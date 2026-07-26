@@ -30,7 +30,7 @@ class RetrieveDocuments(Transform):
         request: SearchRequest,
         user_band: UserBand,
     ) -> DocumentSearchCandidate:
-        """Deduplicate lexical work for every requested reusable user-band context."""
+        """Deduplicate lexical work for every requested reusable user band."""
 
         inner_join(on=document.id == score.document_id)
         inner_join(on=query.id == score.query_id)

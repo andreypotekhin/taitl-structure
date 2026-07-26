@@ -36,13 +36,18 @@
       "schema": "CohortMembership"
     },
     {
-      "name": "user_bands",
+      "name": "cohort_lineage",
       "ordinal": 6,
+      "schema": "CohortLineage"
+    },
+    {
+      "name": "user_bands",
+      "ordinal": 7,
       "schema": "UserBand"
     },
     {
       "name": "params",
-      "ordinal": 7,
+      "ordinal": 8,
       "schema": "EvaluationParams"
     }
   ],
@@ -83,13 +88,18 @@
       "source": "source:examples.search.transforms.evaluation.with_all.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality.input.memberships"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_doc_ranking_quality.EvaluateDocumentRankingQualityGenerated.run.input.cohort_lineage",
+      "ir": "ir:EvaluateDocumentRankingQuality.input.6.cohort_lineage",
+      "source": "source:examples.search.transforms.evaluation.with_all.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality.input.cohort_lineage"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_doc_ranking_quality.EvaluateDocumentRankingQualityGenerated.run.input.user_bands",
-      "ir": "ir:EvaluateDocumentRankingQuality.input.6.user_bands",
+      "ir": "ir:EvaluateDocumentRankingQuality.input.7.user_bands",
       "source": "source:examples.search.transforms.evaluation.with_all.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality.input.user_bands"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_doc_ranking_quality.EvaluateDocumentRankingQualityGenerated.run.input.params",
-      "ir": "ir:EvaluateDocumentRankingQuality.input.7.params",
+      "ir": "ir:EvaluateDocumentRankingQuality.input.8.params",
       "source": "source:examples.search.transforms.evaluation.with_all.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality.input.params"
     },
     {
@@ -133,9 +143,14 @@
       "source": "source:examples.search.transforms.evaluation.with_all.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality.select_queries.join.4.membership"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_doc_ranking_quality.EvaluateDocumentRankingQualityGenerated.run.step.0.select_queries.join.5.user_band",
-      "ir": "ir:EvaluateDocumentRankingQuality.step.0.select_queries.join.5.user_band",
-      "source": "source:examples.search.transforms.evaluation.with_all.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality.select_queries.join.5.user_band"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_doc_ranking_quality.EvaluateDocumentRankingQualityGenerated.run.step.0.select_queries.join.5.lineage",
+      "ir": "ir:EvaluateDocumentRankingQuality.step.0.select_queries.join.5.lineage",
+      "source": "source:examples.search.transforms.evaluation.with_all.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality.select_queries.join.5.lineage"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_doc_ranking_quality.EvaluateDocumentRankingQualityGenerated.run.step.0.select_queries.join.6.user_band",
+      "ir": "ir:EvaluateDocumentRankingQuality.step.0.select_queries.join.6.user_band",
+      "source": "source:examples.search.transforms.evaluation.with_all.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality.select_queries.join.6.user_band"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_doc_ranking_quality.EvaluateDocumentRankingQualityGenerated.run.step.0.select_queries.select.window",
@@ -929,6 +944,10 @@
       "constant": "COHORT_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.user"
     },
+    "CohortLineage": {
+      "constant": "COHORT_LINEAGE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.user"
+    },
     "CohortMembership": {
       "constant": "COHORT_MEMBERSHIP_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.user"
@@ -1313,6 +1332,7 @@
           "judgments",
           "requests",
           "memberships",
+          "cohort_lineage",
           "user_bands",
           "params"
         ],
@@ -1331,6 +1351,7 @@
           "params",
           "request",
           "membership",
+          "lineage",
           "user_band"
         ],
         "step": "select_queries",
@@ -1349,7 +1370,7 @@
         "detail": {},
         "operation": "filter",
         "sources": [
-          "membership.cohort_id",
+          "lineage.ancestor_cohort_id",
           "params.user_band.id"
         ],
         "step": "select_queries",
@@ -1424,7 +1445,22 @@
           "cardinality": "row_multiplying",
           "hint": null,
           "how": "inner",
-          "right_alias": "user_bands_5"
+          "right_alias": "cohort_lineage_5"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "lineage.cohort_id",
+          "membership.cohort_id"
+        ],
+        "step": "select_queries",
+        "target": "select_queries.join[5].lineage"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "user_bands_6"
         },
         "operation": "rowset_join",
         "sources": [
@@ -1432,7 +1468,7 @@
           "request.user_id"
         ],
         "step": "select_queries",
-        "target": "select_queries.join[5].user_band"
+        "target": "select_queries.join[6].user_band"
       },
       {
         "detail": {
@@ -3232,8 +3268,13 @@
         },
         {
           "how": "inner",
+          "input": "lineage",
+          "right_alias": "cohort_lineage_5"
+        },
+        {
+          "how": "inner",
           "input": "user_band",
-          "right_alias": "user_bands_5"
+          "right_alias": "user_bands_6"
         }
       ],
       "name": "select_queries",

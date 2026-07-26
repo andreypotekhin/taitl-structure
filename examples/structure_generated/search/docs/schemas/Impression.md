@@ -8,9 +8,9 @@ Module: `examples.search.schemas.clicks`
 | --- | --- | --- | --- |
 | `id` | `id` | `string` | no |
 | `search_request_id` | `search_request_id` | `string` | no |
-| `shown_at` | `shown_at` | `timestamp` | no |
 | `query` | `query` | `string` | no |
 | `document_id` | `document_id` | `string` | no |
 | `position` | `position` | `long` | no |
 | `examination_propensity` | `examination_propensity` | `double` | no |
 | `user_id` | `user_id` | `string` | yes |
+| `shown_at` | `shown_at` | `timestamp` | no |

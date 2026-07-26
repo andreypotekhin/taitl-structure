@@ -21,18 +21,23 @@
       "schema": "CohortMembership"
     },
     {
-      "name": "bands",
+      "name": "cohort_lineage",
       "ordinal": 1,
+      "schema": "CohortLineage"
+    },
+    {
+      "name": "bands",
+      "ordinal": 2,
       "schema": "Band"
     },
     {
       "name": "user_bands",
-      "ordinal": 2,
+      "ordinal": 3,
       "schema": "UserBand"
     },
     {
       "name": "band_fallbacks",
-      "ordinal": 3,
+      "ordinal": 4,
       "schema": "BandFallback"
     }
   ],
@@ -57,6 +62,11 @@
           "frame": "cohort_memberships",
           "lane": "cohort_memberships",
           "schema": "CohortMembership"
+        },
+        {
+          "frame": "cohort_lineage",
+          "lane": "cohort_lineage",
+          "schema": "CohortLineage"
         },
         {
           "frame": "bands",

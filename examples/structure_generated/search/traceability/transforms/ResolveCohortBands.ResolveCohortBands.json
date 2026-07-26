@@ -63,38 +63,48 @@
       "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.resolve_bands"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.cohort_lineage.select.cohort_id",
+      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.1.cohort_lineage.project.cohort_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs.result.cohort_lineage.cohort_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.cohort_lineage.select.ancestor_cohort_id",
+      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.1.cohort_lineage.project.ancestor_cohort_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs.result.cohort_lineage.ancestor_cohort_id"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.bands.select.band_id",
-      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.1.bands.project.band_id",
+      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.2.bands.project.band_id",
       "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs.result.bands.band_id"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.bands.select.cohort_ids",
-      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.1.bands.project.cohort_ids",
+      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.2.bands.project.cohort_ids",
       "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs.result.bands.cohort_ids"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.user_bands.select.user_id",
-      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.2.user_bands.project.user_id",
+      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.3.user_bands.project.user_id",
       "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs.result.user_bands.user_id"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.user_bands.select.band_id",
-      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.2.user_bands.project.band_id",
+      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.3.user_bands.project.band_id",
       "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs.result.user_bands.band_id"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.band_fallbacks.select.band_id",
-      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.3.band_fallbacks.project.band_id",
+      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.4.band_fallbacks.project.band_id",
       "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs.result.band_fallbacks.band_id"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.band_fallbacks.select.fallback_band_id",
-      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.3.band_fallbacks.project.fallback_band_id",
+      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.4.band_fallbacks.project.fallback_band_id",
       "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs.result.band_fallbacks.fallback_band_id"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.band_fallbacks.select.ordinal",
-      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.3.band_fallbacks.project.ordinal",
+      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.4.band_fallbacks.project.ordinal",
       "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs.result.band_fallbacks.ordinal"
     },
     {
@@ -103,18 +113,23 @@
       "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.output.cohort_memberships"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.output.1.bands.validation.final",
-      "ir": "ir:ResolveCohortBands.output.1.bands.validation.final",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.output.1.cohort_lineage.validation.final",
+      "ir": "ir:ResolveCohortBands.output.1.cohort_lineage.validation.final",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.output.cohort_lineage"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.output.2.bands.validation.final",
+      "ir": "ir:ResolveCohortBands.output.2.bands.validation.final",
       "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.output.bands"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.output.2.user_bands.validation.final",
-      "ir": "ir:ResolveCohortBands.output.2.user_bands.validation.final",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.output.3.user_bands.validation.final",
+      "ir": "ir:ResolveCohortBands.output.3.user_bands.validation.final",
       "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.output.user_bands"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.output.3.band_fallbacks.validation.final",
-      "ir": "ir:ResolveCohortBands.output.3.band_fallbacks.validation.final",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.output.4.band_fallbacks.validation.final",
+      "ir": "ir:ResolveCohortBands.output.4.band_fallbacks.validation.final",
       "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.output.band_fallbacks"
     }
   ],
@@ -157,6 +172,10 @@
     },
     "Cohort": {
       "constant": "COHORT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.user"
+    },
+    "CohortLineage": {
+      "constant": "COHORT_LINEAGE_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.user"
     },
     "CohortMembership": {
@@ -618,6 +637,30 @@
       },
       {
         "detail": {
+          "field": "cohort_id",
+          "result": "cohort_lineage"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "declare_outputs",
+        "target": "cohort_lineage.cohort_id"
+      },
+      {
+        "detail": {
+          "field": "ancestor_cohort_id",
+          "result": "cohort_lineage"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "declare_outputs",
+        "target": "cohort_lineage.ancestor_cohort_id"
+      },
+      {
+        "detail": {
           "field": "band_id",
           "result": "bands"
         },
@@ -717,6 +760,17 @@
         },
         "operation": "validate_schema",
         "sources": [
+          "CohortLineage"
+        ],
+        "step": null,
+        "target": "CohortLineage.validation.final"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
           "Band"
         ],
         "step": null,
@@ -776,6 +830,12 @@
         },
         {
           "after_hooks": [],
+          "frame": "cohort_lineage",
+          "lane": "cohort_lineage",
+          "schema": "CohortLineage"
+        },
+        {
+          "after_hooks": [],
           "frame": "bands",
           "lane": "bands",
           "schema": "Band"
@@ -803,6 +863,11 @@
         "mode": "strict",
         "name": "cohort_memberships",
         "schema": "CohortMembership"
+      },
+      {
+        "mode": "strict",
+        "name": "cohort_lineage",
+        "schema": "CohortLineage"
       },
       {
         "mode": "strict",

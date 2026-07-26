@@ -18,7 +18,7 @@ class User(Schema):
 
 
 class Cohort(Schema):
-    """Caller-owned demographic cohort. Example: (locale=en, gender=Female)"""
+    """A small caller-owned cohort configuration catalog; it is not event data."""
 
     id = string(nullable=False)
     name = string(nullable=True)
@@ -41,6 +41,13 @@ class CohortMembership(Schema):
     cohort_id = string(nullable=False)
     parent_cohort_id = string(nullable=True)
     priority = long(nullable=False)
+
+
+class CohortLineage(Schema):
+    """A matched leaf cohort and one cohort it satisfies, including itself."""
+
+    cohort_id = string(nullable=False)
+    ancestor_cohort_id = string(nullable=False)
 
 
 class Band(Schema):

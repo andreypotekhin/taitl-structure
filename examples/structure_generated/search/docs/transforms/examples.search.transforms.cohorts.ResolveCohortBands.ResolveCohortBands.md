@@ -12,6 +12,7 @@ Source: `examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBand
 ## Outputs
 
 - `cohort_memberships`: `CohortMembership`
+- `cohort_lineage`: `CohortLineage`
 - `bands`: `Band`
 - `user_bands`: `UserBand`
 - `band_fallbacks`: `BandFallback`

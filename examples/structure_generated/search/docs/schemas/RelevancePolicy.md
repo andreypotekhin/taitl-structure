@@ -6,7 +6,6 @@ Module: `examples.search.schemas.relevance`
 
 | Field | Column | Type | Nullable |
 | --- | --- | --- | --- |
-| `evaluated_at` | `evaluated_at` | `timestamp` | no |
 | `half_life_days` | `half_life_days` | `double` | no |
 | `score_weight` | `score_weight` | `double` | no |
 | `feedback_weight` | `feedback_weight` | `double` | no |
@@ -14,3 +13,4 @@ Module: `examples.search.schemas.relevance`
 | `ctr_feedback_weight` | `ctr_feedback_weight` | `double` | no |
 | `minimum_ctr_impressions` | `minimum_ctr_impressions` | `long` | no |
 | `minimum_band_impressions` | `minimum_band_impressions` | `long` | no |
+| `evaluated_at` | `evaluated_at` | `timestamp` | no |

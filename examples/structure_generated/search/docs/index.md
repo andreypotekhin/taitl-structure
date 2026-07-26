@@ -8,6 +8,7 @@
 - [BandFallback](schemas/BandFallback.md)
 - [Click](schemas/Click.md)
 - [Cohort](schemas/Cohort.md)
+- [CohortLineage](schemas/CohortLineage.md)
 - [CohortMembership](schemas/CohortMembership.md)
 - [CorpusStatistics](schemas/CorpusStatistics.md)
 - [CorpusVocabulary](schemas/CorpusVocabulary.md)

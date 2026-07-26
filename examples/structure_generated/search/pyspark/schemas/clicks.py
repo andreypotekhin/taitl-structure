@@ -8,30 +8,30 @@ from examples.structure_generated.search.pyspark.schemas.TimeWindow import TIME_
 SEARCH_REQUEST_SCHEMA = T.StructType([
     T.StructField("id", T.StringType(), False),
     T.StructField("query_id", T.StringType(), False),
-    T.StructField("requested_at", T.TimestampType(), False),
     T.StructField("query", T.StringType(), False),
+    T.StructField("user_id", T.StringType(), True),
     T.StructField("experiment_id", T.StringType(), False),
     T.StructField("ranking_version", T.StringType(), False),
-    T.StructField("user_id", T.StringType(), True),
+    T.StructField("requested_at", T.TimestampType(), False),
 ])
 
 IMPRESSION_SCHEMA = T.StructType([
     T.StructField("id", T.StringType(), False),
     T.StructField("search_request_id", T.StringType(), False),
-    T.StructField("shown_at", T.TimestampType(), False),
     T.StructField("query", T.StringType(), False),
     T.StructField("document_id", T.StringType(), False),
     T.StructField("position", T.LongType(), False),
     T.StructField("examination_propensity", T.DoubleType(), False),
     T.StructField("user_id", T.StringType(), True),
+    T.StructField("shown_at", T.TimestampType(), False),
 ])
 
 CLICK_SCHEMA = T.StructType([
     T.StructField("id", T.StringType(), False),
-    T.StructField("occurred_at", T.TimestampType(), False),
     T.StructField("impression_id", T.StringType(), False),
-    T.StructField("dwell_seconds", T.DoubleType(), False),
     T.StructField("user_id", T.StringType(), True),
+    T.StructField("dwell_seconds", T.DoubleType(), False),
+    T.StructField("occurred_at", T.TimestampType(), False),
 ])
 
 DAILY_IMPRESSIONS_SCHEMA = T.StructType([

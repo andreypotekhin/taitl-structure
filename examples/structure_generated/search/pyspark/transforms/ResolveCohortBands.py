@@ -6,7 +6,7 @@ from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.search.transforms.cohorts.ResolveCohortBands import ResolveCohortBands
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
-from examples.structure_generated.search.pyspark.schemas.user import BAND_FALLBACK_SCHEMA, BAND_SCHEMA, COHORT_MEMBERSHIP_SCHEMA, COHORT_SCHEMA, USER_BAND_SCHEMA, USER_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.user import BAND_FALLBACK_SCHEMA, BAND_SCHEMA, COHORT_LINEAGE_SCHEMA, COHORT_MEMBERSHIP_SCHEMA, COHORT_SCHEMA, USER_BAND_SCHEMA, USER_SCHEMA
 
 
 class ResolveCohortBandsGenerated:
@@ -35,6 +35,10 @@ class ResolveCohortBandsGenerated:
             F.lit(None).cast(T.StringType()).alias("parent_cohort_id"),
             F.lit(0).cast(T.LongType()).alias("priority"),
         )
+        cohort_lineage = declare_outputs_base.select(
+            F.lit('').alias("cohort_id"),
+            F.lit('').alias("ancestor_cohort_id"),
+        )
         bands = declare_outputs_base.select(
             F.lit('').alias("band_id"),
             F.array(F.col("user.id")).alias("cohort_ids"),
@@ -48,12 +52,16 @@ class ResolveCohortBandsGenerated:
             F.lit(None).cast(T.StringType()).alias("fallback_band_id"),
             F.lit(0).cast(T.LongType()).alias("ordinal"),
         )
-        cohort_memberships, bands, user_bands, band_fallbacks = self._impl.resolve_bands(users=_input_users, cohorts=_input_cohorts, cohort_memberships=cohort_memberships, bands=bands, user_bands=user_bands, band_fallbacks=band_fallbacks, spark=self.spark, ctx=self.ctx)
+        cohort_memberships, cohort_lineage, bands, user_bands, band_fallbacks = self._impl.resolve_bands(users=_input_users, cohorts=_input_cohorts, cohort_memberships=cohort_memberships, cohort_lineage=cohort_lineage, bands=bands, user_bands=user_bands, band_fallbacks=band_fallbacks, spark=self.spark, ctx=self.ctx)
         assert_schema(cohort_memberships, COHORT_MEMBERSHIP_SCHEMA, name="CohortMembership", mode="strict")
 
         # Step method: cohort_memberships
         cohort_memberships = cohort_memberships.alias("cohort_membership")
         assert_schema(cohort_memberships, COHORT_MEMBERSHIP_SCHEMA, name="CohortMembership", mode="strict")
+
+        # Step method: cohort_lineage
+        cohort_lineage = cohort_lineage.alias("cohort_lineage")
+        assert_schema(cohort_lineage, COHORT_LINEAGE_SCHEMA, name="CohortLineage", mode="strict")
 
         # Step method: bands
         bands = bands.alias("band")
@@ -66,4 +74,4 @@ class ResolveCohortBandsGenerated:
         # Step method: band_fallbacks
         band_fallbacks = band_fallbacks.alias("band_fallback")
         assert_schema(band_fallbacks, BAND_FALLBACK_SCHEMA, name="BandFallback", mode="strict")
-        return TransformResult({"cohort_memberships": cohort_memberships, "bands": bands, "user_bands": user_bands, "band_fallbacks": band_fallbacks}, single=False, schema={"cohort_memberships": COHORT_MEMBERSHIP_SCHEMA, "bands": BAND_SCHEMA, "user_bands": USER_BAND_SCHEMA, "band_fallbacks": BAND_FALLBACK_SCHEMA})
+        return TransformResult({"cohort_memberships": cohort_memberships, "cohort_lineage": cohort_lineage, "bands": bands, "user_bands": user_bands, "band_fallbacks": band_fallbacks}, single=False, schema={"cohort_memberships": COHORT_MEMBERSHIP_SCHEMA, "cohort_lineage": COHORT_LINEAGE_SCHEMA, "bands": BAND_SCHEMA, "user_bands": USER_BAND_SCHEMA, "band_fallbacks": BAND_FALLBACK_SCHEMA})

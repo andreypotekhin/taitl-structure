@@ -11,6 +11,7 @@ Source: `examples.search.transforms.evaluation.with_users.search_docs.eval_doc_s
 - `impressions`: `Impression`
 - `clicks`: `Click`
 - `memberships`: `CohortMembership`
+- `cohort_lineage`: `CohortLineage`
 - `user_bands`: `UserBand`
 - `params`: `EvaluationParams`
 
@@ -40,9 +41,11 @@ Source: `examples.search.transforms.evaluation.with_users.search_docs.eval_doc_s
 - `click`
 - `clicked`
 - `clicks`
+- `cohort_lineage`
 - `exposure`
 - `impression`
 - `impressions`
+- `lineage`
 - `measured`
 - `membership`
 - `memberships`

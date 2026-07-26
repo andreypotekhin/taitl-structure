@@ -57,16 +57,16 @@ class BuildRelevanceSignals(Transform):
         output=context_impressions,
     )
     def expand_impressions(self, *, daily_impressions, user_bands, band_fallbacks, context_impressions, spark, ctx):
-        """Duplicate logged-in facts into their exact and parent fallback contexts.
+        """Duplicate logged-in facts into their non-global fallback contexts.
 
-        Global rows stay single and context rows are expanded only here, keeping all
+        Global rows stay single and scoped rows are expanded only here, keeping all
         decay and metric calculations in the ordinary typed steps below.
         """
 
         from pyspark.sql import functions as F
 
         global_facts = daily_impressions.withColumn("band_id", F.lit(None).cast("string"))
-        fallback_candidates = band_fallbacks.select(
+        fallback_candidates = band_fallbacks.where(F.col("fallback_band_id").isNotNull()).select(
             F.col("band_id").alias("source_band_id"),
             "fallback_band_id",
             "ordinal",
@@ -99,12 +99,12 @@ class BuildRelevanceSignals(Transform):
 
     @raw(input=[input(daily_clicks), input(user_bands), input(band_fallbacks)], output=context_clicks)
     def expand_clicks(self, *, daily_clicks, user_bands, band_fallbacks, context_clicks, spark, ctx):
-        """Duplicate click facts into the same exact and parent fallback contexts as exposures."""
+        """Duplicate click facts into the same non-global fallback contexts as exposures."""
 
         from pyspark.sql import functions as F
 
         global_facts = daily_clicks.withColumn("band_id", F.lit(None).cast("string"))
-        fallback_candidates = band_fallbacks.select(
+        fallback_candidates = band_fallbacks.where(F.col("fallback_band_id").isNotNull()).select(
             F.col("band_id").alias("source_band_id"),
             "fallback_band_id",
             "ordinal",

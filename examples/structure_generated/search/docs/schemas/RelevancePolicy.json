@@ -2,12 +2,6 @@
   "bases": [],
   "fields": [
     {
-      "column": "evaluated_at",
-      "name": "evaluated_at",
-      "nullable": false,
-      "type": "timestamp"
-    },
-    {
       "column": "half_life_days",
       "name": "half_life_days",
       "nullable": false,
@@ -48,6 +42,12 @@
       "name": "minimum_band_impressions",
       "nullable": false,
       "type": "long"
+    },
+    {
+      "column": "evaluated_at",
+      "name": "evaluated_at",
+      "nullable": false,
+      "type": "timestamp"
     }
   ],
   "generated_by": "Structure",

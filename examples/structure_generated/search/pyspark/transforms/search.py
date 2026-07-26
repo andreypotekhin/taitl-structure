@@ -5,12 +5,14 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import Window
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
+from examples.search.transforms.search import SearchDocuments
+from examples.search.transforms.searching.search_docs.RerankDocuments import RerankDocuments
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
 from examples.structure_generated.search.pyspark.schemas.clicks import SEARCH_REQUEST_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.relevance import DOCUMENT_POPULARITY_SCHEMA, QUERY_DOCUMENT_SIGNALS_SCHEMA, RELEVANCE_POLICY_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.search import DOCUMENT_SCORE_SCHEMA, DOCUMENT_SEARCH_CANDIDATE_SCHEMA, DOCUMENT_SEARCH_RESULT_SCHEMA, SEARCH_QUERY_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.text import DOCUMENT_SCHEMA
-from examples.structure_generated.search.pyspark.schemas.user import USER_BAND_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.user import BAND_FALLBACK_SCHEMA, USER_BAND_SCHEMA
 
 
 class RetrieveDocumentsGenerated:
@@ -64,24 +66,9 @@ class RetrieveDocumentsGenerated:
 
 
 class RerankDocumentsGenerated:
-    def _step_score_candidates_1(self, frames):
-        # Step method: score_candidates
+    def _step_declare_scored_candidates_1(self, frames):
+        # Step method: declare_scored_candidates
         scored_candidates = frames["candidates"].alias("document_search_candidate")
-        scored_candidates = scored_candidates.where(((F.col("document_search_candidate.candidate_rank") <= F.lit(100))))
-        query_document_signals_joined = frames["query_document_signals"].alias("query_document_signals")
-        scored_candidates = scored_candidates.join(
-            query_document_signals_joined,
-            (((F.col("query_document_signals.query") == F.col("document_search_candidate.query")) & (F.col("query_document_signals.document_id") == F.col("document_search_candidate.document_id"))) & F.col("query_document_signals.band_id").eqNullSafe(F.col("document_search_candidate.band_id"))),
-            "left",
-        )
-        document_popularity_2_joined = frames["document_popularity"].alias("document_popularity_2")
-        scored_candidates = scored_candidates.join(
-            document_popularity_2_joined,
-            ((F.col("document_popularity_2.document_id") == F.col("document_search_candidate.document_id")) & F.col("document_popularity_2.band_id").eqNullSafe(F.col("document_search_candidate.band_id"))),
-            "left",
-        )
-        policy_3_joined = frames["policy"].alias("policy_3")
-        scored_candidates = scored_candidates.crossJoin(policy_3_joined)
         scored_candidates = scored_candidates.select(
             F.col("document_search_candidate.search_query_id"),
             F.col("document_search_candidate.experiment_id"),
@@ -92,11 +79,13 @@ class RerankDocumentsGenerated:
             F.col("document_search_candidate.title"),
             F.col("document_search_candidate.url"),
             F.col("document_search_candidate.score"),
-            ((F.lit(0.8) * F.coalesce(F.col("query_document_signals.normalized_score"), F.lit(0.0))) + (F.lit(0.2) * F.coalesce(F.col("document_popularity_2.normalized_score"), F.lit(0.0)))).alias("score_feedback"),
+            F.lit(0.0).alias("score_feedback"),
             F.lit(0.0).alias("score_rank"),
-            F.col("policy_3.score_weight"),
-            F.col("policy_3.feedback_weight"),
+            F.lit(0.0).alias("score_weight"),
+            F.lit(0.0).alias("feedback_weight"),
         )
+        scored_candidates = RerankDocuments.score_candidates(self._impl, candidates=frames["candidates"], query_document_signals=frames["input:query_document_signals"], document_popularity=frames["input:document_popularity"], band_fallbacks=frames["input:band_fallbacks"], policy=frames["input:policy"], scored_candidates=scored_candidates, spark=self.spark, ctx=self.ctx)
+        assert_schema(scored_candidates, DOCUMENT_SEARCH_CANDIDATE_SCHEMA, name="DocumentSearchCandidate", mode="strict")
         assert_schema(scored_candidates, DOCUMENT_SEARCH_CANDIDATE_SCHEMA, name="DocumentSearchCandidate", mode="strict")
         return {
             "scored_candidates": scored_candidates,
@@ -151,6 +140,7 @@ class SearchDocumentsGenerated(RetrieveDocumentsGenerated, RerankDocumentsGenera
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
         self.ctx = ctx
+        self._impl = SearchDocuments()
 
     def run(
         self,
@@ -162,6 +152,7 @@ class SearchDocumentsGenerated(RetrieveDocumentsGenerated, RerankDocumentsGenera
         user_bands: DataFrame,
         query_document_signals: DataFrame,
         document_popularity: DataFrame,
+        band_fallbacks: DataFrame,
         policy: DataFrame,
     ) -> TransformResult:
         assert_schema(queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
@@ -171,6 +162,7 @@ class SearchDocumentsGenerated(RetrieveDocumentsGenerated, RerankDocumentsGenera
         assert_schema(user_bands, USER_BAND_SCHEMA, name="UserBand", mode="strict")
         assert_schema(query_document_signals, QUERY_DOCUMENT_SIGNALS_SCHEMA, name="QueryDocumentSignals", mode="strict")
         assert_schema(document_popularity, DOCUMENT_POPULARITY_SCHEMA, name="DocumentPopularity", mode="strict")
+        assert_schema(band_fallbacks, BAND_FALLBACK_SCHEMA, name="BandFallback", mode="strict")
         assert_schema(policy, RELEVANCE_POLICY_SCHEMA, name="RelevancePolicy", mode="strict")
         _input_queries = queries
         _input_documents = documents
@@ -179,6 +171,7 @@ class SearchDocumentsGenerated(RetrieveDocumentsGenerated, RerankDocumentsGenera
         _input_user_bands = user_bands
         _input_query_document_signals = query_document_signals
         _input_document_popularity = document_popularity
+        _input_band_fallbacks = band_fallbacks
         _input_policy = policy
         frames = {
             "queries": queries,
@@ -188,6 +181,7 @@ class SearchDocumentsGenerated(RetrieveDocumentsGenerated, RerankDocumentsGenera
             "user_bands": user_bands,
             "query_document_signals": query_document_signals,
             "document_popularity": document_popularity,
+            "band_fallbacks": band_fallbacks,
             "policy": policy,
             "input:queries": _input_queries,
             "input:documents": _input_documents,
@@ -196,10 +190,11 @@ class SearchDocumentsGenerated(RetrieveDocumentsGenerated, RerankDocumentsGenera
             "input:user_bands": _input_user_bands,
             "input:query_document_signals": _input_query_document_signals,
             "input:document_popularity": _input_document_popularity,
+            "input:band_fallbacks": _input_band_fallbacks,
             "input:policy": _input_policy,
         }
         frames.update(self._step_select_candidates_0(frames))
-        frames.update(self._step_score_candidates_1(frames))
+        frames.update(self._step_declare_scored_candidates_1(frames))
         frames.update(self._step_normalize_score_2(frames))
         frames.update(self._step_rank_results_3(frames))
 

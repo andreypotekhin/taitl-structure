@@ -37,6 +37,11 @@ COHORT_MEMBERSHIP_SCHEMA = T.StructType([
     T.StructField("priority", T.LongType(), False),
 ])
 
+COHORT_LINEAGE_SCHEMA = T.StructType([
+    T.StructField("cohort_id", T.StringType(), False),
+    T.StructField("ancestor_cohort_id", T.StringType(), False),
+])
+
 BAND_SCHEMA = T.StructType([
     T.StructField("band_id", T.StringType(), False),
     T.StructField("cohort_ids", T.ArrayType(T.StringType(), containsNull=False), False),

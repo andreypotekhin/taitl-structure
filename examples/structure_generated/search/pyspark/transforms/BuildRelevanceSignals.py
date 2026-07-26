@@ -105,9 +105,9 @@ class BuildRelevanceSignalsGenerated:
             F.sum(F.lit(0.0)).cast(T.DoubleType()).alias("normalized_ctr_score"),
             F.sum(F.lit(0.0)).cast(T.DoubleType()).alias("normalized_score"),
         ).select(
-            F.col("band_id"),
             F.col("query"),
             F.col("document_id"),
+            F.col("band_id"),
             F.col("impression_count"),
             F.col("click_count"),
             F.col("clicked_impression_count"),
@@ -154,8 +154,8 @@ class BuildRelevanceSignalsGenerated:
             F.sum(F.lit(0.0)).cast(T.DoubleType()).alias("normalized_ctr_score"),
             F.sum(F.lit(0.0)).cast(T.DoubleType()).alias("normalized_score"),
         ).select(
-            F.col("band_id"),
             F.col("document_id"),
+            F.col("band_id"),
             F.col("impression_count"),
             F.col("click_count"),
             F.col("clicked_impression_count"),
@@ -178,9 +178,9 @@ class BuildRelevanceSignalsGenerated:
         policy_joined = policy.alias("policy")
         query_document_signals = query_document_signals.crossJoin(policy_joined)
         query_document_signals = query_document_signals.select(
-            F.col("query_document_signals.band_id"),
             F.col("query_document_signals.query"),
             F.col("query_document_signals.document_id"),
+            F.col("query_document_signals.band_id"),
             F.col("query_document_signals.impression_count"),
             F.col("query_document_signals.click_count"),
             F.col("query_document_signals.clicked_impression_count"),
@@ -203,8 +203,8 @@ class BuildRelevanceSignalsGenerated:
         policy_joined = policy.alias("policy")
         document_popularity = document_popularity.crossJoin(policy_joined)
         document_popularity = document_popularity.select(
-            F.col("document_popularity.band_id"),
             F.col("document_popularity.document_id"),
+            F.col("document_popularity.band_id"),
             F.col("document_popularity.impression_count"),
             F.col("document_popularity.click_count"),
             F.col("document_popularity.clicked_impression_count"),

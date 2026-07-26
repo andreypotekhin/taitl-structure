@@ -10,7 +10,7 @@ from examples.search.schemas.evaluation.judged_quality import (
 from examples.search.schemas.evaluation.params import EvaluationParams
 from examples.search.schemas.experiment import Experiment
 from examples.search.schemas.search import DocumentSearchResult, SearchQuery
-from examples.search.schemas.user import CohortMembership, UserBand
+from examples.search.schemas.user import CohortLineage, CohortMembership, UserBand
 from examples.search.transforms.evaluation.with_all.search_docs.eval_doc_ranking_quality import (
     EvaluateDocumentRankingQuality as BaseEvaluateDocumentRankingQuality,
 )
@@ -33,6 +33,7 @@ class EvaluateDocumentRankingQuality(BaseEvaluateDocumentRankingQuality):
         query: SearchQuery,
         request: SearchRequest,
         membership: CohortMembership,
+        lineage: CohortLineage,
         user_band: UserBand,
         batch: EvaluationBatch,
         params: EvaluationParams,
@@ -45,11 +46,12 @@ class EvaluateDocumentRankingQuality(BaseEvaluateDocumentRankingQuality):
         cross_join(experiment, allow_cartesian=True)
         inner_join(on=request.query_id == query.id)
         inner_join(on=membership.user_id == request.user_id)
+        inner_join(on=lineage.cohort_id == membership.cohort_id)
         inner_join(on=user_band.user_id == request.user_id)
         where(
             experiment.is_active,
             params.user_band.is_not_null(),
-            membership.cohort_id == params.user_band.id,
+            lineage.ancestor_cohort_id == params.user_band.id,
             self._matches(query, params),
         )
         group_by(

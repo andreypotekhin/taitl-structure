@@ -6,7 +6,7 @@ from examples.search.schemas.evaluation.behavior import BehaviorRequest
 from examples.search.schemas.evaluation.params import EvaluationParams
 from examples.search.schemas.experiment import Experiment
 from examples.search.schemas.search import SearchQuery
-from examples.search.schemas.user import CohortMembership, UserBand
+from examples.search.schemas.user import CohortLineage, CohortMembership, UserBand
 from examples.search.transforms.evaluation.with_all.search_docs.eval_doc_search_behavior import (
     EvaluateDocumentSearchBehavior as BaseEvaluateDocumentSearchBehavior,
 )
@@ -29,6 +29,7 @@ class EvaluateDocumentSearchBehavior(BaseEvaluateDocumentSearchBehavior):
         query: SearchQuery,
         request: SearchRequest,
         membership: CohortMembership,
+        lineage: CohortLineage,
         user_band: UserBand,
         batch: EvaluationBatch,
         params: EvaluationParams,
@@ -40,12 +41,13 @@ class EvaluateDocumentSearchBehavior(BaseEvaluateDocumentSearchBehavior):
         cross_join(params, allow_cartesian=True)
         inner_join(on=query.id == request.query_id)
         inner_join(on=membership.user_id == request.user_id)
+        inner_join(on=lineage.cohort_id == membership.cohort_id)
         inner_join(on=user_band.user_id == request.user_id)
         inner_join(experiment, on=experiment.experiment_id == request.experiment_id)
         where(
             experiment.is_active,
             params.user_band.is_not_null(),
-            membership.cohort_id == params.user_band.id,
+            lineage.ancestor_cohort_id == params.user_band.id,
             self._matches(query, params),
             (request.requested_at >= batch.window.start) & (request.requested_at < batch.window.end),
         )

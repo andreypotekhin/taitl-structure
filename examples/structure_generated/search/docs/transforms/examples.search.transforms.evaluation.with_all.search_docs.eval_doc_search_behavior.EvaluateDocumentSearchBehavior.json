@@ -4,9 +4,11 @@
     "click",
     "clicked",
     "clicks",
+    "cohort_lineage",
     "exposure",
     "impression",
     "impressions",
+    "lineage",
     "measured",
     "membership",
     "memberships",
@@ -44,18 +46,23 @@
       "schema": "CohortMembership"
     },
     {
-      "name": "user_bands",
+      "name": "cohort_lineage",
       "ordinal": 5,
+      "schema": "CohortLineage"
+    },
+    {
+      "name": "user_bands",
+      "ordinal": 6,
       "schema": "UserBand"
     },
     {
       "name": "params",
-      "ordinal": 6,
+      "ordinal": 7,
       "schema": "EvaluationParams"
     },
     {
       "name": "queries",
-      "ordinal": 7,
+      "ordinal": 8,
       "schema": "SearchQuery"
     }
   ],
@@ -98,6 +105,12 @@
         },
         {
           "driving": false,
+          "parameter": "lineage",
+          "schema": "CohortLineage",
+          "source": "cohort_lineage"
+        },
+        {
+          "driving": false,
           "parameter": "user_band",
           "schema": "UserBand",
           "source": "user_bands"
@@ -131,6 +144,10 @@
         {
           "how": "inner",
           "input": "membership"
+        },
+        {
+          "how": "inner",
+          "input": "lineage"
         },
         {
           "how": "inner",

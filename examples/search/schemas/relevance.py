@@ -5,7 +5,6 @@ from structure.plugin.pyspark import *
 
 
 class RelevancePolicy(Schema):
-    evaluated_at = timestamp(nullable=False)
     half_life_days = double(nullable=False)
     score_weight = double(nullable=False)
     feedback_weight = double(nullable=False)
@@ -13,14 +12,15 @@ class RelevancePolicy(Schema):
     ctr_feedback_weight = double(nullable=False)
     minimum_ctr_impressions = long(nullable=False)
     minimum_band_impressions = long(nullable=False)
+    evaluated_at = timestamp(nullable=False)
 
 
 class QueryDocumentSignals(Schema):
-    """One global or band-context query/document feedback signal."""
+    """Query/document feedback signal."""
 
-    band_id = string(nullable=True)
     query = string(nullable=False)
     document_id = string(nullable=False)
+    band_id = string(nullable=True)
     impression_count = long(nullable=False)
     click_count = long(nullable=False)
     clicked_impression_count = long(nullable=False)
@@ -38,10 +38,10 @@ class QueryDocumentSignals(Schema):
 
 
 class DocumentPopularity(Schema):
-    """One global or band-context document feedback signal."""
+    """One document feedback signal."""
 
-    band_id = string(nullable=True)
     document_id = string(nullable=False)
+    band_id = string(nullable=True)
     impression_count = long(nullable=False)
     click_count = long(nullable=False)
     clicked_impression_count = long(nullable=False)

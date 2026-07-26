@@ -11,6 +11,7 @@ Source: `examples.search.transforms.evaluation.with_all.search_docs.eval_doc_sea
 - `impressions`: `Impression`
 - `clicks`: `Click`
 - `memberships`: `CohortMembership`
+- `cohort_lineage`: `CohortLineage`
 - `user_bands`: `UserBand`
 - `params`: `EvaluationParams`
 - `queries`: `SearchQuery`
@@ -41,9 +42,11 @@ Source: `examples.search.transforms.evaluation.with_all.search_docs.eval_doc_sea
 - `click`
 - `clicked`
 - `clicks`
+- `cohort_lineage`
 - `exposure`
 - `impression`
 - `impressions`
+- `lineage`
 - `measured`
 - `membership`
 - `memberships`

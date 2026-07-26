@@ -13,6 +13,7 @@ Source: `examples.search.transforms.searching.search_docs.SearchDocuments.Search
 - `user_bands`: `UserBand`
 - `query_document_signals`: `QueryDocumentSignals`
 - `document_popularity`: `DocumentPopularity`
+- `band_fallbacks`: `BandFallback`
 - `policy`: `RelevancePolicy`
 
 ## Outputs
@@ -23,20 +24,15 @@ Source: `examples.search.transforms.searching.search_docs.SearchDocuments.Search
 ## Step methods
 
 - `select_candidates`: `Document` -> `DocumentSearchCandidate`
-- `score_candidates`: `DocumentSearchCandidate` -> `DocumentSearchCandidate`
+- `declare_scored_candidates`: `DocumentSearchCandidate` -> `DocumentSearchCandidate`
 - `normalize_score`: `DocumentSearchCandidate` -> `DocumentSearchCandidate`
 - `rank_results`: `DocumentSearchCandidate` -> `DocumentSearchResult`
 
 ## Dependencies
 
-- `document_popularity`
 - `document_scores`
-- `policy`
-- `popularity`
 - `queries`
 - `query`
-- `query_document_signals`
-- `query_signal`
 - `request`
 - `requests`
 - `score`

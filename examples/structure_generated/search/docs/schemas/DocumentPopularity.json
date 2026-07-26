@@ -2,15 +2,15 @@
   "bases": [],
   "fields": [
     {
-      "column": "band_id",
-      "name": "band_id",
-      "nullable": true,
-      "type": "string"
-    },
-    {
       "column": "document_id",
       "name": "document_id",
       "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "band_id",
+      "name": "band_id",
+      "nullable": true,
       "type": "string"
     },
     {

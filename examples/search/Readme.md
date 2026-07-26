@@ -18,6 +18,8 @@ For the architecture, evidence boundaries, and ownership model, see the
 | Similarity | `CreateSimilarityQueries`, `ReduceSimilarityScores` | same-grain corpus pairs | Reuse the lexical index; BM25 stays directional. |
 | Feedback | `Impressions`, `Clicks`, `BuildRelevanceSignals` | daily facts and batch signals | Exposure-aware, attributed, propensity-corrected evidence. |
 | Presentation | `SearchSentences`, `SearchPassages`, `SearchDocuments` | deterministic ranks | Sentence and passage ranking are lexical; document ranking is two-stage. |
+| Experiments | `SelectExperimentScores`, experiment evaluators | comparable named runs | Named score variants flow through serving and evaluation. |
+| Evaluation | judged-quality and behavior evaluators | daily quality and serving metrics | Slice by labels and inclusive cohort hierarchies. |
 
 ## Extraction
 
@@ -107,64 +109,6 @@ BM25(k1 = 1.2, b = 0.75)
 
 Overlap is bounded and symmetric at a fixed grain. BM25 is corpus-dependent and directional when used for similarity;
 do not interpret either score as a calibrated relevance probability.
-
-### Experiments
-
-Corpus rows never carry experiment state. `DocumentScore`, `SectionScore`, `ParagraphScore`, and `SentenceScore`
-are query-target relations with an `experiment_id` and unified `score`; production rows use the empty ID. `AddScores`
-creates those production rows from the default grain algorithm, while callers may supply identically shaped named
-experiment scores that combine any algorithms. `SelectExperimentScores` preserves production and admits only currently
-active named experiments before presentation or reranking. A single experiment ID flows from score through results and
-the caller-recorded `SearchRequest`; there is no separate reranking experiment.
-
-```python
-scores = AddScores(
-    queries=queries,
-    document_terms=index.document_terms,
-    document_summary=index.document_summary,
-    section_terms=index.section_terms,
-    section_summary=index.section_summary,
-    paragraph_terms=index.paragraph_terms,
-    paragraph_summary=index.paragraph_summary,
-    sentence_terms=index.sentence_terms,
-    sentence_summary=index.sentence_summary,
-).run(session)
-
-# Choose the target grain needed by the next search boundary.
-document_scores = scores.document_scores
-sentence_scores = scores.sentence_scores
-```
-
-## Label-sliced Evaluation
-
-Callers own label assignment. `QueryLabel` records a timestamped integral value for a query ID; `MergeQueryLabels`
-keeps the latest assignment for each label name and materializes it in `SearchQuery.labels`. The convenience flags
-`is_question` and `is_time_sensitive` mirror their same-named `0`/`1` map entries.
-
-`EvaluationParams.labels` selects the evaluation band. Different label names must match, while multiple values for one
-name are alternatives. An empty band evaluates every query. The labeled ranking and behavior evaluators retain the
-full parameter struct in their outputs, so persisted metrics identify the slice that produced them.
-
-```python
-labeled_queries = MergeQueryLabels(queries=queries, query_labels=query_labels).run(session).labeled_queries
-
-quality = EvaluateLabeledDocumentRankingQuality(
-    batch=batch,
-    queries=labeled_queries,
-    results=document_results,
-    judgments=document_judgments,
-    params=evaluation_params,
-).run(session)
-
-behavior = EvaluateLabeledDocumentSearchBehavior(
-    batch=batch,
-    requests=requests,  # each SearchRequest carries query_id
-    queries=labeled_queries,
-    impressions=impressions,
-    clicks=clicks,
-    params=evaluation_params,
-).run(session)
-```
 
 ## Cohort Bands
 
@@ -439,7 +383,7 @@ first_page = ranked_documents.where("rank <= 20").orderBy("rank")
 `DocumentSearchResult` exposes candidate rank, final rank, BM25, feedback, and final rank score so a serving layer can
 explain movement without reconstructing the scoring path.
 
-## Evaluation
+## Quality and behavior metrics
 
 `EvaluateDocumentRankingQuality` is the offline quality anchor. It compares one daily result batch with caller-supplied
 four-grade query-document judgments (`0` not relevant, `1` related, `2` relevant, `3` ideal). It reports
@@ -539,7 +483,41 @@ answer_evidence = passages.where("rank <= 5").orderBy("search_query_id", "rank")
 `SearchPassages` returns every matching paragraph: adjacent matches remain distinct rows. Callers own refreshing the corpus and index, selecting a current snapshot, and turning
 these evidence outputs into an answer; this example neither invokes an answer model nor creates a cross-document prompt.
 
-## Design constraints
+## Evaluation
+
+Evaluation is caller-owned and batch-only. `EvaluateDocumentRankingQuality` measures judged relevance, while
+`EvaluateDocumentSearchBehavior` monitors served requests, impressions, and clicks. Both preserve an
+`EvaluationParams` value in their output so persisted metrics identify their slice.
+
+### Labels
+
+`QueryLabel` records a timestamped integral value for a query ID; `MergeQueryLabels` materializes the latest values in
+`SearchQuery.labels`. `EvaluationParams.labels` requires different label names to match and treats multiple values for
+one name as alternatives. An empty label map evaluates every query.
+
+### Cohorts
+
+`EvaluationParams.user_band` selects a persisted `Cohort`. A selected leaf cohort evaluates its direct matching users.
+A selected parent cohort is inclusive: it evaluates users whose most-specific matching cohort is that parent or any
+descendant. `CohortLineage` supplies that relationship; it changes only evaluation population selection, never a
+user's resolved `Band` or the band recorded on result rows.
+
+The `with_users` evaluators apply the cohort slice, `with_labels` applies the label slice, and `with_all` applies both.
+Experiment evaluators apply the same combined selection to active named experiments.
+
+## Experiments
+
+Corpus rows never carry experiment state. `DocumentScore`, `SectionScore`, `ParagraphScore`, and `SentenceScore` are
+query-target relations with an `experiment_id` and unified `score`; production rows use the empty ID. `AddScores`
+creates those production rows from the default grain algorithm, while callers may supply identically shaped named
+experiment scores that combine any algorithms. `SelectExperimentScores` preserves production and admits only currently
+active named experiments before presentation or reranking. A single experiment ID flows from score through results and
+the caller-recorded `SearchRequest`; there is no separate reranking experiment.
+
+Experiment evaluators compare active experiment result rows using the same judgments, labels, cohort slice, and
+batch as the production evaluation. This keeps experiments comparable without mixing them into one ranking.
+
+## Design Constraints
 
 - The corpus and relevance snapshots are batch inputs, because similarity distributions and decayed normalization need bounded
   input sets.

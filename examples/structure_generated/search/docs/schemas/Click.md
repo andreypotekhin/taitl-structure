@@ -7,7 +7,7 @@ Module: `examples.search.schemas.clicks`
 | Field | Column | Type | Nullable |
 | --- | --- | --- | --- |
 | `id` | `id` | `string` | no |
-| `occurred_at` | `occurred_at` | `timestamp` | no |
 | `impression_id` | `impression_id` | `string` | no |
-| `dwell_seconds` | `dwell_seconds` | `double` | no |
 | `user_id` | `user_id` | `string` | yes |
+| `dwell_seconds` | `dwell_seconds` | `double` | no |
+| `occurred_at` | `occurred_at` | `timestamp` | no |

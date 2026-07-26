@@ -119,6 +119,10 @@
       "constant": "COHORT_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.user"
     },
+    "CohortLineage": {
+      "constant": "COHORT_LINEAGE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.user"
+    },
     "CohortMembership": {
       "constant": "COHORT_MEMBERSHIP_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.user"

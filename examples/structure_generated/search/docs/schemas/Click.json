@@ -8,15 +8,15 @@
       "type": "string"
     },
     {
-      "column": "occurred_at",
-      "name": "occurred_at",
-      "nullable": false,
-      "type": "timestamp"
-    },
-    {
       "column": "impression_id",
       "name": "impression_id",
       "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "user_id",
+      "name": "user_id",
+      "nullable": true,
       "type": "string"
     },
     {
@@ -26,10 +26,10 @@
       "type": "double"
     },
     {
-      "column": "user_id",
-      "name": "user_id",
-      "nullable": true,
-      "type": "string"
+      "column": "occurred_at",
+      "name": "occurred_at",
+      "nullable": false,
+      "type": "timestamp"
     }
   ],
   "generated_by": "Structure",

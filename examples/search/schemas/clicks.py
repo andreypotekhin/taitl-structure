@@ -9,11 +9,11 @@ class SearchRequest(Schema):
 
     id = string(nullable=False)
     query_id = string(nullable=False)
-    requested_at = timestamp(nullable=False)
     query = string(nullable=False)
+    user_id = string(nullable=True)
     experiment_id = string(nullable=False)
     ranking_version = string(nullable=False)
-    user_id = string(nullable=True)
+    requested_at = timestamp(nullable=False)
 
 
 class Impression(Schema):
@@ -21,22 +21,22 @@ class Impression(Schema):
 
     id = string(nullable=False)
     search_request_id = string(nullable=False)
-    shown_at = timestamp(nullable=False)
     query = string(nullable=False)
     document_id = string(nullable=False)
     position = long(nullable=False)
     examination_propensity = double(nullable=False)
     user_id = string(nullable=True)
+    shown_at = timestamp(nullable=False)
 
 
 class Click(Schema):
     """One caller-recorded action against an impression."""
 
     id = string(nullable=False)
-    occurred_at = timestamp(nullable=False)
     impression_id = string(nullable=False)
-    dwell_seconds = double(nullable=False)
     user_id = string(nullable=True)
+    dwell_seconds = double(nullable=False)
+    occurred_at = timestamp(nullable=False)
 
 
 class DailyImpressions(Schema):

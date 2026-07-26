@@ -6,9 +6,9 @@ Module: `examples.search.schemas.relevance`
 
 | Field | Column | Type | Nullable |
 | --- | --- | --- | --- |
-| `band_id` | `band_id` | `string` | yes |
 | `query` | `query` | `string` | no |
 | `document_id` | `document_id` | `string` | no |
+| `band_id` | `band_id` | `string` | yes |
 | `impression_count` | `impression_count` | `long` | no |
 | `click_count` | `click_count` | `long` | no |
 | `clicked_impression_count` | `clicked_impression_count` | `long` | no |

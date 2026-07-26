@@ -218,11 +218,6 @@
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_query.join.2.policy"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.summarize_query.aggregate.band_id",
-      "ir": "ir:BuildRelevanceSignals.step.2.summarize_query.aggregate.band_id",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_query.aggregate.band_id"
-    },
-    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.summarize_query.aggregate.query",
       "ir": "ir:BuildRelevanceSignals.step.2.summarize_query.aggregate.query",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_query.aggregate.query"
@@ -231,6 +226,11 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.summarize_query.aggregate.document_id",
       "ir": "ir:BuildRelevanceSignals.step.2.summarize_query.aggregate.document_id",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_query.aggregate.document_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.summarize_query.aggregate.band_id",
+      "ir": "ir:BuildRelevanceSignals.step.2.summarize_query.aggregate.band_id",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_query.aggregate.band_id"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.summarize_query.aggregate.impression_count",
@@ -323,14 +323,14 @@
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_popularity.join.2.policy"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.summarize_popularity.aggregate.band_id",
-      "ir": "ir:BuildRelevanceSignals.step.3.summarize_popularity.aggregate.band_id",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_popularity.aggregate.band_id"
-    },
-    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.summarize_popularity.aggregate.document_id",
       "ir": "ir:BuildRelevanceSignals.step.3.summarize_popularity.aggregate.document_id",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_popularity.aggregate.document_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.summarize_popularity.aggregate.band_id",
+      "ir": "ir:BuildRelevanceSignals.step.3.summarize_popularity.aggregate.band_id",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_popularity.aggregate.band_id"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.summarize_popularity.aggregate.impression_count",
@@ -418,11 +418,6 @@
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_query.join.1.policy"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.normalize_query.select.band_id",
-      "ir": "ir:BuildRelevanceSignals.step.4.normalize_query.project.band_id",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_query.field.band_id"
-    },
-    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.normalize_query.select.query",
       "ir": "ir:BuildRelevanceSignals.step.4.normalize_query.project.query",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_query.field.query"
@@ -431,6 +426,11 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.normalize_query.select.document_id",
       "ir": "ir:BuildRelevanceSignals.step.4.normalize_query.project.document_id",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_query.field.document_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.normalize_query.select.band_id",
+      "ir": "ir:BuildRelevanceSignals.step.4.normalize_query.project.band_id",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_query.field.band_id"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.normalize_query.select.impression_count",
@@ -518,14 +518,14 @@
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_popularity.join.1.policy"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.normalize_popularity.select.band_id",
-      "ir": "ir:BuildRelevanceSignals.step.5.normalize_popularity.project.band_id",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_popularity.field.band_id"
-    },
-    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.normalize_popularity.select.document_id",
       "ir": "ir:BuildRelevanceSignals.step.5.normalize_popularity.project.document_id",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_popularity.field.document_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.normalize_popularity.select.band_id",
+      "ir": "ir:BuildRelevanceSignals.step.5.normalize_popularity.project.band_id",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_popularity.field.band_id"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.normalize_popularity.select.impression_count",
@@ -647,6 +647,10 @@
     },
     "Cohort": {
       "constant": "COHORT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.user"
+    },
+    "CohortLineage": {
+      "constant": "COHORT_LINEAGE_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.user"
     },
     "CohortMembership": {
@@ -1361,19 +1365,6 @@
       },
       {
         "detail": {
-          "field": "band_id",
-          "function": "key",
-          "key": "band_id"
-        },
-        "operation": "aggregate",
-        "sources": [
-          "impression.band_id"
-        ],
-        "step": "summarize_query",
-        "target": "QueryDocumentSignals.band_id"
-      },
-      {
-        "detail": {
           "field": "query",
           "function": "key",
           "key": "query"
@@ -1397,6 +1388,19 @@
         ],
         "step": "summarize_query",
         "target": "QueryDocumentSignals.document_id"
+      },
+      {
+        "detail": {
+          "field": "band_id",
+          "function": "key",
+          "key": "band_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "impression.band_id"
+        ],
+        "step": "summarize_query",
+        "target": "QueryDocumentSignals.band_id"
       },
       {
         "detail": {
@@ -1651,19 +1655,6 @@
       },
       {
         "detail": {
-          "field": "band_id",
-          "function": "key",
-          "key": "band_id"
-        },
-        "operation": "aggregate",
-        "sources": [
-          "impression.band_id"
-        ],
-        "step": "summarize_popularity",
-        "target": "DocumentPopularity.band_id"
-      },
-      {
-        "detail": {
           "field": "document_id",
           "function": "key",
           "key": "document_id"
@@ -1674,6 +1665,19 @@
         ],
         "step": "summarize_popularity",
         "target": "DocumentPopularity.document_id"
+      },
+      {
+        "detail": {
+          "field": "band_id",
+          "function": "key",
+          "key": "band_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "impression.band_id"
+        ],
+        "step": "summarize_popularity",
+        "target": "DocumentPopularity.band_id"
       },
       {
         "detail": {
@@ -1900,17 +1904,6 @@
       },
       {
         "detail": {
-          "field": "band_id"
-        },
-        "operation": "project",
-        "sources": [
-          "signal.band_id"
-        ],
-        "step": "normalize_query",
-        "target": "QueryDocumentSignals.band_id"
-      },
-      {
-        "detail": {
           "field": "query"
         },
         "operation": "project",
@@ -1930,6 +1923,17 @@
         ],
         "step": "normalize_query",
         "target": "QueryDocumentSignals.document_id"
+      },
+      {
+        "detail": {
+          "field": "band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "signal.band_id"
+        ],
+        "step": "normalize_query",
+        "target": "QueryDocumentSignals.band_id"
       },
       {
         "detail": {
@@ -2129,17 +2133,6 @@
       },
       {
         "detail": {
-          "field": "band_id"
-        },
-        "operation": "project",
-        "sources": [
-          "popularity.band_id"
-        ],
-        "step": "normalize_popularity",
-        "target": "DocumentPopularity.band_id"
-      },
-      {
-        "detail": {
           "field": "document_id"
         },
         "operation": "project",
@@ -2148,6 +2141,17 @@
         ],
         "step": "normalize_popularity",
         "target": "DocumentPopularity.document_id"
+      },
+      {
+        "detail": {
+          "field": "band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "popularity.band_id"
+        ],
+        "step": "normalize_popularity",
+        "target": "DocumentPopularity.band_id"
       },
       {
         "detail": {

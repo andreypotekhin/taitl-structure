@@ -31,18 +31,23 @@
       "schema": "CohortMembership"
     },
     {
-      "name": "user_bands",
+      "name": "cohort_lineage",
       "ordinal": 5,
+      "schema": "CohortLineage"
+    },
+    {
+      "name": "user_bands",
+      "ordinal": 6,
       "schema": "UserBand"
     },
     {
       "name": "params",
-      "ordinal": 6,
+      "ordinal": 7,
       "schema": "EvaluationParams"
     },
     {
       "name": "queries",
-      "ordinal": 7,
+      "ordinal": 8,
       "schema": "SearchQuery"
     }
   ],
@@ -78,18 +83,23 @@
       "source": "source:examples.search.transforms.evaluation.with_all.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior.input.memberships"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_doc_search_behavior.EvaluateDocumentSearchBehaviorGenerated.run.input.cohort_lineage",
+      "ir": "ir:EvaluateDocumentSearchBehavior.input.5.cohort_lineage",
+      "source": "source:examples.search.transforms.evaluation.with_all.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior.input.cohort_lineage"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_doc_search_behavior.EvaluateDocumentSearchBehaviorGenerated.run.input.user_bands",
-      "ir": "ir:EvaluateDocumentSearchBehavior.input.5.user_bands",
+      "ir": "ir:EvaluateDocumentSearchBehavior.input.6.user_bands",
       "source": "source:examples.search.transforms.evaluation.with_all.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior.input.user_bands"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_doc_search_behavior.EvaluateDocumentSearchBehaviorGenerated.run.input.params",
-      "ir": "ir:EvaluateDocumentSearchBehavior.input.6.params",
+      "ir": "ir:EvaluateDocumentSearchBehavior.input.7.params",
       "source": "source:examples.search.transforms.evaluation.with_all.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior.input.params"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_doc_search_behavior.EvaluateDocumentSearchBehaviorGenerated.run.input.queries",
-      "ir": "ir:EvaluateDocumentSearchBehavior.input.7.queries",
+      "ir": "ir:EvaluateDocumentSearchBehavior.input.8.queries",
       "source": "source:examples.search.transforms.evaluation.with_all.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior.input.queries"
     },
     {
@@ -138,9 +148,14 @@
       "source": "source:examples.search.transforms.evaluation.with_all.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior.select_requests.join.4.membership"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_doc_search_behavior.EvaluateDocumentSearchBehaviorGenerated.run.step.0.select_requests.join.5.user_band",
-      "ir": "ir:EvaluateDocumentSearchBehavior.step.0.select_requests.join.5.user_band",
-      "source": "source:examples.search.transforms.evaluation.with_all.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior.select_requests.join.5.user_band"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_doc_search_behavior.EvaluateDocumentSearchBehaviorGenerated.run.step.0.select_requests.join.5.lineage",
+      "ir": "ir:EvaluateDocumentSearchBehavior.step.0.select_requests.join.5.lineage",
+      "source": "source:examples.search.transforms.evaluation.with_all.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior.select_requests.join.5.lineage"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_doc_search_behavior.EvaluateDocumentSearchBehaviorGenerated.run.step.0.select_requests.join.6.user_band",
+      "ir": "ir:EvaluateDocumentSearchBehavior.step.0.select_requests.join.6.user_band",
+      "source": "source:examples.search.transforms.evaluation.with_all.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior.select_requests.join.6.user_band"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_doc_search_behavior.EvaluateDocumentSearchBehaviorGenerated.run.step.0.select_requests.select.window",
@@ -1219,6 +1234,10 @@
       "constant": "COHORT_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.user"
     },
+    "CohortLineage": {
+      "constant": "COHORT_LINEAGE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.user"
+    },
     "CohortMembership": {
       "constant": "COHORT_MEMBERSHIP_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.user"
@@ -1602,6 +1621,7 @@
           "impressions",
           "clicks",
           "memberships",
+          "cohort_lineage",
           "user_bands",
           "params",
           "queries"
@@ -1621,6 +1641,7 @@
           "params",
           "request",
           "membership",
+          "lineage",
           "user_band"
         ],
         "step": "select_requests",
@@ -1639,7 +1660,7 @@
         "detail": {},
         "operation": "filter",
         "sources": [
-          "membership.cohort_id",
+          "lineage.ancestor_cohort_id",
           "params.user_band.id"
         ],
         "step": "select_requests",
@@ -1725,7 +1746,22 @@
           "cardinality": "row_multiplying",
           "hint": null,
           "how": "inner",
-          "right_alias": "user_bands_5"
+          "right_alias": "cohort_lineage_5"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "lineage.cohort_id",
+          "membership.cohort_id"
+        ],
+        "step": "select_requests",
+        "target": "select_requests.join[5].lineage"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "user_bands_6"
         },
         "operation": "rowset_join",
         "sources": [
@@ -1733,7 +1769,7 @@
           "request.user_id"
         ],
         "step": "select_requests",
-        "target": "select_requests.join[5].user_band"
+        "target": "select_requests.join[6].user_band"
       },
       {
         "detail": {
@@ -4089,8 +4125,13 @@
         },
         {
           "how": "inner",
+          "input": "lineage",
+          "right_alias": "cohort_lineage_5"
+        },
+        {
+          "how": "inner",
           "input": "user_band",
-          "right_alias": "user_bands_5"
+          "right_alias": "user_bands_6"
         }
       ],
       "name": "select_requests",

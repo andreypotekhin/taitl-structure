@@ -41,8 +41,13 @@
       "schema": "DocumentPopularity"
     },
     {
-      "name": "policy",
+      "name": "band_fallbacks",
       "ordinal": 7,
+      "schema": "BandFallback"
+    },
+    {
+      "name": "policy",
+      "ordinal": 8,
       "schema": "RelevancePolicy"
     }
   ],
@@ -88,8 +93,13 @@
       "source": "source:examples.search.transforms.search.SearchDocuments.input.document_popularity"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.input.band_fallbacks",
+      "ir": "ir:SearchDocuments.input.7.band_fallbacks",
+      "source": "source:examples.search.transforms.search.SearchDocuments.input.band_fallbacks"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.input.policy",
-      "ir": "ir:SearchDocuments.input.7.policy",
+      "ir": "ir:SearchDocuments.input.8.policy",
       "source": "source:examples.search.transforms.search.SearchDocuments.input.policy"
     },
     {
@@ -193,99 +203,89 @@
       "source": "source:examples.search.transforms.search.SearchDocuments.select_candidates.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.score_candidates",
-      "ir": "ir:SearchDocuments.step.1.score_candidates",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates",
+      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates",
+      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.select.search_query_id",
+      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.project.search_query_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.field.search_query_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.select.experiment_id",
+      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.project.experiment_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.field.experiment_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.select.band_id",
+      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.project.band_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.field.band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.select.query",
+      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.project.query",
+      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.field.query"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.select.candidate_rank",
+      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.project.candidate_rank",
+      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.field.candidate_rank"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.select.document_id",
+      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.project.document_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.field.document_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.select.title",
+      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.project.title",
+      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.field.title"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.select.url",
+      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.project.url",
+      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.field.url"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.select.score",
+      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.project.score",
+      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.field.score"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.select.score_feedback",
+      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.project.score_feedback",
+      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.field.score_feedback"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.select.score_rank",
+      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.project.score_rank",
+      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.field.score_rank"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.select.score_weight",
+      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.project.score_weight",
+      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.field.score_weight"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.select.feedback_weight",
+      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.project.feedback_weight",
+      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.field.feedback_weight"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.hook.raw.score_candidates",
+      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.hook.raw.score_candidates",
       "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.score_candidates.where.0",
-      "ir": "ir:SearchDocuments.step.1.score_candidates.filter.0",
-      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.filter.0"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.validation.0.hook",
+      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.validation.0.hook",
+      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.validation.0.hook"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.score_candidates.join.1.query_signal",
-      "ir": "ir:SearchDocuments.step.1.score_candidates.join.1.query_signal",
-      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.join.1.query_signal"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.score_candidates.join.2.popularity",
-      "ir": "ir:SearchDocuments.step.1.score_candidates.join.2.popularity",
-      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.join.2.popularity"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.score_candidates.join.3.policy",
-      "ir": "ir:SearchDocuments.step.1.score_candidates.join.3.policy",
-      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.join.3.policy"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.score_candidates.select.search_query_id",
-      "ir": "ir:SearchDocuments.step.1.score_candidates.project.search_query_id",
-      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.field.search_query_id"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.score_candidates.select.experiment_id",
-      "ir": "ir:SearchDocuments.step.1.score_candidates.project.experiment_id",
-      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.field.experiment_id"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.score_candidates.select.band_id",
-      "ir": "ir:SearchDocuments.step.1.score_candidates.project.band_id",
-      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.field.band_id"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.score_candidates.select.query",
-      "ir": "ir:SearchDocuments.step.1.score_candidates.project.query",
-      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.field.query"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.score_candidates.select.candidate_rank",
-      "ir": "ir:SearchDocuments.step.1.score_candidates.project.candidate_rank",
-      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.field.candidate_rank"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.score_candidates.select.document_id",
-      "ir": "ir:SearchDocuments.step.1.score_candidates.project.document_id",
-      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.field.document_id"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.score_candidates.select.title",
-      "ir": "ir:SearchDocuments.step.1.score_candidates.project.title",
-      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.field.title"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.score_candidates.select.url",
-      "ir": "ir:SearchDocuments.step.1.score_candidates.project.url",
-      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.field.url"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.score_candidates.select.score",
-      "ir": "ir:SearchDocuments.step.1.score_candidates.project.score",
-      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.field.score"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.score_candidates.select.score_feedback",
-      "ir": "ir:SearchDocuments.step.1.score_candidates.project.score_feedback",
-      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.field.score_feedback"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.score_candidates.select.score_rank",
-      "ir": "ir:SearchDocuments.step.1.score_candidates.project.score_rank",
-      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.field.score_rank"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.score_candidates.select.score_weight",
-      "ir": "ir:SearchDocuments.step.1.score_candidates.project.score_weight",
-      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.field.score_weight"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.score_candidates.select.feedback_weight",
-      "ir": "ir:SearchDocuments.step.1.score_candidates.project.feedback_weight",
-      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.field.feedback_weight"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.score_candidates.validation.0.intermediate",
-      "ir": "ir:SearchDocuments.step.1.score_candidates.validation.0.intermediate",
-      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.validation.1.intermediate",
+      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.validation.1.intermediate",
+      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.validation.1.intermediate"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.normalize_score",
@@ -472,6 +472,10 @@
     },
     "Cohort": {
       "constant": "COHORT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.user"
+    },
+    "CohortLineage": {
+      "constant": "COHORT_LINEAGE_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.user"
     },
     "CohortMembership": {
@@ -859,6 +863,7 @@
           "user_bands",
           "query_document_signals",
           "document_popularity",
+          "band_fallbacks",
           "policy"
         ],
         "step": null,
@@ -1103,70 +1108,10 @@
         },
         "operation": "step",
         "sources": [
-          "DocumentSearchCandidate",
-          "query_signal",
-          "popularity",
-          "policy"
+          "DocumentSearchCandidate"
         ],
-        "step": "score_candidates",
-        "target": "score_candidates"
-      },
-      {
-        "detail": {},
-        "operation": "filter",
-        "sources": [
-          "candidate.candidate_rank"
-        ],
-        "step": "score_candidates",
-        "target": "score_candidates.filter[0]"
-      },
-      {
-        "detail": {
-          "cardinality": "row_multiplying",
-          "hint": null,
-          "how": "left",
-          "right_alias": "query_document_signals"
-        },
-        "operation": "rowset_join",
-        "sources": [
-          "query_signal.query",
-          "candidate.query",
-          "query_signal.document_id",
-          "candidate.document_id",
-          "query_signal.band_id",
-          "candidate.band_id"
-        ],
-        "step": "score_candidates",
-        "target": "score_candidates.join[1].query_signal"
-      },
-      {
-        "detail": {
-          "cardinality": "row_multiplying",
-          "hint": null,
-          "how": "left",
-          "right_alias": "document_popularity_2"
-        },
-        "operation": "rowset_join",
-        "sources": [
-          "popularity.document_id",
-          "candidate.document_id",
-          "popularity.band_id",
-          "candidate.band_id"
-        ],
-        "step": "score_candidates",
-        "target": "score_candidates.join[2].popularity"
-      },
-      {
-        "detail": {
-          "cardinality": "row_multiplying",
-          "hint": null,
-          "how": "cross",
-          "right_alias": "policy_3"
-        },
-        "operation": "rowset_join",
-        "sources": [],
-        "step": "score_candidates",
-        "target": "score_candidates.join[3].policy"
+        "step": "declare_scored_candidates",
+        "target": "declare_scored_candidates"
       },
       {
         "detail": {
@@ -1174,9 +1119,9 @@
         },
         "operation": "project",
         "sources": [
-          "candidate.search_query_id"
+          "DocumentSearchCandidate.search_query_id"
         ],
-        "step": "score_candidates",
+        "step": "declare_scored_candidates",
         "target": "DocumentSearchCandidate.search_query_id"
       },
       {
@@ -1185,9 +1130,9 @@
         },
         "operation": "project",
         "sources": [
-          "candidate.experiment_id"
+          "DocumentSearchCandidate.experiment_id"
         ],
-        "step": "score_candidates",
+        "step": "declare_scored_candidates",
         "target": "DocumentSearchCandidate.experiment_id"
       },
       {
@@ -1196,9 +1141,9 @@
         },
         "operation": "project",
         "sources": [
-          "candidate.band_id"
+          "DocumentSearchCandidate.band_id"
         ],
-        "step": "score_candidates",
+        "step": "declare_scored_candidates",
         "target": "DocumentSearchCandidate.band_id"
       },
       {
@@ -1207,9 +1152,9 @@
         },
         "operation": "project",
         "sources": [
-          "candidate.query"
+          "DocumentSearchCandidate.query"
         ],
-        "step": "score_candidates",
+        "step": "declare_scored_candidates",
         "target": "DocumentSearchCandidate.query"
       },
       {
@@ -1218,9 +1163,9 @@
         },
         "operation": "project",
         "sources": [
-          "candidate.candidate_rank"
+          "DocumentSearchCandidate.candidate_rank"
         ],
-        "step": "score_candidates",
+        "step": "declare_scored_candidates",
         "target": "DocumentSearchCandidate.candidate_rank"
       },
       {
@@ -1229,9 +1174,9 @@
         },
         "operation": "project",
         "sources": [
-          "candidate.document_id"
+          "DocumentSearchCandidate.document_id"
         ],
-        "step": "score_candidates",
+        "step": "declare_scored_candidates",
         "target": "DocumentSearchCandidate.document_id"
       },
       {
@@ -1240,9 +1185,9 @@
         },
         "operation": "project",
         "sources": [
-          "candidate.title"
+          "DocumentSearchCandidate.title"
         ],
-        "step": "score_candidates",
+        "step": "declare_scored_candidates",
         "target": "DocumentSearchCandidate.title"
       },
       {
@@ -1251,9 +1196,9 @@
         },
         "operation": "project",
         "sources": [
-          "candidate.url"
+          "DocumentSearchCandidate.url"
         ],
-        "step": "score_candidates",
+        "step": "declare_scored_candidates",
         "target": "DocumentSearchCandidate.url"
       },
       {
@@ -1262,9 +1207,9 @@
         },
         "operation": "project",
         "sources": [
-          "candidate.score"
+          "DocumentSearchCandidate.score"
         ],
-        "step": "score_candidates",
+        "step": "declare_scored_candidates",
         "target": "DocumentSearchCandidate.score"
       },
       {
@@ -1273,10 +1218,9 @@
         },
         "operation": "project",
         "sources": [
-          "query_signal.normalized_score",
-          "popularity.normalized_score"
+          "literal"
         ],
-        "step": "score_candidates",
+        "step": "declare_scored_candidates",
         "target": "DocumentSearchCandidate.score_feedback"
       },
       {
@@ -1287,7 +1231,7 @@
         "sources": [
           "literal"
         ],
-        "step": "score_candidates",
+        "step": "declare_scored_candidates",
         "target": "DocumentSearchCandidate.score_rank"
       },
       {
@@ -1296,9 +1240,9 @@
         },
         "operation": "project",
         "sources": [
-          "policy.score_weight"
+          "literal"
         ],
-        "step": "score_candidates",
+        "step": "declare_scored_candidates",
         "target": "DocumentSearchCandidate.score_weight"
       },
       {
@@ -1307,10 +1251,23 @@
         },
         "operation": "project",
         "sources": [
-          "policy.feedback_weight"
+          "literal"
         ],
-        "step": "score_candidates",
+        "step": "declare_scored_candidates",
         "target": "DocumentSearchCandidate.feedback_weight"
+      },
+      {
+        "detail": {
+          "phase": "raw",
+          "project_output": false,
+          "schema_mode": "strict"
+        },
+        "operation": "hook",
+        "sources": [
+          "DocumentSearchCandidate"
+        ],
+        "step": "declare_scored_candidates",
+        "target": "declare_scored_candidates.hook.score_candidates"
       },
       {
         "detail": {
@@ -1634,7 +1591,16 @@
         "target": "DocumentSearchResult.validation.final"
       }
     ],
-    "opaque_boundaries": []
+    "opaque_boundaries": [
+      {
+        "hook": "score_candidates",
+        "phase": "raw",
+        "reason": "arbitrary PySpark hook body",
+        "schema": "DocumentSearchCandidate",
+        "step": "declare_scored_candidates",
+        "target": "declare_scored_candidates"
+      }
+    ]
   },
   "steps": [
     {
@@ -1684,27 +1650,13 @@
       ]
     },
     {
-      "after_hooks": [],
+      "after_hooks": [
+        "score_candidates"
+      ],
       "before_hooks": [],
       "input_alias": "document_search_candidate",
-      "joins": [
-        {
-          "how": "left",
-          "input": "query_signal",
-          "right_alias": "query_document_signals"
-        },
-        {
-          "how": "left",
-          "input": "popularity",
-          "right_alias": "document_popularity_2"
-        },
-        {
-          "how": "cross",
-          "input": "policy",
-          "right_alias": "policy_3"
-        }
-      ],
-      "name": "score_candidates",
+      "joins": [],
+      "name": "declare_scored_candidates",
       "output_alias": "document_search_candidate",
       "output_schema": "DocumentSearchCandidate",
       "results": [
@@ -1716,6 +1668,12 @@
         }
       ],
       "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "hook",
+          "schema": "DocumentSearchCandidate"
+        },
         {
           "mode": "strict",
           "project": false,

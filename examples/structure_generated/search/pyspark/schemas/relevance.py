@@ -5,7 +5,6 @@ from pyspark.sql import types as T
 
 
 RELEVANCE_POLICY_SCHEMA = T.StructType([
-    T.StructField("evaluated_at", T.TimestampType(), False),
     T.StructField("half_life_days", T.DoubleType(), False),
     T.StructField("score_weight", T.DoubleType(), False),
     T.StructField("feedback_weight", T.DoubleType(), False),
@@ -13,12 +12,13 @@ RELEVANCE_POLICY_SCHEMA = T.StructType([
     T.StructField("ctr_feedback_weight", T.DoubleType(), False),
     T.StructField("minimum_ctr_impressions", T.LongType(), False),
     T.StructField("minimum_band_impressions", T.LongType(), False),
+    T.StructField("evaluated_at", T.TimestampType(), False),
 ])
 
 QUERY_DOCUMENT_SIGNALS_SCHEMA = T.StructType([
-    T.StructField("band_id", T.StringType(), True),
     T.StructField("query", T.StringType(), False),
     T.StructField("document_id", T.StringType(), False),
+    T.StructField("band_id", T.StringType(), True),
     T.StructField("impression_count", T.LongType(), False),
     T.StructField("click_count", T.LongType(), False),
     T.StructField("clicked_impression_count", T.LongType(), False),
@@ -36,8 +36,8 @@ QUERY_DOCUMENT_SIGNALS_SCHEMA = T.StructType([
 ])
 
 DOCUMENT_POPULARITY_SCHEMA = T.StructType([
-    T.StructField("band_id", T.StringType(), True),
     T.StructField("document_id", T.StringType(), False),
+    T.StructField("band_id", T.StringType(), True),
     T.StructField("impression_count", T.LongType(), False),
     T.StructField("click_count", T.LongType(), False),
     T.StructField("clicked_impression_count", T.LongType(), False),

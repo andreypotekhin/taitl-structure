@@ -1,6 +1,7 @@
 {
   "dependencies": [
     "batch",
+    "cohort_lineage",
     "experiment",
     "experiments",
     "ideal",
@@ -8,6 +9,7 @@
     "judgment",
     "judgment_totals",
     "judgments",
+    "lineage",
     "membership",
     "memberships",
     "params",
@@ -52,18 +54,23 @@
       "schema": "CohortMembership"
     },
     {
-      "name": "user_bands",
+      "name": "cohort_lineage",
       "ordinal": 6,
+      "schema": "CohortLineage"
+    },
+    {
+      "name": "user_bands",
+      "ordinal": 7,
       "schema": "UserBand"
     },
     {
       "name": "params",
-      "ordinal": 7,
+      "ordinal": 8,
       "schema": "EvaluationParams"
     },
     {
       "name": "experiments",
-      "ordinal": 8,
+      "ordinal": 9,
       "schema": "Experiment"
     }
   ],
@@ -103,6 +110,12 @@
           "parameter": "membership",
           "schema": "CohortMembership",
           "source": "memberships"
+        },
+        {
+          "driving": false,
+          "parameter": "lineage",
+          "schema": "CohortLineage",
+          "source": "cohort_lineage"
         },
         {
           "driving": false,
@@ -149,6 +162,10 @@
         {
           "how": "inner",
           "input": "membership"
+        },
+        {
+          "how": "inner",
+          "input": "lineage"
         },
         {
           "how": "inner",

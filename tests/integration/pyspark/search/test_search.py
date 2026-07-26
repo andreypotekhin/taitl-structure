@@ -104,7 +104,7 @@ from examples.search.schemas.similarity import (
     SimilaritySentenceQuery,
 )
 from examples.search.schemas.text import Document, Paragraph, Section, Sentence, Word
-from examples.search.schemas.user import Band, BandFallback, Cohort, CohortMembership, User, UserBand
+from examples.search.schemas.user import Band, BandFallback, Cohort, CohortLineage, CohortMembership, User, UserBand
 from examples.search.transforms.analyze import AnalyzeText
 from examples.search.transforms.clicks.Clicks import Clicks
 from examples.search.transforms.clicks.Impressions import Impressions
@@ -243,6 +243,7 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         User,
         Cohort,
         CohortMembership,
+        CohortLineage,
         Band,
         UserBand,
         BandFallback,
@@ -927,7 +928,9 @@ def test_relevance_signals_keep_binary_ctr_separate_from_engagement(spark, tmp_p
     with generated_project(tmp_path, PACKAGE, files):
         click_schemas = __import__(f"{PACKAGE}.pyspark.schemas.clicks", fromlist=["DAILY_IMPRESSIONS_SCHEMA"])
         relevance_schemas = __import__(f"{PACKAGE}.pyspark.schemas.relevance", fromlist=["RELEVANCE_POLICY_SCHEMA"])
-        user_schemas = __import__(f"{PACKAGE}.pyspark.schemas.user", fromlist=["USER_BAND_SCHEMA"])
+        user_schemas = __import__(
+            f"{PACKAGE}.pyspark.schemas.user", fromlist=["BAND_FALLBACK_SCHEMA", "USER_BAND_SCHEMA"]
+        )
         start = datetime(2026, 7, 20)
         end = datetime(2026, 7, 21)
         daily_impressions = spark.createDataFrame(
@@ -1039,6 +1042,7 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
                 click_schemas.SEARCH_REQUEST_SCHEMA,
             ),
             user_bands=spark.createDataFrame([], user_schemas.USER_BAND_SCHEMA),
+            band_fallbacks=spark.createDataFrame([], user_schemas.BAND_FALLBACK_SCHEMA),
             query_document_signals=query_signals,
             document_popularity=popularity,
             policy=policy,

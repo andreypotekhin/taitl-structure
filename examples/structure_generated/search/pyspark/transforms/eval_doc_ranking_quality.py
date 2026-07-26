@@ -11,7 +11,7 @@ from examples.structure_generated.search.pyspark.schemas.clicks import SEARCH_RE
 from examples.structure_generated.search.pyspark.schemas.judged_quality import DOCUMENT_EVALUATION_SUMMARY_SCHEMA, DOCUMENT_QUERY_EVALUATION_SCHEMA, DOCUMENT_RELEVANCE_JUDGMENT_SCHEMA, EVALUATION_IDEAL_DCG_SCHEMA, EVALUATION_JUDGMENT_SCHEMA, EVALUATION_JUDGMENT_TOTALS_SCHEMA, EVALUATION_QUERY_SCHEMA, EVALUATION_RESULT_SCHEMA, EVALUATION_RESULT_TOTALS_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.params import EVALUATION_PARAMS_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.search import DOCUMENT_SEARCH_RESULT_SCHEMA, SEARCH_QUERY_SCHEMA
-from examples.structure_generated.search.pyspark.schemas.user import COHORT_MEMBERSHIP_SCHEMA, USER_BAND_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.user import COHORT_LINEAGE_SCHEMA, COHORT_MEMBERSHIP_SCHEMA, USER_BAND_SCHEMA
 
 
 class EvaluateDocumentRankingQualityGenerated:
@@ -29,6 +29,7 @@ class EvaluateDocumentRankingQualityGenerated:
         judgments: DataFrame,
         requests: DataFrame,
         memberships: DataFrame,
+        cohort_lineage: DataFrame,
         user_bands: DataFrame,
         params: DataFrame,
     ) -> TransformResult:
@@ -38,6 +39,7 @@ class EvaluateDocumentRankingQualityGenerated:
         assert_schema(judgments, DOCUMENT_RELEVANCE_JUDGMENT_SCHEMA, name="DocumentRelevanceJudgment", mode="strict")
         assert_schema(requests, SEARCH_REQUEST_SCHEMA, name="SearchRequest", mode="strict")
         assert_schema(memberships, COHORT_MEMBERSHIP_SCHEMA, name="CohortMembership", mode="strict")
+        assert_schema(cohort_lineage, COHORT_LINEAGE_SCHEMA, name="CohortLineage", mode="strict")
         assert_schema(user_bands, USER_BAND_SCHEMA, name="UserBand", mode="strict")
         assert_schema(params, EVALUATION_PARAMS_SCHEMA, name="EvaluationParams", mode="strict")
         _input_batch = batch
@@ -46,6 +48,7 @@ class EvaluateDocumentRankingQualityGenerated:
         _input_judgments = judgments
         _input_requests = requests
         _input_memberships = memberships
+        _input_cohort_lineage = cohort_lineage
         _input_user_bands = user_bands
         _input_params = params
 
@@ -67,18 +70,24 @@ class EvaluateDocumentRankingQualityGenerated:
             (F.col("memberships_4.user_id") == F.col("requests_3.user_id")),
             "inner",
         )
-        user_bands_5_joined = user_bands.alias("user_bands_5")
+        cohort_lineage_5_joined = cohort_lineage.alias("cohort_lineage_5")
         evaluated_queries = evaluated_queries.join(
-            user_bands_5_joined,
-            (F.col("user_bands_5.user_id") == F.col("requests_3.user_id")),
+            cohort_lineage_5_joined,
+            (F.col("cohort_lineage_5.cohort_id") == F.col("memberships_4.cohort_id")),
             "inner",
         )
-        evaluated_queries = evaluated_queries.where((F.col("params_2.user_band").isNotNull()) & ((F.col("memberships_4.cohort_id") == F.col("params_2.user_band.id"))) & (F.forall(F.col("params_2.labels"), lambda requested: F.exists(F.col("params_2.labels"), lambda candidate: ((candidate.getField('name') == requested.getField('name')) & (F.element_at(F.col("search_query.labels"), candidate.getField('name')) == candidate.getField('value')))))))
+        user_bands_6_joined = user_bands.alias("user_bands_6")
+        evaluated_queries = evaluated_queries.join(
+            user_bands_6_joined,
+            (F.col("user_bands_6.user_id") == F.col("requests_3.user_id")),
+            "inner",
+        )
+        evaluated_queries = evaluated_queries.where((F.col("params_2.user_band").isNotNull()) & ((F.col("cohort_lineage_5.ancestor_cohort_id") == F.col("params_2.user_band.id"))) & (F.forall(F.col("params_2.labels"), lambda requested: F.exists(F.col("params_2.labels"), lambda candidate: ((candidate.getField('name') == requested.getField('name')) & (F.element_at(F.col("search_query.labels"), candidate.getField('name')) == candidate.getField('value')))))))
         evaluated_queries = evaluated_queries.select(
             F.col("batch.window"),
             F.struct(F.col("params_2.labels").alias("labels"), F.col("params_2.user_band").alias("user_band")).alias("params"),
             F.lit('').alias("experiment_id"),
-            F.col("user_bands_5.band_id"),
+            F.col("user_bands_6.band_id"),
             F.col("search_query.id").alias("search_query_id"),
         )
         assert_schema(evaluated_queries, EVALUATION_QUERY_SCHEMA, name="EvaluationQuery", mode="strict")

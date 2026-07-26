@@ -5,7 +5,7 @@ from examples.search.schemas.evaluation.batch import EvaluationBatch
 from examples.search.schemas.evaluation.judged_quality import EvaluationQuery
 from examples.search.schemas.evaluation.params import EvaluationParams
 from examples.search.schemas.search import SearchQuery
-from examples.search.schemas.user import CohortMembership, UserBand
+from examples.search.schemas.user import CohortLineage, CohortMembership, UserBand
 from examples.search.transforms.evaluation.with_labels.search_docs.eval_doc_ranking_quality import (
     EvaluateDocumentRankingQuality as LabelSelection,
 )
@@ -25,6 +25,7 @@ class EvaluateDocumentRankingQuality(UserSelection):
         query: SearchQuery,
         request: SearchRequest,
         membership: CohortMembership,
+        lineage: CohortLineage,
         user_band: UserBand,
         batch: EvaluationBatch,
         params: EvaluationParams,
@@ -35,10 +36,11 @@ class EvaluateDocumentRankingQuality(UserSelection):
         cross_join(params, allow_cartesian=True)
         inner_join(on=request.query_id == query.id)
         inner_join(on=membership.user_id == request.user_id)
+        inner_join(on=lineage.cohort_id == membership.cohort_id)
         inner_join(on=user_band.user_id == request.user_id)
         where(
             params.user_band.is_not_null(),
-            membership.cohort_id == params.user_band.id,
+            lineage.ancestor_cohort_id == params.user_band.id,
             LabelSelection._matches(query, params),
         )
         group_by(

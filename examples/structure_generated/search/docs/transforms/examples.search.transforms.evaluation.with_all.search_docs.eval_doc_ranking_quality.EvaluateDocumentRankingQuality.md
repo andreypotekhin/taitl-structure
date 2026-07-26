@@ -12,6 +12,7 @@ Source: `examples.search.transforms.evaluation.with_all.search_docs.eval_doc_ran
 - `judgments`: `DocumentRelevanceJudgment`
 - `requests`: `SearchRequest`
 - `memberships`: `CohortMembership`
+- `cohort_lineage`: `CohortLineage`
 - `user_bands`: `UserBand`
 - `params`: `EvaluationParams`
 
@@ -35,11 +36,13 @@ Source: `examples.search.transforms.evaluation.with_all.search_docs.eval_doc_ran
 ## Dependencies
 
 - `batch`
+- `cohort_lineage`
 - `ideal`
 - `ideal_dcgs`
 - `judgment`
 - `judgment_totals`
 - `judgments`
+- `lineage`
 - `membership`
 - `memberships`
 - `params`

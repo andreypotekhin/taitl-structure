@@ -8,8 +8,8 @@ Module: `examples.search.schemas.clicks`
 | --- | --- | --- | --- |
 | `id` | `id` | `string` | no |
 | `query_id` | `query_id` | `string` | no |
-| `requested_at` | `requested_at` | `timestamp` | no |
 | `query` | `query` | `string` | no |
+| `user_id` | `user_id` | `string` | yes |
 | `experiment_id` | `experiment_id` | `string` | no |
 | `ranking_version` | `ranking_version` | `string` | no |
-| `user_id` | `user_id` | `string` | yes |
+| `requested_at` | `requested_at` | `timestamp` | no |

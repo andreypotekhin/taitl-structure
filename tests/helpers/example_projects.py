@@ -471,7 +471,15 @@ def render_search_example() -> dict[str, str]:
             SimilaritySentenceQuery,
         )
         from examples.search.schemas.text import Document, Paragraph, Section, Sentence, Word
-        from examples.search.schemas.user import Band, BandFallback, Cohort, CohortMembership, User, UserBand
+        from examples.search.schemas.user import (
+            Band,
+            BandFallback,
+            Cohort,
+            CohortLineage,
+            CohortMembership,
+            User,
+            UserBand,
+        )
         from examples.search.transforms.analyze import AnalyzeText
         from examples.search.transforms.clicks.Clicks import Clicks
         from examples.search.transforms.clicks.Impressions import Impressions
@@ -604,6 +612,7 @@ def render_search_example() -> dict[str, str]:
                 User,
                 Cohort,
                 CohortMembership,
+                CohortLineage,
                 Band,
                 UserBand,
                 BandFallback,

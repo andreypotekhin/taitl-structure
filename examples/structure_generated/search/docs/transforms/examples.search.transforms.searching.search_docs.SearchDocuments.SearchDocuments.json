@@ -1,13 +1,8 @@
 {
   "dependencies": [
-    "document_popularity",
     "document_scores",
-    "policy",
-    "popularity",
     "queries",
     "query",
-    "query_document_signals",
-    "query_signal",
     "request",
     "requests",
     "score",
@@ -52,8 +47,13 @@
       "schema": "DocumentPopularity"
     },
     {
-      "name": "policy",
+      "name": "band_fallbacks",
       "ordinal": 7,
+      "schema": "BandFallback"
+    },
+    {
+      "name": "policy",
+      "ordinal": 8,
       "schema": "RelevancePolicy"
     }
   ],
@@ -137,6 +137,9 @@
       ]
     },
     {
+      "after_hooks": [
+        "score_candidates"
+      ],
       "input_lane": "candidates",
       "input_schema": "DocumentSearchCandidate",
       "inputs": [
@@ -145,41 +148,9 @@
           "parameter": "candidate",
           "schema": "DocumentSearchCandidate",
           "source": "candidates"
-        },
-        {
-          "driving": false,
-          "parameter": "query_signal",
-          "schema": "QueryDocumentSignals",
-          "source": "query_document_signals"
-        },
-        {
-          "driving": false,
-          "parameter": "popularity",
-          "schema": "DocumentPopularity",
-          "source": "document_popularity"
-        },
-        {
-          "driving": false,
-          "parameter": "policy",
-          "schema": "RelevancePolicy",
-          "source": "policy"
         }
       ],
-      "joins": [
-        {
-          "how": "left",
-          "input": "query_signal"
-        },
-        {
-          "how": "left",
-          "input": "popularity"
-        },
-        {
-          "how": "cross",
-          "input": "policy"
-        }
-      ],
-      "name": "score_candidates",
+      "name": "declare_scored_candidates",
       "output_lane": "scored_candidates",
       "output_schema": "DocumentSearchCandidate",
       "results": [
