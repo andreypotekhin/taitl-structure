@@ -14,8 +14,8 @@
       "type": "double"
     },
     {
-      "column": "bm25_weight",
-      "name": "bm25_weight",
+      "column": "score_weight",
+      "name": "score_weight",
       "nullable": false,
       "type": "double"
     },

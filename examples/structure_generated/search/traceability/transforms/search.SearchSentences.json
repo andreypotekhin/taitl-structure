@@ -11,9 +11,14 @@
       "schema": "SearchQuery"
     },
     {
-      "name": "scored_sentences",
+      "name": "sentences",
       "ordinal": 1,
       "schema": "Sentence"
+    },
+    {
+      "name": "sentence_scores",
+      "ordinal": 2,
+      "schema": "SentenceScore"
     }
   ],
   "provenance": [
@@ -28,9 +33,14 @@
       "source": "source:examples.search.transforms.search.SearchSentences.input.queries"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchSentencesGenerated.run.input.scored_sentences",
-      "ir": "ir:SearchSentences.input.1.scored_sentences",
-      "source": "source:examples.search.transforms.search.SearchSentences.input.scored_sentences"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchSentencesGenerated.run.input.sentences",
+      "ir": "ir:SearchSentences.input.1.sentences",
+      "source": "source:examples.search.transforms.search.SearchSentences.input.sentences"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchSentencesGenerated.run.input.sentence_scores",
+      "ir": "ir:SearchSentences.input.2.sentence_scores",
+      "source": "source:examples.search.transforms.search.SearchSentences.input.sentence_scores"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchSentencesGenerated.run.step.0.rank_sentences",
@@ -43,24 +53,24 @@
       "source": "source:examples.search.transforms.search.SearchSentences.rank_sentences.filter.0"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchSentencesGenerated.run.step.0.rank_sentences.where.1",
-      "ir": "ir:SearchSentences.step.0.rank_sentences.filter.1",
-      "source": "source:examples.search.transforms.search.SearchSentences.rank_sentences.filter.1"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchSentencesGenerated.run.step.0.rank_sentences.where.2",
-      "ir": "ir:SearchSentences.step.0.rank_sentences.filter.2",
-      "source": "source:examples.search.transforms.search.SearchSentences.rank_sentences.filter.2"
-    },
-    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchSentencesGenerated.run.step.0.rank_sentences.join.1.query",
       "ir": "ir:SearchSentences.step.0.rank_sentences.join.1.query",
       "source": "source:examples.search.transforms.search.SearchSentences.rank_sentences.join.1.query"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchSentencesGenerated.run.step.0.rank_sentences.join.2.sentence",
+      "ir": "ir:SearchSentences.step.0.rank_sentences.join.2.sentence",
+      "source": "source:examples.search.transforms.search.SearchSentences.rank_sentences.join.2.sentence"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchSentencesGenerated.run.step.0.rank_sentences.select.search_query_id",
       "ir": "ir:SearchSentences.step.0.rank_sentences.project.search_query_id",
       "source": "source:examples.search.transforms.search.SearchSentences.rank_sentences.field.search_query_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchSentencesGenerated.run.step.0.rank_sentences.select.experiment_id",
+      "ir": "ir:SearchSentences.step.0.rank_sentences.project.experiment_id",
+      "source": "source:examples.search.transforms.search.SearchSentences.rank_sentences.field.experiment_id"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchSentencesGenerated.run.step.0.rank_sentences.select.rank",
@@ -93,14 +103,9 @@
       "source": "source:examples.search.transforms.search.SearchSentences.rank_sentences.field.content"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchSentencesGenerated.run.step.0.rank_sentences.select.score_overlap",
-      "ir": "ir:SearchSentences.step.0.rank_sentences.project.score_overlap",
-      "source": "source:examples.search.transforms.search.SearchSentences.rank_sentences.field.score_overlap"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchSentencesGenerated.run.step.0.rank_sentences.select.score_bm25",
-      "ir": "ir:SearchSentences.step.0.rank_sentences.project.score_bm25",
-      "source": "source:examples.search.transforms.search.SearchSentences.rank_sentences.field.score_bm25"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchSentencesGenerated.run.step.0.rank_sentences.select.score",
+      "ir": "ir:SearchSentences.step.0.rank_sentences.project.score",
+      "source": "source:examples.search.transforms.search.SearchSentences.rank_sentences.field.score"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchSentencesGenerated.run.output.0.results.validation.final",
@@ -201,6 +206,10 @@
       "constant": "DOCUMENT_RELEVANCE_JUDGMENT_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
     },
+    "DocumentScore": {
+      "constant": "DOCUMENT_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
     "DocumentSearchCandidate": {
       "constant": "DOCUMENT_SEARCH_CANDIDATE_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
@@ -245,6 +254,10 @@
       "constant": "EVALUATION_JUDGMENT_TOTALS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
     },
+    "EvaluationParams": {
+      "constant": "EVALUATION_PARAMS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.params"
+    },
     "EvaluationQuery": {
       "constant": "EVALUATION_QUERY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
@@ -256,6 +269,10 @@
     "EvaluationResultTotals": {
       "constant": "EVALUATION_RESULT_TOTALS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
+    },
+    "Experiment": {
+      "constant": "EXPERIMENT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.experiment"
     },
     "Impression": {
       "constant": "IMPRESSION_SCHEMA",
@@ -276,6 +293,14 @@
     "IndexedSimilarSentence": {
       "constant": "INDEXED_SIMILAR_SENTENCE_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "Label": {
+      "constant": "LABEL_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "LabelMapEntry": {
+      "constant": "LABEL_MAP_ENTRY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
     },
     "Paragraph": {
       "constant": "PARAGRAPH_SCHEMA",
@@ -301,6 +326,10 @@
       "constant": "PARAGRAPH_OVERLAP_SCORE_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "ParagraphScore": {
+      "constant": "PARAGRAPH_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
     "ParagraphSearchTarget": {
       "constant": "PARAGRAPH_SEARCH_TARGET_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
@@ -320,6 +349,18 @@
     "QueryDocumentSignals": {
       "constant": "QUERY_DOCUMENT_SIGNALS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.relevance"
+    },
+    "QueryLabel": {
+      "constant": "QUERY_LABEL_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "QueryLabelAssignmentEntries": {
+      "constant": "QUERY_LABEL_ASSIGNMENT_ENTRIES_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "QueryLabelAssignments": {
+      "constant": "QUERY_LABEL_ASSIGNMENTS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
     },
     "RelevancePolicy": {
       "constant": "RELEVANCE_POLICY_SCHEMA",
@@ -355,6 +396,10 @@
     },
     "SectionOverlapScore": {
       "constant": "SECTION_OVERLAP_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SectionScore": {
+      "constant": "SECTION_SCORE_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
     "SectionSearchTarget": {
@@ -395,6 +440,10 @@
     },
     "SentenceOverlapScore": {
       "constant": "SENTENCE_OVERLAP_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SentenceScore": {
+      "constant": "SENTENCE_SCORE_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
     "SentenceSearchResult": {
@@ -460,20 +509,22 @@
         "operation": "transform",
         "sources": [
           "queries",
-          "scored_sentences"
+          "sentences",
+          "sentence_scores"
         ],
         "step": null,
         "target": "SearchSentences"
       },
       {
         "detail": {
-          "input_schema": "Sentence",
+          "input_schema": "SentenceScore",
           "output_schema": "SentenceSearchResult"
         },
         "operation": "step",
         "sources": [
           "queries",
-          "query"
+          "query",
+          "sentence"
         ],
         "step": "rank_sentences",
         "target": "rank_sentences"
@@ -482,28 +533,10 @@
         "detail": {},
         "operation": "filter",
         "sources": [
-          "sentence.search_query_id"
+          "score.score"
         ],
         "step": "rank_sentences",
         "target": "rank_sentences.filter[0]"
-      },
-      {
-        "detail": {},
-        "operation": "filter",
-        "sources": [
-          "sentence.score_overlap"
-        ],
-        "step": "rank_sentences",
-        "target": "rank_sentences.filter[1]"
-      },
-      {
-        "detail": {},
-        "operation": "filter",
-        "sources": [
-          "sentence.score_bm25"
-        ],
-        "step": "rank_sentences",
-        "target": "rank_sentences.filter[2]"
       },
       {
         "detail": {
@@ -515,10 +548,25 @@
         "operation": "rowset_join",
         "sources": [
           "query.id",
-          "sentence.search_query_id"
+          "score.query_id"
         ],
         "step": "rank_sentences",
         "target": "rank_sentences.join[1].query"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "sentences_2"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "sentence.id",
+          "score.sentence_id"
+        ],
+        "step": "rank_sentences",
+        "target": "rank_sentences.join[2].sentence"
       },
       {
         "detail": {
@@ -526,10 +574,21 @@
         },
         "operation": "project",
         "sources": [
-          "sentence.search_query_id"
+          "score.query_id"
         ],
         "step": "rank_sentences",
         "target": "SentenceSearchResult.search_query_id"
+      },
+      {
+        "detail": {
+          "field": "experiment_id"
+        },
+        "operation": "project",
+        "sources": [
+          "score.experiment_id"
+        ],
+        "step": "rank_sentences",
+        "target": "SentenceSearchResult.experiment_id"
       },
       {
         "detail": {
@@ -537,11 +596,11 @@
         },
         "operation": "project",
         "sources": [
-          "sentence.score_bm25",
-          "sentence.score_overlap",
-          "sentence.document_id",
-          "sentence.id",
-          "sentence.search_query_id"
+          "score.score",
+          "score.document_id",
+          "score.sentence_id",
+          "score.query_id",
+          "score.experiment_id"
         ],
         "step": "rank_sentences",
         "target": "SentenceSearchResult.rank"
@@ -552,7 +611,7 @@
         },
         "operation": "project",
         "sources": [
-          "sentence.document_id"
+          "score.document_id"
         ],
         "step": "rank_sentences",
         "target": "SentenceSearchResult.document_id"
@@ -563,7 +622,7 @@
         },
         "operation": "project",
         "sources": [
-          "sentence.section_id"
+          "score.section_id"
         ],
         "step": "rank_sentences",
         "target": "SentenceSearchResult.section_id"
@@ -574,7 +633,7 @@
         },
         "operation": "project",
         "sources": [
-          "sentence.paragraph_id"
+          "score.paragraph_id"
         ],
         "step": "rank_sentences",
         "target": "SentenceSearchResult.paragraph_id"
@@ -585,7 +644,7 @@
         },
         "operation": "project",
         "sources": [
-          "sentence.id"
+          "score.sentence_id"
         ],
         "step": "rank_sentences",
         "target": "SentenceSearchResult.sentence_id"
@@ -603,25 +662,14 @@
       },
       {
         "detail": {
-          "field": "score_overlap"
+          "field": "score"
         },
         "operation": "project",
         "sources": [
-          "sentence.score_overlap"
+          "score.score"
         ],
         "step": "rank_sentences",
-        "target": "SentenceSearchResult.score_overlap"
-      },
-      {
-        "detail": {
-          "field": "score_bm25"
-        },
-        "operation": "project",
-        "sources": [
-          "sentence.score_bm25"
-        ],
-        "step": "rank_sentences",
-        "target": "SentenceSearchResult.score_bm25"
+        "target": "SentenceSearchResult.score"
       },
       {
         "detail": {
@@ -641,12 +689,17 @@
     {
       "after_hooks": [],
       "before_hooks": [],
-      "input_alias": "sentence",
+      "input_alias": "sentence_score",
       "joins": [
         {
           "how": "inner",
           "input": "query",
           "right_alias": "queries"
+        },
+        {
+          "how": "inner",
+          "input": "sentence",
+          "right_alias": "sentences_2"
         }
       ],
       "name": "rank_sentences",
@@ -655,8 +708,8 @@
       "results": [
         {
           "after_hooks": [],
-          "frame": "scored_sentences",
-          "lane": "scored_sentences",
+          "frame": "sentence_scores",
+          "lane": "sentence_scores",
           "schema": "SentenceSearchResult"
         }
       ],

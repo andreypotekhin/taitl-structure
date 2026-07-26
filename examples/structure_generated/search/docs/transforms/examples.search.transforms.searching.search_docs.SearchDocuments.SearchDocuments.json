@@ -1,12 +1,14 @@
 {
   "dependencies": [
     "document_popularity",
+    "document_scores",
     "policy",
     "popularity",
     "queries",
     "query",
     "query_document_signals",
-    "query_signal"
+    "query_signal",
+    "score"
   ],
   "generated_by": "Structure",
   "inputs": [
@@ -16,23 +18,28 @@
       "schema": "SearchQuery"
     },
     {
-      "name": "scored_documents",
+      "name": "documents",
       "ordinal": 1,
       "schema": "Document"
     },
     {
-      "name": "query_document_signals",
+      "name": "document_scores",
       "ordinal": 2,
+      "schema": "DocumentScore"
+    },
+    {
+      "name": "query_document_signals",
+      "ordinal": 3,
       "schema": "QueryDocumentSignals"
     },
     {
       "name": "document_popularity",
-      "ordinal": 3,
+      "ordinal": 4,
       "schema": "DocumentPopularity"
     },
     {
       "name": "policy",
-      "ordinal": 4,
+      "ordinal": 5,
       "schema": "RelevancePolicy"
     }
   ],
@@ -52,14 +59,20 @@
   "source": "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments",
   "step_methods": [
     {
-      "input_lane": "scored_documents",
+      "input_lane": "documents",
       "input_schema": "Document",
       "inputs": [
         {
           "driving": true,
           "parameter": "document",
           "schema": "Document",
-          "source": "scored_documents"
+          "source": "documents"
+        },
+        {
+          "driving": false,
+          "parameter": "score",
+          "schema": "DocumentScore",
+          "source": "document_scores"
         },
         {
           "driving": false,
@@ -69,6 +82,10 @@
         }
       ],
       "joins": [
+        {
+          "how": "inner",
+          "input": "score"
+        },
         {
           "how": "inner",
           "input": "query"
@@ -150,7 +167,7 @@
           "source": "scored_candidates"
         }
       ],
-      "name": "normalize_bm25",
+      "name": "normalize_score",
       "output_lane": "normalized_candidates",
       "output_schema": "DocumentSearchCandidate",
       "results": [

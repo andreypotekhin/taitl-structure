@@ -168,11 +168,11 @@ class RenderPySparkExpression:
             return f"F.filter({self._render(array, aliases)}, lambda {argument}: {self._render(body, aliases)})"
         if function == "array_exists":
             array, body = expression.args
-            argument = self._lambda_name(body, "item")
+            argument = str(expression.data.get("lambda_name", "item"))
             return f"F.exists({self._render(array, aliases)}, lambda {argument}: {self._render(body, aliases)})"
         if function == "array_forall":
             array, body = expression.args
-            argument = self._lambda_name(body, "item")
+            argument = str(expression.data.get("lambda_name", "item"))
             return f"F.forall({self._render(array, aliases)}, lambda {argument}: {self._render(body, aliases)})"
         if function == "array_zip_with":
             left, right, left_item, right_item, body = expression.args
@@ -437,6 +437,14 @@ class RenderPySparkExpression:
         return str(expression.data.get("name", fallback)) if expression.kind == "lambda_arg" else fallback
 
     def _field(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:
+        if "scope" not in expression.data:
+            path = expression.data.get("name_path")
+            if isinstance(path, tuple) and path:
+                root, *fields = (str(segment) for segment in path)
+                rendered = root
+                for field in fields:
+                    rendered += f".getField({field!r})"
+                return rendered
         scope = str(expression.data["scope"])
         field = ".".join(self._field_path(expression))
         alias = aliases.get(scope, scope)

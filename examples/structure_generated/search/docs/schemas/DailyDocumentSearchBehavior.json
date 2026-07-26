@@ -8,6 +8,18 @@
       "type": "TimeWindow"
     },
     {
+      "column": "params",
+      "name": "params",
+      "nullable": true,
+      "type": "EvaluationParams"
+    },
+    {
+      "column": "experiment_id",
+      "name": "experiment_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
       "column": "ranking_version",
       "name": "ranking_version",
       "nullable": false,

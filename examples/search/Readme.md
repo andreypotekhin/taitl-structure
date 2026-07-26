@@ -14,7 +14,7 @@ For the architecture, evidence boundaries, and ownership model, see the
 | --- | --- | --- | --- |
 | Extraction | `ExtractText` | sections, paragraphs, sentences, words | Plain-text hierarchy and shared token normalization. |
 | Indexing | `CreateIndex` | target-grain terms and summaries | Build once; score many query batches. |
-| Scoring | `ScoreAll`, `AddScores` | overlap and BM25 on corpus rows | Keep scoring algorithms separate. |
+| Scoring | `ScoreAll`, `AddScores` | external production score relations | Keep algorithms separate from immutable corpus rows. |
 | Similarity | `CreateSimilarityQueries`, `ReduceSimilarityScores` | same-grain corpus pairs | Reuse the lexical index; BM25 stays directional. |
 | Feedback | `Impressions`, `Clicks`, `BuildRelevanceSignals` | daily facts and batch signals | Exposure-aware, attributed, propensity-corrected evidence. |
 | Presentation | `SearchSentences`, `SearchPassages`, `SearchDocuments` | deterministic ranks | Sentence and passage ranking are lexical; document ranking is two-stage. |
@@ -108,6 +108,15 @@ BM25(k1 = 1.2, b = 0.75)
 Overlap is bounded and symmetric at a fixed grain. BM25 is corpus-dependent and directional when used for similarity;
 do not interpret either score as a calibrated relevance probability.
 
+### Experiments
+
+Corpus rows never carry experiment state. `DocumentScore`, `SectionScore`, `ParagraphScore`, and `SentenceScore`
+are query-target relations with an `experiment_id` and unified `score`; production rows use the empty ID. `AddScores`
+creates those production rows from the default grain algorithm, while callers may supply identically shaped named
+experiment scores that combine any algorithms. `SelectExperimentScores` preserves production and admits only currently
+active named experiments before presentation or reranking. A single experiment ID flows from score through results and
+the caller-recorded `SearchRequest`; there is no separate reranking experiment.
+
 ```python
 scores = AddScores(
     queries=queries,
@@ -122,8 +131,39 @@ scores = AddScores(
 ).run(session)
 
 # Choose the target grain needed by the next search boundary.
-scored_documents = scores.scored_documents
-scored_sentences = scores.scored_sentences
+document_scores = scores.document_scores
+sentence_scores = scores.sentence_scores
+```
+
+## Label-sliced Evaluation
+
+Callers own label assignment. `QueryLabel` records a timestamped integral value for a query ID; `MergeQueryLabels`
+keeps the latest assignment for each label name and materializes it in `SearchQuery.labels`. The convenience flags
+`is_question` and `is_time_sensitive` mirror their same-named `0`/`1` map entries.
+
+`EvaluationParams.labels` selects the evaluation band. Different label names must match, while multiple values for one
+name are alternatives. An empty band evaluates every query. The labeled ranking and behavior evaluators retain the
+full parameter struct in their outputs, so persisted metrics identify the slice that produced them.
+
+```python
+labeled_queries = MergeQueryLabels(queries=queries, query_labels=query_labels).run(session).labeled_queries
+
+quality = EvaluateLabeledDocumentRankingQuality(
+    batch=batch,
+    queries=labeled_queries,
+    results=document_results,
+    judgments=document_judgments,
+    params=evaluation_params,
+).run(session)
+
+behavior = EvaluateLabeledDocumentSearchBehavior(
+    batch=batch,
+    requests=requests,  # each SearchRequest carries query_id
+    queries=labeled_queries,
+    impressions=impressions,
+    clicks=clicks,
+    params=evaluation_params,
+).run(session)
 ```
 
 ## Similarity Search
@@ -211,7 +251,7 @@ document_pairs = similarities.document_similarities
 ## Sentence Search
 
 The shared `AddScores` output supplies the sentence candidates. `SearchSentences`
-accepts queries and `AddScores.scored_sentences`, emits one-based `SentenceSearchResult` ranks per query.
+accepts immutable sentences and `AddScores.sentence_scores`, emits one-based `SentenceSearchResult` ranks per query and experiment.
 
 ```python
 index = CreateIndex(words=segments.words).run(session)
@@ -238,7 +278,8 @@ promise physical row order, so consumers sort or page by `rank`.
 ```python
 result = SearchSentences(
     queries=queries,
-    scored_sentences=scores.scored_sentences,
+    sentences=segments.sentences,
+    sentence_scores=scores.sentence_scores,
 ).run(session)
 ranked_sentences = result.results
 first_sentences = ranked_sentences.where("rank <= 20").orderBy("search_query_id", "rank")
@@ -351,23 +392,24 @@ Feedback combines 80% of the normalized query-document signal with 20% global do
 candidate set, the reranker calculates:
 
 ```text
-normalized_bm25 = score_bm25 / max(score_bm25)
+normalized_score = score / max(score)
 feedback = 0.8 * query_document_score + 0.2 * document_popularity_score
-rank_score = policy.bm25_weight * normalized_bm25 + policy.feedback_weight * feedback
+rank_score = policy.score_weight * normalized_score + policy.feedback_weight * feedback
 ```
 
 The fixture policy uses a 30-day half-life and 70/30 lexical-feedback weights. Documents without feedback remain
 eligible with zero feedback. Final rank is descending `rank_score`, then document ID. A candidate outside the BM25 top
 100 cannot enter through feedback, and a no-history query preserves BM25 order.
 
-`SearchDocuments` uses the same free-form `SearchQuery` DataFrame and `AddScores.scored_documents` keyword matches as
+`SearchDocuments` uses the same free-form `SearchQuery` DataFrame, immutable documents, and `AddScores.document_scores` as
 the other search boundaries. Its additional inputs only rerank those lexical candidates; they do not change query
 parsing.
 
 ```python
 ranked_documents = SearchDocuments(
     queries=queries,
-    scored_documents=scores.scored_documents,
+    documents=documents,
+    document_scores=scores.document_scores,
     query_document_signals=signals.query_document_signals,
     document_popularity=signals.document_popularity,
     policy=policy,
@@ -461,13 +503,13 @@ Passage Search can be used as a foundation for quesion-answer search engine.
 
 `SearchPassages` ranks the scored paragraph and holds its immediate preceding and trailing paragraphs as context.
 It returns `PassageSearchResult` rows with the document title and URL for citations, the section heading, and `preceding_content` and `following_content` if they exist. Context stays within a document section -  no heading transitions. The adjacent paragraphs do not affect lexical relevance or rank.
-It uses the same free-form `SearchQuery` DataFrame and `AddScores.scored_paragraphs` keyword matches as sentence and
+It uses the same free-form `SearchQuery` DataFrame, immutable paragraphs, and `AddScores.paragraph_scores` as sentence and
 document search.
 
 ```python
 passages = SearchPassages(
     queries=queries,
-    scored_paragraphs=scores.scored_paragraphs,
+    paragraph_scores=scores.paragraph_scores,
     paragraphs=segments.paragraphs,
     sections=segments.sections,
     documents=documents,

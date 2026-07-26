@@ -65,7 +65,7 @@
       "schema": "DailyDocumentSearchBehavior"
     }
   ],
-  "source": "examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior",
+  "source": "examples.search.transforms.evaluation.search_docs.behavior.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
   "step_methods": [
     {
       "input_lane": "requests",
@@ -405,7 +405,7 @@
     }
   ],
   "target_artifacts": {
-    "pyspark_transform": "pyspark/transforms/EvaluateDocumentSearchBehavior.py",
-    "traceability": "traceability/transforms/EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.json"
+    "pyspark_transform": "pyspark/transforms/eval_doc_search_behavior.py",
+    "traceability": "traceability/transforms/eval_doc_search_behavior.EvaluateDocumentSearchBehavior.json"
   }
 }

@@ -7,18 +7,21 @@ from pyspark.sql import types as T
 SEARCH_QUERY_SCHEMA = T.StructType([
     T.StructField("id", T.StringType(), False),
     T.StructField("content", T.StringType(), False),
+    T.StructField("labels", T.MapType(T.StringType(), T.LongType(), valueContainsNull=False), False),
+    T.StructField("is_question", T.BooleanType(), False),
+    T.StructField("is_time_sensitive", T.BooleanType(), False),
 ])
 
 SENTENCE_SEARCH_RESULT_SCHEMA = T.StructType([
     T.StructField("search_query_id", T.StringType(), False),
+    T.StructField("experiment_id", T.StringType(), False),
     T.StructField("rank", T.LongType(), False),
     T.StructField("document_id", T.StringType(), False),
     T.StructField("section_id", T.StringType(), False),
     T.StructField("paragraph_id", T.StringType(), False),
     T.StructField("sentence_id", T.StringType(), False),
     T.StructField("content", T.StringType(), False),
-    T.StructField("score_overlap", T.DoubleType(), False),
-    T.StructField("score_bm25", T.DoubleType(), False),
+    T.StructField("score", T.DoubleType(), False),
 ])
 
 DOCUMENT_SEARCH_TARGET_SCHEMA = T.StructType([
@@ -129,28 +132,50 @@ SENTENCE_BM25_SCORE_SCHEMA = T.StructType(SENTENCE_SEARCH_TARGET_SCHEMA.fields +
     T.StructField("score_bm25", T.DoubleType(), False),
 ])
 
+DOCUMENT_SCORE_SCHEMA = T.StructType(DOCUMENT_SEARCH_TARGET_SCHEMA.fields + [
+    T.StructField("experiment_id", T.StringType(), False),
+    T.StructField("score", T.DoubleType(), False),
+])
+
+SECTION_SCORE_SCHEMA = T.StructType(SECTION_SEARCH_TARGET_SCHEMA.fields + [
+    T.StructField("experiment_id", T.StringType(), False),
+    T.StructField("score", T.DoubleType(), False),
+])
+
+PARAGRAPH_SCORE_SCHEMA = T.StructType(PARAGRAPH_SEARCH_TARGET_SCHEMA.fields + [
+    T.StructField("experiment_id", T.StringType(), False),
+    T.StructField("score", T.DoubleType(), False),
+])
+
+SENTENCE_SCORE_SCHEMA = T.StructType(SENTENCE_SEARCH_TARGET_SCHEMA.fields + [
+    T.StructField("experiment_id", T.StringType(), False),
+    T.StructField("score", T.DoubleType(), False),
+])
+
 DOCUMENT_SEARCH_CANDIDATE_SCHEMA = T.StructType([
     T.StructField("search_query_id", T.StringType(), False),
+    T.StructField("experiment_id", T.StringType(), False),
     T.StructField("query", T.StringType(), False),
     T.StructField("candidate_rank", T.LongType(), False),
     T.StructField("document_id", T.StringType(), False),
     T.StructField("title", T.StringType(), False),
     T.StructField("url", T.StringType(), True),
-    T.StructField("score_bm25", T.DoubleType(), False),
+    T.StructField("score", T.DoubleType(), False),
     T.StructField("score_feedback", T.DoubleType(), False),
     T.StructField("score_rank", T.DoubleType(), False),
-    T.StructField("bm25_weight", T.DoubleType(), False),
+    T.StructField("score_weight", T.DoubleType(), False),
     T.StructField("feedback_weight", T.DoubleType(), False),
 ])
 
 DOCUMENT_SEARCH_RESULT_SCHEMA = T.StructType([
     T.StructField("search_query_id", T.StringType(), False),
+    T.StructField("experiment_id", T.StringType(), False),
     T.StructField("rank", T.LongType(), False),
     T.StructField("candidate_rank", T.LongType(), False),
     T.StructField("document_id", T.StringType(), False),
     T.StructField("title", T.StringType(), False),
     T.StructField("url", T.StringType(), True),
-    T.StructField("score_bm25", T.DoubleType(), False),
+    T.StructField("score", T.DoubleType(), False),
     T.StructField("score_feedback", T.DoubleType(), False),
     T.StructField("score_rank", T.DoubleType(), False),
 ])

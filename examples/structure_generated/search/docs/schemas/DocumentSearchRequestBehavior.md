@@ -7,6 +7,8 @@ Module: `examples.search.schemas.evaluation.behavior`
 | Field | Column | Type | Nullable |
 | --- | --- | --- | --- |
 | `window` | `window` | `TimeWindow` | no |
+| `params` | `params` | `EvaluationParams` | yes |
+| `experiment_id` | `experiment_id` | `string` | no |
 | `search_request_id` | `search_request_id` | `string` | no |
 | `ranking_version` | `ranking_version` | `string` | no |
 | `query` | `query` | `string` | no |

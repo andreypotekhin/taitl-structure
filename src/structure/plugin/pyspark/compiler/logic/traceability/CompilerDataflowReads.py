@@ -7,6 +7,8 @@ class CompilerDataflowReads:
 
     def reads(self, expression: PySparkExpressionRecipe) -> tuple[str, ...]:
         if expression.kind == "field":
+            if "scope" not in expression.data:
+                return ()
             return (f"{expression.data['scope']}.{expression.data['field']}",)
         return self._unique(read for argument in expression.args for read in self.reads(argument))
 

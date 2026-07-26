@@ -311,6 +311,10 @@
       "constant": "DOCUMENT_RELEVANCE_JUDGMENT_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
     },
+    "DocumentScore": {
+      "constant": "DOCUMENT_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
     "DocumentSearchCandidate": {
       "constant": "DOCUMENT_SEARCH_CANDIDATE_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
@@ -355,6 +359,10 @@
       "constant": "EVALUATION_JUDGMENT_TOTALS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
     },
+    "EvaluationParams": {
+      "constant": "EVALUATION_PARAMS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.params"
+    },
     "EvaluationQuery": {
       "constant": "EVALUATION_QUERY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
@@ -366,6 +374,10 @@
     "EvaluationResultTotals": {
       "constant": "EVALUATION_RESULT_TOTALS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
+    },
+    "Experiment": {
+      "constant": "EXPERIMENT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.experiment"
     },
     "Impression": {
       "constant": "IMPRESSION_SCHEMA",
@@ -386,6 +398,14 @@
     "IndexedSimilarSentence": {
       "constant": "INDEXED_SIMILAR_SENTENCE_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "Label": {
+      "constant": "LABEL_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "LabelMapEntry": {
+      "constant": "LABEL_MAP_ENTRY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
     },
     "Paragraph": {
       "constant": "PARAGRAPH_SCHEMA",
@@ -411,6 +431,10 @@
       "constant": "PARAGRAPH_OVERLAP_SCORE_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "ParagraphScore": {
+      "constant": "PARAGRAPH_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
     "ParagraphSearchTarget": {
       "constant": "PARAGRAPH_SEARCH_TARGET_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
@@ -430,6 +454,18 @@
     "QueryDocumentSignals": {
       "constant": "QUERY_DOCUMENT_SIGNALS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.relevance"
+    },
+    "QueryLabel": {
+      "constant": "QUERY_LABEL_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "QueryLabelAssignmentEntries": {
+      "constant": "QUERY_LABEL_ASSIGNMENT_ENTRIES_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "QueryLabelAssignments": {
+      "constant": "QUERY_LABEL_ASSIGNMENTS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
     },
     "RelevancePolicy": {
       "constant": "RELEVANCE_POLICY_SCHEMA",
@@ -465,6 +501,10 @@
     },
     "SectionOverlapScore": {
       "constant": "SECTION_OVERLAP_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SectionScore": {
+      "constant": "SECTION_SCORE_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
     "SectionSearchTarget": {
@@ -505,6 +545,10 @@
     },
     "SentenceOverlapScore": {
       "constant": "SENTENCE_OVERLAP_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SentenceScore": {
+      "constant": "SENTENCE_SCORE_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
     "SentenceSearchResult": {

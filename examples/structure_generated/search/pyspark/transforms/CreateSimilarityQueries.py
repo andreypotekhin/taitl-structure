@@ -54,6 +54,9 @@ class CreateSimilarityQueriesGenerated:
         queries = declare_queries_base.select(
             F.lit('').alias("id"),
             F.lit('').alias("content"),
+            F.map_from_entries(F.array(F.struct(F.lit('is_question').alias("key"), F.lit(0).alias("value")), F.struct(F.lit('is_time_sensitive').alias("key"), F.lit(0).alias("value")))).alias("labels"),
+            F.lit(False).alias("is_question"),
+            F.lit(False).alias("is_time_sensitive"),
         )
         document_queries = declare_queries_base.select(
             F.lit('').alias("query_id"),

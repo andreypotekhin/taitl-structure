@@ -14,7 +14,7 @@ TEST_ROOTS := tests
 PYTHON_ROOTS := $(SOURCE_ROOTS) $(EXAMPLE_ROOTS) $(TEST_ROOTS)
 TYPE_ROOTS := src examples tests
 
-.PHONY: all help install update format lint type test golden golden-refresh differential metamorphic concepts rigidity check build compose-env integration integration-rebuild integration-down clean
+.PHONY: all help install update format lint type test golden gold differential metamorphic concepts rigidity check build compose-env integration integration-rebuild integration-down clean
 
 all: check build
 
@@ -26,7 +26,7 @@ help:
 	@echo "  make type       Run mypy"
 	@echo "  make test       Run pytest"
 	@echo "  make golden     Run generated-output golden tests"
-	@echo "  make golden-refresh Regenerate the Iterable school generated-code golden files"
+	@echo "  make gold       Regenerate all example generated-code golden files"
 	@echo "  make differential Run differential behavior tests"
 	@echo "  make metamorphic Run metamorphic behavior tests"
 	@echo "  make concepts   Run public concept coverage tests"
@@ -63,8 +63,8 @@ test: install
 golden: install
 	$(POETRY) run pytest tests/golden
 
-golden-refresh: install
-	PYTHONPATH=.:src:tests:examples/plugins/iterable/src $(POETRY) run python scripts/regenerate_iterable_golden.py
+gold: install
+	PYTHONPATH=.:src:tests:examples/plugins/iterable/src $(POETRY) run python scripts/regenerate_golden.py
 
 differential: install
 	$(POETRY) run pytest tests/differential

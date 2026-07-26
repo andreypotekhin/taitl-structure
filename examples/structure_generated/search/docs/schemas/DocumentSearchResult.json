@@ -8,6 +8,12 @@
       "type": "string"
     },
     {
+      "column": "experiment_id",
+      "name": "experiment_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
       "column": "rank",
       "name": "rank",
       "nullable": false,
@@ -38,8 +44,8 @@
       "type": "string"
     },
     {
-      "column": "score_bm25",
-      "name": "score_bm25",
+      "column": "score",
+      "name": "score",
       "nullable": false,
       "type": "double"
     },

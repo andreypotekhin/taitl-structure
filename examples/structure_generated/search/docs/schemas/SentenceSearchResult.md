@@ -7,11 +7,11 @@ Module: `examples.search.schemas.search`
 | Field | Column | Type | Nullable |
 | --- | --- | --- | --- |
 | `search_query_id` | `search_query_id` | `string` | no |
+| `experiment_id` | `experiment_id` | `string` | no |
 | `rank` | `rank` | `long` | no |
 | `document_id` | `document_id` | `string` | no |
 | `section_id` | `section_id` | `string` | no |
 | `paragraph_id` | `paragraph_id` | `string` | no |
 | `sentence_id` | `sentence_id` | `string` | no |
 | `content` | `content` | `string` | no |
-| `score_overlap` | `score_overlap` | `double` | no |
-| `score_bm25` | `score_bm25` | `double` | no |
+| `score` | `score` | `double` | no |

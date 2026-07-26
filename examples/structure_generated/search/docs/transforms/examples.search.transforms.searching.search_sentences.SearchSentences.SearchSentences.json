@@ -1,7 +1,9 @@
 {
   "dependencies": [
     "queries",
-    "query"
+    "query",
+    "sentence",
+    "sentences"
   ],
   "generated_by": "Structure",
   "inputs": [
@@ -11,9 +13,14 @@
       "schema": "SearchQuery"
     },
     {
-      "name": "scored_sentences",
+      "name": "sentences",
       "ordinal": 1,
       "schema": "Sentence"
+    },
+    {
+      "name": "sentence_scores",
+      "ordinal": 2,
+      "schema": "SentenceScore"
     }
   ],
   "name": "SearchSentences",
@@ -27,14 +34,20 @@
   "source": "examples.search.transforms.searching.search_sentences.SearchSentences.SearchSentences",
   "step_methods": [
     {
-      "input_lane": "scored_sentences",
-      "input_schema": "Sentence",
+      "input_lane": "sentence_scores",
+      "input_schema": "SentenceScore",
       "inputs": [
         {
           "driving": true,
+          "parameter": "score",
+          "schema": "SentenceScore",
+          "source": "sentence_scores"
+        },
+        {
+          "driving": false,
           "parameter": "sentence",
           "schema": "Sentence",
-          "source": "scored_sentences"
+          "source": "sentences"
         },
         {
           "driving": false,
@@ -47,15 +60,19 @@
         {
           "how": "inner",
           "input": "query"
+        },
+        {
+          "how": "inner",
+          "input": "sentence"
         }
       ],
       "name": "rank_sentences",
-      "output_lane": "scored_sentences",
+      "output_lane": "sentence_scores",
       "output_schema": "SentenceSearchResult",
       "results": [
         {
-          "frame": "scored_sentences",
-          "lane": "scored_sentences",
+          "frame": "sentence_scores",
+          "lane": "sentence_scores",
           "schema": "SentenceSearchResult"
         }
       ]

@@ -46,7 +46,7 @@
       "schema": "DocumentEvaluationSummary"
     }
   ],
-  "source": "examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality",
+  "source": "examples.search.transforms.evaluation.search_docs.judged_quality.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
   "step_methods": [
     {
       "input_lane": "queries",
@@ -326,7 +326,7 @@
     }
   ],
   "target_artifacts": {
-    "pyspark_transform": "pyspark/transforms/EvaluateDocumentRankingQuality.py",
-    "traceability": "traceability/transforms/EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.json"
+    "pyspark_transform": "pyspark/transforms/eval_doc_ranking_quality.py",
+    "traceability": "traceability/transforms/eval_doc_ranking_quality.EvaluateDocumentRankingQuality.json"
   }
 }

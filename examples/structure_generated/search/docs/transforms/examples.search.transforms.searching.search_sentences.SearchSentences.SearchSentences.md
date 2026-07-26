@@ -7,7 +7,8 @@ Source: `examples.search.transforms.searching.search_sentences.SearchSentences.S
 ## Inputs
 
 - `queries`: `SearchQuery`
-- `scored_sentences`: `Sentence`
+- `sentences`: `Sentence`
+- `sentence_scores`: `SentenceScore`
 
 ## Outputs
 
@@ -15,12 +16,14 @@ Source: `examples.search.transforms.searching.search_sentences.SearchSentences.S
 
 ## Step methods
 
-- `rank_sentences`: `Sentence` -> `SentenceSearchResult`
+- `rank_sentences`: `SentenceScore` -> `SentenceSearchResult`
 
 ## Dependencies
 
 - `queries`
 - `query`
+- `sentence`
+- `sentences`
 
 ## Target Artifacts
 

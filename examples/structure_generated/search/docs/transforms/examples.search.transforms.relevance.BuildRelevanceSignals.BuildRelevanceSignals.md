@@ -2,7 +2,7 @@
 
 # BuildRelevanceSignals
 
-Source: `examples.search.transforms.relevance.Signals.BuildRelevanceSignals`
+Source: `examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals`
 
 ## Inputs
 
@@ -30,5 +30,5 @@ Source: `examples.search.transforms.relevance.Signals.BuildRelevanceSignals`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/Signals.py`
-- `traceability`: `traceability/transforms/Signals.BuildRelevanceSignals.json`
+- `pyspark_transform`: `pyspark/transforms/BuildRelevanceSignals.py`
+- `traceability`: `traceability/transforms/BuildRelevanceSignals.BuildRelevanceSignals.json`

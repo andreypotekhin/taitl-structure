@@ -7,8 +7,10 @@ from examples.structure_generated.search.pyspark.schemas.TimeWindow import TIME_
 
 SEARCH_REQUEST_SCHEMA = T.StructType([
     T.StructField("id", T.StringType(), False),
+    T.StructField("query_id", T.StringType(), False),
     T.StructField("requested_at", T.TimestampType(), False),
     T.StructField("query", T.StringType(), False),
+    T.StructField("experiment_id", T.StringType(), False),
     T.StructField("ranking_version", T.StringType(), False),
 ])
 

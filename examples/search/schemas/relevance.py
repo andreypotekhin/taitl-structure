@@ -7,7 +7,7 @@ from structure.plugin.pyspark import *
 class RelevancePolicy(Schema):
     evaluated_at = timestamp(nullable=False)
     half_life_days = double(nullable=False)
-    bm25_weight = double(nullable=False)
+    score_weight = double(nullable=False)
     feedback_weight = double(nullable=False)
     dwell_feedback_weight = double(nullable=False)
     ctr_feedback_weight = double(nullable=False)

@@ -7,6 +7,8 @@ Module: `examples.search.schemas.clicks`
 | Field | Column | Type | Nullable |
 | --- | --- | --- | --- |
 | `id` | `id` | `string` | no |
+| `query_id` | `query_id` | `string` | no |
 | `requested_at` | `requested_at` | `timestamp` | no |
 | `query` | `query` | `string` | no |
+| `experiment_id` | `experiment_id` | `string` | no |
 | `ranking_version` | `ranking_version` | `string` | no |

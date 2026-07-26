@@ -1197,10 +1197,10 @@ def map_filter(value: object, function: Callable[[Expression, Expression], objec
     )
 
 
-def arr_exists(value: object, function: Callable[[Expression], object]) -> Expression:
+def arr_exists(value: object, function: Callable[[Expression], object], *, argument_name: str = "item") -> Expression:
     argument = literal(value)
     array = _array_type(argument, "arr_exists(...)")
-    element = _lambda_arg(array.element, nullable=array.contains_null, name="item")
+    element = _lambda_arg(array.element, nullable=array.contains_null, name=argument_name)
     predicate = _callback_expression("arr_exists(...)", function, element)
     if not isinstance(predicate.type, BooleanType):
         raise TypeError("arr_exists(...) callback must return a Boolean expression")
@@ -1211,13 +1211,14 @@ def arr_exists(value: object, function: Callable[[Expression], object]) -> Expre
         type=BooleanType(),
         nullable=argument.nullable or array.contains_null or predicate.nullable,
         args=(argument, predicate),
+        data=(("lambda_name", argument_name),),
     )
 
 
-def arr_forall(value: object, function: Callable[[Expression], object]) -> Expression:
+def arr_forall(value: object, function: Callable[[Expression], object], *, argument_name: str = "item") -> Expression:
     argument = literal(value)
     array = _array_type(argument, "arr_forall(...)")
-    element = _lambda_arg(array.element, nullable=array.contains_null, name="item")
+    element = _lambda_arg(array.element, nullable=array.contains_null, name=argument_name)
     predicate = _callback_expression("arr_forall(...)", function, element)
     if not isinstance(predicate.type, BooleanType):
         raise TypeError("arr_forall(...) callback must return a Boolean expression")
@@ -1228,6 +1229,7 @@ def arr_forall(value: object, function: Callable[[Expression], object]) -> Expre
         type=BooleanType(),
         nullable=argument.nullable or array.contains_null or predicate.nullable,
         args=(argument, predicate),
+        data=(("lambda_name", argument_name),),
     )
 
 

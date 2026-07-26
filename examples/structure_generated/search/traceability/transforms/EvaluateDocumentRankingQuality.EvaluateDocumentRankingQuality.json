@@ -68,6 +68,16 @@
       "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.select_queries.field.window"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.0.select_queries.select.params",
+      "ir": "ir:EvaluateDocumentRankingQuality.step.0.select_queries.project.params",
+      "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.select_queries.field.params"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.0.select_queries.select.experiment_id",
+      "ir": "ir:EvaluateDocumentRankingQuality.step.0.select_queries.project.experiment_id",
+      "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.select_queries.field.experiment_id"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.0.select_queries.select.search_query_id",
       "ir": "ir:EvaluateDocumentRankingQuality.step.0.select_queries.project.search_query_id",
       "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.select_queries.field.search_query_id"
@@ -83,6 +93,11 @@
       "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.select_results"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.1.select_results.where.0",
+      "ir": "ir:EvaluateDocumentRankingQuality.step.1.select_results.filter.0",
+      "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.select_results.filter.0"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.1.select_results.join.1.result",
       "ir": "ir:EvaluateDocumentRankingQuality.step.1.select_results.join.1.result",
       "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.select_results.join.1.result"
@@ -96,6 +111,16 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.1.select_results.select.window",
       "ir": "ir:EvaluateDocumentRankingQuality.step.1.select_results.project.window",
       "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.select_results.field.window"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.1.select_results.select.params",
+      "ir": "ir:EvaluateDocumentRankingQuality.step.1.select_results.project.params",
+      "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.select_results.field.params"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.1.select_results.select.experiment_id",
+      "ir": "ir:EvaluateDocumentRankingQuality.step.1.select_results.project.experiment_id",
+      "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.select_results.field.experiment_id"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.1.select_results.select.search_query_id",
@@ -138,6 +163,16 @@
       "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.rank_judgments.field.window"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.2.rank_judgments.select.params",
+      "ir": "ir:EvaluateDocumentRankingQuality.step.2.rank_judgments.project.params",
+      "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.rank_judgments.field.params"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.2.rank_judgments.select.experiment_id",
+      "ir": "ir:EvaluateDocumentRankingQuality.step.2.rank_judgments.project.experiment_id",
+      "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.rank_judgments.field.experiment_id"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.2.rank_judgments.select.search_query_id",
       "ir": "ir:EvaluateDocumentRankingQuality.step.2.rank_judgments.project.search_query_id",
       "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.rank_judgments.field.search_query_id"
@@ -168,6 +203,16 @@
       "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.count_judgments.aggregate.window"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.3.count_judgments.aggregate.params",
+      "ir": "ir:EvaluateDocumentRankingQuality.step.3.count_judgments.aggregate.params",
+      "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.count_judgments.aggregate.params"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.3.count_judgments.aggregate.experiment_id",
+      "ir": "ir:EvaluateDocumentRankingQuality.step.3.count_judgments.aggregate.experiment_id",
+      "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.count_judgments.aggregate.experiment_id"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.3.count_judgments.aggregate.search_query_id",
       "ir": "ir:EvaluateDocumentRankingQuality.step.3.count_judgments.aggregate.search_query_id",
       "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.count_judgments.aggregate.search_query_id"
@@ -191,6 +236,16 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.4.calculate_ideal_dcg.aggregate.window",
       "ir": "ir:EvaluateDocumentRankingQuality.step.4.calculate_ideal_dcg.aggregate.window",
       "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.calculate_ideal_dcg.aggregate.window"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.4.calculate_ideal_dcg.aggregate.params",
+      "ir": "ir:EvaluateDocumentRankingQuality.step.4.calculate_ideal_dcg.aggregate.params",
+      "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.calculate_ideal_dcg.aggregate.params"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.4.calculate_ideal_dcg.aggregate.experiment_id",
+      "ir": "ir:EvaluateDocumentRankingQuality.step.4.calculate_ideal_dcg.aggregate.experiment_id",
+      "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.calculate_ideal_dcg.aggregate.experiment_id"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.4.calculate_ideal_dcg.aggregate.search_query_id",
@@ -226,6 +281,16 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.5.total_results.aggregate.window",
       "ir": "ir:EvaluateDocumentRankingQuality.step.5.total_results.aggregate.window",
       "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.total_results.aggregate.window"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.5.total_results.aggregate.params",
+      "ir": "ir:EvaluateDocumentRankingQuality.step.5.total_results.aggregate.params",
+      "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.total_results.aggregate.params"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.5.total_results.aggregate.experiment_id",
+      "ir": "ir:EvaluateDocumentRankingQuality.step.5.total_results.aggregate.experiment_id",
+      "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.total_results.aggregate.experiment_id"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.5.total_results.aggregate.search_query_id",
@@ -326,6 +391,16 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.6.calculate_metrics.select.window",
       "ir": "ir:EvaluateDocumentRankingQuality.step.6.calculate_metrics.project.window",
       "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.calculate_metrics.field.window"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.6.calculate_metrics.select.params",
+      "ir": "ir:EvaluateDocumentRankingQuality.step.6.calculate_metrics.project.params",
+      "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.calculate_metrics.field.params"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.6.calculate_metrics.select.experiment_id",
+      "ir": "ir:EvaluateDocumentRankingQuality.step.6.calculate_metrics.project.experiment_id",
+      "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.calculate_metrics.field.experiment_id"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.6.calculate_metrics.select.search_query_id",
@@ -448,6 +523,16 @@
       "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.publish_metrics.field.window"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.7.publish_metrics.select.params",
+      "ir": "ir:EvaluateDocumentRankingQuality.step.7.publish_metrics.project.params",
+      "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.publish_metrics.field.params"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.7.publish_metrics.select.experiment_id",
+      "ir": "ir:EvaluateDocumentRankingQuality.step.7.publish_metrics.project.experiment_id",
+      "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.publish_metrics.field.experiment_id"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.7.publish_metrics.select.search_query_id",
       "ir": "ir:EvaluateDocumentRankingQuality.step.7.publish_metrics.project.search_query_id",
       "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.publish_metrics.field.search_query_id"
@@ -566,6 +651,16 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.8.summarize.aggregate.window",
       "ir": "ir:EvaluateDocumentRankingQuality.step.8.summarize.aggregate.window",
       "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.summarize.aggregate.window"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.8.summarize.aggregate.params",
+      "ir": "ir:EvaluateDocumentRankingQuality.step.8.summarize.aggregate.params",
+      "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.summarize.aggregate.params"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.8.summarize.aggregate.experiment_id",
+      "ir": "ir:EvaluateDocumentRankingQuality.step.8.summarize.aggregate.experiment_id",
+      "source": "source:examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.summarize.aggregate.experiment_id"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQualityGenerated.run.step.8.summarize.aggregate.query_count",
@@ -771,6 +866,10 @@
       "constant": "DOCUMENT_RELEVANCE_JUDGMENT_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
     },
+    "DocumentScore": {
+      "constant": "DOCUMENT_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
     "DocumentSearchCandidate": {
       "constant": "DOCUMENT_SEARCH_CANDIDATE_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
@@ -815,6 +914,10 @@
       "constant": "EVALUATION_JUDGMENT_TOTALS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
     },
+    "EvaluationParams": {
+      "constant": "EVALUATION_PARAMS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.params"
+    },
     "EvaluationQuery": {
       "constant": "EVALUATION_QUERY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
@@ -826,6 +929,10 @@
     "EvaluationResultTotals": {
       "constant": "EVALUATION_RESULT_TOTALS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
+    },
+    "Experiment": {
+      "constant": "EXPERIMENT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.experiment"
     },
     "Impression": {
       "constant": "IMPRESSION_SCHEMA",
@@ -846,6 +953,14 @@
     "IndexedSimilarSentence": {
       "constant": "INDEXED_SIMILAR_SENTENCE_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "Label": {
+      "constant": "LABEL_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "LabelMapEntry": {
+      "constant": "LABEL_MAP_ENTRY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
     },
     "Paragraph": {
       "constant": "PARAGRAPH_SCHEMA",
@@ -871,6 +986,10 @@
       "constant": "PARAGRAPH_OVERLAP_SCORE_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "ParagraphScore": {
+      "constant": "PARAGRAPH_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
     "ParagraphSearchTarget": {
       "constant": "PARAGRAPH_SEARCH_TARGET_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
@@ -890,6 +1009,18 @@
     "QueryDocumentSignals": {
       "constant": "QUERY_DOCUMENT_SIGNALS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.relevance"
+    },
+    "QueryLabel": {
+      "constant": "QUERY_LABEL_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "QueryLabelAssignmentEntries": {
+      "constant": "QUERY_LABEL_ASSIGNMENT_ENTRIES_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "QueryLabelAssignments": {
+      "constant": "QUERY_LABEL_ASSIGNMENTS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
     },
     "RelevancePolicy": {
       "constant": "RELEVANCE_POLICY_SCHEMA",
@@ -925,6 +1056,10 @@
     },
     "SectionOverlapScore": {
       "constant": "SECTION_OVERLAP_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SectionScore": {
+      "constant": "SECTION_SCORE_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
     "SectionSearchTarget": {
@@ -965,6 +1100,10 @@
     },
     "SentenceOverlapScore": {
       "constant": "SENTENCE_OVERLAP_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SentenceScore": {
+      "constant": "SENTENCE_SCORE_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
     "SentenceSearchResult": {
@@ -1075,6 +1214,28 @@
       },
       {
         "detail": {
+          "field": "params"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "select_queries",
+        "target": "EvaluationQuery.params"
+      },
+      {
+        "detail": {
+          "field": "experiment_id"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "select_queries",
+        "target": "EvaluationQuery.experiment_id"
+      },
+      {
+        "detail": {
           "field": "search_query_id"
         },
         "operation": "project",
@@ -1097,6 +1258,15 @@
         ],
         "step": "select_results",
         "target": "select_results"
+      },
+      {
+        "detail": {},
+        "operation": "filter",
+        "sources": [
+          "result.experiment_id"
+        ],
+        "step": "select_results",
+        "target": "select_results.filter[0]"
       },
       {
         "detail": {
@@ -1140,6 +1310,28 @@
         ],
         "step": "select_results",
         "target": "EvaluationResult.window"
+      },
+      {
+        "detail": {
+          "field": "params"
+        },
+        "operation": "project",
+        "sources": [
+          "query.params"
+        ],
+        "step": "select_results",
+        "target": "EvaluationResult.params"
+      },
+      {
+        "detail": {
+          "field": "experiment_id"
+        },
+        "operation": "project",
+        "sources": [
+          "query.experiment_id"
+        ],
+        "step": "select_results",
+        "target": "EvaluationResult.experiment_id"
       },
       {
         "detail": {
@@ -1226,6 +1418,28 @@
       },
       {
         "detail": {
+          "field": "params"
+        },
+        "operation": "project",
+        "sources": [
+          "query.params"
+        ],
+        "step": "rank_judgments",
+        "target": "EvaluationJudgment.params"
+      },
+      {
+        "detail": {
+          "field": "experiment_id"
+        },
+        "operation": "project",
+        "sources": [
+          "query.experiment_id"
+        ],
+        "step": "rank_judgments",
+        "target": "EvaluationJudgment.experiment_id"
+      },
+      {
+        "detail": {
           "field": "search_query_id"
         },
         "operation": "project",
@@ -1285,6 +1499,32 @@
       },
       {
         "detail": {
+          "field": "params",
+          "function": "key",
+          "key": "params"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "EvaluationJudgment.params"
+        ],
+        "step": "count_judgments",
+        "target": "EvaluationJudgmentTotals.params"
+      },
+      {
+        "detail": {
+          "field": "experiment_id",
+          "function": "key",
+          "key": "experiment_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "EvaluationJudgment.experiment_id"
+        ],
+        "step": "count_judgments",
+        "target": "EvaluationJudgmentTotals.experiment_id"
+      },
+      {
+        "detail": {
           "field": "search_query_id",
           "function": "key",
           "key": "search_query_id"
@@ -1333,6 +1573,32 @@
         ],
         "step": "calculate_ideal_dcg",
         "target": "EvaluationIdealDcg.window"
+      },
+      {
+        "detail": {
+          "field": "params",
+          "function": "key",
+          "key": "params"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "EvaluationJudgment.params"
+        ],
+        "step": "calculate_ideal_dcg",
+        "target": "EvaluationIdealDcg.params"
+      },
+      {
+        "detail": {
+          "field": "experiment_id",
+          "function": "key",
+          "key": "experiment_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "EvaluationJudgment.experiment_id"
+        ],
+        "step": "calculate_ideal_dcg",
+        "target": "EvaluationIdealDcg.experiment_id"
       },
       {
         "detail": {
@@ -1413,6 +1679,32 @@
         ],
         "step": "total_results",
         "target": "EvaluationResultTotals.window"
+      },
+      {
+        "detail": {
+          "field": "params",
+          "function": "key",
+          "key": "params"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "EvaluationResult.params"
+        ],
+        "step": "total_results",
+        "target": "EvaluationResultTotals.params"
+      },
+      {
+        "detail": {
+          "field": "experiment_id",
+          "function": "key",
+          "key": "experiment_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "EvaluationResult.experiment_id"
+        ],
+        "step": "total_results",
+        "target": "EvaluationResultTotals.experiment_id"
       },
       {
         "detail": {
@@ -1635,7 +1927,9 @@
         "operation": "rowset_join",
         "sources": [
           "results.search_query_id",
-          "query.search_query_id"
+          "query.search_query_id",
+          "results.experiment_id",
+          "query.experiment_id"
         ],
         "step": "calculate_metrics",
         "target": "calculate_metrics.join[1].results"
@@ -1650,7 +1944,9 @@
         "operation": "rowset_join",
         "sources": [
           "judgments.search_query_id",
-          "query.search_query_id"
+          "query.search_query_id",
+          "judgments.experiment_id",
+          "query.experiment_id"
         ],
         "step": "calculate_metrics",
         "target": "calculate_metrics.join[2].judgments"
@@ -1665,7 +1961,9 @@
         "operation": "rowset_join",
         "sources": [
           "ideal.search_query_id",
-          "query.search_query_id"
+          "query.search_query_id",
+          "ideal.experiment_id",
+          "query.experiment_id"
         ],
         "step": "calculate_metrics",
         "target": "calculate_metrics.join[3].ideal"
@@ -1680,6 +1978,28 @@
         ],
         "step": "calculate_metrics",
         "target": "DocumentQueryEvaluation.window"
+      },
+      {
+        "detail": {
+          "field": "params"
+        },
+        "operation": "project",
+        "sources": [
+          "query.params"
+        ],
+        "step": "calculate_metrics",
+        "target": "DocumentQueryEvaluation.params"
+      },
+      {
+        "detail": {
+          "field": "experiment_id"
+        },
+        "operation": "project",
+        "sources": [
+          "query.experiment_id"
+        ],
+        "step": "calculate_metrics",
+        "target": "DocumentQueryEvaluation.experiment_id"
       },
       {
         "detail": {
@@ -1966,6 +2286,28 @@
       },
       {
         "detail": {
+          "field": "params"
+        },
+        "operation": "project",
+        "sources": [
+          "DocumentQueryEvaluation.params"
+        ],
+        "step": "publish_metrics",
+        "target": "DocumentQueryEvaluation.params"
+      },
+      {
+        "detail": {
+          "field": "experiment_id"
+        },
+        "operation": "project",
+        "sources": [
+          "DocumentQueryEvaluation.experiment_id"
+        ],
+        "step": "publish_metrics",
+        "target": "DocumentQueryEvaluation.experiment_id"
+      },
+      {
+        "detail": {
           "field": "search_query_id"
         },
         "operation": "project",
@@ -2219,6 +2561,32 @@
         ],
         "step": "summarize",
         "target": "DocumentEvaluationSummary.window"
+      },
+      {
+        "detail": {
+          "field": "params",
+          "function": "key",
+          "key": "params"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "DocumentQueryEvaluation.params"
+        ],
+        "step": "summarize",
+        "target": "DocumentEvaluationSummary.params"
+      },
+      {
+        "detail": {
+          "field": "experiment_id",
+          "function": "key",
+          "key": "experiment_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "DocumentQueryEvaluation.experiment_id"
+        ],
+        "step": "summarize",
+        "target": "DocumentEvaluationSummary.experiment_id"
       },
       {
         "detail": {

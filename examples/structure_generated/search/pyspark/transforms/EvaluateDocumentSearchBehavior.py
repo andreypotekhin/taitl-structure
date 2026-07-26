@@ -19,6 +19,8 @@ class SelectDocumentSearchRequestsGenerated:
         selected = selected.where((((F.col("search_request.requested_at") >= F.col("batch.window.start")) & (F.col("search_request.requested_at") < F.col("batch.window.end")))))
         selected = selected.select(
             F.col("batch.window"),
+            F.lit(None).alias("params"),
+            F.col("search_request.experiment_id"),
             F.col("search_request.id").alias("search_request_id"),
             F.col("search_request.ranking_version"),
             F.col("search_request.query"),
@@ -41,6 +43,8 @@ class MeasureDocumentSearchImpressionsGenerated:
         )
         displayed = displayed.select(
             F.col("behavior_request.window"),
+            F.col("behavior_request.params"),
+            F.col("behavior_request.experiment_id"),
             F.col("behavior_request.search_request_id"),
             F.col("behavior_request.ranking_version"),
             F.col("behavior_request.query"),
@@ -69,6 +73,8 @@ class MeasureDocumentSearchImpressionsGenerated:
         )
         clicked = clicked.groupBy(
             F.col("behavior_impression.window").alias("window"),
+            F.col("behavior_impression.params").alias("params"),
+            F.col("behavior_impression.experiment_id").alias("experiment_id"),
             F.col("behavior_impression.search_request_id").alias("search_request_id"),
             F.col("behavior_impression.ranking_version").alias("ranking_version"),
             F.col("behavior_impression.query").alias("query"),
@@ -83,6 +89,8 @@ class MeasureDocumentSearchImpressionsGenerated:
             F.sum((F.when((F.when((F.col("clicks.dwell_seconds") > F.lit(0.0)), F.col("clicks.dwell_seconds")).otherwise(F.lit(0.0)) < F.lit(60.0)), F.when((F.col("clicks.dwell_seconds") > F.lit(0.0)), F.col("clicks.dwell_seconds")).otherwise(F.lit(0.0))).otherwise(F.lit(60.0)) / F.lit(60.0))).cast(T.DoubleType()).alias("dwell_credit"),
         ).select(
             F.col("window"),
+            F.col("params"),
+            F.col("experiment_id"),
             F.col("search_request_id"),
             F.col("ranking_version"),
             F.col("query"),
@@ -111,6 +119,8 @@ class MeasureDocumentSearchImpressionsGenerated:
         )
         measured = measured.select(
             F.col("behavior_impression.window"),
+            F.col("behavior_impression.params"),
+            F.col("behavior_impression.experiment_id"),
             F.col("behavior_impression.search_request_id"),
             F.col("behavior_impression.ranking_version"),
             F.col("behavior_impression.query"),
@@ -141,6 +151,8 @@ class MeasureDocumentSearchRequestsGenerated:
         )
         request_totals = request_totals.groupBy(
             F.col("behavior_request.window").alias("window"),
+            F.col("behavior_request.params").alias("params"),
+            F.col("behavior_request.experiment_id").alias("experiment_id"),
             F.col("behavior_request.search_request_id").alias("search_request_id"),
             F.col("behavior_request.ranking_version").alias("ranking_version"),
             F.col("behavior_request.query").alias("query"),
@@ -157,6 +169,8 @@ class MeasureDocumentSearchRequestsGenerated:
             F.sum(F.coalesce(F.col("measured.long_click_count"), F.lit(0))).cast(T.LongType()).alias("raw_long_click_count"),
         ).select(
             F.col("window"),
+            F.col("params"),
+            F.col("experiment_id"),
             F.col("search_request_id"),
             F.col("ranking_version"),
             F.col("query"),
@@ -181,6 +195,8 @@ class MeasureDocumentSearchRequestsGenerated:
         request_metrics = frames["request_totals"].alias("behavior_request_totals")
         request_metrics = request_metrics.select(
             F.col("behavior_request_totals.window"),
+            F.col("behavior_request_totals.params"),
+            F.col("behavior_request_totals.experiment_id"),
             F.col("behavior_request_totals.search_request_id"),
             F.col("behavior_request_totals.ranking_version"),
             F.col("behavior_request_totals.query"),
@@ -205,6 +221,8 @@ class MeasureDocumentSearchRequestsGenerated:
         measured_requests = frames["request_metrics"].alias("behavior_request_metrics")
         measured_requests = measured_requests.select(
             F.col("behavior_request_metrics.window"),
+            F.col("behavior_request_metrics.params"),
+            F.col("behavior_request_metrics.experiment_id"),
             F.col("behavior_request_metrics.search_request_id"),
             F.col("behavior_request_metrics.ranking_version"),
             F.col("behavior_request_metrics.query"),
@@ -229,6 +247,8 @@ class SummarizeDocumentSearchBehaviorGenerated:
         exposure = frames["measured"].alias("behavior_impression")
         exposure = exposure.groupBy(
             F.col("behavior_impression.window").alias("window"),
+            F.col("behavior_impression.params").alias("params"),
+            F.col("behavior_impression.experiment_id").alias("experiment_id"),
             F.col("behavior_impression.ranking_version").alias("ranking_version"),
         ).agg(
             F.sum((F.lit(1.0) / F.col("behavior_impression.examination_propensity"))).cast(T.DoubleType()).alias("ips_impression_weight"),
@@ -236,6 +256,8 @@ class SummarizeDocumentSearchBehaviorGenerated:
             F.sum((F.col("behavior_impression.dwell_credit") * (F.lit(1.0) / F.col("behavior_impression.examination_propensity")))).cast(T.DoubleType()).alias("ips_dwell_credit"),
         ).select(
             F.col("window"),
+            F.col("params"),
+            F.col("experiment_id"),
             F.col("ranking_version"),
             F.col("ips_impression_weight"),
             F.col("ips_long_click_weight"),
@@ -251,6 +273,8 @@ class SummarizeDocumentSearchBehaviorGenerated:
         daily_counts = frames["request_metrics"].alias("behavior_request_metrics")
         daily_counts = daily_counts.groupBy(
             F.col("behavior_request_metrics.window").alias("window"),
+            F.col("behavior_request_metrics.params").alias("params"),
+            F.col("behavior_request_metrics.experiment_id").alias("experiment_id"),
             F.col("behavior_request_metrics.ranking_version").alias("ranking_version"),
         ).agg(
             F.sum(F.lit(1)).cast(T.LongType()).alias("request_count"),
@@ -268,6 +292,8 @@ class SummarizeDocumentSearchBehaviorGenerated:
             F.sum(F.lit(0.0)).cast(T.DoubleType()).alias("ips_dwell_credit_per_impression"),
         ).select(
             F.col("window"),
+            F.col("params"),
+            F.col("experiment_id"),
             F.col("ranking_version"),
             F.col("request_count"),
             F.col("zero_result_request_count"),
@@ -294,11 +320,13 @@ class SummarizeDocumentSearchBehaviorGenerated:
         exposure_joined = frames["exposure"].alias("exposure")
         summarized_daily = summarized_daily.join(
             exposure_joined,
-            ((F.col("exposure.window") == F.col("behavior_daily_counts.window")) & (F.col("exposure.ranking_version") == F.col("behavior_daily_counts.ranking_version"))),
+            ((((F.col("exposure.window") == F.col("behavior_daily_counts.window")) & F.col("exposure.params").eqNullSafe(F.col("behavior_daily_counts.params"))) & (F.col("exposure.experiment_id") == F.col("behavior_daily_counts.experiment_id"))) & (F.col("exposure.ranking_version") == F.col("behavior_daily_counts.ranking_version"))),
             "left",
         )
         summarized_daily = summarized_daily.select(
             F.col("behavior_daily_counts.window"),
+            F.col("behavior_daily_counts.params"),
+            F.col("behavior_daily_counts.experiment_id"),
             F.col("behavior_daily_counts.ranking_version"),
             F.col("behavior_daily_counts.request_count"),
             F.col("behavior_daily_counts.zero_result_request_count"),
@@ -326,6 +354,8 @@ class EvaluateDocumentSearchBehaviorGenerated(SelectDocumentSearchRequestsGenera
         request_behaviors = frames["measured_requests"].alias("document_search_request_behavior")
         request_behaviors = request_behaviors.select(
             F.col("document_search_request_behavior.window"),
+            F.col("document_search_request_behavior.params"),
+            F.col("document_search_request_behavior.experiment_id"),
             F.col("document_search_request_behavior.search_request_id"),
             F.col("document_search_request_behavior.ranking_version"),
             F.col("document_search_request_behavior.query"),
@@ -348,6 +378,8 @@ class EvaluateDocumentSearchBehaviorGenerated(SelectDocumentSearchRequestsGenera
         daily_behavior = frames["summarized_daily"].alias("daily_document_search_behavior")
         daily_behavior = daily_behavior.select(
             F.col("daily_document_search_behavior.window"),
+            F.col("daily_document_search_behavior.params"),
+            F.col("daily_document_search_behavior.experiment_id"),
             F.col("daily_document_search_behavior.ranking_version"),
             F.col("daily_document_search_behavior.request_count"),
             F.col("daily_document_search_behavior.zero_result_request_count"),

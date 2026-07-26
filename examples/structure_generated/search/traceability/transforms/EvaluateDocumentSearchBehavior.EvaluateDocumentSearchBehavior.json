@@ -73,6 +73,16 @@
       "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.select_requests.field.window"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.0.select_requests.select.params",
+      "ir": "ir:EvaluateDocumentSearchBehavior.step.0.select_requests.project.params",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.select_requests.field.params"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.0.select_requests.select.experiment_id",
+      "ir": "ir:EvaluateDocumentSearchBehavior.step.0.select_requests.project.experiment_id",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.select_requests.field.experiment_id"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.0.select_requests.select.search_request_id",
       "ir": "ir:EvaluateDocumentSearchBehavior.step.0.select_requests.project.search_request_id",
       "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.select_requests.field.search_request_id"
@@ -106,6 +116,16 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.1.select_impressions.select.window",
       "ir": "ir:EvaluateDocumentSearchBehavior.step.1.select_impressions.project.window",
       "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.select_impressions.field.window"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.1.select_impressions.select.params",
+      "ir": "ir:EvaluateDocumentSearchBehavior.step.1.select_impressions.project.params",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.select_impressions.field.params"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.1.select_impressions.select.experiment_id",
+      "ir": "ir:EvaluateDocumentSearchBehavior.step.1.select_impressions.project.experiment_id",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.select_impressions.field.experiment_id"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.1.select_impressions.select.search_request_id",
@@ -183,6 +203,16 @@
       "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.attribute_clicks.aggregate.window"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.2.attribute_clicks.aggregate.params",
+      "ir": "ir:EvaluateDocumentSearchBehavior.step.2.attribute_clicks.aggregate.params",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.attribute_clicks.aggregate.params"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.2.attribute_clicks.aggregate.experiment_id",
+      "ir": "ir:EvaluateDocumentSearchBehavior.step.2.attribute_clicks.aggregate.experiment_id",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.attribute_clicks.aggregate.experiment_id"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.2.attribute_clicks.aggregate.search_request_id",
       "ir": "ir:EvaluateDocumentSearchBehavior.step.2.attribute_clicks.aggregate.search_request_id",
       "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.attribute_clicks.aggregate.search_request_id"
@@ -258,6 +288,16 @@
       "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.measure_impressions.field.window"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.3.measure_impressions.select.params",
+      "ir": "ir:EvaluateDocumentSearchBehavior.step.3.measure_impressions.project.params",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.measure_impressions.field.params"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.3.measure_impressions.select.experiment_id",
+      "ir": "ir:EvaluateDocumentSearchBehavior.step.3.measure_impressions.project.experiment_id",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.measure_impressions.field.experiment_id"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.3.measure_impressions.select.search_request_id",
       "ir": "ir:EvaluateDocumentSearchBehavior.step.3.measure_impressions.project.search_request_id",
       "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.measure_impressions.field.search_request_id"
@@ -331,6 +371,16 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.4.measure_requests.aggregate.window",
       "ir": "ir:EvaluateDocumentSearchBehavior.step.4.measure_requests.aggregate.window",
       "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.measure_requests.aggregate.window"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.4.measure_requests.aggregate.params",
+      "ir": "ir:EvaluateDocumentSearchBehavior.step.4.measure_requests.aggregate.params",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.measure_requests.aggregate.params"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.4.measure_requests.aggregate.experiment_id",
+      "ir": "ir:EvaluateDocumentSearchBehavior.step.4.measure_requests.aggregate.experiment_id",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.measure_requests.aggregate.experiment_id"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.4.measure_requests.aggregate.search_request_id",
@@ -413,6 +463,16 @@
       "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.calculate_reciprocal_rank.field.window"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.5.calculate_reciprocal_rank.select.params",
+      "ir": "ir:EvaluateDocumentSearchBehavior.step.5.calculate_reciprocal_rank.project.params",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.calculate_reciprocal_rank.field.params"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.5.calculate_reciprocal_rank.select.experiment_id",
+      "ir": "ir:EvaluateDocumentSearchBehavior.step.5.calculate_reciprocal_rank.project.experiment_id",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.calculate_reciprocal_rank.field.experiment_id"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.5.calculate_reciprocal_rank.select.search_request_id",
       "ir": "ir:EvaluateDocumentSearchBehavior.step.5.calculate_reciprocal_rank.project.search_request_id",
       "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.calculate_reciprocal_rank.field.search_request_id"
@@ -493,6 +553,16 @@
       "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.publish_requests.field.window"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.6.publish_requests.select.params",
+      "ir": "ir:EvaluateDocumentSearchBehavior.step.6.publish_requests.project.params",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.publish_requests.field.params"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.6.publish_requests.select.experiment_id",
+      "ir": "ir:EvaluateDocumentSearchBehavior.step.6.publish_requests.project.experiment_id",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.publish_requests.field.experiment_id"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.6.publish_requests.select.search_request_id",
       "ir": "ir:EvaluateDocumentSearchBehavior.step.6.publish_requests.project.search_request_id",
       "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.publish_requests.field.search_request_id"
@@ -563,6 +633,16 @@
       "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.summarize_exposure.aggregate.window"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.7.summarize_exposure.aggregate.params",
+      "ir": "ir:EvaluateDocumentSearchBehavior.step.7.summarize_exposure.aggregate.params",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.summarize_exposure.aggregate.params"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.7.summarize_exposure.aggregate.experiment_id",
+      "ir": "ir:EvaluateDocumentSearchBehavior.step.7.summarize_exposure.aggregate.experiment_id",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.summarize_exposure.aggregate.experiment_id"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.7.summarize_exposure.aggregate.ranking_version",
       "ir": "ir:EvaluateDocumentSearchBehavior.step.7.summarize_exposure.aggregate.ranking_version",
       "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.summarize_exposure.aggregate.ranking_version"
@@ -596,6 +676,16 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.8.summarize_requests.aggregate.window",
       "ir": "ir:EvaluateDocumentSearchBehavior.step.8.summarize_requests.aggregate.window",
       "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.summarize_requests.aggregate.window"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.8.summarize_requests.aggregate.params",
+      "ir": "ir:EvaluateDocumentSearchBehavior.step.8.summarize_requests.aggregate.params",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.summarize_requests.aggregate.params"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.8.summarize_requests.aggregate.experiment_id",
+      "ir": "ir:EvaluateDocumentSearchBehavior.step.8.summarize_requests.aggregate.experiment_id",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.summarize_requests.aggregate.experiment_id"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.8.summarize_requests.aggregate.ranking_version",
@@ -688,6 +778,16 @@
       "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.publish_daily.field.window"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.9.publish_daily.select.params",
+      "ir": "ir:EvaluateDocumentSearchBehavior.step.9.publish_daily.project.params",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.publish_daily.field.params"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.9.publish_daily.select.experiment_id",
+      "ir": "ir:EvaluateDocumentSearchBehavior.step.9.publish_daily.project.experiment_id",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.publish_daily.field.experiment_id"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.9.publish_daily.select.ranking_version",
       "ir": "ir:EvaluateDocumentSearchBehavior.step.9.publish_daily.project.ranking_version",
       "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.publish_daily.field.ranking_version"
@@ -773,6 +873,16 @@
       "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.publish_request_behaviors.field.window"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.10.publish_request_behaviors.select.params",
+      "ir": "ir:EvaluateDocumentSearchBehavior.step.10.publish_request_behaviors.project.params",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.publish_request_behaviors.field.params"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.10.publish_request_behaviors.select.experiment_id",
+      "ir": "ir:EvaluateDocumentSearchBehavior.step.10.publish_request_behaviors.project.experiment_id",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.publish_request_behaviors.field.experiment_id"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.10.publish_request_behaviors.select.search_request_id",
       "ir": "ir:EvaluateDocumentSearchBehavior.step.10.publish_request_behaviors.project.search_request_id",
       "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.publish_request_behaviors.field.search_request_id"
@@ -841,6 +951,16 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.11.publish_daily_behavior.select.window",
       "ir": "ir:EvaluateDocumentSearchBehavior.step.11.publish_daily_behavior.project.window",
       "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.publish_daily_behavior.field.window"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.11.publish_daily_behavior.select.params",
+      "ir": "ir:EvaluateDocumentSearchBehavior.step.11.publish_daily_behavior.project.params",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.publish_daily_behavior.field.params"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.11.publish_daily_behavior.select.experiment_id",
+      "ir": "ir:EvaluateDocumentSearchBehavior.step.11.publish_daily_behavior.project.experiment_id",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.publish_daily_behavior.field.experiment_id"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehaviorGenerated.run.step.11.publish_daily_behavior.select.ranking_version",
@@ -1036,6 +1156,10 @@
       "constant": "DOCUMENT_RELEVANCE_JUDGMENT_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
     },
+    "DocumentScore": {
+      "constant": "DOCUMENT_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
     "DocumentSearchCandidate": {
       "constant": "DOCUMENT_SEARCH_CANDIDATE_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
@@ -1080,6 +1204,10 @@
       "constant": "EVALUATION_JUDGMENT_TOTALS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
     },
+    "EvaluationParams": {
+      "constant": "EVALUATION_PARAMS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.params"
+    },
     "EvaluationQuery": {
       "constant": "EVALUATION_QUERY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
@@ -1091,6 +1219,10 @@
     "EvaluationResultTotals": {
       "constant": "EVALUATION_RESULT_TOTALS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
+    },
+    "Experiment": {
+      "constant": "EXPERIMENT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.experiment"
     },
     "Impression": {
       "constant": "IMPRESSION_SCHEMA",
@@ -1111,6 +1243,14 @@
     "IndexedSimilarSentence": {
       "constant": "INDEXED_SIMILAR_SENTENCE_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "Label": {
+      "constant": "LABEL_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "LabelMapEntry": {
+      "constant": "LABEL_MAP_ENTRY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
     },
     "Paragraph": {
       "constant": "PARAGRAPH_SCHEMA",
@@ -1136,6 +1276,10 @@
       "constant": "PARAGRAPH_OVERLAP_SCORE_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "ParagraphScore": {
+      "constant": "PARAGRAPH_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
     "ParagraphSearchTarget": {
       "constant": "PARAGRAPH_SEARCH_TARGET_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
@@ -1155,6 +1299,18 @@
     "QueryDocumentSignals": {
       "constant": "QUERY_DOCUMENT_SIGNALS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.relevance"
+    },
+    "QueryLabel": {
+      "constant": "QUERY_LABEL_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "QueryLabelAssignmentEntries": {
+      "constant": "QUERY_LABEL_ASSIGNMENT_ENTRIES_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "QueryLabelAssignments": {
+      "constant": "QUERY_LABEL_ASSIGNMENTS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
     },
     "RelevancePolicy": {
       "constant": "RELEVANCE_POLICY_SCHEMA",
@@ -1190,6 +1346,10 @@
     },
     "SectionOverlapScore": {
       "constant": "SECTION_OVERLAP_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SectionScore": {
+      "constant": "SECTION_SCORE_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
     "SectionSearchTarget": {
@@ -1230,6 +1390,10 @@
     },
     "SentenceOverlapScore": {
       "constant": "SENTENCE_OVERLAP_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SentenceScore": {
+      "constant": "SENTENCE_SCORE_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
     "SentenceSearchResult": {
@@ -1351,6 +1515,28 @@
       },
       {
         "detail": {
+          "field": "params"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "select_requests",
+        "target": "BehaviorRequest.params"
+      },
+      {
+        "detail": {
+          "field": "experiment_id"
+        },
+        "operation": "project",
+        "sources": [
+          "request.experiment_id"
+        ],
+        "step": "select_requests",
+        "target": "BehaviorRequest.experiment_id"
+      },
+      {
+        "detail": {
           "field": "search_request_id"
         },
         "operation": "project",
@@ -1420,6 +1606,28 @@
         ],
         "step": "select_impressions",
         "target": "BehaviorImpression.window"
+      },
+      {
+        "detail": {
+          "field": "params"
+        },
+        "operation": "project",
+        "sources": [
+          "request.params"
+        ],
+        "step": "select_impressions",
+        "target": "BehaviorImpression.params"
+      },
+      {
+        "detail": {
+          "field": "experiment_id"
+        },
+        "operation": "project",
+        "sources": [
+          "request.experiment_id"
+        ],
+        "step": "select_impressions",
+        "target": "BehaviorImpression.experiment_id"
       },
       {
         "detail": {
@@ -1584,6 +1792,32 @@
         ],
         "step": "attribute_clicks",
         "target": "BehaviorImpression.window"
+      },
+      {
+        "detail": {
+          "field": "params",
+          "function": "key",
+          "key": "params"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "impression.params"
+        ],
+        "step": "attribute_clicks",
+        "target": "BehaviorImpression.params"
+      },
+      {
+        "detail": {
+          "field": "experiment_id",
+          "function": "key",
+          "key": "experiment_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "impression.experiment_id"
+        ],
+        "step": "attribute_clicks",
+        "target": "BehaviorImpression.experiment_id"
       },
       {
         "detail": {
@@ -1769,6 +2003,28 @@
       },
       {
         "detail": {
+          "field": "params"
+        },
+        "operation": "project",
+        "sources": [
+          "displayed.params"
+        ],
+        "step": "measure_impressions",
+        "target": "BehaviorImpression.params"
+      },
+      {
+        "detail": {
+          "field": "experiment_id"
+        },
+        "operation": "project",
+        "sources": [
+          "displayed.experiment_id"
+        ],
+        "step": "measure_impressions",
+        "target": "BehaviorImpression.experiment_id"
+      },
+      {
+        "detail": {
           "field": "search_request_id"
         },
         "operation": "project",
@@ -1928,6 +2184,32 @@
         ],
         "step": "measure_requests",
         "target": "BehaviorRequestTotals.window"
+      },
+      {
+        "detail": {
+          "field": "params",
+          "function": "key",
+          "key": "params"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "selected.params"
+        ],
+        "step": "measure_requests",
+        "target": "BehaviorRequestTotals.params"
+      },
+      {
+        "detail": {
+          "field": "experiment_id",
+          "function": "key",
+          "key": "experiment_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "selected.experiment_id"
+        ],
+        "step": "measure_requests",
+        "target": "BehaviorRequestTotals.experiment_id"
       },
       {
         "detail": {
@@ -2125,6 +2407,28 @@
       },
       {
         "detail": {
+          "field": "params"
+        },
+        "operation": "project",
+        "sources": [
+          "BehaviorRequestTotals.params"
+        ],
+        "step": "calculate_reciprocal_rank",
+        "target": "BehaviorRequestMetrics.params"
+      },
+      {
+        "detail": {
+          "field": "experiment_id"
+        },
+        "operation": "project",
+        "sources": [
+          "BehaviorRequestTotals.experiment_id"
+        ],
+        "step": "calculate_reciprocal_rank",
+        "target": "BehaviorRequestMetrics.experiment_id"
+      },
+      {
+        "detail": {
           "field": "search_request_id"
         },
         "operation": "project",
@@ -2291,6 +2595,28 @@
       },
       {
         "detail": {
+          "field": "params"
+        },
+        "operation": "project",
+        "sources": [
+          "BehaviorRequestMetrics.params"
+        ],
+        "step": "publish_requests",
+        "target": "DocumentSearchRequestBehavior.params"
+      },
+      {
+        "detail": {
+          "field": "experiment_id"
+        },
+        "operation": "project",
+        "sources": [
+          "BehaviorRequestMetrics.experiment_id"
+        ],
+        "step": "publish_requests",
+        "target": "DocumentSearchRequestBehavior.experiment_id"
+      },
+      {
+        "detail": {
           "field": "search_request_id"
         },
         "operation": "project",
@@ -2437,6 +2763,32 @@
       },
       {
         "detail": {
+          "field": "params",
+          "function": "key",
+          "key": "params"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "BehaviorImpression.params"
+        ],
+        "step": "summarize_exposure",
+        "target": "BehaviorExposure.params"
+      },
+      {
+        "detail": {
+          "field": "experiment_id",
+          "function": "key",
+          "key": "experiment_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "BehaviorImpression.experiment_id"
+        ],
+        "step": "summarize_exposure",
+        "target": "BehaviorExposure.experiment_id"
+      },
+      {
+        "detail": {
           "field": "ranking_version",
           "function": "key",
           "key": "ranking_version"
@@ -2513,6 +2865,32 @@
         ],
         "step": "summarize_requests",
         "target": "BehaviorDailyCounts.window"
+      },
+      {
+        "detail": {
+          "field": "params",
+          "function": "key",
+          "key": "params"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "BehaviorRequestMetrics.params"
+        ],
+        "step": "summarize_requests",
+        "target": "BehaviorDailyCounts.params"
+      },
+      {
+        "detail": {
+          "field": "experiment_id",
+          "function": "key",
+          "key": "experiment_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "BehaviorRequestMetrics.experiment_id"
+        ],
+        "step": "summarize_requests",
+        "target": "BehaviorDailyCounts.experiment_id"
       },
       {
         "detail": {
@@ -2720,6 +3098,10 @@
         "sources": [
           "exposure.window",
           "daily.window",
+          "exposure.params",
+          "daily.params",
+          "exposure.experiment_id",
+          "daily.experiment_id",
           "exposure.ranking_version",
           "daily.ranking_version"
         ],
@@ -2736,6 +3118,28 @@
         ],
         "step": "publish_daily",
         "target": "DailyDocumentSearchBehavior.window"
+      },
+      {
+        "detail": {
+          "field": "params"
+        },
+        "operation": "project",
+        "sources": [
+          "daily.params"
+        ],
+        "step": "publish_daily",
+        "target": "DailyDocumentSearchBehavior.params"
+      },
+      {
+        "detail": {
+          "field": "experiment_id"
+        },
+        "operation": "project",
+        "sources": [
+          "daily.experiment_id"
+        ],
+        "step": "publish_daily",
+        "target": "DailyDocumentSearchBehavior.experiment_id"
       },
       {
         "detail": {
@@ -2918,6 +3322,28 @@
       },
       {
         "detail": {
+          "field": "params"
+        },
+        "operation": "project",
+        "sources": [
+          "DocumentSearchRequestBehavior.params"
+        ],
+        "step": "publish_request_behaviors",
+        "target": "DocumentSearchRequestBehavior.params"
+      },
+      {
+        "detail": {
+          "field": "experiment_id"
+        },
+        "operation": "project",
+        "sources": [
+          "DocumentSearchRequestBehavior.experiment_id"
+        ],
+        "step": "publish_request_behaviors",
+        "target": "DocumentSearchRequestBehavior.experiment_id"
+      },
+      {
+        "detail": {
           "field": "search_request_id"
         },
         "operation": "project",
@@ -3059,6 +3485,28 @@
         ],
         "step": "publish_daily_behavior",
         "target": "DailyDocumentSearchBehavior.window"
+      },
+      {
+        "detail": {
+          "field": "params"
+        },
+        "operation": "project",
+        "sources": [
+          "DailyDocumentSearchBehavior.params"
+        ],
+        "step": "publish_daily_behavior",
+        "target": "DailyDocumentSearchBehavior.params"
+      },
+      {
+        "detail": {
+          "field": "experiment_id"
+        },
+        "operation": "project",
+        "sources": [
+          "DailyDocumentSearchBehavior.experiment_id"
+        ],
+        "step": "publish_daily_behavior",
+        "target": "DailyDocumentSearchBehavior.experiment_id"
       },
       {
         "detail": {

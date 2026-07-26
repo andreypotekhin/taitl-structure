@@ -7,6 +7,8 @@ Module: `examples.search.schemas.evaluation.judged_quality`
 | Field | Column | Type | Nullable |
 | --- | --- | --- | --- |
 | `window` | `window` | `TimeWindow` | no |
+| `params` | `params` | `EvaluationParams` | yes |
+| `experiment_id` | `experiment_id` | `string` | no |
 | `query_count` | `query_count` | `long` | no |
 | `binary_relevant_query_count` | `binary_relevant_query_count` | `long` | no |
 | `no_binary_relevant_query_count` | `no_binary_relevant_query_count` | `long` | no |

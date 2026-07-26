@@ -8,8 +8,7 @@ from examples.search.transforms.score import AddScores
 from examples.search.transforms.scoring.ScoreBm25 import ScoreBm25
 from examples.search.transforms.scoring.ScoreOverlap import ScoreOverlap
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
-from examples.structure_generated.search.pyspark.schemas.search import DOCUMENT_BM25_SCORE_SCHEMA, DOCUMENT_INDEX_SUMMARY_SCHEMA, DOCUMENT_INDEX_TERM_SCHEMA, DOCUMENT_OVERLAP_SCORE_SCHEMA, PARAGRAPH_BM25_SCORE_SCHEMA, PARAGRAPH_INDEX_SUMMARY_SCHEMA, PARAGRAPH_INDEX_TERM_SCHEMA, PARAGRAPH_OVERLAP_SCORE_SCHEMA, SEARCH_QUERY_SCHEMA, SECTION_BM25_SCORE_SCHEMA, SECTION_INDEX_SUMMARY_SCHEMA, SECTION_INDEX_TERM_SCHEMA, SECTION_OVERLAP_SCORE_SCHEMA, SENTENCE_BM25_SCORE_SCHEMA, SENTENCE_INDEX_SUMMARY_SCHEMA, SENTENCE_INDEX_TERM_SCHEMA, SENTENCE_OVERLAP_SCORE_SCHEMA
-from examples.structure_generated.search.pyspark.schemas.text import DOCUMENT_SCHEMA, PARAGRAPH_SCHEMA, SECTION_SCHEMA, SENTENCE_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.search import DOCUMENT_BM25_SCORE_SCHEMA, DOCUMENT_INDEX_SUMMARY_SCHEMA, DOCUMENT_INDEX_TERM_SCHEMA, DOCUMENT_OVERLAP_SCORE_SCHEMA, DOCUMENT_SCORE_SCHEMA, PARAGRAPH_BM25_SCORE_SCHEMA, PARAGRAPH_INDEX_SUMMARY_SCHEMA, PARAGRAPH_INDEX_TERM_SCHEMA, PARAGRAPH_OVERLAP_SCORE_SCHEMA, PARAGRAPH_SCORE_SCHEMA, SEARCH_QUERY_SCHEMA, SECTION_BM25_SCORE_SCHEMA, SECTION_INDEX_SUMMARY_SCHEMA, SECTION_INDEX_TERM_SCHEMA, SECTION_OVERLAP_SCORE_SCHEMA, SECTION_SCORE_SCHEMA, SENTENCE_BM25_SCORE_SCHEMA, SENTENCE_INDEX_SUMMARY_SCHEMA, SENTENCE_INDEX_TERM_SCHEMA, SENTENCE_OVERLAP_SCORE_SCHEMA, SENTENCE_SCORE_SCHEMA
 
 
 class ScoreOverlapGenerated:
@@ -103,129 +102,87 @@ class ScoreBm25Generated:
 class AddScoresGenerated(ScoreOverlapGenerated, ScoreBm25Generated):
     def _step_score_documents_2(self, frames):
         # Step method: score_documents
-        scored_documents = frames["documents"].alias("document")
-        document_overlap_scores_joined = frames["document_overlap_scores"].alias("document_overlap_scores")
-        scored_documents = scored_documents.join(
-            document_overlap_scores_joined,
-            (F.col("document_overlap_scores.document_id") == F.col("document.id")),
+        document_scores = frames["document_overlap_scores"].alias("document_overlap_score")
+        document_bm25_scores_joined = frames["document_bm25_scores"].alias("document_bm25_scores")
+        document_scores = document_scores.join(
+            document_bm25_scores_joined,
+            ((F.col("document_bm25_scores.document_id") == F.col("document_overlap_score.document_id")) & (F.col("document_bm25_scores.query_id") == F.col("document_overlap_score.query_id"))),
             "inner",
         )
-        document_bm25_scores_2_joined = frames["document_bm25_scores"].alias("document_bm25_scores_2")
-        scored_documents = scored_documents.join(
-            document_bm25_scores_2_joined,
-            ((F.col("document_bm25_scores_2.document_id") == F.col("document.id")) & (F.col("document_bm25_scores_2.query_id") == F.col("document_overlap_scores.query_id"))),
-            "inner",
+        document_scores = document_scores.select(
+            F.col("document_overlap_score.query_id"),
+            F.col("document_overlap_score.document_id"),
+            F.lit('').alias("experiment_id"),
+            F.col("document_bm25_scores.score_bm25").alias("score"),
         )
-        scored_documents = scored_documents.select(
-            F.col("document.id"),
-            F.col("document.collection_id"),
-            F.col("document.source"),
-            F.col("document.title"),
-            F.col("document.url"),
-            F.col("document.content"),
-            F.col("document.content_type"),
-            F.col("document.encoding"),
-            F.col("document.language"),
-            F.col("document.created_at"),
-            F.col("document.published_at"),
-            F.col("document.harvested_at"),
-            F.col("document_overlap_scores.query_id").alias("search_query_id"),
-            F.col("document_overlap_scores.score_overlap"),
-            F.col("document_bm25_scores_2.score_bm25"),
-        )
-        assert_schema(scored_documents, DOCUMENT_SCHEMA, name="Document", mode="strict")
+        assert_schema(document_scores, DOCUMENT_SCORE_SCHEMA, name="DocumentScore", mode="strict")
         return {
-            "scored_documents": scored_documents,
+            "document_scores": document_scores,
         }
 
     def _step_score_sections_3(self, frames):
         # Step method: score_sections
-        scored_sections = frames["sections"].alias("section")
-        section_overlap_scores_joined = frames["section_overlap_scores"].alias("section_overlap_scores")
-        scored_sections = scored_sections.join(
-            section_overlap_scores_joined,
-            (F.col("section_overlap_scores.section_id") == F.col("section.id")),
+        section_scores = frames["section_overlap_scores"].alias("section_overlap_score")
+        section_bm25_scores_joined = frames["section_bm25_scores"].alias("section_bm25_scores")
+        section_scores = section_scores.join(
+            section_bm25_scores_joined,
+            ((F.col("section_bm25_scores.section_id") == F.col("section_overlap_score.section_id")) & (F.col("section_bm25_scores.query_id") == F.col("section_overlap_score.query_id"))),
             "inner",
         )
-        section_bm25_scores_2_joined = frames["section_bm25_scores"].alias("section_bm25_scores_2")
-        scored_sections = scored_sections.join(
-            section_bm25_scores_2_joined,
-            ((F.col("section_bm25_scores_2.section_id") == F.col("section.id")) & (F.col("section_bm25_scores_2.query_id") == F.col("section_overlap_scores.query_id"))),
-            "inner",
+        section_scores = section_scores.select(
+            F.col("section_overlap_score.query_id"),
+            F.col("section_overlap_score.document_id"),
+            F.col("section_overlap_score.section_id"),
+            F.lit('').alias("experiment_id"),
+            F.col("section_bm25_scores.score_bm25").alias("score"),
         )
-        scored_sections = scored_sections.select(
-            F.col("section.id"),
-            F.col("section.document_id"),
-            F.col("section.ordinal"),
-            F.col("section.heading"),
-            F.col("section_overlap_scores.query_id").alias("search_query_id"),
-            F.col("section_overlap_scores.score_overlap"),
-            F.col("section_bm25_scores_2.score_bm25"),
-        )
-        assert_schema(scored_sections, SECTION_SCHEMA, name="Section", mode="strict")
+        assert_schema(section_scores, SECTION_SCORE_SCHEMA, name="SectionScore", mode="strict")
         return {
-            "scored_sections": scored_sections,
+            "section_scores": section_scores,
         }
 
     def _step_score_paragraphs_4(self, frames):
         # Step method: score_paragraphs
-        scored_paragraphs = frames["paragraphs"].alias("paragraph")
-        paragraph_overlap_scores_joined = frames["paragraph_overlap_scores"].alias("paragraph_overlap_scores")
-        scored_paragraphs = scored_paragraphs.join(
-            paragraph_overlap_scores_joined,
-            (F.col("paragraph_overlap_scores.paragraph_id") == F.col("paragraph.id")),
+        paragraph_scores = frames["paragraph_overlap_scores"].alias("paragraph_overlap_score")
+        paragraph_bm25_scores_joined = frames["paragraph_bm25_scores"].alias("paragraph_bm25_scores")
+        paragraph_scores = paragraph_scores.join(
+            paragraph_bm25_scores_joined,
+            ((F.col("paragraph_bm25_scores.paragraph_id") == F.col("paragraph_overlap_score.paragraph_id")) & (F.col("paragraph_bm25_scores.query_id") == F.col("paragraph_overlap_score.query_id"))),
             "inner",
         )
-        paragraph_bm25_scores_2_joined = frames["paragraph_bm25_scores"].alias("paragraph_bm25_scores_2")
-        scored_paragraphs = scored_paragraphs.join(
-            paragraph_bm25_scores_2_joined,
-            ((F.col("paragraph_bm25_scores_2.paragraph_id") == F.col("paragraph.id")) & (F.col("paragraph_bm25_scores_2.query_id") == F.col("paragraph_overlap_scores.query_id"))),
-            "inner",
+        paragraph_scores = paragraph_scores.select(
+            F.col("paragraph_overlap_score.query_id"),
+            F.col("paragraph_overlap_score.document_id"),
+            F.col("paragraph_overlap_score.section_id"),
+            F.col("paragraph_overlap_score.paragraph_id"),
+            F.lit('').alias("experiment_id"),
+            F.col("paragraph_overlap_score.score_overlap").alias("score"),
         )
-        scored_paragraphs = scored_paragraphs.select(
-            F.col("paragraph.id"),
-            F.col("paragraph.document_id"),
-            F.col("paragraph.section_id"),
-            F.col("paragraph.ordinal"),
-            F.col("paragraph.content"),
-            F.col("paragraph_overlap_scores.query_id").alias("search_query_id"),
-            F.col("paragraph_overlap_scores.score_overlap"),
-            F.col("paragraph_bm25_scores_2.score_bm25"),
-        )
-        assert_schema(scored_paragraphs, PARAGRAPH_SCHEMA, name="Paragraph", mode="strict")
+        assert_schema(paragraph_scores, PARAGRAPH_SCORE_SCHEMA, name="ParagraphScore", mode="strict")
         return {
-            "scored_paragraphs": scored_paragraphs,
+            "paragraph_scores": paragraph_scores,
         }
 
     def _step_score_sentences_5(self, frames):
         # Step method: score_sentences
-        scored_sentences = frames["sentences"].alias("sentence")
-        sentence_overlap_scores_joined = frames["sentence_overlap_scores"].alias("sentence_overlap_scores")
-        scored_sentences = scored_sentences.join(
-            sentence_overlap_scores_joined,
-            (F.col("sentence_overlap_scores.sentence_id") == F.col("sentence.id")),
+        sentence_scores = frames["sentence_overlap_scores"].alias("sentence_overlap_score")
+        sentence_bm25_scores_joined = frames["sentence_bm25_scores"].alias("sentence_bm25_scores")
+        sentence_scores = sentence_scores.join(
+            sentence_bm25_scores_joined,
+            ((F.col("sentence_bm25_scores.sentence_id") == F.col("sentence_overlap_score.sentence_id")) & (F.col("sentence_bm25_scores.query_id") == F.col("sentence_overlap_score.query_id"))),
             "inner",
         )
-        sentence_bm25_scores_2_joined = frames["sentence_bm25_scores"].alias("sentence_bm25_scores_2")
-        scored_sentences = scored_sentences.join(
-            sentence_bm25_scores_2_joined,
-            ((F.col("sentence_bm25_scores_2.sentence_id") == F.col("sentence.id")) & (F.col("sentence_bm25_scores_2.query_id") == F.col("sentence_overlap_scores.query_id"))),
-            "inner",
-        )
-        scored_sentences = scored_sentences.select(
-            F.col("sentence.id"),
-            F.col("sentence.document_id"),
-            F.col("sentence.section_id"),
-            F.col("sentence.paragraph_id"),
-            F.col("sentence.paragraph_ordinal"),
-            F.col("sentence.ordinal"),
-            F.col("sentence.content"),
-            F.col("sentence_overlap_scores.query_id").alias("search_query_id"),
-            F.col("sentence_overlap_scores.score_overlap"),
-            F.col("sentence_bm25_scores_2.score_bm25"),
+        sentence_scores = sentence_scores.select(
+            F.col("sentence_overlap_score.query_id"),
+            F.col("sentence_overlap_score.document_id"),
+            F.col("sentence_overlap_score.section_id"),
+            F.col("sentence_overlap_score.paragraph_id"),
+            F.col("sentence_overlap_score.sentence_id"),
+            F.lit('').alias("experiment_id"),
+            F.col("sentence_overlap_score.score_overlap").alias("score"),
         )
         return {
-            "scored_sentences": scored_sentences,
+            "sentence_scores": sentence_scores,
         }
 
     def __init__(self, *, spark: SparkSession, ctx=None):
@@ -245,10 +202,6 @@ class AddScoresGenerated(ScoreOverlapGenerated, ScoreBm25Generated):
         section_summary: DataFrame,
         paragraph_summary: DataFrame,
         sentence_summary: DataFrame,
-        documents: DataFrame,
-        sections: DataFrame,
-        paragraphs: DataFrame,
-        sentences: DataFrame,
     ) -> TransformResult:
         assert_schema(queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
         assert_schema(document_terms, DOCUMENT_INDEX_TERM_SCHEMA, name="DocumentIndexTerm", mode="strict")
@@ -259,10 +212,6 @@ class AddScoresGenerated(ScoreOverlapGenerated, ScoreBm25Generated):
         assert_schema(section_summary, SECTION_INDEX_SUMMARY_SCHEMA, name="SectionIndexSummary", mode="strict")
         assert_schema(paragraph_summary, PARAGRAPH_INDEX_SUMMARY_SCHEMA, name="ParagraphIndexSummary", mode="strict")
         assert_schema(sentence_summary, SENTENCE_INDEX_SUMMARY_SCHEMA, name="SentenceIndexSummary", mode="strict")
-        assert_schema(documents, DOCUMENT_SCHEMA, name="Document", mode="strict")
-        assert_schema(sections, SECTION_SCHEMA, name="Section", mode="strict")
-        assert_schema(paragraphs, PARAGRAPH_SCHEMA, name="Paragraph", mode="strict")
-        assert_schema(sentences, SENTENCE_SCHEMA, name="Sentence", mode="strict")
         _input_queries = queries
         _input_document_terms = document_terms
         _input_section_terms = section_terms
@@ -272,10 +221,6 @@ class AddScoresGenerated(ScoreOverlapGenerated, ScoreBm25Generated):
         _input_section_summary = section_summary
         _input_paragraph_summary = paragraph_summary
         _input_sentence_summary = sentence_summary
-        _input_documents = documents
-        _input_sections = sections
-        _input_paragraphs = paragraphs
-        _input_sentences = sentences
         frames = {
             "queries": queries,
             "document_terms": document_terms,
@@ -286,10 +231,6 @@ class AddScoresGenerated(ScoreOverlapGenerated, ScoreBm25Generated):
             "section_summary": section_summary,
             "paragraph_summary": paragraph_summary,
             "sentence_summary": sentence_summary,
-            "documents": documents,
-            "sections": sections,
-            "paragraphs": paragraphs,
-            "sentences": sentences,
             "input:queries": _input_queries,
             "input:document_terms": _input_document_terms,
             "input:section_terms": _input_section_terms,
@@ -299,10 +240,6 @@ class AddScoresGenerated(ScoreOverlapGenerated, ScoreBm25Generated):
             "input:section_summary": _input_section_summary,
             "input:paragraph_summary": _input_paragraph_summary,
             "input:sentence_summary": _input_sentence_summary,
-            "input:documents": _input_documents,
-            "input:sections": _input_sections,
-            "input:paragraphs": _input_paragraphs,
-            "input:sentences": _input_sentences,
         }
         frames.update(self._step_declare_overlap_scores_0(frames))
         frames.update(self._step_declare_bm25_scores_1(frames))
@@ -343,19 +280,19 @@ class AddScoresGenerated(ScoreOverlapGenerated, ScoreBm25Generated):
         sentence_bm25_scores = frames["sentence_bm25_scores"].alias("sentence_bm25_score")
         assert_schema(sentence_bm25_scores, SENTENCE_BM25_SCORE_SCHEMA, name="SentenceBm25Score", mode="strict")
 
-        # Step method: scored_documents
-        scored_documents = frames["scored_documents"].alias("document")
-        assert_schema(scored_documents, DOCUMENT_SCHEMA, name="Document", mode="strict")
+        # Step method: document_scores
+        document_scores = frames["document_scores"].alias("document_score")
+        assert_schema(document_scores, DOCUMENT_SCORE_SCHEMA, name="DocumentScore", mode="strict")
 
-        # Step method: scored_sections
-        scored_sections = frames["scored_sections"].alias("section")
-        assert_schema(scored_sections, SECTION_SCHEMA, name="Section", mode="strict")
+        # Step method: section_scores
+        section_scores = frames["section_scores"].alias("section_score")
+        assert_schema(section_scores, SECTION_SCORE_SCHEMA, name="SectionScore", mode="strict")
 
-        # Step method: scored_paragraphs
-        scored_paragraphs = frames["scored_paragraphs"].alias("paragraph")
-        assert_schema(scored_paragraphs, PARAGRAPH_SCHEMA, name="Paragraph", mode="strict")
+        # Step method: paragraph_scores
+        paragraph_scores = frames["paragraph_scores"].alias("paragraph_score")
+        assert_schema(paragraph_scores, PARAGRAPH_SCORE_SCHEMA, name="ParagraphScore", mode="strict")
 
-        # Step method: scored_sentences
-        scored_sentences = frames["scored_sentences"].alias("sentence")
-        assert_schema(scored_sentences, SENTENCE_SCHEMA, name="Sentence", mode="strict")
-        return TransformResult({"document_overlap_scores": document_overlap_scores, "section_overlap_scores": section_overlap_scores, "paragraph_overlap_scores": paragraph_overlap_scores, "sentence_overlap_scores": sentence_overlap_scores, "document_bm25_scores": document_bm25_scores, "section_bm25_scores": section_bm25_scores, "paragraph_bm25_scores": paragraph_bm25_scores, "sentence_bm25_scores": sentence_bm25_scores, "scored_documents": scored_documents, "scored_sections": scored_sections, "scored_paragraphs": scored_paragraphs, "scored_sentences": scored_sentences}, single=False, schema={"document_overlap_scores": DOCUMENT_OVERLAP_SCORE_SCHEMA, "section_overlap_scores": SECTION_OVERLAP_SCORE_SCHEMA, "paragraph_overlap_scores": PARAGRAPH_OVERLAP_SCORE_SCHEMA, "sentence_overlap_scores": SENTENCE_OVERLAP_SCORE_SCHEMA, "document_bm25_scores": DOCUMENT_BM25_SCORE_SCHEMA, "section_bm25_scores": SECTION_BM25_SCORE_SCHEMA, "paragraph_bm25_scores": PARAGRAPH_BM25_SCORE_SCHEMA, "sentence_bm25_scores": SENTENCE_BM25_SCORE_SCHEMA, "scored_documents": DOCUMENT_SCHEMA, "scored_sections": SECTION_SCHEMA, "scored_paragraphs": PARAGRAPH_SCHEMA, "scored_sentences": SENTENCE_SCHEMA})
+        # Step method: sentence_scores
+        sentence_scores = frames["sentence_scores"].alias("sentence_score")
+        assert_schema(sentence_scores, SENTENCE_SCORE_SCHEMA, name="SentenceScore", mode="strict")
+        return TransformResult({"document_overlap_scores": document_overlap_scores, "section_overlap_scores": section_overlap_scores, "paragraph_overlap_scores": paragraph_overlap_scores, "sentence_overlap_scores": sentence_overlap_scores, "document_bm25_scores": document_bm25_scores, "section_bm25_scores": section_bm25_scores, "paragraph_bm25_scores": paragraph_bm25_scores, "sentence_bm25_scores": sentence_bm25_scores, "document_scores": document_scores, "section_scores": section_scores, "paragraph_scores": paragraph_scores, "sentence_scores": sentence_scores}, single=False, schema={"document_overlap_scores": DOCUMENT_OVERLAP_SCORE_SCHEMA, "section_overlap_scores": SECTION_OVERLAP_SCORE_SCHEMA, "paragraph_overlap_scores": PARAGRAPH_OVERLAP_SCORE_SCHEMA, "sentence_overlap_scores": SENTENCE_OVERLAP_SCORE_SCHEMA, "document_bm25_scores": DOCUMENT_BM25_SCORE_SCHEMA, "section_bm25_scores": SECTION_BM25_SCORE_SCHEMA, "paragraph_bm25_scores": PARAGRAPH_BM25_SCORE_SCHEMA, "sentence_bm25_scores": SENTENCE_BM25_SCORE_SCHEMA, "document_scores": DOCUMENT_SCORE_SCHEMA, "section_scores": SECTION_SCORE_SCHEMA, "paragraph_scores": PARAGRAPH_SCORE_SCHEMA, "sentence_scores": SENTENCE_SCORE_SCHEMA})

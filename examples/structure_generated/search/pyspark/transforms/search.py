@@ -7,32 +7,39 @@ from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
 from examples.structure_generated.search.pyspark.schemas.relevance import DOCUMENT_POPULARITY_SCHEMA, QUERY_DOCUMENT_SIGNALS_SCHEMA, RELEVANCE_POLICY_SCHEMA
-from examples.structure_generated.search.pyspark.schemas.search import DOCUMENT_SEARCH_CANDIDATE_SCHEMA, DOCUMENT_SEARCH_RESULT_SCHEMA, SEARCH_QUERY_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.search import DOCUMENT_SCORE_SCHEMA, DOCUMENT_SEARCH_CANDIDATE_SCHEMA, DOCUMENT_SEARCH_RESULT_SCHEMA, SEARCH_QUERY_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.text import DOCUMENT_SCHEMA
 
 
 class RetrieveDocumentsGenerated:
     def _step_select_candidates_0(self, frames):
         # Step method: select_candidates
-        candidates = frames["scored_documents"].alias("document")
-        queries_joined = frames["queries"].alias("queries")
+        candidates = frames["documents"].alias("document")
+        document_scores_joined = frames["document_scores"].alias("document_scores")
         candidates = candidates.join(
-            queries_joined,
-            (F.col("queries.id") == F.col("document.search_query_id")),
+            document_scores_joined,
+            (F.col("document.id") == F.col("document_scores.document_id")),
             "inner",
         )
-        candidates = candidates.where((F.col("document.score_bm25").isNotNull()))
+        queries_2_joined = frames["queries"].alias("queries_2")
+        candidates = candidates.join(
+            queries_2_joined,
+            (F.col("queries_2.id") == F.col("document_scores.query_id")),
+            "inner",
+        )
+        candidates = candidates.where((F.col("document_scores.score").isNotNull()))
         candidates = candidates.select(
-            F.col("queries.id").alias("search_query_id"),
-            F.lower(F.regexp_replace(F.trim(F.col("queries.content")), '\\s+', ' ')).alias("query"),
-            F.row_number().over(Window.partitionBy(F.col("queries.id")).orderBy(F.col("document.score_bm25").desc_nulls_last(), F.col("document.id").asc_nulls_first())).cast(T.LongType()).alias("candidate_rank"),
+            F.col("queries_2.id").alias("search_query_id"),
+            F.col("document_scores.experiment_id"),
+            F.lower(F.regexp_replace(F.trim(F.col("queries_2.content")), '\\s+', ' ')).alias("query"),
+            F.row_number().over(Window.partitionBy(F.col("queries_2.id"), F.col("document_scores.experiment_id")).orderBy(F.col("document_scores.score").desc_nulls_last(), F.col("document.id").asc_nulls_first())).cast(T.LongType()).alias("candidate_rank"),
             F.col("document.id").alias("document_id"),
             F.col("document.title"),
             F.col("document.url"),
-            F.col("document.score_bm25"),
+            F.col("document_scores.score"),
             F.lit(0.0).alias("score_feedback"),
             F.lit(0.0).alias("score_rank"),
-            F.lit(0.0).alias("bm25_weight"),
+            F.lit(0.0).alias("score_weight"),
             F.lit(0.0).alias("feedback_weight"),
         )
         assert_schema(candidates, DOCUMENT_SEARCH_CANDIDATE_SCHEMA, name="DocumentSearchCandidate", mode="strict")
@@ -62,15 +69,16 @@ class RerankDocumentsGenerated:
         scored_candidates = scored_candidates.crossJoin(policy_3_joined)
         scored_candidates = scored_candidates.select(
             F.col("document_search_candidate.search_query_id"),
+            F.col("document_search_candidate.experiment_id"),
             F.col("document_search_candidate.query"),
             F.col("document_search_candidate.candidate_rank"),
             F.col("document_search_candidate.document_id"),
             F.col("document_search_candidate.title"),
             F.col("document_search_candidate.url"),
-            F.col("document_search_candidate.score_bm25"),
+            F.col("document_search_candidate.score"),
             ((F.lit(0.8) * F.coalesce(F.col("query_document_signals.normalized_score"), F.lit(0.0))) + (F.lit(0.2) * F.coalesce(F.col("document_popularity_2.normalized_score"), F.lit(0.0)))).alias("score_feedback"),
             F.lit(0.0).alias("score_rank"),
-            F.col("policy_3.bm25_weight"),
+            F.col("policy_3.score_weight"),
             F.col("policy_3.feedback_weight"),
         )
         assert_schema(scored_candidates, DOCUMENT_SEARCH_CANDIDATE_SCHEMA, name="DocumentSearchCandidate", mode="strict")
@@ -78,20 +86,21 @@ class RerankDocumentsGenerated:
             "scored_candidates": scored_candidates,
         }
 
-    def _step_normalize_bm25_2(self, frames):
-        # Step method: normalize_bm25
+    def _step_normalize_score_2(self, frames):
+        # Step method: normalize_score
         normalized_candidates = frames["scored_candidates"].alias("document_search_candidate")
         normalized_candidates = normalized_candidates.select(
             F.col("document_search_candidate.search_query_id"),
+            F.col("document_search_candidate.experiment_id"),
             F.col("document_search_candidate.query"),
             F.col("document_search_candidate.candidate_rank"),
             F.col("document_search_candidate.document_id"),
             F.col("document_search_candidate.title"),
             F.col("document_search_candidate.url"),
-            F.col("document_search_candidate.score_bm25"),
+            F.col("document_search_candidate.score"),
             F.col("document_search_candidate.score_feedback"),
-            (((F.col("document_search_candidate.bm25_weight") * F.col("document_search_candidate.score_bm25")) / F.max(F.col("document_search_candidate.score_bm25")).over(Window.partitionBy(F.col("document_search_candidate.search_query_id")).orderBy(F.col("document_search_candidate.document_id").asc()).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing))) + (F.col("document_search_candidate.feedback_weight") * F.col("document_search_candidate.score_feedback"))).alias("score_rank"),
-            F.col("document_search_candidate.bm25_weight"),
+            (((F.col("document_search_candidate.score_weight") * F.col("document_search_candidate.score")) / F.max(F.col("document_search_candidate.score")).over(Window.partitionBy(F.col("document_search_candidate.search_query_id"), F.col("document_search_candidate.experiment_id")).orderBy(F.col("document_search_candidate.document_id").asc()).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing))) + (F.col("document_search_candidate.feedback_weight") * F.col("document_search_candidate.score_feedback"))).alias("score_rank"),
+            F.col("document_search_candidate.score_weight"),
             F.col("document_search_candidate.feedback_weight"),
         )
         assert_schema(normalized_candidates, DOCUMENT_SEARCH_CANDIDATE_SCHEMA, name="DocumentSearchCandidate", mode="strict")
@@ -104,12 +113,13 @@ class RerankDocumentsGenerated:
         results = frames["normalized_candidates"].alias("document_search_candidate")
         results = results.select(
             F.col("document_search_candidate.search_query_id"),
-            F.row_number().over(Window.partitionBy(F.col("document_search_candidate.search_query_id")).orderBy(F.col("document_search_candidate.score_rank").desc_nulls_last(), F.col("document_search_candidate.document_id").asc_nulls_first())).cast(T.LongType()).alias("rank"),
+            F.col("document_search_candidate.experiment_id"),
+            F.row_number().over(Window.partitionBy(F.col("document_search_candidate.search_query_id"), F.col("document_search_candidate.experiment_id")).orderBy(F.col("document_search_candidate.score_rank").desc_nulls_last(), F.col("document_search_candidate.document_id").asc_nulls_first())).cast(T.LongType()).alias("rank"),
             F.col("document_search_candidate.candidate_rank"),
             F.col("document_search_candidate.document_id"),
             F.col("document_search_candidate.title"),
             F.col("document_search_candidate.url"),
-            F.col("document_search_candidate.score_bm25"),
+            F.col("document_search_candidate.score"),
             F.col("document_search_candidate.score_feedback"),
             F.col("document_search_candidate.score_rank"),
         )
@@ -128,36 +138,41 @@ class SearchDocumentsGenerated(RetrieveDocumentsGenerated, RerankDocumentsGenera
         self,
         *,
         queries: DataFrame,
-        scored_documents: DataFrame,
+        documents: DataFrame,
+        document_scores: DataFrame,
         query_document_signals: DataFrame,
         document_popularity: DataFrame,
         policy: DataFrame,
     ) -> TransformResult:
         assert_schema(queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
-        assert_schema(scored_documents, DOCUMENT_SCHEMA, name="Document", mode="strict")
+        assert_schema(documents, DOCUMENT_SCHEMA, name="Document", mode="strict")
+        assert_schema(document_scores, DOCUMENT_SCORE_SCHEMA, name="DocumentScore", mode="strict")
         assert_schema(query_document_signals, QUERY_DOCUMENT_SIGNALS_SCHEMA, name="QueryDocumentSignals", mode="strict")
         assert_schema(document_popularity, DOCUMENT_POPULARITY_SCHEMA, name="DocumentPopularity", mode="strict")
         assert_schema(policy, RELEVANCE_POLICY_SCHEMA, name="RelevancePolicy", mode="strict")
         _input_queries = queries
-        _input_scored_documents = scored_documents
+        _input_documents = documents
+        _input_document_scores = document_scores
         _input_query_document_signals = query_document_signals
         _input_document_popularity = document_popularity
         _input_policy = policy
         frames = {
             "queries": queries,
-            "scored_documents": scored_documents,
+            "documents": documents,
+            "document_scores": document_scores,
             "query_document_signals": query_document_signals,
             "document_popularity": document_popularity,
             "policy": policy,
             "input:queries": _input_queries,
-            "input:scored_documents": _input_scored_documents,
+            "input:documents": _input_documents,
+            "input:document_scores": _input_document_scores,
             "input:query_document_signals": _input_query_document_signals,
             "input:document_popularity": _input_document_popularity,
             "input:policy": _input_policy,
         }
         frames.update(self._step_select_candidates_0(frames))
         frames.update(self._step_score_candidates_1(frames))
-        frames.update(self._step_normalize_bm25_2(frames))
+        frames.update(self._step_normalize_score_2(frames))
         frames.update(self._step_rank_results_3(frames))
 
         # Step method: candidates

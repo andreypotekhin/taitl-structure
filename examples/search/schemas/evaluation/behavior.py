@@ -1,5 +1,6 @@
 """Observed document-search behavior contracts."""
 
+from examples.search.schemas.evaluation.params import EvaluationParams
 from structure import Schema
 from structure.plugin.pyspark import *
 
@@ -8,6 +9,8 @@ class DocumentSearchRequestBehavior(Schema):
     """Observed behavior for one served document result list."""
 
     window = struct(TimeWindow, nullable=False)
+    params = struct(EvaluationParams, nullable=True)
+    experiment_id = string(nullable=False)
     search_request_id = string(nullable=False)
     ranking_version = string(nullable=False)
     query = string(nullable=False)
@@ -25,6 +28,8 @@ class DailyDocumentSearchBehavior(Schema):
     """Observed daily behavior summary for one ranking version."""
 
     window = struct(TimeWindow, nullable=False)
+    params = struct(EvaluationParams, nullable=True)
+    experiment_id = string(nullable=False)
     ranking_version = string(nullable=False)
     request_count = long(nullable=False)
     zero_result_request_count = long(nullable=False)
@@ -43,6 +48,8 @@ class DailyDocumentSearchBehavior(Schema):
 
 class BehaviorRequest(Schema):
     window = struct(TimeWindow, nullable=False)
+    params = struct(EvaluationParams, nullable=True)
+    experiment_id = string(nullable=False)
     search_request_id = string(nullable=False)
     ranking_version = string(nullable=False)
     query = string(nullable=False)
@@ -61,6 +68,8 @@ class BehaviorImpression(BehaviorRequest):
 
 class BehaviorExposure(Schema):
     window = struct(TimeWindow, nullable=False)
+    params = struct(EvaluationParams, nullable=True)
+    experiment_id = string(nullable=False)
     ranking_version = string(nullable=False)
     ips_impression_weight = double(nullable=False)
     ips_long_click_weight = double(nullable=False)

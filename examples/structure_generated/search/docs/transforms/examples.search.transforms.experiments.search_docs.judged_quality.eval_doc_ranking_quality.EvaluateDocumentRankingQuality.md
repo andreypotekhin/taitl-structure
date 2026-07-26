@@ -2,7 +2,7 @@
 
 # EvaluateDocumentRankingQuality
 
-Source: `examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality`
+Source: `examples.search.transforms.experiments.search_docs.judged_quality.eval_doc_ranking_quality.EvaluateDocumentRankingQuality`
 
 ## Inputs
 
@@ -10,6 +10,7 @@ Source: `examples.search.transforms.evaluation.search_docs.judged_quality.Evalua
 - `queries`: `SearchQuery`
 - `results`: `DocumentSearchResult`
 - `judgments`: `DocumentRelevanceJudgment`
+- `experiments`: `Experiment`
 
 ## Outputs
 
@@ -31,6 +32,8 @@ Source: `examples.search.transforms.evaluation.search_docs.judged_quality.Evalua
 ## Dependencies
 
 - `batch`
+- `experiment`
+- `experiments`
 - `ideal`
 - `ideal_dcgs`
 - `judgment`
@@ -42,5 +45,5 @@ Source: `examples.search.transforms.evaluation.search_docs.judged_quality.Evalua
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/EvaluateDocumentRankingQuality.py`
-- `traceability`: `traceability/transforms/EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.json`
+- `pyspark_transform`: `pyspark/transforms/eval_doc_ranking_quality.py`
+- `traceability`: `traceability/transforms/eval_doc_ranking_quality.EvaluateDocumentRankingQuality.json`

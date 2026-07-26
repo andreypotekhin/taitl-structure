@@ -15,10 +15,6 @@ Source: `examples.search.transforms.score.AddScores`
 - `section_summary`: `SectionIndexSummary`
 - `paragraph_summary`: `ParagraphIndexSummary`
 - `sentence_summary`: `SentenceIndexSummary`
-- `documents`: `Document`
-- `sections`: `Section`
-- `paragraphs`: `Paragraph`
-- `sentences`: `Sentence`
 
 ## Outputs
 
@@ -30,32 +26,27 @@ Source: `examples.search.transforms.score.AddScores`
 - `section_bm25_scores`: `SectionBm25Score`
 - `paragraph_bm25_scores`: `ParagraphBm25Score`
 - `sentence_bm25_scores`: `SentenceBm25Score`
-- `scored_documents`: `Document`
-- `scored_sections`: `Section`
-- `scored_paragraphs`: `Paragraph`
-- `scored_sentences`: `Sentence`
+- `document_scores`: `DocumentScore`
+- `section_scores`: `SectionScore`
+- `paragraph_scores`: `ParagraphScore`
+- `sentence_scores`: `SentenceScore`
 
 ## Step methods
 
 - `declare_overlap_scores`: `SearchQuery` -> `DocumentOverlapScore`
 - `declare_bm25_scores`: `SearchQuery` -> `DocumentBm25Score`
-- `score_documents`: `Document` -> `Document`
-- `score_sections`: `Section` -> `Section`
-- `score_paragraphs`: `Paragraph` -> `Paragraph`
-- `score_sentences`: `Sentence` -> `Sentence`
+- `score_documents`: `DocumentOverlapScore` -> `DocumentScore`
+- `score_sections`: `SectionOverlapScore` -> `SectionScore`
+- `score_paragraphs`: `ParagraphOverlapScore` -> `ParagraphScore`
+- `score_sentences`: `SentenceOverlapScore` -> `SentenceScore`
 
 ## Dependencies
 
 - `bm25`
 - `document_bm25_scores`
-- `document_overlap_scores`
-- `overlap`
 - `paragraph_bm25_scores`
-- `paragraph_overlap_scores`
 - `section_bm25_scores`
-- `section_overlap_scores`
 - `sentence_bm25_scores`
-- `sentence_overlap_scores`
 
 ## Target Artifacts
 

@@ -3,6 +3,7 @@
 
 from pyspark.sql import types as T
 from examples.structure_generated.search.pyspark.schemas.TimeWindow import TIME_WINDOW_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.params import EVALUATION_PARAMS_SCHEMA
 
 
 DOCUMENT_RELEVANCE_JUDGMENT_SCHEMA = T.StructType([
@@ -13,6 +14,8 @@ DOCUMENT_RELEVANCE_JUDGMENT_SCHEMA = T.StructType([
 
 DOCUMENT_QUERY_EVALUATION_SCHEMA = T.StructType([
     T.StructField("window", TIME_WINDOW_SCHEMA, False),
+    T.StructField("params", EVALUATION_PARAMS_SCHEMA, True),
+    T.StructField("experiment_id", T.StringType(), False),
     T.StructField("search_query_id", T.StringType(), False),
     T.StructField("returned_result_count", T.LongType(), False),
     T.StructField("judged_result_count", T.LongType(), False),
@@ -38,6 +41,8 @@ DOCUMENT_QUERY_EVALUATION_SCHEMA = T.StructType([
 
 DOCUMENT_EVALUATION_SUMMARY_SCHEMA = T.StructType([
     T.StructField("window", TIME_WINDOW_SCHEMA, False),
+    T.StructField("params", EVALUATION_PARAMS_SCHEMA, True),
+    T.StructField("experiment_id", T.StringType(), False),
     T.StructField("query_count", T.LongType(), False),
     T.StructField("binary_relevant_query_count", T.LongType(), False),
     T.StructField("no_binary_relevant_query_count", T.LongType(), False),
@@ -62,6 +67,8 @@ DOCUMENT_EVALUATION_SUMMARY_SCHEMA = T.StructType([
 
 EVALUATION_QUERY_SCHEMA = T.StructType([
     T.StructField("window", TIME_WINDOW_SCHEMA, False),
+    T.StructField("params", EVALUATION_PARAMS_SCHEMA, True),
+    T.StructField("experiment_id", T.StringType(), False),
     T.StructField("search_query_id", T.StringType(), False),
 ])
 

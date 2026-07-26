@@ -50,22 +50,22 @@ class RerankDocuments(Transform):
         return DocumentSearchCandidate.project(candidate)(
             score_feedback=feedback,
             score_rank=0.0,
-            bm25_weight=policy.bm25_weight,
+            score_weight=policy.score_weight,
             feedback_weight=policy.feedback_weight,
         )
 
     @step(input=scored_candidates, output=normalized_candidates)
-    def normalize_bm25(self, candidate: DocumentSearchCandidate) -> DocumentSearchCandidate:
+    def normalize_score(self, candidate: DocumentSearchCandidate) -> DocumentSearchCandidate:
         maximum = window_max(
-            candidate.score_bm25,
+            candidate.score,
             over=window(
-                partition_by=candidate.search_query_id,
+                partition_by=(candidate.search_query_id, candidate.experiment_id),
                 order_by=candidate.document_id,
                 frame=rows_between(unbounded_preceding(), unbounded_following()),
             ),
         )
         return DocumentSearchCandidate.project(candidate)(
-            score_rank=candidate.bm25_weight * candidate.score_bm25 / maximum
+            score_rank=candidate.score_weight * candidate.score / maximum
             + candidate.feedback_weight * candidate.score_feedback,
         )
 
@@ -73,7 +73,7 @@ class RerankDocuments(Transform):
     def rank_results(self, candidate: DocumentSearchCandidate) -> DocumentSearchResult:
         return DocumentSearchResult.base(candidate)(
             rank=row_number(
-                partition_by=candidate.search_query_id,
+                partition_by=(candidate.search_query_id, candidate.experiment_id),
                 order_by=(candidate.score_rank.desc_nulls_last(), candidate.document_id.asc_nulls_first()),
             ),
         )

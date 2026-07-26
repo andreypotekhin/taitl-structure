@@ -1,75 +1,60 @@
-"""Public query-scoped corpus-score enrichment boundary."""
+"""Public production-score selection boundary."""
 
 from examples.search.schemas.search import (
     DocumentBm25Score,
     DocumentOverlapScore,
+    DocumentScore,
     ParagraphBm25Score,
     ParagraphOverlapScore,
+    ParagraphScore,
     SectionBm25Score,
     SectionOverlapScore,
+    SectionScore,
     SentenceBm25Score,
     SentenceOverlapScore,
+    SentenceScore,
 )
-from examples.search.schemas.text import Document, Paragraph, Section, Sentence
 from examples.search.transforms.scoring.ScoreAll import ScoreAll
-from structure import input, lane, output, step
+from structure import lane, output, step
 from structure.plugin.pyspark import inner_join
 
 
 class AddScores(ScoreAll):
-    """Run index-backed scoring and attach results to matching hierarchy rows."""
+    """Run production scoring and select one unified score per target grain."""
 
-    documents = input(Document)
-    sections = input(Section)
-    paragraphs = input(Paragraph)
-    sentences = input(Sentence)
-    scored_documents = output(Document)
-    scored_sections = output(Section)
-    scored_paragraphs = output(Paragraph)
-    scored_sentences = output(Sentence)
+    document_scores = output(DocumentScore)
+    section_scores = output(SectionScore)
+    paragraph_scores = output(ParagraphScore)
+    sentence_scores = output(SentenceScore)
 
     @step(
-        input=[documents, lane(ScoreAll.document_overlap_scores), lane(ScoreAll.document_bm25_scores)],
-        output=scored_documents,
+        input=[lane(ScoreAll.document_overlap_scores), lane(ScoreAll.document_bm25_scores)],
+        output=document_scores,
     )
-    def score_documents(self, document: Document, overlap: DocumentOverlapScore, bm25: DocumentBm25Score) -> Document:
-        inner_join(on=overlap.document_id == document.id)
-        inner_join(on=(bm25.document_id == document.id) & (bm25.query_id == overlap.query_id))
-        return Document.project(document)(
-            search_query_id=overlap.query_id, score_overlap=overlap.score_overlap, score_bm25=bm25.score_bm25
-        )
+    def score_documents(self, overlap: DocumentOverlapScore, bm25: DocumentBm25Score) -> DocumentScore:
+        inner_join(on=(bm25.document_id == overlap.document_id) & (bm25.query_id == overlap.query_id))
+        return DocumentScore.base(overlap)(experiment_id="", score=bm25.score_bm25)
 
     @step(
-        input=[sections, lane(ScoreAll.section_overlap_scores), lane(ScoreAll.section_bm25_scores)],
-        output=scored_sections,
+        input=[lane(ScoreAll.section_overlap_scores), lane(ScoreAll.section_bm25_scores)],
+        output=section_scores,
     )
-    def score_sections(self, section: Section, overlap: SectionOverlapScore, bm25: SectionBm25Score) -> Section:
-        inner_join(on=overlap.section_id == section.id)
-        inner_join(on=(bm25.section_id == section.id) & (bm25.query_id == overlap.query_id))
-        return Section.project(section)(
-            search_query_id=overlap.query_id, score_overlap=overlap.score_overlap, score_bm25=bm25.score_bm25
-        )
+    def score_sections(self, overlap: SectionOverlapScore, bm25: SectionBm25Score) -> SectionScore:
+        inner_join(on=(bm25.section_id == overlap.section_id) & (bm25.query_id == overlap.query_id))
+        return SectionScore.base(overlap)(experiment_id="", score=bm25.score_bm25)
 
     @step(
-        input=[paragraphs, lane(ScoreAll.paragraph_overlap_scores), lane(ScoreAll.paragraph_bm25_scores)],
-        output=scored_paragraphs,
+        input=[lane(ScoreAll.paragraph_overlap_scores), lane(ScoreAll.paragraph_bm25_scores)],
+        output=paragraph_scores,
     )
-    def score_paragraphs(
-        self, paragraph: Paragraph, overlap: ParagraphOverlapScore, bm25: ParagraphBm25Score
-    ) -> Paragraph:
-        inner_join(on=overlap.paragraph_id == paragraph.id)
-        inner_join(on=(bm25.paragraph_id == paragraph.id) & (bm25.query_id == overlap.query_id))
-        return Paragraph.project(paragraph)(
-            search_query_id=overlap.query_id, score_overlap=overlap.score_overlap, score_bm25=bm25.score_bm25
-        )
+    def score_paragraphs(self, overlap: ParagraphOverlapScore, bm25: ParagraphBm25Score) -> ParagraphScore:
+        inner_join(on=(bm25.paragraph_id == overlap.paragraph_id) & (bm25.query_id == overlap.query_id))
+        return ParagraphScore.base(overlap)(experiment_id="", score=overlap.score_overlap)
 
     @step(
-        input=[sentences, lane(ScoreAll.sentence_overlap_scores), lane(ScoreAll.sentence_bm25_scores)],
-        output=scored_sentences,
+        input=[lane(ScoreAll.sentence_overlap_scores), lane(ScoreAll.sentence_bm25_scores)],
+        output=sentence_scores,
     )
-    def score_sentences(self, sentence: Sentence, overlap: SentenceOverlapScore, bm25: SentenceBm25Score) -> Sentence:
-        inner_join(on=overlap.sentence_id == sentence.id)
-        inner_join(on=(bm25.sentence_id == sentence.id) & (bm25.query_id == overlap.query_id))
-        return Sentence.project(sentence)(
-            search_query_id=overlap.query_id, score_overlap=overlap.score_overlap, score_bm25=bm25.score_bm25
-        )
+    def score_sentences(self, overlap: SentenceOverlapScore, bm25: SentenceBm25Score) -> SentenceScore:
+        inner_join(on=(bm25.sentence_id == overlap.sentence_id) & (bm25.query_id == overlap.query_id))
+        return SentenceScore.base(overlap)(experiment_id="", score=overlap.score_overlap)

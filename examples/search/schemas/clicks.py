@@ -8,8 +8,10 @@ class SearchRequest(Schema):
     """One user search attempt, including attempts with no displayed results."""
 
     id = string(nullable=False)
+    query_id = string(nullable=False)
     requested_at = timestamp(nullable=False)
     query = string(nullable=False)
+    experiment_id = string(nullable=False)
     ranking_version = string(nullable=False)
 
 

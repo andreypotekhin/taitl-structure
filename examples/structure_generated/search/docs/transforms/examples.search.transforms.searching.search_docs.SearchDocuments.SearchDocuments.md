@@ -7,7 +7,8 @@ Source: `examples.search.transforms.searching.search_docs.SearchDocuments.Search
 ## Inputs
 
 - `queries`: `SearchQuery`
-- `scored_documents`: `Document`
+- `documents`: `Document`
+- `document_scores`: `DocumentScore`
 - `query_document_signals`: `QueryDocumentSignals`
 - `document_popularity`: `DocumentPopularity`
 - `policy`: `RelevancePolicy`
@@ -21,18 +22,20 @@ Source: `examples.search.transforms.searching.search_docs.SearchDocuments.Search
 
 - `select_candidates`: `Document` -> `DocumentSearchCandidate`
 - `score_candidates`: `DocumentSearchCandidate` -> `DocumentSearchCandidate`
-- `normalize_bm25`: `DocumentSearchCandidate` -> `DocumentSearchCandidate`
+- `normalize_score`: `DocumentSearchCandidate` -> `DocumentSearchCandidate`
 - `rank_results`: `DocumentSearchCandidate` -> `DocumentSearchResult`
 
 ## Dependencies
 
 - `document_popularity`
+- `document_scores`
 - `policy`
 - `popularity`
 - `queries`
 - `query`
 - `query_document_signals`
 - `query_signal`
+- `score`
 
 ## Target Artifacts
 

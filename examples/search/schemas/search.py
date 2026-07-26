@@ -7,26 +7,30 @@ class SearchQuery(Schema):
 
     id = string(nullable=False)
     content = string(nullable=False)
+    labels = map(string(), long(), value_contains_null=False, nullable=False)
+    is_question = boolean(nullable=False)
+    is_time_sensitive = boolean(nullable=False)
 
 
 class SentenceSearchResult(Schema):
     """One ranked sentence match for a caller-supplied query."""
 
     search_query_id = string(nullable=False)
+    experiment_id = string(nullable=False)
     rank = long(nullable=False)
     document_id = string(nullable=False)
     section_id = string(nullable=False)
     paragraph_id = string(nullable=False)
     sentence_id = string(nullable=False)
     content = string(nullable=False)
-    score_overlap = double(nullable=False)
-    score_bm25 = double(nullable=False)
+    score = double(nullable=False)
 
 
 class PassageSearchResult(Schema):
     """One ranked paragraph match with same-section answer context."""
 
     search_query_id = string(nullable=False)
+    experiment_id = string(nullable=False)
     rank = long(nullable=False)
     document_id = string(nullable=False)
     title = string(nullable=False)
@@ -37,8 +41,7 @@ class PassageSearchResult(Schema):
     preceding_content = string(nullable=True)
     content = string(nullable=False)
     following_content = string(nullable=True)
-    score_overlap = double(nullable=False)
-    score_bm25 = double(nullable=False)
+    score = double(nullable=False)
 
 
 class ParagraphContext(Schema):
@@ -56,12 +59,13 @@ class DocumentSearchResult(Schema):
     """One two-stage ranked document result."""
 
     search_query_id = string(nullable=False)
+    experiment_id = string(nullable=False)
     rank = long(nullable=False)
     candidate_rank = long(nullable=False)
     document_id = string(nullable=False)
     title = string(nullable=False)
     url = string(nullable=True)
-    score_bm25 = double(nullable=False)
+    score = double(nullable=False)
     score_feedback = double(nullable=False)
     score_rank = double(nullable=False)
 
@@ -70,15 +74,16 @@ class DocumentSearchCandidate(Schema):
     """One document candidate while two-stage search ranks it."""
 
     search_query_id = string(nullable=False)
+    experiment_id = string(nullable=False)
     query = string(nullable=False)
     candidate_rank = long(nullable=False)
     document_id = string(nullable=False)
     title = string(nullable=False)
     url = string(nullable=True)
-    score_bm25 = double(nullable=False)
+    score = double(nullable=False)
     score_feedback = double(nullable=False)
     score_rank = double(nullable=False)
-    bm25_weight = double(nullable=False)
+    score_weight = double(nullable=False)
     feedback_weight = double(nullable=False)
 
 
@@ -194,3 +199,31 @@ class ParagraphBm25Score(ParagraphSearchTarget):
 
 class SentenceBm25Score(SentenceSearchTarget):
     score_bm25 = double(nullable=False)
+
+
+class DocumentScore(DocumentSearchTarget):
+    """One experiment-scoped unified document score."""
+
+    experiment_id = string(nullable=False)
+    score = double(nullable=False)
+
+
+class SectionScore(SectionSearchTarget):
+    """One experiment-scoped unified section score."""
+
+    experiment_id = string(nullable=False)
+    score = double(nullable=False)
+
+
+class ParagraphScore(ParagraphSearchTarget):
+    """One experiment-scoped unified paragraph score."""
+
+    experiment_id = string(nullable=False)
+    score = double(nullable=False)
+
+
+class SentenceScore(SentenceSearchTarget):
+    """One experiment-scoped unified sentence score."""
+
+    experiment_id = string(nullable=False)
+    score = double(nullable=False)

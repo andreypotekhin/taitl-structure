@@ -8,6 +8,18 @@
       "type": "TimeWindow"
     },
     {
+      "column": "params",
+      "name": "params",
+      "nullable": true,
+      "type": "EvaluationParams"
+    },
+    {
+      "column": "experiment_id",
+      "name": "experiment_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
       "column": "search_query_id",
       "name": "search_query_id",
       "nullable": false,

@@ -71,7 +71,7 @@ def test_similarity_public_transform_inherits_its_searching_implementation() -> 
 def test_behavior_evaluator_inherits_ordered_partial_stages() -> None:
     """The public evaluator publishes its inherited request-to-daily behavior pipeline."""
 
-    from examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior import (
+    from examples.search.transforms.evaluation.search_docs.behavior.eval_doc_search_behavior import (
         EvaluateDocumentSearchBehavior,
         MeasureDocumentSearchImpressions,
         MeasureDocumentSearchRequests,

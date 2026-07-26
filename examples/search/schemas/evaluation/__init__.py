@@ -22,6 +22,7 @@ from examples.search.schemas.evaluation.judged_quality import (
     EvaluationResult,
     EvaluationResultTotals,
 )
+from examples.search.schemas.evaluation.params import EvaluationParams
 
 __all__ = [
     "BehaviorDailyCounts",
@@ -39,6 +40,7 @@ __all__ = [
     "EvaluationIdealDcg",
     "EvaluationJudgment",
     "EvaluationJudgmentTotals",
+    "EvaluationParams",
     "EvaluationQuery",
     "EvaluationResult",
     "EvaluationResultTotals",

@@ -1,0 +1,34 @@
+{
+  "bases": [
+    "DocumentSearchTarget"
+  ],
+  "fields": [
+    {
+      "column": "query_id",
+      "name": "query_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "document_id",
+      "name": "document_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "experiment_id",
+      "name": "experiment_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "score",
+      "name": "score",
+      "nullable": false,
+      "type": "double"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.search.schemas.search",
+  "name": "DocumentScore"
+}

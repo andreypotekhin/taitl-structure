@@ -40,6 +40,8 @@ class EvaluateDocumentRankingQualityGenerated:
         evaluated_queries = evaluated_queries.crossJoin(batch_joined)
         evaluated_queries = evaluated_queries.select(
             F.col("batch.window"),
+            F.lit(None).alias("params"),
+            F.lit('').alias("experiment_id"),
             F.col("search_query.id").alias("search_query_id"),
         )
         assert_schema(evaluated_queries, EVALUATION_QUERY_SCHEMA, name="EvaluationQuery", mode="strict")
@@ -52,6 +54,7 @@ class EvaluateDocumentRankingQualityGenerated:
             (F.col("results.search_query_id") == F.col("evaluation_query.search_query_id")),
             "left",
         )
+        evaluated_results = evaluated_results.where(((F.col("results.experiment_id") == F.lit(''))))
         judgments_2_joined = judgments.alias("judgments_2")
         evaluated_results = evaluated_results.join(
             judgments_2_joined,
@@ -60,6 +63,8 @@ class EvaluateDocumentRankingQualityGenerated:
         )
         evaluated_results = evaluated_results.select(
             F.col("evaluation_query.window"),
+            F.col("evaluation_query.params"),
+            F.col("evaluation_query.experiment_id"),
             F.col("evaluation_query.search_query_id"),
             F.col("results.document_id"),
             F.col("results.rank"),
@@ -77,6 +82,8 @@ class EvaluateDocumentRankingQualityGenerated:
         )
         ranked_judgments = ranked_judgments.select(
             F.col("evaluation_query.window"),
+            F.col("evaluation_query.params"),
+            F.col("evaluation_query.experiment_id"),
             F.col("evaluation_query.search_query_id"),
             F.col("judgments.relevance_grade"),
             F.row_number().over(Window.partitionBy(F.col("evaluation_query.search_query_id")).orderBy(F.col("judgments.relevance_grade").desc())).cast(T.LongType()).alias("ideal_rank"),
@@ -87,11 +94,15 @@ class EvaluateDocumentRankingQualityGenerated:
         judgment_totals = ranked_judgments.alias("evaluation_judgment")
         judgment_totals = judgment_totals.groupBy(
             F.col("evaluation_judgment.window").alias("window"),
+            F.col("evaluation_judgment.params").alias("params"),
+            F.col("evaluation_judgment.experiment_id").alias("experiment_id"),
             F.col("evaluation_judgment.search_query_id").alias("search_query_id"),
         ).agg(
             F.sum(F.when((F.col("evaluation_judgment.relevance_grade") >= F.lit(2)), F.lit(1)).otherwise(F.lit(0))).cast(T.LongType()).alias("binary_relevant_judgment_count"),
         ).select(
             F.col("window"),
+            F.col("params"),
+            F.col("experiment_id"),
             F.col("search_query_id"),
             F.col("binary_relevant_judgment_count"),
         )
@@ -101,6 +112,8 @@ class EvaluateDocumentRankingQualityGenerated:
         ideal_dcgs = ranked_judgments.alias("evaluation_judgment")
         ideal_dcgs = ideal_dcgs.groupBy(
             F.col("evaluation_judgment.window").alias("window"),
+            F.col("evaluation_judgment.params").alias("params"),
+            F.col("evaluation_judgment.experiment_id").alias("experiment_id"),
             F.col("evaluation_judgment.search_query_id").alias("search_query_id"),
         ).agg(
             F.sum(F.when((F.col("evaluation_judgment.ideal_rank") <= F.lit(5)), ((F.pow(F.lit(2.0), F.col("evaluation_judgment.relevance_grade")) - F.lit(1.0)) / F.log(2, (F.col("evaluation_judgment.ideal_rank") + F.lit(1.0))))).otherwise(F.lit(0.0))).cast(T.DoubleType()).alias("ideal_dcg_at_5"),
@@ -108,6 +121,8 @@ class EvaluateDocumentRankingQualityGenerated:
             F.sum(F.when((F.col("evaluation_judgment.ideal_rank") <= F.lit(15)), ((F.pow(F.lit(2.0), F.col("evaluation_judgment.relevance_grade")) - F.lit(1.0)) / F.log(2, (F.col("evaluation_judgment.ideal_rank") + F.lit(1.0))))).otherwise(F.lit(0.0))).cast(T.DoubleType()).alias("ideal_dcg_at_15"),
         ).select(
             F.col("window"),
+            F.col("params"),
+            F.col("experiment_id"),
             F.col("search_query_id"),
             F.col("ideal_dcg_at_5"),
             F.col("ideal_dcg_at_10"),
@@ -119,6 +134,8 @@ class EvaluateDocumentRankingQualityGenerated:
         result_totals = evaluated_results.alias("evaluation_result")
         result_totals = result_totals.groupBy(
             F.col("evaluation_result.window").alias("window"),
+            F.col("evaluation_result.params").alias("params"),
+            F.col("evaluation_result.experiment_id").alias("experiment_id"),
             F.col("evaluation_result.search_query_id").alias("search_query_id"),
         ).agg(
             F.sum(F.when(F.col("evaluation_result.document_id").isNotNull(), F.lit(1)).otherwise(F.lit(0))).cast(T.LongType()).alias("returned_result_count"),
@@ -136,6 +153,8 @@ class EvaluateDocumentRankingQualityGenerated:
             F.sum(F.when((F.col("evaluation_result.rank") <= F.lit(15)), ((F.pow(F.lit(2.0), F.coalesce(F.col("evaluation_result.relevance_grade"), F.lit(0))) - F.lit(1.0)) / F.log(2, (F.col("evaluation_result.rank") + F.lit(1.0))))).otherwise(F.lit(0.0))).cast(T.DoubleType()).alias("dcg_at_15"),
         ).select(
             F.col("window"),
+            F.col("params"),
+            F.col("experiment_id"),
             F.col("search_query_id"),
             F.col("returned_result_count"),
             F.col("judged_result_count"),
@@ -158,23 +177,25 @@ class EvaluateDocumentRankingQualityGenerated:
         result_totals_joined = result_totals.alias("result_totals")
         metrics = metrics.join(
             result_totals_joined,
-            (F.col("result_totals.search_query_id") == F.col("evaluation_query.search_query_id")),
+            ((F.col("result_totals.search_query_id") == F.col("evaluation_query.search_query_id")) & (F.col("result_totals.experiment_id") == F.col("evaluation_query.experiment_id"))),
             "left",
         )
         judgment_totals_2_joined = judgment_totals.alias("judgment_totals_2")
         metrics = metrics.join(
             judgment_totals_2_joined,
-            (F.col("judgment_totals_2.search_query_id") == F.col("evaluation_query.search_query_id")),
+            ((F.col("judgment_totals_2.search_query_id") == F.col("evaluation_query.search_query_id")) & (F.col("judgment_totals_2.experiment_id") == F.col("evaluation_query.experiment_id"))),
             "left",
         )
         ideal_dcgs_3_joined = ideal_dcgs.alias("ideal_dcgs_3")
         metrics = metrics.join(
             ideal_dcgs_3_joined,
-            (F.col("ideal_dcgs_3.search_query_id") == F.col("evaluation_query.search_query_id")),
+            ((F.col("ideal_dcgs_3.search_query_id") == F.col("evaluation_query.search_query_id")) & (F.col("ideal_dcgs_3.experiment_id") == F.col("evaluation_query.experiment_id"))),
             "left",
         )
         metrics = metrics.select(
             F.col("evaluation_query.window"),
+            F.col("evaluation_query.params"),
+            F.col("evaluation_query.experiment_id"),
             F.col("evaluation_query.search_query_id"),
             F.coalesce(F.col("result_totals.returned_result_count"), F.lit(0)).alias("returned_result_count"),
             F.coalesce(F.col("result_totals.judged_result_count"), F.lit(0)).alias("judged_result_count"),
@@ -203,6 +224,8 @@ class EvaluateDocumentRankingQualityGenerated:
         query_evaluations = metrics.alias("document_query_evaluation")
         query_evaluations = query_evaluations.select(
             F.col("document_query_evaluation.window"),
+            F.col("document_query_evaluation.params"),
+            F.col("document_query_evaluation.experiment_id"),
             F.col("document_query_evaluation.search_query_id"),
             F.col("document_query_evaluation.returned_result_count"),
             F.col("document_query_evaluation.judged_result_count"),
@@ -231,6 +254,8 @@ class EvaluateDocumentRankingQualityGenerated:
         summary = metrics.alias("document_query_evaluation")
         summary = summary.groupBy(
             F.col("document_query_evaluation.window").alias("window"),
+            F.col("document_query_evaluation.params").alias("params"),
+            F.col("document_query_evaluation.experiment_id").alias("experiment_id"),
         ).agg(
             F.count(F.lit(1)).cast(T.LongType()).alias("query_count"),
             F.sum(F.when((F.col("document_query_evaluation.binary_relevant_judgment_count") > F.lit(0)), F.lit(1)).otherwise(F.lit(0))).cast(T.LongType()).alias("binary_relevant_query_count"),
@@ -254,6 +279,8 @@ class EvaluateDocumentRankingQualityGenerated:
             F.avg(F.col("document_query_evaluation.reciprocal_rank")).cast(T.DoubleType()).alias("mean_reciprocal_rank"),
         ).select(
             F.col("window"),
+            F.col("params"),
+            F.col("experiment_id"),
             F.col("query_count"),
             F.col("binary_relevant_query_count"),
             F.col("no_binary_relevant_query_count"),

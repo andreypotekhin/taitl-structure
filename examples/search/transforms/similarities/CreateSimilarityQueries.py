@@ -1,6 +1,7 @@
 """Create tagged self-queries from reusable text indexes."""
 
 from examples.search.algorithms.similarity.SimilarityQueries import SimilarityQueries
+from examples.search.schemas.label import LabelMapEntry
 from examples.search.schemas.search import (
     DocumentIndexSummary,
     DocumentIndexTerm,
@@ -20,6 +21,7 @@ from examples.search.schemas.similarity import (
     SimilarityPolicy,
 )
 from structure import Transform, input, output, raw, step
+from structure.plugin.pyspark import array, map_from_entries
 
 
 class CreateSimilarityQueries(Transform):
@@ -50,7 +52,18 @@ class CreateSimilarityQueries(Transform):
         SearchQuery, DocumentSimilarityQuery, SectionSimilarityQuery, ParagraphSimilarityQuery, SentenceSimilarityQuery
     ]:
         return (
-            SearchQuery(id="", content=""),
+            SearchQuery(
+                id="",
+                content="",
+                labels=map_from_entries(
+                    array(
+                        LabelMapEntry(key="is_question", value=0),
+                        LabelMapEntry(key="is_time_sensitive", value=0),
+                    )
+                ),
+                is_question=False,
+                is_time_sensitive=False,
+            ),
             DocumentSimilarityQuery(query_id="", document_id=term.document_id),
             SectionSimilarityQuery(query_id="", document_id=term.document_id, section_id=""),
             ParagraphSimilarityQuery(query_id="", document_id=term.document_id, section_id="", paragraph_id=""),

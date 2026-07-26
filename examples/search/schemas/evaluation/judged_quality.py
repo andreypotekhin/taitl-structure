@@ -1,6 +1,7 @@
 """Judged document-ranking quality contracts."""
 
 from examples.search.schemas.evaluation.batch import EvaluationBatch
+from examples.search.schemas.evaluation.params import EvaluationParams
 from structure import Schema
 from structure.plugin.pyspark import *
 
@@ -17,6 +18,8 @@ class DocumentQueryEvaluation(Schema):
     """Offline retrieval metrics for one query in one daily batch."""
 
     window = struct(TimeWindow, nullable=False)
+    params = struct(EvaluationParams, nullable=True)
+    experiment_id = string(nullable=False)
     search_query_id = string(nullable=False)
     returned_result_count = long(nullable=False)
     judged_result_count = long(nullable=False)
@@ -44,6 +47,8 @@ class DocumentEvaluationSummary(Schema):
     """Daily means and coverage for one judged document ranking run."""
 
     window = struct(TimeWindow, nullable=False)
+    params = struct(EvaluationParams, nullable=True)
+    experiment_id = string(nullable=False)
     query_count = long(nullable=False)
     binary_relevant_query_count = long(nullable=False)
     no_binary_relevant_query_count = long(nullable=False)
@@ -68,6 +73,8 @@ class DocumentEvaluationSummary(Schema):
 
 class EvaluationQuery(Schema):
     window = struct(TimeWindow, nullable=False)
+    params = struct(EvaluationParams, nullable=True)
+    experiment_id = string(nullable=False)
     search_query_id = string(nullable=False)
 
 

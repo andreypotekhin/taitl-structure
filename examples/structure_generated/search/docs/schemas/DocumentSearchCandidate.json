@@ -8,6 +8,12 @@
       "type": "string"
     },
     {
+      "column": "experiment_id",
+      "name": "experiment_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
       "column": "query",
       "name": "query",
       "nullable": false,
@@ -38,8 +44,8 @@
       "type": "string"
     },
     {
-      "column": "score_bm25",
-      "name": "score_bm25",
+      "column": "score",
+      "name": "score",
       "nullable": false,
       "type": "double"
     },
@@ -56,8 +62,8 @@
       "type": "double"
     },
     {
-      "column": "bm25_weight",
-      "name": "bm25_weight",
+      "column": "score_weight",
+      "name": "score_weight",
       "nullable": false,
       "type": "double"
     },

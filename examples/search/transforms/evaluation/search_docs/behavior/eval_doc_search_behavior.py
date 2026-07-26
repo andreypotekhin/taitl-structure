@@ -42,6 +42,8 @@ class SelectDocumentSearchRequests(Transform):
         where((request.requested_at >= batch.window.start) & (request.requested_at < batch.window.end))
         return BehaviorRequest(
             window=batch.window,
+            params=None,
+            experiment_id=request.experiment_id,
             search_request_id=request.id,
             ranking_version=request.ranking_version,
             query=request.query,
@@ -76,6 +78,8 @@ class MeasureDocumentSearchImpressions(SelectDocumentSearchRequests):
         dwell = when(click.dwell_seconds > 0.0, click.dwell_seconds).otherwise(0.0)
         group_by(
             window=impression.window,
+            params=impression.params,
+            experiment_id=impression.experiment_id,
             search_request_id=impression.search_request_id,
             ranking_version=impression.ranking_version,
             query=impression.query,
@@ -116,6 +120,8 @@ class MeasureDocumentSearchRequests(MeasureDocumentSearchImpressions):
         left_join(on=measured.search_request_id == selected.search_request_id)
         group_by(
             window=selected.window,
+            params=selected.params,
+            experiment_id=selected.experiment_id,
             search_request_id=selected.search_request_id,
             ranking_version=selected.ranking_version,
             query=selected.query,
@@ -160,10 +166,17 @@ class SummarizeDocumentSearchBehavior(MeasureDocumentSearchRequests):
 
     @step(input=lane(MeasureDocumentSearchImpressions.measured), output=exposure)
     def summarize_exposure(self, measured: BehaviorImpression) -> BehaviorExposure:
-        group_by(window=measured.window, ranking_version=measured.ranking_version)
+        group_by(
+            window=measured.window,
+            params=measured.params,
+            experiment_id=measured.experiment_id,
+            ranking_version=measured.ranking_version,
+        )
         weight = 1.0 / measured.examination_propensity
         return BehaviorExposure(
             window=measured.window,
+            params=measured.params,
+            experiment_id=measured.experiment_id,
             ranking_version=measured.ranking_version,
             ips_impression_weight=sum(weight),
             ips_long_click_weight=sum(when(measured.long_click_count > 0, weight).otherwise(0.0)),
@@ -172,7 +185,12 @@ class SummarizeDocumentSearchBehavior(MeasureDocumentSearchRequests):
 
     @step(input=MeasureDocumentSearchRequests.request_metrics, output=daily_counts)
     def summarize_requests(self, request: BehaviorRequestMetrics) -> BehaviorDailyCounts:
-        group_by(window=request.window, ranking_version=request.ranking_version)
+        group_by(
+            window=request.window,
+            params=request.params,
+            experiment_id=request.experiment_id,
+            ranking_version=request.ranking_version,
+        )
         return BehaviorDailyCounts.base(request)(
             request_count=sum(1),
             zero_result_request_count=sum(when(request.result_count == 0, 1).otherwise(0)),
@@ -191,7 +209,12 @@ class SummarizeDocumentSearchBehavior(MeasureDocumentSearchRequests):
 
     @step(input=[daily_counts, exposure], output=summarized_daily)
     def publish_daily(self, daily: BehaviorDailyCounts, exposure: BehaviorExposure) -> DailyDocumentSearchBehavior:
-        left_join(on=(exposure.window == daily.window) & (exposure.ranking_version == daily.ranking_version))
+        left_join(
+            on=(exposure.window == daily.window)
+            & exposure.params.null_safe_eq(daily.params)
+            & (exposure.experiment_id == daily.experiment_id)
+            & (exposure.ranking_version == daily.ranking_version)
+        )
         return DailyDocumentSearchBehavior.project(daily)(
             ips_long_click_rate=when(
                 exposure.ips_impression_weight > 0.0,

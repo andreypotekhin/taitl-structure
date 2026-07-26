@@ -403,9 +403,18 @@ def render_search_example() -> dict[str, str]:
             EvaluationIdealDcg,
             EvaluationJudgment,
             EvaluationJudgmentTotals,
+            EvaluationParams,
             EvaluationQuery,
             EvaluationResult,
             EvaluationResultTotals,
+        )
+        from examples.search.schemas.experiment import Experiment
+        from examples.search.schemas.label import (
+            Label,
+            LabelMapEntry,
+            QueryLabel,
+            QueryLabelAssignmentEntries,
+            QueryLabelAssignments,
         )
         from examples.search.schemas.relevance import DocumentPopularity, QueryDocumentSignals, RelevancePolicy
         from examples.search.schemas.search import (
@@ -414,6 +423,7 @@ def render_search_example() -> dict[str, str]:
             DocumentIndexTarget,
             DocumentIndexTerm,
             DocumentOverlapScore,
+            DocumentScore,
             DocumentSearchCandidate,
             DocumentSearchResult,
             DocumentSearchTarget,
@@ -422,6 +432,7 @@ def render_search_example() -> dict[str, str]:
             ParagraphIndexTarget,
             ParagraphIndexTerm,
             ParagraphOverlapScore,
+            ParagraphScore,
             ParagraphSearchTarget,
             SearchQuery,
             SectionBm25Score,
@@ -429,12 +440,14 @@ def render_search_example() -> dict[str, str]:
             SectionIndexTarget,
             SectionIndexTerm,
             SectionOverlapScore,
+            SectionScore,
             SectionSearchTarget,
             SentenceBm25Score,
             SentenceIndexSummary,
             SentenceIndexTarget,
             SentenceIndexTerm,
             SentenceOverlapScore,
+            SentenceScore,
             SentenceSearchResult,
             SentenceSearchTarget,
         )
@@ -462,11 +475,24 @@ def render_search_example() -> dict[str, str]:
         from examples.search.transforms.clicks.Clicks import Clicks
         from examples.search.transforms.clicks.Impressions import Impressions
         from examples.search.transforms.corpus import CorpusText
-        from examples.search.transforms.evaluate import EvaluateDocumentRankingQuality, EvaluateDocumentSearchBehavior
+        from examples.search.transforms.evaluate import (
+            EvaluateDocumentRankingQuality,
+            EvaluateDocumentSearchBehavior,
+            EvaluateLabeledDocumentRankingQuality,
+            EvaluateLabeledDocumentSearchBehavior,
+        )
+        from examples.search.transforms.experiment import (
+            EvaluateDocumentRankingQuality as EvaluateExperimentDocumentRankingQuality,
+        )
+        from examples.search.transforms.experiment import (
+            EvaluateDocumentSearchBehavior as EvaluateExperimentDocumentSearchBehavior,
+        )
+        from examples.search.transforms.experiment import SelectExperimentScores
         from examples.search.transforms.extract import ExtractText
         from examples.search.transforms.index import CreateIndex
+        from examples.search.transforms.labeling import MergeQueryLabels
         from examples.search.transforms.profile import ProfileDocuments
-        from examples.search.transforms.relevance.Signals import BuildRelevanceSignals
+        from examples.search.transforms.relevance.BuildRelevanceSignals import BuildRelevanceSignals
         from examples.search.transforms.score import AddScores
         from examples.search.transforms.scoring.ScoreAll import ScoreAll
         from examples.search.transforms.search import SearchDocuments, SearchSentences
@@ -517,6 +543,10 @@ def render_search_example() -> dict[str, str]:
                 SectionBm25Score,
                 ParagraphBm25Score,
                 SentenceBm25Score,
+                DocumentScore,
+                SectionScore,
+                ParagraphScore,
+                SentenceScore,
                 DocumentSearchCandidate,
                 DocumentSearchResult,
             ],
@@ -527,8 +557,17 @@ def render_search_example() -> dict[str, str]:
                 DailyImpressions,
                 DailyClicks,
             ],
+            "examples.search.schemas.experiment": [Experiment],
             "structure.plugin.pyspark.dsl.TimeWindow": [TimeWindow],
             "examples.search.schemas.evaluation.batch": [EvaluationBatch],
+            "examples.search.schemas.evaluation.params": [EvaluationParams],
+            "examples.search.schemas.label": [
+                Label,
+                QueryLabel,
+                LabelMapEntry,
+                QueryLabelAssignmentEntries,
+                QueryLabelAssignments,
+            ],
             "examples.search.schemas.evaluation.judged_quality": [
                 DocumentRelevanceJudgment,
                 DocumentQueryEvaluation,
@@ -595,11 +634,21 @@ def render_search_example() -> dict[str, str]:
             (SimilarParagraphs, "examples.search.transforms.similarities.SimilarParagraphs.SimilarParagraphs"),
             (SimilarSentences, "examples.search.transforms.similarities.SimilarSentences.SimilarSentences"),
             (AddScores, "examples.search.transforms.score.AddScores"),
+            (MergeQueryLabels, "examples.search.transforms.labeling.merge_query_labels.MergeQueryLabels"),
+            (SelectExperimentScores, "examples.search.transforms.experiments.select_experiment_scores.SelectExperimentScores"),
             (SearchSentences, "examples.search.transforms.search.SearchSentences"),
             (Impressions, "examples.search.transforms.clicks.Impressions.Impressions"),
             (Clicks, "examples.search.transforms.clicks.Clicks.Clicks"),
-            (BuildRelevanceSignals, "examples.search.transforms.relevance.Signals.BuildRelevanceSignals"),
+            (BuildRelevanceSignals, "examples.search.transforms.relevance.BuildRelevanceSignals"),
             (SearchDocuments, "examples.search.transforms.search.SearchDocuments"),
+            (
+                EvaluateExperimentDocumentRankingQuality,
+                "examples.search.transforms.experiments.search_docs.judged_quality.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
+            ),
+            (
+                EvaluateExperimentDocumentSearchBehavior,
+                "examples.search.transforms.experiments.search_docs.behavior.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
+            ),
             (
                 EvaluateDocumentRankingQuality,
                 "examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality",
@@ -607,6 +656,14 @@ def render_search_example() -> dict[str, str]:
             (
                 EvaluateDocumentSearchBehavior,
                 "examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior",
+            ),
+            (
+                EvaluateLabeledDocumentRankingQuality,
+                "examples.search.transforms.evaluation.with_labels.search_docs.judged_quality.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
+            ),
+            (
+                EvaluateLabeledDocumentSearchBehavior,
+                "examples.search.transforms.evaluation.with_labels.search_docs.behavior.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
             ),
         )
         files = {}
@@ -637,6 +694,9 @@ def render_search_example() -> dict[str, str]:
                     EvaluationIdealDcg,
                     EvaluationJudgment,
                     EvaluationJudgmentTotals,
+                    LabelMapEntry,
+                    QueryLabelAssignmentEntries,
+                    QueryLabelAssignments,
                     EvaluationQuery,
                     EvaluationResult,
                     EvaluationResultTotals,

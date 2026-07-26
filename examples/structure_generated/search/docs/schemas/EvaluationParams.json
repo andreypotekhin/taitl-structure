@@ -1,0 +1,14 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "labels",
+      "name": "labels",
+      "nullable": false,
+      "type": "array<Label!>"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.search.schemas.evaluation.params",
+  "name": "EvaluationParams"
+}

@@ -40,6 +40,18 @@ def literal(value: object) -> Expression:
     if isinstance(value, WhenBuilder):
         raise TypeError("when(...) must end with .otherwise(...) before it can be used as an expression")
 
+    if hasattr(value, "_structure_fields") and hasattr(value, "_structure_values"):
+        schema = value.__class__
+        fields = tuple(schema._structure_fields.values())
+        values = value._structure_values
+        return Expression(
+            kind="struct",
+            type=StructType(schema),
+            nullable=False,
+            data={"fields": fields},
+            args=tuple(literal(values[field.name]) for field in fields),
+        )
+
     if isinstance(value, bool):
         return Expression(kind="literal", type=BooleanType(), nullable=False, data={"value": value})
 

@@ -2,7 +2,7 @@
 
 # EvaluateDocumentSearchBehavior
 
-Source: `examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior`
+Source: `examples.search.transforms.evaluation.search_docs.behavior.eval_doc_search_behavior.EvaluateDocumentSearchBehavior`
 
 ## Inputs
 
@@ -48,5 +48,5 @@ Source: `examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocu
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/EvaluateDocumentSearchBehavior.py`
-- `traceability`: `traceability/transforms/EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.json`
+- `pyspark_transform`: `pyspark/transforms/eval_doc_search_behavior.py`
+- `traceability`: `traceability/transforms/eval_doc_search_behavior.EvaluateDocumentSearchBehavior.json`

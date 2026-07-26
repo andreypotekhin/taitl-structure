@@ -35,7 +35,7 @@
       "schema": "DocumentPopularity"
     }
   ],
-  "source": "examples.search.transforms.relevance.Signals.BuildRelevanceSignals",
+  "source": "examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals",
   "step_methods": [
     {
       "input_lane": "daily_impressions",
@@ -195,7 +195,7 @@
     }
   ],
   "target_artifacts": {
-    "pyspark_transform": "pyspark/transforms/Signals.py",
-    "traceability": "traceability/transforms/Signals.BuildRelevanceSignals.json"
+    "pyspark_transform": "pyspark/transforms/BuildRelevanceSignals.py",
+    "traceability": "traceability/transforms/BuildRelevanceSignals.BuildRelevanceSignals.json"
   }
 }

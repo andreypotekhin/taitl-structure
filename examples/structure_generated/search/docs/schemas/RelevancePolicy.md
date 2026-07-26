@@ -8,7 +8,7 @@ Module: `examples.search.schemas.relevance`
 | --- | --- | --- | --- |
 | `evaluated_at` | `evaluated_at` | `timestamp` | no |
 | `half_life_days` | `half_life_days` | `double` | no |
-| `bm25_weight` | `bm25_weight` | `double` | no |
+| `score_weight` | `score_weight` | `double` | no |
 | `feedback_weight` | `feedback_weight` | `double` | no |
 | `dwell_feedback_weight` | `dwell_feedback_weight` | `double` | no |
 | `ctr_feedback_weight` | `ctr_feedback_weight` | `double` | no |

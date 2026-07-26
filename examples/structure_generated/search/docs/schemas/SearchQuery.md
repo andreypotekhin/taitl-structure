@@ -8,3 +8,6 @@ Module: `examples.search.schemas.search`
 | --- | --- | --- | --- |
 | `id` | `id` | `string` | no |
 | `content` | `content` | `string` | no |
+| `labels` | `labels` | `map<string,long!>` | no |
+| `is_question` | `is_question` | `boolean` | no |
+| `is_time_sensitive` | `is_time_sensitive` | `boolean` | no |

@@ -2,14 +2,9 @@
   "dependencies": [
     "bm25",
     "document_bm25_scores",
-    "document_overlap_scores",
-    "overlap",
     "paragraph_bm25_scores",
-    "paragraph_overlap_scores",
     "section_bm25_scores",
-    "section_overlap_scores",
-    "sentence_bm25_scores",
-    "sentence_overlap_scores"
+    "sentence_bm25_scores"
   ],
   "generated_by": "Structure",
   "inputs": [
@@ -57,26 +52,6 @@
       "name": "sentence_summary",
       "ordinal": 8,
       "schema": "SentenceIndexSummary"
-    },
-    {
-      "name": "documents",
-      "ordinal": 9,
-      "schema": "Document"
-    },
-    {
-      "name": "sections",
-      "ordinal": 10,
-      "schema": "Section"
-    },
-    {
-      "name": "paragraphs",
-      "ordinal": 11,
-      "schema": "Paragraph"
-    },
-    {
-      "name": "sentences",
-      "ordinal": 12,
-      "schema": "Sentence"
     }
   ],
   "name": "AddScores",
@@ -122,24 +97,24 @@
       "schema": "SentenceBm25Score"
     },
     {
-      "name": "scored_documents",
+      "name": "document_scores",
       "ordinal": 8,
-      "schema": "Document"
+      "schema": "DocumentScore"
     },
     {
-      "name": "scored_sections",
+      "name": "section_scores",
       "ordinal": 9,
-      "schema": "Section"
+      "schema": "SectionScore"
     },
     {
-      "name": "scored_paragraphs",
+      "name": "paragraph_scores",
       "ordinal": 10,
-      "schema": "Paragraph"
+      "schema": "ParagraphScore"
     },
     {
-      "name": "scored_sentences",
+      "name": "sentence_scores",
       "ordinal": 11,
-      "schema": "Sentence"
+      "schema": "SentenceScore"
     }
   ],
   "source": "examples.search.transforms.score.AddScores",
@@ -219,17 +194,11 @@
       ]
     },
     {
-      "input_lane": "documents",
-      "input_schema": "Document",
+      "input_lane": "document_overlap_scores",
+      "input_schema": "DocumentOverlapScore",
       "inputs": [
         {
           "driving": true,
-          "parameter": "document",
-          "schema": "Document",
-          "source": "documents"
-        },
-        {
-          "driving": false,
           "parameter": "overlap",
           "schema": "DocumentOverlapScore",
           "source": "document_overlap_scores"
@@ -244,36 +213,26 @@
       "joins": [
         {
           "how": "inner",
-          "input": "overlap"
-        },
-        {
-          "how": "inner",
           "input": "bm25"
         }
       ],
       "name": "score_documents",
-      "output_lane": "scored_documents",
-      "output_schema": "Document",
+      "output_lane": "document_scores",
+      "output_schema": "DocumentScore",
       "results": [
         {
-          "frame": "scored_documents",
-          "lane": "scored_documents",
-          "schema": "Document"
+          "frame": "document_scores",
+          "lane": "document_scores",
+          "schema": "DocumentScore"
         }
       ]
     },
     {
-      "input_lane": "sections",
-      "input_schema": "Section",
+      "input_lane": "section_overlap_scores",
+      "input_schema": "SectionOverlapScore",
       "inputs": [
         {
           "driving": true,
-          "parameter": "section",
-          "schema": "Section",
-          "source": "sections"
-        },
-        {
-          "driving": false,
           "parameter": "overlap",
           "schema": "SectionOverlapScore",
           "source": "section_overlap_scores"
@@ -288,36 +247,26 @@
       "joins": [
         {
           "how": "inner",
-          "input": "overlap"
-        },
-        {
-          "how": "inner",
           "input": "bm25"
         }
       ],
       "name": "score_sections",
-      "output_lane": "scored_sections",
-      "output_schema": "Section",
+      "output_lane": "section_scores",
+      "output_schema": "SectionScore",
       "results": [
         {
-          "frame": "scored_sections",
-          "lane": "scored_sections",
-          "schema": "Section"
+          "frame": "section_scores",
+          "lane": "section_scores",
+          "schema": "SectionScore"
         }
       ]
     },
     {
-      "input_lane": "paragraphs",
-      "input_schema": "Paragraph",
+      "input_lane": "paragraph_overlap_scores",
+      "input_schema": "ParagraphOverlapScore",
       "inputs": [
         {
           "driving": true,
-          "parameter": "paragraph",
-          "schema": "Paragraph",
-          "source": "paragraphs"
-        },
-        {
-          "driving": false,
           "parameter": "overlap",
           "schema": "ParagraphOverlapScore",
           "source": "paragraph_overlap_scores"
@@ -332,36 +281,26 @@
       "joins": [
         {
           "how": "inner",
-          "input": "overlap"
-        },
-        {
-          "how": "inner",
           "input": "bm25"
         }
       ],
       "name": "score_paragraphs",
-      "output_lane": "scored_paragraphs",
-      "output_schema": "Paragraph",
+      "output_lane": "paragraph_scores",
+      "output_schema": "ParagraphScore",
       "results": [
         {
-          "frame": "scored_paragraphs",
-          "lane": "scored_paragraphs",
-          "schema": "Paragraph"
+          "frame": "paragraph_scores",
+          "lane": "paragraph_scores",
+          "schema": "ParagraphScore"
         }
       ]
     },
     {
-      "input_lane": "sentences",
-      "input_schema": "Sentence",
+      "input_lane": "sentence_overlap_scores",
+      "input_schema": "SentenceOverlapScore",
       "inputs": [
         {
           "driving": true,
-          "parameter": "sentence",
-          "schema": "Sentence",
-          "source": "sentences"
-        },
-        {
-          "driving": false,
           "parameter": "overlap",
           "schema": "SentenceOverlapScore",
           "source": "sentence_overlap_scores"
@@ -376,21 +315,17 @@
       "joins": [
         {
           "how": "inner",
-          "input": "overlap"
-        },
-        {
-          "how": "inner",
           "input": "bm25"
         }
       ],
       "name": "score_sentences",
-      "output_lane": "scored_sentences",
-      "output_schema": "Sentence",
+      "output_lane": "sentence_scores",
+      "output_schema": "SentenceScore",
       "results": [
         {
-          "frame": "scored_sentences",
-          "lane": "scored_sentences",
-          "schema": "Sentence"
+          "frame": "sentence_scores",
+          "lane": "sentence_scores",
+          "schema": "SentenceScore"
         }
       ]
     }

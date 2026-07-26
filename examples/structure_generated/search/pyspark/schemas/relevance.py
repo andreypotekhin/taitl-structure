@@ -7,7 +7,7 @@ from pyspark.sql import types as T
 RELEVANCE_POLICY_SCHEMA = T.StructType([
     T.StructField("evaluated_at", T.TimestampType(), False),
     T.StructField("half_life_days", T.DoubleType(), False),
-    T.StructField("bm25_weight", T.DoubleType(), False),
+    T.StructField("score_weight", T.DoubleType(), False),
     T.StructField("feedback_weight", T.DoubleType(), False),
     T.StructField("dwell_feedback_weight", T.DoubleType(), False),
     T.StructField("ctr_feedback_weight", T.DoubleType(), False),
