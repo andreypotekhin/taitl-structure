@@ -4,20 +4,17 @@ from examples.search.schemas.evaluation.batch import EvaluationBatch
 from examples.search.schemas.evaluation.judged_quality import EvaluationQuery
 from examples.search.schemas.evaluation.params import EvaluationParams
 from examples.search.schemas.search import DocumentSearchResult, SearchQuery
-from examples.search.transforms.evaluation.with_labels.search_docs.eval_doc_ranking_quality import (
-    EvaluateDocumentRankingQuality as LabelSelection,
-)
 from examples.search.transforms.evaluation.with_users.search_docs.eval_doc_ranking_quality import (
-    EvaluateDocumentRankingQuality as UserSelection,
+    EvaluateDocumentRankingQuality as Super,
 )
 from structure import step
 from structure.plugin.pyspark import cross_join, group_by, inner_join, where
 
 
-class EvaluateDocumentRankingQuality(UserSelection):
+class EvaluateDocumentRankingQuality(Super):
     """Evaluate rankings selected by both caller query labels and one user band."""
 
-    @step(output=UserSelection.evaluated_queries)
+    @step(output=Super.evaluated_queries)
     def select_queries(
         self,
         query: SearchQuery,
@@ -31,9 +28,8 @@ class EvaluateDocumentRankingQuality(UserSelection):
         cross_join(params, allow_cartesian=True)
         inner_join(on=result.search_query_id == query.id)
         where(
-            params.band_id.is_not_null(),
-            result.band_id == params.band_id,
-            LabelSelection._matches(query, params),
+            params.matches_band(result.band_id),
+            params.matches_query(query),
         )
         group_by(
             window=batch.window,

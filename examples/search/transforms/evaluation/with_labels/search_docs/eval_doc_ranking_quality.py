@@ -4,42 +4,27 @@ from examples.search.schemas.evaluation.batch import EvaluationBatch
 from examples.search.schemas.evaluation.judged_quality import EvaluationQuery
 from examples.search.schemas.evaluation.params import EvaluationParams
 from examples.search.schemas.search import SearchQuery
-from examples.search.transforms.evaluation.search_docs import (
-    EvaluateDocumentRankingQuality as BaseEvaluateDocumentRankingQuality,
-)
+from examples.search.transforms.evaluation.search_docs import EvaluateDocumentRankingQuality as Super
 from structure import input, step
-from structure.plugin.pyspark import arr_exists, arr_forall, cross_join, element_at, where
+from structure.plugin.pyspark import cross_join, where
 
 
-class EvaluateDocumentRankingQuality(BaseEvaluateDocumentRankingQuality):
+class EvaluateDocumentRankingQuality(Super):
     """Evaluate one ranking run for queries selected by a label band."""
 
     params = input(EvaluationParams)
 
-    @step(output=BaseEvaluateDocumentRankingQuality.evaluated_queries)
+    @step(output=Super.evaluated_queries)
     def select_queries(
         self, query: SearchQuery, batch: EvaluationBatch, params: EvaluationParams
     ) -> EvaluationQuery:
         cross_join(batch, allow_cartesian=True)
         cross_join(params, allow_cartesian=True)
-        where(self._matches(query, params))
+        where(params.matches_query(query))
         return EvaluationQuery(
             window=batch.window,
             params=EvaluationParams(labels=params.labels, band_id=params.band_id),
             experiment_id="",
             band_id=None,
             search_query_id=query.id,
-        )
-
-    @staticmethod
-    def _matches(query: SearchQuery, params: EvaluationParams):
-        return arr_forall(
-            params.labels,
-            lambda requested: arr_exists(
-                params.labels,
-                lambda candidate: (candidate.name == requested.name)
-                & (element_at(query.labels, candidate.name) == candidate.value),
-                argument_name="candidate",
-            ),
-            argument_name="requested",
         )

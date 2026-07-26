@@ -107,12 +107,6 @@
           "parameter": "params",
           "schema": "EvaluationParams",
           "source": "params"
-        },
-        {
-          "driving": false,
-          "parameter": "experiment",
-          "schema": "Experiment",
-          "source": "experiments"
         }
       ],
       "joins": [
@@ -131,7 +125,61 @@
         {
           "how": "inner",
           "input": "band"
+        }
+      ],
+      "name": "EvaluateDocumentSearchBehavior.select_requests",
+      "output_lane": "selected_requests",
+      "output_schema": "BehaviorRequest",
+      "results": [
+        {
+          "frame": "selected_requests",
+          "lane": "selected_requests",
+          "schema": "BehaviorRequest"
+        }
+      ]
+    },
+    {
+      "input_lane": "selected_requests",
+      "input_schema": "BehaviorRequest",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "BehaviorRequest",
+          "source": "selected_requests"
         },
+        {
+          "driving": false,
+          "parameter": "request",
+          "schema": "SearchRequest",
+          "source": "requests"
+        },
+        {
+          "driving": false,
+          "parameter": "band",
+          "schema": "BandMembership",
+          "source": "band_memberships"
+        },
+        {
+          "driving": false,
+          "parameter": "batch",
+          "schema": "EvaluationBatch",
+          "source": "batch"
+        },
+        {
+          "driving": false,
+          "parameter": "params",
+          "schema": "EvaluationParams",
+          "source": "params"
+        },
+        {
+          "driving": false,
+          "parameter": "experiment",
+          "schema": "Experiment",
+          "source": "experiments"
+        }
+      ],
+      "joins": [
         {
           "how": "inner",
           "input": "experiment"

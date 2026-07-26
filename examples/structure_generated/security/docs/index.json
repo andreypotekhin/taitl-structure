@@ -2618,9 +2618,6 @@
       "source": "examples.security.transforms.posture.SecurityPosture",
       "step_methods": [
         {
-          "after_hooks": [
-            "retain_reconciled_inventory"
-          ],
           "input_lane": "vulnerabilities",
           "input_schema": "Vuln",
           "inputs": [
@@ -3013,9 +3010,6 @@
           ]
         },
         {
-          "after_hooks": [
-            "reconcile_device_inventory"
-          ],
           "input_lane": "vulnerabilities",
           "input_schema": "Vuln",
           "inputs": [

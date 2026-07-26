@@ -78,6 +78,33 @@ first-qualified priority selection. They exist to replace Search's cohort-band, 
 General recursive relations, dynamic-depth traversal, arbitrary graph algorithms, user-defined hierarchy traversal,
 and implicit surrogate row identifiers remain deferred until a separate contract defines them.
 
+### Checked v6 register
+
+The following is the durable Gaps-side mirror of the postponed and scheduled rows in the
+[v6 API ledger](specifications/V6PySparkApiLedger.md). A generic coverage-family entry may remain deferred while this
+register schedules one narrower typed capability from that family; no broader API is implied.
+
+| Capability | Status | Owner / current boundary |
+| --- | --- | --- |
+| Lambda-bound struct field access | implemented | Sprint 24; the two Security reconciliation hooks are typed steps |
+| Partitioned `window_max` | implemented | Sprint 24; typed partition/order/frame contract is available, while BM25 remains `@raw` for its separate generator dependency |
+| Ordered `collect_list` | implemented | Sprint 24; explicit ascending/descending aggregate keys retain deterministic collection order |
+| `exactly_one` validation | scheduled | Sprint 25; requires the declared relation-assertion runtime contract, so similarity query construction remains `@raw` |
+| Implicit global aggregation | implemented | Sprint 24; aggregate-only steps retain global semantics and enforce empty-input nullability |
+| Explicit scalar UDF example | implemented documentation | Sprint 24; documented opt-in ordinary-PySpark exception with warning and Spark Connect boundary |
+| `posexplode` over array of structs | scheduled | Sprint 25; extraction and scoring expansion remain `@raw` |
+| Other generator forms | deferred | Admit only after a separate cardinality/null/streaming contract |
+| `union_all` and exact-schema `union_by_name`; Self alias | scheduled | Sprint 25; similarity reduction remains `@raw` |
+| Other set operations | deferred | Distinct and multiset semantics need separate contracts |
+| Relation order/limit/offset | scheduled | Sprint 25; no general relation ordering API is promised |
+| Branchable typed union | scheduled | Sprint 25; relevance-context expansion remains `@raw` |
+| `require_unique` / `require_all` / `require_reference` | scheduled | Sprint 25; cohort catalog checks remain `@raw` |
+| Bounded parent hierarchy and fallbacks | scheduled | Sprint 25; cohort traversal remains `@raw` |
+| First-qualified priority selection | scheduled | Sprint 25; reranking remains `@raw` |
+| Sampling | deferred | Seed, replacement, and reproducibility contract is incomplete |
+| Bounded ordered `scan(...)` | scheduled | Sprint 26; separate typed recurrence plan |
+| Binary/encoding; JSON/CSV parsing; Deterministic `mode` | deferred | Retain the documented `@raw` boundary until their type or tie contracts are complete |
+
 ## DSL
 
 ### Column API

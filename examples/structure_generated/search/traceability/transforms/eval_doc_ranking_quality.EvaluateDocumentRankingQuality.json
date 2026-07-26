@@ -78,11 +78,6 @@
       "source": "source:examples.search.transforms.evaluation.with_all.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality.select_queries.filter.1"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_doc_ranking_quality.EvaluateDocumentRankingQualityGenerated.run.step.0.select_queries.where.2",
-      "ir": "ir:EvaluateDocumentRankingQuality.step.0.select_queries.filter.2",
-      "source": "source:examples.search.transforms.evaluation.with_all.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality.select_queries.filter.2"
-    },
-    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_doc_ranking_quality.EvaluateDocumentRankingQualityGenerated.run.step.0.select_queries.join.1.batch",
       "ir": "ir:EvaluateDocumentRankingQuality.step.0.select_queries.join.1.batch",
       "source": "source:examples.search.transforms.evaluation.with_all.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality.select_queries.join.1.batch"
@@ -1295,20 +1290,11 @@
         "detail": {},
         "operation": "filter",
         "sources": [
-          "params.band_id"
+          "params.band_id",
+          "result.band_id"
         ],
         "step": "select_queries",
         "target": "select_queries.filter[0]"
-      },
-      {
-        "detail": {},
-        "operation": "filter",
-        "sources": [
-          "result.band_id",
-          "params.band_id"
-        ],
-        "step": "select_queries",
-        "target": "select_queries.filter[1]"
       },
       {
         "detail": {},
@@ -1318,7 +1304,7 @@
           "query.labels"
         ],
         "step": "select_queries",
-        "target": "select_queries.filter[2]"
+        "target": "select_queries.filter[1]"
       },
       {
         "detail": {

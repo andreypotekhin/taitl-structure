@@ -3,8 +3,8 @@ from typing import Any, cast
 from structure.plugin.api.v1.model.StepAuthoringRequest import StepAuthoringRequest
 from structure.plugin.api.v1.model.StepResultPlan import StepResultPlan
 from structure.plugin.pyspark.dsl.Expression import Expression
+from structure.plugin.pyspark.dsl.operations.CacheOperations import cache_operation, reserved_operations
 from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
-from structure.plugin.pyspark.dsl.operations_api import cache_operation, reserved_operations
 from structure.plugin.pyspark.symbolic_execution.commands.ValidatePySparkAggregates import ValidatePySparkAggregates
 from structure.plugin.pyspark.symbolic_execution.commands.ValidatePySparkAggregationUse import (
     ValidatePySparkAggregationUse,

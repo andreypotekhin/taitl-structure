@@ -543,6 +543,8 @@ class RunOnlinePySparkTransform:
                 .cast(self._spark_type(assignment.field.type, types))
                 .alias(assignment.field.column)
             )
+        if assignment.function == "collect_list" and assignment.order_by is not None and assignment.expression is not None:
+            return self._ordered_collect_list(assignment, step=step, functions=functions)
         arguments = assignment.arguments or (() if assignment.expression is None else (assignment.expression,))
         if assignment.function in self._aggregate_functions() and arguments:
             columns = [
@@ -596,6 +598,34 @@ class RunOnlinePySparkTransform:
             )
             return functions.first(column, ignorenulls=False).alias(assignment.field.column)
         raise TypeError(f"Unsupported aggregate assignment: {assignment.function}")
+
+    def _ordered_collect_list(self, assignment, *, step, functions):
+        order = assignment.order_by
+        assert order is not None and assignment.expression is not None
+        descending = order.kind == "order" and order.data.get("direction") == "desc"
+        key = order.args[0] if order.kind == "order" else order
+        value = self._expressions.evaluate(
+            assignment.expression,
+            functions=functions,
+            aliases=self._scope_aliases(step),
+        )
+        condition = value.isNotNull()
+        if assignment.filter is not None:
+            predicate = self._expressions.evaluate(
+                assignment.filter,
+                functions=functions,
+                aliases=self._scope_aliases(step),
+            )
+            condition = predicate & condition
+        order_column = self._expressions.evaluate(key, functions=functions, aliases=self._scope_aliases(step))
+        item = functions.struct(order_column.alias("_structure_order"), value.alias("_structure_value"))
+        collected = functions.collect_list(
+            functions.when(condition, item)
+        )
+        return functions.transform(
+            functions.sort_array(collected, asc=not descending),
+            lambda item: item.getField("_structure_value"),
+        ).alias(assignment.field.column)
 
     def _aggregate_grouping_column(self, assignment, *, step, aggregate, key_columns, functions):
         if assignment.expression is None:

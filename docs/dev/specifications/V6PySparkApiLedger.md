@@ -19,14 +19,14 @@ renderer/evaluator owner, test location, and public-reference wording. When a ro
 
 ## Ledger
 
-| Capability | Status at v6 start | Owner | Contract and example | Required evidence |
+| Capability | Current v6 status | Owner | Contract and example | Required evidence |
 | --- | --- | --- | --- | --- |
-| Lambda-bound struct field access | scheduled | Sprint 24 | Typed `app.id` inside array/map callback; retires both Security hooks | symbolic, render, online/generated parity, live PySpark |
-| Partitioned `window_max` | scheduled | Sprint 24 | Explicit `WindowSpec`; normalized BM25 client | type/frame diagnostics, two-partition parity |
-| Ordered `collect_list` | scheduled | Sprint 24 | Explicit ordering and deterministic collection; similarity-query client | shuffled-input deterministic parity |
-| `exactly_one` validation | scheduled | Sprint 24 | Zero/multiple cardinality diagnostic | recipe/runtime failure evidence |
-| Implicit global aggregation | scheduled | Sprint 24 | Aggregate-only step works without `group_by`; Index summaries | empty-input and non-aggregate rejection parity |
-| Explicit scalar UDF example | scheduled documentation | Sprint 24 | `@special(type="udf")` with declared type/nullability and warning | ordinary-PySpark generated/online example; Connect rejection |
+| Lambda-bound struct field access | implemented | Sprint 24 | Typed `app.id` inside array/map callback; retired both Security hooks | symbolic, render, generated snapshot, traceability |
+| Partitioned `window_max` | implemented | Sprint 24 | Explicit `WindowSpec` with typed partition/order/frame validation | symbolic, recipe, renderer, evaluator, and type/frame diagnostics |
+| Ordered `collect_list` | implemented | Sprint 24 | Explicit ascending/descending key renders as a null-safe sorted collection | compiler, generated-PySpark, and online recipe parity |
+| `exactly_one` validation | scheduled | Sprint 25 | Declared relation-cardinality assertion; zero/multiple cardinality diagnostic | recipe/runtime failure evidence |
+| Implicit global aggregation | implemented | Sprint 24 | Aggregate-only step works without `group_by`; nullable value aggregates reject non-null output on an empty global level | recipe, renderer, and empty-input schema diagnostics |
+| Explicit scalar UDF example | implemented documentation | Sprint 24 | `@special(type="udf")` declares return type/nullability and warns by default | QuickRef, compiler warning, generated expression, traceability, Connect capability rejection |
 | `posexplode` over array of structs | scheduled | Sprint 25 | Declared element and ordinal output schema; ExtractText/scoring | cardinality/null/empty parity |
 | Other generator forms | deferred | `Gaps.md` / Sprint 25 gate | Admit one by one after distinct contract proof | dedicated specification amendment |
 | `union_all` and exact-schema `union_by_name` | scheduled | Sprint 25 | Explicit schema compatibility and duplicate semantics | online/generated duplicate parity |
@@ -50,6 +50,17 @@ Use a normal step when a ledger operation is implemented. Use an explicit scalar
 row-local Python logic with an honest declared return type/nullability; expect the UDF warning and do not use it with
 Spark Connect. Use `@raw` for a narrow target-specific DataFrame transformation while its typed contract is deferred.
 Keep sources, sinks, actions, and driver algorithms caller-owned or intentionally raw.
+
+## Example Raw-Hook Inventory
+
+`V6ExampleRawHookInventory.json` is the checked inventory of every `@raw` method under `examples/`. The
+`v6-api-ledger` specification test parses the example source and fails when a hook is missing from that inventory or
+an inventory entry no longer names a hook.
+
+The current inventory records two retired Security hooks, ten Search hooks scheduled across Sprints 24 and 25, and
+intentional School matrix inversion because it is a driver-side numerical algorithm. Each scheduled record names the
+smallest capability required for retirement and keeps `@raw` as the boundary until that capability has its complete
+typed contract and parity evidence.
 
 ## Required Record Fields
 

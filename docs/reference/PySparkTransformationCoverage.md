@@ -6,8 +6,8 @@ or streaming lifecycle. The machine-checked inventory and entries are
 [`pyspark-transformation-inventory.json`](pyspark-transformation-inventory.json) and
 [`pyspark-transformation-coverage.json`](pyspark-transformation-coverage.json).
 
-`supported` is available in the public compiler-visible API. `scheduled` is assigned to a V4 slice. `deferred` needs
-a contract first. `unsupported` is deliberately outside the DSL; use the named alternative.
+`supported` is available in the public compiler-visible API. `planned` needs a contract first. `deferred` is not
+currently admitted, and `unsupported` is deliberately outside the DSL; use the named alternative.
 
 | PySpark family | Status | Structure spelling or alternative | Contract / notes |
 | --- | --- | --- | --- |
@@ -22,7 +22,7 @@ a contract first. `unsupported` is deliberately outside the DSL; use the named a
 | JSON/CSV conversion | deferred | `@raw` hook | Inline Schema transport and stable option normalization need a dedicated IR contract. |
 | Array construction, lookup, transformation | supported | Typed array helpers | Exact element/nullability and callback rules are validated. |
 | Map functions | supported | Typed map helpers | Callback bodies remain symbolic. |
-| `explode`, `posexplode`, `inline` variants | deferred | `@raw` hook | Awaiting the V4 generator cardinality design gate. |
+| `explode`, `posexplode`, `inline` variants | deferred | `@raw` hook | Awaiting a generator cardinality design. |
 | Projection and filtering | supported | Schema projection and `where` | Schema owns output names and replacement. |
 | Joins and hints | supported | Typed join helpers | Explicit schema/cardinality; cross needs opt-in. |
 | Set operations; ordering/limit/sample | deferred | `@raw` hook | Relation-composition and deterministic ordering/seed contracts are not yet represented in the IR. |
@@ -45,5 +45,4 @@ a contract first. `unsupported` is deliberately outside the DSL; use the named a
 - Python UDF/UDTF registration and arbitrary callback APIs are not coverage targets. Existing scalar
   `@special(type="udf")` remains its documented ordinary-PySpark exception.
 
-See [API Reference](API.ref.md), [API Gaps](../dev/Gaps.md), and the
-[V4 coverage design](../dev/design/V4TransformationApiCoverage.md) for the detailed admission policy.
+See [API Reference](API.ref.md) and [API Gaps](../dev/Gaps.md) for the detailed admission policy.

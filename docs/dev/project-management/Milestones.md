@@ -348,7 +348,7 @@ the breaking v5 migration.
 
 ## M11: v6 Typed PySpark API Closure, Example-Hook Retirement, and Bounded Recurrence
 
-Status: scheduled after M10. The release program is governed by
+Status: active (started 2026-07-26 after M10/v5 closeout). The release program is governed by
 `docs/dev/planning/P07242604.V6-pyspark-api-and-example-hook-retirement.plan.md`; bounded recurrence remains governed
 by `docs/dev/planning/P07182601.V6-timeline-scan-recurrence.plan.md`.
 

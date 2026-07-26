@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import TypeVar, cast, overload
 
 from structure.dsl import Schema
@@ -98,7 +99,7 @@ class InputScope(RowScope):
             ),
         )
 
-    def __getattr__(self, name: str) -> Expression:
+    def __getattr__(self, name: str) -> Expression | Callable[..., object]:
         if self._structure_joined_scope is not None:
             return getattr(self._structure_joined_scope, name)
         return super().__getattr__(name)

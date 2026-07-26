@@ -2,7 +2,7 @@ from examples.security.schemas.assets import Device, DeviceType, Software
 from examples.security.schemas.organization import Department, Org, Person, Team
 from examples.security.schemas.reporting import VulnerabilityExposure, VulnerabilityPostureCandidate
 from examples.security.schemas.risk import Vuln, VulnType
-from structure import Transform, input, lane, output, raw, step
+from structure import Transform, input, lane, output, step
 from structure.plugin.pyspark import *
 
 
@@ -71,19 +71,14 @@ class SecurityPosture(Transform):
             device_apps=device.apps,
         )
 
-    @raw(inout=lane(posture_candidates) | lane(posture_candidates))
-    def retain_reconciled_inventory(self, *, posture_candidates, spark, ctx):
-        from pyspark.sql import functions as F
-
-        installed = F.exists(F.col("device_apps"), lambda app: app["id"] == F.col("software_id"))
-        return posture_candidates.where(
-            (F.col("device_owner_id") == F.col("person_id"))
-            & F.array_contains(F.col("device_vuln_ids"), F.col("vuln_id"))
-            & ((F.col("device_os_id") == F.col("software_id")) | installed)
-        )
-
     @step(input=posture_candidates, output=exposure_lane)
     def expose(self, candidate: VulnerabilityPostureCandidate) -> VulnerabilityExposure:
+        installed = arr_exists(candidate.device_apps, lambda app: app.id == candidate.software_id)
+        where(
+            (candidate.device_owner_id == candidate.person_id)
+            & array_contains(candidate.device_vuln_ids, candidate.vuln_id)
+            & ((candidate.device_os_id == candidate.software_id) | installed)
+        )
         return VulnerabilityExposure.base(candidate)
 
     def publish(self, finding: VulnerabilityExposure) -> VulnerabilityExposure:

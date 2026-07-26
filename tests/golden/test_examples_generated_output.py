@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import difflib
+from typing import cast
 
 import pytest
 from helpers.example_projects import (
@@ -97,6 +98,35 @@ def test_behavior_evaluator_keeps_its_request_to_daily_pipeline_local() -> None:
         "publish_request_behaviors",
         "publish_daily_behavior",
     ]
+
+
+def test_experiment_evaluators_schedule_combined_selection_before_their_override() -> None:
+    """Experiment evaluators reuse combined selection before adding experiment context."""
+
+    from examples.search.transforms.experiments.search_docs.eval_doc_ranking_quality import (
+        EvaluateDocumentRankingQuality,
+    )
+    from examples.search.transforms.experiments.search_docs.eval_doc_search_behavior import (
+        EvaluateDocumentSearchBehavior,
+    )
+
+    for evaluator, parent_step in (
+        (EvaluateDocumentRankingQuality, "select_queries"),
+        (EvaluateDocumentSearchBehavior, "select_requests"),
+    ):
+        plan = cast(TransformPlan, Compiler.frontend.compile()(evaluator, materialize_schemas=False).analysis)
+        steps = plan.steps
+        parent_origin = steps[0].origin
+        child_origin = steps[1].origin
+
+        assert [step.name for step in steps[:2]] == [
+            f"EvaluateDocument{'RankingQuality' if parent_step == 'select_queries' else 'SearchBehavior'}.{parent_step}",
+            parent_step,
+        ]
+        assert parent_origin is not None
+        assert child_origin is not None
+        assert parent_origin.module.startswith("examples.search.transforms.evaluation.with_all")
+        assert child_origin.module.startswith("examples.search.transforms.experiments")
 
 
 def _paths_diff(actual: dict[str, str], expected: dict[str, str]) -> str:

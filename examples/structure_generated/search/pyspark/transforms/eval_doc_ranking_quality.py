@@ -50,7 +50,7 @@ class EvaluateDocumentRankingQualityGenerated:
             (F.col("results_3.search_query_id") == F.col("search_query.id")),
             "inner",
         )
-        evaluated_queries = evaluated_queries.where((F.col("params_2.band_id").isNotNull()) & ((F.col("results_3.band_id") == F.col("params_2.band_id"))) & (F.forall(F.col("params_2.labels"), lambda requested: F.exists(F.col("params_2.labels"), lambda candidate: ((candidate.getField('name') == requested.getField('name')) & (F.element_at(F.col("search_query.labels"), candidate.getField('name')) == candidate.getField('value')))))))
+        evaluated_queries = evaluated_queries.where((F.col("params_2.band_id").eqNullSafe(F.col("results_3.band_id"))) & (F.forall(F.col("params_2.labels"), lambda requested: F.exists(F.col("params_2.labels"), lambda candidate: ((candidate.getField('name') == requested.getField('name')) & (F.element_at(F.col("search_query.labels"), candidate.getField('name')) == candidate.getField('value')))))))
         evaluated_queries = evaluated_queries.select(
             F.col("batch.window"),
             F.struct(F.col("params_2.labels").alias("labels"), F.col("params_2.band_id").alias("band_id")).alias("params"),

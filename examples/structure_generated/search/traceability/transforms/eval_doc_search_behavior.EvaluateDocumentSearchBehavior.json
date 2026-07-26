@@ -103,11 +103,6 @@
       "source": "source:examples.search.transforms.evaluation.with_all.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior.select_requests.filter.2"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_doc_search_behavior.EvaluateDocumentSearchBehaviorGenerated.run.step.0.select_requests.where.3",
-      "ir": "ir:EvaluateDocumentSearchBehavior.step.0.select_requests.filter.3",
-      "source": "source:examples.search.transforms.evaluation.with_all.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior.select_requests.filter.3"
-    },
-    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_doc_search_behavior.EvaluateDocumentSearchBehaviorGenerated.run.step.0.select_requests.join.1.batch",
       "ir": "ir:EvaluateDocumentSearchBehavior.step.0.select_requests.join.1.batch",
       "source": "source:examples.search.transforms.evaluation.with_all.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior.select_requests.join.1.batch"
@@ -1613,20 +1608,11 @@
         "detail": {},
         "operation": "filter",
         "sources": [
-          "params.band_id"
+          "params.band_id",
+          "band.band_id"
         ],
         "step": "select_requests",
         "target": "select_requests.filter[0]"
-      },
-      {
-        "detail": {},
-        "operation": "filter",
-        "sources": [
-          "band.band_id",
-          "params.band_id"
-        ],
-        "step": "select_requests",
-        "target": "select_requests.filter[1]"
       },
       {
         "detail": {},
@@ -1636,7 +1622,7 @@
           "query.labels"
         ],
         "step": "select_requests",
-        "target": "select_requests.filter[2]"
+        "target": "select_requests.filter[1]"
       },
       {
         "detail": {},
@@ -1647,7 +1633,7 @@
           "batch.window.end"
         ],
         "step": "select_requests",
-        "target": "select_requests.filter[3]"
+        "target": "select_requests.filter[2]"
       },
       {
         "detail": {

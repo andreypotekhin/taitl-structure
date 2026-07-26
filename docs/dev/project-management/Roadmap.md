@@ -240,15 +240,15 @@ schema processing, compilation, execution, generation, serialization, capability
 management, and CLI orchestration. Plugin plugins participate through one discovered plugin and one negotiated
 `PluginAPI` façade, at the highest version supported by Core and that plugin.
 
-### v5 sequence
+### v5 sequence (complete)
 
-- Sprint 19: specify and implement discovery, plugin manifests, API negotiation, target resolution, Plugin API
+- +Sprint 19: specify and implement discovery, plugin manifests, API negotiation, target resolution, Plugin API
   contracts, and Core-owned artifact envelopes.
 - +Sprint 20: refactor PySpark authoring, schema, compiler, execution, generation, and capability behavior behind the
   public Plugin API while preserving current runtime and generated-code evidence.
-- Sprint 21: publish the external plugin author contract and conformance kit; build the internal finite-iterable wheel
+- +Sprint 21: publish the external plugin author contract and conformance kit; build the internal finite-iterable wheel
   to prove real package discovery, execution, serialization, disabling, and isolation.
-- Sprint 22: remove legacy PySpark root exports and backend-specific Core paths, migrate documentation and fixtures,
+- +Sprint 22: remove legacy PySpark root exports and backend-specific Core paths, migrate documentation and fixtures,
   run compatibility evidence, and harden v5 for release.
 
 ### v5 must include
@@ -286,12 +286,14 @@ the shipped Security and Search examples. Every admitted operation has a schema/
 capability classification, traceability, readable generated PySpark, and online/generated parity. Hooks remain the
 honest boundary for actions, driver algorithms, arbitrary Python, sources/sinks, and APIs without a settled contract.
 
-### v6 sequence
+### v6 sequence (active)
 
-- Sprint 23: publish the v6 API ledger, characterize current behavior, and extract focused PySpark delegates without
+- Sprint 23 (+): published the v6 API ledger, checked Gaps register, raw-hook migration fixtures, and initial focused
+  PySpark delegates without
   feature changes.
-- Sprint 24: admit lambda-bound struct field access, explicit analytic maxima, deterministic ordered collections,
-  exact-one validation, and global aggregates; replace both Security raw hooks with ordinary steps.
+- Sprint 24 (+): admitted lambda-bound struct field access, explicit analytic maxima, deterministic ordered
+  collections, and global aggregates; replaced both Security raw hooks with ordinary steps and documented the scalar
+  UDF boundary. Exact-one validation moved to Sprint 25 because it requires declared relation assertions.
 - Sprint 25: admit typed relation operations—generators, branch/set composition, self aliases, ordering, bounds,
   assertions including parent references, bounded hierarchy/fallback expansion, and priority selection—and retire Search hooks in independently verifiable
   slices.

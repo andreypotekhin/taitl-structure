@@ -365,6 +365,29 @@ customer_id=self.clean_id(order.customer_id)
 
 Reference: [expressions API](api/Expressions.api.md) and [DSL expression helpers](background/DSL.back.md).
 
+### Intentional Scalar Python UDFs
+
+Use `@special(type="udf")` only for deliberately opaque, row-local Python logic that cannot be expressed with the
+typed DSL. Declare both its Spark return type and nullability. Structure records `DSL-W0403` by default because Spark
+cannot inspect or optimize the Python body; set `warn_on_udfs = false` only after accepting that trade-off.
+
+```python
+class Publish(Transform):
+    rows = input(Raw)
+    published = output(Published)
+
+    @special(type="udf", return_type=types.string(), nullable=False)
+    def clean(value: str) -> str:
+        return value.strip()
+
+    def publish(self, row: Raw) -> Published:
+        return Published(id=self.clean(row.id))
+```
+
+This is an ordinary-PySpark-only escape hatch, not an implicit fallback for unsupported expressions: Spark Connect
+rejects Python UDF capability requirements. Keep the body scalar and self-contained. Generated modules delegate to
+the source transform unless `generated_code_options` includes `embed_udfs`.
+
 ## Aggregation
 
 Use `group_by(...)` to return an aggregate schema. Aggregate

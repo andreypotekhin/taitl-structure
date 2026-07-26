@@ -20,7 +20,8 @@ Source: `examples.search.transforms.experiments.search_docs.eval_doc_ranking_qua
 
 ## Step methods
 
-- `select_queries`: `SearchQuery` -> `EvaluationQuery`
+- `EvaluateDocumentRankingQuality.select_queries`: `SearchQuery` -> `EvaluationQuery`
+- `select_queries`: `EvaluationQuery` -> `EvaluationQuery`
 - `select_results`: `EvaluationQuery` -> `EvaluationResult`
 - `rank_judgments`: `EvaluationQuery` -> `EvaluationJudgment`
 - `count_judgments`: `EvaluationJudgment` -> `EvaluationJudgmentTotals`

@@ -10,6 +10,9 @@ from structure.plugin.pyspark.dsl.expressions import literal
 from structure.plugin.pyspark.dsl.Projection import Projection
 from structure.plugin.pyspark.dsl.RowScope import RowScope
 from structure.plugin.pyspark.dsl.types import DecimalType, Struct, StructType, StructureType
+from structure.plugin.pyspark.symbolic_execution.logic.results.ValidatePySparkResultReturn import (
+    ValidatePySparkResultReturn,
+)
 from structure.plugin.pyspark.symbolic_execution.model.PySparkResultBody import PySparkResultBody
 from structure.plugin.pyspark.symbolic_execution.model.PySparkSymbolicContext import PySparkSymbolicContext
 
@@ -19,9 +22,10 @@ class BuildPySparkResultBodies:
 
     def __init__(self, request: StepAuthoringRequest) -> None:
         self._request = request
+        self._return_shape = ValidatePySparkResultReturn(request, self._raise)
 
     def __call__(self, value: object, *, context: PySparkSymbolicContext) -> tuple[PySparkResultBody, ...]:
-        values = self._values(value)
+        values = self._return_shape(value)
         origin = self._request.origin
         owner = getattr(origin, "owner", None)
         transform_class = owner if isinstance(owner, type) and issubclass(owner, Transform) else Transform
@@ -50,26 +54,6 @@ class BuildPySparkResultBodies:
             )
             bodies.append(PySparkResultBody(projection=projection, aggregate=aggregate))
         return tuple(bodies)
-
-    def _values(self, value: object) -> tuple[Schema | Projection, ...]:
-        results = self._request.results
-        if len(results) == 1:
-            return (cast(Schema | Projection, value),)
-        if not isinstance(value, tuple) or len(value) != len(results):
-            actual = len(value) if isinstance(value, tuple) else type(value).__name__
-            self._raise(
-                "DSL-E0402",
-                f"{self._request.name} must return {len(results)} schema values; got {actual}.",
-                "Return a tuple whose values match the fixed tuple annotation in order.",
-            )
-        values = cast(tuple[object, ...], value)
-        if any(isinstance(item, Projection) for item in values):
-            self._raise(
-                "DSL-E0402",
-                f"{self._request.name} uses project(...) in a multi-output return.",
-                "Return explicit schema instances for tuple-returning step methods.",
-            )
-        return cast(tuple[Schema | Projection, ...], values)
 
     def _raise(self, code: str, problem: str, use: str) -> None:
         raise self._error(code, transform_class=None, problem=problem, use=use)

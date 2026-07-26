@@ -6,19 +6,19 @@ from examples.search.schemas.evaluation.behavior import BehaviorRequest
 from examples.search.schemas.evaluation.params import EvaluationParams
 from examples.search.schemas.user import BandMembership
 from examples.search.transforms.evaluation.search_docs.eval_doc_search_behavior import (
-    EvaluateDocumentSearchBehavior as BaseEvaluateDocumentSearchBehavior,
+    EvaluateDocumentSearchBehavior as Super,
 )
 from structure import input, step
 from structure.plugin.pyspark import cross_join, inner_join, where
 
 
-class EvaluateDocumentSearchBehavior(BaseEvaluateDocumentSearchBehavior):
+class EvaluateDocumentSearchBehavior(Super):
     """Measure served behavior for requests whose users match one persisted band."""
 
     band_memberships = input(BandMembership)
     params = input(EvaluationParams)
 
-    @step(output=BaseEvaluateDocumentSearchBehavior.selected_requests)
+    @step(output=Super.selected_requests)
     def select_requests(
         self,
         request: SearchRequest,
@@ -32,8 +32,7 @@ class EvaluateDocumentSearchBehavior(BaseEvaluateDocumentSearchBehavior):
         cross_join(params, allow_cartesian=True)
         inner_join(on=band.user_id == request.user_id)
         where(
-            params.band_id.is_not_null(),
-            band.band_id == params.band_id,
+            params.matches_band(band.band_id),
             (request.requested_at >= batch.window.start) & (request.requested_at < batch.window.end),
         )
         return BehaviorRequest(

@@ -4,7 +4,6 @@
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
-from examples.security.transforms.posture import SecurityPosture
 from examples.structure_generated.security.runtime.schema_assert import TransformResult, assert_schema, project_schema
 from examples.structure_generated.security.pyspark.schemas.assets import DEVICE_SCHEMA, DEVICE_TYPE_SCHEMA, SOFTWARE_SCHEMA
 from examples.structure_generated.security.pyspark.schemas.organization import DEPARTMENT_SCHEMA, ORG_SCHEMA, PERSON_SCHEMA, TEAM_SCHEMA
@@ -17,7 +16,6 @@ class SecurityPostureGenerated:
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
         self.ctx = ctx
-        self._impl = SecurityPosture()
 
     def run(
         self,
@@ -128,12 +126,11 @@ class SecurityPostureGenerated:
             F.col("devices.vuln_ids").alias("device_vuln_ids"),
             F.col("devices.apps").alias("device_apps"),
         )
-        posture_candidates = self._impl.retain_reconciled_inventory(posture_candidates=posture_candidates, spark=self.spark, ctx=self.ctx)
-        assert_schema(posture_candidates, VULNERABILITY_POSTURE_CANDIDATE_SCHEMA, name="VulnerabilityPostureCandidate", mode="strict")
         assert_schema(posture_candidates, VULNERABILITY_POSTURE_CANDIDATE_SCHEMA, name="VulnerabilityPostureCandidate", mode="strict")
 
         # Step method: expose
         exposure_lane = posture_candidates.alias("vulnerability_posture_candidate")
+        exposure_lane = exposure_lane.where(((((F.col("vulnerability_posture_candidate.device_owner_id") == F.col("vulnerability_posture_candidate.person_id")) & F.array_contains(F.col("vulnerability_posture_candidate.device_vuln_ids"), F.col("vulnerability_posture_candidate.vuln_id"))) & ((F.col("vulnerability_posture_candidate.device_os_id") == F.col("vulnerability_posture_candidate.software_id")) | F.exists(F.col("vulnerability_posture_candidate.device_apps"), lambda item: (item.getField('id') == F.col("vulnerability_posture_candidate.software_id")))))))
         exposure_lane = exposure_lane.select(
             F.col("vulnerability_posture_candidate.vuln_id"),
             F.col("vulnerability_posture_candidate.vuln_type"),

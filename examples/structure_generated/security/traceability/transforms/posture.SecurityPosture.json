@@ -273,24 +273,19 @@
       "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.field.device_apps"
     },
     {
-      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.hook.raw.retain_reconciled_inventory",
-      "ir": "ir:SecurityPosture.step.0.prepare_exposure.hook.raw.retain_reconciled_inventory",
-      "source": "source:examples.security.transforms.posture.SecurityPosture.retain_reconciled_inventory"
-    },
-    {
-      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.validation.0.hook",
-      "ir": "ir:SecurityPosture.step.0.prepare_exposure.validation.0.hook",
-      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.validation.0.hook"
-    },
-    {
-      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.validation.1.intermediate",
-      "ir": "ir:SecurityPosture.step.0.prepare_exposure.validation.1.intermediate",
-      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.validation.1.intermediate"
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.validation.0.intermediate",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.validation.0.intermediate",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.validation.0.intermediate"
     },
     {
       "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.1.expose",
       "ir": "ir:SecurityPosture.step.1.expose",
       "source": "source:examples.security.transforms.posture.SecurityPosture.expose"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.1.expose.where.0",
+      "ir": "ir:SecurityPosture.step.1.expose.filter.0",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.expose.filter.0"
     },
     {
       "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.1.expose.select.vuln_id",
@@ -1107,19 +1102,6 @@
       },
       {
         "detail": {
-          "phase": "raw",
-          "project_output": false,
-          "schema_mode": "strict"
-        },
-        "operation": "hook",
-        "sources": [
-          "VulnerabilityPostureCandidate"
-        ],
-        "step": "prepare_exposure",
-        "target": "prepare_exposure.hook.retain_reconciled_inventory"
-      },
-      {
-        "detail": {
           "input_schema": "VulnerabilityPostureCandidate",
           "output_schema": "VulnerabilityExposure"
         },
@@ -1129,6 +1111,21 @@
         ],
         "step": "expose",
         "target": "expose"
+      },
+      {
+        "detail": {},
+        "operation": "filter",
+        "sources": [
+          "VulnerabilityPostureCandidate.device_owner_id",
+          "VulnerabilityPostureCandidate.person_id",
+          "VulnerabilityPostureCandidate.device_vuln_ids",
+          "VulnerabilityPostureCandidate.vuln_id",
+          "VulnerabilityPostureCandidate.device_os_id",
+          "VulnerabilityPostureCandidate.software_id",
+          "VulnerabilityPostureCandidate.device_apps"
+        ],
+        "step": "expose",
+        "target": "expose.filter[0]"
       },
       {
         "detail": {
@@ -1616,22 +1613,11 @@
         "target": "VulnerabilityExposure.validation.final"
       }
     ],
-    "opaque_boundaries": [
-      {
-        "hook": "retain_reconciled_inventory",
-        "phase": "raw",
-        "reason": "arbitrary PySpark hook body",
-        "schema": "VulnerabilityPostureCandidate",
-        "step": "prepare_exposure",
-        "target": "prepare_exposure"
-      }
-    ]
+    "opaque_boundaries": []
   },
   "steps": [
     {
-      "after_hooks": [
-        "retain_reconciled_inventory"
-      ],
+      "after_hooks": [],
       "before_hooks": [],
       "input_alias": "vuln",
       "joins": [
@@ -1688,12 +1674,6 @@
         }
       ],
       "validation": [
-        {
-          "mode": "strict",
-          "project": false,
-          "reason": "hook",
-          "schema": "VulnerabilityPostureCandidate"
-        },
         {
           "mode": "strict",
           "project": false,

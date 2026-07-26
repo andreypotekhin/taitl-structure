@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Callable
+from types import FunctionType
+
 from structure.dsl import Schema
 from structure.plugin.pyspark.dsl.Expression import Expression
 
@@ -19,11 +22,16 @@ class RowScope:
         self._structure_scope_nullable = nullable
         self._structure_scope_nullable_reason = nullable_reason
 
-    def __getattr__(self, name: str) -> Expression:
+    def __getattr__(self, name: str) -> Expression | Callable[..., object]:
         fields = self._structure_scope_schema._structure_fields
-        if name not in fields:
-            raise AttributeError(name)
-        field = fields[name]
+        if name in fields:
+            return self._field(name, fields[name])
+        method = self._schema_method(name)
+        if method is not None:
+            return method.__get__(self, type(self))
+        raise AttributeError(name)
+
+    def _field(self, name: str, field) -> Expression:
         data = {
             "scope": self._structure_scope_name,
             "field": field.column,
@@ -39,6 +47,15 @@ class RowScope:
             nullable=self._structure_scope_nullable or field.nullable,
             data=data,
         )
+
+    def _schema_method(self, name: str) -> FunctionType | None:
+        for schema in self._structure_scope_schema.__mro__:
+            if schema is Schema:
+                break
+            method = schema.__dict__.get(name)
+            if isinstance(method, FunctionType):
+                return method
+        return None
 
     def where(self, *predicates: object):
         from structure.plugin.pyspark.dsl.body import where

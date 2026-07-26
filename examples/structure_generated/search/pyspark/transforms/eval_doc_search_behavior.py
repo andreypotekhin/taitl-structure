@@ -63,7 +63,7 @@ class EvaluateDocumentSearchBehaviorGenerated:
             (F.col("band_memberships_4.user_id") == F.col("requests_3.user_id")),
             "inner",
         )
-        selected_requests = selected_requests.where((F.col("params_2.band_id").isNotNull()) & ((F.col("band_memberships_4.band_id") == F.col("params_2.band_id"))) & (F.forall(F.col("params_2.labels"), lambda requested: F.exists(F.col("params_2.labels"), lambda candidate: ((candidate.getField('name') == requested.getField('name')) & (F.element_at(F.col("search_query.labels"), candidate.getField('name')) == candidate.getField('value')))))) & (((F.col("requests_3.requested_at") >= F.col("batch.window.start")) & (F.col("requests_3.requested_at") < F.col("batch.window.end")))))
+        selected_requests = selected_requests.where((F.col("params_2.band_id").eqNullSafe(F.col("band_memberships_4.band_id"))) & (F.forall(F.col("params_2.labels"), lambda requested: F.exists(F.col("params_2.labels"), lambda candidate: ((candidate.getField('name') == requested.getField('name')) & (F.element_at(F.col("search_query.labels"), candidate.getField('name')) == candidate.getField('value')))))) & (((F.col("requests_3.requested_at") >= F.col("batch.window.start")) & (F.col("requests_3.requested_at") < F.col("batch.window.end")))))
         selected_requests = selected_requests.select(
             F.col("batch.window"),
             F.struct(F.col("params_2.labels").alias("labels"), F.col("params_2.band_id").alias("band_id")).alias("params"),

@@ -6,7 +6,7 @@ from decimal import Decimal
 from functools import cache as cached
 from math import isfinite
 from re import fullmatch
-from typing import TypeVar, overload
+from typing import overload
 
 from structure.dsl import FieldDeclaration, Schema
 from structure.plugin.api.v1.model import SymbolicContext
@@ -15,6 +15,7 @@ from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.expressions import literal
 from structure.plugin.pyspark.dsl.joins import TiePolicy
 from structure.plugin.pyspark.dsl.operations import CachePlan, DuplicateRowsPlan, OperationPlan, SelectedRowsPlan
+from structure.plugin.pyspark.dsl.operations.CacheOperations import cache, cache_operation, reserved_operations
 from structure.plugin.pyspark.dsl.TimeWindow import TimeWindow
 from structure.plugin.pyspark.dsl.types import (
     ArrayType,
@@ -34,8 +35,6 @@ from structure.plugin.pyspark.dsl.windows.GroupedRows import GroupedRows
 from structure.plugin.pyspark.dsl.windows.WindowBound import WindowBound
 from structure.plugin.pyspark.dsl.windows.WindowFrame import WindowFrame
 from structure.plugin.pyspark.dsl.windows.WindowSpec import WindowSpec
-
-F = TypeVar("F", bound=Callable)
 
 
 def group_by(*keys: object, **named_keys: object) -> "GroupedRows":
@@ -216,15 +215,21 @@ def percentile(value: object, percentage: float, *, frequency: int = 1, where: o
 
 
 def collect_list(
-    value: object, *, element_type: StructureType | None = None, where: object | None = None
+    value: object,
+    *,
+    order_by: object | None = None,
+    element_type: StructureType | None = None,
+    where: object | None = None,
 ) -> Expression:
     argument = literal(value)
+    order = None if order_by is None else _ordered_aggregate_key(order_by, "collect_list(...)")
     return _aggregate(
         "collect_list",
         argument,
         type=ArrayType(_collection_element_type(argument, element_type), contains_null=False),
         nullable=False,
         where=where,
+        order_by=order,
     )
 
 
@@ -809,6 +814,16 @@ def _aggregate(
 def _global_aggregate_may_be_empty() -> bool:
     context = current_context()
     return context is not None and context.aggregate_grouping == "grouping_sets" and () in context.aggregate_levels
+
+
+def _ordered_aggregate_key(value: object, call: str) -> Expression:
+    expression = literal(value)
+    if expression.kind == "order":
+        direction = expression.data["direction"] if expression.data is not None else None
+        if not isinstance(direction, str) or direction not in {"asc", "desc"}:
+            raise TypeError(f"{call} order_by supports asc() or desc() only")
+        return expression
+    return _orderable_expression(expression, f"{call} order_by")
 
 
 def _selected_rows(direction: str, order_by: object, *, partition_by: object, ties: TiePolicy, call: str) -> None:
@@ -1754,23 +1769,6 @@ def _callback_expression(call: str, function: Callable[..., object], *arguments:
     return result
 
 
-def cache(storage_level: object) -> Callable[[F], F]:
-    def decorate(function: F) -> F:
-        operations = tuple(getattr(function, "_structure_reserved_operations", ()))
-        setattr(function, "_structure_reserved_operations", (*operations, cache_operation(storage_level)))
-        return function
-
-    return decorate
-
-
-def cache_operation(storage_level: object) -> OperationPlan:
-    return OperationPlan.cache_operation(CachePlan(storage_level=_cache_storage_level(storage_level)))
-
-
-def reserved_operations(function: Callable) -> tuple[OperationPlan, ...]:
-    return tuple(getattr(function, "_structure_reserved_operations", ()))
-
-
 def _reserved_expression(
     function: str,
     *,
@@ -1905,23 +1903,6 @@ def _positive_interval(call: str, value: object) -> str:
     ):
         raise TypeError(f"{call} requires a positive fixed Spark interval string, such as '10 minutes'")
     return value.strip()
-
-
-def _cache_storage_level(value: object) -> tuple[bool, bool, bool, bool, int] | None:
-    if value is True:
-        return None
-    names = ("useDisk", "useMemory", "useOffHeap", "deserialized", "replication")
-    try:
-        use_disk, use_memory, use_off_heap, deserialized, replication = (getattr(value, name) for name in names)
-    except AttributeError as error:
-        raise TypeError(
-            "cache(...) requires True or a PySpark StorageLevel; omit cache= to leave a step uncached"
-        ) from error
-    if not all(isinstance(option, bool) for option in (use_disk, use_memory, use_off_heap, deserialized)) or (
-        isinstance(replication, bool) or not isinstance(replication, int) or replication < 1
-    ):
-        raise TypeError("cache(...) requires a valid PySpark StorageLevel")
-    return use_disk, use_memory, use_off_heap, deserialized, replication
 
 
 @cached

@@ -22,7 +22,8 @@ Source: `examples.search.transforms.experiments.search_docs.eval_doc_search_beha
 
 ## Step methods
 
-- `select_requests`: `SearchQuery` -> `BehaviorRequest`
+- `EvaluateDocumentSearchBehavior.select_requests`: `SearchQuery` -> `BehaviorRequest`
+- `select_requests`: `BehaviorRequest` -> `BehaviorRequest`
 - `select_impressions`: `BehaviorRequest` -> `BehaviorImpression`
 - `attribute_clicks`: `BehaviorImpression` -> `BehaviorImpression`
 - `measure_impressions`: `BehaviorImpression` -> `BehaviorImpression`

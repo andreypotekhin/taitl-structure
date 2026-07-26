@@ -238,9 +238,6 @@
       ]
     },
     {
-      "after_hooks": [
-        "reconcile_device_inventory"
-      ],
       "input_lane": "vulnerabilities",
       "input_schema": "Vuln",
       "inputs": [

@@ -6,22 +6,19 @@ from examples.search.schemas.evaluation.behavior import BehaviorRequest
 from examples.search.schemas.evaluation.params import EvaluationParams
 from examples.search.schemas.search import SearchQuery
 from examples.search.schemas.user import BandMembership
-from examples.search.transforms.evaluation.with_labels.search_docs.eval_doc_search_behavior import (
-    EvaluateDocumentSearchBehavior as LabelSelection,
-)
 from examples.search.transforms.evaluation.with_users.search_docs.eval_doc_search_behavior import (
-    EvaluateDocumentSearchBehavior as UserSelection,
+    EvaluateDocumentSearchBehavior as Super,
 )
 from structure import input, step
 from structure.plugin.pyspark import cross_join, inner_join, where
 
 
-class EvaluateDocumentSearchBehavior(UserSelection):
+class EvaluateDocumentSearchBehavior(Super):
     """Measure served behavior selected by both labels and one user band."""
 
     queries = input(SearchQuery)
 
-    @step(output=UserSelection.selected_requests)
+    @step(output=Super.selected_requests)
     def select_requests(
         self,
         query: SearchQuery,
@@ -37,9 +34,8 @@ class EvaluateDocumentSearchBehavior(UserSelection):
         inner_join(on=query.id == request.query_id)
         inner_join(on=band.user_id == request.user_id)
         where(
-            params.band_id.is_not_null(),
-            band.band_id == params.band_id,
-            LabelSelection._matches(query, params),
+            params.matches_band(band.band_id),
+            params.matches_query(query),
             (request.requested_at >= batch.window.start) & (request.requested_at < batch.window.end),
         )
         return BehaviorRequest(

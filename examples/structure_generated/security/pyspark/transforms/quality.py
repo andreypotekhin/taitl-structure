@@ -4,7 +4,6 @@
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
-from examples.security.transforms.quality import SecurityInventoryQuality
 from examples.structure_generated.security.runtime.schema_assert import TransformResult, assert_schema, project_schema
 from examples.structure_generated.security.pyspark.schemas.assets import DEVICE_SCHEMA, DEVICE_TYPE_SCHEMA, SOFTWARE_SCHEMA
 from examples.structure_generated.security.pyspark.schemas.organization import DEPARTMENT_SCHEMA, ORG_SCHEMA, PERSON_SCHEMA, TEAM_SCHEMA
@@ -17,7 +16,6 @@ class SecurityInventoryQualityGenerated:
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
         self.ctx = ctx
-        self._impl = SecurityInventoryQuality()
 
     def run(
         self,
@@ -154,11 +152,9 @@ class SecurityInventoryQualityGenerated:
             F.array_contains(F.col("devices.vuln_ids"), F.col("vuln.id")).alias("device_lists_vulnerability"),
             F.col("devices.os_id"),
             F.col("devices.apps"),
-            F.lit(False).alias("device_has_software"),
-            F.lit(False).alias("is_reconciled"),
+            ((F.col("devices.os_id") == F.col("vuln.software_id")) | F.exists(F.col("devices.apps"), lambda item: (item.getField('id') == F.col("vuln.software_id")))).alias("device_has_software"),
+            (F.array_contains(F.col("devices.vuln_ids"), F.col("vuln.id")) & ((F.col("devices.os_id") == F.col("vuln.software_id")) | F.exists(F.col("devices.apps"), lambda item: (item.getField('id') == F.col("vuln.software_id"))))).alias("is_reconciled"),
         )
-        inventory_candidates = self._impl.reconcile_device_inventory(inventory_candidates=inventory_candidates, spark=self.spark, ctx=self.ctx)
-        assert_schema(inventory_candidates, VULNERABILITY_INVENTORY_CANDIDATE_SCHEMA, name="VulnerabilityInventoryCandidate", mode="strict")
         assert_schema(inventory_candidates, VULNERABILITY_INVENTORY_CANDIDATE_SCHEMA, name="VulnerabilityInventoryCandidate", mode="strict")
 
         # Step method: publish_reconciliation

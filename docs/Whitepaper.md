@@ -416,9 +416,8 @@ Recommended implementation techniques:
 ## Roadmap
 
 The roadmap follows an IR-first north star: the initial release proves that Structure can replace hand-maintained
-PySpark boilerplate with strict execution and optional code-generation workflow. v2 makes that workflow useful
-for mainstream analytical pipelines and promotes Spark Connect for completed batch features. v3 expands streaming
-transformation support without taking over lifecycle concerns. v4 expands predictable PySpark transformation API
+PySpark boilerplate with strict execution and optional code-generation workflow. It now supports mainstream analytical
+pipelines, completed Spark Connect batch features, compiler-visible streaming transformations, and broad typed PySpark
 coverage while loading, storage, and orchestration remain caller-owned.
 
 ### Initial Release
@@ -427,29 +426,12 @@ PySpark execution by default, optional generated PySpark classes, projection, fi
 intermediate schemas, hooks, validation, compiler provenance, compact static dataflow traceability, streaming-compatible
 transforms, diagnostic links, and setup checks.
 
-### v2
+### Current Capability Boundary
 
-Existence joins, `inner_join(...)`, deterministic lookup dedupe, temporal validity-window joins, backward as-of joins,
-full rowset joins, windowing, aggregations, advanced grouping, Spark higher-order functions, cache/persist first-slice
-directives, Spark Connect batch support, and static streaming compatibility diagnostics.
-
-### v3
-
-Streaming transformation support: live streaming evidence, additional stateful operation families, richer
-watermark/state diagnostics, and caller-owned output-mode guidance. Structure keeps `readStream`, `writeStream`, triggers,
-checkpoints, query lifecycle, deployment, and recovery in caller code.
-
-### v4
-
-V4 extends typed, compiler-visible PySpark transformation coverage across expressions, nested values, rowset
-transformations, joins, aggregations, windows, and collections. It classifies every relevant supported-target
-transformation API so users can distinguish a Structure equivalent from a deliberate boundary. Loading, storage,
-orchestration, actions, and alternative-backend work are outside this release.
-
-V4 also completes caller-owned streaming migration for static-gap session aggregates, bounded stream-stream outer and
-semi joins, and stream-static semi filtering. Structure keeps source, sink, checkpoint, trigger, output-mode
-application, and query lifecycle in caller code while reporting the compiler-visible watermark, time-bound, and append
-requirements of admitted transformations.
+Structure provides typed, compiler-visible PySpark transformations across expressions, nested values, relation
+operations, joins, aggregations, windows, collections, and the admitted streaming shapes. The checked coverage catalog
+separates a Structure equivalent from a deliberate boundary. Source, sink, checkpoint, trigger, output-mode
+application, query lifecycle, loading, storage, orchestration, and actions remain caller-owned.
 
 ## Summary
 

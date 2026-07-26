@@ -333,19 +333,9 @@
       "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.prepare_inventory_reconciliation.field.is_reconciled"
     },
     {
-      "generated": "generated:examples.structure_generated.security.pyspark.transforms.quality.SecurityInventoryQualityGenerated.run.step.3.prepare_inventory_reconciliation.hook.raw.reconcile_device_inventory",
-      "ir": "ir:SecurityInventoryQuality.step.3.prepare_inventory_reconciliation.hook.raw.reconcile_device_inventory",
-      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.reconcile_device_inventory"
-    },
-    {
-      "generated": "generated:examples.structure_generated.security.pyspark.transforms.quality.SecurityInventoryQualityGenerated.run.step.3.prepare_inventory_reconciliation.validation.0.hook",
-      "ir": "ir:SecurityInventoryQuality.step.3.prepare_inventory_reconciliation.validation.0.hook",
-      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.prepare_inventory_reconciliation.validation.0.hook"
-    },
-    {
-      "generated": "generated:examples.structure_generated.security.pyspark.transforms.quality.SecurityInventoryQualityGenerated.run.step.3.prepare_inventory_reconciliation.validation.1.intermediate",
-      "ir": "ir:SecurityInventoryQuality.step.3.prepare_inventory_reconciliation.validation.1.intermediate",
-      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.prepare_inventory_reconciliation.validation.1.intermediate"
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.quality.SecurityInventoryQualityGenerated.run.step.3.prepare_inventory_reconciliation.validation.0.intermediate",
+      "ir": "ir:SecurityInventoryQuality.step.3.prepare_inventory_reconciliation.validation.0.intermediate",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.prepare_inventory_reconciliation.validation.0.intermediate"
     },
     {
       "generated": "generated:examples.structure_generated.security.pyspark.transforms.quality.SecurityInventoryQualityGenerated.run.step.4.publish_reconciliation",
@@ -1187,7 +1177,9 @@
         },
         "operation": "project",
         "sources": [
-          "literal"
+          "device.os_id",
+          "vuln.software_id",
+          "device.apps"
         ],
         "step": "prepare_inventory_reconciliation",
         "target": "VulnerabilityInventoryCandidate.device_has_software"
@@ -1198,23 +1190,14 @@
         },
         "operation": "project",
         "sources": [
-          "literal"
+          "device.vuln_ids",
+          "vuln.id",
+          "device.os_id",
+          "vuln.software_id",
+          "device.apps"
         ],
         "step": "prepare_inventory_reconciliation",
         "target": "VulnerabilityInventoryCandidate.is_reconciled"
-      },
-      {
-        "detail": {
-          "phase": "raw",
-          "project_output": false,
-          "schema_mode": "strict"
-        },
-        "operation": "hook",
-        "sources": [
-          "VulnerabilityInventoryCandidate"
-        ],
-        "step": "prepare_inventory_reconciliation",
-        "target": "prepare_inventory_reconciliation.hook.reconcile_device_inventory"
       },
       {
         "detail": {
@@ -1504,16 +1487,7 @@
         "target": "VulnerabilityInventoryIssue.validation.final"
       }
     ],
-    "opaque_boundaries": [
-      {
-        "hook": "reconcile_device_inventory",
-        "phase": "raw",
-        "reason": "arbitrary PySpark hook body",
-        "schema": "VulnerabilityInventoryCandidate",
-        "step": "prepare_inventory_reconciliation",
-        "target": "prepare_inventory_reconciliation"
-      }
-    ]
+    "opaque_boundaries": []
   },
   "steps": [
     {
@@ -1633,9 +1607,7 @@
       ]
     },
     {
-      "after_hooks": [
-        "reconcile_device_inventory"
-      ],
+      "after_hooks": [],
       "before_hooks": [],
       "input_alias": "vuln",
       "joins": [
@@ -1657,12 +1629,6 @@
         }
       ],
       "validation": [
-        {
-          "mode": "strict",
-          "project": false,
-          "reason": "hook",
-          "schema": "VulnerabilityInventoryCandidate"
-        },
         {
           "mode": "strict",
           "project": false,

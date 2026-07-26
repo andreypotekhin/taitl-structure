@@ -4,15 +4,14 @@ This describes Structure's public, compiler-visible API.
 
 If you are just starting using this library, see [QuickRef.md](../QuickRef.md) for an introduction.
 
-`supported` means the public contract is available now. `scheduled` is assigned to a V4 delivery slice. `deferred`
-needs a more complete type, cardinality, or determinism contract. `unsupported` deliberately stays outside the scope.
+`supported` means the public contract is available now. `planned` needs a more complete type, cardinality, or
+determinism contract. `deferred` and `unsupported` deliberately stay outside the current scope.
 Structure is not a one-to-one PySpark
 wrapper: admitted APIs remain typed, symbolic, capability-checked, explainable, and readable in generated code.
 
 The default target is ordinary PySpark `>=3.5,<4.1`; completed compiler-visible batch features also target Spark
 Connect. See [Compatibility.md](../Compatibility.md) for the full target policy,
-[PySpark Transformation Coverage](PySparkTransformationCoverage.md) for the checked v4 catalog,
-[the coverage design](../dev/design/V4TransformationApiCoverage.md) for its admission rules, and
+[PySpark Transformation Coverage](PySparkTransformationCoverage.md) for the checked catalog and
 [API Gaps](../dev/Gaps.md) for the developer backlog.
 
 ## Core APIs
@@ -63,7 +62,7 @@ Connect. See [Compatibility.md](../Compatibility.md) for the full target policy,
 
 ## Planned And Unsupported Surface
 
-The checked [PySpark Transformation Coverage](PySparkTransformationCoverage.md) catalog classifies the V4 baseline.
+The checked [PySpark Transformation Coverage](PySparkTransformationCoverage.md) catalog classifies the current baseline.
 The rows below remain a compact orientation aid. Loading, storage, actions, and orchestration are not transformation
 APIs and stay outside Structure's scope.
 

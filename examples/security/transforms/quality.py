@@ -8,7 +8,7 @@ from examples.security.schemas.reporting import (
     VulnerabilityQualityIssue,
 )
 from examples.security.schemas.risk import Vuln, VulnType
-from structure import Transform, input, lane, output, raw, step
+from structure import Transform, input, lane, output, step
 from structure.plugin.pyspark import *
 
 
@@ -90,31 +90,17 @@ class SecurityInventoryQuality(Transform):
     @step(input=[vulnerabilities, devices], output=inventory_candidates)
     def prepare_inventory_reconciliation(self, vuln: Vuln, device: Device) -> VulnerabilityInventoryCandidate:
         inner_join(device, on=device.id == vuln.device_id)
+        device_has_software = (device.os_id == vuln.software_id) | arr_exists(
+            device.apps,
+            lambda app: app.id == vuln.software_id,
+        )
         return VulnerabilityInventoryCandidate.base(vuln, device)(
             vuln_id=vuln.id,
             device_lists_vulnerability=array_contains(device.vuln_ids, vuln.id),
             os_id=device.os_id,
             apps=device.apps,
-            device_has_software=False,
-            is_reconciled=False,
-        )
-
-    @raw(inout=lane(inventory_candidates) | lane(inventory_candidates))
-    def reconcile_device_inventory(self, *, inventory_candidates, spark, ctx):
-        from pyspark.sql import functions as F
-
-        device_has_software = (F.col("os_id") == F.col("software_id")) | F.exists(
-            F.col("apps"), lambda app: app["id"] == F.col("software_id")
-        )
-        return inventory_candidates.select(
-            "vuln_id",
-            "device_id",
-            "software_id",
-            "device_lists_vulnerability",
-            "os_id",
-            "apps",
-            device_has_software.alias("device_has_software"),
-            (F.col("device_lists_vulnerability") & device_has_software).alias("is_reconciled"),
+            device_has_software=device_has_software,
+            is_reconciled=array_contains(device.vuln_ids, vuln.id) & device_has_software,
         )
 
     @step(input=inventory_candidates, output=reconciliation_lane)

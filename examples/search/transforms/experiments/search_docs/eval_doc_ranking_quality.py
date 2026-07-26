@@ -10,22 +10,18 @@ from examples.search.schemas.evaluation.params import EvaluationParams
 from examples.search.schemas.experiment import Experiment
 from examples.search.schemas.search import DocumentSearchResult, SearchQuery
 from examples.search.transforms.evaluation.with_all.search_docs.eval_doc_ranking_quality import (
-    EvaluateDocumentRankingQuality as BaseEvaluateDocumentRankingQuality,
-)
-from examples.search.transforms.evaluation.with_labels.search_docs.eval_doc_ranking_quality import (
-    EvaluateDocumentRankingQuality as LabelSelection,
+    EvaluateDocumentRankingQuality as Super,
 )
 from structure import input, step
-from structure.plugin.pyspark import cross_join, group_by, inner_join, left_join, where
+from structure.plugin.pyspark import cross_join, inner_join, left_join, where
 
 
-class EvaluateDocumentRankingQuality(BaseEvaluateDocumentRankingQuality):
+class EvaluateDocumentRankingQuality(Super):
     """Evaluate an experiment."""
 
     experiments = input(Experiment)
-    _matches = staticmethod(LabelSelection._matches)
 
-    @step(output=BaseEvaluateDocumentRankingQuality.evaluated_queries)
+    @step(output=Super.evaluated_queries)
     def select_queries(
         self,
         query: SearchQuery,
@@ -36,32 +32,18 @@ class EvaluateDocumentRankingQuality(BaseEvaluateDocumentRankingQuality):
     ) -> EvaluationQuery:
         """Select active experiment rows satisfying both label and user-band filters."""
 
-        cross_join(batch, allow_cartesian=True)
-        cross_join(params, allow_cartesian=True)
+        selected = super().select_queries(query, result, batch, params)
         cross_join(experiment, allow_cartesian=True)
-        inner_join(on=result.search_query_id == query.id)
-        where(
-            experiment.is_active,
-            params.band_id.is_not_null(),
-            result.band_id == params.band_id,
-            self._matches(query, params),
-        )
-        group_by(
-            window=batch.window,
-            params=params,
-            experiment_id=experiment.experiment_id,
-            band_id=result.band_id,
-            search_query_id=query.id,
-        )
+        where(experiment.is_active)
         return EvaluationQuery(
-            window=batch.window,
-            params=EvaluationParams(labels=params.labels, band_id=params.band_id),
+            window=selected.window,
+            params=selected.params,
             experiment_id=experiment.experiment_id,
-            band_id=result.band_id,
-            search_query_id=query.id,
+            band_id=selected.band_id,
+            search_query_id=selected.search_query_id,
         )
 
-    @step(output=BaseEvaluateDocumentRankingQuality.evaluated_results)
+    @step(output=Super.evaluated_results)
     def select_results(
         self,
         query: EvaluationQuery,

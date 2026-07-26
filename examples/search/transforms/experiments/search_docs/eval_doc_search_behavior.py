@@ -8,22 +8,18 @@ from examples.search.schemas.experiment import Experiment
 from examples.search.schemas.search import SearchQuery
 from examples.search.schemas.user import BandMembership
 from examples.search.transforms.evaluation.with_all.search_docs.eval_doc_search_behavior import (
-    EvaluateDocumentSearchBehavior as BaseEvaluateDocumentSearchBehavior,
-)
-from examples.search.transforms.evaluation.with_labels.search_docs.eval_doc_search_behavior import (
-    EvaluateDocumentSearchBehavior as LabelSelection,
+    EvaluateDocumentSearchBehavior as Super,
 )
 from structure import input, step
-from structure.plugin.pyspark import cross_join, inner_join, where
+from structure.plugin.pyspark import inner_join, where
 
 
-class EvaluateDocumentSearchBehavior(BaseEvaluateDocumentSearchBehavior):
+class EvaluateDocumentSearchBehavior(Super):
     """Evaluate an experiment."""
 
     experiments = input(Experiment)
-    _matches = staticmethod(LabelSelection._matches)
 
-    @step(output=BaseEvaluateDocumentSearchBehavior.selected_requests)
+    @step(output=Super.selected_requests)
     def select_requests(
         self,
         query: SearchQuery,
@@ -35,24 +31,7 @@ class EvaluateDocumentSearchBehavior(BaseEvaluateDocumentSearchBehavior):
     ) -> BehaviorRequest:
         """Select active experiment requests satisfying combined label and user-band filters."""
 
-        cross_join(batch, allow_cartesian=True)
-        cross_join(params, allow_cartesian=True)
-        inner_join(on=query.id == request.query_id)
-        inner_join(on=band.user_id == request.user_id)
-        inner_join(experiment, on=experiment.experiment_id == request.experiment_id)
-        where(
-            experiment.is_active,
-            params.band_id.is_not_null(),
-            band.band_id == params.band_id,
-            self._matches(query, params),
-            (request.requested_at >= batch.window.start) & (request.requested_at < batch.window.end),
-        )
-        return BehaviorRequest(
-            window=batch.window,
-            params=EvaluationParams(labels=params.labels, band_id=params.band_id),
-            experiment_id=request.experiment_id,
-            band_id=band.user_band_id,
-            search_request_id=request.id,
-            ranking_version=request.ranking_version,
-            query=request.query,
-        )
+        selected = super().select_requests(query, request, band, batch, params)
+        inner_join(on=experiment.experiment_id == selected.experiment_id)
+        where(experiment.is_active)
+        return BehaviorRequest.base(selected)

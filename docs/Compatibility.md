@@ -154,8 +154,8 @@ Traceability schema rules:
 - Consumers should ignore unknown fields.
 - Structure should keep default compiler traceability compact and stable across patch releases.
 
-Runtime LDJSON traceability is not part of the initial compatibility contract. It is tracked as a nice-to-have
-beyond v4 in [NiceToHave.md](dev/project-management/NiceToHave.md).
+Runtime LDJSON traceability is not part of the current compatibility contract. It is tracked as a
+[nice-to-have](dev/project-management/NiceToHave.md).
 
 ## Config Schema Versioning
 
@@ -173,12 +173,8 @@ Config schema rules:
 - Removing or changing the meaning of a documented key requires a major version after 1.0.
 - Deprecated keys should produce warnings before removal when practical.
 
-## Roadmap
+## Current Boundary
 
-v2 expands execution/generated-code PySpark features and adoption tooling while preserving the same basic compatibility
-contract.
-
-v3 hardens compiler-visible streaming transformations while callers retain streaming lifecycle ownership.
-
-v4 expands predictable PySpark transformation API coverage. Loading, storage, orchestration, alternative backends,
-and non-batch Spark Connect work are outside the v4 objective unless a later decision explicitly changes that boundary.
+Structure supports execution and generated PySpark transformations, completed Spark Connect batch features, and
+compiler-visible streaming transformations. Loading, storage, orchestration, alternative backends, and non-batch Spark
+Connect work remain outside the current contract unless a later decision explicitly admits them.

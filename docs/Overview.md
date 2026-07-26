@@ -434,12 +434,6 @@ streaming transformations while callers retain orchestration.
 - **Initial release:** PySpark execution by default, optional generated PySpark classes, projection,
   filtering, joins, typed intermediate schemas, hooks, validation, compiler provenance, static dataflow
   traceability, streaming-compatible transforms, diagnostic links, and setup checks.
-- **v2:** mainstream analytical features: existence joins, `inner_join(...)`, broad rowset joins, deterministic lookup
-  dedupe, temporal validity joins, windowing, aggregations, advanced grouping, Spark higher-order functions
-  ([Advanced analytical operations](background/DSL.back.md)),
-  caching/persistence/repartition hints, richer explain output, generated docs, pytest helpers, and Spark Connect
-  support for completed v1/v2 batch features.
-- **v3:** PySpark parity and additional compiler-visible streaming transformations; callers retain `readStream`,
-  `writeStream`, triggers, checkpoints, output modes, and query lifecycle.
-- **v4:** broader, predictable PySpark transformation API coverage across expressions, nested values, relational
-  transforms, joins, aggregations, windows, and collections. Loading, storage, and orchestration remain caller-owned.
+- **Current capability boundary:** analytical joins, windows, aggregations, higher-order functions, Spark Connect batch
+  support, compiler-visible streaming transformations, and broad typed PySpark coverage. Callers retain `readStream`,
+  `writeStream`, triggers, checkpoints, output modes, query lifecycle, loading, storage, and orchestration.

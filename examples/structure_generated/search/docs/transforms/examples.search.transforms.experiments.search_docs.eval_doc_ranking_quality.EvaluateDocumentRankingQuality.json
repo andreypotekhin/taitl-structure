@@ -88,12 +88,6 @@
           "parameter": "params",
           "schema": "EvaluationParams",
           "source": "params"
-        },
-        {
-          "driving": false,
-          "parameter": "experiment",
-          "schema": "Experiment",
-          "source": "experiments"
         }
       ],
       "joins": [
@@ -106,12 +100,60 @@
           "input": "params"
         },
         {
-          "how": "cross",
-          "input": "experiment"
-        },
-        {
           "how": "inner",
           "input": "result"
+        }
+      ],
+      "name": "EvaluateDocumentRankingQuality.select_queries",
+      "output_lane": "evaluated_queries",
+      "output_schema": "EvaluationQuery",
+      "results": [
+        {
+          "frame": "evaluated_queries",
+          "lane": "evaluated_queries",
+          "schema": "EvaluationQuery"
+        }
+      ]
+    },
+    {
+      "input_lane": "evaluated_queries",
+      "input_schema": "EvaluationQuery",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "EvaluationQuery",
+          "source": "evaluated_queries"
+        },
+        {
+          "driving": false,
+          "parameter": "result",
+          "schema": "DocumentSearchResult",
+          "source": "results"
+        },
+        {
+          "driving": false,
+          "parameter": "batch",
+          "schema": "EvaluationBatch",
+          "source": "batch"
+        },
+        {
+          "driving": false,
+          "parameter": "params",
+          "schema": "EvaluationParams",
+          "source": "params"
+        },
+        {
+          "driving": false,
+          "parameter": "experiment",
+          "schema": "Experiment",
+          "source": "experiments"
+        }
+      ],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "experiment"
         }
       ],
       "name": "select_queries",

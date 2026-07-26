@@ -55,6 +55,61 @@ def test_field_access_produces_symbolic_projection_expressions(orders_plan) -> N
     }
 
 
+def test_schema_instance_method_can_combine_symbolic_fields() -> None:
+    """I can reuse a predicate defined by an input schema."""
+
+    class Query(Schema):
+        labels = map(string(), string(), value_contains_null=False, nullable=False)
+
+    class Params(Schema):
+        label = string(nullable=False)
+        value = string(nullable=False)
+
+        def matches(self, query: Query):
+            return query.labels[self.label] == self.value
+
+    class Selected(Schema):
+        value = string(nullable=False)
+
+    @transform
+    class Select(Transform):
+        queries = input(Query)
+        params = input(Params)
+        selected = output(Selected)
+
+        def select(self, query: Query, params: Params) -> Selected:
+            cross_join(params, allow_cartesian=True)
+            where(params.matches(query))
+            return Selected(value=params.value)
+
+    predicate = _body(Select).filters[0]
+
+    assert predicate.kind == "eq"
+    assert predicate.args[0].kind == "item"
+
+
+def test_evaluation_params_matches_global_band_with_null_safe_equality() -> None:
+    """A null requested band selects the global candidate context."""
+
+    from examples.search.schemas.evaluation.params import EvaluationParams
+
+    class Candidate(Schema):
+        band_id = string(nullable=True)
+
+    @transform
+    class Select(Transform):
+        candidates = input(Candidate)
+        params = input(EvaluationParams)
+        selected = output(Candidate)
+
+        def select(self, candidate: Candidate, params: EvaluationParams) -> Candidate:
+            cross_join(params, allow_cartesian=True)
+            where(params.matches_band(candidate.band_id))
+            return Candidate.base(candidate)
+
+    assert _body(Select).filters[0].kind == "null_safe_eq"
+
+
 def test_dsl_functions_produce_nested_symbolic_expressions(orders_plan) -> None:
     """I can have DSL functions produce symbolic expressions."""
 

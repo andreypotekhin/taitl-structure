@@ -18,9 +18,15 @@ from structure.plugin.pyspark.compiler.model.PySparkWatermarkRecipe import PySpa
 from structure.plugin.pyspark.dsl.joins import Join, JoinMethod
 from structure.plugin.pyspark.dsl.types import DecimalType, StructType, StructureType
 from structure.plugin.pyspark.render.logic.expressions.RenderPySparkExpression import render_pyspark_expression
+from structure.plugin.pyspark.render.logic.steps.RenderPySparkAggregatePlan import RenderPySparkAggregatePlan
+from structure.plugin.pyspark.render.logic.steps.RenderPySparkFilters import RenderPySparkFilters
 
 
 class RenderPySparkStep:
+
+    def __init__(self) -> None:
+        self._aggregate_renderer = RenderPySparkAggregatePlan(self)
+        self._filters_renderer = RenderPySparkFilters()
 
     @property
     def _schema(self):
@@ -182,7 +188,7 @@ class RenderPySparkStep:
         if not step.operations:
             lines = self._joins(step, sources=sources, target=target)
             if step.filters:
-                lines.extend(self._filters(step.filters, step=step, target=target))
+                lines.extend(self._filters_renderer(step.filters, scope_aliases=self._scope_aliases(step), target=target))
             return lines
 
         ordered_lines: list[str] = []
@@ -195,13 +201,15 @@ class RenderPySparkStep:
                 pending_filters.append(operation.filter)
                 continue
             if pending_filters:
-                ordered_lines.extend(self._filters(tuple(pending_filters), step=step, target=target))
+                ordered_lines.extend(
+                    self._filters_renderer(tuple(pending_filters), scope_aliases=self._scope_aliases(step), target=target)
+                )
                 pending_filters = []
             if operation.kind == "join" and operation.join is not None:
                 ordered_lines.extend(self._join(step, operation.join, sources=prepared_sources, target=target))
                 joined_scopes.add(operation.join.input_name)
             if operation.kind == "aggregate" and operation.aggregate is not None:
-                ordered_lines.extend(self._aggregate(step, operation.aggregate, target=target))
+                ordered_lines.extend(self._aggregate_renderer(step, operation.aggregate, target=target))
             if operation.kind == "selected_rows" and operation.selected_rows is not None:
                 ordered_lines.extend(self._selected_rows(step, operation.selected_rows, target=target))
             if operation.kind == "drop_duplicates":
@@ -227,7 +235,9 @@ class RenderPySparkStep:
                 if operation.watermark.scope == getattr(step, "source_scope", ""):
                     ordered_lines.extend(self._watermark(operation.watermark, target=target))
         if pending_filters:
-            ordered_lines.extend(self._filters(tuple(pending_filters), step=step, target=target))
+            ordered_lines.extend(
+                self._filters_renderer(tuple(pending_filters), scope_aliases=self._scope_aliases(step), target=target)
+            )
         return ordered_lines
 
     def _post_operations(self, step: PySparkStepRecipe | PySparkOutputRecipe, *, target: str) -> list[str]:
@@ -332,100 +342,6 @@ class RenderPySparkStep:
             f'        {target} = {target}.drop("{rank}")',
         ]
 
-    def _aggregate(
-        self,
-        step: PySparkStepRecipe | PySparkOutputRecipe,
-        aggregate: PySparkAggregateRecipe,
-        *,
-        target: str,
-    ) -> list[str]:
-        if aggregate.grouping == "grouping_sets":
-            return self._grouping_sets(step, aggregate, target=target)
-        grouping = {"group_by": "groupBy", "rollup": "rollup", "cube": "cube"}.get(aggregate.grouping)
-        if grouping is None:
-            raise TypeError(f"Unsupported aggregate grouping: {aggregate.grouping}")
-        key_columns = self._aggregate_key_columns(aggregate) if aggregate.grouping in {"rollup", "cube"} else ()
-        lines = []
-        if aggregate.grouping == "group_by" and not aggregate.keys:
-            lines.append(f"        {target} = {target}.agg(")
-            for assignment in aggregate.assignments:
-                if assignment.function != "key":
-                    lines.append(
-                        f"            {self._aggregate_assignment(assignment, step=step, aggregate=aggregate, key_columns=key_columns)},"
-                    )
-            lines.append("        ).select(")
-            for assignment in aggregate.assignments:
-                lines.append(f"            {self._aggregate_select(assignment, key_columns=key_columns)},")
-            lines.append("        )")
-            lines.extend(self._aggregate_having(step, aggregate, target=target))
-            return lines
-        if aggregate.grouping in {"rollup", "cube"}:
-            for key, column in key_columns:
-                expression = render_pyspark_expression(key.expression, scope_aliases=self._scope_aliases(step))
-                lines.append(f"        {target} = {target}.withColumn({self._literal(column)}, {expression})")
-        lines.append(f"        {target} = {target}.{grouping}(")
-        for key in aggregate.keys:
-            if aggregate.grouping in {"rollup", "cube"}:
-                lines.append(f"            {self._literal(self._aggregate_key_column(key, key_columns))},")
-            else:
-                expression = render_pyspark_expression(key.expression, scope_aliases=self._scope_aliases(step))
-                lines.append(f"            {expression}.alias({self._literal(key.name)}),")
-        lines.append("        ).agg(")
-        for assignment in aggregate.assignments:
-            if assignment.function == "key":
-                continue
-            lines.append(
-                f"            {self._aggregate_assignment(assignment, step=step, aggregate=aggregate, key_columns=key_columns)},"
-            )
-        lines.append("        ).select(")
-        for assignment in aggregate.assignments:
-            lines.append(f"            {self._aggregate_select(assignment, key_columns=key_columns)},")
-        lines.append("        )")
-        lines.extend(self._aggregate_having(step, aggregate, target=target))
-        return lines
-
-    def _grouping_sets(
-        self,
-        step: PySparkStepRecipe | PySparkOutputRecipe,
-        aggregate: PySparkAggregateRecipe,
-        *,
-        target: str,
-    ) -> list[str]:
-        key_columns = self._aggregate_key_columns(aggregate)
-        lines: list[str] = []
-        for key, column in key_columns:
-            expression = render_pyspark_expression(key.expression, scope_aliases=self._scope_aliases(step))
-            lines.append(f"        {target} = {target}.withColumn({self._literal(column)}, {expression})")
-        branches: list[str] = []
-        for index, level in enumerate(aggregate.levels, start=1):
-            branch = f"{target}_grouping_set_{index}"
-            branches.append(branch)
-            level_keys = set(level)
-            lines.append(f"        {branch} = {target}.groupBy(")
-            for key in aggregate.keys:
-                if key.name in level_keys:
-                    lines.append(f"            {self._literal(self._aggregate_key_column(key, key_columns))},")
-            lines.append("        ).agg(")
-            for assignment in aggregate.assignments:
-                if assignment.function in {"key", "grouping_id", "is_grouped"}:
-                    continue
-                lines.append(
-                    f"            {self._aggregate_assignment(assignment, step=step, aggregate=aggregate, key_columns=key_columns)},"
-                )
-            lines.append("        ).select(")
-            for assignment in aggregate.assignments:
-                lines.append(
-                    f"            {self._grouping_set_select(assignment, aggregate=aggregate, level=level_keys, key_columns=key_columns)},"
-                )
-            lines.append("        )")
-        if not branches:
-            raise TypeError("grouping_sets(...) requires at least one grouping level")
-        lines.append(f"        {target} = {branches[0]}")
-        for branch in branches[1:]:
-            lines.append(f"        {target} = {target}.unionByName({branch})")
-        lines.extend(self._aggregate_having(step, aggregate, target=target))
-        return lines
-
     def _aggregate_having(
         self,
         step: PySparkStepRecipe | PySparkOutputRecipe,
@@ -509,6 +425,8 @@ class RenderPySparkStep:
                 predicate = render_pyspark_expression(assignment.filter, scope_aliases=self._scope_aliases(step))
                 expression = f"F.when({predicate}, F.lit(1))"
             return f"F.count({expression}).cast({self._schema.render().type(assignment.field.type)}).alias({alias})"
+        if assignment.function == "collect_list" and assignment.order_by is not None and assignment.expression is not None:
+            return self._ordered_collect_list(assignment, step=step, alias=alias)
         if assignment.function == "grouping_id":
             return f"F.grouping_id().cast({self._schema.render().type(assignment.field.type)}).alias({alias})"
         if assignment.function == "is_grouped" and assignment.expression is not None:
@@ -555,6 +473,21 @@ class RenderPySparkStep:
             expression = render_pyspark_expression(assignment.expression, scope_aliases=self._scope_aliases(step))
             return f"F.first({expression}, ignorenulls=False).alias({alias})"
         raise TypeError(f"Unsupported aggregate assignment: {assignment.function}")
+
+    def _ordered_collect_list(self, assignment: PySparkAggregateAssignment, *, step, alias: str) -> str:
+        order = assignment.order_by
+        assert order is not None and assignment.expression is not None
+        descending = order.kind == "order" and order.data.get("direction") == "desc"
+        key = order.args[0] if order.kind == "order" else order
+        value = render_pyspark_expression(assignment.expression, scope_aliases=self._scope_aliases(step))
+        rendered_key = render_pyspark_expression(key, scope_aliases=self._scope_aliases(step))
+        condition = f"{value}.isNotNull()"
+        if assignment.filter is not None:
+            predicate = render_pyspark_expression(assignment.filter, scope_aliases=self._scope_aliases(step))
+            condition = f"({predicate}) & ({condition})"
+        item = f"F.struct({rendered_key}.alias('_structure_order'), {value}.alias('_structure_value'))"
+        collected = f"F.collect_list(F.when({condition}, {item}))"
+        return f"F.transform(F.sort_array({collected}, asc={not descending}), lambda item: item.getField('_structure_value')).alias({alias})"
 
     def _aggregate_grouping_expression(
         self,
@@ -785,18 +718,6 @@ class RenderPySparkStep:
         if join.method is JoinMethod.NOT_EXISTS:
             return "left_anti"
         return join.how.value
-
-    def _filters(
-        self,
-        filters: tuple[PySparkExpressionRecipe, ...],
-        *,
-        step: PySparkStepRecipe | PySparkOutputRecipe,
-        target: str = "df",
-    ) -> list[str]:
-        predicate = " & ".join(
-            f"({render_pyspark_expression(filter, scope_aliases=self._scope_aliases(step))})" for filter in filters
-        )
-        return [f"        {target} = {target}.where({predicate})"]
 
     def _projection(self, step: PySparkStepRecipe | PySparkOutputRecipe, *, target: str) -> list[str]:
         if not step.projection:

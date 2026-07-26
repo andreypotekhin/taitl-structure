@@ -501,10 +501,10 @@ one name as alternatives. An empty label map evaluates every query.
 
 ### Bands
 
-`EvaluationParams.band_id` selects a persisted band. Search materializes one band-only context for every direct
-and ancestor band, so a parent context learns from all descendant activity before it is ranked. Judged quality
-evaluates that parent policy directly. Behavior instead rolls up descendant requests that were actually served; it
-does not claim that the parent policy was served.
+`EvaluationParams.band_id` selects a persisted band; `null` selects the global, non-demographic context. Search
+materializes one band-only context for every direct and ancestor band, so a parent context learns from all descendant
+activity before it is ranked. Judged quality evaluates that parent policy directly. Behavior instead rolls up
+descendant requests that were actually served; it does not claim that the parent policy was served.
 
 Band hierarchy stays upstream from evaluation. Band, label, and experiment evaluators select materialized rows by
 the requested `band_id`, label slice, and active experiment identity.

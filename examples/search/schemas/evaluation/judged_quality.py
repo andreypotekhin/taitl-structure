@@ -7,7 +7,9 @@ from structure.plugin.pyspark import *
 
 
 class DocumentRelevanceJudgment(Schema):
-    """One caller-supplied four-grade document relevance judgment."""
+    """Four-grade document relevance judgment.
+    relevance_grade [0-3], 0 = not relevant
+    """
 
     search_query_id = string(nullable=False)
     document_id = string(nullable=False)
@@ -15,7 +17,7 @@ class DocumentRelevanceJudgment(Schema):
 
 
 class DocumentQueryEvaluation(Schema):
-    """Offline retrieval metrics for one query in one daily batch."""
+    """Search query metrics in one daily batch."""
 
     window = struct(TimeWindow, nullable=False)
     params = struct(EvaluationParams, nullable=True)
@@ -45,7 +47,7 @@ class DocumentQueryEvaluation(Schema):
 
 
 class DocumentEvaluationSummary(Schema):
-    """Daily means and coverage for one judged document ranking run."""
+    """Daily means and coverage for document ranking run."""
 
     window = struct(TimeWindow, nullable=False)
     params = struct(EvaluationParams, nullable=True)
