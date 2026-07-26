@@ -59,16 +59,22 @@ filters, and dependencies in explain/traceability output instead of encountering
   `F.exists(..., lambda app: app.getField('id') ...)`.
 - [x] (2026-07-26) Replaced both Security raw reconciliation hooks with typed steps. The raw inventory marks them
   retired; compiler traceability reports no opaque boundary; regenerated Security artifacts preserve the typed plan.
-- [x] (2026-07-26) Full repository gate passed: 1,178 tests passed and 29 live-PySpark tests skipped; the release
+- [x] (2026-07-26) Full repository gate passed: 1,188 tests passed and 29 live-PySpark tests skipped; the release
   subset passed 34 tests with 6 intentional live-test skips, and source and wheel distributions built successfully.
 - [x] (2026-07-26) Added deterministic `collect_list(..., order_by=...)`. The compiler retains explicit ascending or
   descending order, while generated and online PySpark collect non-null structs, sort them, and project the values.
 - [x] (2026-07-26) Verified and recorded existing partitioned `window_max` and aggregate-only global aggregation
   contracts, including empty-input nullability diagnostics. Documented the existing explicit scalar UDF boundary,
   warning policy, generated embedding option, and Spark Connect exclusion in QuickRef.
-- [x] (2026-07-26) Deferred `exactly_one` validation to Sprint 25. The only current client checks policy cardinality
-  with a driver action; a correct replacement needs the already-scheduled declared relation-assertion runtime contract
-  and must not introduce a hidden action or a nondeterministic `first` fallback.
+- [x] (2026-07-26) Implemented `exactly_one` relation-cardinality validation with its runtime failure contract. The
+  current Search client checks policy cardinality with a driver action; the typed replacement must not introduce a
+  hidden action or a nondeterministic `first` fallback.
+- [x] (2026-07-26) Specified `exactly_one(relation)` as the narrow P0 batch-only relation assertion. It preserves the
+  typed scope on success and fails zero/multiple rows through a public aggregate-count assertion; P1 key, predicate,
+  and reference assertions remain out of scope.
+- [x] (2026-07-26) Closed P0 review gaps: added Search-shaped partition-isolation coverage for `window_max`, online
+  runner coverage for `exactly_one(relation)`, and a compile-time rejection when the assertion is declared after the
+  relation has already been joined.
 - [x] (2026-07-26) Recorded the live-evidence limitation: no supported local PySpark target was available, so the
   repository gate retained 29 intentional live-test skips. Spark-free compiler, generated-source, traceability,
   golden, and reference-contract evidence passed.

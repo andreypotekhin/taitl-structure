@@ -22,9 +22,9 @@ renderer/evaluator owner, test location, and public-reference wording. When a ro
 | Capability | Current v6 status | Owner | Contract and example | Required evidence |
 | --- | --- | --- | --- | --- |
 | Lambda-bound struct field access | implemented | Sprint 24 | Typed `app.id` inside array/map callback; retired both Security hooks | symbolic, render, generated snapshot, traceability |
-| Partitioned `window_max` | implemented | Sprint 24 | Explicit `WindowSpec` with typed partition/order/frame validation | symbolic, recipe, renderer, evaluator, and type/frame diagnostics |
+| Partitioned `window_max` | implemented | Sprint 24 | Explicit `WindowSpec` with typed partition/order/frame validation | symbolic, recipe, renderer, evaluator, type/frame diagnostics, and Search-shaped partition-isolation source evidence |
 | Ordered `collect_list` | implemented | Sprint 24 | Explicit ascending/descending key renders as a null-safe sorted collection | compiler, generated-PySpark, and online recipe parity |
-| `exactly_one` validation | scheduled | Sprint 25 | Declared relation-cardinality assertion; zero/multiple cardinality diagnostic | recipe/runtime failure evidence |
+| `exactly_one` validation | implemented | Sprint 24 P0 | Declared relation-cardinality assertion; zero/multiple `REL-E0701` failure; must be declared before the relation is joined | public API, recipe, generated/online lowering, explain, capability, diagnostic, call-order rejection |
 | Implicit global aggregation | implemented | Sprint 24 | Aggregate-only step works without `group_by`; nullable value aggregates reject non-null output on an empty global level | recipe, renderer, and empty-input schema diagnostics |
 | Explicit scalar UDF example | implemented documentation | Sprint 24 | `@special(type="udf")` declares return type/nullability and warns by default | QuickRef, compiler warning, generated expression, traceability, Connect capability rejection |
 | `posexplode` over array of structs | scheduled | Sprint 25 | Declared element and ordinal output schema; ExtractText/scoring | cardinality/null/empty parity |

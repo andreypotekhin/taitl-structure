@@ -14,6 +14,7 @@ from structure.plugin.pyspark.compiler.model.PySparkAggregateKey import PySparkA
 from structure.plugin.pyspark.compiler.model.PySparkAggregateRecipe import PySparkAggregateRecipe
 from structure.plugin.pyspark.compiler.model.PySparkCacheRecipe import PySparkCacheRecipe
 from structure.plugin.pyspark.compiler.model.PySparkDuplicateRowsRecipe import PySparkDuplicateRowsRecipe
+from structure.plugin.pyspark.compiler.model.PySparkExactlyOneRecipe import PySparkExactlyOneRecipe
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.plugin.pyspark.compiler.model.PySparkHookRecipe import PySparkHookRecipe
@@ -865,6 +866,43 @@ def test_online_runner_applies_relation_duplicate_removal_after_join(monkeypatch
         "alias:orders",
         "join:customers:left:(col(orders.id) == col(customers.id))",
         "dropDuplicates:id",
+        "select:id=col(orders.id),status=col(customers.segment)",
+        "alias:published",
+    )
+
+
+def test_online_runner_applies_relation_exactly_one_before_join(monkeypatch) -> None:
+    """I can assert relation cardinality without a driver collect before a later join consumes it."""
+
+    _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
+    invocation = FakeInvocation(
+        orders=_frame("orders", RawOrder),
+        customers=_frame("customers", Customer),
+    )
+
+    result = RunOnlinePySparkTransform()(
+        cast(Any, invocation),
+        _relation_exactly_one_join_plan(),
+        session=SimpleNamespace(
+            online_executor=None,
+            spark="spark",
+            ctx=None,
+            execution_mode="online",
+            target="pyspark",
+        ),
+    )
+
+    published = cast(FakeFrame, result.published)
+
+    assert published.operations == (
+        "alias:orders",
+        "agg:__structure_count=count(lit(1))",
+        "select:__structure_exactly_one=assert_true((col(__structure_count) == lit(1)),"
+        "'REL-E0701: exactly_one(customers) requires exactly one row; see docs/Diagnostics.md#rel-e0701')",
+        "crossJoin:customers",
+        "drop:__structure_exactly_one",
+        "alias:customers",
+        "crossJoin:customers",
         "select:id=col(orders.id),status=col(customers.segment)",
         "alias:published",
     )
@@ -1955,6 +1993,88 @@ def _relation_drop_duplicates_join_plan(*, before_join: bool) -> PySparkExecutio
     )
 
 
+def _relation_exactly_one_join_plan() -> PySparkExecutionPlan:
+    input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
+    customer_validation = PySparkValidationRecipe("customers", Customer, SchemaMode.STRICT, False, "input")
+    published_validation = PySparkValidationRecipe("published", PublishedOrder, SchemaMode.STRICT, False, "output")
+    projection = (
+        PySparkProjectionRecipe(PublishedOrder._structure_fields["id"], _field(RawOrder, "id")),
+        PySparkProjectionRecipe(
+            PublishedOrder._structure_fields["status"],
+            _field_scope("customers", Customer, "segment"),
+        ),
+    )
+    join = PySparkJoinRecipe(
+        input_name="customers",
+        source="customers",
+        input_schema=Customer,
+        left_alias="orders",
+        right_alias="customers",
+        how=Join.CROSS,
+        hint=None,
+        predicate=_literal(True),
+        occurrence=0,
+    )
+    step = PySparkStepRecipe(
+        name="publish",
+        ordinal=0,
+        source="orders",
+        source_scope="orders",
+        input_schema=RawOrder,
+        output_schema=PublishedOrder,
+        input_alias="orders",
+        output_alias="published",
+        before_hooks=(),
+        filters=(),
+        joins=(join,),
+        projection=projection,
+        after_hooks=(),
+        validations=(),
+        results=(
+            PySparkStepResultRecipe(
+                schema=PublishedOrder,
+                lane="published",
+                frame="published",
+                output_alias="published",
+                projection=projection,
+                ordinal=0,
+                after_hooks=(),
+                validations=(published_validation,),
+            ),
+        ),
+        operations=(
+            PySparkOperationRecipe.exactly_one_operation(PySparkExactlyOneRecipe("customers")),
+            PySparkOperationRecipe.join_operation(join),
+        ),
+    )
+    return PySparkExecutionPlan(
+        transform="PublishSingletonCustomer",
+        backend=BackendId("PySpark", "3.5", "pyspark"),
+        inputs=(
+            PySparkInputRecipe("orders", RawOrder, 0, input_validation),
+            PySparkInputRecipe("customers", Customer, 1, customer_validation),
+        ),
+        steps=(step,),
+        outputs=(
+            PySparkOutputRecipe(
+                name="published",
+                ordinal=0,
+                source="published",
+                source_scope="published",
+                input_schema=PublishedOrder,
+                output_schema=PublishedOrder,
+                input_alias="published",
+                output_alias="published",
+                filters=(),
+                joins=(),
+                projection=(),
+                validation=published_validation,
+            ),
+        ),
+        requires_hook_inputs=False,
+    )
+
+
 def _temporal_join_plan() -> PySparkExecutionPlan:
     input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
     customer_validation = PySparkValidationRecipe("customers", Customer, SchemaMode.STRICT, False, "input")
@@ -2759,6 +2879,9 @@ class FakeFunctions(ModuleType):
     def count(self, column):
         return FakeColumn(f"count({column.expression})")
 
+    def assert_true(self, column, message):
+        return FakeColumn(f"assert_true({column.expression},{message!r})")
+
     def sum(self, column):
         return FakeColumn(f"sum({column.expression})")
 
@@ -3017,6 +3140,7 @@ class FakeFrame:
             for operation in right.operations
             if operation.startswith(("withColumn:", "withWatermark:", "drop:", "dropDuplicates"))
             or "__structure_" in operation
+            or operation.startswith(("agg:", "select:", "crossJoin:"))
         )
         return FakeFrame(
             self.name,
@@ -3042,6 +3166,13 @@ class FakeFrame:
             rendered.append(f"{name}={column.expression}")
         return FakeFrame(self.name, FakeSchema(tuple(fields)), self.operations + ("select:" + ",".join(rendered),))
 
+    def agg(self, *columns: FakeColumn):
+        fields = tuple(
+            FakeField(column.output_name or column.expression, _fake_column_type(column), True) for column in columns
+        )
+        rendered = ",".join(f"{column.output_name or column.expression}={column.expression}" for column in columns)
+        return FakeFrame(self.name, FakeSchema(fields), self.operations + ("agg:" + rendered,))
+
     def groupBy(self, *columns: FakeColumn):
         return FakeGroupedFrame(self, columns)
 
@@ -3056,6 +3187,9 @@ class FakeFrame:
 
     def drop(self, name: str):
         return self.with_operation(f"drop:{name}")
+
+    def crossJoin(self, right):
+        return FakeFrame(self.name, self.schema, self.operations + right.operations + (f"crossJoin:{right.name}",))
 
     def dropDuplicates(self, subset=None):
         suffix = "" if subset is None else ":" + ",".join(subset)

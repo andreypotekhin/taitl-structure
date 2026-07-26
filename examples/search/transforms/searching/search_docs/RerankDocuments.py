@@ -16,7 +16,7 @@ from structure.plugin.pyspark import (
 
 
 class RerankDocuments(Transform):
-    """Enrich lexical candidates with independently resolved feedback signals."""
+    """Rerank lexical candidates using relevance signals."""
 
     query_document_signals = input(QueryDocumentSignals)
     document_popularity = input(DocumentPopularity)

@@ -56,6 +56,12 @@ rejected. Sampling is deferred because seed, replacement, and reproducibility se
 
 ## Relation Assertions, Hierarchies, and Priority Selection
 
+The first assertion is deliberately narrower than the later catalog-validation family: `exactly_one(relation)` proves
+that one declared relation contains one row before a typed consumer reads it. It preserves the typed scope on success
+and lowers through a public aggregate count plus Spark assertion expression, rather than collecting a configuration
+row on the driver or choosing an arbitrary first row. Both zero and multiple rows fail with `REL-E0701`. This P0
+primitive is batch-only and ordinary-PySpark-only; richer key, predicate, and reference assertions remain P1.
+
 `require_unique(...)`, `require_all(...)`, and `require_reference(...)` are relation assertions. They validate a
 declared key, predicate, or nullable foreign-key-like relationship in the Spark plan and emit a registered diagnostic
 instead of collecting configuration rows on the driver. They are required for band catalog identifiers, age ranges,

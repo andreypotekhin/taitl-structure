@@ -8,6 +8,7 @@
       <sourceFolder url="file://$MODULE_DIR$/examples/plugins/iterable/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/.hypothesis" />
       <excludeFolder url="file://$MODULE_DIR$/.venv" />
+      <excludeFolder url="file://$MODULE_DIR$/examples/structure_generated" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

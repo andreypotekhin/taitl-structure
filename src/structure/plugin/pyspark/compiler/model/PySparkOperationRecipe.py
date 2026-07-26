@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from structure.plugin.pyspark.compiler.model.PySparkAggregateRecipe import PySparkAggregateRecipe
 from structure.plugin.pyspark.compiler.model.PySparkCacheRecipe import PySparkCacheRecipe
 from structure.plugin.pyspark.compiler.model.PySparkDuplicateRowsRecipe import PySparkDuplicateRowsRecipe
+from structure.plugin.pyspark.compiler.model.PySparkExactlyOneRecipe import PySparkExactlyOneRecipe
 from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.plugin.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoinRecipe
 from structure.plugin.pyspark.compiler.model.PySparkSelectedRowsRecipe import PySparkSelectedRowsRecipe
@@ -20,6 +21,7 @@ class PySparkOperationRecipe:
     aggregate: PySparkAggregateRecipe | None = None
     selected_rows: PySparkSelectedRowsRecipe | None = None
     duplicate_rows: PySparkDuplicateRowsRecipe | None = None
+    exactly_one: PySparkExactlyOneRecipe | None = None
     watermark: PySparkWatermarkRecipe | None = None
     cache: PySparkCacheRecipe | None = None
     streaming_output_modes: tuple[StreamingOutputMode, ...] = ()
@@ -46,6 +48,10 @@ class PySparkOperationRecipe:
             kind="drop_duplicates",
             duplicate_rows=duplicate_rows or PySparkDuplicateRowsRecipe(),
         )
+
+    @staticmethod
+    def exactly_one_operation(exactly_one: PySparkExactlyOneRecipe) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="exactly_one", exactly_one=exactly_one)
 
     @staticmethod
     def watermark_operation(watermark: PySparkWatermarkRecipe) -> "PySparkOperationRecipe":

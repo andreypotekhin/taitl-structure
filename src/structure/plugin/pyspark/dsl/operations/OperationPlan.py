@@ -5,6 +5,7 @@ from typing import Any
 
 from structure.plugin.pyspark.dsl.operations.CachePlan import CachePlan
 from structure.plugin.pyspark.dsl.operations.DuplicateRowsPlan import DuplicateRowsPlan
+from structure.plugin.pyspark.dsl.operations.ExactlyOnePlan import ExactlyOnePlan
 from structure.plugin.pyspark.dsl.operations.OperationCapability import OperationCapability
 from structure.plugin.pyspark.dsl.operations.OperationCardinality import OperationCardinality
 from structure.plugin.pyspark.dsl.operations.SelectedRowsPlan import SelectedRowsPlan
@@ -21,6 +22,7 @@ class OperationPlan:
     aggregate: Any | None = None
     selected_rows: SelectedRowsPlan | None = None
     duplicate_rows: DuplicateRowsPlan | None = None
+    exactly_one: ExactlyOnePlan | None = None
     watermark: WatermarkPlan | None = None
     cache: CachePlan | None = None
     family: str | None = None
@@ -31,39 +33,121 @@ class OperationPlan:
 
     @staticmethod
     def filter_operation(predicate: Any) -> OperationPlan:
-        return OperationPlan("filter", filter=predicate, family="filter", capability=OperationCapability("expression", "filter"), cardinality=OperationCardinality.ROW_FILTERING, streaming=StreamingSupport.COMPATIBLE)
+        return OperationPlan(
+            "filter",
+            filter=predicate,
+            family="filter",
+            capability=OperationCapability("expression", "filter"),
+            cardinality=OperationCardinality.ROW_FILTERING,
+            streaming=StreamingSupport.COMPATIBLE,
+        )
 
     @staticmethod
     def join_operation(join: Any) -> OperationPlan:
         cardinality = {
-            "lookup_join": OperationCardinality.SELECT_ONE, "exists": OperationCardinality.ROW_FILTERING,
-            "not_exists": OperationCardinality.ROW_FILTERING, "rowset_join": OperationCardinality.ROW_MULTIPLYING,
-            "temporal_one": OperationCardinality.SELECT_ONE, "as_of_one": OperationCardinality.SELECT_ONE,
+            "lookup_join": OperationCardinality.SELECT_ONE,
+            "exists": OperationCardinality.ROW_FILTERING,
+            "not_exists": OperationCardinality.ROW_FILTERING,
+            "rowset_join": OperationCardinality.ROW_MULTIPLYING,
+            "temporal_one": OperationCardinality.SELECT_ONE,
+            "as_of_one": OperationCardinality.SELECT_ONE,
         }[join.method.value]
-        return OperationPlan("join", join=join, family="join", capability=OperationCapability("join", join.method.value), cardinality=cardinality, streaming=StreamingSupport.UNKNOWN)
+        return OperationPlan(
+            "join",
+            join=join,
+            family="join",
+            capability=OperationCapability("join", join.method.value),
+            cardinality=cardinality,
+            streaming=StreamingSupport.UNKNOWN,
+        )
 
     @staticmethod
     def aggregate_operation(aggregate: Any) -> OperationPlan:
         session_window = any((key.expression.data or {}).get("function") == "session_window" for key in aggregate.keys)
-        modes = (StreamingOutputMode.APPEND,) if session_window else (StreamingOutputMode.APPEND, StreamingOutputMode.UPDATE)
-        return OperationPlan("aggregate", aggregate=aggregate, family="aggregate", capability=OperationCapability("aggregate", aggregate.grouping), cardinality=OperationCardinality.AGGREGATE, streaming=StreamingSupport.BATCH_ONLY, streaming_output_modes=modes)
+        modes = (
+            (StreamingOutputMode.APPEND,)
+            if session_window
+            else (StreamingOutputMode.APPEND, StreamingOutputMode.UPDATE)
+        )
+        return OperationPlan(
+            "aggregate",
+            aggregate=aggregate,
+            family="aggregate",
+            capability=OperationCapability("aggregate", aggregate.grouping),
+            cardinality=OperationCardinality.AGGREGATE,
+            streaming=StreamingSupport.BATCH_ONLY,
+            streaming_output_modes=modes,
+        )
 
     @staticmethod
     def selected_rows_operation(selected_rows: SelectedRowsPlan) -> OperationPlan:
-        return OperationPlan("selected_rows", selected_rows=selected_rows, family="window", capability=OperationCapability("window", f"select_{selected_rows.direction}"), cardinality=OperationCardinality.SELECT_ONE, streaming=StreamingSupport.BATCH_ONLY)
+        return OperationPlan(
+            "selected_rows",
+            selected_rows=selected_rows,
+            family="window",
+            capability=OperationCapability("window", f"select_{selected_rows.direction}"),
+            cardinality=OperationCardinality.SELECT_ONE,
+            streaming=StreamingSupport.BATCH_ONLY,
+        )
 
     @staticmethod
     def drop_duplicates_operation(duplicate_rows: DuplicateRowsPlan | None = None) -> OperationPlan:
-        return OperationPlan("drop_duplicates", duplicate_rows=duplicate_rows or DuplicateRowsPlan(), family="dedupe", capability=OperationCapability("dedupe", "drop_duplicates"), cardinality=OperationCardinality.ROW_FILTERING, streaming=StreamingSupport.BATCH_ONLY, streaming_output_modes=(StreamingOutputMode.APPEND,))
+        return OperationPlan(
+            "drop_duplicates",
+            duplicate_rows=duplicate_rows or DuplicateRowsPlan(),
+            family="dedupe",
+            capability=OperationCapability("dedupe", "drop_duplicates"),
+            cardinality=OperationCardinality.ROW_FILTERING,
+            streaming=StreamingSupport.BATCH_ONLY,
+            streaming_output_modes=(StreamingOutputMode.APPEND,),
+        )
+
+    @staticmethod
+    def exactly_one_operation(exactly_one: ExactlyOnePlan) -> OperationPlan:
+        return OperationPlan(
+            "exactly_one",
+            exactly_one=exactly_one,
+            family="relation",
+            capability=OperationCapability("relation", "exactly_one"),
+            cardinality=OperationCardinality.ROW_PRESERVING,
+            streaming=StreamingSupport.BATCH_ONLY,
+        )
 
     @staticmethod
     def watermark_operation(watermark: WatermarkPlan) -> OperationPlan:
-        return OperationPlan("watermark", watermark=watermark, family="streaming", capability=OperationCapability("streaming", "watermark"), cardinality=OperationCardinality.ROW_PRESERVING, streaming=StreamingSupport.COMPATIBLE)
+        return OperationPlan(
+            "watermark",
+            watermark=watermark,
+            family="streaming",
+            capability=OperationCapability("streaming", "watermark"),
+            cardinality=OperationCardinality.ROW_PRESERVING,
+            streaming=StreamingSupport.COMPATIBLE,
+        )
 
     @staticmethod
     def cache_operation(cache: CachePlan) -> OperationPlan:
-        return OperationPlan("cache", cache=cache, family="optimization", capability=OperationCapability("optimization", "cache"), cardinality=OperationCardinality.ROW_PRESERVING, streaming=StreamingSupport.BATCH_ONLY)
+        return OperationPlan(
+            "cache",
+            cache=cache,
+            family="optimization",
+            capability=OperationCapability("optimization", "cache"),
+            cardinality=OperationCardinality.ROW_PRESERVING,
+            streaming=StreamingSupport.BATCH_ONLY,
+        )
 
     @staticmethod
-    def reserved_operation(kind: str, *, group: str, name: str, cardinality: OperationCardinality = OperationCardinality.UNKNOWN, streaming: StreamingSupport = StreamingSupport.UNKNOWN) -> OperationPlan:
-        return OperationPlan(kind, family=group, capability=OperationCapability(group, name), cardinality=cardinality, streaming=streaming)
+    def reserved_operation(
+        kind: str,
+        *,
+        group: str,
+        name: str,
+        cardinality: OperationCardinality = OperationCardinality.UNKNOWN,
+        streaming: StreamingSupport = StreamingSupport.UNKNOWN,
+    ) -> OperationPlan:
+        return OperationPlan(
+            kind,
+            family=group,
+            capability=OperationCapability(group, name),
+            cardinality=cardinality,
+            streaming=streaming,
+        )

@@ -625,6 +625,17 @@ For a streaming frame, declare `watermark(event_time, delay=...)` first: ordinar
 bounded `dropDuplicatesWithinWatermark` rather than forever-global dedupe. Use
 `drop_duplicates_within_watermark(...)` when the streaming-only intent should be explicit.
 
+Use `exactly_one(relation)` before joining a policy/configuration relation that must contain one row:
+
+```python
+exactly_one(policy)
+cross_join(policy, allow_cartesian=True)
+```
+
+The assertion preserves the relation on success. Zero or multiple rows fail during Spark evaluation with `REL-E0701`;
+Structure does not collect the relation on the driver or choose an arbitrary first row. This helper is batch-only and
+ordinary-PySpark-only.
+
 When the selected row must be deterministic, prefer `dedupe_latest_by(...)` or `dedupe_earliest_by(...)`
 with an explicit ordering and tie policy.
 

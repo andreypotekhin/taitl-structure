@@ -114,6 +114,17 @@ diagnostic_registry = DiagnosticRegistry(
             use_template="Use JoinDedupe.latest_by(...) or JoinDedupe.earliest_by(...), or use left_join/inner_join when multiplication is intended.",
         ),
         DiagnosticEntry(
+            code="REL-E0701",
+            severity="error",
+            title="Relation cardinality assertion failed",
+            owner="relation",
+            status="active",
+            docs="docs/Diagnostics.md#rel-e0701",
+            introduced="1.0.0",
+            problem_template="An exactly_one(...) relation assertion found zero or multiple rows.",
+            use_template="Filter or aggregate the relation before asserting exactly_one(...), or remove the assertion if multiple rows are valid.",
+        ),
+        DiagnosticEntry(
             code="BACKEND-E2401",
             severity="error",
             title="Unsupported backend target",

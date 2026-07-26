@@ -265,6 +265,16 @@ class RunOnlinePySparkTransform:
                     prepared_frames[scope] = prepared
                 else:
                     df = self._drop_duplicates(df, subset, within_watermark=within_watermark)
+            if operation.kind == "exactly_one" and operation.exactly_one is not None:
+                scope = operation.exactly_one.scope
+                if scope == getattr(step, "source_scope", None):
+                    df = self._exactly_one(df, scope, functions=functions)
+                else:
+                    source = self._source_for_scope(step, scope)
+                    frame = prepared_frames[source] if source in prepared_frames else prepared_frames[scope]
+                    prepared = self._exactly_one(frame, scope, functions=functions)
+                    prepared_frames[source] = prepared
+                    prepared_frames[scope] = prepared
             if operation.kind == "watermark" and operation.watermark is not None:
                 if operation.watermark.scope == getattr(step, "source_scope", ""):
                     df = self._watermark(operation.watermark, df)
@@ -314,6 +324,16 @@ class RunOnlinePySparkTransform:
         if within_watermark or getattr(frame, "isStreaming", False):
             return frame.dropDuplicatesWithinWatermark(columns)
         return frame.dropDuplicates(columns)
+
+    def _exactly_one(self, frame, scope: str, *, functions):
+        message = f"REL-E0701: exactly_one({scope}) requires exactly one row; see docs/Diagnostics.md#rel-e0701"
+        assertion = frame.agg(functions.count(functions.lit(1)).alias("__structure_count")).select(
+            functions.assert_true(
+                functions.col("__structure_count") == functions.lit(1),
+                message,
+            ).alias("__structure_exactly_one")
+        )
+        return assertion.crossJoin(frame).drop("__structure_exactly_one")
 
     def _field_column(self, expression) -> str:
         if expression.kind != "field":
@@ -543,7 +563,11 @@ class RunOnlinePySparkTransform:
                 .cast(self._spark_type(assignment.field.type, types))
                 .alias(assignment.field.column)
             )
-        if assignment.function == "collect_list" and assignment.order_by is not None and assignment.expression is not None:
+        if (
+            assignment.function == "collect_list"
+            and assignment.order_by is not None
+            and assignment.expression is not None
+        ):
             return self._ordered_collect_list(assignment, step=step, functions=functions)
         arguments = assignment.arguments or (() if assignment.expression is None else (assignment.expression,))
         if assignment.function in self._aggregate_functions() and arguments:
@@ -619,9 +643,7 @@ class RunOnlinePySparkTransform:
             condition = predicate & condition
         order_column = self._expressions.evaluate(key, functions=functions, aliases=self._scope_aliases(step))
         item = functions.struct(order_column.alias("_structure_order"), value.alias("_structure_value"))
-        collected = functions.collect_list(
-            functions.when(condition, item)
-        )
+        collected = functions.collect_list(functions.when(condition, item))
         return functions.transform(
             functions.sort_array(collected, asc=not descending),
             lambda item: item.getField("_structure_value"),

@@ -188,7 +188,9 @@ class RenderPySparkStep:
         if not step.operations:
             lines = self._joins(step, sources=sources, target=target)
             if step.filters:
-                lines.extend(self._filters_renderer(step.filters, scope_aliases=self._scope_aliases(step), target=target))
+                lines.extend(
+                    self._filters_renderer(step.filters, scope_aliases=self._scope_aliases(step), target=target)
+                )
             return lines
 
         ordered_lines: list[str] = []
@@ -196,13 +198,16 @@ class RenderPySparkStep:
         prepared_sources = dict(sources)
         joined_scopes: set[str] = set()
         dedupe_index = 0
+        exact_one_index = 0
         for operation in step.operations:
             if operation.kind == "filter" and operation.filter is not None:
                 pending_filters.append(operation.filter)
                 continue
             if pending_filters:
                 ordered_lines.extend(
-                    self._filters_renderer(tuple(pending_filters), scope_aliases=self._scope_aliases(step), target=target)
+                    self._filters_renderer(
+                        tuple(pending_filters), scope_aliases=self._scope_aliases(step), target=target
+                    )
                 )
                 pending_filters = []
             if operation.kind == "join" and operation.join is not None:
@@ -231,6 +236,18 @@ class RenderPySparkStep:
                     prepared_sources[scope] = prepared
                 else:
                     ordered_lines.extend(self._drop_duplicates(target, target, duplicate_rows))
+            if operation.kind == "exactly_one" and operation.exactly_one is not None:
+                exact_one_index += 1
+                scope = operation.exactly_one.scope
+                if scope == getattr(step, "source_scope", None):
+                    ordered_lines.extend(self._exactly_one(target, target, scope, index=exact_one_index))
+                else:
+                    source_key = self._source_for_scope(step, scope)
+                    source = prepared_sources.get(source_key, prepared_sources.get(scope, source_key))
+                    prepared = f"{target}_{self._identifier(scope)}_exactly_one_{exact_one_index}"
+                    ordered_lines.extend(self._exactly_one(source, prepared, scope, index=exact_one_index))
+                    prepared_sources[source_key] = prepared
+                    prepared_sources[scope] = prepared
             if operation.kind == "watermark" and operation.watermark is not None:
                 if operation.watermark.scope == getattr(step, "source_scope", ""):
                     ordered_lines.extend(self._watermark(operation.watermark, target=target))
@@ -274,6 +291,18 @@ class RenderPySparkStep:
             f"            {target} = {source}.dropDuplicatesWithinWatermark({subset})",
             "        else:",
             f"            {target} = {source}.dropDuplicates({subset})",
+        ]
+
+    def _exactly_one(self, source: str, target: str, scope: str, *, index: int) -> list[str]:
+        count = f"{target}_{self._identifier(scope)}_count_{index}" if source == target else f"{target}_count"
+        assertion = f"REL-E0701: exactly_one({scope}) requires exactly one row; " "see docs/Diagnostics.md#rel-e0701"
+        return [
+            f'        {count} = {source}.agg(F.count(F.lit(1)).alias("__structure_count"))',
+            f"        {count} = {count}.select(",
+            f'            F.assert_true(F.col("__structure_count") == F.lit(1), {assertion!r})',
+            '            .alias("__structure_exactly_one")',
+            "        )",
+            f'        {target} = {count}.crossJoin({source}).drop("__structure_exactly_one")',
         ]
 
     def _prepares_relation(
@@ -425,7 +454,11 @@ class RenderPySparkStep:
                 predicate = render_pyspark_expression(assignment.filter, scope_aliases=self._scope_aliases(step))
                 expression = f"F.when({predicate}, F.lit(1))"
             return f"F.count({expression}).cast({self._schema.render().type(assignment.field.type)}).alias({alias})"
-        if assignment.function == "collect_list" and assignment.order_by is not None and assignment.expression is not None:
+        if (
+            assignment.function == "collect_list"
+            and assignment.order_by is not None
+            and assignment.expression is not None
+        ):
             return self._ordered_collect_list(assignment, step=step, alias=alias)
         if assignment.function == "grouping_id":
             return f"F.grouping_id().cast({self._schema.render().type(assignment.field.type)}).alias({alias})"

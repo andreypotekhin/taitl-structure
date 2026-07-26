@@ -25,6 +25,22 @@ Feature references still own the domain meaning of their diagnostics. For exampl
 [JoinSemantics.md](JoinSemantics.back.md)) owns which join shapes are invalid. This document owns the code, lifecycle, and
 documentation contract that makes that join diagnostic stable.
 
+## REL-E0701
+
+`REL-E0701` means an `exactly_one(...)` relation assertion found a relation cardinality other than one at Spark
+evaluation time. Structure checks this with Spark-visible DataFrame expressions, so generated and direct online
+execution both fail during action evaluation without collecting relation rows to the driver.
+
+Common causes:
+
+- the asserted relation was not filtered to the intended policy row;
+- the upstream input is empty;
+- the upstream input contains duplicate policy/configuration rows;
+- the transform used `exactly_one(...)` where ordinary row multiplication is valid.
+
+Fix the source relation so it produces one row before the assertion, aggregate it to one row intentionally, or remove
+the assertion and use an explicit join when multiple rows are intended.
+
 ## Design Principles
 
 Diagnostics must be:
@@ -71,6 +87,7 @@ SCHEMA  schema declaration, schema model, and schema inheritance
 DSL     DSL, symbolic execution, expressions, filters, and expression helpers
 IR      intermediate representation and generic compileability checks
 JOIN    joins
+REL     relation-level assertions and relation operations
 HOOK    hooks
 VAL     schema validation, validation placement, and data quality constraints
 BACKEND backend capabilities and compatibility

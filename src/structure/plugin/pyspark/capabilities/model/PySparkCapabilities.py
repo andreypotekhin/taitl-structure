@@ -179,6 +179,7 @@ ORDINARY_ONLY_CAPABILITIES = frozenset(
         ("backend", "jvm_access"),
         ("backend", "private_classic_fields"),
         ("expression", "python_udf"),
+        ("relation", "exactly_one"),
         ("streaming", "session_window_aggregate"),
         ("streaming", "stream_static_left_semi_join"),
         ("streaming", "stream_stream_outer_join"),

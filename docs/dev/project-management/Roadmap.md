@@ -292,9 +292,9 @@ honest boundary for actions, driver algorithms, arbitrary Python, sources/sinks,
   PySpark delegates without
   feature changes.
 - Sprint 24 (+): admitted lambda-bound struct field access, explicit analytic maxima, deterministic ordered
-  collections, and global aggregates; replaced both Security raw hooks with ordinary steps and documented the scalar
-  UDF boundary. Exact-one validation moved to Sprint 25 because it requires declared relation assertions.
-- Sprint 25: admit typed relation operations—generators, branch/set composition, self aliases, ordering, bounds,
+  collections, global aggregates, and `exactly_one` relation-cardinality assertions; replaced both Security raw hooks
+  with ordinary steps and documented the scalar UDF boundary. Repository gate passed on 2026-07-26.
+- Sprint 25 (active): admit typed relation operations—generators, branch/set composition, self aliases, ordering, bounds,
   assertions including parent references, bounded hierarchy/fallback expansion, and priority selection—and retire Search hooks in independently verifiable
   slices.
 - Sprint 26: deliver the separately specified bounded ordered timeline `scan(...)` recurrence feature once the shared

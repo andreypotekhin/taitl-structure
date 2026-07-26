@@ -89,7 +89,7 @@ register schedules one narrower typed capability from that family; no broader AP
 | Lambda-bound struct field access | implemented | Sprint 24; the two Security reconciliation hooks are typed steps |
 | Partitioned `window_max` | implemented | Sprint 24; typed partition/order/frame contract is available, while BM25 remains `@raw` for its separate generator dependency |
 | Ordered `collect_list` | implemented | Sprint 24; explicit ascending/descending aggregate keys retain deterministic collection order |
-| `exactly_one` validation | scheduled | Sprint 25; requires the declared relation-assertion runtime contract, so similarity query construction remains `@raw` |
+| `exactly_one` validation | implemented | Sprint 24 P0; batch-only ordinary-PySpark relation assertion with generated/online `REL-E0701` failure. Similarity query construction remains `@raw` until its wider multi-output Search migration. |
 | Implicit global aggregation | implemented | Sprint 24; aggregate-only steps retain global semantics and enforce empty-input nullability |
 | Explicit scalar UDF example | implemented documentation | Sprint 24; documented opt-in ordinary-PySpark exception with warning and Spark Connect boundary |
 | `posexplode` over array of structs | scheduled | Sprint 25; extraction and scoring expansion remain `@raw` |

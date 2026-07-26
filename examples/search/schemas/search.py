@@ -56,7 +56,7 @@ class ParagraphContext(Schema):
 
 
 class DocumentSearchResult(Schema):
-    """One two-stage ranked document result."""
+    """A document search result."""
 
     search_query_id = string(nullable=False)
     experiment_id = string(nullable=False)
@@ -73,8 +73,6 @@ class DocumentSearchResult(Schema):
 
 
 class DocumentSearchCandidate(Schema):
-    """One document candidate while two-stage search ranks it."""
-
     search_query_id = string(nullable=False)
     experiment_id = string(nullable=False)
     user_band_id = string(nullable=True)

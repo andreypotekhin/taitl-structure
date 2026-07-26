@@ -17,6 +17,7 @@ Below is an index for published diagnostic codes. For the full diagnostic contra
 | SCHEMA-E0303 | error | Incompatible output field type | Use a compatible expression type or explicit conversion. |
 | JOIN-E0601 | error | Unsupported join condition | Use equality pairs with `==` or `null_safe_eq(...)` and combine them with `&`. |
 | JOIN-W0601 | warning | lookup_join uniqueness is not proven | Provide deterministic `JoinDedupe`, or use `inner_join(...)` when multiplication is intended. |
+| REL-E0701 | error | Relation cardinality assertion failed | Filter or aggregate the relation before asserting `exactly_one(...)`. |
 | GEN-E0901 | error | Generated output is stale | Run `structure compile` and commit the generated changes. |
 | GEN-E0902 | error | Generated transform is not importable | Rebuild generated code or switch to direct execution with `execution_mode = "online"`. |
 | GEN-E0903 | error | Embedded hook cannot be generated | Use local imports and a standalone hook body, or remove `embed_hooks`. |
@@ -69,6 +70,9 @@ See [Diagnostics.md](background/Diagnostics.back.md#join-e0601).
 
 ### JOIN-W0601
 See [Diagnostics.md](background/Diagnostics.back.md#join-w0601).
+
+### REL-E0701
+See [Diagnostics.md](background/Diagnostics.back.md#rel-e0701).
 
 ### GEN-E0901
 See [Diagnostics.md](background/Diagnostics.back.md#gen-e0901).

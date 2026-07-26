@@ -163,6 +163,8 @@ class RenderPySparkExplainReport:
             if scope is not None:
                 suffix = f"{suffix} scope={scope}"
             return f"drop_duplicates(row_filtering{suffix}{self._streaming_modes(operation)})"
+        if operation.exactly_one is not None:
+            return f"exactly_one(row_preserving scope={operation.exactly_one.scope})"
         if operation.watermark is not None:
             return f"watermark({operation.watermark.column} {operation.watermark.delay})"
         if operation.filter is not None:

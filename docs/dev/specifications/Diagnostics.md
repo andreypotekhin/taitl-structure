@@ -73,6 +73,7 @@ SCHEMA  schema declaration, schema model, and schema inheritance
 DSL     DSL, symbolic execution, expressions, filters, and expression helpers
 IR      intermediate representation and generic compileability checks
 JOIN    joins
+REL     relation-level assertions and relation operations
 HOOK    hooks
 VAL     schema validation, validation placement, and data quality constraints
 BACKEND backend capabilities and compatibility

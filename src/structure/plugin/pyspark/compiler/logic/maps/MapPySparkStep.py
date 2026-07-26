@@ -11,6 +11,7 @@ from structure.plugin.pyspark.compiler.model.PySparkAggregateKey import PySparkA
 from structure.plugin.pyspark.compiler.model.PySparkAggregateRecipe import PySparkAggregateRecipe
 from structure.plugin.pyspark.compiler.model.PySparkCacheRecipe import PySparkCacheRecipe
 from structure.plugin.pyspark.compiler.model.PySparkDuplicateRowsRecipe import PySparkDuplicateRowsRecipe
+from structure.plugin.pyspark.compiler.model.PySparkExactlyOneRecipe import PySparkExactlyOneRecipe
 from structure.plugin.pyspark.compiler.model.PySparkJoinAsOfRecipe import PySparkJoinAsOfRecipe
 from structure.plugin.pyspark.compiler.model.PySparkJoinDedupeRecipe import PySparkJoinDedupeRecipe
 from structure.plugin.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoinRecipe
@@ -65,7 +66,9 @@ class MapPySparkStep:
                 after_hooks=tuple(self._hooks.map(hook) for hook in result.after_hooks),
                 validations=self._validations.result(result, last=last, check_intermediate=check_intermediate),
                 aggregate=(
-                    None if body_result.aggregate is None else self._aggregate(body_result.aggregate, capabilities=capabilities)
+                    None
+                    if body_result.aggregate is None
+                    else self._aggregate(body_result.aggregate, capabilities=capabilities)
                 ),
             )
             for result, body_result in zip(step.results, body.results, strict=True)
@@ -138,7 +141,9 @@ class MapPySparkStep:
                         PySparkOperationRecipe.selected_rows_operation(
                             PySparkSelectedRowsRecipe(
                                 direction=operation.selected_rows.direction,
-                                order_by=self._expressions.map(operation.selected_rows.order_by, capabilities=capabilities),
+                                order_by=self._expressions.map(
+                                    operation.selected_rows.order_by, capabilities=capabilities
+                                ),
                                 partition_by=tuple(
                                     self._expressions.map(expression, capabilities=capabilities)
                                     for expression in operation.selected_rows.partition_by
@@ -157,11 +162,21 @@ class MapPySparkStep:
                         PySparkOperationRecipe.drop_duplicates_operation(
                             PySparkDuplicateRowsRecipe(
                                 subset=tuple(
-                                    self._expressions.map(expression, capabilities=capabilities) for expression in subset
+                                    self._expressions.map(expression, capabilities=capabilities)
+                                    for expression in subset
                                 ),
                                 scope=None if duplicate_rows is None else duplicate_rows.scope,
                                 within_watermark=False if duplicate_rows is None else duplicate_rows.within_watermark,
                             )
+                        ),
+                        operation,
+                    )
+                )
+            if operation.kind == "exactly_one" and operation.exactly_one is not None:
+                recipes.append(
+                    self._operation_modes(
+                        PySparkOperationRecipe.exactly_one_operation(
+                            PySparkExactlyOneRecipe(scope=operation.exactly_one.scope)
                         ),
                         operation,
                     )
@@ -171,7 +186,9 @@ class MapPySparkStep:
                     self._operation_modes(
                         PySparkOperationRecipe.watermark_operation(
                             PySparkWatermarkRecipe(
-                                expression=self._expressions.map(operation.watermark.expression, capabilities=capabilities),
+                                expression=self._expressions.map(
+                                    operation.watermark.expression, capabilities=capabilities
+                                ),
                                 delay=operation.watermark.delay,
                             )
                         ),

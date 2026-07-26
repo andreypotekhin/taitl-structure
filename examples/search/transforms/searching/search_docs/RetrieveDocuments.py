@@ -10,7 +10,7 @@ from structure.plugin.pyspark.dsl.expressions import literal
 
 
 class RetrieveDocuments(Transform):
-    """Select the fixed-size lexical candidate set for every query."""
+    """Select lexical candidates for a given query."""
 
     maximum_candidates = 100
 
@@ -30,8 +30,6 @@ class RetrieveDocuments(Transform):
         request: SearchRequest,
         band: BandMembership,
     ) -> DocumentSearchCandidate:
-        """Deduplicate lexical work for every requested reusable user band."""
-
         inner_join(on=document.id == score.document_id)
         inner_join(on=query.id == score.query_id)
         inner_join(on=request.query_id == query.id)

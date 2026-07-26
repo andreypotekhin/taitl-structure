@@ -1,6 +1,7 @@
 from structure.plugin.pyspark.compiler.model.PySparkAggregateAssignment import PySparkAggregateAssignment
 from structure.plugin.pyspark.compiler.model.PySparkAggregateKey import PySparkAggregateKey
 from structure.plugin.pyspark.compiler.model.PySparkAggregateRecipe import PySparkAggregateRecipe
+from structure.plugin.pyspark.compiler.model.PySparkExactlyOneRecipe import PySparkExactlyOneRecipe
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.plugin.pyspark.compiler.model.PySparkHookRecipe import PySparkHookRecipe
@@ -19,6 +20,7 @@ __all__ = [
     "PySparkAggregateRecipe",
     "PySparkExecutionPlan",
     "PySparkExpressionRecipe",
+    "PySparkExactlyOneRecipe",
     "PySparkHookRecipe",
     "PySparkInputRecipe",
     "PySparkJoinRecipe",

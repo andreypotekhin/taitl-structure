@@ -47,6 +47,8 @@ class ClassifyStreamingCompatibility:
                             streaming_input=bool(input_modes.get(step.source)),
                         )
                     )
+                if operation.exactly_one is not None:
+                    findings.extend(self._exactly_one(step.name, operation.exactly_one.scope))
                 if operation.join is not None:
                     findings.extend(
                         self._join(
@@ -196,6 +198,18 @@ class ClassifyStreamingCompatibility:
                     "defines streaming state and watermark semantics."
                 ),
                 use="Keep this transform batch-only or move selected-row streaming state management outside Structure.",
+            ),
+        )
+
+    def _exactly_one(self, step: str, scope: str) -> tuple[StreamingFinding, ...]:
+        return (
+            StreamingFinding(
+                code="STREAM-E0801",
+                support=StreamingSupport.BATCH_ONLY,
+                step=step,
+                operation=f"exactly_one {scope}",
+                problem="exactly_one(...) computes input cardinality and is batch-only in v1 streaming compatibility.",
+                use="Keep this transform batch-only or enforce relation cardinality before the streaming transform.",
             ),
         )
 

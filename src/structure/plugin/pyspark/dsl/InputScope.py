@@ -20,7 +20,7 @@ from structure.plugin.pyspark.dsl.joins import (
     OverlapPolicy,
     TiePolicy,
 )
-from structure.plugin.pyspark.dsl.operations import OperationPlan
+from structure.plugin.pyspark.dsl.operations import ExactlyOnePlan, OperationPlan
 from structure.plugin.pyspark.dsl.RowScope import RowScope
 from structure.plugin.pyspark.dsl.types import BooleanType
 
@@ -163,6 +163,18 @@ def lookup_join(
         raise TypeError("lookup_join(dedupe=...) requires a JoinDedupe policy")
 
     _record_lookup_join(context, relation, on, how, hint, dedupe)
+    return relation
+
+
+def exactly_one(relation: Relation) -> Relation:
+    context = current_context()
+    if context is None:
+        raise RuntimeError("exactly_one(...) can only be used inside a compiled Structure step method")
+    if not isinstance(relation, InputScope):
+        raise TypeError("exactly_one(relation) requires a Structure relation parameter or transform input")
+    if relation._structure_joined_scope is not None:
+        raise TypeError("exactly_one(relation) must be called before that relation is joined")
+    context.operations.append(OperationPlan.exactly_one_operation(ExactlyOnePlan(scope=relation._structure_input_name)))
     return relation
 
 

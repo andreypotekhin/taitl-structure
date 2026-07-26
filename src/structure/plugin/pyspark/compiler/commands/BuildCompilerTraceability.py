@@ -11,6 +11,9 @@ from structure.plugin.pyspark.compiler.logic.traceability.MapFilterTraceability 
 from structure.plugin.pyspark.compiler.logic.traceability.MapHookTraceability import MapHookTraceability
 from structure.plugin.pyspark.compiler.logic.traceability.MapJoinTraceability import MapJoinTraceability
 from structure.plugin.pyspark.compiler.logic.traceability.MapProjectionTraceability import MapProjectionTraceability
+from structure.plugin.pyspark.compiler.logic.traceability.MapRelationAssertionTraceability import (
+    MapRelationAssertionTraceability,
+)
 from structure.plugin.pyspark.compiler.logic.traceability.MapSelectedRowsTraceability import MapSelectedRowsTraceability
 from structure.plugin.pyspark.compiler.logic.traceability.MapValidationTraceability import MapValidationTraceability
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
@@ -27,6 +30,7 @@ class BuildCompilerTraceability:
         self._hooks = MapHookTraceability()
         self._joins = MapJoinTraceability(self._dataflow)
         self._projections = MapProjectionTraceability(self._dataflow)
+        self._relation_assertions = MapRelationAssertionTraceability()
         self._selected_rows = MapSelectedRowsTraceability(self._dataflow)
         self._udf_boundaries = FindPythonUdfBoundaries()
         self._validations = MapValidationTraceability()
@@ -67,6 +71,8 @@ class BuildCompilerTraceability:
             dependencies.extend(self._selected_rows.dependencies(step))
             provenance.extend(self._deduplication.provenance(plan, step, source_transform, transform_module))
             dependencies.extend(self._deduplication.dependencies(step))
+            provenance.extend(self._relation_assertions.provenance(plan, step, source_transform, transform_module))
+            dependencies.extend(self._relation_assertions.dependencies(step))
             if len(step.results) <= 1:
                 provenance.extend(self._projections.provenance(plan, step, source_transform, transform_module))
                 dependencies.extend(self._projections.dependencies(step))
@@ -80,9 +86,7 @@ class BuildCompilerTraceability:
             else:
                 for result in step.results:
                     provenance.extend(
-                        self._projections.result_provenance(
-                            plan, step, result, source_transform, transform_module
-                        )
+                        self._projections.result_provenance(plan, step, result, source_transform, transform_module)
                     )
                     dependencies.extend(self._projections.result_dependencies(step, result))
                     boundaries.extend(
