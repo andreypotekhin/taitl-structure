@@ -44,7 +44,7 @@ class CapabilityDecision:
             supported=False,
             code=BACKEND_E2401,
             title="Unsupported backend target",
-            problem=f"Structure has no backend capability profile for target_backend = {backend.name!r}.",
+            problem=f"Structure has no installed plugin capability profile for target = {backend.name!r}.",
             why="Compiler, online runtime, and generated output need a known static capability profile.",
             use=f"Set plugin.default to one of: {choices}.",
             docs=requirement.docs,

@@ -56,26 +56,26 @@ class RerankDocuments(Transform):
             "_candidate_id", F.monotonically_increasing_id()
         ).crossJoin(policy)
         fallback = band_fallbacks.select(
-            F.col("band_id").alias("_source_band_id"), "fallback_band_id", "ordinal"
+            F.col("user_band_id").alias("_source_user_band_id"), "user_band_fallback_id", "ordinal"
         )
-        scoped = candidates.alias("candidate").where(F.col("candidate.band_id").isNotNull()).join(
+        scoped = candidates.alias("candidate").where(F.col("candidate.user_band_id").isNotNull()).join(
             fallback.alias("fallback"),
-            F.col("candidate.band_id") == F.col("fallback._source_band_id"),
+            F.col("candidate.user_band_id") == F.col("fallback._source_user_band_id"),
             "inner",
-        ).select("candidate.*", F.col("fallback.fallback_band_id"), F.col("fallback.ordinal"))
-        global_candidates = candidates.where(F.col("band_id").isNull()).withColumn(
-            "fallback_band_id", F.lit(None).cast("string")
+        ).select("candidate.*", F.col("fallback.user_band_fallback_id"), F.col("fallback.ordinal"))
+        global_candidates = candidates.where(F.col("user_band_id").isNull()).withColumn(
+            "user_band_fallback_id", F.lit(None).cast("string")
         ).withColumn("ordinal", F.lit(0).cast("long"))
         options = scoped.unionByName(global_candidates, allowMissingColumns=False)
 
         def select_signal(signals, query_specific, alias):
             condition = (
                 F.col("option.document_id") == F.col("signal.document_id")
-            ) & F.col("signal.band_id").eqNullSafe(F.col("option.fallback_band_id"))
+            ) & F.col("signal.band_id").eqNullSafe(F.col("option.user_band_fallback_id"))
             if query_specific:
                 condition = condition & (F.col("option.query") == F.col("signal.query"))
             choices = options.alias("option").join(signals.alias("signal"), condition, "left").where(
-                F.col("option.fallback_band_id").isNull()
+                F.col("option.user_band_fallback_id").isNull()
                 | (F.col("signal.impression_count") >= F.col("option._minimum_band_impressions"))
             )
             return choices.withColumn(
@@ -113,7 +113,7 @@ class RerankDocuments(Transform):
         maximum = window_max(
             candidate.score,
             over=window(
-                partition_by=(candidate.search_query_id, candidate.band_id, candidate.experiment_id),
+                partition_by=(candidate.search_query_id, candidate.user_band_id, candidate.experiment_id),
                 order_by=candidate.document_id,
                 frame=rows_between(unbounded_preceding(), unbounded_following()),
             ),
@@ -129,7 +129,7 @@ class RerankDocuments(Transform):
 
         return DocumentSearchResult.base(candidate)(
             rank=row_number(
-                partition_by=(candidate.search_query_id, candidate.band_id, candidate.experiment_id),
+                partition_by=(candidate.search_query_id, candidate.user_band_id, candidate.experiment_id),
                 order_by=(candidate.score_rank.desc_nulls_last(), candidate.document_id.asc_nulls_first()),
             ),
         )

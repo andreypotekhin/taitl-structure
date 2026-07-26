@@ -81,9 +81,11 @@ Relation operations change row identity, number, order, or source relation. They
 inference. Their shared design is in `docs/dev/design/TypedRelationOperations.md` and their implementation contract is
 in `docs/dev/specifications/TypedRelationOperations.md`.
 
-The first set is deliberately limited to typed generators, exact-schema union composition, self aliases, relation
-ordering, literal limits, and literal offsets. Sampling, physical-plan directives, dynamic schemas, and source/sink
-ownership stay deferred.
+The first set is deliberately limited to typed generators, branchable exact-schema union composition, self aliases,
+relation ordering, literal limits/offsets, relation assertions, bounded parent-hierarchy closure, and declared-key
+first-qualified priority selection. These latter three remove the new Search cohort, relevance-context, and reranking
+hooks without adopting general recursion or opaque surrogate identities. Sampling, physical-plan directives, dynamic
+schemas, and source/sink ownership stay deferred.
 
 ## Plugin Decomposition
 

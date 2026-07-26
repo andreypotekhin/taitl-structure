@@ -6,5 +6,5 @@ Module: `examples.search.schemas.user`
 
 | Field | Column | Type | Nullable |
 | --- | --- | --- | --- |
-| `user_id` | `user_id` | `string` | no |
-| `band_id` | `band_id` | `string` | yes |
+| `user_band_id` | `user_band_id` | `string` | no |
+| `band_ids` | `band_ids` | `array<string!>` | no |

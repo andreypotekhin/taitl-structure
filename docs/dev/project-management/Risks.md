@@ -64,7 +64,7 @@ storage-write responsibilities, before those contracts are ready.
 ### Mitigation
 
 - Gate Sprint 09 batch support behind no public API changes, no classic-only internals, and live runtime evidence.
-- Keep Spark Connect inside the existing PySpark target boundary as `target_variant = "spark-connect"`.
+- Keep Spark Connect inside the PySpark plugin boundary as `plugin.pyspark.variant = "spark-connect"`.
 - Require online and generated parity tests before public batch support is claimed.
 - Keep public docs explicit that streaming orchestration and storage writes remain outside the Sprint 09 support claim.
 

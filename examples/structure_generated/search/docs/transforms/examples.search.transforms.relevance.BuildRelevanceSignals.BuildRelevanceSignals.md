@@ -8,7 +8,8 @@ Source: `examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevan
 
 - `daily_impressions`: `DailyImpressions`
 - `daily_clicks`: `DailyClicks`
-- `user_bands`: `UserBand`
+- `band_memberships`: `BandMembership`
+- `user_band_memberships`: `UserBandMembership`
 - `band_fallbacks`: `BandFallback`
 - `policy`: `RelevancePolicy`
 

@@ -6,5 +6,15 @@ Module: `examples.search.schemas.user`
 
 | Field | Column | Type | Nullable |
 | --- | --- | --- | --- |
-| `band_id` | `band_id` | `string` | no |
-| `cohort_ids` | `cohort_ids` | `array<string!>` | no |
+| `id` | `id` | `string` | no |
+| `name` | `name` | `string` | yes |
+| `priority` | `priority` | `long` | no |
+| `parent_band_id` | `parent_band_id` | `string` | yes |
+| `age_start` | `age_start` | `long` | yes |
+| `age_end` | `age_end` | `long` | yes |
+| `genders` | `genders` | `array<string!>` | no |
+| `locales` | `locales` | `array<string!>` | no |
+| `countries` | `countries` | `array<string!>` | no |
+| `geo_tags` | `geo_tags` | `array<string!>` | no |
+| `device_types` | `device_types` | `array<string!>` | no |
+| `time_zones` | `time_zones` | `array<string!>` | no |

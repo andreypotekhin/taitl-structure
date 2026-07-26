@@ -177,6 +177,10 @@
       "constant": "BAND_FALLBACK_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.user"
     },
+    "BandMembership": {
+      "constant": "BAND_MEMBERSHIP_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.user"
+    },
     "BehaviorDailyCounts": {
       "constant": "BEHAVIOR_DAILY_COUNTS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.behavior"
@@ -204,18 +208,6 @@
     "Click": {
       "constant": "CLICK_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.clicks"
-    },
-    "Cohort": {
-      "constant": "COHORT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.user"
-    },
-    "CohortLineage": {
-      "constant": "COHORT_LINEAGE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.user"
-    },
-    "CohortMembership": {
-      "constant": "COHORT_MEMBERSHIP_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.user"
     },
     "CorpusStatistics": {
       "constant": "CORPUS_STATISTICS_SCHEMA",
@@ -575,6 +567,10 @@
     },
     "UserBand": {
       "constant": "USER_BAND_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.user"
+    },
+    "UserBandMembership": {
+      "constant": "USER_BAND_MEMBERSHIP_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.user"
     },
     "Word": {

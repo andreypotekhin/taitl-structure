@@ -2,9 +2,9 @@
 
 ## Purpose
 
-This specification defines the v5 configuration and selection contract for installed plugins. It replaces
-the pre-v5 `target_backend`, `target_profile`, and `target_variant` settings when M10 ships. Until then, those legacy
-settings retain their documented v4 behavior and must not be silently interpreted as v5 configuration.
+This specification defines the released v5 configuration and selection contract for installed plugins. It replaces
+the pre-v5 `target_backend`, `target_profile`, and `target_variant` settings; legacy keys are rejected with an
+actionable configuration diagnostic and are never silently translated.
 
 Core owns plugin selection and configuration resolution. A selected plugin receives only its own opaque
 configuration mapping; it cannot read another plugin's settings or alter Core's selection rules.
@@ -15,12 +15,12 @@ The following TOML is the complete v5 plugin configuration shape. The same keys 
 under `[tool.structure]` in `pyproject.toml`.
 
 ```toml
-[plugin]
+[tool.structure.plugin]
 default = "pyspark"
 disabled_distributions = ["example-old-pyspark"]
 plugin_options = "allow_injection"
 
-[plugin.pyspark]
+[tool.structure.plugin.pyspark]
 profile = ">=3.5,<4.1"
 variant = "ordinary"
 ```

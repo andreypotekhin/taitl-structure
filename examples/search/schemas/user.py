@@ -1,4 +1,4 @@
-"""Caller-owned user profiles, cohorts, and derived relevance bands."""
+"""Caller-owned user profiles, bands, and derived user-band contexts."""
 
 from structure import Schema
 from structure.plugin.pyspark import *
@@ -17,13 +17,13 @@ class User(Schema):
     time_zone = string(nullable=True)
 
 
-class Cohort(Schema):
-    """A small caller-owned cohort configuration catalog; it is not event data."""
+class Band(Schema):
+    """A small caller-owned demographic band catalog; it is not event data."""
 
     id = string(nullable=False)
     name = string(nullable=True)
     priority = long(nullable=False)
-    parent_cohort_id = string(nullable=True)
+    parent_band_id = string(nullable=True)
     age_start = long(nullable=True)
     age_end = long(nullable=True)
     genders = array(string(), contains_null=False, nullable=False)
@@ -34,39 +34,35 @@ class Cohort(Schema):
     time_zones = array(string(), contains_null=False, nullable=False)
 
 
-class CohortMembership(Schema):
-    """Most-specific cohort matched by user profile."""
-
-    user_id = string(nullable=False)
-    cohort_id = string(nullable=False)
-    parent_cohort_id = string(nullable=True)
-    priority = long(nullable=False)
-
-
-class CohortLineage(Schema):
-    """A matched leaf cohort and one cohort it satisfies, including itself."""
-
-    cohort_id = string(nullable=False)
-    ancestor_cohort_id = string(nullable=False)
-
-
-class Band(Schema):
-    """Set of most-specific matched cohorts."""
-
-    band_id = string(nullable=False)
-    cohort_ids = array(string(), contains_null=False, nullable=False)
-
-
-class UserBand(Schema):
-    """One user's resolved band; null denotes global."""
+class BandMembership(Schema):
+    """A user's direct or inherited caller band and its singleton user band."""
 
     user_id = string(nullable=False)
     band_id = string(nullable=True)
+    user_band_id = string(nullable=False)
+
+
+class UserBand(Schema):
+    """One reusable resolved user-band context."""
+
+    user_band_id = string(nullable=False)
+    band_ids = array(string(), contains_null=False, nullable=False)
+
+
+class UserBandMembership(Schema):
+    """A user and the reusable context resolved from their most-specific bands."""
+
+    user_id = string(nullable=False)
+    user_band_id = string(nullable=True)
 
 
 class BandFallback(Schema):
-    """Fallback candidate for a band."""
+    """An ordered fallback chain between reusable user bands.
 
-    band_id = string(nullable=False)
-    fallback_band_id = string(nullable=True)
+    ``user_band_id + ordinal`` resolves to ``user_band_fallback_id``. Both IDs
+    refer to rows in :class:`UserBand`; a null fallback ID denotes global.
+    """
+
+    user_band_id = string(nullable=False)
     ordinal = long(nullable=False)
+    user_band_fallback_id = string(nullable=True)

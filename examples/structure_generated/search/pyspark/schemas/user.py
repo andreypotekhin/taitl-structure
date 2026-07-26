@@ -15,11 +15,11 @@ USER_SCHEMA = T.StructType([
     T.StructField("time_zone", T.StringType(), True),
 ])
 
-COHORT_SCHEMA = T.StructType([
+BAND_SCHEMA = T.StructType([
     T.StructField("id", T.StringType(), False),
     T.StructField("name", T.StringType(), True),
     T.StructField("priority", T.LongType(), False),
-    T.StructField("parent_cohort_id", T.StringType(), True),
+    T.StructField("parent_band_id", T.StringType(), True),
     T.StructField("age_start", T.LongType(), True),
     T.StructField("age_end", T.LongType(), True),
     T.StructField("genders", T.ArrayType(T.StringType(), containsNull=False), False),
@@ -30,30 +30,24 @@ COHORT_SCHEMA = T.StructType([
     T.StructField("time_zones", T.ArrayType(T.StringType(), containsNull=False), False),
 ])
 
-COHORT_MEMBERSHIP_SCHEMA = T.StructType([
-    T.StructField("user_id", T.StringType(), False),
-    T.StructField("cohort_id", T.StringType(), False),
-    T.StructField("parent_cohort_id", T.StringType(), True),
-    T.StructField("priority", T.LongType(), False),
-])
-
-COHORT_LINEAGE_SCHEMA = T.StructType([
-    T.StructField("cohort_id", T.StringType(), False),
-    T.StructField("ancestor_cohort_id", T.StringType(), False),
-])
-
-BAND_SCHEMA = T.StructType([
-    T.StructField("band_id", T.StringType(), False),
-    T.StructField("cohort_ids", T.ArrayType(T.StringType(), containsNull=False), False),
-])
-
-USER_BAND_SCHEMA = T.StructType([
+BAND_MEMBERSHIP_SCHEMA = T.StructType([
     T.StructField("user_id", T.StringType(), False),
     T.StructField("band_id", T.StringType(), True),
+    T.StructField("user_band_id", T.StringType(), False),
 ])
 
 BAND_FALLBACK_SCHEMA = T.StructType([
-    T.StructField("band_id", T.StringType(), False),
-    T.StructField("fallback_band_id", T.StringType(), True),
+    T.StructField("user_band_id", T.StringType(), False),
     T.StructField("ordinal", T.LongType(), False),
+    T.StructField("user_band_fallback_id", T.StringType(), True),
+])
+
+USER_BAND_SCHEMA = T.StructType([
+    T.StructField("user_band_id", T.StringType(), False),
+    T.StructField("band_ids", T.ArrayType(T.StringType(), containsNull=False), False),
+])
+
+USER_BAND_MEMBERSHIP_SCHEMA = T.StructType([
+    T.StructField("user_id", T.StringType(), False),
+    T.StructField("user_band_id", T.StringType(), True),
 ])

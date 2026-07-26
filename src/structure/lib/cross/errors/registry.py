@@ -122,7 +122,7 @@ diagnostic_registry = DiagnosticRegistry(
             docs="docs/Diagnostics.md#backend-e2401",
             introduced="1.0.0",
             problem_template="Structure has no capability profile for the configured backend.",
-            use_template='Set target_backend = "pyspark" for v1.',
+            use_template='Set plugin.default = "pyspark" for v1.',
         ),
         DiagnosticEntry(
             code="BACKEND-E2402",
@@ -144,7 +144,9 @@ diagnostic_registry = DiagnosticRegistry(
             docs="docs/Diagnostics.md#connect-e2601",
             introduced="1.0.0",
             problem_template="Runtime code touched a Spark API boundary that Spark Connect cannot expose.",
-            use_template="Use Spark Connect DataFrame APIs or run with target_variant = \"ordinary\".",
+            use_template=(
+                "Use Spark Connect DataFrame APIs or set [tool.structure.plugin.pyspark] variant = \"ordinary\"."
+            ),
         ),
         DiagnosticEntry(
             code="GEN-E0901",

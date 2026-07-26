@@ -8,10 +8,10 @@
       "type": "array<Label!>"
     },
     {
-      "column": "user_band",
-      "name": "user_band",
+      "column": "band_id",
+      "name": "band_id",
       "nullable": true,
-      "type": "Cohort"
+      "type": "string"
     }
   ],
   "generated_by": "Structure",

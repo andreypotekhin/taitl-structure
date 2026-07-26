@@ -14,6 +14,12 @@
       "type": "string"
     },
     {
+      "column": "user_band_id",
+      "name": "user_band_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
       "column": "band_id",
       "name": "band_id",
       "nullable": true,

@@ -10,9 +10,7 @@ Source: `examples.search.transforms.evaluation.with_all.search_docs.eval_doc_sea
 - `requests`: `SearchRequest`
 - `impressions`: `Impression`
 - `clicks`: `Click`
-- `memberships`: `CohortMembership`
-- `cohort_lineage`: `CohortLineage`
-- `user_bands`: `UserBand`
+- `band_memberships`: `BandMembership`
 - `params`: `EvaluationParams`
 - `queries`: `SearchQuery`
 
@@ -38,23 +36,19 @@ Source: `examples.search.transforms.evaluation.with_all.search_docs.eval_doc_sea
 
 ## Dependencies
 
+- `band`
+- `band_memberships`
 - `batch`
 - `click`
 - `clicked`
 - `clicks`
-- `cohort_lineage`
 - `exposure`
 - `impression`
 - `impressions`
-- `lineage`
 - `measured`
-- `membership`
-- `memberships`
 - `params`
 - `request`
 - `requests`
-- `user_band`
-- `user_bands`
 
 ## Target Artifacts
 

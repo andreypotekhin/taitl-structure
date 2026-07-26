@@ -1,6 +1,5 @@
 """Experiment-aware judged ranking evaluation."""
 
-from examples.search.schemas.clicks import SearchRequest
 from examples.search.schemas.evaluation.batch import EvaluationBatch
 from examples.search.schemas.evaluation.judged_quality import (
     DocumentRelevanceJudgment,
@@ -10,7 +9,6 @@ from examples.search.schemas.evaluation.judged_quality import (
 from examples.search.schemas.evaluation.params import EvaluationParams
 from examples.search.schemas.experiment import Experiment
 from examples.search.schemas.search import DocumentSearchResult, SearchQuery
-from examples.search.schemas.user import CohortLineage, CohortMembership, UserBand
 from examples.search.transforms.evaluation.with_all.search_docs.eval_doc_ranking_quality import (
     EvaluateDocumentRankingQuality as BaseEvaluateDocumentRankingQuality,
 )
@@ -22,7 +20,7 @@ from structure.plugin.pyspark import cross_join, group_by, inner_join, left_join
 
 
 class EvaluateDocumentRankingQuality(BaseEvaluateDocumentRankingQuality):
-    """Evaluate result rows belonging to current named experiments."""
+    """Evaluate an experiment."""
 
     experiments = input(Experiment)
     _matches = staticmethod(LabelSelection._matches)
@@ -31,10 +29,7 @@ class EvaluateDocumentRankingQuality(BaseEvaluateDocumentRankingQuality):
     def select_queries(
         self,
         query: SearchQuery,
-        request: SearchRequest,
-        membership: CohortMembership,
-        lineage: CohortLineage,
-        user_band: UserBand,
+        result: DocumentSearchResult,
         batch: EvaluationBatch,
         params: EvaluationParams,
         experiment: Experiment,
@@ -44,28 +39,25 @@ class EvaluateDocumentRankingQuality(BaseEvaluateDocumentRankingQuality):
         cross_join(batch, allow_cartesian=True)
         cross_join(params, allow_cartesian=True)
         cross_join(experiment, allow_cartesian=True)
-        inner_join(on=request.query_id == query.id)
-        inner_join(on=membership.user_id == request.user_id)
-        inner_join(on=lineage.cohort_id == membership.cohort_id)
-        inner_join(on=user_band.user_id == request.user_id)
+        inner_join(on=result.search_query_id == query.id)
         where(
             experiment.is_active,
-            params.user_band.is_not_null(),
-            lineage.ancestor_cohort_id == params.user_band.id,
+            params.band_id.is_not_null(),
+            result.band_id == params.band_id,
             self._matches(query, params),
         )
         group_by(
             window=batch.window,
             params=params,
             experiment_id=experiment.experiment_id,
-            band_id=user_band.band_id,
+            band_id=result.band_id,
             search_query_id=query.id,
         )
         return EvaluationQuery(
             window=batch.window,
-            params=EvaluationParams(labels=params.labels, user_band=params.user_band),
+            params=EvaluationParams(labels=params.labels, band_id=params.band_id),
             experiment_id=experiment.experiment_id,
-            band_id=user_band.band_id,
+            band_id=result.band_id,
             search_query_id=query.id,
         )
 

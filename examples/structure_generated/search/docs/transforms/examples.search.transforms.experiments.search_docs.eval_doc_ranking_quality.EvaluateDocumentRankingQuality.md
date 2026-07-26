@@ -10,10 +10,6 @@ Source: `examples.search.transforms.experiments.search_docs.eval_doc_ranking_qua
 - `queries`: `SearchQuery`
 - `results`: `DocumentSearchResult`
 - `judgments`: `DocumentRelevanceJudgment`
-- `requests`: `SearchRequest`
-- `memberships`: `CohortMembership`
-- `cohort_lineage`: `CohortLineage`
-- `user_bands`: `UserBand`
 - `params`: `EvaluationParams`
 - `experiments`: `Experiment`
 
@@ -37,7 +33,6 @@ Source: `examples.search.transforms.experiments.search_docs.eval_doc_ranking_qua
 ## Dependencies
 
 - `batch`
-- `cohort_lineage`
 - `experiment`
 - `experiments`
 - `ideal`
@@ -45,17 +40,10 @@ Source: `examples.search.transforms.experiments.search_docs.eval_doc_ranking_qua
 - `judgment`
 - `judgment_totals`
 - `judgments`
-- `lineage`
-- `membership`
-- `memberships`
 - `params`
-- `request`
-- `requests`
 - `result`
 - `result_totals`
 - `results`
-- `user_band`
-- `user_bands`
 
 ## Target Artifacts
 

@@ -285,7 +285,7 @@ class CompileTransform:
                 problem=(f"@raw replaces lane(s) that {target.name} does not produce: {', '.join(unknown)}."),
                 use=f"Select one of: {', '.join(output_lanes)}.",
             )
-        target_backend, target_defaulted = cast(tuple[tuple[str, ...], bool], metadata["target_backend"])
+        targets, target_defaulted = cast(tuple[tuple[str, ...], bool], metadata["targets"])
         hook = HookPlan(
             name=item.name,
             phase="raw",
@@ -296,7 +296,7 @@ class CompileTransform:
             schema_mode=cast(SchemaMode, metadata["schema_mode"]),
             project_output=bool(metadata["project_output"]),
             streaming=bool(metadata["streaming"]),
-            target_backend=target_backend,
+            targets=targets,
             target_defaulted=target_defaulted,
             target_platform=cast(str | None, metadata["target_platform"]),
             origin=TransformMemberOrigin.of(item.owner, item.name),
@@ -325,7 +325,7 @@ class CompileTransform:
                 ),
                 use=f"Select lane={target.input_lane}.",
             )
-        target_backend, target_defaulted = cast(tuple[tuple[str, ...], bool], metadata["target_backend"])
+        targets, target_defaulted = cast(tuple[tuple[str, ...], bool], metadata["targets"])
         hook = HookPlan(
             name=item.name,
             phase="raw",
@@ -336,7 +336,7 @@ class CompileTransform:
             schema_mode=cast(SchemaMode, metadata["schema_mode"]),
             project_output=bool(metadata["project_output"]),
             streaming=bool(metadata["streaming"]),
-            target_backend=target_backend,
+            targets=targets,
             target_defaulted=target_defaulted,
             target_platform=cast(str | None, metadata["target_platform"]),
             origin=TransformMemberOrigin.of(item.owner, item.name),

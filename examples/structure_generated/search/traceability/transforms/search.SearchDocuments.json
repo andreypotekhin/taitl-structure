@@ -26,9 +26,9 @@
       "schema": "SearchRequest"
     },
     {
-      "name": "user_bands",
+      "name": "band_memberships",
       "ordinal": 4,
-      "schema": "UserBand"
+      "schema": "BandMembership"
     },
     {
       "name": "query_document_signals",
@@ -78,9 +78,9 @@
       "source": "source:examples.search.transforms.search.SearchDocuments.input.requests"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.input.user_bands",
-      "ir": "ir:SearchDocuments.input.4.user_bands",
-      "source": "source:examples.search.transforms.search.SearchDocuments.input.user_bands"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.input.band_memberships",
+      "ir": "ir:SearchDocuments.input.4.band_memberships",
+      "source": "source:examples.search.transforms.search.SearchDocuments.input.band_memberships"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.input.query_document_signals",
@@ -128,9 +128,9 @@
       "source": "source:examples.search.transforms.search.SearchDocuments.select_candidates.join.3.request"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.0.select_candidates.join.4.user_band",
-      "ir": "ir:SearchDocuments.step.0.select_candidates.join.4.user_band",
-      "source": "source:examples.search.transforms.search.SearchDocuments.select_candidates.join.4.user_band"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.0.select_candidates.join.4.band",
+      "ir": "ir:SearchDocuments.step.0.select_candidates.join.4.band",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_candidates.join.4.band"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.0.select_candidates.select.search_query_id",
@@ -141,6 +141,11 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.0.select_candidates.select.experiment_id",
       "ir": "ir:SearchDocuments.step.0.select_candidates.project.experiment_id",
       "source": "source:examples.search.transforms.search.SearchDocuments.select_candidates.field.experiment_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.0.select_candidates.select.user_band_id",
+      "ir": "ir:SearchDocuments.step.0.select_candidates.project.user_band_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_candidates.field.user_band_id"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.0.select_candidates.select.band_id",
@@ -216,6 +221,11 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.select.experiment_id",
       "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.project.experiment_id",
       "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.field.experiment_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.select.user_band_id",
+      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.project.user_band_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.field.user_band_id"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.select.band_id",
@@ -303,6 +313,11 @@
       "source": "source:examples.search.transforms.search.SearchDocuments.normalize_score.field.experiment_id"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.normalize_score.select.user_band_id",
+      "ir": "ir:SearchDocuments.step.2.normalize_score.project.user_band_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.normalize_score.field.user_band_id"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.normalize_score.select.band_id",
       "ir": "ir:SearchDocuments.step.2.normalize_score.project.band_id",
       "source": "source:examples.search.transforms.search.SearchDocuments.normalize_score.field.band_id"
@@ -378,6 +393,11 @@
       "source": "source:examples.search.transforms.search.SearchDocuments.rank_results.field.experiment_id"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.rank_results.select.user_band_id",
+      "ir": "ir:SearchDocuments.step.3.rank_results.project.user_band_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.rank_results.field.user_band_id"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.rank_results.select.band_id",
       "ir": "ir:SearchDocuments.step.3.rank_results.project.band_id",
       "source": "source:examples.search.transforms.search.SearchDocuments.rank_results.field.band_id"
@@ -442,6 +462,10 @@
       "constant": "BAND_FALLBACK_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.user"
     },
+    "BandMembership": {
+      "constant": "BAND_MEMBERSHIP_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.user"
+    },
     "BehaviorDailyCounts": {
       "constant": "BEHAVIOR_DAILY_COUNTS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.behavior"
@@ -469,18 +493,6 @@
     "Click": {
       "constant": "CLICK_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.clicks"
-    },
-    "Cohort": {
-      "constant": "COHORT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.user"
-    },
-    "CohortLineage": {
-      "constant": "COHORT_LINEAGE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.user"
-    },
-    "CohortMembership": {
-      "constant": "COHORT_MEMBERSHIP_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.user"
     },
     "CorpusStatistics": {
       "constant": "CORPUS_STATISTICS_SCHEMA",
@@ -842,6 +854,10 @@
       "constant": "USER_BAND_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.user"
     },
+    "UserBandMembership": {
+      "constant": "USER_BAND_MEMBERSHIP_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.user"
+    },
     "Word": {
       "constant": "WORD_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.text"
@@ -860,7 +876,7 @@
           "documents",
           "document_scores",
           "requests",
-          "user_bands",
+          "band_memberships",
           "query_document_signals",
           "document_popularity",
           "band_fallbacks",
@@ -880,7 +896,7 @@
           "score",
           "query",
           "request",
-          "user_band"
+          "band"
         ],
         "step": "select_candidates",
         "target": "select_candidates"
@@ -944,15 +960,15 @@
           "cardinality": "row_multiplying",
           "hint": null,
           "how": "left",
-          "right_alias": "user_bands_4"
+          "right_alias": "band_memberships_4"
         },
         "operation": "rowset_join",
         "sources": [
-          "user_band.user_id",
+          "band.user_id",
           "request.user_id"
         ],
         "step": "select_candidates",
-        "target": "select_candidates.join[4].user_band"
+        "target": "select_candidates.join[4].band"
       },
       {
         "detail": {
@@ -978,11 +994,22 @@
       },
       {
         "detail": {
+          "field": "user_band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "band.user_band_id"
+        ],
+        "step": "select_candidates",
+        "target": "DocumentSearchCandidate.user_band_id"
+      },
+      {
+        "detail": {
           "field": "band_id"
         },
         "operation": "project",
         "sources": [
-          "user_band.band_id"
+          "band.band_id"
         ],
         "step": "select_candidates",
         "target": "DocumentSearchCandidate.band_id"
@@ -1007,7 +1034,7 @@
           "score.score",
           "document.id",
           "query.id",
-          "user_band.band_id",
+          "band.user_band_id",
           "score.experiment_id"
         ],
         "step": "select_candidates",
@@ -1134,6 +1161,17 @@
         ],
         "step": "declare_scored_candidates",
         "target": "DocumentSearchCandidate.experiment_id"
+      },
+      {
+        "detail": {
+          "field": "user_band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "DocumentSearchCandidate.user_band_id"
+        ],
+        "step": "declare_scored_candidates",
+        "target": "DocumentSearchCandidate.user_band_id"
       },
       {
         "detail": {
@@ -1305,6 +1343,17 @@
       },
       {
         "detail": {
+          "field": "user_band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "DocumentSearchCandidate.user_band_id"
+        ],
+        "step": "normalize_score",
+        "target": "DocumentSearchCandidate.user_band_id"
+      },
+      {
+        "detail": {
           "field": "band_id"
         },
         "operation": "project",
@@ -1401,7 +1450,7 @@
           "DocumentSearchCandidate.score",
           "DocumentSearchCandidate.document_id",
           "DocumentSearchCandidate.search_query_id",
-          "DocumentSearchCandidate.band_id",
+          "DocumentSearchCandidate.user_band_id",
           "DocumentSearchCandidate.experiment_id",
           "DocumentSearchCandidate.feedback_weight",
           "DocumentSearchCandidate.score_feedback"
@@ -1467,6 +1516,17 @@
       },
       {
         "detail": {
+          "field": "user_band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "DocumentSearchCandidate.user_band_id"
+        ],
+        "step": "rank_results",
+        "target": "DocumentSearchResult.user_band_id"
+      },
+      {
+        "detail": {
           "field": "band_id"
         },
         "operation": "project",
@@ -1485,7 +1545,7 @@
           "DocumentSearchCandidate.score_rank",
           "DocumentSearchCandidate.document_id",
           "DocumentSearchCandidate.search_query_id",
-          "DocumentSearchCandidate.band_id",
+          "DocumentSearchCandidate.user_band_id",
           "DocumentSearchCandidate.experiment_id"
         ],
         "step": "rank_results",
@@ -1625,8 +1685,8 @@
         },
         {
           "how": "left",
-          "input": "user_band",
-          "right_alias": "user_bands_4"
+          "input": "band",
+          "right_alias": "band_memberships_4"
         }
       ],
       "name": "select_candidates",

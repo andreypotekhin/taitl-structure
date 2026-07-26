@@ -2,19 +2,19 @@
   "bases": [],
   "fields": [
     {
-      "column": "cohort_id",
-      "name": "cohort_id",
+      "column": "user_id",
+      "name": "user_id",
       "nullable": false,
       "type": "string"
     },
     {
-      "column": "ancestor_cohort_id",
-      "name": "ancestor_cohort_id",
-      "nullable": false,
+      "column": "user_band_id",
+      "name": "user_band_id",
+      "nullable": true,
       "type": "string"
     }
   ],
   "generated_by": "Structure",
   "module": "examples.search.schemas.user",
-  "name": "CohortLineage"
+  "name": "UserBandMembership"
 }

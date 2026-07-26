@@ -60,8 +60,8 @@ supplies target-specific service facets, and external wheels can supply equivale
 - More detailed performance diagnostics.
 - Generated documentation artifacts for schemas and transforms completed in Sprint 10 adoption tooling.
 - Pytest helper or plugin completed in Sprint 10 adoption tooling.
-- Spark Connect support for completed v1/v2 batch features, using `target_backend = "pyspark"` and
-  `target_variant = "spark-connect"`, backed by live execution/generated-code runtime evidence.
+- Spark Connect support for completed v1/v2 batch features, using `plugin.default = "pyspark"` and
+  `plugin.pyspark.variant = "spark-connect"`, backed by live execution/generated-code runtime evidence.
 - Static first-slice Spark streaming compatibility for caller-owned streaming DataFrames, static lookup side inputs,
   row-local projection/filtering, schema-only validation, and explicit lifecycle/source/sink deferrals. Live
   execution/generated-code runtime evidence remains a v3 entry gate.

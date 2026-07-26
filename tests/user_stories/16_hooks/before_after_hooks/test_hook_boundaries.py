@@ -45,8 +45,8 @@ def test_hooks_record_explicit_input_access_and_projection_validation_contracts(
     ]
 
 
-def test_hooks_record_target_backend_metadata() -> None:
-    """Hooks carry v1 target_backend metadata through the PySpark recipe."""
+def test_hooks_record_target_metadata() -> None:
+    """Hooks carry target metadata through the PySpark recipe."""
 
     class Row(Schema):
         id = string(nullable=False)
@@ -56,22 +56,22 @@ def test_hooks_record_target_backend_metadata() -> None:
         rows = input(Row)
         normalized = output(Row)
 
-        @raw(inout=input(rows) | lane(rows), target_backend=["pyspark"])
+        @raw(inout=input(rows) | lane(rows), target=["pyspark"])
         def prepare(self, *, rows, spark, ctx):
             return rows
 
         def normalize(self, row: Row) -> Row:
             return Row(id=row.id)
 
-        @raw(target_backend="pyspark")
+        @raw(target="pyspark")
         def clean(self, *, rows, spark, ctx):
             return rows
 
     plan = _analysis(NormalizeRows)
 
-    assert plan.steps[0].before_hooks[0].target_backend == ("pyspark",)
+    assert plan.steps[0].before_hooks[0].targets == ("pyspark",)
     assert not plan.steps[0].before_hooks[0].target_defaulted
-    assert plan.steps[0].after_hooks[0].target_backend == ("pyspark",)
+    assert plan.steps[0].after_hooks[0].targets == ("pyspark",)
     assert not plan.steps[0].after_hooks[0].target_defaulted
 
 
@@ -89,7 +89,7 @@ def test_non_pyspark_only_hook_target_fails_before_runtime() -> None:
         def normalize(self, row: Row) -> Row:
             return Row(id=row.id)
 
-        @raw(target_backend="polars")
+        @raw(target="polars")
         def clean(self, *, rows, spark, ctx):
             return rows
 

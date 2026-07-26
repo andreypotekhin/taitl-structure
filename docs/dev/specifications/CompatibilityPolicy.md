@@ -8,7 +8,7 @@ compatibility contract behind that page.
 The compatibility policy must:
 
 - define supported Python versions;
-- define supported PySpark versions and the default `target_profile` range;
+- define supported PySpark versions and the default PySpark plugin profile range;
 - define the boundary for future non-PySpark backends;
 - define Spark Connect scope;
 - define semantic versioning expectations;
@@ -25,9 +25,13 @@ The default PySpark target is:
 
 ```toml
 execution_mode = "online"
-target_backend = "pyspark"
-target_profile = ">=3.5,<4.1"
-target_variant = "ordinary"
+
+[plugin]
+default = "pyspark"
+
+[plugin.pyspark]
+profile = ">=3.5,<4.1"
+variant = "ordinary"
 ```
 
 This means execution and generated-code execution should target PySpark 3.5.x and 4.0.x APIs unless the user configures a
@@ -46,7 +50,7 @@ diagnostics must not scatter PySpark-version conditionals unless a narrow check 
 
 The target layer must be version-aware enough to:
 
-- avoid APIs outside the configured `target_profile` range;
+- avoid APIs outside the configured PySpark plugin profile range;
 - reject requested DSL features that cannot run for that range;
 - produce diagnostics that state the required PySpark version when a feature is unavailable;
 - keep online semantics and generated output deterministic for the same source, config, and Structure version.
@@ -93,9 +97,12 @@ version; users rebuild artifacts after any incompatible change.
 Spark Connect is a PySpark target variant, not a separate backend id. The configuration shape is:
 
 ```toml
-target_backend = "pyspark"
-target_profile = ">=3.5,<4.1"
-target_variant = "spark-connect"
+[plugin]
+default = "pyspark"
+
+[plugin.pyspark]
+profile = ">=3.5,<4.1"
+variant = "spark-connect"
 ```
 
 Mainstream execution/generated-code execution targets ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs. Sprint
@@ -227,10 +234,10 @@ New optional keys may appear in minor releases. Removing or changing a documente
 
 - [Compatibility.md](../../Compatibility.md) documents the public policy.
 - `Readme.md` links to the compatibility policy.
-- [Configuration.md](../../Configuration.md) documents `target_backend`, `target_profile`, `target_variant`, and
-  compatibility diagnostics.
+- [Configuration.md](../../Configuration.md) documents plugin selection, PySpark plugin options, and compatibility
+  diagnostics.
 - [Configuration.md](../../Configuration.md) documents `execution_mode`.
 - [BackendCapabilities.md](BackendCapabilities.md) documents the backend capability interface and PySpark v1 profile.
 - [Roadmap.md](../Roadmap.md) and public roadmap text schedule Spark Connect batch support promotion for Sprint 09.
-- The seed config defaults are `execution_mode = "online"`, `target_profile = ">=3.5,<4.1"`, and
-  `target_variant = "ordinary"`.
+- The seed config defaults are `execution_mode = "online"`, `plugin.default = "pyspark"`,
+  `plugin.pyspark.profile = ">=3.5,<4.1"`, and `plugin.pyspark.variant = "ordinary"`.

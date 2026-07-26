@@ -2,16 +2,16 @@
   "bases": [],
   "fields": [
     {
-      "column": "user_id",
-      "name": "user_id",
+      "column": "user_band_id",
+      "name": "user_band_id",
       "nullable": false,
       "type": "string"
     },
     {
-      "column": "band_id",
-      "name": "band_id",
-      "nullable": true,
-      "type": "string"
+      "column": "band_ids",
+      "name": "band_ids",
+      "nullable": false,
+      "type": "array<string!>"
     }
   ],
   "generated_by": "Structure",

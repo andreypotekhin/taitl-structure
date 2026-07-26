@@ -73,11 +73,49 @@ equivalent public plan. An unordered bound fails with a determinism diagnostic.
 
 `sample` remains deferred pending seed, replacement, and reproducibility semantics.
 
+## Branchable Union
+
+Two or more typed relation branches may converge through `union_all` into one declared lane when every branch returns
+the same declared schema. This supports a global branch plus one row for every qualifying fallback context. Each branch
+retains source provenance; union preserves duplicates and makes no ordering claim.
+
+## Relation Assertions
+
+`require_unique(keys...)` fails at Spark evaluation when two rows share the declared key. `require_all(predicate)`
+fails when any row does not satisfy the symbolic predicate. `require_reference(values, reference, value_key=...,
+reference_key=..., nulls="allow")` fails when a non-null value has no declared reference row. All three operations
+preserve rows on success, record their source relation and constraint in explain/traceability, and are batch-only
+until a streaming validation contract is defined.
+
+## Bounded Parent Hierarchy
+
+`hierarchy_closure(...)` accepts a node relation, literal `max_depth`, node id, parent id, and explicit ordering. It
+returns typed `(node_id, ancestor_id, depth)` closure rows and an ordered path representation. Missing parent, cycle,
+and depth-overrun policies are `ERROR` in v6. Implementation uses a finite chain of self joins; it must not use a
+driver action, Python UDF, or recursive Spark extension.
+
+`hierarchy_fallbacks(paths, parent=..., ordinal=...)` expands each declared ordered band path by replacing its final
+band with its parent until no parent remains, then emits one terminal empty/global path. It returns one row per input
+path and ordinal, preserves the canonical ordered band-id array for a subsequent symbolic digest, and makes no
+implicit ordering claim beyond the explicit ordinal. `ResolveCohortBands` uses closure/path, ordered collection,
+`posexplode`, and this operation to produce its `BandMembership` and `BandFallback` outputs. Its leaf-match query
+uses the existing self-alias plus anti-existence relation pattern; no new raw DataFrame operation is required.
+
+## First-Qualified Priority Selection
+
+`select_first_qualified(...)` accepts a stable declared row key, a candidate relation, an eligibility predicate, an
+ordered priority expression, and explicit missing/tie policies. It yields at most one selected candidate per key.
+The key must be sourced from business fields; generated surrogate IDs such as `monotonically_increasing_id()` are not
+admitted. The operation uses a typed join plus row-number selection internally and records both candidate and selected
+sources in traceability. `RerankDocuments` uses it to choose exact, parent, then global feedback.
+
 ## Diagnostics
 
 Diagnostics must cover: undeclared/incompatible schemas, unsupported generator element type, missing result ordinal,
 null/outer generator ambiguity, alias collision, invalid self-join use, unaligned union schemas, unsupported set
-duplicate policy, absent ordering, negative/nonliteral bounds, unsupported target, and invalid streaming placement.
+duplicate policy, absent ordering, negative/nonliteral bounds, nonunique assertion keys, failed relation predicates,
+missing reference, missing parent, cycle, hierarchy-depth overrun, malformed hierarchy fallback input, unstable priority key, ambiguous/missing priority candidate,
+unsupported target, and invalid streaming placement.
 
 ## Acceptance
 

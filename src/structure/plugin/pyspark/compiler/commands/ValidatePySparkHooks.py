@@ -23,13 +23,13 @@ class ValidatePySparkHooks:
         owner = getattr(origin, "owner", None)
         if not isinstance(owner, type):
             return
-        if "all" not in hook.target_backend and "pyspark" not in hook.target_backend:
-            targets = ", ".join(hook.target_backend)
+        if "all" not in hook.targets and "pyspark" not in hook.targets:
+            targets = ", ".join(hook.targets)
             self._error(
                 hook,
                 f"{owner.__name__}.{hook.name} targets {targets}, but v1 active hook execution is PySpark only.",
-                'Use target_backend="pyspark" for v1, or keep non-PySpark hook declarations for a future backend.',
-                target_backend=targets,
+                'Use target="pyspark" for v1, or keep non-PySpark hook declarations for a future plugin.',
+                target=targets,
             )
         parameters = list(inspect.signature(getattr(owner, hook.name)).parameters.values())
         if not parameters or parameters[0].name != "self":

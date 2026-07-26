@@ -10,7 +10,7 @@ Source: `examples.search.transforms.searching.search_docs.SearchDocuments.Search
 - `documents`: `Document`
 - `document_scores`: `DocumentScore`
 - `requests`: `SearchRequest`
-- `user_bands`: `UserBand`
+- `band_memberships`: `BandMembership`
 - `query_document_signals`: `QueryDocumentSignals`
 - `document_popularity`: `DocumentPopularity`
 - `band_fallbacks`: `BandFallback`
@@ -30,14 +30,14 @@ Source: `examples.search.transforms.searching.search_docs.SearchDocuments.Search
 
 ## Dependencies
 
+- `band`
+- `band_memberships`
 - `document_scores`
 - `queries`
 - `query`
 - `request`
 - `requests`
 - `score`
-- `user_band`
-- `user_bands`
 
 ## Target Artifacts
 

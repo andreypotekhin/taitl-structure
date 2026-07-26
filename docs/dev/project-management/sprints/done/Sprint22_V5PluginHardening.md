@@ -80,3 +80,14 @@ shim obscures which package owns target APIs.
   opaque selected-plugin options, and PySpark interprets its own variant setting in the plugin schema facet.
 - [x] (2026-07-24) Made `RuntimeDiagnostic` generic with a `target` field. PySpark profile and variant are now
   plugin-added diagnostic context rather than Core runtime-diagnostic fields.
+- [x] (2026-07-25) Renamed hook target constraints in the Core DSL and Plugin API IR from `target_backend` to
+  `target` / `targets`; PySpark validates those generic targets within its compiler facet.
+- [x] (2026-07-25) Revalidated the supported ordinary PySpark lanes after the breaking migration: PySpark 3.5
+  passed 26 tests with 3 intentional skips; PySpark 4.0 passed all 29 tests. Aligned stale Search live-test rows with
+  their current declared schema field order before recording this evidence.
+- [x] (2026-07-26) Completed the final live matrix after raising the Spark Connect gateway default heap to 3 GiB:
+  PySpark 3.5 passed 26 tests with 3 intentional skips; PySpark 4.0 passed all 29; Spark Connect 3.5 passed 24 with
+  5 intentional skips; Spark Connect 4.0 passed 27 with 2 intentional skips.
+- [x] (2026-07-26) Updated the tracked configuration seed to use `plugin.default` and the PySpark-owned plugin
+  table. Also promoted the documented 3 GiB Spark Connect gateway heap to the Compose default while preserving the
+  environment override; no live lane has been rerun yet.

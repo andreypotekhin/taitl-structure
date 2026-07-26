@@ -33,6 +33,10 @@ renderer/evaluator owner, test location, and public-reference wording. When a ro
 | Other set operations | deferred | `Gaps.md` | Distinct vs multiset semantics require separate contracts | dedicated specification amendment |
 | Self alias | scheduled | Sprint 25 | Two typed occurrences of one relation for explicit self join | provenance and alias collision tests |
 | Relation order/limit/offset | scheduled | Sprint 25 | Typed ordering, literal bounds, output-boundary ordering claim | ordering and rejection tests |
+| Branchable typed union | scheduled | Sprint 25 | Global and fallback-context branches converge into one lane; relevance client | branch cardinality and parity |
+| `require_unique` / `require_all` / `require_reference` | scheduled | Sprint 25 | Spark-plan key, predicate, and nullable parent-reference assertions for band catalogs | diagnostic/runtime parity |
+| Bounded parent hierarchy and fallbacks | scheduled | Sprint 25 | Literal depth plus missing-parent/cycle policies; typed closure/path and ordered parent-substitution fallbacks for `ResolveCohortBands` | closure/path/fallback and invalid-catalog evidence |
+| First-qualified priority selection | scheduled | Sprint 25 | Declared row key, eligibility, and fallback order; rerank client | exact/parent/global parity and tie failures |
 | Sampling | deferred | `Gaps.md` | Seed/replacement/reproducibility not yet defined | physical-plan specification |
 | Bounded ordered `scan(...)` | scheduled | Sprint 26 | Separate typed recurrence plan | Fibonacci parity and live evidence |
 | Binary/encoding | deferred | `Gaps.md` | Requires Binary type | type-model specification |

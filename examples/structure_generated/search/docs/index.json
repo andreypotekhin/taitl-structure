@@ -5,87 +5,6 @@
       "bases": [],
       "fields": [
         {
-          "column": "band_id",
-          "name": "band_id",
-          "nullable": false,
-          "type": "string"
-        },
-        {
-          "column": "cohort_ids",
-          "name": "cohort_ids",
-          "nullable": false,
-          "type": "array<string!>"
-        }
-      ],
-      "module": "examples.search.schemas.user",
-      "name": "Band"
-    },
-    {
-      "bases": [],
-      "fields": [
-        {
-          "column": "band_id",
-          "name": "band_id",
-          "nullable": false,
-          "type": "string"
-        },
-        {
-          "column": "fallback_band_id",
-          "name": "fallback_band_id",
-          "nullable": true,
-          "type": "string"
-        },
-        {
-          "column": "ordinal",
-          "name": "ordinal",
-          "nullable": false,
-          "type": "long"
-        }
-      ],
-      "module": "examples.search.schemas.user",
-      "name": "BandFallback"
-    },
-    {
-      "bases": [],
-      "fields": [
-        {
-          "column": "id",
-          "name": "id",
-          "nullable": false,
-          "type": "string"
-        },
-        {
-          "column": "impression_id",
-          "name": "impression_id",
-          "nullable": false,
-          "type": "string"
-        },
-        {
-          "column": "user_id",
-          "name": "user_id",
-          "nullable": true,
-          "type": "string"
-        },
-        {
-          "column": "dwell_seconds",
-          "name": "dwell_seconds",
-          "nullable": false,
-          "type": "double"
-        },
-        {
-          "column": "occurred_at",
-          "name": "occurred_at",
-          "nullable": false,
-          "type": "timestamp"
-        }
-      ],
-      "module": "examples.search.schemas.clicks",
-      "name": "Click"
-    },
-    {
-      "bases": [],
-      "fields": [
-        {
           "column": "id",
           "name": "id",
           "nullable": false,
@@ -104,8 +23,8 @@
           "type": "long"
         },
         {
-          "column": "parent_cohort_id",
-          "name": "parent_cohort_id",
+          "column": "parent_band_id",
+          "name": "parent_band_id",
           "nullable": true,
           "type": "string"
         },
@@ -159,26 +78,32 @@
         }
       ],
       "module": "examples.search.schemas.user",
-      "name": "Cohort"
+      "name": "Band"
     },
     {
       "bases": [],
       "fields": [
         {
-          "column": "cohort_id",
-          "name": "cohort_id",
+          "column": "user_band_id",
+          "name": "user_band_id",
           "nullable": false,
           "type": "string"
         },
         {
-          "column": "ancestor_cohort_id",
-          "name": "ancestor_cohort_id",
+          "column": "ordinal",
+          "name": "ordinal",
           "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "user_band_fallback_id",
+          "name": "user_band_fallback_id",
+          "nullable": true,
           "type": "string"
         }
       ],
       "module": "examples.search.schemas.user",
-      "name": "CohortLineage"
+      "name": "BandFallback"
     },
     {
       "bases": [],
@@ -190,26 +115,57 @@
           "type": "string"
         },
         {
-          "column": "cohort_id",
-          "name": "cohort_id",
-          "nullable": false,
-          "type": "string"
-        },
-        {
-          "column": "parent_cohort_id",
-          "name": "parent_cohort_id",
+          "column": "band_id",
+          "name": "band_id",
           "nullable": true,
           "type": "string"
         },
         {
-          "column": "priority",
-          "name": "priority",
+          "column": "user_band_id",
+          "name": "user_band_id",
           "nullable": false,
-          "type": "long"
+          "type": "string"
         }
       ],
       "module": "examples.search.schemas.user",
-      "name": "CohortMembership"
+      "name": "BandMembership"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "impression_id",
+          "name": "impression_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "user_id",
+          "name": "user_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "dwell_seconds",
+          "name": "dwell_seconds",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "occurred_at",
+          "name": "occurred_at",
+          "nullable": false,
+          "type": "timestamp"
+        }
+      ],
+      "module": "examples.search.schemas.clicks",
+      "name": "Click"
     },
     {
       "bases": [],
@@ -1482,6 +1438,12 @@
           "type": "string"
         },
         {
+          "column": "user_band_id",
+          "name": "user_band_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
           "column": "band_id",
           "name": "band_id",
           "nullable": true,
@@ -1661,6 +1623,12 @@
           "column": "experiment_id",
           "name": "experiment_id",
           "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "user_band_id",
+          "name": "user_band_id",
+          "nullable": true,
           "type": "string"
         },
         {
@@ -1880,10 +1848,10 @@
           "type": "array<Label!>"
         },
         {
-          "column": "user_band",
-          "name": "user_band",
+          "column": "band_id",
+          "name": "band_id",
           "nullable": true,
-          "type": "Cohort"
+          "type": "string"
         }
       ],
       "module": "examples.search.schemas.evaluation.params",
@@ -4458,20 +4426,39 @@
       "bases": [],
       "fields": [
         {
+          "column": "user_band_id",
+          "name": "user_band_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "band_ids",
+          "name": "band_ids",
+          "nullable": false,
+          "type": "array<string!>"
+        }
+      ],
+      "module": "examples.search.schemas.user",
+      "name": "UserBand"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
           "column": "user_id",
           "name": "user_id",
           "nullable": false,
           "type": "string"
         },
         {
-          "column": "band_id",
-          "name": "band_id",
+          "column": "user_band_id",
+          "name": "user_band_id",
           "nullable": true,
           "type": "string"
         }
       ],
       "module": "examples.search.schemas.user",
-      "name": "UserBand"
+      "name": "UserBandMembership"
     },
     {
       "bases": [],
@@ -4876,36 +4863,31 @@
           "schema": "User"
         },
         {
-          "name": "cohorts",
+          "name": "bands",
           "ordinal": 1,
-          "schema": "Cohort"
+          "schema": "Band"
         }
       ],
       "name": "ResolveCohortBands",
       "outputs": [
         {
-          "name": "cohort_memberships",
+          "name": "band_memberships",
           "ordinal": 0,
-          "schema": "CohortMembership"
-        },
-        {
-          "name": "cohort_lineage",
-          "ordinal": 1,
-          "schema": "CohortLineage"
-        },
-        {
-          "name": "bands",
-          "ordinal": 2,
-          "schema": "Band"
+          "schema": "BandMembership"
         },
         {
           "name": "user_bands",
-          "ordinal": 3,
+          "ordinal": 1,
           "schema": "UserBand"
         },
         {
+          "name": "user_band_memberships",
+          "ordinal": 2,
+          "schema": "UserBandMembership"
+        },
+        {
           "name": "band_fallbacks",
-          "ordinal": 4,
+          "ordinal": 3,
           "schema": "BandFallback"
         }
       ],
@@ -4923,28 +4905,23 @@
             }
           ],
           "name": "declare_outputs",
-          "output_lane": "cohort_memberships",
-          "output_schema": "CohortMembership",
+          "output_lane": "band_memberships",
+          "output_schema": "BandMembership",
           "results": [
             {
-              "frame": "cohort_memberships",
-              "lane": "cohort_memberships",
-              "schema": "CohortMembership"
-            },
-            {
-              "frame": "cohort_lineage",
-              "lane": "cohort_lineage",
-              "schema": "CohortLineage"
-            },
-            {
-              "frame": "bands",
-              "lane": "bands",
-              "schema": "Band"
+              "frame": "band_memberships",
+              "lane": "band_memberships",
+              "schema": "BandMembership"
             },
             {
               "frame": "user_bands",
               "lane": "user_bands",
               "schema": "UserBand"
+            },
+            {
+              "frame": "user_band_memberships",
+              "lane": "user_band_memberships",
+              "schema": "UserBandMembership"
             },
             {
               "frame": "band_fallbacks",
@@ -5762,23 +5739,15 @@
     {
       "dependencies": [
         "batch",
-        "cohort_lineage",
         "ideal",
         "ideal_dcgs",
         "judgment",
         "judgment_totals",
         "judgments",
-        "lineage",
-        "membership",
-        "memberships",
         "params",
-        "request",
-        "requests",
         "result",
         "result_totals",
-        "results",
-        "user_band",
-        "user_bands"
+        "results"
       ],
       "inputs": [
         {
@@ -5802,28 +5771,8 @@
           "schema": "DocumentRelevanceJudgment"
         },
         {
-          "name": "requests",
-          "ordinal": 4,
-          "schema": "SearchRequest"
-        },
-        {
-          "name": "memberships",
-          "ordinal": 5,
-          "schema": "CohortMembership"
-        },
-        {
-          "name": "cohort_lineage",
-          "ordinal": 6,
-          "schema": "CohortLineage"
-        },
-        {
-          "name": "user_bands",
-          "ordinal": 7,
-          "schema": "UserBand"
-        },
-        {
           "name": "params",
-          "ordinal": 8,
+          "ordinal": 4,
           "schema": "EvaluationParams"
         }
       ],
@@ -5854,27 +5803,9 @@
             },
             {
               "driving": false,
-              "parameter": "request",
-              "schema": "SearchRequest",
-              "source": "requests"
-            },
-            {
-              "driving": false,
-              "parameter": "membership",
-              "schema": "CohortMembership",
-              "source": "memberships"
-            },
-            {
-              "driving": false,
-              "parameter": "lineage",
-              "schema": "CohortLineage",
-              "source": "cohort_lineage"
-            },
-            {
-              "driving": false,
-              "parameter": "user_band",
-              "schema": "UserBand",
-              "source": "user_bands"
+              "parameter": "result",
+              "schema": "DocumentSearchResult",
+              "source": "results"
             },
             {
               "driving": false,
@@ -5900,19 +5831,7 @@
             },
             {
               "how": "inner",
-              "input": "request"
-            },
-            {
-              "how": "inner",
-              "input": "membership"
-            },
-            {
-              "how": "inner",
-              "input": "lineage"
-            },
-            {
-              "how": "inner",
-              "input": "user_band"
+              "input": "result"
             }
           ],
           "name": "select_queries",
@@ -6176,23 +6095,19 @@
     },
     {
       "dependencies": [
+        "band",
+        "band_memberships",
         "batch",
         "click",
         "clicked",
         "clicks",
-        "cohort_lineage",
         "exposure",
         "impression",
         "impressions",
-        "lineage",
         "measured",
-        "membership",
-        "memberships",
         "params",
         "request",
-        "requests",
-        "user_band",
-        "user_bands"
+        "requests"
       ],
       "inputs": [
         {
@@ -6216,28 +6131,18 @@
           "schema": "Click"
         },
         {
-          "name": "memberships",
+          "name": "band_memberships",
           "ordinal": 4,
-          "schema": "CohortMembership"
-        },
-        {
-          "name": "cohort_lineage",
-          "ordinal": 5,
-          "schema": "CohortLineage"
-        },
-        {
-          "name": "user_bands",
-          "ordinal": 6,
-          "schema": "UserBand"
+          "schema": "BandMembership"
         },
         {
           "name": "params",
-          "ordinal": 7,
+          "ordinal": 5,
           "schema": "EvaluationParams"
         },
         {
           "name": "queries",
-          "ordinal": 8,
+          "ordinal": 6,
           "schema": "SearchQuery"
         }
       ],
@@ -6274,21 +6179,9 @@
             },
             {
               "driving": false,
-              "parameter": "membership",
-              "schema": "CohortMembership",
-              "source": "memberships"
-            },
-            {
-              "driving": false,
-              "parameter": "lineage",
-              "schema": "CohortLineage",
-              "source": "cohort_lineage"
-            },
-            {
-              "driving": false,
-              "parameter": "user_band",
-              "schema": "UserBand",
-              "source": "user_bands"
+              "parameter": "band",
+              "schema": "BandMembership",
+              "source": "band_memberships"
             },
             {
               "driving": false,
@@ -6318,15 +6211,7 @@
             },
             {
               "how": "inner",
-              "input": "membership"
-            },
-            {
-              "how": "inner",
-              "input": "lineage"
-            },
-            {
-              "how": "inner",
-              "input": "user_band"
+              "input": "band"
             }
           ],
           "name": "select_requests",
@@ -7421,23 +7306,15 @@
     {
       "dependencies": [
         "batch",
-        "cohort_lineage",
         "ideal",
         "ideal_dcgs",
         "judgment",
         "judgment_totals",
         "judgments",
-        "lineage",
-        "membership",
-        "memberships",
         "params",
-        "request",
-        "requests",
         "result",
         "result_totals",
-        "results",
-        "user_band",
-        "user_bands"
+        "results"
       ],
       "inputs": [
         {
@@ -7461,28 +7338,8 @@
           "schema": "DocumentRelevanceJudgment"
         },
         {
-          "name": "requests",
-          "ordinal": 4,
-          "schema": "SearchRequest"
-        },
-        {
-          "name": "memberships",
-          "ordinal": 5,
-          "schema": "CohortMembership"
-        },
-        {
-          "name": "cohort_lineage",
-          "ordinal": 6,
-          "schema": "CohortLineage"
-        },
-        {
-          "name": "user_bands",
-          "ordinal": 7,
-          "schema": "UserBand"
-        },
-        {
           "name": "params",
-          "ordinal": 8,
+          "ordinal": 4,
           "schema": "EvaluationParams"
         }
       ],
@@ -7513,27 +7370,9 @@
             },
             {
               "driving": false,
-              "parameter": "request",
-              "schema": "SearchRequest",
-              "source": "requests"
-            },
-            {
-              "driving": false,
-              "parameter": "membership",
-              "schema": "CohortMembership",
-              "source": "memberships"
-            },
-            {
-              "driving": false,
-              "parameter": "lineage",
-              "schema": "CohortLineage",
-              "source": "cohort_lineage"
-            },
-            {
-              "driving": false,
-              "parameter": "user_band",
-              "schema": "UserBand",
-              "source": "user_bands"
+              "parameter": "result",
+              "schema": "DocumentSearchResult",
+              "source": "results"
             },
             {
               "driving": false,
@@ -7559,19 +7398,7 @@
             },
             {
               "how": "inner",
-              "input": "request"
-            },
-            {
-              "how": "inner",
-              "input": "membership"
-            },
-            {
-              "how": "inner",
-              "input": "lineage"
-            },
-            {
-              "how": "inner",
-              "input": "user_band"
+              "input": "result"
             }
           ],
           "name": "select_queries",
@@ -7835,21 +7662,17 @@
     },
     {
       "dependencies": [
+        "band",
+        "band_memberships",
         "batch",
         "click",
         "clicked",
         "clicks",
-        "cohort_lineage",
         "exposure",
         "impression",
         "impressions",
-        "lineage",
         "measured",
-        "membership",
-        "memberships",
-        "params",
-        "user_band",
-        "user_bands"
+        "params"
       ],
       "inputs": [
         {
@@ -7873,23 +7696,13 @@
           "schema": "Click"
         },
         {
-          "name": "memberships",
+          "name": "band_memberships",
           "ordinal": 4,
-          "schema": "CohortMembership"
-        },
-        {
-          "name": "cohort_lineage",
-          "ordinal": 5,
-          "schema": "CohortLineage"
-        },
-        {
-          "name": "user_bands",
-          "ordinal": 6,
-          "schema": "UserBand"
+          "schema": "BandMembership"
         },
         {
           "name": "params",
-          "ordinal": 7,
+          "ordinal": 5,
           "schema": "EvaluationParams"
         }
       ],
@@ -7920,21 +7733,9 @@
             },
             {
               "driving": false,
-              "parameter": "membership",
-              "schema": "CohortMembership",
-              "source": "memberships"
-            },
-            {
-              "driving": false,
-              "parameter": "lineage",
-              "schema": "CohortLineage",
-              "source": "cohort_lineage"
-            },
-            {
-              "driving": false,
-              "parameter": "user_band",
-              "schema": "UserBand",
-              "source": "user_bands"
+              "parameter": "band",
+              "schema": "BandMembership",
+              "source": "band_memberships"
             },
             {
               "driving": false,
@@ -7960,15 +7761,7 @@
             },
             {
               "how": "inner",
-              "input": "membership"
-            },
-            {
-              "how": "inner",
-              "input": "lineage"
-            },
-            {
-              "how": "inner",
-              "input": "user_band"
+              "input": "band"
             }
           ],
           "name": "select_requests",
@@ -8293,7 +8086,6 @@
     {
       "dependencies": [
         "batch",
-        "cohort_lineage",
         "experiment",
         "experiments",
         "ideal",
@@ -8301,17 +8093,10 @@
         "judgment",
         "judgment_totals",
         "judgments",
-        "lineage",
-        "membership",
-        "memberships",
         "params",
-        "request",
-        "requests",
         "result",
         "result_totals",
-        "results",
-        "user_band",
-        "user_bands"
+        "results"
       ],
       "inputs": [
         {
@@ -8335,33 +8120,13 @@
           "schema": "DocumentRelevanceJudgment"
         },
         {
-          "name": "requests",
-          "ordinal": 4,
-          "schema": "SearchRequest"
-        },
-        {
-          "name": "memberships",
-          "ordinal": 5,
-          "schema": "CohortMembership"
-        },
-        {
-          "name": "cohort_lineage",
-          "ordinal": 6,
-          "schema": "CohortLineage"
-        },
-        {
-          "name": "user_bands",
-          "ordinal": 7,
-          "schema": "UserBand"
-        },
-        {
           "name": "params",
-          "ordinal": 8,
+          "ordinal": 4,
           "schema": "EvaluationParams"
         },
         {
           "name": "experiments",
-          "ordinal": 9,
+          "ordinal": 5,
           "schema": "Experiment"
         }
       ],
@@ -8392,27 +8157,9 @@
             },
             {
               "driving": false,
-              "parameter": "request",
-              "schema": "SearchRequest",
-              "source": "requests"
-            },
-            {
-              "driving": false,
-              "parameter": "membership",
-              "schema": "CohortMembership",
-              "source": "memberships"
-            },
-            {
-              "driving": false,
-              "parameter": "lineage",
-              "schema": "CohortLineage",
-              "source": "cohort_lineage"
-            },
-            {
-              "driving": false,
-              "parameter": "user_band",
-              "schema": "UserBand",
-              "source": "user_bands"
+              "parameter": "result",
+              "schema": "DocumentSearchResult",
+              "source": "results"
             },
             {
               "driving": false,
@@ -8448,19 +8195,7 @@
             },
             {
               "how": "inner",
-              "input": "request"
-            },
-            {
-              "how": "inner",
-              "input": "membership"
-            },
-            {
-              "how": "inner",
-              "input": "lineage"
-            },
-            {
-              "how": "inner",
-              "input": "user_band"
+              "input": "result"
             }
           ],
           "name": "select_queries",
@@ -8724,25 +8459,21 @@
     },
     {
       "dependencies": [
+        "band",
+        "band_memberships",
         "batch",
         "click",
         "clicked",
         "clicks",
-        "cohort_lineage",
         "experiment",
         "experiments",
         "exposure",
         "impression",
         "impressions",
-        "lineage",
         "measured",
-        "membership",
-        "memberships",
         "params",
         "request",
-        "requests",
-        "user_band",
-        "user_bands"
+        "requests"
       ],
       "inputs": [
         {
@@ -8766,33 +8497,23 @@
           "schema": "Click"
         },
         {
-          "name": "memberships",
+          "name": "band_memberships",
           "ordinal": 4,
-          "schema": "CohortMembership"
-        },
-        {
-          "name": "cohort_lineage",
-          "ordinal": 5,
-          "schema": "CohortLineage"
-        },
-        {
-          "name": "user_bands",
-          "ordinal": 6,
-          "schema": "UserBand"
+          "schema": "BandMembership"
         },
         {
           "name": "params",
-          "ordinal": 7,
+          "ordinal": 5,
           "schema": "EvaluationParams"
         },
         {
           "name": "queries",
-          "ordinal": 8,
+          "ordinal": 6,
           "schema": "SearchQuery"
         },
         {
           "name": "experiments",
-          "ordinal": 9,
+          "ordinal": 7,
           "schema": "Experiment"
         }
       ],
@@ -8829,21 +8550,9 @@
             },
             {
               "driving": false,
-              "parameter": "membership",
-              "schema": "CohortMembership",
-              "source": "memberships"
-            },
-            {
-              "driving": false,
-              "parameter": "lineage",
-              "schema": "CohortLineage",
-              "source": "cohort_lineage"
-            },
-            {
-              "driving": false,
-              "parameter": "user_band",
-              "schema": "UserBand",
-              "source": "user_bands"
+              "parameter": "band",
+              "schema": "BandMembership",
+              "source": "band_memberships"
             },
             {
               "driving": false,
@@ -8879,15 +8588,7 @@
             },
             {
               "how": "inner",
-              "input": "membership"
-            },
-            {
-              "how": "inner",
-              "input": "lineage"
-            },
-            {
-              "how": "inner",
-              "input": "user_band"
+              "input": "band"
             },
             {
               "how": "inner",
@@ -9804,18 +9505,23 @@
           "schema": "DailyClicks"
         },
         {
-          "name": "user_bands",
+          "name": "band_memberships",
           "ordinal": 2,
-          "schema": "UserBand"
+          "schema": "BandMembership"
+        },
+        {
+          "name": "user_band_memberships",
+          "ordinal": 3,
+          "schema": "UserBandMembership"
         },
         {
           "name": "band_fallbacks",
-          "ordinal": 3,
+          "ordinal": 4,
           "schema": "BandFallback"
         },
         {
           "name": "policy",
-          "ordinal": 4,
+          "ordinal": 5,
           "schema": "RelevancePolicy"
         }
       ],
@@ -10558,14 +10264,14 @@
     },
     {
       "dependencies": [
+        "band",
+        "band_memberships",
         "document_scores",
         "queries",
         "query",
         "request",
         "requests",
-        "score",
-        "user_band",
-        "user_bands"
+        "score"
       ],
       "inputs": [
         {
@@ -10589,9 +10295,9 @@
           "schema": "SearchRequest"
         },
         {
-          "name": "user_bands",
+          "name": "band_memberships",
           "ordinal": 4,
-          "schema": "UserBand"
+          "schema": "BandMembership"
         },
         {
           "name": "query_document_signals",
@@ -10659,9 +10365,9 @@
             },
             {
               "driving": false,
-              "parameter": "user_band",
-              "schema": "UserBand",
-              "source": "user_bands"
+              "parameter": "band",
+              "schema": "BandMembership",
+              "source": "band_memberships"
             }
           ],
           "joins": [
@@ -10679,7 +10385,7 @@
             },
             {
               "how": "left",
-              "input": "user_band"
+              "input": "band"
             }
           ],
           "name": "select_candidates",

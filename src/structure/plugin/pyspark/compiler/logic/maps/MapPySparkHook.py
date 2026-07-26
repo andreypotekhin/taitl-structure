@@ -15,7 +15,7 @@ class MapPySparkHook:
             schema_mode=hook.schema_mode,
             project_output=hook.project_output,
             streaming=hook.streaming,
-            target_backend=hook.target_backend,
+            targets=hook.targets,
             target_defaulted=hook.target_defaulted,
             target_platform=hook.target_platform,
             origin=hook.origin,

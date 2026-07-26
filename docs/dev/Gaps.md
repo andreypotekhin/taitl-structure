@@ -72,6 +72,12 @@ for ordinary PySpark; its user contract is [Explicit Scalar Python UDFs](specifi
 opt-in, type/nullability declared, warning-governed, and excluded from Spark Connect. It is not a substitute for an
 unsupported symbolic operation.
 
+The v6 scheduled relation additions are intentionally narrow: branchable typed union, relation assertions (including
+parent-reference validation), bounded parent-hierarchy closure with deterministic fallback expansion, and
+first-qualified priority selection. They exist to replace Search's cohort-band, relevance, and reranking hooks.
+General recursive relations, dynamic-depth traversal, arbitrary graph algorithms, user-defined hierarchy traversal,
+and implicit surrogate row identifiers remain deferred until a separate contract defines them.
+
 ## DSL
 
 ### Column API

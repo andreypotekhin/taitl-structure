@@ -10,7 +10,7 @@ from examples.structure_generated.search.pyspark.schemas.behavior import BEHAVIO
 from examples.structure_generated.search.pyspark.schemas.clicks import CLICK_SCHEMA, IMPRESSION_SCHEMA, SEARCH_REQUEST_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.params import EVALUATION_PARAMS_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.search import SEARCH_QUERY_SCHEMA
-from examples.structure_generated.search.pyspark.schemas.user import COHORT_LINEAGE_SCHEMA, COHORT_MEMBERSHIP_SCHEMA, USER_BAND_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.user import BAND_MEMBERSHIP_SCHEMA
 
 
 class EvaluateDocumentSearchBehaviorGenerated:
@@ -26,9 +26,7 @@ class EvaluateDocumentSearchBehaviorGenerated:
         requests: DataFrame,
         impressions: DataFrame,
         clicks: DataFrame,
-        memberships: DataFrame,
-        cohort_lineage: DataFrame,
-        user_bands: DataFrame,
+        band_memberships: DataFrame,
         params: DataFrame,
         queries: DataFrame,
     ) -> TransformResult:
@@ -36,18 +34,14 @@ class EvaluateDocumentSearchBehaviorGenerated:
         assert_schema(requests, SEARCH_REQUEST_SCHEMA, name="SearchRequest", mode="strict")
         assert_schema(impressions, IMPRESSION_SCHEMA, name="Impression", mode="strict")
         assert_schema(clicks, CLICK_SCHEMA, name="Click", mode="strict")
-        assert_schema(memberships, COHORT_MEMBERSHIP_SCHEMA, name="CohortMembership", mode="strict")
-        assert_schema(cohort_lineage, COHORT_LINEAGE_SCHEMA, name="CohortLineage", mode="strict")
-        assert_schema(user_bands, USER_BAND_SCHEMA, name="UserBand", mode="strict")
+        assert_schema(band_memberships, BAND_MEMBERSHIP_SCHEMA, name="BandMembership", mode="strict")
         assert_schema(params, EVALUATION_PARAMS_SCHEMA, name="EvaluationParams", mode="strict")
         assert_schema(queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
         _input_batch = batch
         _input_requests = requests
         _input_impressions = impressions
         _input_clicks = clicks
-        _input_memberships = memberships
-        _input_cohort_lineage = cohort_lineage
-        _input_user_bands = user_bands
+        _input_band_memberships = band_memberships
         _input_params = params
         _input_queries = queries
 
@@ -63,30 +57,18 @@ class EvaluateDocumentSearchBehaviorGenerated:
             (F.col("search_query.id") == F.col("requests_3.query_id")),
             "inner",
         )
-        memberships_4_joined = memberships.alias("memberships_4")
+        band_memberships_4_joined = band_memberships.alias("band_memberships_4")
         selected_requests = selected_requests.join(
-            memberships_4_joined,
-            (F.col("memberships_4.user_id") == F.col("requests_3.user_id")),
+            band_memberships_4_joined,
+            (F.col("band_memberships_4.user_id") == F.col("requests_3.user_id")),
             "inner",
         )
-        cohort_lineage_5_joined = cohort_lineage.alias("cohort_lineage_5")
-        selected_requests = selected_requests.join(
-            cohort_lineage_5_joined,
-            (F.col("cohort_lineage_5.cohort_id") == F.col("memberships_4.cohort_id")),
-            "inner",
-        )
-        user_bands_6_joined = user_bands.alias("user_bands_6")
-        selected_requests = selected_requests.join(
-            user_bands_6_joined,
-            (F.col("user_bands_6.user_id") == F.col("requests_3.user_id")),
-            "inner",
-        )
-        selected_requests = selected_requests.where((F.col("params_2.user_band").isNotNull()) & ((F.col("cohort_lineage_5.ancestor_cohort_id") == F.col("params_2.user_band.id"))) & (F.forall(F.col("params_2.labels"), lambda requested: F.exists(F.col("params_2.labels"), lambda candidate: ((candidate.getField('name') == requested.getField('name')) & (F.element_at(F.col("search_query.labels"), candidate.getField('name')) == candidate.getField('value')))))) & (((F.col("requests_3.requested_at") >= F.col("batch.window.start")) & (F.col("requests_3.requested_at") < F.col("batch.window.end")))))
+        selected_requests = selected_requests.where((F.col("params_2.band_id").isNotNull()) & ((F.col("band_memberships_4.band_id") == F.col("params_2.band_id"))) & (F.forall(F.col("params_2.labels"), lambda requested: F.exists(F.col("params_2.labels"), lambda candidate: ((candidate.getField('name') == requested.getField('name')) & (F.element_at(F.col("search_query.labels"), candidate.getField('name')) == candidate.getField('value')))))) & (((F.col("requests_3.requested_at") >= F.col("batch.window.start")) & (F.col("requests_3.requested_at") < F.col("batch.window.end")))))
         selected_requests = selected_requests.select(
             F.col("batch.window"),
-            F.struct(F.col("params_2.labels").alias("labels"), F.col("params_2.user_band").alias("user_band")).alias("params"),
+            F.struct(F.col("params_2.labels").alias("labels"), F.col("params_2.band_id").alias("band_id")).alias("params"),
             F.col("requests_3.experiment_id"),
-            F.col("user_bands_6.band_id"),
+            F.col("band_memberships_4.user_band_id").alias("band_id"),
             F.col("requests_3.id").alias("search_request_id"),
             F.col("requests_3.ranking_version"),
             F.col("requests_3.query"),

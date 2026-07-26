@@ -10,10 +10,6 @@ Source: `examples.search.transforms.evaluation.with_users.search_docs.eval_doc_r
 - `queries`: `SearchQuery`
 - `results`: `DocumentSearchResult`
 - `judgments`: `DocumentRelevanceJudgment`
-- `requests`: `SearchRequest`
-- `memberships`: `CohortMembership`
-- `cohort_lineage`: `CohortLineage`
-- `user_bands`: `UserBand`
 - `params`: `EvaluationParams`
 
 ## Outputs
@@ -36,23 +32,15 @@ Source: `examples.search.transforms.evaluation.with_users.search_docs.eval_doc_r
 ## Dependencies
 
 - `batch`
-- `cohort_lineage`
 - `ideal`
 - `ideal_dcgs`
 - `judgment`
 - `judgment_totals`
 - `judgments`
-- `lineage`
-- `membership`
-- `memberships`
 - `params`
-- `request`
-- `requests`
 - `result`
 - `result_totals`
 - `results`
-- `user_band`
-- `user_bands`
 
 ## Target Artifacts
 

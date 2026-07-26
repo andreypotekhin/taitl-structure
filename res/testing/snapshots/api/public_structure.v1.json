@@ -299,7 +299,7 @@
       "kind": "function",
       "module": "structure.core.dsl.model.transforms.transform_api",
       "qualname": "raw",
-      "signature": "(function: 'Callable | None' = None, *, input: 'object | None' = None, output: 'object | None' = None, inout: 'object | None' = None, schema_mode: 'SchemaMode' = <SchemaMode.STRICT: 'strict'>, project_output: 'bool' = False, streaming: 'bool' = False, target_backend: 'str | Iterable[str] | None' = None, target_platform: 'str | None' = None)"
+      "signature": "(function: 'Callable | None' = None, *, input: 'object | None' = None, output: 'object | None' = None, inout: 'object | None' = None, schema_mode: 'SchemaMode' = <SchemaMode.STRICT: 'strict'>, project_output: 'bool' = False, streaming: 'bool' = False, target: 'str | Iterable[str] | None' = None, target_platform: 'str | None' = None)"
     },
     "special": {
       "dataclass_fields": [],

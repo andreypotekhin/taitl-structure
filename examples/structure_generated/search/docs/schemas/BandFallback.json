@@ -2,15 +2,9 @@
   "bases": [],
   "fields": [
     {
-      "column": "band_id",
-      "name": "band_id",
+      "column": "user_band_id",
+      "name": "user_band_id",
       "nullable": false,
-      "type": "string"
-    },
-    {
-      "column": "fallback_band_id",
-      "name": "fallback_band_id",
-      "nullable": true,
       "type": "string"
     },
     {
@@ -18,6 +12,12 @@
       "name": "ordinal",
       "nullable": false,
       "type": "long"
+    },
+    {
+      "column": "user_band_fallback_id",
+      "name": "user_band_fallback_id",
+      "nullable": true,
+      "type": "string"
     }
   ],
   "generated_by": "Structure",

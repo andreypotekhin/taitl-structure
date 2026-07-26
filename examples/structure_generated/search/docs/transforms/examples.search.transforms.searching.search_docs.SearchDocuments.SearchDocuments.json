@@ -1,13 +1,13 @@
 {
   "dependencies": [
+    "band",
+    "band_memberships",
     "document_scores",
     "queries",
     "query",
     "request",
     "requests",
-    "score",
-    "user_band",
-    "user_bands"
+    "score"
   ],
   "generated_by": "Structure",
   "inputs": [
@@ -32,9 +32,9 @@
       "schema": "SearchRequest"
     },
     {
-      "name": "user_bands",
+      "name": "band_memberships",
       "ordinal": 4,
-      "schema": "UserBand"
+      "schema": "BandMembership"
     },
     {
       "name": "query_document_signals",
@@ -102,9 +102,9 @@
         },
         {
           "driving": false,
-          "parameter": "user_band",
-          "schema": "UserBand",
-          "source": "user_bands"
+          "parameter": "band",
+          "schema": "BandMembership",
+          "source": "band_memberships"
         }
       ],
       "joins": [
@@ -122,7 +122,7 @@
         },
         {
           "how": "left",
-          "input": "user_band"
+          "input": "band"
         }
       ],
       "name": "select_candidates",

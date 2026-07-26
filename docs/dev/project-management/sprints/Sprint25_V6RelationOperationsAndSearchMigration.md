@@ -19,8 +19,12 @@ reason rather than an accidental API gap.
 - Exact-schema `union_all` and `union_by_name`, then separately tested set/multiset forms where required.
 - Named self-alias scopes for explicit self joins.
 - Typed relation `order_by`, literal `limit`, and literal `offset`.
-- Slice-by-slice migrations for ExtractText, overlap/BM25 scoring, index summaries, similarity queries, and similarity
-  reduction after each prerequisite exists.
+- Branchable typed union, relation assertions including parent references, bounded parent-hierarchy closure with
+  deterministic fallback expansion, and declared-key first-qualified
+  priority selection.
+- Slice-by-slice migrations for ExtractText, overlap/BM25 scoring, index summaries, similarity queries, similarity
+  reduction, relevance-context expansion, document reranking, and cohort-band resolution after each prerequisite
+  exists.
 - Raw-versus-typed equivalence fixtures with deterministic row normalization.
 
 ### Out of Scope

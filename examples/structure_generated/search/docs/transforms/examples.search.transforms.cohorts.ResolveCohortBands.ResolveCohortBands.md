@@ -7,19 +7,18 @@ Source: `examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBand
 ## Inputs
 
 - `users`: `User`
-- `cohorts`: `Cohort`
+- `bands`: `Band`
 
 ## Outputs
 
-- `cohort_memberships`: `CohortMembership`
-- `cohort_lineage`: `CohortLineage`
-- `bands`: `Band`
+- `band_memberships`: `BandMembership`
 - `user_bands`: `UserBand`
+- `user_band_memberships`: `UserBandMembership`
 - `band_fallbacks`: `BandFallback`
 
 ## Step methods
 
-- `declare_outputs`: `User` -> `CohortMembership`
+- `declare_outputs`: `User` -> `BandMembership`
 
 ## Dependencies
 

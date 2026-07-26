@@ -2,7 +2,7 @@
 
 from examples.search.schemas.clicks import DailyClicks, DailyImpressions
 from examples.search.schemas.relevance import DocumentPopularity, QueryDocumentSignals, RelevancePolicy
-from examples.search.schemas.user import BandFallback, UserBand
+from examples.search.schemas.user import BandFallback, BandMembership, UserBandMembership
 from structure import Transform, input, lane, output, raw, step
 from structure.plugin.pyspark import (
     coalesce,
@@ -27,7 +27,8 @@ class BuildRelevanceSignals(Transform):
 
     daily_impressions = input(DailyImpressions)
     daily_clicks = input(DailyClicks)
-    user_bands = input(UserBand)
+    band_memberships = input(BandMembership)
+    user_band_memberships = input(UserBandMembership)
     band_fallbacks = input(BandFallback)
     policy = input(RelevancePolicy)
     context_impressions = lane(DailyImpressions)
@@ -53,10 +54,20 @@ class BuildRelevanceSignals(Transform):
         )
 
     @raw(
-        input=[input(daily_impressions), input(user_bands), input(band_fallbacks)],
+        input=[input(daily_impressions), input(band_memberships), input(user_band_memberships), input(band_fallbacks)],
         output=context_impressions,
     )
-    def expand_impressions(self, *, daily_impressions, user_bands, band_fallbacks, context_impressions, spark, ctx):
+    def expand_impressions(
+        self,
+        *,
+        daily_impressions,
+        band_memberships,
+        user_band_memberships,
+        band_fallbacks,
+        context_impressions,
+        spark,
+        ctx,
+    ):
         """Duplicate logged-in facts into their non-global fallback contexts.
 
         Global rows stay single and scoped rows are expanded only here, keeping all
@@ -66,17 +77,23 @@ class BuildRelevanceSignals(Transform):
         from pyspark.sql import functions as F
 
         global_facts = daily_impressions.withColumn("band_id", F.lit(None).cast("string"))
-        fallback_candidates = band_fallbacks.where(F.col("fallback_band_id").isNotNull()).select(
-            F.col("band_id").alias("source_band_id"),
-            "fallback_band_id",
+        fallback_candidates = band_fallbacks.where(F.col("user_band_fallback_id").isNotNull()).select(
+            F.col("user_band_id").alias("source_user_band_id"),
+            "user_band_fallback_id",
             "ordinal",
         )
-        scoped = daily_impressions.drop("band_id").join(user_bands, "user_id", "left").join(
+        personalized = user_band_memberships.where(F.col("user_band_id").isNotNull())
+        scoped = daily_impressions.drop("band_id").join(personalized, "user_id", "left").join(
             fallback_candidates,
-            user_bands.band_id == fallback_candidates.source_band_id,
+            personalized.user_band_id == fallback_candidates.source_user_band_id,
             "inner",
-        ).drop("band_id", "source_band_id").withColumnRenamed("fallback_band_id", "band_id").drop("ordinal")
-        return global_facts.unionByName(scoped, allowMissingColumns=False)
+        ).drop("user_band_id", "source_user_band_id").withColumnRenamed("user_band_fallback_id", "band_id").drop("ordinal")
+        band_scoped = daily_impressions.drop("band_id").join(
+            band_memberships.where(F.col("band_id").isNotNull()).select("user_id", F.col("user_band_id").alias("band_id")),
+            "user_id",
+            "inner",
+        )
+        return global_facts.unionByName(scoped, allowMissingColumns=False).unionByName(band_scoped, allowMissingColumns=False)
 
     @step(input=daily_clicks, output=context_clicks)
     def declare_context_clicks(self, click: DailyClicks) -> DailyClicks:
@@ -97,24 +114,43 @@ class BuildRelevanceSignals(Transform):
             long_click_count=click.long_click_count,
         )
 
-    @raw(input=[input(daily_clicks), input(user_bands), input(band_fallbacks)], output=context_clicks)
-    def expand_clicks(self, *, daily_clicks, user_bands, band_fallbacks, context_clicks, spark, ctx):
+    @raw(
+        input=[input(daily_clicks), input(band_memberships), input(user_band_memberships), input(band_fallbacks)],
+        output=context_clicks,
+    )
+    def expand_clicks(
+        self,
+        *,
+        daily_clicks,
+        band_memberships,
+        user_band_memberships,
+        band_fallbacks,
+        context_clicks,
+        spark,
+        ctx,
+    ):
         """Duplicate click facts into the same non-global fallback contexts as exposures."""
 
         from pyspark.sql import functions as F
 
         global_facts = daily_clicks.withColumn("band_id", F.lit(None).cast("string"))
-        fallback_candidates = band_fallbacks.where(F.col("fallback_band_id").isNotNull()).select(
-            F.col("band_id").alias("source_band_id"),
-            "fallback_band_id",
+        fallback_candidates = band_fallbacks.where(F.col("user_band_fallback_id").isNotNull()).select(
+            F.col("user_band_id").alias("source_user_band_id"),
+            "user_band_fallback_id",
             "ordinal",
         )
-        scoped = daily_clicks.drop("band_id").join(user_bands, "user_id", "left").join(
+        personalized = user_band_memberships.where(F.col("user_band_id").isNotNull())
+        scoped = daily_clicks.drop("band_id").join(personalized, "user_id", "left").join(
             fallback_candidates,
-            user_bands.band_id == fallback_candidates.source_band_id,
+            personalized.user_band_id == fallback_candidates.source_user_band_id,
             "inner",
-        ).drop("band_id", "source_band_id").withColumnRenamed("fallback_band_id", "band_id").drop("ordinal")
-        return global_facts.unionByName(scoped, allowMissingColumns=False)
+        ).drop("user_band_id", "source_user_band_id").withColumnRenamed("user_band_fallback_id", "band_id").drop("ordinal")
+        band_scoped = daily_clicks.drop("band_id").join(
+            band_memberships.where(F.col("band_id").isNotNull()).select("user_id", F.col("user_band_id").alias("band_id")),
+            "user_id",
+            "inner",
+        )
+        return global_facts.unionByName(scoped, allowMissingColumns=False).unionByName(band_scoped, allowMissingColumns=False)
 
     @step(input=[context_impressions, context_clicks, policy], output=query_signal_totals)
     def summarize_query(

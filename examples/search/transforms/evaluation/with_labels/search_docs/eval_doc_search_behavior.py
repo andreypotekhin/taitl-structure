@@ -31,7 +31,7 @@ class EvaluateDocumentSearchBehavior(BaseEvaluateDocumentSearchBehavior):
         )
         return BehaviorRequest(
             window=batch.window,
-            params=EvaluationParams(labels=params.labels, user_band=params.user_band),
+            params=EvaluationParams(labels=params.labels, band_id=params.band_id),
             experiment_id=request.experiment_id,
             band_id=None,
             search_request_id=request.id,

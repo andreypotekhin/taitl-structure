@@ -8,6 +8,7 @@ Module: `examples.search.schemas.search`
 | --- | --- | --- | --- |
 | `search_query_id` | `search_query_id` | `string` | no |
 | `experiment_id` | `experiment_id` | `string` | no |
+| `user_band_id` | `user_band_id` | `string` | yes |
 | `band_id` | `band_id` | `string` | yes |
 | `query` | `query` | `string` | no |
 | `candidate_rank` | `candidate_rank` | `long` | no |

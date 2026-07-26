@@ -14,7 +14,7 @@ from structure.core.dsl.model.transforms.SpecialFunction import SpecialFunction
 from structure.core.dsl.model.transforms.Transform import Transform
 
 _CLASS_OPTIONS = {"target", "validate_intermediate", "streaming"}
-_STEP_METHOD_OPTIONS = {"target_backend", "target_platform", "target_profile"}
+_STEP_METHOD_OPTIONS = {"target", "target_platform", "target_profile"}
 _METHOD_BINDING_OPTIONS = {"input", "output", "inout"}
 _METHOD_OPTIMIZATION_OPTIONS = {"cache"}
 
@@ -242,7 +242,7 @@ def _reserved_operations(kwargs: dict[str, object]) -> tuple[object, ...]:
 
 
 def _step_method_option(name: str, value: object) -> object:
-    if name in {"target_backend", "target_platform", "target_profile"}:
+    if name in {"target", "target_platform", "target_profile"}:
         if not isinstance(value, str) or not value:
             raise TypeError(f"{name} must be a non-empty string")
     return value
@@ -328,7 +328,7 @@ def raw(
     schema_mode: SchemaMode = SchemaMode.STRICT,
     project_output: bool = False,
     streaming: bool = False,
-    target_backend: str | Iterable[str] | None = None,
+    target: str | Iterable[str] | None = None,
     target_platform: str | None = None,
 ):
     if not isinstance(schema_mode, SchemaMode):
@@ -373,9 +373,9 @@ def raw(
     if target_platform is not None:
         _step_method_option("target_platform", target_platform)
 
-    def decorate(target: Callable) -> Callable:
+    def decorate(method: Callable) -> Callable:
         setattr(
-            target,
+            method,
             "_structure_raw",
             {
                 "inputs": inputs or None,
@@ -383,34 +383,34 @@ def raw(
                 "schema_mode": schema_mode,
                 "project_output": project_output,
                 "streaming": streaming,
-                "target_backend": _hook_target_backend(target_backend),
+                "targets": _hook_targets(target),
                 "target_platform": target_platform,
             },
         )
-        return target
+        return method
 
     if function is None:
         return decorate
     return decorate(function)
 
 
-def _hook_target_backend(value: str | Iterable[str] | None) -> tuple[tuple[str, ...], bool]:
+def _hook_targets(value: str | Iterable[str] | None) -> tuple[tuple[str, ...], bool]:
     if value is None:
         return ("pyspark",), True
     if isinstance(value, str):
         if not value:
-            raise TypeError("target_backend must be a non-empty backend name")
+            raise TypeError("target must be a non-empty target name")
         if value == "configured":
             return ("pyspark",), False
         return (value,), False
     if isinstance(value, bytes):
-        raise TypeError("target_backend must be a backend name or a non-empty backend name sequence")
+        raise TypeError("target must be a target name or a non-empty target name sequence")
     try:
         targets = tuple(cast(Iterable[object], value))
     except TypeError as error:
-        raise TypeError("target_backend must be a backend name or a non-empty backend name sequence") from error
+        raise TypeError("target must be a target name or a non-empty target name sequence") from error
     if not targets or not all(isinstance(target, str) and target for target in targets):
-        raise TypeError("target_backend must contain non-empty backend names")
+        raise TypeError("target must contain non-empty target names")
     return cast(tuple[str, ...], targets), False
 
 

@@ -292,8 +292,9 @@ honest boundary for actions, driver algorithms, arbitrary Python, sources/sinks,
   feature changes.
 - Sprint 24: admit lambda-bound struct field access, explicit analytic maxima, deterministic ordered collections,
   exact-one validation, and global aggregates; replace both Security raw hooks with ordinary steps.
-- Sprint 25: admit typed relation operations—generators, set composition, self aliases, ordering, limit, and offset—
-  and retire Search hooks in independently verifiable slices.
+- Sprint 25: admit typed relation operations—generators, branch/set composition, self aliases, ordering, bounds,
+  assertions including parent references, bounded hierarchy/fallback expansion, and priority selection—and retire Search hooks in independently verifiable
+  slices.
 - Sprint 26: deliver the separately specified bounded ordered timeline `scan(...)` recurrence feature once the shared
   relation/recipe boundaries are stable.
 - Sprint 27: close release evidence and the unaddressed Challenges.md inventory, with no new feature family admitted.
@@ -311,8 +312,9 @@ honest boundary for actions, driver algorithms, arbitrary Python, sources/sinks,
 - A documented, shipped opt-in scalar `@special(type="udf")` example for ordinary PySpark, including declared
   return/nullability contracts and warning guidance; this is not automatic UDF fallback and remains excluded from
   Spark Connect.
-- Typed relation operations with declared schemas and cardinality for the Search migrations: row generators, union
-  composition, self aliases, ordering, limit, and offset.
+- Typed relation operations with declared schemas and cardinality for the Search migrations: row generators,
+  branch/union composition, self aliases, ordering, limit, offset, relation assertions including parent references,
+  bounded hierarchy closure/fallback expansion, and declared-key priority selection.
 - The bounded batch-only `scan(...)` recurrence feature from
   `docs/dev/planning/P07182601.V6-timeline-scan-recurrence.plan.md`, including partitioned Fibonacci evidence.
 - A maintained disposition for Challenges C27--C34, executable specification coverage for each new feature, and

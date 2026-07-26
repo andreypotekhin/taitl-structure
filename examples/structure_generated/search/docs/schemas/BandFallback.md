@@ -6,6 +6,6 @@ Module: `examples.search.schemas.user`
 
 | Field | Column | Type | Nullable |
 | --- | --- | --- | --- |
-| `band_id` | `band_id` | `string` | no |
-| `fallback_band_id` | `fallback_band_id` | `string` | yes |
+| `user_band_id` | `user_band_id` | `string` | no |
 | `ordinal` | `ordinal` | `long` | no |
+| `user_band_fallback_id` | `user_band_fallback_id` | `string` | yes |

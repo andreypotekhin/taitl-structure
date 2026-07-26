@@ -17,7 +17,7 @@ if [[ "${backend}" == spark-connect* ]]; then
 
     connect_args=(
         --master "${connect_master}"
-        --driver-memory "${STRUCTURE_SPARK_CONNECT_DRIVER_MEMORY:-2g}"
+        --driver-memory "${STRUCTURE_SPARK_CONNECT_DRIVER_MEMORY:-3g}"
         --class org.apache.spark.sql.connect.service.SparkConnectServer
         --conf "spark.connect.grpc.binding.port=${connect_port}"
         --conf "spark.connect.grpc.binding.address=127.0.0.1"

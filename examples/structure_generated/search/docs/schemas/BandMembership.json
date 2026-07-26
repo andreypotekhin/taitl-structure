@@ -8,25 +8,19 @@
       "type": "string"
     },
     {
-      "column": "cohort_id",
-      "name": "cohort_id",
-      "nullable": false,
-      "type": "string"
-    },
-    {
-      "column": "parent_cohort_id",
-      "name": "parent_cohort_id",
+      "column": "band_id",
+      "name": "band_id",
       "nullable": true,
       "type": "string"
     },
     {
-      "column": "priority",
-      "name": "priority",
+      "column": "user_band_id",
+      "name": "user_band_id",
       "nullable": false,
-      "type": "long"
+      "type": "string"
     }
   ],
   "generated_by": "Structure",
   "module": "examples.search.schemas.user",
-  "name": "CohortMembership"
+  "name": "BandMembership"
 }

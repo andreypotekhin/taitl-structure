@@ -17,7 +17,7 @@ class PySparkHookRecipe:
     schema_mode: SchemaMode
     project_output: bool
     streaming: bool
-    target_backend: tuple[str, ...] = ("pyspark",)
+    targets: tuple[str, ...] = ("pyspark",)
     target_defaulted: bool = True
     target_platform: str | None = None
     origin: TransformMemberOrigin | None = None

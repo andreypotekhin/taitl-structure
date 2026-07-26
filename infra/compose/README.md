@@ -27,7 +27,8 @@ Run one backend's test selection:
     make integration BACKEND=spark-connect40
 
 The Spark Connect lanes are experimental. They start the Spark Connect gateway inside the test runner container and do
-not add separate Connect services to the Compose stack.
+not add separate Connect services to the Compose stack. The gateway defaults to a 3 GiB driver heap, which can be
+overridden with `STRUCTURE_SPARK_CONNECT_DRIVER_MEMORY` for constrained or larger local environments.
 
 The test runner is removed after every run, while the Spark master/worker services and the versioned Spark Connect Ivy
 caches are retained locally. This avoids repeat image builds, Spark startup, and Spark Connect dependency downloads.

@@ -1,7 +1,6 @@
 {
   "dependencies": [
     "batch",
-    "cohort_lineage",
     "experiment",
     "experiments",
     "ideal",
@@ -9,17 +8,10 @@
     "judgment",
     "judgment_totals",
     "judgments",
-    "lineage",
-    "membership",
-    "memberships",
     "params",
-    "request",
-    "requests",
     "result",
     "result_totals",
-    "results",
-    "user_band",
-    "user_bands"
+    "results"
   ],
   "generated_by": "Structure",
   "inputs": [
@@ -44,33 +36,13 @@
       "schema": "DocumentRelevanceJudgment"
     },
     {
-      "name": "requests",
-      "ordinal": 4,
-      "schema": "SearchRequest"
-    },
-    {
-      "name": "memberships",
-      "ordinal": 5,
-      "schema": "CohortMembership"
-    },
-    {
-      "name": "cohort_lineage",
-      "ordinal": 6,
-      "schema": "CohortLineage"
-    },
-    {
-      "name": "user_bands",
-      "ordinal": 7,
-      "schema": "UserBand"
-    },
-    {
       "name": "params",
-      "ordinal": 8,
+      "ordinal": 4,
       "schema": "EvaluationParams"
     },
     {
       "name": "experiments",
-      "ordinal": 9,
+      "ordinal": 5,
       "schema": "Experiment"
     }
   ],
@@ -101,27 +73,9 @@
         },
         {
           "driving": false,
-          "parameter": "request",
-          "schema": "SearchRequest",
-          "source": "requests"
-        },
-        {
-          "driving": false,
-          "parameter": "membership",
-          "schema": "CohortMembership",
-          "source": "memberships"
-        },
-        {
-          "driving": false,
-          "parameter": "lineage",
-          "schema": "CohortLineage",
-          "source": "cohort_lineage"
-        },
-        {
-          "driving": false,
-          "parameter": "user_band",
-          "schema": "UserBand",
-          "source": "user_bands"
+          "parameter": "result",
+          "schema": "DocumentSearchResult",
+          "source": "results"
         },
         {
           "driving": false,
@@ -157,19 +111,7 @@
         },
         {
           "how": "inner",
-          "input": "request"
-        },
-        {
-          "how": "inner",
-          "input": "membership"
-        },
-        {
-          "how": "inner",
-          "input": "lineage"
-        },
-        {
-          "how": "inner",
-          "input": "user_band"
+          "input": "result"
         }
       ],
       "name": "select_queries",

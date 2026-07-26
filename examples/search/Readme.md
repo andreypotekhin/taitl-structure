@@ -19,7 +19,7 @@ For the architecture, evidence boundaries, and ownership model, see the
 | Feedback | `Impressions`, `Clicks`, `BuildRelevanceSignals` | daily facts and batch signals | Exposure-aware, attributed, propensity-corrected evidence. |
 | Presentation | `SearchSentences`, `SearchPassages`, `SearchDocuments` | deterministic ranks | Sentence and passage ranking are lexical; document ranking is two-stage. |
 | Experiments | `SelectExperimentScores`, experiment evaluators | comparable named runs | Named score variants flow through serving and evaluation. |
-| Evaluation | judged-quality and behavior evaluators | daily quality and serving metrics | Slice by labels and inclusive cohort hierarchies. |
+| Evaluation | judged-quality and behavior evaluators | daily quality and serving metrics | Slice by labels and inclusive band hierarchies. |
 
 ## Extraction
 
@@ -110,22 +110,26 @@ BM25(k1 = 1.2, b = 0.75)
 Overlap is bounded and symmetric at a fixed grain. BM25 is corpus-dependent and directional when used for similarity;
 do not interpret either score as a calibrated relevance probability.
 
-## Cohort Bands
+## User Bands
 
-`User` is a caller-owned profile and `Cohort` is a caller-owned demographic predicate. A band can constrain one
+`User` is a caller-owned profile and `Band` is a caller-owned demographic predicate. A band can constrain one
 half-open age range and lists of gender, locale, country, opaque `geo_tag`, device type, and time zone. Matching
 requires every constrained dimension; an empty list means unrestricted. `country` and `geo_tag` are intentionally
 opaque caller strings, so callers own their normalization and semantics.
 
-A user can match several cohorts. `ResolveCohortBands` retains the most-specific matches, orders them by caller-defined
-cohort priority, and assigns identical ordered sets one reusable `Band`. Each `UserBand` maps a user to that shared
-`band_id`. `BuildRelevanceSignals` emits global
-feedback plus feedback for each context and its fallback chain. Fallback weakens the least-important band first through
-its `parent_cohort_id`, then ultimately uses the global signal. Missing or cyclic parents are configuration errors.
+A user can match several bands. `ResolveCohortBands` retains the most-specific matches, orders them by caller-defined
+band priority, and assigns identical ordered sets one reusable `UserBand` row and `user_band_id`. `UserBandMembership`
+maps a user to that exact context; `BandMembership` maps the user to each direct or inherited caller band and its
+singleton `UserBand`. `BandFallback` connects one `UserBand` to its next fallback `UserBand` (or global). Thus every
+`user_band_id` in these relations is a foreign-key-like reference to `UserBand`.
+
+`BuildRelevanceSignals` emits global feedback plus feedback for each context and its fallback chain. Fallback weakens
+the least-important band first through its `parent_band_id`, then ultimately uses the global signal. Missing or cyclic
+parents are configuration errors.
 
 `SearchRequest.user_id` is nullable for anonymous traffic; logged-in requests map to their user's reusable context.
-Search results are keyed by query, band, and experiment, not by a single cohort ID. Use the user-band evaluator for
-one cohort, or the combined evaluator when both query labels and a cohort define the population.
+Search results are keyed by query, user band, and experiment, not by a single demographic band ID. Use the user-band
+evaluator for one band, or the combined evaluator when both query labels and a band define the population.
 
 ## Similarity Search
 
@@ -495,15 +499,15 @@ Evaluation is caller-owned and batch-only. `EvaluateDocumentRankingQuality` meas
 `SearchQuery.labels`. `EvaluationParams.labels` requires different label names to match and treats multiple values for
 one name as alternatives. An empty label map evaluates every query.
 
-### Cohorts
+### Bands
 
-`EvaluationParams.user_band` selects a persisted `Cohort`. A selected leaf cohort evaluates its direct matching users.
-A selected parent cohort is inclusive: it evaluates users whose most-specific matching cohort is that parent or any
-descendant. `CohortLineage` supplies that relationship; it changes only evaluation population selection, never a
-user's resolved `Band` or the band recorded on result rows.
+`EvaluationParams.band_id` selects a persisted band. Search materializes one band-only context for every direct
+and ancestor band, so a parent context learns from all descendant activity before it is ranked. Judged quality
+evaluates that parent policy directly. Behavior instead rolls up descendant requests that were actually served; it
+does not claim that the parent policy was served.
 
-The `with_users` evaluators apply the cohort slice, `with_labels` applies the label slice, and `with_all` applies both.
-Experiment evaluators apply the same combined selection to active named experiments.
+Band hierarchy stays upstream from evaluation. Band, label, and experiment evaluators select materialized rows by
+the requested `band_id`, label slice, and active experiment identity.
 
 ## Experiments
 
@@ -514,7 +518,7 @@ experiment scores that combine any algorithms. `SelectExperimentScores` preserve
 active named experiments before presentation or reranking. A single experiment ID flows from score through results and
 the caller-recorded `SearchRequest`; there is no separate reranking experiment.
 
-Experiment evaluators compare active experiment result rows using the same judgments, labels, cohort slice, and
+Experiment evaluators compare active experiment result rows using the same judgments, labels, band slice, and
 batch as the production evaluation. This keeps experiments comparable without mixing them into one ranking.
 
 ## Design Constraints

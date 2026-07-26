@@ -8,36 +8,31 @@
       "schema": "User"
     },
     {
-      "name": "cohorts",
+      "name": "bands",
       "ordinal": 1,
-      "schema": "Cohort"
+      "schema": "Band"
     }
   ],
   "name": "ResolveCohortBands",
   "outputs": [
     {
-      "name": "cohort_memberships",
+      "name": "band_memberships",
       "ordinal": 0,
-      "schema": "CohortMembership"
-    },
-    {
-      "name": "cohort_lineage",
-      "ordinal": 1,
-      "schema": "CohortLineage"
-    },
-    {
-      "name": "bands",
-      "ordinal": 2,
-      "schema": "Band"
+      "schema": "BandMembership"
     },
     {
       "name": "user_bands",
-      "ordinal": 3,
+      "ordinal": 1,
       "schema": "UserBand"
     },
     {
+      "name": "user_band_memberships",
+      "ordinal": 2,
+      "schema": "UserBandMembership"
+    },
+    {
       "name": "band_fallbacks",
-      "ordinal": 4,
+      "ordinal": 3,
       "schema": "BandFallback"
     }
   ],
@@ -55,28 +50,23 @@
         }
       ],
       "name": "declare_outputs",
-      "output_lane": "cohort_memberships",
-      "output_schema": "CohortMembership",
+      "output_lane": "band_memberships",
+      "output_schema": "BandMembership",
       "results": [
         {
-          "frame": "cohort_memberships",
-          "lane": "cohort_memberships",
-          "schema": "CohortMembership"
-        },
-        {
-          "frame": "cohort_lineage",
-          "lane": "cohort_lineage",
-          "schema": "CohortLineage"
-        },
-        {
-          "frame": "bands",
-          "lane": "bands",
-          "schema": "Band"
+          "frame": "band_memberships",
+          "lane": "band_memberships",
+          "schema": "BandMembership"
         },
         {
           "frame": "user_bands",
           "lane": "user_bands",
           "schema": "UserBand"
+        },
+        {
+          "frame": "user_band_memberships",
+          "lane": "user_band_memberships",
+          "schema": "UserBandMembership"
         },
         {
           "frame": "band_fallbacks",

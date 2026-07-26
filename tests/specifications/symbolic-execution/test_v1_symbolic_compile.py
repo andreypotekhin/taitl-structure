@@ -173,7 +173,7 @@ def test_transform_class_options_default_step_method_options() -> None:
     class Row(Schema):
         id = string(nullable=False)
 
-    @transform(target_backend="pyspark", target_platform="spark")
+    @transform(target="pyspark", target_platform="spark")
     class NormalizeRows(Transform):
         rows = input(Row)
         normalized = output(Row)
@@ -187,5 +187,5 @@ def test_transform_class_options_default_step_method_options() -> None:
 
     plan = _analysis(NormalizeRows)
 
-    assert plan.steps[0].options == {"target_backend": "pyspark", "target_platform": "spark"}
-    assert plan.steps[1].options == {"target_backend": "pyspark", "target_platform": "polars"}
+    assert plan.steps[0].options == {"target": "pyspark", "target_platform": "spark"}
+    assert plan.steps[1].options == {"target": "pyspark", "target_platform": "polars"}

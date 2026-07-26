@@ -17,9 +17,12 @@ generated_code_options = []
 
 # Backend target.
 execution_mode = "online"
-target_backend = "pyspark"
-target_profile = ">=3.5,<4.1"
-target_variant = "ordinary"
+[tool.structure.plugin]
+default = "pyspark"
+
+[tool.structure.plugin.pyspark]
+profile = ">=3.5,<4.1"
+variant = "ordinary"
 
 # Validation defaults.
 validate_inputs = true

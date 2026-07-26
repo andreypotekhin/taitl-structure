@@ -319,7 +319,7 @@ Exit Criteria:
 
 ## M10: v5 Plugin Plugin Architecture
 
-Status: in progress. Sprints 19-22 deliver the public Plugin API, migrate the
+Status: complete. Sprints 19-22 delivered the public Plugin API, migrated the
 bundled PySpark plugin, prove external-wheel isolation, validate default-denied private target-local engine
 replacement, and close
 the breaking v5 migration.
@@ -365,9 +365,9 @@ by `docs/dev/planning/P07182601.V6-timeline-scan-recurrence.plan.md`.
   global aggregation without requiring a preceding `group_by(...)` call.
 - At least one shipped ordinary-PySpark `@special(type="udf")` example demonstrates its explicit return/nullability
   contract and warning behavior. It is not a fallback and remains excluded from Spark Connect.
-- Typed generator, set composition, self-alias, ordering, limit, and offset operations retire the corresponding
-  Search hooks only where a same-fixture output comparison proves equivalence. Hooks that remain have an explicit P2
-  rationale.
+- Typed generator, branch/set composition, self-alias, ordering, bound, relation-assertion (including parent
+  reference), bounded-hierarchy/fallback, and declared-key priority-selection operations retire the corresponding Search hooks only where a same-fixture output
+  comparison proves equivalence. Hooks that remain have an explicit P2 rationale.
 - A normal transform consumes a caller-provided finite timeline and produces one typed output row per timeline row
   through `scan(...)`; the scan has declared state, partition/order keys, duplicate-key failure, and a positive bound.
 - Generated and online PySpark use public DataFrame/Column APIs only: no implicit UDF, RDD, Pandas, action, driver

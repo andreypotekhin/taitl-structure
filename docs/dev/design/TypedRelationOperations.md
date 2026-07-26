@@ -44,14 +44,34 @@ The first generator is `posexplode` over `array<struct>`, because it has a clear
 and unblocks hierarchy and token expansion. Other generator variants are separately admitted after their empty/null
 semantics are tested.
 
-The first composition operations are `union_all` and exact-schema `union_by_name`. Distinct set semantics
-(`intersect`, `subtract`) and multiset forms are distinct contracts because they treat duplicates differently.
+The first composition operations are `union_all` and exact-schema `union_by_name`. They must permit separate typed
+branches—such as a global fact branch and a fallback-context branch—to converge into one declared lane. Distinct set
+semantics (`intersect`, `subtract`) and multiset forms are distinct contracts because they treat duplicates differently.
 
 A self alias creates independent left/right typed scopes only. It never duplicates data by itself and cannot expose raw
 DataFrames. It is useful only with an explicit join/projection boundary.
 
 Ordering requires typed order descriptors. `limit` and `offset` use literal non-negative bounds; an unordered limit is
 rejected. Sampling is deferred because seed, replacement, and reproducibility semantics must be explicit.
+
+## Relation Assertions, Hierarchies, and Priority Selection
+
+`require_unique(...)`, `require_all(...)`, and `require_reference(...)` are relation assertions. They validate a
+declared key, predicate, or nullable foreign-key-like relationship in the Spark plan and emit a registered diagnostic
+instead of collecting configuration rows on the driver. They are required for band catalog identifiers, age ranges,
+parent existence, and parent-priority checks.
+
+A bounded parent-hierarchy operation accepts typed node identity, parent identity, explicit ordering, literal
+`max_depth`, and error policies for missing parents/cycles. It lowers to a finite self-join sequence and yields typed
+closure/path rows. It never uses a Python UDF or recursive driver traversal. `hierarchy_fallbacks(...)` derives the
+ordered parent-substitution paths from that representation and emits the final global fallback explicitly. Together
+with ordered collection, this supports the `BandMembership` and `BandFallback` outputs of `ResolveCohortBands`.
+The existing typed self-alias plus anti-existence relation pattern selects leaf matches; it does not need a new
+special-purpose hierarchy API.
+
+Priority selection takes a declared stable row key, a candidate relation, an eligibility predicate, and an explicit
+priority ordering. It selects at most one qualifying candidate per key, with named missing/tie policy. This avoids
+opaque surrogate IDs such as `monotonically_increasing_id()` and supports exact-parent-global fallback selection.
 
 ## Alternatives Rejected
 

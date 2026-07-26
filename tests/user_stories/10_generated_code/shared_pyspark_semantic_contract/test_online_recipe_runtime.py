@@ -424,7 +424,7 @@ def test_online_runner_executes_lowered_pyspark_recipe(monkeypatch) -> None:
             spark=object(),
             ctx=None,
             execution_mode="online",
-            target_backend="pyspark",
+            target="pyspark",
         ),
     )
 
@@ -456,7 +456,7 @@ def test_online_runner_preserves_explicit_cache_level(monkeypatch) -> None:
             spark=object(),
             ctx=None,
             execution_mode="online",
-            target_backend="pyspark",
+            target="pyspark",
         ),
     )
 
@@ -480,7 +480,7 @@ def test_online_runner_applies_source_watermark_in_recipe_order(monkeypatch) -> 
             spark=object(),
             ctx=None,
             execution_mode="online",
-            target_backend="pyspark",
+            target="pyspark",
         ),
     )
 
@@ -508,7 +508,7 @@ def test_online_runner_applies_joined_input_watermark_before_join(monkeypatch) -
             spark=object(),
             ctx=None,
             execution_mode="online",
-            target_backend="pyspark",
+            target="pyspark",
         ),
     )
 
@@ -528,7 +528,7 @@ def test_online_runner_preserves_injected_multi_output_result_contract() -> None
         spark=None,
         ctx=None,
         execution_mode="online",
-        target_backend="pyspark",
+        target="pyspark",
     )
 
     assert RunOnlinePySparkTransform()(cast(Any, invocation), _multi_result_plan(), session=session) is result
@@ -555,7 +555,7 @@ def test_online_runner_applies_step_hooks_and_step_and_output_joins(monkeypatch)
             spark="spark",
             ctx={"run": "online"},
             execution_mode="online",
-            target_backend="pyspark",
+            target="pyspark",
         ),
     )
 
@@ -596,7 +596,7 @@ def test_online_runner_applies_existence_join_modes(monkeypatch) -> None:
             spark="spark",
             ctx=None,
             execution_mode="online",
-            target_backend="pyspark",
+            target="pyspark",
         ),
     )
 
@@ -627,7 +627,7 @@ def test_online_runner_applies_inner_join_as_row_multiplying_join(monkeypatch) -
             spark="spark",
             ctx=None,
             execution_mode="online",
-            target_backend="pyspark",
+            target="pyspark",
         ),
     )
 
@@ -655,7 +655,7 @@ def test_online_runner_applies_grouped_aggregate_recipe(monkeypatch) -> None:
             spark="spark",
             ctx=None,
             execution_mode="online",
-            target_backend="pyspark",
+            target="pyspark",
         ),
     )
 
@@ -694,7 +694,7 @@ def test_online_runner_applies_grouping_sets_and_having_recipe(monkeypatch) -> N
             spark="spark",
             ctx=None,
             execution_mode="online",
-            target_backend="pyspark",
+            target="pyspark",
         ),
     )
 
@@ -733,7 +733,7 @@ def test_online_runner_applies_selected_row_window_recipe(monkeypatch) -> None:
             spark="spark",
             ctx=None,
             execution_mode="online",
-            target_backend="pyspark",
+            target="pyspark",
         ),
     )
 
@@ -764,7 +764,7 @@ def test_online_runner_applies_exact_duplicate_removal_recipe(monkeypatch) -> No
             spark="spark",
             ctx=None,
             execution_mode="online",
-            target_backend="pyspark",
+            target="pyspark",
         ),
     )
 
@@ -792,7 +792,7 @@ def test_online_runner_applies_subset_duplicate_removal_recipe(monkeypatch) -> N
             spark="spark",
             ctx=None,
             execution_mode="online",
-            target_backend="pyspark",
+            target="pyspark",
         ),
     )
 
@@ -823,7 +823,7 @@ def test_online_runner_applies_relation_duplicate_removal_before_join(monkeypatc
             spark="spark",
             ctx=None,
             execution_mode="online",
-            target_backend="pyspark",
+            target="pyspark",
         ),
     )
 
@@ -855,7 +855,7 @@ def test_online_runner_applies_relation_duplicate_removal_after_join(monkeypatch
             spark="spark",
             ctx=None,
             execution_mode="online",
-            target_backend="pyspark",
+            target="pyspark",
         ),
     )
 
@@ -887,7 +887,7 @@ def test_online_runner_dedupes_lookup_input_deterministically(monkeypatch) -> No
             spark="spark",
             ctx=None,
             execution_mode="online",
-            target_backend="pyspark",
+            target="pyspark",
         ),
     )
 
@@ -922,7 +922,7 @@ def test_online_runner_applies_temporal_closed_open_lookup(monkeypatch) -> None:
             spark="spark",
             ctx=None,
             execution_mode="online",
-            target_backend="pyspark",
+            target="pyspark",
         ),
     )
 
@@ -953,7 +953,7 @@ def test_online_runner_applies_backward_as_of_lookup(monkeypatch) -> None:
             spark="spark",
             ctx=None,
             execution_mode="online",
-            target_backend="pyspark",
+            target="pyspark",
         ),
     )
 
@@ -986,7 +986,7 @@ def test_online_runner_materializes_multiple_step_results(monkeypatch) -> None:
             spark="spark",
             ctx=None,
             execution_mode="online",
-            target_backend="pyspark",
+            target="pyspark",
         ),
     )
 

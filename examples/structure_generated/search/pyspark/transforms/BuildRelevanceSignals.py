@@ -9,7 +9,7 @@ from examples.search.transforms.relevance.BuildRelevanceSignals import BuildRele
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
 from examples.structure_generated.search.pyspark.schemas.clicks import DAILY_CLICKS_SCHEMA, DAILY_IMPRESSIONS_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.relevance import DOCUMENT_POPULARITY_SCHEMA, QUERY_DOCUMENT_SIGNALS_SCHEMA, RELEVANCE_POLICY_SCHEMA
-from examples.structure_generated.search.pyspark.schemas.user import BAND_FALLBACK_SCHEMA, USER_BAND_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.user import BAND_FALLBACK_SCHEMA, BAND_MEMBERSHIP_SCHEMA, USER_BAND_MEMBERSHIP_SCHEMA
 
 
 class BuildRelevanceSignalsGenerated:
@@ -24,18 +24,21 @@ class BuildRelevanceSignalsGenerated:
         *,
         daily_impressions: DataFrame,
         daily_clicks: DataFrame,
-        user_bands: DataFrame,
+        band_memberships: DataFrame,
+        user_band_memberships: DataFrame,
         band_fallbacks: DataFrame,
         policy: DataFrame,
     ) -> TransformResult:
         assert_schema(daily_impressions, DAILY_IMPRESSIONS_SCHEMA, name="DailyImpressions", mode="strict")
         assert_schema(daily_clicks, DAILY_CLICKS_SCHEMA, name="DailyClicks", mode="strict")
-        assert_schema(user_bands, USER_BAND_SCHEMA, name="UserBand", mode="strict")
+        assert_schema(band_memberships, BAND_MEMBERSHIP_SCHEMA, name="BandMembership", mode="strict")
+        assert_schema(user_band_memberships, USER_BAND_MEMBERSHIP_SCHEMA, name="UserBandMembership", mode="strict")
         assert_schema(band_fallbacks, BAND_FALLBACK_SCHEMA, name="BandFallback", mode="strict")
         assert_schema(policy, RELEVANCE_POLICY_SCHEMA, name="RelevancePolicy", mode="strict")
         _input_daily_impressions = daily_impressions
         _input_daily_clicks = daily_clicks
-        _input_user_bands = user_bands
+        _input_band_memberships = band_memberships
+        _input_user_band_memberships = user_band_memberships
         _input_band_fallbacks = band_fallbacks
         _input_policy = policy
 
@@ -51,7 +54,7 @@ class BuildRelevanceSignalsGenerated:
             F.lit(None).cast(T.StringType()).alias("band_id"),
             F.col("daily_impressions.impression_count"),
         )
-        context_impressions = self._impl.expand_impressions(daily_impressions=_input_daily_impressions, user_bands=_input_user_bands, band_fallbacks=_input_band_fallbacks, context_impressions=context_impressions, spark=self.spark, ctx=self.ctx)
+        context_impressions = self._impl.expand_impressions(daily_impressions=_input_daily_impressions, band_memberships=_input_band_memberships, user_band_memberships=_input_user_band_memberships, band_fallbacks=_input_band_fallbacks, context_impressions=context_impressions, spark=self.spark, ctx=self.ctx)
         assert_schema(context_impressions, DAILY_IMPRESSIONS_SCHEMA, name="DailyImpressions", mode="strict")
         assert_schema(context_impressions, DAILY_IMPRESSIONS_SCHEMA, name="DailyImpressions", mode="strict")
 
@@ -71,7 +74,7 @@ class BuildRelevanceSignalsGenerated:
             F.col("daily_clicks.dwell_credit"),
             F.col("daily_clicks.long_click_count"),
         )
-        context_clicks = self._impl.expand_clicks(daily_clicks=_input_daily_clicks, user_bands=_input_user_bands, band_fallbacks=_input_band_fallbacks, context_clicks=context_clicks, spark=self.spark, ctx=self.ctx)
+        context_clicks = self._impl.expand_clicks(daily_clicks=_input_daily_clicks, band_memberships=_input_band_memberships, user_band_memberships=_input_user_band_memberships, band_fallbacks=_input_band_fallbacks, context_clicks=context_clicks, spark=self.spark, ctx=self.ctx)
         assert_schema(context_clicks, DAILY_CLICKS_SCHEMA, name="DailyClicks", mode="strict")
         assert_schema(context_clicks, DAILY_CLICKS_SCHEMA, name="DailyClicks", mode="strict")
 

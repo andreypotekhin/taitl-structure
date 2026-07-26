@@ -17,18 +17,23 @@
       "schema": "DailyClicks"
     },
     {
-      "name": "user_bands",
+      "name": "band_memberships",
       "ordinal": 2,
-      "schema": "UserBand"
+      "schema": "BandMembership"
+    },
+    {
+      "name": "user_band_memberships",
+      "ordinal": 3,
+      "schema": "UserBandMembership"
     },
     {
       "name": "band_fallbacks",
-      "ordinal": 3,
+      "ordinal": 4,
       "schema": "BandFallback"
     },
     {
       "name": "policy",
-      "ordinal": 4,
+      "ordinal": 5,
       "schema": "RelevancePolicy"
     }
   ],

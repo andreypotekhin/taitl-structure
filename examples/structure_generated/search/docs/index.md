@@ -6,10 +6,8 @@
 
 - [Band](schemas/Band.md)
 - [BandFallback](schemas/BandFallback.md)
+- [BandMembership](schemas/BandMembership.md)
 - [Click](schemas/Click.md)
-- [Cohort](schemas/Cohort.md)
-- [CohortLineage](schemas/CohortLineage.md)
-- [CohortMembership](schemas/CohortMembership.md)
 - [CorpusStatistics](schemas/CorpusStatistics.md)
 - [CorpusVocabulary](schemas/CorpusVocabulary.md)
 - [DailyClicks](schemas/DailyClicks.md)
@@ -90,6 +88,7 @@
 - [SimilaritySentenceQuery](schemas/SimilaritySentenceQuery.md)
 - [User](schemas/User.md)
 - [UserBand](schemas/UserBand.md)
+- [UserBandMembership](schemas/UserBandMembership.md)
 - [Word](schemas/Word.md)
 
 ## Transforms

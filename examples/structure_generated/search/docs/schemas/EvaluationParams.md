@@ -7,4 +7,4 @@ Module: `examples.search.schemas.evaluation.params`
 | Field | Column | Type | Nullable |
 | --- | --- | --- | --- |
 | `labels` | `labels` | `array<Label!>` | no |
-| `user_band` | `user_band` | `Cohort` | yes |
+| `band_id` | `band_id` | `string` | yes |
