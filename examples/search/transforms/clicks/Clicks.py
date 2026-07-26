@@ -28,6 +28,8 @@ class Clicks(Transform):
     daily_clicks = output(DailyClicks)
 
     def summarize(self, impression: Impression, click: Click) -> DailyClicks:
+        """Attribute clicks to their displayed user's daily exposure grain."""
+
         watermark(impression.shown_at, delay="7 days")
         watermark(click.occurred_at, delay="7 days")
         drop_duplicates_within_watermark(impression.id)
@@ -47,10 +49,14 @@ class Clicks(Transform):
             document_id=impression.document_id,
             position=impression.position,
             examination_propensity=impression.examination_propensity,
+            user_id=impression.user_id,
+            band_id=None,
         )
         return DailyClicks.base(impression)(
             window=day,
             query=query,
+            user_id=impression.user_id,
+            band_id=None,
             click_count=count(),
             clicked_impression_count=count_distinct(click.impression_id),
             dwell_seconds=sum(dwell),

@@ -12,6 +12,7 @@ SEARCH_REQUEST_SCHEMA = T.StructType([
     T.StructField("query", T.StringType(), False),
     T.StructField("experiment_id", T.StringType(), False),
     T.StructField("ranking_version", T.StringType(), False),
+    T.StructField("user_id", T.StringType(), True),
 ])
 
 IMPRESSION_SCHEMA = T.StructType([
@@ -22,6 +23,7 @@ IMPRESSION_SCHEMA = T.StructType([
     T.StructField("document_id", T.StringType(), False),
     T.StructField("position", T.LongType(), False),
     T.StructField("examination_propensity", T.DoubleType(), False),
+    T.StructField("user_id", T.StringType(), True),
 ])
 
 CLICK_SCHEMA = T.StructType([
@@ -29,6 +31,7 @@ CLICK_SCHEMA = T.StructType([
     T.StructField("occurred_at", T.TimestampType(), False),
     T.StructField("impression_id", T.StringType(), False),
     T.StructField("dwell_seconds", T.DoubleType(), False),
+    T.StructField("user_id", T.StringType(), True),
 ])
 
 DAILY_IMPRESSIONS_SCHEMA = T.StructType([
@@ -37,6 +40,8 @@ DAILY_IMPRESSIONS_SCHEMA = T.StructType([
     T.StructField("document_id", T.StringType(), False),
     T.StructField("position", T.LongType(), False),
     T.StructField("examination_propensity", T.DoubleType(), False),
+    T.StructField("user_id", T.StringType(), True),
+    T.StructField("band_id", T.StringType(), True),
     T.StructField("impression_count", T.LongType(), False),
 ])
 
@@ -46,6 +51,8 @@ DAILY_CLICKS_SCHEMA = T.StructType([
     T.StructField("document_id", T.StringType(), False),
     T.StructField("position", T.LongType(), False),
     T.StructField("examination_propensity", T.DoubleType(), False),
+    T.StructField("user_id", T.StringType(), True),
+    T.StructField("band_id", T.StringType(), True),
     T.StructField("click_count", T.LongType(), False),
     T.StructField("clicked_impression_count", T.LongType(), False),
     T.StructField("dwell_seconds", T.DoubleType(), False),

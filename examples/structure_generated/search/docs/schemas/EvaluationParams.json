@@ -6,6 +6,12 @@
       "name": "labels",
       "nullable": false,
       "type": "array<Label!>"
+    },
+    {
+      "column": "user_band",
+      "name": "user_band",
+      "nullable": true,
+      "type": "Cohort"
     }
   ],
   "generated_by": "Structure",

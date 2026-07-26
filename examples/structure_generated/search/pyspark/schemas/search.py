@@ -155,6 +155,7 @@ SENTENCE_SCORE_SCHEMA = T.StructType(SENTENCE_SEARCH_TARGET_SCHEMA.fields + [
 DOCUMENT_SEARCH_CANDIDATE_SCHEMA = T.StructType([
     T.StructField("search_query_id", T.StringType(), False),
     T.StructField("experiment_id", T.StringType(), False),
+    T.StructField("band_id", T.StringType(), True),
     T.StructField("query", T.StringType(), False),
     T.StructField("candidate_rank", T.LongType(), False),
     T.StructField("document_id", T.StringType(), False),
@@ -170,6 +171,7 @@ DOCUMENT_SEARCH_CANDIDATE_SCHEMA = T.StructType([
 DOCUMENT_SEARCH_RESULT_SCHEMA = T.StructType([
     T.StructField("search_query_id", T.StringType(), False),
     T.StructField("experiment_id", T.StringType(), False),
+    T.StructField("band_id", T.StringType(), True),
     T.StructField("rank", T.LongType(), False),
     T.StructField("candidate_rank", T.LongType(), False),
     T.StructField("document_id", T.StringType(), False),

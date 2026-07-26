@@ -1,0 +1,20 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "band_id",
+      "name": "band_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "cohort_ids",
+      "name": "cohort_ids",
+      "nullable": false,
+      "type": "array<string!>"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.search.schemas.user",
+  "name": "Band"
+}

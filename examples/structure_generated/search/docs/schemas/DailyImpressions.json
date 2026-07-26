@@ -32,6 +32,18 @@
       "type": "double"
     },
     {
+      "column": "user_id",
+      "name": "user_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "band_id",
+      "name": "band_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
       "column": "impression_count",
       "name": "impression_count",
       "nullable": false,

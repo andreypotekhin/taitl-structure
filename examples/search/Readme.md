@@ -166,6 +166,23 @@ behavior = EvaluateLabeledDocumentSearchBehavior(
 ).run(session)
 ```
 
+## Cohort Bands
+
+`User` is a caller-owned profile and `Cohort` is a caller-owned demographic predicate. A band can constrain one
+half-open age range and lists of gender, locale, country, opaque `geo_tag`, device type, and time zone. Matching
+requires every constrained dimension; an empty list means unrestricted. `country` and `geo_tag` are intentionally
+opaque caller strings, so callers own their normalization and semantics.
+
+A user can match several cohorts. `ResolveCohortBands` retains the most-specific matches, orders them by caller-defined
+cohort priority, and assigns identical ordered sets one reusable `Band`. Each `UserBand` maps a user to that shared
+`band_id`. `BuildRelevanceSignals` emits global
+feedback plus feedback for each context and its fallback chain. Fallback weakens the least-important band first through
+its `parent_cohort_id`, then ultimately uses the global signal. Missing or cyclic parents are configuration errors.
+
+`SearchRequest.user_id` is nullable for anonymous traffic; logged-in requests map to their user's reusable context.
+Search results are keyed by query, band, and experiment, not by a single cohort ID. Use the user-band evaluator for
+one cohort, or the combined evaluator when both query labels and a cohort define the population.
+
 ## Similarity Search
 
 ### Funnel

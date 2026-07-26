@@ -6,9 +6,11 @@ from pyspark.sql import Window
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
+from examples.structure_generated.search.pyspark.schemas.clicks import SEARCH_REQUEST_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.relevance import DOCUMENT_POPULARITY_SCHEMA, QUERY_DOCUMENT_SIGNALS_SCHEMA, RELEVANCE_POLICY_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.search import DOCUMENT_SCORE_SCHEMA, DOCUMENT_SEARCH_CANDIDATE_SCHEMA, DOCUMENT_SEARCH_RESULT_SCHEMA, SEARCH_QUERY_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.text import DOCUMENT_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.user import USER_BAND_SCHEMA
 
 
 class RetrieveDocumentsGenerated:
@@ -27,12 +29,25 @@ class RetrieveDocumentsGenerated:
             (F.col("queries_2.id") == F.col("document_scores.query_id")),
             "inner",
         )
+        requests_3_joined = frames["requests"].alias("requests_3")
+        candidates = candidates.join(
+            requests_3_joined,
+            (F.col("requests_3.query_id") == F.col("queries_2.id")),
+            "inner",
+        )
+        user_bands_4_joined = frames["user_bands"].alias("user_bands_4")
+        candidates = candidates.join(
+            user_bands_4_joined,
+            (F.col("user_bands_4.user_id") == F.col("requests_3.user_id")),
+            "left",
+        )
         candidates = candidates.where((F.col("document_scores.score").isNotNull()))
         candidates = candidates.select(
             F.col("queries_2.id").alias("search_query_id"),
             F.col("document_scores.experiment_id"),
+            F.coalesce(F.col("user_bands_4.band_id"), F.lit(None)).alias("band_id"),
             F.lower(F.regexp_replace(F.trim(F.col("queries_2.content")), '\\s+', ' ')).alias("query"),
-            F.row_number().over(Window.partitionBy(F.col("queries_2.id"), F.col("document_scores.experiment_id")).orderBy(F.col("document_scores.score").desc_nulls_last(), F.col("document.id").asc_nulls_first())).cast(T.LongType()).alias("candidate_rank"),
+            F.row_number().over(Window.partitionBy(F.col("queries_2.id"), F.col("user_bands_4.band_id"), F.col("document_scores.experiment_id")).orderBy(F.col("document_scores.score").desc_nulls_last(), F.col("document.id").asc_nulls_first())).cast(T.LongType()).alias("candidate_rank"),
             F.col("document.id").alias("document_id"),
             F.col("document.title"),
             F.col("document.url"),
@@ -56,13 +71,13 @@ class RerankDocumentsGenerated:
         query_document_signals_joined = frames["query_document_signals"].alias("query_document_signals")
         scored_candidates = scored_candidates.join(
             query_document_signals_joined,
-            ((F.col("query_document_signals.query") == F.col("document_search_candidate.query")) & (F.col("query_document_signals.document_id") == F.col("document_search_candidate.document_id"))),
+            (((F.col("query_document_signals.query") == F.col("document_search_candidate.query")) & (F.col("query_document_signals.document_id") == F.col("document_search_candidate.document_id"))) & F.col("query_document_signals.band_id").eqNullSafe(F.col("document_search_candidate.band_id"))),
             "left",
         )
         document_popularity_2_joined = frames["document_popularity"].alias("document_popularity_2")
         scored_candidates = scored_candidates.join(
             document_popularity_2_joined,
-            (F.col("document_popularity_2.document_id") == F.col("document_search_candidate.document_id")),
+            ((F.col("document_popularity_2.document_id") == F.col("document_search_candidate.document_id")) & F.col("document_popularity_2.band_id").eqNullSafe(F.col("document_search_candidate.band_id"))),
             "left",
         )
         policy_3_joined = frames["policy"].alias("policy_3")
@@ -70,6 +85,7 @@ class RerankDocumentsGenerated:
         scored_candidates = scored_candidates.select(
             F.col("document_search_candidate.search_query_id"),
             F.col("document_search_candidate.experiment_id"),
+            F.col("document_search_candidate.band_id"),
             F.col("document_search_candidate.query"),
             F.col("document_search_candidate.candidate_rank"),
             F.col("document_search_candidate.document_id"),
@@ -92,6 +108,7 @@ class RerankDocumentsGenerated:
         normalized_candidates = normalized_candidates.select(
             F.col("document_search_candidate.search_query_id"),
             F.col("document_search_candidate.experiment_id"),
+            F.col("document_search_candidate.band_id"),
             F.col("document_search_candidate.query"),
             F.col("document_search_candidate.candidate_rank"),
             F.col("document_search_candidate.document_id"),
@@ -99,7 +116,7 @@ class RerankDocumentsGenerated:
             F.col("document_search_candidate.url"),
             F.col("document_search_candidate.score"),
             F.col("document_search_candidate.score_feedback"),
-            (((F.col("document_search_candidate.score_weight") * F.col("document_search_candidate.score")) / F.max(F.col("document_search_candidate.score")).over(Window.partitionBy(F.col("document_search_candidate.search_query_id"), F.col("document_search_candidate.experiment_id")).orderBy(F.col("document_search_candidate.document_id").asc()).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing))) + (F.col("document_search_candidate.feedback_weight") * F.col("document_search_candidate.score_feedback"))).alias("score_rank"),
+            (((F.col("document_search_candidate.score_weight") * F.col("document_search_candidate.score")) / F.max(F.col("document_search_candidate.score")).over(Window.partitionBy(F.col("document_search_candidate.search_query_id"), F.col("document_search_candidate.band_id"), F.col("document_search_candidate.experiment_id")).orderBy(F.col("document_search_candidate.document_id").asc()).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing))) + (F.col("document_search_candidate.feedback_weight") * F.col("document_search_candidate.score_feedback"))).alias("score_rank"),
             F.col("document_search_candidate.score_weight"),
             F.col("document_search_candidate.feedback_weight"),
         )
@@ -114,7 +131,8 @@ class RerankDocumentsGenerated:
         results = results.select(
             F.col("document_search_candidate.search_query_id"),
             F.col("document_search_candidate.experiment_id"),
-            F.row_number().over(Window.partitionBy(F.col("document_search_candidate.search_query_id"), F.col("document_search_candidate.experiment_id")).orderBy(F.col("document_search_candidate.score_rank").desc_nulls_last(), F.col("document_search_candidate.document_id").asc_nulls_first())).cast(T.LongType()).alias("rank"),
+            F.col("document_search_candidate.band_id"),
+            F.row_number().over(Window.partitionBy(F.col("document_search_candidate.search_query_id"), F.col("document_search_candidate.band_id"), F.col("document_search_candidate.experiment_id")).orderBy(F.col("document_search_candidate.score_rank").desc_nulls_last(), F.col("document_search_candidate.document_id").asc_nulls_first())).cast(T.LongType()).alias("rank"),
             F.col("document_search_candidate.candidate_rank"),
             F.col("document_search_candidate.document_id"),
             F.col("document_search_candidate.title"),
@@ -140,6 +158,8 @@ class SearchDocumentsGenerated(RetrieveDocumentsGenerated, RerankDocumentsGenera
         queries: DataFrame,
         documents: DataFrame,
         document_scores: DataFrame,
+        requests: DataFrame,
+        user_bands: DataFrame,
         query_document_signals: DataFrame,
         document_popularity: DataFrame,
         policy: DataFrame,
@@ -147,12 +167,16 @@ class SearchDocumentsGenerated(RetrieveDocumentsGenerated, RerankDocumentsGenera
         assert_schema(queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
         assert_schema(documents, DOCUMENT_SCHEMA, name="Document", mode="strict")
         assert_schema(document_scores, DOCUMENT_SCORE_SCHEMA, name="DocumentScore", mode="strict")
+        assert_schema(requests, SEARCH_REQUEST_SCHEMA, name="SearchRequest", mode="strict")
+        assert_schema(user_bands, USER_BAND_SCHEMA, name="UserBand", mode="strict")
         assert_schema(query_document_signals, QUERY_DOCUMENT_SIGNALS_SCHEMA, name="QueryDocumentSignals", mode="strict")
         assert_schema(document_popularity, DOCUMENT_POPULARITY_SCHEMA, name="DocumentPopularity", mode="strict")
         assert_schema(policy, RELEVANCE_POLICY_SCHEMA, name="RelevancePolicy", mode="strict")
         _input_queries = queries
         _input_documents = documents
         _input_document_scores = document_scores
+        _input_requests = requests
+        _input_user_bands = user_bands
         _input_query_document_signals = query_document_signals
         _input_document_popularity = document_popularity
         _input_policy = policy
@@ -160,12 +184,16 @@ class SearchDocumentsGenerated(RetrieveDocumentsGenerated, RerankDocumentsGenera
             "queries": queries,
             "documents": documents,
             "document_scores": document_scores,
+            "requests": requests,
+            "user_bands": user_bands,
             "query_document_signals": query_document_signals,
             "document_popularity": document_popularity,
             "policy": policy,
             "input:queries": _input_queries,
             "input:documents": _input_documents,
             "input:document_scores": _input_document_scores,
+            "input:requests": _input_requests,
+            "input:user_bands": _input_user_bands,
             "input:query_document_signals": _input_query_document_signals,
             "input:document_popularity": _input_document_popularity,
             "input:policy": _input_policy,

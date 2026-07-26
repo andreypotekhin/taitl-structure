@@ -53,6 +53,16 @@
       "source": "source:examples.search.transforms.clicks.Impressions.Impressions.summarize.aggregate.examination_propensity"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Impressions.ImpressionsGenerated.run.step.0.summarize.aggregate.user_id",
+      "ir": "ir:Impressions.step.0.summarize.aggregate.user_id",
+      "source": "source:examples.search.transforms.clicks.Impressions.Impressions.summarize.aggregate.user_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Impressions.ImpressionsGenerated.run.step.0.summarize.aggregate.band_id",
+      "ir": "ir:Impressions.step.0.summarize.aggregate.band_id",
+      "source": "source:examples.search.transforms.clicks.Impressions.Impressions.summarize.aggregate.band_id"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Impressions.ImpressionsGenerated.run.step.0.summarize.aggregate.impression_count",
       "ir": "ir:Impressions.step.0.summarize.aggregate.impression_count",
       "source": "source:examples.search.transforms.clicks.Impressions.Impressions.summarize.aggregate.impression_count"
@@ -69,6 +79,14 @@
     }
   ],
   "schema_constants": {
+    "Band": {
+      "constant": "BAND_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.user"
+    },
+    "BandFallback": {
+      "constant": "BAND_FALLBACK_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.user"
+    },
     "BehaviorDailyCounts": {
       "constant": "BEHAVIOR_DAILY_COUNTS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.behavior"
@@ -96,6 +114,14 @@
     "Click": {
       "constant": "CLICK_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.clicks"
+    },
+    "Cohort": {
+      "constant": "COHORT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.user"
+    },
+    "CohortMembership": {
+      "constant": "COHORT_MEMBERSHIP_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.user"
     },
     "CorpusStatistics": {
       "constant": "CORPUS_STATISTICS_SCHEMA",
@@ -449,6 +475,14 @@
       "constant": "TIME_WINDOW_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.TimeWindow"
     },
+    "User": {
+      "constant": "USER_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.user"
+    },
+    "UserBand": {
+      "constant": "USER_BAND_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.user"
+    },
     "Word": {
       "constant": "WORD_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.text"
@@ -544,6 +578,32 @@
         ],
         "step": "summarize",
         "target": "DailyImpressions.examination_propensity"
+      },
+      {
+        "detail": {
+          "field": "user_id",
+          "function": "key",
+          "key": "user_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "impressions.user_id"
+        ],
+        "step": "summarize",
+        "target": "DailyImpressions.user_id"
+      },
+      {
+        "detail": {
+          "field": "band_id",
+          "function": "key",
+          "key": "band_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "impressions"
+        ],
+        "step": "summarize",
+        "target": "DailyImpressions.band_id"
       },
       {
         "detail": {

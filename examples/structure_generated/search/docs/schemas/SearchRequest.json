@@ -36,6 +36,12 @@
       "name": "ranking_version",
       "nullable": false,
       "type": "string"
+    },
+    {
+      "column": "user_id",
+      "name": "user_id",
+      "nullable": true,
+      "type": "string"
     }
   ],
   "generated_by": "Structure",

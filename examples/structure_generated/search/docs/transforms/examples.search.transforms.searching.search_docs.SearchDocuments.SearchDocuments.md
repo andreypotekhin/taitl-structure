@@ -9,6 +9,8 @@ Source: `examples.search.transforms.searching.search_docs.SearchDocuments.Search
 - `queries`: `SearchQuery`
 - `documents`: `Document`
 - `document_scores`: `DocumentScore`
+- `requests`: `SearchRequest`
+- `user_bands`: `UserBand`
 - `query_document_signals`: `QueryDocumentSignals`
 - `document_popularity`: `DocumentPopularity`
 - `policy`: `RelevancePolicy`
@@ -35,7 +37,11 @@ Source: `examples.search.transforms.searching.search_docs.SearchDocuments.Search
 - `query`
 - `query_document_signals`
 - `query_signal`
+- `request`
+- `requests`
 - `score`
+- `user_band`
+- `user_bands`
 
 ## Target Artifacts
 

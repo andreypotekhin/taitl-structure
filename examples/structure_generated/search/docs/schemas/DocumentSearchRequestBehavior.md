@@ -9,6 +9,7 @@ Module: `examples.search.schemas.evaluation.behavior`
 | `window` | `window` | `TimeWindow` | no |
 | `params` | `params` | `EvaluationParams` | yes |
 | `experiment_id` | `experiment_id` | `string` | no |
+| `band_id` | `band_id` | `string` | yes |
 | `search_request_id` | `search_request_id` | `string` | no |
 | `ranking_version` | `ranking_version` | `string` | no |
 | `query` | `query` | `string` | no |

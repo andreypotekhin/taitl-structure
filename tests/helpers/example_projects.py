@@ -471,15 +471,21 @@ def render_search_example() -> dict[str, str]:
             SimilaritySentenceQuery,
         )
         from examples.search.schemas.text import Document, Paragraph, Section, Sentence, Word
+        from examples.search.schemas.user import Band, BandFallback, Cohort, CohortMembership, User, UserBand
         from examples.search.transforms.analyze import AnalyzeText
         from examples.search.transforms.clicks.Clicks import Clicks
         from examples.search.transforms.clicks.Impressions import Impressions
+        from examples.search.transforms.cohorts import ResolveCohortBands
         from examples.search.transforms.corpus import CorpusText
         from examples.search.transforms.evaluate import (
+            EvaluateAllDocumentRankingQuality,
+            EvaluateAllDocumentSearchBehavior,
             EvaluateDocumentRankingQuality,
             EvaluateDocumentSearchBehavior,
             EvaluateLabeledDocumentRankingQuality,
             EvaluateLabeledDocumentSearchBehavior,
+            EvaluateUserDocumentRankingQuality,
+            EvaluateUserDocumentSearchBehavior,
         )
         from examples.search.transforms.experiment import (
             EvaluateDocumentRankingQuality as EvaluateExperimentDocumentRankingQuality,
@@ -594,6 +600,14 @@ def render_search_example() -> dict[str, str]:
                 QueryDocumentSignals,
                 DocumentPopularity,
             ],
+            "examples.search.schemas.user": [
+                User,
+                Cohort,
+                CohortMembership,
+                Band,
+                UserBand,
+                BandFallback,
+            ],
             "examples.search.schemas.similarity": [
                 SimilarityPolicy,
                 SimilarityDocumentQuery,
@@ -634,36 +648,56 @@ def render_search_example() -> dict[str, str]:
             (SimilarParagraphs, "examples.search.transforms.similarities.SimilarParagraphs.SimilarParagraphs"),
             (SimilarSentences, "examples.search.transforms.similarities.SimilarSentences.SimilarSentences"),
             (AddScores, "examples.search.transforms.score.AddScores"),
+            (ResolveCohortBands, "examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands"),
             (MergeQueryLabels, "examples.search.transforms.labeling.merge_query_labels.MergeQueryLabels"),
             (SelectExperimentScores, "examples.search.transforms.experiments.select_experiment_scores.SelectExperimentScores"),
             (SearchSentences, "examples.search.transforms.search.SearchSentences"),
             (Impressions, "examples.search.transforms.clicks.Impressions.Impressions"),
             (Clicks, "examples.search.transforms.clicks.Clicks.Clicks"),
-            (BuildRelevanceSignals, "examples.search.transforms.relevance.BuildRelevanceSignals"),
+            (
+                BuildRelevanceSignals,
+                "examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals",
+            ),
             (SearchDocuments, "examples.search.transforms.search.SearchDocuments"),
             (
                 EvaluateExperimentDocumentRankingQuality,
-                "examples.search.transforms.experiments.search_docs.judged_quality.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
+                "examples.search.transforms.experiments.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
             ),
             (
                 EvaluateExperimentDocumentSearchBehavior,
-                "examples.search.transforms.experiments.search_docs.behavior.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
+                "examples.search.transforms.experiments.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
             ),
             (
                 EvaluateDocumentRankingQuality,
-                "examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality",
+                "examples.search.transforms.evaluation.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
             ),
             (
                 EvaluateDocumentSearchBehavior,
-                "examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior",
+                "examples.search.transforms.evaluation.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
             ),
             (
                 EvaluateLabeledDocumentRankingQuality,
-                "examples.search.transforms.evaluation.with_labels.search_docs.judged_quality.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
+                "examples.search.transforms.evaluation.with_labels.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
             ),
             (
                 EvaluateLabeledDocumentSearchBehavior,
-                "examples.search.transforms.evaluation.with_labels.search_docs.behavior.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
+                "examples.search.transforms.evaluation.with_labels.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
+            ),
+            (
+                EvaluateUserDocumentRankingQuality,
+                "examples.search.transforms.evaluation.with_users.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
+            ),
+            (
+                EvaluateUserDocumentSearchBehavior,
+                "examples.search.transforms.evaluation.with_users.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
+            ),
+            (
+                EvaluateAllDocumentRankingQuality,
+                "examples.search.transforms.evaluation.with_all.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
+            ),
+            (
+                EvaluateAllDocumentSearchBehavior,
+                "examples.search.transforms.evaluation.with_all.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
             ),
         )
         files = {}

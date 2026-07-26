@@ -8,7 +8,11 @@
     "query",
     "query_document_signals",
     "query_signal",
-    "score"
+    "request",
+    "requests",
+    "score",
+    "user_band",
+    "user_bands"
   ],
   "generated_by": "Structure",
   "inputs": [
@@ -28,18 +32,28 @@
       "schema": "DocumentScore"
     },
     {
-      "name": "query_document_signals",
+      "name": "requests",
       "ordinal": 3,
+      "schema": "SearchRequest"
+    },
+    {
+      "name": "user_bands",
+      "ordinal": 4,
+      "schema": "UserBand"
+    },
+    {
+      "name": "query_document_signals",
+      "ordinal": 5,
       "schema": "QueryDocumentSignals"
     },
     {
       "name": "document_popularity",
-      "ordinal": 4,
+      "ordinal": 6,
       "schema": "DocumentPopularity"
     },
     {
       "name": "policy",
-      "ordinal": 5,
+      "ordinal": 7,
       "schema": "RelevancePolicy"
     }
   ],
@@ -79,6 +93,18 @@
           "parameter": "query",
           "schema": "SearchQuery",
           "source": "queries"
+        },
+        {
+          "driving": false,
+          "parameter": "request",
+          "schema": "SearchRequest",
+          "source": "requests"
+        },
+        {
+          "driving": false,
+          "parameter": "user_band",
+          "schema": "UserBand",
+          "source": "user_bands"
         }
       ],
       "joins": [
@@ -89,6 +115,14 @@
         {
           "how": "inner",
           "input": "query"
+        },
+        {
+          "how": "inner",
+          "input": "request"
+        },
+        {
+          "how": "left",
+          "input": "user_band"
         }
       ],
       "name": "select_candidates",

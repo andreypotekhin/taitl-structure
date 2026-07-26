@@ -1,7 +1,7 @@
 {
   "dependencies": [
     "click",
-    "daily_clicks",
+    "context_clicks",
     "policy"
   ],
   "generated_by": "Structure",
@@ -17,8 +17,18 @@
       "schema": "DailyClicks"
     },
     {
-      "name": "policy",
+      "name": "user_bands",
       "ordinal": 2,
+      "schema": "UserBand"
+    },
+    {
+      "name": "band_fallbacks",
+      "ordinal": 3,
+      "schema": "BandFallback"
+    },
+    {
+      "name": "policy",
+      "ordinal": 4,
       "schema": "RelevancePolicy"
     }
   ],
@@ -38,6 +48,9 @@
   "source": "examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals",
   "step_methods": [
     {
+      "after_hooks": [
+        "expand_impressions"
+      ],
       "input_lane": "daily_impressions",
       "input_schema": "DailyImpressions",
       "inputs": [
@@ -46,12 +59,59 @@
           "parameter": "impression",
           "schema": "DailyImpressions",
           "source": "daily_impressions"
+        }
+      ],
+      "name": "declare_context_impressions",
+      "output_lane": "context_impressions",
+      "output_schema": "DailyImpressions",
+      "results": [
+        {
+          "frame": "context_impressions",
+          "lane": "context_impressions",
+          "schema": "DailyImpressions"
+        }
+      ]
+    },
+    {
+      "after_hooks": [
+        "expand_clicks"
+      ],
+      "input_lane": "daily_clicks",
+      "input_schema": "DailyClicks",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "click",
+          "schema": "DailyClicks",
+          "source": "daily_clicks"
+        }
+      ],
+      "name": "declare_context_clicks",
+      "output_lane": "context_clicks",
+      "output_schema": "DailyClicks",
+      "results": [
+        {
+          "frame": "context_clicks",
+          "lane": "context_clicks",
+          "schema": "DailyClicks"
+        }
+      ]
+    },
+    {
+      "input_lane": "context_impressions",
+      "input_schema": "DailyImpressions",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "impression",
+          "schema": "DailyImpressions",
+          "source": "context_impressions"
         },
         {
           "driving": false,
           "parameter": "click",
           "schema": "DailyClicks",
-          "source": "daily_clicks"
+          "source": "context_clicks"
         },
         {
           "driving": false,
@@ -82,20 +142,20 @@
       ]
     },
     {
-      "input_lane": "daily_impressions",
+      "input_lane": "context_impressions",
       "input_schema": "DailyImpressions",
       "inputs": [
         {
           "driving": true,
           "parameter": "impression",
           "schema": "DailyImpressions",
-          "source": "daily_impressions"
+          "source": "context_impressions"
         },
         {
           "driving": false,
           "parameter": "click",
           "schema": "DailyClicks",
-          "source": "daily_clicks"
+          "source": "context_clicks"
         },
         {
           "driving": false,

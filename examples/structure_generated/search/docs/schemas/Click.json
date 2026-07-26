@@ -24,6 +24,12 @@
       "name": "dwell_seconds",
       "nullable": false,
       "type": "double"
+    },
+    {
+      "column": "user_id",
+      "name": "user_id",
+      "nullable": true,
+      "type": "string"
     }
   ],
   "generated_by": "Structure",

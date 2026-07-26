@@ -20,6 +20,12 @@
       "type": "string"
     },
     {
+      "column": "band_id",
+      "name": "band_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
       "column": "search_query_id",
       "name": "search_query_id",
       "nullable": false,

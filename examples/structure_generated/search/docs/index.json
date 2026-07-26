@@ -5,6 +5,50 @@
       "bases": [],
       "fields": [
         {
+          "column": "band_id",
+          "name": "band_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "cohort_ids",
+          "name": "cohort_ids",
+          "nullable": false,
+          "type": "array<string!>"
+        }
+      ],
+      "module": "examples.search.schemas.user",
+      "name": "Band"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "band_id",
+          "name": "band_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "fallback_band_id",
+          "name": "fallback_band_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "ordinal",
+          "name": "ordinal",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.search.schemas.user",
+      "name": "BandFallback"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
           "column": "id",
           "name": "id",
           "nullable": false,
@@ -27,10 +71,126 @@
           "name": "dwell_seconds",
           "nullable": false,
           "type": "double"
+        },
+        {
+          "column": "user_id",
+          "name": "user_id",
+          "nullable": true,
+          "type": "string"
         }
       ],
       "module": "examples.search.schemas.clicks",
       "name": "Click"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "name",
+          "name": "name",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "priority",
+          "name": "priority",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "parent_cohort_id",
+          "name": "parent_cohort_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "age_start",
+          "name": "age_start",
+          "nullable": true,
+          "type": "long"
+        },
+        {
+          "column": "age_end",
+          "name": "age_end",
+          "nullable": true,
+          "type": "long"
+        },
+        {
+          "column": "genders",
+          "name": "genders",
+          "nullable": false,
+          "type": "array<string!>"
+        },
+        {
+          "column": "locales",
+          "name": "locales",
+          "nullable": false,
+          "type": "array<string!>"
+        },
+        {
+          "column": "countries",
+          "name": "countries",
+          "nullable": false,
+          "type": "array<string!>"
+        },
+        {
+          "column": "geo_tags",
+          "name": "geo_tags",
+          "nullable": false,
+          "type": "array<string!>"
+        },
+        {
+          "column": "device_types",
+          "name": "device_types",
+          "nullable": false,
+          "type": "array<string!>"
+        },
+        {
+          "column": "time_zones",
+          "name": "time_zones",
+          "nullable": false,
+          "type": "array<string!>"
+        }
+      ],
+      "module": "examples.search.schemas.user",
+      "name": "Cohort"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "user_id",
+          "name": "user_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "cohort_id",
+          "name": "cohort_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "parent_cohort_id",
+          "name": "parent_cohort_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "priority",
+          "name": "priority",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.search.schemas.user",
+      "name": "CohortMembership"
     },
     {
       "bases": [],
@@ -152,6 +312,18 @@
           "type": "double"
         },
         {
+          "column": "user_id",
+          "name": "user_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "band_id",
+          "name": "band_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
           "column": "click_count",
           "name": "click_count",
           "nullable": false,
@@ -204,6 +376,12 @@
           "column": "experiment_id",
           "name": "experiment_id",
           "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "band_id",
+          "name": "band_id",
+          "nullable": true,
           "type": "string"
         },
         {
@@ -326,6 +504,18 @@
           "name": "examination_propensity",
           "nullable": false,
           "type": "double"
+        },
+        {
+          "column": "user_id",
+          "name": "user_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "band_id",
+          "name": "band_id",
+          "nullable": true,
+          "type": "string"
         },
         {
           "column": "impression_count",
@@ -943,6 +1133,12 @@
       "bases": [],
       "fields": [
         {
+          "column": "band_id",
+          "name": "band_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
           "column": "document_id",
           "name": "document_id",
           "nullable": false,
@@ -1055,6 +1251,12 @@
           "column": "experiment_id",
           "name": "experiment_id",
           "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "band_id",
+          "name": "band_id",
+          "nullable": true,
           "type": "string"
         },
         {
@@ -1261,6 +1463,12 @@
           "type": "string"
         },
         {
+          "column": "band_id",
+          "name": "band_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
           "column": "query",
           "name": "query",
           "nullable": false,
@@ -1346,6 +1554,12 @@
           "type": "string"
         },
         {
+          "column": "band_id",
+          "name": "band_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
           "column": "search_request_id",
           "name": "search_request_id",
           "nullable": false,
@@ -1428,6 +1642,12 @@
           "column": "experiment_id",
           "name": "experiment_id",
           "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "band_id",
+          "name": "band_id",
+          "nullable": true,
           "type": "string"
         },
         {
@@ -1639,6 +1859,12 @@
           "name": "labels",
           "nullable": false,
           "type": "array<Label!>"
+        },
+        {
+          "column": "user_band",
+          "name": "user_band",
+          "nullable": true,
+          "type": "Cohort"
         }
       ],
       "module": "examples.search.schemas.evaluation.params",
@@ -1719,6 +1945,12 @@
           "name": "examination_propensity",
           "nullable": false,
           "type": "double"
+        },
+        {
+          "column": "user_id",
+          "name": "user_id",
+          "nullable": true,
+          "type": "string"
         }
       ],
       "module": "examples.search.schemas.clicks",
@@ -2518,6 +2750,12 @@
       "bases": [],
       "fields": [
         {
+          "column": "band_id",
+          "name": "band_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
           "column": "query",
           "name": "query",
           "nullable": false,
@@ -2686,6 +2924,12 @@
           "name": "minimum_ctr_impressions",
           "nullable": false,
           "type": "long"
+        },
+        {
+          "column": "minimum_band_impressions",
+          "name": "minimum_band_impressions",
+          "nullable": false,
+          "type": "long"
         }
       ],
       "module": "examples.search.schemas.relevance",
@@ -2765,6 +3009,12 @@
           "column": "ranking_version",
           "name": "ranking_version",
           "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "user_id",
+          "name": "user_id",
+          "nullable": true,
           "type": "string"
         }
       ],
@@ -4140,6 +4390,80 @@
           "type": "string"
         },
         {
+          "column": "age",
+          "name": "age",
+          "nullable": true,
+          "type": "long"
+        },
+        {
+          "column": "gender",
+          "name": "gender",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "locale",
+          "name": "locale",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "country",
+          "name": "country",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "geo_tag",
+          "name": "geo_tag",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "device_type",
+          "name": "device_type",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "time_zone",
+          "name": "time_zone",
+          "nullable": true,
+          "type": "string"
+        }
+      ],
+      "module": "examples.search.schemas.user",
+      "name": "User"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "user_id",
+          "name": "user_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "band_id",
+          "name": "band_id",
+          "nullable": true,
+          "type": "string"
+        }
+      ],
+      "module": "examples.search.schemas.user",
+      "name": "UserBand"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
           "column": "document_id",
           "name": "document_id",
           "nullable": false,
@@ -4528,6 +4852,88 @@
       "dependencies": [],
       "inputs": [
         {
+          "name": "users",
+          "ordinal": 0,
+          "schema": "User"
+        },
+        {
+          "name": "cohorts",
+          "ordinal": 1,
+          "schema": "Cohort"
+        }
+      ],
+      "name": "ResolveCohortBands",
+      "outputs": [
+        {
+          "name": "cohort_memberships",
+          "ordinal": 0,
+          "schema": "CohortMembership"
+        },
+        {
+          "name": "bands",
+          "ordinal": 1,
+          "schema": "Band"
+        },
+        {
+          "name": "user_bands",
+          "ordinal": 2,
+          "schema": "UserBand"
+        },
+        {
+          "name": "band_fallbacks",
+          "ordinal": 3,
+          "schema": "BandFallback"
+        }
+      ],
+      "source": "examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands",
+      "step_methods": [
+        {
+          "input_lane": "users",
+          "input_schema": "User",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "user",
+              "schema": "User",
+              "source": "users"
+            }
+          ],
+          "name": "declare_outputs",
+          "output_lane": "cohort_memberships",
+          "output_schema": "CohortMembership",
+          "results": [
+            {
+              "frame": "cohort_memberships",
+              "lane": "cohort_memberships",
+              "schema": "CohortMembership"
+            },
+            {
+              "frame": "bands",
+              "lane": "bands",
+              "schema": "Band"
+            },
+            {
+              "frame": "user_bands",
+              "lane": "user_bands",
+              "schema": "UserBand"
+            },
+            {
+              "frame": "band_fallbacks",
+              "lane": "band_fallbacks",
+              "schema": "BandFallback"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/ResolveCohortBands.py",
+        "traceability": "traceability/transforms/ResolveCohortBands.ResolveCohortBands.json"
+      }
+    },
+    {
+      "dependencies": [],
+      "inputs": [
+        {
           "name": "documents",
           "ordinal": 0,
           "schema": "DocumentStatistics"
@@ -4606,6 +5012,337 @@
     {
       "dependencies": [
         "batch",
+        "ideal",
+        "ideal_dcgs",
+        "judgment",
+        "judgment_totals",
+        "judgments",
+        "result",
+        "result_totals",
+        "results"
+      ],
+      "inputs": [
+        {
+          "name": "batch",
+          "ordinal": 0,
+          "schema": "EvaluationBatch"
+        },
+        {
+          "name": "queries",
+          "ordinal": 1,
+          "schema": "SearchQuery"
+        },
+        {
+          "name": "results",
+          "ordinal": 2,
+          "schema": "DocumentSearchResult"
+        },
+        {
+          "name": "judgments",
+          "ordinal": 3,
+          "schema": "DocumentRelevanceJudgment"
+        }
+      ],
+      "name": "EvaluateDocumentRankingQuality",
+      "outputs": [
+        {
+          "name": "query_evaluations",
+          "ordinal": 0,
+          "schema": "DocumentQueryEvaluation"
+        },
+        {
+          "name": "summary",
+          "ordinal": 1,
+          "schema": "DocumentEvaluationSummary"
+        }
+      ],
+      "source": "examples.search.transforms.evaluation.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
+      "step_methods": [
+        {
+          "input_lane": "queries",
+          "input_schema": "SearchQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "SearchQuery",
+              "source": "queries"
+            },
+            {
+              "driving": false,
+              "parameter": "batch",
+              "schema": "EvaluationBatch",
+              "source": "batch"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "batch"
+            }
+          ],
+          "name": "select_queries",
+          "output_lane": "evaluated_queries",
+          "output_schema": "EvaluationQuery",
+          "results": [
+            {
+              "frame": "evaluated_queries",
+              "lane": "evaluated_queries",
+              "schema": "EvaluationQuery"
+            }
+          ]
+        },
+        {
+          "input_lane": "evaluated_queries",
+          "input_schema": "EvaluationQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "EvaluationQuery",
+              "source": "evaluated_queries"
+            },
+            {
+              "driving": false,
+              "parameter": "result",
+              "schema": "DocumentSearchResult",
+              "source": "results"
+            },
+            {
+              "driving": false,
+              "parameter": "judgment",
+              "schema": "DocumentRelevanceJudgment",
+              "source": "judgments"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "result"
+            },
+            {
+              "how": "left",
+              "input": "judgment"
+            }
+          ],
+          "name": "select_results",
+          "output_lane": "evaluated_results",
+          "output_schema": "EvaluationResult",
+          "results": [
+            {
+              "frame": "evaluated_results",
+              "lane": "evaluated_results",
+              "schema": "EvaluationResult"
+            }
+          ]
+        },
+        {
+          "input_lane": "evaluated_queries",
+          "input_schema": "EvaluationQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "EvaluationQuery",
+              "source": "evaluated_queries"
+            },
+            {
+              "driving": false,
+              "parameter": "judgment",
+              "schema": "DocumentRelevanceJudgment",
+              "source": "judgments"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "judgment"
+            }
+          ],
+          "name": "rank_judgments",
+          "output_lane": "ranked_judgments",
+          "output_schema": "EvaluationJudgment",
+          "results": [
+            {
+              "frame": "ranked_judgments",
+              "lane": "ranked_judgments",
+              "schema": "EvaluationJudgment"
+            }
+          ]
+        },
+        {
+          "input_lane": "ranked_judgments",
+          "input_schema": "EvaluationJudgment",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "judgment",
+              "schema": "EvaluationJudgment",
+              "source": "ranked_judgments"
+            }
+          ],
+          "name": "count_judgments",
+          "output_lane": "judgment_totals",
+          "output_schema": "EvaluationJudgmentTotals",
+          "results": [
+            {
+              "frame": "judgment_totals",
+              "lane": "judgment_totals",
+              "schema": "EvaluationJudgmentTotals"
+            }
+          ]
+        },
+        {
+          "input_lane": "ranked_judgments",
+          "input_schema": "EvaluationJudgment",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "judgment",
+              "schema": "EvaluationJudgment",
+              "source": "ranked_judgments"
+            }
+          ],
+          "name": "calculate_ideal_dcg",
+          "output_lane": "ideal_dcgs",
+          "output_schema": "EvaluationIdealDcg",
+          "results": [
+            {
+              "frame": "ideal_dcgs",
+              "lane": "ideal_dcgs",
+              "schema": "EvaluationIdealDcg"
+            }
+          ]
+        },
+        {
+          "input_lane": "evaluated_results",
+          "input_schema": "EvaluationResult",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "result",
+              "schema": "EvaluationResult",
+              "source": "evaluated_results"
+            }
+          ],
+          "name": "total_results",
+          "output_lane": "result_totals",
+          "output_schema": "EvaluationResultTotals",
+          "results": [
+            {
+              "frame": "result_totals",
+              "lane": "result_totals",
+              "schema": "EvaluationResultTotals"
+            }
+          ]
+        },
+        {
+          "input_lane": "evaluated_queries",
+          "input_schema": "EvaluationQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "EvaluationQuery",
+              "source": "evaluated_queries"
+            },
+            {
+              "driving": false,
+              "parameter": "results",
+              "schema": "EvaluationResultTotals",
+              "source": "result_totals"
+            },
+            {
+              "driving": false,
+              "parameter": "judgments",
+              "schema": "EvaluationJudgmentTotals",
+              "source": "judgment_totals"
+            },
+            {
+              "driving": false,
+              "parameter": "ideal",
+              "schema": "EvaluationIdealDcg",
+              "source": "ideal_dcgs"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "results"
+            },
+            {
+              "how": "left",
+              "input": "judgments"
+            },
+            {
+              "how": "left",
+              "input": "ideal"
+            }
+          ],
+          "name": "calculate_metrics",
+          "output_lane": "metrics",
+          "output_schema": "DocumentQueryEvaluation",
+          "results": [
+            {
+              "frame": "metrics",
+              "lane": "metrics",
+              "schema": "DocumentQueryEvaluation"
+            }
+          ]
+        },
+        {
+          "input_lane": "metrics",
+          "input_schema": "DocumentQueryEvaluation",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "metric",
+              "schema": "DocumentQueryEvaluation",
+              "source": "metrics"
+            }
+          ],
+          "name": "publish_metrics",
+          "output_lane": "query_evaluations",
+          "output_schema": "DocumentQueryEvaluation",
+          "results": [
+            {
+              "frame": "query_evaluations",
+              "lane": "query_evaluations",
+              "schema": "DocumentQueryEvaluation"
+            }
+          ]
+        },
+        {
+          "input_lane": "metrics",
+          "input_schema": "DocumentQueryEvaluation",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "metric",
+              "schema": "DocumentQueryEvaluation",
+              "source": "metrics"
+            }
+          ],
+          "name": "summarize",
+          "output_lane": "summary",
+          "output_schema": "DocumentEvaluationSummary",
+          "results": [
+            {
+              "frame": "summary",
+              "lane": "summary",
+              "schema": "DocumentEvaluationSummary"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/eval_doc_ranking_quality.py",
+        "traceability": "traceability/transforms/eval_doc_ranking_quality.EvaluateDocumentRankingQuality.json"
+      }
+    },
+    {
+      "dependencies": [
+        "batch",
         "click",
         "clicked",
         "clicks",
@@ -4639,37 +5376,17 @@
       "name": "EvaluateDocumentSearchBehavior",
       "outputs": [
         {
-          "name": "selected",
-          "ordinal": 0,
-          "schema": "BehaviorRequest"
-        },
-        {
-          "name": "measured",
-          "ordinal": 1,
-          "schema": "BehaviorImpression"
-        },
-        {
-          "name": "measured_requests",
-          "ordinal": 2,
-          "schema": "DocumentSearchRequestBehavior"
-        },
-        {
-          "name": "summarized_daily",
-          "ordinal": 3,
-          "schema": "DailyDocumentSearchBehavior"
-        },
-        {
           "name": "request_behaviors",
-          "ordinal": 4,
+          "ordinal": 0,
           "schema": "DocumentSearchRequestBehavior"
         },
         {
           "name": "daily_behavior",
-          "ordinal": 5,
+          "ordinal": 1,
           "schema": "DailyDocumentSearchBehavior"
         }
       ],
-      "source": "examples.search.transforms.evaluation.search_docs.behavior.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
+      "source": "examples.search.transforms.evaluation.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
       "step_methods": [
         {
           "input_lane": "requests",
@@ -4695,25 +5412,25 @@
             }
           ],
           "name": "select_requests",
-          "output_lane": "selected",
+          "output_lane": "selected_requests",
           "output_schema": "BehaviorRequest",
           "results": [
             {
-              "frame": "selected",
-              "lane": "selected",
+              "frame": "selected_requests",
+              "lane": "selected_requests",
               "schema": "BehaviorRequest"
             }
           ]
         },
         {
-          "input_lane": "selected",
+          "input_lane": "selected_requests",
           "input_schema": "BehaviorRequest",
           "inputs": [
             {
               "driving": true,
               "parameter": "request",
               "schema": "BehaviorRequest",
-              "source": "selected"
+              "source": "selected_requests"
             },
             {
               "driving": false,
@@ -4808,14 +5525,14 @@
           ]
         },
         {
-          "input_lane": "selected",
+          "input_lane": "selected_requests",
           "input_schema": "BehaviorRequest",
           "inputs": [
             {
               "driving": true,
               "parameter": "selected",
               "schema": "BehaviorRequest",
-              "source": "selected"
+              "source": "selected_requests"
             },
             {
               "driving": false,
@@ -5021,6 +5738,862 @@
         "judgment",
         "judgment_totals",
         "judgments",
+        "membership",
+        "memberships",
+        "params",
+        "request",
+        "requests",
+        "result",
+        "result_totals",
+        "results",
+        "user_band",
+        "user_bands"
+      ],
+      "inputs": [
+        {
+          "name": "batch",
+          "ordinal": 0,
+          "schema": "EvaluationBatch"
+        },
+        {
+          "name": "queries",
+          "ordinal": 1,
+          "schema": "SearchQuery"
+        },
+        {
+          "name": "results",
+          "ordinal": 2,
+          "schema": "DocumentSearchResult"
+        },
+        {
+          "name": "judgments",
+          "ordinal": 3,
+          "schema": "DocumentRelevanceJudgment"
+        },
+        {
+          "name": "requests",
+          "ordinal": 4,
+          "schema": "SearchRequest"
+        },
+        {
+          "name": "memberships",
+          "ordinal": 5,
+          "schema": "CohortMembership"
+        },
+        {
+          "name": "user_bands",
+          "ordinal": 6,
+          "schema": "UserBand"
+        },
+        {
+          "name": "params",
+          "ordinal": 7,
+          "schema": "EvaluationParams"
+        }
+      ],
+      "name": "EvaluateDocumentRankingQuality",
+      "outputs": [
+        {
+          "name": "query_evaluations",
+          "ordinal": 0,
+          "schema": "DocumentQueryEvaluation"
+        },
+        {
+          "name": "summary",
+          "ordinal": 1,
+          "schema": "DocumentEvaluationSummary"
+        }
+      ],
+      "source": "examples.search.transforms.evaluation.with_all.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
+      "step_methods": [
+        {
+          "input_lane": "queries",
+          "input_schema": "SearchQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "SearchQuery",
+              "source": "queries"
+            },
+            {
+              "driving": false,
+              "parameter": "request",
+              "schema": "SearchRequest",
+              "source": "requests"
+            },
+            {
+              "driving": false,
+              "parameter": "membership",
+              "schema": "CohortMembership",
+              "source": "memberships"
+            },
+            {
+              "driving": false,
+              "parameter": "user_band",
+              "schema": "UserBand",
+              "source": "user_bands"
+            },
+            {
+              "driving": false,
+              "parameter": "batch",
+              "schema": "EvaluationBatch",
+              "source": "batch"
+            },
+            {
+              "driving": false,
+              "parameter": "params",
+              "schema": "EvaluationParams",
+              "source": "params"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "batch"
+            },
+            {
+              "how": "cross",
+              "input": "params"
+            },
+            {
+              "how": "inner",
+              "input": "request"
+            },
+            {
+              "how": "inner",
+              "input": "membership"
+            },
+            {
+              "how": "inner",
+              "input": "user_band"
+            }
+          ],
+          "name": "select_queries",
+          "output_lane": "evaluated_queries",
+          "output_schema": "EvaluationQuery",
+          "results": [
+            {
+              "frame": "evaluated_queries",
+              "lane": "evaluated_queries",
+              "schema": "EvaluationQuery"
+            }
+          ]
+        },
+        {
+          "input_lane": "evaluated_queries",
+          "input_schema": "EvaluationQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "EvaluationQuery",
+              "source": "evaluated_queries"
+            },
+            {
+              "driving": false,
+              "parameter": "result",
+              "schema": "DocumentSearchResult",
+              "source": "results"
+            },
+            {
+              "driving": false,
+              "parameter": "judgment",
+              "schema": "DocumentRelevanceJudgment",
+              "source": "judgments"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "result"
+            },
+            {
+              "how": "left",
+              "input": "judgment"
+            }
+          ],
+          "name": "select_results",
+          "output_lane": "evaluated_results",
+          "output_schema": "EvaluationResult",
+          "results": [
+            {
+              "frame": "evaluated_results",
+              "lane": "evaluated_results",
+              "schema": "EvaluationResult"
+            }
+          ]
+        },
+        {
+          "input_lane": "evaluated_queries",
+          "input_schema": "EvaluationQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "EvaluationQuery",
+              "source": "evaluated_queries"
+            },
+            {
+              "driving": false,
+              "parameter": "judgment",
+              "schema": "DocumentRelevanceJudgment",
+              "source": "judgments"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "judgment"
+            }
+          ],
+          "name": "rank_judgments",
+          "output_lane": "ranked_judgments",
+          "output_schema": "EvaluationJudgment",
+          "results": [
+            {
+              "frame": "ranked_judgments",
+              "lane": "ranked_judgments",
+              "schema": "EvaluationJudgment"
+            }
+          ]
+        },
+        {
+          "input_lane": "ranked_judgments",
+          "input_schema": "EvaluationJudgment",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "judgment",
+              "schema": "EvaluationJudgment",
+              "source": "ranked_judgments"
+            }
+          ],
+          "name": "count_judgments",
+          "output_lane": "judgment_totals",
+          "output_schema": "EvaluationJudgmentTotals",
+          "results": [
+            {
+              "frame": "judgment_totals",
+              "lane": "judgment_totals",
+              "schema": "EvaluationJudgmentTotals"
+            }
+          ]
+        },
+        {
+          "input_lane": "ranked_judgments",
+          "input_schema": "EvaluationJudgment",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "judgment",
+              "schema": "EvaluationJudgment",
+              "source": "ranked_judgments"
+            }
+          ],
+          "name": "calculate_ideal_dcg",
+          "output_lane": "ideal_dcgs",
+          "output_schema": "EvaluationIdealDcg",
+          "results": [
+            {
+              "frame": "ideal_dcgs",
+              "lane": "ideal_dcgs",
+              "schema": "EvaluationIdealDcg"
+            }
+          ]
+        },
+        {
+          "input_lane": "evaluated_results",
+          "input_schema": "EvaluationResult",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "result",
+              "schema": "EvaluationResult",
+              "source": "evaluated_results"
+            }
+          ],
+          "name": "total_results",
+          "output_lane": "result_totals",
+          "output_schema": "EvaluationResultTotals",
+          "results": [
+            {
+              "frame": "result_totals",
+              "lane": "result_totals",
+              "schema": "EvaluationResultTotals"
+            }
+          ]
+        },
+        {
+          "input_lane": "evaluated_queries",
+          "input_schema": "EvaluationQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "EvaluationQuery",
+              "source": "evaluated_queries"
+            },
+            {
+              "driving": false,
+              "parameter": "results",
+              "schema": "EvaluationResultTotals",
+              "source": "result_totals"
+            },
+            {
+              "driving": false,
+              "parameter": "judgments",
+              "schema": "EvaluationJudgmentTotals",
+              "source": "judgment_totals"
+            },
+            {
+              "driving": false,
+              "parameter": "ideal",
+              "schema": "EvaluationIdealDcg",
+              "source": "ideal_dcgs"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "results"
+            },
+            {
+              "how": "left",
+              "input": "judgments"
+            },
+            {
+              "how": "left",
+              "input": "ideal"
+            }
+          ],
+          "name": "calculate_metrics",
+          "output_lane": "metrics",
+          "output_schema": "DocumentQueryEvaluation",
+          "results": [
+            {
+              "frame": "metrics",
+              "lane": "metrics",
+              "schema": "DocumentQueryEvaluation"
+            }
+          ]
+        },
+        {
+          "input_lane": "metrics",
+          "input_schema": "DocumentQueryEvaluation",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "metric",
+              "schema": "DocumentQueryEvaluation",
+              "source": "metrics"
+            }
+          ],
+          "name": "publish_metrics",
+          "output_lane": "query_evaluations",
+          "output_schema": "DocumentQueryEvaluation",
+          "results": [
+            {
+              "frame": "query_evaluations",
+              "lane": "query_evaluations",
+              "schema": "DocumentQueryEvaluation"
+            }
+          ]
+        },
+        {
+          "input_lane": "metrics",
+          "input_schema": "DocumentQueryEvaluation",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "metric",
+              "schema": "DocumentQueryEvaluation",
+              "source": "metrics"
+            }
+          ],
+          "name": "summarize",
+          "output_lane": "summary",
+          "output_schema": "DocumentEvaluationSummary",
+          "results": [
+            {
+              "frame": "summary",
+              "lane": "summary",
+              "schema": "DocumentEvaluationSummary"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/eval_doc_ranking_quality.py",
+        "traceability": "traceability/transforms/eval_doc_ranking_quality.EvaluateDocumentRankingQuality.json"
+      }
+    },
+    {
+      "dependencies": [
+        "batch",
+        "click",
+        "clicked",
+        "clicks",
+        "exposure",
+        "impression",
+        "impressions",
+        "measured",
+        "membership",
+        "memberships",
+        "params",
+        "request",
+        "requests",
+        "user_band",
+        "user_bands"
+      ],
+      "inputs": [
+        {
+          "name": "batch",
+          "ordinal": 0,
+          "schema": "EvaluationBatch"
+        },
+        {
+          "name": "requests",
+          "ordinal": 1,
+          "schema": "SearchRequest"
+        },
+        {
+          "name": "impressions",
+          "ordinal": 2,
+          "schema": "Impression"
+        },
+        {
+          "name": "clicks",
+          "ordinal": 3,
+          "schema": "Click"
+        },
+        {
+          "name": "memberships",
+          "ordinal": 4,
+          "schema": "CohortMembership"
+        },
+        {
+          "name": "user_bands",
+          "ordinal": 5,
+          "schema": "UserBand"
+        },
+        {
+          "name": "params",
+          "ordinal": 6,
+          "schema": "EvaluationParams"
+        },
+        {
+          "name": "queries",
+          "ordinal": 7,
+          "schema": "SearchQuery"
+        }
+      ],
+      "name": "EvaluateDocumentSearchBehavior",
+      "outputs": [
+        {
+          "name": "request_behaviors",
+          "ordinal": 0,
+          "schema": "DocumentSearchRequestBehavior"
+        },
+        {
+          "name": "daily_behavior",
+          "ordinal": 1,
+          "schema": "DailyDocumentSearchBehavior"
+        }
+      ],
+      "source": "examples.search.transforms.evaluation.with_all.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
+      "step_methods": [
+        {
+          "input_lane": "queries",
+          "input_schema": "SearchQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "SearchQuery",
+              "source": "queries"
+            },
+            {
+              "driving": false,
+              "parameter": "request",
+              "schema": "SearchRequest",
+              "source": "requests"
+            },
+            {
+              "driving": false,
+              "parameter": "membership",
+              "schema": "CohortMembership",
+              "source": "memberships"
+            },
+            {
+              "driving": false,
+              "parameter": "user_band",
+              "schema": "UserBand",
+              "source": "user_bands"
+            },
+            {
+              "driving": false,
+              "parameter": "batch",
+              "schema": "EvaluationBatch",
+              "source": "batch"
+            },
+            {
+              "driving": false,
+              "parameter": "params",
+              "schema": "EvaluationParams",
+              "source": "params"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "batch"
+            },
+            {
+              "how": "cross",
+              "input": "params"
+            },
+            {
+              "how": "inner",
+              "input": "request"
+            },
+            {
+              "how": "inner",
+              "input": "membership"
+            },
+            {
+              "how": "inner",
+              "input": "user_band"
+            }
+          ],
+          "name": "select_requests",
+          "output_lane": "selected_requests",
+          "output_schema": "BehaviorRequest",
+          "results": [
+            {
+              "frame": "selected_requests",
+              "lane": "selected_requests",
+              "schema": "BehaviorRequest"
+            }
+          ]
+        },
+        {
+          "input_lane": "selected_requests",
+          "input_schema": "BehaviorRequest",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "BehaviorRequest",
+              "source": "selected_requests"
+            },
+            {
+              "driving": false,
+              "parameter": "impression",
+              "schema": "Impression",
+              "source": "impressions"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "impression"
+            }
+          ],
+          "name": "select_impressions",
+          "output_lane": "displayed",
+          "output_schema": "BehaviorImpression",
+          "results": [
+            {
+              "frame": "displayed",
+              "lane": "displayed",
+              "schema": "BehaviorImpression"
+            }
+          ]
+        },
+        {
+          "input_lane": "displayed",
+          "input_schema": "BehaviorImpression",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "impression",
+              "schema": "BehaviorImpression",
+              "source": "displayed"
+            },
+            {
+              "driving": false,
+              "parameter": "click",
+              "schema": "Click",
+              "source": "clicks"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "click"
+            }
+          ],
+          "name": "attribute_clicks",
+          "output_lane": "clicked",
+          "output_schema": "BehaviorImpression",
+          "results": [
+            {
+              "frame": "clicked",
+              "lane": "clicked",
+              "schema": "BehaviorImpression"
+            }
+          ]
+        },
+        {
+          "input_lane": "displayed",
+          "input_schema": "BehaviorImpression",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "displayed",
+              "schema": "BehaviorImpression",
+              "source": "displayed"
+            },
+            {
+              "driving": false,
+              "parameter": "clicked",
+              "schema": "BehaviorImpression",
+              "source": "clicked"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "clicked"
+            }
+          ],
+          "name": "measure_impressions",
+          "output_lane": "measured",
+          "output_schema": "BehaviorImpression",
+          "results": [
+            {
+              "frame": "measured",
+              "lane": "measured",
+              "schema": "BehaviorImpression"
+            }
+          ]
+        },
+        {
+          "input_lane": "selected_requests",
+          "input_schema": "BehaviorRequest",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "selected",
+              "schema": "BehaviorRequest",
+              "source": "selected_requests"
+            },
+            {
+              "driving": false,
+              "parameter": "measured",
+              "schema": "BehaviorImpression",
+              "source": "measured"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "measured"
+            }
+          ],
+          "name": "measure_requests",
+          "output_lane": "request_totals",
+          "output_schema": "BehaviorRequestTotals",
+          "results": [
+            {
+              "frame": "request_totals",
+              "lane": "request_totals",
+              "schema": "BehaviorRequestTotals"
+            }
+          ]
+        },
+        {
+          "input_lane": "request_totals",
+          "input_schema": "BehaviorRequestTotals",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "BehaviorRequestTotals",
+              "source": "request_totals"
+            }
+          ],
+          "name": "calculate_reciprocal_rank",
+          "output_lane": "request_metrics",
+          "output_schema": "BehaviorRequestMetrics",
+          "results": [
+            {
+              "frame": "request_metrics",
+              "lane": "request_metrics",
+              "schema": "BehaviorRequestMetrics"
+            }
+          ]
+        },
+        {
+          "input_lane": "request_metrics",
+          "input_schema": "BehaviorRequestMetrics",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "BehaviorRequestMetrics",
+              "source": "request_metrics"
+            }
+          ],
+          "name": "publish_requests",
+          "output_lane": "measured_requests",
+          "output_schema": "DocumentSearchRequestBehavior",
+          "results": [
+            {
+              "frame": "measured_requests",
+              "lane": "measured_requests",
+              "schema": "DocumentSearchRequestBehavior"
+            }
+          ]
+        },
+        {
+          "input_lane": "measured",
+          "input_schema": "BehaviorImpression",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "measured",
+              "schema": "BehaviorImpression",
+              "source": "measured"
+            }
+          ],
+          "name": "summarize_exposure",
+          "output_lane": "exposure",
+          "output_schema": "BehaviorExposure",
+          "results": [
+            {
+              "frame": "exposure",
+              "lane": "exposure",
+              "schema": "BehaviorExposure"
+            }
+          ]
+        },
+        {
+          "input_lane": "request_metrics",
+          "input_schema": "BehaviorRequestMetrics",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "BehaviorRequestMetrics",
+              "source": "request_metrics"
+            }
+          ],
+          "name": "summarize_requests",
+          "output_lane": "daily_counts",
+          "output_schema": "BehaviorDailyCounts",
+          "results": [
+            {
+              "frame": "daily_counts",
+              "lane": "daily_counts",
+              "schema": "BehaviorDailyCounts"
+            }
+          ]
+        },
+        {
+          "input_lane": "daily_counts",
+          "input_schema": "BehaviorDailyCounts",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "daily",
+              "schema": "BehaviorDailyCounts",
+              "source": "daily_counts"
+            },
+            {
+              "driving": false,
+              "parameter": "exposure",
+              "schema": "BehaviorExposure",
+              "source": "exposure"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "exposure"
+            }
+          ],
+          "name": "publish_daily",
+          "output_lane": "summarized_daily",
+          "output_schema": "DailyDocumentSearchBehavior",
+          "results": [
+            {
+              "frame": "summarized_daily",
+              "lane": "summarized_daily",
+              "schema": "DailyDocumentSearchBehavior"
+            }
+          ]
+        },
+        {
+          "input_lane": "measured_requests",
+          "input_schema": "DocumentSearchRequestBehavior",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "DocumentSearchRequestBehavior",
+              "source": "measured_requests"
+            }
+          ],
+          "name": "publish_request_behaviors",
+          "output_lane": "request_behaviors",
+          "output_schema": "DocumentSearchRequestBehavior",
+          "results": [
+            {
+              "frame": "request_behaviors",
+              "lane": "request_behaviors",
+              "schema": "DocumentSearchRequestBehavior"
+            }
+          ]
+        },
+        {
+          "input_lane": "summarized_daily",
+          "input_schema": "DailyDocumentSearchBehavior",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "daily",
+              "schema": "DailyDocumentSearchBehavior",
+              "source": "summarized_daily"
+            }
+          ],
+          "name": "publish_daily_behavior",
+          "output_lane": "daily_behavior",
+          "output_schema": "DailyDocumentSearchBehavior",
+          "results": [
+            {
+              "frame": "daily_behavior",
+              "lane": "daily_behavior",
+              "schema": "DailyDocumentSearchBehavior"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/eval_doc_search_behavior.py",
+        "traceability": "traceability/transforms/eval_doc_search_behavior.EvaluateDocumentSearchBehavior.json"
+      }
+    },
+    {
+      "dependencies": [
+        "batch",
+        "ideal",
+        "ideal_dcgs",
+        "judgment",
+        "judgment_totals",
+        "judgments",
+        "params",
         "result",
         "result_totals",
         "results"
@@ -5045,6 +6618,11 @@
           "name": "judgments",
           "ordinal": 3,
           "schema": "DocumentRelevanceJudgment"
+        },
+        {
+          "name": "params",
+          "ordinal": 4,
+          "schema": "EvaluationParams"
         }
       ],
       "name": "EvaluateDocumentRankingQuality",
@@ -5060,7 +6638,7 @@
           "schema": "DocumentEvaluationSummary"
         }
       ],
-      "source": "examples.search.transforms.evaluation.search_docs.judged_quality.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
+      "source": "examples.search.transforms.evaluation.with_labels.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
       "step_methods": [
         {
           "input_lane": "queries",
@@ -5077,12 +6655,22 @@
               "parameter": "batch",
               "schema": "EvaluationBatch",
               "source": "batch"
+            },
+            {
+              "driving": false,
+              "parameter": "params",
+              "schema": "EvaluationParams",
+              "source": "params"
             }
           ],
           "joins": [
             {
               "how": "cross",
               "input": "batch"
+            },
+            {
+              "how": "cross",
+              "input": "params"
             }
           ],
           "name": "select_queries",
@@ -5393,37 +6981,17 @@
       "name": "EvaluateDocumentSearchBehavior",
       "outputs": [
         {
-          "name": "selected",
-          "ordinal": 0,
-          "schema": "BehaviorRequest"
-        },
-        {
-          "name": "measured",
-          "ordinal": 1,
-          "schema": "BehaviorImpression"
-        },
-        {
-          "name": "measured_requests",
-          "ordinal": 2,
-          "schema": "DocumentSearchRequestBehavior"
-        },
-        {
-          "name": "summarized_daily",
-          "ordinal": 3,
-          "schema": "DailyDocumentSearchBehavior"
-        },
-        {
           "name": "request_behaviors",
-          "ordinal": 4,
+          "ordinal": 0,
           "schema": "DocumentSearchRequestBehavior"
         },
         {
           "name": "daily_behavior",
-          "ordinal": 5,
+          "ordinal": 1,
           "schema": "DailyDocumentSearchBehavior"
         }
       ],
-      "source": "examples.search.transforms.evaluation.with_labels.search_docs.behavior.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
+      "source": "examples.search.transforms.evaluation.with_labels.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
       "step_methods": [
         {
           "input_lane": "requests",
@@ -5469,25 +7037,25 @@
             }
           ],
           "name": "select_requests",
-          "output_lane": "selected",
+          "output_lane": "selected_requests",
           "output_schema": "BehaviorRequest",
           "results": [
             {
-              "frame": "selected",
-              "lane": "selected",
+              "frame": "selected_requests",
+              "lane": "selected_requests",
               "schema": "BehaviorRequest"
             }
           ]
         },
         {
-          "input_lane": "selected",
+          "input_lane": "selected_requests",
           "input_schema": "BehaviorRequest",
           "inputs": [
             {
               "driving": true,
               "parameter": "request",
               "schema": "BehaviorRequest",
-              "source": "selected"
+              "source": "selected_requests"
             },
             {
               "driving": false,
@@ -5582,14 +7150,14 @@
           ]
         },
         {
-          "input_lane": "selected",
+          "input_lane": "selected_requests",
           "input_schema": "BehaviorRequest",
           "inputs": [
             {
               "driving": true,
               "parameter": "selected",
               "schema": "BehaviorRequest",
-              "source": "selected"
+              "source": "selected_requests"
             },
             {
               "driving": false,
@@ -5795,10 +7363,16 @@
         "judgment",
         "judgment_totals",
         "judgments",
+        "membership",
+        "memberships",
         "params",
+        "request",
+        "requests",
         "result",
         "result_totals",
-        "results"
+        "results",
+        "user_band",
+        "user_bands"
       ],
       "inputs": [
         {
@@ -5822,8 +7396,23 @@
           "schema": "DocumentRelevanceJudgment"
         },
         {
-          "name": "params",
+          "name": "requests",
           "ordinal": 4,
+          "schema": "SearchRequest"
+        },
+        {
+          "name": "memberships",
+          "ordinal": 5,
+          "schema": "CohortMembership"
+        },
+        {
+          "name": "user_bands",
+          "ordinal": 6,
+          "schema": "UserBand"
+        },
+        {
+          "name": "params",
+          "ordinal": 7,
           "schema": "EvaluationParams"
         }
       ],
@@ -5840,7 +7429,7 @@
           "schema": "DocumentEvaluationSummary"
         }
       ],
-      "source": "examples.search.transforms.evaluation.with_labels.search_docs.judged_quality.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
+      "source": "examples.search.transforms.evaluation.with_users.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
       "step_methods": [
         {
           "input_lane": "queries",
@@ -5851,6 +7440,24 @@
               "parameter": "query",
               "schema": "SearchQuery",
               "source": "queries"
+            },
+            {
+              "driving": false,
+              "parameter": "request",
+              "schema": "SearchRequest",
+              "source": "requests"
+            },
+            {
+              "driving": false,
+              "parameter": "membership",
+              "schema": "CohortMembership",
+              "source": "memberships"
+            },
+            {
+              "driving": false,
+              "parameter": "user_band",
+              "schema": "UserBand",
+              "source": "user_bands"
             },
             {
               "driving": false,
@@ -5873,6 +7480,873 @@
             {
               "how": "cross",
               "input": "params"
+            },
+            {
+              "how": "inner",
+              "input": "request"
+            },
+            {
+              "how": "inner",
+              "input": "membership"
+            },
+            {
+              "how": "inner",
+              "input": "user_band"
+            }
+          ],
+          "name": "select_queries",
+          "output_lane": "evaluated_queries",
+          "output_schema": "EvaluationQuery",
+          "results": [
+            {
+              "frame": "evaluated_queries",
+              "lane": "evaluated_queries",
+              "schema": "EvaluationQuery"
+            }
+          ]
+        },
+        {
+          "input_lane": "evaluated_queries",
+          "input_schema": "EvaluationQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "EvaluationQuery",
+              "source": "evaluated_queries"
+            },
+            {
+              "driving": false,
+              "parameter": "result",
+              "schema": "DocumentSearchResult",
+              "source": "results"
+            },
+            {
+              "driving": false,
+              "parameter": "judgment",
+              "schema": "DocumentRelevanceJudgment",
+              "source": "judgments"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "result"
+            },
+            {
+              "how": "left",
+              "input": "judgment"
+            }
+          ],
+          "name": "select_results",
+          "output_lane": "evaluated_results",
+          "output_schema": "EvaluationResult",
+          "results": [
+            {
+              "frame": "evaluated_results",
+              "lane": "evaluated_results",
+              "schema": "EvaluationResult"
+            }
+          ]
+        },
+        {
+          "input_lane": "evaluated_queries",
+          "input_schema": "EvaluationQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "EvaluationQuery",
+              "source": "evaluated_queries"
+            },
+            {
+              "driving": false,
+              "parameter": "judgment",
+              "schema": "DocumentRelevanceJudgment",
+              "source": "judgments"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "judgment"
+            }
+          ],
+          "name": "rank_judgments",
+          "output_lane": "ranked_judgments",
+          "output_schema": "EvaluationJudgment",
+          "results": [
+            {
+              "frame": "ranked_judgments",
+              "lane": "ranked_judgments",
+              "schema": "EvaluationJudgment"
+            }
+          ]
+        },
+        {
+          "input_lane": "ranked_judgments",
+          "input_schema": "EvaluationJudgment",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "judgment",
+              "schema": "EvaluationJudgment",
+              "source": "ranked_judgments"
+            }
+          ],
+          "name": "count_judgments",
+          "output_lane": "judgment_totals",
+          "output_schema": "EvaluationJudgmentTotals",
+          "results": [
+            {
+              "frame": "judgment_totals",
+              "lane": "judgment_totals",
+              "schema": "EvaluationJudgmentTotals"
+            }
+          ]
+        },
+        {
+          "input_lane": "ranked_judgments",
+          "input_schema": "EvaluationJudgment",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "judgment",
+              "schema": "EvaluationJudgment",
+              "source": "ranked_judgments"
+            }
+          ],
+          "name": "calculate_ideal_dcg",
+          "output_lane": "ideal_dcgs",
+          "output_schema": "EvaluationIdealDcg",
+          "results": [
+            {
+              "frame": "ideal_dcgs",
+              "lane": "ideal_dcgs",
+              "schema": "EvaluationIdealDcg"
+            }
+          ]
+        },
+        {
+          "input_lane": "evaluated_results",
+          "input_schema": "EvaluationResult",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "result",
+              "schema": "EvaluationResult",
+              "source": "evaluated_results"
+            }
+          ],
+          "name": "total_results",
+          "output_lane": "result_totals",
+          "output_schema": "EvaluationResultTotals",
+          "results": [
+            {
+              "frame": "result_totals",
+              "lane": "result_totals",
+              "schema": "EvaluationResultTotals"
+            }
+          ]
+        },
+        {
+          "input_lane": "evaluated_queries",
+          "input_schema": "EvaluationQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "EvaluationQuery",
+              "source": "evaluated_queries"
+            },
+            {
+              "driving": false,
+              "parameter": "results",
+              "schema": "EvaluationResultTotals",
+              "source": "result_totals"
+            },
+            {
+              "driving": false,
+              "parameter": "judgments",
+              "schema": "EvaluationJudgmentTotals",
+              "source": "judgment_totals"
+            },
+            {
+              "driving": false,
+              "parameter": "ideal",
+              "schema": "EvaluationIdealDcg",
+              "source": "ideal_dcgs"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "results"
+            },
+            {
+              "how": "left",
+              "input": "judgments"
+            },
+            {
+              "how": "left",
+              "input": "ideal"
+            }
+          ],
+          "name": "calculate_metrics",
+          "output_lane": "metrics",
+          "output_schema": "DocumentQueryEvaluation",
+          "results": [
+            {
+              "frame": "metrics",
+              "lane": "metrics",
+              "schema": "DocumentQueryEvaluation"
+            }
+          ]
+        },
+        {
+          "input_lane": "metrics",
+          "input_schema": "DocumentQueryEvaluation",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "metric",
+              "schema": "DocumentQueryEvaluation",
+              "source": "metrics"
+            }
+          ],
+          "name": "publish_metrics",
+          "output_lane": "query_evaluations",
+          "output_schema": "DocumentQueryEvaluation",
+          "results": [
+            {
+              "frame": "query_evaluations",
+              "lane": "query_evaluations",
+              "schema": "DocumentQueryEvaluation"
+            }
+          ]
+        },
+        {
+          "input_lane": "metrics",
+          "input_schema": "DocumentQueryEvaluation",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "metric",
+              "schema": "DocumentQueryEvaluation",
+              "source": "metrics"
+            }
+          ],
+          "name": "summarize",
+          "output_lane": "summary",
+          "output_schema": "DocumentEvaluationSummary",
+          "results": [
+            {
+              "frame": "summary",
+              "lane": "summary",
+              "schema": "DocumentEvaluationSummary"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/eval_doc_ranking_quality.py",
+        "traceability": "traceability/transforms/eval_doc_ranking_quality.EvaluateDocumentRankingQuality.json"
+      }
+    },
+    {
+      "dependencies": [
+        "batch",
+        "click",
+        "clicked",
+        "clicks",
+        "exposure",
+        "impression",
+        "impressions",
+        "measured",
+        "membership",
+        "memberships",
+        "params",
+        "user_band",
+        "user_bands"
+      ],
+      "inputs": [
+        {
+          "name": "batch",
+          "ordinal": 0,
+          "schema": "EvaluationBatch"
+        },
+        {
+          "name": "requests",
+          "ordinal": 1,
+          "schema": "SearchRequest"
+        },
+        {
+          "name": "impressions",
+          "ordinal": 2,
+          "schema": "Impression"
+        },
+        {
+          "name": "clicks",
+          "ordinal": 3,
+          "schema": "Click"
+        },
+        {
+          "name": "memberships",
+          "ordinal": 4,
+          "schema": "CohortMembership"
+        },
+        {
+          "name": "user_bands",
+          "ordinal": 5,
+          "schema": "UserBand"
+        },
+        {
+          "name": "params",
+          "ordinal": 6,
+          "schema": "EvaluationParams"
+        }
+      ],
+      "name": "EvaluateDocumentSearchBehavior",
+      "outputs": [
+        {
+          "name": "request_behaviors",
+          "ordinal": 0,
+          "schema": "DocumentSearchRequestBehavior"
+        },
+        {
+          "name": "daily_behavior",
+          "ordinal": 1,
+          "schema": "DailyDocumentSearchBehavior"
+        }
+      ],
+      "source": "examples.search.transforms.evaluation.with_users.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
+      "step_methods": [
+        {
+          "input_lane": "requests",
+          "input_schema": "SearchRequest",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "SearchRequest",
+              "source": "requests"
+            },
+            {
+              "driving": false,
+              "parameter": "membership",
+              "schema": "CohortMembership",
+              "source": "memberships"
+            },
+            {
+              "driving": false,
+              "parameter": "user_band",
+              "schema": "UserBand",
+              "source": "user_bands"
+            },
+            {
+              "driving": false,
+              "parameter": "batch",
+              "schema": "EvaluationBatch",
+              "source": "batch"
+            },
+            {
+              "driving": false,
+              "parameter": "params",
+              "schema": "EvaluationParams",
+              "source": "params"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "batch"
+            },
+            {
+              "how": "cross",
+              "input": "params"
+            },
+            {
+              "how": "inner",
+              "input": "membership"
+            },
+            {
+              "how": "inner",
+              "input": "user_band"
+            }
+          ],
+          "name": "select_requests",
+          "output_lane": "selected_requests",
+          "output_schema": "BehaviorRequest",
+          "results": [
+            {
+              "frame": "selected_requests",
+              "lane": "selected_requests",
+              "schema": "BehaviorRequest"
+            }
+          ]
+        },
+        {
+          "input_lane": "selected_requests",
+          "input_schema": "BehaviorRequest",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "BehaviorRequest",
+              "source": "selected_requests"
+            },
+            {
+              "driving": false,
+              "parameter": "impression",
+              "schema": "Impression",
+              "source": "impressions"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "impression"
+            }
+          ],
+          "name": "select_impressions",
+          "output_lane": "displayed",
+          "output_schema": "BehaviorImpression",
+          "results": [
+            {
+              "frame": "displayed",
+              "lane": "displayed",
+              "schema": "BehaviorImpression"
+            }
+          ]
+        },
+        {
+          "input_lane": "displayed",
+          "input_schema": "BehaviorImpression",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "impression",
+              "schema": "BehaviorImpression",
+              "source": "displayed"
+            },
+            {
+              "driving": false,
+              "parameter": "click",
+              "schema": "Click",
+              "source": "clicks"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "click"
+            }
+          ],
+          "name": "attribute_clicks",
+          "output_lane": "clicked",
+          "output_schema": "BehaviorImpression",
+          "results": [
+            {
+              "frame": "clicked",
+              "lane": "clicked",
+              "schema": "BehaviorImpression"
+            }
+          ]
+        },
+        {
+          "input_lane": "displayed",
+          "input_schema": "BehaviorImpression",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "displayed",
+              "schema": "BehaviorImpression",
+              "source": "displayed"
+            },
+            {
+              "driving": false,
+              "parameter": "clicked",
+              "schema": "BehaviorImpression",
+              "source": "clicked"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "clicked"
+            }
+          ],
+          "name": "measure_impressions",
+          "output_lane": "measured",
+          "output_schema": "BehaviorImpression",
+          "results": [
+            {
+              "frame": "measured",
+              "lane": "measured",
+              "schema": "BehaviorImpression"
+            }
+          ]
+        },
+        {
+          "input_lane": "selected_requests",
+          "input_schema": "BehaviorRequest",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "selected",
+              "schema": "BehaviorRequest",
+              "source": "selected_requests"
+            },
+            {
+              "driving": false,
+              "parameter": "measured",
+              "schema": "BehaviorImpression",
+              "source": "measured"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "measured"
+            }
+          ],
+          "name": "measure_requests",
+          "output_lane": "request_totals",
+          "output_schema": "BehaviorRequestTotals",
+          "results": [
+            {
+              "frame": "request_totals",
+              "lane": "request_totals",
+              "schema": "BehaviorRequestTotals"
+            }
+          ]
+        },
+        {
+          "input_lane": "request_totals",
+          "input_schema": "BehaviorRequestTotals",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "BehaviorRequestTotals",
+              "source": "request_totals"
+            }
+          ],
+          "name": "calculate_reciprocal_rank",
+          "output_lane": "request_metrics",
+          "output_schema": "BehaviorRequestMetrics",
+          "results": [
+            {
+              "frame": "request_metrics",
+              "lane": "request_metrics",
+              "schema": "BehaviorRequestMetrics"
+            }
+          ]
+        },
+        {
+          "input_lane": "request_metrics",
+          "input_schema": "BehaviorRequestMetrics",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "BehaviorRequestMetrics",
+              "source": "request_metrics"
+            }
+          ],
+          "name": "publish_requests",
+          "output_lane": "measured_requests",
+          "output_schema": "DocumentSearchRequestBehavior",
+          "results": [
+            {
+              "frame": "measured_requests",
+              "lane": "measured_requests",
+              "schema": "DocumentSearchRequestBehavior"
+            }
+          ]
+        },
+        {
+          "input_lane": "measured",
+          "input_schema": "BehaviorImpression",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "measured",
+              "schema": "BehaviorImpression",
+              "source": "measured"
+            }
+          ],
+          "name": "summarize_exposure",
+          "output_lane": "exposure",
+          "output_schema": "BehaviorExposure",
+          "results": [
+            {
+              "frame": "exposure",
+              "lane": "exposure",
+              "schema": "BehaviorExposure"
+            }
+          ]
+        },
+        {
+          "input_lane": "request_metrics",
+          "input_schema": "BehaviorRequestMetrics",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "BehaviorRequestMetrics",
+              "source": "request_metrics"
+            }
+          ],
+          "name": "summarize_requests",
+          "output_lane": "daily_counts",
+          "output_schema": "BehaviorDailyCounts",
+          "results": [
+            {
+              "frame": "daily_counts",
+              "lane": "daily_counts",
+              "schema": "BehaviorDailyCounts"
+            }
+          ]
+        },
+        {
+          "input_lane": "daily_counts",
+          "input_schema": "BehaviorDailyCounts",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "daily",
+              "schema": "BehaviorDailyCounts",
+              "source": "daily_counts"
+            },
+            {
+              "driving": false,
+              "parameter": "exposure",
+              "schema": "BehaviorExposure",
+              "source": "exposure"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "exposure"
+            }
+          ],
+          "name": "publish_daily",
+          "output_lane": "summarized_daily",
+          "output_schema": "DailyDocumentSearchBehavior",
+          "results": [
+            {
+              "frame": "summarized_daily",
+              "lane": "summarized_daily",
+              "schema": "DailyDocumentSearchBehavior"
+            }
+          ]
+        },
+        {
+          "input_lane": "measured_requests",
+          "input_schema": "DocumentSearchRequestBehavior",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "DocumentSearchRequestBehavior",
+              "source": "measured_requests"
+            }
+          ],
+          "name": "publish_request_behaviors",
+          "output_lane": "request_behaviors",
+          "output_schema": "DocumentSearchRequestBehavior",
+          "results": [
+            {
+              "frame": "request_behaviors",
+              "lane": "request_behaviors",
+              "schema": "DocumentSearchRequestBehavior"
+            }
+          ]
+        },
+        {
+          "input_lane": "summarized_daily",
+          "input_schema": "DailyDocumentSearchBehavior",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "daily",
+              "schema": "DailyDocumentSearchBehavior",
+              "source": "summarized_daily"
+            }
+          ],
+          "name": "publish_daily_behavior",
+          "output_lane": "daily_behavior",
+          "output_schema": "DailyDocumentSearchBehavior",
+          "results": [
+            {
+              "frame": "daily_behavior",
+              "lane": "daily_behavior",
+              "schema": "DailyDocumentSearchBehavior"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/eval_doc_search_behavior.py",
+        "traceability": "traceability/transforms/eval_doc_search_behavior.EvaluateDocumentSearchBehavior.json"
+      }
+    },
+    {
+      "dependencies": [
+        "batch",
+        "experiment",
+        "experiments",
+        "ideal",
+        "ideal_dcgs",
+        "judgment",
+        "judgment_totals",
+        "judgments",
+        "membership",
+        "memberships",
+        "params",
+        "request",
+        "requests",
+        "result",
+        "result_totals",
+        "results",
+        "user_band",
+        "user_bands"
+      ],
+      "inputs": [
+        {
+          "name": "batch",
+          "ordinal": 0,
+          "schema": "EvaluationBatch"
+        },
+        {
+          "name": "queries",
+          "ordinal": 1,
+          "schema": "SearchQuery"
+        },
+        {
+          "name": "results",
+          "ordinal": 2,
+          "schema": "DocumentSearchResult"
+        },
+        {
+          "name": "judgments",
+          "ordinal": 3,
+          "schema": "DocumentRelevanceJudgment"
+        },
+        {
+          "name": "requests",
+          "ordinal": 4,
+          "schema": "SearchRequest"
+        },
+        {
+          "name": "memberships",
+          "ordinal": 5,
+          "schema": "CohortMembership"
+        },
+        {
+          "name": "user_bands",
+          "ordinal": 6,
+          "schema": "UserBand"
+        },
+        {
+          "name": "params",
+          "ordinal": 7,
+          "schema": "EvaluationParams"
+        },
+        {
+          "name": "experiments",
+          "ordinal": 8,
+          "schema": "Experiment"
+        }
+      ],
+      "name": "EvaluateDocumentRankingQuality",
+      "outputs": [
+        {
+          "name": "query_evaluations",
+          "ordinal": 0,
+          "schema": "DocumentQueryEvaluation"
+        },
+        {
+          "name": "summary",
+          "ordinal": 1,
+          "schema": "DocumentEvaluationSummary"
+        }
+      ],
+      "source": "examples.search.transforms.experiments.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
+      "step_methods": [
+        {
+          "input_lane": "queries",
+          "input_schema": "SearchQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "SearchQuery",
+              "source": "queries"
+            },
+            {
+              "driving": false,
+              "parameter": "request",
+              "schema": "SearchRequest",
+              "source": "requests"
+            },
+            {
+              "driving": false,
+              "parameter": "membership",
+              "schema": "CohortMembership",
+              "source": "memberships"
+            },
+            {
+              "driving": false,
+              "parameter": "user_band",
+              "schema": "UserBand",
+              "source": "user_bands"
+            },
+            {
+              "driving": false,
+              "parameter": "batch",
+              "schema": "EvaluationBatch",
+              "source": "batch"
+            },
+            {
+              "driving": false,
+              "parameter": "params",
+              "schema": "EvaluationParams",
+              "source": "params"
+            },
+            {
+              "driving": false,
+              "parameter": "experiment",
+              "schema": "Experiment",
+              "source": "experiments"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "batch"
+            },
+            {
+              "how": "cross",
+              "input": "params"
+            },
+            {
+              "how": "cross",
+              "input": "experiment"
+            },
+            {
+              "how": "inner",
+              "input": "request"
+            },
+            {
+              "how": "inner",
+              "input": "membership"
+            },
+            {
+              "how": "inner",
+              "input": "user_band"
             }
           ],
           "name": "select_queries",
@@ -6145,7 +8619,14 @@
         "exposure",
         "impression",
         "impressions",
-        "measured"
+        "measured",
+        "membership",
+        "memberships",
+        "params",
+        "request",
+        "requests",
+        "user_band",
+        "user_bands"
       ],
       "inputs": [
         {
@@ -6169,61 +8650,85 @@
           "schema": "Click"
         },
         {
-          "name": "experiments",
+          "name": "memberships",
           "ordinal": 4,
+          "schema": "CohortMembership"
+        },
+        {
+          "name": "user_bands",
+          "ordinal": 5,
+          "schema": "UserBand"
+        },
+        {
+          "name": "params",
+          "ordinal": 6,
+          "schema": "EvaluationParams"
+        },
+        {
+          "name": "queries",
+          "ordinal": 7,
+          "schema": "SearchQuery"
+        },
+        {
+          "name": "experiments",
+          "ordinal": 8,
           "schema": "Experiment"
         }
       ],
       "name": "EvaluateDocumentSearchBehavior",
       "outputs": [
         {
-          "name": "selected",
-          "ordinal": 0,
-          "schema": "BehaviorRequest"
-        },
-        {
-          "name": "measured",
-          "ordinal": 1,
-          "schema": "BehaviorImpression"
-        },
-        {
-          "name": "measured_requests",
-          "ordinal": 2,
-          "schema": "DocumentSearchRequestBehavior"
-        },
-        {
-          "name": "summarized_daily",
-          "ordinal": 3,
-          "schema": "DailyDocumentSearchBehavior"
-        },
-        {
           "name": "request_behaviors",
-          "ordinal": 4,
+          "ordinal": 0,
           "schema": "DocumentSearchRequestBehavior"
         },
         {
           "name": "daily_behavior",
-          "ordinal": 5,
+          "ordinal": 1,
           "schema": "DailyDocumentSearchBehavior"
         }
       ],
-      "source": "examples.search.transforms.experiments.search_docs.behavior.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
+      "source": "examples.search.transforms.experiments.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
       "step_methods": [
         {
-          "input_lane": "requests",
-          "input_schema": "SearchRequest",
+          "input_lane": "queries",
+          "input_schema": "SearchQuery",
           "inputs": [
             {
               "driving": true,
+              "parameter": "query",
+              "schema": "SearchQuery",
+              "source": "queries"
+            },
+            {
+              "driving": false,
               "parameter": "request",
               "schema": "SearchRequest",
               "source": "requests"
             },
             {
               "driving": false,
+              "parameter": "membership",
+              "schema": "CohortMembership",
+              "source": "memberships"
+            },
+            {
+              "driving": false,
+              "parameter": "user_band",
+              "schema": "UserBand",
+              "source": "user_bands"
+            },
+            {
+              "driving": false,
               "parameter": "batch",
               "schema": "EvaluationBatch",
               "source": "batch"
+            },
+            {
+              "driving": false,
+              "parameter": "params",
+              "schema": "EvaluationParams",
+              "source": "params"
             },
             {
               "driving": false,
@@ -6238,30 +8743,46 @@
               "input": "batch"
             },
             {
+              "how": "cross",
+              "input": "params"
+            },
+            {
+              "how": "inner",
+              "input": "request"
+            },
+            {
+              "how": "inner",
+              "input": "membership"
+            },
+            {
+              "how": "inner",
+              "input": "user_band"
+            },
+            {
               "how": "inner",
               "input": "experiment"
             }
           ],
           "name": "select_requests",
-          "output_lane": "selected",
+          "output_lane": "selected_requests",
           "output_schema": "BehaviorRequest",
           "results": [
             {
-              "frame": "selected",
-              "lane": "selected",
+              "frame": "selected_requests",
+              "lane": "selected_requests",
               "schema": "BehaviorRequest"
             }
           ]
         },
         {
-          "input_lane": "selected",
+          "input_lane": "selected_requests",
           "input_schema": "BehaviorRequest",
           "inputs": [
             {
               "driving": true,
               "parameter": "request",
               "schema": "BehaviorRequest",
-              "source": "selected"
+              "source": "selected_requests"
             },
             {
               "driving": false,
@@ -6356,14 +8877,14 @@
           ]
         },
         {
-          "input_lane": "selected",
+          "input_lane": "selected_requests",
           "input_schema": "BehaviorRequest",
           "inputs": [
             {
               "driving": true,
               "parameter": "selected",
               "schema": "BehaviorRequest",
-              "source": "selected"
+              "source": "selected_requests"
             },
             {
               "driving": false,
@@ -6559,354 +9080,6 @@
       "target_artifacts": {
         "pyspark_transform": "pyspark/transforms/eval_doc_search_behavior.py",
         "traceability": "traceability/transforms/eval_doc_search_behavior.EvaluateDocumentSearchBehavior.json"
-      }
-    },
-    {
-      "dependencies": [
-        "batch",
-        "experiment",
-        "experiments",
-        "ideal",
-        "ideal_dcgs",
-        "judgment",
-        "judgment_totals",
-        "judgments",
-        "result",
-        "result_totals",
-        "results"
-      ],
-      "inputs": [
-        {
-          "name": "batch",
-          "ordinal": 0,
-          "schema": "EvaluationBatch"
-        },
-        {
-          "name": "queries",
-          "ordinal": 1,
-          "schema": "SearchQuery"
-        },
-        {
-          "name": "results",
-          "ordinal": 2,
-          "schema": "DocumentSearchResult"
-        },
-        {
-          "name": "judgments",
-          "ordinal": 3,
-          "schema": "DocumentRelevanceJudgment"
-        },
-        {
-          "name": "experiments",
-          "ordinal": 4,
-          "schema": "Experiment"
-        }
-      ],
-      "name": "EvaluateDocumentRankingQuality",
-      "outputs": [
-        {
-          "name": "query_evaluations",
-          "ordinal": 0,
-          "schema": "DocumentQueryEvaluation"
-        },
-        {
-          "name": "summary",
-          "ordinal": 1,
-          "schema": "DocumentEvaluationSummary"
-        }
-      ],
-      "source": "examples.search.transforms.experiments.search_docs.judged_quality.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
-      "step_methods": [
-        {
-          "input_lane": "queries",
-          "input_schema": "SearchQuery",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "query",
-              "schema": "SearchQuery",
-              "source": "queries"
-            },
-            {
-              "driving": false,
-              "parameter": "batch",
-              "schema": "EvaluationBatch",
-              "source": "batch"
-            },
-            {
-              "driving": false,
-              "parameter": "experiment",
-              "schema": "Experiment",
-              "source": "experiments"
-            }
-          ],
-          "joins": [
-            {
-              "how": "cross",
-              "input": "batch"
-            },
-            {
-              "how": "cross",
-              "input": "experiment"
-            }
-          ],
-          "name": "select_queries",
-          "output_lane": "evaluated_queries",
-          "output_schema": "EvaluationQuery",
-          "results": [
-            {
-              "frame": "evaluated_queries",
-              "lane": "evaluated_queries",
-              "schema": "EvaluationQuery"
-            }
-          ]
-        },
-        {
-          "input_lane": "evaluated_queries",
-          "input_schema": "EvaluationQuery",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "query",
-              "schema": "EvaluationQuery",
-              "source": "evaluated_queries"
-            },
-            {
-              "driving": false,
-              "parameter": "result",
-              "schema": "DocumentSearchResult",
-              "source": "results"
-            },
-            {
-              "driving": false,
-              "parameter": "judgment",
-              "schema": "DocumentRelevanceJudgment",
-              "source": "judgments"
-            }
-          ],
-          "joins": [
-            {
-              "how": "left",
-              "input": "result"
-            },
-            {
-              "how": "left",
-              "input": "judgment"
-            }
-          ],
-          "name": "select_results",
-          "output_lane": "evaluated_results",
-          "output_schema": "EvaluationResult",
-          "results": [
-            {
-              "frame": "evaluated_results",
-              "lane": "evaluated_results",
-              "schema": "EvaluationResult"
-            }
-          ]
-        },
-        {
-          "input_lane": "evaluated_queries",
-          "input_schema": "EvaluationQuery",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "query",
-              "schema": "EvaluationQuery",
-              "source": "evaluated_queries"
-            },
-            {
-              "driving": false,
-              "parameter": "judgment",
-              "schema": "DocumentRelevanceJudgment",
-              "source": "judgments"
-            }
-          ],
-          "joins": [
-            {
-              "how": "inner",
-              "input": "judgment"
-            }
-          ],
-          "name": "rank_judgments",
-          "output_lane": "ranked_judgments",
-          "output_schema": "EvaluationJudgment",
-          "results": [
-            {
-              "frame": "ranked_judgments",
-              "lane": "ranked_judgments",
-              "schema": "EvaluationJudgment"
-            }
-          ]
-        },
-        {
-          "input_lane": "ranked_judgments",
-          "input_schema": "EvaluationJudgment",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "judgment",
-              "schema": "EvaluationJudgment",
-              "source": "ranked_judgments"
-            }
-          ],
-          "name": "count_judgments",
-          "output_lane": "judgment_totals",
-          "output_schema": "EvaluationJudgmentTotals",
-          "results": [
-            {
-              "frame": "judgment_totals",
-              "lane": "judgment_totals",
-              "schema": "EvaluationJudgmentTotals"
-            }
-          ]
-        },
-        {
-          "input_lane": "ranked_judgments",
-          "input_schema": "EvaluationJudgment",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "judgment",
-              "schema": "EvaluationJudgment",
-              "source": "ranked_judgments"
-            }
-          ],
-          "name": "calculate_ideal_dcg",
-          "output_lane": "ideal_dcgs",
-          "output_schema": "EvaluationIdealDcg",
-          "results": [
-            {
-              "frame": "ideal_dcgs",
-              "lane": "ideal_dcgs",
-              "schema": "EvaluationIdealDcg"
-            }
-          ]
-        },
-        {
-          "input_lane": "evaluated_results",
-          "input_schema": "EvaluationResult",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "result",
-              "schema": "EvaluationResult",
-              "source": "evaluated_results"
-            }
-          ],
-          "name": "total_results",
-          "output_lane": "result_totals",
-          "output_schema": "EvaluationResultTotals",
-          "results": [
-            {
-              "frame": "result_totals",
-              "lane": "result_totals",
-              "schema": "EvaluationResultTotals"
-            }
-          ]
-        },
-        {
-          "input_lane": "evaluated_queries",
-          "input_schema": "EvaluationQuery",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "query",
-              "schema": "EvaluationQuery",
-              "source": "evaluated_queries"
-            },
-            {
-              "driving": false,
-              "parameter": "results",
-              "schema": "EvaluationResultTotals",
-              "source": "result_totals"
-            },
-            {
-              "driving": false,
-              "parameter": "judgments",
-              "schema": "EvaluationJudgmentTotals",
-              "source": "judgment_totals"
-            },
-            {
-              "driving": false,
-              "parameter": "ideal",
-              "schema": "EvaluationIdealDcg",
-              "source": "ideal_dcgs"
-            }
-          ],
-          "joins": [
-            {
-              "how": "left",
-              "input": "results"
-            },
-            {
-              "how": "left",
-              "input": "judgments"
-            },
-            {
-              "how": "left",
-              "input": "ideal"
-            }
-          ],
-          "name": "calculate_metrics",
-          "output_lane": "metrics",
-          "output_schema": "DocumentQueryEvaluation",
-          "results": [
-            {
-              "frame": "metrics",
-              "lane": "metrics",
-              "schema": "DocumentQueryEvaluation"
-            }
-          ]
-        },
-        {
-          "input_lane": "metrics",
-          "input_schema": "DocumentQueryEvaluation",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "metric",
-              "schema": "DocumentQueryEvaluation",
-              "source": "metrics"
-            }
-          ],
-          "name": "publish_metrics",
-          "output_lane": "query_evaluations",
-          "output_schema": "DocumentQueryEvaluation",
-          "results": [
-            {
-              "frame": "query_evaluations",
-              "lane": "query_evaluations",
-              "schema": "DocumentQueryEvaluation"
-            }
-          ]
-        },
-        {
-          "input_lane": "metrics",
-          "input_schema": "DocumentQueryEvaluation",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "metric",
-              "schema": "DocumentQueryEvaluation",
-              "source": "metrics"
-            }
-          ],
-          "name": "summarize",
-          "output_lane": "summary",
-          "output_schema": "DocumentEvaluationSummary",
-          "results": [
-            {
-              "frame": "summary",
-              "lane": "summary",
-              "schema": "DocumentEvaluationSummary"
-            }
-          ]
-        }
-      ],
-      "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/eval_doc_ranking_quality.py",
-        "traceability": "traceability/transforms/eval_doc_ranking_quality.EvaluateDocumentRankingQuality.json"
       }
     },
     {
@@ -7485,7 +9658,7 @@
     {
       "dependencies": [
         "click",
-        "daily_clicks",
+        "context_clicks",
         "policy"
       ],
       "inputs": [
@@ -7500,8 +9673,18 @@
           "schema": "DailyClicks"
         },
         {
-          "name": "policy",
+          "name": "user_bands",
           "ordinal": 2,
+          "schema": "UserBand"
+        },
+        {
+          "name": "band_fallbacks",
+          "ordinal": 3,
+          "schema": "BandFallback"
+        },
+        {
+          "name": "policy",
+          "ordinal": 4,
           "schema": "RelevancePolicy"
         }
       ],
@@ -7521,6 +9704,9 @@
       "source": "examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals",
       "step_methods": [
         {
+          "after_hooks": [
+            "expand_impressions"
+          ],
           "input_lane": "daily_impressions",
           "input_schema": "DailyImpressions",
           "inputs": [
@@ -7529,12 +9715,59 @@
               "parameter": "impression",
               "schema": "DailyImpressions",
               "source": "daily_impressions"
+            }
+          ],
+          "name": "declare_context_impressions",
+          "output_lane": "context_impressions",
+          "output_schema": "DailyImpressions",
+          "results": [
+            {
+              "frame": "context_impressions",
+              "lane": "context_impressions",
+              "schema": "DailyImpressions"
+            }
+          ]
+        },
+        {
+          "after_hooks": [
+            "expand_clicks"
+          ],
+          "input_lane": "daily_clicks",
+          "input_schema": "DailyClicks",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "click",
+              "schema": "DailyClicks",
+              "source": "daily_clicks"
+            }
+          ],
+          "name": "declare_context_clicks",
+          "output_lane": "context_clicks",
+          "output_schema": "DailyClicks",
+          "results": [
+            {
+              "frame": "context_clicks",
+              "lane": "context_clicks",
+              "schema": "DailyClicks"
+            }
+          ]
+        },
+        {
+          "input_lane": "context_impressions",
+          "input_schema": "DailyImpressions",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "impression",
+              "schema": "DailyImpressions",
+              "source": "context_impressions"
             },
             {
               "driving": false,
               "parameter": "click",
               "schema": "DailyClicks",
-              "source": "daily_clicks"
+              "source": "context_clicks"
             },
             {
               "driving": false,
@@ -7565,20 +9798,20 @@
           ]
         },
         {
-          "input_lane": "daily_impressions",
+          "input_lane": "context_impressions",
           "input_schema": "DailyImpressions",
           "inputs": [
             {
               "driving": true,
               "parameter": "impression",
               "schema": "DailyImpressions",
-              "source": "daily_impressions"
+              "source": "context_impressions"
             },
             {
               "driving": false,
               "parameter": "click",
               "schema": "DailyClicks",
-              "source": "daily_clicks"
+              "source": "context_clicks"
             },
             {
               "driving": false,
@@ -8202,7 +10435,11 @@
         "query",
         "query_document_signals",
         "query_signal",
-        "score"
+        "request",
+        "requests",
+        "score",
+        "user_band",
+        "user_bands"
       ],
       "inputs": [
         {
@@ -8221,18 +10458,28 @@
           "schema": "DocumentScore"
         },
         {
-          "name": "query_document_signals",
+          "name": "requests",
           "ordinal": 3,
+          "schema": "SearchRequest"
+        },
+        {
+          "name": "user_bands",
+          "ordinal": 4,
+          "schema": "UserBand"
+        },
+        {
+          "name": "query_document_signals",
+          "ordinal": 5,
           "schema": "QueryDocumentSignals"
         },
         {
           "name": "document_popularity",
-          "ordinal": 4,
+          "ordinal": 6,
           "schema": "DocumentPopularity"
         },
         {
           "name": "policy",
-          "ordinal": 5,
+          "ordinal": 7,
           "schema": "RelevancePolicy"
         }
       ],
@@ -8272,6 +10519,18 @@
               "parameter": "query",
               "schema": "SearchQuery",
               "source": "queries"
+            },
+            {
+              "driving": false,
+              "parameter": "request",
+              "schema": "SearchRequest",
+              "source": "requests"
+            },
+            {
+              "driving": false,
+              "parameter": "user_band",
+              "schema": "UserBand",
+              "source": "user_bands"
             }
           ],
           "joins": [
@@ -8282,6 +10541,14 @@
             {
               "how": "inner",
               "input": "query"
+            },
+            {
+              "how": "inner",
+              "input": "request"
+            },
+            {
+              "how": "left",
+              "input": "user_band"
             }
           ],
           "name": "select_candidates",

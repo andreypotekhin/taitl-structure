@@ -11,6 +11,8 @@ Module: `examples.search.schemas.clicks`
 | `document_id` | `document_id` | `string` | no |
 | `position` | `position` | `long` | no |
 | `examination_propensity` | `examination_propensity` | `double` | no |
+| `user_id` | `user_id` | `string` | yes |
+| `band_id` | `band_id` | `string` | yes |
 | `click_count` | `click_count` | `long` | no |
 | `clicked_impression_count` | `clicked_impression_count` | `long` | no |
 | `dwell_seconds` | `dwell_seconds` | `double` | no |

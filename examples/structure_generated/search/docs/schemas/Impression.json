@@ -42,6 +42,12 @@
       "name": "examination_propensity",
       "nullable": false,
       "type": "double"
+    },
+    {
+      "column": "user_id",
+      "name": "user_id",
+      "nullable": true,
+      "type": "string"
     }
   ],
   "generated_by": "Structure",

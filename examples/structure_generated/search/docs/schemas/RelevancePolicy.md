@@ -13,3 +13,4 @@ Module: `examples.search.schemas.relevance`
 | `dwell_feedback_weight` | `dwell_feedback_weight` | `double` | no |
 | `ctr_feedback_weight` | `ctr_feedback_weight` | `double` | no |
 | `minimum_ctr_impressions` | `minimum_ctr_impressions` | `long` | no |
+| `minimum_band_impressions` | `minimum_band_impressions` | `long` | no |

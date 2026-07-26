@@ -1,0 +1,83 @@
+{
+  "dependencies": [],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "users",
+      "ordinal": 0,
+      "schema": "User"
+    },
+    {
+      "name": "cohorts",
+      "ordinal": 1,
+      "schema": "Cohort"
+    }
+  ],
+  "name": "ResolveCohortBands",
+  "outputs": [
+    {
+      "name": "cohort_memberships",
+      "ordinal": 0,
+      "schema": "CohortMembership"
+    },
+    {
+      "name": "bands",
+      "ordinal": 1,
+      "schema": "Band"
+    },
+    {
+      "name": "user_bands",
+      "ordinal": 2,
+      "schema": "UserBand"
+    },
+    {
+      "name": "band_fallbacks",
+      "ordinal": 3,
+      "schema": "BandFallback"
+    }
+  ],
+  "source": "examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands",
+  "step_methods": [
+    {
+      "input_lane": "users",
+      "input_schema": "User",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "user",
+          "schema": "User",
+          "source": "users"
+        }
+      ],
+      "name": "declare_outputs",
+      "output_lane": "cohort_memberships",
+      "output_schema": "CohortMembership",
+      "results": [
+        {
+          "frame": "cohort_memberships",
+          "lane": "cohort_memberships",
+          "schema": "CohortMembership"
+        },
+        {
+          "frame": "bands",
+          "lane": "bands",
+          "schema": "Band"
+        },
+        {
+          "frame": "user_bands",
+          "lane": "user_bands",
+          "schema": "UserBand"
+        },
+        {
+          "frame": "band_fallbacks",
+          "lane": "band_fallbacks",
+          "schema": "BandFallback"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/ResolveCohortBands.py",
+    "traceability": "traceability/transforms/ResolveCohortBands.ResolveCohortBands.json"
+  }
+}

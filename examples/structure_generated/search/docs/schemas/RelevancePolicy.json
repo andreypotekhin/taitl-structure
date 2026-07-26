@@ -42,6 +42,12 @@
       "name": "minimum_ctr_impressions",
       "nullable": false,
       "type": "long"
+    },
+    {
+      "column": "minimum_band_impressions",
+      "name": "minimum_band_impressions",
+      "nullable": false,
+      "type": "long"
     }
   ],
   "generated_by": "Structure",

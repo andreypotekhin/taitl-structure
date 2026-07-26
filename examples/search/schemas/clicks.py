@@ -13,6 +13,7 @@ class SearchRequest(Schema):
     query = string(nullable=False)
     experiment_id = string(nullable=False)
     ranking_version = string(nullable=False)
+    user_id = string(nullable=True)
 
 
 class Impression(Schema):
@@ -25,13 +26,17 @@ class Impression(Schema):
     document_id = string(nullable=False)
     position = long(nullable=False)
     examination_propensity = double(nullable=False)
+    user_id = string(nullable=True)
 
 
 class Click(Schema):
+    """One caller-recorded action against an impression."""
+
     id = string(nullable=False)
     occurred_at = timestamp(nullable=False)
     impression_id = string(nullable=False)
     dwell_seconds = double(nullable=False)
+    user_id = string(nullable=True)
 
 
 class DailyImpressions(Schema):
@@ -40,6 +45,8 @@ class DailyImpressions(Schema):
     document_id = string(nullable=False)
     position = long(nullable=False)
     examination_propensity = double(nullable=False)
+    user_id = string(nullable=True)
+    band_id = string(nullable=True)
     impression_count = long(nullable=False)
 
 
@@ -49,6 +56,8 @@ class DailyClicks(Schema):
     document_id = string(nullable=False)
     position = long(nullable=False)
     examination_propensity = double(nullable=False)
+    user_id = string(nullable=True)
+    band_id = string(nullable=True)
     click_count = long(nullable=False)
     clicked_impression_count = long(nullable=False)
     dwell_seconds = double(nullable=False)

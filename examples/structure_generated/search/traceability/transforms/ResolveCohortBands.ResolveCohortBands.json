@@ -1,0 +1,824 @@
+{
+  "backend": {
+    "name": "pyspark",
+    "target": ">=3.5,<4.1"
+  },
+  "generated_transform_class": "ResolveCohortBandsGenerated",
+  "inputs": [
+    {
+      "name": "users",
+      "ordinal": 0,
+      "schema": "User"
+    },
+    {
+      "name": "cohorts",
+      "ordinal": 1,
+      "schema": "Cohort"
+    }
+  ],
+  "provenance": [
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated",
+      "ir": "ir:ResolveCohortBands",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.input.users",
+      "ir": "ir:ResolveCohortBands.input.0.users",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.input.users"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.input.cohorts",
+      "ir": "ir:ResolveCohortBands.input.1.cohorts",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.input.cohorts"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs",
+      "ir": "ir:ResolveCohortBands.step.0.declare_outputs",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.cohort_memberships.select.user_id",
+      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.0.cohort_memberships.project.user_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs.result.cohort_memberships.user_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.cohort_memberships.select.cohort_id",
+      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.0.cohort_memberships.project.cohort_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs.result.cohort_memberships.cohort_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.cohort_memberships.select.parent_cohort_id",
+      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.0.cohort_memberships.project.parent_cohort_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs.result.cohort_memberships.parent_cohort_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.cohort_memberships.select.priority",
+      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.0.cohort_memberships.project.priority",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs.result.cohort_memberships.priority"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.hook.raw.resolve_bands",
+      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.hook.raw.resolve_bands",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.resolve_bands"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.bands.select.band_id",
+      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.1.bands.project.band_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs.result.bands.band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.bands.select.cohort_ids",
+      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.1.bands.project.cohort_ids",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs.result.bands.cohort_ids"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.user_bands.select.user_id",
+      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.2.user_bands.project.user_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs.result.user_bands.user_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.user_bands.select.band_id",
+      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.2.user_bands.project.band_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs.result.user_bands.band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.band_fallbacks.select.band_id",
+      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.3.band_fallbacks.project.band_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs.result.band_fallbacks.band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.band_fallbacks.select.fallback_band_id",
+      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.3.band_fallbacks.project.fallback_band_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs.result.band_fallbacks.fallback_band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.band_fallbacks.select.ordinal",
+      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.3.band_fallbacks.project.ordinal",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs.result.band_fallbacks.ordinal"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.output.0.cohort_memberships.validation.final",
+      "ir": "ir:ResolveCohortBands.output.0.cohort_memberships.validation.final",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.output.cohort_memberships"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.output.1.bands.validation.final",
+      "ir": "ir:ResolveCohortBands.output.1.bands.validation.final",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.output.bands"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.output.2.user_bands.validation.final",
+      "ir": "ir:ResolveCohortBands.output.2.user_bands.validation.final",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.output.user_bands"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.output.3.band_fallbacks.validation.final",
+      "ir": "ir:ResolveCohortBands.output.3.band_fallbacks.validation.final",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.output.band_fallbacks"
+    }
+  ],
+  "schema_constants": {
+    "Band": {
+      "constant": "BAND_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.user"
+    },
+    "BandFallback": {
+      "constant": "BAND_FALLBACK_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.user"
+    },
+    "BehaviorDailyCounts": {
+      "constant": "BEHAVIOR_DAILY_COUNTS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.behavior"
+    },
+    "BehaviorExposure": {
+      "constant": "BEHAVIOR_EXPOSURE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.behavior"
+    },
+    "BehaviorImpression": {
+      "constant": "BEHAVIOR_IMPRESSION_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.behavior"
+    },
+    "BehaviorRequest": {
+      "constant": "BEHAVIOR_REQUEST_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.behavior"
+    },
+    "BehaviorRequestMetrics": {
+      "constant": "BEHAVIOR_REQUEST_METRICS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.behavior"
+    },
+    "BehaviorRequestTotals": {
+      "constant": "BEHAVIOR_REQUEST_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.behavior"
+    },
+    "Click": {
+      "constant": "CLICK_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.clicks"
+    },
+    "Cohort": {
+      "constant": "COHORT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.user"
+    },
+    "CohortMembership": {
+      "constant": "COHORT_MEMBERSHIP_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.user"
+    },
+    "CorpusStatistics": {
+      "constant": "CORPUS_STATISTICS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "CorpusVocabulary": {
+      "constant": "CORPUS_VOCABULARY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "DailyClicks": {
+      "constant": "DAILY_CLICKS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.clicks"
+    },
+    "DailyDocumentSearchBehavior": {
+      "constant": "DAILY_DOCUMENT_SEARCH_BEHAVIOR_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.behavior"
+    },
+    "DailyImpressions": {
+      "constant": "DAILY_IMPRESSIONS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.clicks"
+    },
+    "Document": {
+      "constant": "DOCUMENT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.text"
+    },
+    "DocumentBm25Score": {
+      "constant": "DOCUMENT_BM25_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "DocumentEvaluationSummary": {
+      "constant": "DOCUMENT_EVALUATION_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
+    },
+    "DocumentFeatures": {
+      "constant": "DOCUMENT_FEATURES_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "DocumentIndexSummary": {
+      "constant": "DOCUMENT_INDEX_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "DocumentIndexTarget": {
+      "constant": "DOCUMENT_INDEX_TARGET_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "DocumentIndexTerm": {
+      "constant": "DOCUMENT_INDEX_TERM_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "DocumentOverlapScore": {
+      "constant": "DOCUMENT_OVERLAP_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "DocumentPopularity": {
+      "constant": "DOCUMENT_POPULARITY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.relevance"
+    },
+    "DocumentQueryEvaluation": {
+      "constant": "DOCUMENT_QUERY_EVALUATION_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
+    },
+    "DocumentRelevanceJudgment": {
+      "constant": "DOCUMENT_RELEVANCE_JUDGMENT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
+    },
+    "DocumentScore": {
+      "constant": "DOCUMENT_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "DocumentSearchCandidate": {
+      "constant": "DOCUMENT_SEARCH_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "DocumentSearchRequestBehavior": {
+      "constant": "DOCUMENT_SEARCH_REQUEST_BEHAVIOR_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.behavior"
+    },
+    "DocumentSearchResult": {
+      "constant": "DOCUMENT_SEARCH_RESULT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "DocumentSearchTarget": {
+      "constant": "DOCUMENT_SEARCH_TARGET_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "DocumentSimilarity": {
+      "constant": "DOCUMENT_SIMILARITY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "DocumentSimilarityQuery": {
+      "constant": "DOCUMENT_SIMILARITY_QUERY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "DocumentStatistics": {
+      "constant": "DOCUMENT_STATISTICS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "EvaluationBatch": {
+      "constant": "EVALUATION_BATCH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.batch"
+    },
+    "EvaluationIdealDcg": {
+      "constant": "EVALUATION_IDEAL_DCG_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
+    },
+    "EvaluationJudgment": {
+      "constant": "EVALUATION_JUDGMENT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
+    },
+    "EvaluationJudgmentTotals": {
+      "constant": "EVALUATION_JUDGMENT_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
+    },
+    "EvaluationParams": {
+      "constant": "EVALUATION_PARAMS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.params"
+    },
+    "EvaluationQuery": {
+      "constant": "EVALUATION_QUERY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
+    },
+    "EvaluationResult": {
+      "constant": "EVALUATION_RESULT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
+    },
+    "EvaluationResultTotals": {
+      "constant": "EVALUATION_RESULT_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
+    },
+    "Experiment": {
+      "constant": "EXPERIMENT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.experiment"
+    },
+    "Impression": {
+      "constant": "IMPRESSION_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.clicks"
+    },
+    "IndexedSimilarDocument": {
+      "constant": "INDEXED_SIMILAR_DOCUMENT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "IndexedSimilarParagraph": {
+      "constant": "INDEXED_SIMILAR_PARAGRAPH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "IndexedSimilarSection": {
+      "constant": "INDEXED_SIMILAR_SECTION_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "IndexedSimilarSentence": {
+      "constant": "INDEXED_SIMILAR_SENTENCE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "Label": {
+      "constant": "LABEL_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "LabelMapEntry": {
+      "constant": "LABEL_MAP_ENTRY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "Paragraph": {
+      "constant": "PARAGRAPH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.text"
+    },
+    "ParagraphBm25Score": {
+      "constant": "PARAGRAPH_BM25_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ParagraphIndexSummary": {
+      "constant": "PARAGRAPH_INDEX_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ParagraphIndexTarget": {
+      "constant": "PARAGRAPH_INDEX_TARGET_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ParagraphIndexTerm": {
+      "constant": "PARAGRAPH_INDEX_TERM_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ParagraphOverlapScore": {
+      "constant": "PARAGRAPH_OVERLAP_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ParagraphScore": {
+      "constant": "PARAGRAPH_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ParagraphSearchTarget": {
+      "constant": "PARAGRAPH_SEARCH_TARGET_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ParagraphSimilarity": {
+      "constant": "PARAGRAPH_SIMILARITY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "ParagraphSimilarityQuery": {
+      "constant": "PARAGRAPH_SIMILARITY_QUERY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "ParagraphStatistics": {
+      "constant": "PARAGRAPH_STATISTICS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "QueryDocumentSignals": {
+      "constant": "QUERY_DOCUMENT_SIGNALS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.relevance"
+    },
+    "QueryLabel": {
+      "constant": "QUERY_LABEL_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "QueryLabelAssignmentEntries": {
+      "constant": "QUERY_LABEL_ASSIGNMENT_ENTRIES_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "QueryLabelAssignments": {
+      "constant": "QUERY_LABEL_ASSIGNMENTS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "RelevancePolicy": {
+      "constant": "RELEVANCE_POLICY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.relevance"
+    },
+    "SearchQuery": {
+      "constant": "SEARCH_QUERY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SearchRequest": {
+      "constant": "SEARCH_REQUEST_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.clicks"
+    },
+    "Section": {
+      "constant": "SECTION_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.text"
+    },
+    "SectionBm25Score": {
+      "constant": "SECTION_BM25_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SectionIndexSummary": {
+      "constant": "SECTION_INDEX_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SectionIndexTarget": {
+      "constant": "SECTION_INDEX_TARGET_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SectionIndexTerm": {
+      "constant": "SECTION_INDEX_TERM_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SectionOverlapScore": {
+      "constant": "SECTION_OVERLAP_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SectionScore": {
+      "constant": "SECTION_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SectionSearchTarget": {
+      "constant": "SECTION_SEARCH_TARGET_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SectionSimilarity": {
+      "constant": "SECTION_SIMILARITY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "SectionSimilarityQuery": {
+      "constant": "SECTION_SIMILARITY_QUERY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "SectionStatistics": {
+      "constant": "SECTION_STATISTICS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "Sentence": {
+      "constant": "SENTENCE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.text"
+    },
+    "SentenceBm25Score": {
+      "constant": "SENTENCE_BM25_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SentenceIndexSummary": {
+      "constant": "SENTENCE_INDEX_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SentenceIndexTarget": {
+      "constant": "SENTENCE_INDEX_TARGET_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SentenceIndexTerm": {
+      "constant": "SENTENCE_INDEX_TERM_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SentenceOverlapScore": {
+      "constant": "SENTENCE_OVERLAP_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SentenceScore": {
+      "constant": "SENTENCE_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SentenceSearchResult": {
+      "constant": "SENTENCE_SEARCH_RESULT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SentenceSearchTarget": {
+      "constant": "SENTENCE_SEARCH_TARGET_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SentenceSimilarity": {
+      "constant": "SENTENCE_SIMILARITY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "SentenceSimilarityQuery": {
+      "constant": "SENTENCE_SIMILARITY_QUERY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "SentenceStatistics": {
+      "constant": "SENTENCE_STATISTICS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "SimilarDocument": {
+      "constant": "SIMILAR_DOCUMENT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "SimilarityDocumentQuery": {
+      "constant": "SIMILARITY_DOCUMENT_QUERY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "SimilarityParagraphQuery": {
+      "constant": "SIMILARITY_PARAGRAPH_QUERY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "SimilarityPolicy": {
+      "constant": "SIMILARITY_POLICY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "SimilaritySectionQuery": {
+      "constant": "SIMILARITY_SECTION_QUERY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "SimilaritySentenceQuery": {
+      "constant": "SIMILARITY_SENTENCE_QUERY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "TimeWindow": {
+      "constant": "TIME_WINDOW_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.TimeWindow"
+    },
+    "User": {
+      "constant": "USER_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.user"
+    },
+    "UserBand": {
+      "constant": "USER_BAND_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.user"
+    },
+    "Word": {
+      "constant": "WORD_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.text"
+    }
+  },
+  "source_transform": "examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands",
+  "static_dataflow": {
+    "dependencies": [
+      {
+        "detail": {
+          "backend": "pyspark"
+        },
+        "operation": "transform",
+        "sources": [
+          "users",
+          "cohorts"
+        ],
+        "step": null,
+        "target": "ResolveCohortBands"
+      },
+      {
+        "detail": {
+          "input_schema": "User",
+          "output_schema": "CohortMembership"
+        },
+        "operation": "step",
+        "sources": [
+          "users"
+        ],
+        "step": "declare_outputs",
+        "target": "declare_outputs"
+      },
+      {
+        "detail": {
+          "field": "user_id",
+          "result": "cohort_memberships"
+        },
+        "operation": "project",
+        "sources": [
+          "users.id"
+        ],
+        "step": "declare_outputs",
+        "target": "cohort_memberships.user_id"
+      },
+      {
+        "detail": {
+          "field": "cohort_id",
+          "result": "cohort_memberships"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "declare_outputs",
+        "target": "cohort_memberships.cohort_id"
+      },
+      {
+        "detail": {
+          "field": "parent_cohort_id",
+          "result": "cohort_memberships"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "declare_outputs",
+        "target": "cohort_memberships.parent_cohort_id"
+      },
+      {
+        "detail": {
+          "field": "priority",
+          "result": "cohort_memberships"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "declare_outputs",
+        "target": "cohort_memberships.priority"
+      },
+      {
+        "detail": {
+          "phase": "raw",
+          "project_output": false,
+          "schema_mode": "strict"
+        },
+        "operation": "hook",
+        "sources": [
+          "CohortMembership"
+        ],
+        "step": "declare_outputs",
+        "target": "declare_outputs.hook.resolve_bands"
+      },
+      {
+        "detail": {
+          "field": "band_id",
+          "result": "bands"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "declare_outputs",
+        "target": "bands.band_id"
+      },
+      {
+        "detail": {
+          "field": "cohort_ids",
+          "result": "bands"
+        },
+        "operation": "project",
+        "sources": [
+          "users.id"
+        ],
+        "step": "declare_outputs",
+        "target": "bands.cohort_ids"
+      },
+      {
+        "detail": {
+          "field": "user_id",
+          "result": "user_bands"
+        },
+        "operation": "project",
+        "sources": [
+          "users.id"
+        ],
+        "step": "declare_outputs",
+        "target": "user_bands.user_id"
+      },
+      {
+        "detail": {
+          "field": "band_id",
+          "result": "user_bands"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "declare_outputs",
+        "target": "user_bands.band_id"
+      },
+      {
+        "detail": {
+          "field": "band_id",
+          "result": "band_fallbacks"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "declare_outputs",
+        "target": "band_fallbacks.band_id"
+      },
+      {
+        "detail": {
+          "field": "fallback_band_id",
+          "result": "band_fallbacks"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "declare_outputs",
+        "target": "band_fallbacks.fallback_band_id"
+      },
+      {
+        "detail": {
+          "field": "ordinal",
+          "result": "band_fallbacks"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "declare_outputs",
+        "target": "band_fallbacks.ordinal"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "CohortMembership"
+        ],
+        "step": null,
+        "target": "CohortMembership.validation.final"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "Band"
+        ],
+        "step": null,
+        "target": "Band.validation.final"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "UserBand"
+        ],
+        "step": null,
+        "target": "UserBand.validation.final"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "BandFallback"
+        ],
+        "step": null,
+        "target": "BandFallback.validation.final"
+      }
+    ],
+    "opaque_boundaries": [
+      {
+        "hook": "resolve_bands",
+        "phase": "raw",
+        "reason": "arbitrary PySpark hook body",
+        "schema": "CohortMembership",
+        "step": "declare_outputs",
+        "target": "declare_outputs"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "user",
+      "joins": [],
+      "name": "declare_outputs",
+      "output_alias": "cohort_membership",
+      "output_schema": "CohortMembership",
+      "results": [
+        {
+          "after_hooks": [
+            "resolve_bands"
+          ],
+          "frame": "cohort_memberships",
+          "lane": "cohort_memberships",
+          "schema": "CohortMembership"
+        },
+        {
+          "after_hooks": [],
+          "frame": "bands",
+          "lane": "bands",
+          "schema": "Band"
+        },
+        {
+          "after_hooks": [],
+          "frame": "user_bands",
+          "lane": "user_bands",
+          "schema": "UserBand"
+        },
+        {
+          "after_hooks": [],
+          "frame": "band_fallbacks",
+          "lane": "band_fallbacks",
+          "schema": "BandFallback"
+        }
+      ],
+      "validation": []
+    }
+  ],
+  "target_module": "examples.structure_generated.search.pyspark.transforms.ResolveCohortBands",
+  "validation": {
+    "outputs": [
+      {
+        "mode": "strict",
+        "name": "cohort_memberships",
+        "schema": "CohortMembership"
+      },
+      {
+        "mode": "strict",
+        "name": "bands",
+        "schema": "Band"
+      },
+      {
+        "mode": "strict",
+        "name": "user_bands",
+        "schema": "UserBand"
+      },
+      {
+        "mode": "strict",
+        "name": "band_fallbacks",
+        "schema": "BandFallback"
+      }
+    ]
+  }
+}

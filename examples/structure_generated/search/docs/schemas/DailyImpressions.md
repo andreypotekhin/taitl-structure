@@ -11,4 +11,6 @@ Module: `examples.search.schemas.clicks`
 | `document_id` | `document_id` | `string` | no |
 | `position` | `position` | `long` | no |
 | `examination_propensity` | `examination_propensity` | `double` | no |
+| `user_id` | `user_id` | `string` | yes |
+| `band_id` | `band_id` | `string` | yes |
 | `impression_count` | `impression_count` | `long` | no |

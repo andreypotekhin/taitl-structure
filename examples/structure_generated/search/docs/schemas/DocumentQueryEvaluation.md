@@ -9,6 +9,7 @@ Module: `examples.search.schemas.evaluation.judged_quality`
 | `window` | `window` | `TimeWindow` | no |
 | `params` | `params` | `EvaluationParams` | yes |
 | `experiment_id` | `experiment_id` | `string` | no |
+| `band_id` | `band_id` | `string` | yes |
 | `search_query_id` | `search_query_id` | `string` | no |
 | `returned_result_count` | `returned_result_count` | `long` | no |
 | `judged_result_count` | `judged_result_count` | `long` | no |

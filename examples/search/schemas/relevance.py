@@ -12,9 +12,13 @@ class RelevancePolicy(Schema):
     dwell_feedback_weight = double(nullable=False)
     ctr_feedback_weight = double(nullable=False)
     minimum_ctr_impressions = long(nullable=False)
+    minimum_band_impressions = long(nullable=False)
 
 
 class QueryDocumentSignals(Schema):
+    """One global or band-context query/document feedback signal."""
+
+    band_id = string(nullable=True)
     query = string(nullable=False)
     document_id = string(nullable=False)
     impression_count = long(nullable=False)
@@ -34,6 +38,9 @@ class QueryDocumentSignals(Schema):
 
 
 class DocumentPopularity(Schema):
+    """One global or band-context document feedback signal."""
+
+    band_id = string(nullable=True)
     document_id = string(nullable=False)
     impression_count = long(nullable=False)
     click_count = long(nullable=False)

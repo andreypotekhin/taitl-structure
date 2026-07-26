@@ -143,6 +143,16 @@ hidden title, source, language, or collection filters. Callers add those product
 
 Search evaluation has two separate facets that share a caller-selected UTC-aligned daily `EvaluationBatch` window.
 
+### Cohort bands
+
+Caller-owned user profiles can match several persisted `Cohort` predicates. Search derives a reusable ordered
+`Band` from their most-specific matches rather than selecting or blending one band. `UserBand` maps each user to its
+shared band. Band feedback falls back
+through the lowest-priority band first and then to global feedback when it lacks enough impressions. The hierarchy
+resolver is currently a narrow raw Spark boundary because the DSL has no recursive-relation operation; ordinary
+feedback, ranking, and evaluation remain typed transforms. User-band evaluation selects contexts containing its
+requested persisted band, while combined evaluation applies both that membership filter and query-label filters.
+
 ### Judged document quality
 
 `EvaluateDocumentRankingQuality` evaluates one document-ranking run against caller-supplied `DocumentRelevanceJudgment` rows. Grades

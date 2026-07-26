@@ -1,0 +1,56 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "id",
+      "name": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "age",
+      "name": "age",
+      "nullable": true,
+      "type": "long"
+    },
+    {
+      "column": "gender",
+      "name": "gender",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "locale",
+      "name": "locale",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "country",
+      "name": "country",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "geo_tag",
+      "name": "geo_tag",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "device_type",
+      "name": "device_type",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "time_zone",
+      "name": "time_zone",
+      "nullable": true,
+      "type": "string"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.search.schemas.user",
+  "name": "User"
+}

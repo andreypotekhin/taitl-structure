@@ -10,3 +10,4 @@ Module: `examples.search.schemas.clicks`
 | `occurred_at` | `occurred_at` | `timestamp` | no |
 | `impression_id` | `impression_id` | `string` | no |
 | `dwell_seconds` | `dwell_seconds` | `double` | no |
+| `user_id` | `user_id` | `string` | yes |

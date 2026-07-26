@@ -16,6 +16,7 @@ DOCUMENT_QUERY_EVALUATION_SCHEMA = T.StructType([
     T.StructField("window", TIME_WINDOW_SCHEMA, False),
     T.StructField("params", EVALUATION_PARAMS_SCHEMA, True),
     T.StructField("experiment_id", T.StringType(), False),
+    T.StructField("band_id", T.StringType(), True),
     T.StructField("search_query_id", T.StringType(), False),
     T.StructField("returned_result_count", T.LongType(), False),
     T.StructField("judged_result_count", T.LongType(), False),
@@ -69,6 +70,7 @@ EVALUATION_QUERY_SCHEMA = T.StructType([
     T.StructField("window", TIME_WINDOW_SCHEMA, False),
     T.StructField("params", EVALUATION_PARAMS_SCHEMA, True),
     T.StructField("experiment_id", T.StringType(), False),
+    T.StructField("band_id", T.StringType(), True),
     T.StructField("search_query_id", T.StringType(), False),
 ])
 

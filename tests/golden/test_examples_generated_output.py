@@ -19,7 +19,7 @@ from helpers.example_projects import (
     render_streams_example,
 )
 
-from structure import StructureConfig
+from structure import StructureConfig, Transform
 from structure.core.cli.commands.DiscoverStructureProject import DiscoverStructureProject
 from structure.core.compiler.api import Compiler
 from structure.plugin.api.v1.model import TransformPlan
@@ -68,43 +68,18 @@ def test_similarity_public_transform_inherits_its_searching_implementation() -> 
     assert Similarity.__bases__ == (SearchSimilarity,)
 
 
-def test_behavior_evaluator_inherits_ordered_partial_stages() -> None:
-    """The public evaluator publishes its inherited request-to-daily behavior pipeline."""
+def test_behavior_evaluator_keeps_its_request_to_daily_pipeline_local() -> None:
+    """The public evaluator owns all behavior stages for direct IDE navigation."""
 
-    from examples.search.transforms.evaluation.search_docs.behavior.eval_doc_search_behavior import (
+    from examples.search.transforms.evaluation.search_docs.eval_doc_search_behavior import (
         EvaluateDocumentSearchBehavior,
-        MeasureDocumentSearchImpressions,
-        MeasureDocumentSearchRequests,
-        SelectDocumentSearchRequests,
-        SummarizeDocumentSearchBehavior,
     )
 
-    assert MeasureDocumentSearchImpressions.__bases__ == (SelectDocumentSearchRequests,)
-    assert MeasureDocumentSearchRequests.__bases__ == (MeasureDocumentSearchImpressions,)
-    assert SummarizeDocumentSearchBehavior.__bases__ == (MeasureDocumentSearchRequests,)
-    assert EvaluateDocumentSearchBehavior.__bases__ == (SummarizeDocumentSearchBehavior,)
-
-    stages = (
-        (SelectDocumentSearchRequests, ["selected"]),
-        (MeasureDocumentSearchImpressions, ["selected", "measured"]),
-        (MeasureDocumentSearchRequests, ["selected", "measured", "measured_requests"]),
-        (
-            SummarizeDocumentSearchBehavior,
-            ["selected", "measured", "measured_requests", "summarized_daily"],
-        ),
-    )
-    for stage, outputs in stages:
-        plan = Compiler.frontend.compile()(stage, materialize_schemas=False).analysis
-        assert isinstance(plan, TransformPlan)
-        assert [output.name for output in plan.outputs] == outputs
+    assert EvaluateDocumentSearchBehavior.__bases__ == (Transform,)
 
     plan = Compiler.frontend.compile()(EvaluateDocumentSearchBehavior, materialize_schemas=False).analysis
     assert isinstance(plan, TransformPlan)
     assert [output.name for output in plan.outputs] == [
-        "selected",
-        "measured",
-        "measured_requests",
-        "summarized_daily",
         "request_behaviors",
         "daily_behavior",
     ]

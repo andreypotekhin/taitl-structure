@@ -20,6 +20,12 @@
       "type": "string"
     },
     {
+      "column": "band_id",
+      "name": "band_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
       "column": "ranking_version",
       "name": "ranking_version",
       "nullable": false,

@@ -12,3 +12,4 @@ Module: `examples.search.schemas.clicks`
 | `query` | `query` | `string` | no |
 | `experiment_id` | `experiment_id` | `string` | no |
 | `ranking_version` | `ranking_version` | `string` | no |
+| `user_id` | `user_id` | `string` | yes |

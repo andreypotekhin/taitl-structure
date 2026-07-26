@@ -1,0 +1,32 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "user_id",
+      "name": "user_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "cohort_id",
+      "name": "cohort_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "parent_cohort_id",
+      "name": "parent_cohort_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "priority",
+      "name": "priority",
+      "nullable": false,
+      "type": "long"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.search.schemas.user",
+  "name": "CohortMembership"
+}

@@ -30,8 +30,29 @@ class SimilarityQueries:
         queries = pairs[0][0]
         for query, _ in pairs[1:]:
             queries = queries.unionByName(query)
+        queries = cls._as_search_queries(queries)
         actual = (queries, *(mapping for _, mapping in pairs))
         return tuple(frame.select(*output.columns) for frame, output in zip(actual, declared, strict=True))
+
+    @staticmethod
+    def _as_search_queries(queries: DataFrame) -> DataFrame:
+        """Add the required default classification fields to generated self-queries."""
+
+        from pyspark.sql import functions as F
+
+        return (
+            queries.withColumn(
+                "labels",
+                F.create_map(
+                    F.lit("is_question"),
+                    F.lit(0).cast("long"),
+                    F.lit("is_time_sensitive"),
+                    F.lit(0).cast("long"),
+                ),
+            )
+            .withColumn("is_question", F.lit(False))
+            .withColumn("is_time_sensitive", F.lit(False))
+        )
 
     @staticmethod
     def _ratio(policy: DataFrame) -> float | None:

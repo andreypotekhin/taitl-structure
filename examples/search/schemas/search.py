@@ -60,6 +60,7 @@ class DocumentSearchResult(Schema):
 
     search_query_id = string(nullable=False)
     experiment_id = string(nullable=False)
+    band_id = string(nullable=True)
     rank = long(nullable=False)
     candidate_rank = long(nullable=False)
     document_id = string(nullable=False)
@@ -75,6 +76,7 @@ class DocumentSearchCandidate(Schema):
 
     search_query_id = string(nullable=False)
     experiment_id = string(nullable=False)
+    band_id = string(nullable=True)
     query = string(nullable=False)
     candidate_rank = long(nullable=False)
     document_id = string(nullable=False)

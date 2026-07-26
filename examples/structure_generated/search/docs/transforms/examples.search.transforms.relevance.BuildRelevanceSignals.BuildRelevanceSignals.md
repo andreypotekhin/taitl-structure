@@ -8,6 +8,8 @@ Source: `examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevan
 
 - `daily_impressions`: `DailyImpressions`
 - `daily_clicks`: `DailyClicks`
+- `user_bands`: `UserBand`
+- `band_fallbacks`: `BandFallback`
 - `policy`: `RelevancePolicy`
 
 ## Outputs
@@ -17,6 +19,8 @@ Source: `examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevan
 
 ## Step methods
 
+- `declare_context_impressions`: `DailyImpressions` -> `DailyImpressions`
+- `declare_context_clicks`: `DailyClicks` -> `DailyClicks`
 - `summarize_query`: `DailyImpressions` -> `QueryDocumentSignals`
 - `summarize_popularity`: `DailyImpressions` -> `DocumentPopularity`
 - `normalize_query`: `QueryDocumentSignals` -> `QueryDocumentSignals`
@@ -25,7 +29,7 @@ Source: `examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevan
 ## Dependencies
 
 - `click`
-- `daily_clicks`
+- `context_clicks`
 - `policy`
 
 ## Target Artifacts

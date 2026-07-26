@@ -1,0 +1,26 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "band_id",
+      "name": "band_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "fallback_band_id",
+      "name": "fallback_band_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "ordinal",
+      "name": "ordinal",
+      "nullable": false,
+      "type": "long"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.search.schemas.user",
+  "name": "BandFallback"
+}

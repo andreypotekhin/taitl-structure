@@ -32,6 +32,8 @@ class ImpressionsGenerated:
             F.col("impression.document_id").alias("document_id"),
             F.col("impression.position").alias("position"),
             F.col("impression.examination_propensity").alias("examination_propensity"),
+            F.col("impression.user_id").alias("user_id"),
+            F.lit(None).alias("band_id"),
         ).agg(
             F.count(F.lit(1)).cast(T.LongType()).alias("impression_count"),
         ).select(
@@ -40,6 +42,8 @@ class ImpressionsGenerated:
             F.col("document_id"),
             F.col("position"),
             F.col("examination_propensity"),
+            F.col("user_id"),
+            F.col("band_id"),
             F.col("impression_count"),
         )
 

@@ -104,15 +104,21 @@ from examples.search.schemas.similarity import (
     SimilaritySentenceQuery,
 )
 from examples.search.schemas.text import Document, Paragraph, Section, Sentence, Word
+from examples.search.schemas.user import Band, BandFallback, Cohort, CohortMembership, User, UserBand
 from examples.search.transforms.analyze import AnalyzeText
 from examples.search.transforms.clicks.Clicks import Clicks
 from examples.search.transforms.clicks.Impressions import Impressions
+from examples.search.transforms.cohorts import ResolveCohortBands
 from examples.search.transforms.corpus import CorpusText
 from examples.search.transforms.evaluate import (
+    EvaluateAllDocumentRankingQuality,
+    EvaluateAllDocumentSearchBehavior,
     EvaluateDocumentRankingQuality,
     EvaluateDocumentSearchBehavior,
     EvaluateLabeledDocumentRankingQuality,
     EvaluateLabeledDocumentSearchBehavior,
+    EvaluateUserDocumentRankingQuality,
+    EvaluateUserDocumentSearchBehavior,
 )
 from examples.search.transforms.experiment import (
     EvaluateDocumentRankingQuality as EvaluateExperimentDocumentRankingQuality,
@@ -233,6 +239,14 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         QueryDocumentSignals,
         DocumentPopularity,
     ],
+    "examples.search.schemas.user": [
+        User,
+        Cohort,
+        CohortMembership,
+        Band,
+        UserBand,
+        BandFallback,
+    ],
     "examples.search.schemas.similarity": [
         SimilarityPolicy,
         SimilarityDocumentQuery,
@@ -264,33 +278,52 @@ TRANSFORMS = (
     (SearchPassages, "examples.search.transforms.searching.search_passages.SearchPassages.SearchPassages"),
     (Impressions, "examples.search.transforms.clicks.Impressions.Impressions"),
     (Clicks, "examples.search.transforms.clicks.Clicks.Clicks"),
-    (BuildRelevanceSignals, "examples.search.transforms.relevance.BuildRelevanceSignals"),
+    (
+        BuildRelevanceSignals,
+        "examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals",
+    ),
     (SearchDocuments, "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments"),
     (MergeQueryLabels, "examples.search.transforms.labeling.merge_query_labels.MergeQueryLabels"),
     (SelectExperimentScores, "examples.search.transforms.experiments.select_experiment_scores.SelectExperimentScores"),
     (
         EvaluateExperimentDocumentRankingQuality,
-        "examples.search.transforms.experiments.search_docs.judged_quality.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
+        "examples.search.transforms.experiments.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
     ),
     (
         EvaluateExperimentDocumentSearchBehavior,
-        "examples.search.transforms.experiments.search_docs.behavior.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
+        "examples.search.transforms.experiments.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
     ),
     (
         EvaluateDocumentRankingQuality,
-        "examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality",
+        "examples.search.transforms.evaluation.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
     ),
     (
         EvaluateDocumentSearchBehavior,
-        "examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior",
+        "examples.search.transforms.evaluation.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
     ),
     (
         EvaluateLabeledDocumentRankingQuality,
-        "examples.search.transforms.evaluation.with_labels.search_docs.judged_quality.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
+        "examples.search.transforms.evaluation.with_labels.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
     ),
     (
         EvaluateLabeledDocumentSearchBehavior,
-        "examples.search.transforms.evaluation.with_labels.search_docs.behavior.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
+        "examples.search.transforms.evaluation.with_labels.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
+    ),
+    (
+        EvaluateUserDocumentRankingQuality,
+        "examples.search.transforms.evaluation.with_users.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
+    ),
+    (
+        EvaluateUserDocumentSearchBehavior,
+        "examples.search.transforms.evaluation.with_users.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
+    ),
+    (
+        EvaluateAllDocumentRankingQuality,
+        "examples.search.transforms.evaluation.with_all.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
+    ),
+    (
+        EvaluateAllDocumentSearchBehavior,
+        "examples.search.transforms.evaluation.with_all.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
     ),
     (
         CreateSimilarityQueries,
@@ -306,6 +339,7 @@ TRANSFORMS = (
     (SimilarParagraphs, "examples.search.transforms.similarities.SimilarParagraphs.SimilarParagraphs"),
     (SimilarSentences, "examples.search.transforms.similarities.SimilarSentences.SimilarSentences"),
     (AddScores, "examples.search.transforms.score.AddScores"),
+    (ResolveCohortBands, "examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands"),
 )
 
 
@@ -893,29 +927,36 @@ def test_relevance_signals_keep_binary_ctr_separate_from_engagement(spark, tmp_p
     with generated_project(tmp_path, PACKAGE, files):
         click_schemas = __import__(f"{PACKAGE}.pyspark.schemas.clicks", fromlist=["DAILY_IMPRESSIONS_SCHEMA"])
         relevance_schemas = __import__(f"{PACKAGE}.pyspark.schemas.relevance", fromlist=["RELEVANCE_POLICY_SCHEMA"])
+        user_schemas = __import__(f"{PACKAGE}.pyspark.schemas.user", fromlist=["USER_BAND_SCHEMA"])
         start = datetime(2026, 7, 20)
         end = datetime(2026, 7, 21)
         daily_impressions = spark.createDataFrame(
             [
-                ((start, end), "aurora", "d-active", 1, 0.25, 10),
-                ((start, end), "aurora", "d-active", 2, 0.5, 10),
-                ((start, end), "aurora", "d-low", 1, 0.5, 19),
+                ((start, end), "aurora", "d-active", 1, 0.25, None, None, 10),
+                ((start, end), "aurora", "d-active", 2, 0.5, None, None, 10),
+                ((start, end), "aurora", "d-low", 1, 0.5, None, None, 19),
             ],
             click_schemas.DAILY_IMPRESSIONS_SCHEMA,
         )
         daily_clicks = spark.createDataFrame(
             [
-                ((start, end), "aurora", "d-active", 1, 0.25, 6, 5, 120.0, 2.0, 2),
-                ((start, end), "aurora", "d-active", 2, 0.5, 0, 0, 0.0, 0.0, 0),
-                ((start, end), "aurora", "d-low", 1, 0.5, 2, 1, 60.0, 1.0, 1),
+                ((start, end), "aurora", "d-active", 1, 0.25, None, None, 6, 5, 120.0, 2.0, 2),
+                ((start, end), "aurora", "d-active", 2, 0.5, None, None, 0, 0, 0.0, 0.0, 0),
+                ((start, end), "aurora", "d-low", 1, 0.5, None, None, 2, 1, 60.0, 1.0, 1),
             ],
             click_schemas.DAILY_CLICKS_SCHEMA,
         )
         policy = spark.createDataFrame(
-            [(datetime(2026, 7, 21), 30.0, 0.7, 0.3, 0.7, 0.3, 20)],
+            [(datetime(2026, 7, 21), 30.0, 0.7, 0.3, 0.7, 0.3, 20, 20)],
             relevance_schemas.RELEVANCE_POLICY_SCHEMA,
         )
-        inputs = dict(daily_impressions=daily_impressions, daily_clicks=daily_clicks, policy=policy)
+        inputs = dict(
+            daily_impressions=daily_impressions,
+            daily_clicks=daily_clicks,
+            user_bands=spark.createDataFrame([], user_schemas.USER_BAND_SCHEMA),
+            band_fallbacks=spark.createDataFrame([], user_schemas.BAND_FALLBACK_SCHEMA),
+            policy=policy,
+        )
         online = BuildRelevanceSignals(**inputs).run(session(spark, execution_mode="online"))
         generated = BuildRelevanceSignals(**inputs).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
@@ -954,6 +995,8 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
             f"{PACKAGE}.pyspark.schemas.search", fromlist=["SEARCH_QUERY_SCHEMA", "DOCUMENT_SCORE_SCHEMA"]
         )
         relevance_schemas = __import__(f"{PACKAGE}.pyspark.schemas.relevance", fromlist=["RELEVANCE_POLICY_SCHEMA"])
+        click_schemas = __import__(f"{PACKAGE}.pyspark.schemas.clicks", fromlist=["SEARCH_REQUEST_SCHEMA"])
+        user_schemas = __import__(f"{PACKAGE}.pyspark.schemas.user", fromlist=["USER_BAND_SCHEMA"])
         queries = spark.createDataFrame(
             [
                 ("q-free-form", "  AURORA,   beacon!  ", {"is_question": 0, "is_time_sensitive": 0}, False, False),
@@ -971,23 +1014,31 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
         document_scores = spark.createDataFrame(document_score_rows, search_schemas.DOCUMENT_SCORE_SCHEMA)
         query_signals = spark.createDataFrame(
             [
-                ("aurora, beacon!", "d-12", 1, 1, 1, 60.0, 1, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0),
-                ("navigation", "d-13", 1, 1, 1, 60.0, 1, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0),
+                (None, "aurora, beacon!", "d-12", 1, 1, 1, 60.0, 1, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0),
+                (None, "navigation", "d-13", 1, 1, 1, 60.0, 1, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0),
             ],
             relevance_schemas.QUERY_DOCUMENT_SIGNALS_SCHEMA,
         )
         popularity = spark.createDataFrame(
-            [("d-12", 1, 1, 1, 60.0, 1, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0)],
+            [(None, "d-12", 1, 1, 1, 60.0, 1, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0)],
             relevance_schemas.DOCUMENT_POPULARITY_SCHEMA,
         )
         policy = spark.createDataFrame(
-            [(datetime(2026, 7, 21), 30.0, 0.7, 0.3, 0.7, 0.3, 20)],
+            [(datetime(2026, 7, 21), 30.0, 0.7, 0.3, 0.7, 0.3, 20, 20)],
             relevance_schemas.RELEVANCE_POLICY_SCHEMA,
         )
         inputs = dict(
             queries=queries,
             documents=documents,
             document_scores=document_scores,
+            requests=spark.createDataFrame(
+                [
+                    ("r-free-form", "q-free-form", datetime(2026, 7, 21), "aurora, beacon!", "", "", None),
+                    ("r-navigation", "q-navigation", datetime(2026, 7, 21), "navigation", "", "", None),
+                ],
+                click_schemas.SEARCH_REQUEST_SCHEMA,
+            ),
+            user_bands=spark.createDataFrame([], user_schemas.USER_BAND_SCHEMA),
             query_document_signals=query_signals,
             document_popularity=popularity,
             policy=policy,

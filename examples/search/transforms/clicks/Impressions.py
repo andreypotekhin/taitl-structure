@@ -22,6 +22,8 @@ class Impressions(Transform):
     daily_impressions = output(DailyImpressions)
 
     def summarize(self, impression: Impression) -> DailyImpressions:
+        """Group exposures by user so later relevance builds can resolve profiles."""
+
         watermark(impression.shown_at, delay="7 days")
         drop_duplicates_within_watermark(impression.id)
         day = window(impression.shown_at, "1 day")
@@ -32,9 +34,13 @@ class Impressions(Transform):
             document_id=impression.document_id,
             position=impression.position,
             examination_propensity=impression.examination_propensity,
+            user_id=impression.user_id,
+            band_id=None,
         )
         return DailyImpressions.base(impression)(
             window=day,
             query=query,
+            user_id=impression.user_id,
+            band_id=None,
             impression_count=count(),
         )

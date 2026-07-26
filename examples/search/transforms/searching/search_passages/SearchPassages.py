@@ -61,4 +61,5 @@ class SearchPassages(Transform):
             ),
             section_heading=section.heading,
             paragraph_id=score.paragraph_id,
+            content=context.content,
         )

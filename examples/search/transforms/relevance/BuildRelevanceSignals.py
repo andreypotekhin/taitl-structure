@@ -2,7 +2,8 @@
 
 from examples.search.schemas.clicks import DailyClicks, DailyImpressions
 from examples.search.schemas.relevance import DocumentPopularity, QueryDocumentSignals, RelevancePolicy
-from structure import Transform, input, lane, output, step
+from examples.search.schemas.user import BandFallback, UserBand
+from structure import Transform, input, lane, output, raw, step
 from structure.plugin.pyspark import (
     coalesce,
     cross_join,
@@ -26,13 +27,96 @@ class BuildRelevanceSignals(Transform):
 
     daily_impressions = input(DailyImpressions)
     daily_clicks = input(DailyClicks)
+    user_bands = input(UserBand)
+    band_fallbacks = input(BandFallback)
     policy = input(RelevancePolicy)
+    context_impressions = lane(DailyImpressions)
+    context_clicks = lane(DailyClicks)
     query_signal_totals = lane(QueryDocumentSignals)
     popularity_totals = lane(DocumentPopularity)
     query_document_signals = output(QueryDocumentSignals)
     document_popularity = output(DocumentPopularity)
 
-    @step(input=[daily_impressions, daily_clicks, policy], output=query_signal_totals)
+    @step(input=daily_impressions, output=context_impressions)
+    def declare_context_impressions(self, impression: DailyImpressions) -> DailyImpressions:
+        """Declare the context-expanded exposure lane before its hierarchy hook replaces it."""
+
+        return DailyImpressions(
+            window=impression.window,
+            query=impression.query,
+            document_id=impression.document_id,
+            position=impression.position,
+            examination_propensity=impression.examination_propensity,
+            user_id=impression.user_id,
+            band_id=None,
+            impression_count=impression.impression_count,
+        )
+
+    @raw(
+        input=[input(daily_impressions), input(user_bands), input(band_fallbacks)],
+        output=context_impressions,
+    )
+    def expand_impressions(self, *, daily_impressions, user_bands, band_fallbacks, context_impressions, spark, ctx):
+        """Duplicate logged-in facts into their exact and parent fallback contexts.
+
+        Global rows stay single and context rows are expanded only here, keeping all
+        decay and metric calculations in the ordinary typed steps below.
+        """
+
+        from pyspark.sql import functions as F
+
+        global_facts = daily_impressions.withColumn("band_id", F.lit(None).cast("string"))
+        fallback_candidates = band_fallbacks.select(
+            F.col("band_id").alias("source_band_id"),
+            "fallback_band_id",
+            "ordinal",
+        )
+        scoped = daily_impressions.drop("band_id").join(user_bands, "user_id", "left").join(
+            fallback_candidates,
+            user_bands.band_id == fallback_candidates.source_band_id,
+            "inner",
+        ).drop("band_id", "source_band_id").withColumnRenamed("fallback_band_id", "band_id").drop("ordinal")
+        return global_facts.unionByName(scoped, allowMissingColumns=False)
+
+    @step(input=daily_clicks, output=context_clicks)
+    def declare_context_clicks(self, click: DailyClicks) -> DailyClicks:
+        """Declare the context-expanded click lane before its hierarchy hook replaces it."""
+
+        return DailyClicks(
+            window=click.window,
+            query=click.query,
+            document_id=click.document_id,
+            position=click.position,
+            examination_propensity=click.examination_propensity,
+            user_id=click.user_id,
+            band_id=None,
+            click_count=click.click_count,
+            clicked_impression_count=click.clicked_impression_count,
+            dwell_seconds=click.dwell_seconds,
+            dwell_credit=click.dwell_credit,
+            long_click_count=click.long_click_count,
+        )
+
+    @raw(input=[input(daily_clicks), input(user_bands), input(band_fallbacks)], output=context_clicks)
+    def expand_clicks(self, *, daily_clicks, user_bands, band_fallbacks, context_clicks, spark, ctx):
+        """Duplicate click facts into the same exact and parent fallback contexts as exposures."""
+
+        from pyspark.sql import functions as F
+
+        global_facts = daily_clicks.withColumn("band_id", F.lit(None).cast("string"))
+        fallback_candidates = band_fallbacks.select(
+            F.col("band_id").alias("source_band_id"),
+            "fallback_band_id",
+            "ordinal",
+        )
+        scoped = daily_clicks.drop("band_id").join(user_bands, "user_id", "left").join(
+            fallback_candidates,
+            user_bands.band_id == fallback_candidates.source_band_id,
+            "inner",
+        ).drop("band_id", "source_band_id").withColumnRenamed("fallback_band_id", "band_id").drop("ordinal")
+        return global_facts.unionByName(scoped, allowMissingColumns=False)
+
+    @step(input=[context_impressions, context_clicks, policy], output=query_signal_totals)
     def summarize_query(
         self, impression: DailyImpressions, click: DailyClicks, policy: RelevancePolicy
     ) -> QueryDocumentSignals:
@@ -42,7 +126,9 @@ class BuildRelevanceSignals(Transform):
             & (click.query == impression.query)
             & (click.document_id == impression.document_id)
             & (click.position == impression.position)
-            & (click.examination_propensity == impression.examination_propensity),
+            & (click.examination_propensity == impression.examination_propensity)
+            & click.user_id.null_safe_eq(impression.user_id)
+            & click.band_id.null_safe_eq(impression.band_id),
         )
         policy = cross_join(policy, allow_cartesian=True)
         clicks = coalesce(click.click_count, 0)
@@ -55,7 +141,11 @@ class BuildRelevanceSignals(Transform):
             datediff(policy.evaluated_at, impression.window.end),
         ).otherwise(0)
         decay = exp(-log(2.0) * age_days / policy.half_life_days)
-        group_by(query=impression.query, document_id=impression.document_id)
+        group_by(
+            band_id=impression.band_id,
+            query=impression.query,
+            document_id=impression.document_id,
+        )
         return QueryDocumentSignals.base(impression)(
             impression_count=sum(impression.impression_count),
             click_count=sum(clicks),
@@ -73,7 +163,7 @@ class BuildRelevanceSignals(Transform):
             normalized_score=sum(0.0),
         )
 
-    @step(input=[daily_impressions, daily_clicks, policy], output=popularity_totals)
+    @step(input=[context_impressions, context_clicks, policy], output=popularity_totals)
     def summarize_popularity(
         self, impression: DailyImpressions, click: DailyClicks, policy: RelevancePolicy
     ) -> DocumentPopularity:
@@ -83,7 +173,9 @@ class BuildRelevanceSignals(Transform):
             & (click.query == impression.query)
             & (click.document_id == impression.document_id)
             & (click.position == impression.position)
-            & (click.examination_propensity == impression.examination_propensity),
+            & (click.examination_propensity == impression.examination_propensity)
+            & click.user_id.null_safe_eq(impression.user_id)
+            & click.band_id.null_safe_eq(impression.band_id),
         )
         policy = cross_join(policy, allow_cartesian=True)
         clicks = coalesce(click.click_count, 0)
@@ -96,7 +188,7 @@ class BuildRelevanceSignals(Transform):
             datediff(policy.evaluated_at, impression.window.end),
         ).otherwise(0)
         decay = exp(-log(2.0) * age_days / policy.half_life_days)
-        group_by(document_id=impression.document_id)
+        group_by(band_id=impression.band_id, document_id=impression.document_id)
         return DocumentPopularity.base(impression)(
             impression_count=sum(impression.impression_count),
             click_count=sum(clicks),
@@ -121,7 +213,7 @@ class BuildRelevanceSignals(Transform):
         maximum = window_max(
             dwell_score,
             over=window(
-                partition_by=signal.query,
+                partition_by=(signal.query, signal.band_id),
                 order_by=signal.document_id,
                 frame=rows_between(unbounded_preceding(), unbounded_following()),
             ),
@@ -148,7 +240,7 @@ class BuildRelevanceSignals(Transform):
         maximum = window_max(
             dwell_score,
             over=window(
-                partition_by="all documents",
+                partition_by=popularity.band_id,
                 order_by=popularity.document_id,
                 frame=rows_between(unbounded_preceding(), unbounded_following()),
             ),

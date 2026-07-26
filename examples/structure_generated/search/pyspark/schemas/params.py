@@ -3,8 +3,10 @@
 
 from pyspark.sql import types as T
 from examples.structure_generated.search.pyspark.schemas.label import LABEL_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.user import COHORT_SCHEMA
 
 
 EVALUATION_PARAMS_SCHEMA = T.StructType([
     T.StructField("labels", T.ArrayType(LABEL_SCHEMA, containsNull=False), False),
+    T.StructField("user_band", COHORT_SCHEMA, True),
 ])

@@ -2,6 +2,12 @@
   "bases": [],
   "fields": [
     {
+      "column": "band_id",
+      "name": "band_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
       "column": "query",
       "name": "query",
       "nullable": false,
