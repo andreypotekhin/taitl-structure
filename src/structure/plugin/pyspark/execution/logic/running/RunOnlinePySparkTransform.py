@@ -299,6 +299,29 @@ class RunOnlinePySparkTransform:
                     functions=functions,
                     window=window,
                 )
+            if operation.relation_hierarchy_closure is not None:
+                df = self._relation_hierarchy_closure(
+                    step,
+                    df,
+                    operation.relation_hierarchy_closure,
+                    functions=functions,
+                    types=types,
+                )
+            if operation.relation_hierarchy_fallback is not None:
+                parent_source = operation.relation_hierarchy_fallback.parent_source
+                parent_frame = (
+                    prepared_frames[parent_source]
+                    if parent_source in prepared_frames
+                    else prepared_frames[operation.relation_hierarchy_fallback.parent_input]
+                )
+                df = self._relation_hierarchy_fallbacks(
+                    step,
+                    df,
+                    operation.relation_hierarchy_fallback,
+                    parent_frame=parent_frame,
+                    functions=functions,
+                    types=types,
+                )
             if operation.relation_set is not None:
                 source = operation.relation_set.source
                 frame = (
@@ -374,6 +397,8 @@ class RunOnlinePySparkTransform:
             return self._require_all(step, frame, assertion, functions=functions)
         if assertion.operation == "require_reference":
             return self._require_reference(step, frame, assertion, frames=frames, functions=functions)
+        if assertion.operation == "require_parent_hierarchy":
+            return self._require_parent_hierarchy(step, frame, assertion, functions=functions)
         raise TypeError(f"Unsupported relation assertion: {assertion.operation}")
 
     def _require_unique(self, step, frame, assertion, *, functions):
@@ -447,6 +472,87 @@ class RunOnlinePySparkTransform:
             ).alias("__structure_require_reference")
         )
         return guard.crossJoin(frame).drop("__structure_require_reference")
+
+    def _require_parent_hierarchy(self, step, frame, assertion, *, functions):
+        assert assertion.parent is not None
+        assert assertion.order_by is not None
+        assert assertion.max_depth is not None
+        aliases = self._scope_aliases(step)
+        node = "__structure_hierarchy_node"
+        parent = "__structure_hierarchy_parent"
+        order = "__structure_hierarchy_order"
+        path = "__structure_hierarchy_path"
+        message = (
+            "REL-E0706: require_parent_hierarchy(...) found missing parent, cycle, depth overrun, "
+            "or non-increasing child order; see docs/Diagnostics.md#rel-e0706"
+        )
+        node_id = self._expressions.evaluate(assertion.keys[0], functions=functions, aliases=aliases)
+        parent_id = self._expressions.evaluate(assertion.parent, functions=functions, aliases=aliases)
+        order_by = self._expressions.evaluate(self._order_value(assertion.order_by), functions=functions, aliases=aliases)
+        nodes = frame.select(node_id.alias(node), parent_id.alias(parent), order_by.alias(order))
+        known = nodes.select(functions.col(node).alias("__structure_hierarchy_known_parent"))
+        missing = nodes.where(functions.col(parent).isNotNull()).join(
+            known,
+            functions.col(parent) == functions.col("__structure_hierarchy_known_parent"),
+            "left_anti",
+        )
+        parent_order = nodes.alias("child").join(
+            nodes.alias("parent"),
+            functions.col(f"child.{parent}") == functions.col(f"parent.{node}"),
+            "inner",
+        )
+        parent_order = parent_order.where(~(functions.col(f"child.{order}") > functions.col(f"parent.{order}")))
+        parent_order = parent_order.select(
+            functions.col(f"child.{node}").alias(node),
+            functions.col(f"child.{parent}").alias(parent),
+            functions.col(f"child.{order}").alias(order),
+        )
+        frontier = nodes.where(functions.col(parent).isNotNull()).select(
+            functions.col(node),
+            functions.col(parent),
+            functions.col(order),
+            functions.array(functions.col(node)).alias(path),
+        )
+        cycles = frontier.where(functions.array_contains(functions.col(path), functions.col(parent)))
+        for _ in range(assertion.max_depth):
+            frontier = frontier.where(
+                functions.col(parent).isNotNull()
+                & ~functions.array_contains(functions.col(path), functions.col(parent))
+            )
+            frontier = frontier.withColumn(path, functions.array_append(functions.col(path), functions.col(parent)))
+            frontier = frontier.alias("frontier").join(
+                nodes.alias("next_parent"),
+                functions.col(f"frontier.{parent}") == functions.col(f"next_parent.{node}"),
+                "left",
+            ).select(
+                functions.col(f"frontier.{node}").alias(node),
+                functions.col(f"next_parent.{parent}").alias(parent),
+                functions.col(f"frontier.{order}").alias(order),
+                functions.col(f"frontier.{path}").alias(path),
+            )
+            cycles = cycles.unionByName(
+                frontier.where(functions.array_contains(functions.col(path), functions.col(parent))),
+                allowMissingColumns=False,
+            )
+        overrun = frontier.where(functions.col(parent).isNotNull())
+        violations = missing.unionByName(
+            parent_order,
+            allowMissingColumns=False,
+        ).unionByName(
+            cycles.select(missing.columns),
+            allowMissingColumns=False,
+        ).unionByName(
+            overrun.select(missing.columns),
+            allowMissingColumns=False,
+        )
+        violations = violations.agg(functions.count(functions.lit(1)).alias("__structure_violations"))
+        guard = violations.select(
+            functions.assert_true(
+                functions.col("__structure_violations") == functions.lit(0),
+                message,
+            ).alias("__structure_require_parent_hierarchy")
+        )
+        return guard.crossJoin(frame).drop("__structure_require_parent_hierarchy")
 
     def _posexplode_struct(self, step, frame, generator, *, functions, types):
         prefix = f"__structure_{generator.scope}"
@@ -560,6 +666,101 @@ class RunOnlinePySparkTransform:
 
     def _order_value(self, expression):
         return expression.args[0] if expression.kind == "order" else expression
+
+    def _relation_hierarchy_closure(self, step, frame, closure, *, functions, types):
+        aliases = self._scope_aliases(step)
+        source_node = "__structure_hierarchy_node"
+        source_parent = "__structure_hierarchy_parent"
+        node = closure.schema._structure_fields[closure.node].column
+        ancestor = closure.schema._structure_fields[closure.ancestor].column
+        depth = closure.schema._structure_fields[closure.depth].column
+        id_expression = self._expressions.evaluate(closure.id, functions=functions, aliases=aliases)
+        parent_expression = self._expressions.evaluate(closure.parent, functions=functions, aliases=aliases)
+        nodes = frame.select(id_expression.alias(source_node), parent_expression.alias(source_parent))
+        closure_frame = nodes.select(
+            functions.col(source_node).alias(node),
+            functions.col(source_node).alias(ancestor),
+            functions.lit(0).cast(types.LongType()).alias(depth),
+        )
+        frontier = nodes
+        for depth_value in range(1, closure.max_depth + 1):
+            branch = frontier.where(functions.col(source_parent).isNotNull()).select(
+                functions.col(source_node).alias(node),
+                functions.col(source_parent).alias(ancestor),
+                functions.lit(depth_value).cast(types.LongType()).alias(depth),
+            )
+            closure_frame = closure_frame.unionByName(branch, allowMissingColumns=False)
+            frontier = frontier.where(functions.col(source_parent).isNotNull())
+            frontier = frontier.alias("frontier").join(
+                nodes.alias("parent"),
+                functions.col(f"frontier.{source_parent}") == functions.col(f"parent.{source_node}"),
+                "left",
+            ).select(
+                functions.col(f"frontier.{source_node}").alias(source_node),
+                functions.col(f"parent.{source_parent}").alias(source_parent),
+            )
+        return closure_frame
+
+    def _relation_hierarchy_fallbacks(self, step, frame, fallback, *, parent_frame, functions, types):
+        aliases = self._scope_aliases(step)
+        parent_aliases = {
+            fallback.parent_input: "",
+            fallback.parent_schema.__name__: "",
+        }
+        source_key = "__structure_fallback_source"
+        path = "__structure_fallback_path"
+        parent_node = "__structure_fallback_parent_node"
+        parent_value = "__structure_fallback_parent_value"
+        last = "__structure_fallback_last"
+        source = fallback.schema._structure_fields[fallback.source].column
+        fallback_column = fallback.schema._structure_fields[fallback.fallback].column
+        ordinal = fallback.schema._structure_fields[fallback.ordinal].column
+        source_id = self._expressions.evaluate(fallback.source_id, functions=functions, aliases=aliases)
+        path_expression = self._expressions.evaluate(fallback.path, functions=functions, aliases=aliases)
+        parent_id = self._expressions.evaluate(fallback.parent_id, functions=functions, aliases=parent_aliases)
+        parent = self._expressions.evaluate(fallback.parent, functions=functions, aliases=parent_aliases)
+        parents = parent_frame.select(parent_id.alias(parent_node), parent.alias(parent_value))
+        frontier = frame.select(source_id.alias(source_key), path_expression.alias(path))
+        result = frontier.select(
+            functions.col(source_key).alias(source),
+            self._online_fallback_id(functions, fallback, path).alias(fallback_column),
+            functions.lit(0).cast(types.LongType()).alias(ordinal),
+        )
+        for ordinal_value in range(1, fallback.max_depth + 1):
+            active = frontier.where(functions.size(functions.col(path)) > functions.lit(0))
+            joined = active.withColumn(last, functions.element_at(functions.col(path), functions.lit(-1))).join(
+                parents,
+                functions.col(last) == functions.col(parent_node),
+                "left",
+            )
+            frontier = joined.select(
+                functions.col(source_key).alias(source_key),
+                self._online_fallback_next_path(functions, path, parent_value).alias(path),
+            )
+            branch = frontier.select(
+                functions.col(source_key).alias(source),
+                self._online_fallback_id(functions, fallback, path).alias(fallback_column),
+                functions.lit(ordinal_value).cast(types.LongType()).alias(ordinal),
+            )
+            result = result.unionByName(branch, allowMissingColumns=False)
+        return result
+
+    def _online_fallback_next_path(self, functions, path: str, parent: str):
+        head = functions.slice(
+            functions.col(path),
+            functions.lit(1),
+            functions.size(functions.col(path)) - functions.lit(1),
+        )
+        return functions.when(functions.col(parent).isNull(), head).when(
+            functions.array_contains(head, functions.col(parent)),
+            head,
+        ).otherwise(functions.concat(head, functions.array(functions.col(parent))))
+
+    def _online_fallback_id(self, functions, fallback, path: str):
+        return functions.when(
+            functions.size(functions.col(path)) > functions.lit(0),
+            functions.sha2(functions.concat_ws(fallback.separator, functions.col(path)), 256),
+        )
 
     def _field_column(self, expression) -> str:
         if expression.kind != "field":
@@ -1108,6 +1309,10 @@ class RunOnlinePySparkTransform:
         for operation in step.operations:
             if operation.posexplode_struct is not None:
                 aliases[operation.posexplode_struct.scope] = ""
+            if operation.relation_hierarchy_closure is not None:
+                aliases[operation.relation_hierarchy_closure.scope] = ""
+            if operation.relation_hierarchy_fallback is not None:
+                aliases[operation.relation_hierarchy_fallback.scope] = ""
         if join is not None:
             aliases[join.input_name] = join.right_alias
         return aliases

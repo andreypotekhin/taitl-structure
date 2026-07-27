@@ -1,13 +1,23 @@
 {
   "dependencies": [
     "band",
+    "band_fallbacks",
     "band_memberships",
+    "document_popularity",
     "document_scores",
+    "fallback",
+    "global_options",
+    "policy",
+    "popularity",
+    "popularity_feedback",
     "queries",
     "query",
+    "query_document_signals",
+    "query_feedback",
     "request",
     "requests",
-    "score"
+    "score",
+    "signal"
   ],
   "generated_by": "Structure",
   "inputs": [
@@ -137,9 +147,6 @@
       ]
     },
     {
-      "after_hooks": [
-        "score_candidates"
-      ],
       "input_lane": "candidates",
       "input_schema": "DocumentSearchCandidate",
       "inputs": [
@@ -148,9 +155,215 @@
           "parameter": "candidate",
           "schema": "DocumentSearchCandidate",
           "source": "candidates"
+        },
+        {
+          "driving": false,
+          "parameter": "fallback",
+          "schema": "BandFallback",
+          "source": "band_fallbacks"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "RelevancePolicy",
+          "source": "policy"
         }
       ],
-      "name": "declare_scored_candidates",
+      "joins": [
+        {
+          "how": "inner",
+          "input": "fallback"
+        },
+        {
+          "how": "cross",
+          "input": "policy"
+        }
+      ],
+      "name": "select_fallback_options",
+      "output_lane": "fallback_options",
+      "output_schema": "DocumentFeedbackOption",
+      "results": [
+        {
+          "frame": "fallback_options",
+          "lane": "fallback_options",
+          "schema": "DocumentFeedbackOption"
+        }
+      ]
+    },
+    {
+      "input_lane": "candidates",
+      "input_schema": "DocumentSearchCandidate",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "candidate",
+          "schema": "DocumentSearchCandidate",
+          "source": "candidates"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "RelevancePolicy",
+          "source": "policy"
+        }
+      ],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "policy"
+        }
+      ],
+      "name": "select_global_options",
+      "output_lane": "global_options",
+      "output_schema": "DocumentFeedbackOption",
+      "results": [
+        {
+          "frame": "global_options",
+          "lane": "global_options",
+          "schema": "DocumentFeedbackOption"
+        }
+      ]
+    },
+    {
+      "input_lane": "fallback_options",
+      "input_schema": "DocumentFeedbackOption",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "fallback_option",
+          "schema": "DocumentFeedbackOption",
+          "source": "fallback_options"
+        },
+        {
+          "driving": false,
+          "parameter": "global_option",
+          "schema": "DocumentFeedbackOption",
+          "source": "global_options"
+        }
+      ],
+      "name": "merge_feedback_options",
+      "output_lane": "feedback_options",
+      "output_schema": "DocumentFeedbackOption",
+      "results": [
+        {
+          "frame": "feedback_options",
+          "lane": "feedback_options",
+          "schema": "DocumentFeedbackOption"
+        }
+      ]
+    },
+    {
+      "input_lane": "feedback_options",
+      "input_schema": "DocumentFeedbackOption",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "option",
+          "schema": "DocumentFeedbackOption",
+          "source": "feedback_options"
+        },
+        {
+          "driving": false,
+          "parameter": "signal",
+          "schema": "QueryDocumentSignals",
+          "source": "query_document_signals"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "signal"
+        }
+      ],
+      "name": "select_query_feedback",
+      "output_lane": "query_feedback",
+      "output_schema": "QueryDocumentFeedback",
+      "results": [
+        {
+          "frame": "query_feedback",
+          "lane": "query_feedback",
+          "schema": "QueryDocumentFeedback"
+        }
+      ]
+    },
+    {
+      "input_lane": "feedback_options",
+      "input_schema": "DocumentFeedbackOption",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "option",
+          "schema": "DocumentFeedbackOption",
+          "source": "feedback_options"
+        },
+        {
+          "driving": false,
+          "parameter": "signal",
+          "schema": "DocumentPopularity",
+          "source": "document_popularity"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "signal"
+        }
+      ],
+      "name": "select_popularity_feedback",
+      "output_lane": "popularity_feedback",
+      "output_schema": "PopularityFeedback",
+      "results": [
+        {
+          "frame": "popularity_feedback",
+          "lane": "popularity_feedback",
+          "schema": "PopularityFeedback"
+        }
+      ]
+    },
+    {
+      "input_lane": "candidates",
+      "input_schema": "DocumentSearchCandidate",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "candidate",
+          "schema": "DocumentSearchCandidate",
+          "source": "candidates"
+        },
+        {
+          "driving": false,
+          "parameter": "query",
+          "schema": "QueryDocumentFeedback",
+          "source": "query_feedback"
+        },
+        {
+          "driving": false,
+          "parameter": "popularity",
+          "schema": "PopularityFeedback",
+          "source": "popularity_feedback"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "RelevancePolicy",
+          "source": "policy"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "query"
+        },
+        {
+          "how": "left",
+          "input": "popularity"
+        },
+        {
+          "how": "cross",
+          "input": "policy"
+        }
+      ],
+      "name": "score_candidates",
       "output_lane": "scored_candidates",
       "output_schema": "DocumentSearchCandidate",
       "results": [

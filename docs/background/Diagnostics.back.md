@@ -99,6 +99,22 @@ Common causes:
 Fix the eligibility predicate, declare a more specific business key, add a deterministic priority tie-breaker in a
 future supported priority expression, or use `missing="allow"` when absent candidates should simply produce no row.
 
+## REL-E0706
+
+`REL-E0706` means a `require_parent_hierarchy(...)` relation assertion found an invalid bounded parent hierarchy
+during Spark evaluation. The assertion checks missing parents, cycles, depth overruns, and child ordering with
+Spark-visible DataFrame expressions; it does not collect the catalog to the driver.
+
+Common causes:
+
+- a non-null parent id has no matching row in the same relation;
+- parent links contain a cycle;
+- a valid chain exceeds the declared `max_depth`;
+- a child row does not sort after its parent by the declared ordering expression.
+
+Correct the catalog, increase the literal depth only when the longer hierarchy is intentional, or fix the ordering
+field before asserting `require_parent_hierarchy(...)`.
+
 ## Design Principles
 
 Diagnostics must be:

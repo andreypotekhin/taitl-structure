@@ -20,18 +20,33 @@ Source: `examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevan
 
 ## Step methods
 
-- `declare_context_impressions`: `DailyImpressions` -> `DailyImpressions`
-- `declare_context_clicks`: `DailyClicks` -> `DailyClicks`
-- `summarize_query`: `DailyImpressions` -> `QueryDocumentSignals`
-- `summarize_popularity`: `DailyImpressions` -> `DocumentPopularity`
-- `normalize_query`: `QueryDocumentSignals` -> `QueryDocumentSignals`
-- `normalize_popularity`: `DocumentPopularity` -> `DocumentPopularity`
+- `global_impressions`: `DailyImpressions` -> `ContextDailyImpressions`
+- `fallback_impressions`: `DailyImpressions` -> `ContextDailyImpressions`
+- `band_impressions`: `DailyImpressions` -> `ContextDailyImpressions`
+- `merge_context_impressions`: `ContextDailyImpressions` -> `ContextDailyImpressions`
+- `global_clicks`: `DailyClicks` -> `ContextDailyClicks`
+- `fallback_clicks`: `DailyClicks` -> `ContextDailyClicks`
+- `band_clicks`: `DailyClicks` -> `ContextDailyClicks`
+- `merge_context_clicks`: `ContextDailyClicks` -> `ContextDailyClicks`
+- `summarize_query`: `ContextDailyImpressions` -> `QueryDocumentSignalTotals`
+- `summarize_popularity`: `ContextDailyImpressions` -> `DocumentPopularityTotals`
+- `normalize_query`: `QueryDocumentSignalTotals` -> `QueryDocumentSignals`
+- `normalize_popularity`: `DocumentPopularityTotals` -> `DocumentPopularity`
 
 ## Dependencies
 
+- `band_context_clicks`
+- `band_context_impressions`
+- `band_fallbacks`
+- `band_memberships`
 - `click`
 - `context_clicks`
+- `fallback`
+- `fallback_context_clicks`
+- `fallback_context_impressions`
+- `membership`
 - `policy`
+- `user_band_memberships`
 
 ## Target Artifacts
 

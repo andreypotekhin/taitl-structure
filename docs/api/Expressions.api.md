@@ -93,7 +93,7 @@ typed `order` row scope as `o`.
 | `regexp_replace(...)` | `regexp_replace` | `regexp_replace(o.code, pattern="-", replacement="")` |
 | `regexp_extract(...)` | `regexp_extract` | `regexp_extract(o.code, pattern="(.*)", group=1)` |
 | `length(...)` | `length` | `length(o.name)` |
-| `concat_ws(...)` | `concat_ws` | `concat_ws("-", o.region, o.code)` |
+| `concat_ws(...)` | `concat_ws` | `concat_ws("-", o.region, o.code)`; `concat_ws("\u001f", o.path_ids)` for `array<string>` |
 | `initcap(...)` | `initcap` | `initcap(o.name)` |
 | `reverse(...)` | `reverse` | `reverse(o.name)` |
 | `translate(...)` | `translate` | `translate(o.name, matching="-", replacement="_")` |

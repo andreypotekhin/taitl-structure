@@ -269,17 +269,42 @@ def render_security_example() -> dict[str, str]:
         from examples.security.schemas.organization import Department, Org, Person, Team
         from examples.security.schemas.reporting import (
             AppAuditEvent,
+            DeliveryReceipt,
             DepartmentActiveVulnerability,
+            DepartmentRemediationWorkflowSummary,
+            DepartmentVulnerabilityDeadlineSummary,
             DepartmentVulnerabilityStatistic,
             DeviceActiveVulnerability,
+            ExpiredExceptionVulnerability,
+            ExpiringExceptionVulnerability,
             OrgActiveVulnerability,
+            OrgRemediationWorkflowSummary,
+            OrgVulnerabilityDeadlineSummary,
             OrgVulnerabilityStatistic,
+            PendingExceptionVulnerability,
             PersonActiveVulnerability,
+            PersonRemediationWorkflowSummary,
+            PersonVulnerabilityDeadlineSummary,
+            PersonVulnerabilityNotification,
             PersonVulnerabilityStatistic,
+            RemediationCase,
+            RemediationCaseAggregate,
+            RemediationCaseCheck,
+            RemediationCaseIssue,
+            RemediationWorkflowActivity,
+            RemediationWorkflowSummary,
             ReportingPeriod,
+            SecurityEvaluation,
             TeamActiveVulnerability,
+            TeamRemediationWorkflowSummary,
+            TeamVulnerabilityAlarm,
+            TeamVulnerabilityDeadlineSummary,
             TeamVulnerabilityStatistic,
+            UnacknowledgedVulnerability,
             VulnerabilityAuditEvent,
+            VulnerabilityDeadlineActivity,
+            VulnerabilityDeadlineSummary,
+            VulnerabilityDiscovery,
             VulnerabilityExposure,
             VulnerabilityInventoryCandidate,
             VulnerabilityInventoryCheck,
@@ -290,12 +315,17 @@ def render_security_example() -> dict[str, str]:
             VulnerabilityQualityCheck,
             VulnerabilityQualityIssue,
             VulnerabilityStatistic,
+            VulnerabilityWorkflowExposure,
         )
-        from examples.security.schemas.risk import Vuln, VulnType
+        from examples.security.schemas.risk import RemediationPolicy, Vuln, VulnType
+        from examples.security.transforms.alarms import VulnerabilityAlarms
+        from examples.security.transforms.deadlines import VulnerabilityDeadlineReports
         from examples.security.transforms.events import EnrichAppEvents, EnrichVulnerabilityEvents
+        from examples.security.transforms.notify import VulnerabilityNotifications
         from examples.security.transforms.posture import SecurityPosture
         from examples.security.transforms.quality import SecurityInventoryQuality
         from examples.security.transforms.reports import ActiveVulnerabilityReports, VulnerabilityStatistics
+        from examples.security.transforms.workflow import VulnerabilityRemediationWorkflow
 
         schema_modules: dict[str, Sequence[type[Schema]]] = {
             "examples.security.schemas.assets": [DeviceType, Software, App, OS, Scanner, Device],
@@ -303,6 +333,12 @@ def render_security_example() -> dict[str, str]:
             "examples.security.schemas.organization": [Org, Department, Team, Person],
             "examples.security.schemas.reporting": [
                 ReportingPeriod,
+                SecurityEvaluation,
+                DeliveryReceipt,
+                RemediationCase,
+                RemediationCaseAggregate,
+                RemediationCaseCheck,
+                RemediationCaseIssue,
                 VulnerabilityExposure,
                 DeviceActiveVulnerability,
                 PersonActiveVulnerability,
@@ -314,7 +350,27 @@ def render_security_example() -> dict[str, str]:
                 TeamVulnerabilityStatistic,
                 DepartmentVulnerabilityStatistic,
                 OrgVulnerabilityStatistic,
+                VulnerabilityWorkflowExposure,
+                UnacknowledgedVulnerability,
+                PendingExceptionVulnerability,
+                ExpiringExceptionVulnerability,
+                ExpiredExceptionVulnerability,
+                RemediationWorkflowActivity,
+                RemediationWorkflowSummary,
+                PersonRemediationWorkflowSummary,
+                TeamRemediationWorkflowSummary,
+                DepartmentRemediationWorkflowSummary,
+                OrgRemediationWorkflowSummary,
+                VulnerabilityDeadlineSummary,
+                PersonVulnerabilityDeadlineSummary,
+                TeamVulnerabilityDeadlineSummary,
+                DepartmentVulnerabilityDeadlineSummary,
+                OrgVulnerabilityDeadlineSummary,
+                PersonVulnerabilityNotification,
+                TeamVulnerabilityAlarm,
                 VulnerabilityLifecycle,
+                VulnerabilityDiscovery,
+                VulnerabilityDeadlineActivity,
                 VulnerabilityPeriodActivity,
                 VulnerabilityPostureCandidate,
                 VulnerabilityQualityCheck,
@@ -325,12 +381,19 @@ def render_security_example() -> dict[str, str]:
                 AppAuditEvent,
                 VulnerabilityAuditEvent,
             ],
-            "examples.security.schemas.risk": [VulnType, Vuln],
+            "examples.security.schemas.risk": [VulnType, RemediationPolicy, Vuln],
         }
         transforms = (
             (EnrichAppEvents, "examples.security.transforms.events.EnrichAppEvents"),
             (EnrichVulnerabilityEvents, "examples.security.transforms.events.EnrichVulnerabilityEvents"),
             (SecurityPosture, "examples.security.transforms.posture.SecurityPosture"),
+            (
+                VulnerabilityRemediationWorkflow,
+                "examples.security.transforms.workflow.VulnerabilityRemediationWorkflow",
+            ),
+            (VulnerabilityNotifications, "examples.security.transforms.notify.VulnerabilityNotifications"),
+            (VulnerabilityAlarms, "examples.security.transforms.alarms.VulnerabilityAlarms"),
+            (VulnerabilityDeadlineReports, "examples.security.transforms.deadlines.VulnerabilityDeadlineReports"),
             (ActiveVulnerabilityReports, "examples.security.transforms.reports.ActiveVulnerabilityReports"),
             (VulnerabilityStatistics, "examples.security.transforms.reports.VulnerabilityStatistics"),
             (SecurityInventoryQuality, "examples.security.transforms.quality.SecurityInventoryQuality"),
@@ -387,6 +450,7 @@ def render_search_example() -> dict[str, str]:
             SimilarDocument,
         )
         from examples.search.schemas.clicks import Click, DailyClicks, DailyImpressions, Impression, SearchRequest
+        from examples.search.schemas.cohorts.resolve import BandAncestor, BandMatch, SingletonUserBand, UserBandPath
         from examples.search.schemas.evaluation import (
             BehaviorDailyCounts,
             BehaviorExposure,
@@ -409,6 +473,21 @@ def render_search_example() -> dict[str, str]:
             EvaluationResultTotals,
         )
         from examples.search.schemas.experiment import Experiment
+        from examples.search.schemas.extraction.extract import (
+            DocumentLine,
+            ExpandedDocumentLine,
+            ExpandedSentenceText,
+            ExpandedWordText,
+            MarkedDocumentLine,
+            ParagraphContent,
+            ParagraphDraft,
+            ParagraphLine,
+            ParagraphLineGroup,
+            SectionHeading,
+            SectionKey,
+            SentenceText,
+            WordText,
+        )
         from examples.search.schemas.label import (
             Label,
             LabelMapEntry,
@@ -417,39 +496,85 @@ def render_search_example() -> dict[str, str]:
             QueryLabelAssignments,
         )
         from examples.search.schemas.relevance import DocumentPopularity, QueryDocumentSignals, RelevancePolicy
-        from examples.search.schemas.search import (
+        from examples.search.schemas.relevance_signals.build import (
+            ContextDailyClicks,
+            ContextDailyImpressions,
+            DocumentPopularityTotals,
+            QueryDocumentSignalTotals,
+        )
+        from examples.search.schemas.scoring.bm25 import (
             DocumentBm25Score,
+            ParagraphBm25Score,
+            SectionBm25Score,
+            SentenceBm25Score,
+        )
+        from examples.search.schemas.scoring.overlap import (
+            DocumentOverlapMatch,
+            DocumentOverlapScore,
+            ParagraphOverlapMatch,
+            ParagraphOverlapScore,
+            SectionOverlapMatch,
+            SectionOverlapScore,
+            SentenceOverlapMatch,
+            SentenceOverlapScore,
+        )
+        from examples.search.schemas.search import (
+            DocumentFeedbackOption,
             DocumentIndexSummary,
             DocumentIndexTarget,
+            DocumentIndexTargetStats,
             DocumentIndexTerm,
-            DocumentOverlapScore,
+            DocumentIndexTermCount,
             DocumentScore,
             DocumentSearchCandidate,
             DocumentSearchResult,
             DocumentSearchTarget,
-            ParagraphBm25Score,
+            ExpandedQueryToken,
+            IndexTokenFrequency,
             ParagraphIndexSummary,
             ParagraphIndexTarget,
+            ParagraphIndexTargetStats,
             ParagraphIndexTerm,
-            ParagraphOverlapScore,
+            ParagraphIndexTermCount,
             ParagraphScore,
             ParagraphSearchTarget,
+            PopularityFeedback,
+            QueryDocumentFeedback,
+            QueryTerm,
+            QueryTermCount,
+            QueryToken,
             SearchQuery,
-            SectionBm25Score,
             SectionIndexSummary,
             SectionIndexTarget,
+            SectionIndexTargetStats,
             SectionIndexTerm,
-            SectionOverlapScore,
+            SectionIndexTermCount,
             SectionScore,
             SectionSearchTarget,
-            SentenceBm25Score,
             SentenceIndexSummary,
             SentenceIndexTarget,
+            SentenceIndexTargetStats,
             SentenceIndexTerm,
-            SentenceOverlapScore,
+            SentenceIndexTermCount,
             SentenceScore,
             SentenceSearchResult,
             SentenceSearchTarget,
+        )
+        from examples.search.schemas.similarities.query import (
+            DocumentSimilarityQueryText,
+            ParagraphSimilarityQueryText,
+            SectionSimilarityQueryText,
+            SentenceSimilarityQueryText,
+        )
+        from examples.search.schemas.similarities.reduce import (
+            DocumentSimilarityCandidate,
+            DocumentSimilarityPair,
+            ParagraphSimilarityCandidate,
+            ParagraphSimilarityPair,
+            SectionSimilarityCandidate,
+            SectionSimilarityPair,
+            SentenceSimilarityCandidate,
+            SentenceSimilarityPair,
         )
         from examples.search.schemas.similarity import (
             DocumentSimilarity,
@@ -502,12 +627,12 @@ def render_search_example() -> dict[str, str]:
         from examples.search.transforms.score import AddScores
         from examples.search.transforms.scoring.ScoreAll import ScoreAll
         from examples.search.transforms.search import SearchDocuments, SearchSentences
+        from examples.search.transforms.searching.search_similarity import SearchSimilarity
         from examples.search.transforms.similarities.CreateSimilarityQueries import CreateSimilarityQueries
         from examples.search.transforms.similarities.ReduceSimilarityScores import ReduceSimilarityScores
         from examples.search.transforms.similarities.SimilarParagraphs import SimilarParagraphs
         from examples.search.transforms.similarities.SimilarSections import SimilarSections
         from examples.search.transforms.similarities.SimilarSentences import SimilarSentences
-        from examples.search.transforms.similarity import Similarity
         from structure.plugin.pyspark import TimeWindow
 
         schema_modules: dict[str, Sequence[type[Schema]]] = {
@@ -521,7 +646,28 @@ def render_search_example() -> dict[str, str]:
                 CorpusVocabulary,
                 SimilarDocument,
             ],
-            "examples.search.schemas.text": [Document, Section, Paragraph, Sentence, Word],
+            "examples.search.schemas.text": [
+                Document,
+                Section,
+                Paragraph,
+                Sentence,
+                Word,
+            ],
+            "examples.search.schemas.extraction.extract": [
+                DocumentLine,
+                ExpandedDocumentLine,
+                MarkedDocumentLine,
+                ParagraphLine,
+                SectionHeading,
+                ParagraphLineGroup,
+                ParagraphContent,
+                ParagraphDraft,
+                SectionKey,
+                SentenceText,
+                ExpandedSentenceText,
+                WordText,
+                ExpandedWordText,
+            ],
             "examples.search.schemas.search": [
                 SearchQuery,
                 SentenceSearchResult,
@@ -533,28 +679,52 @@ def render_search_example() -> dict[str, str]:
                 SectionIndexTarget,
                 ParagraphIndexTarget,
                 SentenceIndexTarget,
+                IndexTokenFrequency,
+                DocumentIndexTermCount,
+                DocumentIndexTargetStats,
                 DocumentIndexTerm,
                 DocumentIndexSummary,
+                SectionIndexTermCount,
+                SectionIndexTargetStats,
                 SectionIndexTerm,
                 SectionIndexSummary,
+                ParagraphIndexTermCount,
+                ParagraphIndexTargetStats,
                 ParagraphIndexTerm,
                 ParagraphIndexSummary,
+                SentenceIndexTermCount,
+                SentenceIndexTargetStats,
                 SentenceIndexTerm,
                 SentenceIndexSummary,
-                DocumentOverlapScore,
-                SectionOverlapScore,
-                ParagraphOverlapScore,
-                SentenceOverlapScore,
-                DocumentBm25Score,
-                SectionBm25Score,
-                ParagraphBm25Score,
-                SentenceBm25Score,
+                QueryToken,
+                ExpandedQueryToken,
+                QueryTerm,
+                QueryTermCount,
                 DocumentScore,
                 SectionScore,
                 ParagraphScore,
                 SentenceScore,
+                DocumentFeedbackOption,
+                QueryDocumentFeedback,
+                PopularityFeedback,
                 DocumentSearchCandidate,
                 DocumentSearchResult,
+            ],
+            "examples.search.schemas.scoring.overlap": [
+                DocumentOverlapMatch,
+                DocumentOverlapScore,
+                SectionOverlapMatch,
+                SectionOverlapScore,
+                ParagraphOverlapMatch,
+                ParagraphOverlapScore,
+                SentenceOverlapMatch,
+                SentenceOverlapScore,
+            ],
+            "examples.search.schemas.scoring.bm25": [
+                DocumentBm25Score,
+                SectionBm25Score,
+                ParagraphBm25Score,
+                SentenceBm25Score,
             ],
             "examples.search.schemas.clicks": [
                 SearchRequest,
@@ -600,6 +770,12 @@ def render_search_example() -> dict[str, str]:
                 QueryDocumentSignals,
                 DocumentPopularity,
             ],
+            "examples.search.schemas.relevance_signals.build": [
+                ContextDailyImpressions,
+                ContextDailyClicks,
+                QueryDocumentSignalTotals,
+                DocumentPopularityTotals,
+            ],
             "examples.search.schemas.user": [
                 User,
                 Band,
@@ -607,6 +783,12 @@ def render_search_example() -> dict[str, str]:
                 BandFallback,
                 UserBand,
                 UserBandMembership,
+            ],
+            "examples.search.schemas.cohorts.resolve": [
+                BandMatch,
+                BandAncestor,
+                UserBandPath,
+                SingletonUserBand,
             ],
             "examples.search.schemas.similarity": [
                 SimilarityPolicy,
@@ -627,6 +809,22 @@ def render_search_example() -> dict[str, str]:
                 ParagraphSimilarity,
                 SentenceSimilarity,
             ],
+            "examples.search.schemas.similarities.reduce": [
+                DocumentSimilarityCandidate,
+                DocumentSimilarityPair,
+                SectionSimilarityCandidate,
+                SectionSimilarityPair,
+                ParagraphSimilarityCandidate,
+                ParagraphSimilarityPair,
+                SentenceSimilarityCandidate,
+                SentenceSimilarityPair,
+            ],
+            "examples.search.schemas.similarities.query": [
+                DocumentSimilarityQueryText,
+                SectionSimilarityQueryText,
+                ParagraphSimilarityQueryText,
+                SentenceSimilarityQueryText,
+            ],
         }
         transforms = (
             (ExtractText, "examples.search.transforms.extract.ExtractText"),
@@ -643,14 +841,20 @@ def render_search_example() -> dict[str, str]:
                 ReduceSimilarityScores,
                 "examples.search.transforms.similarities.ReduceSimilarityScores.ReduceSimilarityScores",
             ),
-            (Similarity, "examples.search.transforms.similarity.Similarity"),
+            (
+                SearchSimilarity,
+                "examples.search.transforms.searching.search_similarity.SearchSimilarity.SearchSimilarity",
+            ),
             (SimilarSections, "examples.search.transforms.similarities.SimilarSections.SimilarSections"),
             (SimilarParagraphs, "examples.search.transforms.similarities.SimilarParagraphs.SimilarParagraphs"),
             (SimilarSentences, "examples.search.transforms.similarities.SimilarSentences.SimilarSentences"),
             (AddScores, "examples.search.transforms.score.AddScores"),
             (ResolveCohortBands, "examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands"),
             (MergeQueryLabels, "examples.search.transforms.labeling.merge_query_labels.MergeQueryLabels"),
-            (SelectExperimentScores, "examples.search.transforms.experiments.select_experiment_scores.SelectExperimentScores"),
+            (
+                SelectExperimentScores,
+                "examples.search.transforms.experiments.select_experiment_scores.SelectExperimentScores",
+            ),
             (SearchSentences, "examples.search.transforms.search.SearchSentences"),
             (Impressions, "examples.search.transforms.clicks.Impressions.Impressions"),
             (Clicks, "examples.search.transforms.clicks.Clicks.Clicks"),
@@ -661,43 +865,43 @@ def render_search_example() -> dict[str, str]:
             (SearchDocuments, "examples.search.transforms.search.SearchDocuments"),
             (
                 EvaluateExperimentDocumentRankingQuality,
-                "examples.search.transforms.experiments.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
+                "examples.search.transforms.experiments.search_docs.eval_ranking.EvaluateDocumentRankingQuality",
             ),
             (
                 EvaluateExperimentDocumentSearchBehavior,
-                "examples.search.transforms.experiments.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
+                "examples.search.transforms.experiments.search_docs.eval_behavior.EvaluateDocumentSearchBehavior",
             ),
             (
                 EvaluateDocumentRankingQuality,
-                "examples.search.transforms.evaluation.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
+                "examples.search.transforms.evaluation.search_docs.ranking.eval_ranking.EvaluateDocumentRankingQuality",
             ),
             (
                 EvaluateDocumentSearchBehavior,
-                "examples.search.transforms.evaluation.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
+                "examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocumentSearchBehavior",
             ),
             (
                 EvaluateLabeledDocumentRankingQuality,
-                "examples.search.transforms.evaluation.with_labels.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
+                "examples.search.transforms.evaluation.search_docs.ranking.with_labels.EvaluateDocumentRankingQuality",
             ),
             (
                 EvaluateLabeledDocumentSearchBehavior,
-                "examples.search.transforms.evaluation.with_labels.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
+                "examples.search.transforms.evaluation.search_docs.behavior.with_labels.EvaluateDocumentSearchBehavior",
             ),
             (
                 EvaluateUserDocumentRankingQuality,
-                "examples.search.transforms.evaluation.with_users.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
+                "examples.search.transforms.evaluation.search_docs.ranking.with_users.EvaluateDocumentRankingQuality",
             ),
             (
                 EvaluateUserDocumentSearchBehavior,
-                "examples.search.transforms.evaluation.with_users.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
+                "examples.search.transforms.evaluation.search_docs.behavior.with_users.EvaluateDocumentSearchBehavior",
             ),
             (
                 EvaluateAllDocumentRankingQuality,
-                "examples.search.transforms.evaluation.with_all.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
+                "examples.search.transforms.evaluation.search_docs.ranking.with_all.EvaluateDocumentRankingQuality",
             ),
             (
                 EvaluateAllDocumentSearchBehavior,
-                "examples.search.transforms.evaluation.with_all.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
+                "examples.search.transforms.evaluation.search_docs.behavior.with_all.EvaluateDocumentSearchBehavior",
             ),
         )
         files = {}
@@ -725,16 +929,69 @@ def render_search_example() -> dict[str, str]:
                     BehaviorRequest,
                     BehaviorRequestMetrics,
                     BehaviorRequestTotals,
+                    BandAncestor,
+                    BandMatch,
+                    ContextDailyClicks,
+                    ContextDailyImpressions,
+                    DocumentLine,
+                    DocumentFeedbackOption,
+                    DocumentIndexTargetStats,
+                    DocumentIndexTermCount,
+                    DocumentPopularityTotals,
+                    DocumentSimilarityCandidate,
+                    DocumentSimilarityPair,
+                    DocumentOverlapMatch,
+                    DocumentSimilarityQueryText,
+                    ExpandedDocumentLine,
+                    ExpandedSentenceText,
+                    ExpandedWordText,
+                    ExpandedQueryToken,
                     EvaluationIdealDcg,
                     EvaluationJudgment,
                     EvaluationJudgmentTotals,
+                    IndexTokenFrequency,
                     LabelMapEntry,
+                    MarkedDocumentLine,
+                    ParagraphContent,
+                    ParagraphDraft,
+                    ParagraphIndexTargetStats,
+                    ParagraphIndexTermCount,
+                    ParagraphLine,
+                    ParagraphLineGroup,
+                    ParagraphOverlapMatch,
+                    ParagraphSimilarityCandidate,
+                    ParagraphSimilarityPair,
+                    PopularityFeedback,
+                    QueryDocumentFeedback,
+                    QueryDocumentSignalTotals,
+                    ParagraphSimilarityQueryText,
+                    QueryTerm,
+                    QueryTermCount,
+                    QueryToken,
                     QueryLabelAssignmentEntries,
                     QueryLabelAssignments,
+                    SectionIndexTargetStats,
+                    SectionIndexTermCount,
+                    SectionHeading,
+                    SectionKey,
+                    SectionOverlapMatch,
+                    SectionSimilarityCandidate,
+                    SectionSimilarityPair,
+                    SectionSimilarityQueryText,
+                    SingletonUserBand,
+                    SentenceIndexTargetStats,
+                    SentenceIndexTermCount,
+                    SentenceOverlapMatch,
+                    SentenceSimilarityCandidate,
+                    SentenceSimilarityPair,
+                    SentenceSimilarityQueryText,
                     EvaluationQuery,
                     EvaluationResult,
                     EvaluationResultTotals,
                     TimeWindow,
+                    UserBandPath,
+                    SentenceText,
+                    WordText,
                 }
             )
             for module, schemas in schema_modules.items()
@@ -787,8 +1044,18 @@ def render_school_iterable_example() -> dict[str, str]:
                     results=("reports", "audits"),
                     body=authoring.IterableStepBody(
                         joins=(
-                            authoring.Join("left", "profiles", authoring.Field("students", "student"), authoring.Field("profiles", "student")),
-                            authoring.Join("left", "awards", authoring.Field("students", "student"), authoring.Field("awards", "student")),
+                            authoring.Join(
+                                "left",
+                                "profiles",
+                                authoring.Field("students", "student"),
+                                authoring.Field("profiles", "student"),
+                            ),
+                            authoring.Join(
+                                "left",
+                                "awards",
+                                authoring.Field("students", "student"),
+                                authoring.Field("awards", "student"),
+                            ),
                         ),
                         projections=(
                             authoring.Projection(
@@ -802,7 +1069,10 @@ def render_school_iterable_example() -> dict[str, str]:
                             ),
                             authoring.Projection(
                                 schemas.StudentAudit,
-                                {"student": authoring.Field("students", "student"), "score": authoring.Field("students", "score")},
+                                {
+                                    "student": authoring.Field("students", "student"),
+                                    "score": authoring.Field("students", "score"),
+                                },
                             ),
                         ),
                     ),
@@ -828,28 +1098,39 @@ def render_school_iterable_example() -> dict[str, str]:
                         ),
                         scan=authoring.Scan(
                             initial=(0, 1),
-                            next=(authoring.StateValue(1), authoring.BinaryStateExpression("add", authoring.StateValue(0), authoring.StateValue(1))),
+                            next=(
+                                authoring.StateValue(1),
+                                authoring.BinaryStateExpression(
+                                    "add", authoring.StateValue(0), authoring.StateValue(1)
+                                ),
+                            ),
                         ),
                     ),
                 ),
             ),
         )
-        files = generation.Generation().generate(
-            GenerationRequest(
-                payload={"examples.school.transforms.iterable.ProjectIterableScores": scores},
-                source_module="examples.school.transforms.iterable",
-                generated_package="structure_generated.school",
+        files = (
+            generation.Generation()
+            .generate(
+                GenerationRequest(
+                    payload={"examples.school.transforms.iterable.ProjectIterableScores": scores},
+                    source_module="examples.school.transforms.iterable",
+                    generated_package="structure_generated.school",
+                )
             )
-        ).files
+            .files
+        )
         files = {
             **files,
-            **generation.Generation().generate(
+            **generation.Generation()
+            .generate(
                 GenerationRequest(
                     payload={"examples.school.transforms.sequences.Fibonacci": sequences},
                     source_module="examples.school.transforms.sequences",
                     generated_package="structure_generated.school",
                 )
-            ).files,
+            )
+            .files,
         }
         return {f"examples/{path}": text for path, text in files.items()}
     finally:

@@ -11,6 +11,7 @@ Source: `examples.security.transforms.posture.SecurityPosture`
 - `device_types`: `DeviceType`
 - `software`: `Software`
 - `vuln_types`: `VulnType`
+- `remediation_policies`: `RemediationPolicy`
 - `people`: `Person`
 - `teams`: `Team`
 - `departments`: `Department`
@@ -38,6 +39,8 @@ Source: `examples.security.transforms.posture.SecurityPosture`
 - `orgs`
 - `people`
 - `person`
+- `remediation_policies`
+- `remediation_policy`
 - `software`
 - `team`
 - `teams`

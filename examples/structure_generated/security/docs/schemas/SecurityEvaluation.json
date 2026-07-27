@@ -1,0 +1,14 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "as_of_date",
+      "name": "as_of_date",
+      "nullable": false,
+      "type": "date"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.security.schemas.reporting",
+  "name": "SecurityEvaluation"
+}

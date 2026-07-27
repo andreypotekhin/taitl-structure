@@ -12,6 +12,8 @@ from structure.plugin.pyspark.dsl.operations.PosexplodeStructPlan import Posexpl
 from structure.plugin.pyspark.dsl.operations.RelationAliasPlan import RelationAliasPlan
 from structure.plugin.pyspark.dsl.operations.RelationAssertionPlan import RelationAssertionPlan
 from structure.plugin.pyspark.dsl.operations.RelationBoundPlan import RelationBoundPlan
+from structure.plugin.pyspark.dsl.operations.RelationHierarchyClosurePlan import RelationHierarchyClosurePlan
+from structure.plugin.pyspark.dsl.operations.RelationHierarchyFallbackPlan import RelationHierarchyFallbackPlan
 from structure.plugin.pyspark.dsl.operations.RelationOrderPlan import RelationOrderPlan
 from structure.plugin.pyspark.dsl.operations.RelationPrioritySelectionPlan import RelationPrioritySelectionPlan
 from structure.plugin.pyspark.dsl.operations.RelationSetPlan import RelationSetPlan
@@ -33,6 +35,8 @@ class OperationPlan:
     posexplode_struct: PosexplodeStructPlan | None = None
     relation_alias: RelationAliasPlan | None = None
     relation_assertion: RelationAssertionPlan | None = None
+    relation_hierarchy_closure: RelationHierarchyClosurePlan | None = None
+    relation_hierarchy_fallback: RelationHierarchyFallbackPlan | None = None
     relation_order: RelationOrderPlan | None = None
     relation_priority_selection: RelationPrioritySelectionPlan | None = None
     relation_bound: RelationBoundPlan | None = None
@@ -190,6 +194,28 @@ class OperationPlan:
             family="relation",
             capability=OperationCapability("relation", "select_first_qualified"),
             cardinality=OperationCardinality.SELECT_ONE,
+            streaming=StreamingSupport.BATCH_ONLY,
+        )
+
+    @staticmethod
+    def relation_hierarchy_closure_operation(closure: RelationHierarchyClosurePlan) -> OperationPlan:
+        return OperationPlan(
+            "hierarchy_closure",
+            relation_hierarchy_closure=closure,
+            family="relation",
+            capability=OperationCapability("relation", "hierarchy_closure"),
+            cardinality=OperationCardinality.ROW_MULTIPLYING,
+            streaming=StreamingSupport.BATCH_ONLY,
+        )
+
+    @staticmethod
+    def relation_hierarchy_fallback_operation(fallback: RelationHierarchyFallbackPlan) -> OperationPlan:
+        return OperationPlan(
+            "hierarchy_fallbacks",
+            relation_hierarchy_fallback=fallback,
+            family="relation",
+            capability=OperationCapability("relation", "hierarchy_fallbacks"),
+            cardinality=OperationCardinality.ROW_MULTIPLYING,
             streaming=StreamingSupport.BATCH_ONLY,
         )
 

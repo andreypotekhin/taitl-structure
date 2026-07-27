@@ -118,17 +118,25 @@ explain/traceability, and are batch-only until a streaming validation contract i
 
 ## Bounded Parent Hierarchy
 
-`hierarchy_closure(...)` accepts a node relation, literal `max_depth`, node id, parent id, and explicit ordering. It
-returns typed `(node_id, ancestor_id, depth)` closure rows and an ordered path representation. Missing parent, cycle,
-and depth-overrun policies are `ERROR` in v6. Implementation uses a finite chain of self joins; it must not use a
-driver action, Python UDF, or recursive Spark extension.
+`require_parent_hierarchy(id, parent=..., order_by=..., max_depth=...)` validates a bounded parent catalog while
+preserving the current rowset on success. It requires declared id/parent fields, an explicit order expression, and a
+positive literal depth. Missing parent, cycle, depth-overrun, and non-increasing child order failures report
+`REL-E0706`. Implementation uses a finite chain of self joins; it must not use a driver action, Python UDF, or
+recursive Spark extension.
 
-`hierarchy_fallbacks(paths, parent=..., ordinal=...)` expands each declared ordered band path by replacing its final
-band with its parent until no parent remains, then emits one terminal empty/global path. It returns one row per input
-path and ordinal, preserves the canonical ordered band-id array for a subsequent symbolic digest, and makes no
-implicit ordering claim beyond the explicit ordinal. `ResolveCohortBands` uses closure/path, ordered collection,
-`posexplode`, and this operation to produce its `BandMembership` and `BandFallback` outputs. Its leaf-match query
-uses the existing self-alias plus anti-existence relation pattern; no new raw DataFrame operation is required.
+`hierarchy_closure(id, parent=..., as_=ClosureSchema, node="node_id", ancestor="ancestor_id", depth="depth",
+max_depth=..., scope=...)` accepts declared id and parent fields plus a positive literal depth. It replaces the active
+rowset with typed closure rows, where each source node emits a depth-0 self row and one row for every discovered parent
+ancestor through `max_depth`. It is batch-only, finite, and uses public self-join expansion rather than recursion,
+driver collection, or a Python UDF. Invalid catalogs should be guarded first with `require_parent_hierarchy(...)`.
+
+`hierarchy_fallbacks(source_id, path, parents, parent_id=..., parent=..., as_=FallbackSchema, max_depth=...)`
+expands each declared ordered band path by replacing its final band with its parent until no parent remains, then emits
+one terminal empty/global path. It returns one row per input path and ordinal, hashes non-empty fallback paths into the
+nullable fallback-id field, and makes no implicit ordering claim beyond the explicit ordinal. `parents` must be an
+unjoined relation so parent reads remain compiler-visible. `ResolveCohortBands` uses closure/path, ordered collection,
+`posexplode`, and this operation to produce its `BandMembership` and `BandFallback` outputs. Its leaf-match query uses
+the existing self-alias plus anti-existence relation pattern; no new raw DataFrame operation is required.
 
 ## First-Qualified Priority Selection
 

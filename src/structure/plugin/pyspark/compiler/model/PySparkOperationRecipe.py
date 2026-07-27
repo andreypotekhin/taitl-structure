@@ -12,6 +12,12 @@ from structure.plugin.pyspark.compiler.model.PySparkPosexplodeStructRecipe impor
 from structure.plugin.pyspark.compiler.model.PySparkRelationAliasRecipe import PySparkRelationAliasRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationAssertionRecipe import PySparkRelationAssertionRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationBoundRecipe import PySparkRelationBoundRecipe
+from structure.plugin.pyspark.compiler.model.PySparkRelationHierarchyClosureRecipe import (
+    PySparkRelationHierarchyClosureRecipe,
+)
+from structure.plugin.pyspark.compiler.model.PySparkRelationHierarchyFallbackRecipe import (
+    PySparkRelationHierarchyFallbackRecipe,
+)
 from structure.plugin.pyspark.compiler.model.PySparkRelationOrderRecipe import PySparkRelationOrderRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationPrioritySelectionRecipe import (
     PySparkRelationPrioritySelectionRecipe,
@@ -34,6 +40,8 @@ class PySparkOperationRecipe:
     posexplode_struct: PySparkPosexplodeStructRecipe | None = None
     relation_alias: PySparkRelationAliasRecipe | None = None
     relation_assertion: PySparkRelationAssertionRecipe | None = None
+    relation_hierarchy_closure: PySparkRelationHierarchyClosureRecipe | None = None
+    relation_hierarchy_fallback: PySparkRelationHierarchyFallbackRecipe | None = None
     relation_order: PySparkRelationOrderRecipe | None = None
     relation_priority_selection: PySparkRelationPrioritySelectionRecipe | None = None
     relation_bound: PySparkRelationBoundRecipe | None = None
@@ -100,6 +108,18 @@ class PySparkOperationRecipe:
             kind="select_first_qualified",
             relation_priority_selection=selection,
         )
+
+    @staticmethod
+    def relation_hierarchy_closure_operation(
+        closure: PySparkRelationHierarchyClosureRecipe,
+    ) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="hierarchy_closure", relation_hierarchy_closure=closure)
+
+    @staticmethod
+    def relation_hierarchy_fallback_operation(
+        fallback: PySparkRelationHierarchyFallbackRecipe,
+    ) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="hierarchy_fallbacks", relation_hierarchy_fallback=fallback)
 
     @staticmethod
     def relation_set_operation(relation_set: PySparkRelationSetRecipe) -> "PySparkOperationRecipe":

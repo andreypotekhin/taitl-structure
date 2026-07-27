@@ -2,7 +2,7 @@
 
 # SentenceOverlapScore
 
-Module: `examples.search.schemas.search`
+Module: `examples.search.schemas.scoring.overlap`
 
 | Field | Column | Type | Nullable |
 | --- | --- | --- | --- |

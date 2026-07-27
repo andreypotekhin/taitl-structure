@@ -8,6 +8,8 @@ from structure.plugin.pyspark.dsl.operations.PosexplodeStructPlan import Posexpl
 from structure.plugin.pyspark.dsl.operations.RelationAliasPlan import RelationAliasPlan
 from structure.plugin.pyspark.dsl.operations.RelationAssertionPlan import RelationAssertionPlan
 from structure.plugin.pyspark.dsl.operations.RelationBoundPlan import RelationBoundPlan
+from structure.plugin.pyspark.dsl.operations.RelationHierarchyClosurePlan import RelationHierarchyClosurePlan
+from structure.plugin.pyspark.dsl.operations.RelationHierarchyFallbackPlan import RelationHierarchyFallbackPlan
 from structure.plugin.pyspark.dsl.operations.RelationOrderPlan import RelationOrderPlan
 from structure.plugin.pyspark.dsl.operations.RelationPrioritySelectionPlan import RelationPrioritySelectionPlan
 from structure.plugin.pyspark.dsl.operations.RelationSetPlan import RelationSetPlan
@@ -27,6 +29,8 @@ __all__ = [
     "RelationAliasPlan",
     "RelationAssertionPlan",
     "RelationBoundPlan",
+    "RelationHierarchyClosurePlan",
+    "RelationHierarchyFallbackPlan",
     "RelationOrderPlan",
     "RelationPrioritySelectionPlan",
     "RelationSetPlan",

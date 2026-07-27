@@ -1,5 +1,18 @@
 {
-  "dependencies": [],
+  "dependencies": [
+    "document_summary",
+    "document_terms",
+    "paragraph_summary",
+    "paragraph_terms",
+    "query_sizes",
+    "section_summary",
+    "section_terms",
+    "sentence_summary",
+    "sentence_terms",
+    "size",
+    "summary",
+    "term"
+  ],
   "generated_by": "Structure",
   "inputs": [
     {
@@ -104,7 +117,249 @@
           "source": "queries"
         }
       ],
-      "name": "declare_overlap_scores",
+      "name": "expand_query_terms",
+      "output_lane": "expanded_query_terms",
+      "output_schema": "QueryTerm",
+      "results": [
+        {
+          "frame": "expanded_query_terms",
+          "lane": "expanded_query_terms",
+          "schema": "QueryTerm"
+        }
+      ]
+    },
+    {
+      "input_lane": "expanded_query_terms",
+      "input_schema": "QueryTerm",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "QueryTerm",
+          "source": "expanded_query_terms"
+        }
+      ],
+      "name": "select_distinct_query_terms",
+      "output_lane": "query_terms",
+      "output_schema": "QueryTerm",
+      "results": [
+        {
+          "frame": "query_terms",
+          "lane": "query_terms",
+          "schema": "QueryTerm"
+        }
+      ]
+    },
+    {
+      "input_lane": "query_terms",
+      "input_schema": "QueryTerm",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "QueryTerm",
+          "source": "query_terms"
+        }
+      ],
+      "name": "count_query_terms",
+      "output_lane": "query_sizes",
+      "output_schema": "QueryTermCount",
+      "results": [
+        {
+          "frame": "query_sizes",
+          "lane": "query_sizes",
+          "schema": "QueryTermCount"
+        }
+      ]
+    },
+    {
+      "input_lane": "query_terms",
+      "input_schema": "QueryTerm",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "QueryTerm",
+          "source": "query_terms"
+        },
+        {
+          "driving": false,
+          "parameter": "size",
+          "schema": "QueryTermCount",
+          "source": "query_sizes"
+        },
+        {
+          "driving": false,
+          "parameter": "term",
+          "schema": "DocumentIndexTerm",
+          "source": "document_terms"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "term"
+        },
+        {
+          "how": "inner",
+          "input": "size"
+        }
+      ],
+      "name": "match_documents",
+      "output_lane": "document_overlap_matches",
+      "output_schema": "DocumentOverlapMatch",
+      "results": [
+        {
+          "frame": "document_overlap_matches",
+          "lane": "document_overlap_matches",
+          "schema": "DocumentOverlapMatch"
+        }
+      ]
+    },
+    {
+      "input_lane": "query_terms",
+      "input_schema": "QueryTerm",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "QueryTerm",
+          "source": "query_terms"
+        },
+        {
+          "driving": false,
+          "parameter": "size",
+          "schema": "QueryTermCount",
+          "source": "query_sizes"
+        },
+        {
+          "driving": false,
+          "parameter": "term",
+          "schema": "SectionIndexTerm",
+          "source": "section_terms"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "term"
+        },
+        {
+          "how": "inner",
+          "input": "size"
+        }
+      ],
+      "name": "match_sections",
+      "output_lane": "section_overlap_matches",
+      "output_schema": "SectionOverlapMatch",
+      "results": [
+        {
+          "frame": "section_overlap_matches",
+          "lane": "section_overlap_matches",
+          "schema": "SectionOverlapMatch"
+        }
+      ]
+    },
+    {
+      "input_lane": "query_terms",
+      "input_schema": "QueryTerm",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "QueryTerm",
+          "source": "query_terms"
+        },
+        {
+          "driving": false,
+          "parameter": "size",
+          "schema": "QueryTermCount",
+          "source": "query_sizes"
+        },
+        {
+          "driving": false,
+          "parameter": "term",
+          "schema": "ParagraphIndexTerm",
+          "source": "paragraph_terms"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "term"
+        },
+        {
+          "how": "inner",
+          "input": "size"
+        }
+      ],
+      "name": "match_paragraphs",
+      "output_lane": "paragraph_overlap_matches",
+      "output_schema": "ParagraphOverlapMatch",
+      "results": [
+        {
+          "frame": "paragraph_overlap_matches",
+          "lane": "paragraph_overlap_matches",
+          "schema": "ParagraphOverlapMatch"
+        }
+      ]
+    },
+    {
+      "input_lane": "query_terms",
+      "input_schema": "QueryTerm",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "QueryTerm",
+          "source": "query_terms"
+        },
+        {
+          "driving": false,
+          "parameter": "size",
+          "schema": "QueryTermCount",
+          "source": "query_sizes"
+        },
+        {
+          "driving": false,
+          "parameter": "term",
+          "schema": "SentenceIndexTerm",
+          "source": "sentence_terms"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "term"
+        },
+        {
+          "how": "inner",
+          "input": "size"
+        }
+      ],
+      "name": "match_sentences",
+      "output_lane": "sentence_overlap_matches",
+      "output_schema": "SentenceOverlapMatch",
+      "results": [
+        {
+          "frame": "sentence_overlap_matches",
+          "lane": "sentence_overlap_matches",
+          "schema": "SentenceOverlapMatch"
+        }
+      ]
+    },
+    {
+      "input_lane": "document_overlap_matches",
+      "input_schema": "DocumentOverlapMatch",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "match",
+          "schema": "DocumentOverlapMatch",
+          "source": "document_overlap_matches"
+        }
+      ],
+      "name": "publish_document_overlap_scores",
       "output_lane": "document_overlap_scores",
       "output_schema": "DocumentOverlapScore",
       "results": [
@@ -112,17 +367,68 @@
           "frame": "document_overlap_scores",
           "lane": "document_overlap_scores",
           "schema": "DocumentOverlapScore"
-        },
+        }
+      ]
+    },
+    {
+      "input_lane": "section_overlap_matches",
+      "input_schema": "SectionOverlapMatch",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "match",
+          "schema": "SectionOverlapMatch",
+          "source": "section_overlap_matches"
+        }
+      ],
+      "name": "publish_section_overlap_scores",
+      "output_lane": "section_overlap_scores",
+      "output_schema": "SectionOverlapScore",
+      "results": [
         {
           "frame": "section_overlap_scores",
           "lane": "section_overlap_scores",
           "schema": "SectionOverlapScore"
-        },
+        }
+      ]
+    },
+    {
+      "input_lane": "paragraph_overlap_matches",
+      "input_schema": "ParagraphOverlapMatch",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "match",
+          "schema": "ParagraphOverlapMatch",
+          "source": "paragraph_overlap_matches"
+        }
+      ],
+      "name": "publish_paragraph_overlap_scores",
+      "output_lane": "paragraph_overlap_scores",
+      "output_schema": "ParagraphOverlapScore",
+      "results": [
         {
           "frame": "paragraph_overlap_scores",
           "lane": "paragraph_overlap_scores",
           "schema": "ParagraphOverlapScore"
-        },
+        }
+      ]
+    },
+    {
+      "input_lane": "sentence_overlap_matches",
+      "input_schema": "SentenceOverlapMatch",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "match",
+          "schema": "SentenceOverlapMatch",
+          "source": "sentence_overlap_matches"
+        }
+      ],
+      "name": "publish_sentence_overlap_scores",
+      "output_lane": "sentence_overlap_scores",
+      "output_schema": "SentenceOverlapScore",
+      "results": [
         {
           "frame": "sentence_overlap_scores",
           "lane": "sentence_overlap_scores",
@@ -131,17 +437,39 @@
       ]
     },
     {
-      "input_lane": "queries",
-      "input_schema": "SearchQuery",
+      "input_lane": "query_terms",
+      "input_schema": "QueryTerm",
       "inputs": [
         {
           "driving": true,
           "parameter": "query",
-          "schema": "SearchQuery",
-          "source": "queries"
+          "schema": "QueryTerm",
+          "source": "query_terms"
+        },
+        {
+          "driving": false,
+          "parameter": "term",
+          "schema": "DocumentIndexTerm",
+          "source": "document_terms"
+        },
+        {
+          "driving": false,
+          "parameter": "summary",
+          "schema": "DocumentIndexSummary",
+          "source": "document_summary"
         }
       ],
-      "name": "declare_bm25_scores",
+      "joins": [
+        {
+          "how": "inner",
+          "input": "term"
+        },
+        {
+          "how": "cross",
+          "input": "summary"
+        }
+      ],
+      "name": "score_document_bm25",
       "output_lane": "document_bm25_scores",
       "output_schema": "DocumentBm25Score",
       "results": [
@@ -149,17 +477,134 @@
           "frame": "document_bm25_scores",
           "lane": "document_bm25_scores",
           "schema": "DocumentBm25Score"
+        }
+      ]
+    },
+    {
+      "input_lane": "query_terms",
+      "input_schema": "QueryTerm",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "QueryTerm",
+          "source": "query_terms"
         },
+        {
+          "driving": false,
+          "parameter": "term",
+          "schema": "SectionIndexTerm",
+          "source": "section_terms"
+        },
+        {
+          "driving": false,
+          "parameter": "summary",
+          "schema": "SectionIndexSummary",
+          "source": "section_summary"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "term"
+        },
+        {
+          "how": "cross",
+          "input": "summary"
+        }
+      ],
+      "name": "score_section_bm25",
+      "output_lane": "section_bm25_scores",
+      "output_schema": "SectionBm25Score",
+      "results": [
         {
           "frame": "section_bm25_scores",
           "lane": "section_bm25_scores",
           "schema": "SectionBm25Score"
+        }
+      ]
+    },
+    {
+      "input_lane": "query_terms",
+      "input_schema": "QueryTerm",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "QueryTerm",
+          "source": "query_terms"
         },
+        {
+          "driving": false,
+          "parameter": "term",
+          "schema": "ParagraphIndexTerm",
+          "source": "paragraph_terms"
+        },
+        {
+          "driving": false,
+          "parameter": "summary",
+          "schema": "ParagraphIndexSummary",
+          "source": "paragraph_summary"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "term"
+        },
+        {
+          "how": "cross",
+          "input": "summary"
+        }
+      ],
+      "name": "score_paragraph_bm25",
+      "output_lane": "paragraph_bm25_scores",
+      "output_schema": "ParagraphBm25Score",
+      "results": [
         {
           "frame": "paragraph_bm25_scores",
           "lane": "paragraph_bm25_scores",
           "schema": "ParagraphBm25Score"
+        }
+      ]
+    },
+    {
+      "input_lane": "query_terms",
+      "input_schema": "QueryTerm",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "QueryTerm",
+          "source": "query_terms"
         },
+        {
+          "driving": false,
+          "parameter": "term",
+          "schema": "SentenceIndexTerm",
+          "source": "sentence_terms"
+        },
+        {
+          "driving": false,
+          "parameter": "summary",
+          "schema": "SentenceIndexSummary",
+          "source": "sentence_summary"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "term"
+        },
+        {
+          "how": "cross",
+          "input": "summary"
+        }
+      ],
+      "name": "score_sentence_bm25",
+      "output_lane": "sentence_bm25_scores",
+      "output_schema": "SentenceBm25Score",
+      "results": [
         {
           "frame": "sentence_bm25_scores",
           "lane": "sentence_bm25_scores",

@@ -16,4 +16,7 @@ class PySparkRelationAssertionRecipe:
     reference_source: str | None = None
     reference_schema: type[Schema] | None = None
     reference_key: PySparkExpressionRecipe | None = None
+    parent: PySparkExpressionRecipe | None = None
+    order_by: PySparkExpressionRecipe | None = None
+    max_depth: int | None = None
     nulls: str = "allow"

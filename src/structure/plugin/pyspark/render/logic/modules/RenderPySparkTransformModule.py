@@ -780,6 +780,14 @@ class RenderPySparkTransformModule:
             yield from operation.relation_priority_selection.keys
             yield operation.relation_priority_selection.predicate
             yield operation.relation_priority_selection.order_by
+        if operation.relation_hierarchy_closure is not None:
+            yield operation.relation_hierarchy_closure.id
+            yield operation.relation_hierarchy_closure.parent
+        if operation.relation_hierarchy_fallback is not None:
+            yield operation.relation_hierarchy_fallback.source_id
+            yield operation.relation_hierarchy_fallback.path
+            yield operation.relation_hierarchy_fallback.parent_id
+            yield operation.relation_hierarchy_fallback.parent
         if operation.duplicate_rows is not None:
             yield from operation.duplicate_rows.subset
         if operation.watermark is not None:

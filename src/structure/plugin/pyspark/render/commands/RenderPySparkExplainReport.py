@@ -185,6 +185,11 @@ class RenderPySparkExplainReport:
                     f"reference={operation.relation_assertion.reference_input} "
                     f"nulls={operation.relation_assertion.nulls})"
                 )
+            if operation.kind == "require_parent_hierarchy":
+                return (
+                    "require_parent_hierarchy(row_preserving "
+                    f"max_depth={operation.relation_assertion.max_depth})"
+                )
             return "require_all(row_preserving predicate=true)"
         if operation.relation_order is not None:
             return f"order_by(row_preserving keys={len(operation.relation_order.order_by)})"
@@ -196,6 +201,21 @@ class RenderPySparkExplainReport:
                 f"keys={len(operation.relation_priority_selection.keys)} "
                 f"missing={operation.relation_priority_selection.missing} "
                 f"ties={operation.relation_priority_selection.ties.value})"
+            )
+        if operation.relation_hierarchy_closure is not None:
+            return (
+                "hierarchy_closure(row_multiplying "
+                f"scope={operation.relation_hierarchy_closure.scope} "
+                f"schema={operation.relation_hierarchy_closure.schema.__name__} "
+                f"max_depth={operation.relation_hierarchy_closure.max_depth})"
+            )
+        if operation.relation_hierarchy_fallback is not None:
+            return (
+                "hierarchy_fallbacks(row_multiplying "
+                f"scope={operation.relation_hierarchy_fallback.scope} "
+                f"schema={operation.relation_hierarchy_fallback.schema.__name__} "
+                f"parents={operation.relation_hierarchy_fallback.parent_input} "
+                f"max_depth={operation.relation_hierarchy_fallback.max_depth})"
             )
         if operation.relation_set is not None:
             cardinality = "row_multiplying" if operation.kind in {"union_all", "union_by_name"} else "row_filtering"

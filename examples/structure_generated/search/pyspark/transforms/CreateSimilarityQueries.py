@@ -4,8 +4,8 @@
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
-from examples.search.transforms.similarities.CreateSimilarityQueries import CreateSimilarityQueries
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
+from examples.structure_generated.search.pyspark.schemas.query import DOCUMENT_SIMILARITY_QUERY_TEXT_SCHEMA, PARAGRAPH_SIMILARITY_QUERY_TEXT_SCHEMA, SECTION_SIMILARITY_QUERY_TEXT_SCHEMA, SENTENCE_SIMILARITY_QUERY_TEXT_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.search import DOCUMENT_INDEX_SUMMARY_SCHEMA, DOCUMENT_INDEX_TERM_SCHEMA, PARAGRAPH_INDEX_SUMMARY_SCHEMA, PARAGRAPH_INDEX_TERM_SCHEMA, SEARCH_QUERY_SCHEMA, SECTION_INDEX_SUMMARY_SCHEMA, SECTION_INDEX_TERM_SCHEMA, SENTENCE_INDEX_SUMMARY_SCHEMA, SENTENCE_INDEX_TERM_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.similarity import DOCUMENT_SIMILARITY_QUERY_SCHEMA, PARAGRAPH_SIMILARITY_QUERY_SCHEMA, SECTION_SIMILARITY_QUERY_SCHEMA, SENTENCE_SIMILARITY_QUERY_SCHEMA, SIMILARITY_POLICY_SCHEMA
 
@@ -15,7 +15,6 @@ class CreateSimilarityQueriesGenerated:
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
         self.ctx = ctx
-        self._impl = CreateSimilarityQueries()
 
     def run(
         self,
@@ -49,39 +48,227 @@ class CreateSimilarityQueriesGenerated:
         _input_sentence_terms = sentence_terms
         _input_sentence_summary = sentence_summary
 
-        # Step method: declare_queries
-        declare_queries_base = document_terms.alias("document_index_term")
-        queries = declare_queries_base.select(
-            F.lit('').alias("id"),
-            F.lit('').alias("content"),
+        # Step method: validate_policy
+        valid_policy = policy.alias("similarity_policy")
+        valid_policy_require_all_0_violations = valid_policy.where(~F.coalesce((F.col("similarity_policy.max_document_frequency_ratio").isNull() | ((F.col("similarity_policy.max_document_frequency_ratio") > F.lit(0.0)) & (F.col("similarity_policy.max_document_frequency_ratio") <= F.lit(1.0)))), F.lit(False))).agg(
+            F.count(F.lit(1)).alias("__structure_violations")
+        )
+        valid_policy_require_all_0_assertion = valid_policy_require_all_0_violations.select(
+            F.assert_true(F.col("__structure_violations") == F.lit(0), 'REL-E0703: require_all(...) found rows that do not satisfy the predicate; see docs/Diagnostics.md#rel-e0703')
+            .alias("__structure_require_all")
+        )
+        valid_policy = valid_policy_require_all_0_assertion.crossJoin(valid_policy).drop("__structure_require_all")
+        valid_policy = valid_policy.select(
+            F.col("similarity_policy.max_document_frequency_ratio"),
+        )
+        assert_schema(valid_policy, SIMILARITY_POLICY_SCHEMA, name="SimilarityPolicy", mode="strict")
+
+        # Step method: build_document_queries
+        document_query_text = document_terms.alias("document_index_term")
+        document_query_text_policy_exactly_one_1_count = valid_policy.agg(F.count(F.lit(1)).alias("__structure_count"))
+        document_query_text_policy_exactly_one_1_count = document_query_text_policy_exactly_one_1_count.select(
+            F.assert_true(F.col("__structure_count") == F.lit(1), 'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701')
+            .alias("__structure_exactly_one")
+        )
+        document_query_text_policy_exactly_one_1 = document_query_text_policy_exactly_one_1_count.crossJoin(valid_policy).drop("__structure_exactly_one")
+        valid_policy_joined = document_query_text_policy_exactly_one_1.alias("valid_policy")
+        document_query_text = document_query_text.crossJoin(valid_policy_joined)
+        document_summary_2_joined = document_summary.alias("document_summary_2")
+        document_query_text = document_query_text.crossJoin(document_summary_2_joined)
+        document_query_text = document_query_text.where(((F.col("valid_policy.max_document_frequency_ratio").isNull() | ((F.col("document_index_term.document_frequency") / F.col("document_summary_2.target_count")) <= F.col("valid_policy.max_document_frequency_ratio")))))
+        document_query_text = document_query_text.groupBy(
+            F.concat_ws('', F.lit('document:'), F.col("document_index_term.document_id")).alias("query_id"),
+            F.col("document_index_term.document_id").alias("document_id"),
+        ).agg(
+            F.transform(F.sort_array(F.collect_list(F.when(F.col("document_index_term.token").isNotNull(), F.struct(F.col("document_index_term.token").alias('_structure_order'), F.col("document_index_term.token").alias('_structure_value')))), asc=True), lambda item: item.getField('_structure_value')).alias("content_tokens"),
+        ).select(
+            F.col("query_id"),
+            F.col("document_id"),
+            F.col("content_tokens"),
+        )
+        assert_schema(document_query_text, DOCUMENT_SIMILARITY_QUERY_TEXT_SCHEMA, name="DocumentSimilarityQueryText", mode="strict")
+
+        # Step method: build_section_queries
+        section_query_text = section_terms.alias("section_index_term")
+        section_query_text_policy_exactly_one_1_count = valid_policy.agg(F.count(F.lit(1)).alias("__structure_count"))
+        section_query_text_policy_exactly_one_1_count = section_query_text_policy_exactly_one_1_count.select(
+            F.assert_true(F.col("__structure_count") == F.lit(1), 'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701')
+            .alias("__structure_exactly_one")
+        )
+        section_query_text_policy_exactly_one_1 = section_query_text_policy_exactly_one_1_count.crossJoin(valid_policy).drop("__structure_exactly_one")
+        valid_policy_joined = section_query_text_policy_exactly_one_1.alias("valid_policy")
+        section_query_text = section_query_text.crossJoin(valid_policy_joined)
+        section_summary_2_joined = section_summary.alias("section_summary_2")
+        section_query_text = section_query_text.crossJoin(section_summary_2_joined)
+        section_query_text = section_query_text.where(((F.col("valid_policy.max_document_frequency_ratio").isNull() | ((F.col("section_index_term.document_frequency") / F.col("section_summary_2.target_count")) <= F.col("valid_policy.max_document_frequency_ratio")))))
+        section_query_text = section_query_text.groupBy(
+            F.concat_ws('', F.lit('section:'), F.col("section_index_term.section_id")).alias("query_id"),
+            F.col("section_index_term.document_id").alias("document_id"),
+            F.col("section_index_term.section_id").alias("section_id"),
+        ).agg(
+            F.transform(F.sort_array(F.collect_list(F.when(F.col("section_index_term.token").isNotNull(), F.struct(F.col("section_index_term.token").alias('_structure_order'), F.col("section_index_term.token").alias('_structure_value')))), asc=True), lambda item: item.getField('_structure_value')).alias("content_tokens"),
+        ).select(
+            F.col("query_id"),
+            F.col("document_id"),
+            F.col("section_id"),
+            F.col("content_tokens"),
+        )
+        assert_schema(section_query_text, SECTION_SIMILARITY_QUERY_TEXT_SCHEMA, name="SectionSimilarityQueryText", mode="strict")
+
+        # Step method: build_paragraph_queries
+        paragraph_query_text = paragraph_terms.alias("paragraph_index_term")
+        paragraph_query_text_policy_exactly_one_1_count = valid_policy.agg(F.count(F.lit(1)).alias("__structure_count"))
+        paragraph_query_text_policy_exactly_one_1_count = paragraph_query_text_policy_exactly_one_1_count.select(
+            F.assert_true(F.col("__structure_count") == F.lit(1), 'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701')
+            .alias("__structure_exactly_one")
+        )
+        paragraph_query_text_policy_exactly_one_1 = paragraph_query_text_policy_exactly_one_1_count.crossJoin(valid_policy).drop("__structure_exactly_one")
+        valid_policy_joined = paragraph_query_text_policy_exactly_one_1.alias("valid_policy")
+        paragraph_query_text = paragraph_query_text.crossJoin(valid_policy_joined)
+        paragraph_summary_2_joined = paragraph_summary.alias("paragraph_summary_2")
+        paragraph_query_text = paragraph_query_text.crossJoin(paragraph_summary_2_joined)
+        paragraph_query_text = paragraph_query_text.where(((F.col("valid_policy.max_document_frequency_ratio").isNull() | ((F.col("paragraph_index_term.document_frequency") / F.col("paragraph_summary_2.target_count")) <= F.col("valid_policy.max_document_frequency_ratio")))))
+        paragraph_query_text = paragraph_query_text.groupBy(
+            F.concat_ws('', F.lit('paragraph:'), F.col("paragraph_index_term.paragraph_id")).alias("query_id"),
+            F.col("paragraph_index_term.document_id").alias("document_id"),
+            F.col("paragraph_index_term.section_id").alias("section_id"),
+            F.col("paragraph_index_term.paragraph_id").alias("paragraph_id"),
+        ).agg(
+            F.transform(F.sort_array(F.collect_list(F.when(F.col("paragraph_index_term.token").isNotNull(), F.struct(F.col("paragraph_index_term.token").alias('_structure_order'), F.col("paragraph_index_term.token").alias('_structure_value')))), asc=True), lambda item: item.getField('_structure_value')).alias("content_tokens"),
+        ).select(
+            F.col("query_id"),
+            F.col("document_id"),
+            F.col("section_id"),
+            F.col("paragraph_id"),
+            F.col("content_tokens"),
+        )
+        assert_schema(paragraph_query_text, PARAGRAPH_SIMILARITY_QUERY_TEXT_SCHEMA, name="ParagraphSimilarityQueryText", mode="strict")
+
+        # Step method: build_sentence_queries
+        sentence_query_text = sentence_terms.alias("sentence_index_term")
+        sentence_query_text_policy_exactly_one_1_count = valid_policy.agg(F.count(F.lit(1)).alias("__structure_count"))
+        sentence_query_text_policy_exactly_one_1_count = sentence_query_text_policy_exactly_one_1_count.select(
+            F.assert_true(F.col("__structure_count") == F.lit(1), 'REL-E0701: exactly_one(policy) requires exactly one row; see docs/Diagnostics.md#rel-e0701')
+            .alias("__structure_exactly_one")
+        )
+        sentence_query_text_policy_exactly_one_1 = sentence_query_text_policy_exactly_one_1_count.crossJoin(valid_policy).drop("__structure_exactly_one")
+        valid_policy_joined = sentence_query_text_policy_exactly_one_1.alias("valid_policy")
+        sentence_query_text = sentence_query_text.crossJoin(valid_policy_joined)
+        sentence_summary_2_joined = sentence_summary.alias("sentence_summary_2")
+        sentence_query_text = sentence_query_text.crossJoin(sentence_summary_2_joined)
+        sentence_query_text = sentence_query_text.where(((F.col("valid_policy.max_document_frequency_ratio").isNull() | ((F.col("sentence_index_term.document_frequency") / F.col("sentence_summary_2.target_count")) <= F.col("valid_policy.max_document_frequency_ratio")))))
+        sentence_query_text = sentence_query_text.groupBy(
+            F.concat_ws('', F.lit('sentence:'), F.col("sentence_index_term.sentence_id")).alias("query_id"),
+            F.col("sentence_index_term.document_id").alias("document_id"),
+            F.col("sentence_index_term.section_id").alias("section_id"),
+            F.col("sentence_index_term.paragraph_id").alias("paragraph_id"),
+            F.col("sentence_index_term.sentence_id").alias("sentence_id"),
+        ).agg(
+            F.transform(F.sort_array(F.collect_list(F.when(F.col("sentence_index_term.token").isNotNull(), F.struct(F.col("sentence_index_term.token").alias('_structure_order'), F.col("sentence_index_term.token").alias('_structure_value')))), asc=True), lambda item: item.getField('_structure_value')).alias("content_tokens"),
+        ).select(
+            F.col("query_id"),
+            F.col("document_id"),
+            F.col("section_id"),
+            F.col("paragraph_id"),
+            F.col("sentence_id"),
+            F.col("content_tokens"),
+        )
+        assert_schema(sentence_query_text, SENTENCE_SIMILARITY_QUERY_TEXT_SCHEMA, name="SentenceSimilarityQueryText", mode="strict")
+
+        # Step method: publish_document_search_queries
+        document_search_queries = document_query_text.alias("document_similarity_query_text")
+        document_search_queries = document_search_queries.select(
+            F.col("document_similarity_query_text.query_id").alias("id"),
+            F.concat_ws(' ', F.col("document_similarity_query_text.content_tokens")).alias("content"),
             F.map_from_entries(F.array(F.struct(F.lit('is_question').alias("key"), F.lit(0).alias("value")), F.struct(F.lit('is_time_sensitive').alias("key"), F.lit(0).alias("value")))).alias("labels"),
             F.lit(False).alias("is_question"),
             F.lit(False).alias("is_time_sensitive"),
         )
-        document_queries = declare_queries_base.select(
-            F.lit('').alias("query_id"),
-            F.col("document_index_term.document_id"),
+        assert_schema(document_search_queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
+
+        # Step method: publish_section_search_queries
+        section_search_queries = section_query_text.alias("section_similarity_query_text")
+        section_search_queries = section_search_queries.select(
+            F.col("section_similarity_query_text.query_id").alias("id"),
+            F.concat_ws(' ', F.col("section_similarity_query_text.content_tokens")).alias("content"),
+            F.map_from_entries(F.array(F.struct(F.lit('is_question').alias("key"), F.lit(0).alias("value")), F.struct(F.lit('is_time_sensitive').alias("key"), F.lit(0).alias("value")))).alias("labels"),
+            F.lit(False).alias("is_question"),
+            F.lit(False).alias("is_time_sensitive"),
         )
-        section_queries = declare_queries_base.select(
-            F.lit('').alias("query_id"),
-            F.col("document_index_term.document_id"),
-            F.lit('').alias("section_id"),
+        assert_schema(section_search_queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
+
+        # Step method: publish_paragraph_search_queries
+        paragraph_search_queries = paragraph_query_text.alias("paragraph_similarity_query_text")
+        paragraph_search_queries = paragraph_search_queries.select(
+            F.col("paragraph_similarity_query_text.query_id").alias("id"),
+            F.concat_ws(' ', F.col("paragraph_similarity_query_text.content_tokens")).alias("content"),
+            F.map_from_entries(F.array(F.struct(F.lit('is_question').alias("key"), F.lit(0).alias("value")), F.struct(F.lit('is_time_sensitive').alias("key"), F.lit(0).alias("value")))).alias("labels"),
+            F.lit(False).alias("is_question"),
+            F.lit(False).alias("is_time_sensitive"),
         )
-        paragraph_queries = declare_queries_base.select(
-            F.lit('').alias("query_id"),
-            F.col("document_index_term.document_id"),
-            F.lit('').alias("section_id"),
-            F.lit('').alias("paragraph_id"),
+        assert_schema(paragraph_search_queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
+
+        # Step method: publish_sentence_search_queries
+        sentence_search_queries = sentence_query_text.alias("sentence_similarity_query_text")
+        sentence_search_queries = sentence_search_queries.select(
+            F.col("sentence_similarity_query_text.query_id").alias("id"),
+            F.concat_ws(' ', F.col("sentence_similarity_query_text.content_tokens")).alias("content"),
+            F.map_from_entries(F.array(F.struct(F.lit('is_question').alias("key"), F.lit(0).alias("value")), F.struct(F.lit('is_time_sensitive').alias("key"), F.lit(0).alias("value")))).alias("labels"),
+            F.lit(False).alias("is_question"),
+            F.lit(False).alias("is_time_sensitive"),
         )
-        sentence_queries = declare_queries_base.select(
-            F.lit('').alias("query_id"),
-            F.col("document_index_term.document_id"),
-            F.lit('').alias("section_id"),
-            F.lit('').alias("paragraph_id"),
-            F.lit('').alias("sentence_id"),
+        assert_schema(sentence_search_queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
+
+        # Step method: publish_document_query_targets
+        document_queries = document_query_text.alias("document_similarity_query_text")
+        document_queries = document_queries.select(
+            F.col("document_similarity_query_text.query_id"),
+            F.col("document_similarity_query_text.document_id"),
         )
-        queries, document_queries, section_queries, paragraph_queries, sentence_queries = self._impl.build(policy=_input_policy, document_terms=_input_document_terms, document_summary=_input_document_summary, section_terms=_input_section_terms, section_summary=_input_section_summary, paragraph_terms=_input_paragraph_terms, paragraph_summary=_input_paragraph_summary, sentence_terms=_input_sentence_terms, sentence_summary=_input_sentence_summary, queries=queries, document_queries=document_queries, section_queries=section_queries, paragraph_queries=paragraph_queries, sentence_queries=sentence_queries, spark=self.spark, ctx=self.ctx)
-        assert_schema(queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
+        assert_schema(document_queries, DOCUMENT_SIMILARITY_QUERY_SCHEMA, name="DocumentSimilarityQuery", mode="strict")
+
+        # Step method: publish_section_query_targets
+        section_queries = section_query_text.alias("section_similarity_query_text")
+        section_queries = section_queries.select(
+            F.col("section_similarity_query_text.query_id"),
+            F.col("section_similarity_query_text.document_id"),
+            F.col("section_similarity_query_text.section_id"),
+        )
+        assert_schema(section_queries, SECTION_SIMILARITY_QUERY_SCHEMA, name="SectionSimilarityQuery", mode="strict")
+
+        # Step method: publish_paragraph_query_targets
+        paragraph_queries = paragraph_query_text.alias("paragraph_similarity_query_text")
+        paragraph_queries = paragraph_queries.select(
+            F.col("paragraph_similarity_query_text.query_id"),
+            F.col("paragraph_similarity_query_text.document_id"),
+            F.col("paragraph_similarity_query_text.section_id"),
+            F.col("paragraph_similarity_query_text.paragraph_id"),
+        )
+        assert_schema(paragraph_queries, PARAGRAPH_SIMILARITY_QUERY_SCHEMA, name="ParagraphSimilarityQuery", mode="strict")
+
+        # Step method: publish_sentence_query_targets
+        sentence_queries = sentence_query_text.alias("sentence_similarity_query_text")
+        sentence_queries = sentence_queries.select(
+            F.col("sentence_similarity_query_text.query_id"),
+            F.col("sentence_similarity_query_text.document_id"),
+            F.col("sentence_similarity_query_text.section_id"),
+            F.col("sentence_similarity_query_text.paragraph_id"),
+            F.col("sentence_similarity_query_text.sentence_id"),
+        )
+        assert_schema(sentence_queries, SENTENCE_SIMILARITY_QUERY_SCHEMA, name="SentenceSimilarityQuery", mode="strict")
+
+        # Step method: merge_queries
+        queries = document_search_queries.alias("search_query")
+        queries = queries.union(section_search_queries)
+        queries = queries.union(paragraph_search_queries)
+        queries = queries.union(sentence_search_queries)
+        queries = queries.select(
+            F.col("id"),
+            F.col("content"),
+            F.col("labels"),
+            F.col("is_question"),
+            F.col("is_time_sensitive"),
+        )
 
         # Step method: queries
         queries = queries.alias("search_query")

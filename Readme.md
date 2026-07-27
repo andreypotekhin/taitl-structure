@@ -336,6 +336,8 @@ class OrderAnalytics(Transform):
         )
 ```
 
+More examples: [here](examples/search/transforms/evaluation/search_docs/eval_doc_ranking_quality.py), [here](examples/school/transforms/vectors.py), [here](examples/security/transforms/reports.py), [here](examples/store/transforms/analytics.py).
+
 ## Performance Focus
 
 Structure is intentionally strict: compiled methods must lower to Spark Optimizer-visible expressions.

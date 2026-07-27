@@ -104,6 +104,51 @@ reason rather than an accidental API gap.
   later `union_all(...)` step, generated code unions the materialized lane frames, and traceability records the
   branch-to-branch dependency. Search relevance-context expansion still waits for same-fixture migration before hook
   retirement.
+- [x] (2026-07-26) Added the parent hierarchy validation slice:
+  `require_parent_hierarchy(id, parent=..., order_by=..., max_depth=...)` checks bounded catalogs for missing parents,
+  cycles, depth overruns, and non-increasing child order through Spark-visible `REL-E0706` assertions. Typed
+  closure/path rows and fallback expansion remain the next cohort-band slice.
+- [x] (2026-07-26) Added bounded hierarchy closure rows:
+  `hierarchy_closure(id, parent=..., as_=..., max_depth=...)` replaces the active relation with typed
+  `(node, ancestor, depth)` rows through finite public self-join expansion. Fallback expansion remains the remaining
+  cohort-band relation slice before `ResolveCohortBands` migration.
+- [x] (2026-07-27) Added bounded hierarchy fallback expansion:
+  `hierarchy_fallbacks(source_id, path, parents, parent_id=..., parent=..., as_=..., max_depth=...)` emits ordered
+  fallback IDs and the terminal global fallback row through public Spark path expansion. `ResolveCohortBands` still
+  waits for same-fixture migration before raw-hook retirement.
+- [x] (2026-07-27) Locked the typed Search cohort matcher prerequisite:
+  the real `User`/`Band` schema shape compiles and renders the raw hook's wildcard-or-membership predicate through
+  `cross_join(...)`, `where(...)`, `size(...)`, and `array_contains(...)`, leaving `ResolveCohortBands` blocked only on
+  the remaining same-fixture migration work rather than this predicate vocabulary.
+- [x] (2026-07-27) Retired `ScoreOverlap.score_overlap`:
+  query normalization now expands typed token structs with `arr_transform(...)` and `posexplode_struct(...)`, de-dupes
+  terms in a lane, computes per-query term counts, joins reusable index terms by token, and projects the four overlap
+  score outputs without an opaque raw hook.
+- [x] (2026-07-27) Retired `ScoreBm25.score_bm25`:
+  `ScoreBase` now owns shared typed query-term expansion, while BM25 joins each reusable index grain to one-row
+  summaries and computes grouped `sum(log(...))` score outputs through compiler-visible PySpark DSL operations.
+- [x] (2026-07-27) Retired `CreateSimilarityQueries.build`:
+  policy rows now pass `require_all(...)` and `exactly_one(...)` checks, per-grain query text is built with ordered
+  `collect_list(...)`, and the final `SearchQuery` relation is an exact-schema typed union of the four grain lanes.
+- [x] (2026-07-27) Retired `ReduceSimilarityScores.reduce`:
+  directed scoring evidence now flows through typed lanes, reciprocal candidates are matched with named self aliases,
+  canonical pairs are mirrored through exact-schema `union_all(...)`, and per-source ranking stays Spark-visible.
+- [x] (2026-07-27) Retired `BuildRelevanceSignals.expand_impressions` and `.expand_clicks`:
+  global, user-band fallback, and direct-band context rows are now explicit typed branches that merge through
+  exact-schema `union_all(...)`.
+- [x] (2026-07-27) Retired composed `RerankDocuments.score_candidates`:
+  candidate fallback options, first-qualified query/popularity feedback, and policy-weighted feedback scoring now stay
+  in typed lanes without a raw surrogate row identifier.
+- [x] (2026-07-27) Retired `CreateIndex.build`:
+  term counts, target statistics, token document frequencies, final term rows, and aggregate-only summaries are now
+  compiler-visible typed steps.
+- [x] (2026-07-27) Retired `ResolveCohortBands.resolve_bands`:
+  bounded band validation, wildcard-or-membership matching, leaf pruning, lineage closure, reusable user-band catalog
+  publication, user-band memberships, and fallback chains now stay in compiler-visible typed lanes without driver
+  collection.
+- [x] (2026-07-27) Retired `ExtractText.extract`:
+  document lines, paragraph lines, section headings, paragraph content, sentences, and words now expand through typed
+  struct generators, windowed cumulative grouping, ordered paragraph-line collection, and ordinary projection lanes.
 - [ ] Specify remaining generator and relation-composition contracts.
 - [ ] Implement remaining relation plans and end-to-end parity paths.
 - [ ] Migrate Search slices in dependency order.

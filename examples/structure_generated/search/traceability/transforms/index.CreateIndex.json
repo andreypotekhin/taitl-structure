@@ -23,204 +23,649 @@
       "source": "source:examples.search.transforms.index.CreateIndex.input.words"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index",
-      "ir": "ir:CreateIndex.step.0.declare_index",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.count_document_terms",
+      "ir": "ir:CreateIndex.step.0.count_document_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_document_terms"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.document_terms.select.document_id",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.0.document_terms.project.document_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.document_terms.document_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.count_document_terms.aggregate.document_id",
+      "ir": "ir:CreateIndex.step.0.count_document_terms.aggregate.document_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_document_terms.aggregate.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.document_terms.select.token",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.0.document_terms.project.token",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.document_terms.token"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.count_document_terms.aggregate.token",
+      "ir": "ir:CreateIndex.step.0.count_document_terms.aggregate.token",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_document_terms.aggregate.token"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.document_terms.select.term_frequency",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.0.document_terms.project.term_frequency",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.document_terms.term_frequency"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.count_document_terms.aggregate.term_frequency",
+      "ir": "ir:CreateIndex.step.0.count_document_terms.aggregate.term_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_document_terms.aggregate.term_frequency"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.document_terms.select.target_word_count",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.0.document_terms.project.target_word_count",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.document_terms.target_word_count"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.count_document_terms.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.0.count_document_terms.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_document_terms.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.document_terms.select.target_distinct_terms",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.0.document_terms.project.target_distinct_terms",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.document_terms.target_distinct_terms"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.1.summarize_documents",
+      "ir": "ir:CreateIndex.step.1.summarize_documents",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_documents"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.document_terms.select.document_frequency",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.0.document_terms.project.document_frequency",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.document_terms.document_frequency"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.1.summarize_documents.aggregate.document_id",
+      "ir": "ir:CreateIndex.step.1.summarize_documents.aggregate.document_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_documents.aggregate.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.hook.raw.build",
-      "ir": "ir:CreateIndex.step.0.declare_index.hook.raw.build",
-      "source": "source:examples.search.transforms.index.CreateIndex.build"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.1.summarize_documents.aggregate.target_word_count",
+      "ir": "ir:CreateIndex.step.1.summarize_documents.aggregate.target_word_count",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_documents.aggregate.target_word_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.document_summary.select.target_count",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.1.document_summary.project.target_count",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.document_summary.target_count"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.1.summarize_documents.aggregate.target_distinct_terms",
+      "ir": "ir:CreateIndex.step.1.summarize_documents.aggregate.target_distinct_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_documents.aggregate.target_distinct_terms"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.document_summary.select.average_target_length",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.1.document_summary.project.average_target_length",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.document_summary.average_target_length"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.1.summarize_documents.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.1.summarize_documents.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_documents.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.section_terms.select.document_id",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.2.section_terms.project.document_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.section_terms.document_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.2.count_document_frequencies",
+      "ir": "ir:CreateIndex.step.2.count_document_frequencies",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_document_frequencies"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.section_terms.select.section_id",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.2.section_terms.project.section_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.section_terms.section_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.2.count_document_frequencies.aggregate.token",
+      "ir": "ir:CreateIndex.step.2.count_document_frequencies.aggregate.token",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_document_frequencies.aggregate.token"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.section_terms.select.token",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.2.section_terms.project.token",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.section_terms.token"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.2.count_document_frequencies.aggregate.document_frequency",
+      "ir": "ir:CreateIndex.step.2.count_document_frequencies.aggregate.document_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_document_frequencies.aggregate.document_frequency"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.section_terms.select.term_frequency",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.2.section_terms.project.term_frequency",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.section_terms.term_frequency"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.2.count_document_frequencies.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.2.count_document_frequencies.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_document_frequencies.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.section_terms.select.target_word_count",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.2.section_terms.project.target_word_count",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.section_terms.target_word_count"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.3.build_document_terms",
+      "ir": "ir:CreateIndex.step.3.build_document_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_document_terms"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.section_terms.select.target_distinct_terms",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.2.section_terms.project.target_distinct_terms",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.section_terms.target_distinct_terms"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.3.build_document_terms.join.1.stats",
+      "ir": "ir:CreateIndex.step.3.build_document_terms.join.1.stats",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_document_terms.join.1.stats"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.section_terms.select.document_frequency",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.2.section_terms.project.document_frequency",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.section_terms.document_frequency"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.3.build_document_terms.join.2.frequency",
+      "ir": "ir:CreateIndex.step.3.build_document_terms.join.2.frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_document_terms.join.2.frequency"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.section_summary.select.target_count",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.3.section_summary.project.target_count",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.section_summary.target_count"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.3.build_document_terms.select.document_id",
+      "ir": "ir:CreateIndex.step.3.build_document_terms.project.document_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_document_terms.field.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.section_summary.select.average_target_length",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.3.section_summary.project.average_target_length",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.section_summary.average_target_length"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.3.build_document_terms.select.token",
+      "ir": "ir:CreateIndex.step.3.build_document_terms.project.token",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_document_terms.field.token"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.paragraph_terms.select.document_id",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.4.paragraph_terms.project.document_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.paragraph_terms.document_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.3.build_document_terms.select.term_frequency",
+      "ir": "ir:CreateIndex.step.3.build_document_terms.project.term_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_document_terms.field.term_frequency"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.paragraph_terms.select.section_id",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.4.paragraph_terms.project.section_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.paragraph_terms.section_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.3.build_document_terms.select.target_word_count",
+      "ir": "ir:CreateIndex.step.3.build_document_terms.project.target_word_count",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_document_terms.field.target_word_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.paragraph_terms.select.paragraph_id",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.4.paragraph_terms.project.paragraph_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.paragraph_terms.paragraph_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.3.build_document_terms.select.target_distinct_terms",
+      "ir": "ir:CreateIndex.step.3.build_document_terms.project.target_distinct_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_document_terms.field.target_distinct_terms"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.paragraph_terms.select.token",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.4.paragraph_terms.project.token",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.paragraph_terms.token"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.3.build_document_terms.select.document_frequency",
+      "ir": "ir:CreateIndex.step.3.build_document_terms.project.document_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_document_terms.field.document_frequency"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.paragraph_terms.select.term_frequency",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.4.paragraph_terms.project.term_frequency",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.paragraph_terms.term_frequency"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.3.build_document_terms.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.3.build_document_terms.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_document_terms.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.paragraph_terms.select.target_word_count",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.4.paragraph_terms.project.target_word_count",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.paragraph_terms.target_word_count"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.4.summarize_document_index",
+      "ir": "ir:CreateIndex.step.4.summarize_document_index",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_document_index"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.paragraph_terms.select.target_distinct_terms",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.4.paragraph_terms.project.target_distinct_terms",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.paragraph_terms.target_distinct_terms"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.4.summarize_document_index.aggregate.target_count",
+      "ir": "ir:CreateIndex.step.4.summarize_document_index.aggregate.target_count",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_document_index.aggregate.target_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.paragraph_terms.select.document_frequency",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.4.paragraph_terms.project.document_frequency",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.paragraph_terms.document_frequency"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.4.summarize_document_index.aggregate.average_target_length",
+      "ir": "ir:CreateIndex.step.4.summarize_document_index.aggregate.average_target_length",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_document_index.aggregate.average_target_length"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.paragraph_summary.select.target_count",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.5.paragraph_summary.project.target_count",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.paragraph_summary.target_count"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.4.summarize_document_index.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.4.summarize_document_index.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_document_index.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.paragraph_summary.select.average_target_length",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.5.paragraph_summary.project.average_target_length",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.paragraph_summary.average_target_length"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.5.count_section_terms",
+      "ir": "ir:CreateIndex.step.5.count_section_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_section_terms"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.sentence_terms.select.document_id",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.6.sentence_terms.project.document_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.sentence_terms.document_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.5.count_section_terms.aggregate.document_id",
+      "ir": "ir:CreateIndex.step.5.count_section_terms.aggregate.document_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_section_terms.aggregate.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.sentence_terms.select.section_id",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.6.sentence_terms.project.section_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.sentence_terms.section_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.5.count_section_terms.aggregate.section_id",
+      "ir": "ir:CreateIndex.step.5.count_section_terms.aggregate.section_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_section_terms.aggregate.section_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.sentence_terms.select.paragraph_id",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.6.sentence_terms.project.paragraph_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.sentence_terms.paragraph_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.5.count_section_terms.aggregate.token",
+      "ir": "ir:CreateIndex.step.5.count_section_terms.aggregate.token",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_section_terms.aggregate.token"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.sentence_terms.select.sentence_id",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.6.sentence_terms.project.sentence_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.sentence_terms.sentence_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.5.count_section_terms.aggregate.term_frequency",
+      "ir": "ir:CreateIndex.step.5.count_section_terms.aggregate.term_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_section_terms.aggregate.term_frequency"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.sentence_terms.select.token",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.6.sentence_terms.project.token",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.sentence_terms.token"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.5.count_section_terms.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.5.count_section_terms.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_section_terms.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.sentence_terms.select.term_frequency",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.6.sentence_terms.project.term_frequency",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.sentence_terms.term_frequency"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.6.summarize_sections",
+      "ir": "ir:CreateIndex.step.6.summarize_sections",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sections"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.sentence_terms.select.target_word_count",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.6.sentence_terms.project.target_word_count",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.sentence_terms.target_word_count"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.6.summarize_sections.aggregate.document_id",
+      "ir": "ir:CreateIndex.step.6.summarize_sections.aggregate.document_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sections.aggregate.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.sentence_terms.select.target_distinct_terms",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.6.sentence_terms.project.target_distinct_terms",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.sentence_terms.target_distinct_terms"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.6.summarize_sections.aggregate.section_id",
+      "ir": "ir:CreateIndex.step.6.summarize_sections.aggregate.section_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sections.aggregate.section_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.sentence_terms.select.document_frequency",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.6.sentence_terms.project.document_frequency",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.sentence_terms.document_frequency"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.6.summarize_sections.aggregate.target_word_count",
+      "ir": "ir:CreateIndex.step.6.summarize_sections.aggregate.target_word_count",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sections.aggregate.target_word_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.sentence_summary.select.target_count",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.7.sentence_summary.project.target_count",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.sentence_summary.target_count"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.6.summarize_sections.aggregate.target_distinct_terms",
+      "ir": "ir:CreateIndex.step.6.summarize_sections.aggregate.target_distinct_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sections.aggregate.target_distinct_terms"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.declare_index.sentence_summary.select.average_target_length",
-      "ir": "ir:CreateIndex.step.0.declare_index.result.7.sentence_summary.project.average_target_length",
-      "source": "source:examples.search.transforms.index.CreateIndex.declare_index.result.sentence_summary.average_target_length"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.6.summarize_sections.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.6.summarize_sections.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sections.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.7.count_section_frequencies",
+      "ir": "ir:CreateIndex.step.7.count_section_frequencies",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_section_frequencies"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.7.count_section_frequencies.aggregate.token",
+      "ir": "ir:CreateIndex.step.7.count_section_frequencies.aggregate.token",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_section_frequencies.aggregate.token"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.7.count_section_frequencies.aggregate.document_frequency",
+      "ir": "ir:CreateIndex.step.7.count_section_frequencies.aggregate.document_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_section_frequencies.aggregate.document_frequency"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.7.count_section_frequencies.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.7.count_section_frequencies.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_section_frequencies.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.build_section_terms",
+      "ir": "ir:CreateIndex.step.8.build_section_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_section_terms"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.build_section_terms.join.1.stats",
+      "ir": "ir:CreateIndex.step.8.build_section_terms.join.1.stats",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_section_terms.join.1.stats"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.build_section_terms.join.2.frequency",
+      "ir": "ir:CreateIndex.step.8.build_section_terms.join.2.frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_section_terms.join.2.frequency"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.build_section_terms.select.document_id",
+      "ir": "ir:CreateIndex.step.8.build_section_terms.project.document_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_section_terms.field.document_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.build_section_terms.select.section_id",
+      "ir": "ir:CreateIndex.step.8.build_section_terms.project.section_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_section_terms.field.section_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.build_section_terms.select.token",
+      "ir": "ir:CreateIndex.step.8.build_section_terms.project.token",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_section_terms.field.token"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.build_section_terms.select.term_frequency",
+      "ir": "ir:CreateIndex.step.8.build_section_terms.project.term_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_section_terms.field.term_frequency"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.build_section_terms.select.target_word_count",
+      "ir": "ir:CreateIndex.step.8.build_section_terms.project.target_word_count",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_section_terms.field.target_word_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.build_section_terms.select.target_distinct_terms",
+      "ir": "ir:CreateIndex.step.8.build_section_terms.project.target_distinct_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_section_terms.field.target_distinct_terms"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.build_section_terms.select.document_frequency",
+      "ir": "ir:CreateIndex.step.8.build_section_terms.project.document_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_section_terms.field.document_frequency"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.build_section_terms.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.8.build_section_terms.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_section_terms.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.9.summarize_section_index",
+      "ir": "ir:CreateIndex.step.9.summarize_section_index",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_section_index"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.9.summarize_section_index.aggregate.target_count",
+      "ir": "ir:CreateIndex.step.9.summarize_section_index.aggregate.target_count",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_section_index.aggregate.target_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.9.summarize_section_index.aggregate.average_target_length",
+      "ir": "ir:CreateIndex.step.9.summarize_section_index.aggregate.average_target_length",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_section_index.aggregate.average_target_length"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.9.summarize_section_index.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.9.summarize_section_index.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_section_index.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.10.count_paragraph_terms",
+      "ir": "ir:CreateIndex.step.10.count_paragraph_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_paragraph_terms"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.10.count_paragraph_terms.aggregate.document_id",
+      "ir": "ir:CreateIndex.step.10.count_paragraph_terms.aggregate.document_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_paragraph_terms.aggregate.document_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.10.count_paragraph_terms.aggregate.section_id",
+      "ir": "ir:CreateIndex.step.10.count_paragraph_terms.aggregate.section_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_paragraph_terms.aggregate.section_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.10.count_paragraph_terms.aggregate.paragraph_id",
+      "ir": "ir:CreateIndex.step.10.count_paragraph_terms.aggregate.paragraph_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_paragraph_terms.aggregate.paragraph_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.10.count_paragraph_terms.aggregate.token",
+      "ir": "ir:CreateIndex.step.10.count_paragraph_terms.aggregate.token",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_paragraph_terms.aggregate.token"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.10.count_paragraph_terms.aggregate.term_frequency",
+      "ir": "ir:CreateIndex.step.10.count_paragraph_terms.aggregate.term_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_paragraph_terms.aggregate.term_frequency"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.10.count_paragraph_terms.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.10.count_paragraph_terms.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_paragraph_terms.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.11.summarize_paragraphs",
+      "ir": "ir:CreateIndex.step.11.summarize_paragraphs",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_paragraphs"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.11.summarize_paragraphs.aggregate.document_id",
+      "ir": "ir:CreateIndex.step.11.summarize_paragraphs.aggregate.document_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_paragraphs.aggregate.document_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.11.summarize_paragraphs.aggregate.section_id",
+      "ir": "ir:CreateIndex.step.11.summarize_paragraphs.aggregate.section_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_paragraphs.aggregate.section_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.11.summarize_paragraphs.aggregate.paragraph_id",
+      "ir": "ir:CreateIndex.step.11.summarize_paragraphs.aggregate.paragraph_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_paragraphs.aggregate.paragraph_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.11.summarize_paragraphs.aggregate.target_word_count",
+      "ir": "ir:CreateIndex.step.11.summarize_paragraphs.aggregate.target_word_count",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_paragraphs.aggregate.target_word_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.11.summarize_paragraphs.aggregate.target_distinct_terms",
+      "ir": "ir:CreateIndex.step.11.summarize_paragraphs.aggregate.target_distinct_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_paragraphs.aggregate.target_distinct_terms"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.11.summarize_paragraphs.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.11.summarize_paragraphs.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_paragraphs.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.12.count_paragraph_frequencies",
+      "ir": "ir:CreateIndex.step.12.count_paragraph_frequencies",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_paragraph_frequencies"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.12.count_paragraph_frequencies.aggregate.token",
+      "ir": "ir:CreateIndex.step.12.count_paragraph_frequencies.aggregate.token",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_paragraph_frequencies.aggregate.token"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.12.count_paragraph_frequencies.aggregate.document_frequency",
+      "ir": "ir:CreateIndex.step.12.count_paragraph_frequencies.aggregate.document_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_paragraph_frequencies.aggregate.document_frequency"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.12.count_paragraph_frequencies.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.12.count_paragraph_frequencies.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_paragraph_frequencies.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.build_paragraph_terms",
+      "ir": "ir:CreateIndex.step.13.build_paragraph_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_paragraph_terms"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.build_paragraph_terms.join.1.stats",
+      "ir": "ir:CreateIndex.step.13.build_paragraph_terms.join.1.stats",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_paragraph_terms.join.1.stats"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.build_paragraph_terms.join.2.frequency",
+      "ir": "ir:CreateIndex.step.13.build_paragraph_terms.join.2.frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_paragraph_terms.join.2.frequency"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.build_paragraph_terms.select.document_id",
+      "ir": "ir:CreateIndex.step.13.build_paragraph_terms.project.document_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_paragraph_terms.field.document_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.build_paragraph_terms.select.section_id",
+      "ir": "ir:CreateIndex.step.13.build_paragraph_terms.project.section_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_paragraph_terms.field.section_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.build_paragraph_terms.select.paragraph_id",
+      "ir": "ir:CreateIndex.step.13.build_paragraph_terms.project.paragraph_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_paragraph_terms.field.paragraph_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.build_paragraph_terms.select.token",
+      "ir": "ir:CreateIndex.step.13.build_paragraph_terms.project.token",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_paragraph_terms.field.token"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.build_paragraph_terms.select.term_frequency",
+      "ir": "ir:CreateIndex.step.13.build_paragraph_terms.project.term_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_paragraph_terms.field.term_frequency"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.build_paragraph_terms.select.target_word_count",
+      "ir": "ir:CreateIndex.step.13.build_paragraph_terms.project.target_word_count",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_paragraph_terms.field.target_word_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.build_paragraph_terms.select.target_distinct_terms",
+      "ir": "ir:CreateIndex.step.13.build_paragraph_terms.project.target_distinct_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_paragraph_terms.field.target_distinct_terms"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.build_paragraph_terms.select.document_frequency",
+      "ir": "ir:CreateIndex.step.13.build_paragraph_terms.project.document_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_paragraph_terms.field.document_frequency"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.build_paragraph_terms.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.13.build_paragraph_terms.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_paragraph_terms.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.14.summarize_paragraph_index",
+      "ir": "ir:CreateIndex.step.14.summarize_paragraph_index",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_paragraph_index"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.14.summarize_paragraph_index.aggregate.target_count",
+      "ir": "ir:CreateIndex.step.14.summarize_paragraph_index.aggregate.target_count",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_paragraph_index.aggregate.target_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.14.summarize_paragraph_index.aggregate.average_target_length",
+      "ir": "ir:CreateIndex.step.14.summarize_paragraph_index.aggregate.average_target_length",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_paragraph_index.aggregate.average_target_length"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.14.summarize_paragraph_index.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.14.summarize_paragraph_index.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_paragraph_index.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.15.count_sentence_terms",
+      "ir": "ir:CreateIndex.step.15.count_sentence_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_sentence_terms"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.15.count_sentence_terms.aggregate.document_id",
+      "ir": "ir:CreateIndex.step.15.count_sentence_terms.aggregate.document_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_sentence_terms.aggregate.document_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.15.count_sentence_terms.aggregate.section_id",
+      "ir": "ir:CreateIndex.step.15.count_sentence_terms.aggregate.section_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_sentence_terms.aggregate.section_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.15.count_sentence_terms.aggregate.paragraph_id",
+      "ir": "ir:CreateIndex.step.15.count_sentence_terms.aggregate.paragraph_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_sentence_terms.aggregate.paragraph_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.15.count_sentence_terms.aggregate.sentence_id",
+      "ir": "ir:CreateIndex.step.15.count_sentence_terms.aggregate.sentence_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_sentence_terms.aggregate.sentence_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.15.count_sentence_terms.aggregate.token",
+      "ir": "ir:CreateIndex.step.15.count_sentence_terms.aggregate.token",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_sentence_terms.aggregate.token"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.15.count_sentence_terms.aggregate.term_frequency",
+      "ir": "ir:CreateIndex.step.15.count_sentence_terms.aggregate.term_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_sentence_terms.aggregate.term_frequency"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.15.count_sentence_terms.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.15.count_sentence_terms.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_sentence_terms.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.16.summarize_sentences",
+      "ir": "ir:CreateIndex.step.16.summarize_sentences",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sentences"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.16.summarize_sentences.aggregate.document_id",
+      "ir": "ir:CreateIndex.step.16.summarize_sentences.aggregate.document_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sentences.aggregate.document_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.16.summarize_sentences.aggregate.section_id",
+      "ir": "ir:CreateIndex.step.16.summarize_sentences.aggregate.section_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sentences.aggregate.section_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.16.summarize_sentences.aggregate.paragraph_id",
+      "ir": "ir:CreateIndex.step.16.summarize_sentences.aggregate.paragraph_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sentences.aggregate.paragraph_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.16.summarize_sentences.aggregate.sentence_id",
+      "ir": "ir:CreateIndex.step.16.summarize_sentences.aggregate.sentence_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sentences.aggregate.sentence_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.16.summarize_sentences.aggregate.target_word_count",
+      "ir": "ir:CreateIndex.step.16.summarize_sentences.aggregate.target_word_count",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sentences.aggregate.target_word_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.16.summarize_sentences.aggregate.target_distinct_terms",
+      "ir": "ir:CreateIndex.step.16.summarize_sentences.aggregate.target_distinct_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sentences.aggregate.target_distinct_terms"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.16.summarize_sentences.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.16.summarize_sentences.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sentences.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.17.count_sentence_frequencies",
+      "ir": "ir:CreateIndex.step.17.count_sentence_frequencies",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_sentence_frequencies"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.17.count_sentence_frequencies.aggregate.token",
+      "ir": "ir:CreateIndex.step.17.count_sentence_frequencies.aggregate.token",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_sentence_frequencies.aggregate.token"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.17.count_sentence_frequencies.aggregate.document_frequency",
+      "ir": "ir:CreateIndex.step.17.count_sentence_frequencies.aggregate.document_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_sentence_frequencies.aggregate.document_frequency"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.17.count_sentence_frequencies.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.17.count_sentence_frequencies.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.count_sentence_frequencies.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.build_sentence_terms",
+      "ir": "ir:CreateIndex.step.18.build_sentence_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_sentence_terms"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.build_sentence_terms.join.1.stats",
+      "ir": "ir:CreateIndex.step.18.build_sentence_terms.join.1.stats",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_sentence_terms.join.1.stats"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.build_sentence_terms.join.2.frequency",
+      "ir": "ir:CreateIndex.step.18.build_sentence_terms.join.2.frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_sentence_terms.join.2.frequency"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.build_sentence_terms.select.document_id",
+      "ir": "ir:CreateIndex.step.18.build_sentence_terms.project.document_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_sentence_terms.field.document_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.build_sentence_terms.select.section_id",
+      "ir": "ir:CreateIndex.step.18.build_sentence_terms.project.section_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_sentence_terms.field.section_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.build_sentence_terms.select.paragraph_id",
+      "ir": "ir:CreateIndex.step.18.build_sentence_terms.project.paragraph_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_sentence_terms.field.paragraph_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.build_sentence_terms.select.sentence_id",
+      "ir": "ir:CreateIndex.step.18.build_sentence_terms.project.sentence_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_sentence_terms.field.sentence_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.build_sentence_terms.select.token",
+      "ir": "ir:CreateIndex.step.18.build_sentence_terms.project.token",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_sentence_terms.field.token"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.build_sentence_terms.select.term_frequency",
+      "ir": "ir:CreateIndex.step.18.build_sentence_terms.project.term_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_sentence_terms.field.term_frequency"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.build_sentence_terms.select.target_word_count",
+      "ir": "ir:CreateIndex.step.18.build_sentence_terms.project.target_word_count",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_sentence_terms.field.target_word_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.build_sentence_terms.select.target_distinct_terms",
+      "ir": "ir:CreateIndex.step.18.build_sentence_terms.project.target_distinct_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_sentence_terms.field.target_distinct_terms"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.build_sentence_terms.select.document_frequency",
+      "ir": "ir:CreateIndex.step.18.build_sentence_terms.project.document_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_sentence_terms.field.document_frequency"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.build_sentence_terms.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.18.build_sentence_terms.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.build_sentence_terms.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.19.summarize_sentence_index",
+      "ir": "ir:CreateIndex.step.19.summarize_sentence_index",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sentence_index"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.19.summarize_sentence_index.aggregate.target_count",
+      "ir": "ir:CreateIndex.step.19.summarize_sentence_index.aggregate.target_count",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sentence_index.aggregate.target_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.19.summarize_sentence_index.aggregate.average_target_length",
+      "ir": "ir:CreateIndex.step.19.summarize_sentence_index.aggregate.average_target_length",
+      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sentence_index.aggregate.average_target_length"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.output.0.document_terms.validation.final",
@@ -268,9 +713,17 @@
       "constant": "BAND_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.user"
     },
+    "BandAncestor": {
+      "constant": "BAND_ANCESTOR_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.resolve"
+    },
     "BandFallback": {
       "constant": "BAND_FALLBACK_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.user"
+    },
+    "BandMatch": {
+      "constant": "BAND_MATCH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.resolve"
     },
     "BandMembership": {
       "constant": "BAND_MEMBERSHIP_SCHEMA",
@@ -304,6 +757,14 @@
       "constant": "CLICK_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.clicks"
     },
+    "ContextDailyClicks": {
+      "constant": "CONTEXT_DAILY_CLICKS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.build"
+    },
+    "ContextDailyImpressions": {
+      "constant": "CONTEXT_DAILY_IMPRESSIONS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.build"
+    },
     "CorpusStatistics": {
       "constant": "CORPUS_STATISTICS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.analytics"
@@ -330,7 +791,7 @@
     },
     "DocumentBm25Score": {
       "constant": "DOCUMENT_BM25_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.bm25"
     },
     "DocumentEvaluationSummary": {
       "constant": "DOCUMENT_EVALUATION_SUMMARY_SCHEMA",
@@ -340,6 +801,10 @@
       "constant": "DOCUMENT_FEATURES_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.analytics"
     },
+    "DocumentFeedbackOption": {
+      "constant": "DOCUMENT_FEEDBACK_OPTION_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
     "DocumentIndexSummary": {
       "constant": "DOCUMENT_INDEX_SUMMARY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
@@ -348,17 +813,37 @@
       "constant": "DOCUMENT_INDEX_TARGET_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "DocumentIndexTargetStats": {
+      "constant": "DOCUMENT_INDEX_TARGET_STATS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
     "DocumentIndexTerm": {
       "constant": "DOCUMENT_INDEX_TERM_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "DocumentIndexTermCount": {
+      "constant": "DOCUMENT_INDEX_TERM_COUNT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "DocumentLine": {
+      "constant": "DOCUMENT_LINE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "DocumentOverlapMatch": {
+      "constant": "DOCUMENT_OVERLAP_MATCH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+    },
     "DocumentOverlapScore": {
       "constant": "DOCUMENT_OVERLAP_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
     },
     "DocumentPopularity": {
       "constant": "DOCUMENT_POPULARITY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.relevance"
+    },
+    "DocumentPopularityTotals": {
+      "constant": "DOCUMENT_POPULARITY_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.build"
     },
     "DocumentQueryEvaluation": {
       "constant": "DOCUMENT_QUERY_EVALUATION_SCHEMA",
@@ -392,9 +877,21 @@
       "constant": "DOCUMENT_SIMILARITY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "DocumentSimilarityCandidate": {
+      "constant": "DOCUMENT_SIMILARITY_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
+    "DocumentSimilarityPair": {
+      "constant": "DOCUMENT_SIMILARITY_PAIR_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
     "DocumentSimilarityQuery": {
       "constant": "DOCUMENT_SIMILARITY_QUERY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "DocumentSimilarityQueryText": {
+      "constant": "DOCUMENT_SIMILARITY_QUERY_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.query"
     },
     "DocumentStatistics": {
       "constant": "DOCUMENT_STATISTICS_SCHEMA",
@@ -432,6 +929,22 @@
       "constant": "EVALUATION_RESULT_TOTALS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
     },
+    "ExpandedDocumentLine": {
+      "constant": "EXPANDED_DOCUMENT_LINE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "ExpandedQueryToken": {
+      "constant": "EXPANDED_QUERY_TOKEN_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ExpandedSentenceText": {
+      "constant": "EXPANDED_SENTENCE_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "ExpandedWordText": {
+      "constant": "EXPANDED_WORD_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
     "Experiment": {
       "constant": "EXPERIMENT_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.experiment"
@@ -439,6 +952,10 @@
     "Impression": {
       "constant": "IMPRESSION_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.clicks"
+    },
+    "IndexTokenFrequency": {
+      "constant": "INDEX_TOKEN_FREQUENCY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
     "IndexedSimilarDocument": {
       "constant": "INDEXED_SIMILAR_DOCUMENT_SCHEMA",
@@ -464,13 +981,25 @@
       "constant": "LABEL_MAP_ENTRY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.label"
     },
+    "MarkedDocumentLine": {
+      "constant": "MARKED_DOCUMENT_LINE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
     "Paragraph": {
       "constant": "PARAGRAPH_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.text"
     },
     "ParagraphBm25Score": {
       "constant": "PARAGRAPH_BM25_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.bm25"
+    },
+    "ParagraphContent": {
+      "constant": "PARAGRAPH_CONTENT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "ParagraphDraft": {
+      "constant": "PARAGRAPH_DRAFT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
     },
     "ParagraphIndexSummary": {
       "constant": "PARAGRAPH_INDEX_SUMMARY_SCHEMA",
@@ -480,13 +1009,33 @@
       "constant": "PARAGRAPH_INDEX_TARGET_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "ParagraphIndexTargetStats": {
+      "constant": "PARAGRAPH_INDEX_TARGET_STATS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
     "ParagraphIndexTerm": {
       "constant": "PARAGRAPH_INDEX_TERM_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "ParagraphIndexTermCount": {
+      "constant": "PARAGRAPH_INDEX_TERM_COUNT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ParagraphLine": {
+      "constant": "PARAGRAPH_LINE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "ParagraphLineGroup": {
+      "constant": "PARAGRAPH_LINE_GROUP_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "ParagraphOverlapMatch": {
+      "constant": "PARAGRAPH_OVERLAP_MATCH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+    },
     "ParagraphOverlapScore": {
       "constant": "PARAGRAPH_OVERLAP_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
     },
     "ParagraphScore": {
       "constant": "PARAGRAPH_SCORE_SCHEMA",
@@ -500,13 +1049,37 @@
       "constant": "PARAGRAPH_SIMILARITY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "ParagraphSimilarityCandidate": {
+      "constant": "PARAGRAPH_SIMILARITY_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
+    "ParagraphSimilarityPair": {
+      "constant": "PARAGRAPH_SIMILARITY_PAIR_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
     "ParagraphSimilarityQuery": {
       "constant": "PARAGRAPH_SIMILARITY_QUERY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "ParagraphSimilarityQueryText": {
+      "constant": "PARAGRAPH_SIMILARITY_QUERY_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.query"
+    },
     "ParagraphStatistics": {
       "constant": "PARAGRAPH_STATISTICS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "PopularityFeedback": {
+      "constant": "POPULARITY_FEEDBACK_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "QueryDocumentFeedback": {
+      "constant": "QUERY_DOCUMENT_FEEDBACK_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "QueryDocumentSignalTotals": {
+      "constant": "QUERY_DOCUMENT_SIGNAL_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.build"
     },
     "QueryDocumentSignals": {
       "constant": "QUERY_DOCUMENT_SIGNALS_SCHEMA",
@@ -523,6 +1096,18 @@
     "QueryLabelAssignments": {
       "constant": "QUERY_LABEL_ASSIGNMENTS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "QueryTerm": {
+      "constant": "QUERY_TERM_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "QueryTermCount": {
+      "constant": "QUERY_TERM_COUNT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "QueryToken": {
+      "constant": "QUERY_TOKEN_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
     "RelevancePolicy": {
       "constant": "RELEVANCE_POLICY_SCHEMA",
@@ -542,7 +1127,11 @@
     },
     "SectionBm25Score": {
       "constant": "SECTION_BM25_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.bm25"
+    },
+    "SectionHeading": {
+      "constant": "SECTION_HEADING_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
     },
     "SectionIndexSummary": {
       "constant": "SECTION_INDEX_SUMMARY_SCHEMA",
@@ -552,13 +1141,29 @@
       "constant": "SECTION_INDEX_TARGET_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "SectionIndexTargetStats": {
+      "constant": "SECTION_INDEX_TARGET_STATS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
     "SectionIndexTerm": {
       "constant": "SECTION_INDEX_TERM_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "SectionIndexTermCount": {
+      "constant": "SECTION_INDEX_TERM_COUNT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SectionKey": {
+      "constant": "SECTION_KEY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "SectionOverlapMatch": {
+      "constant": "SECTION_OVERLAP_MATCH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+    },
     "SectionOverlapScore": {
       "constant": "SECTION_OVERLAP_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
     },
     "SectionScore": {
       "constant": "SECTION_SCORE_SCHEMA",
@@ -572,9 +1177,21 @@
       "constant": "SECTION_SIMILARITY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "SectionSimilarityCandidate": {
+      "constant": "SECTION_SIMILARITY_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
+    "SectionSimilarityPair": {
+      "constant": "SECTION_SIMILARITY_PAIR_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
     "SectionSimilarityQuery": {
       "constant": "SECTION_SIMILARITY_QUERY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "SectionSimilarityQueryText": {
+      "constant": "SECTION_SIMILARITY_QUERY_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.query"
     },
     "SectionStatistics": {
       "constant": "SECTION_STATISTICS_SCHEMA",
@@ -586,7 +1203,7 @@
     },
     "SentenceBm25Score": {
       "constant": "SENTENCE_BM25_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.bm25"
     },
     "SentenceIndexSummary": {
       "constant": "SENTENCE_INDEX_SUMMARY_SCHEMA",
@@ -596,13 +1213,25 @@
       "constant": "SENTENCE_INDEX_TARGET_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "SentenceIndexTargetStats": {
+      "constant": "SENTENCE_INDEX_TARGET_STATS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
     "SentenceIndexTerm": {
       "constant": "SENTENCE_INDEX_TERM_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "SentenceIndexTermCount": {
+      "constant": "SENTENCE_INDEX_TERM_COUNT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SentenceOverlapMatch": {
+      "constant": "SENTENCE_OVERLAP_MATCH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+    },
     "SentenceOverlapScore": {
       "constant": "SENTENCE_OVERLAP_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
     },
     "SentenceScore": {
       "constant": "SENTENCE_SCORE_SCHEMA",
@@ -620,13 +1249,29 @@
       "constant": "SENTENCE_SIMILARITY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "SentenceSimilarityCandidate": {
+      "constant": "SENTENCE_SIMILARITY_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
+    "SentenceSimilarityPair": {
+      "constant": "SENTENCE_SIMILARITY_PAIR_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
     "SentenceSimilarityQuery": {
       "constant": "SENTENCE_SIMILARITY_QUERY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "SentenceSimilarityQueryText": {
+      "constant": "SENTENCE_SIMILARITY_QUERY_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.query"
+    },
     "SentenceStatistics": {
       "constant": "SENTENCE_STATISTICS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "SentenceText": {
+      "constant": "SENTENCE_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
     },
     "SimilarDocument": {
       "constant": "SIMILAR_DOCUMENT_SCHEMA",
@@ -652,6 +1297,10 @@
       "constant": "SIMILARITY_SENTENCE_QUERY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "SingletonUserBand": {
+      "constant": "SINGLETON_USER_BAND_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.resolve"
+    },
     "TimeWindow": {
       "constant": "TIME_WINDOW_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.TimeWindow"
@@ -668,9 +1317,17 @@
       "constant": "USER_BAND_MEMBERSHIP_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.user"
     },
+    "UserBandPath": {
+      "constant": "USER_BAND_PATH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.resolve"
+    },
     "Word": {
       "constant": "WORD_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.text"
+    },
+    "WordText": {
+      "constant": "WORD_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
     }
   },
   "source_transform": "examples.search.transforms.index.CreateIndex",
@@ -690,483 +1347,1388 @@
       {
         "detail": {
           "input_schema": "Word",
-          "output_schema": "DocumentIndexTerm"
+          "output_schema": "DocumentIndexTermCount"
         },
         "operation": "step",
         "sources": [
           "words"
         ],
-        "step": "declare_index",
-        "target": "declare_index"
+        "step": "count_document_terms",
+        "target": "count_document_terms"
       },
       {
         "detail": {
           "field": "document_id",
-          "result": "document_terms"
+          "function": "key",
+          "key": "document_id"
         },
-        "operation": "project",
+        "operation": "aggregate",
         "sources": [
           "words.document_id"
         ],
-        "step": "declare_index",
-        "target": "document_terms.document_id"
+        "step": "count_document_terms",
+        "target": "DocumentIndexTermCount.document_id"
       },
       {
         "detail": {
           "field": "token",
-          "result": "document_terms"
+          "function": "key",
+          "key": "token"
         },
-        "operation": "project",
+        "operation": "aggregate",
         "sources": [
           "words.token"
         ],
-        "step": "declare_index",
-        "target": "document_terms.token"
+        "step": "count_document_terms",
+        "target": "DocumentIndexTermCount.token"
       },
       {
         "detail": {
           "field": "term_frequency",
-          "result": "document_terms"
+          "function": "count",
+          "key": null
         },
-        "operation": "project",
+        "operation": "aggregate",
         "sources": [
-          "literal"
+          "words"
         ],
-        "step": "declare_index",
-        "target": "document_terms.term_frequency"
+        "step": "count_document_terms",
+        "target": "DocumentIndexTermCount.term_frequency"
+      },
+      {
+        "detail": {
+          "input_schema": "Word",
+          "output_schema": "DocumentIndexTargetStats"
+        },
+        "operation": "step",
+        "sources": [
+          "DocumentIndexTermCount"
+        ],
+        "step": "summarize_documents",
+        "target": "summarize_documents"
+      },
+      {
+        "detail": {
+          "field": "document_id",
+          "function": "key",
+          "key": "document_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "words.document_id"
+        ],
+        "step": "summarize_documents",
+        "target": "DocumentIndexTargetStats.document_id"
       },
       {
         "detail": {
           "field": "target_word_count",
-          "result": "document_terms"
+          "function": "count",
+          "key": null
         },
-        "operation": "project",
+        "operation": "aggregate",
         "sources": [
-          "literal"
+          "words"
         ],
-        "step": "declare_index",
-        "target": "document_terms.target_word_count"
+        "step": "summarize_documents",
+        "target": "DocumentIndexTargetStats.target_word_count"
       },
       {
         "detail": {
           "field": "target_distinct_terms",
-          "result": "document_terms"
+          "function": "count_distinct",
+          "key": null
         },
-        "operation": "project",
+        "operation": "aggregate",
         "sources": [
-          "literal"
+          "words.token"
         ],
-        "step": "declare_index",
-        "target": "document_terms.target_distinct_terms"
+        "step": "summarize_documents",
+        "target": "DocumentIndexTargetStats.target_distinct_terms"
+      },
+      {
+        "detail": {
+          "input_schema": "DocumentIndexTermCount",
+          "output_schema": "IndexTokenFrequency"
+        },
+        "operation": "step",
+        "sources": [
+          "DocumentIndexTargetStats"
+        ],
+        "step": "count_document_frequencies",
+        "target": "count_document_frequencies"
+      },
+      {
+        "detail": {
+          "field": "token",
+          "function": "key",
+          "key": "token"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "DocumentIndexTermCount.token"
+        ],
+        "step": "count_document_frequencies",
+        "target": "IndexTokenFrequency.token"
       },
       {
         "detail": {
           "field": "document_frequency",
-          "result": "document_terms"
+          "function": "count",
+          "key": null
         },
-        "operation": "project",
+        "operation": "aggregate",
         "sources": [
-          "literal"
+          "document_term_counts"
         ],
-        "step": "declare_index",
-        "target": "document_terms.document_frequency"
+        "step": "count_document_frequencies",
+        "target": "IndexTokenFrequency.document_frequency"
       },
       {
         "detail": {
-          "phase": "raw",
-          "project_output": false,
-          "schema_mode": "strict"
+          "input_schema": "DocumentIndexTermCount",
+          "output_schema": "DocumentIndexTerm"
         },
-        "operation": "hook",
+        "operation": "step",
+        "sources": [
+          "IndexTokenFrequency",
+          "stats",
+          "frequency"
+        ],
+        "step": "build_document_terms",
+        "target": "build_document_terms"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "document_target_stats"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "stats.document_id",
+          "term.document_id"
+        ],
+        "step": "build_document_terms",
+        "target": "build_document_terms.join[1].stats"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "document_token_frequencies_2"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "frequency.token",
+          "term.token"
+        ],
+        "step": "build_document_terms",
+        "target": "build_document_terms.join[2].frequency"
+      },
+      {
+        "detail": {
+          "field": "document_id"
+        },
+        "operation": "project",
+        "sources": [
+          "term.document_id"
+        ],
+        "step": "build_document_terms",
+        "target": "DocumentIndexTerm.document_id"
+      },
+      {
+        "detail": {
+          "field": "token"
+        },
+        "operation": "project",
+        "sources": [
+          "term.token"
+        ],
+        "step": "build_document_terms",
+        "target": "DocumentIndexTerm.token"
+      },
+      {
+        "detail": {
+          "field": "term_frequency"
+        },
+        "operation": "project",
+        "sources": [
+          "term.term_frequency"
+        ],
+        "step": "build_document_terms",
+        "target": "DocumentIndexTerm.term_frequency"
+      },
+      {
+        "detail": {
+          "field": "target_word_count"
+        },
+        "operation": "project",
+        "sources": [
+          "stats.target_word_count"
+        ],
+        "step": "build_document_terms",
+        "target": "DocumentIndexTerm.target_word_count"
+      },
+      {
+        "detail": {
+          "field": "target_distinct_terms"
+        },
+        "operation": "project",
+        "sources": [
+          "stats.target_distinct_terms"
+        ],
+        "step": "build_document_terms",
+        "target": "DocumentIndexTerm.target_distinct_terms"
+      },
+      {
+        "detail": {
+          "field": "document_frequency"
+        },
+        "operation": "project",
+        "sources": [
+          "frequency.document_frequency"
+        ],
+        "step": "build_document_terms",
+        "target": "DocumentIndexTerm.document_frequency"
+      },
+      {
+        "detail": {
+          "input_schema": "DocumentIndexTargetStats",
+          "output_schema": "DocumentIndexSummary"
+        },
+        "operation": "step",
         "sources": [
           "DocumentIndexTerm"
         ],
-        "step": "declare_index",
-        "target": "declare_index.hook.build"
+        "step": "summarize_document_index",
+        "target": "summarize_document_index"
       },
       {
         "detail": {
           "field": "target_count",
-          "result": "document_summary"
+          "function": "count",
+          "key": null
         },
-        "operation": "project",
+        "operation": "aggregate",
         "sources": [
-          "literal"
+          "document_target_stats"
         ],
-        "step": "declare_index",
-        "target": "document_summary.target_count"
+        "step": "summarize_document_index",
+        "target": "DocumentIndexSummary.target_count"
       },
       {
         "detail": {
           "field": "average_target_length",
-          "result": "document_summary"
+          "function": "avg",
+          "key": null
         },
-        "operation": "project",
+        "operation": "aggregate",
         "sources": [
-          "literal"
+          "DocumentIndexTargetStats.target_word_count"
         ],
-        "step": "declare_index",
-        "target": "document_summary.average_target_length"
+        "step": "summarize_document_index",
+        "target": "DocumentIndexSummary.average_target_length"
+      },
+      {
+        "detail": {
+          "input_schema": "Word",
+          "output_schema": "SectionIndexTermCount"
+        },
+        "operation": "step",
+        "sources": [
+          "DocumentIndexSummary"
+        ],
+        "step": "count_section_terms",
+        "target": "count_section_terms"
       },
       {
         "detail": {
           "field": "document_id",
-          "result": "section_terms"
+          "function": "key",
+          "key": "document_id"
         },
-        "operation": "project",
+        "operation": "aggregate",
         "sources": [
           "words.document_id"
         ],
-        "step": "declare_index",
-        "target": "section_terms.document_id"
+        "step": "count_section_terms",
+        "target": "SectionIndexTermCount.document_id"
       },
       {
         "detail": {
           "field": "section_id",
-          "result": "section_terms"
+          "function": "key",
+          "key": "section_id"
         },
-        "operation": "project",
+        "operation": "aggregate",
         "sources": [
           "words.section_id"
         ],
-        "step": "declare_index",
-        "target": "section_terms.section_id"
+        "step": "count_section_terms",
+        "target": "SectionIndexTermCount.section_id"
       },
       {
         "detail": {
           "field": "token",
-          "result": "section_terms"
+          "function": "key",
+          "key": "token"
         },
-        "operation": "project",
+        "operation": "aggregate",
         "sources": [
           "words.token"
         ],
-        "step": "declare_index",
-        "target": "section_terms.token"
+        "step": "count_section_terms",
+        "target": "SectionIndexTermCount.token"
       },
       {
         "detail": {
           "field": "term_frequency",
-          "result": "section_terms"
+          "function": "count",
+          "key": null
         },
-        "operation": "project",
+        "operation": "aggregate",
         "sources": [
-          "literal"
+          "words"
         ],
-        "step": "declare_index",
-        "target": "section_terms.term_frequency"
+        "step": "count_section_terms",
+        "target": "SectionIndexTermCount.term_frequency"
       },
       {
         "detail": {
-          "field": "target_word_count",
-          "result": "section_terms"
+          "input_schema": "Word",
+          "output_schema": "SectionIndexTargetStats"
         },
-        "operation": "project",
+        "operation": "step",
         "sources": [
-          "literal"
+          "SectionIndexTermCount"
         ],
-        "step": "declare_index",
-        "target": "section_terms.target_word_count"
-      },
-      {
-        "detail": {
-          "field": "target_distinct_terms",
-          "result": "section_terms"
-        },
-        "operation": "project",
-        "sources": [
-          "literal"
-        ],
-        "step": "declare_index",
-        "target": "section_terms.target_distinct_terms"
-      },
-      {
-        "detail": {
-          "field": "document_frequency",
-          "result": "section_terms"
-        },
-        "operation": "project",
-        "sources": [
-          "literal"
-        ],
-        "step": "declare_index",
-        "target": "section_terms.document_frequency"
-      },
-      {
-        "detail": {
-          "field": "target_count",
-          "result": "section_summary"
-        },
-        "operation": "project",
-        "sources": [
-          "literal"
-        ],
-        "step": "declare_index",
-        "target": "section_summary.target_count"
-      },
-      {
-        "detail": {
-          "field": "average_target_length",
-          "result": "section_summary"
-        },
-        "operation": "project",
-        "sources": [
-          "literal"
-        ],
-        "step": "declare_index",
-        "target": "section_summary.average_target_length"
+        "step": "summarize_sections",
+        "target": "summarize_sections"
       },
       {
         "detail": {
           "field": "document_id",
-          "result": "paragraph_terms"
+          "function": "key",
+          "key": "document_id"
         },
-        "operation": "project",
+        "operation": "aggregate",
         "sources": [
           "words.document_id"
         ],
-        "step": "declare_index",
-        "target": "paragraph_terms.document_id"
+        "step": "summarize_sections",
+        "target": "SectionIndexTargetStats.document_id"
       },
       {
         "detail": {
           "field": "section_id",
-          "result": "paragraph_terms"
+          "function": "key",
+          "key": "section_id"
         },
-        "operation": "project",
+        "operation": "aggregate",
         "sources": [
           "words.section_id"
         ],
-        "step": "declare_index",
-        "target": "paragraph_terms.section_id"
+        "step": "summarize_sections",
+        "target": "SectionIndexTargetStats.section_id"
       },
       {
         "detail": {
-          "field": "paragraph_id",
-          "result": "paragraph_terms"
+          "field": "target_word_count",
+          "function": "count",
+          "key": null
         },
-        "operation": "project",
+        "operation": "aggregate",
         "sources": [
-          "words.paragraph_id"
+          "words"
         ],
-        "step": "declare_index",
-        "target": "paragraph_terms.paragraph_id"
+        "step": "summarize_sections",
+        "target": "SectionIndexTargetStats.target_word_count"
+      },
+      {
+        "detail": {
+          "field": "target_distinct_terms",
+          "function": "count_distinct",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "words.token"
+        ],
+        "step": "summarize_sections",
+        "target": "SectionIndexTargetStats.target_distinct_terms"
+      },
+      {
+        "detail": {
+          "input_schema": "SectionIndexTermCount",
+          "output_schema": "IndexTokenFrequency"
+        },
+        "operation": "step",
+        "sources": [
+          "SectionIndexTargetStats"
+        ],
+        "step": "count_section_frequencies",
+        "target": "count_section_frequencies"
       },
       {
         "detail": {
           "field": "token",
-          "result": "paragraph_terms"
+          "function": "key",
+          "key": "token"
         },
-        "operation": "project",
+        "operation": "aggregate",
         "sources": [
-          "words.token"
+          "SectionIndexTermCount.token"
         ],
-        "step": "declare_index",
-        "target": "paragraph_terms.token"
-      },
-      {
-        "detail": {
-          "field": "term_frequency",
-          "result": "paragraph_terms"
-        },
-        "operation": "project",
-        "sources": [
-          "literal"
-        ],
-        "step": "declare_index",
-        "target": "paragraph_terms.term_frequency"
-      },
-      {
-        "detail": {
-          "field": "target_word_count",
-          "result": "paragraph_terms"
-        },
-        "operation": "project",
-        "sources": [
-          "literal"
-        ],
-        "step": "declare_index",
-        "target": "paragraph_terms.target_word_count"
-      },
-      {
-        "detail": {
-          "field": "target_distinct_terms",
-          "result": "paragraph_terms"
-        },
-        "operation": "project",
-        "sources": [
-          "literal"
-        ],
-        "step": "declare_index",
-        "target": "paragraph_terms.target_distinct_terms"
+        "step": "count_section_frequencies",
+        "target": "IndexTokenFrequency.token"
       },
       {
         "detail": {
           "field": "document_frequency",
-          "result": "paragraph_terms"
+          "function": "count",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "section_term_counts"
+        ],
+        "step": "count_section_frequencies",
+        "target": "IndexTokenFrequency.document_frequency"
+      },
+      {
+        "detail": {
+          "input_schema": "SectionIndexTermCount",
+          "output_schema": "SectionIndexTerm"
+        },
+        "operation": "step",
+        "sources": [
+          "IndexTokenFrequency",
+          "stats",
+          "frequency"
+        ],
+        "step": "build_section_terms",
+        "target": "build_section_terms"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "section_target_stats"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "stats.document_id",
+          "term.document_id",
+          "stats.section_id",
+          "term.section_id"
+        ],
+        "step": "build_section_terms",
+        "target": "build_section_terms.join[1].stats"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "section_token_frequencies_2"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "frequency.token",
+          "term.token"
+        ],
+        "step": "build_section_terms",
+        "target": "build_section_terms.join[2].frequency"
+      },
+      {
+        "detail": {
+          "field": "document_id"
         },
         "operation": "project",
         "sources": [
-          "literal"
+          "term.document_id"
         ],
-        "step": "declare_index",
-        "target": "paragraph_terms.document_frequency"
+        "step": "build_section_terms",
+        "target": "SectionIndexTerm.document_id"
+      },
+      {
+        "detail": {
+          "field": "section_id"
+        },
+        "operation": "project",
+        "sources": [
+          "term.section_id"
+        ],
+        "step": "build_section_terms",
+        "target": "SectionIndexTerm.section_id"
+      },
+      {
+        "detail": {
+          "field": "token"
+        },
+        "operation": "project",
+        "sources": [
+          "term.token"
+        ],
+        "step": "build_section_terms",
+        "target": "SectionIndexTerm.token"
+      },
+      {
+        "detail": {
+          "field": "term_frequency"
+        },
+        "operation": "project",
+        "sources": [
+          "term.term_frequency"
+        ],
+        "step": "build_section_terms",
+        "target": "SectionIndexTerm.term_frequency"
+      },
+      {
+        "detail": {
+          "field": "target_word_count"
+        },
+        "operation": "project",
+        "sources": [
+          "stats.target_word_count"
+        ],
+        "step": "build_section_terms",
+        "target": "SectionIndexTerm.target_word_count"
+      },
+      {
+        "detail": {
+          "field": "target_distinct_terms"
+        },
+        "operation": "project",
+        "sources": [
+          "stats.target_distinct_terms"
+        ],
+        "step": "build_section_terms",
+        "target": "SectionIndexTerm.target_distinct_terms"
+      },
+      {
+        "detail": {
+          "field": "document_frequency"
+        },
+        "operation": "project",
+        "sources": [
+          "frequency.document_frequency"
+        ],
+        "step": "build_section_terms",
+        "target": "SectionIndexTerm.document_frequency"
+      },
+      {
+        "detail": {
+          "input_schema": "SectionIndexTargetStats",
+          "output_schema": "SectionIndexSummary"
+        },
+        "operation": "step",
+        "sources": [
+          "SectionIndexTerm"
+        ],
+        "step": "summarize_section_index",
+        "target": "summarize_section_index"
       },
       {
         "detail": {
           "field": "target_count",
-          "result": "paragraph_summary"
+          "function": "count",
+          "key": null
         },
-        "operation": "project",
+        "operation": "aggregate",
         "sources": [
-          "literal"
+          "section_target_stats"
         ],
-        "step": "declare_index",
-        "target": "paragraph_summary.target_count"
+        "step": "summarize_section_index",
+        "target": "SectionIndexSummary.target_count"
       },
       {
         "detail": {
           "field": "average_target_length",
-          "result": "paragraph_summary"
+          "function": "avg",
+          "key": null
         },
-        "operation": "project",
+        "operation": "aggregate",
         "sources": [
-          "literal"
+          "SectionIndexTargetStats.target_word_count"
         ],
-        "step": "declare_index",
-        "target": "paragraph_summary.average_target_length"
+        "step": "summarize_section_index",
+        "target": "SectionIndexSummary.average_target_length"
+      },
+      {
+        "detail": {
+          "input_schema": "Word",
+          "output_schema": "ParagraphIndexTermCount"
+        },
+        "operation": "step",
+        "sources": [
+          "SectionIndexSummary"
+        ],
+        "step": "count_paragraph_terms",
+        "target": "count_paragraph_terms"
       },
       {
         "detail": {
           "field": "document_id",
-          "result": "sentence_terms"
+          "function": "key",
+          "key": "document_id"
         },
-        "operation": "project",
+        "operation": "aggregate",
         "sources": [
           "words.document_id"
         ],
-        "step": "declare_index",
-        "target": "sentence_terms.document_id"
+        "step": "count_paragraph_terms",
+        "target": "ParagraphIndexTermCount.document_id"
       },
       {
         "detail": {
           "field": "section_id",
-          "result": "sentence_terms"
+          "function": "key",
+          "key": "section_id"
         },
-        "operation": "project",
+        "operation": "aggregate",
         "sources": [
           "words.section_id"
         ],
-        "step": "declare_index",
-        "target": "sentence_terms.section_id"
+        "step": "count_paragraph_terms",
+        "target": "ParagraphIndexTermCount.section_id"
       },
       {
         "detail": {
           "field": "paragraph_id",
-          "result": "sentence_terms"
+          "function": "key",
+          "key": "paragraph_id"
         },
-        "operation": "project",
+        "operation": "aggregate",
         "sources": [
           "words.paragraph_id"
         ],
-        "step": "declare_index",
-        "target": "sentence_terms.paragraph_id"
+        "step": "count_paragraph_terms",
+        "target": "ParagraphIndexTermCount.paragraph_id"
+      },
+      {
+        "detail": {
+          "field": "token",
+          "function": "key",
+          "key": "token"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "words.token"
+        ],
+        "step": "count_paragraph_terms",
+        "target": "ParagraphIndexTermCount.token"
+      },
+      {
+        "detail": {
+          "field": "term_frequency",
+          "function": "count",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "words"
+        ],
+        "step": "count_paragraph_terms",
+        "target": "ParagraphIndexTermCount.term_frequency"
+      },
+      {
+        "detail": {
+          "input_schema": "Word",
+          "output_schema": "ParagraphIndexTargetStats"
+        },
+        "operation": "step",
+        "sources": [
+          "ParagraphIndexTermCount"
+        ],
+        "step": "summarize_paragraphs",
+        "target": "summarize_paragraphs"
+      },
+      {
+        "detail": {
+          "field": "document_id",
+          "function": "key",
+          "key": "document_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "words.document_id"
+        ],
+        "step": "summarize_paragraphs",
+        "target": "ParagraphIndexTargetStats.document_id"
+      },
+      {
+        "detail": {
+          "field": "section_id",
+          "function": "key",
+          "key": "section_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "words.section_id"
+        ],
+        "step": "summarize_paragraphs",
+        "target": "ParagraphIndexTargetStats.section_id"
+      },
+      {
+        "detail": {
+          "field": "paragraph_id",
+          "function": "key",
+          "key": "paragraph_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "words.paragraph_id"
+        ],
+        "step": "summarize_paragraphs",
+        "target": "ParagraphIndexTargetStats.paragraph_id"
+      },
+      {
+        "detail": {
+          "field": "target_word_count",
+          "function": "count",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "words"
+        ],
+        "step": "summarize_paragraphs",
+        "target": "ParagraphIndexTargetStats.target_word_count"
+      },
+      {
+        "detail": {
+          "field": "target_distinct_terms",
+          "function": "count_distinct",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "words.token"
+        ],
+        "step": "summarize_paragraphs",
+        "target": "ParagraphIndexTargetStats.target_distinct_terms"
+      },
+      {
+        "detail": {
+          "input_schema": "ParagraphIndexTermCount",
+          "output_schema": "IndexTokenFrequency"
+        },
+        "operation": "step",
+        "sources": [
+          "ParagraphIndexTargetStats"
+        ],
+        "step": "count_paragraph_frequencies",
+        "target": "count_paragraph_frequencies"
+      },
+      {
+        "detail": {
+          "field": "token",
+          "function": "key",
+          "key": "token"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "ParagraphIndexTermCount.token"
+        ],
+        "step": "count_paragraph_frequencies",
+        "target": "IndexTokenFrequency.token"
+      },
+      {
+        "detail": {
+          "field": "document_frequency",
+          "function": "count",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "paragraph_term_counts"
+        ],
+        "step": "count_paragraph_frequencies",
+        "target": "IndexTokenFrequency.document_frequency"
+      },
+      {
+        "detail": {
+          "input_schema": "ParagraphIndexTermCount",
+          "output_schema": "ParagraphIndexTerm"
+        },
+        "operation": "step",
+        "sources": [
+          "IndexTokenFrequency",
+          "stats",
+          "frequency"
+        ],
+        "step": "build_paragraph_terms",
+        "target": "build_paragraph_terms"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "paragraph_target_stats"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "stats.document_id",
+          "term.document_id",
+          "stats.section_id",
+          "term.section_id",
+          "stats.paragraph_id",
+          "term.paragraph_id"
+        ],
+        "step": "build_paragraph_terms",
+        "target": "build_paragraph_terms.join[1].stats"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "paragraph_token_frequencies_2"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "frequency.token",
+          "term.token"
+        ],
+        "step": "build_paragraph_terms",
+        "target": "build_paragraph_terms.join[2].frequency"
+      },
+      {
+        "detail": {
+          "field": "document_id"
+        },
+        "operation": "project",
+        "sources": [
+          "term.document_id"
+        ],
+        "step": "build_paragraph_terms",
+        "target": "ParagraphIndexTerm.document_id"
+      },
+      {
+        "detail": {
+          "field": "section_id"
+        },
+        "operation": "project",
+        "sources": [
+          "term.section_id"
+        ],
+        "step": "build_paragraph_terms",
+        "target": "ParagraphIndexTerm.section_id"
+      },
+      {
+        "detail": {
+          "field": "paragraph_id"
+        },
+        "operation": "project",
+        "sources": [
+          "term.paragraph_id"
+        ],
+        "step": "build_paragraph_terms",
+        "target": "ParagraphIndexTerm.paragraph_id"
+      },
+      {
+        "detail": {
+          "field": "token"
+        },
+        "operation": "project",
+        "sources": [
+          "term.token"
+        ],
+        "step": "build_paragraph_terms",
+        "target": "ParagraphIndexTerm.token"
+      },
+      {
+        "detail": {
+          "field": "term_frequency"
+        },
+        "operation": "project",
+        "sources": [
+          "term.term_frequency"
+        ],
+        "step": "build_paragraph_terms",
+        "target": "ParagraphIndexTerm.term_frequency"
+      },
+      {
+        "detail": {
+          "field": "target_word_count"
+        },
+        "operation": "project",
+        "sources": [
+          "stats.target_word_count"
+        ],
+        "step": "build_paragraph_terms",
+        "target": "ParagraphIndexTerm.target_word_count"
+      },
+      {
+        "detail": {
+          "field": "target_distinct_terms"
+        },
+        "operation": "project",
+        "sources": [
+          "stats.target_distinct_terms"
+        ],
+        "step": "build_paragraph_terms",
+        "target": "ParagraphIndexTerm.target_distinct_terms"
+      },
+      {
+        "detail": {
+          "field": "document_frequency"
+        },
+        "operation": "project",
+        "sources": [
+          "frequency.document_frequency"
+        ],
+        "step": "build_paragraph_terms",
+        "target": "ParagraphIndexTerm.document_frequency"
+      },
+      {
+        "detail": {
+          "input_schema": "ParagraphIndexTargetStats",
+          "output_schema": "ParagraphIndexSummary"
+        },
+        "operation": "step",
+        "sources": [
+          "ParagraphIndexTerm"
+        ],
+        "step": "summarize_paragraph_index",
+        "target": "summarize_paragraph_index"
+      },
+      {
+        "detail": {
+          "field": "target_count",
+          "function": "count",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "paragraph_target_stats"
+        ],
+        "step": "summarize_paragraph_index",
+        "target": "ParagraphIndexSummary.target_count"
+      },
+      {
+        "detail": {
+          "field": "average_target_length",
+          "function": "avg",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "ParagraphIndexTargetStats.target_word_count"
+        ],
+        "step": "summarize_paragraph_index",
+        "target": "ParagraphIndexSummary.average_target_length"
+      },
+      {
+        "detail": {
+          "input_schema": "Word",
+          "output_schema": "SentenceIndexTermCount"
+        },
+        "operation": "step",
+        "sources": [
+          "ParagraphIndexSummary"
+        ],
+        "step": "count_sentence_terms",
+        "target": "count_sentence_terms"
+      },
+      {
+        "detail": {
+          "field": "document_id",
+          "function": "key",
+          "key": "document_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "words.document_id"
+        ],
+        "step": "count_sentence_terms",
+        "target": "SentenceIndexTermCount.document_id"
+      },
+      {
+        "detail": {
+          "field": "section_id",
+          "function": "key",
+          "key": "section_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "words.section_id"
+        ],
+        "step": "count_sentence_terms",
+        "target": "SentenceIndexTermCount.section_id"
+      },
+      {
+        "detail": {
+          "field": "paragraph_id",
+          "function": "key",
+          "key": "paragraph_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "words.paragraph_id"
+        ],
+        "step": "count_sentence_terms",
+        "target": "SentenceIndexTermCount.paragraph_id"
       },
       {
         "detail": {
           "field": "sentence_id",
-          "result": "sentence_terms"
+          "function": "key",
+          "key": "sentence_id"
         },
-        "operation": "project",
+        "operation": "aggregate",
         "sources": [
           "words.sentence_id"
         ],
-        "step": "declare_index",
-        "target": "sentence_terms.sentence_id"
+        "step": "count_sentence_terms",
+        "target": "SentenceIndexTermCount.sentence_id"
       },
       {
         "detail": {
           "field": "token",
-          "result": "sentence_terms"
+          "function": "key",
+          "key": "token"
         },
-        "operation": "project",
+        "operation": "aggregate",
         "sources": [
           "words.token"
         ],
-        "step": "declare_index",
-        "target": "sentence_terms.token"
+        "step": "count_sentence_terms",
+        "target": "SentenceIndexTermCount.token"
       },
       {
         "detail": {
           "field": "term_frequency",
-          "result": "sentence_terms"
+          "function": "count",
+          "key": null
         },
-        "operation": "project",
+        "operation": "aggregate",
         "sources": [
-          "literal"
+          "words"
         ],
-        "step": "declare_index",
-        "target": "sentence_terms.term_frequency"
+        "step": "count_sentence_terms",
+        "target": "SentenceIndexTermCount.term_frequency"
+      },
+      {
+        "detail": {
+          "input_schema": "Word",
+          "output_schema": "SentenceIndexTargetStats"
+        },
+        "operation": "step",
+        "sources": [
+          "SentenceIndexTermCount"
+        ],
+        "step": "summarize_sentences",
+        "target": "summarize_sentences"
+      },
+      {
+        "detail": {
+          "field": "document_id",
+          "function": "key",
+          "key": "document_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "words.document_id"
+        ],
+        "step": "summarize_sentences",
+        "target": "SentenceIndexTargetStats.document_id"
+      },
+      {
+        "detail": {
+          "field": "section_id",
+          "function": "key",
+          "key": "section_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "words.section_id"
+        ],
+        "step": "summarize_sentences",
+        "target": "SentenceIndexTargetStats.section_id"
+      },
+      {
+        "detail": {
+          "field": "paragraph_id",
+          "function": "key",
+          "key": "paragraph_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "words.paragraph_id"
+        ],
+        "step": "summarize_sentences",
+        "target": "SentenceIndexTargetStats.paragraph_id"
+      },
+      {
+        "detail": {
+          "field": "sentence_id",
+          "function": "key",
+          "key": "sentence_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "words.sentence_id"
+        ],
+        "step": "summarize_sentences",
+        "target": "SentenceIndexTargetStats.sentence_id"
       },
       {
         "detail": {
           "field": "target_word_count",
-          "result": "sentence_terms"
+          "function": "count",
+          "key": null
         },
-        "operation": "project",
+        "operation": "aggregate",
         "sources": [
-          "literal"
+          "words"
         ],
-        "step": "declare_index",
-        "target": "sentence_terms.target_word_count"
+        "step": "summarize_sentences",
+        "target": "SentenceIndexTargetStats.target_word_count"
       },
       {
         "detail": {
           "field": "target_distinct_terms",
-          "result": "sentence_terms"
+          "function": "count_distinct",
+          "key": null
         },
-        "operation": "project",
+        "operation": "aggregate",
         "sources": [
-          "literal"
+          "words.token"
         ],
-        "step": "declare_index",
-        "target": "sentence_terms.target_distinct_terms"
+        "step": "summarize_sentences",
+        "target": "SentenceIndexTargetStats.target_distinct_terms"
+      },
+      {
+        "detail": {
+          "input_schema": "SentenceIndexTermCount",
+          "output_schema": "IndexTokenFrequency"
+        },
+        "operation": "step",
+        "sources": [
+          "SentenceIndexTargetStats"
+        ],
+        "step": "count_sentence_frequencies",
+        "target": "count_sentence_frequencies"
+      },
+      {
+        "detail": {
+          "field": "token",
+          "function": "key",
+          "key": "token"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "SentenceIndexTermCount.token"
+        ],
+        "step": "count_sentence_frequencies",
+        "target": "IndexTokenFrequency.token"
       },
       {
         "detail": {
           "field": "document_frequency",
-          "result": "sentence_terms"
+          "function": "count",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "sentence_term_counts"
+        ],
+        "step": "count_sentence_frequencies",
+        "target": "IndexTokenFrequency.document_frequency"
+      },
+      {
+        "detail": {
+          "input_schema": "SentenceIndexTermCount",
+          "output_schema": "SentenceIndexTerm"
+        },
+        "operation": "step",
+        "sources": [
+          "IndexTokenFrequency",
+          "stats",
+          "frequency"
+        ],
+        "step": "build_sentence_terms",
+        "target": "build_sentence_terms"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "sentence_target_stats"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "stats.document_id",
+          "term.document_id",
+          "stats.section_id",
+          "term.section_id",
+          "stats.paragraph_id",
+          "term.paragraph_id",
+          "stats.sentence_id",
+          "term.sentence_id"
+        ],
+        "step": "build_sentence_terms",
+        "target": "build_sentence_terms.join[1].stats"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "sentence_token_frequencies_2"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "frequency.token",
+          "term.token"
+        ],
+        "step": "build_sentence_terms",
+        "target": "build_sentence_terms.join[2].frequency"
+      },
+      {
+        "detail": {
+          "field": "document_id"
         },
         "operation": "project",
         "sources": [
-          "literal"
+          "term.document_id"
         ],
-        "step": "declare_index",
-        "target": "sentence_terms.document_frequency"
+        "step": "build_sentence_terms",
+        "target": "SentenceIndexTerm.document_id"
+      },
+      {
+        "detail": {
+          "field": "section_id"
+        },
+        "operation": "project",
+        "sources": [
+          "term.section_id"
+        ],
+        "step": "build_sentence_terms",
+        "target": "SentenceIndexTerm.section_id"
+      },
+      {
+        "detail": {
+          "field": "paragraph_id"
+        },
+        "operation": "project",
+        "sources": [
+          "term.paragraph_id"
+        ],
+        "step": "build_sentence_terms",
+        "target": "SentenceIndexTerm.paragraph_id"
+      },
+      {
+        "detail": {
+          "field": "sentence_id"
+        },
+        "operation": "project",
+        "sources": [
+          "term.sentence_id"
+        ],
+        "step": "build_sentence_terms",
+        "target": "SentenceIndexTerm.sentence_id"
+      },
+      {
+        "detail": {
+          "field": "token"
+        },
+        "operation": "project",
+        "sources": [
+          "term.token"
+        ],
+        "step": "build_sentence_terms",
+        "target": "SentenceIndexTerm.token"
+      },
+      {
+        "detail": {
+          "field": "term_frequency"
+        },
+        "operation": "project",
+        "sources": [
+          "term.term_frequency"
+        ],
+        "step": "build_sentence_terms",
+        "target": "SentenceIndexTerm.term_frequency"
+      },
+      {
+        "detail": {
+          "field": "target_word_count"
+        },
+        "operation": "project",
+        "sources": [
+          "stats.target_word_count"
+        ],
+        "step": "build_sentence_terms",
+        "target": "SentenceIndexTerm.target_word_count"
+      },
+      {
+        "detail": {
+          "field": "target_distinct_terms"
+        },
+        "operation": "project",
+        "sources": [
+          "stats.target_distinct_terms"
+        ],
+        "step": "build_sentence_terms",
+        "target": "SentenceIndexTerm.target_distinct_terms"
+      },
+      {
+        "detail": {
+          "field": "document_frequency"
+        },
+        "operation": "project",
+        "sources": [
+          "frequency.document_frequency"
+        ],
+        "step": "build_sentence_terms",
+        "target": "SentenceIndexTerm.document_frequency"
+      },
+      {
+        "detail": {
+          "input_schema": "SentenceIndexTargetStats",
+          "output_schema": "SentenceIndexSummary"
+        },
+        "operation": "step",
+        "sources": [
+          "SentenceIndexTerm"
+        ],
+        "step": "summarize_sentence_index",
+        "target": "summarize_sentence_index"
       },
       {
         "detail": {
           "field": "target_count",
-          "result": "sentence_summary"
+          "function": "count",
+          "key": null
         },
-        "operation": "project",
+        "operation": "aggregate",
         "sources": [
-          "literal"
+          "sentence_target_stats"
         ],
-        "step": "declare_index",
-        "target": "sentence_summary.target_count"
+        "step": "summarize_sentence_index",
+        "target": "SentenceIndexSummary.target_count"
       },
       {
         "detail": {
           "field": "average_target_length",
-          "result": "sentence_summary"
+          "function": "avg",
+          "key": null
         },
-        "operation": "project",
+        "operation": "aggregate",
         "sources": [
-          "literal"
+          "SentenceIndexTargetStats.target_word_count"
         ],
-        "step": "declare_index",
-        "target": "sentence_summary.average_target_length"
+        "step": "summarize_sentence_index",
+        "target": "SentenceIndexSummary.average_target_length"
       },
       {
         "detail": {
@@ -1257,16 +2819,7 @@
         "target": "SentenceIndexSummary.validation.final"
       }
     ],
-    "opaque_boundaries": [
-      {
-        "hook": "build",
-        "phase": "raw",
-        "reason": "arbitrary PySpark hook body",
-        "schema": "DocumentIndexTerm",
-        "step": "declare_index",
-        "target": "declare_index"
-      }
-    ]
+    "opaque_boundaries": []
   },
   "steps": [
     {
@@ -1274,54 +2827,529 @@
       "before_hooks": [],
       "input_alias": "word",
       "joins": [],
-      "name": "declare_index",
+      "name": "count_document_terms",
+      "output_alias": "document_index_term_count",
+      "output_schema": "DocumentIndexTermCount",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "document_term_counts",
+          "lane": "document_term_counts",
+          "schema": "DocumentIndexTermCount"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "DocumentIndexTermCount"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "word",
+      "joins": [],
+      "name": "summarize_documents",
+      "output_alias": "document_index_target_stats",
+      "output_schema": "DocumentIndexTargetStats",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "document_target_stats",
+          "lane": "document_target_stats",
+          "schema": "DocumentIndexTargetStats"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "DocumentIndexTargetStats"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "document_index_term_count",
+      "joins": [],
+      "name": "count_document_frequencies",
+      "output_alias": "index_token_frequency",
+      "output_schema": "IndexTokenFrequency",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "document_token_frequencies",
+          "lane": "document_token_frequencies",
+          "schema": "IndexTokenFrequency"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "IndexTokenFrequency"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "document_index_term_count",
+      "joins": [
+        {
+          "how": "inner",
+          "input": "stats",
+          "right_alias": "document_target_stats"
+        },
+        {
+          "how": "inner",
+          "input": "frequency",
+          "right_alias": "document_token_frequencies_2"
+        }
+      ],
+      "name": "build_document_terms",
       "output_alias": "document_index_term",
       "output_schema": "DocumentIndexTerm",
       "results": [
         {
-          "after_hooks": [
-            "build"
-          ],
+          "after_hooks": [],
           "frame": "document_terms",
           "lane": "document_terms",
           "schema": "DocumentIndexTerm"
-        },
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "DocumentIndexTerm"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "document_index_target_stats",
+      "joins": [],
+      "name": "summarize_document_index",
+      "output_alias": "document_index_summary",
+      "output_schema": "DocumentIndexSummary",
+      "results": [
         {
           "after_hooks": [],
           "frame": "document_summary",
           "lane": "document_summary",
           "schema": "DocumentIndexSummary"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "DocumentIndexSummary"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "word",
+      "joins": [],
+      "name": "count_section_terms",
+      "output_alias": "section_index_term_count",
+      "output_schema": "SectionIndexTermCount",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "section_term_counts",
+          "lane": "section_term_counts",
+          "schema": "SectionIndexTermCount"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "SectionIndexTermCount"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "word",
+      "joins": [],
+      "name": "summarize_sections",
+      "output_alias": "section_index_target_stats",
+      "output_schema": "SectionIndexTargetStats",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "section_target_stats",
+          "lane": "section_target_stats",
+          "schema": "SectionIndexTargetStats"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "SectionIndexTargetStats"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "section_index_term_count",
+      "joins": [],
+      "name": "count_section_frequencies",
+      "output_alias": "index_token_frequency",
+      "output_schema": "IndexTokenFrequency",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "section_token_frequencies",
+          "lane": "section_token_frequencies",
+          "schema": "IndexTokenFrequency"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "IndexTokenFrequency"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "section_index_term_count",
+      "joins": [
+        {
+          "how": "inner",
+          "input": "stats",
+          "right_alias": "section_target_stats"
         },
+        {
+          "how": "inner",
+          "input": "frequency",
+          "right_alias": "section_token_frequencies_2"
+        }
+      ],
+      "name": "build_section_terms",
+      "output_alias": "section_index_term",
+      "output_schema": "SectionIndexTerm",
+      "results": [
         {
           "after_hooks": [],
           "frame": "section_terms",
           "lane": "section_terms",
           "schema": "SectionIndexTerm"
-        },
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "SectionIndexTerm"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "section_index_target_stats",
+      "joins": [],
+      "name": "summarize_section_index",
+      "output_alias": "section_index_summary",
+      "output_schema": "SectionIndexSummary",
+      "results": [
         {
           "after_hooks": [],
           "frame": "section_summary",
           "lane": "section_summary",
           "schema": "SectionIndexSummary"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "SectionIndexSummary"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "word",
+      "joins": [],
+      "name": "count_paragraph_terms",
+      "output_alias": "paragraph_index_term_count",
+      "output_schema": "ParagraphIndexTermCount",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "paragraph_term_counts",
+          "lane": "paragraph_term_counts",
+          "schema": "ParagraphIndexTermCount"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "ParagraphIndexTermCount"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "word",
+      "joins": [],
+      "name": "summarize_paragraphs",
+      "output_alias": "paragraph_index_target_stats",
+      "output_schema": "ParagraphIndexTargetStats",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "paragraph_target_stats",
+          "lane": "paragraph_target_stats",
+          "schema": "ParagraphIndexTargetStats"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "ParagraphIndexTargetStats"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "paragraph_index_term_count",
+      "joins": [],
+      "name": "count_paragraph_frequencies",
+      "output_alias": "index_token_frequency",
+      "output_schema": "IndexTokenFrequency",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "paragraph_token_frequencies",
+          "lane": "paragraph_token_frequencies",
+          "schema": "IndexTokenFrequency"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "IndexTokenFrequency"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "paragraph_index_term_count",
+      "joins": [
+        {
+          "how": "inner",
+          "input": "stats",
+          "right_alias": "paragraph_target_stats"
         },
+        {
+          "how": "inner",
+          "input": "frequency",
+          "right_alias": "paragraph_token_frequencies_2"
+        }
+      ],
+      "name": "build_paragraph_terms",
+      "output_alias": "paragraph_index_term",
+      "output_schema": "ParagraphIndexTerm",
+      "results": [
         {
           "after_hooks": [],
           "frame": "paragraph_terms",
           "lane": "paragraph_terms",
           "schema": "ParagraphIndexTerm"
-        },
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "ParagraphIndexTerm"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "paragraph_index_target_stats",
+      "joins": [],
+      "name": "summarize_paragraph_index",
+      "output_alias": "paragraph_index_summary",
+      "output_schema": "ParagraphIndexSummary",
+      "results": [
         {
           "after_hooks": [],
           "frame": "paragraph_summary",
           "lane": "paragraph_summary",
           "schema": "ParagraphIndexSummary"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "ParagraphIndexSummary"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "word",
+      "joins": [],
+      "name": "count_sentence_terms",
+      "output_alias": "sentence_index_term_count",
+      "output_schema": "SentenceIndexTermCount",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "sentence_term_counts",
+          "lane": "sentence_term_counts",
+          "schema": "SentenceIndexTermCount"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "SentenceIndexTermCount"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "word",
+      "joins": [],
+      "name": "summarize_sentences",
+      "output_alias": "sentence_index_target_stats",
+      "output_schema": "SentenceIndexTargetStats",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "sentence_target_stats",
+          "lane": "sentence_target_stats",
+          "schema": "SentenceIndexTargetStats"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "SentenceIndexTargetStats"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "sentence_index_term_count",
+      "joins": [],
+      "name": "count_sentence_frequencies",
+      "output_alias": "index_token_frequency",
+      "output_schema": "IndexTokenFrequency",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "sentence_token_frequencies",
+          "lane": "sentence_token_frequencies",
+          "schema": "IndexTokenFrequency"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "IndexTokenFrequency"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "sentence_index_term_count",
+      "joins": [
+        {
+          "how": "inner",
+          "input": "stats",
+          "right_alias": "sentence_target_stats"
         },
+        {
+          "how": "inner",
+          "input": "frequency",
+          "right_alias": "sentence_token_frequencies_2"
+        }
+      ],
+      "name": "build_sentence_terms",
+      "output_alias": "sentence_index_term",
+      "output_schema": "SentenceIndexTerm",
+      "results": [
         {
           "after_hooks": [],
           "frame": "sentence_terms",
           "lane": "sentence_terms",
           "schema": "SentenceIndexTerm"
-        },
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "SentenceIndexTerm"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "sentence_index_target_stats",
+      "joins": [],
+      "name": "summarize_sentence_index",
+      "output_alias": "sentence_index_summary",
+      "output_schema": "SentenceIndexSummary",
+      "results": [
         {
           "after_hooks": [],
           "frame": "sentence_summary",

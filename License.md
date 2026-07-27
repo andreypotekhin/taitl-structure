@@ -23,12 +23,14 @@ Prohibited use:
 These terms and conditions should also apply to any derived work.
 You must include this Ethical Use Policy in any derived work, 
 source fork and in any redistribution of this work, alone or as part
-of other product.
+of other product. Plugins are also considered derived work.
 
 ## Copyright
 
 Name: Structure (Library)
+
 Author: Andrey Potekhin
+
 Copyright: Taitl Design, LLC
 
 ## No warranty

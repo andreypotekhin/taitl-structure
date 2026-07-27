@@ -11,11 +11,14 @@ from structure.plugin.pyspark.dsl.operations import (
     RelationAliasPlan,
     RelationAssertionPlan,
     RelationBoundPlan,
+    RelationHierarchyClosurePlan,
+    RelationHierarchyFallbackPlan,
     RelationOrderPlan,
     RelationPrioritySelectionPlan,
     RelationSetPlan,
 )
 from structure.plugin.pyspark.dsl.RowScope import RowScope
+from structure.plugin.pyspark.dsl.types import ArrayType, LongType, StringType
 
 _ORDERABLE_TYPES = frozenset({"date", "decimal", "double", "float", "integer", "long", "string", "timestamp"})
 
@@ -120,6 +123,148 @@ def require_reference(
         )
     )
     return RowScope(name=_current_scope(context.default_project_source), schema=source_schema)
+
+
+def require_parent_hierarchy(
+    id: object,
+    *,
+    parent: object,
+    order_by: object,
+    max_depth: int,
+) -> RowScope:
+    context = _context("require_parent_hierarchy(...)")
+    source_schema = _current_schema(context.default_project_source, function="require_parent_hierarchy")
+    if isinstance(max_depth, bool) or not isinstance(max_depth, int) or max_depth < 1:
+        raise TypeError("require_parent_hierarchy(max_depth=...) must be a positive integer literal")
+    context.operations.append(
+        OperationPlan.relation_assertion_operation(
+            RelationAssertionPlan(
+                operation="require_parent_hierarchy",
+                keys=(_field_key(id),),
+                parent=_field_key(parent),
+                order_by=_orderable(order_by, call="require_parent_hierarchy(...)"),
+                max_depth=max_depth,
+            )
+        )
+    )
+    return RowScope(name=_current_scope(context.default_project_source), schema=source_schema)
+
+
+def hierarchy_closure(
+    id: object,
+    *,
+    parent: object,
+    as_: type[Schema],
+    node: str = "node_id",
+    ancestor: str = "ancestor_id",
+    depth: str = "depth",
+    max_depth: int,
+    scope: str | None = None,
+) -> RowScope:
+    context = _context("hierarchy_closure(...)")
+    if not isinstance(as_, type) or not issubclass(as_, Schema):
+        raise TypeError("hierarchy_closure(as_=...) requires a Structure Schema class")
+    if isinstance(max_depth, bool) or not isinstance(max_depth, int) or max_depth < 1:
+        raise TypeError("hierarchy_closure(max_depth=...) must be a positive integer literal")
+    if scope is not None and (not isinstance(scope, str) or not scope):
+        raise TypeError("hierarchy_closure(scope=...) requires a non-empty string")
+    id_expression = _field_key(id)
+    parent_expression = _field_key(parent)
+    _validate_prior_operations(context.operations, function="hierarchy_closure")
+    _validate_closure_schema(
+        as_,
+        id_expression=id_expression,
+        parent_expression=parent_expression,
+        node=node,
+        ancestor=ancestor,
+        depth=depth,
+    )
+    closure_scope = scope or _default_scope(as_)
+    context.operations.append(
+        OperationPlan.relation_hierarchy_closure_operation(
+            RelationHierarchyClosurePlan(
+                id=id_expression,
+                parent=parent_expression,
+                schema=as_,
+                scope=closure_scope,
+                node=node,
+                ancestor=ancestor,
+                depth=depth,
+                max_depth=max_depth,
+            )
+        )
+    )
+    context.register_current_scope(closure_scope)
+    return RowScope(name=closure_scope, schema=as_)
+
+
+def hierarchy_fallbacks(
+    source_id: object,
+    path: object,
+    parents: object,
+    *,
+    parent_id: object,
+    parent: object,
+    as_: type[Schema],
+    source: str = "user_band_id",
+    fallback: str = "user_band_fallback_id",
+    ordinal: str = "ordinal",
+    separator: str = "\u001f",
+    max_depth: int,
+    scope: str | None = None,
+) -> RowScope:
+    context = _context("hierarchy_fallbacks(...)")
+    if not isinstance(parents, InputScope):
+        raise TypeError("hierarchy_fallbacks(parents, ...) requires a Structure relation parameter")
+    if parents._structure_joined_scope is not None:
+        raise TypeError("hierarchy_fallbacks(parents, ...) must be called before that relation is joined")
+    if not isinstance(as_, type) or not issubclass(as_, Schema):
+        raise TypeError("hierarchy_fallbacks(as_=...) requires a Structure Schema class")
+    if isinstance(max_depth, bool) or not isinstance(max_depth, int) or max_depth < 1:
+        raise TypeError("hierarchy_fallbacks(max_depth=...) must be a positive integer literal")
+    if not isinstance(separator, str) or not separator:
+        raise TypeError("hierarchy_fallbacks(separator=...) requires a non-empty string")
+    if scope is not None and (not isinstance(scope, str) or not scope):
+        raise TypeError("hierarchy_fallbacks(scope=...) requires a non-empty string")
+
+    source_expression = _field_key(source_id)
+    path_expression = literal(path)
+    parent_id_expression = _field_key(parent_id)
+    parent_expression = _field_key(parent)
+    _validate_prior_operations(context.operations, function="hierarchy_fallbacks")
+    _validate_fallback_schema(
+        as_,
+        source_expression=source_expression,
+        path_expression=path_expression,
+        parent_id_expression=parent_id_expression,
+        parent_expression=parent_expression,
+        source=source,
+        fallback=fallback,
+        ordinal=ordinal,
+    )
+    fallback_scope = scope or _default_scope(as_)
+    context.operations.append(
+        OperationPlan.relation_hierarchy_fallback_operation(
+            RelationHierarchyFallbackPlan(
+                source_id=source_expression,
+                path=path_expression,
+                parent_input=parents._structure_input_name,
+                parent_source=parents._structure_source,
+                parent_schema=parents._structure_input_schema,
+                parent_id=parent_id_expression,
+                parent=parent_expression,
+                schema=as_,
+                scope=fallback_scope,
+                source=source,
+                fallback=fallback,
+                ordinal=ordinal,
+                separator=separator,
+                max_depth=max_depth,
+            )
+        )
+    )
+    context.register_current_scope(fallback_scope)
+    return RowScope(name=fallback_scope, schema=as_)
 
 
 def select_first_qualified(
@@ -266,7 +411,15 @@ def _validate_prior_operations(operations, *, function: str) -> None:
     blocked = [
         operation.kind
         for operation in operations
-        if operation.kind in {"join", "aggregate", "selected_rows", "posexplode_struct", "select_first_qualified"}
+        if operation.kind in {
+            "join",
+            "aggregate",
+            "selected_rows",
+            "posexplode_struct",
+            "select_first_qualified",
+            "hierarchy_closure",
+            "hierarchy_fallbacks",
+        }
     ]
     if blocked:
         raise TypeError(
@@ -287,6 +440,8 @@ def _validate_ordered_state(operations, *, function: str) -> None:
             "posexplode_struct",
             "selected_rows",
             "select_first_qualified",
+            "hierarchy_closure",
+            "hierarchy_fallbacks",
             "subtract",
             "union_all",
             "union_by_name",
@@ -326,3 +481,74 @@ def _validate_same_schema(left: type[Schema], right: type[Schema], *, function: 
 
 def _field_signature(field) -> tuple[str, str, object, bool]:
     return field.name, field.column, field.type, field.nullable
+
+
+def _validate_closure_schema(
+    schema: type[Schema],
+    *,
+    id_expression: Expression,
+    parent_expression: Expression,
+    node: str,
+    ancestor: str,
+    depth: str,
+) -> None:
+    for name, option in ((node, "node"), (ancestor, "ancestor"), (depth, "depth")):
+        if not isinstance(name, str) or not name:
+            raise TypeError(f"hierarchy_closure({option}=...) requires a non-empty field name")
+        if name not in schema._structure_fields:
+            raise TypeError(f"hierarchy_closure(as_=...) schema must declare {option} field {name!r}")
+    node_type = schema._structure_fields[node].type
+    ancestor_type = schema._structure_fields[ancestor].type
+    depth_type = schema._structure_fields[depth].type
+    if id_expression.nullable:
+        raise TypeError("hierarchy_closure(id) requires a non-null declared field")
+    if parent_expression.type != id_expression.type:
+        raise TypeError("hierarchy_closure(parent=...) must have the same type as id")
+    if node_type != id_expression.type:
+        raise TypeError(f"hierarchy_closure(node={node!r}) field must match the id field type")
+    if ancestor_type != id_expression.type:
+        raise TypeError(f"hierarchy_closure(ancestor={ancestor!r}) field must match the id field type")
+    if not isinstance(depth_type, LongType):
+        raise TypeError(f"hierarchy_closure(depth={depth!r}) field must be long()")
+
+
+def _default_scope(schema: type[Schema]) -> str:
+    name = schema.__name__
+    return name[:1].lower() + name[1:]
+
+
+def _validate_fallback_schema(
+    schema: type[Schema],
+    *,
+    source_expression: Expression,
+    path_expression: Expression,
+    parent_id_expression: Expression,
+    parent_expression: Expression,
+    source: str,
+    fallback: str,
+    ordinal: str,
+) -> None:
+    for name, option in ((source, "source"), (fallback, "fallback"), (ordinal, "ordinal")):
+        if not isinstance(name, str) or not name:
+            raise TypeError(f"hierarchy_fallbacks({option}=...) requires a non-empty field name")
+        if name not in schema._structure_fields:
+            raise TypeError(f"hierarchy_fallbacks(as_=...) schema must declare {option} field {name!r}")
+    if source_expression.nullable:
+        raise TypeError("hierarchy_fallbacks(source_id) requires a non-null declared field")
+    if path_expression.nullable:
+        raise TypeError("hierarchy_fallbacks(path) requires a non-null array expression")
+    if parent_id_expression.nullable:
+        raise TypeError("hierarchy_fallbacks(parent_id=...) requires a non-null declared field")
+    if parent_expression.type != parent_id_expression.type:
+        raise TypeError("hierarchy_fallbacks(parent=...) must have the same type as parent_id")
+    if not isinstance(path_expression.type, ArrayType) or path_expression.type.contains_null:
+        raise TypeError("hierarchy_fallbacks(path) requires an array with contains_null=False")
+    if path_expression.type.element != parent_id_expression.type:
+        raise TypeError("hierarchy_fallbacks(path) element type must match parent_id")
+    fields = schema._structure_fields
+    if fields[source].type != source_expression.type or fields[source].nullable:
+        raise TypeError(f"hierarchy_fallbacks(source={source!r}) field must match the non-null source_id type")
+    if not isinstance(fields[fallback].type, StringType) or not fields[fallback].nullable:
+        raise TypeError(f"hierarchy_fallbacks(fallback={fallback!r}) field must be nullable string()")
+    if not isinstance(fields[ordinal].type, LongType) or fields[ordinal].nullable:
+        raise TypeError(f"hierarchy_fallbacks(ordinal={ordinal!r}) field must be non-null long()")

@@ -25,4 +25,5 @@ PERSON_SCHEMA = T.StructType([
     T.StructField("id", T.StringType(), False),
     T.StructField("team_id", T.StringType(), False),
     T.StructField("name", T.StringType(), False),
+    T.StructField("email", T.StringType(), False),
 ])

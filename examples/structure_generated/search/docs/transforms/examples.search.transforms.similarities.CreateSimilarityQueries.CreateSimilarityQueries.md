@@ -26,11 +26,33 @@ Source: `examples.search.transforms.similarities.CreateSimilarityQueries.CreateS
 
 ## Step methods
 
-- `declare_queries`: `DocumentIndexTerm` -> `SearchQuery`
+- `validate_policy`: `SimilarityPolicy` -> `SimilarityPolicy`
+- `build_document_queries`: `DocumentIndexTerm` -> `DocumentSimilarityQueryText`
+- `build_section_queries`: `SectionIndexTerm` -> `SectionSimilarityQueryText`
+- `build_paragraph_queries`: `ParagraphIndexTerm` -> `ParagraphSimilarityQueryText`
+- `build_sentence_queries`: `SentenceIndexTerm` -> `SentenceSimilarityQueryText`
+- `publish_document_search_queries`: `DocumentSimilarityQueryText` -> `SearchQuery`
+- `publish_section_search_queries`: `SectionSimilarityQueryText` -> `SearchQuery`
+- `publish_paragraph_search_queries`: `ParagraphSimilarityQueryText` -> `SearchQuery`
+- `publish_sentence_search_queries`: `SentenceSimilarityQueryText` -> `SearchQuery`
+- `publish_document_query_targets`: `DocumentSimilarityQueryText` -> `DocumentSimilarityQuery`
+- `publish_section_query_targets`: `SectionSimilarityQueryText` -> `SectionSimilarityQuery`
+- `publish_paragraph_query_targets`: `ParagraphSimilarityQueryText` -> `ParagraphSimilarityQuery`
+- `publish_sentence_query_targets`: `SentenceSimilarityQueryText` -> `SentenceSimilarityQuery`
+- `merge_queries`: `SearchQuery` -> `SearchQuery`
 
 ## Dependencies
 
-- None
+- `document_summary`
+- `paragraph_search_queries`
+- `paragraph_summary`
+- `policy`
+- `section_search_queries`
+- `section_summary`
+- `sentence_search_queries`
+- `sentence_summary`
+- `summary`
+- `valid_policy`
 
 ## Target Artifacts
 

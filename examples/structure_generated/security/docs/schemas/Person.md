@@ -9,3 +9,4 @@ Module: `examples.security.schemas.organization`
 | `id` | `id` | `string` | no |
 | `team_id` | `team_id` | `string` | no |
 | `name` | `name` | `string` | no |
+| `email` | `email` | `string` | no |

@@ -73,538 +73,958 @@
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.input.policy"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.0.declare_context_impressions",
-      "ir": "ir:BuildRelevanceSignals.step.0.declare_context_impressions",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.declare_context_impressions"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.0.global_impressions",
+      "ir": "ir:BuildRelevanceSignals.step.0.global_impressions",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.global_impressions"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.0.declare_context_impressions.select.window",
-      "ir": "ir:BuildRelevanceSignals.step.0.declare_context_impressions.project.window",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.declare_context_impressions.field.window"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.0.global_impressions.select.window",
+      "ir": "ir:BuildRelevanceSignals.step.0.global_impressions.project.window",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.global_impressions.field.window"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.0.declare_context_impressions.select.query",
-      "ir": "ir:BuildRelevanceSignals.step.0.declare_context_impressions.project.query",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.declare_context_impressions.field.query"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.0.global_impressions.select.query",
+      "ir": "ir:BuildRelevanceSignals.step.0.global_impressions.project.query",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.global_impressions.field.query"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.0.declare_context_impressions.select.document_id",
-      "ir": "ir:BuildRelevanceSignals.step.0.declare_context_impressions.project.document_id",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.declare_context_impressions.field.document_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.0.global_impressions.select.document_id",
+      "ir": "ir:BuildRelevanceSignals.step.0.global_impressions.project.document_id",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.global_impressions.field.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.0.declare_context_impressions.select.position",
-      "ir": "ir:BuildRelevanceSignals.step.0.declare_context_impressions.project.position",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.declare_context_impressions.field.position"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.0.global_impressions.select.position",
+      "ir": "ir:BuildRelevanceSignals.step.0.global_impressions.project.position",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.global_impressions.field.position"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.0.declare_context_impressions.select.examination_propensity",
-      "ir": "ir:BuildRelevanceSignals.step.0.declare_context_impressions.project.examination_propensity",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.declare_context_impressions.field.examination_propensity"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.0.global_impressions.select.examination_propensity",
+      "ir": "ir:BuildRelevanceSignals.step.0.global_impressions.project.examination_propensity",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.global_impressions.field.examination_propensity"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.0.declare_context_impressions.select.user_id",
-      "ir": "ir:BuildRelevanceSignals.step.0.declare_context_impressions.project.user_id",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.declare_context_impressions.field.user_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.0.global_impressions.select.user_id",
+      "ir": "ir:BuildRelevanceSignals.step.0.global_impressions.project.user_id",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.global_impressions.field.user_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.0.declare_context_impressions.select.band_id",
-      "ir": "ir:BuildRelevanceSignals.step.0.declare_context_impressions.project.band_id",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.declare_context_impressions.field.band_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.0.global_impressions.select.band_id",
+      "ir": "ir:BuildRelevanceSignals.step.0.global_impressions.project.band_id",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.global_impressions.field.band_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.0.declare_context_impressions.select.impression_count",
-      "ir": "ir:BuildRelevanceSignals.step.0.declare_context_impressions.project.impression_count",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.declare_context_impressions.field.impression_count"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.0.global_impressions.select.impression_count",
+      "ir": "ir:BuildRelevanceSignals.step.0.global_impressions.project.impression_count",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.global_impressions.field.impression_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.0.declare_context_impressions.hook.raw.expand_impressions",
-      "ir": "ir:BuildRelevanceSignals.step.0.declare_context_impressions.hook.raw.expand_impressions",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.expand_impressions"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.0.global_impressions.validation.0.intermediate",
+      "ir": "ir:BuildRelevanceSignals.step.0.global_impressions.validation.0.intermediate",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.global_impressions.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.0.declare_context_impressions.validation.0.hook",
-      "ir": "ir:BuildRelevanceSignals.step.0.declare_context_impressions.validation.0.hook",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.declare_context_impressions.validation.0.hook"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.1.fallback_impressions",
+      "ir": "ir:BuildRelevanceSignals.step.1.fallback_impressions",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_impressions"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.0.declare_context_impressions.validation.1.intermediate",
-      "ir": "ir:BuildRelevanceSignals.step.0.declare_context_impressions.validation.1.intermediate",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.declare_context_impressions.validation.1.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.1.fallback_impressions.where.0",
+      "ir": "ir:BuildRelevanceSignals.step.1.fallback_impressions.filter.0",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_impressions.filter.0"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.1.declare_context_clicks",
-      "ir": "ir:BuildRelevanceSignals.step.1.declare_context_clicks",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.declare_context_clicks"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.1.fallback_impressions.where.1",
+      "ir": "ir:BuildRelevanceSignals.step.1.fallback_impressions.filter.1",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_impressions.filter.1"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.1.declare_context_clicks.select.window",
-      "ir": "ir:BuildRelevanceSignals.step.1.declare_context_clicks.project.window",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.declare_context_clicks.field.window"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.1.fallback_impressions.join.1.membership",
+      "ir": "ir:BuildRelevanceSignals.step.1.fallback_impressions.join.1.membership",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_impressions.join.1.membership"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.1.declare_context_clicks.select.query",
-      "ir": "ir:BuildRelevanceSignals.step.1.declare_context_clicks.project.query",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.declare_context_clicks.field.query"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.1.fallback_impressions.join.2.fallback",
+      "ir": "ir:BuildRelevanceSignals.step.1.fallback_impressions.join.2.fallback",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_impressions.join.2.fallback"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.1.declare_context_clicks.select.document_id",
-      "ir": "ir:BuildRelevanceSignals.step.1.declare_context_clicks.project.document_id",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.declare_context_clicks.field.document_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.1.fallback_impressions.select.window",
+      "ir": "ir:BuildRelevanceSignals.step.1.fallback_impressions.project.window",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_impressions.field.window"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.1.declare_context_clicks.select.position",
-      "ir": "ir:BuildRelevanceSignals.step.1.declare_context_clicks.project.position",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.declare_context_clicks.field.position"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.1.fallback_impressions.select.query",
+      "ir": "ir:BuildRelevanceSignals.step.1.fallback_impressions.project.query",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_impressions.field.query"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.1.declare_context_clicks.select.examination_propensity",
-      "ir": "ir:BuildRelevanceSignals.step.1.declare_context_clicks.project.examination_propensity",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.declare_context_clicks.field.examination_propensity"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.1.fallback_impressions.select.document_id",
+      "ir": "ir:BuildRelevanceSignals.step.1.fallback_impressions.project.document_id",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_impressions.field.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.1.declare_context_clicks.select.user_id",
-      "ir": "ir:BuildRelevanceSignals.step.1.declare_context_clicks.project.user_id",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.declare_context_clicks.field.user_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.1.fallback_impressions.select.position",
+      "ir": "ir:BuildRelevanceSignals.step.1.fallback_impressions.project.position",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_impressions.field.position"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.1.declare_context_clicks.select.band_id",
-      "ir": "ir:BuildRelevanceSignals.step.1.declare_context_clicks.project.band_id",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.declare_context_clicks.field.band_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.1.fallback_impressions.select.examination_propensity",
+      "ir": "ir:BuildRelevanceSignals.step.1.fallback_impressions.project.examination_propensity",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_impressions.field.examination_propensity"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.1.declare_context_clicks.select.click_count",
-      "ir": "ir:BuildRelevanceSignals.step.1.declare_context_clicks.project.click_count",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.declare_context_clicks.field.click_count"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.1.fallback_impressions.select.user_id",
+      "ir": "ir:BuildRelevanceSignals.step.1.fallback_impressions.project.user_id",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_impressions.field.user_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.1.declare_context_clicks.select.clicked_impression_count",
-      "ir": "ir:BuildRelevanceSignals.step.1.declare_context_clicks.project.clicked_impression_count",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.declare_context_clicks.field.clicked_impression_count"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.1.fallback_impressions.select.band_id",
+      "ir": "ir:BuildRelevanceSignals.step.1.fallback_impressions.project.band_id",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_impressions.field.band_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.1.declare_context_clicks.select.dwell_seconds",
-      "ir": "ir:BuildRelevanceSignals.step.1.declare_context_clicks.project.dwell_seconds",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.declare_context_clicks.field.dwell_seconds"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.1.fallback_impressions.select.impression_count",
+      "ir": "ir:BuildRelevanceSignals.step.1.fallback_impressions.project.impression_count",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_impressions.field.impression_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.1.declare_context_clicks.select.dwell_credit",
-      "ir": "ir:BuildRelevanceSignals.step.1.declare_context_clicks.project.dwell_credit",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.declare_context_clicks.field.dwell_credit"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.1.fallback_impressions.validation.0.intermediate",
+      "ir": "ir:BuildRelevanceSignals.step.1.fallback_impressions.validation.0.intermediate",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_impressions.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.1.declare_context_clicks.select.long_click_count",
-      "ir": "ir:BuildRelevanceSignals.step.1.declare_context_clicks.project.long_click_count",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.declare_context_clicks.field.long_click_count"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.band_impressions",
+      "ir": "ir:BuildRelevanceSignals.step.2.band_impressions",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.band_impressions"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.1.declare_context_clicks.hook.raw.expand_clicks",
-      "ir": "ir:BuildRelevanceSignals.step.1.declare_context_clicks.hook.raw.expand_clicks",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.expand_clicks"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.band_impressions.where.0",
+      "ir": "ir:BuildRelevanceSignals.step.2.band_impressions.filter.0",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.band_impressions.filter.0"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.1.declare_context_clicks.validation.0.hook",
-      "ir": "ir:BuildRelevanceSignals.step.1.declare_context_clicks.validation.0.hook",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.declare_context_clicks.validation.0.hook"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.band_impressions.join.1.membership",
+      "ir": "ir:BuildRelevanceSignals.step.2.band_impressions.join.1.membership",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.band_impressions.join.1.membership"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.1.declare_context_clicks.validation.1.intermediate",
-      "ir": "ir:BuildRelevanceSignals.step.1.declare_context_clicks.validation.1.intermediate",
-      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.declare_context_clicks.validation.1.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.band_impressions.select.window",
+      "ir": "ir:BuildRelevanceSignals.step.2.band_impressions.project.window",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.band_impressions.field.window"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.summarize_query",
-      "ir": "ir:BuildRelevanceSignals.step.2.summarize_query",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.band_impressions.select.query",
+      "ir": "ir:BuildRelevanceSignals.step.2.band_impressions.project.query",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.band_impressions.field.query"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.band_impressions.select.document_id",
+      "ir": "ir:BuildRelevanceSignals.step.2.band_impressions.project.document_id",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.band_impressions.field.document_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.band_impressions.select.position",
+      "ir": "ir:BuildRelevanceSignals.step.2.band_impressions.project.position",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.band_impressions.field.position"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.band_impressions.select.examination_propensity",
+      "ir": "ir:BuildRelevanceSignals.step.2.band_impressions.project.examination_propensity",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.band_impressions.field.examination_propensity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.band_impressions.select.user_id",
+      "ir": "ir:BuildRelevanceSignals.step.2.band_impressions.project.user_id",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.band_impressions.field.user_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.band_impressions.select.band_id",
+      "ir": "ir:BuildRelevanceSignals.step.2.band_impressions.project.band_id",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.band_impressions.field.band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.band_impressions.select.impression_count",
+      "ir": "ir:BuildRelevanceSignals.step.2.band_impressions.project.impression_count",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.band_impressions.field.impression_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.band_impressions.validation.0.intermediate",
+      "ir": "ir:BuildRelevanceSignals.step.2.band_impressions.validation.0.intermediate",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.band_impressions.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.merge_context_impressions",
+      "ir": "ir:BuildRelevanceSignals.step.3.merge_context_impressions",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.merge_context_impressions"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.merge_context_impressions.union_all.0",
+      "ir": "ir:BuildRelevanceSignals.step.3.merge_context_impressions.union_all.0",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.merge_context_impressions.union_all.0"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.merge_context_impressions.union_all.1",
+      "ir": "ir:BuildRelevanceSignals.step.3.merge_context_impressions.union_all.1",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.merge_context_impressions.union_all.1"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.merge_context_impressions.select.window",
+      "ir": "ir:BuildRelevanceSignals.step.3.merge_context_impressions.project.window",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.merge_context_impressions.field.window"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.merge_context_impressions.select.query",
+      "ir": "ir:BuildRelevanceSignals.step.3.merge_context_impressions.project.query",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.merge_context_impressions.field.query"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.merge_context_impressions.select.document_id",
+      "ir": "ir:BuildRelevanceSignals.step.3.merge_context_impressions.project.document_id",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.merge_context_impressions.field.document_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.merge_context_impressions.select.position",
+      "ir": "ir:BuildRelevanceSignals.step.3.merge_context_impressions.project.position",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.merge_context_impressions.field.position"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.merge_context_impressions.select.examination_propensity",
+      "ir": "ir:BuildRelevanceSignals.step.3.merge_context_impressions.project.examination_propensity",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.merge_context_impressions.field.examination_propensity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.merge_context_impressions.select.user_id",
+      "ir": "ir:BuildRelevanceSignals.step.3.merge_context_impressions.project.user_id",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.merge_context_impressions.field.user_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.merge_context_impressions.select.band_id",
+      "ir": "ir:BuildRelevanceSignals.step.3.merge_context_impressions.project.band_id",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.merge_context_impressions.field.band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.merge_context_impressions.select.impression_count",
+      "ir": "ir:BuildRelevanceSignals.step.3.merge_context_impressions.project.impression_count",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.merge_context_impressions.field.impression_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.merge_context_impressions.validation.0.intermediate",
+      "ir": "ir:BuildRelevanceSignals.step.3.merge_context_impressions.validation.0.intermediate",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.merge_context_impressions.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.global_clicks",
+      "ir": "ir:BuildRelevanceSignals.step.4.global_clicks",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.global_clicks"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.global_clicks.select.window",
+      "ir": "ir:BuildRelevanceSignals.step.4.global_clicks.project.window",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.global_clicks.field.window"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.global_clicks.select.query",
+      "ir": "ir:BuildRelevanceSignals.step.4.global_clicks.project.query",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.global_clicks.field.query"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.global_clicks.select.document_id",
+      "ir": "ir:BuildRelevanceSignals.step.4.global_clicks.project.document_id",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.global_clicks.field.document_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.global_clicks.select.position",
+      "ir": "ir:BuildRelevanceSignals.step.4.global_clicks.project.position",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.global_clicks.field.position"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.global_clicks.select.examination_propensity",
+      "ir": "ir:BuildRelevanceSignals.step.4.global_clicks.project.examination_propensity",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.global_clicks.field.examination_propensity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.global_clicks.select.user_id",
+      "ir": "ir:BuildRelevanceSignals.step.4.global_clicks.project.user_id",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.global_clicks.field.user_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.global_clicks.select.band_id",
+      "ir": "ir:BuildRelevanceSignals.step.4.global_clicks.project.band_id",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.global_clicks.field.band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.global_clicks.select.click_count",
+      "ir": "ir:BuildRelevanceSignals.step.4.global_clicks.project.click_count",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.global_clicks.field.click_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.global_clicks.select.clicked_impression_count",
+      "ir": "ir:BuildRelevanceSignals.step.4.global_clicks.project.clicked_impression_count",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.global_clicks.field.clicked_impression_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.global_clicks.select.dwell_seconds",
+      "ir": "ir:BuildRelevanceSignals.step.4.global_clicks.project.dwell_seconds",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.global_clicks.field.dwell_seconds"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.global_clicks.select.dwell_credit",
+      "ir": "ir:BuildRelevanceSignals.step.4.global_clicks.project.dwell_credit",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.global_clicks.field.dwell_credit"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.global_clicks.select.long_click_count",
+      "ir": "ir:BuildRelevanceSignals.step.4.global_clicks.project.long_click_count",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.global_clicks.field.long_click_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.global_clicks.validation.0.intermediate",
+      "ir": "ir:BuildRelevanceSignals.step.4.global_clicks.validation.0.intermediate",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.global_clicks.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.fallback_clicks",
+      "ir": "ir:BuildRelevanceSignals.step.5.fallback_clicks",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_clicks"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.fallback_clicks.where.0",
+      "ir": "ir:BuildRelevanceSignals.step.5.fallback_clicks.filter.0",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_clicks.filter.0"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.fallback_clicks.where.1",
+      "ir": "ir:BuildRelevanceSignals.step.5.fallback_clicks.filter.1",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_clicks.filter.1"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.fallback_clicks.join.1.membership",
+      "ir": "ir:BuildRelevanceSignals.step.5.fallback_clicks.join.1.membership",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_clicks.join.1.membership"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.fallback_clicks.join.2.fallback",
+      "ir": "ir:BuildRelevanceSignals.step.5.fallback_clicks.join.2.fallback",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_clicks.join.2.fallback"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.fallback_clicks.select.window",
+      "ir": "ir:BuildRelevanceSignals.step.5.fallback_clicks.project.window",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_clicks.field.window"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.fallback_clicks.select.query",
+      "ir": "ir:BuildRelevanceSignals.step.5.fallback_clicks.project.query",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_clicks.field.query"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.fallback_clicks.select.document_id",
+      "ir": "ir:BuildRelevanceSignals.step.5.fallback_clicks.project.document_id",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_clicks.field.document_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.fallback_clicks.select.position",
+      "ir": "ir:BuildRelevanceSignals.step.5.fallback_clicks.project.position",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_clicks.field.position"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.fallback_clicks.select.examination_propensity",
+      "ir": "ir:BuildRelevanceSignals.step.5.fallback_clicks.project.examination_propensity",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_clicks.field.examination_propensity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.fallback_clicks.select.user_id",
+      "ir": "ir:BuildRelevanceSignals.step.5.fallback_clicks.project.user_id",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_clicks.field.user_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.fallback_clicks.select.band_id",
+      "ir": "ir:BuildRelevanceSignals.step.5.fallback_clicks.project.band_id",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_clicks.field.band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.fallback_clicks.select.click_count",
+      "ir": "ir:BuildRelevanceSignals.step.5.fallback_clicks.project.click_count",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_clicks.field.click_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.fallback_clicks.select.clicked_impression_count",
+      "ir": "ir:BuildRelevanceSignals.step.5.fallback_clicks.project.clicked_impression_count",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_clicks.field.clicked_impression_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.fallback_clicks.select.dwell_seconds",
+      "ir": "ir:BuildRelevanceSignals.step.5.fallback_clicks.project.dwell_seconds",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_clicks.field.dwell_seconds"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.fallback_clicks.select.dwell_credit",
+      "ir": "ir:BuildRelevanceSignals.step.5.fallback_clicks.project.dwell_credit",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_clicks.field.dwell_credit"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.fallback_clicks.select.long_click_count",
+      "ir": "ir:BuildRelevanceSignals.step.5.fallback_clicks.project.long_click_count",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_clicks.field.long_click_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.fallback_clicks.validation.0.intermediate",
+      "ir": "ir:BuildRelevanceSignals.step.5.fallback_clicks.validation.0.intermediate",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.fallback_clicks.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.6.band_clicks",
+      "ir": "ir:BuildRelevanceSignals.step.6.band_clicks",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.band_clicks"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.6.band_clicks.where.0",
+      "ir": "ir:BuildRelevanceSignals.step.6.band_clicks.filter.0",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.band_clicks.filter.0"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.6.band_clicks.join.1.membership",
+      "ir": "ir:BuildRelevanceSignals.step.6.band_clicks.join.1.membership",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.band_clicks.join.1.membership"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.6.band_clicks.select.window",
+      "ir": "ir:BuildRelevanceSignals.step.6.band_clicks.project.window",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.band_clicks.field.window"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.6.band_clicks.select.query",
+      "ir": "ir:BuildRelevanceSignals.step.6.band_clicks.project.query",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.band_clicks.field.query"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.6.band_clicks.select.document_id",
+      "ir": "ir:BuildRelevanceSignals.step.6.band_clicks.project.document_id",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.band_clicks.field.document_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.6.band_clicks.select.position",
+      "ir": "ir:BuildRelevanceSignals.step.6.band_clicks.project.position",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.band_clicks.field.position"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.6.band_clicks.select.examination_propensity",
+      "ir": "ir:BuildRelevanceSignals.step.6.band_clicks.project.examination_propensity",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.band_clicks.field.examination_propensity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.6.band_clicks.select.user_id",
+      "ir": "ir:BuildRelevanceSignals.step.6.band_clicks.project.user_id",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.band_clicks.field.user_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.6.band_clicks.select.band_id",
+      "ir": "ir:BuildRelevanceSignals.step.6.band_clicks.project.band_id",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.band_clicks.field.band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.6.band_clicks.select.click_count",
+      "ir": "ir:BuildRelevanceSignals.step.6.band_clicks.project.click_count",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.band_clicks.field.click_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.6.band_clicks.select.clicked_impression_count",
+      "ir": "ir:BuildRelevanceSignals.step.6.band_clicks.project.clicked_impression_count",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.band_clicks.field.clicked_impression_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.6.band_clicks.select.dwell_seconds",
+      "ir": "ir:BuildRelevanceSignals.step.6.band_clicks.project.dwell_seconds",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.band_clicks.field.dwell_seconds"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.6.band_clicks.select.dwell_credit",
+      "ir": "ir:BuildRelevanceSignals.step.6.band_clicks.project.dwell_credit",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.band_clicks.field.dwell_credit"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.6.band_clicks.select.long_click_count",
+      "ir": "ir:BuildRelevanceSignals.step.6.band_clicks.project.long_click_count",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.band_clicks.field.long_click_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.6.band_clicks.validation.0.intermediate",
+      "ir": "ir:BuildRelevanceSignals.step.6.band_clicks.validation.0.intermediate",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.band_clicks.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.7.merge_context_clicks",
+      "ir": "ir:BuildRelevanceSignals.step.7.merge_context_clicks",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.merge_context_clicks"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.7.merge_context_clicks.union_all.0",
+      "ir": "ir:BuildRelevanceSignals.step.7.merge_context_clicks.union_all.0",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.merge_context_clicks.union_all.0"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.7.merge_context_clicks.union_all.1",
+      "ir": "ir:BuildRelevanceSignals.step.7.merge_context_clicks.union_all.1",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.merge_context_clicks.union_all.1"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.7.merge_context_clicks.select.window",
+      "ir": "ir:BuildRelevanceSignals.step.7.merge_context_clicks.project.window",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.merge_context_clicks.field.window"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.7.merge_context_clicks.select.query",
+      "ir": "ir:BuildRelevanceSignals.step.7.merge_context_clicks.project.query",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.merge_context_clicks.field.query"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.7.merge_context_clicks.select.document_id",
+      "ir": "ir:BuildRelevanceSignals.step.7.merge_context_clicks.project.document_id",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.merge_context_clicks.field.document_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.7.merge_context_clicks.select.position",
+      "ir": "ir:BuildRelevanceSignals.step.7.merge_context_clicks.project.position",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.merge_context_clicks.field.position"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.7.merge_context_clicks.select.examination_propensity",
+      "ir": "ir:BuildRelevanceSignals.step.7.merge_context_clicks.project.examination_propensity",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.merge_context_clicks.field.examination_propensity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.7.merge_context_clicks.select.user_id",
+      "ir": "ir:BuildRelevanceSignals.step.7.merge_context_clicks.project.user_id",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.merge_context_clicks.field.user_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.7.merge_context_clicks.select.band_id",
+      "ir": "ir:BuildRelevanceSignals.step.7.merge_context_clicks.project.band_id",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.merge_context_clicks.field.band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.7.merge_context_clicks.select.click_count",
+      "ir": "ir:BuildRelevanceSignals.step.7.merge_context_clicks.project.click_count",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.merge_context_clicks.field.click_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.7.merge_context_clicks.select.clicked_impression_count",
+      "ir": "ir:BuildRelevanceSignals.step.7.merge_context_clicks.project.clicked_impression_count",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.merge_context_clicks.field.clicked_impression_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.7.merge_context_clicks.select.dwell_seconds",
+      "ir": "ir:BuildRelevanceSignals.step.7.merge_context_clicks.project.dwell_seconds",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.merge_context_clicks.field.dwell_seconds"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.7.merge_context_clicks.select.dwell_credit",
+      "ir": "ir:BuildRelevanceSignals.step.7.merge_context_clicks.project.dwell_credit",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.merge_context_clicks.field.dwell_credit"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.7.merge_context_clicks.select.long_click_count",
+      "ir": "ir:BuildRelevanceSignals.step.7.merge_context_clicks.project.long_click_count",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.merge_context_clicks.field.long_click_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.7.merge_context_clicks.validation.0.intermediate",
+      "ir": "ir:BuildRelevanceSignals.step.7.merge_context_clicks.validation.0.intermediate",
+      "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.merge_context_clicks.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.8.summarize_query",
+      "ir": "ir:BuildRelevanceSignals.step.8.summarize_query",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_query"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.summarize_query.join.1.click",
-      "ir": "ir:BuildRelevanceSignals.step.2.summarize_query.join.1.click",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.8.summarize_query.join.1.click",
+      "ir": "ir:BuildRelevanceSignals.step.8.summarize_query.join.1.click",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_query.join.1.click"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.summarize_query.join.2.policy",
-      "ir": "ir:BuildRelevanceSignals.step.2.summarize_query.join.2.policy",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.8.summarize_query.join.2.policy",
+      "ir": "ir:BuildRelevanceSignals.step.8.summarize_query.join.2.policy",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_query.join.2.policy"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.summarize_query.aggregate.query",
-      "ir": "ir:BuildRelevanceSignals.step.2.summarize_query.aggregate.query",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.8.summarize_query.aggregate.query",
+      "ir": "ir:BuildRelevanceSignals.step.8.summarize_query.aggregate.query",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_query.aggregate.query"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.summarize_query.aggregate.document_id",
-      "ir": "ir:BuildRelevanceSignals.step.2.summarize_query.aggregate.document_id",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.8.summarize_query.aggregate.document_id",
+      "ir": "ir:BuildRelevanceSignals.step.8.summarize_query.aggregate.document_id",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_query.aggregate.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.summarize_query.aggregate.band_id",
-      "ir": "ir:BuildRelevanceSignals.step.2.summarize_query.aggregate.band_id",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.8.summarize_query.aggregate.band_id",
+      "ir": "ir:BuildRelevanceSignals.step.8.summarize_query.aggregate.band_id",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_query.aggregate.band_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.summarize_query.aggregate.impression_count",
-      "ir": "ir:BuildRelevanceSignals.step.2.summarize_query.aggregate.impression_count",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.8.summarize_query.aggregate.impression_count",
+      "ir": "ir:BuildRelevanceSignals.step.8.summarize_query.aggregate.impression_count",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_query.aggregate.impression_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.summarize_query.aggregate.click_count",
-      "ir": "ir:BuildRelevanceSignals.step.2.summarize_query.aggregate.click_count",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.8.summarize_query.aggregate.click_count",
+      "ir": "ir:BuildRelevanceSignals.step.8.summarize_query.aggregate.click_count",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_query.aggregate.click_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.summarize_query.aggregate.clicked_impression_count",
-      "ir": "ir:BuildRelevanceSignals.step.2.summarize_query.aggregate.clicked_impression_count",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.8.summarize_query.aggregate.clicked_impression_count",
+      "ir": "ir:BuildRelevanceSignals.step.8.summarize_query.aggregate.clicked_impression_count",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_query.aggregate.clicked_impression_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.summarize_query.aggregate.dwell_seconds",
-      "ir": "ir:BuildRelevanceSignals.step.2.summarize_query.aggregate.dwell_seconds",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.8.summarize_query.aggregate.dwell_seconds",
+      "ir": "ir:BuildRelevanceSignals.step.8.summarize_query.aggregate.dwell_seconds",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_query.aggregate.dwell_seconds"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.summarize_query.aggregate.long_click_count",
-      "ir": "ir:BuildRelevanceSignals.step.2.summarize_query.aggregate.long_click_count",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.8.summarize_query.aggregate.long_click_count",
+      "ir": "ir:BuildRelevanceSignals.step.8.summarize_query.aggregate.long_click_count",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_query.aggregate.long_click_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.summarize_query.aggregate.click_through_rate",
-      "ir": "ir:BuildRelevanceSignals.step.2.summarize_query.aggregate.click_through_rate",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.8.summarize_query.aggregate.click_through_rate",
+      "ir": "ir:BuildRelevanceSignals.step.8.summarize_query.aggregate.click_through_rate",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_query.aggregate.click_through_rate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.summarize_query.aggregate.ips_clicks",
-      "ir": "ir:BuildRelevanceSignals.step.2.summarize_query.aggregate.ips_clicks",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.8.summarize_query.aggregate.ips_clicks",
+      "ir": "ir:BuildRelevanceSignals.step.8.summarize_query.aggregate.ips_clicks",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_query.aggregate.ips_clicks"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.summarize_query.aggregate.ips_dwell_credit",
-      "ir": "ir:BuildRelevanceSignals.step.2.summarize_query.aggregate.ips_dwell_credit",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.8.summarize_query.aggregate.ips_dwell_credit",
+      "ir": "ir:BuildRelevanceSignals.step.8.summarize_query.aggregate.ips_dwell_credit",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_query.aggregate.ips_dwell_credit"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.summarize_query.aggregate.ips_click_through_rate",
-      "ir": "ir:BuildRelevanceSignals.step.2.summarize_query.aggregate.ips_click_through_rate",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.8.summarize_query.aggregate.ips_click_through_rate",
+      "ir": "ir:BuildRelevanceSignals.step.8.summarize_query.aggregate.ips_click_through_rate",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_query.aggregate.ips_click_through_rate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.summarize_query.aggregate.ips_impression_weight",
-      "ir": "ir:BuildRelevanceSignals.step.2.summarize_query.aggregate.ips_impression_weight",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.8.summarize_query.aggregate.ips_impression_weight",
+      "ir": "ir:BuildRelevanceSignals.step.8.summarize_query.aggregate.ips_impression_weight",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_query.aggregate.ips_impression_weight"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.summarize_query.aggregate.ips_clicked_impression_weight",
-      "ir": "ir:BuildRelevanceSignals.step.2.summarize_query.aggregate.ips_clicked_impression_weight",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.8.summarize_query.aggregate.ips_clicked_impression_weight",
+      "ir": "ir:BuildRelevanceSignals.step.8.summarize_query.aggregate.ips_clicked_impression_weight",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_query.aggregate.ips_clicked_impression_weight"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.summarize_query.aggregate.normalized_dwell_score",
-      "ir": "ir:BuildRelevanceSignals.step.2.summarize_query.aggregate.normalized_dwell_score",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.8.summarize_query.aggregate.normalized_dwell_score",
+      "ir": "ir:BuildRelevanceSignals.step.8.summarize_query.aggregate.normalized_dwell_score",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_query.aggregate.normalized_dwell_score"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.summarize_query.aggregate.normalized_ctr_score",
-      "ir": "ir:BuildRelevanceSignals.step.2.summarize_query.aggregate.normalized_ctr_score",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.8.summarize_query.aggregate.normalized_ctr_score",
+      "ir": "ir:BuildRelevanceSignals.step.8.summarize_query.aggregate.normalized_ctr_score",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_query.aggregate.normalized_ctr_score"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.summarize_query.aggregate.normalized_score",
-      "ir": "ir:BuildRelevanceSignals.step.2.summarize_query.aggregate.normalized_score",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.8.summarize_query.aggregate.normalized_score",
+      "ir": "ir:BuildRelevanceSignals.step.8.summarize_query.aggregate.normalized_score",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_query.aggregate.normalized_score"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.2.summarize_query.validation.0.intermediate",
-      "ir": "ir:BuildRelevanceSignals.step.2.summarize_query.validation.0.intermediate",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.8.summarize_query.validation.0.intermediate",
+      "ir": "ir:BuildRelevanceSignals.step.8.summarize_query.validation.0.intermediate",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_query.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.summarize_popularity",
-      "ir": "ir:BuildRelevanceSignals.step.3.summarize_popularity",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.9.summarize_popularity",
+      "ir": "ir:BuildRelevanceSignals.step.9.summarize_popularity",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_popularity"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.summarize_popularity.join.1.click",
-      "ir": "ir:BuildRelevanceSignals.step.3.summarize_popularity.join.1.click",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.9.summarize_popularity.join.1.click",
+      "ir": "ir:BuildRelevanceSignals.step.9.summarize_popularity.join.1.click",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_popularity.join.1.click"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.summarize_popularity.join.2.policy",
-      "ir": "ir:BuildRelevanceSignals.step.3.summarize_popularity.join.2.policy",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.9.summarize_popularity.join.2.policy",
+      "ir": "ir:BuildRelevanceSignals.step.9.summarize_popularity.join.2.policy",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_popularity.join.2.policy"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.summarize_popularity.aggregate.document_id",
-      "ir": "ir:BuildRelevanceSignals.step.3.summarize_popularity.aggregate.document_id",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.9.summarize_popularity.aggregate.document_id",
+      "ir": "ir:BuildRelevanceSignals.step.9.summarize_popularity.aggregate.document_id",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_popularity.aggregate.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.summarize_popularity.aggregate.band_id",
-      "ir": "ir:BuildRelevanceSignals.step.3.summarize_popularity.aggregate.band_id",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.9.summarize_popularity.aggregate.band_id",
+      "ir": "ir:BuildRelevanceSignals.step.9.summarize_popularity.aggregate.band_id",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_popularity.aggregate.band_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.summarize_popularity.aggregate.impression_count",
-      "ir": "ir:BuildRelevanceSignals.step.3.summarize_popularity.aggregate.impression_count",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.9.summarize_popularity.aggregate.impression_count",
+      "ir": "ir:BuildRelevanceSignals.step.9.summarize_popularity.aggregate.impression_count",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_popularity.aggregate.impression_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.summarize_popularity.aggregate.click_count",
-      "ir": "ir:BuildRelevanceSignals.step.3.summarize_popularity.aggregate.click_count",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.9.summarize_popularity.aggregate.click_count",
+      "ir": "ir:BuildRelevanceSignals.step.9.summarize_popularity.aggregate.click_count",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_popularity.aggregate.click_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.summarize_popularity.aggregate.clicked_impression_count",
-      "ir": "ir:BuildRelevanceSignals.step.3.summarize_popularity.aggregate.clicked_impression_count",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.9.summarize_popularity.aggregate.clicked_impression_count",
+      "ir": "ir:BuildRelevanceSignals.step.9.summarize_popularity.aggregate.clicked_impression_count",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_popularity.aggregate.clicked_impression_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.summarize_popularity.aggregate.dwell_seconds",
-      "ir": "ir:BuildRelevanceSignals.step.3.summarize_popularity.aggregate.dwell_seconds",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.9.summarize_popularity.aggregate.dwell_seconds",
+      "ir": "ir:BuildRelevanceSignals.step.9.summarize_popularity.aggregate.dwell_seconds",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_popularity.aggregate.dwell_seconds"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.summarize_popularity.aggregate.long_click_count",
-      "ir": "ir:BuildRelevanceSignals.step.3.summarize_popularity.aggregate.long_click_count",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.9.summarize_popularity.aggregate.long_click_count",
+      "ir": "ir:BuildRelevanceSignals.step.9.summarize_popularity.aggregate.long_click_count",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_popularity.aggregate.long_click_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.summarize_popularity.aggregate.click_through_rate",
-      "ir": "ir:BuildRelevanceSignals.step.3.summarize_popularity.aggregate.click_through_rate",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.9.summarize_popularity.aggregate.click_through_rate",
+      "ir": "ir:BuildRelevanceSignals.step.9.summarize_popularity.aggregate.click_through_rate",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_popularity.aggregate.click_through_rate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.summarize_popularity.aggregate.ips_clicks",
-      "ir": "ir:BuildRelevanceSignals.step.3.summarize_popularity.aggregate.ips_clicks",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.9.summarize_popularity.aggregate.ips_clicks",
+      "ir": "ir:BuildRelevanceSignals.step.9.summarize_popularity.aggregate.ips_clicks",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_popularity.aggregate.ips_clicks"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.summarize_popularity.aggregate.ips_dwell_credit",
-      "ir": "ir:BuildRelevanceSignals.step.3.summarize_popularity.aggregate.ips_dwell_credit",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.9.summarize_popularity.aggregate.ips_dwell_credit",
+      "ir": "ir:BuildRelevanceSignals.step.9.summarize_popularity.aggregate.ips_dwell_credit",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_popularity.aggregate.ips_dwell_credit"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.summarize_popularity.aggregate.ips_click_through_rate",
-      "ir": "ir:BuildRelevanceSignals.step.3.summarize_popularity.aggregate.ips_click_through_rate",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.9.summarize_popularity.aggregate.ips_click_through_rate",
+      "ir": "ir:BuildRelevanceSignals.step.9.summarize_popularity.aggregate.ips_click_through_rate",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_popularity.aggregate.ips_click_through_rate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.summarize_popularity.aggregate.ips_impression_weight",
-      "ir": "ir:BuildRelevanceSignals.step.3.summarize_popularity.aggregate.ips_impression_weight",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.9.summarize_popularity.aggregate.ips_impression_weight",
+      "ir": "ir:BuildRelevanceSignals.step.9.summarize_popularity.aggregate.ips_impression_weight",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_popularity.aggregate.ips_impression_weight"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.summarize_popularity.aggregate.ips_clicked_impression_weight",
-      "ir": "ir:BuildRelevanceSignals.step.3.summarize_popularity.aggregate.ips_clicked_impression_weight",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.9.summarize_popularity.aggregate.ips_clicked_impression_weight",
+      "ir": "ir:BuildRelevanceSignals.step.9.summarize_popularity.aggregate.ips_clicked_impression_weight",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_popularity.aggregate.ips_clicked_impression_weight"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.summarize_popularity.aggregate.normalized_dwell_score",
-      "ir": "ir:BuildRelevanceSignals.step.3.summarize_popularity.aggregate.normalized_dwell_score",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.9.summarize_popularity.aggregate.normalized_dwell_score",
+      "ir": "ir:BuildRelevanceSignals.step.9.summarize_popularity.aggregate.normalized_dwell_score",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_popularity.aggregate.normalized_dwell_score"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.summarize_popularity.aggregate.normalized_ctr_score",
-      "ir": "ir:BuildRelevanceSignals.step.3.summarize_popularity.aggregate.normalized_ctr_score",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.9.summarize_popularity.aggregate.normalized_ctr_score",
+      "ir": "ir:BuildRelevanceSignals.step.9.summarize_popularity.aggregate.normalized_ctr_score",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_popularity.aggregate.normalized_ctr_score"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.summarize_popularity.aggregate.normalized_score",
-      "ir": "ir:BuildRelevanceSignals.step.3.summarize_popularity.aggregate.normalized_score",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.9.summarize_popularity.aggregate.normalized_score",
+      "ir": "ir:BuildRelevanceSignals.step.9.summarize_popularity.aggregate.normalized_score",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_popularity.aggregate.normalized_score"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.3.summarize_popularity.validation.0.intermediate",
-      "ir": "ir:BuildRelevanceSignals.step.3.summarize_popularity.validation.0.intermediate",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.9.summarize_popularity.validation.0.intermediate",
+      "ir": "ir:BuildRelevanceSignals.step.9.summarize_popularity.validation.0.intermediate",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.summarize_popularity.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.normalize_query",
-      "ir": "ir:BuildRelevanceSignals.step.4.normalize_query",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.10.normalize_query",
+      "ir": "ir:BuildRelevanceSignals.step.10.normalize_query",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_query"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.normalize_query.join.1.policy",
-      "ir": "ir:BuildRelevanceSignals.step.4.normalize_query.join.1.policy",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.10.normalize_query.join.1.policy",
+      "ir": "ir:BuildRelevanceSignals.step.10.normalize_query.join.1.policy",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_query.join.1.policy"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.normalize_query.select.query",
-      "ir": "ir:BuildRelevanceSignals.step.4.normalize_query.project.query",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.10.normalize_query.select.query",
+      "ir": "ir:BuildRelevanceSignals.step.10.normalize_query.project.query",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_query.field.query"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.normalize_query.select.document_id",
-      "ir": "ir:BuildRelevanceSignals.step.4.normalize_query.project.document_id",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.10.normalize_query.select.document_id",
+      "ir": "ir:BuildRelevanceSignals.step.10.normalize_query.project.document_id",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_query.field.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.normalize_query.select.band_id",
-      "ir": "ir:BuildRelevanceSignals.step.4.normalize_query.project.band_id",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.10.normalize_query.select.band_id",
+      "ir": "ir:BuildRelevanceSignals.step.10.normalize_query.project.band_id",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_query.field.band_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.normalize_query.select.impression_count",
-      "ir": "ir:BuildRelevanceSignals.step.4.normalize_query.project.impression_count",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.10.normalize_query.select.impression_count",
+      "ir": "ir:BuildRelevanceSignals.step.10.normalize_query.project.impression_count",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_query.field.impression_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.normalize_query.select.click_count",
-      "ir": "ir:BuildRelevanceSignals.step.4.normalize_query.project.click_count",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.10.normalize_query.select.click_count",
+      "ir": "ir:BuildRelevanceSignals.step.10.normalize_query.project.click_count",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_query.field.click_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.normalize_query.select.clicked_impression_count",
-      "ir": "ir:BuildRelevanceSignals.step.4.normalize_query.project.clicked_impression_count",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.10.normalize_query.select.clicked_impression_count",
+      "ir": "ir:BuildRelevanceSignals.step.10.normalize_query.project.clicked_impression_count",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_query.field.clicked_impression_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.normalize_query.select.dwell_seconds",
-      "ir": "ir:BuildRelevanceSignals.step.4.normalize_query.project.dwell_seconds",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.10.normalize_query.select.dwell_seconds",
+      "ir": "ir:BuildRelevanceSignals.step.10.normalize_query.project.dwell_seconds",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_query.field.dwell_seconds"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.normalize_query.select.long_click_count",
-      "ir": "ir:BuildRelevanceSignals.step.4.normalize_query.project.long_click_count",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.10.normalize_query.select.long_click_count",
+      "ir": "ir:BuildRelevanceSignals.step.10.normalize_query.project.long_click_count",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_query.field.long_click_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.normalize_query.select.click_through_rate",
-      "ir": "ir:BuildRelevanceSignals.step.4.normalize_query.project.click_through_rate",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.10.normalize_query.select.click_through_rate",
+      "ir": "ir:BuildRelevanceSignals.step.10.normalize_query.project.click_through_rate",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_query.field.click_through_rate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.normalize_query.select.ips_clicks",
-      "ir": "ir:BuildRelevanceSignals.step.4.normalize_query.project.ips_clicks",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.10.normalize_query.select.ips_clicks",
+      "ir": "ir:BuildRelevanceSignals.step.10.normalize_query.project.ips_clicks",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_query.field.ips_clicks"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.normalize_query.select.ips_dwell_credit",
-      "ir": "ir:BuildRelevanceSignals.step.4.normalize_query.project.ips_dwell_credit",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.10.normalize_query.select.ips_dwell_credit",
+      "ir": "ir:BuildRelevanceSignals.step.10.normalize_query.project.ips_dwell_credit",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_query.field.ips_dwell_credit"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.normalize_query.select.ips_click_through_rate",
-      "ir": "ir:BuildRelevanceSignals.step.4.normalize_query.project.ips_click_through_rate",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.10.normalize_query.select.ips_click_through_rate",
+      "ir": "ir:BuildRelevanceSignals.step.10.normalize_query.project.ips_click_through_rate",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_query.field.ips_click_through_rate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.normalize_query.select.ips_impression_weight",
-      "ir": "ir:BuildRelevanceSignals.step.4.normalize_query.project.ips_impression_weight",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.10.normalize_query.select.ips_impression_weight",
+      "ir": "ir:BuildRelevanceSignals.step.10.normalize_query.project.ips_impression_weight",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_query.field.ips_impression_weight"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.normalize_query.select.ips_clicked_impression_weight",
-      "ir": "ir:BuildRelevanceSignals.step.4.normalize_query.project.ips_clicked_impression_weight",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.10.normalize_query.select.ips_clicked_impression_weight",
+      "ir": "ir:BuildRelevanceSignals.step.10.normalize_query.project.ips_clicked_impression_weight",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_query.field.ips_clicked_impression_weight"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.normalize_query.select.normalized_dwell_score",
-      "ir": "ir:BuildRelevanceSignals.step.4.normalize_query.project.normalized_dwell_score",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.10.normalize_query.select.normalized_dwell_score",
+      "ir": "ir:BuildRelevanceSignals.step.10.normalize_query.project.normalized_dwell_score",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_query.field.normalized_dwell_score"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.normalize_query.select.normalized_ctr_score",
-      "ir": "ir:BuildRelevanceSignals.step.4.normalize_query.project.normalized_ctr_score",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.10.normalize_query.select.normalized_ctr_score",
+      "ir": "ir:BuildRelevanceSignals.step.10.normalize_query.project.normalized_ctr_score",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_query.field.normalized_ctr_score"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.normalize_query.select.normalized_score",
-      "ir": "ir:BuildRelevanceSignals.step.4.normalize_query.project.normalized_score",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.10.normalize_query.select.normalized_score",
+      "ir": "ir:BuildRelevanceSignals.step.10.normalize_query.project.normalized_score",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_query.field.normalized_score"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.4.normalize_query.validation.0.intermediate",
-      "ir": "ir:BuildRelevanceSignals.step.4.normalize_query.validation.0.intermediate",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.10.normalize_query.validation.0.intermediate",
+      "ir": "ir:BuildRelevanceSignals.step.10.normalize_query.validation.0.intermediate",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_query.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.normalize_popularity",
-      "ir": "ir:BuildRelevanceSignals.step.5.normalize_popularity",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.11.normalize_popularity",
+      "ir": "ir:BuildRelevanceSignals.step.11.normalize_popularity",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_popularity"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.normalize_popularity.join.1.policy",
-      "ir": "ir:BuildRelevanceSignals.step.5.normalize_popularity.join.1.policy",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.11.normalize_popularity.join.1.policy",
+      "ir": "ir:BuildRelevanceSignals.step.11.normalize_popularity.join.1.policy",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_popularity.join.1.policy"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.normalize_popularity.select.document_id",
-      "ir": "ir:BuildRelevanceSignals.step.5.normalize_popularity.project.document_id",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.11.normalize_popularity.select.document_id",
+      "ir": "ir:BuildRelevanceSignals.step.11.normalize_popularity.project.document_id",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_popularity.field.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.normalize_popularity.select.band_id",
-      "ir": "ir:BuildRelevanceSignals.step.5.normalize_popularity.project.band_id",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.11.normalize_popularity.select.band_id",
+      "ir": "ir:BuildRelevanceSignals.step.11.normalize_popularity.project.band_id",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_popularity.field.band_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.normalize_popularity.select.impression_count",
-      "ir": "ir:BuildRelevanceSignals.step.5.normalize_popularity.project.impression_count",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.11.normalize_popularity.select.impression_count",
+      "ir": "ir:BuildRelevanceSignals.step.11.normalize_popularity.project.impression_count",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_popularity.field.impression_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.normalize_popularity.select.click_count",
-      "ir": "ir:BuildRelevanceSignals.step.5.normalize_popularity.project.click_count",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.11.normalize_popularity.select.click_count",
+      "ir": "ir:BuildRelevanceSignals.step.11.normalize_popularity.project.click_count",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_popularity.field.click_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.normalize_popularity.select.clicked_impression_count",
-      "ir": "ir:BuildRelevanceSignals.step.5.normalize_popularity.project.clicked_impression_count",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.11.normalize_popularity.select.clicked_impression_count",
+      "ir": "ir:BuildRelevanceSignals.step.11.normalize_popularity.project.clicked_impression_count",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_popularity.field.clicked_impression_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.normalize_popularity.select.dwell_seconds",
-      "ir": "ir:BuildRelevanceSignals.step.5.normalize_popularity.project.dwell_seconds",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.11.normalize_popularity.select.dwell_seconds",
+      "ir": "ir:BuildRelevanceSignals.step.11.normalize_popularity.project.dwell_seconds",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_popularity.field.dwell_seconds"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.normalize_popularity.select.long_click_count",
-      "ir": "ir:BuildRelevanceSignals.step.5.normalize_popularity.project.long_click_count",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.11.normalize_popularity.select.long_click_count",
+      "ir": "ir:BuildRelevanceSignals.step.11.normalize_popularity.project.long_click_count",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_popularity.field.long_click_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.normalize_popularity.select.click_through_rate",
-      "ir": "ir:BuildRelevanceSignals.step.5.normalize_popularity.project.click_through_rate",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.11.normalize_popularity.select.click_through_rate",
+      "ir": "ir:BuildRelevanceSignals.step.11.normalize_popularity.project.click_through_rate",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_popularity.field.click_through_rate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.normalize_popularity.select.ips_clicks",
-      "ir": "ir:BuildRelevanceSignals.step.5.normalize_popularity.project.ips_clicks",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.11.normalize_popularity.select.ips_clicks",
+      "ir": "ir:BuildRelevanceSignals.step.11.normalize_popularity.project.ips_clicks",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_popularity.field.ips_clicks"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.normalize_popularity.select.ips_dwell_credit",
-      "ir": "ir:BuildRelevanceSignals.step.5.normalize_popularity.project.ips_dwell_credit",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.11.normalize_popularity.select.ips_dwell_credit",
+      "ir": "ir:BuildRelevanceSignals.step.11.normalize_popularity.project.ips_dwell_credit",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_popularity.field.ips_dwell_credit"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.normalize_popularity.select.ips_click_through_rate",
-      "ir": "ir:BuildRelevanceSignals.step.5.normalize_popularity.project.ips_click_through_rate",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.11.normalize_popularity.select.ips_click_through_rate",
+      "ir": "ir:BuildRelevanceSignals.step.11.normalize_popularity.project.ips_click_through_rate",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_popularity.field.ips_click_through_rate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.normalize_popularity.select.ips_impression_weight",
-      "ir": "ir:BuildRelevanceSignals.step.5.normalize_popularity.project.ips_impression_weight",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.11.normalize_popularity.select.ips_impression_weight",
+      "ir": "ir:BuildRelevanceSignals.step.11.normalize_popularity.project.ips_impression_weight",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_popularity.field.ips_impression_weight"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.normalize_popularity.select.ips_clicked_impression_weight",
-      "ir": "ir:BuildRelevanceSignals.step.5.normalize_popularity.project.ips_clicked_impression_weight",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.11.normalize_popularity.select.ips_clicked_impression_weight",
+      "ir": "ir:BuildRelevanceSignals.step.11.normalize_popularity.project.ips_clicked_impression_weight",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_popularity.field.ips_clicked_impression_weight"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.normalize_popularity.select.normalized_dwell_score",
-      "ir": "ir:BuildRelevanceSignals.step.5.normalize_popularity.project.normalized_dwell_score",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.11.normalize_popularity.select.normalized_dwell_score",
+      "ir": "ir:BuildRelevanceSignals.step.11.normalize_popularity.project.normalized_dwell_score",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_popularity.field.normalized_dwell_score"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.normalize_popularity.select.normalized_ctr_score",
-      "ir": "ir:BuildRelevanceSignals.step.5.normalize_popularity.project.normalized_ctr_score",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.11.normalize_popularity.select.normalized_ctr_score",
+      "ir": "ir:BuildRelevanceSignals.step.11.normalize_popularity.project.normalized_ctr_score",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_popularity.field.normalized_ctr_score"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.5.normalize_popularity.select.normalized_score",
-      "ir": "ir:BuildRelevanceSignals.step.5.normalize_popularity.project.normalized_score",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.BuildRelevanceSignals.BuildRelevanceSignalsGenerated.run.step.11.normalize_popularity.select.normalized_score",
+      "ir": "ir:BuildRelevanceSignals.step.11.normalize_popularity.project.normalized_score",
       "source": "source:examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals.normalize_popularity.field.normalized_score"
     },
     {
@@ -623,9 +1043,17 @@
       "constant": "BAND_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.user"
     },
+    "BandAncestor": {
+      "constant": "BAND_ANCESTOR_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.resolve"
+    },
     "BandFallback": {
       "constant": "BAND_FALLBACK_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.user"
+    },
+    "BandMatch": {
+      "constant": "BAND_MATCH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.resolve"
     },
     "BandMembership": {
       "constant": "BAND_MEMBERSHIP_SCHEMA",
@@ -659,6 +1087,14 @@
       "constant": "CLICK_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.clicks"
     },
+    "ContextDailyClicks": {
+      "constant": "CONTEXT_DAILY_CLICKS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.build"
+    },
+    "ContextDailyImpressions": {
+      "constant": "CONTEXT_DAILY_IMPRESSIONS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.build"
+    },
     "CorpusStatistics": {
       "constant": "CORPUS_STATISTICS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.analytics"
@@ -685,7 +1121,7 @@
     },
     "DocumentBm25Score": {
       "constant": "DOCUMENT_BM25_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.bm25"
     },
     "DocumentEvaluationSummary": {
       "constant": "DOCUMENT_EVALUATION_SUMMARY_SCHEMA",
@@ -695,6 +1131,10 @@
       "constant": "DOCUMENT_FEATURES_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.analytics"
     },
+    "DocumentFeedbackOption": {
+      "constant": "DOCUMENT_FEEDBACK_OPTION_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
     "DocumentIndexSummary": {
       "constant": "DOCUMENT_INDEX_SUMMARY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
@@ -703,17 +1143,37 @@
       "constant": "DOCUMENT_INDEX_TARGET_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "DocumentIndexTargetStats": {
+      "constant": "DOCUMENT_INDEX_TARGET_STATS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
     "DocumentIndexTerm": {
       "constant": "DOCUMENT_INDEX_TERM_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "DocumentIndexTermCount": {
+      "constant": "DOCUMENT_INDEX_TERM_COUNT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "DocumentLine": {
+      "constant": "DOCUMENT_LINE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "DocumentOverlapMatch": {
+      "constant": "DOCUMENT_OVERLAP_MATCH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+    },
     "DocumentOverlapScore": {
       "constant": "DOCUMENT_OVERLAP_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
     },
     "DocumentPopularity": {
       "constant": "DOCUMENT_POPULARITY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.relevance"
+    },
+    "DocumentPopularityTotals": {
+      "constant": "DOCUMENT_POPULARITY_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.build"
     },
     "DocumentQueryEvaluation": {
       "constant": "DOCUMENT_QUERY_EVALUATION_SCHEMA",
@@ -747,9 +1207,21 @@
       "constant": "DOCUMENT_SIMILARITY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "DocumentSimilarityCandidate": {
+      "constant": "DOCUMENT_SIMILARITY_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
+    "DocumentSimilarityPair": {
+      "constant": "DOCUMENT_SIMILARITY_PAIR_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
     "DocumentSimilarityQuery": {
       "constant": "DOCUMENT_SIMILARITY_QUERY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "DocumentSimilarityQueryText": {
+      "constant": "DOCUMENT_SIMILARITY_QUERY_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.query"
     },
     "DocumentStatistics": {
       "constant": "DOCUMENT_STATISTICS_SCHEMA",
@@ -787,6 +1259,22 @@
       "constant": "EVALUATION_RESULT_TOTALS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
     },
+    "ExpandedDocumentLine": {
+      "constant": "EXPANDED_DOCUMENT_LINE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "ExpandedQueryToken": {
+      "constant": "EXPANDED_QUERY_TOKEN_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ExpandedSentenceText": {
+      "constant": "EXPANDED_SENTENCE_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "ExpandedWordText": {
+      "constant": "EXPANDED_WORD_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
     "Experiment": {
       "constant": "EXPERIMENT_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.experiment"
@@ -794,6 +1282,10 @@
     "Impression": {
       "constant": "IMPRESSION_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.clicks"
+    },
+    "IndexTokenFrequency": {
+      "constant": "INDEX_TOKEN_FREQUENCY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
     "IndexedSimilarDocument": {
       "constant": "INDEXED_SIMILAR_DOCUMENT_SCHEMA",
@@ -819,13 +1311,25 @@
       "constant": "LABEL_MAP_ENTRY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.label"
     },
+    "MarkedDocumentLine": {
+      "constant": "MARKED_DOCUMENT_LINE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
     "Paragraph": {
       "constant": "PARAGRAPH_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.text"
     },
     "ParagraphBm25Score": {
       "constant": "PARAGRAPH_BM25_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.bm25"
+    },
+    "ParagraphContent": {
+      "constant": "PARAGRAPH_CONTENT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "ParagraphDraft": {
+      "constant": "PARAGRAPH_DRAFT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
     },
     "ParagraphIndexSummary": {
       "constant": "PARAGRAPH_INDEX_SUMMARY_SCHEMA",
@@ -835,13 +1339,33 @@
       "constant": "PARAGRAPH_INDEX_TARGET_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "ParagraphIndexTargetStats": {
+      "constant": "PARAGRAPH_INDEX_TARGET_STATS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
     "ParagraphIndexTerm": {
       "constant": "PARAGRAPH_INDEX_TERM_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "ParagraphIndexTermCount": {
+      "constant": "PARAGRAPH_INDEX_TERM_COUNT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ParagraphLine": {
+      "constant": "PARAGRAPH_LINE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "ParagraphLineGroup": {
+      "constant": "PARAGRAPH_LINE_GROUP_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "ParagraphOverlapMatch": {
+      "constant": "PARAGRAPH_OVERLAP_MATCH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+    },
     "ParagraphOverlapScore": {
       "constant": "PARAGRAPH_OVERLAP_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
     },
     "ParagraphScore": {
       "constant": "PARAGRAPH_SCORE_SCHEMA",
@@ -855,13 +1379,37 @@
       "constant": "PARAGRAPH_SIMILARITY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "ParagraphSimilarityCandidate": {
+      "constant": "PARAGRAPH_SIMILARITY_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
+    "ParagraphSimilarityPair": {
+      "constant": "PARAGRAPH_SIMILARITY_PAIR_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
     "ParagraphSimilarityQuery": {
       "constant": "PARAGRAPH_SIMILARITY_QUERY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "ParagraphSimilarityQueryText": {
+      "constant": "PARAGRAPH_SIMILARITY_QUERY_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.query"
+    },
     "ParagraphStatistics": {
       "constant": "PARAGRAPH_STATISTICS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "PopularityFeedback": {
+      "constant": "POPULARITY_FEEDBACK_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "QueryDocumentFeedback": {
+      "constant": "QUERY_DOCUMENT_FEEDBACK_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "QueryDocumentSignalTotals": {
+      "constant": "QUERY_DOCUMENT_SIGNAL_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.build"
     },
     "QueryDocumentSignals": {
       "constant": "QUERY_DOCUMENT_SIGNALS_SCHEMA",
@@ -878,6 +1426,18 @@
     "QueryLabelAssignments": {
       "constant": "QUERY_LABEL_ASSIGNMENTS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "QueryTerm": {
+      "constant": "QUERY_TERM_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "QueryTermCount": {
+      "constant": "QUERY_TERM_COUNT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "QueryToken": {
+      "constant": "QUERY_TOKEN_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
     "RelevancePolicy": {
       "constant": "RELEVANCE_POLICY_SCHEMA",
@@ -897,7 +1457,11 @@
     },
     "SectionBm25Score": {
       "constant": "SECTION_BM25_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.bm25"
+    },
+    "SectionHeading": {
+      "constant": "SECTION_HEADING_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
     },
     "SectionIndexSummary": {
       "constant": "SECTION_INDEX_SUMMARY_SCHEMA",
@@ -907,13 +1471,29 @@
       "constant": "SECTION_INDEX_TARGET_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "SectionIndexTargetStats": {
+      "constant": "SECTION_INDEX_TARGET_STATS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
     "SectionIndexTerm": {
       "constant": "SECTION_INDEX_TERM_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "SectionIndexTermCount": {
+      "constant": "SECTION_INDEX_TERM_COUNT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SectionKey": {
+      "constant": "SECTION_KEY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "SectionOverlapMatch": {
+      "constant": "SECTION_OVERLAP_MATCH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+    },
     "SectionOverlapScore": {
       "constant": "SECTION_OVERLAP_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
     },
     "SectionScore": {
       "constant": "SECTION_SCORE_SCHEMA",
@@ -927,9 +1507,21 @@
       "constant": "SECTION_SIMILARITY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "SectionSimilarityCandidate": {
+      "constant": "SECTION_SIMILARITY_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
+    "SectionSimilarityPair": {
+      "constant": "SECTION_SIMILARITY_PAIR_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
     "SectionSimilarityQuery": {
       "constant": "SECTION_SIMILARITY_QUERY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "SectionSimilarityQueryText": {
+      "constant": "SECTION_SIMILARITY_QUERY_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.query"
     },
     "SectionStatistics": {
       "constant": "SECTION_STATISTICS_SCHEMA",
@@ -941,7 +1533,7 @@
     },
     "SentenceBm25Score": {
       "constant": "SENTENCE_BM25_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.bm25"
     },
     "SentenceIndexSummary": {
       "constant": "SENTENCE_INDEX_SUMMARY_SCHEMA",
@@ -951,13 +1543,25 @@
       "constant": "SENTENCE_INDEX_TARGET_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "SentenceIndexTargetStats": {
+      "constant": "SENTENCE_INDEX_TARGET_STATS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
     "SentenceIndexTerm": {
       "constant": "SENTENCE_INDEX_TERM_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "SentenceIndexTermCount": {
+      "constant": "SENTENCE_INDEX_TERM_COUNT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SentenceOverlapMatch": {
+      "constant": "SENTENCE_OVERLAP_MATCH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+    },
     "SentenceOverlapScore": {
       "constant": "SENTENCE_OVERLAP_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
     },
     "SentenceScore": {
       "constant": "SENTENCE_SCORE_SCHEMA",
@@ -975,13 +1579,29 @@
       "constant": "SENTENCE_SIMILARITY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "SentenceSimilarityCandidate": {
+      "constant": "SENTENCE_SIMILARITY_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
+    "SentenceSimilarityPair": {
+      "constant": "SENTENCE_SIMILARITY_PAIR_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
     "SentenceSimilarityQuery": {
       "constant": "SENTENCE_SIMILARITY_QUERY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "SentenceSimilarityQueryText": {
+      "constant": "SENTENCE_SIMILARITY_QUERY_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.query"
+    },
     "SentenceStatistics": {
       "constant": "SENTENCE_STATISTICS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "SentenceText": {
+      "constant": "SENTENCE_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
     },
     "SimilarDocument": {
       "constant": "SIMILAR_DOCUMENT_SCHEMA",
@@ -1007,6 +1627,10 @@
       "constant": "SIMILARITY_SENTENCE_QUERY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "SingletonUserBand": {
+      "constant": "SINGLETON_USER_BAND_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.resolve"
+    },
     "TimeWindow": {
       "constant": "TIME_WINDOW_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.TimeWindow"
@@ -1023,9 +1647,17 @@
       "constant": "USER_BAND_MEMBERSHIP_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.user"
     },
+    "UserBandPath": {
+      "constant": "USER_BAND_PATH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.resolve"
+    },
     "Word": {
       "constant": "WORD_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.text"
+    },
+    "WordText": {
+      "constant": "WORD_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
     }
   },
   "source_transform": "examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals",
@@ -1050,14 +1682,14 @@
       {
         "detail": {
           "input_schema": "DailyImpressions",
-          "output_schema": "DailyImpressions"
+          "output_schema": "ContextDailyImpressions"
         },
         "operation": "step",
         "sources": [
           "daily_impressions"
         ],
-        "step": "declare_context_impressions",
-        "target": "declare_context_impressions"
+        "step": "global_impressions",
+        "target": "global_impressions"
       },
       {
         "detail": {
@@ -1067,8 +1699,8 @@
         "sources": [
           "daily_impressions.window"
         ],
-        "step": "declare_context_impressions",
-        "target": "DailyImpressions.window"
+        "step": "global_impressions",
+        "target": "ContextDailyImpressions.window"
       },
       {
         "detail": {
@@ -1078,8 +1710,8 @@
         "sources": [
           "daily_impressions.query"
         ],
-        "step": "declare_context_impressions",
-        "target": "DailyImpressions.query"
+        "step": "global_impressions",
+        "target": "ContextDailyImpressions.query"
       },
       {
         "detail": {
@@ -1089,8 +1721,8 @@
         "sources": [
           "daily_impressions.document_id"
         ],
-        "step": "declare_context_impressions",
-        "target": "DailyImpressions.document_id"
+        "step": "global_impressions",
+        "target": "ContextDailyImpressions.document_id"
       },
       {
         "detail": {
@@ -1100,8 +1732,8 @@
         "sources": [
           "daily_impressions.position"
         ],
-        "step": "declare_context_impressions",
-        "target": "DailyImpressions.position"
+        "step": "global_impressions",
+        "target": "ContextDailyImpressions.position"
       },
       {
         "detail": {
@@ -1111,8 +1743,8 @@
         "sources": [
           "daily_impressions.examination_propensity"
         ],
-        "step": "declare_context_impressions",
-        "target": "DailyImpressions.examination_propensity"
+        "step": "global_impressions",
+        "target": "ContextDailyImpressions.examination_propensity"
       },
       {
         "detail": {
@@ -1122,8 +1754,8 @@
         "sources": [
           "daily_impressions.user_id"
         ],
-        "step": "declare_context_impressions",
-        "target": "DailyImpressions.user_id"
+        "step": "global_impressions",
+        "target": "ContextDailyImpressions.user_id"
       },
       {
         "detail": {
@@ -1133,8 +1765,8 @@
         "sources": [
           "literal"
         ],
-        "step": "declare_context_impressions",
-        "target": "DailyImpressions.band_id"
+        "step": "global_impressions",
+        "target": "ContextDailyImpressions.band_id"
       },
       {
         "detail": {
@@ -1144,33 +1776,423 @@
         "sources": [
           "daily_impressions.impression_count"
         ],
-        "step": "declare_context_impressions",
-        "target": "DailyImpressions.impression_count"
+        "step": "global_impressions",
+        "target": "ContextDailyImpressions.impression_count"
       },
       {
         "detail": {
-          "phase": "raw",
-          "project_output": false,
-          "schema_mode": "strict"
+          "input_schema": "DailyImpressions",
+          "output_schema": "ContextDailyImpressions"
         },
-        "operation": "hook",
+        "operation": "step",
         "sources": [
-          "DailyImpressions"
+          "ContextDailyImpressions",
+          "membership",
+          "fallback"
         ],
-        "step": "declare_context_impressions",
-        "target": "declare_context_impressions.hook.expand_impressions"
+        "step": "fallback_impressions",
+        "target": "fallback_impressions"
+      },
+      {
+        "detail": {},
+        "operation": "filter",
+        "sources": [
+          "membership.user_band_id"
+        ],
+        "step": "fallback_impressions",
+        "target": "fallback_impressions.filter[0]"
+      },
+      {
+        "detail": {},
+        "operation": "filter",
+        "sources": [
+          "fallback.user_band_fallback_id"
+        ],
+        "step": "fallback_impressions",
+        "target": "fallback_impressions.filter[1]"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "user_band_memberships"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "membership.user_id",
+          "impression.user_id"
+        ],
+        "step": "fallback_impressions",
+        "target": "fallback_impressions.join[1].membership"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "band_fallbacks_2"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "fallback.user_band_id",
+          "membership.user_band_id"
+        ],
+        "step": "fallback_impressions",
+        "target": "fallback_impressions.join[2].fallback"
+      },
+      {
+        "detail": {
+          "field": "window"
+        },
+        "operation": "project",
+        "sources": [
+          "impression.window"
+        ],
+        "step": "fallback_impressions",
+        "target": "ContextDailyImpressions.window"
+      },
+      {
+        "detail": {
+          "field": "query"
+        },
+        "operation": "project",
+        "sources": [
+          "impression.query"
+        ],
+        "step": "fallback_impressions",
+        "target": "ContextDailyImpressions.query"
+      },
+      {
+        "detail": {
+          "field": "document_id"
+        },
+        "operation": "project",
+        "sources": [
+          "impression.document_id"
+        ],
+        "step": "fallback_impressions",
+        "target": "ContextDailyImpressions.document_id"
+      },
+      {
+        "detail": {
+          "field": "position"
+        },
+        "operation": "project",
+        "sources": [
+          "impression.position"
+        ],
+        "step": "fallback_impressions",
+        "target": "ContextDailyImpressions.position"
+      },
+      {
+        "detail": {
+          "field": "examination_propensity"
+        },
+        "operation": "project",
+        "sources": [
+          "impression.examination_propensity"
+        ],
+        "step": "fallback_impressions",
+        "target": "ContextDailyImpressions.examination_propensity"
+      },
+      {
+        "detail": {
+          "field": "user_id"
+        },
+        "operation": "project",
+        "sources": [
+          "impression.user_id"
+        ],
+        "step": "fallback_impressions",
+        "target": "ContextDailyImpressions.user_id"
+      },
+      {
+        "detail": {
+          "field": "band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "fallback.user_band_fallback_id"
+        ],
+        "step": "fallback_impressions",
+        "target": "ContextDailyImpressions.band_id"
+      },
+      {
+        "detail": {
+          "field": "impression_count"
+        },
+        "operation": "project",
+        "sources": [
+          "impression.impression_count"
+        ],
+        "step": "fallback_impressions",
+        "target": "ContextDailyImpressions.impression_count"
+      },
+      {
+        "detail": {
+          "input_schema": "DailyImpressions",
+          "output_schema": "ContextDailyImpressions"
+        },
+        "operation": "step",
+        "sources": [
+          "ContextDailyImpressions",
+          "membership"
+        ],
+        "step": "band_impressions",
+        "target": "band_impressions"
+      },
+      {
+        "detail": {},
+        "operation": "filter",
+        "sources": [
+          "membership.band_id"
+        ],
+        "step": "band_impressions",
+        "target": "band_impressions.filter[0]"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "band_memberships"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "membership.user_id",
+          "impression.user_id"
+        ],
+        "step": "band_impressions",
+        "target": "band_impressions.join[1].membership"
+      },
+      {
+        "detail": {
+          "field": "window"
+        },
+        "operation": "project",
+        "sources": [
+          "impression.window"
+        ],
+        "step": "band_impressions",
+        "target": "ContextDailyImpressions.window"
+      },
+      {
+        "detail": {
+          "field": "query"
+        },
+        "operation": "project",
+        "sources": [
+          "impression.query"
+        ],
+        "step": "band_impressions",
+        "target": "ContextDailyImpressions.query"
+      },
+      {
+        "detail": {
+          "field": "document_id"
+        },
+        "operation": "project",
+        "sources": [
+          "impression.document_id"
+        ],
+        "step": "band_impressions",
+        "target": "ContextDailyImpressions.document_id"
+      },
+      {
+        "detail": {
+          "field": "position"
+        },
+        "operation": "project",
+        "sources": [
+          "impression.position"
+        ],
+        "step": "band_impressions",
+        "target": "ContextDailyImpressions.position"
+      },
+      {
+        "detail": {
+          "field": "examination_propensity"
+        },
+        "operation": "project",
+        "sources": [
+          "impression.examination_propensity"
+        ],
+        "step": "band_impressions",
+        "target": "ContextDailyImpressions.examination_propensity"
+      },
+      {
+        "detail": {
+          "field": "user_id"
+        },
+        "operation": "project",
+        "sources": [
+          "impression.user_id"
+        ],
+        "step": "band_impressions",
+        "target": "ContextDailyImpressions.user_id"
+      },
+      {
+        "detail": {
+          "field": "band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "membership.user_band_id"
+        ],
+        "step": "band_impressions",
+        "target": "ContextDailyImpressions.band_id"
+      },
+      {
+        "detail": {
+          "field": "impression_count"
+        },
+        "operation": "project",
+        "sources": [
+          "impression.impression_count"
+        ],
+        "step": "band_impressions",
+        "target": "ContextDailyImpressions.impression_count"
+      },
+      {
+        "detail": {
+          "input_schema": "ContextDailyImpressions",
+          "output_schema": "ContextDailyImpressions"
+        },
+        "operation": "step",
+        "sources": [
+          "ContextDailyImpressions"
+        ],
+        "step": "merge_context_impressions",
+        "target": "merge_context_impressions"
+      },
+      {
+        "detail": {
+          "by_name": false,
+          "schema": "ContextDailyImpressions",
+          "source": "fallback_context_impressions"
+        },
+        "operation": "union_all",
+        "sources": [
+          "global_fact",
+          "fallback_fact"
+        ],
+        "step": "merge_context_impressions",
+        "target": "merge_context_impressions.union_all[0].fallback_fact"
+      },
+      {
+        "detail": {
+          "by_name": false,
+          "schema": "ContextDailyImpressions",
+          "source": "band_context_impressions"
+        },
+        "operation": "union_all",
+        "sources": [
+          "global_fact",
+          "band_fact"
+        ],
+        "step": "merge_context_impressions",
+        "target": "merge_context_impressions.union_all[1].band_fact"
+      },
+      {
+        "detail": {
+          "field": "window"
+        },
+        "operation": "project",
+        "sources": [
+          "global_fact.window"
+        ],
+        "step": "merge_context_impressions",
+        "target": "ContextDailyImpressions.window"
+      },
+      {
+        "detail": {
+          "field": "query"
+        },
+        "operation": "project",
+        "sources": [
+          "global_fact.query"
+        ],
+        "step": "merge_context_impressions",
+        "target": "ContextDailyImpressions.query"
+      },
+      {
+        "detail": {
+          "field": "document_id"
+        },
+        "operation": "project",
+        "sources": [
+          "global_fact.document_id"
+        ],
+        "step": "merge_context_impressions",
+        "target": "ContextDailyImpressions.document_id"
+      },
+      {
+        "detail": {
+          "field": "position"
+        },
+        "operation": "project",
+        "sources": [
+          "global_fact.position"
+        ],
+        "step": "merge_context_impressions",
+        "target": "ContextDailyImpressions.position"
+      },
+      {
+        "detail": {
+          "field": "examination_propensity"
+        },
+        "operation": "project",
+        "sources": [
+          "global_fact.examination_propensity"
+        ],
+        "step": "merge_context_impressions",
+        "target": "ContextDailyImpressions.examination_propensity"
+      },
+      {
+        "detail": {
+          "field": "user_id"
+        },
+        "operation": "project",
+        "sources": [
+          "global_fact.user_id"
+        ],
+        "step": "merge_context_impressions",
+        "target": "ContextDailyImpressions.user_id"
+      },
+      {
+        "detail": {
+          "field": "band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "global_fact.band_id"
+        ],
+        "step": "merge_context_impressions",
+        "target": "ContextDailyImpressions.band_id"
+      },
+      {
+        "detail": {
+          "field": "impression_count"
+        },
+        "operation": "project",
+        "sources": [
+          "global_fact.impression_count"
+        ],
+        "step": "merge_context_impressions",
+        "target": "ContextDailyImpressions.impression_count"
       },
       {
         "detail": {
           "input_schema": "DailyClicks",
-          "output_schema": "DailyClicks"
+          "output_schema": "ContextDailyClicks"
         },
         "operation": "step",
         "sources": [
-          "DailyImpressions"
+          "ContextDailyImpressions"
         ],
-        "step": "declare_context_clicks",
-        "target": "declare_context_clicks"
+        "step": "global_clicks",
+        "target": "global_clicks"
       },
       {
         "detail": {
@@ -1180,8 +2202,8 @@
         "sources": [
           "daily_clicks.window"
         ],
-        "step": "declare_context_clicks",
-        "target": "DailyClicks.window"
+        "step": "global_clicks",
+        "target": "ContextDailyClicks.window"
       },
       {
         "detail": {
@@ -1191,8 +2213,8 @@
         "sources": [
           "daily_clicks.query"
         ],
-        "step": "declare_context_clicks",
-        "target": "DailyClicks.query"
+        "step": "global_clicks",
+        "target": "ContextDailyClicks.query"
       },
       {
         "detail": {
@@ -1202,8 +2224,8 @@
         "sources": [
           "daily_clicks.document_id"
         ],
-        "step": "declare_context_clicks",
-        "target": "DailyClicks.document_id"
+        "step": "global_clicks",
+        "target": "ContextDailyClicks.document_id"
       },
       {
         "detail": {
@@ -1213,8 +2235,8 @@
         "sources": [
           "daily_clicks.position"
         ],
-        "step": "declare_context_clicks",
-        "target": "DailyClicks.position"
+        "step": "global_clicks",
+        "target": "ContextDailyClicks.position"
       },
       {
         "detail": {
@@ -1224,8 +2246,8 @@
         "sources": [
           "daily_clicks.examination_propensity"
         ],
-        "step": "declare_context_clicks",
-        "target": "DailyClicks.examination_propensity"
+        "step": "global_clicks",
+        "target": "ContextDailyClicks.examination_propensity"
       },
       {
         "detail": {
@@ -1235,8 +2257,8 @@
         "sources": [
           "daily_clicks.user_id"
         ],
-        "step": "declare_context_clicks",
-        "target": "DailyClicks.user_id"
+        "step": "global_clicks",
+        "target": "ContextDailyClicks.user_id"
       },
       {
         "detail": {
@@ -1246,8 +2268,8 @@
         "sources": [
           "literal"
         ],
-        "step": "declare_context_clicks",
-        "target": "DailyClicks.band_id"
+        "step": "global_clicks",
+        "target": "ContextDailyClicks.band_id"
       },
       {
         "detail": {
@@ -1257,8 +2279,8 @@
         "sources": [
           "daily_clicks.click_count"
         ],
-        "step": "declare_context_clicks",
-        "target": "DailyClicks.click_count"
+        "step": "global_clicks",
+        "target": "ContextDailyClicks.click_count"
       },
       {
         "detail": {
@@ -1268,8 +2290,8 @@
         "sources": [
           "daily_clicks.clicked_impression_count"
         ],
-        "step": "declare_context_clicks",
-        "target": "DailyClicks.clicked_impression_count"
+        "step": "global_clicks",
+        "target": "ContextDailyClicks.clicked_impression_count"
       },
       {
         "detail": {
@@ -1279,8 +2301,8 @@
         "sources": [
           "daily_clicks.dwell_seconds"
         ],
-        "step": "declare_context_clicks",
-        "target": "DailyClicks.dwell_seconds"
+        "step": "global_clicks",
+        "target": "ContextDailyClicks.dwell_seconds"
       },
       {
         "detail": {
@@ -1290,8 +2312,8 @@
         "sources": [
           "daily_clicks.dwell_credit"
         ],
-        "step": "declare_context_clicks",
-        "target": "DailyClicks.dwell_credit"
+        "step": "global_clicks",
+        "target": "ContextDailyClicks.dwell_credit"
       },
       {
         "detail": {
@@ -1301,30 +2323,552 @@
         "sources": [
           "daily_clicks.long_click_count"
         ],
-        "step": "declare_context_clicks",
-        "target": "DailyClicks.long_click_count"
+        "step": "global_clicks",
+        "target": "ContextDailyClicks.long_click_count"
       },
       {
         "detail": {
-          "phase": "raw",
-          "project_output": false,
-          "schema_mode": "strict"
-        },
-        "operation": "hook",
-        "sources": [
-          "DailyClicks"
-        ],
-        "step": "declare_context_clicks",
-        "target": "declare_context_clicks.hook.expand_clicks"
-      },
-      {
-        "detail": {
-          "input_schema": "DailyImpressions",
-          "output_schema": "QueryDocumentSignals"
+          "input_schema": "DailyClicks",
+          "output_schema": "ContextDailyClicks"
         },
         "operation": "step",
         "sources": [
-          "DailyClicks",
+          "ContextDailyClicks",
+          "membership",
+          "fallback"
+        ],
+        "step": "fallback_clicks",
+        "target": "fallback_clicks"
+      },
+      {
+        "detail": {},
+        "operation": "filter",
+        "sources": [
+          "membership.user_band_id"
+        ],
+        "step": "fallback_clicks",
+        "target": "fallback_clicks.filter[0]"
+      },
+      {
+        "detail": {},
+        "operation": "filter",
+        "sources": [
+          "fallback.user_band_fallback_id"
+        ],
+        "step": "fallback_clicks",
+        "target": "fallback_clicks.filter[1]"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "user_band_memberships"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "membership.user_id",
+          "click.user_id"
+        ],
+        "step": "fallback_clicks",
+        "target": "fallback_clicks.join[1].membership"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "band_fallbacks_2"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "fallback.user_band_id",
+          "membership.user_band_id"
+        ],
+        "step": "fallback_clicks",
+        "target": "fallback_clicks.join[2].fallback"
+      },
+      {
+        "detail": {
+          "field": "window"
+        },
+        "operation": "project",
+        "sources": [
+          "click.window"
+        ],
+        "step": "fallback_clicks",
+        "target": "ContextDailyClicks.window"
+      },
+      {
+        "detail": {
+          "field": "query"
+        },
+        "operation": "project",
+        "sources": [
+          "click.query"
+        ],
+        "step": "fallback_clicks",
+        "target": "ContextDailyClicks.query"
+      },
+      {
+        "detail": {
+          "field": "document_id"
+        },
+        "operation": "project",
+        "sources": [
+          "click.document_id"
+        ],
+        "step": "fallback_clicks",
+        "target": "ContextDailyClicks.document_id"
+      },
+      {
+        "detail": {
+          "field": "position"
+        },
+        "operation": "project",
+        "sources": [
+          "click.position"
+        ],
+        "step": "fallback_clicks",
+        "target": "ContextDailyClicks.position"
+      },
+      {
+        "detail": {
+          "field": "examination_propensity"
+        },
+        "operation": "project",
+        "sources": [
+          "click.examination_propensity"
+        ],
+        "step": "fallback_clicks",
+        "target": "ContextDailyClicks.examination_propensity"
+      },
+      {
+        "detail": {
+          "field": "user_id"
+        },
+        "operation": "project",
+        "sources": [
+          "click.user_id"
+        ],
+        "step": "fallback_clicks",
+        "target": "ContextDailyClicks.user_id"
+      },
+      {
+        "detail": {
+          "field": "band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "fallback.user_band_fallback_id"
+        ],
+        "step": "fallback_clicks",
+        "target": "ContextDailyClicks.band_id"
+      },
+      {
+        "detail": {
+          "field": "click_count"
+        },
+        "operation": "project",
+        "sources": [
+          "click.click_count"
+        ],
+        "step": "fallback_clicks",
+        "target": "ContextDailyClicks.click_count"
+      },
+      {
+        "detail": {
+          "field": "clicked_impression_count"
+        },
+        "operation": "project",
+        "sources": [
+          "click.clicked_impression_count"
+        ],
+        "step": "fallback_clicks",
+        "target": "ContextDailyClicks.clicked_impression_count"
+      },
+      {
+        "detail": {
+          "field": "dwell_seconds"
+        },
+        "operation": "project",
+        "sources": [
+          "click.dwell_seconds"
+        ],
+        "step": "fallback_clicks",
+        "target": "ContextDailyClicks.dwell_seconds"
+      },
+      {
+        "detail": {
+          "field": "dwell_credit"
+        },
+        "operation": "project",
+        "sources": [
+          "click.dwell_credit"
+        ],
+        "step": "fallback_clicks",
+        "target": "ContextDailyClicks.dwell_credit"
+      },
+      {
+        "detail": {
+          "field": "long_click_count"
+        },
+        "operation": "project",
+        "sources": [
+          "click.long_click_count"
+        ],
+        "step": "fallback_clicks",
+        "target": "ContextDailyClicks.long_click_count"
+      },
+      {
+        "detail": {
+          "input_schema": "DailyClicks",
+          "output_schema": "ContextDailyClicks"
+        },
+        "operation": "step",
+        "sources": [
+          "ContextDailyClicks",
+          "membership"
+        ],
+        "step": "band_clicks",
+        "target": "band_clicks"
+      },
+      {
+        "detail": {},
+        "operation": "filter",
+        "sources": [
+          "membership.band_id"
+        ],
+        "step": "band_clicks",
+        "target": "band_clicks.filter[0]"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "band_memberships"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "membership.user_id",
+          "click.user_id"
+        ],
+        "step": "band_clicks",
+        "target": "band_clicks.join[1].membership"
+      },
+      {
+        "detail": {
+          "field": "window"
+        },
+        "operation": "project",
+        "sources": [
+          "click.window"
+        ],
+        "step": "band_clicks",
+        "target": "ContextDailyClicks.window"
+      },
+      {
+        "detail": {
+          "field": "query"
+        },
+        "operation": "project",
+        "sources": [
+          "click.query"
+        ],
+        "step": "band_clicks",
+        "target": "ContextDailyClicks.query"
+      },
+      {
+        "detail": {
+          "field": "document_id"
+        },
+        "operation": "project",
+        "sources": [
+          "click.document_id"
+        ],
+        "step": "band_clicks",
+        "target": "ContextDailyClicks.document_id"
+      },
+      {
+        "detail": {
+          "field": "position"
+        },
+        "operation": "project",
+        "sources": [
+          "click.position"
+        ],
+        "step": "band_clicks",
+        "target": "ContextDailyClicks.position"
+      },
+      {
+        "detail": {
+          "field": "examination_propensity"
+        },
+        "operation": "project",
+        "sources": [
+          "click.examination_propensity"
+        ],
+        "step": "band_clicks",
+        "target": "ContextDailyClicks.examination_propensity"
+      },
+      {
+        "detail": {
+          "field": "user_id"
+        },
+        "operation": "project",
+        "sources": [
+          "click.user_id"
+        ],
+        "step": "band_clicks",
+        "target": "ContextDailyClicks.user_id"
+      },
+      {
+        "detail": {
+          "field": "band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "membership.user_band_id"
+        ],
+        "step": "band_clicks",
+        "target": "ContextDailyClicks.band_id"
+      },
+      {
+        "detail": {
+          "field": "click_count"
+        },
+        "operation": "project",
+        "sources": [
+          "click.click_count"
+        ],
+        "step": "band_clicks",
+        "target": "ContextDailyClicks.click_count"
+      },
+      {
+        "detail": {
+          "field": "clicked_impression_count"
+        },
+        "operation": "project",
+        "sources": [
+          "click.clicked_impression_count"
+        ],
+        "step": "band_clicks",
+        "target": "ContextDailyClicks.clicked_impression_count"
+      },
+      {
+        "detail": {
+          "field": "dwell_seconds"
+        },
+        "operation": "project",
+        "sources": [
+          "click.dwell_seconds"
+        ],
+        "step": "band_clicks",
+        "target": "ContextDailyClicks.dwell_seconds"
+      },
+      {
+        "detail": {
+          "field": "dwell_credit"
+        },
+        "operation": "project",
+        "sources": [
+          "click.dwell_credit"
+        ],
+        "step": "band_clicks",
+        "target": "ContextDailyClicks.dwell_credit"
+      },
+      {
+        "detail": {
+          "field": "long_click_count"
+        },
+        "operation": "project",
+        "sources": [
+          "click.long_click_count"
+        ],
+        "step": "band_clicks",
+        "target": "ContextDailyClicks.long_click_count"
+      },
+      {
+        "detail": {
+          "input_schema": "ContextDailyClicks",
+          "output_schema": "ContextDailyClicks"
+        },
+        "operation": "step",
+        "sources": [
+          "ContextDailyClicks"
+        ],
+        "step": "merge_context_clicks",
+        "target": "merge_context_clicks"
+      },
+      {
+        "detail": {
+          "by_name": false,
+          "schema": "ContextDailyClicks",
+          "source": "fallback_context_clicks"
+        },
+        "operation": "union_all",
+        "sources": [
+          "global_fact",
+          "fallback_fact"
+        ],
+        "step": "merge_context_clicks",
+        "target": "merge_context_clicks.union_all[0].fallback_fact"
+      },
+      {
+        "detail": {
+          "by_name": false,
+          "schema": "ContextDailyClicks",
+          "source": "band_context_clicks"
+        },
+        "operation": "union_all",
+        "sources": [
+          "global_fact",
+          "band_fact"
+        ],
+        "step": "merge_context_clicks",
+        "target": "merge_context_clicks.union_all[1].band_fact"
+      },
+      {
+        "detail": {
+          "field": "window"
+        },
+        "operation": "project",
+        "sources": [
+          "global_fact.window"
+        ],
+        "step": "merge_context_clicks",
+        "target": "ContextDailyClicks.window"
+      },
+      {
+        "detail": {
+          "field": "query"
+        },
+        "operation": "project",
+        "sources": [
+          "global_fact.query"
+        ],
+        "step": "merge_context_clicks",
+        "target": "ContextDailyClicks.query"
+      },
+      {
+        "detail": {
+          "field": "document_id"
+        },
+        "operation": "project",
+        "sources": [
+          "global_fact.document_id"
+        ],
+        "step": "merge_context_clicks",
+        "target": "ContextDailyClicks.document_id"
+      },
+      {
+        "detail": {
+          "field": "position"
+        },
+        "operation": "project",
+        "sources": [
+          "global_fact.position"
+        ],
+        "step": "merge_context_clicks",
+        "target": "ContextDailyClicks.position"
+      },
+      {
+        "detail": {
+          "field": "examination_propensity"
+        },
+        "operation": "project",
+        "sources": [
+          "global_fact.examination_propensity"
+        ],
+        "step": "merge_context_clicks",
+        "target": "ContextDailyClicks.examination_propensity"
+      },
+      {
+        "detail": {
+          "field": "user_id"
+        },
+        "operation": "project",
+        "sources": [
+          "global_fact.user_id"
+        ],
+        "step": "merge_context_clicks",
+        "target": "ContextDailyClicks.user_id"
+      },
+      {
+        "detail": {
+          "field": "band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "global_fact.band_id"
+        ],
+        "step": "merge_context_clicks",
+        "target": "ContextDailyClicks.band_id"
+      },
+      {
+        "detail": {
+          "field": "click_count"
+        },
+        "operation": "project",
+        "sources": [
+          "global_fact.click_count"
+        ],
+        "step": "merge_context_clicks",
+        "target": "ContextDailyClicks.click_count"
+      },
+      {
+        "detail": {
+          "field": "clicked_impression_count"
+        },
+        "operation": "project",
+        "sources": [
+          "global_fact.clicked_impression_count"
+        ],
+        "step": "merge_context_clicks",
+        "target": "ContextDailyClicks.clicked_impression_count"
+      },
+      {
+        "detail": {
+          "field": "dwell_seconds"
+        },
+        "operation": "project",
+        "sources": [
+          "global_fact.dwell_seconds"
+        ],
+        "step": "merge_context_clicks",
+        "target": "ContextDailyClicks.dwell_seconds"
+      },
+      {
+        "detail": {
+          "field": "dwell_credit"
+        },
+        "operation": "project",
+        "sources": [
+          "global_fact.dwell_credit"
+        ],
+        "step": "merge_context_clicks",
+        "target": "ContextDailyClicks.dwell_credit"
+      },
+      {
+        "detail": {
+          "field": "long_click_count"
+        },
+        "operation": "project",
+        "sources": [
+          "global_fact.long_click_count"
+        ],
+        "step": "merge_context_clicks",
+        "target": "ContextDailyClicks.long_click_count"
+      },
+      {
+        "detail": {
+          "input_schema": "ContextDailyImpressions",
+          "output_schema": "QueryDocumentSignalTotals"
+        },
+        "operation": "step",
+        "sources": [
+          "ContextDailyClicks",
           "click",
           "policy"
         ],
@@ -1381,7 +2925,7 @@
           "impression.query"
         ],
         "step": "summarize_query",
-        "target": "QueryDocumentSignals.query"
+        "target": "QueryDocumentSignalTotals.query"
       },
       {
         "detail": {
@@ -1394,7 +2938,7 @@
           "impression.document_id"
         ],
         "step": "summarize_query",
-        "target": "QueryDocumentSignals.document_id"
+        "target": "QueryDocumentSignalTotals.document_id"
       },
       {
         "detail": {
@@ -1407,7 +2951,7 @@
           "impression.band_id"
         ],
         "step": "summarize_query",
-        "target": "QueryDocumentSignals.band_id"
+        "target": "QueryDocumentSignalTotals.band_id"
       },
       {
         "detail": {
@@ -1420,7 +2964,7 @@
           "impression.impression_count"
         ],
         "step": "summarize_query",
-        "target": "QueryDocumentSignals.impression_count"
+        "target": "QueryDocumentSignalTotals.impression_count"
       },
       {
         "detail": {
@@ -1433,7 +2977,7 @@
           "click.click_count"
         ],
         "step": "summarize_query",
-        "target": "QueryDocumentSignals.click_count"
+        "target": "QueryDocumentSignalTotals.click_count"
       },
       {
         "detail": {
@@ -1446,7 +2990,7 @@
           "click.clicked_impression_count"
         ],
         "step": "summarize_query",
-        "target": "QueryDocumentSignals.clicked_impression_count"
+        "target": "QueryDocumentSignalTotals.clicked_impression_count"
       },
       {
         "detail": {
@@ -1459,7 +3003,7 @@
           "click.dwell_seconds"
         ],
         "step": "summarize_query",
-        "target": "QueryDocumentSignals.dwell_seconds"
+        "target": "QueryDocumentSignalTotals.dwell_seconds"
       },
       {
         "detail": {
@@ -1472,7 +3016,7 @@
           "click.long_click_count"
         ],
         "step": "summarize_query",
-        "target": "QueryDocumentSignals.long_click_count"
+        "target": "QueryDocumentSignalTotals.long_click_count"
       },
       {
         "detail": {
@@ -1485,7 +3029,7 @@
           "context_impressions"
         ],
         "step": "summarize_query",
-        "target": "QueryDocumentSignals.click_through_rate"
+        "target": "QueryDocumentSignalTotals.click_through_rate"
       },
       {
         "detail": {
@@ -1502,7 +3046,7 @@
           "impression.examination_propensity"
         ],
         "step": "summarize_query",
-        "target": "QueryDocumentSignals.ips_clicks"
+        "target": "QueryDocumentSignalTotals.ips_clicks"
       },
       {
         "detail": {
@@ -1519,7 +3063,7 @@
           "impression.examination_propensity"
         ],
         "step": "summarize_query",
-        "target": "QueryDocumentSignals.ips_dwell_credit"
+        "target": "QueryDocumentSignalTotals.ips_dwell_credit"
       },
       {
         "detail": {
@@ -1532,7 +3076,7 @@
           "context_impressions"
         ],
         "step": "summarize_query",
-        "target": "QueryDocumentSignals.ips_click_through_rate"
+        "target": "QueryDocumentSignalTotals.ips_click_through_rate"
       },
       {
         "detail": {
@@ -1549,7 +3093,7 @@
           "impression.examination_propensity"
         ],
         "step": "summarize_query",
-        "target": "QueryDocumentSignals.ips_impression_weight"
+        "target": "QueryDocumentSignalTotals.ips_impression_weight"
       },
       {
         "detail": {
@@ -1566,7 +3110,7 @@
           "impression.examination_propensity"
         ],
         "step": "summarize_query",
-        "target": "QueryDocumentSignals.ips_clicked_impression_weight"
+        "target": "QueryDocumentSignalTotals.ips_clicked_impression_weight"
       },
       {
         "detail": {
@@ -1579,7 +3123,7 @@
           "context_impressions"
         ],
         "step": "summarize_query",
-        "target": "QueryDocumentSignals.normalized_dwell_score"
+        "target": "QueryDocumentSignalTotals.normalized_dwell_score"
       },
       {
         "detail": {
@@ -1592,7 +3136,7 @@
           "context_impressions"
         ],
         "step": "summarize_query",
-        "target": "QueryDocumentSignals.normalized_ctr_score"
+        "target": "QueryDocumentSignalTotals.normalized_ctr_score"
       },
       {
         "detail": {
@@ -1605,16 +3149,16 @@
           "context_impressions"
         ],
         "step": "summarize_query",
-        "target": "QueryDocumentSignals.normalized_score"
+        "target": "QueryDocumentSignalTotals.normalized_score"
       },
       {
         "detail": {
-          "input_schema": "DailyImpressions",
-          "output_schema": "DocumentPopularity"
+          "input_schema": "ContextDailyImpressions",
+          "output_schema": "DocumentPopularityTotals"
         },
         "operation": "step",
         "sources": [
-          "QueryDocumentSignals",
+          "QueryDocumentSignalTotals",
           "click",
           "policy"
         ],
@@ -1671,7 +3215,7 @@
           "impression.document_id"
         ],
         "step": "summarize_popularity",
-        "target": "DocumentPopularity.document_id"
+        "target": "DocumentPopularityTotals.document_id"
       },
       {
         "detail": {
@@ -1684,7 +3228,7 @@
           "impression.band_id"
         ],
         "step": "summarize_popularity",
-        "target": "DocumentPopularity.band_id"
+        "target": "DocumentPopularityTotals.band_id"
       },
       {
         "detail": {
@@ -1697,7 +3241,7 @@
           "impression.impression_count"
         ],
         "step": "summarize_popularity",
-        "target": "DocumentPopularity.impression_count"
+        "target": "DocumentPopularityTotals.impression_count"
       },
       {
         "detail": {
@@ -1710,7 +3254,7 @@
           "click.click_count"
         ],
         "step": "summarize_popularity",
-        "target": "DocumentPopularity.click_count"
+        "target": "DocumentPopularityTotals.click_count"
       },
       {
         "detail": {
@@ -1723,7 +3267,7 @@
           "click.clicked_impression_count"
         ],
         "step": "summarize_popularity",
-        "target": "DocumentPopularity.clicked_impression_count"
+        "target": "DocumentPopularityTotals.clicked_impression_count"
       },
       {
         "detail": {
@@ -1736,7 +3280,7 @@
           "click.dwell_seconds"
         ],
         "step": "summarize_popularity",
-        "target": "DocumentPopularity.dwell_seconds"
+        "target": "DocumentPopularityTotals.dwell_seconds"
       },
       {
         "detail": {
@@ -1749,7 +3293,7 @@
           "click.long_click_count"
         ],
         "step": "summarize_popularity",
-        "target": "DocumentPopularity.long_click_count"
+        "target": "DocumentPopularityTotals.long_click_count"
       },
       {
         "detail": {
@@ -1762,7 +3306,7 @@
           "context_impressions"
         ],
         "step": "summarize_popularity",
-        "target": "DocumentPopularity.click_through_rate"
+        "target": "DocumentPopularityTotals.click_through_rate"
       },
       {
         "detail": {
@@ -1779,7 +3323,7 @@
           "impression.examination_propensity"
         ],
         "step": "summarize_popularity",
-        "target": "DocumentPopularity.ips_clicks"
+        "target": "DocumentPopularityTotals.ips_clicks"
       },
       {
         "detail": {
@@ -1796,7 +3340,7 @@
           "impression.examination_propensity"
         ],
         "step": "summarize_popularity",
-        "target": "DocumentPopularity.ips_dwell_credit"
+        "target": "DocumentPopularityTotals.ips_dwell_credit"
       },
       {
         "detail": {
@@ -1809,7 +3353,7 @@
           "context_impressions"
         ],
         "step": "summarize_popularity",
-        "target": "DocumentPopularity.ips_click_through_rate"
+        "target": "DocumentPopularityTotals.ips_click_through_rate"
       },
       {
         "detail": {
@@ -1826,7 +3370,7 @@
           "impression.examination_propensity"
         ],
         "step": "summarize_popularity",
-        "target": "DocumentPopularity.ips_impression_weight"
+        "target": "DocumentPopularityTotals.ips_impression_weight"
       },
       {
         "detail": {
@@ -1843,7 +3387,7 @@
           "impression.examination_propensity"
         ],
         "step": "summarize_popularity",
-        "target": "DocumentPopularity.ips_clicked_impression_weight"
+        "target": "DocumentPopularityTotals.ips_clicked_impression_weight"
       },
       {
         "detail": {
@@ -1856,7 +3400,7 @@
           "context_impressions"
         ],
         "step": "summarize_popularity",
-        "target": "DocumentPopularity.normalized_dwell_score"
+        "target": "DocumentPopularityTotals.normalized_dwell_score"
       },
       {
         "detail": {
@@ -1869,7 +3413,7 @@
           "context_impressions"
         ],
         "step": "summarize_popularity",
-        "target": "DocumentPopularity.normalized_ctr_score"
+        "target": "DocumentPopularityTotals.normalized_ctr_score"
       },
       {
         "detail": {
@@ -1882,16 +3426,16 @@
           "context_impressions"
         ],
         "step": "summarize_popularity",
-        "target": "DocumentPopularity.normalized_score"
+        "target": "DocumentPopularityTotals.normalized_score"
       },
       {
         "detail": {
-          "input_schema": "QueryDocumentSignals",
+          "input_schema": "QueryDocumentSignalTotals",
           "output_schema": "QueryDocumentSignals"
         },
         "operation": "step",
         "sources": [
-          "DocumentPopularity",
+          "DocumentPopularityTotals",
           "policy"
         ],
         "step": "normalize_query",
@@ -2115,7 +3659,7 @@
       },
       {
         "detail": {
-          "input_schema": "DocumentPopularity",
+          "input_schema": "DocumentPopularityTotals",
           "output_schema": "DocumentPopularity"
         },
         "operation": "step",
@@ -2352,89 +3896,31 @@
         "target": "DocumentPopularity.validation.final"
       }
     ],
-    "opaque_boundaries": [
-      {
-        "hook": "expand_impressions",
-        "phase": "raw",
-        "reason": "arbitrary PySpark hook body",
-        "schema": "DailyImpressions",
-        "step": "declare_context_impressions",
-        "target": "declare_context_impressions"
-      },
-      {
-        "hook": "expand_clicks",
-        "phase": "raw",
-        "reason": "arbitrary PySpark hook body",
-        "schema": "DailyClicks",
-        "step": "declare_context_clicks",
-        "target": "declare_context_clicks"
-      }
-    ]
+    "opaque_boundaries": []
   },
   "steps": [
     {
-      "after_hooks": [
-        "expand_impressions"
-      ],
+      "after_hooks": [],
       "before_hooks": [],
       "input_alias": "daily_impressions",
       "joins": [],
-      "name": "declare_context_impressions",
-      "output_alias": "daily_impressions",
-      "output_schema": "DailyImpressions",
+      "name": "global_impressions",
+      "output_alias": "context_daily_impressions",
+      "output_schema": "ContextDailyImpressions",
       "results": [
         {
           "after_hooks": [],
-          "frame": "context_impressions",
-          "lane": "context_impressions",
-          "schema": "DailyImpressions"
+          "frame": "global_context_impressions",
+          "lane": "global_context_impressions",
+          "schema": "ContextDailyImpressions"
         }
       ],
       "validation": [
         {
           "mode": "strict",
           "project": false,
-          "reason": "hook",
-          "schema": "DailyImpressions"
-        },
-        {
-          "mode": "strict",
-          "project": false,
           "reason": "intermediate",
-          "schema": "DailyImpressions"
-        }
-      ]
-    },
-    {
-      "after_hooks": [
-        "expand_clicks"
-      ],
-      "before_hooks": [],
-      "input_alias": "daily_clicks",
-      "joins": [],
-      "name": "declare_context_clicks",
-      "output_alias": "daily_clicks",
-      "output_schema": "DailyClicks",
-      "results": [
-        {
-          "after_hooks": [],
-          "frame": "context_clicks",
-          "lane": "context_clicks",
-          "schema": "DailyClicks"
-        }
-      ],
-      "validation": [
-        {
-          "mode": "strict",
-          "project": false,
-          "reason": "hook",
-          "schema": "DailyClicks"
-        },
-        {
-          "mode": "strict",
-          "project": false,
-          "reason": "intermediate",
-          "schema": "DailyClicks"
+          "schema": "ContextDailyImpressions"
         }
       ]
     },
@@ -2442,6 +3928,215 @@
       "after_hooks": [],
       "before_hooks": [],
       "input_alias": "daily_impressions",
+      "joins": [
+        {
+          "how": "inner",
+          "input": "membership",
+          "right_alias": "user_band_memberships"
+        },
+        {
+          "how": "inner",
+          "input": "fallback",
+          "right_alias": "band_fallbacks_2"
+        }
+      ],
+      "name": "fallback_impressions",
+      "output_alias": "context_daily_impressions",
+      "output_schema": "ContextDailyImpressions",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "fallback_context_impressions",
+          "lane": "fallback_context_impressions",
+          "schema": "ContextDailyImpressions"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "ContextDailyImpressions"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "daily_impressions",
+      "joins": [
+        {
+          "how": "inner",
+          "input": "membership",
+          "right_alias": "band_memberships"
+        }
+      ],
+      "name": "band_impressions",
+      "output_alias": "context_daily_impressions",
+      "output_schema": "ContextDailyImpressions",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "band_context_impressions",
+          "lane": "band_context_impressions",
+          "schema": "ContextDailyImpressions"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "ContextDailyImpressions"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "context_daily_impressions",
+      "joins": [],
+      "name": "merge_context_impressions",
+      "output_alias": "context_daily_impressions",
+      "output_schema": "ContextDailyImpressions",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "context_impressions",
+          "lane": "context_impressions",
+          "schema": "ContextDailyImpressions"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "ContextDailyImpressions"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "daily_clicks",
+      "joins": [],
+      "name": "global_clicks",
+      "output_alias": "context_daily_clicks",
+      "output_schema": "ContextDailyClicks",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "global_context_clicks",
+          "lane": "global_context_clicks",
+          "schema": "ContextDailyClicks"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "ContextDailyClicks"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "daily_clicks",
+      "joins": [
+        {
+          "how": "inner",
+          "input": "membership",
+          "right_alias": "user_band_memberships"
+        },
+        {
+          "how": "inner",
+          "input": "fallback",
+          "right_alias": "band_fallbacks_2"
+        }
+      ],
+      "name": "fallback_clicks",
+      "output_alias": "context_daily_clicks",
+      "output_schema": "ContextDailyClicks",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "fallback_context_clicks",
+          "lane": "fallback_context_clicks",
+          "schema": "ContextDailyClicks"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "ContextDailyClicks"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "daily_clicks",
+      "joins": [
+        {
+          "how": "inner",
+          "input": "membership",
+          "right_alias": "band_memberships"
+        }
+      ],
+      "name": "band_clicks",
+      "output_alias": "context_daily_clicks",
+      "output_schema": "ContextDailyClicks",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "band_context_clicks",
+          "lane": "band_context_clicks",
+          "schema": "ContextDailyClicks"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "ContextDailyClicks"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "context_daily_clicks",
+      "joins": [],
+      "name": "merge_context_clicks",
+      "output_alias": "context_daily_clicks",
+      "output_schema": "ContextDailyClicks",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "context_clicks",
+          "lane": "context_clicks",
+          "schema": "ContextDailyClicks"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "ContextDailyClicks"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "context_daily_impressions",
       "joins": [
         {
           "how": "left",
@@ -2455,14 +4150,14 @@
         }
       ],
       "name": "summarize_query",
-      "output_alias": "query_document_signals",
-      "output_schema": "QueryDocumentSignals",
+      "output_alias": "query_document_signal_totals",
+      "output_schema": "QueryDocumentSignalTotals",
       "results": [
         {
           "after_hooks": [],
           "frame": "query_signal_totals",
           "lane": "query_signal_totals",
-          "schema": "QueryDocumentSignals"
+          "schema": "QueryDocumentSignalTotals"
         }
       ],
       "validation": [
@@ -2470,14 +4165,14 @@
           "mode": "strict",
           "project": false,
           "reason": "intermediate",
-          "schema": "QueryDocumentSignals"
+          "schema": "QueryDocumentSignalTotals"
         }
       ]
     },
     {
       "after_hooks": [],
       "before_hooks": [],
-      "input_alias": "daily_impressions",
+      "input_alias": "context_daily_impressions",
       "joins": [
         {
           "how": "left",
@@ -2491,14 +4186,14 @@
         }
       ],
       "name": "summarize_popularity",
-      "output_alias": "document_popularity",
-      "output_schema": "DocumentPopularity",
+      "output_alias": "document_popularity_totals",
+      "output_schema": "DocumentPopularityTotals",
       "results": [
         {
           "after_hooks": [],
           "frame": "popularity_totals",
           "lane": "popularity_totals",
-          "schema": "DocumentPopularity"
+          "schema": "DocumentPopularityTotals"
         }
       ],
       "validation": [
@@ -2506,14 +4201,14 @@
           "mode": "strict",
           "project": false,
           "reason": "intermediate",
-          "schema": "DocumentPopularity"
+          "schema": "DocumentPopularityTotals"
         }
       ]
     },
     {
       "after_hooks": [],
       "before_hooks": [],
-      "input_alias": "query_document_signals",
+      "input_alias": "query_document_signal_totals",
       "joins": [
         {
           "how": "cross",
@@ -2544,7 +4239,7 @@
     {
       "after_hooks": [],
       "before_hooks": [],
-      "input_alias": "document_popularity",
+      "input_alias": "document_popularity_totals",
       "joins": [
         {
           "how": "cross",

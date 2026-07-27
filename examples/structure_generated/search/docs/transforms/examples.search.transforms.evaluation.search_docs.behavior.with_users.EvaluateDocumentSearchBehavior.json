@@ -1,0 +1,424 @@
+{
+  "dependencies": [
+    "band",
+    "band_memberships",
+    "batch",
+    "click",
+    "clicked",
+    "clicks",
+    "exposure",
+    "impression",
+    "impressions",
+    "measured",
+    "params"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "batch",
+      "ordinal": 0,
+      "schema": "EvaluationBatch"
+    },
+    {
+      "name": "requests",
+      "ordinal": 1,
+      "schema": "SearchRequest"
+    },
+    {
+      "name": "impressions",
+      "ordinal": 2,
+      "schema": "Impression"
+    },
+    {
+      "name": "clicks",
+      "ordinal": 3,
+      "schema": "Click"
+    },
+    {
+      "name": "band_memberships",
+      "ordinal": 4,
+      "schema": "BandMembership"
+    },
+    {
+      "name": "params",
+      "ordinal": 5,
+      "schema": "EvaluationParams"
+    }
+  ],
+  "name": "EvaluateDocumentSearchBehavior",
+  "outputs": [
+    {
+      "name": "request_behaviors",
+      "ordinal": 0,
+      "schema": "DocumentSearchRequestBehavior"
+    },
+    {
+      "name": "daily_behavior",
+      "ordinal": 1,
+      "schema": "DailyDocumentSearchBehavior"
+    }
+  ],
+  "source": "examples.search.transforms.evaluation.search_docs.behavior.with_users.EvaluateDocumentSearchBehavior",
+  "step_methods": [
+    {
+      "input_lane": "requests",
+      "input_schema": "SearchRequest",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "request",
+          "schema": "SearchRequest",
+          "source": "requests"
+        },
+        {
+          "driving": false,
+          "parameter": "band",
+          "schema": "BandMembership",
+          "source": "band_memberships"
+        },
+        {
+          "driving": false,
+          "parameter": "batch",
+          "schema": "EvaluationBatch",
+          "source": "batch"
+        },
+        {
+          "driving": false,
+          "parameter": "params",
+          "schema": "EvaluationParams",
+          "source": "params"
+        }
+      ],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "batch"
+        },
+        {
+          "how": "cross",
+          "input": "params"
+        },
+        {
+          "how": "inner",
+          "input": "band"
+        }
+      ],
+      "name": "select_requests",
+      "output_lane": "selected_requests",
+      "output_schema": "BehaviorRequest",
+      "results": [
+        {
+          "frame": "selected_requests",
+          "lane": "selected_requests",
+          "schema": "BehaviorRequest"
+        }
+      ]
+    },
+    {
+      "input_lane": "selected_requests",
+      "input_schema": "BehaviorRequest",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "request",
+          "schema": "BehaviorRequest",
+          "source": "selected_requests"
+        },
+        {
+          "driving": false,
+          "parameter": "impression",
+          "schema": "Impression",
+          "source": "impressions"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "impression"
+        }
+      ],
+      "name": "select_impressions",
+      "output_lane": "displayed",
+      "output_schema": "BehaviorImpression",
+      "results": [
+        {
+          "frame": "displayed",
+          "lane": "displayed",
+          "schema": "BehaviorImpression"
+        }
+      ]
+    },
+    {
+      "input_lane": "displayed",
+      "input_schema": "BehaviorImpression",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "impression",
+          "schema": "BehaviorImpression",
+          "source": "displayed"
+        },
+        {
+          "driving": false,
+          "parameter": "click",
+          "schema": "Click",
+          "source": "clicks"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "click"
+        }
+      ],
+      "name": "attribute_clicks",
+      "output_lane": "clicked",
+      "output_schema": "BehaviorImpression",
+      "results": [
+        {
+          "frame": "clicked",
+          "lane": "clicked",
+          "schema": "BehaviorImpression"
+        }
+      ]
+    },
+    {
+      "input_lane": "displayed",
+      "input_schema": "BehaviorImpression",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "displayed",
+          "schema": "BehaviorImpression",
+          "source": "displayed"
+        },
+        {
+          "driving": false,
+          "parameter": "clicked",
+          "schema": "BehaviorImpression",
+          "source": "clicked"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "clicked"
+        }
+      ],
+      "name": "measure_impressions",
+      "output_lane": "measured",
+      "output_schema": "BehaviorImpression",
+      "results": [
+        {
+          "frame": "measured",
+          "lane": "measured",
+          "schema": "BehaviorImpression"
+        }
+      ]
+    },
+    {
+      "input_lane": "selected_requests",
+      "input_schema": "BehaviorRequest",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "selected",
+          "schema": "BehaviorRequest",
+          "source": "selected_requests"
+        },
+        {
+          "driving": false,
+          "parameter": "measured",
+          "schema": "BehaviorImpression",
+          "source": "measured"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "measured"
+        }
+      ],
+      "name": "measure_requests",
+      "output_lane": "request_totals",
+      "output_schema": "BehaviorRequestTotals",
+      "results": [
+        {
+          "frame": "request_totals",
+          "lane": "request_totals",
+          "schema": "BehaviorRequestTotals"
+        }
+      ]
+    },
+    {
+      "input_lane": "request_totals",
+      "input_schema": "BehaviorRequestTotals",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "request",
+          "schema": "BehaviorRequestTotals",
+          "source": "request_totals"
+        }
+      ],
+      "name": "calculate_reciprocal_rank",
+      "output_lane": "request_metrics",
+      "output_schema": "BehaviorRequestMetrics",
+      "results": [
+        {
+          "frame": "request_metrics",
+          "lane": "request_metrics",
+          "schema": "BehaviorRequestMetrics"
+        }
+      ]
+    },
+    {
+      "input_lane": "request_metrics",
+      "input_schema": "BehaviorRequestMetrics",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "request",
+          "schema": "BehaviorRequestMetrics",
+          "source": "request_metrics"
+        }
+      ],
+      "name": "publish_requests",
+      "output_lane": "measured_requests",
+      "output_schema": "DocumentSearchRequestBehavior",
+      "results": [
+        {
+          "frame": "measured_requests",
+          "lane": "measured_requests",
+          "schema": "DocumentSearchRequestBehavior"
+        }
+      ]
+    },
+    {
+      "input_lane": "measured",
+      "input_schema": "BehaviorImpression",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "measured",
+          "schema": "BehaviorImpression",
+          "source": "measured"
+        }
+      ],
+      "name": "summarize_exposure",
+      "output_lane": "exposure",
+      "output_schema": "BehaviorExposure",
+      "results": [
+        {
+          "frame": "exposure",
+          "lane": "exposure",
+          "schema": "BehaviorExposure"
+        }
+      ]
+    },
+    {
+      "input_lane": "request_metrics",
+      "input_schema": "BehaviorRequestMetrics",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "request",
+          "schema": "BehaviorRequestMetrics",
+          "source": "request_metrics"
+        }
+      ],
+      "name": "summarize_requests",
+      "output_lane": "daily_counts",
+      "output_schema": "BehaviorDailyCounts",
+      "results": [
+        {
+          "frame": "daily_counts",
+          "lane": "daily_counts",
+          "schema": "BehaviorDailyCounts"
+        }
+      ]
+    },
+    {
+      "input_lane": "daily_counts",
+      "input_schema": "BehaviorDailyCounts",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "daily",
+          "schema": "BehaviorDailyCounts",
+          "source": "daily_counts"
+        },
+        {
+          "driving": false,
+          "parameter": "exposure",
+          "schema": "BehaviorExposure",
+          "source": "exposure"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "exposure"
+        }
+      ],
+      "name": "publish_daily",
+      "output_lane": "summarized_daily",
+      "output_schema": "DailyDocumentSearchBehavior",
+      "results": [
+        {
+          "frame": "summarized_daily",
+          "lane": "summarized_daily",
+          "schema": "DailyDocumentSearchBehavior"
+        }
+      ]
+    },
+    {
+      "input_lane": "measured_requests",
+      "input_schema": "DocumentSearchRequestBehavior",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "request",
+          "schema": "DocumentSearchRequestBehavior",
+          "source": "measured_requests"
+        }
+      ],
+      "name": "publish_request_behaviors",
+      "output_lane": "request_behaviors",
+      "output_schema": "DocumentSearchRequestBehavior",
+      "results": [
+        {
+          "frame": "request_behaviors",
+          "lane": "request_behaviors",
+          "schema": "DocumentSearchRequestBehavior"
+        }
+      ]
+    },
+    {
+      "input_lane": "summarized_daily",
+      "input_schema": "DailyDocumentSearchBehavior",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "daily",
+          "schema": "DailyDocumentSearchBehavior",
+          "source": "summarized_daily"
+        }
+      ],
+      "name": "publish_daily_behavior",
+      "output_lane": "daily_behavior",
+      "output_schema": "DailyDocumentSearchBehavior",
+      "results": [
+        {
+          "frame": "daily_behavior",
+          "lane": "daily_behavior",
+          "schema": "DailyDocumentSearchBehavior"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/with_users.py",
+    "traceability": "traceability/transforms/with_users.EvaluateDocumentSearchBehavior.json"
+  }
+}

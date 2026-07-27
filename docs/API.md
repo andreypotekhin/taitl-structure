@@ -3,17 +3,17 @@
 This describes Structure's public, compiler-visible API.
 
 If you are just starting using this library, see [QuickRef.md](QuickRef.md) for an introduction.
-For PySpark-plugin additions on top of PySpark, see [APIExtensions.md](APIExtensions.md). For the detailed
-reference page, see [API.ref.md](reference/API.ref.md).
 
 `supported` means the public contract is available now. `planned` needs a more complete type, cardinality, or
 determinism contract. `deferred` and `unsupported` deliberately stay outside the current scope.
 Structure is not a one-to-one PySpark
 wrapper: admitted APIs remain typed, symbolic, capability-checked, explainable, and readable in generated code.
 
-The default target is ordinary PySpark `>=3.5,<4.1`; completed compiler-visible batch features also target Spark
+The default target is ordinary PySpark `>=3.5,<4.1`; batch features also target Spark
 Connect. See [Compatibility.md](Compatibility.md) for the full target policy, [APICatalog.md](APICatalog.md) for the
 public API catalog and checked coverage table, and [API Gaps](dev/Gaps.md) for the developer backlog.
+For additions on top of PySpark, see [APIExtensions.md](APIExtensions.md). For the detailed
+reference page, see [API.ref.md](reference/API.ref.md).
 
 ## Core APIs
 
@@ -63,7 +63,7 @@ public API catalog and checked coverage table, and [API Gaps](dev/Gaps.md) for t
 
 ## Planned And Unsupported Surface
 
-The [API Coverage](APICatalog.md#api-coverage) table classifies the current PySpark transformation baseline. The rows
+The [API Coverage](APICatalog.md#api-coverage) classifies the current PySpark transformation baseline. The rows
 below remain a compact orientation aid. Loading, storage, actions, and orchestration are not transformation APIs and
 stay outside Structure's scope.
 

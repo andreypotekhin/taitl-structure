@@ -17,7 +17,7 @@ GAPS_REGISTER = (
     "Explicit scalar UDF example",
     "`posexplode` over array of structs",
     "Other generator forms",
-    "Exact-schema relation set composition and self-alias; Search similarity reduction",
+    "Exact-schema relation set composition and self-alias",
     "Relation order/limit/offset",
     "Branchable typed union",
     "`require_unique` / `require_all` / `require_reference`",

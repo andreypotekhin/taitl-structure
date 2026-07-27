@@ -23,3 +23,4 @@ class Person(Schema):
     id = string(nullable=False)
     team_id = string(nullable=False)
     name = string(nullable=False)
+    email = string(nullable=False)

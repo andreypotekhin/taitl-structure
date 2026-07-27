@@ -1,5 +1,16 @@
 {
-  "dependencies": [],
+  "dependencies": [
+    "document_target_stats",
+    "document_token_frequencies",
+    "frequency",
+    "paragraph_target_stats",
+    "paragraph_token_frequencies",
+    "section_target_stats",
+    "section_token_frequencies",
+    "sentence_target_stats",
+    "sentence_token_frequencies",
+    "stats"
+  ],
   "generated_by": "Structure",
   "inputs": [
     {
@@ -64,7 +75,95 @@
           "source": "words"
         }
       ],
-      "name": "declare_index",
+      "name": "count_document_terms",
+      "output_lane": "document_term_counts",
+      "output_schema": "DocumentIndexTermCount",
+      "results": [
+        {
+          "frame": "document_term_counts",
+          "lane": "document_term_counts",
+          "schema": "DocumentIndexTermCount"
+        }
+      ]
+    },
+    {
+      "input_lane": "words",
+      "input_schema": "Word",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "word",
+          "schema": "Word",
+          "source": "words"
+        }
+      ],
+      "name": "summarize_documents",
+      "output_lane": "document_target_stats",
+      "output_schema": "DocumentIndexTargetStats",
+      "results": [
+        {
+          "frame": "document_target_stats",
+          "lane": "document_target_stats",
+          "schema": "DocumentIndexTargetStats"
+        }
+      ]
+    },
+    {
+      "input_lane": "document_term_counts",
+      "input_schema": "DocumentIndexTermCount",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "term",
+          "schema": "DocumentIndexTermCount",
+          "source": "document_term_counts"
+        }
+      ],
+      "name": "count_document_frequencies",
+      "output_lane": "document_token_frequencies",
+      "output_schema": "IndexTokenFrequency",
+      "results": [
+        {
+          "frame": "document_token_frequencies",
+          "lane": "document_token_frequencies",
+          "schema": "IndexTokenFrequency"
+        }
+      ]
+    },
+    {
+      "input_lane": "document_term_counts",
+      "input_schema": "DocumentIndexTermCount",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "term",
+          "schema": "DocumentIndexTermCount",
+          "source": "document_term_counts"
+        },
+        {
+          "driving": false,
+          "parameter": "stats",
+          "schema": "DocumentIndexTargetStats",
+          "source": "document_target_stats"
+        },
+        {
+          "driving": false,
+          "parameter": "frequency",
+          "schema": "IndexTokenFrequency",
+          "source": "document_token_frequencies"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "stats"
+        },
+        {
+          "how": "inner",
+          "input": "frequency"
+        }
+      ],
+      "name": "build_document_terms",
       "output_lane": "document_terms",
       "output_schema": "DocumentIndexTerm",
       "results": [
@@ -72,37 +171,420 @@
           "frame": "document_terms",
           "lane": "document_terms",
           "schema": "DocumentIndexTerm"
-        },
+        }
+      ]
+    },
+    {
+      "input_lane": "document_target_stats",
+      "input_schema": "DocumentIndexTargetStats",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "stats",
+          "schema": "DocumentIndexTargetStats",
+          "source": "document_target_stats"
+        }
+      ],
+      "name": "summarize_document_index",
+      "output_lane": "document_summary",
+      "output_schema": "DocumentIndexSummary",
+      "results": [
         {
           "frame": "document_summary",
           "lane": "document_summary",
           "schema": "DocumentIndexSummary"
+        }
+      ]
+    },
+    {
+      "input_lane": "words",
+      "input_schema": "Word",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "word",
+          "schema": "Word",
+          "source": "words"
+        }
+      ],
+      "name": "count_section_terms",
+      "output_lane": "section_term_counts",
+      "output_schema": "SectionIndexTermCount",
+      "results": [
+        {
+          "frame": "section_term_counts",
+          "lane": "section_term_counts",
+          "schema": "SectionIndexTermCount"
+        }
+      ]
+    },
+    {
+      "input_lane": "words",
+      "input_schema": "Word",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "word",
+          "schema": "Word",
+          "source": "words"
+        }
+      ],
+      "name": "summarize_sections",
+      "output_lane": "section_target_stats",
+      "output_schema": "SectionIndexTargetStats",
+      "results": [
+        {
+          "frame": "section_target_stats",
+          "lane": "section_target_stats",
+          "schema": "SectionIndexTargetStats"
+        }
+      ]
+    },
+    {
+      "input_lane": "section_term_counts",
+      "input_schema": "SectionIndexTermCount",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "term",
+          "schema": "SectionIndexTermCount",
+          "source": "section_term_counts"
+        }
+      ],
+      "name": "count_section_frequencies",
+      "output_lane": "section_token_frequencies",
+      "output_schema": "IndexTokenFrequency",
+      "results": [
+        {
+          "frame": "section_token_frequencies",
+          "lane": "section_token_frequencies",
+          "schema": "IndexTokenFrequency"
+        }
+      ]
+    },
+    {
+      "input_lane": "section_term_counts",
+      "input_schema": "SectionIndexTermCount",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "term",
+          "schema": "SectionIndexTermCount",
+          "source": "section_term_counts"
         },
+        {
+          "driving": false,
+          "parameter": "stats",
+          "schema": "SectionIndexTargetStats",
+          "source": "section_target_stats"
+        },
+        {
+          "driving": false,
+          "parameter": "frequency",
+          "schema": "IndexTokenFrequency",
+          "source": "section_token_frequencies"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "stats"
+        },
+        {
+          "how": "inner",
+          "input": "frequency"
+        }
+      ],
+      "name": "build_section_terms",
+      "output_lane": "section_terms",
+      "output_schema": "SectionIndexTerm",
+      "results": [
         {
           "frame": "section_terms",
           "lane": "section_terms",
           "schema": "SectionIndexTerm"
-        },
+        }
+      ]
+    },
+    {
+      "input_lane": "section_target_stats",
+      "input_schema": "SectionIndexTargetStats",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "stats",
+          "schema": "SectionIndexTargetStats",
+          "source": "section_target_stats"
+        }
+      ],
+      "name": "summarize_section_index",
+      "output_lane": "section_summary",
+      "output_schema": "SectionIndexSummary",
+      "results": [
         {
           "frame": "section_summary",
           "lane": "section_summary",
           "schema": "SectionIndexSummary"
+        }
+      ]
+    },
+    {
+      "input_lane": "words",
+      "input_schema": "Word",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "word",
+          "schema": "Word",
+          "source": "words"
+        }
+      ],
+      "name": "count_paragraph_terms",
+      "output_lane": "paragraph_term_counts",
+      "output_schema": "ParagraphIndexTermCount",
+      "results": [
+        {
+          "frame": "paragraph_term_counts",
+          "lane": "paragraph_term_counts",
+          "schema": "ParagraphIndexTermCount"
+        }
+      ]
+    },
+    {
+      "input_lane": "words",
+      "input_schema": "Word",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "word",
+          "schema": "Word",
+          "source": "words"
+        }
+      ],
+      "name": "summarize_paragraphs",
+      "output_lane": "paragraph_target_stats",
+      "output_schema": "ParagraphIndexTargetStats",
+      "results": [
+        {
+          "frame": "paragraph_target_stats",
+          "lane": "paragraph_target_stats",
+          "schema": "ParagraphIndexTargetStats"
+        }
+      ]
+    },
+    {
+      "input_lane": "paragraph_term_counts",
+      "input_schema": "ParagraphIndexTermCount",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "term",
+          "schema": "ParagraphIndexTermCount",
+          "source": "paragraph_term_counts"
+        }
+      ],
+      "name": "count_paragraph_frequencies",
+      "output_lane": "paragraph_token_frequencies",
+      "output_schema": "IndexTokenFrequency",
+      "results": [
+        {
+          "frame": "paragraph_token_frequencies",
+          "lane": "paragraph_token_frequencies",
+          "schema": "IndexTokenFrequency"
+        }
+      ]
+    },
+    {
+      "input_lane": "paragraph_term_counts",
+      "input_schema": "ParagraphIndexTermCount",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "term",
+          "schema": "ParagraphIndexTermCount",
+          "source": "paragraph_term_counts"
         },
+        {
+          "driving": false,
+          "parameter": "stats",
+          "schema": "ParagraphIndexTargetStats",
+          "source": "paragraph_target_stats"
+        },
+        {
+          "driving": false,
+          "parameter": "frequency",
+          "schema": "IndexTokenFrequency",
+          "source": "paragraph_token_frequencies"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "stats"
+        },
+        {
+          "how": "inner",
+          "input": "frequency"
+        }
+      ],
+      "name": "build_paragraph_terms",
+      "output_lane": "paragraph_terms",
+      "output_schema": "ParagraphIndexTerm",
+      "results": [
         {
           "frame": "paragraph_terms",
           "lane": "paragraph_terms",
           "schema": "ParagraphIndexTerm"
-        },
+        }
+      ]
+    },
+    {
+      "input_lane": "paragraph_target_stats",
+      "input_schema": "ParagraphIndexTargetStats",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "stats",
+          "schema": "ParagraphIndexTargetStats",
+          "source": "paragraph_target_stats"
+        }
+      ],
+      "name": "summarize_paragraph_index",
+      "output_lane": "paragraph_summary",
+      "output_schema": "ParagraphIndexSummary",
+      "results": [
         {
           "frame": "paragraph_summary",
           "lane": "paragraph_summary",
           "schema": "ParagraphIndexSummary"
+        }
+      ]
+    },
+    {
+      "input_lane": "words",
+      "input_schema": "Word",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "word",
+          "schema": "Word",
+          "source": "words"
+        }
+      ],
+      "name": "count_sentence_terms",
+      "output_lane": "sentence_term_counts",
+      "output_schema": "SentenceIndexTermCount",
+      "results": [
+        {
+          "frame": "sentence_term_counts",
+          "lane": "sentence_term_counts",
+          "schema": "SentenceIndexTermCount"
+        }
+      ]
+    },
+    {
+      "input_lane": "words",
+      "input_schema": "Word",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "word",
+          "schema": "Word",
+          "source": "words"
+        }
+      ],
+      "name": "summarize_sentences",
+      "output_lane": "sentence_target_stats",
+      "output_schema": "SentenceIndexTargetStats",
+      "results": [
+        {
+          "frame": "sentence_target_stats",
+          "lane": "sentence_target_stats",
+          "schema": "SentenceIndexTargetStats"
+        }
+      ]
+    },
+    {
+      "input_lane": "sentence_term_counts",
+      "input_schema": "SentenceIndexTermCount",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "term",
+          "schema": "SentenceIndexTermCount",
+          "source": "sentence_term_counts"
+        }
+      ],
+      "name": "count_sentence_frequencies",
+      "output_lane": "sentence_token_frequencies",
+      "output_schema": "IndexTokenFrequency",
+      "results": [
+        {
+          "frame": "sentence_token_frequencies",
+          "lane": "sentence_token_frequencies",
+          "schema": "IndexTokenFrequency"
+        }
+      ]
+    },
+    {
+      "input_lane": "sentence_term_counts",
+      "input_schema": "SentenceIndexTermCount",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "term",
+          "schema": "SentenceIndexTermCount",
+          "source": "sentence_term_counts"
         },
+        {
+          "driving": false,
+          "parameter": "stats",
+          "schema": "SentenceIndexTargetStats",
+          "source": "sentence_target_stats"
+        },
+        {
+          "driving": false,
+          "parameter": "frequency",
+          "schema": "IndexTokenFrequency",
+          "source": "sentence_token_frequencies"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "stats"
+        },
+        {
+          "how": "inner",
+          "input": "frequency"
+        }
+      ],
+      "name": "build_sentence_terms",
+      "output_lane": "sentence_terms",
+      "output_schema": "SentenceIndexTerm",
+      "results": [
         {
           "frame": "sentence_terms",
           "lane": "sentence_terms",
           "schema": "SentenceIndexTerm"
-        },
+        }
+      ]
+    },
+    {
+      "input_lane": "sentence_target_stats",
+      "input_schema": "SentenceIndexTargetStats",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "stats",
+          "schema": "SentenceIndexTargetStats",
+          "source": "sentence_target_stats"
+        }
+      ],
+      "name": "summarize_sentence_index",
+      "output_lane": "sentence_summary",
+      "output_schema": "SentenceIndexSummary",
+      "results": [
         {
           "frame": "sentence_summary",
           "lane": "sentence_summary",

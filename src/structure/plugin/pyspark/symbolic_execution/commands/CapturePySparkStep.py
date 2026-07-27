@@ -69,12 +69,31 @@ class CapturePySparkStep:
         expressions.extend(
             expression
             for operation in body.operations
+            if operation.relation_hierarchy_closure is not None
+            for expression in (operation.relation_hierarchy_closure.id, operation.relation_hierarchy_closure.parent)
+        )
+        expressions.extend(
+            expression
+            for operation in body.operations
+            if operation.relation_hierarchy_fallback is not None
+            for expression in (
+                operation.relation_hierarchy_fallback.source_id,
+                operation.relation_hierarchy_fallback.path,
+                operation.relation_hierarchy_fallback.parent_id,
+                operation.relation_hierarchy_fallback.parent,
+            )
+        )
+        expressions.extend(
+            expression
+            for operation in body.operations
             if operation.relation_assertion is not None
             for expression in (
                 *operation.relation_assertion.keys,
                 operation.relation_assertion.predicate,
                 operation.relation_assertion.value,
                 operation.relation_assertion.reference_key,
+                operation.relation_assertion.parent,
+                operation.relation_assertion.order_by,
             )
             if expression is not None
         )

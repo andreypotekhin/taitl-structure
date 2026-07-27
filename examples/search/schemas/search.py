@@ -12,6 +12,33 @@ class SearchQuery(Schema):
     is_time_sensitive = boolean(nullable=False)
 
 
+class QueryToken(Schema):
+    """One normalized query token before row expansion."""
+
+    token = string(nullable=False)
+
+
+class ExpandedQueryToken(Schema):
+    """One expanded query token with its original query-local ordinal."""
+
+    ordinal = long(nullable=False)
+    token = string(nullable=False)
+
+
+class QueryTerm(Schema):
+    """One distinct normalized query term."""
+
+    query_id = string(nullable=False)
+    token = string(nullable=False)
+
+
+class QueryTermCount(Schema):
+    """Number of distinct normalized terms in one query."""
+
+    query_id = string(nullable=False)
+    query_terms = long(nullable=False)
+
+
 class SentenceSearchResult(Schema):
     """One ranked sentence match for a caller-supplied query."""
 
@@ -89,6 +116,36 @@ class DocumentSearchCandidate(Schema):
     feedback_weight = double(nullable=False)
 
 
+class DocumentFeedbackOption(DocumentSearchCandidate):
+    """Internal candidate row bound to one feedback fallback context."""
+
+    feedback_band_id = string(nullable=True)
+    fallback_ordinal = long(nullable=False)
+    minimum_band_impressions = long(nullable=False)
+
+
+class QueryDocumentFeedback(Schema):
+    """Internal selected query/document feedback for one search candidate."""
+
+    search_query_id = string(nullable=False)
+    experiment_id = string(nullable=False)
+    user_band_id = string(nullable=True)
+    candidate_rank = long(nullable=False)
+    document_id = string(nullable=False)
+    query_feedback = double(nullable=True)
+
+
+class PopularityFeedback(Schema):
+    """Internal selected document-popularity feedback for one search candidate."""
+
+    search_query_id = string(nullable=False)
+    experiment_id = string(nullable=False)
+    user_band_id = string(nullable=True)
+    candidate_rank = long(nullable=False)
+    document_id = string(nullable=False)
+    popularity_feedback = double(nullable=True)
+
+
 class DocumentSearchTarget(Schema):
     query_id = string(nullable=False)
     document_id = string(nullable=False)
@@ -120,6 +177,69 @@ class ParagraphIndexTarget(SectionIndexTarget):
 
 class SentenceIndexTarget(ParagraphIndexTarget):
     sentence_id = string(nullable=False)
+
+
+class IndexTokenFrequency(Schema):
+    """Internal count of indexed targets containing one token."""
+
+    token = string(nullable=False)
+    document_frequency = long(nullable=False)
+
+
+class DocumentIndexTargetStats(DocumentIndexTarget):
+    """Internal document-level token totals."""
+
+    target_word_count = long(nullable=False)
+    target_distinct_terms = long(nullable=False)
+
+
+class SectionIndexTargetStats(SectionIndexTarget):
+    """Internal section-level token totals."""
+
+    target_word_count = long(nullable=False)
+    target_distinct_terms = long(nullable=False)
+
+
+class ParagraphIndexTargetStats(ParagraphIndexTarget):
+    """Internal paragraph-level token totals."""
+
+    target_word_count = long(nullable=False)
+    target_distinct_terms = long(nullable=False)
+
+
+class SentenceIndexTargetStats(SentenceIndexTarget):
+    """Internal sentence-level token totals."""
+
+    target_word_count = long(nullable=False)
+    target_distinct_terms = long(nullable=False)
+
+
+class DocumentIndexTermCount(DocumentIndexTarget):
+    """Internal document-level term frequency."""
+
+    token = string(nullable=False)
+    term_frequency = long(nullable=False)
+
+
+class SectionIndexTermCount(SectionIndexTarget):
+    """Internal section-level term frequency."""
+
+    token = string(nullable=False)
+    term_frequency = long(nullable=False)
+
+
+class ParagraphIndexTermCount(ParagraphIndexTarget):
+    """Internal paragraph-level term frequency."""
+
+    token = string(nullable=False)
+    term_frequency = long(nullable=False)
+
+
+class SentenceIndexTermCount(SentenceIndexTarget):
+    """Internal sentence-level term frequency."""
+
+    token = string(nullable=False)
+    term_frequency = long(nullable=False)
 
 
 class DocumentIndexTerm(DocumentIndexTarget):
@@ -169,38 +289,6 @@ class ParagraphIndexSummary(DocumentIndexSummary):
 
 class SentenceIndexSummary(DocumentIndexSummary):
     pass
-
-
-class DocumentOverlapScore(DocumentSearchTarget):
-    score_overlap = double(nullable=False)
-
-
-class SectionOverlapScore(SectionSearchTarget):
-    score_overlap = double(nullable=False)
-
-
-class ParagraphOverlapScore(ParagraphSearchTarget):
-    score_overlap = double(nullable=False)
-
-
-class SentenceOverlapScore(SentenceSearchTarget):
-    score_overlap = double(nullable=False)
-
-
-class DocumentBm25Score(DocumentSearchTarget):
-    score_bm25 = double(nullable=False)
-
-
-class SectionBm25Score(SectionSearchTarget):
-    score_bm25 = double(nullable=False)
-
-
-class ParagraphBm25Score(ParagraphSearchTarget):
-    score_bm25 = double(nullable=False)
-
-
-class SentenceBm25Score(SentenceSearchTarget):
-    score_bm25 = double(nullable=False)
 
 
 class DocumentScore(DocumentSearchTarget):

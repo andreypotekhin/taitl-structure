@@ -18,6 +18,7 @@ from examples.search.schemas.analytics import (
     SimilarDocument,
 )
 from examples.search.schemas.clicks import Click, DailyClicks, DailyImpressions, Impression, SearchRequest
+from examples.search.schemas.cohorts.resolve import BandAncestor, BandMatch, SingletonUserBand, UserBandPath
 from examples.search.schemas.evaluation import (
     BehaviorDailyCounts,
     BehaviorExposure,
@@ -40,6 +41,21 @@ from examples.search.schemas.evaluation import (
     EvaluationResultTotals,
 )
 from examples.search.schemas.experiment import Experiment
+from examples.search.schemas.extraction.extract import (
+    DocumentLine,
+    ExpandedDocumentLine,
+    ExpandedSentenceText,
+    ExpandedWordText,
+    MarkedDocumentLine,
+    ParagraphContent,
+    ParagraphDraft,
+    ParagraphLine,
+    ParagraphLineGroup,
+    SectionHeading,
+    SectionKey,
+    SentenceText,
+    WordText,
+)
 from examples.search.schemas.label import (
     Label,
     LabelMapEntry,
@@ -48,41 +64,79 @@ from examples.search.schemas.label import (
     QueryLabelAssignments,
 )
 from examples.search.schemas.relevance import DocumentPopularity, QueryDocumentSignals, RelevancePolicy
-from examples.search.schemas.search import (
+from examples.search.schemas.relevance_signals.build import (
+    ContextDailyClicks,
+    ContextDailyImpressions,
+    DocumentPopularityTotals,
+    QueryDocumentSignalTotals,
+)
+from examples.search.schemas.scoring.bm25 import (
     DocumentBm25Score,
+    ParagraphBm25Score,
+    SectionBm25Score,
+    SentenceBm25Score,
+)
+from examples.search.schemas.scoring.overlap import (
+    DocumentOverlapScore,
+    ParagraphOverlapScore,
+    SectionOverlapScore,
+    SentenceOverlapScore,
+)
+from examples.search.schemas.search import (
+    DocumentFeedbackOption,
     DocumentIndexSummary,
     DocumentIndexTarget,
+    DocumentIndexTargetStats,
     DocumentIndexTerm,
-    DocumentOverlapScore,
+    DocumentIndexTermCount,
     DocumentScore,
     DocumentSearchCandidate,
     DocumentSearchResult,
     DocumentSearchTarget,
-    ParagraphBm25Score,
+    IndexTokenFrequency,
     ParagraphContext,
     ParagraphIndexSummary,
     ParagraphIndexTarget,
+    ParagraphIndexTargetStats,
     ParagraphIndexTerm,
-    ParagraphOverlapScore,
+    ParagraphIndexTermCount,
     ParagraphScore,
     ParagraphSearchTarget,
     PassageSearchResult,
+    PopularityFeedback,
+    QueryDocumentFeedback,
     SearchQuery,
-    SectionBm25Score,
     SectionIndexSummary,
     SectionIndexTarget,
+    SectionIndexTargetStats,
     SectionIndexTerm,
-    SectionOverlapScore,
+    SectionIndexTermCount,
     SectionScore,
     SectionSearchTarget,
-    SentenceBm25Score,
     SentenceIndexSummary,
     SentenceIndexTarget,
+    SentenceIndexTargetStats,
     SentenceIndexTerm,
-    SentenceOverlapScore,
+    SentenceIndexTermCount,
     SentenceScore,
     SentenceSearchResult,
     SentenceSearchTarget,
+)
+from examples.search.schemas.similarities.query import (
+    DocumentSimilarityQueryText,
+    ParagraphSimilarityQueryText,
+    SectionSimilarityQueryText,
+    SentenceSimilarityQueryText,
+)
+from examples.search.schemas.similarities.reduce import (
+    DocumentSimilarityCandidate,
+    DocumentSimilarityPair,
+    ParagraphSimilarityCandidate,
+    ParagraphSimilarityPair,
+    SectionSimilarityCandidate,
+    SectionSimilarityPair,
+    SentenceSimilarityCandidate,
+    SentenceSimilarityPair,
 )
 from examples.search.schemas.similarity import (
     DocumentSimilarity,
@@ -135,12 +189,12 @@ from examples.search.transforms.relevance.BuildRelevanceSignals import BuildRele
 from examples.search.transforms.score import AddScores
 from examples.search.transforms.scoring.ScoreAll import ScoreAll
 from examples.search.transforms.search import SearchDocuments, SearchPassages, SearchSentences
+from examples.search.transforms.searching.search_similarity import SearchSimilarity
 from examples.search.transforms.similarities.CreateSimilarityQueries import CreateSimilarityQueries
 from examples.search.transforms.similarities.ReduceSimilarityScores import ReduceSimilarityScores
 from examples.search.transforms.similarities.SimilarParagraphs import SimilarParagraphs
 from examples.search.transforms.similarities.SimilarSections import SimilarSections
 from examples.search.transforms.similarities.SimilarSentences import SimilarSentences
-from examples.search.transforms.similarity import Similarity
 from structure import Schema
 from structure.plugin.pyspark import TimeWindow
 
@@ -169,31 +223,47 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         SectionIndexTarget,
         ParagraphIndexTarget,
         SentenceIndexTarget,
+        IndexTokenFrequency,
+        DocumentIndexTermCount,
+        DocumentIndexTargetStats,
         DocumentIndexTerm,
         DocumentIndexSummary,
+        SectionIndexTermCount,
+        SectionIndexTargetStats,
         SectionIndexTerm,
         SectionIndexSummary,
+        ParagraphIndexTermCount,
+        ParagraphIndexTargetStats,
         ParagraphIndexTerm,
         ParagraphIndexSummary,
+        SentenceIndexTermCount,
+        SentenceIndexTargetStats,
         SentenceIndexTerm,
         SentenceIndexSummary,
         SentenceSearchResult,
         PassageSearchResult,
         ParagraphContext,
-        DocumentOverlapScore,
-        SectionOverlapScore,
-        ParagraphOverlapScore,
-        SentenceOverlapScore,
-        DocumentBm25Score,
-        SectionBm25Score,
-        ParagraphBm25Score,
-        SentenceBm25Score,
         DocumentScore,
         SectionScore,
         ParagraphScore,
         SentenceScore,
+        DocumentFeedbackOption,
+        QueryDocumentFeedback,
+        PopularityFeedback,
         DocumentSearchResult,
         DocumentSearchCandidate,
+    ],
+    "examples.search.schemas.scoring.overlap": [
+        DocumentOverlapScore,
+        SectionOverlapScore,
+        ParagraphOverlapScore,
+        SentenceOverlapScore,
+    ],
+    "examples.search.schemas.scoring.bm25": [
+        DocumentBm25Score,
+        SectionBm25Score,
+        ParagraphBm25Score,
+        SentenceBm25Score,
     ],
     "examples.search.schemas.clicks": [
         SearchRequest,
@@ -239,6 +309,12 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         QueryDocumentSignals,
         DocumentPopularity,
     ],
+    "examples.search.schemas.relevance_signals.build": [
+        ContextDailyImpressions,
+        ContextDailyClicks,
+        QueryDocumentSignalTotals,
+        DocumentPopularityTotals,
+    ],
     "examples.search.schemas.user": [
         User,
         Band,
@@ -246,6 +322,12 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         BandFallback,
         UserBand,
         UserBandMembership,
+    ],
+    "examples.search.schemas.cohorts.resolve": [
+        BandMatch,
+        BandAncestor,
+        UserBandPath,
+        SingletonUserBand,
     ],
     "examples.search.schemas.similarity": [
         SimilarityPolicy,
@@ -266,7 +348,44 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         ParagraphSimilarity,
         SentenceSimilarity,
     ],
-    "examples.search.schemas.text": [Document, Section, Paragraph, Sentence, Word],
+    "examples.search.schemas.similarities.reduce": [
+        DocumentSimilarityCandidate,
+        DocumentSimilarityPair,
+        SectionSimilarityCandidate,
+        SectionSimilarityPair,
+        ParagraphSimilarityCandidate,
+        ParagraphSimilarityPair,
+        SentenceSimilarityCandidate,
+        SentenceSimilarityPair,
+    ],
+    "examples.search.schemas.similarities.query": [
+        DocumentSimilarityQueryText,
+        SectionSimilarityQueryText,
+        ParagraphSimilarityQueryText,
+        SentenceSimilarityQueryText,
+    ],
+    "examples.search.schemas.text": [
+        Document,
+        Section,
+        Paragraph,
+        Sentence,
+        Word,
+    ],
+    "examples.search.schemas.extraction.extract": [
+        DocumentLine,
+        ExpandedDocumentLine,
+        MarkedDocumentLine,
+        ParagraphLine,
+        SectionHeading,
+        ParagraphLineGroup,
+        ParagraphContent,
+        ParagraphDraft,
+        SectionKey,
+        SentenceText,
+        ExpandedSentenceText,
+        WordText,
+        ExpandedWordText,
+    ],
 }
 TRANSFORMS = (
     (ExtractText, "examples.search.transforms.extract.ExtractText"),
@@ -287,43 +406,43 @@ TRANSFORMS = (
     (SelectExperimentScores, "examples.search.transforms.experiments.select_experiment_scores.SelectExperimentScores"),
     (
         EvaluateExperimentDocumentRankingQuality,
-        "examples.search.transforms.experiments.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
+        "examples.search.transforms.experiments.search_docs.eval_ranking.EvaluateDocumentRankingQuality",
     ),
     (
         EvaluateExperimentDocumentSearchBehavior,
-        "examples.search.transforms.experiments.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
+        "examples.search.transforms.experiments.search_docs.eval_behavior.EvaluateDocumentSearchBehavior",
     ),
     (
         EvaluateDocumentRankingQuality,
-        "examples.search.transforms.evaluation.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
+        "examples.search.transforms.evaluation.search_docs.ranking.eval_ranking.EvaluateDocumentRankingQuality",
     ),
     (
         EvaluateDocumentSearchBehavior,
-        "examples.search.transforms.evaluation.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
+        "examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocumentSearchBehavior",
     ),
     (
         EvaluateLabeledDocumentRankingQuality,
-        "examples.search.transforms.evaluation.with_labels.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
+        "examples.search.transforms.evaluation.search_docs.ranking.with_labels.EvaluateDocumentRankingQuality",
     ),
     (
         EvaluateLabeledDocumentSearchBehavior,
-        "examples.search.transforms.evaluation.with_labels.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
+        "examples.search.transforms.evaluation.search_docs.behavior.with_labels.EvaluateDocumentSearchBehavior",
     ),
     (
         EvaluateUserDocumentRankingQuality,
-        "examples.search.transforms.evaluation.with_users.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
+        "examples.search.transforms.evaluation.search_docs.ranking.with_users.EvaluateDocumentRankingQuality",
     ),
     (
         EvaluateUserDocumentSearchBehavior,
-        "examples.search.transforms.evaluation.with_users.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
+        "examples.search.transforms.evaluation.search_docs.behavior.with_users.EvaluateDocumentSearchBehavior",
     ),
     (
         EvaluateAllDocumentRankingQuality,
-        "examples.search.transforms.evaluation.with_all.search_docs.eval_doc_ranking_quality.EvaluateDocumentRankingQuality",
+        "examples.search.transforms.evaluation.search_docs.ranking.with_all.EvaluateDocumentRankingQuality",
     ),
     (
         EvaluateAllDocumentSearchBehavior,
-        "examples.search.transforms.evaluation.with_all.search_docs.eval_doc_search_behavior.EvaluateDocumentSearchBehavior",
+        "examples.search.transforms.evaluation.search_docs.behavior.with_all.EvaluateDocumentSearchBehavior",
     ),
     (
         CreateSimilarityQueries,
@@ -334,7 +453,10 @@ TRANSFORMS = (
         ReduceSimilarityScores,
         "examples.search.transforms.similarities.ReduceSimilarityScores.ReduceSimilarityScores",
     ),
-    (Similarity, "examples.search.transforms.similarity.Similarity"),
+    (
+        SearchSimilarity,
+        "examples.search.transforms.searching.search_similarity.SearchSimilarity.SearchSimilarity",
+    ),
     (SimilarSections, "examples.search.transforms.similarities.SimilarSections.SimilarSections"),
     (SimilarParagraphs, "examples.search.transforms.similarities.SimilarParagraphs.SimilarParagraphs"),
     (SimilarSentences, "examples.search.transforms.similarities.SimilarSentences.SimilarSentences"),
@@ -639,7 +761,7 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             document_similarities=generated_similarities.document_similarities,
         )
         online_similar_documents = (
-            Similarity(
+            SearchSimilarity(
                 query=similar_document_inputs["query"],
                 documents=documents,
                 document_similarities=online_similarities.document_similarities,
@@ -648,7 +770,7 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             .similar_documents
         )
         generated_similar_documents = (
-            Similarity(**similar_document_inputs)
+            SearchSimilarity(**similar_document_inputs)
             .run(session(spark, execution_mode="generated", generated_package=PACKAGE))
             .similar_documents
         )

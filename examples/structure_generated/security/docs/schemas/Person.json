@@ -18,6 +18,12 @@
       "name": "name",
       "nullable": false,
       "type": "string"
+    },
+    {
+      "column": "email",
+      "name": "email",
+      "nullable": false,
+      "type": "string"
     }
   ],
   "generated_by": "Structure",

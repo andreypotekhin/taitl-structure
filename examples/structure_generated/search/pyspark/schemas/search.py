@@ -57,6 +57,21 @@ SENTENCE_INDEX_TARGET_SCHEMA = T.StructType(PARAGRAPH_INDEX_TARGET_SCHEMA.fields
     T.StructField("sentence_id", T.StringType(), False),
 ])
 
+INDEX_TOKEN_FREQUENCY_SCHEMA = T.StructType([
+    T.StructField("token", T.StringType(), False),
+    T.StructField("document_frequency", T.LongType(), False),
+])
+
+DOCUMENT_INDEX_TERM_COUNT_SCHEMA = T.StructType(DOCUMENT_INDEX_TARGET_SCHEMA.fields + [
+    T.StructField("token", T.StringType(), False),
+    T.StructField("term_frequency", T.LongType(), False),
+])
+
+DOCUMENT_INDEX_TARGET_STATS_SCHEMA = T.StructType(DOCUMENT_INDEX_TARGET_SCHEMA.fields + [
+    T.StructField("target_word_count", T.LongType(), False),
+    T.StructField("target_distinct_terms", T.LongType(), False),
+])
+
 DOCUMENT_INDEX_TERM_SCHEMA = T.StructType(DOCUMENT_INDEX_TARGET_SCHEMA.fields + [
     T.StructField("token", T.StringType(), False),
     T.StructField("term_frequency", T.LongType(), False),
@@ -70,6 +85,16 @@ DOCUMENT_INDEX_SUMMARY_SCHEMA = T.StructType([
     T.StructField("average_target_length", T.DoubleType(), False),
 ])
 
+SECTION_INDEX_TERM_COUNT_SCHEMA = T.StructType(SECTION_INDEX_TARGET_SCHEMA.fields + [
+    T.StructField("token", T.StringType(), False),
+    T.StructField("term_frequency", T.LongType(), False),
+])
+
+SECTION_INDEX_TARGET_STATS_SCHEMA = T.StructType(SECTION_INDEX_TARGET_SCHEMA.fields + [
+    T.StructField("target_word_count", T.LongType(), False),
+    T.StructField("target_distinct_terms", T.LongType(), False),
+])
+
 SECTION_INDEX_TERM_SCHEMA = T.StructType(SECTION_INDEX_TARGET_SCHEMA.fields + [
     T.StructField("token", T.StringType(), False),
     T.StructField("term_frequency", T.LongType(), False),
@@ -79,6 +104,16 @@ SECTION_INDEX_TERM_SCHEMA = T.StructType(SECTION_INDEX_TARGET_SCHEMA.fields + [
 ])
 
 SECTION_INDEX_SUMMARY_SCHEMA = T.StructType(DOCUMENT_INDEX_SUMMARY_SCHEMA.fields)
+
+PARAGRAPH_INDEX_TERM_COUNT_SCHEMA = T.StructType(PARAGRAPH_INDEX_TARGET_SCHEMA.fields + [
+    T.StructField("token", T.StringType(), False),
+    T.StructField("term_frequency", T.LongType(), False),
+])
+
+PARAGRAPH_INDEX_TARGET_STATS_SCHEMA = T.StructType(PARAGRAPH_INDEX_TARGET_SCHEMA.fields + [
+    T.StructField("target_word_count", T.LongType(), False),
+    T.StructField("target_distinct_terms", T.LongType(), False),
+])
 
 PARAGRAPH_INDEX_TERM_SCHEMA = T.StructType(PARAGRAPH_INDEX_TARGET_SCHEMA.fields + [
     T.StructField("token", T.StringType(), False),
@@ -90,6 +125,16 @@ PARAGRAPH_INDEX_TERM_SCHEMA = T.StructType(PARAGRAPH_INDEX_TARGET_SCHEMA.fields 
 
 PARAGRAPH_INDEX_SUMMARY_SCHEMA = T.StructType(DOCUMENT_INDEX_SUMMARY_SCHEMA.fields)
 
+SENTENCE_INDEX_TERM_COUNT_SCHEMA = T.StructType(SENTENCE_INDEX_TARGET_SCHEMA.fields + [
+    T.StructField("token", T.StringType(), False),
+    T.StructField("term_frequency", T.LongType(), False),
+])
+
+SENTENCE_INDEX_TARGET_STATS_SCHEMA = T.StructType(SENTENCE_INDEX_TARGET_SCHEMA.fields + [
+    T.StructField("target_word_count", T.LongType(), False),
+    T.StructField("target_distinct_terms", T.LongType(), False),
+])
+
 SENTENCE_INDEX_TERM_SCHEMA = T.StructType(SENTENCE_INDEX_TARGET_SCHEMA.fields + [
     T.StructField("token", T.StringType(), False),
     T.StructField("term_frequency", T.LongType(), False),
@@ -100,36 +145,23 @@ SENTENCE_INDEX_TERM_SCHEMA = T.StructType(SENTENCE_INDEX_TARGET_SCHEMA.fields + 
 
 SENTENCE_INDEX_SUMMARY_SCHEMA = T.StructType(DOCUMENT_INDEX_SUMMARY_SCHEMA.fields)
 
-DOCUMENT_OVERLAP_SCORE_SCHEMA = T.StructType(DOCUMENT_SEARCH_TARGET_SCHEMA.fields + [
-    T.StructField("score_overlap", T.DoubleType(), False),
+QUERY_TOKEN_SCHEMA = T.StructType([
+    T.StructField("token", T.StringType(), False),
 ])
 
-SECTION_OVERLAP_SCORE_SCHEMA = T.StructType(SECTION_SEARCH_TARGET_SCHEMA.fields + [
-    T.StructField("score_overlap", T.DoubleType(), False),
+EXPANDED_QUERY_TOKEN_SCHEMA = T.StructType([
+    T.StructField("ordinal", T.LongType(), False),
+    T.StructField("token", T.StringType(), False),
 ])
 
-PARAGRAPH_OVERLAP_SCORE_SCHEMA = T.StructType(PARAGRAPH_SEARCH_TARGET_SCHEMA.fields + [
-    T.StructField("score_overlap", T.DoubleType(), False),
+QUERY_TERM_SCHEMA = T.StructType([
+    T.StructField("query_id", T.StringType(), False),
+    T.StructField("token", T.StringType(), False),
 ])
 
-SENTENCE_OVERLAP_SCORE_SCHEMA = T.StructType(SENTENCE_SEARCH_TARGET_SCHEMA.fields + [
-    T.StructField("score_overlap", T.DoubleType(), False),
-])
-
-DOCUMENT_BM25_SCORE_SCHEMA = T.StructType(DOCUMENT_SEARCH_TARGET_SCHEMA.fields + [
-    T.StructField("score_bm25", T.DoubleType(), False),
-])
-
-SECTION_BM25_SCORE_SCHEMA = T.StructType(SECTION_SEARCH_TARGET_SCHEMA.fields + [
-    T.StructField("score_bm25", T.DoubleType(), False),
-])
-
-PARAGRAPH_BM25_SCORE_SCHEMA = T.StructType(PARAGRAPH_SEARCH_TARGET_SCHEMA.fields + [
-    T.StructField("score_bm25", T.DoubleType(), False),
-])
-
-SENTENCE_BM25_SCORE_SCHEMA = T.StructType(SENTENCE_SEARCH_TARGET_SCHEMA.fields + [
-    T.StructField("score_bm25", T.DoubleType(), False),
+QUERY_TERM_COUNT_SCHEMA = T.StructType([
+    T.StructField("query_id", T.StringType(), False),
+    T.StructField("query_terms", T.LongType(), False),
 ])
 
 DOCUMENT_SCORE_SCHEMA = T.StructType(DOCUMENT_SEARCH_TARGET_SCHEMA.fields + [
@@ -150,6 +182,30 @@ PARAGRAPH_SCORE_SCHEMA = T.StructType(PARAGRAPH_SEARCH_TARGET_SCHEMA.fields + [
 SENTENCE_SCORE_SCHEMA = T.StructType(SENTENCE_SEARCH_TARGET_SCHEMA.fields + [
     T.StructField("experiment_id", T.StringType(), False),
     T.StructField("score", T.DoubleType(), False),
+])
+
+DOCUMENT_FEEDBACK_OPTION_SCHEMA = T.StructType(DOCUMENT_SEARCH_CANDIDATE_SCHEMA.fields + [
+    T.StructField("feedback_band_id", T.StringType(), True),
+    T.StructField("fallback_ordinal", T.LongType(), False),
+    T.StructField("minimum_band_impressions", T.LongType(), False),
+])
+
+QUERY_DOCUMENT_FEEDBACK_SCHEMA = T.StructType([
+    T.StructField("search_query_id", T.StringType(), False),
+    T.StructField("experiment_id", T.StringType(), False),
+    T.StructField("user_band_id", T.StringType(), True),
+    T.StructField("candidate_rank", T.LongType(), False),
+    T.StructField("document_id", T.StringType(), False),
+    T.StructField("query_feedback", T.DoubleType(), True),
+])
+
+POPULARITY_FEEDBACK_SCHEMA = T.StructType([
+    T.StructField("search_query_id", T.StringType(), False),
+    T.StructField("experiment_id", T.StringType(), False),
+    T.StructField("user_band_id", T.StringType(), True),
+    T.StructField("candidate_rank", T.LongType(), False),
+    T.StructField("document_id", T.StringType(), False),
+    T.StructField("popularity_feedback", T.DoubleType(), True),
 ])
 
 DOCUMENT_SEARCH_CANDIDATE_SCHEMA = T.StructType([

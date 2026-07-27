@@ -22,6 +22,12 @@ from structure.plugin.pyspark.compiler.model.PySparkProjectionRecipe import PySp
 from structure.plugin.pyspark.compiler.model.PySparkRelationAliasRecipe import PySparkRelationAliasRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationAssertionRecipe import PySparkRelationAssertionRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationBoundRecipe import PySparkRelationBoundRecipe
+from structure.plugin.pyspark.compiler.model.PySparkRelationHierarchyClosureRecipe import (
+    PySparkRelationHierarchyClosureRecipe,
+)
+from structure.plugin.pyspark.compiler.model.PySparkRelationHierarchyFallbackRecipe import (
+    PySparkRelationHierarchyFallbackRecipe,
+)
 from structure.plugin.pyspark.compiler.model.PySparkRelationOrderRecipe import PySparkRelationOrderRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationPrioritySelectionRecipe import (
     PySparkRelationPrioritySelectionRecipe,
@@ -262,7 +268,62 @@ class MapPySparkStep:
                                     if assertion.reference_key is None
                                     else self._expressions.map(assertion.reference_key, capabilities=capabilities)
                                 ),
+                                parent=(
+                                    None
+                                    if assertion.parent is None
+                                    else self._expressions.map(assertion.parent, capabilities=capabilities)
+                                ),
+                                order_by=(
+                                    None
+                                    if assertion.order_by is None
+                                    else self._expressions.map(assertion.order_by, capabilities=capabilities)
+                                ),
+                                max_depth=assertion.max_depth,
                                 nulls=assertion.nulls,
+                            )
+                        ),
+                        operation,
+                    )
+                )
+            if operation.relation_hierarchy_closure is not None:
+                closure = operation.relation_hierarchy_closure
+                recipes.append(
+                    self._operation_modes(
+                        PySparkOperationRecipe.relation_hierarchy_closure_operation(
+                            PySparkRelationHierarchyClosureRecipe(
+                                id=self._expressions.map(closure.id, capabilities=capabilities),
+                                parent=self._expressions.map(closure.parent, capabilities=capabilities),
+                                schema=closure.schema,
+                                scope=closure.scope,
+                                node=closure.node,
+                                ancestor=closure.ancestor,
+                                depth=closure.depth,
+                                max_depth=closure.max_depth,
+                            )
+                        ),
+                        operation,
+                    )
+                )
+            if operation.relation_hierarchy_fallback is not None:
+                fallback = operation.relation_hierarchy_fallback
+                recipes.append(
+                    self._operation_modes(
+                        PySparkOperationRecipe.relation_hierarchy_fallback_operation(
+                            PySparkRelationHierarchyFallbackRecipe(
+                                source_id=self._expressions.map(fallback.source_id, capabilities=capabilities),
+                                path=self._expressions.map(fallback.path, capabilities=capabilities),
+                                parent_input=fallback.parent_input,
+                                parent_source=fallback.parent_source,
+                                parent_schema=fallback.parent_schema,
+                                parent_id=self._expressions.map(fallback.parent_id, capabilities=capabilities),
+                                parent=self._expressions.map(fallback.parent, capabilities=capabilities),
+                                schema=fallback.schema,
+                                scope=fallback.scope,
+                                source=fallback.source,
+                                fallback=fallback.fallback,
+                                ordinal=fallback.ordinal,
+                                separator=fallback.separator,
+                                max_depth=fallback.max_depth,
                             )
                         ),
                         operation,

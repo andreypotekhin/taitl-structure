@@ -17,11 +17,23 @@ Source: `examples.search.transforms.extract.ExtractText`
 
 ## Step methods
 
-- `declare_hierarchy`: `Document` -> `Section`
+- `mark_lines`: `Document` -> `MarkedDocumentLine`
+- `select_paragraph_lines`: `MarkedDocumentLine` -> `ParagraphLine`
+- `select_section_headings`: `MarkedDocumentLine` -> `SectionHeading`
+- `collect_paragraph_lines`: `ParagraphLine` -> `ParagraphLineGroup`
+- `assemble_paragraph_content`: `ParagraphLineGroup` -> `ParagraphContent`
+- `rank_paragraphs`: `ParagraphContent` -> `ParagraphDraft`
+- `publish_paragraphs`: `ParagraphDraft` -> `Paragraph`
+- `select_section_keys`: `ParagraphDraft` -> `SectionKey`
+- `build_sections`: `SectionKey` -> `Section`
+- `build_sentences`: `ParagraphDraft` -> `Sentence`
+- `publish_sentences`: `Sentence` -> `Sentence`
+- `build_words`: `Sentence` -> `Word`
 
 ## Dependencies
 
-- None
+- `heading`
+- `section_headings`
 
 ## Target Artifacts
 

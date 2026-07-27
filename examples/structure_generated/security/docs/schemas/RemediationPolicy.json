@@ -1,0 +1,20 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "severity",
+      "name": "severity",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "target_days",
+      "name": "target_days",
+      "nullable": false,
+      "type": "integer"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.security.schemas.risk",
+  "name": "RemediationPolicy"
+}

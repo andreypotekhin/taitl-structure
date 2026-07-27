@@ -51,6 +51,16 @@ class ValidatePySparkRelationReads:
                     self._validate(relations, joined, reads, request)
             if operation.kind == "posexplode_struct" and operation.posexplode_struct is not None:
                 self._validate(relations, joined, self._scopes(operation.posexplode_struct.expression), request)
+            if operation.relation_hierarchy_closure is not None:
+                closure = operation.relation_hierarchy_closure
+                reads = set().union(self._scopes(closure.id), self._scopes(closure.parent))
+                self._validate(relations, joined, reads, request)
+            if operation.relation_hierarchy_fallback is not None:
+                fallback = operation.relation_hierarchy_fallback
+                parent_reads = set().union(self._scopes(fallback.parent_id), self._scopes(fallback.parent))
+                reads = set().union(self._scopes(fallback.source_id), self._scopes(fallback.path))
+                self._validate(relations, joined, reads, request)
+                self._validate(relations, joined, parent_reads - {fallback.parent_input}, request)
             if operation.relation_order is not None:
                 reads = set().union(*(self._scopes(expression) for expression in operation.relation_order.order_by))
                 self._validate(relations, joined, reads, request)
@@ -63,6 +73,8 @@ class ValidatePySparkRelationReads:
                     *(self._scopes(expression) for expression in assertion.keys),
                     self._scopes(assertion.predicate) if assertion.predicate is not None else set(),
                     self._scopes(assertion.value) if assertion.value is not None else set(),
+                    self._scopes(assertion.parent) if assertion.parent is not None else set(),
+                    self._scopes(assertion.order_by) if assertion.order_by is not None else set(),
                 )
                 reads -= references
                 self._validate(relations, joined, reads, request)

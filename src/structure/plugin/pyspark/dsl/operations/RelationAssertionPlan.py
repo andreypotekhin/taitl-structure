@@ -16,4 +16,7 @@ class RelationAssertionPlan:
     reference_source: str | None = None
     reference_schema: type[Schema] | None = None
     reference_key: Expression | None = None
+    parent: Expression | None = None
+    order_by: Expression | None = None
+    max_depth: int | None = None
     nulls: str = "allow"

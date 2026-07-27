@@ -59,6 +59,10 @@ class ClassifyStreamingCompatibility:
                     findings.extend(self._relation_ordering(step.name, operation.kind))
                 if operation.relation_priority_selection is not None:
                     findings.extend(self._priority_selection(step.name))
+                if operation.relation_hierarchy_closure is not None:
+                    findings.extend(self._hierarchy_closure(step.name))
+                if operation.relation_hierarchy_fallback is not None:
+                    findings.extend(self._hierarchy_fallbacks(step.name))
                 if operation.relation_set is not None:
                     findings.extend(self._relation_set(step.name, operation.kind, operation.relation_set.input_name))
                 if operation.join is not None:
@@ -273,6 +277,30 @@ class ClassifyStreamingCompatibility:
                     "streaming compatibility."
                 ),
                 use="Keep this transform batch-only or perform priority selection before the streaming transform.",
+            ),
+        )
+
+    def _hierarchy_closure(self, step: str) -> tuple[StreamingFinding, ...]:
+        return (
+            StreamingFinding(
+                code="STREAM-E0801",
+                support=StreamingSupport.BATCH_ONLY,
+                step=step,
+                operation="hierarchy_closure",
+                problem="hierarchy_closure(...) expands bounded parent rows and is batch-only in v1 streaming compatibility.",
+                use="Keep this transform batch-only or materialize hierarchy closure before the streaming transform.",
+            ),
+        )
+
+    def _hierarchy_fallbacks(self, step: str) -> tuple[StreamingFinding, ...]:
+        return (
+            StreamingFinding(
+                code="STREAM-E0801",
+                support=StreamingSupport.BATCH_ONLY,
+                step=step,
+                operation="hierarchy_fallbacks",
+                problem="hierarchy_fallbacks(...) expands bounded parent fallback rows and is batch-only in v1 streaming compatibility.",
+                use="Keep this transform batch-only or materialize hierarchy fallbacks before the streaming transform.",
             ),
         )
 

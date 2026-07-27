@@ -1,8 +1,17 @@
 {
   "dependencies": [
+    "band_context_clicks",
+    "band_context_impressions",
+    "band_fallbacks",
+    "band_memberships",
     "click",
     "context_clicks",
-    "policy"
+    "fallback",
+    "fallback_context_clicks",
+    "fallback_context_impressions",
+    "membership",
+    "policy",
+    "user_band_memberships"
   ],
   "generated_by": "Structure",
   "inputs": [
@@ -53,9 +62,6 @@
   "source": "examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals",
   "step_methods": [
     {
-      "after_hooks": [
-        "expand_impressions"
-      ],
       "input_lane": "daily_impressions",
       "input_schema": "DailyImpressions",
       "inputs": [
@@ -66,21 +72,130 @@
           "source": "daily_impressions"
         }
       ],
-      "name": "declare_context_impressions",
-      "output_lane": "context_impressions",
-      "output_schema": "DailyImpressions",
+      "name": "global_impressions",
+      "output_lane": "global_context_impressions",
+      "output_schema": "ContextDailyImpressions",
       "results": [
         {
-          "frame": "context_impressions",
-          "lane": "context_impressions",
-          "schema": "DailyImpressions"
+          "frame": "global_context_impressions",
+          "lane": "global_context_impressions",
+          "schema": "ContextDailyImpressions"
         }
       ]
     },
     {
-      "after_hooks": [
-        "expand_clicks"
+      "input_lane": "daily_impressions",
+      "input_schema": "DailyImpressions",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "impression",
+          "schema": "DailyImpressions",
+          "source": "daily_impressions"
+        },
+        {
+          "driving": false,
+          "parameter": "membership",
+          "schema": "UserBandMembership",
+          "source": "user_band_memberships"
+        },
+        {
+          "driving": false,
+          "parameter": "fallback",
+          "schema": "BandFallback",
+          "source": "band_fallbacks"
+        }
       ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "membership"
+        },
+        {
+          "how": "inner",
+          "input": "fallback"
+        }
+      ],
+      "name": "fallback_impressions",
+      "output_lane": "fallback_context_impressions",
+      "output_schema": "ContextDailyImpressions",
+      "results": [
+        {
+          "frame": "fallback_context_impressions",
+          "lane": "fallback_context_impressions",
+          "schema": "ContextDailyImpressions"
+        }
+      ]
+    },
+    {
+      "input_lane": "daily_impressions",
+      "input_schema": "DailyImpressions",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "impression",
+          "schema": "DailyImpressions",
+          "source": "daily_impressions"
+        },
+        {
+          "driving": false,
+          "parameter": "membership",
+          "schema": "BandMembership",
+          "source": "band_memberships"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "membership"
+        }
+      ],
+      "name": "band_impressions",
+      "output_lane": "band_context_impressions",
+      "output_schema": "ContextDailyImpressions",
+      "results": [
+        {
+          "frame": "band_context_impressions",
+          "lane": "band_context_impressions",
+          "schema": "ContextDailyImpressions"
+        }
+      ]
+    },
+    {
+      "input_lane": "global_context_impressions",
+      "input_schema": "ContextDailyImpressions",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "global_fact",
+          "schema": "ContextDailyImpressions",
+          "source": "global_context_impressions"
+        },
+        {
+          "driving": false,
+          "parameter": "fallback_fact",
+          "schema": "ContextDailyImpressions",
+          "source": "fallback_context_impressions"
+        },
+        {
+          "driving": false,
+          "parameter": "band_fact",
+          "schema": "ContextDailyImpressions",
+          "source": "band_context_impressions"
+        }
+      ],
+      "name": "merge_context_impressions",
+      "output_lane": "context_impressions",
+      "output_schema": "ContextDailyImpressions",
+      "results": [
+        {
+          "frame": "context_impressions",
+          "lane": "context_impressions",
+          "schema": "ContextDailyImpressions"
+        }
+      ]
+    },
+    {
       "input_lane": "daily_clicks",
       "input_schema": "DailyClicks",
       "inputs": [
@@ -91,31 +206,143 @@
           "source": "daily_clicks"
         }
       ],
-      "name": "declare_context_clicks",
+      "name": "global_clicks",
+      "output_lane": "global_context_clicks",
+      "output_schema": "ContextDailyClicks",
+      "results": [
+        {
+          "frame": "global_context_clicks",
+          "lane": "global_context_clicks",
+          "schema": "ContextDailyClicks"
+        }
+      ]
+    },
+    {
+      "input_lane": "daily_clicks",
+      "input_schema": "DailyClicks",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "click",
+          "schema": "DailyClicks",
+          "source": "daily_clicks"
+        },
+        {
+          "driving": false,
+          "parameter": "membership",
+          "schema": "UserBandMembership",
+          "source": "user_band_memberships"
+        },
+        {
+          "driving": false,
+          "parameter": "fallback",
+          "schema": "BandFallback",
+          "source": "band_fallbacks"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "membership"
+        },
+        {
+          "how": "inner",
+          "input": "fallback"
+        }
+      ],
+      "name": "fallback_clicks",
+      "output_lane": "fallback_context_clicks",
+      "output_schema": "ContextDailyClicks",
+      "results": [
+        {
+          "frame": "fallback_context_clicks",
+          "lane": "fallback_context_clicks",
+          "schema": "ContextDailyClicks"
+        }
+      ]
+    },
+    {
+      "input_lane": "daily_clicks",
+      "input_schema": "DailyClicks",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "click",
+          "schema": "DailyClicks",
+          "source": "daily_clicks"
+        },
+        {
+          "driving": false,
+          "parameter": "membership",
+          "schema": "BandMembership",
+          "source": "band_memberships"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "membership"
+        }
+      ],
+      "name": "band_clicks",
+      "output_lane": "band_context_clicks",
+      "output_schema": "ContextDailyClicks",
+      "results": [
+        {
+          "frame": "band_context_clicks",
+          "lane": "band_context_clicks",
+          "schema": "ContextDailyClicks"
+        }
+      ]
+    },
+    {
+      "input_lane": "global_context_clicks",
+      "input_schema": "ContextDailyClicks",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "global_fact",
+          "schema": "ContextDailyClicks",
+          "source": "global_context_clicks"
+        },
+        {
+          "driving": false,
+          "parameter": "fallback_fact",
+          "schema": "ContextDailyClicks",
+          "source": "fallback_context_clicks"
+        },
+        {
+          "driving": false,
+          "parameter": "band_fact",
+          "schema": "ContextDailyClicks",
+          "source": "band_context_clicks"
+        }
+      ],
+      "name": "merge_context_clicks",
       "output_lane": "context_clicks",
-      "output_schema": "DailyClicks",
+      "output_schema": "ContextDailyClicks",
       "results": [
         {
           "frame": "context_clicks",
           "lane": "context_clicks",
-          "schema": "DailyClicks"
+          "schema": "ContextDailyClicks"
         }
       ]
     },
     {
       "input_lane": "context_impressions",
-      "input_schema": "DailyImpressions",
+      "input_schema": "ContextDailyImpressions",
       "inputs": [
         {
           "driving": true,
           "parameter": "impression",
-          "schema": "DailyImpressions",
+          "schema": "ContextDailyImpressions",
           "source": "context_impressions"
         },
         {
           "driving": false,
           "parameter": "click",
-          "schema": "DailyClicks",
+          "schema": "ContextDailyClicks",
           "source": "context_clicks"
         },
         {
@@ -137,29 +364,29 @@
       ],
       "name": "summarize_query",
       "output_lane": "query_signal_totals",
-      "output_schema": "QueryDocumentSignals",
+      "output_schema": "QueryDocumentSignalTotals",
       "results": [
         {
           "frame": "query_signal_totals",
           "lane": "query_signal_totals",
-          "schema": "QueryDocumentSignals"
+          "schema": "QueryDocumentSignalTotals"
         }
       ]
     },
     {
       "input_lane": "context_impressions",
-      "input_schema": "DailyImpressions",
+      "input_schema": "ContextDailyImpressions",
       "inputs": [
         {
           "driving": true,
           "parameter": "impression",
-          "schema": "DailyImpressions",
+          "schema": "ContextDailyImpressions",
           "source": "context_impressions"
         },
         {
           "driving": false,
           "parameter": "click",
-          "schema": "DailyClicks",
+          "schema": "ContextDailyClicks",
           "source": "context_clicks"
         },
         {
@@ -181,23 +408,23 @@
       ],
       "name": "summarize_popularity",
       "output_lane": "popularity_totals",
-      "output_schema": "DocumentPopularity",
+      "output_schema": "DocumentPopularityTotals",
       "results": [
         {
           "frame": "popularity_totals",
           "lane": "popularity_totals",
-          "schema": "DocumentPopularity"
+          "schema": "DocumentPopularityTotals"
         }
       ]
     },
     {
       "input_lane": "query_signal_totals",
-      "input_schema": "QueryDocumentSignals",
+      "input_schema": "QueryDocumentSignalTotals",
       "inputs": [
         {
           "driving": true,
           "parameter": "signal",
-          "schema": "QueryDocumentSignals",
+          "schema": "QueryDocumentSignalTotals",
           "source": "query_signal_totals"
         },
         {
@@ -226,12 +453,12 @@
     },
     {
       "input_lane": "popularity_totals",
-      "input_schema": "DocumentPopularity",
+      "input_schema": "DocumentPopularityTotals",
       "inputs": [
         {
           "driving": true,
           "parameter": "popularity",
-          "schema": "DocumentPopularity",
+          "schema": "DocumentPopularityTotals",
           "source": "popularity_totals"
         },
         {

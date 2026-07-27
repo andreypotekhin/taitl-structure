@@ -1,5 +1,17 @@
 {
-  "dependencies": [],
+  "dependencies": [
+    "ancestor",
+    "band",
+    "band_ancestors",
+    "child_match",
+    "path",
+    "resolved_band_memberships",
+    "singleton",
+    "singleton_catalog",
+    "singleton_user_bands",
+    "user_band_paths",
+    "valid_bands"
+  ],
   "generated_by": "Structure",
   "inputs": [
     {
@@ -39,6 +51,28 @@
   "source": "examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands",
   "step_methods": [
     {
+      "input_lane": "bands",
+      "input_schema": "Band",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "band",
+          "schema": "Band",
+          "source": "bands"
+        }
+      ],
+      "name": "validate_bands",
+      "output_lane": "valid_bands",
+      "output_schema": "Band",
+      "results": [
+        {
+          "frame": "valid_bands",
+          "lane": "valid_bands",
+          "schema": "Band"
+        }
+      ]
+    },
+    {
       "input_lane": "users",
       "input_schema": "User",
       "inputs": [
@@ -47,9 +81,359 @@
           "parameter": "user",
           "schema": "User",
           "source": "users"
+        },
+        {
+          "driving": false,
+          "parameter": "band",
+          "schema": "Band",
+          "source": "valid_bands"
         }
       ],
-      "name": "declare_outputs",
+      "joins": [
+        {
+          "how": "cross",
+          "input": "band"
+        }
+      ],
+      "name": "match_bands",
+      "output_lane": "matches",
+      "output_schema": "BandMatch",
+      "results": [
+        {
+          "frame": "matches",
+          "lane": "matches",
+          "schema": "BandMatch"
+        }
+      ]
+    },
+    {
+      "input_lane": "matches",
+      "input_schema": "BandMatch",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "match",
+          "schema": "BandMatch",
+          "source": "matches"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "child_match"
+        }
+      ],
+      "name": "select_leaf_matches",
+      "output_lane": "leaf_matches",
+      "output_schema": "BandMatch",
+      "results": [
+        {
+          "frame": "leaf_matches",
+          "lane": "leaf_matches",
+          "schema": "BandMatch"
+        }
+      ]
+    },
+    {
+      "input_lane": "valid_bands",
+      "input_schema": "Band",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "band",
+          "schema": "Band",
+          "source": "valid_bands"
+        }
+      ],
+      "name": "expand_band_ancestors",
+      "output_lane": "band_ancestors",
+      "output_schema": "BandAncestor",
+      "results": [
+        {
+          "frame": "band_ancestors",
+          "lane": "band_ancestors",
+          "schema": "BandAncestor"
+        }
+      ]
+    },
+    {
+      "input_lane": "leaf_matches",
+      "input_schema": "BandMatch",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "match",
+          "schema": "BandMatch",
+          "source": "leaf_matches"
+        }
+      ],
+      "name": "build_user_band_paths",
+      "output_lane": "user_band_paths",
+      "output_schema": "UserBandPath",
+      "results": [
+        {
+          "frame": "user_band_paths",
+          "lane": "user_band_paths",
+          "schema": "UserBandPath"
+        }
+      ]
+    },
+    {
+      "input_lane": "user_band_paths",
+      "input_schema": "UserBandPath",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "path",
+          "schema": "UserBandPath",
+          "source": "user_band_paths"
+        }
+      ],
+      "name": "build_resolved_user_bands",
+      "output_lane": "resolved_user_bands",
+      "output_schema": "UserBand",
+      "results": [
+        {
+          "frame": "resolved_user_bands",
+          "lane": "resolved_user_bands",
+          "schema": "UserBand"
+        }
+      ]
+    },
+    {
+      "input_lane": "valid_bands",
+      "input_schema": "Band",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "band",
+          "schema": "Band",
+          "source": "valid_bands"
+        }
+      ],
+      "name": "build_singleton_user_bands",
+      "output_lane": "singleton_user_bands",
+      "output_schema": "SingletonUserBand",
+      "results": [
+        {
+          "frame": "singleton_user_bands",
+          "lane": "singleton_user_bands",
+          "schema": "SingletonUserBand"
+        }
+      ]
+    },
+    {
+      "input_lane": "singleton_user_bands",
+      "input_schema": "SingletonUserBand",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "singleton",
+          "schema": "SingletonUserBand",
+          "source": "singleton_user_bands"
+        }
+      ],
+      "name": "publish_singleton_user_bands",
+      "output_lane": "singleton_catalog",
+      "output_schema": "UserBand",
+      "results": [
+        {
+          "frame": "singleton_catalog",
+          "lane": "singleton_catalog",
+          "schema": "UserBand"
+        }
+      ]
+    },
+    {
+      "input_lane": "resolved_user_bands",
+      "input_schema": "UserBand",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "resolved",
+          "schema": "UserBand",
+          "source": "resolved_user_bands"
+        },
+        {
+          "driving": false,
+          "parameter": "singleton",
+          "schema": "UserBand",
+          "source": "singleton_catalog"
+        }
+      ],
+      "name": "merge_user_band_catalog",
+      "output_lane": "all_user_bands",
+      "output_schema": "UserBand",
+      "results": [
+        {
+          "frame": "all_user_bands",
+          "lane": "all_user_bands",
+          "schema": "UserBand"
+        }
+      ]
+    },
+    {
+      "input_lane": "all_user_bands",
+      "input_schema": "UserBand",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "band",
+          "schema": "UserBand",
+          "source": "all_user_bands"
+        }
+      ],
+      "name": "publish_user_bands",
+      "output_lane": "user_bands",
+      "output_schema": "UserBand",
+      "results": [
+        {
+          "frame": "user_bands",
+          "lane": "user_bands",
+          "schema": "UserBand"
+        }
+      ]
+    },
+    {
+      "input_lane": "users",
+      "input_schema": "User",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "user",
+          "schema": "User",
+          "source": "users"
+        },
+        {
+          "driving": false,
+          "parameter": "path",
+          "schema": "UserBandPath",
+          "source": "user_band_paths"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "path"
+        }
+      ],
+      "name": "build_user_band_memberships",
+      "output_lane": "resolved_user_band_memberships",
+      "output_schema": "UserBandMembership",
+      "results": [
+        {
+          "frame": "resolved_user_band_memberships",
+          "lane": "resolved_user_band_memberships",
+          "schema": "UserBandMembership"
+        }
+      ]
+    },
+    {
+      "input_lane": "resolved_user_band_memberships",
+      "input_schema": "UserBandMembership",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "membership",
+          "schema": "UserBandMembership",
+          "source": "resolved_user_band_memberships"
+        }
+      ],
+      "name": "publish_user_band_memberships",
+      "output_lane": "user_band_memberships",
+      "output_schema": "UserBandMembership",
+      "results": [
+        {
+          "frame": "user_band_memberships",
+          "lane": "user_band_memberships",
+          "schema": "UserBandMembership"
+        }
+      ]
+    },
+    {
+      "input_lane": "leaf_matches",
+      "input_schema": "BandMatch",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "match",
+          "schema": "BandMatch",
+          "source": "leaf_matches"
+        },
+        {
+          "driving": false,
+          "parameter": "ancestor",
+          "schema": "BandAncestor",
+          "source": "band_ancestors"
+        },
+        {
+          "driving": false,
+          "parameter": "singleton",
+          "schema": "SingletonUserBand",
+          "source": "singleton_user_bands"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "ancestor"
+        },
+        {
+          "how": "inner",
+          "input": "singleton"
+        }
+      ],
+      "name": "build_direct_band_memberships",
+      "output_lane": "direct_band_memberships",
+      "output_schema": "BandMembership",
+      "results": [
+        {
+          "frame": "direct_band_memberships",
+          "lane": "direct_band_memberships",
+          "schema": "BandMembership"
+        }
+      ]
+    },
+    {
+      "input_lane": "resolved_user_band_memberships",
+      "input_schema": "UserBandMembership",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "membership",
+          "schema": "UserBandMembership",
+          "source": "resolved_user_band_memberships"
+        }
+      ],
+      "name": "build_resolved_band_memberships",
+      "output_lane": "resolved_band_memberships",
+      "output_schema": "BandMembership",
+      "results": [
+        {
+          "frame": "resolved_band_memberships",
+          "lane": "resolved_band_memberships",
+          "schema": "BandMembership"
+        }
+      ]
+    },
+    {
+      "input_lane": "direct_band_memberships",
+      "input_schema": "BandMembership",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "direct",
+          "schema": "BandMembership",
+          "source": "direct_band_memberships"
+        },
+        {
+          "driving": false,
+          "parameter": "resolved",
+          "schema": "BandMembership",
+          "source": "resolved_band_memberships"
+        }
+      ],
+      "name": "merge_band_memberships",
       "output_lane": "band_memberships",
       "output_schema": "BandMembership",
       "results": [
@@ -57,17 +441,30 @@
           "frame": "band_memberships",
           "lane": "band_memberships",
           "schema": "BandMembership"
+        }
+      ]
+    },
+    {
+      "input_lane": "all_user_bands",
+      "input_schema": "UserBand",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "user_band",
+          "schema": "UserBand",
+          "source": "all_user_bands"
         },
         {
-          "frame": "user_bands",
-          "lane": "user_bands",
-          "schema": "UserBand"
-        },
-        {
-          "frame": "user_band_memberships",
-          "lane": "user_band_memberships",
-          "schema": "UserBandMembership"
-        },
+          "driving": false,
+          "parameter": "band",
+          "schema": "Band",
+          "source": "valid_bands"
+        }
+      ],
+      "name": "build_band_fallbacks",
+      "output_lane": "band_fallbacks",
+      "output_schema": "BandFallback",
+      "results": [
         {
           "frame": "band_fallbacks",
           "lane": "band_fallbacks",

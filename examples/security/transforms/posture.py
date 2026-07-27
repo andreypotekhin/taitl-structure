@@ -1,7 +1,7 @@
 from examples.security.schemas.assets import Device, DeviceType, Software
 from examples.security.schemas.organization import Department, Org, Person, Team
 from examples.security.schemas.reporting import VulnerabilityExposure, VulnerabilityPostureCandidate
-from examples.security.schemas.risk import Vuln, VulnType
+from examples.security.schemas.risk import RemediationPolicy, Vuln, VulnType
 from structure import Transform, input, lane, output, step
 from structure.plugin.pyspark import *
 
@@ -14,6 +14,7 @@ class SecurityPosture(Transform):
     device_types = input(DeviceType)
     software = input(Software)
     vuln_types = input(VulnType)
+    remediation_policies = input(RemediationPolicy)
     people = input(Person)
     teams = input(Team)
     departments = input(Department)
@@ -30,6 +31,7 @@ class SecurityPosture(Transform):
         device_type: DeviceType,
         software: Software,
         vuln_type: VulnType,
+        remediation_policy: RemediationPolicy,
         person: Person,
         team: Team,
         department: Department,
@@ -39,6 +41,7 @@ class SecurityPosture(Transform):
         inner_join(device_type, on=device_type.id == device.device_type_id)
         inner_join(software, on=software.id == vuln.software_id)
         inner_join(vuln_type, on=vuln_type.id == vuln.vuln_type_id)
+        inner_join(remediation_policy, on=remediation_policy.severity == vuln_type.severity)
         inner_join(person, on=person.id == vuln.owner_id)
         inner_join(team, on=team.id == person.team_id)
         inner_join(department, on=department.id == team.department_id)
@@ -48,8 +51,10 @@ class SecurityPosture(Transform):
             vuln_type=vuln_type.type,
             description=vuln_type.description,
             instructions=vuln_type.instructions,
+            severity=vuln_type.severity,
             date_discovered=vuln.date_discovered,
             date_addressed=vuln.date_addressed,
+            target_date=date_add(vuln.date_discovered, days=remediation_policy.target_days),
             is_active=vuln.date_addressed.is_null(),
             device_id=device.id,
             device_platform=device_type.platform,

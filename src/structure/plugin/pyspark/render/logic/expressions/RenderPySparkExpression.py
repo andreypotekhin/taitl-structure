@@ -511,7 +511,8 @@ class RenderPySparkExpression:
         if function == "sha2":
             return f"F.sha2({args[0]}, {expression.data['bits']})"
         if function == "date_add":
-            return f"F.date_add({args[0]}, {expression.data['days']})"
+            days = expression.data.get("days", args[1] if len(args) == 2 else None)
+            return f"F.date_add({args[0]}, {days})"
         if function == "date_sub":
             return f"F.date_sub({args[0]}, {expression.data['days']})"
         if function == "datediff":

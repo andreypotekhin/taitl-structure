@@ -29,12 +29,36 @@ Source: `examples.search.transforms.scoring.ScoreAll.ScoreAll`
 
 ## Step methods
 
-- `declare_overlap_scores`: `SearchQuery` -> `DocumentOverlapScore`
-- `declare_bm25_scores`: `SearchQuery` -> `DocumentBm25Score`
+- `expand_query_terms`: `SearchQuery` -> `QueryTerm`
+- `select_distinct_query_terms`: `QueryTerm` -> `QueryTerm`
+- `count_query_terms`: `QueryTerm` -> `QueryTermCount`
+- `match_documents`: `QueryTerm` -> `DocumentOverlapMatch`
+- `match_sections`: `QueryTerm` -> `SectionOverlapMatch`
+- `match_paragraphs`: `QueryTerm` -> `ParagraphOverlapMatch`
+- `match_sentences`: `QueryTerm` -> `SentenceOverlapMatch`
+- `publish_document_overlap_scores`: `DocumentOverlapMatch` -> `DocumentOverlapScore`
+- `publish_section_overlap_scores`: `SectionOverlapMatch` -> `SectionOverlapScore`
+- `publish_paragraph_overlap_scores`: `ParagraphOverlapMatch` -> `ParagraphOverlapScore`
+- `publish_sentence_overlap_scores`: `SentenceOverlapMatch` -> `SentenceOverlapScore`
+- `score_document_bm25`: `QueryTerm` -> `DocumentBm25Score`
+- `score_section_bm25`: `QueryTerm` -> `SectionBm25Score`
+- `score_paragraph_bm25`: `QueryTerm` -> `ParagraphBm25Score`
+- `score_sentence_bm25`: `QueryTerm` -> `SentenceBm25Score`
 
 ## Dependencies
 
-- None
+- `document_summary`
+- `document_terms`
+- `paragraph_summary`
+- `paragraph_terms`
+- `query_sizes`
+- `section_summary`
+- `section_terms`
+- `sentence_summary`
+- `sentence_terms`
+- `size`
+- `summary`
+- `term`
 
 ## Target Artifacts
 

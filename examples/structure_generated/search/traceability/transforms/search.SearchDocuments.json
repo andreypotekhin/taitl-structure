@@ -208,238 +208,673 @@
       "source": "source:examples.search.transforms.search.SearchDocuments.select_candidates.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates",
-      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates",
-      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.select_fallback_options",
+      "ir": "ir:SearchDocuments.step.1.select_fallback_options",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_fallback_options"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.select.search_query_id",
-      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.project.search_query_id",
-      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.field.search_query_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.select_fallback_options.where.0",
+      "ir": "ir:SearchDocuments.step.1.select_fallback_options.filter.0",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_fallback_options.filter.0"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.select.experiment_id",
-      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.project.experiment_id",
-      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.field.experiment_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.select_fallback_options.where.1",
+      "ir": "ir:SearchDocuments.step.1.select_fallback_options.filter.1",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_fallback_options.filter.1"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.select.user_band_id",
-      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.project.user_band_id",
-      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.field.user_band_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.select_fallback_options.join.1.fallback",
+      "ir": "ir:SearchDocuments.step.1.select_fallback_options.join.1.fallback",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_fallback_options.join.1.fallback"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.select.band_id",
-      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.project.band_id",
-      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.field.band_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.select_fallback_options.join.2.policy",
+      "ir": "ir:SearchDocuments.step.1.select_fallback_options.join.2.policy",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_fallback_options.join.2.policy"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.select.query",
-      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.project.query",
-      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.field.query"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.select_fallback_options.select.search_query_id",
+      "ir": "ir:SearchDocuments.step.1.select_fallback_options.project.search_query_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_fallback_options.field.search_query_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.select.candidate_rank",
-      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.project.candidate_rank",
-      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.field.candidate_rank"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.select_fallback_options.select.experiment_id",
+      "ir": "ir:SearchDocuments.step.1.select_fallback_options.project.experiment_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_fallback_options.field.experiment_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.select.document_id",
-      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.project.document_id",
-      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.field.document_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.select_fallback_options.select.user_band_id",
+      "ir": "ir:SearchDocuments.step.1.select_fallback_options.project.user_band_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_fallback_options.field.user_band_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.select.title",
-      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.project.title",
-      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.field.title"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.select_fallback_options.select.band_id",
+      "ir": "ir:SearchDocuments.step.1.select_fallback_options.project.band_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_fallback_options.field.band_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.select.url",
-      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.project.url",
-      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.field.url"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.select_fallback_options.select.query",
+      "ir": "ir:SearchDocuments.step.1.select_fallback_options.project.query",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_fallback_options.field.query"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.select.score",
-      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.project.score",
-      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.field.score"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.select_fallback_options.select.candidate_rank",
+      "ir": "ir:SearchDocuments.step.1.select_fallback_options.project.candidate_rank",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_fallback_options.field.candidate_rank"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.select.score_feedback",
-      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.project.score_feedback",
-      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.field.score_feedback"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.select_fallback_options.select.document_id",
+      "ir": "ir:SearchDocuments.step.1.select_fallback_options.project.document_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_fallback_options.field.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.select.score_rank",
-      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.project.score_rank",
-      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.field.score_rank"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.select_fallback_options.select.title",
+      "ir": "ir:SearchDocuments.step.1.select_fallback_options.project.title",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_fallback_options.field.title"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.select.score_weight",
-      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.project.score_weight",
-      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.field.score_weight"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.select_fallback_options.select.url",
+      "ir": "ir:SearchDocuments.step.1.select_fallback_options.project.url",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_fallback_options.field.url"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.select.feedback_weight",
-      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.project.feedback_weight",
-      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.field.feedback_weight"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.select_fallback_options.select.score",
+      "ir": "ir:SearchDocuments.step.1.select_fallback_options.project.score",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_fallback_options.field.score"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.hook.raw.score_candidates",
-      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.hook.raw.score_candidates",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.select_fallback_options.select.score_feedback",
+      "ir": "ir:SearchDocuments.step.1.select_fallback_options.project.score_feedback",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_fallback_options.field.score_feedback"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.select_fallback_options.select.score_rank",
+      "ir": "ir:SearchDocuments.step.1.select_fallback_options.project.score_rank",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_fallback_options.field.score_rank"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.select_fallback_options.select.score_weight",
+      "ir": "ir:SearchDocuments.step.1.select_fallback_options.project.score_weight",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_fallback_options.field.score_weight"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.select_fallback_options.select.feedback_weight",
+      "ir": "ir:SearchDocuments.step.1.select_fallback_options.project.feedback_weight",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_fallback_options.field.feedback_weight"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.select_fallback_options.select.feedback_band_id",
+      "ir": "ir:SearchDocuments.step.1.select_fallback_options.project.feedback_band_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_fallback_options.field.feedback_band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.select_fallback_options.select.fallback_ordinal",
+      "ir": "ir:SearchDocuments.step.1.select_fallback_options.project.fallback_ordinal",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_fallback_options.field.fallback_ordinal"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.select_fallback_options.select.minimum_band_impressions",
+      "ir": "ir:SearchDocuments.step.1.select_fallback_options.project.minimum_band_impressions",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_fallback_options.field.minimum_band_impressions"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.select_fallback_options.validation.0.intermediate",
+      "ir": "ir:SearchDocuments.step.1.select_fallback_options.validation.0.intermediate",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_fallback_options.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.select_global_options",
+      "ir": "ir:SearchDocuments.step.2.select_global_options",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_global_options"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.select_global_options.where.0",
+      "ir": "ir:SearchDocuments.step.2.select_global_options.filter.0",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_global_options.filter.0"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.select_global_options.where.1",
+      "ir": "ir:SearchDocuments.step.2.select_global_options.filter.1",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_global_options.filter.1"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.select_global_options.join.1.policy",
+      "ir": "ir:SearchDocuments.step.2.select_global_options.join.1.policy",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_global_options.join.1.policy"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.select_global_options.select.search_query_id",
+      "ir": "ir:SearchDocuments.step.2.select_global_options.project.search_query_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_global_options.field.search_query_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.select_global_options.select.experiment_id",
+      "ir": "ir:SearchDocuments.step.2.select_global_options.project.experiment_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_global_options.field.experiment_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.select_global_options.select.user_band_id",
+      "ir": "ir:SearchDocuments.step.2.select_global_options.project.user_band_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_global_options.field.user_band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.select_global_options.select.band_id",
+      "ir": "ir:SearchDocuments.step.2.select_global_options.project.band_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_global_options.field.band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.select_global_options.select.query",
+      "ir": "ir:SearchDocuments.step.2.select_global_options.project.query",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_global_options.field.query"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.select_global_options.select.candidate_rank",
+      "ir": "ir:SearchDocuments.step.2.select_global_options.project.candidate_rank",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_global_options.field.candidate_rank"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.select_global_options.select.document_id",
+      "ir": "ir:SearchDocuments.step.2.select_global_options.project.document_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_global_options.field.document_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.select_global_options.select.title",
+      "ir": "ir:SearchDocuments.step.2.select_global_options.project.title",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_global_options.field.title"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.select_global_options.select.url",
+      "ir": "ir:SearchDocuments.step.2.select_global_options.project.url",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_global_options.field.url"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.select_global_options.select.score",
+      "ir": "ir:SearchDocuments.step.2.select_global_options.project.score",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_global_options.field.score"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.select_global_options.select.score_feedback",
+      "ir": "ir:SearchDocuments.step.2.select_global_options.project.score_feedback",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_global_options.field.score_feedback"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.select_global_options.select.score_rank",
+      "ir": "ir:SearchDocuments.step.2.select_global_options.project.score_rank",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_global_options.field.score_rank"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.select_global_options.select.score_weight",
+      "ir": "ir:SearchDocuments.step.2.select_global_options.project.score_weight",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_global_options.field.score_weight"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.select_global_options.select.feedback_weight",
+      "ir": "ir:SearchDocuments.step.2.select_global_options.project.feedback_weight",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_global_options.field.feedback_weight"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.select_global_options.select.feedback_band_id",
+      "ir": "ir:SearchDocuments.step.2.select_global_options.project.feedback_band_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_global_options.field.feedback_band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.select_global_options.select.fallback_ordinal",
+      "ir": "ir:SearchDocuments.step.2.select_global_options.project.fallback_ordinal",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_global_options.field.fallback_ordinal"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.select_global_options.select.minimum_band_impressions",
+      "ir": "ir:SearchDocuments.step.2.select_global_options.project.minimum_band_impressions",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_global_options.field.minimum_band_impressions"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.select_global_options.validation.0.intermediate",
+      "ir": "ir:SearchDocuments.step.2.select_global_options.validation.0.intermediate",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_global_options.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.merge_feedback_options",
+      "ir": "ir:SearchDocuments.step.3.merge_feedback_options",
+      "source": "source:examples.search.transforms.search.SearchDocuments.merge_feedback_options"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.merge_feedback_options.union_all.0",
+      "ir": "ir:SearchDocuments.step.3.merge_feedback_options.union_all.0",
+      "source": "source:examples.search.transforms.search.SearchDocuments.merge_feedback_options.union_all.0"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.merge_feedback_options.select.search_query_id",
+      "ir": "ir:SearchDocuments.step.3.merge_feedback_options.project.search_query_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.merge_feedback_options.field.search_query_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.merge_feedback_options.select.experiment_id",
+      "ir": "ir:SearchDocuments.step.3.merge_feedback_options.project.experiment_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.merge_feedback_options.field.experiment_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.merge_feedback_options.select.user_band_id",
+      "ir": "ir:SearchDocuments.step.3.merge_feedback_options.project.user_band_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.merge_feedback_options.field.user_band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.merge_feedback_options.select.band_id",
+      "ir": "ir:SearchDocuments.step.3.merge_feedback_options.project.band_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.merge_feedback_options.field.band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.merge_feedback_options.select.query",
+      "ir": "ir:SearchDocuments.step.3.merge_feedback_options.project.query",
+      "source": "source:examples.search.transforms.search.SearchDocuments.merge_feedback_options.field.query"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.merge_feedback_options.select.candidate_rank",
+      "ir": "ir:SearchDocuments.step.3.merge_feedback_options.project.candidate_rank",
+      "source": "source:examples.search.transforms.search.SearchDocuments.merge_feedback_options.field.candidate_rank"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.merge_feedback_options.select.document_id",
+      "ir": "ir:SearchDocuments.step.3.merge_feedback_options.project.document_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.merge_feedback_options.field.document_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.merge_feedback_options.select.title",
+      "ir": "ir:SearchDocuments.step.3.merge_feedback_options.project.title",
+      "source": "source:examples.search.transforms.search.SearchDocuments.merge_feedback_options.field.title"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.merge_feedback_options.select.url",
+      "ir": "ir:SearchDocuments.step.3.merge_feedback_options.project.url",
+      "source": "source:examples.search.transforms.search.SearchDocuments.merge_feedback_options.field.url"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.merge_feedback_options.select.score",
+      "ir": "ir:SearchDocuments.step.3.merge_feedback_options.project.score",
+      "source": "source:examples.search.transforms.search.SearchDocuments.merge_feedback_options.field.score"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.merge_feedback_options.select.score_feedback",
+      "ir": "ir:SearchDocuments.step.3.merge_feedback_options.project.score_feedback",
+      "source": "source:examples.search.transforms.search.SearchDocuments.merge_feedback_options.field.score_feedback"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.merge_feedback_options.select.score_rank",
+      "ir": "ir:SearchDocuments.step.3.merge_feedback_options.project.score_rank",
+      "source": "source:examples.search.transforms.search.SearchDocuments.merge_feedback_options.field.score_rank"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.merge_feedback_options.select.score_weight",
+      "ir": "ir:SearchDocuments.step.3.merge_feedback_options.project.score_weight",
+      "source": "source:examples.search.transforms.search.SearchDocuments.merge_feedback_options.field.score_weight"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.merge_feedback_options.select.feedback_weight",
+      "ir": "ir:SearchDocuments.step.3.merge_feedback_options.project.feedback_weight",
+      "source": "source:examples.search.transforms.search.SearchDocuments.merge_feedback_options.field.feedback_weight"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.merge_feedback_options.select.feedback_band_id",
+      "ir": "ir:SearchDocuments.step.3.merge_feedback_options.project.feedback_band_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.merge_feedback_options.field.feedback_band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.merge_feedback_options.select.fallback_ordinal",
+      "ir": "ir:SearchDocuments.step.3.merge_feedback_options.project.fallback_ordinal",
+      "source": "source:examples.search.transforms.search.SearchDocuments.merge_feedback_options.field.fallback_ordinal"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.merge_feedback_options.select.minimum_band_impressions",
+      "ir": "ir:SearchDocuments.step.3.merge_feedback_options.project.minimum_band_impressions",
+      "source": "source:examples.search.transforms.search.SearchDocuments.merge_feedback_options.field.minimum_band_impressions"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.merge_feedback_options.validation.0.intermediate",
+      "ir": "ir:SearchDocuments.step.3.merge_feedback_options.validation.0.intermediate",
+      "source": "source:examples.search.transforms.search.SearchDocuments.merge_feedback_options.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.4.select_query_feedback",
+      "ir": "ir:SearchDocuments.step.4.select_query_feedback",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_query_feedback"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.4.select_query_feedback.join.1.signal",
+      "ir": "ir:SearchDocuments.step.4.select_query_feedback.join.1.signal",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_query_feedback.join.1.signal"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.4.select_query_feedback.select_first_qualified.1",
+      "ir": "ir:SearchDocuments.step.4.select_query_feedback.select_first_qualified.1",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_query_feedback.select_first_qualified.1"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.4.select_query_feedback.select.search_query_id",
+      "ir": "ir:SearchDocuments.step.4.select_query_feedback.project.search_query_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_query_feedback.field.search_query_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.4.select_query_feedback.select.experiment_id",
+      "ir": "ir:SearchDocuments.step.4.select_query_feedback.project.experiment_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_query_feedback.field.experiment_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.4.select_query_feedback.select.user_band_id",
+      "ir": "ir:SearchDocuments.step.4.select_query_feedback.project.user_band_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_query_feedback.field.user_band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.4.select_query_feedback.select.candidate_rank",
+      "ir": "ir:SearchDocuments.step.4.select_query_feedback.project.candidate_rank",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_query_feedback.field.candidate_rank"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.4.select_query_feedback.select.document_id",
+      "ir": "ir:SearchDocuments.step.4.select_query_feedback.project.document_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_query_feedback.field.document_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.4.select_query_feedback.select.query_feedback",
+      "ir": "ir:SearchDocuments.step.4.select_query_feedback.project.query_feedback",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_query_feedback.field.query_feedback"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.4.select_query_feedback.validation.0.intermediate",
+      "ir": "ir:SearchDocuments.step.4.select_query_feedback.validation.0.intermediate",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_query_feedback.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.5.select_popularity_feedback",
+      "ir": "ir:SearchDocuments.step.5.select_popularity_feedback",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_popularity_feedback"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.5.select_popularity_feedback.join.1.signal",
+      "ir": "ir:SearchDocuments.step.5.select_popularity_feedback.join.1.signal",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_popularity_feedback.join.1.signal"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.5.select_popularity_feedback.select_first_qualified.1",
+      "ir": "ir:SearchDocuments.step.5.select_popularity_feedback.select_first_qualified.1",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_popularity_feedback.select_first_qualified.1"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.5.select_popularity_feedback.select.search_query_id",
+      "ir": "ir:SearchDocuments.step.5.select_popularity_feedback.project.search_query_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_popularity_feedback.field.search_query_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.5.select_popularity_feedback.select.experiment_id",
+      "ir": "ir:SearchDocuments.step.5.select_popularity_feedback.project.experiment_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_popularity_feedback.field.experiment_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.5.select_popularity_feedback.select.user_band_id",
+      "ir": "ir:SearchDocuments.step.5.select_popularity_feedback.project.user_band_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_popularity_feedback.field.user_band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.5.select_popularity_feedback.select.candidate_rank",
+      "ir": "ir:SearchDocuments.step.5.select_popularity_feedback.project.candidate_rank",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_popularity_feedback.field.candidate_rank"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.5.select_popularity_feedback.select.document_id",
+      "ir": "ir:SearchDocuments.step.5.select_popularity_feedback.project.document_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_popularity_feedback.field.document_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.5.select_popularity_feedback.select.popularity_feedback",
+      "ir": "ir:SearchDocuments.step.5.select_popularity_feedback.project.popularity_feedback",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_popularity_feedback.field.popularity_feedback"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.5.select_popularity_feedback.validation.0.intermediate",
+      "ir": "ir:SearchDocuments.step.5.select_popularity_feedback.validation.0.intermediate",
+      "source": "source:examples.search.transforms.search.SearchDocuments.select_popularity_feedback.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.6.score_candidates",
+      "ir": "ir:SearchDocuments.step.6.score_candidates",
       "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.validation.0.hook",
-      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.validation.0.hook",
-      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.validation.0.hook"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.6.score_candidates.where.0",
+      "ir": "ir:SearchDocuments.step.6.score_candidates.filter.0",
+      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.filter.0"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.1.declare_scored_candidates.validation.1.intermediate",
-      "ir": "ir:SearchDocuments.step.1.declare_scored_candidates.validation.1.intermediate",
-      "source": "source:examples.search.transforms.search.SearchDocuments.declare_scored_candidates.validation.1.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.6.score_candidates.join.1.query",
+      "ir": "ir:SearchDocuments.step.6.score_candidates.join.1.query",
+      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.join.1.query"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.normalize_score",
-      "ir": "ir:SearchDocuments.step.2.normalize_score",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.6.score_candidates.join.2.popularity",
+      "ir": "ir:SearchDocuments.step.6.score_candidates.join.2.popularity",
+      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.join.2.popularity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.6.score_candidates.join.3.policy",
+      "ir": "ir:SearchDocuments.step.6.score_candidates.join.3.policy",
+      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.join.3.policy"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.6.score_candidates.select.search_query_id",
+      "ir": "ir:SearchDocuments.step.6.score_candidates.project.search_query_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.field.search_query_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.6.score_candidates.select.experiment_id",
+      "ir": "ir:SearchDocuments.step.6.score_candidates.project.experiment_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.field.experiment_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.6.score_candidates.select.user_band_id",
+      "ir": "ir:SearchDocuments.step.6.score_candidates.project.user_band_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.field.user_band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.6.score_candidates.select.band_id",
+      "ir": "ir:SearchDocuments.step.6.score_candidates.project.band_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.field.band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.6.score_candidates.select.query",
+      "ir": "ir:SearchDocuments.step.6.score_candidates.project.query",
+      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.field.query"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.6.score_candidates.select.candidate_rank",
+      "ir": "ir:SearchDocuments.step.6.score_candidates.project.candidate_rank",
+      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.field.candidate_rank"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.6.score_candidates.select.document_id",
+      "ir": "ir:SearchDocuments.step.6.score_candidates.project.document_id",
+      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.field.document_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.6.score_candidates.select.title",
+      "ir": "ir:SearchDocuments.step.6.score_candidates.project.title",
+      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.field.title"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.6.score_candidates.select.url",
+      "ir": "ir:SearchDocuments.step.6.score_candidates.project.url",
+      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.field.url"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.6.score_candidates.select.score",
+      "ir": "ir:SearchDocuments.step.6.score_candidates.project.score",
+      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.field.score"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.6.score_candidates.select.score_feedback",
+      "ir": "ir:SearchDocuments.step.6.score_candidates.project.score_feedback",
+      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.field.score_feedback"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.6.score_candidates.select.score_rank",
+      "ir": "ir:SearchDocuments.step.6.score_candidates.project.score_rank",
+      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.field.score_rank"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.6.score_candidates.select.score_weight",
+      "ir": "ir:SearchDocuments.step.6.score_candidates.project.score_weight",
+      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.field.score_weight"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.6.score_candidates.select.feedback_weight",
+      "ir": "ir:SearchDocuments.step.6.score_candidates.project.feedback_weight",
+      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.field.feedback_weight"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.6.score_candidates.validation.0.intermediate",
+      "ir": "ir:SearchDocuments.step.6.score_candidates.validation.0.intermediate",
+      "source": "source:examples.search.transforms.search.SearchDocuments.score_candidates.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.7.normalize_score",
+      "ir": "ir:SearchDocuments.step.7.normalize_score",
       "source": "source:examples.search.transforms.search.SearchDocuments.normalize_score"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.normalize_score.select.search_query_id",
-      "ir": "ir:SearchDocuments.step.2.normalize_score.project.search_query_id",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.7.normalize_score.select.search_query_id",
+      "ir": "ir:SearchDocuments.step.7.normalize_score.project.search_query_id",
       "source": "source:examples.search.transforms.search.SearchDocuments.normalize_score.field.search_query_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.normalize_score.select.experiment_id",
-      "ir": "ir:SearchDocuments.step.2.normalize_score.project.experiment_id",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.7.normalize_score.select.experiment_id",
+      "ir": "ir:SearchDocuments.step.7.normalize_score.project.experiment_id",
       "source": "source:examples.search.transforms.search.SearchDocuments.normalize_score.field.experiment_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.normalize_score.select.user_band_id",
-      "ir": "ir:SearchDocuments.step.2.normalize_score.project.user_band_id",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.7.normalize_score.select.user_band_id",
+      "ir": "ir:SearchDocuments.step.7.normalize_score.project.user_band_id",
       "source": "source:examples.search.transforms.search.SearchDocuments.normalize_score.field.user_band_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.normalize_score.select.band_id",
-      "ir": "ir:SearchDocuments.step.2.normalize_score.project.band_id",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.7.normalize_score.select.band_id",
+      "ir": "ir:SearchDocuments.step.7.normalize_score.project.band_id",
       "source": "source:examples.search.transforms.search.SearchDocuments.normalize_score.field.band_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.normalize_score.select.query",
-      "ir": "ir:SearchDocuments.step.2.normalize_score.project.query",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.7.normalize_score.select.query",
+      "ir": "ir:SearchDocuments.step.7.normalize_score.project.query",
       "source": "source:examples.search.transforms.search.SearchDocuments.normalize_score.field.query"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.normalize_score.select.candidate_rank",
-      "ir": "ir:SearchDocuments.step.2.normalize_score.project.candidate_rank",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.7.normalize_score.select.candidate_rank",
+      "ir": "ir:SearchDocuments.step.7.normalize_score.project.candidate_rank",
       "source": "source:examples.search.transforms.search.SearchDocuments.normalize_score.field.candidate_rank"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.normalize_score.select.document_id",
-      "ir": "ir:SearchDocuments.step.2.normalize_score.project.document_id",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.7.normalize_score.select.document_id",
+      "ir": "ir:SearchDocuments.step.7.normalize_score.project.document_id",
       "source": "source:examples.search.transforms.search.SearchDocuments.normalize_score.field.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.normalize_score.select.title",
-      "ir": "ir:SearchDocuments.step.2.normalize_score.project.title",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.7.normalize_score.select.title",
+      "ir": "ir:SearchDocuments.step.7.normalize_score.project.title",
       "source": "source:examples.search.transforms.search.SearchDocuments.normalize_score.field.title"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.normalize_score.select.url",
-      "ir": "ir:SearchDocuments.step.2.normalize_score.project.url",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.7.normalize_score.select.url",
+      "ir": "ir:SearchDocuments.step.7.normalize_score.project.url",
       "source": "source:examples.search.transforms.search.SearchDocuments.normalize_score.field.url"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.normalize_score.select.score",
-      "ir": "ir:SearchDocuments.step.2.normalize_score.project.score",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.7.normalize_score.select.score",
+      "ir": "ir:SearchDocuments.step.7.normalize_score.project.score",
       "source": "source:examples.search.transforms.search.SearchDocuments.normalize_score.field.score"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.normalize_score.select.score_feedback",
-      "ir": "ir:SearchDocuments.step.2.normalize_score.project.score_feedback",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.7.normalize_score.select.score_feedback",
+      "ir": "ir:SearchDocuments.step.7.normalize_score.project.score_feedback",
       "source": "source:examples.search.transforms.search.SearchDocuments.normalize_score.field.score_feedback"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.normalize_score.select.score_rank",
-      "ir": "ir:SearchDocuments.step.2.normalize_score.project.score_rank",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.7.normalize_score.select.score_rank",
+      "ir": "ir:SearchDocuments.step.7.normalize_score.project.score_rank",
       "source": "source:examples.search.transforms.search.SearchDocuments.normalize_score.field.score_rank"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.normalize_score.select.score_weight",
-      "ir": "ir:SearchDocuments.step.2.normalize_score.project.score_weight",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.7.normalize_score.select.score_weight",
+      "ir": "ir:SearchDocuments.step.7.normalize_score.project.score_weight",
       "source": "source:examples.search.transforms.search.SearchDocuments.normalize_score.field.score_weight"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.normalize_score.select.feedback_weight",
-      "ir": "ir:SearchDocuments.step.2.normalize_score.project.feedback_weight",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.7.normalize_score.select.feedback_weight",
+      "ir": "ir:SearchDocuments.step.7.normalize_score.project.feedback_weight",
       "source": "source:examples.search.transforms.search.SearchDocuments.normalize_score.field.feedback_weight"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.2.normalize_score.validation.0.intermediate",
-      "ir": "ir:SearchDocuments.step.2.normalize_score.validation.0.intermediate",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.7.normalize_score.validation.0.intermediate",
+      "ir": "ir:SearchDocuments.step.7.normalize_score.validation.0.intermediate",
       "source": "source:examples.search.transforms.search.SearchDocuments.normalize_score.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.rank_results",
-      "ir": "ir:SearchDocuments.step.3.rank_results",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.8.rank_results",
+      "ir": "ir:SearchDocuments.step.8.rank_results",
       "source": "source:examples.search.transforms.search.SearchDocuments.rank_results"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.rank_results.select.search_query_id",
-      "ir": "ir:SearchDocuments.step.3.rank_results.project.search_query_id",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.8.rank_results.select.search_query_id",
+      "ir": "ir:SearchDocuments.step.8.rank_results.project.search_query_id",
       "source": "source:examples.search.transforms.search.SearchDocuments.rank_results.field.search_query_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.rank_results.select.experiment_id",
-      "ir": "ir:SearchDocuments.step.3.rank_results.project.experiment_id",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.8.rank_results.select.experiment_id",
+      "ir": "ir:SearchDocuments.step.8.rank_results.project.experiment_id",
       "source": "source:examples.search.transforms.search.SearchDocuments.rank_results.field.experiment_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.rank_results.select.user_band_id",
-      "ir": "ir:SearchDocuments.step.3.rank_results.project.user_band_id",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.8.rank_results.select.user_band_id",
+      "ir": "ir:SearchDocuments.step.8.rank_results.project.user_band_id",
       "source": "source:examples.search.transforms.search.SearchDocuments.rank_results.field.user_band_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.rank_results.select.band_id",
-      "ir": "ir:SearchDocuments.step.3.rank_results.project.band_id",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.8.rank_results.select.band_id",
+      "ir": "ir:SearchDocuments.step.8.rank_results.project.band_id",
       "source": "source:examples.search.transforms.search.SearchDocuments.rank_results.field.band_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.rank_results.select.rank",
-      "ir": "ir:SearchDocuments.step.3.rank_results.project.rank",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.8.rank_results.select.rank",
+      "ir": "ir:SearchDocuments.step.8.rank_results.project.rank",
       "source": "source:examples.search.transforms.search.SearchDocuments.rank_results.field.rank"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.rank_results.select.candidate_rank",
-      "ir": "ir:SearchDocuments.step.3.rank_results.project.candidate_rank",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.8.rank_results.select.candidate_rank",
+      "ir": "ir:SearchDocuments.step.8.rank_results.project.candidate_rank",
       "source": "source:examples.search.transforms.search.SearchDocuments.rank_results.field.candidate_rank"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.rank_results.select.document_id",
-      "ir": "ir:SearchDocuments.step.3.rank_results.project.document_id",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.8.rank_results.select.document_id",
+      "ir": "ir:SearchDocuments.step.8.rank_results.project.document_id",
       "source": "source:examples.search.transforms.search.SearchDocuments.rank_results.field.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.rank_results.select.title",
-      "ir": "ir:SearchDocuments.step.3.rank_results.project.title",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.8.rank_results.select.title",
+      "ir": "ir:SearchDocuments.step.8.rank_results.project.title",
       "source": "source:examples.search.transforms.search.SearchDocuments.rank_results.field.title"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.rank_results.select.url",
-      "ir": "ir:SearchDocuments.step.3.rank_results.project.url",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.8.rank_results.select.url",
+      "ir": "ir:SearchDocuments.step.8.rank_results.project.url",
       "source": "source:examples.search.transforms.search.SearchDocuments.rank_results.field.url"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.rank_results.select.score",
-      "ir": "ir:SearchDocuments.step.3.rank_results.project.score",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.8.rank_results.select.score",
+      "ir": "ir:SearchDocuments.step.8.rank_results.project.score",
       "source": "source:examples.search.transforms.search.SearchDocuments.rank_results.field.score"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.rank_results.select.score_feedback",
-      "ir": "ir:SearchDocuments.step.3.rank_results.project.score_feedback",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.8.rank_results.select.score_feedback",
+      "ir": "ir:SearchDocuments.step.8.rank_results.project.score_feedback",
       "source": "source:examples.search.transforms.search.SearchDocuments.rank_results.field.score_feedback"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.3.rank_results.select.score_rank",
-      "ir": "ir:SearchDocuments.step.3.rank_results.project.score_rank",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.search.SearchDocumentsGenerated.run.step.8.rank_results.select.score_rank",
+      "ir": "ir:SearchDocuments.step.8.rank_results.project.score_rank",
       "source": "source:examples.search.transforms.search.SearchDocuments.rank_results.field.score_rank"
     },
     {
@@ -458,9 +893,17 @@
       "constant": "BAND_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.user"
     },
+    "BandAncestor": {
+      "constant": "BAND_ANCESTOR_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.resolve"
+    },
     "BandFallback": {
       "constant": "BAND_FALLBACK_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.user"
+    },
+    "BandMatch": {
+      "constant": "BAND_MATCH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.resolve"
     },
     "BandMembership": {
       "constant": "BAND_MEMBERSHIP_SCHEMA",
@@ -494,6 +937,14 @@
       "constant": "CLICK_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.clicks"
     },
+    "ContextDailyClicks": {
+      "constant": "CONTEXT_DAILY_CLICKS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.build"
+    },
+    "ContextDailyImpressions": {
+      "constant": "CONTEXT_DAILY_IMPRESSIONS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.build"
+    },
     "CorpusStatistics": {
       "constant": "CORPUS_STATISTICS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.analytics"
@@ -520,7 +971,7 @@
     },
     "DocumentBm25Score": {
       "constant": "DOCUMENT_BM25_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.bm25"
     },
     "DocumentEvaluationSummary": {
       "constant": "DOCUMENT_EVALUATION_SUMMARY_SCHEMA",
@@ -530,6 +981,10 @@
       "constant": "DOCUMENT_FEATURES_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.analytics"
     },
+    "DocumentFeedbackOption": {
+      "constant": "DOCUMENT_FEEDBACK_OPTION_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
     "DocumentIndexSummary": {
       "constant": "DOCUMENT_INDEX_SUMMARY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
@@ -538,17 +993,37 @@
       "constant": "DOCUMENT_INDEX_TARGET_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "DocumentIndexTargetStats": {
+      "constant": "DOCUMENT_INDEX_TARGET_STATS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
     "DocumentIndexTerm": {
       "constant": "DOCUMENT_INDEX_TERM_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "DocumentIndexTermCount": {
+      "constant": "DOCUMENT_INDEX_TERM_COUNT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "DocumentLine": {
+      "constant": "DOCUMENT_LINE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "DocumentOverlapMatch": {
+      "constant": "DOCUMENT_OVERLAP_MATCH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+    },
     "DocumentOverlapScore": {
       "constant": "DOCUMENT_OVERLAP_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
     },
     "DocumentPopularity": {
       "constant": "DOCUMENT_POPULARITY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.relevance"
+    },
+    "DocumentPopularityTotals": {
+      "constant": "DOCUMENT_POPULARITY_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.build"
     },
     "DocumentQueryEvaluation": {
       "constant": "DOCUMENT_QUERY_EVALUATION_SCHEMA",
@@ -582,9 +1057,21 @@
       "constant": "DOCUMENT_SIMILARITY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "DocumentSimilarityCandidate": {
+      "constant": "DOCUMENT_SIMILARITY_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
+    "DocumentSimilarityPair": {
+      "constant": "DOCUMENT_SIMILARITY_PAIR_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
     "DocumentSimilarityQuery": {
       "constant": "DOCUMENT_SIMILARITY_QUERY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "DocumentSimilarityQueryText": {
+      "constant": "DOCUMENT_SIMILARITY_QUERY_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.query"
     },
     "DocumentStatistics": {
       "constant": "DOCUMENT_STATISTICS_SCHEMA",
@@ -622,6 +1109,22 @@
       "constant": "EVALUATION_RESULT_TOTALS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
     },
+    "ExpandedDocumentLine": {
+      "constant": "EXPANDED_DOCUMENT_LINE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "ExpandedQueryToken": {
+      "constant": "EXPANDED_QUERY_TOKEN_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ExpandedSentenceText": {
+      "constant": "EXPANDED_SENTENCE_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "ExpandedWordText": {
+      "constant": "EXPANDED_WORD_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
     "Experiment": {
       "constant": "EXPERIMENT_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.experiment"
@@ -629,6 +1132,10 @@
     "Impression": {
       "constant": "IMPRESSION_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.clicks"
+    },
+    "IndexTokenFrequency": {
+      "constant": "INDEX_TOKEN_FREQUENCY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
     "IndexedSimilarDocument": {
       "constant": "INDEXED_SIMILAR_DOCUMENT_SCHEMA",
@@ -654,13 +1161,25 @@
       "constant": "LABEL_MAP_ENTRY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.label"
     },
+    "MarkedDocumentLine": {
+      "constant": "MARKED_DOCUMENT_LINE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
     "Paragraph": {
       "constant": "PARAGRAPH_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.text"
     },
     "ParagraphBm25Score": {
       "constant": "PARAGRAPH_BM25_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.bm25"
+    },
+    "ParagraphContent": {
+      "constant": "PARAGRAPH_CONTENT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "ParagraphDraft": {
+      "constant": "PARAGRAPH_DRAFT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
     },
     "ParagraphIndexSummary": {
       "constant": "PARAGRAPH_INDEX_SUMMARY_SCHEMA",
@@ -670,13 +1189,33 @@
       "constant": "PARAGRAPH_INDEX_TARGET_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "ParagraphIndexTargetStats": {
+      "constant": "PARAGRAPH_INDEX_TARGET_STATS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
     "ParagraphIndexTerm": {
       "constant": "PARAGRAPH_INDEX_TERM_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "ParagraphIndexTermCount": {
+      "constant": "PARAGRAPH_INDEX_TERM_COUNT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ParagraphLine": {
+      "constant": "PARAGRAPH_LINE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "ParagraphLineGroup": {
+      "constant": "PARAGRAPH_LINE_GROUP_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "ParagraphOverlapMatch": {
+      "constant": "PARAGRAPH_OVERLAP_MATCH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+    },
     "ParagraphOverlapScore": {
       "constant": "PARAGRAPH_OVERLAP_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
     },
     "ParagraphScore": {
       "constant": "PARAGRAPH_SCORE_SCHEMA",
@@ -690,13 +1229,37 @@
       "constant": "PARAGRAPH_SIMILARITY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "ParagraphSimilarityCandidate": {
+      "constant": "PARAGRAPH_SIMILARITY_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
+    "ParagraphSimilarityPair": {
+      "constant": "PARAGRAPH_SIMILARITY_PAIR_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
     "ParagraphSimilarityQuery": {
       "constant": "PARAGRAPH_SIMILARITY_QUERY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "ParagraphSimilarityQueryText": {
+      "constant": "PARAGRAPH_SIMILARITY_QUERY_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.query"
+    },
     "ParagraphStatistics": {
       "constant": "PARAGRAPH_STATISTICS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "PopularityFeedback": {
+      "constant": "POPULARITY_FEEDBACK_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "QueryDocumentFeedback": {
+      "constant": "QUERY_DOCUMENT_FEEDBACK_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "QueryDocumentSignalTotals": {
+      "constant": "QUERY_DOCUMENT_SIGNAL_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.build"
     },
     "QueryDocumentSignals": {
       "constant": "QUERY_DOCUMENT_SIGNALS_SCHEMA",
@@ -713,6 +1276,18 @@
     "QueryLabelAssignments": {
       "constant": "QUERY_LABEL_ASSIGNMENTS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "QueryTerm": {
+      "constant": "QUERY_TERM_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "QueryTermCount": {
+      "constant": "QUERY_TERM_COUNT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "QueryToken": {
+      "constant": "QUERY_TOKEN_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
     "RelevancePolicy": {
       "constant": "RELEVANCE_POLICY_SCHEMA",
@@ -732,7 +1307,11 @@
     },
     "SectionBm25Score": {
       "constant": "SECTION_BM25_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.bm25"
+    },
+    "SectionHeading": {
+      "constant": "SECTION_HEADING_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
     },
     "SectionIndexSummary": {
       "constant": "SECTION_INDEX_SUMMARY_SCHEMA",
@@ -742,13 +1321,29 @@
       "constant": "SECTION_INDEX_TARGET_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "SectionIndexTargetStats": {
+      "constant": "SECTION_INDEX_TARGET_STATS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
     "SectionIndexTerm": {
       "constant": "SECTION_INDEX_TERM_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "SectionIndexTermCount": {
+      "constant": "SECTION_INDEX_TERM_COUNT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SectionKey": {
+      "constant": "SECTION_KEY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "SectionOverlapMatch": {
+      "constant": "SECTION_OVERLAP_MATCH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+    },
     "SectionOverlapScore": {
       "constant": "SECTION_OVERLAP_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
     },
     "SectionScore": {
       "constant": "SECTION_SCORE_SCHEMA",
@@ -762,9 +1357,21 @@
       "constant": "SECTION_SIMILARITY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "SectionSimilarityCandidate": {
+      "constant": "SECTION_SIMILARITY_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
+    "SectionSimilarityPair": {
+      "constant": "SECTION_SIMILARITY_PAIR_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
     "SectionSimilarityQuery": {
       "constant": "SECTION_SIMILARITY_QUERY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "SectionSimilarityQueryText": {
+      "constant": "SECTION_SIMILARITY_QUERY_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.query"
     },
     "SectionStatistics": {
       "constant": "SECTION_STATISTICS_SCHEMA",
@@ -776,7 +1383,7 @@
     },
     "SentenceBm25Score": {
       "constant": "SENTENCE_BM25_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.bm25"
     },
     "SentenceIndexSummary": {
       "constant": "SENTENCE_INDEX_SUMMARY_SCHEMA",
@@ -786,13 +1393,25 @@
       "constant": "SENTENCE_INDEX_TARGET_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "SentenceIndexTargetStats": {
+      "constant": "SENTENCE_INDEX_TARGET_STATS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
     "SentenceIndexTerm": {
       "constant": "SENTENCE_INDEX_TERM_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "SentenceIndexTermCount": {
+      "constant": "SENTENCE_INDEX_TERM_COUNT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SentenceOverlapMatch": {
+      "constant": "SENTENCE_OVERLAP_MATCH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+    },
     "SentenceOverlapScore": {
       "constant": "SENTENCE_OVERLAP_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
     },
     "SentenceScore": {
       "constant": "SENTENCE_SCORE_SCHEMA",
@@ -810,13 +1429,29 @@
       "constant": "SENTENCE_SIMILARITY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "SentenceSimilarityCandidate": {
+      "constant": "SENTENCE_SIMILARITY_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
+    "SentenceSimilarityPair": {
+      "constant": "SENTENCE_SIMILARITY_PAIR_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
     "SentenceSimilarityQuery": {
       "constant": "SENTENCE_SIMILARITY_QUERY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "SentenceSimilarityQueryText": {
+      "constant": "SENTENCE_SIMILARITY_QUERY_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.query"
+    },
     "SentenceStatistics": {
       "constant": "SENTENCE_STATISTICS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "SentenceText": {
+      "constant": "SENTENCE_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
     },
     "SimilarDocument": {
       "constant": "SIMILAR_DOCUMENT_SCHEMA",
@@ -842,6 +1477,10 @@
       "constant": "SIMILARITY_SENTENCE_QUERY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "SingletonUserBand": {
+      "constant": "SINGLETON_USER_BAND_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.resolve"
+    },
     "TimeWindow": {
       "constant": "TIME_WINDOW_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.TimeWindow"
@@ -858,9 +1497,17 @@
       "constant": "USER_BAND_MEMBERSHIP_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.user"
     },
+    "UserBandPath": {
+      "constant": "USER_BAND_PATH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.resolve"
+    },
     "Word": {
       "constant": "WORD_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.text"
+    },
+    "WordText": {
+      "constant": "WORD_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
     }
   },
   "source_transform": "examples.search.transforms.search.SearchDocuments",
@@ -1131,14 +1778,61 @@
       {
         "detail": {
           "input_schema": "DocumentSearchCandidate",
-          "output_schema": "DocumentSearchCandidate"
+          "output_schema": "DocumentFeedbackOption"
         },
         "operation": "step",
         "sources": [
-          "DocumentSearchCandidate"
+          "DocumentSearchCandidate",
+          "fallback",
+          "policy"
         ],
-        "step": "declare_scored_candidates",
-        "target": "declare_scored_candidates"
+        "step": "select_fallback_options",
+        "target": "select_fallback_options"
+      },
+      {
+        "detail": {},
+        "operation": "filter",
+        "sources": [
+          "candidate.candidate_rank"
+        ],
+        "step": "select_fallback_options",
+        "target": "select_fallback_options.filter[0]"
+      },
+      {
+        "detail": {},
+        "operation": "filter",
+        "sources": [
+          "candidate.user_band_id"
+        ],
+        "step": "select_fallback_options",
+        "target": "select_fallback_options.filter[1]"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "band_fallbacks"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "fallback.user_band_id",
+          "candidate.user_band_id"
+        ],
+        "step": "select_fallback_options",
+        "target": "select_fallback_options.join[1].fallback"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "cross",
+          "right_alias": "policy_2"
+        },
+        "operation": "rowset_join",
+        "sources": [],
+        "step": "select_fallback_options",
+        "target": "select_fallback_options.join[2].policy"
       },
       {
         "detail": {
@@ -1146,9 +1840,959 @@
         },
         "operation": "project",
         "sources": [
-          "DocumentSearchCandidate.search_query_id"
+          "candidate.search_query_id"
         ],
-        "step": "declare_scored_candidates",
+        "step": "select_fallback_options",
+        "target": "DocumentFeedbackOption.search_query_id"
+      },
+      {
+        "detail": {
+          "field": "experiment_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.experiment_id"
+        ],
+        "step": "select_fallback_options",
+        "target": "DocumentFeedbackOption.experiment_id"
+      },
+      {
+        "detail": {
+          "field": "user_band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.user_band_id"
+        ],
+        "step": "select_fallback_options",
+        "target": "DocumentFeedbackOption.user_band_id"
+      },
+      {
+        "detail": {
+          "field": "band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.band_id"
+        ],
+        "step": "select_fallback_options",
+        "target": "DocumentFeedbackOption.band_id"
+      },
+      {
+        "detail": {
+          "field": "query"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.query"
+        ],
+        "step": "select_fallback_options",
+        "target": "DocumentFeedbackOption.query"
+      },
+      {
+        "detail": {
+          "field": "candidate_rank"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.candidate_rank"
+        ],
+        "step": "select_fallback_options",
+        "target": "DocumentFeedbackOption.candidate_rank"
+      },
+      {
+        "detail": {
+          "field": "document_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.document_id"
+        ],
+        "step": "select_fallback_options",
+        "target": "DocumentFeedbackOption.document_id"
+      },
+      {
+        "detail": {
+          "field": "title"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.title"
+        ],
+        "step": "select_fallback_options",
+        "target": "DocumentFeedbackOption.title"
+      },
+      {
+        "detail": {
+          "field": "url"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.url"
+        ],
+        "step": "select_fallback_options",
+        "target": "DocumentFeedbackOption.url"
+      },
+      {
+        "detail": {
+          "field": "score"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.score"
+        ],
+        "step": "select_fallback_options",
+        "target": "DocumentFeedbackOption.score"
+      },
+      {
+        "detail": {
+          "field": "score_feedback"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.score_feedback"
+        ],
+        "step": "select_fallback_options",
+        "target": "DocumentFeedbackOption.score_feedback"
+      },
+      {
+        "detail": {
+          "field": "score_rank"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.score_rank"
+        ],
+        "step": "select_fallback_options",
+        "target": "DocumentFeedbackOption.score_rank"
+      },
+      {
+        "detail": {
+          "field": "score_weight"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.score_weight"
+        ],
+        "step": "select_fallback_options",
+        "target": "DocumentFeedbackOption.score_weight"
+      },
+      {
+        "detail": {
+          "field": "feedback_weight"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.feedback_weight"
+        ],
+        "step": "select_fallback_options",
+        "target": "DocumentFeedbackOption.feedback_weight"
+      },
+      {
+        "detail": {
+          "field": "feedback_band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "fallback.user_band_fallback_id"
+        ],
+        "step": "select_fallback_options",
+        "target": "DocumentFeedbackOption.feedback_band_id"
+      },
+      {
+        "detail": {
+          "field": "fallback_ordinal"
+        },
+        "operation": "project",
+        "sources": [
+          "fallback.ordinal"
+        ],
+        "step": "select_fallback_options",
+        "target": "DocumentFeedbackOption.fallback_ordinal"
+      },
+      {
+        "detail": {
+          "field": "minimum_band_impressions"
+        },
+        "operation": "project",
+        "sources": [
+          "policy.minimum_band_impressions"
+        ],
+        "step": "select_fallback_options",
+        "target": "DocumentFeedbackOption.minimum_band_impressions"
+      },
+      {
+        "detail": {
+          "input_schema": "DocumentSearchCandidate",
+          "output_schema": "DocumentFeedbackOption"
+        },
+        "operation": "step",
+        "sources": [
+          "DocumentFeedbackOption",
+          "policy"
+        ],
+        "step": "select_global_options",
+        "target": "select_global_options"
+      },
+      {
+        "detail": {},
+        "operation": "filter",
+        "sources": [
+          "candidate.candidate_rank"
+        ],
+        "step": "select_global_options",
+        "target": "select_global_options.filter[0]"
+      },
+      {
+        "detail": {},
+        "operation": "filter",
+        "sources": [
+          "candidate.user_band_id"
+        ],
+        "step": "select_global_options",
+        "target": "select_global_options.filter[1]"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "cross",
+          "right_alias": "policy"
+        },
+        "operation": "rowset_join",
+        "sources": [],
+        "step": "select_global_options",
+        "target": "select_global_options.join[1].policy"
+      },
+      {
+        "detail": {
+          "field": "search_query_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.search_query_id"
+        ],
+        "step": "select_global_options",
+        "target": "DocumentFeedbackOption.search_query_id"
+      },
+      {
+        "detail": {
+          "field": "experiment_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.experiment_id"
+        ],
+        "step": "select_global_options",
+        "target": "DocumentFeedbackOption.experiment_id"
+      },
+      {
+        "detail": {
+          "field": "user_band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.user_band_id"
+        ],
+        "step": "select_global_options",
+        "target": "DocumentFeedbackOption.user_band_id"
+      },
+      {
+        "detail": {
+          "field": "band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.band_id"
+        ],
+        "step": "select_global_options",
+        "target": "DocumentFeedbackOption.band_id"
+      },
+      {
+        "detail": {
+          "field": "query"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.query"
+        ],
+        "step": "select_global_options",
+        "target": "DocumentFeedbackOption.query"
+      },
+      {
+        "detail": {
+          "field": "candidate_rank"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.candidate_rank"
+        ],
+        "step": "select_global_options",
+        "target": "DocumentFeedbackOption.candidate_rank"
+      },
+      {
+        "detail": {
+          "field": "document_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.document_id"
+        ],
+        "step": "select_global_options",
+        "target": "DocumentFeedbackOption.document_id"
+      },
+      {
+        "detail": {
+          "field": "title"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.title"
+        ],
+        "step": "select_global_options",
+        "target": "DocumentFeedbackOption.title"
+      },
+      {
+        "detail": {
+          "field": "url"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.url"
+        ],
+        "step": "select_global_options",
+        "target": "DocumentFeedbackOption.url"
+      },
+      {
+        "detail": {
+          "field": "score"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.score"
+        ],
+        "step": "select_global_options",
+        "target": "DocumentFeedbackOption.score"
+      },
+      {
+        "detail": {
+          "field": "score_feedback"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.score_feedback"
+        ],
+        "step": "select_global_options",
+        "target": "DocumentFeedbackOption.score_feedback"
+      },
+      {
+        "detail": {
+          "field": "score_rank"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.score_rank"
+        ],
+        "step": "select_global_options",
+        "target": "DocumentFeedbackOption.score_rank"
+      },
+      {
+        "detail": {
+          "field": "score_weight"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.score_weight"
+        ],
+        "step": "select_global_options",
+        "target": "DocumentFeedbackOption.score_weight"
+      },
+      {
+        "detail": {
+          "field": "feedback_weight"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.feedback_weight"
+        ],
+        "step": "select_global_options",
+        "target": "DocumentFeedbackOption.feedback_weight"
+      },
+      {
+        "detail": {
+          "field": "feedback_band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "select_global_options",
+        "target": "DocumentFeedbackOption.feedback_band_id"
+      },
+      {
+        "detail": {
+          "field": "fallback_ordinal"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "select_global_options",
+        "target": "DocumentFeedbackOption.fallback_ordinal"
+      },
+      {
+        "detail": {
+          "field": "minimum_band_impressions"
+        },
+        "operation": "project",
+        "sources": [
+          "policy.minimum_band_impressions"
+        ],
+        "step": "select_global_options",
+        "target": "DocumentFeedbackOption.minimum_band_impressions"
+      },
+      {
+        "detail": {
+          "input_schema": "DocumentFeedbackOption",
+          "output_schema": "DocumentFeedbackOption"
+        },
+        "operation": "step",
+        "sources": [
+          "DocumentFeedbackOption"
+        ],
+        "step": "merge_feedback_options",
+        "target": "merge_feedback_options"
+      },
+      {
+        "detail": {
+          "by_name": false,
+          "schema": "DocumentFeedbackOption",
+          "source": "global_options"
+        },
+        "operation": "union_all",
+        "sources": [
+          "fallback_option",
+          "global_option"
+        ],
+        "step": "merge_feedback_options",
+        "target": "merge_feedback_options.union_all[0].global_option"
+      },
+      {
+        "detail": {
+          "field": "search_query_id"
+        },
+        "operation": "project",
+        "sources": [
+          "fallback_option.search_query_id"
+        ],
+        "step": "merge_feedback_options",
+        "target": "DocumentFeedbackOption.search_query_id"
+      },
+      {
+        "detail": {
+          "field": "experiment_id"
+        },
+        "operation": "project",
+        "sources": [
+          "fallback_option.experiment_id"
+        ],
+        "step": "merge_feedback_options",
+        "target": "DocumentFeedbackOption.experiment_id"
+      },
+      {
+        "detail": {
+          "field": "user_band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "fallback_option.user_band_id"
+        ],
+        "step": "merge_feedback_options",
+        "target": "DocumentFeedbackOption.user_band_id"
+      },
+      {
+        "detail": {
+          "field": "band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "fallback_option.band_id"
+        ],
+        "step": "merge_feedback_options",
+        "target": "DocumentFeedbackOption.band_id"
+      },
+      {
+        "detail": {
+          "field": "query"
+        },
+        "operation": "project",
+        "sources": [
+          "fallback_option.query"
+        ],
+        "step": "merge_feedback_options",
+        "target": "DocumentFeedbackOption.query"
+      },
+      {
+        "detail": {
+          "field": "candidate_rank"
+        },
+        "operation": "project",
+        "sources": [
+          "fallback_option.candidate_rank"
+        ],
+        "step": "merge_feedback_options",
+        "target": "DocumentFeedbackOption.candidate_rank"
+      },
+      {
+        "detail": {
+          "field": "document_id"
+        },
+        "operation": "project",
+        "sources": [
+          "fallback_option.document_id"
+        ],
+        "step": "merge_feedback_options",
+        "target": "DocumentFeedbackOption.document_id"
+      },
+      {
+        "detail": {
+          "field": "title"
+        },
+        "operation": "project",
+        "sources": [
+          "fallback_option.title"
+        ],
+        "step": "merge_feedback_options",
+        "target": "DocumentFeedbackOption.title"
+      },
+      {
+        "detail": {
+          "field": "url"
+        },
+        "operation": "project",
+        "sources": [
+          "fallback_option.url"
+        ],
+        "step": "merge_feedback_options",
+        "target": "DocumentFeedbackOption.url"
+      },
+      {
+        "detail": {
+          "field": "score"
+        },
+        "operation": "project",
+        "sources": [
+          "fallback_option.score"
+        ],
+        "step": "merge_feedback_options",
+        "target": "DocumentFeedbackOption.score"
+      },
+      {
+        "detail": {
+          "field": "score_feedback"
+        },
+        "operation": "project",
+        "sources": [
+          "fallback_option.score_feedback"
+        ],
+        "step": "merge_feedback_options",
+        "target": "DocumentFeedbackOption.score_feedback"
+      },
+      {
+        "detail": {
+          "field": "score_rank"
+        },
+        "operation": "project",
+        "sources": [
+          "fallback_option.score_rank"
+        ],
+        "step": "merge_feedback_options",
+        "target": "DocumentFeedbackOption.score_rank"
+      },
+      {
+        "detail": {
+          "field": "score_weight"
+        },
+        "operation": "project",
+        "sources": [
+          "fallback_option.score_weight"
+        ],
+        "step": "merge_feedback_options",
+        "target": "DocumentFeedbackOption.score_weight"
+      },
+      {
+        "detail": {
+          "field": "feedback_weight"
+        },
+        "operation": "project",
+        "sources": [
+          "fallback_option.feedback_weight"
+        ],
+        "step": "merge_feedback_options",
+        "target": "DocumentFeedbackOption.feedback_weight"
+      },
+      {
+        "detail": {
+          "field": "feedback_band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "fallback_option.feedback_band_id"
+        ],
+        "step": "merge_feedback_options",
+        "target": "DocumentFeedbackOption.feedback_band_id"
+      },
+      {
+        "detail": {
+          "field": "fallback_ordinal"
+        },
+        "operation": "project",
+        "sources": [
+          "fallback_option.fallback_ordinal"
+        ],
+        "step": "merge_feedback_options",
+        "target": "DocumentFeedbackOption.fallback_ordinal"
+      },
+      {
+        "detail": {
+          "field": "minimum_band_impressions"
+        },
+        "operation": "project",
+        "sources": [
+          "fallback_option.minimum_band_impressions"
+        ],
+        "step": "merge_feedback_options",
+        "target": "DocumentFeedbackOption.minimum_band_impressions"
+      },
+      {
+        "detail": {
+          "input_schema": "DocumentFeedbackOption",
+          "output_schema": "QueryDocumentFeedback"
+        },
+        "operation": "step",
+        "sources": [
+          "DocumentFeedbackOption",
+          "signal"
+        ],
+        "step": "select_query_feedback",
+        "target": "select_query_feedback"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "left",
+          "right_alias": "query_document_signals"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "signal.query",
+          "option.query",
+          "signal.document_id",
+          "option.document_id",
+          "signal.band_id",
+          "option.feedback_band_id"
+        ],
+        "step": "select_query_feedback",
+        "target": "select_query_feedback.join[1].signal"
+      },
+      {
+        "detail": {
+          "diagnostic": "REL-E0705",
+          "keys": 5,
+          "missing": "allow",
+          "ties": "error"
+        },
+        "operation": "select_first_qualified",
+        "sources": [
+          "option.search_query_id",
+          "option.experiment_id",
+          "option.user_band_id",
+          "option.candidate_rank",
+          "option.document_id",
+          "option.feedback_band_id",
+          "signal.impression_count",
+          "option.minimum_band_impressions",
+          "option.fallback_ordinal"
+        ],
+        "step": "select_query_feedback",
+        "target": "select_query_feedback.select_first_qualified[1]"
+      },
+      {
+        "detail": {
+          "field": "search_query_id"
+        },
+        "operation": "project",
+        "sources": [
+          "option.search_query_id"
+        ],
+        "step": "select_query_feedback",
+        "target": "QueryDocumentFeedback.search_query_id"
+      },
+      {
+        "detail": {
+          "field": "experiment_id"
+        },
+        "operation": "project",
+        "sources": [
+          "option.experiment_id"
+        ],
+        "step": "select_query_feedback",
+        "target": "QueryDocumentFeedback.experiment_id"
+      },
+      {
+        "detail": {
+          "field": "user_band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "option.user_band_id"
+        ],
+        "step": "select_query_feedback",
+        "target": "QueryDocumentFeedback.user_band_id"
+      },
+      {
+        "detail": {
+          "field": "candidate_rank"
+        },
+        "operation": "project",
+        "sources": [
+          "option.candidate_rank"
+        ],
+        "step": "select_query_feedback",
+        "target": "QueryDocumentFeedback.candidate_rank"
+      },
+      {
+        "detail": {
+          "field": "document_id"
+        },
+        "operation": "project",
+        "sources": [
+          "option.document_id"
+        ],
+        "step": "select_query_feedback",
+        "target": "QueryDocumentFeedback.document_id"
+      },
+      {
+        "detail": {
+          "field": "query_feedback"
+        },
+        "operation": "project",
+        "sources": [
+          "signal.normalized_score"
+        ],
+        "step": "select_query_feedback",
+        "target": "QueryDocumentFeedback.query_feedback"
+      },
+      {
+        "detail": {
+          "input_schema": "DocumentFeedbackOption",
+          "output_schema": "PopularityFeedback"
+        },
+        "operation": "step",
+        "sources": [
+          "QueryDocumentFeedback",
+          "signal"
+        ],
+        "step": "select_popularity_feedback",
+        "target": "select_popularity_feedback"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "left",
+          "right_alias": "document_popularity"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "signal.document_id",
+          "option.document_id",
+          "signal.band_id",
+          "option.feedback_band_id"
+        ],
+        "step": "select_popularity_feedback",
+        "target": "select_popularity_feedback.join[1].signal"
+      },
+      {
+        "detail": {
+          "diagnostic": "REL-E0705",
+          "keys": 5,
+          "missing": "allow",
+          "ties": "error"
+        },
+        "operation": "select_first_qualified",
+        "sources": [
+          "option.search_query_id",
+          "option.experiment_id",
+          "option.user_band_id",
+          "option.candidate_rank",
+          "option.document_id",
+          "option.feedback_band_id",
+          "signal.impression_count",
+          "option.minimum_band_impressions",
+          "option.fallback_ordinal"
+        ],
+        "step": "select_popularity_feedback",
+        "target": "select_popularity_feedback.select_first_qualified[1]"
+      },
+      {
+        "detail": {
+          "field": "search_query_id"
+        },
+        "operation": "project",
+        "sources": [
+          "option.search_query_id"
+        ],
+        "step": "select_popularity_feedback",
+        "target": "PopularityFeedback.search_query_id"
+      },
+      {
+        "detail": {
+          "field": "experiment_id"
+        },
+        "operation": "project",
+        "sources": [
+          "option.experiment_id"
+        ],
+        "step": "select_popularity_feedback",
+        "target": "PopularityFeedback.experiment_id"
+      },
+      {
+        "detail": {
+          "field": "user_band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "option.user_band_id"
+        ],
+        "step": "select_popularity_feedback",
+        "target": "PopularityFeedback.user_band_id"
+      },
+      {
+        "detail": {
+          "field": "candidate_rank"
+        },
+        "operation": "project",
+        "sources": [
+          "option.candidate_rank"
+        ],
+        "step": "select_popularity_feedback",
+        "target": "PopularityFeedback.candidate_rank"
+      },
+      {
+        "detail": {
+          "field": "document_id"
+        },
+        "operation": "project",
+        "sources": [
+          "option.document_id"
+        ],
+        "step": "select_popularity_feedback",
+        "target": "PopularityFeedback.document_id"
+      },
+      {
+        "detail": {
+          "field": "popularity_feedback"
+        },
+        "operation": "project",
+        "sources": [
+          "signal.normalized_score"
+        ],
+        "step": "select_popularity_feedback",
+        "target": "PopularityFeedback.popularity_feedback"
+      },
+      {
+        "detail": {
+          "input_schema": "DocumentSearchCandidate",
+          "output_schema": "DocumentSearchCandidate"
+        },
+        "operation": "step",
+        "sources": [
+          "PopularityFeedback",
+          "query",
+          "popularity",
+          "policy"
+        ],
+        "step": "score_candidates",
+        "target": "score_candidates"
+      },
+      {
+        "detail": {},
+        "operation": "filter",
+        "sources": [
+          "candidate.candidate_rank"
+        ],
+        "step": "score_candidates",
+        "target": "score_candidates.filter[0]"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "left",
+          "right_alias": "query_feedback"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "query.search_query_id",
+          "candidate.search_query_id",
+          "query.experiment_id",
+          "candidate.experiment_id",
+          "query.user_band_id",
+          "candidate.user_band_id",
+          "query.candidate_rank",
+          "candidate.candidate_rank",
+          "query.document_id",
+          "candidate.document_id"
+        ],
+        "step": "score_candidates",
+        "target": "score_candidates.join[1].query"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "left",
+          "right_alias": "popularity_feedback_2"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "popularity.search_query_id",
+          "candidate.search_query_id",
+          "popularity.experiment_id",
+          "candidate.experiment_id",
+          "popularity.user_band_id",
+          "candidate.user_band_id",
+          "popularity.candidate_rank",
+          "candidate.candidate_rank",
+          "popularity.document_id",
+          "candidate.document_id"
+        ],
+        "step": "score_candidates",
+        "target": "score_candidates.join[2].popularity"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "cross",
+          "right_alias": "policy_3"
+        },
+        "operation": "rowset_join",
+        "sources": [],
+        "step": "score_candidates",
+        "target": "score_candidates.join[3].policy"
+      },
+      {
+        "detail": {
+          "field": "search_query_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.search_query_id"
+        ],
+        "step": "score_candidates",
         "target": "DocumentSearchCandidate.search_query_id"
       },
       {
@@ -1157,9 +2801,9 @@
         },
         "operation": "project",
         "sources": [
-          "DocumentSearchCandidate.experiment_id"
+          "candidate.experiment_id"
         ],
-        "step": "declare_scored_candidates",
+        "step": "score_candidates",
         "target": "DocumentSearchCandidate.experiment_id"
       },
       {
@@ -1168,9 +2812,9 @@
         },
         "operation": "project",
         "sources": [
-          "DocumentSearchCandidate.user_band_id"
+          "candidate.user_band_id"
         ],
-        "step": "declare_scored_candidates",
+        "step": "score_candidates",
         "target": "DocumentSearchCandidate.user_band_id"
       },
       {
@@ -1179,9 +2823,9 @@
         },
         "operation": "project",
         "sources": [
-          "DocumentSearchCandidate.band_id"
+          "candidate.band_id"
         ],
-        "step": "declare_scored_candidates",
+        "step": "score_candidates",
         "target": "DocumentSearchCandidate.band_id"
       },
       {
@@ -1190,9 +2834,9 @@
         },
         "operation": "project",
         "sources": [
-          "DocumentSearchCandidate.query"
+          "candidate.query"
         ],
-        "step": "declare_scored_candidates",
+        "step": "score_candidates",
         "target": "DocumentSearchCandidate.query"
       },
       {
@@ -1201,9 +2845,9 @@
         },
         "operation": "project",
         "sources": [
-          "DocumentSearchCandidate.candidate_rank"
+          "candidate.candidate_rank"
         ],
-        "step": "declare_scored_candidates",
+        "step": "score_candidates",
         "target": "DocumentSearchCandidate.candidate_rank"
       },
       {
@@ -1212,9 +2856,9 @@
         },
         "operation": "project",
         "sources": [
-          "DocumentSearchCandidate.document_id"
+          "candidate.document_id"
         ],
-        "step": "declare_scored_candidates",
+        "step": "score_candidates",
         "target": "DocumentSearchCandidate.document_id"
       },
       {
@@ -1223,9 +2867,9 @@
         },
         "operation": "project",
         "sources": [
-          "DocumentSearchCandidate.title"
+          "candidate.title"
         ],
-        "step": "declare_scored_candidates",
+        "step": "score_candidates",
         "target": "DocumentSearchCandidate.title"
       },
       {
@@ -1234,9 +2878,9 @@
         },
         "operation": "project",
         "sources": [
-          "DocumentSearchCandidate.url"
+          "candidate.url"
         ],
-        "step": "declare_scored_candidates",
+        "step": "score_candidates",
         "target": "DocumentSearchCandidate.url"
       },
       {
@@ -1245,9 +2889,9 @@
         },
         "operation": "project",
         "sources": [
-          "DocumentSearchCandidate.score"
+          "candidate.score"
         ],
-        "step": "declare_scored_candidates",
+        "step": "score_candidates",
         "target": "DocumentSearchCandidate.score"
       },
       {
@@ -1256,9 +2900,10 @@
         },
         "operation": "project",
         "sources": [
-          "literal"
+          "query.query_feedback",
+          "popularity.popularity_feedback"
         ],
-        "step": "declare_scored_candidates",
+        "step": "score_candidates",
         "target": "DocumentSearchCandidate.score_feedback"
       },
       {
@@ -1269,7 +2914,7 @@
         "sources": [
           "literal"
         ],
-        "step": "declare_scored_candidates",
+        "step": "score_candidates",
         "target": "DocumentSearchCandidate.score_rank"
       },
       {
@@ -1278,9 +2923,9 @@
         },
         "operation": "project",
         "sources": [
-          "literal"
+          "policy.score_weight"
         ],
-        "step": "declare_scored_candidates",
+        "step": "score_candidates",
         "target": "DocumentSearchCandidate.score_weight"
       },
       {
@@ -1289,23 +2934,10 @@
         },
         "operation": "project",
         "sources": [
-          "literal"
+          "policy.feedback_weight"
         ],
-        "step": "declare_scored_candidates",
+        "step": "score_candidates",
         "target": "DocumentSearchCandidate.feedback_weight"
-      },
-      {
-        "detail": {
-          "phase": "raw",
-          "project_output": false,
-          "schema_mode": "strict"
-        },
-        "operation": "hook",
-        "sources": [
-          "DocumentSearchCandidate"
-        ],
-        "step": "declare_scored_candidates",
-        "target": "declare_scored_candidates.hook.score_candidates"
       },
       {
         "detail": {
@@ -1651,16 +3283,7 @@
         "target": "DocumentSearchResult.validation.final"
       }
     ],
-    "opaque_boundaries": [
-      {
-        "hook": "score_candidates",
-        "phase": "raw",
-        "reason": "arbitrary PySpark hook body",
-        "schema": "DocumentSearchCandidate",
-        "step": "declare_scored_candidates",
-        "target": "declare_scored_candidates"
-      }
-    ]
+    "opaque_boundaries": []
   },
   "steps": [
     {
@@ -1710,13 +3333,181 @@
       ]
     },
     {
-      "after_hooks": [
-        "score_candidates"
-      ],
+      "after_hooks": [],
       "before_hooks": [],
       "input_alias": "document_search_candidate",
+      "joins": [
+        {
+          "how": "inner",
+          "input": "fallback",
+          "right_alias": "band_fallbacks"
+        },
+        {
+          "how": "cross",
+          "input": "policy",
+          "right_alias": "policy_2"
+        }
+      ],
+      "name": "select_fallback_options",
+      "output_alias": "document_feedback_option",
+      "output_schema": "DocumentFeedbackOption",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "fallback_options",
+          "lane": "fallback_options",
+          "schema": "DocumentFeedbackOption"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "DocumentFeedbackOption"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "document_search_candidate",
+      "joins": [
+        {
+          "how": "cross",
+          "input": "policy",
+          "right_alias": "policy"
+        }
+      ],
+      "name": "select_global_options",
+      "output_alias": "document_feedback_option",
+      "output_schema": "DocumentFeedbackOption",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "global_options",
+          "lane": "global_options",
+          "schema": "DocumentFeedbackOption"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "DocumentFeedbackOption"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "document_feedback_option",
       "joins": [],
-      "name": "declare_scored_candidates",
+      "name": "merge_feedback_options",
+      "output_alias": "document_feedback_option",
+      "output_schema": "DocumentFeedbackOption",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "feedback_options",
+          "lane": "feedback_options",
+          "schema": "DocumentFeedbackOption"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "DocumentFeedbackOption"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "document_feedback_option",
+      "joins": [
+        {
+          "how": "left",
+          "input": "signal",
+          "right_alias": "query_document_signals"
+        }
+      ],
+      "name": "select_query_feedback",
+      "output_alias": "query_document_feedback",
+      "output_schema": "QueryDocumentFeedback",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "query_feedback",
+          "lane": "query_feedback",
+          "schema": "QueryDocumentFeedback"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "QueryDocumentFeedback"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "document_feedback_option",
+      "joins": [
+        {
+          "how": "left",
+          "input": "signal",
+          "right_alias": "document_popularity"
+        }
+      ],
+      "name": "select_popularity_feedback",
+      "output_alias": "popularity_feedback",
+      "output_schema": "PopularityFeedback",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "popularity_feedback",
+          "lane": "popularity_feedback",
+          "schema": "PopularityFeedback"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "PopularityFeedback"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "document_search_candidate",
+      "joins": [
+        {
+          "how": "left",
+          "input": "query",
+          "right_alias": "query_feedback"
+        },
+        {
+          "how": "left",
+          "input": "popularity",
+          "right_alias": "popularity_feedback_2"
+        },
+        {
+          "how": "cross",
+          "input": "policy",
+          "right_alias": "policy_3"
+        }
+      ],
+      "name": "score_candidates",
       "output_alias": "document_search_candidate",
       "output_schema": "DocumentSearchCandidate",
       "results": [
@@ -1728,12 +3519,6 @@
         }
       ],
       "validation": [
-        {
-          "mode": "strict",
-          "project": false,
-          "reason": "hook",
-          "schema": "DocumentSearchCandidate"
-        },
         {
           "mode": "strict",
           "project": false,

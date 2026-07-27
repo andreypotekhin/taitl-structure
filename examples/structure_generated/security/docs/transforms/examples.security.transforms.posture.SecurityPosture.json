@@ -10,6 +10,8 @@
     "orgs",
     "people",
     "person",
+    "remediation_policies",
+    "remediation_policy",
     "software",
     "team",
     "teams",
@@ -44,23 +46,28 @@
       "schema": "VulnType"
     },
     {
-      "name": "people",
+      "name": "remediation_policies",
       "ordinal": 5,
+      "schema": "RemediationPolicy"
+    },
+    {
+      "name": "people",
+      "ordinal": 6,
       "schema": "Person"
     },
     {
       "name": "teams",
-      "ordinal": 6,
+      "ordinal": 7,
       "schema": "Team"
     },
     {
       "name": "departments",
-      "ordinal": 7,
+      "ordinal": 8,
       "schema": "Department"
     },
     {
       "name": "orgs",
-      "ordinal": 8,
+      "ordinal": 9,
       "schema": "Org"
     }
   ],
@@ -110,6 +117,12 @@
         },
         {
           "driving": false,
+          "parameter": "remediation_policy",
+          "schema": "RemediationPolicy",
+          "source": "remediation_policies"
+        },
+        {
+          "driving": false,
           "parameter": "person",
           "schema": "Person",
           "source": "people"
@@ -149,6 +162,10 @@
         {
           "how": "inner",
           "input": "vuln_type"
+        },
+        {
+          "how": "inner",
+          "input": "remediation_policy"
         },
         {
           "how": "inner",

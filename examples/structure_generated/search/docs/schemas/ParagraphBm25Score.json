@@ -35,6 +35,6 @@
     }
   ],
   "generated_by": "Structure",
-  "module": "examples.search.schemas.search",
+  "module": "examples.search.schemas.scoring.bm25",
   "name": "ParagraphBm25Score"
 }

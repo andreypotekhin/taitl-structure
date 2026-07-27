@@ -1,13 +1,15 @@
 # API Catalog
 
-This catalog is the source for API compatibility decisions. Use `@raw` or caller-owned PySpark if it says the symbolic contract is deferred or unsupported.
+This catalog is the reference for API compatibility decisions. Use `@raw` or caller-owned PySpark if it says the symbolic contract is deferred or unsupported.
+
+For extensions on top of PySpark, see [APIExtentions.md](APIExtentions.md). For Strucute own APIs such as schemas, transforms, hooks, see Core APIs in [API.md](API.md).
 
 ## Column API
 
 Structure supports typed field references, nested struct field access, equality and ordering comparisons, boolean
 composition, arithmetic `+`, `-`, and `*`, null predicates, `isin(...)`, and inclusive `between(...)`.
 
-| API / Capability | Status | PySpark parity | Structure contract | Reference / boundary |
+| Capability | Status | PySpark parity | Structure contract | Reference |
 | --- | --- | --- | --- | --- |
 | String predicates | implemented | `contains`, `startswith`, `endswith`, `like`, `ilike`, `rlike` | Typed plain and regex matching | [Expressions API](api/Expressions.api.md) |
 | Collection indexing | implemented | `getItem`, `__getitem__` | Typed Array/Map result inference with nullable lookup results | [Collections API](api/Collections.api.md) |
@@ -27,9 +29,9 @@ composition, arithmetic `+`, `-`, and `*`, null predicates, `isin(...)`, and inc
 Structure exposes row-local string normalization, decimal conversion, null coalescing, conditionals, grouped aggregates,
 window helpers, and selected array/map higher-order functions.
 
-| API / Capability | Status | PySpark parity | Structure contract | Reference / boundary |
+| Capability | Status | PySpark parity | Structure contract | Reference |
 | --- | --- | --- | --- | --- |
-| Broader string helpers | implemented | `ltrim`, `rtrim`, `substring`, `split`, `regexp_replace`, `regexp_extract`, `length`, `concat_ws`, `initcap`, `reverse`, `translate`, `instr`, `levenshtein` | Typed cross-version string transformation, search, and comparison core | [Expressions API](api/Expressions.api.md) |
+| Broader string helpers | implemented | `ltrim`, `rtrim`, `substring`, `split`, `regexp_replace`, `regexp_extract`, `length`, `concat_ws`, `initcap`, `reverse`, `translate`, `instr`, `levenshtein` | Typed cross-version string transformation, search, comparison, and `array<string>` path joining core | [Expressions API](api/Expressions.api.md) |
 | Date/time helpers | implemented | `date_add`, `date_sub`, `datediff`, `date_trunc`, `trunc`, calendar extraction, `to_date`, `to_timestamp` | Typed Date/Timestamp temporal helper set | [Expressions API](api/Expressions.api.md) |
 | Numeric/math helpers | implemented | `abs`, `round`, `bround`, `ceil`, `floor`, `sqrt`, `pow`, `log`, `exp`, `signum` | Typed deterministic scalar helper set | [Expressions API](api/Expressions.api.md) |
 | Predicate helpers | implemented | `isnull`, `isnotnull`, `isnan` | Function-style null checks and typed NaN predicate | [Expressions API](api/Expressions.api.md) |
@@ -44,7 +46,7 @@ window helpers, and selected array/map higher-order functions.
 
 ## Joins
 
-| API / Capability | Status | PySpark parity | Structure contract | Reference / boundary |
+| Capability | Status | PySpark parity | Structure contract | Reference |
 | --- | --- | --- | --- | --- |
 | Using-key joins | implemented | `join(on="key")`, `on=["k1", "k2"]` | Symbolic `on=` remains preferred | [Joins API](api/Joins.api.md) |
 | Full join diagnostics hardening | implemented | `how="full"` | Nullable sides are named clearly | [Joins API](api/Joins.api.md) |
@@ -63,7 +65,7 @@ Structure supports ordinary grouping, rollup, cube, explicit grouping sets, `hav
 approximate count/percentile, boolean aggregates, statistical aggregates, filtered metrics, collection aggregates, and
 deterministic first/last helpers.
 
-| API / Capability | Status | PySpark parity | Structure contract | Reference / boundary |
+| Capability | Status | PySpark parity | Structure contract | Reference |
 | --- | --- | --- | --- | --- |
 | Explicit grouping sets | implemented | Custom grouping-set levels | Lowers as generated PySpark branch unions | [Aggregations API](api/Aggregations.api.md) |
 | Having predicates | implemented | SQL/PySpark post-aggregate filters | Uses aggregate-output predicate scope | [Aggregations API](api/Aggregations.api.md) |
@@ -79,7 +81,7 @@ deterministic first/last helpers.
 
 Structure supports inline ranking/lag/lead/rolling helpers and reusable window specs with explicit row/range frames.
 
-| API / Capability | Status | PySpark parity | Structure contract | Reference / boundary |
+| API / Capability | Status | PySpark parity | Structure contract | Reference |
 | --- | --- | --- | --- | --- |
 | Null ordering in window order keys | implemented | Null-ordering sort methods | Typed order descriptors render in inline and reusable windows | [Windows API](api/Windows.api.md) |
 | Multiple order keys in all helpers | implemented | `Window.orderBy(*cols)` | Inline and reusable helpers preserve ordered keys | [Windows API](api/Windows.api.md) |
@@ -87,13 +89,13 @@ Structure supports inline ranking/lag/lead/rolling helpers and reusable window s
 | Partitioned `window_max` | implemented | Window aggregate over partition/order/frame | Explicit typed window validation keeps partitioned maximum compiler-visible | [Windows API](api/Windows.api.md) |
 | Raw `WindowSpec` escape hatch | unsupported | Direct PySpark `WindowSpec` | Use hooks for raw PySpark | [Windows API](api/Windows.api.md) |
 
-## Higher-Order And Collection Helpers
+## Higher-Order And Collection Functions
 
 Structure supports `arr_transform`, `arr_filter`, `arr_exists`, `arr_forall`, `arr_zip_with`, `arr_aggregate`,
 `arr_sort_by`, `arr_flatten`, `arr_distinct`, `arr_position`, `map_transform_values`, `map_filter`,
 `map_transform_keys`, `map_zip_with`, `map_keys`, `map_values`, `map_entries`, and `map_from_entries`.
 
-| API / Capability | Status | PySpark parity | Structure contract | Reference / boundary |
+| API / Capability | Status | PySpark parity | Structure contract | Reference |
 | --- | --- | --- | --- | --- |
 | Collection size and membership | implemented | `size`, `array_contains`, `map_contains_key` | Typed count and membership helpers preserve Spark null semantics | [Collections API](api/Collections.api.md) |
 | Array construction and set operations | implemented | `array`, `array_repeat`, `array_union`, `array_except` | Compatible numerics widen; other element types must agree | [Collections API](api/Collections.api.md) |
@@ -108,7 +110,7 @@ Structure supports `arr_transform`, `arr_filter`, `arr_exists`, `arr_forall`, `a
 Relation operations change the active rowset's identity, cardinality, ordering, or available relation aliases. They are
 Structure additions over public DataFrame transformation patterns, not raw DataFrame escape hatches.
 
-| API / Capability | Status | PySpark parity | Structure contract | Reference / boundary |
+| Capability | Status | PySpark parity | Structure contract | Reference |
 | --- | --- | --- | --- | --- |
 | Exact-schema set operations | implemented | `union`, `unionByName`, `intersect`, `intersectAll`, `subtract`, `exceptAll` | Exact-schema relation set composition uses Spark duplicate/distinct semantics and makes no ordering claim | Missing-column composition deferred |
 | Branchable typed union | implemented | Union of compatible DataFrames | Independently materialized exact-schema lanes can converge through `union_all(...)` | Relevance-context expansion remains `@raw` |
@@ -116,8 +118,10 @@ Structure additions over public DataFrame transformation patterns, not raw DataF
 | Relation order/limit/offset | implemented | `orderBy`, `limit`, `offset` | Typed order descriptors and literal bounds; bounds require ordered current relation state | `sample` deferred |
 | `exactly_one` validation | implemented | Relation cardinality assertion | Declared assertion fails zero/multiple matches with `REL-E0701` | Search query construction remains `@raw` |
 | `require_unique` / `require_all` / `require_reference` | implemented | Spark-plan assertions | Key, predicate, and nullable parent-reference checks fail through `REL-E0702`/`REL-E0703`/`REL-E0704` | [APIExtensions.md](APIExtensions.md) |
+| Parent hierarchy validation | implemented | Finite DataFrame self-join validation | `require_parent_hierarchy(...)` checks missing parents, cycles, depth overruns, and child ordering with `REL-E0706` | [APIExtensions.md](APIExtensions.md) |
 | First-qualified priority selection | implemented | Priority row selection pattern | `select_first_qualified(...)` selects at most one eligible row per key and reports `REL-E0705` for configured missing/tie failures | Reranking remains `@raw` |
-| Bounded parent hierarchy and fallbacks | scheduled | Hierarchy expansion patterns | Literal depth plus missing-parent/cycle policies and ordered fallback selection | Cohort traversal remains `@raw` |
+| Parent hierarchy closure | implemented | Finite iterative self-join expansion | `hierarchy_closure(...)` replaces the active rowset with typed `(node, ancestor, depth)` rows up to literal `max_depth` | Cohort migration pending |
+| Bounded parent hierarchy fallbacks | implemented | Hierarchy expansion patterns | `hierarchy_fallbacks(...)` emits ordered parent-substitution fallback IDs plus the terminal global fallback row | Cohort migration pending |
 | Sampling | deferred | `sample` | Seed, replacement, and reproducibility contract is incomplete | Use `@raw` |
 | Bounded ordered `scan(...)` | scheduled | Ordered recurrence pattern | Separate typed recurrence plan | Sprint 26 |
 | Matrix inversion | intentional raw | Driver-side numerical algorithm | Not a symbolic distributed DataFrame transformation | School example hook |
@@ -127,7 +131,7 @@ Structure additions over public DataFrame transformation patterns, not raw DataF
 The streaming slice accepts compatible streaming DataFrames as inputs for row-local, watermarked stateful, and admitted
 stream-stream operations. Structure intentionally does not own streaming lifecycle.
 
-| API / Capability | Status | PySpark parity | Structure contract | Reference / boundary |
+| Capability | Status | PySpark parity | Structure contract | Reference |
 | --- | --- | --- | --- | --- |
 | Generated streaming sources | unsupported | `spark.readStream` | Callers own source selection and configuration | [Streaming API](api/Streaming.api.md) |
 | Generated streaming sinks | unsupported | `DataFrame.writeStream` | Callers own sinks and side effects | [Streaming API](api/Streaming.api.md) |

@@ -69,11 +69,13 @@ declared key, predicate, or nullable parent-reference relationship in the Spark 
 instead of collecting configuration rows on the driver. They cover band catalog identifiers, age ranges, priority
 predicates, and parent existence.
 
-A bounded parent-hierarchy operation accepts typed node identity, parent identity, explicit ordering, literal
-`max_depth`, and error policies for missing parents/cycles. It lowers to a finite self-join sequence and yields typed
-closure/path rows. It never uses a Python UDF or recursive driver traversal. `hierarchy_fallbacks(...)` derives the
-ordered parent-substitution paths from that representation and emits the final global fallback explicitly. Together
-with ordered collection, this supports the `BandMembership` and `BandFallback` outputs of `ResolveCohortBands`.
+A bounded parent-hierarchy validation accepts typed node identity, parent identity, explicit ordering, and literal
+`max_depth`. It lowers to a finite self-join sequence and reports `REL-E0706` for missing parents, cycles, depth
+overruns, and non-increasing child order. `hierarchy_closure(...)` yields typed bounded `(node, ancestor, depth)` rows
+from that validated catalog. `hierarchy_fallbacks(...)` derives ordered parent-substitution fallback rows from a
+declared band-id path and unjoined parent catalog, then emits the final global fallback explicitly. Together with
+ordered collection, this supports the `BandMembership` and `BandFallback`
+outputs of `ResolveCohortBands`.
 The existing typed self-alias plus anti-existence relation pattern selects leaf matches; it does not need a new
 special-purpose hierarchy API.
 
@@ -94,7 +96,7 @@ Structure.
 | Self-alias joins | Represent a second occurrence of a relation with a named scope and require an explicit typed join/projection to read it. | canonical/reversed similarity rows; leaf-band exclusion patterns | Alias does not copy rows or expose DataFrames. |
 | Relation order and bounds | Treat `order_by(...)`, `limit(n)`, and `offset(n)` as relation operations with literal bounds; reject bounds after an order-destroying operation. | top-K result slices, similarity-query token ordering, candidate windows | Output order is observable only at declared materialization boundaries. |
 | Relation assertions | Validate uniqueness, predicates, and references through Spark-plan assertions instead of driver collection. | cohort band catalog validation; exact-one policy checks | Assertions are row-preserving on success and batch-only in P1. |
-| Bounded hierarchy and fallbacks | Build finite parent closure/path rows from explicit id, parent, priority, and `max_depth`; emit deterministic parent-substitution fallbacks plus terminal global fallback. | `ResolveCohortBands` | No dynamic recursion, graph API, Python traversal, or driver-side catalog collection. |
+| Bounded hierarchy and fallbacks | Validate finite parent catalogs with `require_parent_hierarchy(...)`; build `hierarchy_closure(...)` rows from explicit id, parent, and `max_depth`; emit deterministic parent-substitution fallbacks plus terminal global fallback with `hierarchy_fallbacks(...)`. | `ResolveCohortBands` | No dynamic recursion, graph API, Python traversal, or driver-side catalog collection. |
 | Branchable typed union | Let independently typed branches converge through exact-schema union while retaining branch provenance. | scoped and global relevance impressions/clicks | Branches must return one declared schema; union preserves duplicates. |
 | First-qualified priority selection | Select one eligible candidate per declared business key using explicit priority order and `REL-E0705` missing/tie failures. | `RerankDocuments` exact, parent, then global feedback | Generated surrogate row IDs are not admitted as selection keys. |
 

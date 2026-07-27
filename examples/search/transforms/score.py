@@ -1,19 +1,18 @@
 """Public production-score selection boundary."""
 
-from examples.search.schemas.search import (
+from examples.search.schemas.scoring.bm25 import (
     DocumentBm25Score,
-    DocumentOverlapScore,
-    DocumentScore,
     ParagraphBm25Score,
-    ParagraphOverlapScore,
-    ParagraphScore,
     SectionBm25Score,
-    SectionOverlapScore,
-    SectionScore,
     SentenceBm25Score,
-    SentenceOverlapScore,
-    SentenceScore,
 )
+from examples.search.schemas.scoring.overlap import (
+    DocumentOverlapScore,
+    ParagraphOverlapScore,
+    SectionOverlapScore,
+    SentenceOverlapScore,
+)
+from examples.search.schemas.search import DocumentScore, ParagraphScore, SectionScore, SentenceScore
 from examples.search.transforms.scoring.ScoreAll import ScoreAll
 from structure import lane, output, step
 from structure.plugin.pyspark import inner_join

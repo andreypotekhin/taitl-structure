@@ -63,7 +63,7 @@ def test_search_scoring_subpackage_transform_is_discovered_and_compiled() -> Non
 def test_similarity_public_transform_inherits_its_searching_implementation() -> None:
     """The public transform stays import-stable while its implementation is grouped with search transforms."""
 
-    from examples.search.transforms.searching.search_similarity import Similarity as SearchSimilarity
+    from examples.search.transforms.searching.search_similarity import SearchSimilarity
     from examples.search.transforms.similarity import Similarity
 
     assert Similarity.__bases__ == (SearchSimilarity,)
@@ -72,9 +72,7 @@ def test_similarity_public_transform_inherits_its_searching_implementation() -> 
 def test_behavior_evaluator_keeps_its_request_to_daily_pipeline_local() -> None:
     """The public evaluator owns all behavior stages for direct IDE navigation."""
 
-    from examples.search.transforms.evaluation.search_docs.eval_doc_search_behavior import (
-        EvaluateDocumentSearchBehavior,
-    )
+    from examples.search.transforms.evaluation.search_docs.behavior.eval_behavior import EvaluateDocumentSearchBehavior
 
     assert EvaluateDocumentSearchBehavior.__bases__ == (Transform,)
 
@@ -103,12 +101,8 @@ def test_behavior_evaluator_keeps_its_request_to_daily_pipeline_local() -> None:
 def test_experiment_evaluators_schedule_combined_selection_before_their_override() -> None:
     """Experiment evaluators reuse combined selection before adding experiment context."""
 
-    from examples.search.transforms.experiments.search_docs.eval_doc_ranking_quality import (
-        EvaluateDocumentRankingQuality,
-    )
-    from examples.search.transforms.experiments.search_docs.eval_doc_search_behavior import (
-        EvaluateDocumentSearchBehavior,
-    )
+    from examples.search.transforms.experiments.search_docs.eval_behavior import EvaluateDocumentSearchBehavior
+    from examples.search.transforms.experiments.search_docs.eval_ranking import EvaluateDocumentRankingQuality
 
     for evaluator, parent_step in (
         (EvaluateDocumentRankingQuality, "select_queries"),
@@ -125,7 +119,7 @@ def test_experiment_evaluators_schedule_combined_selection_before_their_override
         ]
         assert parent_origin is not None
         assert child_origin is not None
-        assert parent_origin.module.startswith("examples.search.transforms.evaluation.with_all")
+        assert parent_origin.module.startswith("examples.search.transforms.evaluation.search_docs")
         assert child_origin.module.startswith("examples.search.transforms.experiments")
 
 

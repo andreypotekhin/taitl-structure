@@ -718,7 +718,30 @@ def test_concat_ws_requires_string_values() -> None:
         _compile(Publish)
 
     assert raised.value.diagnostic.code == "DSL-E0401"
-    assert "concat_ws(...) requires a String Structure expression" in raised.value.diagnostic.problem_text()
+    assert "concat_ws(...) requires a String or array<string> Structure expression" in raised.value.diagnostic.problem_text()
+
+
+def test_concat_ws_accepts_string_arrays() -> None:
+    """I can join an array<string> for deterministic path IDs."""
+
+    class Raw(Schema):
+        parts = array(string(), contains_null=False, nullable=False)
+
+    class Published(Schema):
+        value = string(nullable=False)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(value=concat_ws("\u001f", row.parts))
+
+    expression = _body(Publish).projection[0].expression
+
+    assert expression.type is not None and expression.type.name == "string"
+    assert expression.nullable is False
 
 
 def test_regexp_extract_requires_a_non_negative_group() -> None:

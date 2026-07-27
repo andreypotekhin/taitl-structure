@@ -2,7 +2,7 @@
 
 # ParagraphBm25Score
 
-Module: `examples.search.schemas.search`
+Module: `examples.search.schemas.scoring.bm25`
 
 | Field | Column | Type | Nullable |
 | --- | --- | --- | --- |

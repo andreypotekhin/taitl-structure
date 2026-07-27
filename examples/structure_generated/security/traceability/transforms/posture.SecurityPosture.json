@@ -31,23 +31,28 @@
       "schema": "VulnType"
     },
     {
-      "name": "people",
+      "name": "remediation_policies",
       "ordinal": 5,
+      "schema": "RemediationPolicy"
+    },
+    {
+      "name": "people",
+      "ordinal": 6,
       "schema": "Person"
     },
     {
       "name": "teams",
-      "ordinal": 6,
+      "ordinal": 7,
       "schema": "Team"
     },
     {
       "name": "departments",
-      "ordinal": 7,
+      "ordinal": 8,
       "schema": "Department"
     },
     {
       "name": "orgs",
-      "ordinal": 8,
+      "ordinal": 9,
       "schema": "Org"
     }
   ],
@@ -83,23 +88,28 @@
       "source": "source:examples.security.transforms.posture.SecurityPosture.input.vuln_types"
     },
     {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.input.remediation_policies",
+      "ir": "ir:SecurityPosture.input.5.remediation_policies",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.input.remediation_policies"
+    },
+    {
       "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.input.people",
-      "ir": "ir:SecurityPosture.input.5.people",
+      "ir": "ir:SecurityPosture.input.6.people",
       "source": "source:examples.security.transforms.posture.SecurityPosture.input.people"
     },
     {
       "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.input.teams",
-      "ir": "ir:SecurityPosture.input.6.teams",
+      "ir": "ir:SecurityPosture.input.7.teams",
       "source": "source:examples.security.transforms.posture.SecurityPosture.input.teams"
     },
     {
       "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.input.departments",
-      "ir": "ir:SecurityPosture.input.7.departments",
+      "ir": "ir:SecurityPosture.input.8.departments",
       "source": "source:examples.security.transforms.posture.SecurityPosture.input.departments"
     },
     {
       "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.input.orgs",
-      "ir": "ir:SecurityPosture.input.8.orgs",
+      "ir": "ir:SecurityPosture.input.9.orgs",
       "source": "source:examples.security.transforms.posture.SecurityPosture.input.orgs"
     },
     {
@@ -128,24 +138,29 @@
       "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.join.4.vuln_type"
     },
     {
-      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.join.5.person",
-      "ir": "ir:SecurityPosture.step.0.prepare_exposure.join.5.person",
-      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.join.5.person"
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.join.5.remediation_policy",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.join.5.remediation_policy",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.join.5.remediation_policy"
     },
     {
-      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.join.6.team",
-      "ir": "ir:SecurityPosture.step.0.prepare_exposure.join.6.team",
-      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.join.6.team"
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.join.6.person",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.join.6.person",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.join.6.person"
     },
     {
-      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.join.7.department",
-      "ir": "ir:SecurityPosture.step.0.prepare_exposure.join.7.department",
-      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.join.7.department"
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.join.7.team",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.join.7.team",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.join.7.team"
     },
     {
-      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.join.8.org",
-      "ir": "ir:SecurityPosture.step.0.prepare_exposure.join.8.org",
-      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.join.8.org"
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.join.8.department",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.join.8.department",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.join.8.department"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.join.9.org",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.join.9.org",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.join.9.org"
     },
     {
       "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.select.vuln_id",
@@ -168,6 +183,11 @@
       "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.field.instructions"
     },
     {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.select.severity",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.project.severity",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.field.severity"
+    },
+    {
       "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.select.date_discovered",
       "ir": "ir:SecurityPosture.step.0.prepare_exposure.project.date_discovered",
       "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.field.date_discovered"
@@ -176,6 +196,11 @@
       "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.select.date_addressed",
       "ir": "ir:SecurityPosture.step.0.prepare_exposure.project.date_addressed",
       "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.field.date_addressed"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.select.target_date",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.project.target_date",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.field.target_date"
     },
     {
       "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.select.is_active",
@@ -308,6 +333,11 @@
       "source": "source:examples.security.transforms.posture.SecurityPosture.expose.field.instructions"
     },
     {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.1.expose.select.severity",
+      "ir": "ir:SecurityPosture.step.1.expose.project.severity",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.expose.field.severity"
+    },
+    {
       "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.1.expose.select.date_discovered",
       "ir": "ir:SecurityPosture.step.1.expose.project.date_discovered",
       "source": "source:examples.security.transforms.posture.SecurityPosture.expose.field.date_discovered"
@@ -316,6 +346,11 @@
       "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.1.expose.select.date_addressed",
       "ir": "ir:SecurityPosture.step.1.expose.project.date_addressed",
       "source": "source:examples.security.transforms.posture.SecurityPosture.expose.field.date_addressed"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.1.expose.select.target_date",
+      "ir": "ir:SecurityPosture.step.1.expose.project.target_date",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.expose.field.target_date"
     },
     {
       "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.1.expose.select.is_active",
@@ -423,6 +458,11 @@
       "source": "source:examples.security.transforms.posture.SecurityPosture.publish.field.instructions"
     },
     {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.2.publish.select.severity",
+      "ir": "ir:SecurityPosture.step.2.publish.project.severity",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.publish.field.severity"
+    },
+    {
       "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.2.publish.select.date_discovered",
       "ir": "ir:SecurityPosture.step.2.publish.project.date_discovered",
       "source": "source:examples.security.transforms.posture.SecurityPosture.publish.field.date_discovered"
@@ -431,6 +471,11 @@
       "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.2.publish.select.date_addressed",
       "ir": "ir:SecurityPosture.step.2.publish.project.date_addressed",
       "source": "source:examples.security.transforms.posture.SecurityPosture.publish.field.date_addressed"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.2.publish.select.target_date",
+      "ir": "ir:SecurityPosture.step.2.publish.project.target_date",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.publish.field.target_date"
     },
     {
       "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.2.publish.select.is_active",
@@ -526,12 +571,24 @@
       "constant": "APP_EVENT_SCHEMA",
       "module": "examples.structure_generated.security.pyspark.schemas.events"
     },
+    "DeliveryReceipt": {
+      "constant": "DELIVERY_RECEIPT_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
     "Department": {
       "constant": "DEPARTMENT_SCHEMA",
       "module": "examples.structure_generated.security.pyspark.schemas.organization"
     },
     "DepartmentActiveVulnerability": {
       "constant": "DEPARTMENT_ACTIVE_VULNERABILITY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "DepartmentRemediationWorkflowSummary": {
+      "constant": "DEPARTMENT_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "DepartmentVulnerabilityDeadlineSummary": {
+      "constant": "DEPARTMENT_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA",
       "module": "examples.structure_generated.security.pyspark.schemas.reporting"
     },
     "DepartmentVulnerabilityStatistic": {
@@ -550,6 +607,14 @@
       "constant": "DEVICE_TYPE_SCHEMA",
       "module": "examples.structure_generated.security.pyspark.schemas.assets"
     },
+    "ExpiredExceptionVulnerability": {
+      "constant": "EXPIRED_EXCEPTION_VULNERABILITY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "ExpiringExceptionVulnerability": {
+      "constant": "EXPIRING_EXCEPTION_VULNERABILITY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
     "OS": {
       "constant": "O_S_SCHEMA",
       "module": "examples.structure_generated.security.pyspark.schemas.assets"
@@ -562,8 +627,20 @@
       "constant": "ORG_ACTIVE_VULNERABILITY_SCHEMA",
       "module": "examples.structure_generated.security.pyspark.schemas.reporting"
     },
+    "OrgRemediationWorkflowSummary": {
+      "constant": "ORG_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "OrgVulnerabilityDeadlineSummary": {
+      "constant": "ORG_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
     "OrgVulnerabilityStatistic": {
       "constant": "ORG_VULNERABILITY_STATISTIC_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "PendingExceptionVulnerability": {
+      "constant": "PENDING_EXCEPTION_VULNERABILITY_SCHEMA",
       "module": "examples.structure_generated.security.pyspark.schemas.reporting"
     },
     "Person": {
@@ -574,6 +651,18 @@
       "constant": "PERSON_ACTIVE_VULNERABILITY_SCHEMA",
       "module": "examples.structure_generated.security.pyspark.schemas.reporting"
     },
+    "PersonRemediationWorkflowSummary": {
+      "constant": "PERSON_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "PersonVulnerabilityDeadlineSummary": {
+      "constant": "PERSON_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "PersonVulnerabilityNotification": {
+      "constant": "PERSON_VULNERABILITY_NOTIFICATION_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
     "PersonVulnerabilityStatistic": {
       "constant": "PERSON_VULNERABILITY_STATISTIC_SCHEMA",
       "module": "examples.structure_generated.security.pyspark.schemas.reporting"
@@ -582,6 +671,34 @@
       "constant": "RAW_EVENT_SCHEMA",
       "module": "examples.structure_generated.security.pyspark.schemas.events"
     },
+    "RemediationCase": {
+      "constant": "REMEDIATION_CASE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "RemediationCaseAggregate": {
+      "constant": "REMEDIATION_CASE_AGGREGATE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "RemediationCaseCheck": {
+      "constant": "REMEDIATION_CASE_CHECK_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "RemediationCaseIssue": {
+      "constant": "REMEDIATION_CASE_ISSUE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "RemediationPolicy": {
+      "constant": "REMEDIATION_POLICY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.risk"
+    },
+    "RemediationWorkflowActivity": {
+      "constant": "REMEDIATION_WORKFLOW_ACTIVITY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "RemediationWorkflowSummary": {
+      "constant": "REMEDIATION_WORKFLOW_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
     "ReportingPeriod": {
       "constant": "REPORTING_PERIOD_SCHEMA",
       "module": "examples.structure_generated.security.pyspark.schemas.reporting"
@@ -589,6 +706,10 @@
     "Scanner": {
       "constant": "SCANNER_SCHEMA",
       "module": "examples.structure_generated.security.pyspark.schemas.assets"
+    },
+    "SecurityEvaluation": {
+      "constant": "SECURITY_EVALUATION_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
     },
     "Software": {
       "constant": "SOFTWARE_SCHEMA",
@@ -602,8 +723,24 @@
       "constant": "TEAM_ACTIVE_VULNERABILITY_SCHEMA",
       "module": "examples.structure_generated.security.pyspark.schemas.reporting"
     },
+    "TeamRemediationWorkflowSummary": {
+      "constant": "TEAM_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "TeamVulnerabilityAlarm": {
+      "constant": "TEAM_VULNERABILITY_ALARM_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "TeamVulnerabilityDeadlineSummary": {
+      "constant": "TEAM_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
     "TeamVulnerabilityStatistic": {
       "constant": "TEAM_VULNERABILITY_STATISTIC_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "UnacknowledgedVulnerability": {
+      "constant": "UNACKNOWLEDGED_VULNERABILITY_SCHEMA",
       "module": "examples.structure_generated.security.pyspark.schemas.reporting"
     },
     "Vuln": {
@@ -620,6 +757,18 @@
     },
     "VulnerabilityAuditEvent": {
       "constant": "VULNERABILITY_AUDIT_EVENT_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityDeadlineActivity": {
+      "constant": "VULNERABILITY_DEADLINE_ACTIVITY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityDeadlineSummary": {
+      "constant": "VULNERABILITY_DEADLINE_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityDiscovery": {
+      "constant": "VULNERABILITY_DISCOVERY_SCHEMA",
       "module": "examples.structure_generated.security.pyspark.schemas.reporting"
     },
     "VulnerabilityExposure": {
@@ -661,6 +810,10 @@
     "VulnerabilityStatistic": {
       "constant": "VULNERABILITY_STATISTIC_SCHEMA",
       "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityWorkflowExposure": {
+      "constant": "VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
     }
   },
   "source_transform": "examples.security.transforms.posture.SecurityPosture",
@@ -677,6 +830,7 @@
           "device_types",
           "software",
           "vuln_types",
+          "remediation_policies",
           "people",
           "teams",
           "departments",
@@ -697,6 +851,7 @@
           "device_type",
           "software",
           "vuln_type",
+          "remediation_policy",
           "person",
           "team",
           "department",
@@ -770,7 +925,22 @@
           "cardinality": "row_multiplying",
           "hint": null,
           "how": "inner",
-          "right_alias": "people_5"
+          "right_alias": "remediation_policies_5"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "remediation_policy.severity",
+          "vuln_type.severity"
+        ],
+        "step": "prepare_exposure",
+        "target": "prepare_exposure.join[5].remediation_policy"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "people_6"
         },
         "operation": "rowset_join",
         "sources": [
@@ -778,14 +948,14 @@
           "vuln.owner_id"
         ],
         "step": "prepare_exposure",
-        "target": "prepare_exposure.join[5].person"
+        "target": "prepare_exposure.join[6].person"
       },
       {
         "detail": {
           "cardinality": "row_multiplying",
           "hint": null,
           "how": "inner",
-          "right_alias": "teams_6"
+          "right_alias": "teams_7"
         },
         "operation": "rowset_join",
         "sources": [
@@ -793,14 +963,14 @@
           "person.team_id"
         ],
         "step": "prepare_exposure",
-        "target": "prepare_exposure.join[6].team"
+        "target": "prepare_exposure.join[7].team"
       },
       {
         "detail": {
           "cardinality": "row_multiplying",
           "hint": null,
           "how": "inner",
-          "right_alias": "departments_7"
+          "right_alias": "departments_8"
         },
         "operation": "rowset_join",
         "sources": [
@@ -808,14 +978,14 @@
           "team.department_id"
         ],
         "step": "prepare_exposure",
-        "target": "prepare_exposure.join[7].department"
+        "target": "prepare_exposure.join[8].department"
       },
       {
         "detail": {
           "cardinality": "row_multiplying",
           "hint": null,
           "how": "inner",
-          "right_alias": "orgs_8"
+          "right_alias": "orgs_9"
         },
         "operation": "rowset_join",
         "sources": [
@@ -823,7 +993,7 @@
           "department.org_id"
         ],
         "step": "prepare_exposure",
-        "target": "prepare_exposure.join[8].org"
+        "target": "prepare_exposure.join[9].org"
       },
       {
         "detail": {
@@ -871,6 +1041,17 @@
       },
       {
         "detail": {
+          "field": "severity"
+        },
+        "operation": "project",
+        "sources": [
+          "vuln_type.severity"
+        ],
+        "step": "prepare_exposure",
+        "target": "VulnerabilityPostureCandidate.severity"
+      },
+      {
+        "detail": {
           "field": "date_discovered"
         },
         "operation": "project",
@@ -890,6 +1071,18 @@
         ],
         "step": "prepare_exposure",
         "target": "VulnerabilityPostureCandidate.date_addressed"
+      },
+      {
+        "detail": {
+          "field": "target_date"
+        },
+        "operation": "project",
+        "sources": [
+          "vuln.date_discovered",
+          "remediation_policy.target_days"
+        ],
+        "step": "prepare_exposure",
+        "target": "VulnerabilityPostureCandidate.target_date"
       },
       {
         "detail": {
@@ -1173,6 +1366,17 @@
       },
       {
         "detail": {
+          "field": "severity"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityPostureCandidate.severity"
+        ],
+        "step": "expose",
+        "target": "VulnerabilityExposure.severity"
+      },
+      {
+        "detail": {
           "field": "date_discovered"
         },
         "operation": "project",
@@ -1192,6 +1396,17 @@
         ],
         "step": "expose",
         "target": "VulnerabilityExposure.date_addressed"
+      },
+      {
+        "detail": {
+          "field": "target_date"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityPostureCandidate.target_date"
+        ],
+        "step": "expose",
+        "target": "VulnerabilityExposure.target_date"
       },
       {
         "detail": {
@@ -1416,6 +1631,17 @@
       },
       {
         "detail": {
+          "field": "severity"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityExposure.severity"
+        ],
+        "step": "publish",
+        "target": "VulnerabilityExposure.severity"
+      },
+      {
+        "detail": {
           "field": "date_discovered"
         },
         "operation": "project",
@@ -1435,6 +1661,17 @@
         ],
         "step": "publish",
         "target": "VulnerabilityExposure.date_addressed"
+      },
+      {
+        "detail": {
+          "field": "target_date"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityExposure.target_date"
+        ],
+        "step": "publish",
+        "target": "VulnerabilityExposure.target_date"
       },
       {
         "detail": {
@@ -1643,23 +1880,28 @@
         },
         {
           "how": "inner",
+          "input": "remediation_policy",
+          "right_alias": "remediation_policies_5"
+        },
+        {
+          "how": "inner",
           "input": "person",
-          "right_alias": "people_5"
+          "right_alias": "people_6"
         },
         {
           "how": "inner",
           "input": "team",
-          "right_alias": "teams_6"
+          "right_alias": "teams_7"
         },
         {
           "how": "inner",
           "input": "department",
-          "right_alias": "departments_7"
+          "right_alias": "departments_8"
         },
         {
           "how": "inner",
           "input": "org",
-          "right_alias": "orgs_8"
+          "right_alias": "orgs_9"
         }
       ],
       "name": "prepare_exposure",

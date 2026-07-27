@@ -1,6 +1,5 @@
 """Create tagged self-queries from reusable text indexes."""
 
-from examples.search.algorithms.similarity.SimilarityQueries import SimilarityQueries
 from examples.search.schemas.label import LabelMapEntry
 from examples.search.schemas.search import (
     DocumentIndexSummary,
@@ -13,6 +12,12 @@ from examples.search.schemas.search import (
     SentenceIndexSummary,
     SentenceIndexTerm,
 )
+from examples.search.schemas.similarities.query import (
+    DocumentSimilarityQueryText,
+    ParagraphSimilarityQueryText,
+    SectionSimilarityQueryText,
+    SentenceSimilarityQueryText,
+)
 from examples.search.schemas.similarity import (
     DocumentSimilarityQuery,
     ParagraphSimilarityQuery,
@@ -20,8 +25,19 @@ from examples.search.schemas.similarity import (
     SentenceSimilarityQuery,
     SimilarityPolicy,
 )
-from structure import Transform, input, output, raw, step
-from structure.plugin.pyspark import array, map_from_entries
+from structure import Transform, input, lane, output, step
+from structure.plugin.pyspark import (
+    array,
+    collect_list,
+    concat_ws,
+    cross_join,
+    exactly_one,
+    group_by,
+    map_from_entries,
+    require_all,
+    union_all,
+    where,
+)
 
 
 class CreateSimilarityQueries(Transform):
@@ -36,85 +52,185 @@ class CreateSimilarityQueries(Transform):
     paragraph_summary = input(ParagraphIndexSummary)
     sentence_terms = input(SentenceIndexTerm)
     sentence_summary = input(SentenceIndexSummary)
+    valid_policy = lane(SimilarityPolicy)
+    document_query_text = lane(DocumentSimilarityQueryText)
+    section_query_text = lane(SectionSimilarityQueryText)
+    paragraph_query_text = lane(ParagraphSimilarityQueryText)
+    sentence_query_text = lane(SentenceSimilarityQueryText)
+    document_search_queries = lane(SearchQuery)
+    section_search_queries = lane(SearchQuery)
+    paragraph_search_queries = lane(SearchQuery)
+    sentence_search_queries = lane(SearchQuery)
     queries = output(SearchQuery)
     document_queries = output(DocumentSimilarityQuery)
     section_queries = output(SectionSimilarityQuery)
     paragraph_queries = output(ParagraphSimilarityQuery)
     sentence_queries = output(SentenceSimilarityQuery)
 
-    @step(
-        input=document_terms,
-        output=[queries, document_queries, section_queries, paragraph_queries, sentence_queries],
-    )
-    def declare_queries(
-        self, term: DocumentIndexTerm
-    ) -> tuple[
-        SearchQuery, DocumentSimilarityQuery, SectionSimilarityQuery, ParagraphSimilarityQuery, SentenceSimilarityQuery
-    ]:
-        return (
-            SearchQuery(
-                id="",
-                content="",
-                labels=map_from_entries(
-                    array(
-                        LabelMapEntry(key="is_question", value=0),
-                        LabelMapEntry(key="is_time_sensitive", value=0),
-                    )
-                ),
-                is_question=False,
-                is_time_sensitive=False,
-            ),
-            DocumentSimilarityQuery(query_id="", document_id=term.document_id),
-            SectionSimilarityQuery(query_id="", document_id=term.document_id, section_id=""),
-            ParagraphSimilarityQuery(query_id="", document_id=term.document_id, section_id="", paragraph_id=""),
-            SentenceSimilarityQuery(
-                query_id="", document_id=term.document_id, section_id="", paragraph_id="", sentence_id=""
-            ),
+    @step(input=policy, output=valid_policy)
+    def validate_policy(self, policy: SimilarityPolicy) -> SimilarityPolicy:
+        validated = require_all(
+            policy.max_document_frequency_ratio.is_null()
+            | ((policy.max_document_frequency_ratio > 0.0) & (policy.max_document_frequency_ratio <= 1.0))
+        )
+        return SimilarityPolicy.project(validated)
+
+    @step(input=[document_terms, document_summary, valid_policy], output=document_query_text)
+    def build_document_queries(
+        self, term: DocumentIndexTerm, summary: DocumentIndexSummary, policy: SimilarityPolicy
+    ) -> DocumentSimilarityQueryText:
+        self._retain(policy, summary, term)
+        query_id = concat_ws("", "document:", term.document_id)
+        group_by(query_id=query_id, document_id=term.document_id)
+        return DocumentSimilarityQueryText(
+            query_id=query_id,
+            document_id=term.document_id,
+            content_tokens=collect_list(term.token, order_by=term.token),
         )
 
-    @raw(
-        input=[
-            input(policy),
-            input(document_terms),
-            input(document_summary),
-            input(section_terms),
-            input(section_summary),
-            input(paragraph_terms),
-            input(paragraph_summary),
-            input(sentence_terms),
-            input(sentence_summary),
-        ],
-        output=[
-            output(queries),
-            output(document_queries),
-            output(section_queries),
-            output(paragraph_queries),
-            output(sentence_queries),
-        ],
+    @step(input=[section_terms, section_summary, valid_policy], output=section_query_text)
+    def build_section_queries(
+        self, term: SectionIndexTerm, summary: SectionIndexSummary, policy: SimilarityPolicy
+    ) -> SectionSimilarityQueryText:
+        self._retain(policy, summary, term)
+        query_id = concat_ws("", "section:", term.section_id)
+        group_by(query_id=query_id, document_id=term.document_id, section_id=term.section_id)
+        return SectionSimilarityQueryText(
+            query_id=query_id,
+            document_id=term.document_id,
+            section_id=term.section_id,
+            content_tokens=collect_list(term.token, order_by=term.token),
+        )
+
+    @step(input=[paragraph_terms, paragraph_summary, valid_policy], output=paragraph_query_text)
+    def build_paragraph_queries(
+        self, term: ParagraphIndexTerm, summary: ParagraphIndexSummary, policy: SimilarityPolicy
+    ) -> ParagraphSimilarityQueryText:
+        self._retain(policy, summary, term)
+        query_id = concat_ws("", "paragraph:", term.paragraph_id)
+        group_by(
+            query_id=query_id,
+            document_id=term.document_id,
+            section_id=term.section_id,
+            paragraph_id=term.paragraph_id,
+        )
+        return ParagraphSimilarityQueryText(
+            query_id=query_id,
+            document_id=term.document_id,
+            section_id=term.section_id,
+            paragraph_id=term.paragraph_id,
+            content_tokens=collect_list(term.token, order_by=term.token),
+        )
+
+    @step(input=[sentence_terms, sentence_summary, valid_policy], output=sentence_query_text)
+    def build_sentence_queries(
+        self, term: SentenceIndexTerm, summary: SentenceIndexSummary, policy: SimilarityPolicy
+    ) -> SentenceSimilarityQueryText:
+        self._retain(policy, summary, term)
+        query_id = concat_ws("", "sentence:", term.sentence_id)
+        group_by(
+            query_id=query_id,
+            document_id=term.document_id,
+            section_id=term.section_id,
+            paragraph_id=term.paragraph_id,
+            sentence_id=term.sentence_id,
+        )
+        return SentenceSimilarityQueryText(
+            query_id=query_id,
+            document_id=term.document_id,
+            section_id=term.section_id,
+            paragraph_id=term.paragraph_id,
+            sentence_id=term.sentence_id,
+            content_tokens=collect_list(term.token, order_by=term.token),
+        )
+
+    @step(input=document_query_text, output=document_search_queries)
+    def publish_document_search_queries(self, query: DocumentSimilarityQueryText) -> SearchQuery:
+        return self._search_query(query.query_id, query.content_tokens)
+
+    @step(input=section_query_text, output=section_search_queries)
+    def publish_section_search_queries(self, query: SectionSimilarityQueryText) -> SearchQuery:
+        return self._search_query(query.query_id, query.content_tokens)
+
+    @step(input=paragraph_query_text, output=paragraph_search_queries)
+    def publish_paragraph_search_queries(self, query: ParagraphSimilarityQueryText) -> SearchQuery:
+        return self._search_query(query.query_id, query.content_tokens)
+
+    @step(input=sentence_query_text, output=sentence_search_queries)
+    def publish_sentence_search_queries(self, query: SentenceSimilarityQueryText) -> SearchQuery:
+        return self._search_query(query.query_id, query.content_tokens)
+
+    @step(input=document_query_text, output=document_queries)
+    def publish_document_query_targets(self, query: DocumentSimilarityQueryText) -> DocumentSimilarityQuery:
+        return DocumentSimilarityQuery(query_id=query.query_id, document_id=query.document_id)
+
+    @step(input=section_query_text, output=section_queries)
+    def publish_section_query_targets(self, query: SectionSimilarityQueryText) -> SectionSimilarityQuery:
+        return SectionSimilarityQuery(
+            query_id=query.query_id,
+            document_id=query.document_id,
+            section_id=query.section_id,
+        )
+
+    @step(input=paragraph_query_text, output=paragraph_queries)
+    def publish_paragraph_query_targets(self, query: ParagraphSimilarityQueryText) -> ParagraphSimilarityQuery:
+        return ParagraphSimilarityQuery(
+            query_id=query.query_id,
+            document_id=query.document_id,
+            section_id=query.section_id,
+            paragraph_id=query.paragraph_id,
+        )
+
+    @step(input=sentence_query_text, output=sentence_queries)
+    def publish_sentence_query_targets(self, query: SentenceSimilarityQueryText) -> SentenceSimilarityQuery:
+        return SentenceSimilarityQuery(
+            query_id=query.query_id,
+            document_id=query.document_id,
+            section_id=query.section_id,
+            paragraph_id=query.paragraph_id,
+            sentence_id=query.sentence_id,
+        )
+
+    @step(
+        input=[document_search_queries, section_search_queries, paragraph_search_queries, sentence_search_queries],
+        output=queries,
     )
-    def build(
+    def merge_queries(
         self,
-        *,
-        policy,
-        document_terms,
-        document_summary,
-        section_terms,
-        section_summary,
-        paragraph_terms,
-        paragraph_summary,
-        sentence_terms,
-        sentence_summary,
-        queries,
-        document_queries,
-        section_queries,
-        paragraph_queries,
-        sentence_queries,
-        spark,
-        ctx,
-    ):
-        return SimilarityQueries.build(
-            (document_terms, section_terms, paragraph_terms, sentence_terms),
-            (document_summary, section_summary, paragraph_summary, sentence_summary),
-            policy,
-            (queries, document_queries, section_queries, paragraph_queries, sentence_queries),
+        document: SearchQuery,
+        section: SearchQuery,
+        paragraph: SearchQuery,
+        sentence: SearchQuery,
+    ) -> SearchQuery:
+        merged = union_all(section)
+        merged = union_all(paragraph)
+        merged = union_all(sentence)
+        return SearchQuery.project(merged)
+
+    def _retain(
+        self,
+        policy: SimilarityPolicy,
+        summary: DocumentIndexSummary | SectionIndexSummary | ParagraphIndexSummary | SentenceIndexSummary,
+        term: DocumentIndexTerm | SectionIndexTerm | ParagraphIndexTerm | SentenceIndexTerm,
+    ) -> None:
+        exactly_one(policy)
+        cross_join(policy, allow_cartesian=True)
+        cross_join(summary, allow_cartesian=True)
+        where(
+            policy.max_document_frequency_ratio.is_null()
+            | (term.document_frequency / summary.target_count <= policy.max_document_frequency_ratio)
+        )
+
+    def _search_query(self, query_id: object, tokens: object) -> SearchQuery:
+        return SearchQuery(
+            id=query_id,
+            content=concat_ws(" ", tokens),
+            labels=map_from_entries(
+                array(
+                    LabelMapEntry(key="is_question", value=0),
+                    LabelMapEntry(key="is_time_sensitive", value=0),
+                )
+            ),
+            is_question=False,
+            is_time_sensitive=False,
         )

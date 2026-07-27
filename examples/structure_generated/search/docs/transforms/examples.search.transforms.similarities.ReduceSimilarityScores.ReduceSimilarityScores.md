@@ -28,11 +28,51 @@ Source: `examples.search.transforms.similarities.ReduceSimilarityScores.ReduceSi
 
 ## Step methods
 
-- `declare_similarities`: `DocumentSimilarityQuery` -> `DocumentSimilarity`
+- `build_document_candidates`: `DocumentOverlapScore` -> `DocumentSimilarityCandidate`
+- `canonical_document_pairs`: `DocumentSimilarityCandidate` -> `DocumentSimilarityPair`
+- `reverse_document_pairs`: `DocumentSimilarityPair` -> `DocumentSimilarityPair`
+- `merge_document_pairs`: `DocumentSimilarityPair` -> `DocumentSimilarityPair`
+- `rank_document_pairs`: `DocumentSimilarityPair` -> `DocumentSimilarity`
+- `publish_document_pairs`: `DocumentSimilarity` -> `DocumentSimilarity`
+- `build_section_candidates`: `SectionOverlapScore` -> `SectionSimilarityCandidate`
+- `canonical_section_pairs`: `SectionSimilarityCandidate` -> `SectionSimilarityPair`
+- `reverse_section_pairs`: `SectionSimilarityPair` -> `SectionSimilarityPair`
+- `merge_section_pairs`: `SectionSimilarityPair` -> `SectionSimilarityPair`
+- `rank_section_pairs`: `SectionSimilarityPair` -> `SectionSimilarity`
+- `publish_section_pairs`: `SectionSimilarity` -> `SectionSimilarity`
+- `build_paragraph_candidates`: `ParagraphOverlapScore` -> `ParagraphSimilarityCandidate`
+- `canonical_paragraph_pairs`: `ParagraphSimilarityCandidate` -> `ParagraphSimilarityPair`
+- `reverse_paragraph_pairs`: `ParagraphSimilarityPair` -> `ParagraphSimilarityPair`
+- `merge_paragraph_pairs`: `ParagraphSimilarityPair` -> `ParagraphSimilarityPair`
+- `rank_paragraph_pairs`: `ParagraphSimilarityPair` -> `ParagraphSimilarity`
+- `publish_paragraph_pairs`: `ParagraphSimilarity` -> `ParagraphSimilarity`
+- `build_sentence_candidates`: `SentenceOverlapScore` -> `SentenceSimilarityCandidate`
+- `canonical_sentence_pairs`: `SentenceSimilarityCandidate` -> `SentenceSimilarityPair`
+- `reverse_sentence_pairs`: `SentenceSimilarityPair` -> `SentenceSimilarityPair`
+- `merge_sentence_pairs`: `SentenceSimilarityPair` -> `SentenceSimilarityPair`
+- `rank_sentence_pairs`: `SentenceSimilarityPair` -> `SentenceSimilarity`
+- `publish_sentence_pairs`: `SentenceSimilarity` -> `SentenceSimilarity`
 
 ## Dependencies
 
-- None
+- `bm25`
+- `document_bm25_scores`
+- `document_queries`
+- `document_reversed_pairs`
+- `paragraph_bm25_scores`
+- `paragraph_queries`
+- `paragraph_reversed_pairs`
+- `query`
+- `reverse_document`
+- `reverse_paragraph`
+- `reverse_section`
+- `reverse_sentence`
+- `section_bm25_scores`
+- `section_queries`
+- `section_reversed_pairs`
+- `sentence_bm25_scores`
+- `sentence_queries`
+- `sentence_reversed_pairs`
 
 ## Target Artifacts
 

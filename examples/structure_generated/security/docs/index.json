@@ -162,6 +162,25 @@
       "bases": [],
       "fields": [
         {
+          "column": "delivery_key",
+          "name": "delivery_key",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "delivered_at",
+          "name": "delivered_at",
+          "nullable": false,
+          "type": "timestamp"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "DeliveryReceipt"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
           "column": "id",
           "name": "id",
           "nullable": false,
@@ -213,6 +232,12 @@
           "type": "string"
         },
         {
+          "column": "severity",
+          "name": "severity",
+          "nullable": false,
+          "type": "string"
+        },
+        {
           "column": "date_discovered",
           "name": "date_discovered",
           "nullable": false,
@@ -222,6 +247,12 @@
           "column": "date_addressed",
           "name": "date_addressed",
           "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "target_date",
+          "name": "target_date",
+          "nullable": false,
           "type": "date"
         },
         {
@@ -317,6 +348,96 @@
       ],
       "module": "examples.security.schemas.reporting",
       "name": "DepartmentActiveVulnerability"
+    },
+    {
+      "bases": [
+        "RemediationWorkflowSummary"
+      ],
+      "fields": [
+        {
+          "column": "as_of_date",
+          "name": "as_of_date",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "unacknowledged_count",
+          "name": "unacknowledged_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "pending_exception_count",
+          "name": "pending_exception_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "expiring_exception_count",
+          "name": "expiring_exception_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "expired_exception_count",
+          "name": "expired_exception_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "department_id",
+          "name": "department_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "department_name",
+          "name": "department_name",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "DepartmentRemediationWorkflowSummary"
+    },
+    {
+      "bases": [
+        "VulnerabilityDeadlineSummary"
+      ],
+      "fields": [
+        {
+          "column": "as_of_date",
+          "name": "as_of_date",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "imminent_count",
+          "name": "imminent_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "overdue_count",
+          "name": "overdue_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "department_id",
+          "name": "department_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "department_name",
+          "name": "department_name",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "DepartmentVulnerabilityDeadlineSummary"
     },
     {
       "bases": [
@@ -448,6 +569,12 @@
           "type": "string"
         },
         {
+          "column": "severity",
+          "name": "severity",
+          "nullable": false,
+          "type": "string"
+        },
+        {
           "column": "date_discovered",
           "name": "date_discovered",
           "nullable": false,
@@ -457,6 +584,12 @@
           "column": "date_addressed",
           "name": "date_addressed",
           "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "target_date",
+          "name": "target_date",
+          "nullable": false,
           "type": "date"
         },
         {
@@ -604,6 +737,396 @@
     },
     {
       "bases": [
+        "VulnerabilityWorkflowExposure"
+      ],
+      "fields": [
+        {
+          "column": "vuln_id",
+          "name": "vuln_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "vuln_type",
+          "name": "vuln_type",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "description",
+          "name": "description",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "instructions",
+          "name": "instructions",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "severity",
+          "name": "severity",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "date_discovered",
+          "name": "date_discovered",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "date_addressed",
+          "name": "date_addressed",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "target_date",
+          "name": "target_date",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "is_active",
+          "name": "is_active",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "device_id",
+          "name": "device_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_platform",
+          "name": "device_platform",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_model",
+          "name": "device_model",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_id",
+          "name": "software_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_name",
+          "name": "software_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_version",
+          "name": "software_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "person_id",
+          "name": "person_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "person_name",
+          "name": "person_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_id",
+          "name": "team_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_name",
+          "name": "team_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "department_id",
+          "name": "department_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "department_name",
+          "name": "department_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "org_id",
+          "name": "org_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "org_name",
+          "name": "org_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "acknowledged_at",
+          "name": "acknowledged_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "exception_requested_at",
+          "name": "exception_requested_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "exception_reason",
+          "name": "exception_reason",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "exception_approver",
+          "name": "exception_approver",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "exception_approved_at",
+          "name": "exception_approved_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "exception_expires_on",
+          "name": "exception_expires_on",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "is_acknowledged",
+          "name": "is_acknowledged",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "is_deadline_paused",
+          "name": "is_deadline_paused",
+          "nullable": false,
+          "type": "boolean"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "ExpiredExceptionVulnerability"
+    },
+    {
+      "bases": [
+        "VulnerabilityWorkflowExposure"
+      ],
+      "fields": [
+        {
+          "column": "vuln_id",
+          "name": "vuln_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "vuln_type",
+          "name": "vuln_type",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "description",
+          "name": "description",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "instructions",
+          "name": "instructions",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "severity",
+          "name": "severity",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "date_discovered",
+          "name": "date_discovered",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "date_addressed",
+          "name": "date_addressed",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "target_date",
+          "name": "target_date",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "is_active",
+          "name": "is_active",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "device_id",
+          "name": "device_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_platform",
+          "name": "device_platform",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_model",
+          "name": "device_model",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_id",
+          "name": "software_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_name",
+          "name": "software_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_version",
+          "name": "software_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "person_id",
+          "name": "person_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "person_name",
+          "name": "person_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_id",
+          "name": "team_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_name",
+          "name": "team_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "department_id",
+          "name": "department_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "department_name",
+          "name": "department_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "org_id",
+          "name": "org_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "org_name",
+          "name": "org_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "acknowledged_at",
+          "name": "acknowledged_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "exception_requested_at",
+          "name": "exception_requested_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "exception_reason",
+          "name": "exception_reason",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "exception_approver",
+          "name": "exception_approver",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "exception_approved_at",
+          "name": "exception_approved_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "exception_expires_on",
+          "name": "exception_expires_on",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "is_acknowledged",
+          "name": "is_acknowledged",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "is_deadline_paused",
+          "name": "is_deadline_paused",
+          "nullable": false,
+          "type": "boolean"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "ExpiringExceptionVulnerability"
+    },
+    {
+      "bases": [
         "Software"
       ],
       "fields": [
@@ -690,6 +1213,12 @@
           "type": "string"
         },
         {
+          "column": "severity",
+          "name": "severity",
+          "nullable": false,
+          "type": "string"
+        },
+        {
           "column": "date_discovered",
           "name": "date_discovered",
           "nullable": false,
@@ -699,6 +1228,12 @@
           "column": "date_addressed",
           "name": "date_addressed",
           "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "target_date",
+          "name": "target_date",
+          "nullable": false,
           "type": "date"
         },
         {
@@ -797,6 +1332,96 @@
     },
     {
       "bases": [
+        "RemediationWorkflowSummary"
+      ],
+      "fields": [
+        {
+          "column": "as_of_date",
+          "name": "as_of_date",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "unacknowledged_count",
+          "name": "unacknowledged_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "pending_exception_count",
+          "name": "pending_exception_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "expiring_exception_count",
+          "name": "expiring_exception_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "expired_exception_count",
+          "name": "expired_exception_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "org_id",
+          "name": "org_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "org_name",
+          "name": "org_name",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "OrgRemediationWorkflowSummary"
+    },
+    {
+      "bases": [
+        "VulnerabilityDeadlineSummary"
+      ],
+      "fields": [
+        {
+          "column": "as_of_date",
+          "name": "as_of_date",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "imminent_count",
+          "name": "imminent_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "overdue_count",
+          "name": "overdue_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "org_id",
+          "name": "org_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "org_name",
+          "name": "org_name",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "OrgVulnerabilityDeadlineSummary"
+    },
+    {
+      "bases": [
         "VulnerabilityStatistic"
       ],
       "fields": [
@@ -853,6 +1478,201 @@
       "name": "OrgVulnerabilityStatistic"
     },
     {
+      "bases": [
+        "VulnerabilityWorkflowExposure"
+      ],
+      "fields": [
+        {
+          "column": "vuln_id",
+          "name": "vuln_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "vuln_type",
+          "name": "vuln_type",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "description",
+          "name": "description",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "instructions",
+          "name": "instructions",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "severity",
+          "name": "severity",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "date_discovered",
+          "name": "date_discovered",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "date_addressed",
+          "name": "date_addressed",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "target_date",
+          "name": "target_date",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "is_active",
+          "name": "is_active",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "device_id",
+          "name": "device_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_platform",
+          "name": "device_platform",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_model",
+          "name": "device_model",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_id",
+          "name": "software_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_name",
+          "name": "software_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_version",
+          "name": "software_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "person_id",
+          "name": "person_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "person_name",
+          "name": "person_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_id",
+          "name": "team_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_name",
+          "name": "team_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "department_id",
+          "name": "department_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "department_name",
+          "name": "department_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "org_id",
+          "name": "org_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "org_name",
+          "name": "org_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "acknowledged_at",
+          "name": "acknowledged_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "exception_requested_at",
+          "name": "exception_requested_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "exception_reason",
+          "name": "exception_reason",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "exception_approver",
+          "name": "exception_approver",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "exception_approved_at",
+          "name": "exception_approved_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "exception_expires_on",
+          "name": "exception_expires_on",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "is_acknowledged",
+          "name": "is_acknowledged",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "is_deadline_paused",
+          "name": "is_deadline_paused",
+          "nullable": false,
+          "type": "boolean"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "PendingExceptionVulnerability"
+    },
+    {
       "bases": [],
       "fields": [
         {
@@ -870,6 +1690,12 @@
         {
           "column": "name",
           "name": "name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "email",
+          "name": "email",
           "nullable": false,
           "type": "string"
         }
@@ -907,6 +1733,12 @@
           "type": "string"
         },
         {
+          "column": "severity",
+          "name": "severity",
+          "nullable": false,
+          "type": "string"
+        },
+        {
           "column": "date_discovered",
           "name": "date_discovered",
           "nullable": false,
@@ -916,6 +1748,12 @@
           "column": "date_addressed",
           "name": "date_addressed",
           "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "target_date",
+          "name": "target_date",
+          "nullable": false,
           "type": "date"
         },
         {
@@ -1011,6 +1849,157 @@
       ],
       "module": "examples.security.schemas.reporting",
       "name": "PersonActiveVulnerability"
+    },
+    {
+      "bases": [
+        "RemediationWorkflowSummary"
+      ],
+      "fields": [
+        {
+          "column": "as_of_date",
+          "name": "as_of_date",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "unacknowledged_count",
+          "name": "unacknowledged_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "pending_exception_count",
+          "name": "pending_exception_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "expiring_exception_count",
+          "name": "expiring_exception_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "expired_exception_count",
+          "name": "expired_exception_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "person_id",
+          "name": "person_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "person_name",
+          "name": "person_name",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "PersonRemediationWorkflowSummary"
+    },
+    {
+      "bases": [
+        "VulnerabilityDeadlineSummary"
+      ],
+      "fields": [
+        {
+          "column": "as_of_date",
+          "name": "as_of_date",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "imminent_count",
+          "name": "imminent_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "overdue_count",
+          "name": "overdue_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "person_id",
+          "name": "person_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "person_name",
+          "name": "person_name",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "PersonVulnerabilityDeadlineSummary"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "delivery_key",
+          "name": "delivery_key",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "notification_type",
+          "name": "notification_type",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "vuln_id",
+          "name": "vuln_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "person_id",
+          "name": "person_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "person_name",
+          "name": "person_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "person_email",
+          "name": "person_email",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "severity",
+          "name": "severity",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "target_date",
+          "name": "target_date",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "instructions",
+          "name": "instructions",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "PersonVulnerabilityNotification"
     },
     {
       "bases": [
@@ -1110,6 +2099,385 @@
       "bases": [],
       "fields": [
         {
+          "column": "vuln_id",
+          "name": "vuln_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "acknowledged_at",
+          "name": "acknowledged_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "exception_requested_at",
+          "name": "exception_requested_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "exception_reason",
+          "name": "exception_reason",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "exception_approver",
+          "name": "exception_approver",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "exception_approved_at",
+          "name": "exception_approved_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "exception_expires_on",
+          "name": "exception_expires_on",
+          "nullable": true,
+          "type": "date"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "RemediationCase"
+    },
+    {
+      "bases": [
+        "RemediationCase"
+      ],
+      "fields": [
+        {
+          "column": "vuln_id",
+          "name": "vuln_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "acknowledged_at",
+          "name": "acknowledged_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "exception_requested_at",
+          "name": "exception_requested_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "exception_reason",
+          "name": "exception_reason",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "exception_approver",
+          "name": "exception_approver",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "exception_approved_at",
+          "name": "exception_approved_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "exception_expires_on",
+          "name": "exception_expires_on",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "case_count",
+          "name": "case_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "vulnerability_exists",
+          "name": "vulnerability_exists",
+          "nullable": false,
+          "type": "boolean"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "RemediationCaseAggregate"
+    },
+    {
+      "bases": [
+        "RemediationCaseAggregate"
+      ],
+      "fields": [
+        {
+          "column": "vuln_id",
+          "name": "vuln_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "acknowledged_at",
+          "name": "acknowledged_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "exception_requested_at",
+          "name": "exception_requested_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "exception_reason",
+          "name": "exception_reason",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "exception_approver",
+          "name": "exception_approver",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "exception_approved_at",
+          "name": "exception_approved_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "exception_expires_on",
+          "name": "exception_expires_on",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "case_count",
+          "name": "case_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "vulnerability_exists",
+          "name": "vulnerability_exists",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "issues",
+          "name": "issues",
+          "nullable": false,
+          "type": "array<string!>"
+        },
+        {
+          "column": "is_valid",
+          "name": "is_valid",
+          "nullable": false,
+          "type": "boolean"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "RemediationCaseCheck"
+    },
+    {
+      "bases": [
+        "RemediationCaseCheck"
+      ],
+      "fields": [
+        {
+          "column": "vuln_id",
+          "name": "vuln_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "acknowledged_at",
+          "name": "acknowledged_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "exception_requested_at",
+          "name": "exception_requested_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "exception_reason",
+          "name": "exception_reason",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "exception_approver",
+          "name": "exception_approver",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "exception_approved_at",
+          "name": "exception_approved_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "exception_expires_on",
+          "name": "exception_expires_on",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "case_count",
+          "name": "case_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "vulnerability_exists",
+          "name": "vulnerability_exists",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "issues",
+          "name": "issues",
+          "nullable": false,
+          "type": "array<string!>"
+        },
+        {
+          "column": "is_valid",
+          "name": "is_valid",
+          "nullable": false,
+          "type": "boolean"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "RemediationCaseIssue"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "severity",
+          "name": "severity",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "target_days",
+          "name": "target_days",
+          "nullable": false,
+          "type": "integer"
+        }
+      ],
+      "module": "examples.security.schemas.risk",
+      "name": "RemediationPolicy"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "person_id",
+          "name": "person_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_id",
+          "name": "team_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "department_id",
+          "name": "department_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "org_id",
+          "name": "org_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "as_of_date",
+          "name": "as_of_date",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "unacknowledged_count",
+          "name": "unacknowledged_count",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "column": "pending_exception_count",
+          "name": "pending_exception_count",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "column": "expiring_exception_count",
+          "name": "expiring_exception_count",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "column": "expired_exception_count",
+          "name": "expired_exception_count",
+          "nullable": false,
+          "type": "integer"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "RemediationWorkflowActivity"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "as_of_date",
+          "name": "as_of_date",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "unacknowledged_count",
+          "name": "unacknowledged_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "pending_exception_count",
+          "name": "pending_exception_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "expiring_exception_count",
+          "name": "expiring_exception_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "expired_exception_count",
+          "name": "expired_exception_count",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "RemediationWorkflowSummary"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
           "column": "kind",
           "name": "kind",
           "nullable": false,
@@ -1169,6 +2537,19 @@
       ],
       "module": "examples.security.schemas.assets",
       "name": "Scanner"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "as_of_date",
+          "name": "as_of_date",
+          "nullable": false,
+          "type": "date"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "SecurityEvaluation"
     },
     {
       "bases": [],
@@ -1262,6 +2643,12 @@
           "type": "string"
         },
         {
+          "column": "severity",
+          "name": "severity",
+          "nullable": false,
+          "type": "string"
+        },
+        {
           "column": "date_discovered",
           "name": "date_discovered",
           "nullable": false,
@@ -1271,6 +2658,12 @@
           "column": "date_addressed",
           "name": "date_addressed",
           "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "target_date",
+          "name": "target_date",
+          "nullable": false,
           "type": "date"
         },
         {
@@ -1369,6 +2762,145 @@
     },
     {
       "bases": [
+        "RemediationWorkflowSummary"
+      ],
+      "fields": [
+        {
+          "column": "as_of_date",
+          "name": "as_of_date",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "unacknowledged_count",
+          "name": "unacknowledged_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "pending_exception_count",
+          "name": "pending_exception_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "expiring_exception_count",
+          "name": "expiring_exception_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "expired_exception_count",
+          "name": "expired_exception_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "team_id",
+          "name": "team_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_name",
+          "name": "team_name",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "TeamRemediationWorkflowSummary"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "delivery_key",
+          "name": "delivery_key",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "vuln_id",
+          "name": "vuln_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_id",
+          "name": "team_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_name",
+          "name": "team_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "severity",
+          "name": "severity",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "target_date",
+          "name": "target_date",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "instructions",
+          "name": "instructions",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "TeamVulnerabilityAlarm"
+    },
+    {
+      "bases": [
+        "VulnerabilityDeadlineSummary"
+      ],
+      "fields": [
+        {
+          "column": "as_of_date",
+          "name": "as_of_date",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "imminent_count",
+          "name": "imminent_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "overdue_count",
+          "name": "overdue_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "team_id",
+          "name": "team_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_name",
+          "name": "team_name",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "TeamVulnerabilityDeadlineSummary"
+    },
+    {
+      "bases": [
         "VulnerabilityStatistic"
       ],
       "fields": [
@@ -1423,6 +2955,201 @@
       ],
       "module": "examples.security.schemas.reporting",
       "name": "TeamVulnerabilityStatistic"
+    },
+    {
+      "bases": [
+        "VulnerabilityWorkflowExposure"
+      ],
+      "fields": [
+        {
+          "column": "vuln_id",
+          "name": "vuln_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "vuln_type",
+          "name": "vuln_type",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "description",
+          "name": "description",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "instructions",
+          "name": "instructions",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "severity",
+          "name": "severity",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "date_discovered",
+          "name": "date_discovered",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "date_addressed",
+          "name": "date_addressed",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "target_date",
+          "name": "target_date",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "is_active",
+          "name": "is_active",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "device_id",
+          "name": "device_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_platform",
+          "name": "device_platform",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_model",
+          "name": "device_model",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_id",
+          "name": "software_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_name",
+          "name": "software_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_version",
+          "name": "software_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "person_id",
+          "name": "person_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "person_name",
+          "name": "person_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_id",
+          "name": "team_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_name",
+          "name": "team_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "department_id",
+          "name": "department_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "department_name",
+          "name": "department_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "org_id",
+          "name": "org_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "org_name",
+          "name": "org_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "acknowledged_at",
+          "name": "acknowledged_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "exception_requested_at",
+          "name": "exception_requested_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "exception_reason",
+          "name": "exception_reason",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "exception_approver",
+          "name": "exception_approver",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "exception_approved_at",
+          "name": "exception_approved_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "exception_expires_on",
+          "name": "exception_expires_on",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "is_acknowledged",
+          "name": "is_acknowledged",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "is_deadline_paused",
+          "name": "is_deadline_paused",
+          "nullable": false,
+          "type": "boolean"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "UnacknowledgedVulnerability"
     },
     {
       "bases": [],
@@ -1558,6 +3285,12 @@
           "type": "string"
         },
         {
+          "column": "severity",
+          "name": "severity",
+          "nullable": false,
+          "type": "string"
+        },
+        {
           "column": "description",
           "name": "description",
           "nullable": false,
@@ -1638,6 +3371,99 @@
       "bases": [],
       "fields": [
         {
+          "column": "person_id",
+          "name": "person_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_id",
+          "name": "team_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "department_id",
+          "name": "department_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "org_id",
+          "name": "org_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "as_of_date",
+          "name": "as_of_date",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "imminent_count",
+          "name": "imminent_count",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "column": "overdue_count",
+          "name": "overdue_count",
+          "nullable": false,
+          "type": "integer"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "VulnerabilityDeadlineActivity"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "as_of_date",
+          "name": "as_of_date",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "imminent_count",
+          "name": "imminent_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "overdue_count",
+          "name": "overdue_count",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "VulnerabilityDeadlineSummary"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "vuln_id",
+          "name": "vuln_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "discovered_at",
+          "name": "discovered_at",
+          "nullable": false,
+          "type": "timestamp"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "VulnerabilityDiscovery"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
           "column": "vuln_id",
           "name": "vuln_id",
           "nullable": false,
@@ -1662,6 +3488,12 @@
           "type": "string"
         },
         {
+          "column": "severity",
+          "name": "severity",
+          "nullable": false,
+          "type": "string"
+        },
+        {
           "column": "date_discovered",
           "name": "date_discovered",
           "nullable": false,
@@ -1671,6 +3503,12 @@
           "column": "date_addressed",
           "name": "date_addressed",
           "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "target_date",
+          "name": "target_date",
+          "nullable": false,
           "type": "date"
         },
         {
@@ -2032,6 +3870,12 @@
           "type": "string"
         },
         {
+          "column": "severity",
+          "name": "severity",
+          "nullable": false,
+          "type": "string"
+        },
+        {
           "column": "date_discovered",
           "name": "date_discovered",
           "nullable": false,
@@ -2041,6 +3885,12 @@
           "column": "date_addressed",
           "name": "date_addressed",
           "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "target_date",
+          "name": "target_date",
+          "nullable": false,
           "type": "date"
         },
         {
@@ -2303,9 +4153,566 @@
       ],
       "module": "examples.security.schemas.reporting",
       "name": "VulnerabilityStatistic"
+    },
+    {
+      "bases": [
+        "VulnerabilityExposure"
+      ],
+      "fields": [
+        {
+          "column": "vuln_id",
+          "name": "vuln_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "vuln_type",
+          "name": "vuln_type",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "description",
+          "name": "description",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "instructions",
+          "name": "instructions",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "severity",
+          "name": "severity",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "date_discovered",
+          "name": "date_discovered",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "date_addressed",
+          "name": "date_addressed",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "target_date",
+          "name": "target_date",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "is_active",
+          "name": "is_active",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "device_id",
+          "name": "device_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_platform",
+          "name": "device_platform",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_model",
+          "name": "device_model",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_id",
+          "name": "software_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_name",
+          "name": "software_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_version",
+          "name": "software_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "person_id",
+          "name": "person_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "person_name",
+          "name": "person_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_id",
+          "name": "team_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_name",
+          "name": "team_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "department_id",
+          "name": "department_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "department_name",
+          "name": "department_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "org_id",
+          "name": "org_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "org_name",
+          "name": "org_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "acknowledged_at",
+          "name": "acknowledged_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "exception_requested_at",
+          "name": "exception_requested_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "exception_reason",
+          "name": "exception_reason",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "exception_approver",
+          "name": "exception_approver",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "exception_approved_at",
+          "name": "exception_approved_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "exception_expires_on",
+          "name": "exception_expires_on",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "is_acknowledged",
+          "name": "is_acknowledged",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "is_deadline_paused",
+          "name": "is_deadline_paused",
+          "nullable": false,
+          "type": "boolean"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "VulnerabilityWorkflowExposure"
     }
   ],
   "transforms": [
+    {
+      "dependencies": [
+        "evaluation",
+        "receipt",
+        "receipts"
+      ],
+      "inputs": [
+        {
+          "name": "exposures",
+          "ordinal": 0,
+          "schema": "VulnerabilityWorkflowExposure"
+        },
+        {
+          "name": "evaluation",
+          "ordinal": 1,
+          "schema": "SecurityEvaluation"
+        },
+        {
+          "name": "receipts",
+          "ordinal": 2,
+          "schema": "DeliveryReceipt"
+        }
+      ],
+      "name": "VulnerabilityAlarms",
+      "outputs": [
+        {
+          "name": "overdue_alarms",
+          "ordinal": 0,
+          "schema": "TeamVulnerabilityAlarm"
+        }
+      ],
+      "source": "examples.security.transforms.alarms.VulnerabilityAlarms",
+      "step_methods": [
+        {
+          "input_lane": "exposures",
+          "input_schema": "VulnerabilityWorkflowExposure",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "finding",
+              "schema": "VulnerabilityWorkflowExposure",
+              "source": "exposures"
+            },
+            {
+              "driving": false,
+              "parameter": "evaluation",
+              "schema": "SecurityEvaluation",
+              "source": "evaluation"
+            },
+            {
+              "driving": false,
+              "parameter": "receipt",
+              "schema": "DeliveryReceipt",
+              "source": "receipts"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "evaluation"
+            },
+            {
+              "how": "left",
+              "input": "receipt"
+            }
+          ],
+          "name": "alarm_team",
+          "output_lane": "overdue_alarms",
+          "output_schema": "TeamVulnerabilityAlarm",
+          "results": [
+            {
+              "frame": "overdue_alarms",
+              "lane": "overdue_alarms",
+              "schema": "TeamVulnerabilityAlarm"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/alarms.py",
+        "traceability": "traceability/transforms/alarms.VulnerabilityAlarms.json"
+      }
+    },
+    {
+      "dependencies": [
+        "activities",
+        "activity",
+        "evaluation"
+      ],
+      "inputs": [
+        {
+          "name": "exposures",
+          "ordinal": 0,
+          "schema": "VulnerabilityWorkflowExposure"
+        },
+        {
+          "name": "people",
+          "ordinal": 1,
+          "schema": "Person"
+        },
+        {
+          "name": "teams",
+          "ordinal": 2,
+          "schema": "Team"
+        },
+        {
+          "name": "departments",
+          "ordinal": 3,
+          "schema": "Department"
+        },
+        {
+          "name": "orgs",
+          "ordinal": 4,
+          "schema": "Org"
+        },
+        {
+          "name": "evaluation",
+          "ordinal": 5,
+          "schema": "SecurityEvaluation"
+        }
+      ],
+      "name": "VulnerabilityDeadlineReports",
+      "outputs": [
+        {
+          "name": "person_summaries",
+          "ordinal": 0,
+          "schema": "PersonVulnerabilityDeadlineSummary"
+        },
+        {
+          "name": "team_summaries",
+          "ordinal": 1,
+          "schema": "TeamVulnerabilityDeadlineSummary"
+        },
+        {
+          "name": "department_summaries",
+          "ordinal": 2,
+          "schema": "DepartmentVulnerabilityDeadlineSummary"
+        },
+        {
+          "name": "org_summaries",
+          "ordinal": 3,
+          "schema": "OrgVulnerabilityDeadlineSummary"
+        }
+      ],
+      "source": "examples.security.transforms.deadlines.VulnerabilityDeadlineReports",
+      "step_methods": [
+        {
+          "input_lane": "exposures",
+          "input_schema": "VulnerabilityWorkflowExposure",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "finding",
+              "schema": "VulnerabilityWorkflowExposure",
+              "source": "exposures"
+            },
+            {
+              "driving": false,
+              "parameter": "evaluation",
+              "schema": "SecurityEvaluation",
+              "source": "evaluation"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "evaluation"
+            }
+          ],
+          "name": "assess",
+          "output_lane": "activities",
+          "output_schema": "VulnerabilityDeadlineActivity",
+          "results": [
+            {
+              "frame": "activities",
+              "lane": "activities",
+              "schema": "VulnerabilityDeadlineActivity"
+            }
+          ]
+        },
+        {
+          "input_lane": "people",
+          "input_schema": "Person",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "person",
+              "schema": "Person",
+              "source": "people"
+            },
+            {
+              "driving": false,
+              "parameter": "evaluation",
+              "schema": "SecurityEvaluation",
+              "source": "evaluation"
+            },
+            {
+              "driving": false,
+              "parameter": "activity",
+              "schema": "VulnerabilityDeadlineActivity",
+              "source": "activities"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "evaluation"
+            },
+            {
+              "how": "left",
+              "input": "activity"
+            }
+          ],
+          "name": "summarize_people",
+          "output_lane": "person_summaries",
+          "output_schema": "PersonVulnerabilityDeadlineSummary",
+          "results": [
+            {
+              "frame": "person_summaries",
+              "lane": "person_summaries",
+              "schema": "PersonVulnerabilityDeadlineSummary"
+            }
+          ]
+        },
+        {
+          "input_lane": "teams",
+          "input_schema": "Team",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "team",
+              "schema": "Team",
+              "source": "teams"
+            },
+            {
+              "driving": false,
+              "parameter": "evaluation",
+              "schema": "SecurityEvaluation",
+              "source": "evaluation"
+            },
+            {
+              "driving": false,
+              "parameter": "activity",
+              "schema": "VulnerabilityDeadlineActivity",
+              "source": "activities"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "evaluation"
+            },
+            {
+              "how": "left",
+              "input": "activity"
+            }
+          ],
+          "name": "summarize_teams",
+          "output_lane": "team_summaries",
+          "output_schema": "TeamVulnerabilityDeadlineSummary",
+          "results": [
+            {
+              "frame": "team_summaries",
+              "lane": "team_summaries",
+              "schema": "TeamVulnerabilityDeadlineSummary"
+            }
+          ]
+        },
+        {
+          "input_lane": "departments",
+          "input_schema": "Department",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "department",
+              "schema": "Department",
+              "source": "departments"
+            },
+            {
+              "driving": false,
+              "parameter": "evaluation",
+              "schema": "SecurityEvaluation",
+              "source": "evaluation"
+            },
+            {
+              "driving": false,
+              "parameter": "activity",
+              "schema": "VulnerabilityDeadlineActivity",
+              "source": "activities"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "evaluation"
+            },
+            {
+              "how": "left",
+              "input": "activity"
+            }
+          ],
+          "name": "summarize_departments",
+          "output_lane": "department_summaries",
+          "output_schema": "DepartmentVulnerabilityDeadlineSummary",
+          "results": [
+            {
+              "frame": "department_summaries",
+              "lane": "department_summaries",
+              "schema": "DepartmentVulnerabilityDeadlineSummary"
+            }
+          ]
+        },
+        {
+          "input_lane": "orgs",
+          "input_schema": "Org",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "org",
+              "schema": "Org",
+              "source": "orgs"
+            },
+            {
+              "driving": false,
+              "parameter": "evaluation",
+              "schema": "SecurityEvaluation",
+              "source": "evaluation"
+            },
+            {
+              "driving": false,
+              "parameter": "activity",
+              "schema": "VulnerabilityDeadlineActivity",
+              "source": "activities"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "evaluation"
+            },
+            {
+              "how": "left",
+              "input": "activity"
+            }
+          ],
+          "name": "summarize_orgs",
+          "output_lane": "org_summaries",
+          "output_schema": "OrgVulnerabilityDeadlineSummary",
+          "results": [
+            {
+              "frame": "org_summaries",
+              "lane": "org_summaries",
+              "schema": "OrgVulnerabilityDeadlineSummary"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/deadlines.py",
+        "traceability": "traceability/transforms/deadlines.VulnerabilityDeadlineReports.json"
+      }
+    },
     {
       "dependencies": [
         "app",
@@ -2544,6 +4951,275 @@
     },
     {
       "dependencies": [
+        "discoveries",
+        "discovery",
+        "evaluation",
+        "people",
+        "person",
+        "receipt",
+        "receipts"
+      ],
+      "inputs": [
+        {
+          "name": "exposures",
+          "ordinal": 0,
+          "schema": "VulnerabilityWorkflowExposure"
+        },
+        {
+          "name": "events",
+          "ordinal": 1,
+          "schema": "VulnEvent"
+        },
+        {
+          "name": "people",
+          "ordinal": 2,
+          "schema": "Person"
+        },
+        {
+          "name": "evaluation",
+          "ordinal": 3,
+          "schema": "SecurityEvaluation"
+        },
+        {
+          "name": "receipts",
+          "ordinal": 4,
+          "schema": "DeliveryReceipt"
+        }
+      ],
+      "name": "VulnerabilityNotifications",
+      "outputs": [
+        {
+          "name": "discovery_notifications",
+          "ordinal": 0,
+          "schema": "PersonVulnerabilityNotification"
+        },
+        {
+          "name": "imminent_notifications",
+          "ordinal": 1,
+          "schema": "PersonVulnerabilityNotification"
+        },
+        {
+          "name": "overdue_notifications",
+          "ordinal": 2,
+          "schema": "PersonVulnerabilityNotification"
+        }
+      ],
+      "source": "examples.security.transforms.notify.VulnerabilityNotifications",
+      "step_methods": [
+        {
+          "input_lane": "events",
+          "input_schema": "VulnEvent",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "event",
+              "schema": "VulnEvent",
+              "source": "events"
+            }
+          ],
+          "name": "dedupe_delivery",
+          "output_lane": "deduped_events",
+          "output_schema": "VulnEvent",
+          "results": [
+            {
+              "frame": "deduped_events",
+              "lane": "deduped_events",
+              "schema": "VulnEvent"
+            }
+          ]
+        },
+        {
+          "input_lane": "deduped_events",
+          "input_schema": "VulnEvent",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "event",
+              "schema": "VulnEvent",
+              "source": "deduped_events"
+            }
+          ],
+          "name": "first_detection",
+          "output_lane": "discoveries",
+          "output_schema": "VulnerabilityDiscovery",
+          "results": [
+            {
+              "frame": "discoveries",
+              "lane": "discoveries",
+              "schema": "VulnerabilityDiscovery"
+            }
+          ]
+        },
+        {
+          "input_lane": "exposures",
+          "input_schema": "VulnerabilityWorkflowExposure",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "finding",
+              "schema": "VulnerabilityWorkflowExposure",
+              "source": "exposures"
+            },
+            {
+              "driving": false,
+              "parameter": "discovery",
+              "schema": "VulnerabilityDiscovery",
+              "source": "discoveries"
+            },
+            {
+              "driving": false,
+              "parameter": "person",
+              "schema": "Person",
+              "source": "people"
+            },
+            {
+              "driving": false,
+              "parameter": "receipt",
+              "schema": "DeliveryReceipt",
+              "source": "receipts"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "discovery"
+            },
+            {
+              "how": "inner",
+              "input": "person"
+            },
+            {
+              "how": "left",
+              "input": "receipt"
+            }
+          ],
+          "name": "notify_discovery",
+          "output_lane": "discovery_notifications",
+          "output_schema": "PersonVulnerabilityNotification",
+          "results": [
+            {
+              "frame": "discovery_notifications",
+              "lane": "discovery_notifications",
+              "schema": "PersonVulnerabilityNotification"
+            }
+          ]
+        },
+        {
+          "input_lane": "exposures",
+          "input_schema": "VulnerabilityWorkflowExposure",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "finding",
+              "schema": "VulnerabilityWorkflowExposure",
+              "source": "exposures"
+            },
+            {
+              "driving": false,
+              "parameter": "evaluation",
+              "schema": "SecurityEvaluation",
+              "source": "evaluation"
+            },
+            {
+              "driving": false,
+              "parameter": "person",
+              "schema": "Person",
+              "source": "people"
+            },
+            {
+              "driving": false,
+              "parameter": "receipt",
+              "schema": "DeliveryReceipt",
+              "source": "receipts"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "evaluation"
+            },
+            {
+              "how": "inner",
+              "input": "person"
+            },
+            {
+              "how": "left",
+              "input": "receipt"
+            }
+          ],
+          "name": "notify_imminent",
+          "output_lane": "imminent_notifications",
+          "output_schema": "PersonVulnerabilityNotification",
+          "results": [
+            {
+              "frame": "imminent_notifications",
+              "lane": "imminent_notifications",
+              "schema": "PersonVulnerabilityNotification"
+            }
+          ]
+        },
+        {
+          "input_lane": "exposures",
+          "input_schema": "VulnerabilityWorkflowExposure",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "finding",
+              "schema": "VulnerabilityWorkflowExposure",
+              "source": "exposures"
+            },
+            {
+              "driving": false,
+              "parameter": "evaluation",
+              "schema": "SecurityEvaluation",
+              "source": "evaluation"
+            },
+            {
+              "driving": false,
+              "parameter": "person",
+              "schema": "Person",
+              "source": "people"
+            },
+            {
+              "driving": false,
+              "parameter": "receipt",
+              "schema": "DeliveryReceipt",
+              "source": "receipts"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "evaluation"
+            },
+            {
+              "how": "inner",
+              "input": "person"
+            },
+            {
+              "how": "left",
+              "input": "receipt"
+            }
+          ],
+          "name": "notify_overdue",
+          "output_lane": "overdue_notifications",
+          "output_schema": "PersonVulnerabilityNotification",
+          "results": [
+            {
+              "frame": "overdue_notifications",
+              "lane": "overdue_notifications",
+              "schema": "PersonVulnerabilityNotification"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/notify.py",
+        "traceability": "traceability/transforms/notify.VulnerabilityNotifications.json"
+      }
+    },
+    {
+      "dependencies": [
         "department",
         "departments",
         "device",
@@ -2554,6 +5230,8 @@
         "orgs",
         "people",
         "person",
+        "remediation_policies",
+        "remediation_policy",
         "software",
         "team",
         "teams",
@@ -2587,23 +5265,28 @@
           "schema": "VulnType"
         },
         {
-          "name": "people",
+          "name": "remediation_policies",
           "ordinal": 5,
+          "schema": "RemediationPolicy"
+        },
+        {
+          "name": "people",
+          "ordinal": 6,
           "schema": "Person"
         },
         {
           "name": "teams",
-          "ordinal": 6,
+          "ordinal": 7,
           "schema": "Team"
         },
         {
           "name": "departments",
-          "ordinal": 7,
+          "ordinal": 8,
           "schema": "Department"
         },
         {
           "name": "orgs",
-          "ordinal": 8,
+          "ordinal": 9,
           "schema": "Org"
         }
       ],
@@ -2653,6 +5336,12 @@
             },
             {
               "driving": false,
+              "parameter": "remediation_policy",
+              "schema": "RemediationPolicy",
+              "source": "remediation_policies"
+            },
+            {
+              "driving": false,
               "parameter": "person",
               "schema": "Person",
               "source": "people"
@@ -2692,6 +5381,10 @@
             {
               "how": "inner",
               "input": "vuln_type"
+            },
+            {
+              "how": "inner",
+              "input": "remediation_policy"
             },
             {
               "how": "inner",
@@ -3609,6 +6302,612 @@
       "target_artifacts": {
         "pyspark_transform": "pyspark/transforms/reports.py",
         "traceability": "traceability/transforms/reports.VulnerabilityStatistics.json"
+      }
+    },
+    {
+      "dependencies": [
+        "activities",
+        "activity",
+        "case_lane",
+        "check",
+        "evaluation",
+        "vuln",
+        "vulnerabilities"
+      ],
+      "inputs": [
+        {
+          "name": "exposures",
+          "ordinal": 0,
+          "schema": "VulnerabilityExposure"
+        },
+        {
+          "name": "vulnerabilities",
+          "ordinal": 1,
+          "schema": "Vuln"
+        },
+        {
+          "name": "cases",
+          "ordinal": 2,
+          "schema": "RemediationCase"
+        },
+        {
+          "name": "people",
+          "ordinal": 3,
+          "schema": "Person"
+        },
+        {
+          "name": "teams",
+          "ordinal": 4,
+          "schema": "Team"
+        },
+        {
+          "name": "departments",
+          "ordinal": 5,
+          "schema": "Department"
+        },
+        {
+          "name": "orgs",
+          "ordinal": 6,
+          "schema": "Org"
+        },
+        {
+          "name": "evaluation",
+          "ordinal": 7,
+          "schema": "SecurityEvaluation"
+        }
+      ],
+      "name": "VulnerabilityRemediationWorkflow",
+      "outputs": [
+        {
+          "name": "case_checks",
+          "ordinal": 0,
+          "schema": "RemediationCaseCheck"
+        },
+        {
+          "name": "case_issues",
+          "ordinal": 1,
+          "schema": "RemediationCaseIssue"
+        },
+        {
+          "name": "workflow_exposures",
+          "ordinal": 2,
+          "schema": "VulnerabilityWorkflowExposure"
+        },
+        {
+          "name": "unacknowledged",
+          "ordinal": 3,
+          "schema": "UnacknowledgedVulnerability"
+        },
+        {
+          "name": "pending_exceptions",
+          "ordinal": 4,
+          "schema": "PendingExceptionVulnerability"
+        },
+        {
+          "name": "expiring_exceptions",
+          "ordinal": 5,
+          "schema": "ExpiringExceptionVulnerability"
+        },
+        {
+          "name": "expired_exceptions",
+          "ordinal": 6,
+          "schema": "ExpiredExceptionVulnerability"
+        },
+        {
+          "name": "person_summaries",
+          "ordinal": 7,
+          "schema": "PersonRemediationWorkflowSummary"
+        },
+        {
+          "name": "team_summaries",
+          "ordinal": 8,
+          "schema": "TeamRemediationWorkflowSummary"
+        },
+        {
+          "name": "department_summaries",
+          "ordinal": 9,
+          "schema": "DepartmentRemediationWorkflowSummary"
+        },
+        {
+          "name": "org_summaries",
+          "ordinal": 10,
+          "schema": "OrgRemediationWorkflowSummary"
+        }
+      ],
+      "source": "examples.security.transforms.workflow.VulnerabilityRemediationWorkflow",
+      "step_methods": [
+        {
+          "input_lane": "cases",
+          "input_schema": "RemediationCase",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "case",
+              "schema": "RemediationCase",
+              "source": "cases"
+            },
+            {
+              "driving": false,
+              "parameter": "vuln",
+              "schema": "Vuln",
+              "source": "vulnerabilities"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "vuln"
+            }
+          ],
+          "name": "aggregate_cases",
+          "output_lane": "case_aggregates",
+          "output_schema": "RemediationCaseAggregate",
+          "results": [
+            {
+              "frame": "case_aggregates",
+              "lane": "case_aggregates",
+              "schema": "RemediationCaseAggregate"
+            }
+          ]
+        },
+        {
+          "input_lane": "case_aggregates",
+          "input_schema": "RemediationCaseAggregate",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "case",
+              "schema": "RemediationCaseAggregate",
+              "source": "case_aggregates"
+            }
+          ],
+          "name": "check_cases",
+          "output_lane": "case_lane",
+          "output_schema": "RemediationCaseCheck",
+          "results": [
+            {
+              "frame": "case_lane",
+              "lane": "case_lane",
+              "schema": "RemediationCaseCheck"
+            }
+          ]
+        },
+        {
+          "input_lane": "case_lane",
+          "input_schema": "RemediationCaseCheck",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "check",
+              "schema": "RemediationCaseCheck",
+              "source": "case_lane"
+            }
+          ],
+          "name": "publish_case_checks",
+          "output_lane": "case_checks",
+          "output_schema": "RemediationCaseCheck",
+          "results": [
+            {
+              "frame": "case_checks",
+              "lane": "case_checks",
+              "schema": "RemediationCaseCheck"
+            }
+          ]
+        },
+        {
+          "input_lane": "case_lane",
+          "input_schema": "RemediationCaseCheck",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "check",
+              "schema": "RemediationCaseCheck",
+              "source": "case_lane"
+            }
+          ],
+          "name": "publish_case_issues",
+          "output_lane": "case_issues",
+          "output_schema": "RemediationCaseIssue",
+          "results": [
+            {
+              "frame": "case_issues",
+              "lane": "case_issues",
+              "schema": "RemediationCaseIssue"
+            }
+          ]
+        },
+        {
+          "input_lane": "exposures",
+          "input_schema": "VulnerabilityExposure",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "finding",
+              "schema": "VulnerabilityExposure",
+              "source": "exposures"
+            },
+            {
+              "driving": false,
+              "parameter": "check",
+              "schema": "RemediationCaseCheck",
+              "source": "case_lane"
+            },
+            {
+              "driving": false,
+              "parameter": "evaluation",
+              "schema": "SecurityEvaluation",
+              "source": "evaluation"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "check"
+            },
+            {
+              "how": "cross",
+              "input": "evaluation"
+            }
+          ],
+          "name": "enrich_exposure",
+          "output_lane": "workflow_lane",
+          "output_schema": "VulnerabilityWorkflowExposure",
+          "results": [
+            {
+              "frame": "workflow_lane",
+              "lane": "workflow_lane",
+              "schema": "VulnerabilityWorkflowExposure"
+            }
+          ]
+        },
+        {
+          "input_lane": "workflow_lane",
+          "input_schema": "VulnerabilityWorkflowExposure",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "finding",
+              "schema": "VulnerabilityWorkflowExposure",
+              "source": "workflow_lane"
+            }
+          ],
+          "name": "publish_workflow_exposures",
+          "output_lane": "workflow_exposures",
+          "output_schema": "VulnerabilityWorkflowExposure",
+          "results": [
+            {
+              "frame": "workflow_exposures",
+              "lane": "workflow_exposures",
+              "schema": "VulnerabilityWorkflowExposure"
+            }
+          ]
+        },
+        {
+          "input_lane": "workflow_lane",
+          "input_schema": "VulnerabilityWorkflowExposure",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "finding",
+              "schema": "VulnerabilityWorkflowExposure",
+              "source": "workflow_lane"
+            }
+          ],
+          "name": "publish_unacknowledged",
+          "output_lane": "unacknowledged",
+          "output_schema": "UnacknowledgedVulnerability",
+          "results": [
+            {
+              "frame": "unacknowledged",
+              "lane": "unacknowledged",
+              "schema": "UnacknowledgedVulnerability"
+            }
+          ]
+        },
+        {
+          "input_lane": "workflow_lane",
+          "input_schema": "VulnerabilityWorkflowExposure",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "finding",
+              "schema": "VulnerabilityWorkflowExposure",
+              "source": "workflow_lane"
+            }
+          ],
+          "name": "publish_pending",
+          "output_lane": "pending_exceptions",
+          "output_schema": "PendingExceptionVulnerability",
+          "results": [
+            {
+              "frame": "pending_exceptions",
+              "lane": "pending_exceptions",
+              "schema": "PendingExceptionVulnerability"
+            }
+          ]
+        },
+        {
+          "input_lane": "workflow_lane",
+          "input_schema": "VulnerabilityWorkflowExposure",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "finding",
+              "schema": "VulnerabilityWorkflowExposure",
+              "source": "workflow_lane"
+            },
+            {
+              "driving": false,
+              "parameter": "evaluation",
+              "schema": "SecurityEvaluation",
+              "source": "evaluation"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "evaluation"
+            }
+          ],
+          "name": "publish_expiring",
+          "output_lane": "expiring_exceptions",
+          "output_schema": "ExpiringExceptionVulnerability",
+          "results": [
+            {
+              "frame": "expiring_exceptions",
+              "lane": "expiring_exceptions",
+              "schema": "ExpiringExceptionVulnerability"
+            }
+          ]
+        },
+        {
+          "input_lane": "workflow_lane",
+          "input_schema": "VulnerabilityWorkflowExposure",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "finding",
+              "schema": "VulnerabilityWorkflowExposure",
+              "source": "workflow_lane"
+            },
+            {
+              "driving": false,
+              "parameter": "evaluation",
+              "schema": "SecurityEvaluation",
+              "source": "evaluation"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "evaluation"
+            }
+          ],
+          "name": "publish_expired",
+          "output_lane": "expired_exceptions",
+          "output_schema": "ExpiredExceptionVulnerability",
+          "results": [
+            {
+              "frame": "expired_exceptions",
+              "lane": "expired_exceptions",
+              "schema": "ExpiredExceptionVulnerability"
+            }
+          ]
+        },
+        {
+          "input_lane": "workflow_lane",
+          "input_schema": "VulnerabilityWorkflowExposure",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "finding",
+              "schema": "VulnerabilityWorkflowExposure",
+              "source": "workflow_lane"
+            },
+            {
+              "driving": false,
+              "parameter": "evaluation",
+              "schema": "SecurityEvaluation",
+              "source": "evaluation"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "evaluation"
+            }
+          ],
+          "name": "assess",
+          "output_lane": "activities",
+          "output_schema": "RemediationWorkflowActivity",
+          "results": [
+            {
+              "frame": "activities",
+              "lane": "activities",
+              "schema": "RemediationWorkflowActivity"
+            }
+          ]
+        },
+        {
+          "input_lane": "people",
+          "input_schema": "Person",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "person",
+              "schema": "Person",
+              "source": "people"
+            },
+            {
+              "driving": false,
+              "parameter": "evaluation",
+              "schema": "SecurityEvaluation",
+              "source": "evaluation"
+            },
+            {
+              "driving": false,
+              "parameter": "activity",
+              "schema": "RemediationWorkflowActivity",
+              "source": "activities"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "evaluation"
+            },
+            {
+              "how": "left",
+              "input": "activity"
+            }
+          ],
+          "name": "summarize_people",
+          "output_lane": "person_summaries",
+          "output_schema": "PersonRemediationWorkflowSummary",
+          "results": [
+            {
+              "frame": "person_summaries",
+              "lane": "person_summaries",
+              "schema": "PersonRemediationWorkflowSummary"
+            }
+          ]
+        },
+        {
+          "input_lane": "teams",
+          "input_schema": "Team",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "team",
+              "schema": "Team",
+              "source": "teams"
+            },
+            {
+              "driving": false,
+              "parameter": "evaluation",
+              "schema": "SecurityEvaluation",
+              "source": "evaluation"
+            },
+            {
+              "driving": false,
+              "parameter": "activity",
+              "schema": "RemediationWorkflowActivity",
+              "source": "activities"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "evaluation"
+            },
+            {
+              "how": "left",
+              "input": "activity"
+            }
+          ],
+          "name": "summarize_teams",
+          "output_lane": "team_summaries",
+          "output_schema": "TeamRemediationWorkflowSummary",
+          "results": [
+            {
+              "frame": "team_summaries",
+              "lane": "team_summaries",
+              "schema": "TeamRemediationWorkflowSummary"
+            }
+          ]
+        },
+        {
+          "input_lane": "departments",
+          "input_schema": "Department",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "department",
+              "schema": "Department",
+              "source": "departments"
+            },
+            {
+              "driving": false,
+              "parameter": "evaluation",
+              "schema": "SecurityEvaluation",
+              "source": "evaluation"
+            },
+            {
+              "driving": false,
+              "parameter": "activity",
+              "schema": "RemediationWorkflowActivity",
+              "source": "activities"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "evaluation"
+            },
+            {
+              "how": "left",
+              "input": "activity"
+            }
+          ],
+          "name": "summarize_departments",
+          "output_lane": "department_summaries",
+          "output_schema": "DepartmentRemediationWorkflowSummary",
+          "results": [
+            {
+              "frame": "department_summaries",
+              "lane": "department_summaries",
+              "schema": "DepartmentRemediationWorkflowSummary"
+            }
+          ]
+        },
+        {
+          "input_lane": "orgs",
+          "input_schema": "Org",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "org",
+              "schema": "Org",
+              "source": "orgs"
+            },
+            {
+              "driving": false,
+              "parameter": "evaluation",
+              "schema": "SecurityEvaluation",
+              "source": "evaluation"
+            },
+            {
+              "driving": false,
+              "parameter": "activity",
+              "schema": "RemediationWorkflowActivity",
+              "source": "activities"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "evaluation"
+            },
+            {
+              "how": "left",
+              "input": "activity"
+            }
+          ],
+          "name": "summarize_orgs",
+          "output_lane": "org_summaries",
+          "output_schema": "OrgRemediationWorkflowSummary",
+          "results": [
+            {
+              "frame": "org_summaries",
+              "lane": "org_summaries",
+              "schema": "OrgRemediationWorkflowSummary"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/workflow.py",
+        "traceability": "traceability/transforms/workflow.VulnerabilityRemediationWorkflow.json"
       }
     }
   ]

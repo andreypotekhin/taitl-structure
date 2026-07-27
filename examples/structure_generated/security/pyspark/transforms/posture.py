@@ -8,7 +8,7 @@ from examples.structure_generated.security.runtime.schema_assert import Transfor
 from examples.structure_generated.security.pyspark.schemas.assets import DEVICE_SCHEMA, DEVICE_TYPE_SCHEMA, SOFTWARE_SCHEMA
 from examples.structure_generated.security.pyspark.schemas.organization import DEPARTMENT_SCHEMA, ORG_SCHEMA, PERSON_SCHEMA, TEAM_SCHEMA
 from examples.structure_generated.security.pyspark.schemas.reporting import VULNERABILITY_EXPOSURE_SCHEMA, VULNERABILITY_POSTURE_CANDIDATE_SCHEMA
-from examples.structure_generated.security.pyspark.schemas.risk import VULN_SCHEMA, VULN_TYPE_SCHEMA
+from examples.structure_generated.security.pyspark.schemas.risk import REMEDIATION_POLICY_SCHEMA, VULN_SCHEMA, VULN_TYPE_SCHEMA
 
 
 class SecurityPostureGenerated:
@@ -25,6 +25,7 @@ class SecurityPostureGenerated:
         device_types: DataFrame,
         software: DataFrame,
         vuln_types: DataFrame,
+        remediation_policies: DataFrame,
         people: DataFrame,
         teams: DataFrame,
         departments: DataFrame,
@@ -35,6 +36,7 @@ class SecurityPostureGenerated:
         assert_schema(device_types, DEVICE_TYPE_SCHEMA, name="DeviceType", mode="strict")
         assert_schema(software, SOFTWARE_SCHEMA, name="Software", mode="strict")
         assert_schema(vuln_types, VULN_TYPE_SCHEMA, name="VulnType", mode="strict")
+        assert_schema(remediation_policies, REMEDIATION_POLICY_SCHEMA, name="RemediationPolicy", mode="strict")
         assert_schema(people, PERSON_SCHEMA, name="Person", mode="strict")
         assert_schema(teams, TEAM_SCHEMA, name="Team", mode="strict")
         assert_schema(departments, DEPARTMENT_SCHEMA, name="Department", mode="strict")
@@ -44,6 +46,7 @@ class SecurityPostureGenerated:
         _input_device_types = device_types
         _input_software = software
         _input_vuln_types = vuln_types
+        _input_remediation_policies = remediation_policies
         _input_people = people
         _input_teams = teams
         _input_departments = departments
@@ -75,28 +78,34 @@ class SecurityPostureGenerated:
             (F.col("vuln_types_4.id") == F.col("vuln.vuln_type_id")),
             "inner",
         )
-        people_5_joined = people.alias("people_5")
+        remediation_policies_5_joined = remediation_policies.alias("remediation_policies_5")
         posture_candidates = posture_candidates.join(
-            people_5_joined,
-            (F.col("people_5.id") == F.col("vuln.owner_id")),
+            remediation_policies_5_joined,
+            (F.col("remediation_policies_5.severity") == F.col("vuln_types_4.severity")),
             "inner",
         )
-        teams_6_joined = teams.alias("teams_6")
+        people_6_joined = people.alias("people_6")
         posture_candidates = posture_candidates.join(
-            teams_6_joined,
-            (F.col("teams_6.id") == F.col("people_5.team_id")),
+            people_6_joined,
+            (F.col("people_6.id") == F.col("vuln.owner_id")),
             "inner",
         )
-        departments_7_joined = departments.alias("departments_7")
+        teams_7_joined = teams.alias("teams_7")
         posture_candidates = posture_candidates.join(
-            departments_7_joined,
-            (F.col("departments_7.id") == F.col("teams_6.department_id")),
+            teams_7_joined,
+            (F.col("teams_7.id") == F.col("people_6.team_id")),
             "inner",
         )
-        orgs_8_joined = orgs.alias("orgs_8")
+        departments_8_joined = departments.alias("departments_8")
         posture_candidates = posture_candidates.join(
-            orgs_8_joined,
-            (F.col("orgs_8.id") == F.col("departments_7.org_id")),
+            departments_8_joined,
+            (F.col("departments_8.id") == F.col("teams_7.department_id")),
+            "inner",
+        )
+        orgs_9_joined = orgs.alias("orgs_9")
+        posture_candidates = posture_candidates.join(
+            orgs_9_joined,
+            (F.col("orgs_9.id") == F.col("departments_8.org_id")),
             "inner",
         )
         posture_candidates = posture_candidates.select(
@@ -104,8 +113,10 @@ class SecurityPostureGenerated:
             F.col("vuln_types_4.type").alias("vuln_type"),
             F.col("vuln_types_4.description"),
             F.col("vuln_types_4.instructions"),
+            F.col("vuln_types_4.severity"),
             F.col("vuln.date_discovered"),
             F.col("vuln.date_addressed"),
+            F.date_add(F.col("vuln.date_discovered"), F.col("remediation_policies_5.target_days")).alias("target_date"),
             F.col("vuln.date_addressed").isNull().alias("is_active"),
             F.col("devices.id").alias("device_id"),
             F.col("device_types_2.platform").alias("device_platform"),
@@ -113,14 +124,14 @@ class SecurityPostureGenerated:
             F.col("software_3.id").alias("software_id"),
             F.col("software_3.name").alias("software_name"),
             F.col("software_3.version").alias("software_version"),
-            F.col("people_5.id").alias("person_id"),
-            F.col("people_5.name").alias("person_name"),
-            F.col("teams_6.id").alias("team_id"),
-            F.col("teams_6.name").alias("team_name"),
-            F.col("departments_7.id").alias("department_id"),
-            F.col("departments_7.name").alias("department_name"),
-            F.col("orgs_8.id").alias("org_id"),
-            F.col("orgs_8.name").alias("org_name"),
+            F.col("people_6.id").alias("person_id"),
+            F.col("people_6.name").alias("person_name"),
+            F.col("teams_7.id").alias("team_id"),
+            F.col("teams_7.name").alias("team_name"),
+            F.col("departments_8.id").alias("department_id"),
+            F.col("departments_8.name").alias("department_name"),
+            F.col("orgs_9.id").alias("org_id"),
+            F.col("orgs_9.name").alias("org_name"),
             F.col("devices.owner_id").alias("device_owner_id"),
             F.col("devices.os_id").alias("device_os_id"),
             F.col("devices.vuln_ids").alias("device_vuln_ids"),
@@ -136,8 +147,10 @@ class SecurityPostureGenerated:
             F.col("vulnerability_posture_candidate.vuln_type"),
             F.col("vulnerability_posture_candidate.description"),
             F.col("vulnerability_posture_candidate.instructions"),
+            F.col("vulnerability_posture_candidate.severity"),
             F.col("vulnerability_posture_candidate.date_discovered"),
             F.col("vulnerability_posture_candidate.date_addressed"),
+            F.col("vulnerability_posture_candidate.target_date"),
             F.col("vulnerability_posture_candidate.is_active"),
             F.col("vulnerability_posture_candidate.device_id"),
             F.col("vulnerability_posture_candidate.device_platform"),
@@ -163,8 +176,10 @@ class SecurityPostureGenerated:
             F.col("vulnerability_exposure.vuln_type"),
             F.col("vulnerability_exposure.description"),
             F.col("vulnerability_exposure.instructions"),
+            F.col("vulnerability_exposure.severity"),
             F.col("vulnerability_exposure.date_discovered"),
             F.col("vulnerability_exposure.date_addressed"),
+            F.col("vulnerability_exposure.target_date"),
             F.col("vulnerability_exposure.is_active"),
             F.col("vulnerability_exposure.device_id"),
             F.col("vulnerability_exposure.device_platform"),

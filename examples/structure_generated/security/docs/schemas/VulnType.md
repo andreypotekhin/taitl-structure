@@ -8,5 +8,6 @@ Module: `examples.security.schemas.risk`
 | --- | --- | --- | --- |
 | `id` | `id` | `string` | no |
 | `type` | `type` | `string` | no |
+| `severity` | `severity` | `string` | no |
 | `description` | `description` | `string` | no |
 | `instructions` | `instructions` | `string` | no |

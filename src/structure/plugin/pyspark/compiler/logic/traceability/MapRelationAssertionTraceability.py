@@ -57,7 +57,14 @@ class MapRelationAssertionTraceability:
         )
 
     def _sources(self, assertion) -> tuple[str, ...]:
-        expressions = (*assertion.keys, assertion.predicate, assertion.value, assertion.reference_key)
+        expressions = (
+            *assertion.keys,
+            assertion.predicate,
+            assertion.value,
+            assertion.reference_key,
+            assertion.parent,
+            assertion.order_by,
+        )
         seen: set[str] = set()
         result: list[str] = []
         for expression in expressions:
@@ -74,6 +81,7 @@ class MapRelationAssertionTraceability:
             "require_unique": "REL-E0702",
             "require_all": "REL-E0703",
             "require_reference": "REL-E0704",
+            "require_parent_hierarchy": "REL-E0706",
         }[assertion.operation]
         detail: dict[str, object] = {"diagnostic": diagnostic}
         if assertion.keys:
@@ -81,4 +89,6 @@ class MapRelationAssertionTraceability:
         if assertion.reference_input is not None:
             detail["reference"] = assertion.reference_input
             detail["nulls"] = assertion.nulls
+        if assertion.operation == "require_parent_hierarchy":
+            detail["max_depth"] = assertion.max_depth
         return detail

@@ -18,6 +18,12 @@ from structure.plugin.pyspark.compiler.logic.traceability.MapRelationAliasTracea
 from structure.plugin.pyspark.compiler.logic.traceability.MapRelationAssertionTraceability import (
     MapRelationAssertionTraceability,
 )
+from structure.plugin.pyspark.compiler.logic.traceability.MapRelationHierarchyClosureTraceability import (
+    MapRelationHierarchyClosureTraceability,
+)
+from structure.plugin.pyspark.compiler.logic.traceability.MapRelationHierarchyFallbackTraceability import (
+    MapRelationHierarchyFallbackTraceability,
+)
 from structure.plugin.pyspark.compiler.logic.traceability.MapRelationOrderingTraceability import (
     MapRelationOrderingTraceability,
 )
@@ -43,6 +49,8 @@ class BuildCompilerTraceability:
         self._joins = MapJoinTraceability(self._dataflow)
         self._projections = MapProjectionTraceability(self._dataflow)
         self._relation_assertions = MapRelationAssertionTraceability(self._dataflow)
+        self._relation_hierarchy_closure = MapRelationHierarchyClosureTraceability(self._dataflow)
+        self._relation_hierarchy_fallback = MapRelationHierarchyFallbackTraceability(self._dataflow)
         self._relation_aliases = MapRelationAliasTraceability()
         self._relation_ordering = MapRelationOrderingTraceability(self._dataflow)
         self._relation_priority_selection = MapRelationPrioritySelectionTraceability(self._dataflow)
@@ -91,6 +99,14 @@ class BuildCompilerTraceability:
             dependencies.extend(self._deduplication.dependencies(step))
             provenance.extend(self._relation_assertions.provenance(plan, step, source_transform, transform_module))
             dependencies.extend(self._relation_assertions.dependencies(step))
+            provenance.extend(
+                self._relation_hierarchy_closure.provenance(plan, step, source_transform, transform_module)
+            )
+            dependencies.extend(self._relation_hierarchy_closure.dependencies(step))
+            provenance.extend(
+                self._relation_hierarchy_fallback.provenance(plan, step, source_transform, transform_module)
+            )
+            dependencies.extend(self._relation_hierarchy_fallback.dependencies(step))
             provenance.extend(self._relation_aliases.provenance(plan, step, source_transform, transform_module))
             dependencies.extend(self._relation_aliases.dependencies(step))
             provenance.extend(self._relation_ordering.provenance(plan, step, source_transform, transform_module))

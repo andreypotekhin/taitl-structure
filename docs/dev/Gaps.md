@@ -73,10 +73,10 @@ for ordinary PySpark; its user contract is [Explicit Scalar Python UDFs](specifi
 opt-in, type/nullability declared, warning-governed, and excluded from Spark Connect. It is not a substitute for an
 unsupported symbolic operation.
 
-The remaining v6 scheduled relation additions are intentionally narrow: bounded parent-hierarchy closure with
-deterministic fallback expansion. Implemented P1 relation assertions, branchable typed union, and first-qualified
-priority selection exist to replace Search's cohort-band, relevance, and reranking hooks once same-fixture migrations
-prove parity. General recursive relations, dynamic-depth traversal, arbitrary graph algorithms, user-defined hierarchy
+The remaining v6 work is cleanup and broader vocabulary, not Search hook retirement. Implemented P1 generators,
+relation assertions, parent hierarchy validation, hierarchy closure rows, hierarchy fallback expansion, branchable typed
+union, first-qualified priority selection, and typed cohort matcher predicates now cover the Search example's former raw
+boundaries. General recursive relations, dynamic-depth traversal, arbitrary graph algorithms, user-defined hierarchy
 traversal, and implicit surrogate row identifiers remain deferred until a separate contract defines them.
 
 ### Checked v6 register
@@ -88,19 +88,21 @@ narrower typed capability from that family; no broader API is implied.
 | Capability | Status | Owner / current boundary |
 | --- | --- | --- |
 | Lambda-bound struct field access | implemented | Sprint 24; the two Security reconciliation hooks are typed steps |
-| Partitioned `window_max` | implemented | Sprint 24; typed partition/order/frame contract is available, while BM25 remains `@raw` for its separate generator dependency |
+| Partitioned `window_max` | implemented | Sprint 24; typed partition/order/frame contract is available, and BM25 no longer needs a raw hook |
 | Ordered `collect_list` | implemented | Sprint 24; explicit ascending/descending aggregate keys retain deterministic collection order |
-| `exactly_one` validation | implemented | Sprint 24 P0; batch-only ordinary-PySpark relation assertion with generated/online `REL-E0701` failure. Similarity query construction remains `@raw` until its wider multi-output Search migration. |
-| Implicit global aggregation | implemented | Sprint 24; aggregate-only steps retain global semantics and enforce empty-input nullability |
+| `exactly_one` validation | implemented | Sprint 24 P0; batch-only ordinary-PySpark relation assertion with generated/online `REL-E0701` failure. `CreateSimilarityQueries` now uses it with ordered token aggregation and typed query union. |
+| Implicit global aggregation | implemented | Sprint 24; aggregate-only steps retain global semantics and enforce empty-input nullability. `CreateIndex` now uses grouped term aggregates plus aggregate-only summaries without a raw hook. |
 | Explicit scalar UDF example | implemented documentation | Sprint 24; documented opt-in ordinary-PySpark exception with warning and Spark Connect boundary |
-| `posexplode` over array of structs | implemented | Sprint 25; `posexplode_struct(...)` is available, while Search extraction/scoring remain `@raw` until their same-fixture migrations are completed |
+| `posexplode` over array of structs | implemented | Sprint 25; `posexplode_struct(...)` is available, and `ExtractText`, `ScoreOverlap`, and `ScoreBm25` now use typed struct-wrapped expansion instead of raw hooks |
 | Other generator forms | deferred | Admit only after a separate cardinality/null/streaming contract |
-| Exact-schema relation set composition and self-alias; Search similarity reduction | partial | Sprint 25; exact-schema set operations, branchable lane rejoin, and `relation_alias(...)` are implemented, while Search similarity reduction and relevance-context expansion remain `@raw` until same-fixture migrations are completed |
+| Exact-schema relation set composition and self-alias | implemented | Sprint 25; exact-schema set operations, branchable lane rejoin, and `relation_alias(...)` are implemented. `ReduceSimilarityScores` now uses them for reciprocal pair matching, exact-schema pair union, and typed per-source ranking. |
 | Relation order/limit/offset | implemented | Sprint 25; `order_by(...)`, `limit(n)`, and `offset(n)` are compiler-visible. `sample` remains deferred. |
-| Branchable typed union | implemented | Sprint 25; independently materialized typed lanes can rejoin through exact-schema `union_all(...)`, while relevance-context expansion remains `@raw` until same-fixture migration is completed |
-| `require_unique` / `require_all` / `require_reference` | implemented | Sprint 25; compiler-visible Spark-plan assertions are available, while cohort traversal still waits for bounded hierarchy/fallback operations |
-| Bounded parent hierarchy and fallbacks | scheduled | Sprint 25; cohort traversal remains `@raw` |
-| First-qualified priority selection | implemented | Sprint 25; `select_first_qualified(...)` is available, while reranking remains `@raw` until same-fixture migration is completed |
+| Branchable typed union | implemented | Sprint 25; independently materialized typed lanes can rejoin through exact-schema `union_all(...)`. `BuildRelevanceSignals` now uses branch fan-out for global, fallback, and band-scoped impressions/clicks without raw hooks. |
+| `require_unique` / `require_all` / `require_reference` / `require_parent_hierarchy` | implemented | Sprint 25; compiler-visible Spark-plan assertions are available, and `ResolveCohortBands` now uses them for bounded band-catalog validation |
+| Search cohort band matcher predicates | implemented | Sprint 25; `cross_join(...)`, `where(...)`, `size(...)`, and `array_contains(...)` cover wildcard-or-membership matching inside the typed `ResolveCohortBands` migration |
+| Parent hierarchy closure | implemented | Sprint 25; `hierarchy_closure(...)` emits typed bounded `(node, ancestor, depth)` rows without driver collection |
+| Bounded parent hierarchy and fallbacks | implemented | Sprint 25; `ResolveCohortBands` now uses `require_parent_hierarchy(...)`, `hierarchy_closure(...)`, and `hierarchy_fallbacks(...)` to retire its raw driver-collection traversal |
+| First-qualified priority selection | implemented | Sprint 25; `select_first_qualified(...)` is available. `RerankDocuments` now uses declared candidate keys to select the first eligible query and popularity feedback context without a raw surrogate row ID. |
 | Sampling | deferred | Seed, replacement, and reproducibility contract is incomplete |
 | Bounded ordered `scan(...)` | scheduled | Sprint 26; separate typed recurrence plan |
 | Binary/encoding; JSON/CSV parsing; Deterministic `mode` | deferred | Retain the documented `@raw` boundary until their type or tie contracts are complete |

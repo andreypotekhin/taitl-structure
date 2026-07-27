@@ -2,10 +2,11 @@
 # Source: examples.search.transforms.extract.ExtractText
 
 from pyspark.sql import DataFrame, SparkSession
+from pyspark.sql import Window
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
-from examples.search.transforms.extract import ExtractText
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
+from examples.structure_generated.search.pyspark.schemas.extract import MARKED_DOCUMENT_LINE_SCHEMA, PARAGRAPH_CONTENT_SCHEMA, PARAGRAPH_DRAFT_SCHEMA, PARAGRAPH_LINE_GROUP_SCHEMA, PARAGRAPH_LINE_SCHEMA, SECTION_HEADING_SCHEMA, SECTION_KEY_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.text import DOCUMENT_SCHEMA, PARAGRAPH_SCHEMA, SECTION_SCHEMA, SENTENCE_SCHEMA, WORD_SCHEMA
 
 
@@ -14,7 +15,6 @@ class ExtractTextGenerated:
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
         self.ctx = ctx
-        self._impl = ExtractText()
 
     def run(
         self,
@@ -24,51 +24,220 @@ class ExtractTextGenerated:
         assert_schema(documents, DOCUMENT_SCHEMA, name="Document", mode="strict")
         _input_documents = documents
 
-        # Step method: declare_hierarchy
-        declare_hierarchy_base = documents.alias("document")
-        sections = declare_hierarchy_base.select(
-            F.concat_ws('#s', F.col("document.id"), F.lit('0')).alias("id"),
+        # Step method: mark_lines
+        marked_lines = documents.alias("document")
+        marked_lines = marked_lines.select(
+            "*",
+            F.posexplode(F.transform(F.split(F.regexp_replace(F.col("document.content"), '\\r\\n?', '\n'), '\n', -1), lambda item: F.struct(item.alias("line")))).alias("__structure_document_line_1_pos", "__structure_document_line_1_item"),
+        )
+        marked_lines = marked_lines.withColumn(
+            "ordinal",
+            F.col("__structure_document_line_1_pos").cast(T.LongType()),
+        )
+        marked_lines = marked_lines.withColumn(
+            "line",
+            F.col("__structure_document_line_1_item.line"),
+        )
+        marked_lines = marked_lines.drop("__structure_document_line_1_pos", "__structure_document_line_1_item")
+        marked_lines = marked_lines.select(
             F.col("document.id").alias("document_id"),
-            F.lit(0).alias("ordinal"),
-            F.col("document.title").alias("heading"),
+            F.col("ordinal").alias("line_ordinal"),
+            F.col("line"),
+            F.when((F.trim(F.regexp_extract(F.col("line"), '^\\s*#+\\s+(.+?)\\s*$', 1)) != F.lit('')), F.trim(F.regexp_extract(F.col("line"), '^\\s*#+\\s+(.+?)\\s*$', 1))).otherwise(F.lit(None)).alias("heading"),
+            (F.trim(F.col("line")) == F.lit('')).alias("is_blank"),
+            F.sum(F.when((F.trim(F.regexp_extract(F.col("line"), '^\\s*#+\\s+(.+?)\\s*$', 1)) != F.lit('')), F.lit(1)).otherwise(F.lit(0))).over(Window.partitionBy(F.col("document.id")).orderBy(F.col("ordinal").asc()).rowsBetween(Window.unboundedPreceding, Window.currentRow)).alias("section_ordinal"),
+            F.sum(F.when((F.trim(F.col("line")) == F.lit('')), F.lit(1)).otherwise(F.lit(0))).over(Window.partitionBy(F.col("document.id")).orderBy(F.col("ordinal").asc()).rowsBetween(Window.unboundedPreceding, Window.currentRow)).alias("paragraph_group"),
+        )
+        assert_schema(marked_lines, MARKED_DOCUMENT_LINE_SCHEMA, name="MarkedDocumentLine", mode="strict")
+
+        # Step method: select_paragraph_lines
+        paragraph_lines = marked_lines.alias("marked_document_line")
+        paragraph_lines = paragraph_lines.where(((~(F.col("marked_document_line.is_blank")) & F.col("marked_document_line.heading").isNull())))
+        paragraph_lines = paragraph_lines.select(
+            F.col("marked_document_line.document_id"),
+            F.col("marked_document_line.section_ordinal"),
+            F.col("marked_document_line.paragraph_group"),
+            F.col("marked_document_line.line_ordinal"),
+            F.col("marked_document_line.line"),
+        )
+        assert_schema(paragraph_lines, PARAGRAPH_LINE_SCHEMA, name="ParagraphLine", mode="strict")
+
+        # Step method: select_section_headings
+        section_headings = marked_lines.alias("marked_document_line")
+        section_headings = section_headings.where((F.col("marked_document_line.heading").isNotNull()))
+        section_headings = section_headings.select(
+            F.col("marked_document_line.document_id"),
+            F.col("marked_document_line.section_ordinal"),
+            F.col("marked_document_line.heading"),
+        )
+        assert_schema(section_headings, SECTION_HEADING_SCHEMA, name="SectionHeading", mode="strict")
+
+        # Step method: collect_paragraph_lines
+        paragraph_line_groups = paragraph_lines.alias("paragraph_line")
+        paragraph_line_groups = paragraph_line_groups.groupBy(
+            F.concat_ws('#p', F.col("paragraph_line.document_id"), F.col("paragraph_line.paragraph_group").cast('string')).alias("id"),
+            F.col("paragraph_line.document_id").alias("document_id"),
+            F.concat_ws('#s', F.col("paragraph_line.document_id"), F.col("paragraph_line.section_ordinal").cast('string')).alias("section_id"),
+            F.col("paragraph_line.section_ordinal").alias("section_ordinal"),
+            F.col("paragraph_line.paragraph_group").alias("paragraph_group"),
+        ).agg(
+            F.transform(F.sort_array(F.collect_list(F.when(F.col("paragraph_line.line").isNotNull(), F.struct(F.col("paragraph_line.line_ordinal").alias('_structure_order'), F.col("paragraph_line.line").alias('_structure_value')))), asc=True), lambda item: item.getField('_structure_value')).alias("lines"),
+        ).select(
+            F.col("id"),
+            F.col("document_id"),
+            F.col("section_id"),
+            F.col("section_ordinal"),
+            F.col("paragraph_group"),
+            F.col("lines"),
+        )
+        assert_schema(paragraph_line_groups, PARAGRAPH_LINE_GROUP_SCHEMA, name="ParagraphLineGroup", mode="strict")
+
+        # Step method: assemble_paragraph_content
+        paragraph_content = paragraph_line_groups.alias("paragraph_line_group")
+        paragraph_content = paragraph_content.select(
+            F.col("paragraph_line_group.id"),
+            F.col("paragraph_line_group.document_id"),
+            F.col("paragraph_line_group.section_id"),
+            F.col("paragraph_line_group.section_ordinal"),
+            F.col("paragraph_line_group.paragraph_group"),
+            F.concat_ws(' ', F.col("paragraph_line_group.lines")).alias("content"),
+        )
+        assert_schema(paragraph_content, PARAGRAPH_CONTENT_SCHEMA, name="ParagraphContent", mode="strict")
+
+        # Step method: rank_paragraphs
+        paragraph_drafts = paragraph_content.alias("paragraph_content")
+        paragraph_drafts = paragraph_drafts.select(
+            F.col("paragraph_content.id"),
+            F.col("paragraph_content.document_id"),
+            F.col("paragraph_content.section_id"),
+            F.col("paragraph_content.section_ordinal"),
+            F.row_number().over(Window.partitionBy(F.col("paragraph_content.document_id"), F.col("paragraph_content.section_ordinal")).orderBy(F.col("paragraph_content.paragraph_group").asc())).cast(T.LongType()).cast('int').alias("ordinal"),
+            F.col("paragraph_content.content"),
             F.lit(None).cast(T.StringType()).alias("search_query_id"),
             F.lit(None).cast(T.DoubleType()).alias("score_overlap"),
             F.lit(None).cast(T.DoubleType()).alias("score_bm25"),
         )
-        paragraphs = declare_hierarchy_base.select(
-            F.concat_ws('#p', F.col("document.id"), F.lit('0')).alias("id"),
-            F.col("document.id").alias("document_id"),
-            F.concat_ws('#s', F.col("document.id"), F.lit('0')).alias("section_id"),
-            F.lit(0).alias("ordinal"),
-            F.col("document.content"),
+        assert_schema(paragraph_drafts, PARAGRAPH_DRAFT_SCHEMA, name="ParagraphDraft", mode="strict")
+
+        # Step method: publish_paragraphs
+        paragraphs = paragraph_drafts.alias("paragraph_draft")
+        paragraphs = paragraphs.select(
+            F.col("paragraph_draft.id"),
+            F.col("paragraph_draft.document_id"),
+            F.col("paragraph_draft.section_id"),
+            F.col("paragraph_draft.ordinal"),
+            F.col("paragraph_draft.content"),
+            F.col("paragraph_draft.search_query_id"),
+            F.col("paragraph_draft.score_overlap"),
+            F.col("paragraph_draft.score_bm25"),
+        )
+        assert_schema(paragraphs, PARAGRAPH_SCHEMA, name="Paragraph", mode="strict")
+
+        # Step method: select_section_keys
+        section_keys = paragraph_drafts.alias("paragraph_draft")
+        if section_keys.isStreaming:
+            section_keys = section_keys.dropDuplicatesWithinWatermark(["document_id", "section_id"])
+        else:
+            section_keys = section_keys.dropDuplicates(["document_id", "section_id"])
+        section_keys = section_keys.select(
+            F.col("paragraph_draft.section_id").alias("id"),
+            F.col("paragraph_draft.document_id"),
+            F.col("paragraph_draft.section_ordinal"),
+            F.col("paragraph_draft.section_ordinal").cast('int').alias("ordinal"),
+        )
+        assert_schema(section_keys, SECTION_KEY_SCHEMA, name="SectionKey", mode="strict")
+
+        # Step method: build_sections
+        sections = section_keys.alias("section_key")
+        section_headings_joined = section_headings.alias("section_headings")
+        sections = sections.join(
+            section_headings_joined,
+            ((F.col("section_headings.document_id") == F.col("section_key.document_id")) & (F.col("section_headings.section_ordinal") == F.col("section_key.section_ordinal"))),
+            "left",
+        )
+        sections = sections.select(
+            F.col("section_key.id"),
+            F.col("section_key.document_id"),
+            F.col("section_key.ordinal"),
+            F.coalesce(F.col("section_headings.heading"), F.lit('Document')).alias("heading"),
             F.lit(None).cast(T.StringType()).alias("search_query_id"),
             F.lit(None).cast(T.DoubleType()).alias("score_overlap"),
             F.lit(None).cast(T.DoubleType()).alias("score_bm25"),
         )
-        sentences = declare_hierarchy_base.select(
-            F.concat_ws('#s', F.concat_ws('#p', F.col("document.id"), F.lit('0')), F.lit('0')).alias("id"),
-            F.col("document.id").alias("document_id"),
-            F.concat_ws('#s', F.col("document.id"), F.lit('0')).alias("section_id"),
-            F.concat_ws('#p', F.col("document.id"), F.lit('0')).alias("paragraph_id"),
-            F.lit(0).alias("paragraph_ordinal"),
-            F.lit(0).alias("ordinal"),
-            F.col("document.content"),
-            F.lit(None).cast(T.StringType()).alias("search_query_id"),
-            F.lit(None).cast(T.DoubleType()).alias("score_overlap"),
-            F.lit(None).cast(T.DoubleType()).alias("score_bm25"),
-        )
-        words = declare_hierarchy_base.select(
-            F.concat_ws('#w', F.concat_ws('#s', F.concat_ws('#p', F.col("document.id"), F.lit('0')), F.lit('0')), F.lit('0')).alias("id"),
-            F.col("document.id").alias("document_id"),
-            F.concat_ws('#s', F.col("document.id"), F.lit('0')).alias("section_id"),
-            F.concat_ws('#p', F.col("document.id"), F.lit('0')).alias("paragraph_id"),
-            F.lit(0).alias("paragraph_ordinal"),
-            F.concat_ws('#s', F.concat_ws('#p', F.col("document.id"), F.lit('0')), F.lit('0')).alias("sentence_id"),
-            F.lit(0).alias("ordinal"),
-            F.col("document.title").alias("token"),
-        )
-        sections, paragraphs, sentences, words = self._impl.extract(documents=_input_documents, sections=sections, paragraphs=paragraphs, sentences=sentences, words=words, spark=self.spark, ctx=self.ctx)
         assert_schema(sections, SECTION_SCHEMA, name="Section", mode="strict")
+
+        # Step method: build_sentences
+        sentence_rows = paragraph_drafts.alias("paragraph_draft")
+        sentence_rows = sentence_rows.select(
+            "*",
+            F.posexplode(F.transform(F.split(F.col("paragraph_draft.content"), '(?<=[.!?])\\s+', -1), lambda item: F.struct(item.alias("sentence_content")))).alias("__structure_sentence_text_1_pos", "__structure_sentence_text_1_item"),
+        )
+        sentence_rows = sentence_rows.withColumn(
+            "position",
+            F.col("__structure_sentence_text_1_pos").cast(T.LongType()),
+        )
+        sentence_rows = sentence_rows.withColumn(
+            "sentence_content",
+            F.col("__structure_sentence_text_1_item.sentence_content"),
+        )
+        sentence_rows = sentence_rows.drop("__structure_sentence_text_1_pos", "__structure_sentence_text_1_item")
+        sentence_rows = sentence_rows.where(((F.trim(F.col("sentence_content")) != F.lit(''))))
+        sentence_rows = sentence_rows.select(
+            F.concat_ws('#s', F.col("paragraph_draft.id"), F.col("position").cast('string')).alias("id"),
+            F.col("paragraph_draft.document_id"),
+            F.col("paragraph_draft.section_id"),
+            F.col("paragraph_draft.id").alias("paragraph_id"),
+            F.col("paragraph_draft.ordinal").alias("paragraph_ordinal"),
+            (F.col("position") + F.lit(1)).cast('int').alias("ordinal"),
+            F.trim(F.col("sentence_content")).alias("content"),
+            F.lit(None).cast(T.StringType()).alias("search_query_id"),
+            F.lit(None).cast(T.DoubleType()).alias("score_overlap"),
+            F.lit(None).cast(T.DoubleType()).alias("score_bm25"),
+        )
+        assert_schema(sentence_rows, SENTENCE_SCHEMA, name="Sentence", mode="strict")
+
+        # Step method: publish_sentences
+        sentences = sentence_rows.alias("sentence")
+        sentences = sentences.select(
+            F.col("sentence.id"),
+            F.col("sentence.document_id"),
+            F.col("sentence.section_id"),
+            F.col("sentence.paragraph_id"),
+            F.col("sentence.paragraph_ordinal"),
+            F.col("sentence.ordinal"),
+            F.col("sentence.content"),
+            F.col("sentence.search_query_id"),
+            F.col("sentence.score_overlap"),
+            F.col("sentence.score_bm25"),
+        )
+        assert_schema(sentences, SENTENCE_SCHEMA, name="Sentence", mode="strict")
+
+        # Step method: build_words
+        words = sentence_rows.alias("sentence")
+        words = words.select(
+            "*",
+            F.posexplode(F.transform(F.split(F.col("sentence.content"), '\\s+', -1), lambda item: F.struct(item.alias("word_token")))).alias("__structure_word_text_1_pos", "__structure_word_text_1_item"),
+        )
+        words = words.withColumn(
+            "position",
+            F.col("__structure_word_text_1_pos").cast(T.LongType()),
+        )
+        words = words.withColumn(
+            "word_token",
+            F.col("__structure_word_text_1_item.word_token"),
+        )
+        words = words.drop("__structure_word_text_1_pos", "__structure_word_text_1_item")
+        words = words.where(((F.lower(F.regexp_replace(F.trim(F.col("word_token")), '^[^A-Za-z0-9]+|[^A-Za-z0-9]+$', '')) != F.lit(''))))
+        words = words.select(
+            F.concat_ws('#w', F.col("sentence.id"), F.col("position").cast('string')).alias("id"),
+            F.col("sentence.document_id"),
+            F.col("sentence.section_id"),
+            F.col("sentence.paragraph_id"),
+            F.col("sentence.paragraph_ordinal"),
+            F.col("sentence.id").alias("sentence_id"),
+            (F.col("position") + F.lit(1)).cast('int').alias("ordinal"),
+            F.lower(F.regexp_replace(F.trim(F.col("word_token")), '^[^A-Za-z0-9]+|[^A-Za-z0-9]+$', '')).alias("token"),
+        )
 
         # Step method: sections
         sections = sections.alias("section")

@@ -1,3 +1,3 @@
-id,type,description,instructions
-adv-1,Advisory,Update the affected browser,https://example.test/advisories/1
-known-1,Known,Remove the vulnerable extension,https://example.test/known/1
+id,type,severity,description,instructions
+adv-1,Advisory,Critical,Update the affected browser,https://example.test/advisories/1
+known-1,Known,Low,Remove the vulnerable extension,https://example.test/known/1

@@ -33,64 +33,504 @@
       "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.input.bands"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs",
-      "ir": "ir:ResolveCohortBands.step.0.declare_outputs",
-      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.validate_bands",
+      "ir": "ir:ResolveCohortBands.step.0.validate_bands",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.validate_bands"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.band_memberships.select.user_id",
-      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.0.band_memberships.project.user_id",
-      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs.result.band_memberships.user_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.validate_bands.require_unique.0",
+      "ir": "ir:ResolveCohortBands.step.0.validate_bands.require_unique.0",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.validate_bands.require_unique.0"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.band_memberships.select.band_id",
-      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.0.band_memberships.project.band_id",
-      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs.result.band_memberships.band_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.validate_bands.require_all.1",
+      "ir": "ir:ResolveCohortBands.step.0.validate_bands.require_all.1",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.validate_bands.require_all.1"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.band_memberships.select.user_band_id",
-      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.0.band_memberships.project.user_band_id",
-      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs.result.band_memberships.user_band_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.validate_bands.require_parent_hierarchy.2",
+      "ir": "ir:ResolveCohortBands.step.0.validate_bands.require_parent_hierarchy.2",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.validate_bands.require_parent_hierarchy.2"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.hook.raw.resolve_bands",
-      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.hook.raw.resolve_bands",
-      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.resolve_bands"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.validate_bands.select.id",
+      "ir": "ir:ResolveCohortBands.step.0.validate_bands.project.id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.validate_bands.field.id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.user_bands.select.user_band_id",
-      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.1.user_bands.project.user_band_id",
-      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs.result.user_bands.user_band_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.validate_bands.select.name",
+      "ir": "ir:ResolveCohortBands.step.0.validate_bands.project.name",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.validate_bands.field.name"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.user_bands.select.band_ids",
-      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.1.user_bands.project.band_ids",
-      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs.result.user_bands.band_ids"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.validate_bands.select.priority",
+      "ir": "ir:ResolveCohortBands.step.0.validate_bands.project.priority",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.validate_bands.field.priority"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.user_band_memberships.select.user_id",
-      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.2.user_band_memberships.project.user_id",
-      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs.result.user_band_memberships.user_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.validate_bands.select.parent_band_id",
+      "ir": "ir:ResolveCohortBands.step.0.validate_bands.project.parent_band_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.validate_bands.field.parent_band_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.user_band_memberships.select.user_band_id",
-      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.2.user_band_memberships.project.user_band_id",
-      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs.result.user_band_memberships.user_band_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.validate_bands.select.age_start",
+      "ir": "ir:ResolveCohortBands.step.0.validate_bands.project.age_start",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.validate_bands.field.age_start"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.band_fallbacks.select.user_band_id",
-      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.3.band_fallbacks.project.user_band_id",
-      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs.result.band_fallbacks.user_band_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.validate_bands.select.age_end",
+      "ir": "ir:ResolveCohortBands.step.0.validate_bands.project.age_end",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.validate_bands.field.age_end"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.band_fallbacks.select.ordinal",
-      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.3.band_fallbacks.project.ordinal",
-      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs.result.band_fallbacks.ordinal"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.validate_bands.select.genders",
+      "ir": "ir:ResolveCohortBands.step.0.validate_bands.project.genders",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.validate_bands.field.genders"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.declare_outputs.band_fallbacks.select.user_band_fallback_id",
-      "ir": "ir:ResolveCohortBands.step.0.declare_outputs.result.3.band_fallbacks.project.user_band_fallback_id",
-      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.declare_outputs.result.band_fallbacks.user_band_fallback_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.validate_bands.select.locales",
+      "ir": "ir:ResolveCohortBands.step.0.validate_bands.project.locales",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.validate_bands.field.locales"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.validate_bands.select.countries",
+      "ir": "ir:ResolveCohortBands.step.0.validate_bands.project.countries",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.validate_bands.field.countries"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.validate_bands.select.geo_tags",
+      "ir": "ir:ResolveCohortBands.step.0.validate_bands.project.geo_tags",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.validate_bands.field.geo_tags"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.validate_bands.select.device_types",
+      "ir": "ir:ResolveCohortBands.step.0.validate_bands.project.device_types",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.validate_bands.field.device_types"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.validate_bands.select.time_zones",
+      "ir": "ir:ResolveCohortBands.step.0.validate_bands.project.time_zones",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.validate_bands.field.time_zones"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.0.validate_bands.validation.0.intermediate",
+      "ir": "ir:ResolveCohortBands.step.0.validate_bands.validation.0.intermediate",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.validate_bands.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.1.match_bands",
+      "ir": "ir:ResolveCohortBands.step.1.match_bands",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.match_bands"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.1.match_bands.where.0",
+      "ir": "ir:ResolveCohortBands.step.1.match_bands.filter.0",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.match_bands.filter.0"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.1.match_bands.join.1.band",
+      "ir": "ir:ResolveCohortBands.step.1.match_bands.join.1.band",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.match_bands.join.1.band"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.1.match_bands.select.user_id",
+      "ir": "ir:ResolveCohortBands.step.1.match_bands.project.user_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.match_bands.field.user_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.1.match_bands.select.band_id",
+      "ir": "ir:ResolveCohortBands.step.1.match_bands.project.band_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.match_bands.field.band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.1.match_bands.select.priority",
+      "ir": "ir:ResolveCohortBands.step.1.match_bands.project.priority",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.match_bands.field.priority"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.1.match_bands.select.parent_band_id",
+      "ir": "ir:ResolveCohortBands.step.1.match_bands.project.parent_band_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.match_bands.field.parent_band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.1.match_bands.validation.0.intermediate",
+      "ir": "ir:ResolveCohortBands.step.1.match_bands.validation.0.intermediate",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.match_bands.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.2.select_leaf_matches",
+      "ir": "ir:ResolveCohortBands.step.2.select_leaf_matches",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.select_leaf_matches"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.2.select_leaf_matches.join.1.child_match",
+      "ir": "ir:ResolveCohortBands.step.2.select_leaf_matches.join.1.child_match",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.select_leaf_matches.join.1.child_match"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.2.select_leaf_matches.relation_alias.0.child_match",
+      "ir": "ir:ResolveCohortBands.step.2.select_leaf_matches.relation_alias.0.child_match",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.select_leaf_matches.relation_alias.0.child_match"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.2.select_leaf_matches.select.user_id",
+      "ir": "ir:ResolveCohortBands.step.2.select_leaf_matches.project.user_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.select_leaf_matches.field.user_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.2.select_leaf_matches.select.band_id",
+      "ir": "ir:ResolveCohortBands.step.2.select_leaf_matches.project.band_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.select_leaf_matches.field.band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.2.select_leaf_matches.select.priority",
+      "ir": "ir:ResolveCohortBands.step.2.select_leaf_matches.project.priority",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.select_leaf_matches.field.priority"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.2.select_leaf_matches.select.parent_band_id",
+      "ir": "ir:ResolveCohortBands.step.2.select_leaf_matches.project.parent_band_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.select_leaf_matches.field.parent_band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.2.select_leaf_matches.validation.0.intermediate",
+      "ir": "ir:ResolveCohortBands.step.2.select_leaf_matches.validation.0.intermediate",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.select_leaf_matches.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.3.expand_band_ancestors",
+      "ir": "ir:ResolveCohortBands.step.3.expand_band_ancestors",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.expand_band_ancestors"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.3.expand_band_ancestors.hierarchy_closure.0",
+      "ir": "ir:ResolveCohortBands.step.3.expand_band_ancestors.hierarchy_closure.0",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.expand_band_ancestors.hierarchy_closure.0"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.3.expand_band_ancestors.select.band_id",
+      "ir": "ir:ResolveCohortBands.step.3.expand_band_ancestors.project.band_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.expand_band_ancestors.field.band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.3.expand_band_ancestors.select.ancestor_band_id",
+      "ir": "ir:ResolveCohortBands.step.3.expand_band_ancestors.project.ancestor_band_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.expand_band_ancestors.field.ancestor_band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.3.expand_band_ancestors.select.depth",
+      "ir": "ir:ResolveCohortBands.step.3.expand_band_ancestors.project.depth",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.expand_band_ancestors.field.depth"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.3.expand_band_ancestors.validation.0.intermediate",
+      "ir": "ir:ResolveCohortBands.step.3.expand_band_ancestors.validation.0.intermediate",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.expand_band_ancestors.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.4.build_user_band_paths",
+      "ir": "ir:ResolveCohortBands.step.4.build_user_band_paths",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_user_band_paths"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.4.build_user_band_paths.aggregate.user_id",
+      "ir": "ir:ResolveCohortBands.step.4.build_user_band_paths.aggregate.user_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_user_band_paths.aggregate.user_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.4.build_user_band_paths.aggregate.band_ids",
+      "ir": "ir:ResolveCohortBands.step.4.build_user_band_paths.aggregate.band_ids",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_user_band_paths.aggregate.band_ids"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.4.build_user_band_paths.validation.0.intermediate",
+      "ir": "ir:ResolveCohortBands.step.4.build_user_band_paths.validation.0.intermediate",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_user_band_paths.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.5.build_resolved_user_bands",
+      "ir": "ir:ResolveCohortBands.step.5.build_resolved_user_bands",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_resolved_user_bands"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.5.build_resolved_user_bands.drop_duplicates.0",
+      "ir": "ir:ResolveCohortBands.step.5.build_resolved_user_bands.drop_duplicates.0",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_resolved_user_bands.drop_duplicates.0"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.5.build_resolved_user_bands.select.user_band_id",
+      "ir": "ir:ResolveCohortBands.step.5.build_resolved_user_bands.project.user_band_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_resolved_user_bands.field.user_band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.5.build_resolved_user_bands.select.band_ids",
+      "ir": "ir:ResolveCohortBands.step.5.build_resolved_user_bands.project.band_ids",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_resolved_user_bands.field.band_ids"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.5.build_resolved_user_bands.validation.0.intermediate",
+      "ir": "ir:ResolveCohortBands.step.5.build_resolved_user_bands.validation.0.intermediate",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_resolved_user_bands.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.6.build_singleton_user_bands",
+      "ir": "ir:ResolveCohortBands.step.6.build_singleton_user_bands",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_singleton_user_bands"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.6.build_singleton_user_bands.select.band_id",
+      "ir": "ir:ResolveCohortBands.step.6.build_singleton_user_bands.project.band_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_singleton_user_bands.field.band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.6.build_singleton_user_bands.select.user_band_id",
+      "ir": "ir:ResolveCohortBands.step.6.build_singleton_user_bands.project.user_band_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_singleton_user_bands.field.user_band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.6.build_singleton_user_bands.select.band_ids",
+      "ir": "ir:ResolveCohortBands.step.6.build_singleton_user_bands.project.band_ids",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_singleton_user_bands.field.band_ids"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.6.build_singleton_user_bands.validation.0.intermediate",
+      "ir": "ir:ResolveCohortBands.step.6.build_singleton_user_bands.validation.0.intermediate",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_singleton_user_bands.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.7.publish_singleton_user_bands",
+      "ir": "ir:ResolveCohortBands.step.7.publish_singleton_user_bands",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.publish_singleton_user_bands"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.7.publish_singleton_user_bands.select.user_band_id",
+      "ir": "ir:ResolveCohortBands.step.7.publish_singleton_user_bands.project.user_band_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.publish_singleton_user_bands.field.user_band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.7.publish_singleton_user_bands.select.band_ids",
+      "ir": "ir:ResolveCohortBands.step.7.publish_singleton_user_bands.project.band_ids",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.publish_singleton_user_bands.field.band_ids"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.7.publish_singleton_user_bands.validation.0.intermediate",
+      "ir": "ir:ResolveCohortBands.step.7.publish_singleton_user_bands.validation.0.intermediate",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.publish_singleton_user_bands.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.8.merge_user_band_catalog",
+      "ir": "ir:ResolveCohortBands.step.8.merge_user_band_catalog",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.merge_user_band_catalog"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.8.merge_user_band_catalog.drop_duplicates.1",
+      "ir": "ir:ResolveCohortBands.step.8.merge_user_band_catalog.drop_duplicates.1",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.merge_user_band_catalog.drop_duplicates.1"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.8.merge_user_band_catalog.union_all.0",
+      "ir": "ir:ResolveCohortBands.step.8.merge_user_band_catalog.union_all.0",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.merge_user_band_catalog.union_all.0"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.8.merge_user_band_catalog.select.user_band_id",
+      "ir": "ir:ResolveCohortBands.step.8.merge_user_band_catalog.project.user_band_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.merge_user_band_catalog.field.user_band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.8.merge_user_band_catalog.select.band_ids",
+      "ir": "ir:ResolveCohortBands.step.8.merge_user_band_catalog.project.band_ids",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.merge_user_band_catalog.field.band_ids"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.8.merge_user_band_catalog.validation.0.intermediate",
+      "ir": "ir:ResolveCohortBands.step.8.merge_user_band_catalog.validation.0.intermediate",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.merge_user_band_catalog.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.9.publish_user_bands",
+      "ir": "ir:ResolveCohortBands.step.9.publish_user_bands",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.publish_user_bands"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.9.publish_user_bands.select.user_band_id",
+      "ir": "ir:ResolveCohortBands.step.9.publish_user_bands.project.user_band_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.publish_user_bands.field.user_band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.9.publish_user_bands.select.band_ids",
+      "ir": "ir:ResolveCohortBands.step.9.publish_user_bands.project.band_ids",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.publish_user_bands.field.band_ids"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.9.publish_user_bands.validation.0.intermediate",
+      "ir": "ir:ResolveCohortBands.step.9.publish_user_bands.validation.0.intermediate",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.publish_user_bands.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.10.build_user_band_memberships",
+      "ir": "ir:ResolveCohortBands.step.10.build_user_band_memberships",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_user_band_memberships"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.10.build_user_band_memberships.join.1.path",
+      "ir": "ir:ResolveCohortBands.step.10.build_user_band_memberships.join.1.path",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_user_band_memberships.join.1.path"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.10.build_user_band_memberships.select.user_id",
+      "ir": "ir:ResolveCohortBands.step.10.build_user_band_memberships.project.user_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_user_band_memberships.field.user_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.10.build_user_band_memberships.select.user_band_id",
+      "ir": "ir:ResolveCohortBands.step.10.build_user_band_memberships.project.user_band_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_user_band_memberships.field.user_band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.10.build_user_band_memberships.validation.0.intermediate",
+      "ir": "ir:ResolveCohortBands.step.10.build_user_band_memberships.validation.0.intermediate",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_user_band_memberships.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.11.publish_user_band_memberships",
+      "ir": "ir:ResolveCohortBands.step.11.publish_user_band_memberships",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.publish_user_band_memberships"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.11.publish_user_band_memberships.select.user_id",
+      "ir": "ir:ResolveCohortBands.step.11.publish_user_band_memberships.project.user_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.publish_user_band_memberships.field.user_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.11.publish_user_band_memberships.select.user_band_id",
+      "ir": "ir:ResolveCohortBands.step.11.publish_user_band_memberships.project.user_band_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.publish_user_band_memberships.field.user_band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.11.publish_user_band_memberships.validation.0.intermediate",
+      "ir": "ir:ResolveCohortBands.step.11.publish_user_band_memberships.validation.0.intermediate",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.publish_user_band_memberships.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.12.build_direct_band_memberships",
+      "ir": "ir:ResolveCohortBands.step.12.build_direct_band_memberships",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_direct_band_memberships"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.12.build_direct_band_memberships.join.1.ancestor",
+      "ir": "ir:ResolveCohortBands.step.12.build_direct_band_memberships.join.1.ancestor",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_direct_band_memberships.join.1.ancestor"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.12.build_direct_band_memberships.join.2.singleton",
+      "ir": "ir:ResolveCohortBands.step.12.build_direct_band_memberships.join.2.singleton",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_direct_band_memberships.join.2.singleton"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.12.build_direct_band_memberships.select.user_id",
+      "ir": "ir:ResolveCohortBands.step.12.build_direct_band_memberships.project.user_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_direct_band_memberships.field.user_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.12.build_direct_band_memberships.select.band_id",
+      "ir": "ir:ResolveCohortBands.step.12.build_direct_band_memberships.project.band_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_direct_band_memberships.field.band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.12.build_direct_band_memberships.select.user_band_id",
+      "ir": "ir:ResolveCohortBands.step.12.build_direct_band_memberships.project.user_band_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_direct_band_memberships.field.user_band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.12.build_direct_band_memberships.validation.0.intermediate",
+      "ir": "ir:ResolveCohortBands.step.12.build_direct_band_memberships.validation.0.intermediate",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_direct_band_memberships.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.13.build_resolved_band_memberships",
+      "ir": "ir:ResolveCohortBands.step.13.build_resolved_band_memberships",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_resolved_band_memberships"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.13.build_resolved_band_memberships.where.0",
+      "ir": "ir:ResolveCohortBands.step.13.build_resolved_band_memberships.filter.0",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_resolved_band_memberships.filter.0"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.13.build_resolved_band_memberships.select.user_id",
+      "ir": "ir:ResolveCohortBands.step.13.build_resolved_band_memberships.project.user_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_resolved_band_memberships.field.user_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.13.build_resolved_band_memberships.select.band_id",
+      "ir": "ir:ResolveCohortBands.step.13.build_resolved_band_memberships.project.band_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_resolved_band_memberships.field.band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.13.build_resolved_band_memberships.select.user_band_id",
+      "ir": "ir:ResolveCohortBands.step.13.build_resolved_band_memberships.project.user_band_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_resolved_band_memberships.field.user_band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.13.build_resolved_band_memberships.validation.0.intermediate",
+      "ir": "ir:ResolveCohortBands.step.13.build_resolved_band_memberships.validation.0.intermediate",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_resolved_band_memberships.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.14.merge_band_memberships",
+      "ir": "ir:ResolveCohortBands.step.14.merge_band_memberships",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.merge_band_memberships"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.14.merge_band_memberships.union_all.0",
+      "ir": "ir:ResolveCohortBands.step.14.merge_band_memberships.union_all.0",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.merge_band_memberships.union_all.0"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.14.merge_band_memberships.select.user_id",
+      "ir": "ir:ResolveCohortBands.step.14.merge_band_memberships.project.user_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.merge_band_memberships.field.user_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.14.merge_band_memberships.select.band_id",
+      "ir": "ir:ResolveCohortBands.step.14.merge_band_memberships.project.band_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.merge_band_memberships.field.band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.14.merge_band_memberships.select.user_band_id",
+      "ir": "ir:ResolveCohortBands.step.14.merge_band_memberships.project.user_band_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.merge_band_memberships.field.user_band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.14.merge_band_memberships.validation.0.intermediate",
+      "ir": "ir:ResolveCohortBands.step.14.merge_band_memberships.validation.0.intermediate",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.merge_band_memberships.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.15.build_band_fallbacks",
+      "ir": "ir:ResolveCohortBands.step.15.build_band_fallbacks",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_band_fallbacks"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.15.build_band_fallbacks.hierarchy_fallbacks.0",
+      "ir": "ir:ResolveCohortBands.step.15.build_band_fallbacks.hierarchy_fallbacks.0",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_band_fallbacks.hierarchy_fallbacks.0"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.15.build_band_fallbacks.select.user_band_id",
+      "ir": "ir:ResolveCohortBands.step.15.build_band_fallbacks.project.user_band_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_band_fallbacks.field.user_band_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.15.build_band_fallbacks.select.ordinal",
+      "ir": "ir:ResolveCohortBands.step.15.build_band_fallbacks.project.ordinal",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_band_fallbacks.field.ordinal"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.step.15.build_band_fallbacks.select.user_band_fallback_id",
+      "ir": "ir:ResolveCohortBands.step.15.build_band_fallbacks.project.user_band_fallback_id",
+      "source": "source:examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands.build_band_fallbacks.field.user_band_fallback_id"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.ResolveCohortBands.ResolveCohortBandsGenerated.run.output.0.band_memberships.validation.final",
@@ -118,9 +558,17 @@
       "constant": "BAND_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.user"
     },
+    "BandAncestor": {
+      "constant": "BAND_ANCESTOR_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.resolve"
+    },
     "BandFallback": {
       "constant": "BAND_FALLBACK_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.user"
+    },
+    "BandMatch": {
+      "constant": "BAND_MATCH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.resolve"
     },
     "BandMembership": {
       "constant": "BAND_MEMBERSHIP_SCHEMA",
@@ -154,6 +602,14 @@
       "constant": "CLICK_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.clicks"
     },
+    "ContextDailyClicks": {
+      "constant": "CONTEXT_DAILY_CLICKS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.build"
+    },
+    "ContextDailyImpressions": {
+      "constant": "CONTEXT_DAILY_IMPRESSIONS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.build"
+    },
     "CorpusStatistics": {
       "constant": "CORPUS_STATISTICS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.analytics"
@@ -180,7 +636,7 @@
     },
     "DocumentBm25Score": {
       "constant": "DOCUMENT_BM25_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.bm25"
     },
     "DocumentEvaluationSummary": {
       "constant": "DOCUMENT_EVALUATION_SUMMARY_SCHEMA",
@@ -190,6 +646,10 @@
       "constant": "DOCUMENT_FEATURES_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.analytics"
     },
+    "DocumentFeedbackOption": {
+      "constant": "DOCUMENT_FEEDBACK_OPTION_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
     "DocumentIndexSummary": {
       "constant": "DOCUMENT_INDEX_SUMMARY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
@@ -198,17 +658,37 @@
       "constant": "DOCUMENT_INDEX_TARGET_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "DocumentIndexTargetStats": {
+      "constant": "DOCUMENT_INDEX_TARGET_STATS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
     "DocumentIndexTerm": {
       "constant": "DOCUMENT_INDEX_TERM_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "DocumentIndexTermCount": {
+      "constant": "DOCUMENT_INDEX_TERM_COUNT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "DocumentLine": {
+      "constant": "DOCUMENT_LINE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "DocumentOverlapMatch": {
+      "constant": "DOCUMENT_OVERLAP_MATCH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+    },
     "DocumentOverlapScore": {
       "constant": "DOCUMENT_OVERLAP_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
     },
     "DocumentPopularity": {
       "constant": "DOCUMENT_POPULARITY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.relevance"
+    },
+    "DocumentPopularityTotals": {
+      "constant": "DOCUMENT_POPULARITY_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.build"
     },
     "DocumentQueryEvaluation": {
       "constant": "DOCUMENT_QUERY_EVALUATION_SCHEMA",
@@ -242,9 +722,21 @@
       "constant": "DOCUMENT_SIMILARITY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "DocumentSimilarityCandidate": {
+      "constant": "DOCUMENT_SIMILARITY_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
+    "DocumentSimilarityPair": {
+      "constant": "DOCUMENT_SIMILARITY_PAIR_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
     "DocumentSimilarityQuery": {
       "constant": "DOCUMENT_SIMILARITY_QUERY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "DocumentSimilarityQueryText": {
+      "constant": "DOCUMENT_SIMILARITY_QUERY_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.query"
     },
     "DocumentStatistics": {
       "constant": "DOCUMENT_STATISTICS_SCHEMA",
@@ -282,6 +774,22 @@
       "constant": "EVALUATION_RESULT_TOTALS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
     },
+    "ExpandedDocumentLine": {
+      "constant": "EXPANDED_DOCUMENT_LINE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "ExpandedQueryToken": {
+      "constant": "EXPANDED_QUERY_TOKEN_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ExpandedSentenceText": {
+      "constant": "EXPANDED_SENTENCE_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "ExpandedWordText": {
+      "constant": "EXPANDED_WORD_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
     "Experiment": {
       "constant": "EXPERIMENT_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.experiment"
@@ -289,6 +797,10 @@
     "Impression": {
       "constant": "IMPRESSION_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.clicks"
+    },
+    "IndexTokenFrequency": {
+      "constant": "INDEX_TOKEN_FREQUENCY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
     "IndexedSimilarDocument": {
       "constant": "INDEXED_SIMILAR_DOCUMENT_SCHEMA",
@@ -314,13 +826,25 @@
       "constant": "LABEL_MAP_ENTRY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.label"
     },
+    "MarkedDocumentLine": {
+      "constant": "MARKED_DOCUMENT_LINE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
     "Paragraph": {
       "constant": "PARAGRAPH_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.text"
     },
     "ParagraphBm25Score": {
       "constant": "PARAGRAPH_BM25_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.bm25"
+    },
+    "ParagraphContent": {
+      "constant": "PARAGRAPH_CONTENT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "ParagraphDraft": {
+      "constant": "PARAGRAPH_DRAFT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
     },
     "ParagraphIndexSummary": {
       "constant": "PARAGRAPH_INDEX_SUMMARY_SCHEMA",
@@ -330,13 +854,33 @@
       "constant": "PARAGRAPH_INDEX_TARGET_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "ParagraphIndexTargetStats": {
+      "constant": "PARAGRAPH_INDEX_TARGET_STATS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
     "ParagraphIndexTerm": {
       "constant": "PARAGRAPH_INDEX_TERM_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "ParagraphIndexTermCount": {
+      "constant": "PARAGRAPH_INDEX_TERM_COUNT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ParagraphLine": {
+      "constant": "PARAGRAPH_LINE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "ParagraphLineGroup": {
+      "constant": "PARAGRAPH_LINE_GROUP_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "ParagraphOverlapMatch": {
+      "constant": "PARAGRAPH_OVERLAP_MATCH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+    },
     "ParagraphOverlapScore": {
       "constant": "PARAGRAPH_OVERLAP_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
     },
     "ParagraphScore": {
       "constant": "PARAGRAPH_SCORE_SCHEMA",
@@ -350,13 +894,37 @@
       "constant": "PARAGRAPH_SIMILARITY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "ParagraphSimilarityCandidate": {
+      "constant": "PARAGRAPH_SIMILARITY_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
+    "ParagraphSimilarityPair": {
+      "constant": "PARAGRAPH_SIMILARITY_PAIR_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
     "ParagraphSimilarityQuery": {
       "constant": "PARAGRAPH_SIMILARITY_QUERY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "ParagraphSimilarityQueryText": {
+      "constant": "PARAGRAPH_SIMILARITY_QUERY_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.query"
+    },
     "ParagraphStatistics": {
       "constant": "PARAGRAPH_STATISTICS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "PopularityFeedback": {
+      "constant": "POPULARITY_FEEDBACK_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "QueryDocumentFeedback": {
+      "constant": "QUERY_DOCUMENT_FEEDBACK_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "QueryDocumentSignalTotals": {
+      "constant": "QUERY_DOCUMENT_SIGNAL_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.build"
     },
     "QueryDocumentSignals": {
       "constant": "QUERY_DOCUMENT_SIGNALS_SCHEMA",
@@ -373,6 +941,18 @@
     "QueryLabelAssignments": {
       "constant": "QUERY_LABEL_ASSIGNMENTS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "QueryTerm": {
+      "constant": "QUERY_TERM_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "QueryTermCount": {
+      "constant": "QUERY_TERM_COUNT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "QueryToken": {
+      "constant": "QUERY_TOKEN_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
     "RelevancePolicy": {
       "constant": "RELEVANCE_POLICY_SCHEMA",
@@ -392,7 +972,11 @@
     },
     "SectionBm25Score": {
       "constant": "SECTION_BM25_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.bm25"
+    },
+    "SectionHeading": {
+      "constant": "SECTION_HEADING_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
     },
     "SectionIndexSummary": {
       "constant": "SECTION_INDEX_SUMMARY_SCHEMA",
@@ -402,13 +986,29 @@
       "constant": "SECTION_INDEX_TARGET_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "SectionIndexTargetStats": {
+      "constant": "SECTION_INDEX_TARGET_STATS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
     "SectionIndexTerm": {
       "constant": "SECTION_INDEX_TERM_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "SectionIndexTermCount": {
+      "constant": "SECTION_INDEX_TERM_COUNT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SectionKey": {
+      "constant": "SECTION_KEY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "SectionOverlapMatch": {
+      "constant": "SECTION_OVERLAP_MATCH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+    },
     "SectionOverlapScore": {
       "constant": "SECTION_OVERLAP_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
     },
     "SectionScore": {
       "constant": "SECTION_SCORE_SCHEMA",
@@ -422,9 +1022,21 @@
       "constant": "SECTION_SIMILARITY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "SectionSimilarityCandidate": {
+      "constant": "SECTION_SIMILARITY_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
+    "SectionSimilarityPair": {
+      "constant": "SECTION_SIMILARITY_PAIR_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
     "SectionSimilarityQuery": {
       "constant": "SECTION_SIMILARITY_QUERY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "SectionSimilarityQueryText": {
+      "constant": "SECTION_SIMILARITY_QUERY_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.query"
     },
     "SectionStatistics": {
       "constant": "SECTION_STATISTICS_SCHEMA",
@@ -436,7 +1048,7 @@
     },
     "SentenceBm25Score": {
       "constant": "SENTENCE_BM25_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.bm25"
     },
     "SentenceIndexSummary": {
       "constant": "SENTENCE_INDEX_SUMMARY_SCHEMA",
@@ -446,13 +1058,25 @@
       "constant": "SENTENCE_INDEX_TARGET_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "SentenceIndexTargetStats": {
+      "constant": "SENTENCE_INDEX_TARGET_STATS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
     "SentenceIndexTerm": {
       "constant": "SENTENCE_INDEX_TERM_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
     },
+    "SentenceIndexTermCount": {
+      "constant": "SENTENCE_INDEX_TERM_COUNT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SentenceOverlapMatch": {
+      "constant": "SENTENCE_OVERLAP_MATCH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+    },
     "SentenceOverlapScore": {
       "constant": "SENTENCE_OVERLAP_SCORE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
     },
     "SentenceScore": {
       "constant": "SENTENCE_SCORE_SCHEMA",
@@ -470,13 +1094,29 @@
       "constant": "SENTENCE_SIMILARITY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "SentenceSimilarityCandidate": {
+      "constant": "SENTENCE_SIMILARITY_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
+    "SentenceSimilarityPair": {
+      "constant": "SENTENCE_SIMILARITY_PAIR_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
     "SentenceSimilarityQuery": {
       "constant": "SENTENCE_SIMILARITY_QUERY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "SentenceSimilarityQueryText": {
+      "constant": "SENTENCE_SIMILARITY_QUERY_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.query"
+    },
     "SentenceStatistics": {
       "constant": "SENTENCE_STATISTICS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "SentenceText": {
+      "constant": "SENTENCE_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
     },
     "SimilarDocument": {
       "constant": "SIMILAR_DOCUMENT_SCHEMA",
@@ -502,6 +1142,10 @@
       "constant": "SIMILARITY_SENTENCE_QUERY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "SingletonUserBand": {
+      "constant": "SINGLETON_USER_BAND_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.resolve"
+    },
     "TimeWindow": {
       "constant": "TIME_WINDOW_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.TimeWindow"
@@ -518,9 +1162,17 @@
       "constant": "USER_BAND_MEMBERSHIP_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.user"
     },
+    "UserBandPath": {
+      "constant": "USER_BAND_PATH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.resolve"
+    },
     "Word": {
       "constant": "WORD_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.text"
+    },
+    "WordText": {
+      "constant": "WORD_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
     }
   },
   "source_transform": "examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands",
@@ -540,148 +1192,1019 @@
       },
       {
         "detail": {
-          "input_schema": "User",
-          "output_schema": "BandMembership"
+          "input_schema": "Band",
+          "output_schema": "Band"
         },
         "operation": "step",
         "sources": [
           "users"
         ],
-        "step": "declare_outputs",
-        "target": "declare_outputs"
+        "step": "validate_bands",
+        "target": "validate_bands"
+      },
+      {
+        "detail": {
+          "diagnostic": "REL-E0702",
+          "keys": 1
+        },
+        "operation": "require_unique",
+        "sources": [
+          "bands.id"
+        ],
+        "step": "validate_bands",
+        "target": "validate_bands.require_unique[0]"
+      },
+      {
+        "detail": {
+          "diagnostic": "REL-E0703"
+        },
+        "operation": "require_all",
+        "sources": [
+          "bands.age_start",
+          "bands.age_end"
+        ],
+        "step": "validate_bands",
+        "target": "validate_bands.require_all[1]"
+      },
+      {
+        "detail": {
+          "diagnostic": "REL-E0706",
+          "keys": 1,
+          "max_depth": 8
+        },
+        "operation": "require_parent_hierarchy",
+        "sources": [
+          "bands.id",
+          "bands.parent_band_id",
+          "bands.priority"
+        ],
+        "step": "validate_bands",
+        "target": "validate_bands.require_parent_hierarchy[2]"
+      },
+      {
+        "detail": {
+          "field": "id"
+        },
+        "operation": "project",
+        "sources": [
+          "bands.id"
+        ],
+        "step": "validate_bands",
+        "target": "Band.id"
+      },
+      {
+        "detail": {
+          "field": "name"
+        },
+        "operation": "project",
+        "sources": [
+          "bands.name"
+        ],
+        "step": "validate_bands",
+        "target": "Band.name"
+      },
+      {
+        "detail": {
+          "field": "priority"
+        },
+        "operation": "project",
+        "sources": [
+          "bands.priority"
+        ],
+        "step": "validate_bands",
+        "target": "Band.priority"
+      },
+      {
+        "detail": {
+          "field": "parent_band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "bands.parent_band_id"
+        ],
+        "step": "validate_bands",
+        "target": "Band.parent_band_id"
+      },
+      {
+        "detail": {
+          "field": "age_start"
+        },
+        "operation": "project",
+        "sources": [
+          "bands.age_start"
+        ],
+        "step": "validate_bands",
+        "target": "Band.age_start"
+      },
+      {
+        "detail": {
+          "field": "age_end"
+        },
+        "operation": "project",
+        "sources": [
+          "bands.age_end"
+        ],
+        "step": "validate_bands",
+        "target": "Band.age_end"
+      },
+      {
+        "detail": {
+          "field": "genders"
+        },
+        "operation": "project",
+        "sources": [
+          "bands.genders"
+        ],
+        "step": "validate_bands",
+        "target": "Band.genders"
+      },
+      {
+        "detail": {
+          "field": "locales"
+        },
+        "operation": "project",
+        "sources": [
+          "bands.locales"
+        ],
+        "step": "validate_bands",
+        "target": "Band.locales"
+      },
+      {
+        "detail": {
+          "field": "countries"
+        },
+        "operation": "project",
+        "sources": [
+          "bands.countries"
+        ],
+        "step": "validate_bands",
+        "target": "Band.countries"
+      },
+      {
+        "detail": {
+          "field": "geo_tags"
+        },
+        "operation": "project",
+        "sources": [
+          "bands.geo_tags"
+        ],
+        "step": "validate_bands",
+        "target": "Band.geo_tags"
+      },
+      {
+        "detail": {
+          "field": "device_types"
+        },
+        "operation": "project",
+        "sources": [
+          "bands.device_types"
+        ],
+        "step": "validate_bands",
+        "target": "Band.device_types"
+      },
+      {
+        "detail": {
+          "field": "time_zones"
+        },
+        "operation": "project",
+        "sources": [
+          "bands.time_zones"
+        ],
+        "step": "validate_bands",
+        "target": "Band.time_zones"
+      },
+      {
+        "detail": {
+          "input_schema": "User",
+          "output_schema": "BandMatch"
+        },
+        "operation": "step",
+        "sources": [
+          "Band",
+          "band"
+        ],
+        "step": "match_bands",
+        "target": "match_bands"
+      },
+      {
+        "detail": {},
+        "operation": "filter",
+        "sources": [
+          "band.genders",
+          "user.gender",
+          "band.locales",
+          "user.locale",
+          "band.countries",
+          "user.country",
+          "band.geo_tags",
+          "user.geo_tag",
+          "band.device_types",
+          "user.device_type",
+          "band.time_zones",
+          "user.time_zone",
+          "band.age_start",
+          "user.age",
+          "band.age_end"
+        ],
+        "step": "match_bands",
+        "target": "match_bands.filter[0]"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "cross",
+          "right_alias": "valid_bands"
+        },
+        "operation": "rowset_join",
+        "sources": [],
+        "step": "match_bands",
+        "target": "match_bands.join[1].band"
+      },
+      {
+        "detail": {
+          "field": "user_id"
+        },
+        "operation": "project",
+        "sources": [
+          "user.id"
+        ],
+        "step": "match_bands",
+        "target": "BandMatch.user_id"
+      },
+      {
+        "detail": {
+          "field": "band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "band.id"
+        ],
+        "step": "match_bands",
+        "target": "BandMatch.band_id"
+      },
+      {
+        "detail": {
+          "field": "priority"
+        },
+        "operation": "project",
+        "sources": [
+          "band.priority"
+        ],
+        "step": "match_bands",
+        "target": "BandMatch.priority"
+      },
+      {
+        "detail": {
+          "field": "parent_band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "band.parent_band_id"
+        ],
+        "step": "match_bands",
+        "target": "BandMatch.parent_band_id"
+      },
+      {
+        "detail": {
+          "input_schema": "BandMatch",
+          "output_schema": "BandMatch"
+        },
+        "operation": "step",
+        "sources": [
+          "BandMatch",
+          "child_match"
+        ],
+        "step": "select_leaf_matches",
+        "target": "select_leaf_matches"
+      },
+      {
+        "detail": {
+          "cardinality": "row_filtering",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "child_match"
+        },
+        "operation": "not_exists",
+        "sources": [
+          "child_match.user_id",
+          "BandMatch.user_id",
+          "child_match.parent_band_id",
+          "BandMatch.band_id"
+        ],
+        "step": "select_leaf_matches",
+        "target": "select_leaf_matches.join[1].child_match"
+      },
+      {
+        "detail": {
+          "input_name": "child_match",
+          "schema": "BandMatch"
+        },
+        "operation": "relation_alias",
+        "sources": [
+          "matches"
+        ],
+        "step": "select_leaf_matches",
+        "target": "select_leaf_matches.relation_alias[0].child_match"
+      },
+      {
+        "detail": {
+          "field": "user_id"
+        },
+        "operation": "project",
+        "sources": [
+          "BandMatch.user_id"
+        ],
+        "step": "select_leaf_matches",
+        "target": "BandMatch.user_id"
+      },
+      {
+        "detail": {
+          "field": "band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "BandMatch.band_id"
+        ],
+        "step": "select_leaf_matches",
+        "target": "BandMatch.band_id"
+      },
+      {
+        "detail": {
+          "field": "priority"
+        },
+        "operation": "project",
+        "sources": [
+          "BandMatch.priority"
+        ],
+        "step": "select_leaf_matches",
+        "target": "BandMatch.priority"
+      },
+      {
+        "detail": {
+          "field": "parent_band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "BandMatch.parent_band_id"
+        ],
+        "step": "select_leaf_matches",
+        "target": "BandMatch.parent_band_id"
+      },
+      {
+        "detail": {
+          "input_schema": "Band",
+          "output_schema": "BandAncestor"
+        },
+        "operation": "step",
+        "sources": [
+          "BandMatch"
+        ],
+        "step": "expand_band_ancestors",
+        "target": "expand_band_ancestors"
+      },
+      {
+        "detail": {
+          "max_depth": 8,
+          "schema": "BandAncestor",
+          "scope": "band_ancestors"
+        },
+        "operation": "hierarchy_closure",
+        "sources": [
+          "Band.id",
+          "Band.parent_band_id"
+        ],
+        "step": "expand_band_ancestors",
+        "target": "expand_band_ancestors.hierarchy_closure[0].band_ancestors"
+      },
+      {
+        "detail": {
+          "field": "band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "band_ancestors.band_id"
+        ],
+        "step": "expand_band_ancestors",
+        "target": "BandAncestor.band_id"
+      },
+      {
+        "detail": {
+          "field": "ancestor_band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "band_ancestors.ancestor_band_id"
+        ],
+        "step": "expand_band_ancestors",
+        "target": "BandAncestor.ancestor_band_id"
+      },
+      {
+        "detail": {
+          "field": "depth"
+        },
+        "operation": "project",
+        "sources": [
+          "band_ancestors.depth"
+        ],
+        "step": "expand_band_ancestors",
+        "target": "BandAncestor.depth"
+      },
+      {
+        "detail": {
+          "input_schema": "BandMatch",
+          "output_schema": "UserBandPath"
+        },
+        "operation": "step",
+        "sources": [
+          "BandAncestor"
+        ],
+        "step": "build_user_band_paths",
+        "target": "build_user_band_paths"
       },
       {
         "detail": {
           "field": "user_id",
-          "result": "band_memberships"
+          "function": "key",
+          "key": "user_id"
         },
-        "operation": "project",
+        "operation": "aggregate",
         "sources": [
-          "users.id"
+          "BandMatch.user_id"
         ],
-        "step": "declare_outputs",
-        "target": "band_memberships.user_id"
-      },
-      {
-        "detail": {
-          "field": "band_id",
-          "result": "band_memberships"
-        },
-        "operation": "project",
-        "sources": [
-          "literal"
-        ],
-        "step": "declare_outputs",
-        "target": "band_memberships.band_id"
-      },
-      {
-        "detail": {
-          "field": "user_band_id",
-          "result": "band_memberships"
-        },
-        "operation": "project",
-        "sources": [
-          "literal"
-        ],
-        "step": "declare_outputs",
-        "target": "band_memberships.user_band_id"
-      },
-      {
-        "detail": {
-          "phase": "raw",
-          "project_output": false,
-          "schema_mode": "strict"
-        },
-        "operation": "hook",
-        "sources": [
-          "BandMembership"
-        ],
-        "step": "declare_outputs",
-        "target": "declare_outputs.hook.resolve_bands"
-      },
-      {
-        "detail": {
-          "field": "user_band_id",
-          "result": "user_bands"
-        },
-        "operation": "project",
-        "sources": [
-          "literal"
-        ],
-        "step": "declare_outputs",
-        "target": "user_bands.user_band_id"
+        "step": "build_user_band_paths",
+        "target": "UserBandPath.user_id"
       },
       {
         "detail": {
           "field": "band_ids",
-          "result": "user_bands"
+          "function": "collect_list",
+          "key": null
         },
-        "operation": "project",
+        "operation": "aggregate",
         "sources": [
-          "users.id"
+          "BandMatch.band_id",
+          "BandMatch.priority"
         ],
-        "step": "declare_outputs",
-        "target": "user_bands.band_ids"
+        "step": "build_user_band_paths",
+        "target": "UserBandPath.band_ids"
       },
       {
         "detail": {
-          "field": "user_id",
-          "result": "user_band_memberships"
+          "input_schema": "UserBandPath",
+          "output_schema": "UserBand"
         },
-        "operation": "project",
+        "operation": "step",
         "sources": [
-          "users.id"
+          "UserBandPath"
         ],
-        "step": "declare_outputs",
-        "target": "user_band_memberships.user_id"
+        "step": "build_resolved_user_bands",
+        "target": "build_resolved_user_bands"
       },
       {
         "detail": {
-          "field": "user_band_id",
-          "result": "user_band_memberships"
+          "scope": "UserBandPath",
+          "subset": "1"
+        },
+        "operation": "drop_duplicates",
+        "sources": [
+          "UserBandPath.band_ids"
+        ],
+        "step": "build_resolved_user_bands",
+        "target": "build_resolved_user_bands.drop_duplicates[0]"
+      },
+      {
+        "detail": {
+          "field": "user_band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "UserBandPath.band_ids"
+        ],
+        "step": "build_resolved_user_bands",
+        "target": "UserBand.user_band_id"
+      },
+      {
+        "detail": {
+          "field": "band_ids"
+        },
+        "operation": "project",
+        "sources": [
+          "UserBandPath.band_ids"
+        ],
+        "step": "build_resolved_user_bands",
+        "target": "UserBand.band_ids"
+      },
+      {
+        "detail": {
+          "input_schema": "Band",
+          "output_schema": "SingletonUserBand"
+        },
+        "operation": "step",
+        "sources": [
+          "UserBand"
+        ],
+        "step": "build_singleton_user_bands",
+        "target": "build_singleton_user_bands"
+      },
+      {
+        "detail": {
+          "field": "band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "Band.id"
+        ],
+        "step": "build_singleton_user_bands",
+        "target": "SingletonUserBand.band_id"
+      },
+      {
+        "detail": {
+          "field": "user_band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "Band.id"
+        ],
+        "step": "build_singleton_user_bands",
+        "target": "SingletonUserBand.user_band_id"
+      },
+      {
+        "detail": {
+          "field": "band_ids"
+        },
+        "operation": "project",
+        "sources": [
+          "Band.id"
+        ],
+        "step": "build_singleton_user_bands",
+        "target": "SingletonUserBand.band_ids"
+      },
+      {
+        "detail": {
+          "input_schema": "SingletonUserBand",
+          "output_schema": "UserBand"
+        },
+        "operation": "step",
+        "sources": [
+          "SingletonUserBand"
+        ],
+        "step": "publish_singleton_user_bands",
+        "target": "publish_singleton_user_bands"
+      },
+      {
+        "detail": {
+          "field": "user_band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "SingletonUserBand.user_band_id"
+        ],
+        "step": "publish_singleton_user_bands",
+        "target": "UserBand.user_band_id"
+      },
+      {
+        "detail": {
+          "field": "band_ids"
+        },
+        "operation": "project",
+        "sources": [
+          "SingletonUserBand.band_ids"
+        ],
+        "step": "publish_singleton_user_bands",
+        "target": "UserBand.band_ids"
+      },
+      {
+        "detail": {
+          "input_schema": "UserBand",
+          "output_schema": "UserBand"
+        },
+        "operation": "step",
+        "sources": [
+          "UserBand"
+        ],
+        "step": "merge_user_band_catalog",
+        "target": "merge_user_band_catalog"
+      },
+      {
+        "detail": {
+          "scope": "resolved",
+          "subset": "2"
+        },
+        "operation": "drop_duplicates",
+        "sources": [
+          "resolved.user_band_id",
+          "resolved.band_ids"
+        ],
+        "step": "merge_user_band_catalog",
+        "target": "merge_user_band_catalog.drop_duplicates[1]"
+      },
+      {
+        "detail": {
+          "by_name": false,
+          "schema": "UserBand",
+          "source": "singleton_catalog"
+        },
+        "operation": "union_all",
+        "sources": [
+          "resolved",
+          "singleton"
+        ],
+        "step": "merge_user_band_catalog",
+        "target": "merge_user_band_catalog.union_all[0].singleton"
+      },
+      {
+        "detail": {
+          "field": "user_band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "resolved.user_band_id"
+        ],
+        "step": "merge_user_band_catalog",
+        "target": "UserBand.user_band_id"
+      },
+      {
+        "detail": {
+          "field": "band_ids"
+        },
+        "operation": "project",
+        "sources": [
+          "resolved.band_ids"
+        ],
+        "step": "merge_user_band_catalog",
+        "target": "UserBand.band_ids"
+      },
+      {
+        "detail": {
+          "input_schema": "UserBand",
+          "output_schema": "UserBand"
+        },
+        "operation": "step",
+        "sources": [
+          "UserBand"
+        ],
+        "step": "publish_user_bands",
+        "target": "publish_user_bands"
+      },
+      {
+        "detail": {
+          "field": "user_band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "UserBand.user_band_id"
+        ],
+        "step": "publish_user_bands",
+        "target": "UserBand.user_band_id"
+      },
+      {
+        "detail": {
+          "field": "band_ids"
+        },
+        "operation": "project",
+        "sources": [
+          "UserBand.band_ids"
+        ],
+        "step": "publish_user_bands",
+        "target": "UserBand.band_ids"
+      },
+      {
+        "detail": {
+          "input_schema": "User",
+          "output_schema": "UserBandMembership"
+        },
+        "operation": "step",
+        "sources": [
+          "UserBand",
+          "path"
+        ],
+        "step": "build_user_band_memberships",
+        "target": "build_user_band_memberships"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "left",
+          "right_alias": "user_band_paths"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "path.user_id",
+          "user.id"
+        ],
+        "step": "build_user_band_memberships",
+        "target": "build_user_band_memberships.join[1].path"
+      },
+      {
+        "detail": {
+          "field": "user_id"
+        },
+        "operation": "project",
+        "sources": [
+          "user.id"
+        ],
+        "step": "build_user_band_memberships",
+        "target": "UserBandMembership.user_id"
+      },
+      {
+        "detail": {
+          "field": "user_band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "path.user_id",
+          "path.band_ids"
+        ],
+        "step": "build_user_band_memberships",
+        "target": "UserBandMembership.user_band_id"
+      },
+      {
+        "detail": {
+          "input_schema": "UserBandMembership",
+          "output_schema": "UserBandMembership"
+        },
+        "operation": "step",
+        "sources": [
+          "UserBandMembership"
+        ],
+        "step": "publish_user_band_memberships",
+        "target": "publish_user_band_memberships"
+      },
+      {
+        "detail": {
+          "field": "user_id"
+        },
+        "operation": "project",
+        "sources": [
+          "UserBandMembership.user_id"
+        ],
+        "step": "publish_user_band_memberships",
+        "target": "UserBandMembership.user_id"
+      },
+      {
+        "detail": {
+          "field": "user_band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "UserBandMembership.user_band_id"
+        ],
+        "step": "publish_user_band_memberships",
+        "target": "UserBandMembership.user_band_id"
+      },
+      {
+        "detail": {
+          "input_schema": "BandMatch",
+          "output_schema": "BandMembership"
+        },
+        "operation": "step",
+        "sources": [
+          "UserBandMembership",
+          "ancestor",
+          "singleton"
+        ],
+        "step": "build_direct_band_memberships",
+        "target": "build_direct_band_memberships"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "band_ancestors"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "ancestor.band_id",
+          "match.band_id"
+        ],
+        "step": "build_direct_band_memberships",
+        "target": "build_direct_band_memberships.join[1].ancestor"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "singleton_user_bands_2"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "singleton.band_id",
+          "match.band_id"
+        ],
+        "step": "build_direct_band_memberships",
+        "target": "build_direct_band_memberships.join[2].singleton"
+      },
+      {
+        "detail": {
+          "field": "user_id"
+        },
+        "operation": "project",
+        "sources": [
+          "match.user_id"
+        ],
+        "step": "build_direct_band_memberships",
+        "target": "BandMembership.user_id"
+      },
+      {
+        "detail": {
+          "field": "band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "ancestor.ancestor_band_id"
+        ],
+        "step": "build_direct_band_memberships",
+        "target": "BandMembership.band_id"
+      },
+      {
+        "detail": {
+          "field": "user_band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "singleton.user_band_id"
+        ],
+        "step": "build_direct_band_memberships",
+        "target": "BandMembership.user_band_id"
+      },
+      {
+        "detail": {
+          "input_schema": "UserBandMembership",
+          "output_schema": "BandMembership"
+        },
+        "operation": "step",
+        "sources": [
+          "BandMembership"
+        ],
+        "step": "build_resolved_band_memberships",
+        "target": "build_resolved_band_memberships"
+      },
+      {
+        "detail": {},
+        "operation": "filter",
+        "sources": [
+          "UserBandMembership.user_band_id"
+        ],
+        "step": "build_resolved_band_memberships",
+        "target": "build_resolved_band_memberships.filter[0]"
+      },
+      {
+        "detail": {
+          "field": "user_id"
+        },
+        "operation": "project",
+        "sources": [
+          "UserBandMembership.user_id"
+        ],
+        "step": "build_resolved_band_memberships",
+        "target": "BandMembership.user_id"
+      },
+      {
+        "detail": {
+          "field": "band_id"
         },
         "operation": "project",
         "sources": [
           "literal"
         ],
-        "step": "declare_outputs",
-        "target": "user_band_memberships.user_band_id"
+        "step": "build_resolved_band_memberships",
+        "target": "BandMembership.band_id"
       },
       {
         "detail": {
-          "field": "user_band_id",
-          "result": "band_fallbacks"
+          "field": "user_band_id"
         },
         "operation": "project",
         "sources": [
-          "literal"
+          "UserBandMembership.user_band_id"
         ],
-        "step": "declare_outputs",
-        "target": "band_fallbacks.user_band_id"
+        "step": "build_resolved_band_memberships",
+        "target": "BandMembership.user_band_id"
       },
       {
         "detail": {
-          "field": "ordinal",
-          "result": "band_fallbacks"
+          "input_schema": "BandMembership",
+          "output_schema": "BandMembership"
         },
-        "operation": "project",
+        "operation": "step",
         "sources": [
-          "literal"
+          "BandMembership"
         ],
-        "step": "declare_outputs",
-        "target": "band_fallbacks.ordinal"
+        "step": "merge_band_memberships",
+        "target": "merge_band_memberships"
       },
       {
         "detail": {
-          "field": "user_band_fallback_id",
-          "result": "band_fallbacks"
+          "by_name": false,
+          "schema": "BandMembership",
+          "source": "resolved_band_memberships"
+        },
+        "operation": "union_all",
+        "sources": [
+          "direct",
+          "resolved"
+        ],
+        "step": "merge_band_memberships",
+        "target": "merge_band_memberships.union_all[0].resolved"
+      },
+      {
+        "detail": {
+          "field": "user_id"
         },
         "operation": "project",
         "sources": [
-          "literal"
+          "direct.user_id"
         ],
-        "step": "declare_outputs",
-        "target": "band_fallbacks.user_band_fallback_id"
+        "step": "merge_band_memberships",
+        "target": "BandMembership.user_id"
+      },
+      {
+        "detail": {
+          "field": "band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "direct.band_id"
+        ],
+        "step": "merge_band_memberships",
+        "target": "BandMembership.band_id"
+      },
+      {
+        "detail": {
+          "field": "user_band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "direct.user_band_id"
+        ],
+        "step": "merge_band_memberships",
+        "target": "BandMembership.user_band_id"
+      },
+      {
+        "detail": {
+          "input_schema": "UserBand",
+          "output_schema": "BandFallback"
+        },
+        "operation": "step",
+        "sources": [
+          "BandMembership"
+        ],
+        "step": "build_band_fallbacks",
+        "target": "build_band_fallbacks"
+      },
+      {
+        "detail": {
+          "max_depth": 8,
+          "parents": "band",
+          "schema": "BandFallback",
+          "scope": "band_fallbacks"
+        },
+        "operation": "hierarchy_fallbacks",
+        "sources": [
+          "user_band.user_band_id",
+          "user_band.band_ids",
+          "band.id",
+          "band.parent_band_id"
+        ],
+        "step": "build_band_fallbacks",
+        "target": "build_band_fallbacks.hierarchy_fallbacks[0].band_fallbacks"
+      },
+      {
+        "detail": {
+          "field": "user_band_id"
+        },
+        "operation": "project",
+        "sources": [
+          "band_fallbacks.user_band_id"
+        ],
+        "step": "build_band_fallbacks",
+        "target": "BandFallback.user_band_id"
+      },
+      {
+        "detail": {
+          "field": "ordinal"
+        },
+        "operation": "project",
+        "sources": [
+          "band_fallbacks.ordinal"
+        ],
+        "step": "build_band_fallbacks",
+        "target": "BandFallback.ordinal"
+      },
+      {
+        "detail": {
+          "field": "user_band_fallback_id"
+        },
+        "operation": "project",
+        "sources": [
+          "band_fallbacks.user_band_fallback_id"
+        ],
+        "step": "build_band_fallbacks",
+        "target": "BandFallback.user_band_fallback_id"
       },
       {
         "detail": {
@@ -728,47 +2251,422 @@
         "target": "BandFallback.validation.final"
       }
     ],
-    "opaque_boundaries": [
-      {
-        "hook": "resolve_bands",
-        "phase": "raw",
-        "reason": "arbitrary PySpark hook body",
-        "schema": "BandMembership",
-        "step": "declare_outputs",
-        "target": "declare_outputs"
-      }
-    ]
+    "opaque_boundaries": []
   },
   "steps": [
     {
       "after_hooks": [],
       "before_hooks": [],
-      "input_alias": "user",
+      "input_alias": "band",
       "joins": [],
-      "name": "declare_outputs",
-      "output_alias": "band_membership",
-      "output_schema": "BandMembership",
+      "name": "validate_bands",
+      "output_alias": "band",
+      "output_schema": "Band",
       "results": [
         {
-          "after_hooks": [
-            "resolve_bands"
-          ],
-          "frame": "band_memberships",
-          "lane": "band_memberships",
-          "schema": "BandMembership"
-        },
+          "after_hooks": [],
+          "frame": "valid_bands",
+          "lane": "valid_bands",
+          "schema": "Band"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "Band"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "user",
+      "joins": [
+        {
+          "how": "cross",
+          "input": "band",
+          "right_alias": "valid_bands"
+        }
+      ],
+      "name": "match_bands",
+      "output_alias": "band_match",
+      "output_schema": "BandMatch",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "matches",
+          "lane": "matches",
+          "schema": "BandMatch"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "BandMatch"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "band_match",
+      "joins": [
+        {
+          "how": "inner",
+          "input": "child_match",
+          "right_alias": "child_match"
+        }
+      ],
+      "name": "select_leaf_matches",
+      "output_alias": "band_match",
+      "output_schema": "BandMatch",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "leaf_matches",
+          "lane": "leaf_matches",
+          "schema": "BandMatch"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "BandMatch"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "band",
+      "joins": [],
+      "name": "expand_band_ancestors",
+      "output_alias": "band_ancestor",
+      "output_schema": "BandAncestor",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "band_ancestors",
+          "lane": "band_ancestors",
+          "schema": "BandAncestor"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "BandAncestor"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "band_match",
+      "joins": [],
+      "name": "build_user_band_paths",
+      "output_alias": "user_band_path",
+      "output_schema": "UserBandPath",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "user_band_paths",
+          "lane": "user_band_paths",
+          "schema": "UserBandPath"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "UserBandPath"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "user_band_path",
+      "joins": [],
+      "name": "build_resolved_user_bands",
+      "output_alias": "user_band",
+      "output_schema": "UserBand",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "resolved_user_bands",
+          "lane": "resolved_user_bands",
+          "schema": "UserBand"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "UserBand"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "band",
+      "joins": [],
+      "name": "build_singleton_user_bands",
+      "output_alias": "singleton_user_band",
+      "output_schema": "SingletonUserBand",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "singleton_user_bands",
+          "lane": "singleton_user_bands",
+          "schema": "SingletonUserBand"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "SingletonUserBand"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "singleton_user_band",
+      "joins": [],
+      "name": "publish_singleton_user_bands",
+      "output_alias": "user_band",
+      "output_schema": "UserBand",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "singleton_catalog",
+          "lane": "singleton_catalog",
+          "schema": "UserBand"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "UserBand"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "user_band",
+      "joins": [],
+      "name": "merge_user_band_catalog",
+      "output_alias": "user_band",
+      "output_schema": "UserBand",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "all_user_bands",
+          "lane": "all_user_bands",
+          "schema": "UserBand"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "UserBand"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "user_band",
+      "joins": [],
+      "name": "publish_user_bands",
+      "output_alias": "user_band",
+      "output_schema": "UserBand",
+      "results": [
         {
           "after_hooks": [],
           "frame": "user_bands",
           "lane": "user_bands",
           "schema": "UserBand"
-        },
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "UserBand"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "user",
+      "joins": [
+        {
+          "how": "left",
+          "input": "path",
+          "right_alias": "user_band_paths"
+        }
+      ],
+      "name": "build_user_band_memberships",
+      "output_alias": "user_band_membership",
+      "output_schema": "UserBandMembership",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "resolved_user_band_memberships",
+          "lane": "resolved_user_band_memberships",
+          "schema": "UserBandMembership"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "UserBandMembership"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "user_band_membership",
+      "joins": [],
+      "name": "publish_user_band_memberships",
+      "output_alias": "user_band_membership",
+      "output_schema": "UserBandMembership",
+      "results": [
         {
           "after_hooks": [],
           "frame": "user_band_memberships",
           "lane": "user_band_memberships",
           "schema": "UserBandMembership"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "UserBandMembership"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "band_match",
+      "joins": [
+        {
+          "how": "inner",
+          "input": "ancestor",
+          "right_alias": "band_ancestors"
         },
+        {
+          "how": "inner",
+          "input": "singleton",
+          "right_alias": "singleton_user_bands_2"
+        }
+      ],
+      "name": "build_direct_band_memberships",
+      "output_alias": "band_membership",
+      "output_schema": "BandMembership",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "direct_band_memberships",
+          "lane": "direct_band_memberships",
+          "schema": "BandMembership"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "BandMembership"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "user_band_membership",
+      "joins": [],
+      "name": "build_resolved_band_memberships",
+      "output_alias": "band_membership",
+      "output_schema": "BandMembership",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "resolved_band_memberships",
+          "lane": "resolved_band_memberships",
+          "schema": "BandMembership"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "BandMembership"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "band_membership",
+      "joins": [],
+      "name": "merge_band_memberships",
+      "output_alias": "band_membership",
+      "output_schema": "BandMembership",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "band_memberships",
+          "lane": "band_memberships",
+          "schema": "BandMembership"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "BandMembership"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "user_band",
+      "joins": [],
+      "name": "build_band_fallbacks",
+      "output_alias": "band_fallback",
+      "output_schema": "BandFallback",
+      "results": [
         {
           "after_hooks": [],
           "frame": "band_fallbacks",

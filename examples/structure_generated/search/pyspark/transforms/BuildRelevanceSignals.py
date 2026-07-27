@@ -5,8 +5,8 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import Window
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
-from examples.search.transforms.relevance.BuildRelevanceSignals import BuildRelevanceSignals
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
+from examples.structure_generated.search.pyspark.schemas.build import CONTEXT_DAILY_CLICKS_SCHEMA, CONTEXT_DAILY_IMPRESSIONS_SCHEMA, DOCUMENT_POPULARITY_TOTALS_SCHEMA, QUERY_DOCUMENT_SIGNAL_TOTALS_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.clicks import DAILY_CLICKS_SCHEMA, DAILY_IMPRESSIONS_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.relevance import DOCUMENT_POPULARITY_SCHEMA, QUERY_DOCUMENT_SIGNALS_SCHEMA, RELEVANCE_POLICY_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.user import BAND_FALLBACK_SCHEMA, BAND_MEMBERSHIP_SCHEMA, USER_BAND_MEMBERSHIP_SCHEMA
@@ -17,7 +17,6 @@ class BuildRelevanceSignalsGenerated:
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
         self.ctx = ctx
-        self._impl = BuildRelevanceSignals()
 
     def run(
         self,
@@ -42,9 +41,9 @@ class BuildRelevanceSignalsGenerated:
         _input_band_fallbacks = band_fallbacks
         _input_policy = policy
 
-        # Step method: declare_context_impressions
-        context_impressions = daily_impressions.alias("daily_impressions")
-        context_impressions = context_impressions.select(
+        # Step method: global_impressions
+        global_context_impressions = daily_impressions.alias("daily_impressions")
+        global_context_impressions = global_context_impressions.select(
             F.col("daily_impressions.window"),
             F.col("daily_impressions.query"),
             F.col("daily_impressions.document_id"),
@@ -54,13 +53,75 @@ class BuildRelevanceSignalsGenerated:
             F.lit(None).cast(T.StringType()).alias("band_id"),
             F.col("daily_impressions.impression_count"),
         )
-        context_impressions = self._impl.expand_impressions(daily_impressions=_input_daily_impressions, band_memberships=_input_band_memberships, user_band_memberships=_input_user_band_memberships, band_fallbacks=_input_band_fallbacks, context_impressions=context_impressions, spark=self.spark, ctx=self.ctx)
-        assert_schema(context_impressions, DAILY_IMPRESSIONS_SCHEMA, name="DailyImpressions", mode="strict")
-        assert_schema(context_impressions, DAILY_IMPRESSIONS_SCHEMA, name="DailyImpressions", mode="strict")
+        assert_schema(global_context_impressions, CONTEXT_DAILY_IMPRESSIONS_SCHEMA, name="ContextDailyImpressions", mode="strict")
 
-        # Step method: declare_context_clicks
-        context_clicks = daily_clicks.alias("daily_clicks")
-        context_clicks = context_clicks.select(
+        # Step method: fallback_impressions
+        fallback_context_impressions = daily_impressions.alias("daily_impressions")
+        user_band_memberships_joined = user_band_memberships.alias("user_band_memberships")
+        fallback_context_impressions = fallback_context_impressions.join(
+            user_band_memberships_joined,
+            (F.col("user_band_memberships.user_id") == F.col("daily_impressions.user_id")),
+            "inner",
+        )
+        band_fallbacks_2_joined = band_fallbacks.alias("band_fallbacks_2")
+        fallback_context_impressions = fallback_context_impressions.join(
+            band_fallbacks_2_joined,
+            (F.col("band_fallbacks_2.user_band_id") == F.col("user_band_memberships.user_band_id")),
+            "inner",
+        )
+        fallback_context_impressions = fallback_context_impressions.where((F.col("user_band_memberships.user_band_id").isNotNull()) & (F.col("band_fallbacks_2.user_band_fallback_id").isNotNull()))
+        fallback_context_impressions = fallback_context_impressions.select(
+            F.col("daily_impressions.window"),
+            F.col("daily_impressions.query"),
+            F.col("daily_impressions.document_id"),
+            F.col("daily_impressions.position"),
+            F.col("daily_impressions.examination_propensity"),
+            F.col("daily_impressions.user_id"),
+            F.col("band_fallbacks_2.user_band_fallback_id").alias("band_id"),
+            F.col("daily_impressions.impression_count"),
+        )
+        assert_schema(fallback_context_impressions, CONTEXT_DAILY_IMPRESSIONS_SCHEMA, name="ContextDailyImpressions", mode="strict")
+
+        # Step method: band_impressions
+        band_context_impressions = daily_impressions.alias("daily_impressions")
+        band_memberships_joined = band_memberships.alias("band_memberships")
+        band_context_impressions = band_context_impressions.join(
+            band_memberships_joined,
+            (F.col("band_memberships.user_id") == F.col("daily_impressions.user_id")),
+            "inner",
+        )
+        band_context_impressions = band_context_impressions.where((F.col("band_memberships.band_id").isNotNull()))
+        band_context_impressions = band_context_impressions.select(
+            F.col("daily_impressions.window"),
+            F.col("daily_impressions.query"),
+            F.col("daily_impressions.document_id"),
+            F.col("daily_impressions.position"),
+            F.col("daily_impressions.examination_propensity"),
+            F.col("daily_impressions.user_id"),
+            F.col("band_memberships.user_band_id").alias("band_id"),
+            F.col("daily_impressions.impression_count"),
+        )
+        assert_schema(band_context_impressions, CONTEXT_DAILY_IMPRESSIONS_SCHEMA, name="ContextDailyImpressions", mode="strict")
+
+        # Step method: merge_context_impressions
+        context_impressions = global_context_impressions.alias("context_daily_impressions")
+        context_impressions = context_impressions.union(fallback_context_impressions)
+        context_impressions = context_impressions.union(band_context_impressions)
+        context_impressions = context_impressions.select(
+            F.col("window"),
+            F.col("query"),
+            F.col("document_id"),
+            F.col("position"),
+            F.col("examination_propensity"),
+            F.col("user_id"),
+            F.col("band_id"),
+            F.col("impression_count"),
+        )
+        assert_schema(context_impressions, CONTEXT_DAILY_IMPRESSIONS_SCHEMA, name="ContextDailyImpressions", mode="strict")
+
+        # Step method: global_clicks
+        global_context_clicks = daily_clicks.alias("daily_clicks")
+        global_context_clicks = global_context_clicks.select(
             F.col("daily_clicks.window"),
             F.col("daily_clicks.query"),
             F.col("daily_clicks.document_id"),
@@ -74,36 +135,110 @@ class BuildRelevanceSignalsGenerated:
             F.col("daily_clicks.dwell_credit"),
             F.col("daily_clicks.long_click_count"),
         )
-        context_clicks = self._impl.expand_clicks(daily_clicks=_input_daily_clicks, band_memberships=_input_band_memberships, user_band_memberships=_input_user_band_memberships, band_fallbacks=_input_band_fallbacks, context_clicks=context_clicks, spark=self.spark, ctx=self.ctx)
-        assert_schema(context_clicks, DAILY_CLICKS_SCHEMA, name="DailyClicks", mode="strict")
-        assert_schema(context_clicks, DAILY_CLICKS_SCHEMA, name="DailyClicks", mode="strict")
+        assert_schema(global_context_clicks, CONTEXT_DAILY_CLICKS_SCHEMA, name="ContextDailyClicks", mode="strict")
+
+        # Step method: fallback_clicks
+        fallback_context_clicks = daily_clicks.alias("daily_clicks")
+        user_band_memberships_joined = user_band_memberships.alias("user_band_memberships")
+        fallback_context_clicks = fallback_context_clicks.join(
+            user_band_memberships_joined,
+            (F.col("user_band_memberships.user_id") == F.col("daily_clicks.user_id")),
+            "inner",
+        )
+        band_fallbacks_2_joined = band_fallbacks.alias("band_fallbacks_2")
+        fallback_context_clicks = fallback_context_clicks.join(
+            band_fallbacks_2_joined,
+            (F.col("band_fallbacks_2.user_band_id") == F.col("user_band_memberships.user_band_id")),
+            "inner",
+        )
+        fallback_context_clicks = fallback_context_clicks.where((F.col("user_band_memberships.user_band_id").isNotNull()) & (F.col("band_fallbacks_2.user_band_fallback_id").isNotNull()))
+        fallback_context_clicks = fallback_context_clicks.select(
+            F.col("daily_clicks.window"),
+            F.col("daily_clicks.query"),
+            F.col("daily_clicks.document_id"),
+            F.col("daily_clicks.position"),
+            F.col("daily_clicks.examination_propensity"),
+            F.col("daily_clicks.user_id"),
+            F.col("band_fallbacks_2.user_band_fallback_id").alias("band_id"),
+            F.col("daily_clicks.click_count"),
+            F.col("daily_clicks.clicked_impression_count"),
+            F.col("daily_clicks.dwell_seconds"),
+            F.col("daily_clicks.dwell_credit"),
+            F.col("daily_clicks.long_click_count"),
+        )
+        assert_schema(fallback_context_clicks, CONTEXT_DAILY_CLICKS_SCHEMA, name="ContextDailyClicks", mode="strict")
+
+        # Step method: band_clicks
+        band_context_clicks = daily_clicks.alias("daily_clicks")
+        band_memberships_joined = band_memberships.alias("band_memberships")
+        band_context_clicks = band_context_clicks.join(
+            band_memberships_joined,
+            (F.col("band_memberships.user_id") == F.col("daily_clicks.user_id")),
+            "inner",
+        )
+        band_context_clicks = band_context_clicks.where((F.col("band_memberships.band_id").isNotNull()))
+        band_context_clicks = band_context_clicks.select(
+            F.col("daily_clicks.window"),
+            F.col("daily_clicks.query"),
+            F.col("daily_clicks.document_id"),
+            F.col("daily_clicks.position"),
+            F.col("daily_clicks.examination_propensity"),
+            F.col("daily_clicks.user_id"),
+            F.col("band_memberships.user_band_id").alias("band_id"),
+            F.col("daily_clicks.click_count"),
+            F.col("daily_clicks.clicked_impression_count"),
+            F.col("daily_clicks.dwell_seconds"),
+            F.col("daily_clicks.dwell_credit"),
+            F.col("daily_clicks.long_click_count"),
+        )
+        assert_schema(band_context_clicks, CONTEXT_DAILY_CLICKS_SCHEMA, name="ContextDailyClicks", mode="strict")
+
+        # Step method: merge_context_clicks
+        context_clicks = global_context_clicks.alias("context_daily_clicks")
+        context_clicks = context_clicks.union(fallback_context_clicks)
+        context_clicks = context_clicks.union(band_context_clicks)
+        context_clicks = context_clicks.select(
+            F.col("window"),
+            F.col("query"),
+            F.col("document_id"),
+            F.col("position"),
+            F.col("examination_propensity"),
+            F.col("user_id"),
+            F.col("band_id"),
+            F.col("click_count"),
+            F.col("clicked_impression_count"),
+            F.col("dwell_seconds"),
+            F.col("dwell_credit"),
+            F.col("long_click_count"),
+        )
+        assert_schema(context_clicks, CONTEXT_DAILY_CLICKS_SCHEMA, name="ContextDailyClicks", mode="strict")
 
         # Step method: summarize_query
-        query_signal_totals = context_impressions.alias("daily_impressions")
+        query_signal_totals = context_impressions.alias("context_daily_impressions")
         context_clicks_joined = context_clicks.alias("context_clicks")
         query_signal_totals = query_signal_totals.join(
             context_clicks_joined,
-            (((((((F.col("context_clicks.window") == F.col("daily_impressions.window")) & (F.col("context_clicks.query") == F.col("daily_impressions.query"))) & (F.col("context_clicks.document_id") == F.col("daily_impressions.document_id"))) & (F.col("context_clicks.position") == F.col("daily_impressions.position"))) & (F.col("context_clicks.examination_propensity") == F.col("daily_impressions.examination_propensity"))) & F.col("context_clicks.user_id").eqNullSafe(F.col("daily_impressions.user_id"))) & F.col("context_clicks.band_id").eqNullSafe(F.col("daily_impressions.band_id"))),
+            (((((((F.col("context_clicks.window") == F.col("context_daily_impressions.window")) & (F.col("context_clicks.query") == F.col("context_daily_impressions.query"))) & (F.col("context_clicks.document_id") == F.col("context_daily_impressions.document_id"))) & (F.col("context_clicks.position") == F.col("context_daily_impressions.position"))) & (F.col("context_clicks.examination_propensity") == F.col("context_daily_impressions.examination_propensity"))) & F.col("context_clicks.user_id").eqNullSafe(F.col("context_daily_impressions.user_id"))) & F.col("context_clicks.band_id").eqNullSafe(F.col("context_daily_impressions.band_id"))),
             "left",
         )
         policy_2_joined = policy.alias("policy_2")
         query_signal_totals = query_signal_totals.crossJoin(policy_2_joined)
         query_signal_totals = query_signal_totals.groupBy(
-            F.col("daily_impressions.band_id").alias("band_id"),
-            F.col("daily_impressions.query").alias("query"),
-            F.col("daily_impressions.document_id").alias("document_id"),
+            F.col("context_daily_impressions.band_id").alias("band_id"),
+            F.col("context_daily_impressions.query").alias("query"),
+            F.col("context_daily_impressions.document_id").alias("document_id"),
         ).agg(
-            F.sum(F.col("daily_impressions.impression_count")).cast(T.LongType()).alias("impression_count"),
+            F.sum(F.col("context_daily_impressions.impression_count")).cast(T.LongType()).alias("impression_count"),
             F.sum(F.coalesce(F.col("context_clicks.click_count"), F.lit(0))).cast(T.LongType()).alias("click_count"),
             F.sum(F.coalesce(F.col("context_clicks.clicked_impression_count"), F.lit(0))).cast(T.LongType()).alias("clicked_impression_count"),
             F.sum(F.coalesce(F.col("context_clicks.dwell_seconds"), F.lit(0.0))).cast(T.DoubleType()).alias("dwell_seconds"),
             F.sum(F.coalesce(F.col("context_clicks.long_click_count"), F.lit(0))).cast(T.LongType()).alias("long_click_count"),
             F.sum(F.lit(0.0)).cast(T.DoubleType()).alias("click_through_rate"),
-            F.sum(((F.coalesce(F.col("context_clicks.click_count"), F.lit(0)) * F.exp((((-F.log(F.lit(2.0))) * F.when((F.datediff(F.col("policy_2.evaluated_at"), F.col("daily_impressions.window.end")) > F.lit(0)), F.datediff(F.col("policy_2.evaluated_at"), F.col("daily_impressions.window.end"))).otherwise(F.lit(0))) / F.col("policy_2.half_life_days")))) / F.col("daily_impressions.examination_propensity"))).cast(T.DoubleType()).alias("ips_clicks"),
-            F.sum(((F.coalesce(F.col("context_clicks.dwell_credit"), F.lit(0.0)) * F.exp((((-F.log(F.lit(2.0))) * F.when((F.datediff(F.col("policy_2.evaluated_at"), F.col("daily_impressions.window.end")) > F.lit(0)), F.datediff(F.col("policy_2.evaluated_at"), F.col("daily_impressions.window.end"))).otherwise(F.lit(0))) / F.col("policy_2.half_life_days")))) / F.col("daily_impressions.examination_propensity"))).cast(T.DoubleType()).alias("ips_dwell_credit"),
+            F.sum(((F.coalesce(F.col("context_clicks.click_count"), F.lit(0)) * F.exp((((-F.log(F.lit(2.0))) * F.when((F.datediff(F.col("policy_2.evaluated_at"), F.col("context_daily_impressions.window.end")) > F.lit(0)), F.datediff(F.col("policy_2.evaluated_at"), F.col("context_daily_impressions.window.end"))).otherwise(F.lit(0))) / F.col("policy_2.half_life_days")))) / F.col("context_daily_impressions.examination_propensity"))).cast(T.DoubleType()).alias("ips_clicks"),
+            F.sum(((F.coalesce(F.col("context_clicks.dwell_credit"), F.lit(0.0)) * F.exp((((-F.log(F.lit(2.0))) * F.when((F.datediff(F.col("policy_2.evaluated_at"), F.col("context_daily_impressions.window.end")) > F.lit(0)), F.datediff(F.col("policy_2.evaluated_at"), F.col("context_daily_impressions.window.end"))).otherwise(F.lit(0))) / F.col("policy_2.half_life_days")))) / F.col("context_daily_impressions.examination_propensity"))).cast(T.DoubleType()).alias("ips_dwell_credit"),
             F.sum(F.lit(0.0)).cast(T.DoubleType()).alias("ips_click_through_rate"),
-            F.sum(((F.col("daily_impressions.impression_count") * F.exp((((-F.log(F.lit(2.0))) * F.when((F.datediff(F.col("policy_2.evaluated_at"), F.col("daily_impressions.window.end")) > F.lit(0)), F.datediff(F.col("policy_2.evaluated_at"), F.col("daily_impressions.window.end"))).otherwise(F.lit(0))) / F.col("policy_2.half_life_days")))) / F.col("daily_impressions.examination_propensity"))).cast(T.DoubleType()).alias("ips_impression_weight"),
-            F.sum(((F.coalesce(F.col("context_clicks.clicked_impression_count"), F.lit(0)) * F.exp((((-F.log(F.lit(2.0))) * F.when((F.datediff(F.col("policy_2.evaluated_at"), F.col("daily_impressions.window.end")) > F.lit(0)), F.datediff(F.col("policy_2.evaluated_at"), F.col("daily_impressions.window.end"))).otherwise(F.lit(0))) / F.col("policy_2.half_life_days")))) / F.col("daily_impressions.examination_propensity"))).cast(T.DoubleType()).alias("ips_clicked_impression_weight"),
+            F.sum(((F.col("context_daily_impressions.impression_count") * F.exp((((-F.log(F.lit(2.0))) * F.when((F.datediff(F.col("policy_2.evaluated_at"), F.col("context_daily_impressions.window.end")) > F.lit(0)), F.datediff(F.col("policy_2.evaluated_at"), F.col("context_daily_impressions.window.end"))).otherwise(F.lit(0))) / F.col("policy_2.half_life_days")))) / F.col("context_daily_impressions.examination_propensity"))).cast(T.DoubleType()).alias("ips_impression_weight"),
+            F.sum(((F.coalesce(F.col("context_clicks.clicked_impression_count"), F.lit(0)) * F.exp((((-F.log(F.lit(2.0))) * F.when((F.datediff(F.col("policy_2.evaluated_at"), F.col("context_daily_impressions.window.end")) > F.lit(0)), F.datediff(F.col("policy_2.evaluated_at"), F.col("context_daily_impressions.window.end"))).otherwise(F.lit(0))) / F.col("policy_2.half_life_days")))) / F.col("context_daily_impressions.examination_propensity"))).cast(T.DoubleType()).alias("ips_clicked_impression_weight"),
             F.sum(F.lit(0.0)).cast(T.DoubleType()).alias("normalized_dwell_score"),
             F.sum(F.lit(0.0)).cast(T.DoubleType()).alias("normalized_ctr_score"),
             F.sum(F.lit(0.0)).cast(T.DoubleType()).alias("normalized_score"),
@@ -126,33 +261,33 @@ class BuildRelevanceSignalsGenerated:
             F.col("normalized_ctr_score"),
             F.col("normalized_score"),
         )
-        assert_schema(query_signal_totals, QUERY_DOCUMENT_SIGNALS_SCHEMA, name="QueryDocumentSignals", mode="strict")
+        assert_schema(query_signal_totals, QUERY_DOCUMENT_SIGNAL_TOTALS_SCHEMA, name="QueryDocumentSignalTotals", mode="strict")
 
         # Step method: summarize_popularity
-        popularity_totals = context_impressions.alias("daily_impressions")
+        popularity_totals = context_impressions.alias("context_daily_impressions")
         context_clicks_joined = context_clicks.alias("context_clicks")
         popularity_totals = popularity_totals.join(
             context_clicks_joined,
-            (((((((F.col("context_clicks.window") == F.col("daily_impressions.window")) & (F.col("context_clicks.query") == F.col("daily_impressions.query"))) & (F.col("context_clicks.document_id") == F.col("daily_impressions.document_id"))) & (F.col("context_clicks.position") == F.col("daily_impressions.position"))) & (F.col("context_clicks.examination_propensity") == F.col("daily_impressions.examination_propensity"))) & F.col("context_clicks.user_id").eqNullSafe(F.col("daily_impressions.user_id"))) & F.col("context_clicks.band_id").eqNullSafe(F.col("daily_impressions.band_id"))),
+            (((((((F.col("context_clicks.window") == F.col("context_daily_impressions.window")) & (F.col("context_clicks.query") == F.col("context_daily_impressions.query"))) & (F.col("context_clicks.document_id") == F.col("context_daily_impressions.document_id"))) & (F.col("context_clicks.position") == F.col("context_daily_impressions.position"))) & (F.col("context_clicks.examination_propensity") == F.col("context_daily_impressions.examination_propensity"))) & F.col("context_clicks.user_id").eqNullSafe(F.col("context_daily_impressions.user_id"))) & F.col("context_clicks.band_id").eqNullSafe(F.col("context_daily_impressions.band_id"))),
             "left",
         )
         policy_2_joined = policy.alias("policy_2")
         popularity_totals = popularity_totals.crossJoin(policy_2_joined)
         popularity_totals = popularity_totals.groupBy(
-            F.col("daily_impressions.band_id").alias("band_id"),
-            F.col("daily_impressions.document_id").alias("document_id"),
+            F.col("context_daily_impressions.band_id").alias("band_id"),
+            F.col("context_daily_impressions.document_id").alias("document_id"),
         ).agg(
-            F.sum(F.col("daily_impressions.impression_count")).cast(T.LongType()).alias("impression_count"),
+            F.sum(F.col("context_daily_impressions.impression_count")).cast(T.LongType()).alias("impression_count"),
             F.sum(F.coalesce(F.col("context_clicks.click_count"), F.lit(0))).cast(T.LongType()).alias("click_count"),
             F.sum(F.coalesce(F.col("context_clicks.clicked_impression_count"), F.lit(0))).cast(T.LongType()).alias("clicked_impression_count"),
             F.sum(F.coalesce(F.col("context_clicks.dwell_seconds"), F.lit(0.0))).cast(T.DoubleType()).alias("dwell_seconds"),
             F.sum(F.coalesce(F.col("context_clicks.long_click_count"), F.lit(0))).cast(T.LongType()).alias("long_click_count"),
             F.sum(F.lit(0.0)).cast(T.DoubleType()).alias("click_through_rate"),
-            F.sum(((F.coalesce(F.col("context_clicks.click_count"), F.lit(0)) * F.exp((((-F.log(F.lit(2.0))) * F.when((F.datediff(F.col("policy_2.evaluated_at"), F.col("daily_impressions.window.end")) > F.lit(0)), F.datediff(F.col("policy_2.evaluated_at"), F.col("daily_impressions.window.end"))).otherwise(F.lit(0))) / F.col("policy_2.half_life_days")))) / F.col("daily_impressions.examination_propensity"))).cast(T.DoubleType()).alias("ips_clicks"),
-            F.sum(((F.coalesce(F.col("context_clicks.dwell_credit"), F.lit(0.0)) * F.exp((((-F.log(F.lit(2.0))) * F.when((F.datediff(F.col("policy_2.evaluated_at"), F.col("daily_impressions.window.end")) > F.lit(0)), F.datediff(F.col("policy_2.evaluated_at"), F.col("daily_impressions.window.end"))).otherwise(F.lit(0))) / F.col("policy_2.half_life_days")))) / F.col("daily_impressions.examination_propensity"))).cast(T.DoubleType()).alias("ips_dwell_credit"),
+            F.sum(((F.coalesce(F.col("context_clicks.click_count"), F.lit(0)) * F.exp((((-F.log(F.lit(2.0))) * F.when((F.datediff(F.col("policy_2.evaluated_at"), F.col("context_daily_impressions.window.end")) > F.lit(0)), F.datediff(F.col("policy_2.evaluated_at"), F.col("context_daily_impressions.window.end"))).otherwise(F.lit(0))) / F.col("policy_2.half_life_days")))) / F.col("context_daily_impressions.examination_propensity"))).cast(T.DoubleType()).alias("ips_clicks"),
+            F.sum(((F.coalesce(F.col("context_clicks.dwell_credit"), F.lit(0.0)) * F.exp((((-F.log(F.lit(2.0))) * F.when((F.datediff(F.col("policy_2.evaluated_at"), F.col("context_daily_impressions.window.end")) > F.lit(0)), F.datediff(F.col("policy_2.evaluated_at"), F.col("context_daily_impressions.window.end"))).otherwise(F.lit(0))) / F.col("policy_2.half_life_days")))) / F.col("context_daily_impressions.examination_propensity"))).cast(T.DoubleType()).alias("ips_dwell_credit"),
             F.sum(F.lit(0.0)).cast(T.DoubleType()).alias("ips_click_through_rate"),
-            F.sum(((F.col("daily_impressions.impression_count") * F.exp((((-F.log(F.lit(2.0))) * F.when((F.datediff(F.col("policy_2.evaluated_at"), F.col("daily_impressions.window.end")) > F.lit(0)), F.datediff(F.col("policy_2.evaluated_at"), F.col("daily_impressions.window.end"))).otherwise(F.lit(0))) / F.col("policy_2.half_life_days")))) / F.col("daily_impressions.examination_propensity"))).cast(T.DoubleType()).alias("ips_impression_weight"),
-            F.sum(((F.coalesce(F.col("context_clicks.clicked_impression_count"), F.lit(0)) * F.exp((((-F.log(F.lit(2.0))) * F.when((F.datediff(F.col("policy_2.evaluated_at"), F.col("daily_impressions.window.end")) > F.lit(0)), F.datediff(F.col("policy_2.evaluated_at"), F.col("daily_impressions.window.end"))).otherwise(F.lit(0))) / F.col("policy_2.half_life_days")))) / F.col("daily_impressions.examination_propensity"))).cast(T.DoubleType()).alias("ips_clicked_impression_weight"),
+            F.sum(((F.col("context_daily_impressions.impression_count") * F.exp((((-F.log(F.lit(2.0))) * F.when((F.datediff(F.col("policy_2.evaluated_at"), F.col("context_daily_impressions.window.end")) > F.lit(0)), F.datediff(F.col("policy_2.evaluated_at"), F.col("context_daily_impressions.window.end"))).otherwise(F.lit(0))) / F.col("policy_2.half_life_days")))) / F.col("context_daily_impressions.examination_propensity"))).cast(T.DoubleType()).alias("ips_impression_weight"),
+            F.sum(((F.coalesce(F.col("context_clicks.clicked_impression_count"), F.lit(0)) * F.exp((((-F.log(F.lit(2.0))) * F.when((F.datediff(F.col("policy_2.evaluated_at"), F.col("context_daily_impressions.window.end")) > F.lit(0)), F.datediff(F.col("policy_2.evaluated_at"), F.col("context_daily_impressions.window.end"))).otherwise(F.lit(0))) / F.col("policy_2.half_life_days")))) / F.col("context_daily_impressions.examination_propensity"))).cast(T.DoubleType()).alias("ips_clicked_impression_weight"),
             F.sum(F.lit(0.0)).cast(T.DoubleType()).alias("normalized_dwell_score"),
             F.sum(F.lit(0.0)).cast(T.DoubleType()).alias("normalized_ctr_score"),
             F.sum(F.lit(0.0)).cast(T.DoubleType()).alias("normalized_score"),
@@ -174,54 +309,54 @@ class BuildRelevanceSignalsGenerated:
             F.col("normalized_ctr_score"),
             F.col("normalized_score"),
         )
-        assert_schema(popularity_totals, DOCUMENT_POPULARITY_SCHEMA, name="DocumentPopularity", mode="strict")
+        assert_schema(popularity_totals, DOCUMENT_POPULARITY_TOTALS_SCHEMA, name="DocumentPopularityTotals", mode="strict")
 
         # Step method: normalize_query
-        query_document_signals = query_signal_totals.alias("query_document_signals")
+        query_document_signals = query_signal_totals.alias("query_document_signal_totals")
         policy_joined = policy.alias("policy")
         query_document_signals = query_document_signals.crossJoin(policy_joined)
         query_document_signals = query_document_signals.select(
-            F.col("query_document_signals.query"),
-            F.col("query_document_signals.document_id"),
-            F.col("query_document_signals.band_id"),
-            F.col("query_document_signals.impression_count"),
-            F.col("query_document_signals.click_count"),
-            F.col("query_document_signals.clicked_impression_count"),
-            F.col("query_document_signals.dwell_seconds"),
-            F.col("query_document_signals.long_click_count"),
-            (F.col("query_document_signals.clicked_impression_count") / F.col("query_document_signals.impression_count")).alias("click_through_rate"),
-            F.col("query_document_signals.ips_clicks"),
-            F.col("query_document_signals.ips_dwell_credit"),
-            (F.col("query_document_signals.ips_clicked_impression_weight") / F.col("query_document_signals.ips_impression_weight")).alias("ips_click_through_rate"),
-            F.col("query_document_signals.ips_impression_weight"),
-            F.col("query_document_signals.ips_clicked_impression_weight"),
-            F.when((F.max(F.log((F.lit(1.0) + F.col("query_document_signals.ips_dwell_credit")))).over(Window.partitionBy(F.col("query_document_signals.query"), F.col("query_document_signals.band_id")).orderBy(F.col("query_document_signals.document_id").asc()).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)) > F.lit(0.0)), (F.log((F.lit(1.0) + F.col("query_document_signals.ips_dwell_credit"))) / F.max(F.log((F.lit(1.0) + F.col("query_document_signals.ips_dwell_credit")))).over(Window.partitionBy(F.col("query_document_signals.query"), F.col("query_document_signals.band_id")).orderBy(F.col("query_document_signals.document_id").asc()).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)))).otherwise(F.lit(0.0)).alias("normalized_dwell_score"),
-            F.when((F.col("query_document_signals.impression_count") >= F.col("policy.minimum_ctr_impressions")), (F.col("query_document_signals.ips_clicked_impression_weight") / F.col("query_document_signals.ips_impression_weight"))).otherwise(F.lit(0.0)).alias("normalized_ctr_score"),
-            ((F.col("policy.dwell_feedback_weight") * F.when((F.max(F.log((F.lit(1.0) + F.col("query_document_signals.ips_dwell_credit")))).over(Window.partitionBy(F.col("query_document_signals.query"), F.col("query_document_signals.band_id")).orderBy(F.col("query_document_signals.document_id").asc()).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)) > F.lit(0.0)), (F.log((F.lit(1.0) + F.col("query_document_signals.ips_dwell_credit"))) / F.max(F.log((F.lit(1.0) + F.col("query_document_signals.ips_dwell_credit")))).over(Window.partitionBy(F.col("query_document_signals.query"), F.col("query_document_signals.band_id")).orderBy(F.col("query_document_signals.document_id").asc()).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)))).otherwise(F.lit(0.0))) + (F.col("policy.ctr_feedback_weight") * F.when((F.col("query_document_signals.impression_count") >= F.col("policy.minimum_ctr_impressions")), (F.col("query_document_signals.ips_clicked_impression_weight") / F.col("query_document_signals.ips_impression_weight"))).otherwise(F.lit(0.0)))).alias("normalized_score"),
+            F.col("query_document_signal_totals.query"),
+            F.col("query_document_signal_totals.document_id"),
+            F.col("query_document_signal_totals.band_id"),
+            F.col("query_document_signal_totals.impression_count"),
+            F.col("query_document_signal_totals.click_count"),
+            F.col("query_document_signal_totals.clicked_impression_count"),
+            F.col("query_document_signal_totals.dwell_seconds"),
+            F.col("query_document_signal_totals.long_click_count"),
+            (F.col("query_document_signal_totals.clicked_impression_count") / F.col("query_document_signal_totals.impression_count")).alias("click_through_rate"),
+            F.col("query_document_signal_totals.ips_clicks"),
+            F.col("query_document_signal_totals.ips_dwell_credit"),
+            (F.col("query_document_signal_totals.ips_clicked_impression_weight") / F.col("query_document_signal_totals.ips_impression_weight")).alias("ips_click_through_rate"),
+            F.col("query_document_signal_totals.ips_impression_weight"),
+            F.col("query_document_signal_totals.ips_clicked_impression_weight"),
+            F.when((F.max(F.log((F.lit(1.0) + F.col("query_document_signal_totals.ips_dwell_credit")))).over(Window.partitionBy(F.col("query_document_signal_totals.query"), F.col("query_document_signal_totals.band_id")).orderBy(F.col("query_document_signal_totals.document_id").asc()).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)) > F.lit(0.0)), (F.log((F.lit(1.0) + F.col("query_document_signal_totals.ips_dwell_credit"))) / F.max(F.log((F.lit(1.0) + F.col("query_document_signal_totals.ips_dwell_credit")))).over(Window.partitionBy(F.col("query_document_signal_totals.query"), F.col("query_document_signal_totals.band_id")).orderBy(F.col("query_document_signal_totals.document_id").asc()).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)))).otherwise(F.lit(0.0)).alias("normalized_dwell_score"),
+            F.when((F.col("query_document_signal_totals.impression_count") >= F.col("policy.minimum_ctr_impressions")), (F.col("query_document_signal_totals.ips_clicked_impression_weight") / F.col("query_document_signal_totals.ips_impression_weight"))).otherwise(F.lit(0.0)).alias("normalized_ctr_score"),
+            ((F.col("policy.dwell_feedback_weight") * F.when((F.max(F.log((F.lit(1.0) + F.col("query_document_signal_totals.ips_dwell_credit")))).over(Window.partitionBy(F.col("query_document_signal_totals.query"), F.col("query_document_signal_totals.band_id")).orderBy(F.col("query_document_signal_totals.document_id").asc()).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)) > F.lit(0.0)), (F.log((F.lit(1.0) + F.col("query_document_signal_totals.ips_dwell_credit"))) / F.max(F.log((F.lit(1.0) + F.col("query_document_signal_totals.ips_dwell_credit")))).over(Window.partitionBy(F.col("query_document_signal_totals.query"), F.col("query_document_signal_totals.band_id")).orderBy(F.col("query_document_signal_totals.document_id").asc()).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)))).otherwise(F.lit(0.0))) + (F.col("policy.ctr_feedback_weight") * F.when((F.col("query_document_signal_totals.impression_count") >= F.col("policy.minimum_ctr_impressions")), (F.col("query_document_signal_totals.ips_clicked_impression_weight") / F.col("query_document_signal_totals.ips_impression_weight"))).otherwise(F.lit(0.0)))).alias("normalized_score"),
         )
         assert_schema(query_document_signals, QUERY_DOCUMENT_SIGNALS_SCHEMA, name="QueryDocumentSignals", mode="strict")
 
         # Step method: normalize_popularity
-        document_popularity = popularity_totals.alias("document_popularity")
+        document_popularity = popularity_totals.alias("document_popularity_totals")
         policy_joined = policy.alias("policy")
         document_popularity = document_popularity.crossJoin(policy_joined)
         document_popularity = document_popularity.select(
-            F.col("document_popularity.document_id"),
-            F.col("document_popularity.band_id"),
-            F.col("document_popularity.impression_count"),
-            F.col("document_popularity.click_count"),
-            F.col("document_popularity.clicked_impression_count"),
-            F.col("document_popularity.dwell_seconds"),
-            F.col("document_popularity.long_click_count"),
-            (F.col("document_popularity.clicked_impression_count") / F.col("document_popularity.impression_count")).alias("click_through_rate"),
-            F.col("document_popularity.ips_clicks"),
-            F.col("document_popularity.ips_dwell_credit"),
-            (F.col("document_popularity.ips_clicked_impression_weight") / F.col("document_popularity.ips_impression_weight")).alias("ips_click_through_rate"),
-            F.col("document_popularity.ips_impression_weight"),
-            F.col("document_popularity.ips_clicked_impression_weight"),
-            F.when((F.max(F.log((F.lit(1.0) + F.col("document_popularity.ips_dwell_credit")))).over(Window.partitionBy(F.col("document_popularity.band_id")).orderBy(F.col("document_popularity.document_id").asc()).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)) > F.lit(0.0)), (F.log((F.lit(1.0) + F.col("document_popularity.ips_dwell_credit"))) / F.max(F.log((F.lit(1.0) + F.col("document_popularity.ips_dwell_credit")))).over(Window.partitionBy(F.col("document_popularity.band_id")).orderBy(F.col("document_popularity.document_id").asc()).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)))).otherwise(F.lit(0.0)).alias("normalized_dwell_score"),
-            F.when((F.col("document_popularity.impression_count") >= F.col("policy.minimum_ctr_impressions")), (F.col("document_popularity.ips_clicked_impression_weight") / F.col("document_popularity.ips_impression_weight"))).otherwise(F.lit(0.0)).alias("normalized_ctr_score"),
-            ((F.col("policy.dwell_feedback_weight") * F.when((F.max(F.log((F.lit(1.0) + F.col("document_popularity.ips_dwell_credit")))).over(Window.partitionBy(F.col("document_popularity.band_id")).orderBy(F.col("document_popularity.document_id").asc()).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)) > F.lit(0.0)), (F.log((F.lit(1.0) + F.col("document_popularity.ips_dwell_credit"))) / F.max(F.log((F.lit(1.0) + F.col("document_popularity.ips_dwell_credit")))).over(Window.partitionBy(F.col("document_popularity.band_id")).orderBy(F.col("document_popularity.document_id").asc()).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)))).otherwise(F.lit(0.0))) + (F.col("policy.ctr_feedback_weight") * F.when((F.col("document_popularity.impression_count") >= F.col("policy.minimum_ctr_impressions")), (F.col("document_popularity.ips_clicked_impression_weight") / F.col("document_popularity.ips_impression_weight"))).otherwise(F.lit(0.0)))).alias("normalized_score"),
+            F.col("document_popularity_totals.document_id"),
+            F.col("document_popularity_totals.band_id"),
+            F.col("document_popularity_totals.impression_count"),
+            F.col("document_popularity_totals.click_count"),
+            F.col("document_popularity_totals.clicked_impression_count"),
+            F.col("document_popularity_totals.dwell_seconds"),
+            F.col("document_popularity_totals.long_click_count"),
+            (F.col("document_popularity_totals.clicked_impression_count") / F.col("document_popularity_totals.impression_count")).alias("click_through_rate"),
+            F.col("document_popularity_totals.ips_clicks"),
+            F.col("document_popularity_totals.ips_dwell_credit"),
+            (F.col("document_popularity_totals.ips_clicked_impression_weight") / F.col("document_popularity_totals.ips_impression_weight")).alias("ips_click_through_rate"),
+            F.col("document_popularity_totals.ips_impression_weight"),
+            F.col("document_popularity_totals.ips_clicked_impression_weight"),
+            F.when((F.max(F.log((F.lit(1.0) + F.col("document_popularity_totals.ips_dwell_credit")))).over(Window.partitionBy(F.col("document_popularity_totals.band_id")).orderBy(F.col("document_popularity_totals.document_id").asc()).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)) > F.lit(0.0)), (F.log((F.lit(1.0) + F.col("document_popularity_totals.ips_dwell_credit"))) / F.max(F.log((F.lit(1.0) + F.col("document_popularity_totals.ips_dwell_credit")))).over(Window.partitionBy(F.col("document_popularity_totals.band_id")).orderBy(F.col("document_popularity_totals.document_id").asc()).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)))).otherwise(F.lit(0.0)).alias("normalized_dwell_score"),
+            F.when((F.col("document_popularity_totals.impression_count") >= F.col("policy.minimum_ctr_impressions")), (F.col("document_popularity_totals.ips_clicked_impression_weight") / F.col("document_popularity_totals.ips_impression_weight"))).otherwise(F.lit(0.0)).alias("normalized_ctr_score"),
+            ((F.col("policy.dwell_feedback_weight") * F.when((F.max(F.log((F.lit(1.0) + F.col("document_popularity_totals.ips_dwell_credit")))).over(Window.partitionBy(F.col("document_popularity_totals.band_id")).orderBy(F.col("document_popularity_totals.document_id").asc()).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)) > F.lit(0.0)), (F.log((F.lit(1.0) + F.col("document_popularity_totals.ips_dwell_credit"))) / F.max(F.log((F.lit(1.0) + F.col("document_popularity_totals.ips_dwell_credit")))).over(Window.partitionBy(F.col("document_popularity_totals.band_id")).orderBy(F.col("document_popularity_totals.document_id").asc()).rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)))).otherwise(F.lit(0.0))) + (F.col("policy.ctr_feedback_weight") * F.when((F.col("document_popularity_totals.impression_count") >= F.col("policy.minimum_ctr_impressions")), (F.col("document_popularity_totals.ips_clicked_impression_weight") / F.col("document_popularity_totals.ips_impression_weight"))).otherwise(F.lit(0.0)))).alias("normalized_score"),
         )
 
         # Step method: query_document_signals

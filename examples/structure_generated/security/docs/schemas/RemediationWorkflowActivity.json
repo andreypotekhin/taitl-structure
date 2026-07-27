@@ -1,0 +1,62 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "person_id",
+      "name": "person_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "team_id",
+      "name": "team_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "department_id",
+      "name": "department_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "org_id",
+      "name": "org_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "as_of_date",
+      "name": "as_of_date",
+      "nullable": false,
+      "type": "date"
+    },
+    {
+      "column": "unacknowledged_count",
+      "name": "unacknowledged_count",
+      "nullable": false,
+      "type": "integer"
+    },
+    {
+      "column": "pending_exception_count",
+      "name": "pending_exception_count",
+      "nullable": false,
+      "type": "integer"
+    },
+    {
+      "column": "expiring_exception_count",
+      "name": "expiring_exception_count",
+      "nullable": false,
+      "type": "integer"
+    },
+    {
+      "column": "expired_exception_count",
+      "name": "expired_exception_count",
+      "nullable": false,
+      "type": "integer"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.security.schemas.reporting",
+  "name": "RemediationWorkflowActivity"
+}

@@ -9,13 +9,34 @@ class ReportingPeriod(Schema):
     end = date(nullable=False)
 
 
+class SecurityEvaluation(Schema):
+    as_of_date = date(nullable=False)
+
+
+class DeliveryReceipt(Schema):
+    delivery_key = string(nullable=False)
+    delivered_at = timestamp(nullable=False)
+
+
+class RemediationCase(Schema):
+    vuln_id = string(nullable=False)
+    acknowledged_at = timestamp(nullable=True)
+    exception_requested_at = timestamp(nullable=True)
+    exception_reason = string(nullable=True)
+    exception_approver = string(nullable=True)
+    exception_approved_at = timestamp(nullable=True)
+    exception_expires_on = date(nullable=True)
+
+
 class VulnerabilityExposure(Schema):
     vuln_id = string(nullable=False)
     vuln_type = string(nullable=False)
     description = string(nullable=False)
     instructions = string(nullable=False)
+    severity = string(nullable=False)
     date_discovered = date(nullable=False)
     date_addressed = date(nullable=True)
+    target_date = date(nullable=False)
     is_active = boolean(nullable=False)
     device_id = string(nullable=False)
     device_platform = string(nullable=False)
@@ -38,6 +59,87 @@ class VulnerabilityPostureCandidate(VulnerabilityExposure):
     device_os_id = string(nullable=False)
     device_vuln_ids = array(string(), contains_null=False, nullable=False)
     device_apps = array(struct(App), contains_null=False, nullable=False)
+
+
+class RemediationCaseAggregate(RemediationCase):
+    case_count = long(nullable=False)
+    vulnerability_exists = boolean(nullable=False)
+
+
+class RemediationCaseCheck(RemediationCaseAggregate):
+    issues = array(string(), contains_null=False, nullable=False)
+    is_valid = boolean(nullable=False)
+
+
+class RemediationCaseIssue(RemediationCaseCheck):
+    pass
+
+
+class VulnerabilityWorkflowExposure(VulnerabilityExposure):
+    acknowledged_at = timestamp(nullable=True)
+    exception_requested_at = timestamp(nullable=True)
+    exception_reason = string(nullable=True)
+    exception_approver = string(nullable=True)
+    exception_approved_at = timestamp(nullable=True)
+    exception_expires_on = date(nullable=True)
+    is_acknowledged = boolean(nullable=False)
+    is_deadline_paused = boolean(nullable=False)
+
+
+class UnacknowledgedVulnerability(VulnerabilityWorkflowExposure):
+    pass
+
+
+class PendingExceptionVulnerability(VulnerabilityWorkflowExposure):
+    pass
+
+
+class ExpiringExceptionVulnerability(VulnerabilityWorkflowExposure):
+    pass
+
+
+class ExpiredExceptionVulnerability(VulnerabilityWorkflowExposure):
+    pass
+
+
+class RemediationWorkflowActivity(Schema):
+    person_id = string(nullable=False)
+    team_id = string(nullable=False)
+    department_id = string(nullable=False)
+    org_id = string(nullable=False)
+    as_of_date = date(nullable=False)
+    unacknowledged_count = integer(nullable=False)
+    pending_exception_count = integer(nullable=False)
+    expiring_exception_count = integer(nullable=False)
+    expired_exception_count = integer(nullable=False)
+
+
+class RemediationWorkflowSummary(Schema):
+    as_of_date = date(nullable=False)
+    unacknowledged_count = long(nullable=False)
+    pending_exception_count = long(nullable=False)
+    expiring_exception_count = long(nullable=False)
+    expired_exception_count = long(nullable=False)
+
+
+class PersonRemediationWorkflowSummary(RemediationWorkflowSummary):
+    person_id = string(nullable=False)
+    person_name = string(nullable=False)
+
+
+class TeamRemediationWorkflowSummary(RemediationWorkflowSummary):
+    team_id = string(nullable=False)
+    team_name = string(nullable=False)
+
+
+class DepartmentRemediationWorkflowSummary(RemediationWorkflowSummary):
+    department_id = string(nullable=False)
+    department_name = string(nullable=False)
+
+
+class OrgRemediationWorkflowSummary(RemediationWorkflowSummary):
+    org_id = string(nullable=False)
+    org_name = string(nullable=False)
 
 
 class DeviceActiveVulnerability(VulnerabilityExposure):
@@ -73,6 +175,69 @@ class VulnerabilityLifecycle(Schema):
     vuln_id = string(nullable=False)
     detected_at = timestamp(nullable=True)
     addressed_at = timestamp(nullable=True)
+
+
+class VulnerabilityDiscovery(Schema):
+    vuln_id = string(nullable=False)
+    discovered_at = timestamp(nullable=False)
+
+
+class VulnerabilityDeadlineActivity(Schema):
+    person_id = string(nullable=False)
+    team_id = string(nullable=False)
+    department_id = string(nullable=False)
+    org_id = string(nullable=False)
+    as_of_date = date(nullable=False)
+    imminent_count = integer(nullable=False)
+    overdue_count = integer(nullable=False)
+
+
+class VulnerabilityDeadlineSummary(Schema):
+    as_of_date = date(nullable=False)
+    imminent_count = long(nullable=False)
+    overdue_count = long(nullable=False)
+
+
+class PersonVulnerabilityDeadlineSummary(VulnerabilityDeadlineSummary):
+    person_id = string(nullable=False)
+    person_name = string(nullable=False)
+
+
+class TeamVulnerabilityDeadlineSummary(VulnerabilityDeadlineSummary):
+    team_id = string(nullable=False)
+    team_name = string(nullable=False)
+
+
+class DepartmentVulnerabilityDeadlineSummary(VulnerabilityDeadlineSummary):
+    department_id = string(nullable=False)
+    department_name = string(nullable=False)
+
+
+class OrgVulnerabilityDeadlineSummary(VulnerabilityDeadlineSummary):
+    org_id = string(nullable=False)
+    org_name = string(nullable=False)
+
+
+class PersonVulnerabilityNotification(Schema):
+    delivery_key = string(nullable=False)
+    notification_type = string(nullable=False)
+    vuln_id = string(nullable=False)
+    person_id = string(nullable=False)
+    person_name = string(nullable=False)
+    person_email = string(nullable=False)
+    severity = string(nullable=False)
+    target_date = date(nullable=False)
+    instructions = string(nullable=False)
+
+
+class TeamVulnerabilityAlarm(Schema):
+    delivery_key = string(nullable=False)
+    vuln_id = string(nullable=False)
+    team_id = string(nullable=False)
+    team_name = string(nullable=False)
+    severity = string(nullable=False)
+    target_date = date(nullable=False)
+    instructions = string(nullable=False)
 
 
 class VulnerabilityPeriodActivity(Schema):

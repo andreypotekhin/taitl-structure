@@ -230,7 +230,7 @@ def concat_ws(separator: str, *values: object) -> Expression:
         raise TypeError("concat_ws(...) separator must be a string literal")
     if not values:
         raise TypeError("concat_ws(...) requires at least one String value")
-    arguments = tuple(_string_argument(value, "concat_ws(...)") for value in values)
+    arguments = tuple(_concat_ws_argument(value) for value in values)
     return Expression(
         kind="call",
         type=StringType(),
@@ -269,16 +269,27 @@ def sha2(value: object, *, bits: int = 256) -> Expression:
     )
 
 
-def date_add(value: object, *, days: int) -> Expression:
+def date_add(value: object, *, days: object) -> Expression:
     argument = _date_or_timestamp_argument(value, "date_add(...)")
-    if isinstance(days, bool) or not isinstance(days, int):
-        raise TypeError("date_add(...) days must be an integer")
+    if isinstance(days, bool):
+        raise TypeError("date_add(...) days must be an integer or integral Structure expression")
+    if isinstance(days, int):
+        return Expression(
+            kind="call",
+            type=DateType(),
+            nullable=argument.nullable,
+            data={"function": "date_add", "days": days},
+            args=(argument,),
+        )
+    day_count = literal(days)
+    if not isinstance(day_count.type, (IntegerType, LongType)):
+        raise TypeError("date_add(...) days must be an integer or integral Structure expression")
     return Expression(
         kind="call",
         type=DateType(),
-        nullable=argument.nullable,
-        data={"function": "date_add", "days": days},
-        args=(argument,),
+        nullable=argument.nullable or day_count.nullable,
+        data={"function": "date_add"},
+        args=(argument, day_count),
     )
 
 
@@ -626,6 +637,15 @@ def _string_argument(value: object, call: str) -> Expression:
     if not isinstance(argument.type, StringType):
         raise TypeError(f"{call} requires a String Structure expression")
     return argument
+
+
+def _concat_ws_argument(value: object) -> Expression:
+    argument = literal(value)
+    if isinstance(argument.type, StringType):
+        return argument
+    if isinstance(argument.type, ArrayType) and isinstance(argument.type.element, StringType):
+        return argument
+    raise TypeError("concat_ws(...) requires a String or array<string> Structure expression")
 
 
 def _string_call(function: str, value: object) -> Expression:

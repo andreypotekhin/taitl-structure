@@ -648,6 +648,7 @@ def test_v3_expression_renderer_renders_scalar_casts() -> None:
 def test_v3_expression_renderer_renders_string_sql_helpers() -> None:
     class Raw(Schema):
         label = string(nullable=True)
+        parts = array(string(), contains_null=False, nullable=False)
 
     class Published(Schema):
         prefix = string(nullable=True)
@@ -661,6 +662,7 @@ def test_v3_expression_renderer_renders_string_sql_helpers() -> None:
         dash_position = integer(nullable=True)
         distance = integer(nullable=True)
         joined = string(nullable=False)
+        path = string(nullable=False)
 
     @transform
     class Publish(Transform):
@@ -680,6 +682,7 @@ def test_v3_expression_renderer_renders_string_sql_helpers() -> None:
                 dash_position=instr(row.label, substring="-"),
                 distance=levenshtein(row.label, "release"),
                 joined=concat_ws(" / ", row.label, "release"),
+                path=concat_ws("\u001f", row.parts),
             )
 
     recipe = _recipe(Publish)
@@ -698,6 +701,7 @@ def test_v3_expression_renderer_renders_string_sql_helpers() -> None:
         'F.instr(F.col("orders.label"), \'-\')',
         'F.levenshtein(F.col("orders.label"), F.lit(\'release\'))',
         'F.concat_ws(\' / \', F.col("orders.label"), F.lit(\'release\'))',
+        'F.concat_ws(\'\\x1f\', F.col("orders.parts"))',
     ]
 
 

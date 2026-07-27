@@ -169,6 +169,17 @@ diagnostic_registry = DiagnosticRegistry(
             use_template="Correct the eligibility predicate, add a deterministic priority tie-breaker, or allow missing candidates when absence is valid.",
         ),
         DiagnosticEntry(
+            code="REL-E0706",
+            severity="error",
+            title="Relation parent hierarchy assertion failed",
+            owner="relation",
+            status="active",
+            docs="docs/Diagnostics.md#rel-e0706",
+            introduced="1.0.0",
+            problem_template="A require_parent_hierarchy(...) relation assertion found an invalid parent hierarchy.",
+            use_template="Correct missing parents, cycles, depth overruns, or child ordering before asserting the hierarchy.",
+        ),
+        DiagnosticEntry(
             code="BACKEND-E2401",
             severity="error",
             title="Unsupported backend target",

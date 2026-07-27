@@ -24,20 +24,35 @@ Source: `examples.search.transforms.searching.search_docs.SearchDocuments.Search
 ## Step methods
 
 - `select_candidates`: `Document` -> `DocumentSearchCandidate`
-- `declare_scored_candidates`: `DocumentSearchCandidate` -> `DocumentSearchCandidate`
+- `select_fallback_options`: `DocumentSearchCandidate` -> `DocumentFeedbackOption`
+- `select_global_options`: `DocumentSearchCandidate` -> `DocumentFeedbackOption`
+- `merge_feedback_options`: `DocumentFeedbackOption` -> `DocumentFeedbackOption`
+- `select_query_feedback`: `DocumentFeedbackOption` -> `QueryDocumentFeedback`
+- `select_popularity_feedback`: `DocumentFeedbackOption` -> `PopularityFeedback`
+- `score_candidates`: `DocumentSearchCandidate` -> `DocumentSearchCandidate`
 - `normalize_score`: `DocumentSearchCandidate` -> `DocumentSearchCandidate`
 - `rank_results`: `DocumentSearchCandidate` -> `DocumentSearchResult`
 
 ## Dependencies
 
 - `band`
+- `band_fallbacks`
 - `band_memberships`
+- `document_popularity`
 - `document_scores`
+- `fallback`
+- `global_options`
+- `policy`
+- `popularity`
+- `popularity_feedback`
 - `queries`
 - `query`
+- `query_document_signals`
+- `query_feedback`
 - `request`
 - `requests`
 - `score`
+- `signal`
 
 ## Target Artifacts
 

@@ -53,6 +53,16 @@ class RewritePySparkStepBody:
                 if operation.relation_assertion is None
                 else self._relation_assertion(operation.relation_assertion)
             ),
+            relation_hierarchy_closure=(
+                None
+                if operation.relation_hierarchy_closure is None
+                else self._relation_hierarchy_closure(operation.relation_hierarchy_closure)
+            ),
+            relation_hierarchy_fallback=(
+                None
+                if operation.relation_hierarchy_fallback is None
+                else self._relation_hierarchy_fallback(operation.relation_hierarchy_fallback, frames=frames)
+            ),
             relation_order=(
                 None if operation.relation_order is None else self._relation_order(operation.relation_order)
             ),
@@ -145,6 +155,29 @@ class RewritePySparkStepBody:
                 if relation_assertion.reference_key is None
                 else self._expression(relation_assertion.reference_key)
             ),
+            parent=None if relation_assertion.parent is None else self._expression(relation_assertion.parent),
+            order_by=(
+                None
+                if relation_assertion.order_by is None
+                else self._expression(relation_assertion.order_by)
+            ),
+        )
+
+    def _relation_hierarchy_closure(self, relation_hierarchy_closure):
+        return replace(
+            relation_hierarchy_closure,
+            id=self._expression(relation_hierarchy_closure.id),
+            parent=self._expression(relation_hierarchy_closure.parent),
+        )
+
+    def _relation_hierarchy_fallback(self, relation_hierarchy_fallback, *, frames: Mapping[str, str]):
+        return replace(
+            relation_hierarchy_fallback,
+            source_id=self._expression(relation_hierarchy_fallback.source_id),
+            path=self._expression(relation_hierarchy_fallback.path),
+            parent_source=frames.get(relation_hierarchy_fallback.parent_source, relation_hierarchy_fallback.parent_source),
+            parent_id=self._expression(relation_hierarchy_fallback.parent_id),
+            parent=self._expression(relation_hierarchy_fallback.parent),
         )
 
     def _relation_order(self, relation_order):

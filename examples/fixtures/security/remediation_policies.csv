@@ -1,0 +1,5 @@
+severity,target_days
+Critical,7
+High,30
+Medium,90
+Low,180

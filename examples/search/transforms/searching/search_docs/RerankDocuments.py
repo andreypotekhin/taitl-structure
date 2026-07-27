@@ -1,18 +1,32 @@
 """Implicit-feedback document reranking."""
 
 from examples.search.schemas.relevance import DocumentPopularity, QueryDocumentSignals, RelevancePolicy
-from examples.search.schemas.search import DocumentSearchCandidate, DocumentSearchResult
+from examples.search.schemas.search import (
+    DocumentFeedbackOption,
+    DocumentSearchCandidate,
+    DocumentSearchResult,
+    PopularityFeedback,
+    QueryDocumentFeedback,
+)
 from examples.search.schemas.user import BandFallback
 from examples.search.transforms.searching.search_docs.RetrieveDocuments import RetrieveDocuments
-from structure import Transform, input, lane, output, raw, step
+from structure import Transform, input, lane, output, step
 from structure.plugin.pyspark import (
+    coalesce,
+    cross_join,
+    inner_join,
+    left_join,
     row_number,
     rows_between,
+    select_first_qualified,
     unbounded_following,
     unbounded_preceding,
+    union_all,
+    where,
     window,
     window_max,
 )
+from structure.plugin.pyspark.dsl.expressions import literal
 
 
 class RerankDocuments(Transform):
@@ -22,131 +36,135 @@ class RerankDocuments(Transform):
     document_popularity = input(DocumentPopularity)
     band_fallbacks = input(BandFallback)
     policy = input(RelevancePolicy)
+    fallback_options = lane(DocumentFeedbackOption)
+    global_options = lane(DocumentFeedbackOption)
+    feedback_options = lane(DocumentFeedbackOption)
+    query_feedback = lane(QueryDocumentFeedback)
+    popularity_feedback = lane(PopularityFeedback)
     scored_candidates = lane(DocumentSearchCandidate)
     normalized_candidates = lane(DocumentSearchCandidate)
     results = output(DocumentSearchResult)
 
-    @step(input=lane(RetrieveDocuments.candidates), output=scored_candidates)
-    def declare_scored_candidates(self, candidate: DocumentSearchCandidate) -> DocumentSearchCandidate:
-        """Declare the feedback-enriched lane before its ordered raw selection."""
-
-        return DocumentSearchCandidate.project(candidate)(
-            score_feedback=0.0,
-            score_rank=0.0,
-            score_weight=0.0,
-            feedback_weight=0.0,
+    @step(input=[lane(RetrieveDocuments.candidates), band_fallbacks, policy], output=fallback_options)
+    def select_fallback_options(
+        self, candidate: DocumentSearchCandidate, fallback: BandFallback, policy: RelevancePolicy
+    ) -> DocumentFeedbackOption:
+        where(candidate.candidate_rank <= RetrieveDocuments.maximum_candidates, candidate.user_band_id.is_not_null())
+        inner_join(fallback, on=fallback.user_band_id == candidate.user_band_id)
+        policy = cross_join(policy, allow_cartesian=True)
+        return DocumentFeedbackOption.project(candidate)(
+            feedback_band_id=fallback.user_band_fallback_id,
+            fallback_ordinal=fallback.ordinal,
+            minimum_band_impressions=policy.minimum_band_impressions,
         )
 
-    @raw(
-        input=[
-            lane(RetrieveDocuments.candidates),
-            input(query_document_signals),
-            input(document_popularity),
-            input(band_fallbacks),
-            input(policy),
-        ],
-        output=scored_candidates,
-    )
+    @step(input=[lane(RetrieveDocuments.candidates), policy], output=global_options)
+    def select_global_options(
+        self, candidate: DocumentSearchCandidate, policy: RelevancePolicy
+    ) -> DocumentFeedbackOption:
+        where(candidate.candidate_rank <= RetrieveDocuments.maximum_candidates, candidate.user_band_id.is_null())
+        policy = cross_join(policy, allow_cartesian=True)
+        return DocumentFeedbackOption.project(candidate)(
+            feedback_band_id=literal(None),
+            fallback_ordinal=0,
+            minimum_band_impressions=policy.minimum_band_impressions,
+        )
+
+    @step(input=[fallback_options, global_options], output=feedback_options)
+    def merge_feedback_options(
+        self, fallback_option: DocumentFeedbackOption, global_option: DocumentFeedbackOption
+    ) -> DocumentFeedbackOption:
+        merged = union_all(global_option)
+        return DocumentFeedbackOption.project(merged)
+
+    @step(input=[feedback_options, query_document_signals], output=query_feedback)
+    def select_query_feedback(
+        self, option: DocumentFeedbackOption, signal: QueryDocumentSignals
+    ) -> QueryDocumentFeedback:
+        left_join(
+            signal,
+            on=(signal.query == option.query)
+            & (signal.document_id == option.document_id)
+            & signal.band_id.null_safe_eq(option.feedback_band_id),
+        )
+        selected = select_first_qualified(
+            option.search_query_id,
+            option.experiment_id,
+            option.user_band_id,
+            option.candidate_rank,
+            option.document_id,
+            where=option.feedback_band_id.is_null() | (signal.impression_count >= option.minimum_band_impressions),
+            order_by=option.fallback_ordinal.asc(),
+            missing="allow",
+        )
+        return QueryDocumentFeedback(
+            search_query_id=selected.search_query_id,
+            experiment_id=selected.experiment_id,
+            user_band_id=selected.user_band_id,
+            candidate_rank=selected.candidate_rank,
+            document_id=selected.document_id,
+            query_feedback=signal.normalized_score,
+        )
+
+    @step(input=[feedback_options, document_popularity], output=popularity_feedback)
+    def select_popularity_feedback(
+        self, option: DocumentFeedbackOption, signal: DocumentPopularity
+    ) -> PopularityFeedback:
+        left_join(
+            signal,
+            on=(signal.document_id == option.document_id) & signal.band_id.null_safe_eq(option.feedback_band_id),
+        )
+        selected = select_first_qualified(
+            option.search_query_id,
+            option.experiment_id,
+            option.user_band_id,
+            option.candidate_rank,
+            option.document_id,
+            where=option.feedback_band_id.is_null() | (signal.impression_count >= option.minimum_band_impressions),
+            order_by=option.fallback_ordinal.asc(),
+            missing="allow",
+        )
+        return PopularityFeedback(
+            search_query_id=selected.search_query_id,
+            experiment_id=selected.experiment_id,
+            user_band_id=selected.user_band_id,
+            candidate_rank=selected.candidate_rank,
+            document_id=selected.document_id,
+            popularity_feedback=signal.normalized_score,
+        )
+
+    @step(input=[lane(RetrieveDocuments.candidates), query_feedback, popularity_feedback, policy], output=scored_candidates)
     def score_candidates(
         self,
-        *,
-        candidates,
-        query_document_signals,
-        document_popularity,
-        band_fallbacks,
-        policy,
-        scored_candidates,
-        spark,
-        ctx,
-    ):
-        """Choose exact, parent, then global feedback without blending fallback levels."""
-
-        from pyspark.sql import Window
-        from pyspark.sql import functions as F
-
-        policy = policy.select(
-            F.col("minimum_band_impressions").alias("_minimum_band_impressions"),
-            F.col("score_weight").alias("_score_weight"),
-            F.col("feedback_weight").alias("_feedback_weight"),
+        candidate: DocumentSearchCandidate,
+        query: QueryDocumentFeedback,
+        popularity: PopularityFeedback,
+        policy: RelevancePolicy,
+    ) -> DocumentSearchCandidate:
+        where(candidate.candidate_rank <= RetrieveDocuments.maximum_candidates)
+        left_join(
+            query,
+            on=(query.search_query_id == candidate.search_query_id)
+            & (query.experiment_id == candidate.experiment_id)
+            & query.user_band_id.null_safe_eq(candidate.user_band_id)
+            & (query.candidate_rank == candidate.candidate_rank)
+            & (query.document_id == candidate.document_id),
         )
-        candidates = (
-            candidates.where(F.col("candidate_rank") <= RetrieveDocuments.maximum_candidates)
-            .withColumn("_candidate_id", F.monotonically_increasing_id())
-            .crossJoin(policy)
+        left_join(
+            popularity,
+            on=(popularity.search_query_id == candidate.search_query_id)
+            & (popularity.experiment_id == candidate.experiment_id)
+            & popularity.user_band_id.null_safe_eq(candidate.user_band_id)
+            & (popularity.candidate_rank == candidate.candidate_rank)
+            & (popularity.document_id == candidate.document_id),
         )
-        fallback = band_fallbacks.select(
-            F.col("user_band_id").alias("_source_user_band_id"), "user_band_fallback_id", "ordinal"
-        )
-        scoped = (
-            candidates.alias("candidate")
-            .where(F.col("candidate.user_band_id").isNotNull())
-            .join(
-                fallback.alias("fallback"),
-                F.col("candidate.user_band_id") == F.col("fallback._source_user_band_id"),
-                "inner",
-            )
-            .select("candidate.*", F.col("fallback.user_band_fallback_id"), F.col("fallback.ordinal"))
-        )
-        global_candidates = (
-            candidates.where(F.col("user_band_id").isNull())
-            .withColumn("user_band_fallback_id", F.lit(None).cast("string"))
-            .withColumn("ordinal", F.lit(0).cast("long"))
-        )
-        options = scoped.unionByName(global_candidates, allowMissingColumns=False)
-
-        def select_signal(signals, query_specific, alias):
-            condition = (F.col("option.document_id") == F.col("signal.document_id")) & F.col(
-                "signal.band_id"
-            ).eqNullSafe(F.col("option.user_band_fallback_id"))
-            if query_specific:
-                condition = condition & (F.col("option.query") == F.col("signal.query"))
-            choices = (
-                options.alias("option")
-                .join(signals.alias("signal"), condition, "left")
-                .where(
-                    F.col("option.user_band_fallback_id").isNull()
-                    | (F.col("signal.impression_count") >= F.col("option._minimum_band_impressions"))
-                )
-            )
-            return (
-                choices.withColumn(
-                    "_choice", F.row_number().over(Window.partitionBy("option._candidate_id").orderBy("option.ordinal"))
-                )
-                .where(F.col("_choice") == 1)
-                .select(F.col("option._candidate_id"), F.col("signal.normalized_score").alias(alias))
-            )
-
-        query_feedback = select_signal(query_document_signals, True, "query_feedback")
-        popularity_feedback = select_signal(document_popularity, False, "popularity_feedback")
-        scored = (
-            candidates.alias("candidate")
-            .join(query_feedback, "_candidate_id", "left")
-            .join(popularity_feedback, "_candidate_id", "left")
-        )
-        return scored.select(
-            *[
-                (
-                    (
-                        0.8 * F.coalesce(F.col("query_feedback"), F.lit(0.0))
-                        + 0.2 * F.coalesce(F.col("popularity_feedback"), F.lit(0.0))
-                    ).alias(name)
-                    if name == "score_feedback"
-                    else (
-                        F.lit(0.0).alias(name)
-                        if name == "score_rank"
-                        else (
-                            F.col("candidate._score_weight").alias(name)
-                            if name == "score_weight"
-                            else (
-                                F.col("candidate._feedback_weight").alias(name)
-                                if name == "feedback_weight"
-                                else F.col(f"candidate.{name}").alias(name)
-                            )
-                        )
-                    )
-                )
-                for name in scored_candidates.columns
-            ]
+        policy = cross_join(policy, allow_cartesian=True)
+        return DocumentSearchCandidate.project(candidate)(
+            score_feedback=0.8 * coalesce(query.query_feedback, 0.0)
+            + 0.2 * coalesce(popularity.popularity_feedback, 0.0),
+            score_rank=0.0,
+            score_weight=policy.score_weight,
+            feedback_weight=policy.feedback_weight,
         )
 
     @step(input=scored_candidates, output=normalized_candidates)

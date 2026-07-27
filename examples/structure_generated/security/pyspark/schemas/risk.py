@@ -7,8 +7,14 @@ from pyspark.sql import types as T
 VULN_TYPE_SCHEMA = T.StructType([
     T.StructField("id", T.StringType(), False),
     T.StructField("type", T.StringType(), False),
+    T.StructField("severity", T.StringType(), False),
     T.StructField("description", T.StringType(), False),
     T.StructField("instructions", T.StringType(), False),
+])
+
+REMEDIATION_POLICY_SCHEMA = T.StructType([
+    T.StructField("severity", T.StringType(), False),
+    T.StructField("target_days", T.IntegerType(), False),
 ])
 
 VULN_SCHEMA = T.StructType([
