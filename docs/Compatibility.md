@@ -52,6 +52,21 @@ When a transform uses a feature that cannot run for the configured target, Struc
 `structure check`, `structure compile`, or direct runtime compilation with a backend capability diagnostic.
 Unknown plugin targets use `BACKEND-E2401`; unsupported target features use `BACKEND-E2402`.
 
+## API Compatibility
+
+The public API compatibility surface is the compiler-visible Structure DSL plus the admitted PySpark plugin API listed
+in [APICatalog.md](APICatalog.md). A catalog row marked `supported` or `implemented` is part of the current public
+contract for its stated target profile. Rows marked `planned`, `scheduled`, `partial`, `deferred`, `unsupported`, or
+`intentional raw` are not compatibility promises beyond the exact boundary stated in the catalog.
+
+Compatible API additions may appear in minor releases when they preserve existing source behavior and pass backend
+capability checks for their target profile. Removing a supported catalog row, changing its public spelling, widening
+or narrowing its result schema/nullability in a breaking way, or changing documented semantics requires a major version
+after 1.0 or an explicit compatibility shim.
+
+PySpark-plugin additions on top of PySpark are summarized in [APIExtensions.md](APIExtensions.md). Detailed API
+reference material remains in [API.ref.md](reference/API.ref.md).
+
 ## Spark Connect
 
 Spark Connect is a PySpark target variant, not a separate backend id:
@@ -139,6 +154,51 @@ Backend capability providers, diagnostic renderers, schema type adapters, valida
 lint rule registries are internal or deferred extension surfaces. Projects should not depend on
 monkey-patching those internals. Future releases may promote some of them to public APIs once their behavior,
 compatibility, and tests are specified.
+
+## Plugin Compatibility
+
+The public plugin contract is Plugin API v1. It lets Structure Core invoke one selected plugin through a negotiated
+`PluginAPI` facade without importing the plugin's DSL, runtime, schema materialization, or lowered plan types. The
+complete authoring contract is [PluginAuthoring.md](dev/PluginAuthoring.md), and the detailed v1 specification is
+[PluginAPI.md](dev/specifications/PluginAPI.md).
+
+The bundled PySpark plugin is selected by:
+
+```toml
+[tool.structure.plugin]
+default = "pyspark"
+```
+
+External plugins are discovered from the `structure.plugin` entry-point group. A plugin exposes a descriptor with its
+plugin name, distribution identity, plugin version, and inclusive minimum/maximum Plugin API versions. Core selects the
+highest v1-compatible version in the overlap and asks the plugin for exactly one `PluginAPI` facade for that version.
+No overlap, an unadvertised version, descriptor identity mismatch, or a missing required facet is a plugin
+compatibility error.
+
+Plugin API v1 has four required facets and three optional lifecycle facets:
+
+| Facet | Compatibility role |
+| --- | --- |
+| `schema` | Validates plugin-owned fields and materializes target schema representations before compilation. |
+| `authoring` | Supplies symbolic step arguments and captures returned plugin bodies while Core owns transform lifecycle and source order. |
+| `compiler` | Lowers Core-owned transform facts plus opaque authored bodies into a plugin-owned compiled payload. |
+| `capabilities` | Resolves target feature support from plugin options without requiring a live runtime. |
+| `executor` | Optional; runs an opaque compiled payload over caller-supplied runtime objects. |
+| `generator` | Optional; returns generated file content while Core owns paths and writes. |
+| `serializer` | Optional; encodes and decodes only opaque plugin payloads inside Core-owned artifact envelopes. |
+
+A plugin may add compiler-visible API only when its public rows are documented in [APICatalog.md](APICatalog.md), backed
+by capability diagnostics, and compatible with the selected profile. Unknown plugins fail with `BACKEND-E2401`; known
+plugins that cannot support a requested feature for the configured target fail with `BACKEND-E2402`.
+
+Generated artifacts and serialized payloads record plugin name, normalized distribution identity, plugin version,
+negotiated Plugin API version, selected options, payload version, and fingerprints. Loading an artifact must use the
+recorded compatible plugin/API combination or rebuild the artifact; Structure must not silently reinterpret an opaque
+payload through a different plugin contract.
+
+The internal provider interfaces behind plugin capabilities, rendering, diagnostics, type adapters, and validation
+policies are not public extension APIs yet. Do not depend on monkey-patching or subclassing those internals unless a
+future catalog row and specification explicitly promote them.
 
 ## Compiler Traceability Schema Versioning
 

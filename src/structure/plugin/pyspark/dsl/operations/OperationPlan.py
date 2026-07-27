@@ -13,6 +13,7 @@ from structure.plugin.pyspark.dsl.operations.RelationAliasPlan import RelationAl
 from structure.plugin.pyspark.dsl.operations.RelationAssertionPlan import RelationAssertionPlan
 from structure.plugin.pyspark.dsl.operations.RelationBoundPlan import RelationBoundPlan
 from structure.plugin.pyspark.dsl.operations.RelationOrderPlan import RelationOrderPlan
+from structure.plugin.pyspark.dsl.operations.RelationPrioritySelectionPlan import RelationPrioritySelectionPlan
 from structure.plugin.pyspark.dsl.operations.RelationSetPlan import RelationSetPlan
 from structure.plugin.pyspark.dsl.operations.SelectedRowsPlan import SelectedRowsPlan
 from structure.plugin.pyspark.dsl.operations.StreamingOutputMode import StreamingOutputMode
@@ -33,6 +34,7 @@ class OperationPlan:
     relation_alias: RelationAliasPlan | None = None
     relation_assertion: RelationAssertionPlan | None = None
     relation_order: RelationOrderPlan | None = None
+    relation_priority_selection: RelationPrioritySelectionPlan | None = None
     relation_bound: RelationBoundPlan | None = None
     relation_set: RelationSetPlan | None = None
     watermark: WatermarkPlan | None = None
@@ -177,6 +179,17 @@ class OperationPlan:
             family="relation",
             capability=OperationCapability("relation", kind),
             cardinality=OperationCardinality.ROW_FILTERING,
+            streaming=StreamingSupport.BATCH_ONLY,
+        )
+
+    @staticmethod
+    def relation_priority_selection_operation(selection: RelationPrioritySelectionPlan) -> OperationPlan:
+        return OperationPlan(
+            "select_first_qualified",
+            relation_priority_selection=selection,
+            family="relation",
+            capability=OperationCapability("relation", "select_first_qualified"),
+            cardinality=OperationCardinality.SELECT_ONE,
             streaming=StreamingSupport.BATCH_ONLY,
         )
 

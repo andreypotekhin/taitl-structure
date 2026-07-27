@@ -1,8 +1,10 @@
-# API Reference
+# API
 
 This describes Structure's public, compiler-visible API.
 
-If you are just starting using this library, see [QuickRef.md](../QuickRef.md) for an introduction.
+If you are just starting using this library, see [QuickRef.md](QuickRef.md) for an introduction.
+For PySpark-plugin additions on top of PySpark, see [APIExtensions.md](APIExtensions.md). For the detailed
+reference page, see [API.ref.md](reference/API.ref.md).
 
 `supported` means the public contract is available now. `planned` needs a more complete type, cardinality, or
 determinism contract. `deferred` and `unsupported` deliberately stay outside the current scope.
@@ -10,17 +12,16 @@ Structure is not a one-to-one PySpark
 wrapper: admitted APIs remain typed, symbolic, capability-checked, explainable, and readable in generated code.
 
 The default target is ordinary PySpark `>=3.5,<4.1`; completed compiler-visible batch features also target Spark
-Connect. See [Compatibility.md](../Compatibility.md) for the full target policy,
-[APICatalog.md](../APICatalog.md) for the public API catalog and checked coverage table, and
-[API Gaps](../dev/Gaps.md) for the developer backlog.
+Connect. See [Compatibility.md](Compatibility.md) for the full target policy, [APICatalog.md](APICatalog.md) for the
+public API catalog and checked coverage table, and [API Gaps](dev/Gaps.md) for the developer backlog.
 
 ## Core APIs
 
 | API Area | Status | PySpark Coverage | Reference |
 | --- | --- | --- | --- |
-| Schemas | supported | `StructType`, SQL types | [Schema reference](Schema.ref.md) |
-| Transforms and hooks | supported | DataFrame pipeline | [Transforms API](../api/Transforms.api.md) |
-| Expressions | supported | Column and SQL-function subset | [Expressions API](../api/Expressions.api.md) |
+| Schemas | supported | `StructType`, SQL types | [Schema reference](reference/Schema.ref.md) |
+| Transforms and hooks | supported | DataFrame pipeline | [Transforms API](api/Transforms.api.md) |
+| Expressions | supported | Column and SQL-function subset | [Expressions API](api/Expressions.api.md) |
 
 **Details And Differences**
 
@@ -33,10 +34,10 @@ Connect. See [Compatibility.md](../Compatibility.md) for the full target policy,
 
 | API Area | Status | PySpark Coverage | Reference |
 | --- | --- | --- | --- |
-| Joins | supported | DataFrame joins and windowed matching | [Joins API](../api/Joins.api.md) |
-| Aggregations and dedupe | supported | `GroupedData` and Window patterns | [Aggregates](../api/Aggregations.api.md) |
-| Inline and reusable windows | supported | `Window` and window functions | [Windows API](../api/Windows.api.md) |
-| Array/map helpers | supported | Higher-order and map SQL functions | [Collections API](../api/Collections.api.md) |
+| Joins | supported | DataFrame joins and windowed matching | [Joins API](api/Joins.api.md) |
+| Aggregations and dedupe | supported | `GroupedData` and Window patterns | [Aggregates](api/Aggregations.api.md) |
+| Inline and reusable windows | supported | `Window` and window functions | [Windows API](api/Windows.api.md) |
+| Array/map helpers | supported | Higher-order and map SQL functions | [Collections API](api/Collections.api.md) |
 
 **Details And Differences**
 
@@ -48,10 +49,10 @@ Connect. See [Compatibility.md](../Compatibility.md) for the full target policy,
 
 | API Area | Status | PySpark Coverage | Reference |
 | --- | --- | --- | --- |
-| PySpark batch | supported | Spark DataFrames | [Execution](../background/Execution.back.md) |
-| Spark Connect batch | supported | Spark Connect DataFrame and Column APIs | [Compatibility.md](../Compatibility.md) |
-| Streaming transforms | supported | Streaming-safe shapes | [Streaming API](../api/Streaming.api.md) |
-| Generated lifecycle | unsupported | `readStream`, `writeStream` | [Streaming](../background/SparkStreaming.back.md) |
+| PySpark batch | supported | Spark DataFrames | [Execution](background/Execution.back.md) |
+| Spark Connect batch | supported | Spark Connect DataFrame and Column APIs | [Compatibility.md](Compatibility.md) |
+| Streaming transforms | supported | Streaming-safe shapes | [Streaming API](api/Streaming.api.md) |
+| Generated lifecycle | unsupported | `readStream`, `writeStream` | [Streaming](background/SparkStreaming.back.md) |
 
 **Details And Differences**
 
@@ -62,7 +63,7 @@ Connect. See [Compatibility.md](../Compatibility.md) for the full target policy,
 
 ## Planned And Unsupported Surface
 
-The [API Coverage](../APICatalog.md#api-coverage) table classifies the current PySpark transformation baseline. The rows
+The [API Coverage](APICatalog.md#api-coverage) table classifies the current PySpark transformation baseline. The rows
 below remain a compact orientation aid. Loading, storage, actions, and orchestration are not transformation APIs and
 stay outside Structure's scope.
 
@@ -73,14 +74,14 @@ stay outside Structure's scope.
 | Nearest as-of, reordering, extra stats | planned | Advanced joins and analytics | Need admitted contracts. |
 | Array variants; generators | partial | `slice`, `sort_array`, `explode`, `posexplode` | Array variants and `posexplode_struct(...)` are supported; other row generators need distinct contracts. |
 | Window order; more aggregates | supported | Window functions and aggregate frames | Sprint 14. |
-| Collection basics | supported | Core arrays/maps | [Collections API](../api/Collections.api.md) |
+| Collection basics | supported | Core arrays/maps | [Collections API](api/Collections.api.md) |
 | Raw APIs/lifecycle | unsupported | `expr`, raw `WindowSpec`, UDTF | Use hooks; caller owns lifecycle. Scalar `@special(type="udf")` is row-local ordinary-PySpark supported. |
 
-For detailed restrictions, diagnostics, and feature-admission rationale, consult [APICatalog.md](../APICatalog.md),
-[API Gaps](../dev/Gaps.md), and the linked reference pages.
+For detailed restrictions, diagnostics, and feature-admission rationale, consult [APICatalog.md](APICatalog.md),
+[API Gaps](dev/Gaps.md), and the linked reference pages.
 
 ## Next Steps
 
-Get started: [GettingStarted.md](../GettingStarted.md)
+Get started: [GettingStarted.md](GettingStarted.md)
 
-Reference docs: [Reference.md](../Reference.md)
+Reference docs: [Reference.md](Reference.md)

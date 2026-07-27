@@ -776,6 +776,10 @@ class RenderPySparkTransformModule:
         if operation.selected_rows is not None:
             yield operation.selected_rows.order_by
             yield from operation.selected_rows.partition_by
+        if operation.relation_priority_selection is not None:
+            yield from operation.relation_priority_selection.keys
+            yield operation.relation_priority_selection.predicate
+            yield operation.relation_priority_selection.order_by
         if operation.duplicate_rows is not None:
             yield from operation.duplicate_rows.subset
         if operation.watermark is not None:
@@ -928,8 +932,21 @@ class RenderPySparkTransformModule:
             for operation in output.operations
             if operation.selected_rows is not None
         )
+        priority_selections = [
+            operation.relation_priority_selection
+            for step in plan.steps
+            for operation in step.operations
+            if operation.relation_priority_selection is not None
+        ]
+        priority_selections.extend(
+            operation.relation_priority_selection
+            for output in plan.outputs
+            for operation in output.operations
+            if operation.relation_priority_selection is not None
+        )
         return (
             bool(selected_rows)
+            or bool(priority_selections)
             or any(join.dedupe is not None or join.as_of is not None for join in joins)
             or any(
                 self._has_window_projection(assignment.expression)

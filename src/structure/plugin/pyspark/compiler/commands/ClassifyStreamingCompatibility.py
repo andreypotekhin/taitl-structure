@@ -57,6 +57,8 @@ class ClassifyStreamingCompatibility:
                     findings.extend(self._relation_ordering(step.name, "order_by"))
                 if operation.relation_bound is not None:
                     findings.extend(self._relation_ordering(step.name, operation.kind))
+                if operation.relation_priority_selection is not None:
+                    findings.extend(self._priority_selection(step.name))
                 if operation.relation_set is not None:
                     findings.extend(self._relation_set(step.name, operation.kind, operation.relation_set.input_name))
                 if operation.join is not None:
@@ -256,6 +258,21 @@ class ClassifyStreamingCompatibility:
                 operation=f"{operation} {input_name}",
                 problem="Relation union output modes and watermarks are not admitted for streaming transforms yet.",
                 use="Keep this transform batch-only or union the streams outside Structure with explicit lifecycle ownership.",
+            ),
+        )
+
+    def _priority_selection(self, step: str) -> tuple[StreamingFinding, ...]:
+        return (
+            StreamingFinding(
+                code="STREAM-E0801",
+                support=StreamingSupport.BATCH_ONLY,
+                step=step,
+                operation="select_first_qualified",
+                problem=(
+                    "select_first_qualified(...) uses ranking and validation aggregates and is batch-only in v1 "
+                    "streaming compatibility."
+                ),
+                use="Keep this transform batch-only or perform priority selection before the streaming transform.",
             ),
         )
 

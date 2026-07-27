@@ -23,6 +23,9 @@ from structure.plugin.pyspark.compiler.model.PySparkRelationAliasRecipe import P
 from structure.plugin.pyspark.compiler.model.PySparkRelationAssertionRecipe import PySparkRelationAssertionRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationBoundRecipe import PySparkRelationBoundRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationOrderRecipe import PySparkRelationOrderRecipe
+from structure.plugin.pyspark.compiler.model.PySparkRelationPrioritySelectionRecipe import (
+    PySparkRelationPrioritySelectionRecipe,
+)
 from structure.plugin.pyspark.compiler.model.PySparkRelationSetRecipe import PySparkRelationSetRecipe
 from structure.plugin.pyspark.compiler.model.PySparkSelectedRowsRecipe import PySparkSelectedRowsRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkStepRecipe
@@ -285,6 +288,25 @@ class MapPySparkStep:
                         PySparkOperationRecipe.relation_bound_operation(
                             operation.kind,
                             PySparkRelationBoundRecipe(count=operation.relation_bound.count),
+                        ),
+                        operation,
+                    )
+                )
+            if operation.relation_priority_selection is not None:
+                selection = operation.relation_priority_selection
+                recipes.append(
+                    self._operation_modes(
+                        PySparkOperationRecipe.relation_priority_selection_operation(
+                            PySparkRelationPrioritySelectionRecipe(
+                                keys=tuple(
+                                    self._expressions.map(expression, capabilities=capabilities)
+                                    for expression in selection.keys
+                                ),
+                                predicate=self._expressions.map(selection.predicate, capabilities=capabilities),
+                                order_by=self._expressions.map(selection.order_by, capabilities=capabilities),
+                                missing=selection.missing,
+                                ties=selection.ties,
+                            )
                         ),
                         operation,
                     )

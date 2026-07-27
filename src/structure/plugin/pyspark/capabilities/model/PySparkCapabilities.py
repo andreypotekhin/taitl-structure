@@ -136,6 +136,7 @@ COMMON_CAPABILITIES = frozenset(
         ("relation", "require_all"),
         ("relation", "require_reference"),
         ("relation", "require_unique"),
+        ("relation", "select_first_qualified"),
         ("set", "except_all"),
         ("set", "intersect"),
         ("set", "intersect_all"),

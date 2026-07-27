@@ -132,11 +132,15 @@ uses the existing self-alias plus anti-existence relation pattern; no new raw Da
 
 ## First-Qualified Priority Selection
 
-`select_first_qualified(...)` accepts a stable declared row key, a candidate relation, an eligibility predicate, an
-ordered priority expression, and explicit missing/tie policies. It yields at most one selected candidate per key.
-The key must be sourced from business fields; generated surrogate IDs such as `monotonically_increasing_id()` are not
-admitted. The operation uses a typed join plus row-number selection internally and records both candidate and selected
-sources in traceability. `RerankDocuments` uses it to choose exact, parent, then global feedback.
+`select_first_qualified(keys..., where=..., order_by=..., missing="allow", ties=TiePolicy.ERROR)` accepts stable
+declared row keys on the current candidate relation, an eligibility predicate, an ordered priority expression, and
+explicit missing/tie policies. It yields at most one selected candidate per key. `missing="error"` fails when a key has
+no eligible row; `missing="allow"` drops such keys. Ties on the same key and priority value fail with `REL-E0705`.
+
+Keys must be declared field references sourced from business fields; generated surrogate IDs such as
+`monotonically_increasing_id()` are not admitted. The operation lowers to Spark-visible key projection, eligibility
+filtering, aggregate assertions, and `row_number()` ranking, and records candidate and selected sources in traceability.
+`RerankDocuments` uses it to choose exact, parent, then global feedback.
 
 ## Diagnostics
 

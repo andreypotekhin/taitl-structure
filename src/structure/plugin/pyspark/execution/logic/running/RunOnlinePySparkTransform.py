@@ -291,6 +291,14 @@ class RunOnlinePySparkTransform:
                 df = self._relation_order(step, df, operation.relation_order, functions=functions)
             if operation.relation_bound is not None:
                 df = getattr(df, operation.kind)(operation.relation_bound.count)
+            if operation.relation_priority_selection is not None:
+                df = self._relation_priority_selection(
+                    step,
+                    df,
+                    operation.relation_priority_selection,
+                    functions=functions,
+                    window=window,
+                )
             if operation.relation_set is not None:
                 source = operation.relation_set.source
                 frame = (
@@ -476,6 +484,82 @@ class RunOnlinePySparkTransform:
                 for expression in relation_order.order_by
             )
         )
+
+    def _relation_priority_selection(self, step, frame, selection, *, functions, window):
+        aliases = self._scope_aliases(step)
+        key_columns = tuple(f"__structure_priority_key_{position}" for position, _ in enumerate(selection.keys))
+        priority = "__structure_priority_order"
+        rank = "__structure_priority_rank"
+        keys = tuple(
+            self._expressions.evaluate(expression, functions=functions, aliases=aliases)
+            for expression in selection.keys
+        )
+        predicate = self._expressions.evaluate(selection.predicate, functions=functions, aliases=aliases)
+        priority_value = self._expressions.evaluate(
+            self._order_value(selection.order_by), functions=functions, aliases=aliases
+        )
+        ordering = self._expressions.evaluate(selection.order_by, functions=functions, aliases=aliases)
+
+        all_keys = frame.select(*(key.alias(column) for key, column in zip(keys, key_columns, strict=True)))
+        all_keys = all_keys.dropDuplicates(list(key_columns))
+        eligible = frame.where(functions.coalesce(predicate, functions.lit(False))).withColumn(priority, priority_value)
+        eligible_keys = eligible.select(*(key.alias(column) for key, column in zip(keys, key_columns, strict=True)))
+        eligible_keys = eligible_keys.dropDuplicates(list(key_columns))
+
+        guards = []
+        if selection.missing == "error":
+            message = (
+                "REL-E0705: select_first_qualified(...) found a key without an eligible candidate; "
+                "see docs/Diagnostics.md#rel-e0705"
+            )
+            missing = all_keys.join(eligible_keys, list(key_columns), "left_anti")
+            missing = missing.agg(functions.count(functions.lit(1)).alias("__structure_violations"))
+            guards.append(
+                missing.select(
+                    functions.assert_true(
+                        functions.col("__structure_violations") == functions.lit(0),
+                        message,
+                    ).alias("__structure_select_first_missing")
+                )
+            )
+
+        message = (
+            "REL-E0705: select_first_qualified(...) found tied eligible candidates; "
+            "see docs/Diagnostics.md#rel-e0705"
+        )
+        ties = eligible.select(
+            *(key.alias(column) for key, column in zip(keys, key_columns, strict=True)),
+            functions.col(priority),
+        )
+        ties = ties.groupBy(*key_columns, priority).agg(functions.count(functions.lit(1)).alias("__structure_count"))
+        ties = ties.where(functions.col("__structure_count") > functions.lit(1))
+        ties = ties.agg(functions.count(functions.lit(1)).alias("__structure_violations"))
+        guards.append(
+            ties.select(
+                functions.assert_true(
+                    functions.col("__structure_violations") == functions.lit(0),
+                    message,
+                ).alias("__structure_select_first_ties")
+            )
+        )
+
+        ranked = eligible.withColumn(
+            rank,
+            functions.row_number().over(window.partitionBy(*keys).orderBy(ordering)),
+        )
+        ranked = ranked.where(functions.col(rank) == functions.lit(1))
+        guarded = guards[0]
+        for guard in guards[1:]:
+            guarded = guarded.crossJoin(guard)
+        return guarded.crossJoin(ranked).drop(
+            rank,
+            priority,
+            "__structure_select_first_missing",
+            "__structure_select_first_ties",
+        )
+
+    def _order_value(self, expression):
+        return expression.args[0] if expression.kind == "order" else expression
 
     def _field_column(self, expression) -> str:
         if expression.kind != "field":

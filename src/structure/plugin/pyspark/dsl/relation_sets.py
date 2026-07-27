@@ -5,12 +5,14 @@ from structure.plugin.api.v1.model import current_symbolic_context
 from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.expressions import literal
 from structure.plugin.pyspark.dsl.InputScope import InputScope
+from structure.plugin.pyspark.dsl.joins import TiePolicy
 from structure.plugin.pyspark.dsl.operations import (
     OperationPlan,
     RelationAliasPlan,
     RelationAssertionPlan,
     RelationBoundPlan,
     RelationOrderPlan,
+    RelationPrioritySelectionPlan,
     RelationSetPlan,
 )
 from structure.plugin.pyspark.dsl.RowScope import RowScope
@@ -120,6 +122,39 @@ def require_reference(
     return RowScope(name=_current_scope(context.default_project_source), schema=source_schema)
 
 
+def select_first_qualified(
+    *keys: object,
+    where: object,
+    order_by: object,
+    missing: str = "allow",
+    ties: TiePolicy = TiePolicy.ERROR,
+) -> RowScope:
+    context = _context("select_first_qualified(...)")
+    source_schema = _current_schema(context.default_project_source, function="select_first_qualified")
+    expressions = tuple(_field_key(key) for key in keys)
+    if not expressions:
+        raise TypeError("select_first_qualified(...) requires at least one declared key field")
+    predicate = literal(where)
+    if predicate.type is None or predicate.type.name != "boolean":
+        raise TypeError("select_first_qualified(where=...) requires a Boolean expression")
+    if missing not in {"allow", "error"}:
+        raise TypeError("select_first_qualified(missing=...) must be 'allow' or 'error'")
+    if ties is not TiePolicy.ERROR:
+        raise TypeError("select_first_qualified(ties=...) requires TiePolicy.ERROR")
+    context.operations.append(
+        OperationPlan.relation_priority_selection_operation(
+            RelationPrioritySelectionPlan(
+                keys=expressions,
+                predicate=predicate,
+                order_by=_orderable(order_by, call="select_first_qualified(...)"),
+                missing=missing,
+                ties=ties,
+            )
+        )
+    )
+    return RowScope(name=_current_scope(context.default_project_source), schema=source_schema)
+
+
 def union_all(relation: object) -> RowScope:
     return _set(relation, operation="union_all", by_name=False)
 
@@ -199,6 +234,13 @@ def _orderable(value: object, *, call: str) -> Expression:
     return expression.asc()
 
 
+def _field_key(value: object) -> Expression:
+    expression = literal(value)
+    if expression.kind != "field":
+        raise TypeError("select_first_qualified(...) keys must be declared field references")
+    return expression
+
+
 def _validate_alias_name(name: str) -> None:
     if not isinstance(name, str) or not name:
         raise TypeError("relation_alias(name=...) requires a non-empty string")
@@ -224,7 +266,7 @@ def _validate_prior_operations(operations, *, function: str) -> None:
     blocked = [
         operation.kind
         for operation in operations
-        if operation.kind in {"join", "aggregate", "selected_rows", "posexplode_struct"}
+        if operation.kind in {"join", "aggregate", "selected_rows", "posexplode_struct", "select_first_qualified"}
     ]
     if blocked:
         raise TypeError(
@@ -244,6 +286,7 @@ def _validate_ordered_state(operations, *, function: str) -> None:
             "join",
             "posexplode_struct",
             "selected_rows",
+            "select_first_qualified",
             "subtract",
             "union_all",
             "union_by_name",

@@ -1,7 +1,7 @@
 # Quick Reference
 
-For exhaustive referemce on supported APIs, PySpark parity, examples and semantic differences, see the
-[API reference](reference/API.ref.md): [schemas](api/Schemas.api.md), [transforms](api/Transforms.api.md),
+For exhaustive reference on supported APIs, PySpark parity, examples and semantic differences, see the
+[API](API.md): [schemas](api/Schemas.api.md), [transforms](api/Transforms.api.md),
 [expressions](api/Expressions.api.md), [joins](api/Joins.api.md), [aggregations](api/Aggregations.api.md),
 [windows](api/Windows.api.md), [collections](api/Collections.api.md), and [streaming](api/Streaming.api.md).
 
@@ -648,6 +648,24 @@ def latest_events(self, event: RawEvent) -> RawEvent:
 Streaming: exact duplicate removal is batch-only in v2 streaming compatibility because streaming dedupe needs explicit
 watermark, state, and output-mode semantics.
 
+Use `select_first_qualified(...)` when a relation contains several candidate rows and one eligible row should survive
+per declared business key:
+
+```python
+def choose_feedback(self, option: FeedbackOption) -> FeedbackOption:
+    selected = select_first_qualified(
+        option.request_id,
+        option.document_id,
+        where=option.has_signal,
+        order_by=option.priority.asc(),
+        missing="allow",
+    )
+    return FeedbackOption.project(selected)
+```
+
+Keys must be declared field references. Tied eligible candidates fail with `REL-E0705`; `missing="error"` also fails
+when a key has no eligible candidate. The helper is batch-only in v1 streaming compatibility.
+
 Reference: [aggregations API](api/Aggregations.api.md), [DSL](background/DSL.back.md),
 [IR](background/PySparkCodeGeneration.back.md),
 [PySpark code generation](background/PySparkCodeGeneration.back.md), and
@@ -1277,6 +1295,10 @@ Reference: [schemas API](api/Schemas.api.md), [CLI](background/CLI.back.md), and
 Code examples: [Examples](../examples/Readme.md)
 
 Get started: [GettingStarted.md](GettingStarted.md)
+
+API: [API.md](API.md)
+
+API catalog: [APICatalog.md](APICatalog.md)
 
 API reference: [API.ref.md](reference/API.ref.md)
 

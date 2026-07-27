@@ -21,6 +21,7 @@ Below is an index for published diagnostic codes. For the full diagnostic contra
 | REL-E0702 | error | Relation uniqueness assertion failed | Deduplicate, aggregate, or correct the source before asserting `require_unique(...)`. |
 | REL-E0703 | error | Relation predicate assertion failed | Filter or correct invalid rows before asserting `require_all(...)`. |
 | REL-E0704 | error | Relation reference assertion failed | Correct the referenced catalog or filter invalid rows before asserting `require_reference(...)`. |
+| REL-E0705 | error | Relation priority selection failed | Add a deterministic priority tie-breaker, fix eligibility, or allow missing candidates. |
 | GEN-E0901 | error | Generated output is stale | Run `structure compile` and commit the generated changes. |
 | GEN-E0902 | error | Generated transform is not importable | Rebuild generated code or switch to direct execution with `execution_mode = "online"`. |
 | GEN-E0903 | error | Embedded hook cannot be generated | Use local imports and a standalone hook body, or remove `embed_hooks`. |
@@ -85,6 +86,9 @@ See [Diagnostics.md](background/Diagnostics.back.md#rel-e0703).
 
 ### REL-E0704
 See [Diagnostics.md](background/Diagnostics.back.md#rel-e0704).
+
+### REL-E0705
+See [Diagnostics.md](background/Diagnostics.back.md#rel-e0705).
 
 ### GEN-E0901
 See [Diagnostics.md](background/Diagnostics.back.md#gen-e0901).

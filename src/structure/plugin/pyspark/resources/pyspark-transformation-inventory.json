@@ -41,6 +41,7 @@
     {"id": "dataframe.set", "family": "DataFrame", "pyspark": ["union", "unionByName", "intersect", "intersectAll", "subtract", "exceptAll"]},
     {"id": "dataframe.deduplication", "family": "DataFrame", "pyspark": ["distinct", "dropDuplicates", "dropDuplicatesWithinWatermark"]},
     {"id": "dataframe.ordering", "family": "DataFrame", "pyspark": ["sort", "orderBy", "limit", "offset", "sample"]},
+    {"id": "dataframe.priority-selection", "family": "DataFrame", "pyspark": ["where", "withColumn", "row_number"]},
     {"id": "dataframe.grouping", "family": "DataFrame", "pyspark": ["groupBy", "rollup", "cube", "groupingSets"]},
     {"id": "grouped.aggregates", "family": "GroupedData", "pyspark": ["agg", "count", "min", "max", "sum", "avg", "mean"]},
     {"id": "functions.aggregate-advanced", "family": "SQL functions", "pyspark": ["count_distinct", "approx_count_distinct", "approx_percentile", "percentile", "stddev", "variance", "corr", "covar_samp", "skewness", "kurtosis", "mode"]},

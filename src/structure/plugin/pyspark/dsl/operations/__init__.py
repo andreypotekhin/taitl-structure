@@ -9,6 +9,7 @@ from structure.plugin.pyspark.dsl.operations.RelationAliasPlan import RelationAl
 from structure.plugin.pyspark.dsl.operations.RelationAssertionPlan import RelationAssertionPlan
 from structure.plugin.pyspark.dsl.operations.RelationBoundPlan import RelationBoundPlan
 from structure.plugin.pyspark.dsl.operations.RelationOrderPlan import RelationOrderPlan
+from structure.plugin.pyspark.dsl.operations.RelationPrioritySelectionPlan import RelationPrioritySelectionPlan
 from structure.plugin.pyspark.dsl.operations.RelationSetPlan import RelationSetPlan
 from structure.plugin.pyspark.dsl.operations.SelectedRowsPlan import SelectedRowsPlan
 from structure.plugin.pyspark.dsl.operations.StreamingOutputMode import StreamingOutputMode
@@ -27,6 +28,7 @@ __all__ = [
     "RelationAssertionPlan",
     "RelationBoundPlan",
     "RelationOrderPlan",
+    "RelationPrioritySelectionPlan",
     "RelationSetPlan",
     "SelectedRowsPlan",
     "StreamingOutputMode",

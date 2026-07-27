@@ -2,10 +2,11 @@ from typing import cast
 
 import pytest
 
-from structure import Schema, Transform, input, output
+from structure import Schema, Transform, input, lane, output, step
 from structure.core.cli.commands.RenderExplainReport import render_explain_report
 from structure.core.compiler.api import Compiler
 from structure.plugin.pyspark import (
+    PySpark,
     except_all,
     integer,
     intersect,
@@ -41,6 +42,27 @@ class MergeItems(Transform):
 
     def merge(self, active: ActiveItem, archived: ArchivedItem) -> ActiveItem:
         merged = union_all(archived)
+        return ActiveItem.project(merged)
+
+
+class MergeBranchedItems(Transform):
+    active = input(ActiveItem)
+    archived = input(ArchivedItem)
+    scoped = lane(ActiveItem)
+    global_context = lane(ArchivedItem)
+    merged = output(ActiveItem)
+
+    @step(input=active, output=scoped)
+    def scope_active(self, active: ActiveItem) -> ActiveItem:
+        return ActiveItem.project(active)
+
+    @step(input=archived, output=global_context)
+    def scope_global(self, archived: ArchivedItem) -> ArchivedItem:
+        return ArchivedItem.project(archived)
+
+    @step(input=[scoped, global_context], output=merged)
+    def rejoin(self, scoped: ActiveItem, global_context: ArchivedItem) -> ActiveItem:
+        merged = union_all(global_context)
         return ActiveItem.project(merged)
 
 
@@ -136,6 +158,36 @@ def test_union_all_renders_public_pyspark_union_source() -> None:
     assert 'F.col("score")' in text
 
 
+def test_union_all_rejoins_independently_materialized_lanes() -> None:
+    """A branch can materialize typed lanes and rejoin them without an opaque hook."""
+
+    step = _lowered(MergeBranchedItems).steps[2]
+    operation = step.operations[0]
+
+    assert step.source == "scoped"
+    assert operation.kind == "union_all"
+    assert operation.relation_set is not None
+    assert operation.relation_set.input_name == "global_context"
+    assert operation.relation_set.source == "global_context"
+
+
+def test_generated_union_all_rejoins_branch_lane_sources() -> None:
+    """Generated transforms route branch union through materialized lane frames."""
+
+    text = PySpark.render.transform()(
+        _lowered(MergeBranchedItems),
+        source_transform="tests.specifications.v6_api_ledger.test_v6_relation_union.MergeBranchedItems",
+        runtime_module="testing.runtime",
+        schema_modules={ActiveItem: "testing.schemas", ArchivedItem: "testing.schemas"},
+    )
+
+    assert "        # Step method: scope_active" in text
+    assert "        # Step method: scope_global" in text
+    assert "        # Step method: rejoin" in text
+    assert '        merged = scoped.alias("active_item")' in text
+    assert "        merged = merged.union(global_context)" in text
+
+
 def test_union_by_name_renders_exact_schema_name_aligned_union_source() -> None:
     text = render_pyspark_step(
         _lowered(MergeItemsByName).steps[0],
@@ -193,6 +245,20 @@ def test_relation_union_records_traceability_dependency() -> None:
     assert dependency.sources == ("active", "archived")
     assert dependency.operation == "union_all"
     assert dependency.detail["schema"] == "ArchivedItem"
+
+
+def test_branchable_union_records_traceability_dependency_between_lanes() -> None:
+    traceability = Compiler.traceability.build()(
+        _lowered(MergeBranchedItems),
+        source_transform="tests.MergeBranchedItems",
+        transform_module="tests.generated",
+    )
+    dependencies = {dependency.target: dependency for dependency in traceability.static_dataflow}
+
+    dependency = dependencies["rejoin.union_all[0].global_context"]
+    assert dependency.sources == ("scoped", "global_context")
+    assert dependency.operation == "union_all"
+    assert dependency.detail["source"] == "global_context"
 
 
 def test_relation_union_rejects_unaligned_schemas() -> None:

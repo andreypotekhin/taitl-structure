@@ -1,4 +1,4 @@
-# Basic Concepts
+# Concepts
 
 ## DSL
 

@@ -5,7 +5,7 @@
 Structure's core API is target-neutral. Import PySpark fields, expressions, joins, and helpers from
 `structure.plugin.pyspark`; configure its supported profile and variant under `[tool.structure.plugin.pyspark]`.
 Core selects one plugin target per transform and owns compilation, execution, generated-file lifecycle, and
-diagnostics. See [Configuration](docs/Configuration.md) and [Basic Concepts](docs/BasicConcepts.md).
+diagnostics. See [Configuration](docs/Configuration.md) and [Concepts](docs/Concepts.md).
 
 ## Less Code, More Spark
 

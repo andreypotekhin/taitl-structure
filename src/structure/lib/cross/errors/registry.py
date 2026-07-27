@@ -158,6 +158,17 @@ diagnostic_registry = DiagnosticRegistry(
             use_template="Correct the referenced catalog, allow nulls only when they are valid, or filter invalid rows before asserting require_reference(...).",
         ),
         DiagnosticEntry(
+            code="REL-E0705",
+            severity="error",
+            title="Relation priority selection failed",
+            owner="relation",
+            status="active",
+            docs="docs/Diagnostics.md#rel-e0705",
+            introduced="1.0.0",
+            problem_template="A select_first_qualified(...) relation selection found a missing or tied candidate.",
+            use_template="Correct the eligibility predicate, add a deterministic priority tie-breaker, or allow missing candidates when absence is valid.",
+        ),
+        DiagnosticEntry(
             code="BACKEND-E2401",
             severity="error",
             title="Unsupported backend target",

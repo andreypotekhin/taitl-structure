@@ -276,6 +276,15 @@ class RenderPySparkStep:
                 ordered_lines.extend(self._relation_order(operation.relation_order, step=step, target=target))
             if operation.relation_bound is not None:
                 ordered_lines.extend(self._relation_bound(operation.kind, operation.relation_bound, target=target))
+            if operation.relation_priority_selection is not None:
+                ordered_lines.extend(
+                    self._relation_priority_selection(
+                        operation.relation_priority_selection,
+                        step=step,
+                        target=target,
+                        index=index,
+                    )
+                )
             if operation.relation_set is not None:
                 source = prepared_sources.get(
                     operation.relation_set.source,
@@ -497,6 +506,116 @@ class RenderPySparkStep:
 
     def _relation_bound(self, kind: str, relation_bound, *, target: str) -> list[str]:
         return [f"        {target} = {target}.{kind}({relation_bound.count})"]
+
+    def _relation_priority_selection(
+        self,
+        selection,
+        *,
+        step: PySparkStepRecipe | PySparkOutputRecipe,
+        target: str,
+        index: int,
+    ) -> list[str]:
+        aliases = self._scope_aliases(step)
+        prefix = f"{target}_select_first_qualified_{index}"
+        key_columns = tuple(f"__structure_priority_key_{index}_{position}" for position, _ in enumerate(selection.keys))
+        priority = f"__structure_priority_order_{index}"
+        rank = f"__structure_priority_rank_{index}"
+        rendered_keys = tuple(render_pyspark_expression(key, scope_aliases=aliases) for key in selection.keys)
+        predicate = render_pyspark_expression(selection.predicate, scope_aliases=aliases)
+        order_value = render_pyspark_expression(self._order_value(selection.order_by), scope_aliases=aliases)
+        ordering = render_pyspark_expression(selection.order_by, scope_aliases=aliases)
+        lines = [
+            f"        {prefix}_keys = {target}.select(",
+            *(
+                f"            {key}.alias({self._literal(column)}),"
+                for key, column in zip(rendered_keys, key_columns, strict=True)
+            ),
+            "        )",
+            f"        {prefix}_keys = {prefix}_keys.dropDuplicates({list(key_columns)!r})",
+            f"        {prefix}_eligible = {target}.where(F.coalesce({predicate}, F.lit(False)))",
+            f"        {prefix}_eligible = {prefix}_eligible.withColumn({self._literal(priority)}, {order_value})",
+            f"        {prefix}_eligible_keys = {prefix}_eligible.select(",
+            *(
+                f"            {key}.alias({self._literal(column)}),"
+                for key, column in zip(rendered_keys, key_columns, strict=True)
+            ),
+            "        )",
+            f"        {prefix}_eligible_keys = {prefix}_eligible_keys.dropDuplicates({list(key_columns)!r})",
+        ]
+        guards: list[str] = []
+        if selection.missing == "error":
+            guards.append(f"{prefix}_missing_assertion")
+            message = (
+                "REL-E0705: select_first_qualified(...) found a key without an eligible candidate; "
+                "see docs/Diagnostics.md#rel-e0705"
+            )
+            lines.extend(
+                [
+                    f"        {prefix}_missing = {prefix}_keys.join(",
+                    f"            {prefix}_eligible_keys,",
+                    f"            {list(key_columns)!r},",
+                    '            "left_anti",',
+                    "        )",
+                    f"        {prefix}_missing = {prefix}_missing.agg(",
+                    '            F.count(F.lit(1)).alias("__structure_violations")',
+                    "        )",
+                    f"        {prefix}_missing_assertion = {prefix}_missing.select(",
+                    f'            F.assert_true(F.col("__structure_violations") == F.lit(0), {message!r})',
+                    '            .alias("__structure_select_first_missing")',
+                    "        )",
+                ]
+            )
+        guards.append(f"{prefix}_tie_assertion")
+        tie_columns = (*key_columns, priority)
+        message = (
+            "REL-E0705: select_first_qualified(...) found tied eligible candidates; "
+            "see docs/Diagnostics.md#rel-e0705"
+        )
+        lines.extend(
+            [
+                f"        {prefix}_ties = {prefix}_eligible.select(",
+                *(
+                    f"            {key}.alias({self._literal(column)}),"
+                    for key, column in zip(rendered_keys, key_columns, strict=True)
+                ),
+                f"            F.col({self._literal(priority)}),",
+                "        )",
+                f"        {prefix}_ties = {prefix}_ties.groupBy({', '.join(self._literal(column) for column in tie_columns)}).agg(",
+                '            F.count(F.lit(1)).alias("__structure_count")',
+                "        )",
+                f'        {prefix}_ties = {prefix}_ties.where(F.col("__structure_count") > F.lit(1))',
+                f"        {prefix}_ties = {prefix}_ties.agg(",
+                '            F.count(F.lit(1)).alias("__structure_violations")',
+                "        )",
+                f"        {prefix}_tie_assertion = {prefix}_ties.select(",
+                f'            F.assert_true(F.col("__structure_violations") == F.lit(0), {message!r})',
+                '            .alias("__structure_select_first_ties")',
+                "        )",
+                f"        {prefix}_ranked = {prefix}_eligible.withColumn(",
+                f"            {self._literal(rank)},",
+                f"            F.row_number().over(Window.partitionBy({', '.join(rendered_keys)}).orderBy({ordering})),",
+                "        )",
+                f"        {prefix}_ranked = {prefix}_ranked.where(F.col({self._literal(rank)}) == F.lit(1))",
+            ]
+        )
+        lines.append(f"        {target} = {guards[0]}")
+        for guard in guards[1:]:
+            lines.append(f"        {target} = {target}.crossJoin({guard})")
+        lines.extend(
+            [
+                f"        {target} = {target}.crossJoin({prefix}_ranked)",
+                f"        {target} = {target}.drop(",
+                f"            {self._literal(rank)},",
+                f"            {self._literal(priority)},",
+                '            "__structure_select_first_missing",',
+                '            "__structure_select_first_ties",',
+                "        )",
+            ]
+        )
+        return lines
+
+    def _order_value(self, expression: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
+        return expression.args[0] if expression.kind == "order" else expression
 
     def _prepares_relation(
         self,

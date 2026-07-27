@@ -81,6 +81,23 @@ Priority selection takes a declared stable row key, a candidate relation, an eli
 priority ordering. It selects at most one qualifying candidate per key, with named missing/tie policy. This avoids
 opaque surrogate IDs such as `monotonically_increasing_id()` and supports exact-parent-global fallback selection.
 
+## P1 Support Matrix
+
+Sprint 25's P1 list is intentionally a set of narrow relation contracts rather than a new generic DataFrame surface.
+Each item exists because one or more Search hooks currently hide row cardinality, relation identity, or ordering from
+Structure.
+
+| P1 item | Design support | Search client | Boundary |
+| --- | --- | --- | --- |
+| Typed generators | Admit `posexplode_struct(...)` first because it has a declared generated scope, ordinal field, row-expanding cardinality, and explicit null-element rejection. Keep `explode`, outer generators, and `inline` deferred until their null/empty row contracts are proven. | `ExtractText`, `ScoreOverlap`, `ScoreBm25`, cohort fallback expansion | Step migration only after same-fixture generated/online parity. |
+| Exact-schema relation composition | Use exact declared schema compatibility for `union_all`, `union_by_name`, `intersect`, `intersect_all`, `subtract`, and `except_all`; preserve Spark duplicate semantics and make no ordering promise. | `ReduceSimilarityScores`, relevance context convergence | No missing-column or schema-evolution policy in P1. |
+| Self-alias joins | Represent a second occurrence of a relation with a named scope and require an explicit typed join/projection to read it. | canonical/reversed similarity rows; leaf-band exclusion patterns | Alias does not copy rows or expose DataFrames. |
+| Relation order and bounds | Treat `order_by(...)`, `limit(n)`, and `offset(n)` as relation operations with literal bounds; reject bounds after an order-destroying operation. | top-K result slices, similarity-query token ordering, candidate windows | Output order is observable only at declared materialization boundaries. |
+| Relation assertions | Validate uniqueness, predicates, and references through Spark-plan assertions instead of driver collection. | cohort band catalog validation; exact-one policy checks | Assertions are row-preserving on success and batch-only in P1. |
+| Bounded hierarchy and fallbacks | Build finite parent closure/path rows from explicit id, parent, priority, and `max_depth`; emit deterministic parent-substitution fallbacks plus terminal global fallback. | `ResolveCohortBands` | No dynamic recursion, graph API, Python traversal, or driver-side catalog collection. |
+| Branchable typed union | Let independently typed branches converge through exact-schema union while retaining branch provenance. | scoped and global relevance impressions/clicks | Branches must return one declared schema; union preserves duplicates. |
+| First-qualified priority selection | Select one eligible candidate per declared business key using explicit priority order and `REL-E0705` missing/tie failures. | `RerankDocuments` exact, parent, then global feedback | Generated surrogate row IDs are not admitted as selection keys. |
+
 ## Alternatives Rejected
 
 - Forward raw PySpark DataFrames through a step method: this erases schemas, cardinality, and traceability.

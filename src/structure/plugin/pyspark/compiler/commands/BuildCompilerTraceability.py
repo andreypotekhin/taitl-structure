@@ -21,6 +21,9 @@ from structure.plugin.pyspark.compiler.logic.traceability.MapRelationAssertionTr
 from structure.plugin.pyspark.compiler.logic.traceability.MapRelationOrderingTraceability import (
     MapRelationOrderingTraceability,
 )
+from structure.plugin.pyspark.compiler.logic.traceability.MapRelationPrioritySelectionTraceability import (
+    MapRelationPrioritySelectionTraceability,
+)
 from structure.plugin.pyspark.compiler.logic.traceability.MapRelationSetTraceability import MapRelationSetTraceability
 from structure.plugin.pyspark.compiler.logic.traceability.MapSelectedRowsTraceability import MapSelectedRowsTraceability
 from structure.plugin.pyspark.compiler.logic.traceability.MapValidationTraceability import MapValidationTraceability
@@ -42,6 +45,7 @@ class BuildCompilerTraceability:
         self._relation_assertions = MapRelationAssertionTraceability(self._dataflow)
         self._relation_aliases = MapRelationAliasTraceability()
         self._relation_ordering = MapRelationOrderingTraceability(self._dataflow)
+        self._relation_priority_selection = MapRelationPrioritySelectionTraceability(self._dataflow)
         self._relation_sets = MapRelationSetTraceability()
         self._selected_rows = MapSelectedRowsTraceability(self._dataflow)
         self._udf_boundaries = FindPythonUdfBoundaries()
@@ -91,6 +95,10 @@ class BuildCompilerTraceability:
             dependencies.extend(self._relation_aliases.dependencies(step))
             provenance.extend(self._relation_ordering.provenance(plan, step, source_transform, transform_module))
             dependencies.extend(self._relation_ordering.dependencies(step))
+            provenance.extend(
+                self._relation_priority_selection.provenance(plan, step, source_transform, transform_module)
+            )
+            dependencies.extend(self._relation_priority_selection.dependencies(step))
             provenance.extend(self._relation_sets.provenance(plan, step, source_transform, transform_module))
             dependencies.extend(self._relation_sets.dependencies(step))
             if len(step.results) <= 1:

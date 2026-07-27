@@ -13,6 +13,9 @@ from structure.plugin.pyspark.compiler.model.PySparkRelationAliasRecipe import P
 from structure.plugin.pyspark.compiler.model.PySparkRelationAssertionRecipe import PySparkRelationAssertionRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationBoundRecipe import PySparkRelationBoundRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationOrderRecipe import PySparkRelationOrderRecipe
+from structure.plugin.pyspark.compiler.model.PySparkRelationPrioritySelectionRecipe import (
+    PySparkRelationPrioritySelectionRecipe,
+)
 from structure.plugin.pyspark.compiler.model.PySparkRelationSetRecipe import PySparkRelationSetRecipe
 from structure.plugin.pyspark.compiler.model.PySparkSelectedRowsRecipe import PySparkSelectedRowsRecipe
 from structure.plugin.pyspark.compiler.model.PySparkWatermarkRecipe import PySparkWatermarkRecipe
@@ -32,6 +35,7 @@ class PySparkOperationRecipe:
     relation_alias: PySparkRelationAliasRecipe | None = None
     relation_assertion: PySparkRelationAssertionRecipe | None = None
     relation_order: PySparkRelationOrderRecipe | None = None
+    relation_priority_selection: PySparkRelationPrioritySelectionRecipe | None = None
     relation_bound: PySparkRelationBoundRecipe | None = None
     relation_set: PySparkRelationSetRecipe | None = None
     watermark: PySparkWatermarkRecipe | None = None
@@ -87,6 +91,15 @@ class PySparkOperationRecipe:
     @staticmethod
     def relation_bound_operation(kind: str, relation_bound: PySparkRelationBoundRecipe) -> "PySparkOperationRecipe":
         return PySparkOperationRecipe(kind=kind, relation_bound=relation_bound)
+
+    @staticmethod
+    def relation_priority_selection_operation(
+        selection: PySparkRelationPrioritySelectionRecipe,
+    ) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(
+            kind="select_first_qualified",
+            relation_priority_selection=selection,
+        )
 
     @staticmethod
     def relation_set_operation(relation_set: PySparkRelationSetRecipe) -> "PySparkOperationRecipe":

@@ -95,6 +95,15 @@ reason rather than an accidental API gap.
   reference_key=..., nulls="allow")`. It validates nullable parent/foreign-key-like values against an unjoined
   reference relation through public Spark projections, duplicate removal, left-anti join, and assertion expressions,
   reports `REL-E0704`, and keeps generated/online/explain/traceability/capability/streaming evidence compiler-visible.
+- [x] (2026-07-26) Implemented declared-key first-qualified priority selection:
+  `select_first_qualified(keys..., where=..., order_by=..., missing="allow")` filters eligible candidates, validates
+  configured missing/tie failures with `REL-E0705`, selects one candidate per business key through public
+  `row_number()` window lowering, and reports generated/online/explain/traceability/capability/streaming evidence.
+  Search document reranking still waits for same-fixture migration before hook retirement.
+- [x] (2026-07-26) Closed the branchable typed-union P1 contract: independently materialized typed lanes can feed a
+  later `union_all(...)` step, generated code unions the materialized lane frames, and traceability records the
+  branch-to-branch dependency. Search relevance-context expansion still waits for same-fixture migration before hook
+  retirement.
 - [ ] Specify remaining generator and relation-composition contracts.
 - [ ] Implement remaining relation plans and end-to-end parity paths.
 - [ ] Migrate Search slices in dependency order.

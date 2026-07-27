@@ -47,8 +47,9 @@ fallback on only one path.
 the detailed API/evidence view. Every status change updates all three in the same pull request:
 
 - `docs/dev/Gaps.md` records the reason, user-facing escape hatch, and owning plan.
-- `docs/reference/pyspark-transformation-coverage.json` records the supported-target classification.
-- `docs/dev/specifications/V6PySparkApiLedger.md` records the release priority, contracts, examples, and evidence.
+- `src/structure/plugin/pyspark/resources/pyspark-transformation-coverage.json` records the supported-target
+  classification.
+- `docs/APICatalog.md` records the release priority, contracts, examples, and evidence.
 
 An unsupported or deferred API must name whether the correct boundary is an ordinary step, an explicit scalar UDF,
 `@raw`, or caller-owned PySpark. It must never become an implicit promise merely because Spark offers it.
@@ -86,6 +87,11 @@ relation ordering, literal limits/offsets, relation assertions, bounded parent-h
 first-qualified priority selection. These latter three remove the new Search cohort, relevance-context, and reranking
 hooks without adopting general recursion or opaque surrogate identities. Sampling, physical-plan directives, dynamic
 schemas, and source/sink ownership stay deferred.
+
+The P1 design support lives in `docs/dev/design/TypedRelationOperations.md`. That document is the rationale for why
+each P1 capability is admitted, which Search hook it supports, and which broader PySpark behavior remains outside the
+release. The matching implementation contract is `docs/dev/specifications/TypedRelationOperations.md`, and the release
+evidence ledger is `docs/APICatalog.md`.
 
 ## Plugin Decomposition
 

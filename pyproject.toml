@@ -12,6 +12,8 @@ readme = "Readme.md"
 include = [
     "Readme.md",
     { path = "src/structure/plugin/pyspark/resources/runtime.py.template", format = [ "sdist", "wheel" ] },
+    { path = "src/structure/plugin/pyspark/resources/pyspark-transformation-coverage.json", format = [ "sdist", "wheel" ] },
+    { path = "src/structure/plugin/pyspark/resources/pyspark-transformation-inventory.json", format = [ "sdist", "wheel" ] },
 ]
 packages = [
     { include = "structure", from = "src" },

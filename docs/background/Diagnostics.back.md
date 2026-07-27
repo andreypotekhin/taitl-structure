@@ -83,6 +83,22 @@ Common causes:
 Correct the referenced catalog, normalize both sides to the same business key, or filter invalid rows before asserting
 `require_reference(...)`.
 
+## REL-E0705
+
+`REL-E0705` means a `select_first_qualified(...)` relation operation could not choose one deterministic candidate for
+each declared key under its configured policies. With `missing="error"`, every key in the candidate relation must have
+at least one eligible row. With `ties=TiePolicy.ERROR`, no key may have two eligible rows with the same priority value.
+
+Common causes:
+
+- the eligibility predicate filters out every candidate for a required key;
+- the priority expression is not specific enough to break ties;
+- the declared key is too broad and combines unrelated candidates into one partition;
+- missing candidates are valid, but the operation was configured with `missing="error"`.
+
+Fix the eligibility predicate, declare a more specific business key, add a deterministic priority tie-breaker in a
+future supported priority expression, or use `missing="allow"` when absent candidates should simply produce no row.
+
 ## Design Principles
 
 Diagnostics must be:

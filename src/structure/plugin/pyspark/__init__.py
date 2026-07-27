@@ -46,7 +46,7 @@ isnotnull isnull is_grouped kurtosis lag left_join latest_by lead lookup_join la
 ltrim log limit md5 map_entries map_concat map_contains_key map_filter map_from_entries map_keys map_transform_keys
 map_transform_values map_values map_zip_with max min minute month nanvl nvl nvl2 nullif pow not_exists nth_value
 ntile offset order_by percent_rank percentile posexplode_struct preceding project rank range_between relation_alias regexp_extract regexp_replace require_all require_reference require_unique reverse rtrim round
-signum slice sha1 sha2 second right_join rollup row_number rowset_join rows_between rolling_avg rolling_max
+select_first_qualified signum slice sha1 sha2 second right_join rollup row_number rowset_join rows_between rolling_avg rolling_max
 rolling_min rolling_sum subtract sum stddev sqrt size sequence session_window skewness split translate substring temporal_one
 to_decimal to_date to_timestamp TimeWindow trim trunc try_element_at union_all union_by_name upper unbounded_following unbounded_preceding
 variance when year xxhash64 zeroifnull where watermark window window_avg window_bool_and window_bool_or
@@ -214,6 +214,7 @@ __all__ = [  # noqa: F405
     "require_all",
     "require_reference",
     "require_unique",
+    "select_first_qualified",
     "reverse",
     "rtrim",
     "round",

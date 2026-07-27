@@ -191,7 +191,10 @@ Raw boundaries remain only where the DSL cannot yet express the necessary relati
 - lexical scoring needs query-token row expansion;
 - index summaries need a global aggregate with a defined empty-corpus result;
 - similarity-query creation needs sorted token collection and exact-one policy validation; and
-- similarity reduction needs self-alias joins and canonical/reversed relation union.
+- similarity reduction needs self-alias joins and canonical/reversed relation union;
+- relevance-context expansion needs branchable typed union for scoped and global contexts;
+- document reranking needs first-qualified priority selection over declared business keys; and
+- cohort-band resolution needs relation assertions, bounded parent hierarchy, and deterministic fallback expansion.
 
 These are capability gaps, not permission to hide ordinary logic in hooks. When a capability gains an explicit typed
 contract, IR representation, target checks, generated rendering, and online/generated parity coverage, migrate the

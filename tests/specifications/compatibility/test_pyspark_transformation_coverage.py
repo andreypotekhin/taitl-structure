@@ -6,8 +6,9 @@ import structure
 from structure.plugin import pyspark
 
 ROOT = Path(__file__).resolve().parents[3]
-INVENTORY = ROOT / "docs/reference/pyspark-transformation-inventory.json"
-CATALOG = ROOT / "docs/reference/pyspark-transformation-coverage.json"
+RESOURCES = ROOT / "src/structure/plugin/pyspark/resources"
+INVENTORY = RESOURCES / "pyspark-transformation-inventory.json"
+CATALOG = RESOURCES / "pyspark-transformation-coverage.json"
 VALID_STATUSES = {"supported", "scheduled", "deferred", "unsupported"}
 
 

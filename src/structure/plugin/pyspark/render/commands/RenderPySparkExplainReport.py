@@ -190,6 +190,13 @@ class RenderPySparkExplainReport:
             return f"order_by(row_preserving keys={len(operation.relation_order.order_by)})"
         if operation.relation_bound is not None:
             return f"{operation.kind}(row_filtering count={operation.relation_bound.count})"
+        if operation.relation_priority_selection is not None:
+            return (
+                "select_first_qualified(select_one "
+                f"keys={len(operation.relation_priority_selection.keys)} "
+                f"missing={operation.relation_priority_selection.missing} "
+                f"ties={operation.relation_priority_selection.ties.value})"
+            )
         if operation.relation_set is not None:
             cardinality = "row_multiplying" if operation.kind in {"union_all", "union_by_name"} else "row_filtering"
             return (
