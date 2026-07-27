@@ -23,13 +23,15 @@ execution, generated source, diagnostics, explain, and traceability.
 
 ### First admitted shape: `posexplode` over `array<struct>`
 
-The initial helper expands one array-of-struct field into zero or more rows. The author declares a result schema that
-contains the selected source fields, an ordinal Long field, and the element struct fields or a declared nested element
-field. The exact public helper spelling is chosen during implementation but must make the driving array, ordinal name,
-and result schema clear.
+The initial helper, `posexplode_struct(value, as_=GeneratedScope, ordinal="ordinal", scope="...")`, expands one
+array-of-struct field into zero or more rows. The author declares a generated scope schema that contains an ordinal
+Long field and the element struct fields. The final output schema can combine the original input fields with fields
+read from that generated scope through normal Structure projection.
 
 - A non-null array with N elements yields N rows in ordinal order 0 through N-1.
 - A null or empty array yields zero rows for the inner form.
+- Nullable array elements are rejected until their flattening/nullability semantics are admitted; declare
+  `contains_null=False`.
 - An outer form is a separate future admission because its null-row contract differs.
 - The operation is row-expanding and batch-only until a streaming contract is separately accepted.
 - `explode`, `explode_outer`, `inline`, and `inline_outer` remain deferred in `Gaps.md` until their distinct schemas
@@ -39,37 +41,49 @@ and result schema clear.
 
 ### `union_all`
 
-`union_all(left, right)` requires identical declared schemas including physical names, field types, and nullability
-compatibility. It returns every row from both relations and preserves duplicates. Its result has set-combining
-cardinality and makes no ordering promise.
+`union_all(relation)` appends an unjoined relation to the active rowset. The active rowset and the relation must have
+identical declared schemas including field order, physical names, field types, and nullability. It returns every row
+from both relations and preserves duplicates. Its result has set-combining cardinality and makes no ordering promise.
 
 ### `union_by_name`
 
-`union_by_name(left, right)` aligns fields by declared physical name. V6 initially requires the same field set;
-missing-column filling is deferred because it changes nullability and schema evolution semantics. It preserves
-duplicates and makes no ordering promise.
+`union_by_name(relation)` appends an unjoined relation to the active rowset and aligns fields by declared physical
+name. V6 initially requires the same field set and the same declared schema; missing-column filling is deferred because
+it changes nullability and schema evolution semantics. It preserves duplicates and makes no ordering promise.
 
-`intersect`, `intersect_all`, `subtract`, and `except_all` remain deferred until their distinct/multiset duplicate
-rules are separately specified in `Gaps.md`.
+### `intersect` and `intersect_all`
+
+`intersect(relation)` keeps rows that appear in both exact-schema relations and follows Spark's distinct set
+semantics. `intersect_all(relation)` keeps duplicate occurrences according to Spark's multiset semantics.
+
+### `subtract` and `except_all`
+
+`subtract(relation)` removes rows that appear in the right relation using Spark's distinct EXCEPT semantics.
+`except_all(relation)` removes rows using Spark's duplicate-preserving multiset semantics.
+
+All admitted set operations require identical declared schemas including field order, physical names, field types, and
+nullability. They are batch-only, make no ordering promise, and must run before joins, generators, aggregation, or
+selected-row operations in the same step.
 
 ## Self Alias
 
-`alias(relation, name=...)` creates a second typed occurrence of one relation for an explicit self join. `name` is a
-non-empty literal identifier unique within the step. The alias is row-preserving and does not execute or duplicate
-data by itself. A join and explicit schema projection determine the resulting rows.
+`relation_alias(relation, name=...)` creates a second typed occurrence of the current rowset or an unjoined relation for
+an explicit self join. `name` is a non-empty public Python identifier unique within the step. The alias is
+row-preserving and does not execute or duplicate data by itself. A join and explicit schema projection determine the
+resulting rows.
 
 Field provenance retains the alias occurrence so generated columns and traceability distinguish left and right fields.
-Alias collision, self-join predicate ambiguity, and use without an admitted relation consumer fail at compile time.
+Alias collision, self-join predicate ambiguity, and reading alias fields before joining the alias fail at compile time.
 
 ## Ordering and Selection
 
-`order_by(...)` accepts one or more existing typed order descriptors. It establishes the result presentation order and
-is visible at the materialized output boundary. A later operator may not claim to preserve that order unless its own
-contract says so.
+`order_by(...)` accepts one or more typed order descriptors, or orderable scalar expressions that are interpreted as
+ascending order descriptors. It establishes the current relation presentation order and is visible at the materialized
+output boundary. A later operator may not claim to preserve that order unless its own contract says so.
 
-`limit(n)` and `offset(n)` require non-negative integer literals. `limit` requires a preceding explicit ordering;
-`offset` requires a preceding explicit ordering and is supported only where the selected PySpark profile exposes an
-equivalent public plan. An unordered bound fails with a determinism diagnostic.
+`limit(n)` and `offset(n)` require non-negative integer literals. Both require the current relation state to have a
+preceding explicit `order_by(...)`; if a row-shaping or set operation has run after the latest ordering, the bound is
+rejected as nondeterministic.
 
 `sample` remains deferred pending seed, replacement, and reproducibility semantics.
 
@@ -95,10 +109,12 @@ windows, and streaming steps. `CreateSimilarityQueries` is intended to replace i
 primitive before reading `SimilarityPolicy.max_document_frequency_ratio`.
 
 `require_unique(keys...)` fails at Spark evaluation when two rows share the declared key. `require_all(predicate)`
-fails when any row does not satisfy the symbolic predicate. `require_reference(values, reference, value_key=...,
-reference_key=..., nulls="allow")` fails when a non-null value has no declared reference row. All three operations
-preserve rows on success, record their source relation and constraint in explain/traceability, and are batch-only
-until a streaming validation contract is defined.
+fails when any row does not satisfy the symbolic predicate; null predicate results are failures.
+`require_reference(value, reference, reference_key=..., nulls="allow")` fails when a checked value has no declared
+reference row. Null checked values pass by default; `nulls="reject"` treats them as violations.
+
+All three assertions preserve the current rowset on success, record their source relation and constraint in
+explain/traceability, and are batch-only until a streaming validation contract is defined.
 
 ## Bounded Parent Hierarchy
 

@@ -36,6 +36,7 @@ class PySparkSymbolicContext:
         self.aggregate: AggregatePlan | None = None
         self.results: tuple[object, ...] = ()
         self.default_project_source: object | None = None
+        self.default_project_frame: str | None = None
         self.current_scopes: set[str] = set()
         self.relation_scopes: dict[str, object] = {}
         self._token: Token[SymbolicContext | None] | None = None

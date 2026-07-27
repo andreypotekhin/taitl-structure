@@ -9,7 +9,13 @@ from structure.plugin.pyspark.compiler.model.PySparkInputRecipe import PySparkIn
 from structure.plugin.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoinRecipe
 from structure.plugin.pyspark.compiler.model.PySparkJoinTemporalRecipe import PySparkJoinTemporalRecipe
 from structure.plugin.pyspark.compiler.model.PySparkOutputRecipe import PySparkOutputRecipe
+from structure.plugin.pyspark.compiler.model.PySparkPosexplodeStructRecipe import PySparkPosexplodeStructRecipe
 from structure.plugin.pyspark.compiler.model.PySparkProjectionRecipe import PySparkProjectionRecipe
+from structure.plugin.pyspark.compiler.model.PySparkRelationAliasRecipe import PySparkRelationAliasRecipe
+from structure.plugin.pyspark.compiler.model.PySparkRelationAssertionRecipe import PySparkRelationAssertionRecipe
+from structure.plugin.pyspark.compiler.model.PySparkRelationBoundRecipe import PySparkRelationBoundRecipe
+from structure.plugin.pyspark.compiler.model.PySparkRelationOrderRecipe import PySparkRelationOrderRecipe
+from structure.plugin.pyspark.compiler.model.PySparkRelationSetRecipe import PySparkRelationSetRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStepResultRecipe import PySparkStepResultRecipe
 from structure.plugin.pyspark.compiler.model.PySparkValidationRecipe import PySparkValidationRecipe
@@ -26,7 +32,13 @@ __all__ = [
     "PySparkJoinRecipe",
     "PySparkJoinTemporalRecipe",
     "PySparkOutputRecipe",
+    "PySparkPosexplodeStructRecipe",
     "PySparkProjectionRecipe",
+    "PySparkRelationAliasRecipe",
+    "PySparkRelationAssertionRecipe",
+    "PySparkRelationBoundRecipe",
+    "PySparkRelationOrderRecipe",
+    "PySparkRelationSetRecipe",
     "PySparkStepRecipe",
     "PySparkStepResultRecipe",
     "PySparkValidationRecipe",

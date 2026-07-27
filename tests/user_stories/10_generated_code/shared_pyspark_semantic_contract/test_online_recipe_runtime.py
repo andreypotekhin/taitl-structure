@@ -25,7 +25,12 @@ from structure.plugin.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoi
 from structure.plugin.pyspark.compiler.model.PySparkJoinTemporalRecipe import PySparkJoinTemporalRecipe
 from structure.plugin.pyspark.compiler.model.PySparkOperationRecipe import PySparkOperationRecipe
 from structure.plugin.pyspark.compiler.model.PySparkOutputRecipe import PySparkOutputRecipe
+from structure.plugin.pyspark.compiler.model.PySparkPosexplodeStructRecipe import PySparkPosexplodeStructRecipe
 from structure.plugin.pyspark.compiler.model.PySparkProjectionRecipe import PySparkProjectionRecipe
+from structure.plugin.pyspark.compiler.model.PySparkRelationAssertionRecipe import PySparkRelationAssertionRecipe
+from structure.plugin.pyspark.compiler.model.PySparkRelationBoundRecipe import PySparkRelationBoundRecipe
+from structure.plugin.pyspark.compiler.model.PySparkRelationOrderRecipe import PySparkRelationOrderRecipe
+from structure.plugin.pyspark.compiler.model.PySparkRelationSetRecipe import PySparkRelationSetRecipe
 from structure.plugin.pyspark.compiler.model.PySparkSelectedRowsRecipe import PySparkSelectedRowsRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStepResultRecipe import PySparkStepResultRecipe
@@ -84,6 +89,27 @@ class RawMetric(Schema):
 
 class RawTagBatch(Schema):
     tags = array(string(), contains_null=False, nullable=True)
+
+
+class RuntimeTerm(Schema):
+    token = string(nullable=False)
+    weight = string(nullable=False)
+
+
+class RawTermBatch(Schema):
+    terms = array(struct(RuntimeTerm), contains_null=False, nullable=False)
+
+
+class ExpandedRuntimeTerm(Schema):
+    ordinal = long(nullable=False)
+    token = string(nullable=False)
+    weight = string(nullable=False)
+
+
+class PublishedRuntimeTerm(Schema):
+    ordinal = long(nullable=False)
+    token = string(nullable=False)
+    weight = string(nullable=False)
 
 
 class RawMapBatch(Schema):
@@ -906,6 +932,247 @@ def test_online_runner_applies_relation_exactly_one_before_join(monkeypatch) -> 
         "select:id=col(orders.id),status=col(customers.segment)",
         "alias:published",
     )
+
+
+def test_online_runner_applies_posexplode_struct_before_projection(monkeypatch) -> None:
+    """I can expand array-of-struct rows through the same recipe used by generated PySpark."""
+
+    _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
+    invocation = FakeInvocation(terms=_frame("terms", RawTermBatch))
+
+    result = RunOnlinePySparkTransform()(
+        cast(Any, invocation),
+        _posexplode_struct_plan(),
+        session=SimpleNamespace(
+            online_executor=None,
+            spark="spark",
+            ctx=None,
+            execution_mode="online",
+            target="pyspark",
+        ),
+    )
+
+    published = cast(FakeFrame, result.published)
+
+    assert published.operations == (
+        "alias:rawTermBatch",
+        "select:*=*,__structure_expanded_pos=posexplode(col(rawTermBatch.terms)),"
+        "__structure_expanded_item=posexplode(col(rawTermBatch.terms))",
+        "withColumn:ordinal=cast(col(__structure_expanded_pos) as LongType())",
+        "withColumn:token=col(__structure_expanded_item.token)",
+        "withColumn:weight=col(__structure_expanded_item.weight)",
+        "drop:__structure_expanded_pos,__structure_expanded_item",
+        "select:ordinal=col(ordinal),token=col(token),weight=col(weight)",
+        "alias:published",
+    )
+
+
+def test_online_runner_applies_relation_union_before_projection(monkeypatch) -> None:
+    """I can concatenate another exact-schema relation without an opaque hook."""
+
+    _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
+    invocation = FakeInvocation(
+        orders=_frame("orders", RawOrder),
+        archived=_frame("archived", RawOrder),
+    )
+
+    result = RunOnlinePySparkTransform()(
+        cast(Any, invocation),
+        _relation_set_plan("union_all", by_name=False),
+        session=SimpleNamespace(
+            online_executor=None,
+            spark="spark",
+            ctx=None,
+            execution_mode="online",
+            target="pyspark",
+        ),
+    )
+
+    published = cast(FakeFrame, result.published)
+
+    assert published.operations == (
+        "alias:rawOrder",
+        "union:archived",
+        "select:id=col(id),status=col(status)",
+        "alias:published",
+    )
+
+
+def test_online_runner_applies_relation_union_by_name_before_projection(monkeypatch) -> None:
+    """I can concatenate another exact-schema relation by physical field name."""
+
+    _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
+    invocation = FakeInvocation(
+        orders=_frame("orders", RawOrder),
+        archived=_frame("archived", RawOrder),
+    )
+
+    result = RunOnlinePySparkTransform()(
+        cast(Any, invocation),
+        _relation_set_plan("union_by_name", by_name=True),
+        session=SimpleNamespace(
+            online_executor=None,
+            spark="spark",
+            ctx=None,
+            execution_mode="online",
+            target="pyspark",
+        ),
+    )
+
+    published = cast(FakeFrame, result.published)
+
+    assert published.operations == (
+        "alias:rawOrder",
+        "unionByName:archived:allowMissingColumns=False",
+        "select:id=col(id),status=col(status)",
+        "alias:published",
+    )
+
+
+@pytest.mark.parametrize(
+    ("operation", "expected"),
+    (
+        ("intersect", "intersect:archived"),
+        ("intersect_all", "intersectAll:archived"),
+        ("subtract", "subtract:archived"),
+        ("except_all", "exceptAll:archived"),
+    ),
+)
+def test_online_runner_applies_relation_set_operation_before_projection(
+    monkeypatch, operation: str, expected: str
+) -> None:
+    """I can apply exact-schema set operations without an opaque hook."""
+
+    _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
+    invocation = FakeInvocation(
+        orders=_frame("orders", RawOrder),
+        archived=_frame("archived", RawOrder),
+    )
+
+    result = RunOnlinePySparkTransform()(
+        cast(Any, invocation),
+        _relation_set_plan(operation, by_name=False),
+        session=SimpleNamespace(
+            online_executor=None,
+            spark="spark",
+            ctx=None,
+            execution_mode="online",
+            target="pyspark",
+        ),
+    )
+
+    published = cast(FakeFrame, result.published)
+
+    assert published.operations == (
+        "alias:rawOrder",
+        expected,
+        "select:id=col(id),status=col(status)",
+        "alias:published",
+    )
+
+
+def test_online_runner_applies_relation_order_and_bounds_before_projection(monkeypatch) -> None:
+    """I can sort and bound the current relation without an opaque hook."""
+
+    _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
+
+    result = RunOnlinePySparkTransform()(
+        cast(Any, FakeInvocation(orders=_frame("orders", RawOrder))),
+        _relation_order_plan(),
+        session=SimpleNamespace(
+            online_executor=None,
+            spark="spark",
+            ctx=None,
+            execution_mode="online",
+            target="pyspark",
+        ),
+    )
+
+    published = cast(FakeFrame, result.published)
+
+    assert published.operations == (
+        "alias:rawOrder",
+        "orderBy:col(rawOrder.id).desc(),col(rawOrder.status).asc()",
+        "limit:10",
+        "offset:2",
+        "select:id=col(rawOrder.id),status=col(rawOrder.status)",
+        "alias:published",
+    )
+
+
+def test_online_runner_applies_relation_assertions_before_projection(monkeypatch) -> None:
+    """I can enforce catalog assertions without a driver-side action or opaque hook."""
+
+    _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
+    plan = _with_operations(
+        _online_plan(),
+        PySparkOperationRecipe.relation_assertion_operation(
+            PySparkRelationAssertionRecipe("require_unique", keys=(_field(RawOrder, "id"),))
+        ),
+        PySparkOperationRecipe.relation_assertion_operation(
+            PySparkRelationAssertionRecipe("require_all", predicate=_not_null(_field(RawOrder, "status")))
+        ),
+    )
+
+    result = RunOnlinePySparkTransform()(
+        cast(Any, FakeInvocation(orders=_frame("orders", RawOrder))),
+        plan,
+        session=SimpleNamespace(
+            online_executor=None,
+            spark="spark",
+            ctx=None,
+            execution_mode="online",
+            target="pyspark",
+        ),
+    )
+
+    operations = cast(FakeFrame, result.published).operations
+
+    assert "groupBy:id=col(orders.id)" in operations
+    assert "where:(col(__structure_count) > lit(1))" in operations
+    assert any("REL-E0702: require_unique" in operation for operation in operations)
+    assert "where:~(coalesce(col(orders.status).isNotNull(),lit(False)))" in operations
+    assert any("REL-E0703: require_all" in operation for operation in operations)
+
+
+def test_online_runner_applies_relation_reference_assertion_before_projection(monkeypatch) -> None:
+    """I can validate current values against an unjoined reference relation."""
+
+    _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
+    plan = _with_operations(
+        _relation_set_plan("union_all", by_name=False),
+        PySparkOperationRecipe.relation_assertion_operation(
+            PySparkRelationAssertionRecipe(
+                "require_reference",
+                value=_field(RawOrder, "status"),
+                reference_input="archived",
+                reference_source="archived",
+                reference_schema=RawOrder,
+                reference_key=_field_scope("archived", RawOrder, "status"),
+            )
+        ),
+    )
+
+    result = RunOnlinePySparkTransform()(
+        cast(Any, FakeInvocation(orders=_frame("orders", RawOrder), archived=_frame("archived", RawOrder))),
+        plan,
+        session=SimpleNamespace(
+            online_executor=None,
+            spark="spark",
+            ctx=None,
+            execution_mode="online",
+            target="pyspark",
+        ),
+    )
+
+    operations = cast(FakeFrame, result.published).operations
+
+    assert "withColumn:__structure_reference_value=col(rawOrder.status)" in operations
+    assert "select:__structure_reference_key=col(status)" in operations
+    assert "dropDuplicates:__structure_reference_key" in operations
+    assert "where:col(__structure_reference_value).isNotNull()" in operations
+    assert "join:archived:left_anti:(col(__structure_reference_value) == col(__structure_reference_key))" in operations
+    assert any("REL-E0704: require_reference" in operation for operation in operations)
 
 
 def test_online_runner_dedupes_lookup_input_deterministically(monkeypatch) -> None:
@@ -2075,6 +2342,229 @@ def _relation_exactly_one_join_plan() -> PySparkExecutionPlan:
     )
 
 
+def _posexplode_struct_plan() -> PySparkExecutionPlan:
+    input_validation = PySparkValidationRecipe("terms", RawTermBatch, SchemaMode.STRICT, False, "input")
+    published_validation = PySparkValidationRecipe(
+        "published", PublishedRuntimeTerm, SchemaMode.STRICT, False, "output"
+    )
+    projection = (
+        PySparkProjectionRecipe(
+            PublishedRuntimeTerm._structure_fields["ordinal"],
+            _field_scope("expanded", ExpandedRuntimeTerm, "ordinal"),
+        ),
+        PySparkProjectionRecipe(
+            PublishedRuntimeTerm._structure_fields["token"],
+            _field_scope("expanded", ExpandedRuntimeTerm, "token"),
+        ),
+        PySparkProjectionRecipe(
+            PublishedRuntimeTerm._structure_fields["weight"],
+            _field_scope("expanded", ExpandedRuntimeTerm, "weight"),
+        ),
+    )
+    generator = PySparkPosexplodeStructRecipe(
+        expression=_field(RawTermBatch, "terms"),
+        scope="expanded",
+        schema=ExpandedRuntimeTerm,
+        ordinal="ordinal",
+    )
+    step = PySparkStepRecipe(
+        name="expand",
+        ordinal=0,
+        source="terms",
+        source_scope="RawTermBatch",
+        input_schema=RawTermBatch,
+        output_schema=PublishedRuntimeTerm,
+        input_alias="rawTermBatch",
+        output_alias="published",
+        before_hooks=(),
+        filters=(),
+        joins=(),
+        projection=projection,
+        after_hooks=(),
+        validations=(),
+        results=(
+            PySparkStepResultRecipe(
+                schema=PublishedRuntimeTerm,
+                lane="published",
+                frame="published",
+                output_alias="published",
+                projection=projection,
+                ordinal=0,
+                after_hooks=(),
+                validations=(published_validation,),
+            ),
+        ),
+        operations=(PySparkOperationRecipe.posexplode_struct_operation(generator),),
+    )
+    return PySparkExecutionPlan(
+        transform="ExpandRuntimeTerms",
+        backend=BackendId("PySpark", "3.5", "pyspark"),
+        inputs=(PySparkInputRecipe("terms", RawTermBatch, 0, input_validation),),
+        steps=(step,),
+        outputs=(
+            PySparkOutputRecipe(
+                name="published",
+                ordinal=0,
+                source="published",
+                source_scope="published",
+                input_schema=PublishedRuntimeTerm,
+                output_schema=PublishedRuntimeTerm,
+                input_alias="published",
+                output_alias="published",
+                filters=(),
+                joins=(),
+                projection=(),
+                validation=published_validation,
+            ),
+        ),
+        requires_hook_inputs=False,
+    )
+
+
+def _relation_set_plan(operation: str, *, by_name: bool) -> PySparkExecutionPlan:
+    input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
+    archived_validation = PySparkValidationRecipe("archived", RawOrder, SchemaMode.STRICT, False, "input")
+    published_validation = PySparkValidationRecipe("published", PublishedOrder, SchemaMode.STRICT, False, "output")
+    projection = (
+        PySparkProjectionRecipe(PublishedOrder._structure_fields["id"], _field(RawOrder, "id")),
+        PySparkProjectionRecipe(PublishedOrder._structure_fields["status"], _field(RawOrder, "status")),
+    )
+    relation_set = PySparkRelationSetRecipe(
+        operation=operation,
+        input_name="archived",
+        source="archived",
+        schema=RawOrder,
+        by_name=by_name,
+    )
+    step = PySparkStepRecipe(
+        name="publish",
+        ordinal=0,
+        source="orders",
+        source_scope="RawOrder",
+        input_schema=RawOrder,
+        output_schema=PublishedOrder,
+        input_alias="rawOrder",
+        output_alias="published",
+        before_hooks=(),
+        filters=(),
+        joins=(),
+        projection=projection,
+        after_hooks=(),
+        validations=(),
+        results=(
+            PySparkStepResultRecipe(
+                schema=PublishedOrder,
+                lane="published",
+                frame="published",
+                output_alias="published",
+                projection=projection,
+                ordinal=0,
+                after_hooks=(),
+                validations=(published_validation,),
+            ),
+        ),
+        operations=(PySparkOperationRecipe.relation_set_operation(relation_set),),
+    )
+    return PySparkExecutionPlan(
+        transform="PublishUnionedOrders",
+        backend=BackendId("PySpark", "3.5", "pyspark"),
+        inputs=(
+            PySparkInputRecipe("orders", RawOrder, 0, input_validation),
+            PySparkInputRecipe("archived", RawOrder, 1, archived_validation),
+        ),
+        steps=(step,),
+        outputs=(
+            PySparkOutputRecipe(
+                name="published",
+                ordinal=0,
+                source="published",
+                source_scope="published",
+                input_schema=PublishedOrder,
+                output_schema=PublishedOrder,
+                input_alias="published",
+                output_alias="published",
+                filters=(),
+                joins=(),
+                projection=(),
+                validation=published_validation,
+            ),
+        ),
+        requires_hook_inputs=False,
+    )
+
+
+def _relation_order_plan() -> PySparkExecutionPlan:
+    input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
+    published_validation = PySparkValidationRecipe("published", PublishedOrder, SchemaMode.STRICT, False, "output")
+    projection = (
+        PySparkProjectionRecipe(PublishedOrder._structure_fields["id"], _field(RawOrder, "id")),
+        PySparkProjectionRecipe(PublishedOrder._structure_fields["status"], _field(RawOrder, "status")),
+    )
+    step = PySparkStepRecipe(
+        name="publish",
+        ordinal=0,
+        source="orders",
+        source_scope="RawOrder",
+        input_schema=RawOrder,
+        output_schema=PublishedOrder,
+        input_alias="rawOrder",
+        output_alias="published",
+        before_hooks=(),
+        filters=(),
+        joins=(),
+        projection=projection,
+        after_hooks=(),
+        validations=(),
+        results=(
+            PySparkStepResultRecipe(
+                schema=PublishedOrder,
+                lane="published",
+                frame="published",
+                output_alias="published",
+                projection=projection,
+                ordinal=0,
+                after_hooks=(),
+                validations=(published_validation,),
+            ),
+        ),
+        operations=(
+            PySparkOperationRecipe.relation_order_operation(
+                PySparkRelationOrderRecipe(
+                    order_by=(
+                        _order(_field(RawOrder, "id"), "desc"),
+                        _order(_field(RawOrder, "status"), "asc"),
+                    )
+                )
+            ),
+            PySparkOperationRecipe.relation_bound_operation("limit", PySparkRelationBoundRecipe(count=10)),
+            PySparkOperationRecipe.relation_bound_operation("offset", PySparkRelationBoundRecipe(count=2)),
+        ),
+    )
+    return PySparkExecutionPlan(
+        transform="PublishTopOrders",
+        backend=BackendId("PySpark", "3.5", "pyspark"),
+        inputs=(PySparkInputRecipe("orders", RawOrder, 0, input_validation),),
+        steps=(step,),
+        outputs=(
+            PySparkOutputRecipe(
+                name="published",
+                ordinal=0,
+                source="published",
+                source_scope="published",
+                input_schema=PublishedOrder,
+                output_schema=PublishedOrder,
+                input_alias="published",
+                output_alias="published",
+                filters=(),
+                joins=(),
+                projection=(),
+                validation=published_validation,
+            ),
+        ),
+        requires_hook_inputs=False,
+    )
+
+
 def _temporal_join_plan() -> PySparkExecutionPlan:
     input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
     customer_validation = PySparkValidationRecipe("customers", Customer, SchemaMode.STRICT, False, "input")
@@ -2603,6 +3093,15 @@ def _type(value):
         return FakeTypes.LongType()
     if value.__class__.__name__ == "Boolean":
         return FakeTypes.BooleanType()
+    if value.__class__.__name__ == "Struct":
+        return FakeTypes.StructType(
+            tuple(
+                FakeTypes.StructField(field.column, _type(field.type), field.nullable)
+                for field in value.schema._structure_fields.values()
+            )
+        )
+    if value.__class__.__name__ == "Array":
+        return FakeTypes.ArrayType(_type(value.element), containsNull=value.contains_null)
     return FakeTypes.StringType()
 
 
@@ -2847,6 +3346,9 @@ class FakeFunctions(ModuleType):
         item = FakeColumn("item")
         return FakeColumn(f"transform({column.expression}, lambda item: {function(item).expression})")
 
+    def posexplode(self, column):
+        return FakeColumn(f"posexplode({column.expression})")
+
     def aggregate(self, column, initial, merge, finish=None):
         merged = merge(FakeColumn("acc"), FakeColumn("item"))
         rendered = f"aggregate({column.expression},{initial.expression}, lambda acc, item: {merged.expression}"
@@ -2941,10 +3443,10 @@ class FakeFunctions(ModuleType):
 class FakeColumn:
     expression: str
     source_name: str | None = None
-    output_name: str | None = None
+    output_name: str | tuple[str, ...] | None = None
 
-    def alias(self, name: str):
-        return FakeColumn(self.expression, self.source_name, name)
+    def alias(self, *names: str):
+        return FakeColumn(self.expression, self.source_name, names[0] if len(names) == 1 else names)
 
     def cast(self, target: str):
         return FakeColumn(f"cast({self.expression} as {target})", self.source_name)
@@ -3151,12 +3653,21 @@ class FakeFrame:
     def hint(self, name: str):
         return self.with_operation(f"hint:{name}")
 
-    def select(self, *columns: FakeColumn):
+    def select(self, *columns: FakeColumn | str):
         fields_by_name = {schema_field.name: schema_field for schema_field in self.schema}
-        fields = []
+        fields: list[FakeField] = []
         rendered = []
         for column in columns:
-            name = column.output_name or column.source_name or column.expression
+            if isinstance(column, str) and column == "*":
+                fields.extend(self.schema.fields)
+                rendered.append("*=*")
+                continue
+            assert isinstance(column, FakeColumn)
+            if isinstance(column.output_name, tuple):
+                fields.extend(FakeField(name, _fake_column_type(column), True) for name in column.output_name)
+                rendered.extend(f"{name}={column.expression}" for name in column.output_name)
+                continue
+            name = _column_name(column)
             source = fields_by_name.get(column.source_name or name)
             fields.append(
                 FakeField(
@@ -3168,9 +3679,9 @@ class FakeFrame:
 
     def agg(self, *columns: FakeColumn):
         fields = tuple(
-            FakeField(column.output_name or column.expression, _fake_column_type(column), True) for column in columns
+            FakeField(_column_name(column), _fake_column_type(column), True) for column in columns
         )
-        rendered = ",".join(f"{column.output_name or column.expression}={column.expression}" for column in columns)
+        rendered = ",".join(f"{_column_name(column)}={column.expression}" for column in columns)
         return FakeFrame(self.name, FakeSchema(fields), self.operations + ("agg:" + rendered,))
 
     def groupBy(self, *columns: FakeColumn):
@@ -3180,13 +3691,19 @@ class FakeFrame:
         return FakeFrame(self.name, self.schema, self.operations + (operation,))
 
     def withColumn(self, name: str, column: FakeColumn):
-        return self.with_operation(f"withColumn:{name}={column.expression}")
+        fields = tuple(field for field in self.schema.fields if field.name != name)
+        fields = (*fields, FakeField(name, _fake_column_type(column), True))
+        return FakeFrame(
+            self.name,
+            FakeSchema(fields),
+            self.operations + (f"withColumn:{name}={column.expression}",),
+        )
 
     def withWatermark(self, field: str, delay: str):
         return self.with_operation(f"withWatermark:{field}:{delay}")
 
-    def drop(self, name: str):
-        return self.with_operation(f"drop:{name}")
+    def drop(self, *names: str):
+        return self.with_operation(f"drop:{','.join(names)}")
 
     def crossJoin(self, right):
         return FakeFrame(self.name, self.schema, self.operations + right.operations + (f"crossJoin:{right.name}",))
@@ -3200,8 +3717,37 @@ class FakeFrame:
             return self.with_operation("persist")
         return self.with_operation(f"persist:{','.join(str(value) for value in storage_level.values)}")
 
-    def unionByName(self, right):
-        return FakeFrame(self.name, self.schema, self.operations + right.operations + (f"unionByName:{right.name}",))
+    def union(self, right):
+        return FakeFrame(self.name, self.schema, self.operations + right.operations + (f"union:{right.name}",))
+
+    def unionByName(self, right, *, allowMissingColumns: bool | None = None):
+        suffix = "" if allowMissingColumns is None else f":allowMissingColumns={allowMissingColumns}"
+        return FakeFrame(
+            self.name,
+            self.schema,
+            self.operations + right.operations + (f"unionByName:{right.name}{suffix}",),
+        )
+
+    def intersect(self, right):
+        return FakeFrame(self.name, self.schema, self.operations + right.operations + (f"intersect:{right.name}",))
+
+    def intersectAll(self, right):
+        return FakeFrame(self.name, self.schema, self.operations + right.operations + (f"intersectAll:{right.name}",))
+
+    def subtract(self, right):
+        return FakeFrame(self.name, self.schema, self.operations + right.operations + (f"subtract:{right.name}",))
+
+    def exceptAll(self, right):
+        return FakeFrame(self.name, self.schema, self.operations + right.operations + (f"exceptAll:{right.name}",))
+
+    def orderBy(self, *columns: FakeColumn):
+        return self.with_operation("orderBy:" + ",".join(column.expression for column in columns))
+
+    def limit(self, count: int):
+        return self.with_operation(f"limit:{count}")
+
+    def offset(self, count: int):
+        return self.with_operation(f"offset:{count}")
 
 
 @dataclass(frozen=True)
@@ -3213,14 +3759,14 @@ class FakeGroupedFrame:
         fields_by_name = {schema_field.name: schema_field for schema_field in self.frame.schema}
         key_fields = tuple(self._key_field(column, fields_by_name) for column in self.keys)
         aggregate_fields = tuple(
-            FakeField(column.output_name or column.expression, self._type(column), True) for column in columns
+            FakeField(_column_name(column), self._type(column), True) for column in columns
         )
         group = "groupBy:" + ",".join(
-            f"{column.output_name or column.source_name or column.expression}={column.expression}"
+            f"{_column_name(column)}={column.expression}"
             for column in self.keys
         )
         aggregate = "agg:" + ",".join(
-            f"{column.output_name or column.expression}={column.expression}" for column in columns
+            f"{_column_name(column)}={column.expression}" for column in columns
         )
         return FakeFrame(
             self.frame.name,
@@ -3232,13 +3778,19 @@ class FakeGroupedFrame:
         return _fake_column_type(column)
 
     def _key_field(self, column: FakeColumn, fields_by_name: dict[str, "FakeField"]) -> "FakeField":
-        name = column.output_name or column.source_name or column.expression
+        name = _column_name(column)
         source = fields_by_name.get(column.source_name or "")
         return FakeField(
             name,
             source.dataType if source else FakeTypes.StringType(),
             source.nullable if source else True,
         )
+
+
+def _column_name(column: FakeColumn) -> str:
+    if isinstance(column.output_name, tuple):
+        return ",".join(column.output_name)
+    return column.output_name or column.source_name or column.expression
 
 
 def _fake_column_type(column: FakeColumn):

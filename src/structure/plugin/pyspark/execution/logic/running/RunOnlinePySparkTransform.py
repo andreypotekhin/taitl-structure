@@ -275,6 +275,30 @@ class RunOnlinePySparkTransform:
                     prepared = self._exactly_one(frame, scope, functions=functions)
                     prepared_frames[source] = prepared
                     prepared_frames[scope] = prepared
+            if operation.kind == "posexplode_struct" and operation.posexplode_struct is not None:
+                df = self._posexplode_struct(step, df, operation.posexplode_struct, functions=functions, types=types)
+            if operation.relation_alias is not None:
+                continue
+            if operation.relation_assertion is not None:
+                df = self._relation_assertion(
+                    step,
+                    df,
+                    operation.relation_assertion,
+                    frames=prepared_frames,
+                    functions=functions,
+                )
+            if operation.relation_order is not None:
+                df = self._relation_order(step, df, operation.relation_order, functions=functions)
+            if operation.relation_bound is not None:
+                df = getattr(df, operation.kind)(operation.relation_bound.count)
+            if operation.relation_set is not None:
+                source = operation.relation_set.source
+                frame = (
+                    prepared_frames[source]
+                    if source in prepared_frames
+                    else prepared_frames[operation.relation_set.input_name]
+                )
+                df = self._relation_set(df, frame, operation.relation_set)
             if operation.kind == "watermark" and operation.watermark is not None:
                 if operation.watermark.scope == getattr(step, "source_scope", ""):
                     df = self._watermark(operation.watermark, df)
@@ -334,6 +358,124 @@ class RunOnlinePySparkTransform:
             ).alias("__structure_exactly_one")
         )
         return assertion.crossJoin(frame).drop("__structure_exactly_one")
+
+    def _relation_assertion(self, step, frame, assertion, *, frames, functions):
+        if assertion.operation == "require_unique":
+            return self._require_unique(step, frame, assertion, functions=functions)
+        if assertion.operation == "require_all":
+            return self._require_all(step, frame, assertion, functions=functions)
+        if assertion.operation == "require_reference":
+            return self._require_reference(step, frame, assertion, frames=frames, functions=functions)
+        raise TypeError(f"Unsupported relation assertion: {assertion.operation}")
+
+    def _require_unique(self, step, frame, assertion, *, functions):
+        message = "REL-E0702: require_unique(...) found duplicate keys; see docs/Diagnostics.md#rel-e0702"
+        keys = tuple(
+            self._expressions.evaluate(expression, functions=functions, aliases=self._scope_aliases(step))
+            for expression in assertion.keys
+        )
+        duplicates = frame.groupBy(*keys).agg(functions.count(functions.lit(1)).alias("__structure_count"))
+        violations = duplicates.where(functions.col("__structure_count") > functions.lit(1)).agg(
+            functions.count(functions.lit(1)).alias("__structure_violations")
+        )
+        guard = violations.select(
+            functions.assert_true(
+                functions.col("__structure_violations") == functions.lit(0),
+                message,
+            ).alias("__structure_require_unique")
+        )
+        return guard.crossJoin(frame).drop("__structure_require_unique")
+
+    def _require_all(self, step, frame, assertion, *, functions):
+        assert assertion.predicate is not None
+        message = (
+            "REL-E0703: require_all(...) found rows that do not satisfy the predicate; "
+            "see docs/Diagnostics.md#rel-e0703"
+        )
+        predicate = self._expressions.evaluate(assertion.predicate, functions=functions, aliases=self._scope_aliases(step))
+        violations = frame.where(~functions.coalesce(predicate, functions.lit(False))).agg(
+            functions.count(functions.lit(1)).alias("__structure_violations")
+        )
+        guard = violations.select(
+            functions.assert_true(
+                functions.col("__structure_violations") == functions.lit(0),
+                message,
+            ).alias("__structure_require_all")
+        )
+        return guard.crossJoin(frame).drop("__structure_require_all")
+
+    def _require_reference(self, step, frame, assertion, *, frames, functions):
+        assert assertion.value is not None
+        assert assertion.reference_key is not None
+        message = "REL-E0704: require_reference(...) found values without a reference row; see docs/Diagnostics.md#rel-e0704"
+        value_column = "__structure_reference_value"
+        key_column = "__structure_reference_key"
+        reference = (
+            frames[assertion.reference_source]
+            if assertion.reference_source in frames
+            else frames[assertion.reference_input]
+        )
+        value = self._expressions.evaluate(assertion.value, functions=functions, aliases=self._scope_aliases(step))
+        reference_key = self._expressions.evaluate(
+            assertion.reference_key,
+            functions=functions,
+            aliases={
+                assertion.reference_input: "",
+                assertion.reference_schema.__name__: "",
+            },
+        )
+        left = frame.withColumn(value_column, value)
+        right = reference.select(reference_key.alias(key_column)).dropDuplicates([key_column])
+        candidates = left.where(functions.col(value_column).isNotNull()) if assertion.nulls == "allow" else left
+        violations = candidates.join(
+            right,
+            functions.col(value_column) == functions.col(key_column),
+            "left_anti",
+        ).agg(functions.count(functions.lit(1)).alias("__structure_violations"))
+        guard = violations.select(
+            functions.assert_true(
+                functions.col("__structure_violations") == functions.lit(0),
+                message,
+            ).alias("__structure_require_reference")
+        )
+        return guard.crossJoin(frame).drop("__structure_require_reference")
+
+    def _posexplode_struct(self, step, frame, generator, *, functions, types):
+        prefix = f"__structure_{generator.scope}"
+        position = f"{prefix}_pos"
+        item = f"{prefix}_item"
+        aliases = self._scope_aliases(step)
+        value = self._expressions.evaluate(generator.expression, functions=functions, aliases=aliases)
+        expanded = frame.select("*", functions.posexplode(value).alias(position, item))
+        expanded = expanded.withColumn(
+            generator.schema._structure_fields[generator.ordinal].column,
+            functions.col(position).cast(types.LongType()),
+        )
+        for name, field in generator.schema._structure_fields.items():
+            if name == generator.ordinal:
+                continue
+            expanded = expanded.withColumn(field.column, functions.col(f"{item}.{field.column}"))
+        return expanded.drop(position, item)
+
+    def _relation_set(self, left, right, relation_set):
+        if relation_set.by_name:
+            return left.unionByName(right, allowMissingColumns=False)
+        function = {
+            "union_all": "union",
+            "intersect": "intersect",
+            "intersect_all": "intersectAll",
+            "subtract": "subtract",
+            "except_all": "exceptAll",
+        }[relation_set.operation]
+        return getattr(left, function)(right)
+
+    def _relation_order(self, step, frame, relation_order, *, functions):
+        return frame.orderBy(
+            *(
+                self._expressions.evaluate(expression, functions=functions, aliases=self._scope_aliases(step))
+                for expression in relation_order.order_by
+            )
+        )
 
     def _field_column(self, expression) -> str:
         if expression.kind != "field":
@@ -873,8 +1015,15 @@ class RunOnlinePySparkTransform:
             aliases[source_scope] = step.input_alias
         if step.ordinal == 0:
             aliases["orders"] = step.input_alias
+        if any(operation.relation_set is not None for operation in step.operations):
+            if source_scope is not None:
+                aliases[source_scope] = ""
+            aliases[step.input_schema.__name__] = ""
         for item in step.joins:
             aliases[item.input_name] = item.right_alias
+        for operation in step.operations:
+            if operation.posexplode_struct is not None:
+                aliases[operation.posexplode_struct.scope] = ""
         if join is not None:
             aliases[join.input_name] = join.right_alias
         return aliases

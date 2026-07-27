@@ -165,6 +165,37 @@ class RenderPySparkExplainReport:
             return f"drop_duplicates(row_filtering{suffix}{self._streaming_modes(operation)})"
         if operation.exactly_one is not None:
             return f"exactly_one(row_preserving scope={operation.exactly_one.scope})"
+        if operation.posexplode_struct is not None:
+            return (
+                "posexplode_struct(row_multiplying "
+                f"scope={operation.posexplode_struct.scope} schema={operation.posexplode_struct.schema.__name__})"
+            )
+        if operation.relation_alias is not None:
+            return (
+                "relation_alias(row_preserving "
+                f"source={operation.relation_alias.source} alias={operation.relation_alias.alias} "
+                f"schema={operation.relation_alias.schema.__name__})"
+            )
+        if operation.relation_assertion is not None:
+            if operation.kind == "require_unique":
+                return f"require_unique(row_preserving keys={len(operation.relation_assertion.keys)})"
+            if operation.kind == "require_reference":
+                return (
+                    "require_reference(row_preserving "
+                    f"reference={operation.relation_assertion.reference_input} "
+                    f"nulls={operation.relation_assertion.nulls})"
+                )
+            return "require_all(row_preserving predicate=true)"
+        if operation.relation_order is not None:
+            return f"order_by(row_preserving keys={len(operation.relation_order.order_by)})"
+        if operation.relation_bound is not None:
+            return f"{operation.kind}(row_filtering count={operation.relation_bound.count})"
+        if operation.relation_set is not None:
+            cardinality = "row_multiplying" if operation.kind in {"union_all", "union_by_name"} else "row_filtering"
+            return (
+                f"{operation.kind}({cardinality} input={operation.relation_set.input_name} "
+                f"schema={operation.relation_set.schema.__name__})"
+            )
         if operation.watermark is not None:
             return f"watermark({operation.watermark.column} {operation.watermark.delay})"
         if operation.filter is not None:

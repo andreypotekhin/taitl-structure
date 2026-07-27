@@ -4,6 +4,12 @@ from structure.plugin.pyspark.dsl.operations.ExactlyOnePlan import ExactlyOnePla
 from structure.plugin.pyspark.dsl.operations.OperationCapability import OperationCapability
 from structure.plugin.pyspark.dsl.operations.OperationCardinality import OperationCardinality
 from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
+from structure.plugin.pyspark.dsl.operations.PosexplodeStructPlan import PosexplodeStructPlan
+from structure.plugin.pyspark.dsl.operations.RelationAliasPlan import RelationAliasPlan
+from structure.plugin.pyspark.dsl.operations.RelationAssertionPlan import RelationAssertionPlan
+from structure.plugin.pyspark.dsl.operations.RelationBoundPlan import RelationBoundPlan
+from structure.plugin.pyspark.dsl.operations.RelationOrderPlan import RelationOrderPlan
+from structure.plugin.pyspark.dsl.operations.RelationSetPlan import RelationSetPlan
 from structure.plugin.pyspark.dsl.operations.SelectedRowsPlan import SelectedRowsPlan
 from structure.plugin.pyspark.dsl.operations.StreamingOutputMode import StreamingOutputMode
 from structure.plugin.pyspark.dsl.operations.StreamingSupport import StreamingSupport
@@ -16,6 +22,12 @@ __all__ = [
     "OperationCapability",
     "OperationCardinality",
     "OperationPlan",
+    "PosexplodeStructPlan",
+    "RelationAliasPlan",
+    "RelationAssertionPlan",
+    "RelationBoundPlan",
+    "RelationOrderPlan",
+    "RelationSetPlan",
     "SelectedRowsPlan",
     "StreamingOutputMode",
     "StreamingSupport",

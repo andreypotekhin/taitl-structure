@@ -92,13 +92,12 @@ register schedules one narrower typed capability from that family; no broader AP
 | `exactly_one` validation | implemented | Sprint 24 P0; batch-only ordinary-PySpark relation assertion with generated/online `REL-E0701` failure. Similarity query construction remains `@raw` until its wider multi-output Search migration. |
 | Implicit global aggregation | implemented | Sprint 24; aggregate-only steps retain global semantics and enforce empty-input nullability |
 | Explicit scalar UDF example | implemented documentation | Sprint 24; documented opt-in ordinary-PySpark exception with warning and Spark Connect boundary |
-| `posexplode` over array of structs | scheduled | Sprint 25; extraction and scoring expansion remain `@raw` |
+| `posexplode` over array of structs | implemented | Sprint 25; `posexplode_struct(...)` is available, while Search extraction/scoring remain `@raw` until their same-fixture migrations are completed |
 | Other generator forms | deferred | Admit only after a separate cardinality/null/streaming contract |
-| `union_all` and exact-schema `union_by_name`; Self alias | scheduled | Sprint 25; similarity reduction remains `@raw` |
-| Other set operations | deferred | Distinct and multiset semantics need separate contracts |
-| Relation order/limit/offset | scheduled | Sprint 25; no general relation ordering API is promised |
+| Exact-schema relation set composition and self-alias; Search similarity reduction | partial | Sprint 25; exact-schema set operations and `relation_alias(...)` are implemented, while Search similarity reduction remains `@raw` until ranked selection and same-fixture migration are completed |
+| Relation order/limit/offset | implemented | Sprint 25; `order_by(...)`, `limit(n)`, and `offset(n)` are compiler-visible. `sample` remains deferred. |
 | Branchable typed union | scheduled | Sprint 25; relevance-context expansion remains `@raw` |
-| `require_unique` / `require_all` / `require_reference` | scheduled | Sprint 25; cohort catalog checks remain `@raw` |
+| `require_unique` / `require_all` / `require_reference` | implemented | Sprint 25; compiler-visible Spark-plan assertions are available, while cohort traversal still waits for bounded hierarchy/fallback operations |
 | Bounded parent hierarchy and fallbacks | scheduled | Sprint 25; cohort traversal remains `@raw` |
 | First-qualified priority selection | scheduled | Sprint 25; reranking remains `@raw` |
 | Sampling | deferred | Seed, replacement, and reproducibility contract is incomplete |

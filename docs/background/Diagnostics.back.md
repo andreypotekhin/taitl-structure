@@ -41,6 +41,48 @@ Common causes:
 Fix the source relation so it produces one row before the assertion, aggregate it to one row intentionally, or remove
 the assertion and use an explicit join when multiple rows are intended.
 
+## REL-E0702
+
+`REL-E0702` means a `require_unique(...)` relation assertion found duplicate keys during Spark evaluation. Structure
+checks duplicate groups in the Spark plan and fails through a Spark assertion expression; it does not collect the
+relation to the driver.
+
+Common causes:
+
+- the declared key is incomplete;
+- upstream data has duplicate catalog/configuration identifiers;
+- deduplication or aggregation was expected but not declared.
+
+Fix the source relation, declare a fuller business key, or explicitly deduplicate/aggregate before the assertion.
+
+## REL-E0703
+
+`REL-E0703` means a `require_all(...)` relation assertion found at least one row where the predicate is not true. Null
+predicate results count as failures.
+
+Common causes:
+
+- an input catalog contains invalid ranges or required fields;
+- the predicate is too strict for legitimate data;
+- upstream normalization did not run before validation.
+
+Fix or filter invalid rows before asserting `require_all(...)`, or loosen the predicate when those rows are valid.
+
+## REL-E0704
+
+`REL-E0704` means a `require_reference(...)` relation assertion found at least one checked value without a matching
+row in the declared reference relation. By default null checked values are allowed; `nulls="reject"` treats nulls as
+missing references.
+
+Common causes:
+
+- a catalog contains a parent or foreign-key value that is absent from the reference relation;
+- upstream normalization uses different physical key values on the checked and reference sides;
+- null values are invalid but were not rejected before validation.
+
+Correct the referenced catalog, normalize both sides to the same business key, or filter invalid rows before asserting
+`require_reference(...)`.
+
 ## Design Principles
 
 Diagnostics must be:

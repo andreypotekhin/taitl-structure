@@ -18,6 +18,9 @@ Below is an index for published diagnostic codes. For the full diagnostic contra
 | JOIN-E0601 | error | Unsupported join condition | Use equality pairs with `==` or `null_safe_eq(...)` and combine them with `&`. |
 | JOIN-W0601 | warning | lookup_join uniqueness is not proven | Provide deterministic `JoinDedupe`, or use `inner_join(...)` when multiplication is intended. |
 | REL-E0701 | error | Relation cardinality assertion failed | Filter or aggregate the relation before asserting `exactly_one(...)`. |
+| REL-E0702 | error | Relation uniqueness assertion failed | Deduplicate, aggregate, or correct the source before asserting `require_unique(...)`. |
+| REL-E0703 | error | Relation predicate assertion failed | Filter or correct invalid rows before asserting `require_all(...)`. |
+| REL-E0704 | error | Relation reference assertion failed | Correct the referenced catalog or filter invalid rows before asserting `require_reference(...)`. |
 | GEN-E0901 | error | Generated output is stale | Run `structure compile` and commit the generated changes. |
 | GEN-E0902 | error | Generated transform is not importable | Rebuild generated code or switch to direct execution with `execution_mode = "online"`. |
 | GEN-E0903 | error | Embedded hook cannot be generated | Use local imports and a standalone hook body, or remove `embed_hooks`. |
@@ -73,6 +76,15 @@ See [Diagnostics.md](background/Diagnostics.back.md#join-w0601).
 
 ### REL-E0701
 See [Diagnostics.md](background/Diagnostics.back.md#rel-e0701).
+
+### REL-E0702
+See [Diagnostics.md](background/Diagnostics.back.md#rel-e0702).
+
+### REL-E0703
+See [Diagnostics.md](background/Diagnostics.back.md#rel-e0703).
+
+### REL-E0704
+See [Diagnostics.md](background/Diagnostics.back.md#rel-e0704).
 
 ### GEN-E0901
 See [Diagnostics.md](background/Diagnostics.back.md#gen-e0901).

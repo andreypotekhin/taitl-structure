@@ -8,12 +8,20 @@ from structure.plugin.pyspark.compiler.logic.traceability.MapDeduplicationTracea
     MapDeduplicationTraceability,
 )
 from structure.plugin.pyspark.compiler.logic.traceability.MapFilterTraceability import MapFilterTraceability
+from structure.plugin.pyspark.compiler.logic.traceability.MapGeneratorTraceability import MapGeneratorTraceability
 from structure.plugin.pyspark.compiler.logic.traceability.MapHookTraceability import MapHookTraceability
 from structure.plugin.pyspark.compiler.logic.traceability.MapJoinTraceability import MapJoinTraceability
 from structure.plugin.pyspark.compiler.logic.traceability.MapProjectionTraceability import MapProjectionTraceability
+from structure.plugin.pyspark.compiler.logic.traceability.MapRelationAliasTraceability import (
+    MapRelationAliasTraceability,
+)
 from structure.plugin.pyspark.compiler.logic.traceability.MapRelationAssertionTraceability import (
     MapRelationAssertionTraceability,
 )
+from structure.plugin.pyspark.compiler.logic.traceability.MapRelationOrderingTraceability import (
+    MapRelationOrderingTraceability,
+)
+from structure.plugin.pyspark.compiler.logic.traceability.MapRelationSetTraceability import MapRelationSetTraceability
 from structure.plugin.pyspark.compiler.logic.traceability.MapSelectedRowsTraceability import MapSelectedRowsTraceability
 from structure.plugin.pyspark.compiler.logic.traceability.MapValidationTraceability import MapValidationTraceability
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
@@ -27,10 +35,14 @@ class BuildCompilerTraceability:
         self._aggregates = MapAggregateTraceability(self._dataflow)
         self._deduplication = MapDeduplicationTraceability(self._dataflow)
         self._filters = MapFilterTraceability(self._dataflow)
+        self._generators = MapGeneratorTraceability(self._dataflow)
         self._hooks = MapHookTraceability()
         self._joins = MapJoinTraceability(self._dataflow)
         self._projections = MapProjectionTraceability(self._dataflow)
-        self._relation_assertions = MapRelationAssertionTraceability()
+        self._relation_assertions = MapRelationAssertionTraceability(self._dataflow)
+        self._relation_aliases = MapRelationAliasTraceability()
+        self._relation_ordering = MapRelationOrderingTraceability(self._dataflow)
+        self._relation_sets = MapRelationSetTraceability()
         self._selected_rows = MapSelectedRowsTraceability(self._dataflow)
         self._udf_boundaries = FindPythonUdfBoundaries()
         self._validations = MapValidationTraceability()
@@ -69,10 +81,18 @@ class BuildCompilerTraceability:
             dependencies.extend(self._aggregates.having_dependencies(step))
             provenance.extend(self._selected_rows.provenance(plan, step, source_transform, transform_module))
             dependencies.extend(self._selected_rows.dependencies(step))
+            provenance.extend(self._generators.provenance(plan, step, source_transform, transform_module))
+            dependencies.extend(self._generators.dependencies(step))
             provenance.extend(self._deduplication.provenance(plan, step, source_transform, transform_module))
             dependencies.extend(self._deduplication.dependencies(step))
             provenance.extend(self._relation_assertions.provenance(plan, step, source_transform, transform_module))
             dependencies.extend(self._relation_assertions.dependencies(step))
+            provenance.extend(self._relation_aliases.provenance(plan, step, source_transform, transform_module))
+            dependencies.extend(self._relation_aliases.dependencies(step))
+            provenance.extend(self._relation_ordering.provenance(plan, step, source_transform, transform_module))
+            dependencies.extend(self._relation_ordering.dependencies(step))
+            provenance.extend(self._relation_sets.provenance(plan, step, source_transform, transform_module))
+            dependencies.extend(self._relation_sets.dependencies(step))
             if len(step.results) <= 1:
                 provenance.extend(self._projections.provenance(plan, step, source_transform, transform_module))
                 dependencies.extend(self._projections.dependencies(step))

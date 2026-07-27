@@ -49,6 +49,16 @@ class ClassifyStreamingCompatibility:
                     )
                 if operation.exactly_one is not None:
                     findings.extend(self._exactly_one(step.name, operation.exactly_one.scope))
+                if operation.relation_assertion is not None:
+                    findings.extend(self._relation_assertion(step.name, operation.kind))
+                if operation.posexplode_struct is not None:
+                    findings.extend(self._posexplode_struct(step.name, operation.posexplode_struct.scope))
+                if operation.relation_order is not None:
+                    findings.extend(self._relation_ordering(step.name, "order_by"))
+                if operation.relation_bound is not None:
+                    findings.extend(self._relation_ordering(step.name, operation.kind))
+                if operation.relation_set is not None:
+                    findings.extend(self._relation_set(step.name, operation.kind, operation.relation_set.input_name))
                 if operation.join is not None:
                     findings.extend(
                         self._join(
@@ -210,6 +220,54 @@ class ClassifyStreamingCompatibility:
                 operation=f"exactly_one {scope}",
                 problem="exactly_one(...) computes input cardinality and is batch-only in v1 streaming compatibility.",
                 use="Keep this transform batch-only or enforce relation cardinality before the streaming transform.",
+            ),
+        )
+
+    def _relation_assertion(self, step: str, operation: str) -> tuple[StreamingFinding, ...]:
+        return (
+            StreamingFinding(
+                code="STREAM-E0801",
+                support=StreamingSupport.BATCH_ONLY,
+                step=step,
+                operation=operation,
+                problem=f"{operation}(...) computes validation aggregates and is batch-only in v1 streaming compatibility.",
+                use="Keep this transform batch-only or enforce relation assertions before the streaming transform.",
+            ),
+        )
+
+    def _posexplode_struct(self, step: str, scope: str) -> tuple[StreamingFinding, ...]:
+        return (
+            StreamingFinding(
+                code="STREAM-E0801",
+                support=StreamingSupport.BATCH_ONLY,
+                step=step,
+                operation=f"posexplode_struct {scope}",
+                problem="posexplode_struct(...) is row-expanding and is batch-only until generator streaming semantics are admitted.",
+                use="Keep this transform batch-only or perform row expansion before the streaming transform.",
+            ),
+        )
+
+    def _relation_set(self, step: str, operation: str, input_name: str) -> tuple[StreamingFinding, ...]:
+        return (
+            StreamingFinding(
+                code="STREAM-E0801",
+                support=StreamingSupport.BATCH_ONLY,
+                step=step,
+                operation=f"{operation} {input_name}",
+                problem="Relation union output modes and watermarks are not admitted for streaming transforms yet.",
+                use="Keep this transform batch-only or union the streams outside Structure with explicit lifecycle ownership.",
+            ),
+        )
+
+    def _relation_ordering(self, step: str, operation: str) -> tuple[StreamingFinding, ...]:
+        return (
+            StreamingFinding(
+                code="STREAM-E0801",
+                support=StreamingSupport.BATCH_ONLY,
+                step=step,
+                operation=operation,
+                problem="Relation ordering and bounded selection are batch-only until streaming output semantics are admitted.",
+                use="Keep this transform batch-only or move ordering and bounded selection to a batch materialization boundary.",
             ),
         )
 

@@ -39,6 +39,7 @@ class PySparkStepSession:
     def __enter__(self) -> PySparkStepSession:
         self._context.__enter__()
         self._context.default_project_source = self._arguments[0]
+        self._context.default_project_frame = self._request.inputs[0].source
         self._context.register_current_scope(self._request.inputs[0].scope)
         for binding, argument in zip(self._request.inputs[1:], self._arguments[1:], strict=True):
             self._context.register_relation_scope(binding.scope, argument)

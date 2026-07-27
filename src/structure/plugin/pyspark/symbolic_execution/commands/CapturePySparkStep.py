@@ -55,6 +55,29 @@ class CapturePySparkStep:
 
     def _expressions(self, body: PySparkStepBody) -> tuple[Expression, ...]:
         expressions: list[Expression] = [*body.filters, *(assignment.expression for assignment in body.projection)]
+        expressions.extend(
+            operation.posexplode_struct.expression
+            for operation in body.operations
+            if operation.posexplode_struct is not None
+        )
+        expressions.extend(
+            expression
+            for operation in body.operations
+            if operation.relation_order is not None
+            for expression in operation.relation_order.order_by
+        )
+        expressions.extend(
+            expression
+            for operation in body.operations
+            if operation.relation_assertion is not None
+            for expression in (
+                *operation.relation_assertion.keys,
+                operation.relation_assertion.predicate,
+                operation.relation_assertion.value,
+                operation.relation_assertion.reference_key,
+            )
+            if expression is not None
+        )
         for result in body.results:
             expressions.extend(assignment.expression for assignment in result.projection)
             if result.aggregate is None:

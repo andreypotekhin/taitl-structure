@@ -22,10 +22,11 @@ currently admitted, and `unsupported` is deliberately outside the DSL; use the n
 | JSON/CSV conversion | deferred | `@raw` hook | Inline Schema transport and stable option normalization need a dedicated IR contract. |
 | Array construction, lookup, transformation | supported | Typed array helpers | Exact element/nullability and callback rules are validated. |
 | Map functions | supported | Typed map helpers | Callback bodies remain symbolic. |
-| `explode`, `posexplode`, `inline` variants | deferred | `@raw` hook | Awaiting a generator cardinality design. |
+| Generator variants | supported/deferred | `posexplode_struct(...)`; `@raw` for other variants | The admitted generator expands `array<struct>` values with a declared generated scope and ordinal. `explode`, outer forms, and `inline` remain deferred. |
 | Projection and filtering | supported | Schema projection and `where` | Schema owns output names and replacement. |
-| Joins and hints | supported | Typed join helpers | Explicit schema/cardinality; cross needs opt-in. |
-| Set operations; ordering/limit/sample | deferred | `@raw` hook | Relation-composition and deterministic ordering/seed contracts are not yet represented in the IR. |
+| Joins and hints | supported | Typed join helpers, `relation_alias` | Explicit schema/cardinality; cross needs opt-in; self joins require named aliases. |
+| Set operations | supported/deferred | `union_all`, `union_by_name`, `intersect`, `intersect_all`, `subtract`, `except_all`; `@raw` for missing-column union | Exact-schema set operations are supported. Missing-column union remains deferred. |
+| Ordering/limit/sample | supported/deferred | `order_by`, `limit`, `offset`; `@raw` for `sample` | Ordered bounds are compiler-visible and batch-only; sampling waits for seed/replacement/reproducibility semantics. |
 | Distinct and deduplication | supported | `distinct`, `drop_duplicates` | Watermark form is streaming classified. |
 | Grouping and standard aggregates | supported | `group_by`, `rollup`, `cube`, typed aggregates | Declared aggregate output schema. |
 | Exact percentile and statistics | mixed | `percentile`, approximate and moment helpers; `@raw` for `mode` | Deterministic mode tie-breaking is unavailable in the 3.5 baseline. |

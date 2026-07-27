@@ -8,6 +8,12 @@ from structure.plugin.pyspark.dsl.operations.DuplicateRowsPlan import DuplicateR
 from structure.plugin.pyspark.dsl.operations.ExactlyOnePlan import ExactlyOnePlan
 from structure.plugin.pyspark.dsl.operations.OperationCapability import OperationCapability
 from structure.plugin.pyspark.dsl.operations.OperationCardinality import OperationCardinality
+from structure.plugin.pyspark.dsl.operations.PosexplodeStructPlan import PosexplodeStructPlan
+from structure.plugin.pyspark.dsl.operations.RelationAliasPlan import RelationAliasPlan
+from structure.plugin.pyspark.dsl.operations.RelationAssertionPlan import RelationAssertionPlan
+from structure.plugin.pyspark.dsl.operations.RelationBoundPlan import RelationBoundPlan
+from structure.plugin.pyspark.dsl.operations.RelationOrderPlan import RelationOrderPlan
+from structure.plugin.pyspark.dsl.operations.RelationSetPlan import RelationSetPlan
 from structure.plugin.pyspark.dsl.operations.SelectedRowsPlan import SelectedRowsPlan
 from structure.plugin.pyspark.dsl.operations.StreamingOutputMode import StreamingOutputMode
 from structure.plugin.pyspark.dsl.operations.StreamingSupport import StreamingSupport
@@ -23,6 +29,12 @@ class OperationPlan:
     selected_rows: SelectedRowsPlan | None = None
     duplicate_rows: DuplicateRowsPlan | None = None
     exactly_one: ExactlyOnePlan | None = None
+    posexplode_struct: PosexplodeStructPlan | None = None
+    relation_alias: RelationAliasPlan | None = None
+    relation_assertion: RelationAssertionPlan | None = None
+    relation_order: RelationOrderPlan | None = None
+    relation_bound: RelationBoundPlan | None = None
+    relation_set: RelationSetPlan | None = None
     watermark: WatermarkPlan | None = None
     cache: CachePlan | None = None
     family: str | None = None
@@ -110,6 +122,77 @@ class OperationPlan:
             family="relation",
             capability=OperationCapability("relation", "exactly_one"),
             cardinality=OperationCardinality.ROW_PRESERVING,
+            streaming=StreamingSupport.BATCH_ONLY,
+        )
+
+    @staticmethod
+    def posexplode_struct_operation(posexplode_struct: PosexplodeStructPlan) -> OperationPlan:
+        return OperationPlan(
+            "posexplode_struct",
+            posexplode_struct=posexplode_struct,
+            family="generator",
+            capability=OperationCapability("generator", "posexplode_struct"),
+            cardinality=OperationCardinality.ROW_MULTIPLYING,
+            streaming=StreamingSupport.BATCH_ONLY,
+        )
+
+    @staticmethod
+    def relation_alias_operation(relation_alias: RelationAliasPlan) -> OperationPlan:
+        return OperationPlan(
+            "relation_alias",
+            relation_alias=relation_alias,
+            family="relation",
+            capability=OperationCapability("relation", "relation_alias"),
+            cardinality=OperationCardinality.ROW_PRESERVING,
+            streaming=StreamingSupport.COMPATIBLE,
+        )
+
+    @staticmethod
+    def relation_assertion_operation(relation_assertion: RelationAssertionPlan) -> OperationPlan:
+        return OperationPlan(
+            relation_assertion.operation,
+            relation_assertion=relation_assertion,
+            family="relation",
+            capability=OperationCapability("relation", relation_assertion.operation),
+            cardinality=OperationCardinality.ROW_PRESERVING,
+            streaming=StreamingSupport.BATCH_ONLY,
+        )
+
+    @staticmethod
+    def relation_order_operation(relation_order: RelationOrderPlan) -> OperationPlan:
+        return OperationPlan(
+            "order_by",
+            relation_order=relation_order,
+            family="relation",
+            capability=OperationCapability("relation", "order_by"),
+            cardinality=OperationCardinality.ROW_PRESERVING,
+            streaming=StreamingSupport.BATCH_ONLY,
+        )
+
+    @staticmethod
+    def relation_bound_operation(kind: str, relation_bound: RelationBoundPlan) -> OperationPlan:
+        return OperationPlan(
+            kind,
+            relation_bound=relation_bound,
+            family="relation",
+            capability=OperationCapability("relation", kind),
+            cardinality=OperationCardinality.ROW_FILTERING,
+            streaming=StreamingSupport.BATCH_ONLY,
+        )
+
+    @staticmethod
+    def relation_set_operation(relation_set: RelationSetPlan) -> OperationPlan:
+        cardinality = (
+            OperationCardinality.ROW_MULTIPLYING
+            if relation_set.operation in {"union_all", "union_by_name"}
+            else OperationCardinality.ROW_FILTERING
+        )
+        return OperationPlan(
+            relation_set.operation,
+            relation_set=relation_set,
+            family="set",
+            capability=OperationCapability("set", relation_set.operation),
+            cardinality=cardinality,
             streaming=StreamingSupport.BATCH_ONLY,
         )
 

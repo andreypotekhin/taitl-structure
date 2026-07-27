@@ -16,7 +16,7 @@ reason rather than an accidental API gap.
 ### In Scope
 
 - Typed `posexplode` over `array<struct>` first, followed only by generator variants with separately proven semantics.
-- Exact-schema `union_all` and `union_by_name`, then separately tested set/multiset forms where required.
+- Exact-schema `union_all`, `union_by_name`, `intersect`, `intersect_all`, `subtract`, and `except_all`.
 - Named self-alias scopes for explicit self joins.
 - Typed relation `order_by`, literal `limit`, and literal `offset`.
 - Branchable typed union, relation assertions including parent references, bounded parent-hierarchy closure with
@@ -57,7 +57,45 @@ reason rather than an accidental API gap.
 
 ## Progress
 
-- [ ] Specify generator and relation-composition contracts.
-- [ ] Implement relation plans and end-to-end parity paths.
+- [x] (2026-07-26) Implemented the first typed generator slice:
+  `posexplode_struct(value, as_=..., ordinal=..., scope=...)` over `array<struct>` with `contains_null=False`.
+  The operation records row-expanding cardinality, maps to immutable recipes, renders public PySpark
+  `F.posexplode`, runs online through the same recipe, reports explain/traceability facts, and is classified
+  batch-only for streaming compatibility.
+- [x] (2026-07-26) Repository gate passed after the generator slice: 1,195 tests passed and 29 live-PySpark tests
+  skipped; the release subset passed 34 tests with 6 intentional live-test skips, and source and wheel distributions
+  built successfully.
+- [x] (2026-07-26) Implemented exact-schema relation composition: `union_all(relation)` and
+  `union_by_name(relation)` append an unjoined relation to the active rowset, preserve duplicates, reject unaligned
+  schemas, lower through immutable recipes, render public PySpark union calls, run online through the same path, and
+  report explain/traceability/streaming facts.
+- [x] (2026-07-26) Completed the typed set-composition slice: `intersect(relation)`,
+  `intersect_all(relation)`, `subtract(relation)`, and `except_all(relation)` reuse the exact-schema relation-set
+  contract, preserve Spark's distinct/multiset semantics by lowering to public DataFrame set methods, and carry through
+  generated source, online execution, explain, traceability, capabilities, and streaming diagnostics.
+- [x] (2026-07-26) Repository gate passed after the set-composition slice: 1,216 tests passed and 29 live-PySpark tests
+  skipped; the release subset passed 34 tests with 6 intentional live-test skips, and source and wheel distributions
+  built successfully.
+- [x] (2026-07-26) Implemented the self-alias join foundation: `relation_alias(relation, name=...)` records a
+  compiler-visible alias scope for the current rowset or an unjoined relation, reuses existing typed joins against the
+  same source frame, rejects pre-join alias field reads, and reports explain/traceability/capability facts. Search
+  similarity reduction still waits for ranked selection before hook retirement.
+- [x] (2026-07-26) Repository gate passed after the self-alias slice: 1,220 tests passed and 29 live-PySpark tests
+  skipped; the release subset passed 34 tests with 6 intentional live-test skips, and source and wheel distributions
+  built successfully.
+- [x] (2026-07-26) Implemented deterministic relation ordering and bounded selection: `order_by(...)`, `limit(n)`,
+  and `offset(n)` are compiler-visible relation operations with literal-bound validation, generated and online PySpark
+  lowering, explain/traceability/capability records, batch-only streaming diagnostics, and a guard that rejects bounds
+  after an order-destroying relation operation.
+- [x] (2026-07-26) Implemented the first P1 relation assertions: `require_unique(keys...)` and
+  `require_all(predicate)` preserve rows on success, fail through Spark-visible assertion expressions with
+  `REL-E0702`/`REL-E0703`, lower through generated and online execution, and report explain/traceability/capability
+  and streaming facts. `require_reference(...)` remains scheduled for nullable parent-reference checks.
+- [x] (2026-07-26) Completed the P1 relation assertion family with `require_reference(value, reference,
+  reference_key=..., nulls="allow")`. It validates nullable parent/foreign-key-like values against an unjoined
+  reference relation through public Spark projections, duplicate removal, left-anti join, and assertion expressions,
+  reports `REL-E0704`, and keeps generated/online/explain/traceability/capability/streaming evidence compiler-visible.
+- [ ] Specify remaining generator and relation-composition contracts.
+- [ ] Implement remaining relation plans and end-to-end parity paths.
 - [ ] Migrate Search slices in dependency order.
 - [ ] Update hook ledger and run regression evidence.

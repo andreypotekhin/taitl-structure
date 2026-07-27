@@ -3,6 +3,8 @@ from importlib import import_module
 _MODULES = (
     "joins",
     "operations",
+    "generators",
+    "relation_sets",
     "aggregation",
     "expressions",
     "operations_api",

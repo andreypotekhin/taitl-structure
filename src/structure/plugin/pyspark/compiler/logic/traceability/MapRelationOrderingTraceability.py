@@ -4,8 +4,8 @@ from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySpark
 from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkStepRecipe
 
 
-class MapRelationAssertionTraceability:
-    """Map relation assertions to provenance and static dataflow records."""
+class MapRelationOrderingTraceability:
+    """Map relation ordering and bounded-selection operations to traceability records."""
 
     def __init__(self, dataflow: CompilerDataflowReads) -> None:
         self._dataflow = dataflow
@@ -27,58 +27,38 @@ class MapRelationAssertionTraceability:
                 ),
             )
             for index, operation in enumerate(step.operations)
-            if operation.exactly_one is not None or operation.relation_assertion is not None
+            if operation.relation_order is not None or operation.relation_bound is not None
         )
 
     def dependencies(self, step: PySparkStepRecipe) -> tuple[DataflowDependency, ...]:
         return tuple(
             self._dependency(step, operation, index)
             for index, operation in enumerate(step.operations)
-            if operation.exactly_one is not None or operation.relation_assertion is not None
+            if operation.relation_order is not None or operation.relation_bound is not None
         )
 
     def _dependency(self, step: PySparkStepRecipe, operation, index: int) -> DataflowDependency:
-        if operation.exactly_one is not None:
-            return DataflowDependency(
-                target=f"{step.name}.exactly_one[{index}].{operation.exactly_one.scope}",
-                sources=(operation.exactly_one.scope,),
-                operation="exactly_one",
-                step=step.name,
-                detail={"scope": operation.exactly_one.scope, "diagnostic": "REL-E0701"},
-            )
-        assertion = operation.relation_assertion
-        assert assertion is not None
+        sources: tuple[str, ...] = (step.source_scope,)
+        detail: dict[str, object] = {}
+        if operation.relation_order is not None:
+            sources = self._reads(*operation.relation_order.order_by)
+            detail["order_by"] = len(operation.relation_order.order_by)
+        if operation.relation_bound is not None:
+            detail["count"] = operation.relation_bound.count
         return DataflowDependency(
             target=f"{step.name}.{operation.kind}[{index}]",
-            sources=self._sources(assertion),
+            sources=sources,
             operation=operation.kind,
             step=step.name,
-            detail=self._detail(assertion),
+            detail=detail,
         )
 
-    def _sources(self, assertion) -> tuple[str, ...]:
-        expressions = (*assertion.keys, assertion.predicate, assertion.value, assertion.reference_key)
+    def _reads(self, *expressions) -> tuple[str, ...]:
         seen: set[str] = set()
         result: list[str] = []
         for expression in expressions:
-            if expression is None:
-                continue
             for source in self._dataflow.reads(expression):
                 if source not in seen:
                     result.append(source)
                     seen.add(source)
         return tuple(result)
-
-    def _detail(self, assertion) -> dict[str, object]:
-        diagnostic = {
-            "require_unique": "REL-E0702",
-            "require_all": "REL-E0703",
-            "require_reference": "REL-E0704",
-        }[assertion.operation]
-        detail: dict[str, object] = {"diagnostic": diagnostic}
-        if assertion.keys:
-            detail["keys"] = len(assertion.keys)
-        if assertion.reference_input is not None:
-            detail["reference"] = assertion.reference_input
-            detail["nulls"] = assertion.nulls
-        return detail

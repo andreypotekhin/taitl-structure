@@ -40,19 +40,21 @@ Spark DataFrame.
 
 ## Deliberate Phasing
 
-The first generator is `posexplode` over `array<struct>`, because it has a clear element schema plus an ordinal field
-and unblocks hierarchy and token expansion. Other generator variants are separately admitted after their empty/null
-semantics are tested.
+The first generator is `posexplode_struct(...)` over `array<struct>` with `contains_null=False`, because it has a
+clear element schema plus an ordinal field and unblocks hierarchy and token expansion. Other generator variants are
+separately admitted after their empty/null semantics are tested.
 
-The first composition operations are `union_all` and exact-schema `union_by_name`. They must permit separate typed
-branches—such as a global fact branch and a fallback-context branch—to converge into one declared lane. Distinct set
-semantics (`intersect`, `subtract`) and multiset forms are distinct contracts because they treat duplicates differently.
+The first composition operations are exact-schema set operations: `union_all`, `union_by_name`, `intersect`,
+`intersect_all`, `subtract`, and `except_all`. They permit separate typed branches—such as a global fact branch and a
+fallback-context branch—to converge into one declared lane without hiding DataFrame set logic in hooks. Missing-column
+union remains deferred because it changes schema-evolution and nullability policy.
 
 A self alias creates independent left/right typed scopes only. It never duplicates data by itself and cannot expose raw
 DataFrames. It is useful only with an explicit join/projection boundary.
 
-Ordering requires typed order descriptors. `limit` and `offset` use literal non-negative bounds; an unordered limit is
-rejected. Sampling is deferred because seed, replacement, and reproducibility semantics must be explicit.
+Ordering requires typed order descriptors or orderable scalar expressions that become ascending descriptors. `limit`
+and `offset` use literal non-negative bounds and require the current relation state to still be ordered. Sampling is
+deferred because seed, replacement, and reproducibility semantics must be explicit.
 
 ## Relation Assertions, Hierarchies, and Priority Selection
 
@@ -62,10 +64,10 @@ and lowers through a public aggregate count plus Spark assertion expression, rat
 row on the driver or choosing an arbitrary first row. Both zero and multiple rows fail with `REL-E0701`. This P0
 primitive is batch-only and ordinary-PySpark-only; richer key, predicate, and reference assertions remain P1.
 
-`require_unique(...)`, `require_all(...)`, and `require_reference(...)` are relation assertions. They validate a
-declared key, predicate, or nullable foreign-key-like relationship in the Spark plan and emit a registered diagnostic
-instead of collecting configuration rows on the driver. They are required for band catalog identifiers, age ranges,
-parent existence, and parent-priority checks.
+`require_unique(...)`, `require_all(...)`, and `require_reference(...)` are P1 relation assertions. They validate a
+declared key, predicate, or nullable parent-reference relationship in the Spark plan and emit registered diagnostics
+instead of collecting configuration rows on the driver. They cover band catalog identifiers, age ranges, priority
+predicates, and parent existence.
 
 A bounded parent-hierarchy operation accepts typed node identity, parent identity, explicit ordering, literal
 `max_depth`, and error policies for missing parents/cycles. It lowers to a finite self-join sequence and yields typed

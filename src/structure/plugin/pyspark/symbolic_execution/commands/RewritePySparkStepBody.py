@@ -40,6 +40,25 @@ class RewritePySparkStepBody:
             aggregate=None if operation.aggregate is None else self._aggregate(operation.aggregate),
             selected_rows=None if operation.selected_rows is None else self._selected_rows(operation.selected_rows),
             duplicate_rows=None if operation.duplicate_rows is None else self._duplicate_rows(operation.duplicate_rows),
+            posexplode_struct=(
+                None if operation.posexplode_struct is None else self._posexplode_struct(operation.posexplode_struct)
+            ),
+            relation_alias=(
+                None
+                if operation.relation_alias is None
+                else self._relation_alias(operation.relation_alias, frames=frames)
+            ),
+            relation_assertion=(
+                None
+                if operation.relation_assertion is None
+                else self._relation_assertion(operation.relation_assertion)
+            ),
+            relation_order=(
+                None if operation.relation_order is None else self._relation_order(operation.relation_order)
+            ),
+            relation_set=(
+                None if operation.relation_set is None else self._relation_set(operation.relation_set, frames=frames)
+            ),
         )
 
     def _join(self, join: JoinPlan, *, frames: Mapping[str, str]) -> JoinPlan:
@@ -104,6 +123,38 @@ class RewritePySparkStepBody:
             subset=tuple(self._expression(expression) for expression in duplicate_rows.subset),
             scope=duplicate_rows.scope,
         )
+
+    def _posexplode_struct(self, posexplode_struct):
+        return replace(posexplode_struct, expression=self._expression(posexplode_struct.expression))
+
+    def _relation_alias(self, relation_alias, *, frames: Mapping[str, str]):
+        return replace(relation_alias, source=frames.get(relation_alias.source, relation_alias.source))
+
+    def _relation_assertion(self, relation_assertion):
+        return replace(
+            relation_assertion,
+            keys=tuple(self._expression(expression) for expression in relation_assertion.keys),
+            predicate=(
+                None
+                if relation_assertion.predicate is None
+                else self._expression(relation_assertion.predicate)
+            ),
+            value=None if relation_assertion.value is None else self._expression(relation_assertion.value),
+            reference_key=(
+                None
+                if relation_assertion.reference_key is None
+                else self._expression(relation_assertion.reference_key)
+            ),
+        )
+
+    def _relation_order(self, relation_order):
+        return replace(
+            relation_order,
+            order_by=tuple(self._expression(expression) for expression in relation_order.order_by),
+        )
+
+    def _relation_set(self, relation_set, *, frames: Mapping[str, str]):
+        return replace(relation_set, source=frames.get(relation_set.source, relation_set.source))
 
     def _projection(self, assignment: ProjectAssignment) -> ProjectAssignment:
         return ProjectAssignment(field=assignment.field, expression=self._expression(assignment.expression))

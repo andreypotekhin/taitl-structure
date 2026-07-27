@@ -12,6 +12,8 @@ class ValidatePySparkRelationReads:
         joined: set[str] = set()
         relations = {binding.scope: binding.parameter for binding in request.inputs if not binding.driving}
         for operation in body.operations:
+            if operation.relation_alias is not None:
+                relations[operation.relation_alias.alias] = operation.relation_alias.alias
             if operation.kind == "filter" and operation.filter is not None:
                 self._validate(relations, joined, self._scopes(operation.filter), request)
             if operation.kind == "join" and operation.join is not None:
@@ -47,6 +49,23 @@ class ValidatePySparkRelationReads:
                 reads = set().union(*(self._scopes(expression) for expression in duplicate.subset))
                 if not (duplicate.scope is not None and reads <= {duplicate.scope}):
                     self._validate(relations, joined, reads, request)
+            if operation.kind == "posexplode_struct" and operation.posexplode_struct is not None:
+                self._validate(relations, joined, self._scopes(operation.posexplode_struct.expression), request)
+            if operation.relation_order is not None:
+                reads = set().union(*(self._scopes(expression) for expression in operation.relation_order.order_by))
+                self._validate(relations, joined, reads, request)
+            if operation.relation_assertion is not None:
+                assertion = operation.relation_assertion
+                references = (
+                    self._scopes(assertion.reference_key) if assertion.reference_key is not None else set()
+                )
+                reads = set().union(
+                    *(self._scopes(expression) for expression in assertion.keys),
+                    self._scopes(assertion.predicate) if assertion.predicate is not None else set(),
+                    self._scopes(assertion.value) if assertion.value is not None else set(),
+                )
+                reads -= references
+                self._validate(relations, joined, reads, request)
 
         reads = set().union(
             *(self._scopes(assignment.expression) for result in body.results for assignment in result.projection)

@@ -11,6 +11,7 @@ from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySp
 from structure.plugin.pyspark.compiler.model.PySparkHookRecipe import PySparkHookRecipe
 from structure.plugin.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoinRecipe
 from structure.plugin.pyspark.compiler.model.PySparkOutputRecipe import PySparkOutputRecipe
+from structure.plugin.pyspark.compiler.model.PySparkPosexplodeStructRecipe import PySparkPosexplodeStructRecipe
 from structure.plugin.pyspark.compiler.model.PySparkSelectedRowsRecipe import PySparkSelectedRowsRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.plugin.pyspark.compiler.model.PySparkValidationRecipe import PySparkValidationRecipe
@@ -199,7 +200,8 @@ class RenderPySparkStep:
         joined_scopes: set[str] = set()
         dedupe_index = 0
         exact_one_index = 0
-        for operation in step.operations:
+        generator_index = 0
+        for index, operation in enumerate(step.operations):
             if operation.kind == "filter" and operation.filter is not None:
                 pending_filters.append(operation.filter)
                 continue
@@ -248,6 +250,38 @@ class RenderPySparkStep:
                     ordered_lines.extend(self._exactly_one(source, prepared, scope, index=exact_one_index))
                     prepared_sources[source_key] = prepared
                     prepared_sources[scope] = prepared
+            if operation.kind == "posexplode_struct" and operation.posexplode_struct is not None:
+                generator_index += 1
+                ordered_lines.extend(
+                    self._posexplode_struct(
+                        operation.posexplode_struct,
+                        step=step,
+                        target=target,
+                        index=generator_index,
+                    )
+                )
+            if operation.relation_alias is not None:
+                continue
+            if operation.relation_assertion is not None:
+                ordered_lines.extend(
+                    self._relation_assertion(
+                        operation.relation_assertion,
+                        step=step,
+                        sources=prepared_sources,
+                        target=target,
+                        index=index,
+                    )
+                )
+            if operation.relation_order is not None:
+                ordered_lines.extend(self._relation_order(operation.relation_order, step=step, target=target))
+            if operation.relation_bound is not None:
+                ordered_lines.extend(self._relation_bound(operation.kind, operation.relation_bound, target=target))
+            if operation.relation_set is not None:
+                source = prepared_sources.get(
+                    operation.relation_set.source,
+                    prepared_sources.get(operation.relation_set.input_name, operation.relation_set.source),
+                )
+                ordered_lines.extend(self._relation_set(source, operation.relation_set, target=target))
             if operation.kind == "watermark" and operation.watermark is not None:
                 if operation.watermark.scope == getattr(step, "source_scope", ""):
                     ordered_lines.extend(self._watermark(operation.watermark, target=target))
@@ -304,6 +338,165 @@ class RenderPySparkStep:
             "        )",
             f'        {target} = {count}.crossJoin({source}).drop("__structure_exactly_one")',
         ]
+
+    def _relation_assertion(self, assertion, *, step, sources: dict[str, str], target: str, index: int) -> list[str]:
+        if assertion.operation == "require_unique":
+            return self._require_unique(assertion, step=step, target=target, index=index)
+        if assertion.operation == "require_all":
+            return self._require_all(assertion, step=step, target=target, index=index)
+        if assertion.operation == "require_reference":
+            return self._require_reference(assertion, step=step, sources=sources, target=target, index=index)
+        raise TypeError(f"Unsupported relation assertion: {assertion.operation}")
+
+    def _require_unique(self, assertion, *, step, target: str, index: int) -> list[str]:
+        keys = ", ".join(
+            render_pyspark_expression(expression, scope_aliases=self._scope_aliases(step))
+            for expression in assertion.keys
+        )
+        prefix = f"{target}_require_unique_{index}"
+        message = (
+            "REL-E0702: require_unique(...) found duplicate keys; "
+            "see docs/Diagnostics.md#rel-e0702"
+        )
+        return [
+            f"        {prefix}_duplicates = {target}.groupBy({keys}).agg(",
+            '            F.count(F.lit(1)).alias("__structure_count")',
+            "        )",
+            f'        {prefix}_duplicates = {prefix}_duplicates.where(F.col("__structure_count") > F.lit(1))',
+            f"        {prefix}_violations = {prefix}_duplicates.agg(",
+            '            F.count(F.lit(1)).alias("__structure_violations")',
+            "        )",
+            f"        {prefix}_assertion = {prefix}_violations.select(",
+            f'            F.assert_true(F.col("__structure_violations") == F.lit(0), {message!r})',
+            '            .alias("__structure_require_unique")',
+            "        )",
+            f'        {target} = {prefix}_assertion.crossJoin({target}).drop("__structure_require_unique")',
+        ]
+
+    def _require_all(self, assertion, *, step, target: str, index: int) -> list[str]:
+        assert assertion.predicate is not None
+        predicate = render_pyspark_expression(assertion.predicate, scope_aliases=self._scope_aliases(step))
+        prefix = f"{target}_require_all_{index}"
+        message = (
+            "REL-E0703: require_all(...) found rows that do not satisfy the predicate; "
+            "see docs/Diagnostics.md#rel-e0703"
+        )
+        return [
+            f"        {prefix}_violations = {target}.where(~F.coalesce({predicate}, F.lit(False))).agg(",
+            '            F.count(F.lit(1)).alias("__structure_violations")',
+            "        )",
+            f"        {prefix}_assertion = {prefix}_violations.select(",
+            f'            F.assert_true(F.col("__structure_violations") == F.lit(0), {message!r})',
+            '            .alias("__structure_require_all")',
+            "        )",
+            f'        {target} = {prefix}_assertion.crossJoin({target}).drop("__structure_require_all")',
+        ]
+
+    def _require_reference(self, assertion, *, step, sources: dict[str, str], target: str, index: int) -> list[str]:
+        assert assertion.value is not None
+        assert assertion.reference_key is not None
+        value_column = f"__structure_reference_value_{index}"
+        key_column = f"__structure_reference_key_{index}"
+        prefix = f"{target}_require_reference_{index}"
+        source = sources.get(
+            assertion.reference_source,
+            sources.get(assertion.reference_input, assertion.reference_source),
+        )
+        reference_aliases = {
+            assertion.reference_input: "",
+            assertion.reference_schema.__name__: "",
+        }
+        value = render_pyspark_expression(assertion.value, scope_aliases=self._scope_aliases(step))
+        reference_key = render_pyspark_expression(assertion.reference_key, scope_aliases=reference_aliases)
+        candidates = f"{prefix}_candidates"
+        if assertion.nulls == "allow":
+            candidates_line = f'        {candidates} = {prefix}_left.where(F.col({self._literal(value_column)}).isNotNull())'
+        else:
+            candidates_line = f"        {candidates} = {prefix}_left"
+        message = (
+            "REL-E0704: require_reference(...) found values without a reference row; "
+            "see docs/Diagnostics.md#rel-e0704"
+        )
+        return [
+            f"        {prefix}_left = {target}.withColumn({self._literal(value_column)}, {value})",
+            f"        {prefix}_right = {source}.select(",
+            f"            {reference_key}.alias({self._literal(key_column)})",
+            "        )",
+            f"        {prefix}_right = {prefix}_right.dropDuplicates([{self._literal(key_column)}])",
+            candidates_line,
+            f"        {prefix}_violations = {candidates}.join(",
+            f"            {prefix}_right,",
+            f"            F.col({self._literal(value_column)}) == F.col({self._literal(key_column)}),",
+            '            "left_anti",',
+            "        )",
+            f"        {prefix}_violations = {prefix}_violations.agg(",
+            '            F.count(F.lit(1)).alias("__structure_violations")',
+            "        )",
+            f"        {prefix}_assertion = {prefix}_violations.select(",
+            f'            F.assert_true(F.col("__structure_violations") == F.lit(0), {message!r})',
+            '            .alias("__structure_require_reference")',
+            "        )",
+            f'        {target} = {prefix}_assertion.crossJoin({target}).drop("__structure_require_reference")',
+        ]
+
+    def _posexplode_struct(
+        self,
+        generator: PySparkPosexplodeStructRecipe,
+        *,
+        step: PySparkStepRecipe | PySparkOutputRecipe,
+        target: str,
+        index: int,
+    ) -> list[str]:
+        aliases = self._scope_aliases(step)
+        value = render_pyspark_expression(generator.expression, scope_aliases=aliases)
+        prefix = f"__structure_{self._identifier(generator.scope)}_{index}"
+        position = f"{prefix}_pos"
+        item = f"{prefix}_item"
+        lines = [
+            f"        {target} = {target}.select(",
+            "            \"*\",",
+            f"            F.posexplode({value}).alias({self._literal(position)}, {self._literal(item)}),",
+            "        )",
+            f"        {target} = {target}.withColumn(",
+            f"            {self._literal(generator.schema._structure_fields[generator.ordinal].column)},",
+            f"            F.col({self._literal(position)}).cast(T.LongType()),",
+            "        )",
+        ]
+        for name, field in generator.schema._structure_fields.items():
+            if name == generator.ordinal:
+                continue
+            lines.extend(
+                [
+                    f"        {target} = {target}.withColumn(",
+                    f"            {self._literal(field.column)},",
+                    f"            F.col({self._literal(f'{item}.{field.column}')}),",
+                    "        )",
+                ]
+            )
+        lines.append(f"        {target} = {target}.drop({self._literal(position)}, {self._literal(item)})")
+        return lines
+
+    def _relation_set(self, source: str, relation_set, *, target: str) -> list[str]:
+        if relation_set.by_name:
+            return [f"        {target} = {target}.unionByName({source}, allowMissingColumns=False)"]
+        function = {
+            "union_all": "union",
+            "intersect": "intersect",
+            "intersect_all": "intersectAll",
+            "subtract": "subtract",
+            "except_all": "exceptAll",
+        }[relation_set.operation]
+        return [f"        {target} = {target}.{function}({source})"]
+
+    def _relation_order(self, relation_order, *, step: PySparkStepRecipe | PySparkOutputRecipe, target: str) -> list[str]:
+        order = ", ".join(
+            render_pyspark_expression(expression, scope_aliases=self._scope_aliases(step))
+            for expression in relation_order.order_by
+        )
+        return [f"        {target} = {target}.orderBy({order})"]
+
+    def _relation_bound(self, kind: str, relation_bound, *, target: str) -> list[str]:
+        return [f"        {target} = {target}.{kind}({relation_bound.count})"]
 
     def _prepares_relation(
         self,
@@ -824,8 +1017,15 @@ class RenderPySparkStep:
             aliases[source_scope] = step.input_alias
         if step.ordinal == 0:
             aliases["orders"] = step.input_alias
+        if any(operation.relation_set is not None for operation in step.operations):
+            if source_scope is not None:
+                aliases[source_scope] = ""
+            aliases[step.input_schema.__name__] = ""
         for item in step.joins:
             aliases[item.input_name] = item.right_alias
+        for operation in step.operations:
+            if operation.posexplode_struct is not None:
+                aliases[operation.posexplode_struct.scope] = ""
         if join is not None:
             aliases[join.input_name] = join.right_alias
         return aliases

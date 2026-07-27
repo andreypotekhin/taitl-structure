@@ -40,15 +40,15 @@ arr_flatten arr_forall arr_position arr_prepend arr_reverse arr_insert arr_remov
 arr_zip_with array array_contains array_except array_intersect array_repeat array_union avg as_of_one bool_and bool_or
 collect_list collect_set concat_ws coalesce ceil count count_distinct corr covar cross_join cube current_row date_add
 date_sub date_trunc dayofmonth datediff cume_dist dedupe_earliest_by dedupe_latest_by dense_rank distinct
-drop_duplicates drop_duplicates_within_watermark earliest_by element_at event_time_between exactly_one exp exists floor hash hour
-initcap ifnull instr first_value following full_join group_by grouping_id grouping_sets having inner_join isnan
+drop_duplicates drop_duplicates_within_watermark earliest_by element_at event_time_between exactly_one except_all exp exists floor hash hour
+initcap ifnull instr intersect intersect_all first_value following full_join group_by grouping_id grouping_sets having inner_join isnan
 isnotnull isnull is_grouped kurtosis lag left_join latest_by lead lookup_join last_value length levenshtein lower
-ltrim log md5 map_entries map_concat map_contains_key map_filter map_from_entries map_keys map_transform_keys
+ltrim log limit md5 map_entries map_concat map_contains_key map_filter map_from_entries map_keys map_transform_keys
 map_transform_values map_values map_zip_with max min minute month nanvl nvl nvl2 nullif pow not_exists nth_value
-ntile percent_rank percentile preceding project rank range_between regexp_extract regexp_replace reverse rtrim round
+ntile offset order_by percent_rank percentile posexplode_struct preceding project rank range_between relation_alias regexp_extract regexp_replace require_all require_reference require_unique reverse rtrim round
 signum slice sha1 sha2 second right_join rollup row_number rowset_join rows_between rolling_avg rolling_max
-rolling_min rolling_sum sum stddev sqrt size sequence session_window skewness split translate substring temporal_one
-to_decimal to_date to_timestamp TimeWindow trim trunc try_element_at upper unbounded_following unbounded_preceding
+rolling_min rolling_sum subtract sum stddev sqrt size sequence session_window skewness split translate substring temporal_one
+to_decimal to_date to_timestamp TimeWindow trim trunc try_element_at union_all union_by_name upper unbounded_following unbounded_preceding
 variance when year xxhash64 zeroifnull where watermark window window_avg window_bool_and window_bool_or
 window_collect_list window_collect_set window_count window_count_distinct window_max window_min window_sum
 window_stddev window_variance
@@ -140,6 +140,7 @@ __all__ = [  # noqa: F405
     "element_at",
     "event_time_between",
     "exactly_one",
+    "except_all",
     "exp",
     "exists",
     "floor",
@@ -148,6 +149,8 @@ __all__ = [  # noqa: F405
     "initcap",
     "ifnull",
     "instr",
+    "intersect",
+    "intersect_all",
     "first_value",
     "following",
     "full_join",
@@ -172,6 +175,7 @@ __all__ = [  # noqa: F405
     "lower",
     "ltrim",
     "log",
+    "limit",
     "md5",
     "map_entries",
     "map_concat",
@@ -195,14 +199,21 @@ __all__ = [  # noqa: F405
     "not_exists",
     "nth_value",
     "ntile",
+    "offset",
+    "order_by",
     "percent_rank",
     "percentile",
+    "posexplode_struct",
     "preceding",
     "project",
     "rank",
     "range_between",
+    "relation_alias",
     "regexp_extract",
     "regexp_replace",
+    "require_all",
+    "require_reference",
+    "require_unique",
     "reverse",
     "rtrim",
     "round",
@@ -220,6 +231,7 @@ __all__ = [  # noqa: F405
     "rolling_max",
     "rolling_min",
     "rolling_sum",
+    "subtract",
     "sum",
     "stddev",
     "sqrt",
@@ -238,6 +250,8 @@ __all__ = [  # noqa: F405
     "trim",
     "trunc",
     "try_element_at",
+    "union_all",
+    "union_by_name",
     "upper",
     "unbounded_following",
     "unbounded_preceding",

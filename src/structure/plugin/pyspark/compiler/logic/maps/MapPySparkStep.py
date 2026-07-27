@@ -17,7 +17,13 @@ from structure.plugin.pyspark.compiler.model.PySparkJoinDedupeRecipe import PySp
 from structure.plugin.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoinRecipe
 from structure.plugin.pyspark.compiler.model.PySparkJoinTemporalRecipe import PySparkJoinTemporalRecipe
 from structure.plugin.pyspark.compiler.model.PySparkOperationRecipe import PySparkOperationRecipe
+from structure.plugin.pyspark.compiler.model.PySparkPosexplodeStructRecipe import PySparkPosexplodeStructRecipe
 from structure.plugin.pyspark.compiler.model.PySparkProjectionRecipe import PySparkProjectionRecipe
+from structure.plugin.pyspark.compiler.model.PySparkRelationAliasRecipe import PySparkRelationAliasRecipe
+from structure.plugin.pyspark.compiler.model.PySparkRelationAssertionRecipe import PySparkRelationAssertionRecipe
+from structure.plugin.pyspark.compiler.model.PySparkRelationBoundRecipe import PySparkRelationBoundRecipe
+from structure.plugin.pyspark.compiler.model.PySparkRelationOrderRecipe import PySparkRelationOrderRecipe
+from structure.plugin.pyspark.compiler.model.PySparkRelationSetRecipe import PySparkRelationSetRecipe
 from structure.plugin.pyspark.compiler.model.PySparkSelectedRowsRecipe import PySparkSelectedRowsRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStepResultRecipe import PySparkStepResultRecipe
@@ -49,8 +55,15 @@ class MapPySparkStep:
         input_alias = self._names.alias(step.input_schema.__name__)
         output_alias = self._names.alias(step.output_schema.__name__)
         operations = self._operations(body, input_alias=input_alias, capabilities=capabilities)
+        alias_scopes = self._alias_scopes(body)
         joins = tuple(operation.join for operation in operations if operation.join is not None) or tuple(
-            self._join(join, occurrence=occurrence, left_alias=input_alias, capabilities=capabilities)
+            self._join(
+                join,
+                occurrence=occurrence,
+                left_alias=input_alias,
+                alias_scopes=alias_scopes,
+                capabilities=capabilities,
+            )
             for occurrence, join in enumerate(body.joins, start=1)
         )
         results = tuple(
@@ -103,6 +116,7 @@ class MapPySparkStep:
     ) -> tuple[PySparkOperationRecipe, ...]:
         recipes: list[PySparkOperationRecipe] = []
         occurrence = 0
+        alias_scopes = self._alias_scopes(body)
         for operation in body.operations:
             self._require_operation_capability(operation.capability, capabilities=capabilities)
             if operation.kind == "filter" and operation.filter is not None:
@@ -120,7 +134,11 @@ class MapPySparkStep:
                     self._operation_modes(
                         PySparkOperationRecipe.join_operation(
                             self._join(
-                                operation.join, occurrence=occurrence, left_alias=input_alias, capabilities=capabilities
+                                operation.join,
+                                occurrence=occurrence,
+                                left_alias=input_alias,
+                                alias_scopes=alias_scopes,
+                                capabilities=capabilities,
                             )
                         ),
                         operation,
@@ -177,6 +195,111 @@ class MapPySparkStep:
                     self._operation_modes(
                         PySparkOperationRecipe.exactly_one_operation(
                             PySparkExactlyOneRecipe(scope=operation.exactly_one.scope)
+                        ),
+                        operation,
+                    )
+                )
+            if operation.kind == "posexplode_struct" and operation.posexplode_struct is not None:
+                recipes.append(
+                    self._operation_modes(
+                        PySparkOperationRecipe.posexplode_struct_operation(
+                            PySparkPosexplodeStructRecipe(
+                                expression=self._expressions.map(
+                                    operation.posexplode_struct.expression,
+                                    capabilities=capabilities,
+                                ),
+                                scope=operation.posexplode_struct.scope,
+                                schema=operation.posexplode_struct.schema,
+                                ordinal=operation.posexplode_struct.ordinal,
+                            )
+                        ),
+                        operation,
+                    )
+                )
+            if operation.relation_alias is not None:
+                recipes.append(
+                    self._operation_modes(
+                        PySparkOperationRecipe.relation_alias_operation(
+                            PySparkRelationAliasRecipe(
+                                input_name=operation.relation_alias.input_name,
+                                source=operation.relation_alias.source,
+                                schema=operation.relation_alias.schema,
+                                alias=operation.relation_alias.alias,
+                            )
+                        ),
+                        operation,
+                    )
+                )
+            if operation.relation_assertion is not None:
+                assertion = operation.relation_assertion
+                recipes.append(
+                    self._operation_modes(
+                        PySparkOperationRecipe.relation_assertion_operation(
+                            PySparkRelationAssertionRecipe(
+                                operation=assertion.operation,
+                                keys=tuple(
+                                    self._expressions.map(expression, capabilities=capabilities)
+                                    for expression in assertion.keys
+                                ),
+                                predicate=(
+                                    None
+                                    if assertion.predicate is None
+                                    else self._expressions.map(assertion.predicate, capabilities=capabilities)
+                                ),
+                                value=(
+                                    None
+                                    if assertion.value is None
+                                    else self._expressions.map(assertion.value, capabilities=capabilities)
+                                ),
+                                reference_input=assertion.reference_input,
+                                reference_source=assertion.reference_source,
+                                reference_schema=assertion.reference_schema,
+                                reference_key=(
+                                    None
+                                    if assertion.reference_key is None
+                                    else self._expressions.map(assertion.reference_key, capabilities=capabilities)
+                                ),
+                                nulls=assertion.nulls,
+                            )
+                        ),
+                        operation,
+                    )
+                )
+            if operation.relation_order is not None:
+                recipes.append(
+                    self._operation_modes(
+                        PySparkOperationRecipe.relation_order_operation(
+                            PySparkRelationOrderRecipe(
+                                order_by=tuple(
+                                    self._expressions.map(expression, capabilities=capabilities)
+                                    for expression in operation.relation_order.order_by
+                                )
+                            )
+                        ),
+                        operation,
+                    )
+                )
+            if operation.relation_bound is not None:
+                recipes.append(
+                    self._operation_modes(
+                        PySparkOperationRecipe.relation_bound_operation(
+                            operation.kind,
+                            PySparkRelationBoundRecipe(count=operation.relation_bound.count),
+                        ),
+                        operation,
+                    )
+                )
+            if operation.relation_set is not None:
+                recipes.append(
+                    self._operation_modes(
+                        PySparkOperationRecipe.relation_set_operation(
+                            PySparkRelationSetRecipe(
+                                operation=operation.relation_set.operation,
+                                input_name=operation.relation_set.input_name,
+                                source=operation.relation_set.source,
+                                schema=operation.relation_set.schema,
+                                by_name=operation.relation_set.by_name,
+                            )
                         ),
                         operation,
                     )
@@ -318,6 +441,7 @@ class MapPySparkStep:
         *,
         occurrence: int,
         left_alias: str,
+        alias_scopes: set[str],
         capabilities: BackendCapabilities,
     ) -> PySparkJoinRecipe:
         capabilities.require(CapabilityRequirement(group="join", name=join.method.value))
@@ -332,12 +456,13 @@ class MapPySparkStep:
         temporal = self._temporal(join, capabilities=capabilities)
         as_of = self._as_of(join, capabilities=capabilities)
 
+        source_name = join.input_name if join.input_name in alias_scopes else self._join_source_name(join.source)
         return PySparkJoinRecipe(
             input_name=join.input_name,
             source=join.source,
             input_schema=join.input_schema,
             left_alias=left_alias,
-            right_alias=self._names.join_alias(self._join_source_name(join.source), occurrence),
+            right_alias=self._names.join_alias(source_name, occurrence),
             how=join.how,
             hint=join.hint,
             strategy=join.strategy,
@@ -421,6 +546,13 @@ class MapPySparkStep:
         if expression.kind in {"gt", "lt", "le", "ge", "ne"}:
             return True
         return any(self._has_non_equi_condition(argument) for argument in expression.args)
+
+    def _alias_scopes(self, body: PySparkStepBody) -> set[str]:
+        return {
+            operation.relation_alias.alias
+            for operation in body.operations
+            if operation.relation_alias is not None
+        }
 
     def _join_source_name(self, source: str) -> str:
         return source.removeprefix("input:")
