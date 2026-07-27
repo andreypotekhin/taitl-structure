@@ -2,7 +2,7 @@
 
 This document captures the pre-implementation challenges identified for the **Structure** project. They are labeled **C1–C20** for reference in planning, backlog, risk tracking, and sprint discussions.
 
-Current inventory runs through C32. A challenge marked resolved here means the design/specification decision is
+Current inventory runs through C34. A challenge marked resolved here means the design/specification decision is
 settled; implementation work may still remain in the owning plan or sprint.
 
 ## +C1. Package and Import Layout Is Not Fully Resolved
@@ -633,14 +633,16 @@ Validation depth is controlled per phase with `input_validation_mode`, `intermed
 `output_validation_mode`. Future constraints also bind to validation phases, so a constraint runs only at intended
 boundaries and only when that phase allows `schema_and_constraints`.
 
-## C27. Analytical Join Coverage Is Still Narrow
+## +C27. Analytical Join Coverage Is Still Narrow
 
 Resolved by [AnalyticalJoinCoverage.md](../specifications/AnalyticalJoinCoverage.md), design
 [AnalyticalJoinCoverage.md](AnalyticalJoinCoverage.md), decision
 [D06212601.Analytical-join-coverage.md](decisions/D06212601.Analytical-join-coverage.md), and plan
 [P06212601.Analytical-join-coverage.plan.md](../planning/P06212601.Analytical-join-coverage.plan.md).
 
-Remaining: implementation of AnalyticalJoinCoverage.md
+The implemented join family now covers existence joins, row-multiplying joins, deterministic lookup dedupe, temporal
+lookups, as-of lookups, full/right/cross rowset joins, and named self aliases. Remaining work is no longer this
+challenge's analytical-join gap; any future join variant must enter the API catalog with its own narrow contract.
 
 The v1 `lookup_join(...)` design is disciplined, but real analytical pipelines often need semi joins, anti joins,
 existence checks, temporal/as-of joins, slowly changing dimension lookups, deduped lookup policies, and row-multiplying
@@ -724,11 +726,13 @@ Recommended direction:
 - Add governance basics before public release: contribution guide, security policy, code of conduct if desired,
   release process, support window, and vulnerability reporting path.
 
-## C32 Imported schema fields can conflict with Python keywords
+## +C32 Imported schema fields can conflict with Python keywords
 
-Field names in Structure schema classes are Python attribute names. If a Spark schema field name is not a valid Python
-identifier or is a Python keyword, Structure v1 cannot preserve it because it does not have field aliases. Renaming the
-field during schema generation would create an incorrect schema.
+Resolved by schema field `alias=...`, the alias-aware schema rendering/materialization contract, and StructureTools
+schema generation that emits safe Python names plus aliases for non-identifiers and Python keywords. The public
+contract is documented in [SchemaDeclarationSyntax.md](../specifications/SchemaDeclarationSyntax.md) and
+[Schema.ref.md](../../reference/Schema.ref.md), with executable coverage in the field-alias and schema-generation user
+story tests.
 
 ## C33. Transform Composition Needs Hook Ownership Rules
 
@@ -753,26 +757,19 @@ Recommended direction:
 - Keep `lane(...)` internal to a transform implementation and unavailable for composition matching unless a later design
   explicitly changes that boundary.
 
-## C34. Insufficient DSL coverage necessitates raw hooks 
+## +C34. Insufficient DSL coverage necessitates raw hooks
 
-Example app: Security
-P: use of raw hooks, impossibility to replace with step methods.
-Hooks: retain_reconciled_inventory, reconcile_device_inventory
-Agent: 
-The DSL supports higher-order array functions, but generated-code rendering cannot currently render a field accessed from a lambda-bound struct (app.id): lambda arguments have no relation scope, while the renderer’s field path expects one. That is why the raw hook uses Spark’s F.exists(...) directly.
-Recommendation: retain both hooks for now. They are narrow, typed at their boundaries, optimizer-visible to Spark, and perform no actions or driver collection.
-The best improvement is a small DSL/codegen enhancement: support struct-field access on lambda arguments, with online/generated parity tests. Then both hooks collapse into ordinary steps, and VulnerabilityInventoryCandidate can drop its placeholder boolean fields.
+Resolved for the shipped examples by the v6 API ledger, the checked raw-hook inventory, and the Sprint 24/25 hook
+retirements. Security's reconciliation hooks are now typed steps using lambda-bound struct field access. Search's ten
+scheduled raw hooks are now typed pipelines using the admitted v6 capabilities: partitioned windows, implicit global
+aggregation, ordered collection, exact-one validation, typed struct generators, exact-schema relation composition,
+named self aliases, relation assertions, bounded hierarchy closure/fallbacks, branchable typed union, and
+first-qualified priority selection.
 
-Example app: Search
-P: use of raw hooks, impossibility to replace with step methods.
-Cause: the current DSL has row_number but no partitioned analytic max, which the normalized-BM25 formula needs.
-
-Existing raw methods in Search app that can't be refactored: 
-- ExtractText requires row expansion (posexplode) and multi-stage hierarchical parsing, which the typed DSL does not yet model. [extract.py (line 67)](/Users/chaos/Files/Dev/Code/taitl-structure/examples/search/transforms/extract.py:67)
-- ScoreOverlap and ScoreBm25 need query-token row expansion. Their scoring algebra could become steps only after extracting a reusable typed query-term relation; that expansion still needs raw support. [ScoreOverlap.py (line 39)](/Users/chaos/Files/Dev/Code/taitl-structure/examples/search/transforms/scoring/ScoreOverlap.py:39)
-- Index is a worthwhile larger refactor, but preserving its global zero-row summaries needs a typed global-aggregate capability first. [Index.py (line 86)](/Users/chaos/Files/Dev/Code/taitl-structure/examples/search/transforms/indexing/Index.py:86)
-- CreateSimilarityQueries needs sorted aggregate token collection and exact-one policy validation, both currently outside typed DSL coverage. [CreateSimilarityQueries.py (line 62)](/Users/chaos/Files/Dev/Code/taitl-structure/examples/search/transforms/similarities/CreateSimilarityQueries.py:62)
-- ReduceSimilarityScores needs self-alias joins plus canonical/reversed union construction; keep raw until the DSL supports those relation operations. [ReduceSimilarityScores.py (line 109)](/Users/chaos/Files/Dev/Code/taitl-structure/examples/search/transforms/similarities/ReduceSimilarityScores.py:109)
+`docs/dev/specifications/V6ExampleRawHookInventory.json` now records each retired Security/Search hook and keeps only
+School matrix inversion as an intentional example raw boundary. Remaining DSL gaps such as broader generator forms,
+sampling, physical-plan directives, deterministic `mode`, binary/encoding, and inline JSON/CSV parsing stay in
+`Gaps.md` with explicit deferred boundaries instead of hiding behind this generic challenge.
 
 
 

@@ -39,10 +39,10 @@ Keep sources, sinks, actions, and driver algorithms caller-owned or intentionall
 `v6-api-ledger` specification test parses the example source and fails when a hook is missing from that inventory or
 an inventory entry no longer names a hook.
 
-The current inventory records two retired Security hooks, ten Search hooks scheduled across Sprints 24 and 25, and
-intentional School matrix inversion because it is a driver-side numerical algorithm. Each scheduled record names the
+The current inventory records two retired Security hooks, ten retired Search hooks from Sprints 24 and 25, and the
+intentional School matrix inversion hook because it is a driver-side numerical algorithm. A scheduled record names the
 smallest capability required for retirement and keeps `@raw` as the boundary until that capability has its complete
-typed contract and parity evidence.
+typed contract and parity evidence; a retired record names the typed capability that replaced the hook.
 
 ## Required Record Fields
 

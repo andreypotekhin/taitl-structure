@@ -2,6 +2,7 @@ import ast
 from pathlib import Path
 from typing import cast
 
+import structure.plugin.pyspark as pyspark
 from structure.plugin.pyspark import (
     AsOf,
     Join,
@@ -52,6 +53,34 @@ def test_pyspark_endpoint_groups_commands_and_creates_fresh_actions() -> None:
     assert isinstance(PySpark.render.project(), RenderPySparkProject)
     assert isinstance(PySpark.files.compare(), CompareGeneratedFiles)
     assert PySpark.compiler.lower() is not PySpark.compiler.lower()
+
+
+def test_pyspark_public_dsl_exports_are_static_for_editor_navigation() -> None:
+    names = (
+        "field",
+        "types",
+        "except_all",
+        "intersect",
+        "intersect_all",
+        "limit",
+        "offset",
+        "order_by",
+        "posexplode_struct",
+        "relation_alias",
+        "require_all",
+        "require_parent_hierarchy",
+        "require_reference",
+        "require_unique",
+        "hierarchy_closure",
+        "hierarchy_fallbacks",
+        "select_first_qualified",
+        "subtract",
+        "union_all",
+        "union_by_name",
+    )
+
+    assert [name for name in names if name not in vars(pyspark)] == []
+    assert all(getattr(pyspark, name) is vars(pyspark)[name] for name in names)
 
 
 def test_pyspark_symbolic_execution_scopes_its_authoring_context() -> None:

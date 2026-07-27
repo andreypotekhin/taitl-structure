@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Any, cast, overload
 from structure.dsl import FieldDeclaration
 from structure.plugin.pyspark.PySparkPlugin import PySparkPlugin
 from structure.plugin.pyspark.dsl import field as field
+from structure.plugin.pyspark.dsl import types as types
 from structure.plugin.pyspark.dsl.generators import posexplode_struct as _posexplode_struct
 from structure.plugin.pyspark.dsl.relation_sets import (
     except_all,
@@ -29,9 +30,9 @@ from structure.plugin.pyspark.dsl.relation_sets import (
 def posexplode_struct(*args: object, **kwargs: object) -> Any:
     return cast(Any, _posexplode_struct)(*args, **kwargs)
 
+
 if TYPE_CHECKING:
     from structure.plugin.pyspark.api.PySpark import PySpark
-    from structure.plugin.pyspark.dsl import types
     from structure.plugin.pyspark.dsl.Expression import Expression
     from structure.plugin.pyspark.dsl.InputScope import *  # type: ignore  # noqa: F403
     from structure.plugin.pyspark.dsl.Projection import Projection

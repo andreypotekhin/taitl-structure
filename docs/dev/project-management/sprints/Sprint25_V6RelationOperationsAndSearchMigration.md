@@ -149,7 +149,13 @@ reason rather than an accidental API gap.
 - [x] (2026-07-27) Retired `ExtractText.extract`:
   document lines, paragraph lines, section headings, paragraph content, sentences, and words now expand through typed
   struct generators, windowed cumulative grouping, ordered paragraph-line collection, and ordinary projection lanes.
-- [ ] Specify remaining generator and relation-composition contracts.
-- [ ] Implement remaining relation plans and end-to-end parity paths.
-- [ ] Migrate Search slices in dependency order.
-- [ ] Update hook ledger and run regression evidence.
+- [x] (2026-07-27) Specified and admitted the generator and relation-composition contracts needed by the Search
+  migrations. Broader generator forms, sampling, and physical-plan directives remain deferred in `Gaps.md` rather than
+  being treated as hidden Sprint 25 scope.
+- [x] (2026-07-27) Implemented the required P1 relation plans and parity paths: typed struct expansion, exact-schema
+  set composition, named self aliases, relation ordering/bounds, relation assertions, bounded hierarchy closure and
+  fallbacks, branchable typed union, and first-qualified priority selection.
+- [x] (2026-07-27) Migrated the Search slices in dependency order and deleted their raw adapters after the
+  deterministic example/golden, differential, metamorphic, and v6 raw-hook inventory gates passed.
+- [x] (2026-07-27) Updated the hook ledger and ran regression evidence. The example raw-hook inventory now records only
+  the intentional School matrix-inversion boundary as an active example hook.
