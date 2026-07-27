@@ -38,6 +38,11 @@ class Published(Schema):
     product_name = string(nullable=True)
 
 
+class Audit(Schema):
+    id = string(nullable=False)
+    note = string(nullable=True)
+
+
 class Metric(Schema):
     id = string(nullable=False)
     value = integer(nullable=True)
@@ -69,6 +74,26 @@ class PublishOrders(Transform):
 
     def publish(self, order: Enriched) -> Published:
         return Published(id=order.id, product_name=order.product_name)
+
+
+@transform
+class AuditNormalized(Transform):
+    normalized = input(Normalized)
+    audited = output(Audit)
+
+    def audit_order(self, order: Normalized) -> Audit:
+        return Audit(id=order.id, note=order.product_id)
+
+
+@transform
+class PublishWithAudit(Transform):
+    enriched = input(Enriched)
+    audit = input(Audit)
+    published = output(Published)
+
+    def publish(self, order: Enriched, audit: Audit) -> Published:
+        left_join(audit, on=audit.id == order.id)
+        return Published(id=order.id, product_name=audit.note)
 
 
 def test_instance_to_runs_with_final_output_shape() -> None:
@@ -309,6 +334,95 @@ def test_class_field_pipeline_compiles_and_renders_generated_transform() -> None
         "# Step method: add_product.add_product"
     )
     assert text.index("# Step method: add_product.add_product") < text.index("# Step method: publish_orders.publish")
+
+
+def test_stage_graph_exports_declared_outputs_from_multiple_stages() -> None:
+    class OrderGraph(Transform):
+        orders = input(Raw)
+        products = input(Product)
+
+        normalized = output(Normalized)
+        enriched = output(Enriched)
+        published = output(Published)
+
+        normalized_stage = stage(NormalizeOrders(orders=orders))
+        enriched_stage = stage(AddProduct(normalized=normalized_stage.normalized, products=products))
+        published_stage = stage(PublishOrders(enriched=enriched_stage.enriched))
+
+    plan = _analysis(OrderGraph)
+
+    assert [input.name for input in plan.inputs] == ["orders", "products"]
+    assert [output.name for output in plan.outputs] == ["normalized", "enriched", "published"]
+    assert [step.name for step in plan.steps] == [
+        "normalized_stage.normalize",
+        "enriched_stage.add_product",
+        "published_stage.publish",
+    ]
+
+
+def test_stage_graph_fans_out_and_merges_stage_outputs() -> None:
+    class OrderGraph(Transform):
+        orders = input(Raw)
+        products = input(Product)
+
+        audit = output(Audit)
+        published = output(Published)
+
+        normalized_stage = stage(NormalizeOrders(orders=orders))
+        enriched_stage = stage(AddProduct(normalized=normalized_stage.normalized, products=products))
+        audit_stage = stage(AuditNormalized(normalized=normalized_stage.normalized))
+        published_stage = stage(
+            PublishWithAudit(enriched=enriched_stage.enriched, audit=audit_stage.audited)
+        )
+
+    plan = _analysis(OrderGraph)
+
+    assert [output.name for output in plan.outputs] == ["audit", "published"]
+    assert [step.name for step in plan.steps] == [
+        "normalized_stage.normalize",
+        "enriched_stage.add_product",
+        "audit_stage.audit_order",
+        "published_stage.publish",
+    ]
+
+
+def test_stage_graph_allows_unused_underlying_outputs() -> None:
+    class OrderGraph(Transform):
+        orders = input(Raw)
+
+        normalized = output(Normalized)
+
+        normalized_stage = stage(NormalizeOrders(orders=orders))
+
+    assert [output.name for output in _analysis(OrderGraph).outputs] == ["normalized"]
+
+
+def test_stage_graph_uses_explicit_output_binding_for_ambiguous_schema() -> None:
+    class OrderGraph(Transform):
+        orders = input(Raw)
+        products = input(Product)
+
+        normalized_stage = stage(NormalizeOrders(orders=orders))
+        enriched_stage = stage(AddProduct(normalized=normalized_stage.normalized, products=products))
+        duplicate_stage = stage(AddProduct(normalized=normalized_stage.normalized, products=products))
+        selected = output(Enriched).from_(enriched_stage.enriched)
+
+    assert [output.name for output in _analysis(OrderGraph).outputs] == ["selected"]
+
+
+def test_stage_graph_ambiguous_output_inference_fails() -> None:
+    class OrderGraph(Transform):
+        orders = input(Raw)
+        products = input(Product)
+
+        selected = output(Enriched)
+
+        normalized_stage = stage(NormalizeOrders(orders=orders))
+        enriched_stage = stage(AddProduct(normalized=normalized_stage.normalized, products=products))
+        duplicate_stage = stage(AddProduct(normalized=normalized_stage.normalized, products=products))
+
+    with pytest.raises(StructureCompileError, match="Cannot infer output selected"):
+        _analysis(OrderGraph)
 
 
 def test_generated_transform_renders_output_alias_metadata() -> None:

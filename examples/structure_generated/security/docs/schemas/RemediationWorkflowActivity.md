@@ -2,7 +2,7 @@
 
 # RemediationWorkflowActivity
 
-Module: `examples.security.schemas.reporting`
+Module: `examples.security.schemas.remediate`
 
 | Field | Column | Type | Nullable |
 | --- | --- | --- | --- |

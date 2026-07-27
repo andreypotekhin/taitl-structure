@@ -8,6 +8,8 @@ _EXPORTS = {
     "OutputDeclaration": "structure.core.dsl.model.transforms.OutputDeclaration",
     "Schema": "structure.core.dsl.model.schemas.Schema",
     "SchemaMode": "structure.core.dsl.model.transforms.SchemaMode",
+    "StageDeclaration": "structure.core.dsl.model.transforms.StageDeclaration",
+    "StageOutputReference": "structure.core.dsl.model.transforms.StageDeclaration",
     "Transform": "structure.core.dsl.model.transforms.Transform",
 }
 

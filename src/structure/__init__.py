@@ -17,7 +17,7 @@ from structure.core.configuration.api import StructureConfig
 from structure.core.dsl.model.schemas.Schema import Schema
 from structure.core.dsl.model.transforms.SchemaMode import SchemaMode
 from structure.core.dsl.model.transforms.Transform import Transform
-from structure.core.dsl.model.transforms.transform_api import input, lane, output, raw, special, step, transform
+from structure.core.dsl.model.transforms.transform_api import input, lane, output, raw, special, stage, step, transform
 from structure.core.runtime.api import (
     ResultSchemas,
     StructureRuntimeError,
@@ -57,6 +57,7 @@ __all__ = [
     "output",
     "raw",
     "special",
+    "stage",
     "step",
     "transform",
 ]

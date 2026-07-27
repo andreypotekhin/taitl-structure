@@ -264,43 +264,46 @@ def expected_stocks_generated() -> dict[str, str]:
 
 def render_security_example() -> dict[str, str]:
     with _example_imports():
+        from examples.security.schemas.alarms import TeamVulnerabilityAlarm
         from examples.security.schemas.assets import OS, App, Device, DeviceType, Scanner, Software
         from examples.security.schemas.events import AppEvent, RawEvent, VulnEvent
+        from examples.security.schemas.notifications import PersonVulnerabilityNotification
         from examples.security.schemas.organization import Department, Org, Person, Team
-        from examples.security.schemas.reporting import (
-            AppAuditEvent,
-            DeliveryReceipt,
-            DepartmentActiveVulnerability,
+        from examples.security.schemas.remediation import (
             DepartmentRemediationWorkflowSummary,
-            DepartmentVulnerabilityDeadlineSummary,
-            DepartmentVulnerabilityStatistic,
-            DeviceActiveVulnerability,
             ExpiredExceptionVulnerability,
             ExpiringExceptionVulnerability,
-            OrgActiveVulnerability,
             OrgRemediationWorkflowSummary,
-            OrgVulnerabilityDeadlineSummary,
-            OrgVulnerabilityStatistic,
             PendingExceptionVulnerability,
-            PersonActiveVulnerability,
             PersonRemediationWorkflowSummary,
-            PersonVulnerabilityDeadlineSummary,
-            PersonVulnerabilityNotification,
-            PersonVulnerabilityStatistic,
             RemediationCase,
             RemediationCaseAggregate,
             RemediationCaseCheck,
             RemediationCaseIssue,
             RemediationWorkflowActivity,
             RemediationWorkflowSummary,
+            TeamRemediationWorkflowSummary,
+            UnacknowledgedVulnerability,
+            VulnerabilityWorkflowExposure,
+        )
+        from examples.security.schemas.reporting import (
+            AppAuditEvent,
+            DeliveryReceipt,
+            DepartmentActiveVulnerability,
+            DepartmentVulnerabilityDeadlineSummary,
+            DepartmentVulnerabilityStatistic,
+            DeviceActiveVulnerability,
+            OrgActiveVulnerability,
+            OrgVulnerabilityDeadlineSummary,
+            OrgVulnerabilityStatistic,
+            PersonActiveVulnerability,
+            PersonVulnerabilityDeadlineSummary,
+            PersonVulnerabilityStatistic,
             ReportingPeriod,
             SecurityEvaluation,
             TeamActiveVulnerability,
-            TeamRemediationWorkflowSummary,
-            TeamVulnerabilityAlarm,
             TeamVulnerabilityDeadlineSummary,
             TeamVulnerabilityStatistic,
-            UnacknowledgedVulnerability,
             VulnerabilityAuditEvent,
             VulnerabilityDeadlineActivity,
             VulnerabilityDeadlineSummary,
@@ -315,7 +318,6 @@ def render_security_example() -> dict[str, str]:
             VulnerabilityQualityCheck,
             VulnerabilityQualityIssue,
             VulnerabilityStatistic,
-            VulnerabilityWorkflowExposure,
         )
         from examples.security.schemas.risk import RemediationPolicy, Vuln, VulnType
         from examples.security.transforms.alarms import VulnerabilityAlarms
@@ -324,8 +326,8 @@ def render_security_example() -> dict[str, str]:
         from examples.security.transforms.notify import VulnerabilityNotifications
         from examples.security.transforms.posture import SecurityPosture
         from examples.security.transforms.quality import SecurityInventoryQuality
+        from examples.security.transforms.remediate.workflow import VulnerabilityRemediationWorkflow
         from examples.security.transforms.reports import ActiveVulnerabilityReports, VulnerabilityStatistics
-        from examples.security.transforms.workflow import VulnerabilityRemediationWorkflow
 
         schema_modules: dict[str, Sequence[type[Schema]]] = {
             "examples.security.schemas.assets": [DeviceType, Software, App, OS, Scanner, Device],
@@ -335,10 +337,6 @@ def render_security_example() -> dict[str, str]:
                 ReportingPeriod,
                 SecurityEvaluation,
                 DeliveryReceipt,
-                RemediationCase,
-                RemediationCaseAggregate,
-                RemediationCaseCheck,
-                RemediationCaseIssue,
                 VulnerabilityExposure,
                 DeviceActiveVulnerability,
                 PersonActiveVulnerability,
@@ -350,24 +348,11 @@ def render_security_example() -> dict[str, str]:
                 TeamVulnerabilityStatistic,
                 DepartmentVulnerabilityStatistic,
                 OrgVulnerabilityStatistic,
-                VulnerabilityWorkflowExposure,
-                UnacknowledgedVulnerability,
-                PendingExceptionVulnerability,
-                ExpiringExceptionVulnerability,
-                ExpiredExceptionVulnerability,
-                RemediationWorkflowActivity,
-                RemediationWorkflowSummary,
-                PersonRemediationWorkflowSummary,
-                TeamRemediationWorkflowSummary,
-                DepartmentRemediationWorkflowSummary,
-                OrgRemediationWorkflowSummary,
                 VulnerabilityDeadlineSummary,
                 PersonVulnerabilityDeadlineSummary,
                 TeamVulnerabilityDeadlineSummary,
                 DepartmentVulnerabilityDeadlineSummary,
                 OrgVulnerabilityDeadlineSummary,
-                PersonVulnerabilityNotification,
-                TeamVulnerabilityAlarm,
                 VulnerabilityLifecycle,
                 VulnerabilityDiscovery,
                 VulnerabilityDeadlineActivity,
@@ -381,6 +366,25 @@ def render_security_example() -> dict[str, str]:
                 AppAuditEvent,
                 VulnerabilityAuditEvent,
             ],
+            "examples.security.schemas.remediate": [
+                RemediationCase,
+                RemediationCaseAggregate,
+                RemediationCaseCheck,
+                RemediationCaseIssue,
+                VulnerabilityWorkflowExposure,
+                UnacknowledgedVulnerability,
+                PendingExceptionVulnerability,
+                ExpiringExceptionVulnerability,
+                ExpiredExceptionVulnerability,
+                RemediationWorkflowActivity,
+                RemediationWorkflowSummary,
+                PersonRemediationWorkflowSummary,
+                TeamRemediationWorkflowSummary,
+                DepartmentRemediationWorkflowSummary,
+                OrgRemediationWorkflowSummary,
+            ],
+            "examples.security.schemas.notifications": [PersonVulnerabilityNotification],
+            "examples.security.schemas.alarms": [TeamVulnerabilityAlarm],
             "examples.security.schemas.risk": [VulnType, RemediationPolicy, Vuln],
         }
         transforms = (
@@ -389,7 +393,7 @@ def render_security_example() -> dict[str, str]:
             (SecurityPosture, "examples.security.transforms.posture.SecurityPosture"),
             (
                 VulnerabilityRemediationWorkflow,
-                "examples.security.transforms.workflow.VulnerabilityRemediationWorkflow",
+                "examples.security.transforms.remediate.workflow.VulnerabilityRemediationWorkflow",
             ),
             (VulnerabilityNotifications, "examples.security.transforms.notify.VulnerabilityNotifications"),
             (VulnerabilityAlarms, "examples.security.transforms.alarms.VulnerabilityAlarms"),

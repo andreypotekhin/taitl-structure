@@ -1,12 +1,8 @@
 from examples.security.schemas.events import VulnEvent
+from examples.security.schemas.notifications import PersonVulnerabilityNotification
 from examples.security.schemas.organization import Person
-from examples.security.schemas.reporting import (
-    DeliveryReceipt,
-    PersonVulnerabilityNotification,
-    SecurityEvaluation,
-    VulnerabilityDiscovery,
-    VulnerabilityWorkflowExposure,
-)
+from examples.security.schemas.remediation import VulnerabilityWorkflowExposure
+from examples.security.schemas.reporting import DeliveryReceipt, SecurityEvaluation, VulnerabilityDiscovery
 from structure import Transform, input, lane, output, step
 from structure.plugin.pyspark import *
 from structure.plugin.pyspark.dsl import types

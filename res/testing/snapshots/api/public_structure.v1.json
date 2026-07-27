@@ -309,6 +309,14 @@
       "qualname": "special",
       "signature": "(function: 'Callable | None' = None, *, type: 'str', **kwargs)"
     },
+    "stage": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.core.dsl.model.transforms.transform_api",
+      "qualname": "stage",
+      "signature": "(value: 'Transform') -> 'StageDeclaration'"
+    },
     "step": {
       "dataclass_fields": [],
       "enum_members": [],

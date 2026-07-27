@@ -11,6 +11,7 @@ from structure.core.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.core.dsl.model.transforms.OutputDeclaration import OutputDeclaration
 from structure.core.dsl.model.transforms.SchemaMode import SchemaMode
 from structure.core.dsl.model.transforms.SpecialFunction import SpecialFunction
+from structure.core.dsl.model.transforms.StageDeclaration import StageDeclaration
 from structure.core.dsl.model.transforms.Transform import Transform
 
 _CLASS_OPTIONS = {"target", "validate_intermediate", "streaming"}
@@ -73,6 +74,12 @@ def lane(value: type[Schema] | SelectedDeclaration) -> LaneDeclaration | Binding
     if not isinstance(value, type) or not issubclass(value, Schema):
         raise TypeError("lane(...) requires a Schema class")
     return LaneDeclaration(schema=value)
+
+
+def stage(value: Transform) -> StageDeclaration:
+    if not isinstance(value, Transform):
+        raise TypeError("stage(...) requires a Transform invocation")
+    return StageDeclaration(invocation=value)
 
 
 def transform(target=None, **kwargs):

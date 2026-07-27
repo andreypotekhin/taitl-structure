@@ -397,7 +397,7 @@
           "type": "string"
         }
       ],
-      "module": "examples.security.schemas.reporting",
+      "module": "examples.security.schemas.remediate",
       "name": "DepartmentRemediationWorkflowSummary"
     },
     {
@@ -927,7 +927,7 @@
           "type": "boolean"
         }
       ],
-      "module": "examples.security.schemas.reporting",
+      "module": "examples.security.schemas.remediate",
       "name": "ExpiredExceptionVulnerability"
     },
     {
@@ -1122,7 +1122,7 @@
           "type": "boolean"
         }
       ],
-      "module": "examples.security.schemas.reporting",
+      "module": "examples.security.schemas.remediate",
       "name": "ExpiringExceptionVulnerability"
     },
     {
@@ -1378,7 +1378,7 @@
           "type": "string"
         }
       ],
-      "module": "examples.security.schemas.reporting",
+      "module": "examples.security.schemas.remediate",
       "name": "OrgRemediationWorkflowSummary"
     },
     {
@@ -1669,7 +1669,7 @@
           "type": "boolean"
         }
       ],
-      "module": "examples.security.schemas.reporting",
+      "module": "examples.security.schemas.remediate",
       "name": "PendingExceptionVulnerability"
     },
     {
@@ -1898,7 +1898,7 @@
           "type": "string"
         }
       ],
-      "module": "examples.security.schemas.reporting",
+      "module": "examples.security.schemas.remediate",
       "name": "PersonRemediationWorkflowSummary"
     },
     {
@@ -1998,7 +1998,7 @@
           "type": "string"
         }
       ],
-      "module": "examples.security.schemas.reporting",
+      "module": "examples.security.schemas.notifications",
       "name": "PersonVulnerabilityNotification"
     },
     {
@@ -2141,7 +2141,7 @@
           "type": "date"
         }
       ],
-      "module": "examples.security.schemas.reporting",
+      "module": "examples.security.schemas.remediate",
       "name": "RemediationCase"
     },
     {
@@ -2204,7 +2204,7 @@
           "type": "boolean"
         }
       ],
-      "module": "examples.security.schemas.reporting",
+      "module": "examples.security.schemas.remediate",
       "name": "RemediationCaseAggregate"
     },
     {
@@ -2279,7 +2279,7 @@
           "type": "boolean"
         }
       ],
-      "module": "examples.security.schemas.reporting",
+      "module": "examples.security.schemas.remediate",
       "name": "RemediationCaseCheck"
     },
     {
@@ -2354,7 +2354,7 @@
           "type": "boolean"
         }
       ],
-      "module": "examples.security.schemas.reporting",
+      "module": "examples.security.schemas.remediate",
       "name": "RemediationCaseIssue"
     },
     {
@@ -2434,7 +2434,7 @@
           "type": "integer"
         }
       ],
-      "module": "examples.security.schemas.reporting",
+      "module": "examples.security.schemas.remediate",
       "name": "RemediationWorkflowActivity"
     },
     {
@@ -2471,7 +2471,7 @@
           "type": "long"
         }
       ],
-      "module": "examples.security.schemas.reporting",
+      "module": "examples.security.schemas.remediate",
       "name": "RemediationWorkflowSummary"
     },
     {
@@ -2808,7 +2808,7 @@
           "type": "string"
         }
       ],
-      "module": "examples.security.schemas.reporting",
+      "module": "examples.security.schemas.remediate",
       "name": "TeamRemediationWorkflowSummary"
     },
     {
@@ -2857,7 +2857,7 @@
           "type": "string"
         }
       ],
-      "module": "examples.security.schemas.reporting",
+      "module": "examples.security.schemas.alarms",
       "name": "TeamVulnerabilityAlarm"
     },
     {
@@ -3148,7 +3148,7 @@
           "type": "boolean"
         }
       ],
-      "module": "examples.security.schemas.reporting",
+      "module": "examples.security.schemas.remediate",
       "name": "UnacknowledgedVulnerability"
     },
     {
@@ -4346,7 +4346,7 @@
           "type": "boolean"
         }
       ],
-      "module": "examples.security.schemas.reporting",
+      "module": "examples.security.schemas.remediate",
       "name": "VulnerabilityWorkflowExposure"
     }
   ],
@@ -5809,6 +5809,590 @@
       }
     },
     {
+      "dependencies": [
+        "activity",
+        "check",
+        "evaluation",
+        "prepared__case_checks",
+        "summarized__activities",
+        "vuln",
+        "vulnerabilities"
+      ],
+      "inputs": [
+        {
+          "name": "cases",
+          "ordinal": 0,
+          "schema": "RemediationCase"
+        },
+        {
+          "name": "vulnerabilities",
+          "ordinal": 1,
+          "schema": "Vuln"
+        },
+        {
+          "name": "exposures",
+          "ordinal": 2,
+          "schema": "VulnerabilityExposure"
+        },
+        {
+          "name": "evaluation",
+          "ordinal": 3,
+          "schema": "SecurityEvaluation"
+        },
+        {
+          "name": "people",
+          "ordinal": 4,
+          "schema": "Person"
+        },
+        {
+          "name": "teams",
+          "ordinal": 5,
+          "schema": "Team"
+        },
+        {
+          "name": "departments",
+          "ordinal": 6,
+          "schema": "Department"
+        },
+        {
+          "name": "orgs",
+          "ordinal": 7,
+          "schema": "Org"
+        }
+      ],
+      "name": "VulnerabilityRemediationWorkflow",
+      "outputs": [
+        {
+          "name": "case_checks",
+          "ordinal": 0,
+          "schema": "RemediationCaseCheck"
+        },
+        {
+          "name": "case_issues",
+          "ordinal": 1,
+          "schema": "RemediationCaseIssue"
+        },
+        {
+          "name": "workflow_exposures",
+          "ordinal": 2,
+          "schema": "VulnerabilityWorkflowExposure"
+        },
+        {
+          "name": "unacknowledged",
+          "ordinal": 3,
+          "schema": "UnacknowledgedVulnerability"
+        },
+        {
+          "name": "pending_exceptions",
+          "ordinal": 4,
+          "schema": "PendingExceptionVulnerability"
+        },
+        {
+          "name": "expiring_exceptions",
+          "ordinal": 5,
+          "schema": "ExpiringExceptionVulnerability"
+        },
+        {
+          "name": "expired_exceptions",
+          "ordinal": 6,
+          "schema": "ExpiredExceptionVulnerability"
+        },
+        {
+          "name": "person_summaries",
+          "ordinal": 7,
+          "schema": "PersonRemediationWorkflowSummary"
+        },
+        {
+          "name": "team_summaries",
+          "ordinal": 8,
+          "schema": "TeamRemediationWorkflowSummary"
+        },
+        {
+          "name": "department_summaries",
+          "ordinal": 9,
+          "schema": "DepartmentRemediationWorkflowSummary"
+        },
+        {
+          "name": "org_summaries",
+          "ordinal": 10,
+          "schema": "OrgRemediationWorkflowSummary"
+        }
+      ],
+      "source": "examples.security.transforms.remediate.workflow.VulnerabilityRemediationWorkflow",
+      "step_methods": [
+        {
+          "input_lane": "cases",
+          "input_schema": "RemediationCase",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "case",
+              "schema": "RemediationCase",
+              "source": "cases"
+            },
+            {
+              "driving": false,
+              "parameter": "vuln",
+              "schema": "Vuln",
+              "source": "vulnerabilities"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "vuln"
+            }
+          ],
+          "name": "prepared.aggregate_cases",
+          "output_lane": "prepared__case_aggregates",
+          "output_schema": "RemediationCaseAggregate",
+          "results": [
+            {
+              "frame": "prepared__case_aggregates",
+              "lane": "prepared__case_aggregates",
+              "schema": "RemediationCaseAggregate"
+            }
+          ]
+        },
+        {
+          "input_lane": "prepared__case_aggregates",
+          "input_schema": "RemediationCaseAggregate",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "case",
+              "schema": "RemediationCaseAggregate",
+              "source": "prepared__case_aggregates"
+            }
+          ],
+          "name": "prepared.check_cases",
+          "output_lane": "prepared__case_lane",
+          "output_schema": "RemediationCaseCheck",
+          "results": [
+            {
+              "frame": "prepared__case_lane",
+              "lane": "prepared__case_lane",
+              "schema": "RemediationCaseCheck"
+            }
+          ]
+        },
+        {
+          "input_lane": "prepared__case_lane",
+          "input_schema": "RemediationCaseCheck",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "check",
+              "schema": "RemediationCaseCheck",
+              "source": "prepared__case_lane"
+            }
+          ],
+          "name": "prepared.publish_case_checks",
+          "output_lane": "prepared__case_checks",
+          "output_schema": "RemediationCaseCheck",
+          "results": [
+            {
+              "frame": "prepared__case_checks",
+              "lane": "prepared__case_checks",
+              "schema": "RemediationCaseCheck"
+            }
+          ]
+        },
+        {
+          "input_lane": "prepared__case_lane",
+          "input_schema": "RemediationCaseCheck",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "check",
+              "schema": "RemediationCaseCheck",
+              "source": "prepared__case_lane"
+            }
+          ],
+          "name": "prepared.publish_case_issues",
+          "output_lane": "prepared__case_issues",
+          "output_schema": "RemediationCaseIssue",
+          "results": [
+            {
+              "frame": "prepared__case_issues",
+              "lane": "prepared__case_issues",
+              "schema": "RemediationCaseIssue"
+            }
+          ]
+        },
+        {
+          "input_lane": "exposures",
+          "input_schema": "VulnerabilityExposure",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "finding",
+              "schema": "VulnerabilityExposure",
+              "source": "exposures"
+            },
+            {
+              "driving": false,
+              "parameter": "check",
+              "schema": "RemediationCaseCheck",
+              "source": "prepared__case_checks"
+            },
+            {
+              "driving": false,
+              "parameter": "evaluation",
+              "schema": "SecurityEvaluation",
+              "source": "evaluation"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "check"
+            },
+            {
+              "how": "cross",
+              "input": "evaluation"
+            }
+          ],
+          "name": "accessed.enrich_exposure",
+          "output_lane": "accessed__workflow_exposures",
+          "output_schema": "VulnerabilityWorkflowExposure",
+          "results": [
+            {
+              "frame": "accessed__workflow_exposures",
+              "lane": "accessed__workflow_exposures",
+              "schema": "VulnerabilityWorkflowExposure"
+            }
+          ]
+        },
+        {
+          "input_lane": "accessed__workflow_exposures",
+          "input_schema": "VulnerabilityWorkflowExposure",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "finding",
+              "schema": "VulnerabilityWorkflowExposure",
+              "source": "accessed__workflow_exposures"
+            }
+          ],
+          "name": "published.publish_unacknowledged",
+          "output_lane": "published__unacknowledged",
+          "output_schema": "UnacknowledgedVulnerability",
+          "results": [
+            {
+              "frame": "published__unacknowledged",
+              "lane": "published__unacknowledged",
+              "schema": "UnacknowledgedVulnerability"
+            }
+          ]
+        },
+        {
+          "input_lane": "accessed__workflow_exposures",
+          "input_schema": "VulnerabilityWorkflowExposure",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "finding",
+              "schema": "VulnerabilityWorkflowExposure",
+              "source": "accessed__workflow_exposures"
+            }
+          ],
+          "name": "published.publish_pending",
+          "output_lane": "published__pending_exceptions",
+          "output_schema": "PendingExceptionVulnerability",
+          "results": [
+            {
+              "frame": "published__pending_exceptions",
+              "lane": "published__pending_exceptions",
+              "schema": "PendingExceptionVulnerability"
+            }
+          ]
+        },
+        {
+          "input_lane": "accessed__workflow_exposures",
+          "input_schema": "VulnerabilityWorkflowExposure",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "finding",
+              "schema": "VulnerabilityWorkflowExposure",
+              "source": "accessed__workflow_exposures"
+            },
+            {
+              "driving": false,
+              "parameter": "evaluation",
+              "schema": "SecurityEvaluation",
+              "source": "evaluation"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "evaluation"
+            }
+          ],
+          "name": "published.publish_expiring",
+          "output_lane": "published__expiring_exceptions",
+          "output_schema": "ExpiringExceptionVulnerability",
+          "results": [
+            {
+              "frame": "published__expiring_exceptions",
+              "lane": "published__expiring_exceptions",
+              "schema": "ExpiringExceptionVulnerability"
+            }
+          ]
+        },
+        {
+          "input_lane": "accessed__workflow_exposures",
+          "input_schema": "VulnerabilityWorkflowExposure",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "finding",
+              "schema": "VulnerabilityWorkflowExposure",
+              "source": "accessed__workflow_exposures"
+            },
+            {
+              "driving": false,
+              "parameter": "evaluation",
+              "schema": "SecurityEvaluation",
+              "source": "evaluation"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "evaluation"
+            }
+          ],
+          "name": "published.publish_expired",
+          "output_lane": "published__expired_exceptions",
+          "output_schema": "ExpiredExceptionVulnerability",
+          "results": [
+            {
+              "frame": "published__expired_exceptions",
+              "lane": "published__expired_exceptions",
+              "schema": "ExpiredExceptionVulnerability"
+            }
+          ]
+        },
+        {
+          "input_lane": "accessed__workflow_exposures",
+          "input_schema": "VulnerabilityWorkflowExposure",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "finding",
+              "schema": "VulnerabilityWorkflowExposure",
+              "source": "accessed__workflow_exposures"
+            },
+            {
+              "driving": false,
+              "parameter": "evaluation",
+              "schema": "SecurityEvaluation",
+              "source": "evaluation"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "evaluation"
+            }
+          ],
+          "name": "summarized.assess",
+          "output_lane": "summarized__activities",
+          "output_schema": "RemediationWorkflowActivity",
+          "results": [
+            {
+              "frame": "summarized__activities",
+              "lane": "summarized__activities",
+              "schema": "RemediationWorkflowActivity"
+            }
+          ]
+        },
+        {
+          "input_lane": "people",
+          "input_schema": "Person",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "person",
+              "schema": "Person",
+              "source": "people"
+            },
+            {
+              "driving": false,
+              "parameter": "evaluation",
+              "schema": "SecurityEvaluation",
+              "source": "evaluation"
+            },
+            {
+              "driving": false,
+              "parameter": "activity",
+              "schema": "RemediationWorkflowActivity",
+              "source": "summarized__activities"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "evaluation"
+            },
+            {
+              "how": "left",
+              "input": "activity"
+            }
+          ],
+          "name": "summarized.summarize_people",
+          "output_lane": "summarized__person_summaries",
+          "output_schema": "PersonRemediationWorkflowSummary",
+          "results": [
+            {
+              "frame": "summarized__person_summaries",
+              "lane": "summarized__person_summaries",
+              "schema": "PersonRemediationWorkflowSummary"
+            }
+          ]
+        },
+        {
+          "input_lane": "teams",
+          "input_schema": "Team",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "team",
+              "schema": "Team",
+              "source": "teams"
+            },
+            {
+              "driving": false,
+              "parameter": "evaluation",
+              "schema": "SecurityEvaluation",
+              "source": "evaluation"
+            },
+            {
+              "driving": false,
+              "parameter": "activity",
+              "schema": "RemediationWorkflowActivity",
+              "source": "summarized__activities"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "evaluation"
+            },
+            {
+              "how": "left",
+              "input": "activity"
+            }
+          ],
+          "name": "summarized.summarize_teams",
+          "output_lane": "summarized__team_summaries",
+          "output_schema": "TeamRemediationWorkflowSummary",
+          "results": [
+            {
+              "frame": "summarized__team_summaries",
+              "lane": "summarized__team_summaries",
+              "schema": "TeamRemediationWorkflowSummary"
+            }
+          ]
+        },
+        {
+          "input_lane": "departments",
+          "input_schema": "Department",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "department",
+              "schema": "Department",
+              "source": "departments"
+            },
+            {
+              "driving": false,
+              "parameter": "evaluation",
+              "schema": "SecurityEvaluation",
+              "source": "evaluation"
+            },
+            {
+              "driving": false,
+              "parameter": "activity",
+              "schema": "RemediationWorkflowActivity",
+              "source": "summarized__activities"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "evaluation"
+            },
+            {
+              "how": "left",
+              "input": "activity"
+            }
+          ],
+          "name": "summarized.summarize_departments",
+          "output_lane": "summarized__department_summaries",
+          "output_schema": "DepartmentRemediationWorkflowSummary",
+          "results": [
+            {
+              "frame": "summarized__department_summaries",
+              "lane": "summarized__department_summaries",
+              "schema": "DepartmentRemediationWorkflowSummary"
+            }
+          ]
+        },
+        {
+          "input_lane": "orgs",
+          "input_schema": "Org",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "org",
+              "schema": "Org",
+              "source": "orgs"
+            },
+            {
+              "driving": false,
+              "parameter": "evaluation",
+              "schema": "SecurityEvaluation",
+              "source": "evaluation"
+            },
+            {
+              "driving": false,
+              "parameter": "activity",
+              "schema": "RemediationWorkflowActivity",
+              "source": "summarized__activities"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "evaluation"
+            },
+            {
+              "how": "left",
+              "input": "activity"
+            }
+          ],
+          "name": "summarized.summarize_orgs",
+          "output_lane": "summarized__org_summaries",
+          "output_schema": "OrgRemediationWorkflowSummary",
+          "results": [
+            {
+              "frame": "summarized__org_summaries",
+              "lane": "summarized__org_summaries",
+              "schema": "OrgRemediationWorkflowSummary"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/workflow.py",
+        "traceability": "traceability/transforms/workflow.VulnerabilityRemediationWorkflow.json"
+      }
+    },
+    {
       "dependencies": [],
       "inputs": [
         {
@@ -6302,612 +6886,6 @@
       "target_artifacts": {
         "pyspark_transform": "pyspark/transforms/reports.py",
         "traceability": "traceability/transforms/reports.VulnerabilityStatistics.json"
-      }
-    },
-    {
-      "dependencies": [
-        "activities",
-        "activity",
-        "case_lane",
-        "check",
-        "evaluation",
-        "vuln",
-        "vulnerabilities"
-      ],
-      "inputs": [
-        {
-          "name": "exposures",
-          "ordinal": 0,
-          "schema": "VulnerabilityExposure"
-        },
-        {
-          "name": "vulnerabilities",
-          "ordinal": 1,
-          "schema": "Vuln"
-        },
-        {
-          "name": "cases",
-          "ordinal": 2,
-          "schema": "RemediationCase"
-        },
-        {
-          "name": "people",
-          "ordinal": 3,
-          "schema": "Person"
-        },
-        {
-          "name": "teams",
-          "ordinal": 4,
-          "schema": "Team"
-        },
-        {
-          "name": "departments",
-          "ordinal": 5,
-          "schema": "Department"
-        },
-        {
-          "name": "orgs",
-          "ordinal": 6,
-          "schema": "Org"
-        },
-        {
-          "name": "evaluation",
-          "ordinal": 7,
-          "schema": "SecurityEvaluation"
-        }
-      ],
-      "name": "VulnerabilityRemediationWorkflow",
-      "outputs": [
-        {
-          "name": "case_checks",
-          "ordinal": 0,
-          "schema": "RemediationCaseCheck"
-        },
-        {
-          "name": "case_issues",
-          "ordinal": 1,
-          "schema": "RemediationCaseIssue"
-        },
-        {
-          "name": "workflow_exposures",
-          "ordinal": 2,
-          "schema": "VulnerabilityWorkflowExposure"
-        },
-        {
-          "name": "unacknowledged",
-          "ordinal": 3,
-          "schema": "UnacknowledgedVulnerability"
-        },
-        {
-          "name": "pending_exceptions",
-          "ordinal": 4,
-          "schema": "PendingExceptionVulnerability"
-        },
-        {
-          "name": "expiring_exceptions",
-          "ordinal": 5,
-          "schema": "ExpiringExceptionVulnerability"
-        },
-        {
-          "name": "expired_exceptions",
-          "ordinal": 6,
-          "schema": "ExpiredExceptionVulnerability"
-        },
-        {
-          "name": "person_summaries",
-          "ordinal": 7,
-          "schema": "PersonRemediationWorkflowSummary"
-        },
-        {
-          "name": "team_summaries",
-          "ordinal": 8,
-          "schema": "TeamRemediationWorkflowSummary"
-        },
-        {
-          "name": "department_summaries",
-          "ordinal": 9,
-          "schema": "DepartmentRemediationWorkflowSummary"
-        },
-        {
-          "name": "org_summaries",
-          "ordinal": 10,
-          "schema": "OrgRemediationWorkflowSummary"
-        }
-      ],
-      "source": "examples.security.transforms.workflow.VulnerabilityRemediationWorkflow",
-      "step_methods": [
-        {
-          "input_lane": "cases",
-          "input_schema": "RemediationCase",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "case",
-              "schema": "RemediationCase",
-              "source": "cases"
-            },
-            {
-              "driving": false,
-              "parameter": "vuln",
-              "schema": "Vuln",
-              "source": "vulnerabilities"
-            }
-          ],
-          "joins": [
-            {
-              "how": "left",
-              "input": "vuln"
-            }
-          ],
-          "name": "aggregate_cases",
-          "output_lane": "case_aggregates",
-          "output_schema": "RemediationCaseAggregate",
-          "results": [
-            {
-              "frame": "case_aggregates",
-              "lane": "case_aggregates",
-              "schema": "RemediationCaseAggregate"
-            }
-          ]
-        },
-        {
-          "input_lane": "case_aggregates",
-          "input_schema": "RemediationCaseAggregate",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "case",
-              "schema": "RemediationCaseAggregate",
-              "source": "case_aggregates"
-            }
-          ],
-          "name": "check_cases",
-          "output_lane": "case_lane",
-          "output_schema": "RemediationCaseCheck",
-          "results": [
-            {
-              "frame": "case_lane",
-              "lane": "case_lane",
-              "schema": "RemediationCaseCheck"
-            }
-          ]
-        },
-        {
-          "input_lane": "case_lane",
-          "input_schema": "RemediationCaseCheck",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "check",
-              "schema": "RemediationCaseCheck",
-              "source": "case_lane"
-            }
-          ],
-          "name": "publish_case_checks",
-          "output_lane": "case_checks",
-          "output_schema": "RemediationCaseCheck",
-          "results": [
-            {
-              "frame": "case_checks",
-              "lane": "case_checks",
-              "schema": "RemediationCaseCheck"
-            }
-          ]
-        },
-        {
-          "input_lane": "case_lane",
-          "input_schema": "RemediationCaseCheck",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "check",
-              "schema": "RemediationCaseCheck",
-              "source": "case_lane"
-            }
-          ],
-          "name": "publish_case_issues",
-          "output_lane": "case_issues",
-          "output_schema": "RemediationCaseIssue",
-          "results": [
-            {
-              "frame": "case_issues",
-              "lane": "case_issues",
-              "schema": "RemediationCaseIssue"
-            }
-          ]
-        },
-        {
-          "input_lane": "exposures",
-          "input_schema": "VulnerabilityExposure",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "finding",
-              "schema": "VulnerabilityExposure",
-              "source": "exposures"
-            },
-            {
-              "driving": false,
-              "parameter": "check",
-              "schema": "RemediationCaseCheck",
-              "source": "case_lane"
-            },
-            {
-              "driving": false,
-              "parameter": "evaluation",
-              "schema": "SecurityEvaluation",
-              "source": "evaluation"
-            }
-          ],
-          "joins": [
-            {
-              "how": "left",
-              "input": "check"
-            },
-            {
-              "how": "cross",
-              "input": "evaluation"
-            }
-          ],
-          "name": "enrich_exposure",
-          "output_lane": "workflow_lane",
-          "output_schema": "VulnerabilityWorkflowExposure",
-          "results": [
-            {
-              "frame": "workflow_lane",
-              "lane": "workflow_lane",
-              "schema": "VulnerabilityWorkflowExposure"
-            }
-          ]
-        },
-        {
-          "input_lane": "workflow_lane",
-          "input_schema": "VulnerabilityWorkflowExposure",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "finding",
-              "schema": "VulnerabilityWorkflowExposure",
-              "source": "workflow_lane"
-            }
-          ],
-          "name": "publish_workflow_exposures",
-          "output_lane": "workflow_exposures",
-          "output_schema": "VulnerabilityWorkflowExposure",
-          "results": [
-            {
-              "frame": "workflow_exposures",
-              "lane": "workflow_exposures",
-              "schema": "VulnerabilityWorkflowExposure"
-            }
-          ]
-        },
-        {
-          "input_lane": "workflow_lane",
-          "input_schema": "VulnerabilityWorkflowExposure",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "finding",
-              "schema": "VulnerabilityWorkflowExposure",
-              "source": "workflow_lane"
-            }
-          ],
-          "name": "publish_unacknowledged",
-          "output_lane": "unacknowledged",
-          "output_schema": "UnacknowledgedVulnerability",
-          "results": [
-            {
-              "frame": "unacknowledged",
-              "lane": "unacknowledged",
-              "schema": "UnacknowledgedVulnerability"
-            }
-          ]
-        },
-        {
-          "input_lane": "workflow_lane",
-          "input_schema": "VulnerabilityWorkflowExposure",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "finding",
-              "schema": "VulnerabilityWorkflowExposure",
-              "source": "workflow_lane"
-            }
-          ],
-          "name": "publish_pending",
-          "output_lane": "pending_exceptions",
-          "output_schema": "PendingExceptionVulnerability",
-          "results": [
-            {
-              "frame": "pending_exceptions",
-              "lane": "pending_exceptions",
-              "schema": "PendingExceptionVulnerability"
-            }
-          ]
-        },
-        {
-          "input_lane": "workflow_lane",
-          "input_schema": "VulnerabilityWorkflowExposure",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "finding",
-              "schema": "VulnerabilityWorkflowExposure",
-              "source": "workflow_lane"
-            },
-            {
-              "driving": false,
-              "parameter": "evaluation",
-              "schema": "SecurityEvaluation",
-              "source": "evaluation"
-            }
-          ],
-          "joins": [
-            {
-              "how": "cross",
-              "input": "evaluation"
-            }
-          ],
-          "name": "publish_expiring",
-          "output_lane": "expiring_exceptions",
-          "output_schema": "ExpiringExceptionVulnerability",
-          "results": [
-            {
-              "frame": "expiring_exceptions",
-              "lane": "expiring_exceptions",
-              "schema": "ExpiringExceptionVulnerability"
-            }
-          ]
-        },
-        {
-          "input_lane": "workflow_lane",
-          "input_schema": "VulnerabilityWorkflowExposure",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "finding",
-              "schema": "VulnerabilityWorkflowExposure",
-              "source": "workflow_lane"
-            },
-            {
-              "driving": false,
-              "parameter": "evaluation",
-              "schema": "SecurityEvaluation",
-              "source": "evaluation"
-            }
-          ],
-          "joins": [
-            {
-              "how": "cross",
-              "input": "evaluation"
-            }
-          ],
-          "name": "publish_expired",
-          "output_lane": "expired_exceptions",
-          "output_schema": "ExpiredExceptionVulnerability",
-          "results": [
-            {
-              "frame": "expired_exceptions",
-              "lane": "expired_exceptions",
-              "schema": "ExpiredExceptionVulnerability"
-            }
-          ]
-        },
-        {
-          "input_lane": "workflow_lane",
-          "input_schema": "VulnerabilityWorkflowExposure",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "finding",
-              "schema": "VulnerabilityWorkflowExposure",
-              "source": "workflow_lane"
-            },
-            {
-              "driving": false,
-              "parameter": "evaluation",
-              "schema": "SecurityEvaluation",
-              "source": "evaluation"
-            }
-          ],
-          "joins": [
-            {
-              "how": "cross",
-              "input": "evaluation"
-            }
-          ],
-          "name": "assess",
-          "output_lane": "activities",
-          "output_schema": "RemediationWorkflowActivity",
-          "results": [
-            {
-              "frame": "activities",
-              "lane": "activities",
-              "schema": "RemediationWorkflowActivity"
-            }
-          ]
-        },
-        {
-          "input_lane": "people",
-          "input_schema": "Person",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "person",
-              "schema": "Person",
-              "source": "people"
-            },
-            {
-              "driving": false,
-              "parameter": "evaluation",
-              "schema": "SecurityEvaluation",
-              "source": "evaluation"
-            },
-            {
-              "driving": false,
-              "parameter": "activity",
-              "schema": "RemediationWorkflowActivity",
-              "source": "activities"
-            }
-          ],
-          "joins": [
-            {
-              "how": "cross",
-              "input": "evaluation"
-            },
-            {
-              "how": "left",
-              "input": "activity"
-            }
-          ],
-          "name": "summarize_people",
-          "output_lane": "person_summaries",
-          "output_schema": "PersonRemediationWorkflowSummary",
-          "results": [
-            {
-              "frame": "person_summaries",
-              "lane": "person_summaries",
-              "schema": "PersonRemediationWorkflowSummary"
-            }
-          ]
-        },
-        {
-          "input_lane": "teams",
-          "input_schema": "Team",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "team",
-              "schema": "Team",
-              "source": "teams"
-            },
-            {
-              "driving": false,
-              "parameter": "evaluation",
-              "schema": "SecurityEvaluation",
-              "source": "evaluation"
-            },
-            {
-              "driving": false,
-              "parameter": "activity",
-              "schema": "RemediationWorkflowActivity",
-              "source": "activities"
-            }
-          ],
-          "joins": [
-            {
-              "how": "cross",
-              "input": "evaluation"
-            },
-            {
-              "how": "left",
-              "input": "activity"
-            }
-          ],
-          "name": "summarize_teams",
-          "output_lane": "team_summaries",
-          "output_schema": "TeamRemediationWorkflowSummary",
-          "results": [
-            {
-              "frame": "team_summaries",
-              "lane": "team_summaries",
-              "schema": "TeamRemediationWorkflowSummary"
-            }
-          ]
-        },
-        {
-          "input_lane": "departments",
-          "input_schema": "Department",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "department",
-              "schema": "Department",
-              "source": "departments"
-            },
-            {
-              "driving": false,
-              "parameter": "evaluation",
-              "schema": "SecurityEvaluation",
-              "source": "evaluation"
-            },
-            {
-              "driving": false,
-              "parameter": "activity",
-              "schema": "RemediationWorkflowActivity",
-              "source": "activities"
-            }
-          ],
-          "joins": [
-            {
-              "how": "cross",
-              "input": "evaluation"
-            },
-            {
-              "how": "left",
-              "input": "activity"
-            }
-          ],
-          "name": "summarize_departments",
-          "output_lane": "department_summaries",
-          "output_schema": "DepartmentRemediationWorkflowSummary",
-          "results": [
-            {
-              "frame": "department_summaries",
-              "lane": "department_summaries",
-              "schema": "DepartmentRemediationWorkflowSummary"
-            }
-          ]
-        },
-        {
-          "input_lane": "orgs",
-          "input_schema": "Org",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "org",
-              "schema": "Org",
-              "source": "orgs"
-            },
-            {
-              "driving": false,
-              "parameter": "evaluation",
-              "schema": "SecurityEvaluation",
-              "source": "evaluation"
-            },
-            {
-              "driving": false,
-              "parameter": "activity",
-              "schema": "RemediationWorkflowActivity",
-              "source": "activities"
-            }
-          ],
-          "joins": [
-            {
-              "how": "cross",
-              "input": "evaluation"
-            },
-            {
-              "how": "left",
-              "input": "activity"
-            }
-          ],
-          "name": "summarize_orgs",
-          "output_lane": "org_summaries",
-          "output_schema": "OrgRemediationWorkflowSummary",
-          "results": [
-            {
-              "frame": "org_summaries",
-              "lane": "org_summaries",
-              "schema": "OrgRemediationWorkflowSummary"
-            }
-          ]
-        }
-      ],
-      "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/workflow.py",
-        "traceability": "traceability/transforms/workflow.VulnerabilityRemediationWorkflow.json"
       }
     }
   ]

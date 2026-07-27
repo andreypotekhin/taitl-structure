@@ -6,8 +6,10 @@ from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.security.runtime.schema_assert import TransformResult, assert_schema, project_schema
 from examples.structure_generated.security.pyspark.schemas.events import VULN_EVENT_SCHEMA
+from examples.structure_generated.security.pyspark.schemas.notifications import PERSON_VULNERABILITY_NOTIFICATION_SCHEMA
 from examples.structure_generated.security.pyspark.schemas.organization import PERSON_SCHEMA
-from examples.structure_generated.security.pyspark.schemas.reporting import DELIVERY_RECEIPT_SCHEMA, PERSON_VULNERABILITY_NOTIFICATION_SCHEMA, SECURITY_EVALUATION_SCHEMA, VULNERABILITY_DISCOVERY_SCHEMA, VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA
+from examples.structure_generated.security.pyspark.schemas.remediate import VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA
+from examples.structure_generated.security.pyspark.schemas.reporting import DELIVERY_RECEIPT_SCHEMA, SECURITY_EVALUATION_SCHEMA, VULNERABILITY_DISCOVERY_SCHEMA
 
 
 class VulnerabilityNotificationsGenerated:

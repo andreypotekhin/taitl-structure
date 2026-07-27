@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from structure.core.dsl.model.schemas.Schema import Schema
 from structure.core.dsl.model.transforms.aliases import alias as declaration_alias
@@ -12,6 +12,7 @@ class OutputDeclaration:
     schema: type[Schema]
     name: str = ""
     aliases: tuple[str, ...] = ()
+    source: object | None = None
 
     def __set_name__(self, owner: type, name: str) -> None:
         object.__setattr__(self, "name", name)
@@ -27,3 +28,6 @@ class OutputDeclaration:
 
     def alias(self, *names: str) -> OutputDeclaration:
         return declaration_alias(self, names)
+
+    def from_(self, source: object) -> OutputDeclaration:
+        return replace(self, source=source)

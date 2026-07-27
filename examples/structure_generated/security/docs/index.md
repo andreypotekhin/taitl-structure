@@ -78,6 +78,6 @@
 - [VulnerabilityNotifications](transforms/examples.security.transforms.notify.VulnerabilityNotifications.md)
 - [SecurityPosture](transforms/examples.security.transforms.posture.SecurityPosture.md)
 - [SecurityInventoryQuality](transforms/examples.security.transforms.quality.SecurityInventoryQuality.md)
+- [VulnerabilityRemediationWorkflow](transforms/examples.security.transforms.remediate.workflow.VulnerabilityRemediationWorkflow.md)
 - [ActiveVulnerabilityReports](transforms/examples.security.transforms.reports.ActiveVulnerabilityReports.md)
 - [VulnerabilityStatistics](transforms/examples.security.transforms.reports.VulnerabilityStatistics.md)
-- [VulnerabilityRemediationWorkflow](transforms/examples.security.transforms.workflow.VulnerabilityRemediationWorkflow.md)

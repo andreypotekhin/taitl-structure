@@ -11,6 +11,7 @@ from structure.core.compiler.diagnostics.api import Diagnostics, StructureCompil
 from structure.core.compiler.frontend.logic.CompilerInputCollector import CompilerInputCollector
 from structure.core.compiler.frontend.logic.CompilerTransformMember import CompilerTransformMember
 from structure.core.compiler.frontend.logic.CompilerTransformMemberCollector import CompilerTransformMemberCollector
+from structure.core.compiler.frontend.logic.ComposeTransformGraph import ComposeTransformGraph
 from structure.core.compiler.frontend.logic.ComposeTransformPlans import ComposeTransformPlans
 from structure.core.compiler.frontend.logic.GuardTransformStepCalls import GuardTransformStepCalls
 from structure.core.compiler.frontend.logic.PatchParentStepCalls import ParentStepInvocation, PatchParentStepCalls
@@ -52,6 +53,7 @@ class CompileTransform:
 
     def __init__(self) -> None:
         self._composer = ComposeTransformPlans()
+        self._graph_composer = ComposeTransformGraph()
         self._diagnostic_source = Diagnostics().source()
         self._input_collector = CompilerInputCollector()
         self._member_collector = CompilerTransformMemberCollector()
@@ -119,6 +121,8 @@ class CompileTransform:
             return self._compose_pipeline(
                 pipeline, name=transform_class.__name__, config=config, wrapper_class=transform_class
             )
+        if transform_class._structure_stages:
+            return self._compose_graph(transform_class, config=config)
         if not transform_class._structure_outputs:
             raise self._error(
                 "DSL-E0402",
@@ -197,6 +201,16 @@ class CompileTransform:
             compile_stage=lambda transform_class: self._compile(transform_class, config=config),
             rewrite_body=lambda body, frames: authoring_api.rewrite_body(body, frames=frames),
             wrapper_class=wrapper_class,
+        )
+
+    def _compose_graph(self, transform_class: type[Transform], *, config: StructureConfig) -> TransformPlan:
+        authoring_api = cast(AuthoringAPI | None, _authoring.get()[0])
+        if authoring_api is None:
+            raise RuntimeError("Core authoring requires a selected platform authoring facet.")
+        return self._graph_composer(
+            transform_class,
+            compile_stage=lambda stage_class: self._compile(stage_class, config=config),
+            rewrite_body=lambda body, frames: authoring_api.rewrite_body(body, frames=frames),
         )
 
     def _steps(

@@ -68,7 +68,7 @@ exposures = SecurityPosture(
     orgs=orgs,
 ).run(session).exposures
 
-# Use as input for an operational remediation view.
+# Use as input for an operational remediate view.
 active_exposures = exposures.where("is_active")
 ```
 
@@ -184,6 +184,10 @@ imminent and overdue counts. A revised target date creates new deadline delivery
 missing case is valid: it means that an active vulnerability is unacknowledged and has no exception. The transform
 publishes unacknowledged, pending-exception, expiring-exception, and expired-exception queues plus zero-filled summaries
 at person, team, department, and organization scope.
+
+The public workflow composes focused remediation stages: case preparation, exposure access enrichment, queue publishing,
+and scope summarization. Publishing and summarization both depend on workflow exposures, so callers that want separate
+scheduling can run those internal stages independently while the public workflow keeps the usual single-call surface.
 
 Approved exceptions require a request, reason, approver, and expiry date. A valid approved exception pauses deadline
 notifications, alarms, and counts through its expiry date; it never changes the underlying target date. Invalid,

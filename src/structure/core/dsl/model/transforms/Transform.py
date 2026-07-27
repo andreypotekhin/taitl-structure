@@ -7,6 +7,7 @@ from structure.core.dsl.model.transforms.aliases import require_alias
 from structure.core.dsl.model.transforms.InputDeclaration import InputDeclaration
 from structure.core.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.core.dsl.model.transforms.OutputDeclaration import OutputDeclaration
+from structure.core.dsl.model.transforms.StageDeclaration import StageDeclaration
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline
 
 
@@ -19,6 +20,7 @@ class Transform:
     _structure_lane_aliases: dict[str, str] = {}
     _structure_output_aliases: dict[str, str] = {}
     _structure_pipeline: TransformPipeline | None = None
+    _structure_stages: dict[str, StageDeclaration] = {}
     _structure_transform = False
     _structure_transform_options: dict[str, object] = {}
     _structure_step_method_options: dict[str, object] = {}
@@ -51,7 +53,11 @@ class Transform:
         pipelines = [value for value in cls.__dict__.values() if isinstance(value, TransformPipeline)]
         if len(pipelines) > 1:
             raise TypeError(f"{cls.__name__} declares more than one transform pipeline field")
+        stages = {value.name: value for value in cls.__dict__.values() if isinstance(value, StageDeclaration)}
+        if pipelines and stages:
+            raise TypeError(f"{cls.__name__} cannot combine Transform.to(...) pipeline and stage(...) composition")
         cls._structure_pipeline = pipelines[0] if pipelines else None
+        cls._structure_stages = stages
         cls._structure_transform = False
         cls._structure_transform_options = {}
         cls._structure_step_method_options = {}

@@ -1,4 +1,5 @@
 from examples.security.schemas.organization import Department, Org, Person, Team
+from examples.security.schemas.remediation import VulnerabilityWorkflowExposure
 from examples.security.schemas.reporting import (
     DepartmentVulnerabilityDeadlineSummary,
     OrgVulnerabilityDeadlineSummary,
@@ -6,14 +7,13 @@ from examples.security.schemas.reporting import (
     SecurityEvaluation,
     TeamVulnerabilityDeadlineSummary,
     VulnerabilityDeadlineActivity,
-    VulnerabilityWorkflowExposure,
 )
 from structure import Transform, input, lane, output, step
 from structure.plugin.pyspark import *
 
 
 class VulnerabilityDeadlineReports(Transform):
-    """Publish current, zero-filled remediation deadline summaries."""
+    """Publish current, zero-filled remediate deadline summaries."""
 
     exposures = input(VulnerabilityWorkflowExposure)
     people = input(Person)

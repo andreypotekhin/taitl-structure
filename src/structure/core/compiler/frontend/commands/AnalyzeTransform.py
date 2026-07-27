@@ -61,6 +61,8 @@ class AnalyzeTransform(CompileTransform):
         pipeline = getattr(transform_class, "_structure_pipeline", None)
         if pipeline is not None:
             return self._compose_pipeline(pipeline, name=transform_class.__name__, config=config, wrapper_class=transform_class)
+        if transform_class._structure_stages:
+            return self._compose_graph(transform_class, config=config)
         if not transform_class._structure_outputs:
             raise self._error(
                 "DSL-E0402",
@@ -100,6 +102,12 @@ class AnalyzeTransform(CompileTransform):
             name=name,
             compile_stage=lambda transform_class: self._analyze(transform_class, config=config),
             wrapper_class=wrapper_class,
+        )
+
+    def _compose_graph(self, transform_class: type[Transform], *, config: StructureConfig) -> TransformPlan:
+        return self._graph_composer(
+            transform_class,
+            compile_stage=lambda stage_class: self._analyze(stage_class, config=config),
         )
 
     def _structural_steps(self, transform_class, inputs):

@@ -5,7 +5,9 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.security.runtime.schema_assert import TransformResult, assert_schema, project_schema
-from examples.structure_generated.security.pyspark.schemas.reporting import DELIVERY_RECEIPT_SCHEMA, SECURITY_EVALUATION_SCHEMA, TEAM_VULNERABILITY_ALARM_SCHEMA, VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA
+from examples.structure_generated.security.pyspark.schemas.alarms import TEAM_VULNERABILITY_ALARM_SCHEMA
+from examples.structure_generated.security.pyspark.schemas.remediate import VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA
+from examples.structure_generated.security.pyspark.schemas.reporting import DELIVERY_RECEIPT_SCHEMA, SECURITY_EVALUATION_SCHEMA
 
 
 class VulnerabilityAlarmsGenerated:

@@ -1,9 +1,6 @@
-from examples.security.schemas.reporting import (
-    DeliveryReceipt,
-    SecurityEvaluation,
-    TeamVulnerabilityAlarm,
-    VulnerabilityWorkflowExposure,
-)
+from examples.security.schemas.alarms import TeamVulnerabilityAlarm
+from examples.security.schemas.remediation import VulnerabilityWorkflowExposure
+from examples.security.schemas.reporting import DeliveryReceipt, SecurityEvaluation
 from structure import Transform, input, output, step
 from structure.plugin.pyspark import *
 from structure.plugin.pyspark.dsl import types

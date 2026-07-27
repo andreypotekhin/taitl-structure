@@ -1,8 +1,33 @@
 from importlib import import_module
-from typing import TYPE_CHECKING, Any, overload
+from typing import TYPE_CHECKING, Any, cast, overload
 
 from structure.dsl import FieldDeclaration
 from structure.plugin.pyspark.PySparkPlugin import PySparkPlugin
+from structure.plugin.pyspark.dsl import field as field
+from structure.plugin.pyspark.dsl.generators import posexplode_struct as _posexplode_struct
+from structure.plugin.pyspark.dsl.relation_sets import (
+    except_all,
+    hierarchy_closure,
+    hierarchy_fallbacks,
+    intersect,
+    intersect_all,
+    limit,
+    offset,
+    order_by,
+    relation_alias,
+    require_all,
+    require_parent_hierarchy,
+    require_reference,
+    require_unique,
+    select_first_qualified,
+    subtract,
+    union_all,
+    union_by_name,
+)
+
+
+def posexplode_struct(*args: object, **kwargs: object) -> Any:
+    return cast(Any, _posexplode_struct)(*args, **kwargs)
 
 if TYPE_CHECKING:
     from structure.plugin.pyspark.api.PySpark import PySpark

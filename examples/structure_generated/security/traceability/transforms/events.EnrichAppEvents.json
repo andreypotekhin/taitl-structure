@@ -170,7 +170,7 @@
     },
     "DepartmentRemediationWorkflowSummary": {
       "constant": "DEPARTMENT_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA",
-      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+      "module": "examples.structure_generated.security.pyspark.schemas.remediate"
     },
     "DepartmentVulnerabilityDeadlineSummary": {
       "constant": "DEPARTMENT_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA",
@@ -194,11 +194,11 @@
     },
     "ExpiredExceptionVulnerability": {
       "constant": "EXPIRED_EXCEPTION_VULNERABILITY_SCHEMA",
-      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+      "module": "examples.structure_generated.security.pyspark.schemas.remediate"
     },
     "ExpiringExceptionVulnerability": {
       "constant": "EXPIRING_EXCEPTION_VULNERABILITY_SCHEMA",
-      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+      "module": "examples.structure_generated.security.pyspark.schemas.remediate"
     },
     "OS": {
       "constant": "O_S_SCHEMA",
@@ -214,7 +214,7 @@
     },
     "OrgRemediationWorkflowSummary": {
       "constant": "ORG_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA",
-      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+      "module": "examples.structure_generated.security.pyspark.schemas.remediate"
     },
     "OrgVulnerabilityDeadlineSummary": {
       "constant": "ORG_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA",
@@ -226,7 +226,7 @@
     },
     "PendingExceptionVulnerability": {
       "constant": "PENDING_EXCEPTION_VULNERABILITY_SCHEMA",
-      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+      "module": "examples.structure_generated.security.pyspark.schemas.remediate"
     },
     "Person": {
       "constant": "PERSON_SCHEMA",
@@ -238,7 +238,7 @@
     },
     "PersonRemediationWorkflowSummary": {
       "constant": "PERSON_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA",
-      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+      "module": "examples.structure_generated.security.pyspark.schemas.remediate"
     },
     "PersonVulnerabilityDeadlineSummary": {
       "constant": "PERSON_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA",
@@ -246,7 +246,7 @@
     },
     "PersonVulnerabilityNotification": {
       "constant": "PERSON_VULNERABILITY_NOTIFICATION_SCHEMA",
-      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+      "module": "examples.structure_generated.security.pyspark.schemas.notifications"
     },
     "PersonVulnerabilityStatistic": {
       "constant": "PERSON_VULNERABILITY_STATISTIC_SCHEMA",
@@ -258,19 +258,19 @@
     },
     "RemediationCase": {
       "constant": "REMEDIATION_CASE_SCHEMA",
-      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+      "module": "examples.structure_generated.security.pyspark.schemas.remediate"
     },
     "RemediationCaseAggregate": {
       "constant": "REMEDIATION_CASE_AGGREGATE_SCHEMA",
-      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+      "module": "examples.structure_generated.security.pyspark.schemas.remediate"
     },
     "RemediationCaseCheck": {
       "constant": "REMEDIATION_CASE_CHECK_SCHEMA",
-      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+      "module": "examples.structure_generated.security.pyspark.schemas.remediate"
     },
     "RemediationCaseIssue": {
       "constant": "REMEDIATION_CASE_ISSUE_SCHEMA",
-      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+      "module": "examples.structure_generated.security.pyspark.schemas.remediate"
     },
     "RemediationPolicy": {
       "constant": "REMEDIATION_POLICY_SCHEMA",
@@ -278,11 +278,11 @@
     },
     "RemediationWorkflowActivity": {
       "constant": "REMEDIATION_WORKFLOW_ACTIVITY_SCHEMA",
-      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+      "module": "examples.structure_generated.security.pyspark.schemas.remediate"
     },
     "RemediationWorkflowSummary": {
       "constant": "REMEDIATION_WORKFLOW_SUMMARY_SCHEMA",
-      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+      "module": "examples.structure_generated.security.pyspark.schemas.remediate"
     },
     "ReportingPeriod": {
       "constant": "REPORTING_PERIOD_SCHEMA",
@@ -310,11 +310,11 @@
     },
     "TeamRemediationWorkflowSummary": {
       "constant": "TEAM_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA",
-      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+      "module": "examples.structure_generated.security.pyspark.schemas.remediate"
     },
     "TeamVulnerabilityAlarm": {
       "constant": "TEAM_VULNERABILITY_ALARM_SCHEMA",
-      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+      "module": "examples.structure_generated.security.pyspark.schemas.alarms"
     },
     "TeamVulnerabilityDeadlineSummary": {
       "constant": "TEAM_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA",
@@ -326,7 +326,7 @@
     },
     "UnacknowledgedVulnerability": {
       "constant": "UNACKNOWLEDGED_VULNERABILITY_SCHEMA",
-      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+      "module": "examples.structure_generated.security.pyspark.schemas.remediate"
     },
     "Vuln": {
       "constant": "VULN_SCHEMA",
@@ -398,7 +398,7 @@
     },
     "VulnerabilityWorkflowExposure": {
       "constant": "VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA",
-      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+      "module": "examples.structure_generated.security.pyspark.schemas.remediate"
     }
   },
   "source_transform": "examples.security.transforms.events.EnrichAppEvents",

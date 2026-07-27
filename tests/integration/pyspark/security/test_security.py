@@ -8,42 +8,45 @@ import pytest
 from integration.pyspark.support.backend_matrix import generated_project, render_generated_projects, session
 from integration.pyspark.support.rows import rows
 
+from examples.security.schemas.alarms import TeamVulnerabilityAlarm
 from examples.security.schemas.assets import OS, App, Device, DeviceType, Scanner, Software
 from examples.security.schemas.events import AppEvent, RawEvent, VulnEvent
+from examples.security.schemas.notifications import PersonVulnerabilityNotification
 from examples.security.schemas.organization import Department, Org, Person, Team
-from examples.security.schemas.reporting import (
-    DeliveryReceipt,
-    DepartmentActiveVulnerability,
+from examples.security.schemas.remediation import (
     DepartmentRemediationWorkflowSummary,
-    DepartmentVulnerabilityDeadlineSummary,
-    DepartmentVulnerabilityStatistic,
-    DeviceActiveVulnerability,
     ExpiredExceptionVulnerability,
     ExpiringExceptionVulnerability,
-    OrgActiveVulnerability,
     OrgRemediationWorkflowSummary,
-    OrgVulnerabilityDeadlineSummary,
-    OrgVulnerabilityStatistic,
     PendingExceptionVulnerability,
-    PersonActiveVulnerability,
     PersonRemediationWorkflowSummary,
-    PersonVulnerabilityDeadlineSummary,
-    PersonVulnerabilityNotification,
-    PersonVulnerabilityStatistic,
     RemediationCase,
     RemediationCaseAggregate,
     RemediationCaseCheck,
     RemediationCaseIssue,
     RemediationWorkflowActivity,
     RemediationWorkflowSummary,
+    TeamRemediationWorkflowSummary,
+    UnacknowledgedVulnerability,
+    VulnerabilityWorkflowExposure,
+)
+from examples.security.schemas.reporting import (
+    DeliveryReceipt,
+    DepartmentActiveVulnerability,
+    DepartmentVulnerabilityDeadlineSummary,
+    DepartmentVulnerabilityStatistic,
+    DeviceActiveVulnerability,
+    OrgActiveVulnerability,
+    OrgVulnerabilityDeadlineSummary,
+    OrgVulnerabilityStatistic,
+    PersonActiveVulnerability,
+    PersonVulnerabilityDeadlineSummary,
+    PersonVulnerabilityStatistic,
     ReportingPeriod,
     SecurityEvaluation,
     TeamActiveVulnerability,
-    TeamRemediationWorkflowSummary,
-    TeamVulnerabilityAlarm,
     TeamVulnerabilityDeadlineSummary,
     TeamVulnerabilityStatistic,
-    UnacknowledgedVulnerability,
     VulnerabilityDeadlineActivity,
     VulnerabilityDeadlineSummary,
     VulnerabilityDiscovery,
@@ -57,7 +60,6 @@ from examples.security.schemas.reporting import (
     VulnerabilityQualityCheck,
     VulnerabilityQualityIssue,
     VulnerabilityStatistic,
-    VulnerabilityWorkflowExposure,
 )
 from examples.security.schemas.risk import RemediationPolicy, Vuln, VulnType
 from examples.security.transforms.alarms import VulnerabilityAlarms
@@ -65,8 +67,8 @@ from examples.security.transforms.deadlines import VulnerabilityDeadlineReports
 from examples.security.transforms.notify import VulnerabilityNotifications
 from examples.security.transforms.posture import SecurityPosture
 from examples.security.transforms.quality import SecurityInventoryQuality
+from examples.security.transforms.remediate.workflow import VulnerabilityRemediationWorkflow
 from examples.security.transforms.reports import ActiveVulnerabilityReports, VulnerabilityStatistics
-from examples.security.transforms.workflow import VulnerabilityRemediationWorkflow
 from structure.core.dsl.model.schemas.Schema import Schema
 
 pytestmark = pytest.mark.integration
@@ -81,10 +83,6 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         ReportingPeriod,
         SecurityEvaluation,
         DeliveryReceipt,
-        RemediationCase,
-        RemediationCaseAggregate,
-        RemediationCaseCheck,
-        RemediationCaseIssue,
         VulnerabilityExposure,
         DeviceActiveVulnerability,
         PersonActiveVulnerability,
@@ -96,24 +94,11 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         TeamVulnerabilityStatistic,
         DepartmentVulnerabilityStatistic,
         OrgVulnerabilityStatistic,
-        VulnerabilityWorkflowExposure,
-        UnacknowledgedVulnerability,
-        PendingExceptionVulnerability,
-        ExpiringExceptionVulnerability,
-        ExpiredExceptionVulnerability,
-        RemediationWorkflowActivity,
-        RemediationWorkflowSummary,
-        PersonRemediationWorkflowSummary,
-        TeamRemediationWorkflowSummary,
-        DepartmentRemediationWorkflowSummary,
-        OrgRemediationWorkflowSummary,
         VulnerabilityDeadlineSummary,
         PersonVulnerabilityDeadlineSummary,
         TeamVulnerabilityDeadlineSummary,
         DepartmentVulnerabilityDeadlineSummary,
         OrgVulnerabilityDeadlineSummary,
-        PersonVulnerabilityNotification,
-        TeamVulnerabilityAlarm,
         VulnerabilityLifecycle,
         VulnerabilityDiscovery,
         VulnerabilityDeadlineActivity,
@@ -125,11 +110,33 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         VulnerabilityInventoryCheck,
         VulnerabilityInventoryIssue,
     ],
+    "examples.security.schemas.remediate": [
+        RemediationCase,
+        RemediationCaseAggregate,
+        RemediationCaseCheck,
+        RemediationCaseIssue,
+        VulnerabilityWorkflowExposure,
+        UnacknowledgedVulnerability,
+        PendingExceptionVulnerability,
+        ExpiringExceptionVulnerability,
+        ExpiredExceptionVulnerability,
+        RemediationWorkflowActivity,
+        RemediationWorkflowSummary,
+        PersonRemediationWorkflowSummary,
+        TeamRemediationWorkflowSummary,
+        DepartmentRemediationWorkflowSummary,
+        OrgRemediationWorkflowSummary,
+    ],
+    "examples.security.schemas.notifications": [PersonVulnerabilityNotification],
+    "examples.security.schemas.alarms": [TeamVulnerabilityAlarm],
     "examples.security.schemas.risk": [VulnType, RemediationPolicy, Vuln],
 }
 TRANSFORMS = (
     (SecurityPosture, "examples.security.transforms.posture.SecurityPosture"),
-    (VulnerabilityRemediationWorkflow, "examples.security.transforms.workflow.VulnerabilityRemediationWorkflow"),
+    (
+        VulnerabilityRemediationWorkflow,
+        "examples.security.transforms.remediate.workflow.VulnerabilityRemediationWorkflow",
+    ),
     (VulnerabilityNotifications, "examples.security.transforms.notify.VulnerabilityNotifications"),
     (VulnerabilityAlarms, "examples.security.transforms.alarms.VulnerabilityAlarms"),
     (VulnerabilityDeadlineReports, "examples.security.transforms.deadlines.VulnerabilityDeadlineReports"),
@@ -152,9 +159,10 @@ def test_security_fixtures_run_online_and_generated(spark, tmp_path) -> None:
         assets = import_module(f"{PACKAGE}.pyspark.schemas.assets")
         events = import_module(f"{PACKAGE}.pyspark.schemas.events")
         organization = import_module(f"{PACKAGE}.pyspark.schemas.organization")
+        remediation = import_module(f"{PACKAGE}.pyspark.schemas.remediate")
         reporting = import_module(f"{PACKAGE}.pyspark.schemas.reporting")
         risk = import_module(f"{PACKAGE}.pyspark.schemas.risk")
-        inputs = _inputs(spark, assets, events, organization, reporting, risk)
+        inputs = _inputs(spark, assets, events, organization, remediation, reporting, risk)
 
         online = _run(SecurityPosture, SecurityInventoryQuality, spark, "online", None, inputs)
         generated = _run(SecurityPosture, SecurityInventoryQuality, spark, "generated", PACKAGE, inputs)
@@ -198,14 +206,15 @@ def test_remediation_workflow_pauses_only_valid_current_exceptions(spark, tmp_pa
         assets = import_module(f"{PACKAGE}.pyspark.schemas.assets")
         events = import_module(f"{PACKAGE}.pyspark.schemas.events")
         organization = import_module(f"{PACKAGE}.pyspark.schemas.organization")
+        remediation = import_module(f"{PACKAGE}.pyspark.schemas.remediate")
         reporting = import_module(f"{PACKAGE}.pyspark.schemas.reporting")
         risk = import_module(f"{PACKAGE}.pyspark.schemas.risk")
-        inputs = _inputs(spark, assets, events, organization, reporting, risk)
+        inputs = _inputs(spark, assets, events, organization, remediation, reporting, risk)
 
         valid = _with_cases(
             spark,
             inputs,
-            reporting,
+            remediation,
             [
                 (
                     "vuln-open",
@@ -231,7 +240,7 @@ def test_remediation_workflow_pauses_only_valid_current_exceptions(spark, tmp_pa
         pending = _with_cases(
             spark,
             inputs,
-            reporting,
+            remediation,
             [("vuln-open", None, datetime(2026, 1, 1, 9), None, None, None, None)],
         )
         pending_output = _run(SecurityPosture, SecurityInventoryQuality, spark, "online", None, pending)
@@ -241,7 +250,7 @@ def test_remediation_workflow_pauses_only_valid_current_exceptions(spark, tmp_pa
         invalid = _with_cases(
             spark,
             inputs,
-            reporting,
+            remediation,
             [("vuln-unknown", None, None, None, None, None, None)],
         )
         invalid_output = _run(SecurityPosture, SecurityInventoryQuality, spark, "online", None, invalid)
@@ -391,7 +400,7 @@ def _run(posture_type, quality_type, spark, execution_mode, generated_package, i
     }
 
 
-def _inputs(spark, assets, events, organization, reporting, risk):
+def _inputs(spark, assets, events, organization, remediation, reporting, risk):
     software = _csv("software.csv")
     vulnerabilities = _vulnerabilities("vulnerabilities.csv")
     quality_vulnerabilities = vulnerabilities + _vulnerabilities("quality_vulnerabilities.csv")
@@ -411,12 +420,12 @@ def _inputs(spark, assets, events, organization, reporting, risk):
         "quality_vulnerabilities": spark.createDataFrame(quality_vulnerabilities, risk.VULN_SCHEMA),
         "evaluation": spark.createDataFrame([(date(2026, 1, 2),)], reporting.SECURITY_EVALUATION_SCHEMA),
         "receipts": spark.createDataFrame([], reporting.DELIVERY_RECEIPT_SCHEMA),
-        "cases": spark.createDataFrame([], reporting.REMEDIATION_CASE_SCHEMA),
+        "cases": spark.createDataFrame([], remediation.REMEDIATION_CASE_SCHEMA),
     }
 
 
-def _with_cases(spark, inputs, reporting, cases):
-    return {**inputs, "cases": spark.createDataFrame(cases, reporting.REMEDIATION_CASE_SCHEMA)}
+def _with_cases(spark, inputs, remediation, cases):
+    return {**inputs, "cases": spark.createDataFrame(cases, remediation.REMEDIATION_CASE_SCHEMA)}
 
 
 def _with_evaluation(spark, inputs, reporting, as_of_date):

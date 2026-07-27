@@ -20,28 +20,6 @@ DELIVERY_RECEIPT_SCHEMA = T.StructType([
     T.StructField("delivered_at", T.TimestampType(), False),
 ])
 
-REMEDIATION_CASE_SCHEMA = T.StructType([
-    T.StructField("vuln_id", T.StringType(), False),
-    T.StructField("acknowledged_at", T.TimestampType(), True),
-    T.StructField("exception_requested_at", T.TimestampType(), True),
-    T.StructField("exception_reason", T.StringType(), True),
-    T.StructField("exception_approver", T.StringType(), True),
-    T.StructField("exception_approved_at", T.TimestampType(), True),
-    T.StructField("exception_expires_on", T.DateType(), True),
-])
-
-REMEDIATION_CASE_AGGREGATE_SCHEMA = T.StructType(REMEDIATION_CASE_SCHEMA.fields + [
-    T.StructField("case_count", T.LongType(), False),
-    T.StructField("vulnerability_exists", T.BooleanType(), False),
-])
-
-REMEDIATION_CASE_CHECK_SCHEMA = T.StructType(REMEDIATION_CASE_AGGREGATE_SCHEMA.fields + [
-    T.StructField("issues", T.ArrayType(T.StringType(), containsNull=False), False),
-    T.StructField("is_valid", T.BooleanType(), False),
-])
-
-REMEDIATION_CASE_ISSUE_SCHEMA = T.StructType(REMEDIATION_CASE_CHECK_SCHEMA.fields)
-
 VULNERABILITY_EXPOSURE_SCHEMA = T.StructType([
     T.StructField("vuln_id", T.StringType(), False),
     T.StructField("vuln_type", T.StringType(), False),
@@ -107,65 +85,6 @@ ORG_VULNERABILITY_STATISTIC_SCHEMA = T.StructType(VULNERABILITY_STATISTIC_SCHEMA
     T.StructField("org_name", T.StringType(), False),
 ])
 
-VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA = T.StructType(VULNERABILITY_EXPOSURE_SCHEMA.fields + [
-    T.StructField("acknowledged_at", T.TimestampType(), True),
-    T.StructField("exception_requested_at", T.TimestampType(), True),
-    T.StructField("exception_reason", T.StringType(), True),
-    T.StructField("exception_approver", T.StringType(), True),
-    T.StructField("exception_approved_at", T.TimestampType(), True),
-    T.StructField("exception_expires_on", T.DateType(), True),
-    T.StructField("is_acknowledged", T.BooleanType(), False),
-    T.StructField("is_deadline_paused", T.BooleanType(), False),
-])
-
-UNACKNOWLEDGED_VULNERABILITY_SCHEMA = T.StructType(VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA.fields)
-
-PENDING_EXCEPTION_VULNERABILITY_SCHEMA = T.StructType(VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA.fields)
-
-EXPIRING_EXCEPTION_VULNERABILITY_SCHEMA = T.StructType(VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA.fields)
-
-EXPIRED_EXCEPTION_VULNERABILITY_SCHEMA = T.StructType(VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA.fields)
-
-REMEDIATION_WORKFLOW_ACTIVITY_SCHEMA = T.StructType([
-    T.StructField("person_id", T.StringType(), False),
-    T.StructField("team_id", T.StringType(), False),
-    T.StructField("department_id", T.StringType(), False),
-    T.StructField("org_id", T.StringType(), False),
-    T.StructField("as_of_date", T.DateType(), False),
-    T.StructField("unacknowledged_count", T.IntegerType(), False),
-    T.StructField("pending_exception_count", T.IntegerType(), False),
-    T.StructField("expiring_exception_count", T.IntegerType(), False),
-    T.StructField("expired_exception_count", T.IntegerType(), False),
-])
-
-REMEDIATION_WORKFLOW_SUMMARY_SCHEMA = T.StructType([
-    T.StructField("as_of_date", T.DateType(), False),
-    T.StructField("unacknowledged_count", T.LongType(), False),
-    T.StructField("pending_exception_count", T.LongType(), False),
-    T.StructField("expiring_exception_count", T.LongType(), False),
-    T.StructField("expired_exception_count", T.LongType(), False),
-])
-
-PERSON_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA = T.StructType(REMEDIATION_WORKFLOW_SUMMARY_SCHEMA.fields + [
-    T.StructField("person_id", T.StringType(), False),
-    T.StructField("person_name", T.StringType(), False),
-])
-
-TEAM_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA = T.StructType(REMEDIATION_WORKFLOW_SUMMARY_SCHEMA.fields + [
-    T.StructField("team_id", T.StringType(), False),
-    T.StructField("team_name", T.StringType(), False),
-])
-
-DEPARTMENT_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA = T.StructType(REMEDIATION_WORKFLOW_SUMMARY_SCHEMA.fields + [
-    T.StructField("department_id", T.StringType(), False),
-    T.StructField("department_name", T.StringType(), False),
-])
-
-ORG_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA = T.StructType(REMEDIATION_WORKFLOW_SUMMARY_SCHEMA.fields + [
-    T.StructField("org_id", T.StringType(), False),
-    T.StructField("org_name", T.StringType(), False),
-])
-
 VULNERABILITY_DEADLINE_SUMMARY_SCHEMA = T.StructType([
     T.StructField("as_of_date", T.DateType(), False),
     T.StructField("imminent_count", T.LongType(), False),
@@ -190,28 +109,6 @@ DEPARTMENT_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA = T.StructType(VULNERABILITY_DE
 ORG_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA = T.StructType(VULNERABILITY_DEADLINE_SUMMARY_SCHEMA.fields + [
     T.StructField("org_id", T.StringType(), False),
     T.StructField("org_name", T.StringType(), False),
-])
-
-PERSON_VULNERABILITY_NOTIFICATION_SCHEMA = T.StructType([
-    T.StructField("delivery_key", T.StringType(), False),
-    T.StructField("notification_type", T.StringType(), False),
-    T.StructField("vuln_id", T.StringType(), False),
-    T.StructField("person_id", T.StringType(), False),
-    T.StructField("person_name", T.StringType(), False),
-    T.StructField("person_email", T.StringType(), False),
-    T.StructField("severity", T.StringType(), False),
-    T.StructField("target_date", T.DateType(), False),
-    T.StructField("instructions", T.StringType(), False),
-])
-
-TEAM_VULNERABILITY_ALARM_SCHEMA = T.StructType([
-    T.StructField("delivery_key", T.StringType(), False),
-    T.StructField("vuln_id", T.StringType(), False),
-    T.StructField("team_id", T.StringType(), False),
-    T.StructField("team_name", T.StringType(), False),
-    T.StructField("severity", T.StringType(), False),
-    T.StructField("target_date", T.DateType(), False),
-    T.StructField("instructions", T.StringType(), False),
 ])
 
 VULNERABILITY_LIFECYCLE_SCHEMA = T.StructType([
