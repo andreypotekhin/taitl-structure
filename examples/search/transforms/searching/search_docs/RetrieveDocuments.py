@@ -35,7 +35,7 @@ class RetrieveDocuments(Transform):
         inner_join(on=request.query_id == query.id)
         left_join(on=band.user_id == request.user_id)
         where(score.score.is_not_null())
-        return DocumentSearchCandidate.base(score, document)(
+        return DocumentSearchCandidate.project(score, document)(
             search_query_id=query.id,
             user_band_id=coalesce(band.user_band_id, literal(None)),
             band_id=band.band_id,

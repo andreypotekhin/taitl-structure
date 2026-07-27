@@ -23,22 +23,22 @@ class SelectExperimentScores(Transform):
     def select_documents(self, score: DocumentScore, experiment: Experiment) -> DocumentScore:
         left_join(on=experiment.experiment_id == score.experiment_id)
         where((score.experiment_id == "") | experiment.is_active)
-        return DocumentScore.base(score)
+        return DocumentScore.project(score)
 
     @step(input=[section_scores, experiments], output=active_section_scores)
     def select_sections(self, score: SectionScore, experiment: Experiment) -> SectionScore:
         left_join(on=experiment.experiment_id == score.experiment_id)
         where((score.experiment_id == "") | experiment.is_active)
-        return SectionScore.base(score)
+        return SectionScore.project(score)
 
     @step(input=[paragraph_scores, experiments], output=active_paragraph_scores)
     def select_paragraphs(self, score: ParagraphScore, experiment: Experiment) -> ParagraphScore:
         left_join(on=experiment.experiment_id == score.experiment_id)
         where((score.experiment_id == "") | experiment.is_active)
-        return ParagraphScore.base(score)
+        return ParagraphScore.project(score)
 
     @step(input=[sentence_scores, experiments], output=active_sentence_scores)
     def select_sentences(self, score: SentenceScore, experiment: Experiment) -> SentenceScore:
         left_join(on=experiment.experiment_id == score.experiment_id)
         where((score.experiment_id == "") | experiment.is_active)
-        return SentenceScore.base(score)
+        return SentenceScore.project(score)

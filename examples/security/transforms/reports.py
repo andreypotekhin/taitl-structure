@@ -76,7 +76,7 @@ class VulnerabilityStatistics(Transform):
     @step(input=events, output=deduped_events)
     def dedupe_delivery(self, event: VulnEvent) -> VulnEvent:
         drop_duplicates(event.id)
-        return VulnEvent.base(event)
+        return VulnEvent.project(event)
 
     @step(input=deduped_events, output=lifecycles)
     def lifecycle(self, event: VulnEvent) -> VulnerabilityLifecycle:

@@ -21,7 +21,7 @@ class Momentum(Transform):
         average_loss = window_avg(row.loss, over=rsi_window)
         low_14 = rolling_min(row.low, partition_by=row.symbol, order_by=row.trade_date, preceding=13)
         high_14 = rolling_max(row.high, partition_by=row.symbol, order_by=row.trade_date, preceding=13)
-        return MomentumIndicator.base(row)(
+        return MomentumIndicator.project(row)(
             roc_10=when(
                 bar_number >= 11,
                 row.close / lag(row.close, partition_by=row.symbol, order_by=row.trade_date, offset=10) - 1.0,

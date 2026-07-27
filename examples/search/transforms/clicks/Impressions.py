@@ -37,7 +37,7 @@ class Impressions(Transform):
             user_id=impression.user_id,
             band_id=None,
         )
-        return DailyImpressions.base(impression)(
+        return DailyImpressions.project(impression)(
             window=day,
             query=query,
             user_id=impression.user_id,

@@ -889,13 +889,21 @@ flags = PublicationFlags(
 return OrderPublished.base(order, flags)
 ```
 
-To copy the fields from an unrelated/non-base class, use `.project()` method.
-The method copies same-named fields of compatible type.
+To copy fields from unrelated/non-base classes, use `.project()`.
+The method copies same-named fields of compatible type. It can accept multiple sources; when more than one source
+provides a target field, provide that field explicitly to make the chosen lineage clear.
 
 ```python
 def normalize(self, order: OrderRaw) -> OrderNormalized:
     return OrderNormalized.project(order)(
         total=to_decimal(order.total, precision=12, scale=2),
+    )
+```
+
+```python
+def combine(self, order: OrderRaw, customer: Customer) -> OrderCustomer:
+    return OrderCustomer.project(order, customer)(
+        customer_id=customer.id,  # explicit because both rows provide an id
     )
 ```
 

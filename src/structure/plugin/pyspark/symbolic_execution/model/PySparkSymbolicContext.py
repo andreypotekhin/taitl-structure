@@ -74,10 +74,14 @@ class PySparkSymbolicContext:
 
         return InputScope(name=name, schema=cast(type, schema))
 
-    def project(self, source: object, *, target: object) -> object:
+    def project(self, *sources: object, target: object) -> object:
         from structure.plugin.pyspark.dsl.body import project
 
-        return project(source, cast(Any, target))
+        if len(sources) == 1:
+            return project(sources[0], cast(Any, target))
+        from structure.plugin.pyspark.dsl.Projection import Projection
+
+        return Projection(sources=sources, target=cast(Any, target))
 
     def special(self, function, *, type: str, return_type: object | None, nullable: bool, args, kwargs):
         from structure.plugin.pyspark.dsl.SpecialFunction import SpecialFunction

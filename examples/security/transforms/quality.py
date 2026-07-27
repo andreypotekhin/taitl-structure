@@ -73,14 +73,14 @@ class SecurityInventoryQuality(Transform):
                 ).otherwise(None),
             )
         )
-        return VulnerabilityQualityCheck.base(vuln)(
+        return VulnerabilityQualityCheck.project(vuln)(
             vuln_id=vuln.id,
             issues=issues,
             is_valid=size(issues) == 0,
         )
 
     def publish_reference_checks(self, check: VulnerabilityQualityCheck) -> VulnerabilityQualityCheck:
-        return VulnerabilityQualityCheck.base(check)
+        return VulnerabilityQualityCheck.project(check)
 
     @step(input=quality_lane, output=reference_issues)
     def publish_reference_issues(self, check: VulnerabilityQualityCheck) -> VulnerabilityQualityIssue:
@@ -94,7 +94,7 @@ class SecurityInventoryQuality(Transform):
             device.apps,
             lambda app: app.id == vuln.software_id,
         )
-        return VulnerabilityInventoryCandidate.base(vuln, device)(
+        return VulnerabilityInventoryCandidate.project(vuln, device)(
             vuln_id=vuln.id,
             device_lists_vulnerability=array_contains(device.vuln_ids, vuln.id),
             os_id=device.os_id,
@@ -105,10 +105,10 @@ class SecurityInventoryQuality(Transform):
 
     @step(input=inventory_candidates, output=reconciliation_lane)
     def publish_reconciliation(self, candidate: VulnerabilityInventoryCandidate) -> VulnerabilityInventoryCheck:
-        return VulnerabilityInventoryCheck.base(candidate)
+        return VulnerabilityInventoryCheck.project(candidate)
 
     def publish_reconciliation_checks(self, check: VulnerabilityInventoryCheck) -> VulnerabilityInventoryCheck:
-        return VulnerabilityInventoryCheck.base(check)
+        return VulnerabilityInventoryCheck.project(check)
 
     @step(input=reconciliation_lane, output=reconciliation_issues)
     def publish_reconciliation_issues(self, check: VulnerabilityInventoryCheck) -> VulnerabilityInventoryIssue:

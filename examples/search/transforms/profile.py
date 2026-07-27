@@ -15,7 +15,7 @@ class ProfileDocuments(Transform):
         normalized_content = lower(regexp_replace(trim(row.content), pattern=r"\s+", replacement=" "))
         title_words = split(row.title, pattern=r"\s+")
         content_length = length(row.content)
-        return DocumentFeatures.base(row)(
+        return DocumentFeatures.project(row)(
             document_id=row.id,
             normalized_title=normalized_title,
             normalized_content=normalized_content,

@@ -14,7 +14,7 @@ class Trend(Transform):
         bar_number = row_number(partition_by=bar.symbol, order_by=bar.trade_date)
         sma_20 = rolling_avg(bar.close, partition_by=bar.symbol, order_by=bar.trade_date, preceding=19)
         sma_50 = rolling_avg(bar.close, partition_by=bar.symbol, order_by=bar.trade_date, preceding=49)
-        return TrendIndicator.base(bar)(
+        return TrendIndicator.project(bar)(
             sma_20=when(bar_number >= 20, sma_20).otherwise(None),
             sma_50=when(bar_number >= 50, sma_50).otherwise(None),
             high_20=when(

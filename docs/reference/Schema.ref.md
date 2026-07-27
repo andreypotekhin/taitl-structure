@@ -892,6 +892,7 @@ Base overlay rules:
 - For a target schema with one direct schema base, `base(...)` takes one source row compatible with that base.
 - For a target schema with multiple direct schema bases, `base(...)` takes one source row per direct schema base, in the
   same left-to-right order as the class declaration.
+- `base(...)` is invalid for a schema with no direct schema base; use `project(...)` for unrelated rows.
 - The compiler maps fields by inherited field origin, not by searching all sources for a matching field name.
 - Fields introduced locally by the target schema must be supplied as explicit overrides unless they can be copied by a
   later spec-defined default.

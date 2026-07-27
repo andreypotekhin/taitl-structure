@@ -37,4 +37,4 @@ class SimilarSentences(Transform):
 
     def limit(self, candidate: IndexedSimilarSentence) -> IndexedSimilarSentence:
         where(candidate.rank <= self.maximum_results)
-        return IndexedSimilarSentence.base(candidate)
+        return IndexedSimilarSentence.project(candidate)

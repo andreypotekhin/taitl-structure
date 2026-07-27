@@ -47,9 +47,17 @@ class BuildPySparkResultBodies:
                 if context.aggregate_requested
                 else None
             )
-            projection = () if aggregate is not None else tuple(
-                self._assignments(
-                    transform_class, member, cast(type[Schema], result.schema), result_value, filters=context.filters
+            projection = (
+                ()
+                if aggregate is not None
+                else tuple(
+                    self._assignments(
+                        transform_class,
+                        member,
+                        cast(type[Schema], result.schema),
+                        result_value,
+                        filters=context.filters,
+                    )
                 )
             )
             bodies.append(PySparkResultBody(projection=projection, aggregate=aggregate))
@@ -292,25 +300,38 @@ class BuildPySparkResultBodies:
                 use="Make the project(...) target match the step method return annotation.",
                 context={"expected": output_schema.__name__, "actual": result.target.__name__},
             )
-        source_schema = self._source_schema(result.source)
-        if source_schema is None:
+        source_schemas = tuple(self._source_schema(source) for source in result.sources)
+        if any(schema is None for schema in source_schemas):
             raise self._error(
                 "DSL-E0402",
                 transform_class=transform_class,
                 member=member,
-                problem="project(...) source must be a Schema row or relation.",
-                use="Call project(order, TargetSchema) or project(order, ['field']).",
+                problem="project(...) sources must be Schema rows or relations.",
+                use="Call TargetSchema.project(order) or project(order, TargetSchema).",
             )
+        schemas = cast(tuple[type[Schema], ...], source_schemas)
 
-        selected = set(result.fields) if result.fields is not None else set(source_schema._structure_fields)
-        unknown = selected - set(source_schema._structure_fields)
-        if unknown:
+        if result.fields is not None and len(result.sources) != 1:
             raise self._error(
                 "DSL-E0402",
                 transform_class=transform_class,
                 member=member,
-                problem=f"project(...) source {source_schema.__name__} has no field(s): {', '.join(sorted(unknown))}.",
-                use=f"Select fields declared by {source_schema.__name__}.",
+                problem="project(source, fields) accepts exactly one source row.",
+                use="Use TargetSchema.project(left, right)(...) to project from multiple rows.",
+            )
+        available = set().union(*(schema._structure_fields for schema in schemas))
+        selected = set(result.fields) if result.fields is not None else available
+        unknown = selected - available
+        if unknown:
+            source_text = (
+                f"source {schemas[0].__name__} has no field(s)" if len(schemas) == 1 else "sources have no field(s)"
+            )
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=member,
+                problem=f"project(...) {source_text}: {', '.join(sorted(unknown))}.",
+                use="Select fields declared by a project(...) source.",
             )
 
         assignments: list[ProjectAssignment] = []
@@ -324,21 +345,46 @@ class BuildPySparkResultBodies:
                     use="Include the field in project(source, [...]) or use Schema.project(source)(...) with overrides.",
                     context={"field": field.name, "schema": output_schema.__name__},
                 )
-            expression = self._source_field(result.source, field.name)
+            providers = tuple(
+                (source, schema)
+                for source, schema in zip(result.sources, schemas, strict=True)
+                if field.name in schema._structure_fields
+            )
+            if not providers:
+                raise self._error(
+                    "DSL-E0402",
+                    transform_class=transform_class,
+                    member=member,
+                    problem=f"No project(...) source provides {output_schema.__name__}.{field.name}.",
+                    use="Use a target schema whose fields exist on the source or provide explicit overrides.",
+                    context={"field": field.name, "schema": output_schema.__name__},
+                )
+            if len(providers) > 1:
+                names = ", ".join(schema.__name__ for _, schema in providers)
+                raise self._error(
+                    "DSL-E0402",
+                    transform_class=transform_class,
+                    member=member,
+                    problem=(f"project(...) sources {names} all provide {output_schema.__name__}.{field.name}."),
+                    use=f"Provide {field.name}=... explicitly to choose its source.",
+                    context={"field": field.name, "schema": output_schema.__name__},
+                )
+            source, source_schema = providers[0]
+            expression = self._source_field(source, field.name)
             if expression is None:
                 raise self._error(
                     "DSL-E0402",
                     transform_class=transform_class,
                     member=member,
                     problem=f"{source_schema.__name__}.{field.name} is not available for project(...).",
-                    use="Use a target schema whose fields exist on the source or provide explicit overrides.",
+                    use="Provide the field explicitly or project from a source that supplies it.",
                     context={"field": field.name, "schema": source_schema.__name__},
                 )
-            if isinstance(result.source, Schema):
+            if isinstance(source, Schema):
                 expression = self._value_expression(
                     transform_class,
                     member,
-                    result.source._structure_values[field.name],
+                    source._structure_values[field.name],
                     field.type,
                     path=f"{output_schema.__name__}.{field.name}",
                     filters=filters,

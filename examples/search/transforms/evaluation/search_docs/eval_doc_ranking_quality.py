@@ -72,12 +72,18 @@ class EvaluateDocumentRankingQuality(Transform):
         left_join(
             on=(judgment.search_query_id == query.search_query_id) & (judgment.document_id == result.document_id),
         )
-        return EvaluationResult.base(query, result, judgment)
+        return EvaluationResult.project(query, result, judgment)(
+            experiment_id=query.experiment_id,
+            band_id=query.band_id,
+            search_query_id=query.search_query_id,
+            document_id=result.document_id,
+        )
 
     @step(input=[evaluated_queries, judgments], output=ranked_judgments)
     def rank_judgments(self, query: EvaluationQuery, judgment: DocumentRelevanceJudgment) -> EvaluationJudgment:
         inner_join(on=judgment.search_query_id == query.search_query_id)
-        return EvaluationJudgment.base(query, judgment)(
+        return EvaluationJudgment.project(query, judgment)(
+            search_query_id=query.search_query_id,
             ideal_rank=row_number(
                 partition_by=(query.search_query_id, query.band_id),
                 order_by=judgment.relevance_grade,
@@ -94,7 +100,7 @@ class EvaluateDocumentRankingQuality(Transform):
             band_id=judgment.band_id,
             search_query_id=judgment.search_query_id,
         )
-        return EvaluationJudgmentTotals.base(judgment)(
+        return EvaluationJudgmentTotals.project(judgment)(
             binary_relevant_judgment_count=sum(when(judgment.relevance_grade >= 2, 1).otherwise(0)),
         )
 
@@ -108,7 +114,7 @@ class EvaluateDocumentRankingQuality(Transform):
             search_query_id=judgment.search_query_id,
         )
         gain = (pow(2.0, judgment.relevance_grade) - 1.0) / log(judgment.ideal_rank + 1.0, base=2)
-        return EvaluationIdealDcg.base(judgment)(
+        return EvaluationIdealDcg.project(judgment)(
             ideal_dcg_at_5=sum(when(judgment.ideal_rank <= 5, gain).otherwise(0.0)),
             ideal_dcg_at_10=sum(when(judgment.ideal_rank <= 10, gain).otherwise(0.0)),
             ideal_dcg_at_15=sum(when(judgment.ideal_rank <= 15, gain).otherwise(0.0)),
@@ -127,7 +133,7 @@ class EvaluateDocumentRankingQuality(Transform):
         judged = result.relevance_grade.is_not_null()
         relevant = result.relevance_grade >= 2
         gain = (pow(2.0, coalesce(result.relevance_grade, 0)) - 1.0) / log(result.rank + 1.0, base=2)
-        return EvaluationResultTotals.base(result)(
+        return EvaluationResultTotals.project(result)(
             returned_result_count=sum(when(returned, 1).otherwise(0)),
             judged_result_count=sum(when(judged, 1).otherwise(0)),
             unjudged_result_count=sum(when(returned & ~judged, 1).otherwise(0)),
@@ -151,12 +157,16 @@ class EvaluateDocumentRankingQuality(Transform):
         judgments: EvaluationJudgmentTotals,
         ideal: EvaluationIdealDcg,
     ) -> DocumentQueryEvaluation:
-        left_join(on=(results.search_query_id == query.search_query_id) & (results.experiment_id == query.experiment_id))
-        left_join(on=(judgments.search_query_id == query.search_query_id) & (judgments.experiment_id == query.experiment_id))
+        left_join(
+            on=(results.search_query_id == query.search_query_id) & (results.experiment_id == query.experiment_id)
+        )
+        left_join(
+            on=(judgments.search_query_id == query.search_query_id) & (judgments.experiment_id == query.experiment_id)
+        )
         left_join(on=(ideal.search_query_id == query.search_query_id) & (ideal.experiment_id == query.experiment_id))
         relevant_count = coalesce(judgments.binary_relevant_judgment_count, 0)
         reciprocal_rank_covered = coalesce(results.unjudged_result_count, 0) == 0
-        return DocumentQueryEvaluation.base(query)(
+        return DocumentQueryEvaluation.project(query)(
             returned_result_count=coalesce(results.returned_result_count, 0),
             judged_result_count=coalesce(results.judged_result_count, 0),
             binary_relevant_judgment_count=relevant_count,
@@ -205,7 +215,7 @@ class EvaluateDocumentRankingQuality(Transform):
 
     @step(input=metrics, output=query_evaluations)
     def publish_metrics(self, metric: DocumentQueryEvaluation) -> DocumentQueryEvaluation:
-        return DocumentQueryEvaluation.base(metric)
+        return DocumentQueryEvaluation.project(metric)
 
     @step(input=metrics, output=summary)
     def summarize(self, metric: DocumentQueryEvaluation) -> DocumentEvaluationSummary:

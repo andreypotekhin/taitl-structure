@@ -37,7 +37,7 @@ class AnalyzeText(Transform):
             ordinal=sentence.ordinal,
         )
         words_in_sentence = count()
-        return SentenceStatistics.base(sentence)(
+        return SentenceStatistics.project(sentence)(
             sentence_id=sentence.id,
             word_count=words_in_sentence,
             distinct_words=count_distinct(word.token),
@@ -52,7 +52,7 @@ class AnalyzeText(Transform):
             section_id=word.section_id,
         )
         words_in_paragraph = count()
-        return ParagraphStatistics.base(word)(
+        return ParagraphStatistics.project(word)(
             ordinal=min(word.paragraph_ordinal),
             word_count=words_in_paragraph,
             sentence_count=count_distinct(word.sentence_id),
@@ -68,7 +68,7 @@ class AnalyzeText(Transform):
             section_ordinal=section.ordinal,
             heading=section.heading,
         )
-        return SectionStatistics.base(section)(
+        return SectionStatistics.project(section)(
             section_id=section.id,
             section_ordinal=section.ordinal,
             paragraph_count=count_distinct(word.paragraph_id),
@@ -80,7 +80,7 @@ class AnalyzeText(Transform):
     @step(input=words, output=document_statistics)
     def document_stats(self, word: Word) -> DocumentStatistics:
         group_by(document_id=word.document_id)
-        return DocumentStatistics.base(word)(
+        return DocumentStatistics.project(word)(
             section_count=count_distinct(word.section_id),
             paragraph_count=count_distinct(word.paragraph_id),
             sentence_count=count_distinct(word.sentence_id),
@@ -97,7 +97,7 @@ class AnalyzeText(Transform):
             & (left.title_prefix == right.title_prefix)
         )
         where(left.document_id < right.document_id)
-        return SimilarDocument.base(left)(
+        return SimilarDocument.project(left)(
             left_document_id=left.document_id,
             right_document_id=right.document_id,
             title_distance=levenshtein(left.title, right.title),

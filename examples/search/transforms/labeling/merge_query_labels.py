@@ -40,7 +40,7 @@ class MergeQueryLabels(Transform):
             partition_by=(label.query_id, label.label.name),
             ties=TiePolicy.ERROR,
         )
-        return QueryLabel.base(label)
+        return QueryLabel.project(label)
 
     @step(input=latest_labels, output=entries)
     def collect_assignments(self, label: QueryLabel) -> QueryLabelAssignmentEntries:
@@ -62,9 +62,9 @@ class MergeQueryLabels(Transform):
             query.labels,
             lambda key, value: ~array_contains(map_keys(assignment.labels), key),
         )
-        updated = when(
-            assignment.query_id.is_not_null(), map_concat(retained, assignment.labels)
-        ).otherwise(query.labels)
+        updated = when(assignment.query_id.is_not_null(), map_concat(retained, assignment.labels)).otherwise(
+            query.labels
+        )
         labels = coalesce(updated, query.labels)
         return SearchQuery(
             id=query.id,

@@ -20,7 +20,9 @@ class Advanced(Transform):
             order_by=row.trade_date,
             frame=rows_between(preceding(19), current_row()),
         )
-        return AdvancedIndicator.base(row, benchmark)(
+        return AdvancedIndicator.project(row, benchmark)(
+            trade_date=row.trade_date,
+            return_1d=row.return_1d,
             benchmark_return=benchmark.return_1d,
             excess_return=row.return_1d - benchmark.return_1d,
             daily_return_rank=when(

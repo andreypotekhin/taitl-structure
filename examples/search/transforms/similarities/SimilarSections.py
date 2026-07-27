@@ -37,4 +37,4 @@ class SimilarSections(Transform):
 
     def limit(self, candidate: IndexedSimilarSection) -> IndexedSimilarSection:
         where(candidate.rank <= self.maximum_results)
-        return IndexedSimilarSection.base(candidate)
+        return IndexedSimilarSection.project(candidate)

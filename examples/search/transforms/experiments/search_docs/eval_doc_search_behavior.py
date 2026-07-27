@@ -34,4 +34,4 @@ class EvaluateDocumentSearchBehavior(Super):
         selected = super().select_requests(query, request, band, batch, params)
         inner_join(on=experiment.experiment_id == selected.experiment_id)
         where(experiment.is_active)
-        return BehaviorRequest.base(selected)
+        return BehaviorRequest.project(selected)

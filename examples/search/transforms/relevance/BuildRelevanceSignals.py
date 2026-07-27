@@ -83,17 +83,28 @@ class BuildRelevanceSignals(Transform):
             "ordinal",
         )
         personalized = user_band_memberships.where(F.col("user_band_id").isNotNull())
-        scoped = daily_impressions.drop("band_id").join(personalized, "user_id", "left").join(
-            fallback_candidates,
-            personalized.user_band_id == fallback_candidates.source_user_band_id,
-            "inner",
-        ).drop("user_band_id", "source_user_band_id").withColumnRenamed("user_band_fallback_id", "band_id").drop("ordinal")
+        scoped = (
+            daily_impressions.drop("band_id")
+            .join(personalized, "user_id", "left")
+            .join(
+                fallback_candidates,
+                personalized.user_band_id == fallback_candidates.source_user_band_id,
+                "inner",
+            )
+            .drop("user_band_id", "source_user_band_id")
+            .withColumnRenamed("user_band_fallback_id", "band_id")
+            .drop("ordinal")
+        )
         band_scoped = daily_impressions.drop("band_id").join(
-            band_memberships.where(F.col("band_id").isNotNull()).select("user_id", F.col("user_band_id").alias("band_id")),
+            band_memberships.where(F.col("band_id").isNotNull()).select(
+                "user_id", F.col("user_band_id").alias("band_id")
+            ),
             "user_id",
             "inner",
         )
-        return global_facts.unionByName(scoped, allowMissingColumns=False).unionByName(band_scoped, allowMissingColumns=False)
+        return global_facts.unionByName(scoped, allowMissingColumns=False).unionByName(
+            band_scoped, allowMissingColumns=False
+        )
 
     @step(input=daily_clicks, output=context_clicks)
     def declare_context_clicks(self, click: DailyClicks) -> DailyClicks:
@@ -140,17 +151,28 @@ class BuildRelevanceSignals(Transform):
             "ordinal",
         )
         personalized = user_band_memberships.where(F.col("user_band_id").isNotNull())
-        scoped = daily_clicks.drop("band_id").join(personalized, "user_id", "left").join(
-            fallback_candidates,
-            personalized.user_band_id == fallback_candidates.source_user_band_id,
-            "inner",
-        ).drop("user_band_id", "source_user_band_id").withColumnRenamed("user_band_fallback_id", "band_id").drop("ordinal")
+        scoped = (
+            daily_clicks.drop("band_id")
+            .join(personalized, "user_id", "left")
+            .join(
+                fallback_candidates,
+                personalized.user_band_id == fallback_candidates.source_user_band_id,
+                "inner",
+            )
+            .drop("user_band_id", "source_user_band_id")
+            .withColumnRenamed("user_band_fallback_id", "band_id")
+            .drop("ordinal")
+        )
         band_scoped = daily_clicks.drop("band_id").join(
-            band_memberships.where(F.col("band_id").isNotNull()).select("user_id", F.col("user_band_id").alias("band_id")),
+            band_memberships.where(F.col("band_id").isNotNull()).select(
+                "user_id", F.col("user_band_id").alias("band_id")
+            ),
             "user_id",
             "inner",
         )
-        return global_facts.unionByName(scoped, allowMissingColumns=False).unionByName(band_scoped, allowMissingColumns=False)
+        return global_facts.unionByName(scoped, allowMissingColumns=False).unionByName(
+            band_scoped, allowMissingColumns=False
+        )
 
     @step(input=[context_impressions, context_clicks, policy], output=query_signal_totals)
     def summarize_query(
@@ -182,7 +204,7 @@ class BuildRelevanceSignals(Transform):
             query=impression.query,
             document_id=impression.document_id,
         )
-        return QueryDocumentSignals.base(impression)(
+        return QueryDocumentSignals.project(impression)(
             impression_count=sum(impression.impression_count),
             click_count=sum(clicks),
             clicked_impression_count=sum(clicked_impressions),
@@ -225,7 +247,7 @@ class BuildRelevanceSignals(Transform):
         ).otherwise(0)
         decay = exp(-log(2.0) * age_days / policy.half_life_days)
         group_by(band_id=impression.band_id, document_id=impression.document_id)
-        return DocumentPopularity.base(impression)(
+        return DocumentPopularity.project(impression)(
             impression_count=sum(impression.impression_count),
             click_count=sum(clicks),
             clicked_impression_count=sum(clicked_impressions),

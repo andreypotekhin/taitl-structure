@@ -18,7 +18,7 @@ class Volume(Transform):
             frame=rows_between(preceding(19), current_row()),
         )
         volume_sma = rolling_avg(row.volume, partition_by=row.symbol, order_by=row.trade_date, preceding=19)
-        return VolumeIndicator.base(row)(
+        return VolumeIndicator.project(row)(
             volume_sma_20=when(bar_number >= 20, volume_sma).otherwise(None),
             relative_volume=when(bar_number >= 20, row.volume / volume_sma).otherwise(None),
             on_balance_volume=window_sum(

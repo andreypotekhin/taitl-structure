@@ -20,7 +20,7 @@ class SearchSentences(Transform):
         where(
             score.score.is_not_null(),
         )
-        return SentenceSearchResult.base(score, sentence)(
+        return SentenceSearchResult.project(score, sentence)(
             search_query_id=score.query_id,
             rank=row_number(
                 partition_by=(score.query_id, score.experiment_id),
@@ -30,5 +30,8 @@ class SearchSentences(Transform):
                     score.sentence_id.asc_nulls_first(),
                 ),
             ),
+            document_id=score.document_id,
+            section_id=score.section_id,
+            paragraph_id=score.paragraph_id,
             sentence_id=score.sentence_id,
         )

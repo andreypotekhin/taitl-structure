@@ -46,7 +46,9 @@ def watermark(field: object, *, delay: str = "10 minutes") -> None:
         raise TypeError(
             "watermark(delay=...) requires a non-negative fixed Spark interval string, such as '10 minutes'"
         )
-    context.operations.append(OperationPlan.watermark_operation(WatermarkPlan(expression=expression, delay=delay.strip())))
+    context.operations.append(
+        OperationPlan.watermark_operation(WatermarkPlan(expression=expression, delay=delay.strip()))
+    )
 
 
 @overload
@@ -65,9 +67,9 @@ def project(source: object | None = None, target: type[Schema] | Iterable[str] |
     context = current_symbolic_context()
     if target is None:
         if context is not None and isinstance(source, type) and issubclass(source, Schema):
-            return Projection(source=_default_project_source(context), target=source)
+            return Projection(sources=(_default_project_source(context),), target=source)
         if context is not None and source is not None:
-            return Projection(source=_default_project_source(context), fields=_project_fields(source))
+            return Projection(sources=(_default_project_source(context),), fields=_project_fields(source))
         raise TypeError("project(...) requires a source row first, such as project(order, OrderPublished)")
     if isinstance(source, type) and issubclass(source, Schema):
         raise TypeError("project(...) requires a source row first, such as project(order, OrderPublished)")
@@ -76,8 +78,8 @@ def project(source: object | None = None, target: type[Schema] | Iterable[str] |
     if isinstance(target, type):
         if not issubclass(target, Schema):
             raise TypeError("project(source, target) requires a Schema class target")
-        return Projection(source=source, target=target)
-    return Projection(source=source, fields=_project_fields(target))
+        return Projection(sources=(source,), target=target)
+    return Projection(sources=(source,), fields=_project_fields(target))
 
 
 class WhereChain:

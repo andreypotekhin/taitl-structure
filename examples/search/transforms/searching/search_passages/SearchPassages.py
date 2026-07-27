@@ -19,7 +19,7 @@ class SearchPassages(Transform):
 
     @step(input=paragraphs, output=contexts)
     def add_context(self, paragraph: Paragraph) -> ParagraphContext:
-        return ParagraphContext.base(paragraph)(
+        return ParagraphContext.project(paragraph)(
             paragraph_id=paragraph.id,
             preceding_content=lag(
                 paragraph.content,
@@ -49,7 +49,7 @@ class SearchPassages(Transform):
         where(
             score.score.is_not_null(),
         )
-        return PassageSearchResult.base(score, document, section, context)(
+        return PassageSearchResult.project(score, document, section, context)(
             search_query_id=query.id,
             rank=row_number(
                 partition_by=(query.id, score.experiment_id),

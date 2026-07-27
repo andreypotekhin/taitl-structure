@@ -55,7 +55,10 @@ class EvaluateDocumentRankingQuality(Super):
             & (result.experiment_id == query.experiment_id)
             & result.band_id.null_safe_eq(query.band_id)
         )
-        left_join(
-            on=(judgment.search_query_id == query.search_query_id) & (judgment.document_id == result.document_id)
+        left_join(on=(judgment.search_query_id == query.search_query_id) & (judgment.document_id == result.document_id))
+        return EvaluationResult.project(query, result, judgment)(
+            experiment_id=query.experiment_id,
+            band_id=query.band_id,
+            search_query_id=query.search_query_id,
+            document_id=result.document_id,
         )
-        return EvaluationResult.base(query, result, judgment)

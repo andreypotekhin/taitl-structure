@@ -52,7 +52,7 @@ class Clicks(Transform):
             user_id=impression.user_id,
             band_id=None,
         )
-        return DailyClicks.base(impression)(
+        return DailyClicks.project(impression)(
             window=day,
             query=query,
             user_id=impression.user_id,

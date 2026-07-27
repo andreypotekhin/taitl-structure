@@ -36,4 +36,4 @@ class Similarity(Transform):
 
     def limit(self, candidate: IndexedSimilarDocument) -> IndexedSimilarDocument:
         where(candidate.rank <= self.maximum_results)
-        return IndexedSimilarDocument.base(candidate)
+        return IndexedSimilarDocument.project(candidate)

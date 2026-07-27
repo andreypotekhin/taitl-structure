@@ -37,4 +37,4 @@ class SimilarParagraphs(Transform):
 
     def limit(self, candidate: IndexedSimilarParagraph) -> IndexedSimilarParagraph:
         where(candidate.rank <= self.maximum_results)
-        return IndexedSimilarParagraph.base(candidate)
+        return IndexedSimilarParagraph.project(candidate)

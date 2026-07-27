@@ -65,25 +65,65 @@ class Schema:
         return build
 
     @classmethod
-    def project(cls, source: object):
+    def project(cls, *sources: object):
         from structure.plugin.api.v1.model import current_symbolic_context
 
         context = current_symbolic_context()
         project = None if context is None else getattr(context, "project", None)
         if not callable(project):
             raise RuntimeError(f"{cls.__name__}.project(...) can only be used while a plugin authors a Structure step")
-        return project(source, target=cls)
+        if not sources:
+            raise TypeError(f"{cls.__name__}.project(...) requires at least one source row")
+        return project(*sources, target=cls)
 
     @classmethod
     def _base_values(cls, sources: tuple[object, ...]) -> dict[str, object]:
+        bases = cls._structure_schema_bases
+        if not bases:
+            raise TypeError(f"{cls.__name__}.base(...) requires a schema that directly inherits from another Schema")
+        if len(sources) != len(bases):
+            raise TypeError(
+                f"{cls.__name__}.base(...) requires {len(bases)} source row(s), one for each direct schema base"
+            )
         values: dict[str, object] = {}
-        for field in cls._structure_fields:
-            for source in sources:
+        for base, source in zip(bases, sources, strict=True):
+            source_schema = cls._source_schema(source)
+            if source_schema is None or not set(base._structure_fields).issubset(source_schema._structure_fields):
+                actual = type(source).__name__ if source_schema is None else source_schema.__name__
+                raise TypeError(
+                    f"{cls.__name__}.base(...) source for {base.__name__} must provide every "
+                    f"{base.__name__} field, but {actual} does not"
+                )
+            for field in base._structure_fields:
+                if field in cls._structure_local_fields or field in values:
+                    continue
                 value = cls._field_value(source, field)
                 if value is not _MISSING:
                     values[field] = value
-                    break
         return values
+
+    @classmethod
+    def _project_values(cls, sources: tuple[object, ...]) -> dict[str, object]:
+        values: dict[str, object] = {}
+        for field in cls._structure_fields:
+            providers = [source for source in sources if cls._source_has_field(source, field)]
+            if len(providers) == 1:
+                value = cls._field_value(providers[0], field)
+                if value is not _MISSING:
+                    values[field] = value
+        return values
+
+    @staticmethod
+    def _source_schema(source: object) -> type["Schema"] | None:
+        if isinstance(source, Schema):
+            return type(source)
+        schema = getattr(source, "_structure_scope_schema", None)
+        return schema if isinstance(schema, type) and issubclass(schema, Schema) else None
+
+    @classmethod
+    def _source_has_field(cls, source: object, field: str) -> bool:
+        schema = cls._source_schema(source)
+        return schema is not None and field in schema._structure_fields
 
     @staticmethod
     def _field_value(source: object, field: str) -> object:
@@ -115,9 +155,7 @@ class Schema:
         except (NameError, TypeError):
             resolved = annotations
         return {
-            name: hint
-            for name, hint in resolved.items()
-            if name in annotations and get_origin(hint) is not ClassVar
+            name: hint for name, hint in resolved.items() if name in annotations and get_origin(hint) is not ClassVar
         }
 
 

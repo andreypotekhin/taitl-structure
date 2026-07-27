@@ -105,9 +105,81 @@ def test_evaluation_params_matches_global_band_with_null_safe_equality() -> None
         def select(self, candidate: Candidate, params: EvaluationParams) -> Candidate:
             cross_join(params, allow_cartesian=True)
             where(params.matches_band(candidate.band_id))
-            return Candidate.base(candidate)
+            return Candidate.project(candidate)
 
     assert _body(Select).filters[0].kind == "null_safe_eq"
+
+
+def test_schema_project_merges_unrelated_rows() -> None:
+    """I can project distinct fields from multiple unrelated source rows."""
+
+    class Left(Schema):
+        id = string(nullable=False)
+
+    class Right(Schema):
+        name = string(nullable=False)
+
+    class Combined(Schema):
+        id = string(nullable=False)
+        name = string(nullable=False)
+
+    @transform
+    class Merge(Transform):
+        lefts = input(Left)
+        rights = input(Right)
+        combined = output(Combined)
+
+        def merge(self, left: Left, right: Right) -> Combined:
+            cross_join(right, allow_cartesian=True)
+            return Combined.project(left, right)
+
+    projection = {assignment.field.name: assignment.expression for assignment in _body(Merge).projection}
+
+    assert projection["id"].data["scope"] == "left"
+    assert projection["name"].data["scope"] == "right"
+
+
+def test_schema_project_requires_override_for_duplicate_source_field() -> None:
+    """I must choose a source when unrelated rows provide the same target field."""
+
+    class Left(Schema):
+        id = string(nullable=False)
+
+    class Right(Schema):
+        id = string(nullable=False)
+
+    @transform
+    class Merge(Transform):
+        lefts = input(Left)
+        rights = input(Right)
+        merged = output(Left)
+
+        def merge(self, left: Left, right: Right) -> Left:
+            cross_join(right, allow_cartesian=True)
+            return Left.project(left, right)
+
+    with pytest.raises(StructureCompileError, match="all provide Left.id"):
+        _body(Merge)
+
+
+def test_schema_base_requires_matching_direct_parent_rows() -> None:
+    """I can use base only with one source for each direct schema parent."""
+
+    class Parent(Schema):
+        id = string(nullable=False)
+
+    class Child(Parent):
+        name = string(nullable=False)
+
+    class Unrelated(Schema):
+        code = string(nullable=False)
+
+    with pytest.raises(TypeError, match="directly inherits"):
+        Unrelated.base(Unrelated(code="code"))
+    with pytest.raises(TypeError, match="requires 1 source row"):
+        Child.base()
+    with pytest.raises(TypeError, match="must provide every Parent field"):
+        Child.base(Unrelated(code="code"))
 
 
 def test_dsl_functions_produce_nested_symbolic_expressions(orders_plan) -> None:
@@ -229,10 +301,7 @@ def test_plain_python_expression_extensions_are_symbolic() -> None:
                 line_total=order.price * order.quantity,
             )
 
-    projection = {
-        assignment.field.name: assignment.expression
-        for assignment in _body_pyspark4(Publish).projection
-    }
+    projection = {assignment.field.name: assignment.expression for assignment in _body_pyspark4(Publish).projection}
 
     assert projection["customer_id"].data == {"function": "upper"}
     assert projection["customer_id"].args[0].data == {"function": "trim"}
@@ -391,10 +460,7 @@ def test_string_predicates_are_typed_symbolic_expressions() -> None:
                 has_release_number=status.rlike(r"release-[0-9]+"),
             )
 
-    projection = {
-        assignment.field.name: assignment.expression
-        for assignment in _body_pyspark4(Publish).projection
-    }
+    projection = {assignment.field.name: assignment.expression for assignment in _body_pyspark4(Publish).projection}
 
     assert [(expression.kind, expression.data, expression.nullable) for expression in projection.values()] == [
         ("contains", {"pattern": "new"}, True),
@@ -448,10 +514,7 @@ def test_collection_indexing_is_typed_and_symbolic() -> None:
             source = cast(Any, row)
             return Published(first_tag=source.tags[0], region=source.attributes["region"])
 
-    projection = {
-        assignment.field.name: assignment.expression
-        for assignment in _body_pyspark4(Publish).projection
-    }
+    projection = {assignment.field.name: assignment.expression for assignment in _body_pyspark4(Publish).projection}
 
     assert [(expression.kind, expression.type, expression.nullable) for expression in projection.values()] == [
         ("item", types.string(), True),
@@ -509,10 +572,7 @@ def test_scalar_casts_are_typed_symbolic_expressions() -> None:
                 try_count=source.raw_count.try_cast(types.integer()),
             )
 
-    projection = {
-        assignment.field.name: assignment.expression
-        for assignment in _body_pyspark4(Publish).projection
-    }
+    projection = {assignment.field.name: assignment.expression for assignment in _body_pyspark4(Publish).projection}
 
     actual = [
         (expression.kind, expression.type.name if expression.type else None, expression.nullable)
@@ -594,9 +654,7 @@ def test_string_sql_helpers_are_typed_symbolic_expressions() -> None:
                 label=concat_ws(" / ", row.label, "release"),
             )
 
-    projection = {
-        assignment.field.name: assignment.expression for assignment in _body(Publish).projection
-    }
+    projection = {assignment.field.name: assignment.expression for assignment in _body(Publish).projection}
 
     assert [
         (expression.data, expression.type.name if expression.type else None) for expression in projection.values()
@@ -712,9 +770,7 @@ def test_temporal_sql_helpers_are_typed_symbolic_expressions() -> None:
                 month=date_trunc(row.recorded_at, unit="month"),
             )
 
-    projection = {
-        assignment.field.name: assignment.expression for assignment in _body(Publish).projection
-    }
+    projection = {assignment.field.name: assignment.expression for assignment in _body(Publish).projection}
 
     assert [
         (expression.data, expression.type.name if expression.type else None, expression.nullable)
@@ -775,9 +831,7 @@ def test_numeric_sql_helpers_are_typed_symbolic_expressions() -> None:
                 floor=floor(row.amount),
             )
 
-    projection = {
-        assignment.field.name: assignment.expression for assignment in _body(Publish).projection
-    }
+    projection = {assignment.field.name: assignment.expression for assignment in _body(Publish).projection}
 
     assert [
         (expression.data, expression.type.name if expression.type else None) for expression in projection.values()
@@ -837,9 +891,7 @@ def test_predicate_sql_helpers_are_typed_symbolic_expressions() -> None:
                 invalid_score=isnan(row.score),
             )
 
-    projection = {
-        assignment.field.name: assignment.expression for assignment in _body(Publish).projection
-    }
+    projection = {assignment.field.name: assignment.expression for assignment in _body(Publish).projection}
 
     assert [(expression.kind, expression.nullable) for expression in projection.values()] == [
         ("is_null", False),

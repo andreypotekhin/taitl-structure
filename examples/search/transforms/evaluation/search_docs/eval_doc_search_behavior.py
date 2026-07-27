@@ -66,7 +66,9 @@ class EvaluateDocumentSearchBehavior(Transform):
     @step(output=displayed)
     def select_impressions(self, request: BehaviorRequest, impression: Impression) -> BehaviorImpression:
         inner_join(on=impression.search_request_id == request.search_request_id)
-        return BehaviorImpression.base(request, impression)(
+        return BehaviorImpression.project(request, impression)(
+            search_request_id=request.search_request_id,
+            query=request.query,
             impression_id=impression.id,
             click_count=0,
             long_click_count=0,
@@ -128,7 +130,7 @@ class EvaluateDocumentSearchBehavior(Transform):
         clicked_count = sum(when(measured.click_count > 0, 1).otherwise(0))
         long_count = sum(when(measured.long_click_count > 0, 1).otherwise(0))
         first_long = min(measured.position, where=measured.long_click_count > 0)
-        return BehaviorRequestTotals.base(selected)(
+        return BehaviorRequestTotals.project(selected)(
             result_count=result_count,
             clicked_result_count=clicked_count,
             long_clicked_result_count=long_count,
@@ -152,7 +154,7 @@ class EvaluateDocumentSearchBehavior(Transform):
 
     @step(input=request_metrics, output=measured_requests)
     def publish_requests(self, request: BehaviorRequestMetrics) -> DocumentSearchRequestBehavior:
-        return DocumentSearchRequestBehavior.base(request)
+        return DocumentSearchRequestBehavior.project(request)
 
     @step(input=measured, output=exposure)
     def summarize_exposure(self, measured: BehaviorImpression) -> BehaviorExposure:
@@ -184,7 +186,7 @@ class EvaluateDocumentSearchBehavior(Transform):
             band_id=request.band_id,
             ranking_version=request.ranking_version,
         )
-        return BehaviorDailyCounts.base(request)(
+        return BehaviorDailyCounts.project(request)(
             request_count=sum(1),
             zero_result_request_count=sum(when(request.result_count == 0, 1).otherwise(0)),
             clicked_request_count=sum(when(request.has_click, 1).otherwise(0)),
@@ -221,8 +223,8 @@ class EvaluateDocumentSearchBehavior(Transform):
 
     @step(input=measured_requests, output=request_behaviors)
     def publish_request_behaviors(self, request: DocumentSearchRequestBehavior) -> DocumentSearchRequestBehavior:
-        return DocumentSearchRequestBehavior.base(request)
+        return DocumentSearchRequestBehavior.project(request)
 
     @step(input=summarized_daily, output=daily_behavior)
     def publish_daily_behavior(self, daily: DailyDocumentSearchBehavior) -> DailyDocumentSearchBehavior:
-        return DailyDocumentSearchBehavior.base(daily)
+        return DailyDocumentSearchBehavior.project(daily)

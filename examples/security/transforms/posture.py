@@ -79,7 +79,7 @@ class SecurityPosture(Transform):
             & array_contains(candidate.device_vuln_ids, candidate.vuln_id)
             & ((candidate.device_os_id == candidate.software_id) | installed)
         )
-        return VulnerabilityExposure.base(candidate)
+        return VulnerabilityExposure.project(candidate)
 
     def publish(self, finding: VulnerabilityExposure) -> VulnerabilityExposure:
-        return VulnerabilityExposure.base(finding)
+        return VulnerabilityExposure.project(finding)
