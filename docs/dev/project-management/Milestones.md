@@ -348,10 +348,9 @@ the breaking v5 migration.
 
 ## M11: v6 Typed PySpark API Closure, Example-Hook Retirement, and Bounded Recurrence
 
-Status: active (Sprint 26). Sprints 23--25 delivered the v6 API ledger, PySpark plugin decomposition, Security hook
-retirement, and Search hook retirement. The remaining feature slice is bounded ordered timeline recurrence, governed by
-`docs/dev/planning/P07182601.V6-timeline-scan-recurrence.plan.md` and
-`docs/dev/specifications/OrderedTimelineScan.md`; Sprint 27 remains release evidence and challenge closure.
+Status: active (Sprint 27). Sprints 23--26 delivered the v6 API ledger, PySpark plugin decomposition, Security hook
+retirement, Search hook retirement, and bounded ordered timeline recurrence. Sprint 27 remains release evidence and
+challenge closure.
 
 ### Exit Criteria
 

@@ -64,4 +64,7 @@ explain/traceability, and obtain equivalent online and generated batch PySpark o
 - [x] (2026-07-27) Cleared unrelated PySpark 3.5 full-lane blockers found during release probing: passage-search
   projection fields, search generated-schema fixture coverage/order, long-valued generated similarity query labels,
   online higher-order lambda struct-field evaluation, and an integration-session AQE plan-string OOM.
-- [ ] Run full release regression evidence.
+- [x] (2026-07-27) Completed full release regression evidence. `make build` passed with 1310 tests passing, 39
+  skipped, the supplemental rigidity pass passed with 34 tests passing and 6 skipped, and package build produced both
+  sdist and wheel. Full Docker Compose integration passed for ordinary PySpark: `pyspark35` passed with 35 tests and 3
+  skipped in 6:02; `pyspark40` passed with 38 tests in 6:54.

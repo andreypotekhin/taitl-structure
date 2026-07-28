@@ -1,13 +1,12 @@
 """PySpark sequence and series schemas."""
 
 from structure import Schema
-from structure.plugin.pyspark import double, long, string
+from structure.plugin.pyspark import array, double, integer, long
 
 
-class SequenceTick(Schema):
-    """One ordered point in a PySpark sequence partition."""
+class Tick(Schema):
+    """One ordered point in a finite PySpark sequence."""
 
-    series = string(nullable=False)
     index = long(nullable=False)
 
 
@@ -18,12 +17,25 @@ class FibonacciState(Schema):
     current = long(nullable=False)
 
 
-class FibonacciRow(Schema):
+class FibonacciNumber(Schema):
     """A PySpark Fibonacci value at one sequence position."""
 
-    series = string(nullable=False)
     index = long(nullable=False)
     value = long(nullable=False)
+
+
+class PrimeState(Schema):
+    """State carried while discovering prime numbers."""
+
+    primes = array(integer(), contains_null=False, nullable=False)
+    current = integer(nullable=False)
+
+
+class PrimeNumber(Schema):
+    """A PySpark prime number at one sequence position."""
+
+    index = long(nullable=False)
+    prime = integer(nullable=False)
 
 
 class SeriesState(Schema):
@@ -36,7 +48,6 @@ class SeriesState(Schema):
 class SeriesApproximation(Schema):
     """One partial sum of a numerical series."""
 
-    series = string(nullable=False)
     index = long(nullable=False)
     term = double(nullable=False)
     value = double(nullable=False)

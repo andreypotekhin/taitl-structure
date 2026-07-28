@@ -297,9 +297,10 @@ honest boundary for actions, driver algorithms, arbitrary Python, sources/sinks,
 - Sprint 25 (+): admitted typed relation operations—generators, branch/set composition, self aliases, ordering, bounds,
   assertions including parent references, bounded hierarchy/fallback expansion, and priority selection—and retired the
   scheduled Search hooks in independently verifiable slices.
-- Sprint 26 (active): deliver the separately specified bounded ordered timeline `scan(...)` recurrence feature using
+- Sprint 26 (+): delivered the separately specified bounded ordered timeline `scan(...)` recurrence feature using
   the stable relation/recipe boundaries from Sprint 25.
-- Sprint 27: close release evidence and the unaddressed Challenges.md inventory, with no new feature family admitted.
+- Sprint 27 (active): close release evidence and the unaddressed Challenges.md inventory, with no new feature family
+  admitted.
 
 ### v6 must include
 

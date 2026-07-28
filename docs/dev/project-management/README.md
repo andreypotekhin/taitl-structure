@@ -38,9 +38,9 @@ project-management/
     Sprint16_V3StreamingOrchestration.md
     Sprint23_V6ApiLedgerAndPluginDecomposition.md
     Sprint24_V6SecurityReconciliation.md
-    Sprint26_V6OrderedTimelineRecurrence.md
     Sprint27_V6ReleaseAndChallengeClosure.md
     done/
+      Sprint26_V6OrderedTimelineRecurrence.md
       Sprint25_V6RelationOperationsAndSearchMigration.md
       Sprint12_V3JoinParityHardening.md
       Sprint13_V3AggregationParity.md
@@ -130,6 +130,6 @@ v6 follows the v5 plugin hardening work with a deliberately bounded typed-PySpar
    collection/exact-one/global aggregates, and retirement of both Security raw hooks.
 3. **Sprint 25 (+): typed relation operations and Search migration**: generators, union composition, self aliases,
    ordering/selection, and hook retirement after output-equivalence evidence.
-4. **Sprint 26 (active): bounded timeline recurrence**: the separately specified batch-only ordered `scan(...)` feature.
-5. **Sprint 27: release and challenge closure**: live evidence, documentation, executable specifications, and C27--C34
+4. **Sprint 26 (+): bounded timeline recurrence**: the separately specified batch-only ordered `scan(...)` feature.
+5. **Sprint 27 (active): release and challenge closure**: live evidence, documentation, executable specifications, and C27--C34
    disposition, with no new feature family.

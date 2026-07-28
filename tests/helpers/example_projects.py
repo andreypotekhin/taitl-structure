@@ -1135,20 +1135,25 @@ def render_school_iterable_example() -> dict[str, str]:
 
 def _render_school_pyspark_example() -> dict[str, str]:
     from examples.school.schemas.sequences import (
-        FibonacciRow,
+        FibonacciNumber,
         FibonacciState,
+        PrimeNumber,
+        PrimeState,
         SequenceTick,
         SeriesApproximation,
         SeriesState,
+        Tick,
     )
-    from examples.school.transforms.sequences import Fibonacci
+    from examples.school.transforms.sequences import Fibonacci, PrimeNumbers
     from examples.school.transforms.series import EAsSeries, Ln2AsSeries, PiAsSeries
 
     schema_modules: dict[str, Sequence[type[Schema]]] = {
         "examples.school.schemas.sequences": [
-            SequenceTick,
+            Tick,
             FibonacciState,
-            FibonacciRow,
+            FibonacciNumber,
+            PrimeState,
+            PrimeNumber,
             SeriesState,
             SeriesApproximation,
         ]
@@ -1158,7 +1163,11 @@ def _render_school_pyspark_example() -> dict[str, str]:
             "examples.school.transforms.sequences.Fibonacci": cast(
                 PySparkExecutionPlan,
                 Compiler.frontend.compile()(Fibonacci, materialize_schemas=False).lowered,
-            )
+            ),
+            "examples.school.transforms.sequences.PrimeNumbers": cast(
+                PySparkExecutionPlan,
+                Compiler.frontend.compile()(PrimeNumbers, materialize_schemas=False).lowered,
+            ),
         },
         source_module="examples.school.transforms.sequences",
         generated_package="examples.structure_generated.school",
