@@ -1,4 +1,4 @@
-# Generated PySpark
+# Generated PySpark Source
 
 Structure can emit generated PySpark code.
 
@@ -143,10 +143,3 @@ Developers should:
 Developers should not edit generated files by hand. If generated code is wrong, change the Structure source,
 configuration, or generator, then regenerate.
 
-## Why Generated Code Is Longer
-
-Structure lets developers maintain compact source while reviewers and operators can inspect explicit PySpark.
-
-Example: `add_promotion()` source on the left, generated PySpark on the right.
-
-![](../res/img/screenshots/add_promotion.screen.jpg)

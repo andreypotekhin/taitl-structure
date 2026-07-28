@@ -3,9 +3,6 @@
 ## Project overview
 [Overview.md](../Overview.md)
 
-## User stories and use cases
-See [UserStories.md](specifications/UserStories.md) for detailed description of library external behavior.
-
 ## Terminology
 See [Terminology.md](Terminology.md) for project language.
 
@@ -18,11 +15,6 @@ Main: [Architecture.md](Architecture.md)
 Design docs: **/docs/dev/design**
 
 Specifications: **/docs/dev/specifications**
-
-## Coding
-Code structure: [Code.md](Code.md)
-
-Coding style: [Style.md](Style.md)
 
 ## Setup
 See [Setup.md](Setup.md) for project setup and prerequisites.
@@ -41,7 +33,61 @@ See [Setup.md](Setup.md) for project setup and prerequisites.
     make install
     make build
 
+## Coding
+
+Code structure: [Code.md](Code.md)
+
+Coding style: [Style.md](Style.md)
+
+## Default Project Layout
+
+For execution (default):
+
+```text
+src/
+  my_package/
+    schemas/
+    transforms/
+```
+
+For code generation and generated-code execution:
+
+```text
+src/
+  my_package/
+    schemas/
+    transforms/
+generated/
+  structure_generated/
+    my_package/
+      pyspark/
+        schemas/
+        transforms/
+    runtime/
+    traceability/  # compiler metadata, not runtime telemetry
+```
+
+For example, `src/my_package/` generates `generated/structure_generated/my_package/pyspark/`.
+
+Mark both `src` and `generated` as source roots in the IDE. The paths and package names are configurable.
+
+## Targets and Plugins
+
+Structure's public `structure` package contains target-neutral schema, transform, configuration, and session APIs.
+Target DSLs are owned by plugins. The PySpark DSL is imported from `structure.plugin.pyspark`; configured under `[tool.structure.plugin.pyspark]`. Structure selects one plugin target for each
+transform, then orchestrates compilation, execution, generation, artifacts, and diagnostics through its versioned
+Plugin API. Use `@transform(target="...")`, a session or command `target=`, or `plugin.default` to select it.
+
+An external plugin may use its own import package and DSL. Different transforms in one project can select different
+installed plugins, but one composed pipeline always uses one target. See [Configuration.md](Configuration.md) and
+[Plugin Authoring](dev/PluginAuthoring.md).
+
+Rebuilding
+
+
+
 ## Testing
+
 Main: [Testing.md](Testing.md)
 
 Testing guidelines: [Style.md](Style.md)

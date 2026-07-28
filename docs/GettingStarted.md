@@ -178,7 +178,7 @@ Results are available as DataFrames in transform's declared outputs.
 
 Use the next steps if you want generated PySpark code.
 
-## 6. (Optional) Check and Compile
+## 6. (Optional) Compile to disk
 
 ```bash
 structure check
@@ -260,7 +260,7 @@ result = EnrichOrdersGenerated(spark=spark).run(
 enriched_df = result.enriched
 ```
 
-## 9. Example use from Airflow
+## 9. Example use with Airflow
 
 We can run a Transform as part of Airflow or other orchestrator - no code generation needed.
 

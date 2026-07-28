@@ -180,10 +180,11 @@ Content style:
   test placement, internal checklists, and lowering explanations when the lowering is the same or similar to a PySpark
   concept.
 
-Help a new user to get familiar with the library by making it easy to absorb content. For instance, try not to refer
-to concepts which haven't been introduced, or include a link or a brief definition; prioritize content from more
-general/common path to less general/less common use cases.
-Typical reading order for new/unfamiliar user:
+Help a new user to get familiar with the library by making it easy to absorb content for first-time reader. 
+- Avoid, if possible, refering to concepts which haven't been introduced, or include a link or a brief definition; 
+- Prioritize content from more general/common path to less general/less common use cases.
+- Do not overspecify nouns. Right: Wrong: 
+Typical reading order for first-time reader:
 - [Readme.md](../../Readme.md) is the main entry point for end-users
 - [QuickRef.md](../QuickRef.md)
 - Reference pages (`/docs/reference/`)

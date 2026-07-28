@@ -106,8 +106,18 @@ class ExpandedRuntimeTerm(Schema):
     weight = string(nullable=False)
 
 
+class ExplodedRuntimeTerm(Schema):
+    token = string(nullable=False)
+    weight = string(nullable=False)
+
+
 class PublishedRuntimeTerm(Schema):
     ordinal = long(nullable=False)
+    token = string(nullable=False)
+    weight = string(nullable=False)
+
+
+class PublishedExplodedRuntimeTerm(Schema):
     token = string(nullable=False)
     weight = string(nullable=False)
 
@@ -967,6 +977,37 @@ def test_online_runner_applies_posexplode_struct_before_projection(monkeypatch) 
         "withColumn:weight=col(__structure_expanded_item.weight)",
         "drop:__structure_expanded_pos,__structure_expanded_item",
         "select:ordinal=col(ordinal),token=col(token),weight=col(weight)",
+        "alias:published",
+    )
+
+
+def test_online_runner_applies_explode_struct_before_projection(monkeypatch) -> None:
+    """I can expand array-of-struct rows without adding an ordinal column."""
+
+    _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
+    invocation = FakeInvocation(terms=_frame("terms", RawTermBatch))
+
+    result = RunOnlinePySparkTransform()(
+        cast(Any, invocation),
+        _explode_struct_plan(),
+        session=SimpleNamespace(
+            online_executor=None,
+            spark="spark",
+            ctx=None,
+            execution_mode="online",
+            target="pyspark",
+        ),
+    )
+
+    published = cast(FakeFrame, result.published)
+
+    assert published.operations == (
+        "alias:rawTermBatch",
+        "select:*=*,__structure_expanded_item=explode(col(rawTermBatch.terms))",
+        "withColumn:token=col(__structure_expanded_item.token)",
+        "withColumn:weight=col(__structure_expanded_item.weight)",
+        "drop:__structure_expanded_item",
+        "select:token=col(token),weight=col(weight)",
         "alias:published",
     )
 
@@ -2425,6 +2466,58 @@ def _posexplode_struct_plan() -> PySparkExecutionPlan:
     )
 
 
+def _explode_struct_plan() -> PySparkExecutionPlan:
+    plan = _posexplode_struct_plan()
+    published_validation = PySparkValidationRecipe(
+        "published", PublishedExplodedRuntimeTerm, SchemaMode.STRICT, False, "output"
+    )
+    generator = PySparkPosexplodeStructRecipe(
+        expression=_field(RawTermBatch, "terms"),
+        scope="expanded",
+        schema=ExplodedRuntimeTerm,
+        ordinal=None,
+        function="explode",
+    )
+    projection = (
+        PySparkProjectionRecipe(
+            PublishedExplodedRuntimeTerm._structure_fields["token"],
+            _field_scope("expanded", ExplodedRuntimeTerm, "token"),
+        ),
+        PySparkProjectionRecipe(
+            PublishedExplodedRuntimeTerm._structure_fields["weight"],
+            _field_scope("expanded", ExplodedRuntimeTerm, "weight"),
+        ),
+    )
+    step = plan.steps[0]
+    updated = replace(
+        step,
+        output_schema=PublishedExplodedRuntimeTerm,
+        output_alias="published",
+        projection=projection,
+        operations=(PySparkOperationRecipe.explode_struct_operation(generator),),
+        results=(
+            replace(
+                step.results[0],
+                schema=PublishedExplodedRuntimeTerm,
+                projection=projection,
+                validations=(published_validation,),
+            ),
+        ),
+    )
+    return replace(
+        plan,
+        steps=(updated,),
+        outputs=(
+            replace(
+                plan.outputs[0],
+                input_schema=PublishedExplodedRuntimeTerm,
+                output_schema=PublishedExplodedRuntimeTerm,
+                validation=published_validation,
+            ),
+        ),
+    )
+
+
 def _relation_set_plan(operation: str, *, by_name: bool) -> PySparkExecutionPlan:
     input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
     archived_validation = PySparkValidationRecipe("archived", RawOrder, SchemaMode.STRICT, False, "input")
@@ -3361,6 +3454,9 @@ class FakeFunctions(ModuleType):
 
     def posexplode(self, column):
         return FakeColumn(f"posexplode({column.expression})")
+
+    def explode(self, column):
+        return FakeColumn(f"explode({column.expression})")
 
     def aggregate(self, column, initial, merge, finish=None):
         merged = merge(FakeColumn("acc"), FakeColumn("item"))

@@ -1,0 +1,139 @@
+from __future__ import annotations
+
+from typing import cast
+
+from structure.dsl import Schema
+from structure.plugin.api.v1.model import SymbolicContext
+from structure.plugin.pyspark.dsl.Expression import Expression
+from structure.plugin.pyspark.dsl.expressions import literal
+from structure.plugin.pyspark.dsl.operations import OperationPlan, PosexplodeStructPlan
+from structure.plugin.pyspark.dsl.RowScope import RowScope
+from structure.plugin.pyspark.dsl.types import ArrayType, LongType, StructType
+
+
+class CapturePySparkGenerator:
+    """Capture typed row generators into the current symbolic step."""
+
+    def explode_struct(
+        self,
+        context: SymbolicContext,
+        value: object,
+        *,
+        as_: type[Schema],
+        scope: str | None = None,
+    ) -> RowScope:
+        self._validate_options(as_=as_, ordinal=None, scope=scope)
+        expression = self._struct_array(value)
+        expression_type = cast(ArrayType, expression.type)
+        element_type = cast(StructType, expression_type.element)
+        self._validate_generated_schema(as_, element_schema=element_type.schema, ordinal=None, exact=True)
+        self._validate_source_collisions(context.default_project_source, generated=as_)
+
+        generated_scope = scope or self._default_scope(as_)
+        context.operations.append(
+            OperationPlan.explode_struct_operation(
+                PosexplodeStructPlan(
+                    expression=expression,
+                    scope=generated_scope,
+                    schema=as_,
+                    ordinal=None,
+                    function="explode",
+                )
+            )
+        )
+        context.register_current_scope(generated_scope)
+        return RowScope(name=generated_scope, schema=as_)
+
+    def posexplode_struct(
+        self,
+        context: SymbolicContext,
+        value: object,
+        *,
+        as_: type[Schema],
+        ordinal: str = "ordinal",
+        scope: str | None = None,
+    ) -> RowScope:
+        self._validate_options(as_=as_, ordinal=ordinal, scope=scope)
+        expression = self._struct_array(value)
+        expression_type = cast(ArrayType, expression.type)
+        element_type = cast(StructType, expression_type.element)
+        self._validate_generated_schema(as_, element_schema=element_type.schema, ordinal=ordinal, exact=False)
+        self._validate_source_collisions(context.default_project_source, generated=as_)
+
+        generated_scope = scope or self._default_scope(as_)
+        context.operations.append(
+            OperationPlan.posexplode_struct_operation(
+                PosexplodeStructPlan(
+                    expression=expression,
+                    scope=generated_scope,
+                    schema=as_,
+                    ordinal=ordinal,
+                )
+            )
+        )
+        context.register_current_scope(generated_scope)
+        return RowScope(name=generated_scope, schema=as_)
+
+    def _validate_options(self, *, as_: type[Schema], ordinal: str | None, scope: str | None) -> None:
+        if not isinstance(as_, type) or not issubclass(as_, Schema):
+            raise TypeError("posexplode_struct(as_=...) requires a Structure Schema class")
+        if ordinal is not None and (not isinstance(ordinal, str) or not ordinal):
+            raise TypeError("posexplode_struct(ordinal=...) requires a non-empty field name")
+        if scope is not None and (not isinstance(scope, str) or not scope):
+            raise TypeError("posexplode_struct(scope=...) requires a non-empty string")
+
+    def _struct_array(self, value: object) -> Expression:
+        expression = literal(value)
+        if not isinstance(expression, Expression) or not isinstance(expression.type, ArrayType):
+            raise TypeError("posexplode_struct(...) requires an array<struct<...>> Structure expression")
+        if not isinstance(expression.type.element, StructType):
+            raise TypeError("posexplode_struct(...) requires an array<struct<...>> Structure expression")
+        if expression.type.contains_null:
+            raise TypeError("posexplode_struct(...) requires contains_null=False until null element semantics are admitted")
+        return expression
+
+    def _validate_generated_schema(
+        self,
+        schema: type[Schema],
+        *,
+        element_schema: type[Schema],
+        ordinal: str | None,
+        exact: bool,
+    ) -> None:
+        fields = schema._structure_fields
+        if ordinal is not None and ordinal not in fields:
+            raise TypeError(f"posexplode_struct(as_=...) schema must declare ordinal field {ordinal!r}")
+        if ordinal is not None and not isinstance(fields[ordinal].type, LongType):
+            raise TypeError(f"posexplode_struct(ordinal={ordinal!r}) field must be long()")
+        for name, field in element_schema._structure_fields.items():
+            if name not in fields:
+                raise TypeError(f"posexplode_struct(as_=...) schema must declare element field {name!r}")
+            if fields[name].type != field.type:
+                raise TypeError(f"posexplode_struct(as_=...) field {name!r} must match the array element field type")
+        allowed = set(element_schema._structure_fields)
+        if ordinal is not None:
+            allowed.add(ordinal)
+        extras = sorted(set(fields) - allowed)
+        if exact and extras:
+            raise TypeError(
+                "explode_struct(as_=...) schema must contain exactly the array element fields; "
+                f"extra field(s): {', '.join(extras)}"
+            )
+
+    def _validate_source_collisions(self, source: object, *, generated: type[Schema]) -> None:
+        source_schema = getattr(source, "_structure_scope_schema", None)
+        if not isinstance(source_schema, type) or not issubclass(source_schema, Schema):
+            return
+        source_schema = cast(type[Schema], source_schema)
+        source_columns = {field.column for field in source_schema._structure_fields.values()}
+        generated_columns = {field.column for field in generated._structure_fields.values()}
+        collisions = sorted(source_columns & generated_columns)
+        if collisions:
+            raise TypeError(
+                "posexplode_struct(as_=...) generated columns collide with current input column(s): "
+                f"{', '.join(collisions)}. Use field aliases on the generated schema."
+            )
+
+    def _default_scope(self, schema: type[Schema]) -> str:
+        name = schema.__name__
+        return name[:1].lower() + name[1:]

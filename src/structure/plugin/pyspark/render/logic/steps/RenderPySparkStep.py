@@ -12,7 +12,6 @@ from structure.plugin.pyspark.compiler.model.PySparkHookRecipe import PySparkHoo
 from structure.plugin.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoinRecipe
 from structure.plugin.pyspark.compiler.model.PySparkOrderedTimelineScanRecipe import PySparkOrderedTimelineScanRecipe
 from structure.plugin.pyspark.compiler.model.PySparkOutputRecipe import PySparkOutputRecipe
-from structure.plugin.pyspark.compiler.model.PySparkPosexplodeStructRecipe import PySparkPosexplodeStructRecipe
 from structure.plugin.pyspark.compiler.model.PySparkSelectedRowsRecipe import PySparkSelectedRowsRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.plugin.pyspark.compiler.model.PySparkValidationRecipe import PySparkValidationRecipe
@@ -22,6 +21,7 @@ from structure.plugin.pyspark.dsl.types import DecimalType, StructType, Structur
 from structure.plugin.pyspark.render.logic.expressions.RenderPySparkExpression import render_pyspark_expression
 from structure.plugin.pyspark.render.logic.steps.RenderPySparkAggregatePlan import RenderPySparkAggregatePlan
 from structure.plugin.pyspark.render.logic.steps.RenderPySparkFilters import RenderPySparkFilters
+from structure.plugin.pyspark.render.logic.steps.RenderPySparkStructGenerator import RenderPySparkStructGenerator
 
 
 class RenderPySparkStep:
@@ -29,6 +29,7 @@ class RenderPySparkStep:
     def __init__(self) -> None:
         self._aggregate_renderer = RenderPySparkAggregatePlan(self)
         self._filters_renderer = RenderPySparkFilters()
+        self._struct_generator_renderer = RenderPySparkStructGenerator()
 
     @property
     def _schema(self):
@@ -254,9 +255,19 @@ class RenderPySparkStep:
             if operation.kind == "posexplode_struct" and operation.posexplode_struct is not None:
                 generator_index += 1
                 ordered_lines.extend(
-                    self._posexplode_struct(
+                    self._struct_generator_renderer(
                         operation.posexplode_struct,
-                        step=step,
+                        aliases=self._scope_aliases(step),
+                        target=target,
+                        index=generator_index,
+                    )
+                )
+            if operation.kind == "explode_struct" and operation.posexplode_struct is not None:
+                generator_index += 1
+                ordered_lines.extend(
+                    self._struct_generator_renderer(
+                        operation.posexplode_struct,
+                        aliases=self._scope_aliases(step),
                         target=target,
                         index=generator_index,
                     )
@@ -591,43 +602,6 @@ class RenderPySparkStep:
                 f'        {target} = {prefix}_assertion.crossJoin({target}).drop("__structure_require_parent_hierarchy")',
             ]
         )
-        return lines
-
-    def _posexplode_struct(
-        self,
-        generator: PySparkPosexplodeStructRecipe,
-        *,
-        step: PySparkStepRecipe | PySparkOutputRecipe,
-        target: str,
-        index: int,
-    ) -> list[str]:
-        aliases = self._scope_aliases(step)
-        value = render_pyspark_expression(generator.expression, scope_aliases=aliases)
-        prefix = f"__structure_{self._identifier(generator.scope)}_{index}"
-        position = f"{prefix}_pos"
-        item = f"{prefix}_item"
-        lines = [
-            f"        {target} = {target}.select(",
-            "            \"*\",",
-            f"            F.posexplode({value}).alias({self._literal(position)}, {self._literal(item)}),",
-            "        )",
-            f"        {target} = {target}.withColumn(",
-            f"            {self._literal(generator.schema._structure_fields[generator.ordinal].column)},",
-            f"            F.col({self._literal(position)}).cast(T.LongType()),",
-            "        )",
-        ]
-        for name, field in generator.schema._structure_fields.items():
-            if name == generator.ordinal:
-                continue
-            lines.extend(
-                [
-                    f"        {target} = {target}.withColumn(",
-                    f"            {self._literal(field.column)},",
-                    f"            F.col({self._literal(f'{item}.{field.column}')}),",
-                    "        )",
-                ]
-            )
-        lines.append(f"        {target} = {target}.drop({self._literal(position)}, {self._literal(item)})")
         return lines
 
     def _ordered_timeline_scan(
@@ -1638,7 +1612,7 @@ class RenderPySparkStep:
             aliases[item.input_name] = item.right_alias
         for operation in step.operations:
             if operation.posexplode_struct is not None:
-                aliases[operation.posexplode_struct.scope] = ""
+                aliases.update(self._struct_generator_renderer.aliases(step))
             if operation.ordered_timeline_scan is not None:
                 aliases[operation.ordered_timeline_scan.row_scope] = ""
                 aliases[operation.ordered_timeline_scan.scope] = ""

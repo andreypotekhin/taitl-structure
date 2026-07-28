@@ -6,9 +6,13 @@ from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySpark
 from structure.plugin.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoinRecipe
 from structure.plugin.pyspark.compiler.model.PySparkOperationRecipe import PySparkOperationRecipe
 from structure.plugin.pyspark.dsl.joins import Join, JoinMethod
+from structure.plugin.pyspark.render.logic.explain.RenderPySparkGeneratorExplain import RenderPySparkGeneratorExplain
 
 
 class RenderPySparkExplainReport:
+
+    def __init__(self) -> None:
+        self._generators = RenderPySparkGeneratorExplain()
 
     @property
     def _streaming(self):
@@ -166,10 +170,7 @@ class RenderPySparkExplainReport:
         if operation.exactly_one is not None:
             return f"exactly_one(row_preserving scope={operation.exactly_one.scope})"
         if operation.posexplode_struct is not None:
-            return (
-                "posexplode_struct(row_multiplying "
-                f"scope={operation.posexplode_struct.scope} schema={operation.posexplode_struct.schema.__name__})"
-            )
+            return self._generators.posexplode_struct(operation.posexplode_struct)
         if operation.relation_alias is not None:
             return (
                 "relation_alias(row_preserving "

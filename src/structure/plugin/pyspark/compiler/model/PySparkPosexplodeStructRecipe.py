@@ -11,4 +11,5 @@ class PySparkPosexplodeStructRecipe:
     expression: PySparkExpressionRecipe
     scope: str
     schema: type[Schema]
-    ordinal: str
+    ordinal: str | None
+    function: str = "posexplode"

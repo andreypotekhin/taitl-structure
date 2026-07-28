@@ -11,6 +11,9 @@ from structure.plugin.pyspark.compiler.model.PySparkWatermarkRecipe import PySpa
 from structure.plugin.pyspark.dsl.joins import JoinMethod
 from structure.plugin.pyspark.execution.logic.expressions.EvaluatePySparkExpression import EvaluatePySparkExpression
 from structure.plugin.pyspark.execution.logic.InvokePySparkHooks import InvokePySparkHooks
+from structure.plugin.pyspark.execution.logic.running.RunOnlinePySparkStructGenerator import (
+    RunOnlinePySparkStructGenerator,
+)
 from structure.plugin.pyspark.execution.logic.ValidatePySparkFrame import ValidatePySparkFrame
 
 
@@ -19,6 +22,7 @@ class RunOnlinePySparkTransform:
     def __init__(self) -> None:
         self._expressions = EvaluatePySparkExpression()
         self._hooks = InvokePySparkHooks()
+        self._struct_generators = RunOnlinePySparkStructGenerator()
         self._validator = ValidatePySparkFrame()
 
     @property
@@ -277,6 +281,8 @@ class RunOnlinePySparkTransform:
                     prepared_frames[source] = prepared
                     prepared_frames[scope] = prepared
             if operation.kind == "posexplode_struct" and operation.posexplode_struct is not None:
+                df = self._posexplode_struct(step, df, operation.posexplode_struct, functions=functions, types=types)
+            if operation.kind == "explode_struct" and operation.posexplode_struct is not None:
                 df = self._posexplode_struct(step, df, operation.posexplode_struct, functions=functions, types=types)
             if operation.kind == "ordered_timeline_scan" and operation.ordered_timeline_scan is not None:
                 df = self._ordered_timeline_scan(
@@ -564,21 +570,9 @@ class RunOnlinePySparkTransform:
         return guard.crossJoin(frame).drop("__structure_require_parent_hierarchy")
 
     def _posexplode_struct(self, step, frame, generator, *, functions, types):
-        prefix = f"__structure_{generator.scope}"
-        position = f"{prefix}_pos"
-        item = f"{prefix}_item"
         aliases = self._scope_aliases(step)
         value = self._expressions.evaluate(generator.expression, functions=functions, aliases=aliases)
-        expanded = frame.select("*", functions.posexplode(value).alias(position, item))
-        expanded = expanded.withColumn(
-            generator.schema._structure_fields[generator.ordinal].column,
-            functions.col(position).cast(types.LongType()),
-        )
-        for name, field in generator.schema._structure_fields.items():
-            if name == generator.ordinal:
-                continue
-            expanded = expanded.withColumn(field.column, functions.col(f"{item}.{field.column}"))
-        return expanded.drop(position, item)
+        return self._struct_generators(frame, generator, functions=functions, types=types, value=value)
 
     def _ordered_timeline_scan(self, step, frame, scan, *, functions, types):
         prefix = f"__structure_{scan.scope.strip('_')}"

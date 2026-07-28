@@ -26,14 +26,14 @@ runtime behavior, and performance guardrails.
 19. Public API snapshot tests.
 20. Invariant tests.
 
-## Public Examples
+## Example Apps
 
-Public examples live under `examples/` and are treated as both documentation and test input. Example source files live
-under `examples/<package>/`, but their import package is `examples.<package>`. Checked-in generated output for each
-example package lives under `examples/structure_generated/<package>/` and imports as
+Public example apps live under `examples/` and are treated as both documentation and test input. Example source files live
+under `examples/<package>/`; their import package is `examples.<package>`. Checked-in generated output for each
+example package lives under `examples/structure_generated/<package>/` and the imports are
 `examples.structure_generated.<package>`.
 
-Example layout:
+Layout:
 
 ```text
 examples/
@@ -50,13 +50,8 @@ examples/
       traceability/
 ```
 
-Keep `res/testing/model/v*` focused on internal model fixtures. Do not put every public example domain under
-`res/testing/model/v*`; use `examples/` for user-readable examples and their golden generated output.
-
-Do not add `examples` as an import root for tests or IDE setup. Use the repository root as the import base so public
+Use the repository root as the import base so public
 examples do not create top-level packages such as `orders` that can shadow temporary projects or internal fixtures.
-`make lint` and `make type` include hand-written example source under `examples/`, while excluding fixtures and
-checked-in generated golden output.
 
 ## Generated-Code Correctness
 

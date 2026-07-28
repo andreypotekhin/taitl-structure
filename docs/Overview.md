@@ -16,21 +16,7 @@ Hand-written PySpark is powerful, but large pipelines often become difficult to 
 Structure makes schemas and transformations explicit Python classes while keeping the emitted PySpark visible
 to Spark's optimizer.
 
-## Targets and Plugins
-
-Structure's public `structure` package contains target-neutral schema, transform, configuration, and session APIs.
-Target DSLs are owned by plugins. The supported PySpark DSL is imported from `structure.plugin.pyspark`; its profile
-and runtime variant are configured under `[tool.structure.plugin.pyspark]`. Core selects one plugin target for each
-transform, then orchestrates compilation, execution, generation, artifacts, and diagnostics through its versioned
-Plugin API. Use `@transform(target="...")`, a session or command `target=`, or `plugin.default` to select it.
-
-An external plugin may use its own import package and DSL. Different transforms in one project can select different
-installed plugins, but one composed pipeline always uses one target. See [Configuration.md](Configuration.md) and
-[Plugin Authoring](dev/PluginAuthoring.md).
-
-
-
-## Less Code, More Spark!
+## Less Code, More Spark
 
 Structure reduces hand-maintained PySpark boilerplate. Pipelines express filtering, joins, projections, and
 normalization in plain Python while Spark still sees optimizer-visible DataFrame logic.
@@ -139,20 +125,7 @@ class EnrichOrders(Transform):
 Run a transform with `.run(session)`:
 
 ```python
-from structure import (
-    Schema,
-    StructureConfig,
-    StructureSession,
-    StructureTools,
-    Transform,
-    input,
-    lane,
-    output,
-    raw,
-    special,
-    step,
-    transform,
-)
+from structure import *
 from orders.transforms.order import EnrichOrders
 
 session = StructureSession(spark=spark, ctx=ctx)
@@ -275,38 +248,6 @@ For custom logic, create expression helpers with `@special(type="expr")`. This k
 
 Arbitrary PySpark is still supported, but only through explicit hooks. Hooks receive the underlying DataFrame(s) for arbitrary manipulation. Hooks are escape hatches: Structure calls them, records them as opaque boundaries, but does not treat their body as compiler-visible logic.
 
-## Default Project Layout
-
-For execution (default):
-
-```text
-src/
-  my_package/
-    schemas/
-    transforms/
-```
-
-For code generation and generated-code execution:
-
-```text
-src/
-  my_package/
-    schemas/
-    transforms/
-generated/
-  structure_generated/
-    my_package/
-      pyspark/
-        schemas/
-        transforms/
-    runtime/
-    traceability/  # compiler metadata, not runtime telemetry
-```
-
-For example, `src/my_package/` generates `generated/structure_generated/my_package/pyspark/`.
-
-Mark both `src` and `generated` as source roots in the IDE. The paths and package names are configurable.
-
 ## Configuration
 
 Structure works by convention, so many projects need no configuration. Add `pyproject.toml` when paths, modes,
@@ -362,20 +303,7 @@ structure tools schemas generate --from-path data/orders.parquet --format parque
 `StructureTools` can generate starter Structure schema classes from existing Spark schemes/DataFrames.
 
 ```python
-from structure import (
-    Schema,
-    StructureConfig,
-    StructureSession,
-    StructureTools,
-    Transform,
-    input,
-    lane,
-    output,
-    raw,
-    special,
-    step,
-    transform,
-)
+from structure import *
 
 code = StructureTools.schemas.generate(schema=orders_df.schema, to="OrderRaw")
 code = StructureTools.schemas.generate(schema=orders_df, to="OrderRaw")
@@ -421,19 +349,4 @@ QuickRef: [QuickRef.md](QuickRef.md)
 
 Get started: [GettingStarted.md](GettingStarted.md)
 
-Solve a focused pipeline outcome: [Recipes.md](Recipes.md)
-
-
-
-## Roadmap
-
-The roadmap follows an IR-first path: prove strict execution with optional code generation, grow into
-mainstream analytical pipelines, promote Spark Connect for completed batch features, and deepen compiler-visible
-streaming transformations while callers retain orchestration.
-
-- **Initial release:** PySpark execution by default, optional generated PySpark classes, projection,
-  filtering, joins, typed intermediate schemas, hooks, validation, compiler provenance, static dataflow
-  traceability, streaming-compatible transforms, diagnostic links, and setup checks.
-- **Current capability boundary:** analytical joins, windows, aggregations, higher-order functions, Spark Connect batch
-  support, compiler-visible streaming transformations, and broad typed PySpark coverage. Callers retain `readStream`,
-  `writeStream`, triggers, checkpoints, output modes, query lifecycle, loading, storage, and orchestration.
+Recipes: [Recipes.md](Recipes.md)

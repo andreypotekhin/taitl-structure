@@ -128,6 +128,7 @@ COMMON_CAPABILITIES = frozenset(
         ("higher_order", "map_zip_with"),
         ("higher_order", "try_element_at"),
         ("dedupe", "drop_duplicates"),
+        ("generator", "explode_struct"),
         ("generator", "posexplode_struct"),
         ("relation", "hierarchy_closure"),
         ("relation", "hierarchy_fallbacks"),

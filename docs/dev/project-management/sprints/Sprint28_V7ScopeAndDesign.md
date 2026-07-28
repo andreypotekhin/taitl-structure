@@ -49,3 +49,16 @@ Maintainers have one checked v7 backlog, a dependency-ordered feature sequence, 
   first implementation ExecPlan remain next.
 - [x] (2026-07-27) Expanded v7 to commit the three deferred transformation families and three streaming-adoption
   stages; the delivery roadmap now spans Sprints 29--35.
+- [x] (2026-07-28) Started implementation with the first behavior-preserving typed struct-generator extraction:
+  generated rendering and online execution now use focused delegates, with existing `posexplode_struct(...)`
+  characterization still passing.
+- [x] (2026-07-28) Extracted generator streaming diagnostics and explain text to focused delegates, preserving the
+  existing batch-only generator diagnostic and explain output.
+- [x] (2026-07-28) Extracted generator compiler lowering to `MapPySparkGenerator`, preserving the existing
+  `posexplode_struct(...)` operation recipe contract.
+- [x] (2026-07-28) Completed the generator-adjacent extraction baseline: traceability is already isolated in
+  `MapGeneratorTraceability`, and DSL capture now delegates validation and symbolic operation registration to
+  `CapturePySparkGenerator`.
+- [x] (2026-07-28) Added the first v7 generator helper, `explode_struct(...)`, through DSL capture, capability
+  admission, lowering, generated rendering, online execution, explain, traceability, streaming diagnostics, tests, and
+  the checked coverage catalog. Live PySpark 3.5/4.0 evidence remains for the release gate.

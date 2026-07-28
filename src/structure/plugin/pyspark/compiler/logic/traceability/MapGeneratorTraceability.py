@@ -19,11 +19,11 @@ class MapGeneratorTraceability:
     ) -> tuple[CompilerProvenance, ...]:
         return tuple(
             CompilerProvenance(
-                source=f"source:{source_transform}.{step.name}.posexplode_struct.{index}",
-                ir=f"ir:{plan.transform}.step.{step.ordinal}.{step.name}.posexplode_struct.{index}",
+                source=f"source:{source_transform}.{step.name}.{operation.kind}.{index}",
+                ir=f"ir:{plan.transform}.step.{step.ordinal}.{step.name}.{operation.kind}.{index}",
                 generated=(
                     f"generated:{transform_module}.{plan.transform}Generated.run."
-                    f"step.{step.ordinal}.{step.name}.posexplode_struct.{index}"
+                    f"step.{step.ordinal}.{step.name}.{operation.kind}.{index}"
                 ),
             )
             for index, operation in enumerate(step.operations)
@@ -33,9 +33,9 @@ class MapGeneratorTraceability:
     def dependencies(self, step: PySparkStepRecipe) -> tuple[DataflowDependency, ...]:
         return tuple(
             DataflowDependency(
-                target=f"{step.name}.posexplode_struct[{index}].{operation.posexplode_struct.scope}",
+                target=f"{step.name}.{operation.kind}[{index}].{operation.posexplode_struct.scope}",
                 sources=self._dataflow.reads(operation.posexplode_struct.expression),
-                operation="posexplode_struct",
+                operation=operation.kind,
                 step=step.name,
                 detail={
                     "scope": operation.posexplode_struct.scope,

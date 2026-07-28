@@ -145,6 +145,17 @@ class OperationPlan:
         )
 
     @staticmethod
+    def explode_struct_operation(explode_struct: PosexplodeStructPlan) -> OperationPlan:
+        return OperationPlan(
+            "explode_struct",
+            posexplode_struct=explode_struct,
+            family="generator",
+            capability=OperationCapability("generator", "explode_struct"),
+            cardinality=OperationCardinality.ROW_MULTIPLYING,
+            streaming=StreamingSupport.BATCH_ONLY,
+        )
+
+    @staticmethod
     def ordered_timeline_scan_operation(scan: OrderedTimelineScanPlan) -> OperationPlan:
         return OperationPlan(
             "ordered_timeline_scan",

@@ -3,6 +3,7 @@ from typing import Any, cast
 
 from structure.plugin.api.v1.model import BackendCapabilities, CapabilityRequirement, StepPlan
 from structure.plugin.pyspark.compiler.logic.maps.MapPySparkExpression import MapPySparkExpression
+from structure.plugin.pyspark.compiler.logic.maps.MapPySparkGenerator import MapPySparkGenerator
 from structure.plugin.pyspark.compiler.logic.maps.MapPySparkHook import MapPySparkHook
 from structure.plugin.pyspark.compiler.logic.maps.MapPySparkName import MapPySparkName
 from structure.plugin.pyspark.compiler.logic.maps.MapPySparkValidation import MapPySparkValidation
@@ -18,7 +19,6 @@ from structure.plugin.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoi
 from structure.plugin.pyspark.compiler.model.PySparkJoinTemporalRecipe import PySparkJoinTemporalRecipe
 from structure.plugin.pyspark.compiler.model.PySparkOperationRecipe import PySparkOperationRecipe
 from structure.plugin.pyspark.compiler.model.PySparkOrderedTimelineScanRecipe import PySparkOrderedTimelineScanRecipe
-from structure.plugin.pyspark.compiler.model.PySparkPosexplodeStructRecipe import PySparkPosexplodeStructRecipe
 from structure.plugin.pyspark.compiler.model.PySparkProjectionRecipe import PySparkProjectionRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationAliasRecipe import PySparkRelationAliasRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationAssertionRecipe import PySparkRelationAssertionRecipe
@@ -50,6 +50,7 @@ class MapPySparkStep:
     def __init__(self) -> None:
         self._names = MapPySparkName()
         self._expressions = MapPySparkExpression()
+        self._generators = MapPySparkGenerator(self._expressions)
         self._hooks = MapPySparkHook()
         self._validations = MapPySparkValidation()
 
@@ -212,16 +213,19 @@ class MapPySparkStep:
             if operation.kind == "posexplode_struct" and operation.posexplode_struct is not None:
                 recipes.append(
                     self._operation_modes(
-                        PySparkOperationRecipe.posexplode_struct_operation(
-                            PySparkPosexplodeStructRecipe(
-                                expression=self._expressions.map(
-                                    operation.posexplode_struct.expression,
-                                    capabilities=capabilities,
-                                ),
-                                scope=operation.posexplode_struct.scope,
-                                schema=operation.posexplode_struct.schema,
-                                ordinal=operation.posexplode_struct.ordinal,
-                            )
+                        self._generators.posexplode_struct(
+                            operation.posexplode_struct,
+                            capabilities=capabilities,
+                        ),
+                        operation,
+                    )
+                )
+            if operation.kind == "explode_struct" and operation.posexplode_struct is not None:
+                recipes.append(
+                    self._operation_modes(
+                        self._generators.posexplode_struct(
+                            operation.posexplode_struct,
+                            capabilities=capabilities,
                         ),
                         operation,
                     )

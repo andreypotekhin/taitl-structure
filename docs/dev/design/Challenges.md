@@ -662,7 +662,7 @@ Recommended direction:
 
 ## +C28. Operational Integration Recipes Are Missing
 
-Resolved for v6 adoption by [OperationalIntegration.md](../../OperationalIntegration.md) and linked troubleshooting
+Resolved for v6 adoption by [Integration.md](../../Integration.md) and linked troubleshooting
 entries for generated imports, stale generated output, target mismatch, and Spark-capable schema tooling. Managed Spark
 runtime certification remains evidence-driven: release notes must record the exact runtime and command that passed
 rather than infer target support from local tests.

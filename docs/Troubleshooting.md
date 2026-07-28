@@ -34,7 +34,7 @@ When: Running CI or reviewing a pull request after changing schemas, transforms,
 Error: `structure compile --fail-on-diff` reports generated file differences.
 Cause: Source and generated artifacts were not updated together.
 Fix: Run `structure compile`, review the generated transform, schema, docs, and traceability diffs, then commit the
-     source and generated output together. See [OperationalIntegration.md](OperationalIntegration.md).
+     source and generated output together. See [Integration.md](Integration.md).
 
 ### Problem (tools): schema generation CLI cannot start Spark
 

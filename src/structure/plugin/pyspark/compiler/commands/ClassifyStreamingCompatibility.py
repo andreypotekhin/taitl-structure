@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 from structure.plugin.api.v1.model import StreamingFinding, StreamingReport
+from structure.plugin.pyspark.compiler.logic.streaming.ClassifyGeneratorStreamingCompatibility import (
+    ClassifyGeneratorStreamingCompatibility,
+)
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.plugin.pyspark.compiler.model.PySparkHookRecipe import PySparkHookRecipe
@@ -10,6 +13,9 @@ from structure.plugin.pyspark.dsl.operations import StreamingSupport
 
 
 class ClassifyStreamingCompatibility:
+
+    def __init__(self) -> None:
+        self._generators = ClassifyGeneratorStreamingCompatibility()
 
     def __call__(self, plan: PySparkExecutionPlan, *, required: bool = False) -> StreamingReport:
         findings: list[StreamingFinding] = []
@@ -52,7 +58,7 @@ class ClassifyStreamingCompatibility:
                 if operation.relation_assertion is not None:
                     findings.extend(self._relation_assertion(step.name, operation.kind))
                 if operation.posexplode_struct is not None:
-                    findings.extend(self._posexplode_struct(step.name, operation.posexplode_struct.scope))
+                    findings.extend(self._generators.posexplode_struct(step.name, operation.posexplode_struct))
                 if operation.relation_order is not None:
                     findings.extend(self._relation_ordering(step.name, "order_by"))
                 if operation.relation_bound is not None:
@@ -238,18 +244,6 @@ class ClassifyStreamingCompatibility:
                 operation=operation,
                 problem=f"{operation}(...) computes validation aggregates and is batch-only in v1 streaming compatibility.",
                 use="Keep this transform batch-only or enforce relation assertions before the streaming transform.",
-            ),
-        )
-
-    def _posexplode_struct(self, step: str, scope: str) -> tuple[StreamingFinding, ...]:
-        return (
-            StreamingFinding(
-                code="STREAM-E0801",
-                support=StreamingSupport.BATCH_ONLY,
-                step=step,
-                operation=f"posexplode_struct {scope}",
-                problem="posexplode_struct(...) is row-expanding and is batch-only until generator streaming semantics are admitted.",
-                use="Keep this transform batch-only or perform row expansion before the streaming transform.",
             ),
         )
 
