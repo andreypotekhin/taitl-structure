@@ -13,6 +13,7 @@ class StructureConfigBuilder:
         generated_dir = root / str(values["generated_dir"])
         generated_docs_formats = cast(list[str], values["generated_docs_formats"])
         generated_code_options = cast(list[str], values["generated_code_options"])
+        generated_code_hard_wrap = cast(int, values["generated_code_hard_wrap"])
         hook_target_default = values["hook_target_default"]
         plugin_configuration = PluginConfiguration.resolve({"plugin": cast(Mapping[str, object], values["plugin"])})
         plugins = plugin_configuration.plugins
@@ -33,6 +34,7 @@ class StructureConfigBuilder:
             generated_docs_dir=generated_dir / str(values["generated_docs_dir"]),
             generated_docs_formats=tuple(generated_docs_formats),
             generated_code_options=tuple(sorted(generated_code_options)),
+            generated_code_hard_wrap=generated_code_hard_wrap,
             execution_mode=str(values["execution_mode"]),
             target=target,
             hook_target_default=hook_targets,

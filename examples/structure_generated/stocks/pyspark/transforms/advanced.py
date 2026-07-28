@@ -41,12 +41,63 @@ class AdvancedGenerated:
             F.col("daily_return.return_1d"),
             F.col("benchmarks.return_1d").alias("benchmark_return"),
             (F.col("daily_return.return_1d") - F.col("benchmarks.return_1d")).alias("excess_return"),
-            F.when(F.col("daily_return.return_1d").isNotNull(), F.rank().over(Window.partitionBy(F.col("daily_return.trade_date")).orderBy(F.col("daily_return.return_1d").desc_nulls_last())).cast(T.LongType())).otherwise(F.lit(None)).alias("daily_return_rank"),
-            F.when((F.row_number().over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc())).cast(T.LongType()) >= F.lit(20)), ((F.col("daily_return.close") / F.max(F.col("daily_return.close")).over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc()).rowsBetween(-19, Window.currentRow))) - F.lit(1.0))).otherwise(F.lit(None)).alias("drawdown_from_20d_high"),
-            F.when((F.row_number().over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc())).cast(T.LongType()) >= F.lit(21)), F.stddev(F.col("daily_return.return_1d")).over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc()).rowsBetween(-19, Window.currentRow))).otherwise(F.lit(None)).alias("daily_return_stddev_20"),
+            F.when(
+                F.col("daily_return.return_1d").isNotNull(),
+                F.rank()
+                .over(
+                    Window.partitionBy(F.col("daily_return.trade_date")).orderBy(
+                        F.col("daily_return.return_1d").desc_nulls_last()
+                    )
+                )
+                .cast(T.LongType()),
+            )
+            .otherwise(F.lit(None))
+            .alias("daily_return_rank"),
+            F.when(
+                (
+                    F.row_number()
+                    .over(
+                        Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc())
+                    )
+                    .cast(T.LongType())
+                    >= F.lit(20)
+                ),
+                (
+                    (
+                        F.col("daily_return.close")
+                        / F.max(F.col("daily_return.close")).over(
+                            Window.partitionBy(F.col("daily_return.symbol"))
+                            .orderBy(F.col("daily_return.trade_date").asc())
+                            .rowsBetween(-19, Window.currentRow)
+                        )
+                    )
+                    - F.lit(1.0)
+                ),
+            )
+            .otherwise(F.lit(None))
+            .alias("drawdown_from_20d_high"),
+            F.when(
+                (
+                    F.row_number()
+                    .over(
+                        Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc())
+                    )
+                    .cast(T.LongType())
+                    >= F.lit(21)
+                ),
+                F.stddev(F.col("daily_return.return_1d")).over(
+                    Window.partitionBy(F.col("daily_return.symbol"))
+                    .orderBy(F.col("daily_return.trade_date").asc())
+                    .rowsBetween(-19, Window.currentRow)
+                ),
+            )
+            .otherwise(F.lit(None))
+            .alias("daily_return_stddev_20"),
         )
 
         # Step method: indicators
         indicators = indicators.alias("advanced_indicator")
         assert_schema(indicators, ADVANCED_INDICATOR_SCHEMA, name="AdvancedIndicator", mode="strict")
-        return TransformResult({"indicators": indicators}, single=True, schema={"indicators": ADVANCED_INDICATOR_SCHEMA})
+        return TransformResult(
+            {"indicators": indicators}, single=True, schema={"indicators": ADVANCED_INDICATOR_SCHEMA}
+        )

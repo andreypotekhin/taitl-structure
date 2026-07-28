@@ -15,6 +15,7 @@ class StructureConfig:
     generated_docs_dir: Path
     generated_docs_formats: tuple[str, ...]
     generated_code_options: tuple[str, ...]
+    generated_code_hard_wrap: int
     execution_mode: str
     target: str
     hook_target_default: tuple[str, ...] | str

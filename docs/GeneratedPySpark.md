@@ -39,6 +39,7 @@ list and keeps the `run(*, inputs)` API shown above.
 
 ```toml
 generated_code_options = ["mirror_methods", "embed_exprs", "embed_hooks", "embed_udfs"]
+generated_code_hard_wrap = 120
 ```
 
 `mirror_methods` renders one zero-argument generated method for each schema-returning source step. Its generated class

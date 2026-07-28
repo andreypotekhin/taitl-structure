@@ -6,8 +6,22 @@ from pyspark.sql import Window
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
-from examples.structure_generated.search.pyspark.schemas.extract import MARKED_DOCUMENT_LINE_SCHEMA, PARAGRAPH_CONTENT_SCHEMA, PARAGRAPH_DRAFT_SCHEMA, PARAGRAPH_LINE_GROUP_SCHEMA, PARAGRAPH_LINE_SCHEMA, SECTION_HEADING_SCHEMA, SECTION_KEY_SCHEMA
-from examples.structure_generated.search.pyspark.schemas.text import DOCUMENT_SCHEMA, PARAGRAPH_SCHEMA, SECTION_SCHEMA, SENTENCE_SCHEMA, WORD_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.extract import (
+    MARKED_DOCUMENT_LINE_SCHEMA,
+    PARAGRAPH_CONTENT_SCHEMA,
+    PARAGRAPH_DRAFT_SCHEMA,
+    PARAGRAPH_LINE_GROUP_SCHEMA,
+    PARAGRAPH_LINE_SCHEMA,
+    SECTION_HEADING_SCHEMA,
+    SECTION_KEY_SCHEMA,
+)
+from examples.structure_generated.search.pyspark.schemas.text import (
+    DOCUMENT_SCHEMA,
+    PARAGRAPH_SCHEMA,
+    SECTION_SCHEMA,
+    SENTENCE_SCHEMA,
+    WORD_SCHEMA,
+)
 
 
 class ExtractTextGenerated:
@@ -28,7 +42,12 @@ class ExtractTextGenerated:
         marked_lines = documents.alias("document")
         marked_lines = marked_lines.select(
             "*",
-            F.posexplode(F.transform(F.split(F.regexp_replace(F.col("document.content"), '\\r\\n?', '\n'), '\n', -1), lambda item: F.struct(item.alias("line")))).alias("__structure_document_line_1_pos", "__structure_document_line_1_item"),
+            F.posexplode(
+                F.transform(
+                    F.split(F.regexp_replace(F.col("document.content"), '\\r\\n?', '\n'), '\n', -1),
+                    lambda item: F.struct(item.alias("line")),
+                )
+            ).alias("__structure_document_line_1_pos", "__structure_document_line_1_item"),
         )
         marked_lines = marked_lines.withColumn(
             "ordinal",
@@ -43,16 +62,39 @@ class ExtractTextGenerated:
             F.col("document.id").alias("document_id"),
             F.col("ordinal").alias("line_ordinal"),
             F.col("line"),
-            F.when((F.trim(F.regexp_extract(F.col("line"), '^\\s*#+\\s+(.+?)\\s*$', 1)) != F.lit('')), F.trim(F.regexp_extract(F.col("line"), '^\\s*#+\\s+(.+?)\\s*$', 1))).otherwise(F.lit(None)).alias("heading"),
+            F.when(
+                (F.trim(F.regexp_extract(F.col("line"), '^\\s*#+\\s+(.+?)\\s*$', 1)) != F.lit('')),
+                F.trim(F.regexp_extract(F.col("line"), '^\\s*#+\\s+(.+?)\\s*$', 1)),
+            )
+            .otherwise(F.lit(None))
+            .alias("heading"),
             (F.trim(F.col("line")) == F.lit('')).alias("is_blank"),
-            F.sum(F.when((F.trim(F.regexp_extract(F.col("line"), '^\\s*#+\\s+(.+?)\\s*$', 1)) != F.lit('')), F.lit(1)).otherwise(F.lit(0))).over(Window.partitionBy(F.col("document.id")).orderBy(F.col("ordinal").asc()).rowsBetween(Window.unboundedPreceding, Window.currentRow)).alias("section_ordinal"),
-            F.sum(F.when((F.trim(F.col("line")) == F.lit('')), F.lit(1)).otherwise(F.lit(0))).over(Window.partitionBy(F.col("document.id")).orderBy(F.col("ordinal").asc()).rowsBetween(Window.unboundedPreceding, Window.currentRow)).alias("paragraph_group"),
+            F.sum(
+                F.when(
+                    (F.trim(F.regexp_extract(F.col("line"), '^\\s*#+\\s+(.+?)\\s*$', 1)) != F.lit('')), F.lit(1)
+                ).otherwise(F.lit(0))
+            )
+            .over(
+                Window.partitionBy(F.col("document.id"))
+                .orderBy(F.col("ordinal").asc())
+                .rowsBetween(Window.unboundedPreceding, Window.currentRow)
+            )
+            .alias("section_ordinal"),
+            F.sum(F.when((F.trim(F.col("line")) == F.lit('')), F.lit(1)).otherwise(F.lit(0)))
+            .over(
+                Window.partitionBy(F.col("document.id"))
+                .orderBy(F.col("ordinal").asc())
+                .rowsBetween(Window.unboundedPreceding, Window.currentRow)
+            )
+            .alias("paragraph_group"),
         )
         assert_schema(marked_lines, MARKED_DOCUMENT_LINE_SCHEMA, name="MarkedDocumentLine", mode="strict")
 
         # Step method: select_paragraph_lines
         paragraph_lines = marked_lines.alias("marked_document_line")
-        paragraph_lines = paragraph_lines.where(((~(F.col("marked_document_line.is_blank")) & F.col("marked_document_line.heading").isNull())))
+        paragraph_lines = paragraph_lines.where(
+            ((~(F.col("marked_document_line.is_blank")) & F.col("marked_document_line.heading").isNull()))
+        )
         paragraph_lines = paragraph_lines.select(
             F.col("marked_document_line.document_id"),
             F.col("marked_document_line.section_ordinal"),
@@ -74,21 +116,43 @@ class ExtractTextGenerated:
 
         # Step method: collect_paragraph_lines
         paragraph_line_groups = paragraph_lines.alias("paragraph_line")
-        paragraph_line_groups = paragraph_line_groups.groupBy(
-            F.concat_ws('#p', F.col("paragraph_line.document_id"), F.col("paragraph_line.paragraph_group").cast('string')).alias("id"),
-            F.col("paragraph_line.document_id").alias("document_id"),
-            F.concat_ws('#s', F.col("paragraph_line.document_id"), F.col("paragraph_line.section_ordinal").cast('string')).alias("section_id"),
-            F.col("paragraph_line.section_ordinal").alias("section_ordinal"),
-            F.col("paragraph_line.paragraph_group").alias("paragraph_group"),
-        ).agg(
-            F.transform(F.sort_array(F.collect_list(F.when(F.col("paragraph_line.line").isNotNull(), F.struct(F.col("paragraph_line.line_ordinal").alias('_structure_order'), F.col("paragraph_line.line").alias('_structure_value')))), asc=True), lambda item: item.getField('_structure_value')).alias("lines"),
-        ).select(
-            F.col("id"),
-            F.col("document_id"),
-            F.col("section_id"),
-            F.col("section_ordinal"),
-            F.col("paragraph_group"),
-            F.col("lines"),
+        paragraph_line_groups = (
+            paragraph_line_groups.groupBy(
+                F.concat_ws(
+                    '#p', F.col("paragraph_line.document_id"), F.col("paragraph_line.paragraph_group").cast('string')
+                ).alias("id"),
+                F.col("paragraph_line.document_id").alias("document_id"),
+                F.concat_ws(
+                    '#s', F.col("paragraph_line.document_id"), F.col("paragraph_line.section_ordinal").cast('string')
+                ).alias("section_id"),
+                F.col("paragraph_line.section_ordinal").alias("section_ordinal"),
+                F.col("paragraph_line.paragraph_group").alias("paragraph_group"),
+            )
+            .agg(
+                F.transform(
+                    F.sort_array(
+                        F.collect_list(
+                            F.when(
+                                F.col("paragraph_line.line").isNotNull(),
+                                F.struct(
+                                    F.col("paragraph_line.line_ordinal").alias('_structure_order'),
+                                    F.col("paragraph_line.line").alias('_structure_value'),
+                                ),
+                            )
+                        ),
+                        asc=True,
+                    ),
+                    lambda item: item.getField('_structure_value'),
+                ).alias("lines"),
+            )
+            .select(
+                F.col("id"),
+                F.col("document_id"),
+                F.col("section_id"),
+                F.col("section_ordinal"),
+                F.col("paragraph_group"),
+                F.col("lines"),
+            )
         )
         assert_schema(paragraph_line_groups, PARAGRAPH_LINE_GROUP_SCHEMA, name="ParagraphLineGroup", mode="strict")
 
@@ -111,7 +175,15 @@ class ExtractTextGenerated:
             F.col("paragraph_content.document_id"),
             F.col("paragraph_content.section_id"),
             F.col("paragraph_content.section_ordinal"),
-            F.row_number().over(Window.partitionBy(F.col("paragraph_content.document_id"), F.col("paragraph_content.section_ordinal")).orderBy(F.col("paragraph_content.paragraph_group").asc())).cast(T.LongType()).cast('int').alias("ordinal"),
+            F.row_number()
+            .over(
+                Window.partitionBy(
+                    F.col("paragraph_content.document_id"), F.col("paragraph_content.section_ordinal")
+                ).orderBy(F.col("paragraph_content.paragraph_group").asc())
+            )
+            .cast(T.LongType())
+            .cast('int')
+            .alias("ordinal"),
             F.col("paragraph_content.content"),
             F.lit(None).cast(T.StringType()).alias("search_query_id"),
             F.lit(None).cast(T.DoubleType()).alias("score_overlap"),
@@ -152,7 +224,10 @@ class ExtractTextGenerated:
         section_headings_joined = section_headings.alias("section_headings")
         sections = sections.join(
             section_headings_joined,
-            ((F.col("section_headings.document_id") == F.col("section_key.document_id")) & (F.col("section_headings.section_ordinal") == F.col("section_key.section_ordinal"))),
+            (
+                (F.col("section_headings.document_id") == F.col("section_key.document_id"))
+                & (F.col("section_headings.section_ordinal") == F.col("section_key.section_ordinal"))
+            ),
             "left",
         )
         sections = sections.select(
@@ -170,7 +245,12 @@ class ExtractTextGenerated:
         sentence_rows = paragraph_drafts.alias("paragraph_draft")
         sentence_rows = sentence_rows.select(
             "*",
-            F.posexplode(F.transform(F.split(F.col("paragraph_draft.content"), '(?<=[.!?])\\s+', -1), lambda item: F.struct(item.alias("sentence_content")))).alias("__structure_sentence_text_1_pos", "__structure_sentence_text_1_item"),
+            F.posexplode(
+                F.transform(
+                    F.split(F.col("paragraph_draft.content"), '(?<=[.!?])\\s+', -1),
+                    lambda item: F.struct(item.alias("sentence_content")),
+                )
+            ).alias("__structure_sentence_text_1_pos", "__structure_sentence_text_1_item"),
         )
         sentence_rows = sentence_rows.withColumn(
             "position",
@@ -216,7 +296,11 @@ class ExtractTextGenerated:
         words = sentence_rows.alias("sentence")
         words = words.select(
             "*",
-            F.posexplode(F.transform(F.split(F.col("sentence.content"), '\\s+', -1), lambda item: F.struct(item.alias("word_token")))).alias("__structure_word_text_1_pos", "__structure_word_text_1_item"),
+            F.posexplode(
+                F.transform(
+                    F.split(F.col("sentence.content"), '\\s+', -1), lambda item: F.struct(item.alias("word_token"))
+                )
+            ).alias("__structure_word_text_1_pos", "__structure_word_text_1_item"),
         )
         words = words.withColumn(
             "position",
@@ -227,7 +311,9 @@ class ExtractTextGenerated:
             F.col("__structure_word_text_1_item.word_token"),
         )
         words = words.drop("__structure_word_text_1_pos", "__structure_word_text_1_item")
-        words = words.where(((F.lower(F.regexp_replace(F.trim(F.col("word_token")), '^[^A-Za-z0-9]+|[^A-Za-z0-9]+$', '')) != F.lit(''))))
+        words = words.where(
+            ((F.lower(F.regexp_replace(F.trim(F.col("word_token")), '^[^A-Za-z0-9]+|[^A-Za-z0-9]+$', '')) != F.lit('')))
+        )
         words = words.select(
             F.concat_ws('#w', F.col("sentence.id"), F.col("position").cast('string')).alias("id"),
             F.col("sentence.document_id"),
@@ -254,4 +340,13 @@ class ExtractTextGenerated:
         # Step method: words
         words = words.alias("word")
         assert_schema(words, WORD_SCHEMA, name="Word", mode="strict")
-        return TransformResult({"sections": sections, "paragraphs": paragraphs, "sentences": sentences, "words": words}, single=False, schema={"sections": SECTION_SCHEMA, "paragraphs": PARAGRAPH_SCHEMA, "sentences": SENTENCE_SCHEMA, "words": WORD_SCHEMA})
+        return TransformResult(
+            {"sections": sections, "paragraphs": paragraphs, "sentences": sentences, "words": words},
+            single=False,
+            schema={
+                "sections": SECTION_SCHEMA,
+                "paragraphs": PARAGRAPH_SCHEMA,
+                "sentences": SENTENCE_SCHEMA,
+                "words": WORD_SCHEMA,
+            },
+        )

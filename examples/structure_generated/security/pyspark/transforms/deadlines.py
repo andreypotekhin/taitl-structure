@@ -5,9 +5,21 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.security.runtime.schema_assert import TransformResult, assert_schema, project_schema
-from examples.structure_generated.security.pyspark.schemas.organization import DEPARTMENT_SCHEMA, ORG_SCHEMA, PERSON_SCHEMA, TEAM_SCHEMA
+from examples.structure_generated.security.pyspark.schemas.organization import (
+    DEPARTMENT_SCHEMA,
+    ORG_SCHEMA,
+    PERSON_SCHEMA,
+    TEAM_SCHEMA,
+)
 from examples.structure_generated.security.pyspark.schemas.remediate import VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA
-from examples.structure_generated.security.pyspark.schemas.reporting import DEPARTMENT_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA, ORG_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA, PERSON_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA, SECURITY_EVALUATION_SCHEMA, TEAM_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA, VULNERABILITY_DEADLINE_ACTIVITY_SCHEMA
+from examples.structure_generated.security.pyspark.schemas.reporting import (
+    DEPARTMENT_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA,
+    ORG_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA,
+    PERSON_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA,
+    SECURITY_EVALUATION_SCHEMA,
+    TEAM_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA,
+    VULNERABILITY_DEADLINE_ACTIVITY_SCHEMA,
+)
 
 
 class VulnerabilityDeadlineReportsGenerated:
@@ -26,7 +38,9 @@ class VulnerabilityDeadlineReportsGenerated:
         orgs: DataFrame,
         evaluation: DataFrame,
     ) -> TransformResult:
-        assert_schema(exposures, VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA, name="VulnerabilityWorkflowExposure", mode="strict")
+        assert_schema(
+            exposures, VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA, name="VulnerabilityWorkflowExposure", mode="strict"
+        )
         assert_schema(people, PERSON_SCHEMA, name="Person", mode="strict")
         assert_schema(teams, TEAM_SCHEMA, name="Team", mode="strict")
         assert_schema(departments, DEPARTMENT_SCHEMA, name="Department", mode="strict")
@@ -49,10 +63,40 @@ class VulnerabilityDeadlineReportsGenerated:
             F.col("vulnerability_workflow_exposure.department_id"),
             F.col("vulnerability_workflow_exposure.org_id"),
             F.col("evaluation.as_of_date"),
-            F.when((((F.col("vulnerability_workflow_exposure.is_active") & ~(F.col("vulnerability_workflow_exposure.is_deadline_paused"))) & (F.col("evaluation.as_of_date") >= F.date_sub(F.col("vulnerability_workflow_exposure.target_date"), 7))) & (F.col("evaluation.as_of_date") < F.col("vulnerability_workflow_exposure.target_date"))), F.lit(1)).otherwise(F.lit(0)).alias("imminent_count"),
-            F.when(((F.col("vulnerability_workflow_exposure.is_active") & ~(F.col("vulnerability_workflow_exposure.is_deadline_paused"))) & (F.col("evaluation.as_of_date") > F.col("vulnerability_workflow_exposure.target_date"))), F.lit(1)).otherwise(F.lit(0)).alias("overdue_count"),
+            F.when(
+                (
+                    (
+                        (
+                            F.col("vulnerability_workflow_exposure.is_active")
+                            & ~(F.col("vulnerability_workflow_exposure.is_deadline_paused"))
+                        )
+                        & (
+                            F.col("evaluation.as_of_date")
+                            >= F.date_sub(F.col("vulnerability_workflow_exposure.target_date"), 7)
+                        )
+                    )
+                    & (F.col("evaluation.as_of_date") < F.col("vulnerability_workflow_exposure.target_date"))
+                ),
+                F.lit(1),
+            )
+            .otherwise(F.lit(0))
+            .alias("imminent_count"),
+            F.when(
+                (
+                    (
+                        F.col("vulnerability_workflow_exposure.is_active")
+                        & ~(F.col("vulnerability_workflow_exposure.is_deadline_paused"))
+                    )
+                    & (F.col("evaluation.as_of_date") > F.col("vulnerability_workflow_exposure.target_date"))
+                ),
+                F.lit(1),
+            )
+            .otherwise(F.lit(0))
+            .alias("overdue_count"),
         )
-        assert_schema(activities, VULNERABILITY_DEADLINE_ACTIVITY_SCHEMA, name="VulnerabilityDeadlineActivity", mode="strict")
+        assert_schema(
+            activities, VULNERABILITY_DEADLINE_ACTIVITY_SCHEMA, name="VulnerabilityDeadlineActivity", mode="strict"
+        )
 
         # Step method: summarize_people
         person_summaries = people.alias("person")
@@ -61,24 +105,40 @@ class VulnerabilityDeadlineReportsGenerated:
         activities_2_joined = activities.alias("activities_2")
         person_summaries = person_summaries.join(
             activities_2_joined,
-            ((F.col("activities_2.person_id") == F.col("person.id")) & (F.col("activities_2.as_of_date") == F.col("evaluation.as_of_date"))),
+            (
+                (F.col("activities_2.person_id") == F.col("person.id"))
+                & (F.col("activities_2.as_of_date") == F.col("evaluation.as_of_date"))
+            ),
             "left",
         )
-        person_summaries = person_summaries.groupBy(
-            F.col("person.id").alias("person_id"),
-            F.col("person.name").alias("person_name"),
-            F.col("evaluation.as_of_date").alias("as_of_date"),
-        ).agg(
-            F.sum(F.coalesce(F.col("activities_2.imminent_count"), F.lit(0))).cast(T.LongType()).alias("imminent_count"),
-            F.sum(F.coalesce(F.col("activities_2.overdue_count"), F.lit(0))).cast(T.LongType()).alias("overdue_count"),
-        ).select(
-            F.col("as_of_date"),
-            F.col("imminent_count"),
-            F.col("overdue_count"),
-            F.col("person_id"),
-            F.col("person_name"),
+        person_summaries = (
+            person_summaries.groupBy(
+                F.col("person.id").alias("person_id"),
+                F.col("person.name").alias("person_name"),
+                F.col("evaluation.as_of_date").alias("as_of_date"),
+            )
+            .agg(
+                F.sum(F.coalesce(F.col("activities_2.imminent_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("imminent_count"),
+                F.sum(F.coalesce(F.col("activities_2.overdue_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("overdue_count"),
+            )
+            .select(
+                F.col("as_of_date"),
+                F.col("imminent_count"),
+                F.col("overdue_count"),
+                F.col("person_id"),
+                F.col("person_name"),
+            )
         )
-        assert_schema(person_summaries, PERSON_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA, name="PersonVulnerabilityDeadlineSummary", mode="strict")
+        assert_schema(
+            person_summaries,
+            PERSON_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA,
+            name="PersonVulnerabilityDeadlineSummary",
+            mode="strict",
+        )
 
         # Step method: summarize_teams
         team_summaries = teams.alias("team")
@@ -87,24 +147,40 @@ class VulnerabilityDeadlineReportsGenerated:
         activities_2_joined = activities.alias("activities_2")
         team_summaries = team_summaries.join(
             activities_2_joined,
-            ((F.col("activities_2.team_id") == F.col("team.id")) & (F.col("activities_2.as_of_date") == F.col("evaluation.as_of_date"))),
+            (
+                (F.col("activities_2.team_id") == F.col("team.id"))
+                & (F.col("activities_2.as_of_date") == F.col("evaluation.as_of_date"))
+            ),
             "left",
         )
-        team_summaries = team_summaries.groupBy(
-            F.col("team.id").alias("team_id"),
-            F.col("team.name").alias("team_name"),
-            F.col("evaluation.as_of_date").alias("as_of_date"),
-        ).agg(
-            F.sum(F.coalesce(F.col("activities_2.imminent_count"), F.lit(0))).cast(T.LongType()).alias("imminent_count"),
-            F.sum(F.coalesce(F.col("activities_2.overdue_count"), F.lit(0))).cast(T.LongType()).alias("overdue_count"),
-        ).select(
-            F.col("as_of_date"),
-            F.col("imminent_count"),
-            F.col("overdue_count"),
-            F.col("team_id"),
-            F.col("team_name"),
+        team_summaries = (
+            team_summaries.groupBy(
+                F.col("team.id").alias("team_id"),
+                F.col("team.name").alias("team_name"),
+                F.col("evaluation.as_of_date").alias("as_of_date"),
+            )
+            .agg(
+                F.sum(F.coalesce(F.col("activities_2.imminent_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("imminent_count"),
+                F.sum(F.coalesce(F.col("activities_2.overdue_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("overdue_count"),
+            )
+            .select(
+                F.col("as_of_date"),
+                F.col("imminent_count"),
+                F.col("overdue_count"),
+                F.col("team_id"),
+                F.col("team_name"),
+            )
         )
-        assert_schema(team_summaries, TEAM_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA, name="TeamVulnerabilityDeadlineSummary", mode="strict")
+        assert_schema(
+            team_summaries,
+            TEAM_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA,
+            name="TeamVulnerabilityDeadlineSummary",
+            mode="strict",
+        )
 
         # Step method: summarize_departments
         department_summaries = departments.alias("department")
@@ -113,24 +189,40 @@ class VulnerabilityDeadlineReportsGenerated:
         activities_2_joined = activities.alias("activities_2")
         department_summaries = department_summaries.join(
             activities_2_joined,
-            ((F.col("activities_2.department_id") == F.col("department.id")) & (F.col("activities_2.as_of_date") == F.col("evaluation.as_of_date"))),
+            (
+                (F.col("activities_2.department_id") == F.col("department.id"))
+                & (F.col("activities_2.as_of_date") == F.col("evaluation.as_of_date"))
+            ),
             "left",
         )
-        department_summaries = department_summaries.groupBy(
-            F.col("department.id").alias("department_id"),
-            F.col("department.name").alias("department_name"),
-            F.col("evaluation.as_of_date").alias("as_of_date"),
-        ).agg(
-            F.sum(F.coalesce(F.col("activities_2.imminent_count"), F.lit(0))).cast(T.LongType()).alias("imminent_count"),
-            F.sum(F.coalesce(F.col("activities_2.overdue_count"), F.lit(0))).cast(T.LongType()).alias("overdue_count"),
-        ).select(
-            F.col("as_of_date"),
-            F.col("imminent_count"),
-            F.col("overdue_count"),
-            F.col("department_id"),
-            F.col("department_name"),
+        department_summaries = (
+            department_summaries.groupBy(
+                F.col("department.id").alias("department_id"),
+                F.col("department.name").alias("department_name"),
+                F.col("evaluation.as_of_date").alias("as_of_date"),
+            )
+            .agg(
+                F.sum(F.coalesce(F.col("activities_2.imminent_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("imminent_count"),
+                F.sum(F.coalesce(F.col("activities_2.overdue_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("overdue_count"),
+            )
+            .select(
+                F.col("as_of_date"),
+                F.col("imminent_count"),
+                F.col("overdue_count"),
+                F.col("department_id"),
+                F.col("department_name"),
+            )
         )
-        assert_schema(department_summaries, DEPARTMENT_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA, name="DepartmentVulnerabilityDeadlineSummary", mode="strict")
+        assert_schema(
+            department_summaries,
+            DEPARTMENT_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA,
+            name="DepartmentVulnerabilityDeadlineSummary",
+            mode="strict",
+        )
 
         # Step method: summarize_orgs
         org_summaries = orgs.alias("org")
@@ -139,37 +231,82 @@ class VulnerabilityDeadlineReportsGenerated:
         activities_2_joined = activities.alias("activities_2")
         org_summaries = org_summaries.join(
             activities_2_joined,
-            ((F.col("activities_2.org_id") == F.col("org.id")) & (F.col("activities_2.as_of_date") == F.col("evaluation.as_of_date"))),
+            (
+                (F.col("activities_2.org_id") == F.col("org.id"))
+                & (F.col("activities_2.as_of_date") == F.col("evaluation.as_of_date"))
+            ),
             "left",
         )
-        org_summaries = org_summaries.groupBy(
-            F.col("org.id").alias("org_id"),
-            F.col("org.name").alias("org_name"),
-            F.col("evaluation.as_of_date").alias("as_of_date"),
-        ).agg(
-            F.sum(F.coalesce(F.col("activities_2.imminent_count"), F.lit(0))).cast(T.LongType()).alias("imminent_count"),
-            F.sum(F.coalesce(F.col("activities_2.overdue_count"), F.lit(0))).cast(T.LongType()).alias("overdue_count"),
-        ).select(
-            F.col("as_of_date"),
-            F.col("imminent_count"),
-            F.col("overdue_count"),
-            F.col("org_id"),
-            F.col("org_name"),
+        org_summaries = (
+            org_summaries.groupBy(
+                F.col("org.id").alias("org_id"),
+                F.col("org.name").alias("org_name"),
+                F.col("evaluation.as_of_date").alias("as_of_date"),
+            )
+            .agg(
+                F.sum(F.coalesce(F.col("activities_2.imminent_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("imminent_count"),
+                F.sum(F.coalesce(F.col("activities_2.overdue_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("overdue_count"),
+            )
+            .select(
+                F.col("as_of_date"),
+                F.col("imminent_count"),
+                F.col("overdue_count"),
+                F.col("org_id"),
+                F.col("org_name"),
+            )
         )
 
         # Step method: person_summaries
         person_summaries = person_summaries.alias("person_vulnerability_deadline_summary")
-        assert_schema(person_summaries, PERSON_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA, name="PersonVulnerabilityDeadlineSummary", mode="strict")
+        assert_schema(
+            person_summaries,
+            PERSON_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA,
+            name="PersonVulnerabilityDeadlineSummary",
+            mode="strict",
+        )
 
         # Step method: team_summaries
         team_summaries = team_summaries.alias("team_vulnerability_deadline_summary")
-        assert_schema(team_summaries, TEAM_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA, name="TeamVulnerabilityDeadlineSummary", mode="strict")
+        assert_schema(
+            team_summaries,
+            TEAM_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA,
+            name="TeamVulnerabilityDeadlineSummary",
+            mode="strict",
+        )
 
         # Step method: department_summaries
         department_summaries = department_summaries.alias("department_vulnerability_deadline_summary")
-        assert_schema(department_summaries, DEPARTMENT_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA, name="DepartmentVulnerabilityDeadlineSummary", mode="strict")
+        assert_schema(
+            department_summaries,
+            DEPARTMENT_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA,
+            name="DepartmentVulnerabilityDeadlineSummary",
+            mode="strict",
+        )
 
         # Step method: org_summaries
         org_summaries = org_summaries.alias("org_vulnerability_deadline_summary")
-        assert_schema(org_summaries, ORG_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA, name="OrgVulnerabilityDeadlineSummary", mode="strict")
-        return TransformResult({"person_summaries": person_summaries, "team_summaries": team_summaries, "department_summaries": department_summaries, "org_summaries": org_summaries}, single=False, schema={"person_summaries": PERSON_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA, "team_summaries": TEAM_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA, "department_summaries": DEPARTMENT_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA, "org_summaries": ORG_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA})
+        assert_schema(
+            org_summaries,
+            ORG_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA,
+            name="OrgVulnerabilityDeadlineSummary",
+            mode="strict",
+        )
+        return TransformResult(
+            {
+                "person_summaries": person_summaries,
+                "team_summaries": team_summaries,
+                "department_summaries": department_summaries,
+                "org_summaries": org_summaries,
+            },
+            single=False,
+            schema={
+                "person_summaries": PERSON_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA,
+                "team_summaries": TEAM_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA,
+                "department_summaries": DEPARTMENT_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA,
+                "org_summaries": ORG_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA,
+            },
+        )

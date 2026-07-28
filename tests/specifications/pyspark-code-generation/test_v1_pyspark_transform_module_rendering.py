@@ -1,4 +1,5 @@
 import ast
+import builtins
 import sys
 from typing import Any, cast
 
@@ -9,6 +10,7 @@ from structure.core.cli.commands.RenderExplainReport import render_explain_repor
 from structure.core.compiler.api import Compiler
 from structure.plugin.pyspark import *
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
+from structure.plugin.pyspark.render.logic.HardWrapGeneratedPython import HardWrapGeneratedPython
 from structure.plugin.pyspark.render.logic.RenderEmbeddedHooks import EmbeddedHookError
 
 
@@ -174,10 +176,10 @@ def test_v1_transform_module_renderer_composes_steps_and_final_return() -> None:
     assert (
         "        orders = self._impl.use_current_orders(orders=_input_orders, spark=self.spark, ctx=self.ctx)" in text
     )
-    assert (
-        "        orders = self._impl.note_lookup_inputs(orders=orders, customers=_input_customers, "
-        "products=_input_products, spark=self.spark, ctx=self.ctx)" in text
-    )
+    assert "orders =" in text
+    assert "self._impl.note_lookup_inputs(" in text
+    assert "customers=_input_customers" in text
+    assert "products=_input_products" in text
     assert "        published = project_schema(published, ORDER_PUBLISHED_SCHEMA)" in text
     assert text.count('assert_schema(published, ORDER_PUBLISHED_SCHEMA, name="OrderPublished", mode="strict")') == 2
     assert text.rstrip().endswith(
@@ -198,7 +200,8 @@ def test_mirror_methods_render_source_named_steps_and_constructor_inputs() -> No
     )
 
     ast.parse(text)
-    assert "    def __init__(self, *, spark: SparkSession, ctx=None," in text
+    assert "    def __init__(" in text
+    assert "        spark: SparkSession," in text
     assert "        orders: DataFrame," in text
     assert "    def normalize(self):" in text
     assert "    def add_customer(self):" in text
@@ -312,7 +315,9 @@ def test_embed_udfs_copies_udf_source() -> None:
     ast.parse(text)
 
     assert "self._impl" not in text
-    assert "= F.udf(self.normalize, returnType=" in text
+    assert ".udf(" in text
+    assert "self.normalize" in text
+    assert "returnType=" in text
     assert "    @staticmethod\n    def normalize(value: Any):" in text
     assert "return value.strip().lower()" in text
 
@@ -357,6 +362,33 @@ def test_v2_cache_directive_preserves_an_explicit_storage_level() -> None:
     assert operation.cache.storage_level == (True, True, False, False, 2)
     assert "from pyspark import StorageLevel" in text
     assert "        orders = orders.persist(StorageLevel(True, True, False, False, 2))" in text
+
+
+def test_transform_module_hard_wrap_keeps_generated_python_parseable() -> None:
+    from testing.model.v1.orders.transforms.order import EnrichOrders
+
+    text = PySpark.render.transform()(
+        _recipe(EnrichOrders),
+        source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
+        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
+        schema_modules=_schema_modules(),
+        generated_code_hard_wrap=88,
+    )
+
+    ast.parse(text)
+    assert builtins.max(len(line) for line in text.splitlines()) <= 88
+
+
+def test_transform_module_hard_wrap_preserves_long_fingerprint_literals() -> None:
+    text = HardWrapGeneratedPython()(
+        "STRUCTURE_ARTIFACT_FINGERPRINTS = {"
+        "'integration.pyspark.v6.test_ordered_timeline_scan.FibonacciFromTimeline':"
+        f"'{('abcdef0123456789' * 8)}'"
+        "}\n",
+        width=88,
+    )
+
+    ast.parse(text)
 
 
 def _schema_modules() -> dict[type, str]:

@@ -8,6 +8,7 @@ from structure.plugin.pyspark.dsl.operations.DuplicateRowsPlan import DuplicateR
 from structure.plugin.pyspark.dsl.operations.ExactlyOnePlan import ExactlyOnePlan
 from structure.plugin.pyspark.dsl.operations.OperationCapability import OperationCapability
 from structure.plugin.pyspark.dsl.operations.OperationCardinality import OperationCardinality
+from structure.plugin.pyspark.dsl.operations.OrderedTimelineScanPlan import OrderedTimelineScanPlan
 from structure.plugin.pyspark.dsl.operations.PosexplodeStructPlan import PosexplodeStructPlan
 from structure.plugin.pyspark.dsl.operations.RelationAliasPlan import RelationAliasPlan
 from structure.plugin.pyspark.dsl.operations.RelationAssertionPlan import RelationAssertionPlan
@@ -33,6 +34,7 @@ class OperationPlan:
     duplicate_rows: DuplicateRowsPlan | None = None
     exactly_one: ExactlyOnePlan | None = None
     posexplode_struct: PosexplodeStructPlan | None = None
+    ordered_timeline_scan: OrderedTimelineScanPlan | None = None
     relation_alias: RelationAliasPlan | None = None
     relation_assertion: RelationAssertionPlan | None = None
     relation_hierarchy_closure: RelationHierarchyClosurePlan | None = None
@@ -139,6 +141,21 @@ class OperationPlan:
             family="generator",
             capability=OperationCapability("generator", "posexplode_struct"),
             cardinality=OperationCardinality.ROW_MULTIPLYING,
+            streaming=StreamingSupport.BATCH_ONLY,
+        )
+
+    @staticmethod
+    def ordered_timeline_scan_operation(scan: OrderedTimelineScanPlan) -> OperationPlan:
+        return OperationPlan(
+            "ordered_timeline_scan",
+            ordered_timeline_scan=scan,
+            family="scan",
+            capability=OperationCapability(
+                "pyspark",
+                "ordered_timeline_scan",
+                docs="docs/dev/specifications/OrderedTimelineScan.md",
+            ),
+            cardinality=OperationCardinality.ROW_PRESERVING,
             streaming=StreamingSupport.BATCH_ONLY,
         )
 

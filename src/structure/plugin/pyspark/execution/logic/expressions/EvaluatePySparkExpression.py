@@ -14,6 +14,8 @@ class EvaluatePySparkExpression:
 
     def evaluate(self, expression: PySparkExpressionRecipe, *, functions, aliases, window=None):
         if expression.kind == "field":
+            if "column" in expression.data:
+                return expression.data["column"]
             scope = str(expression.data["scope"])
             alias = aliases.get(scope, scope)
             if alias == "":
@@ -618,12 +620,36 @@ class EvaluatePySparkExpression:
                 data={**expression.data, "column": columns[name]},
                 args=expression.args,
             )
+        if expression.kind == "field" and "scope" not in expression.data:
+            bound = self._bound_lambda_field(expression, columns)
+            if bound is not None:
+                return bound
         return PySparkExpressionRecipe(
             kind=expression.kind,
             type=expression.type,
             nullable=expression.nullable,
             data=expression.data,
             args=tuple(self._bind_lambdas(argument, columns) for argument in expression.args),
+        )
+
+    def _bound_lambda_field(self, expression: PySparkExpressionRecipe, columns):
+        name_path = expression.data.get("name_path")
+        if not isinstance(name_path, tuple) or not name_path:
+            return None
+        root = str(name_path[0])
+        if root not in columns:
+            return None
+        column = columns[root]
+        path = expression.data.get("path")
+        segments = path if isinstance(path, tuple) else name_path[1:]
+        for segment in segments:
+            column = column.getField(str(segment))
+        return PySparkExpressionRecipe(
+            kind=expression.kind,
+            type=expression.type,
+            nullable=expression.nullable,
+            data={**expression.data, "column": column},
+            args=expression.args,
         )
 
     def _call(self, expression: PySparkExpressionRecipe, *, functions, aliases, window):

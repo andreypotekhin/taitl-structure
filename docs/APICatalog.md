@@ -113,17 +113,17 @@ Structure additions over public DataFrame transformation patterns, not raw DataF
 | Capability | Status | PySpark parity | Structure contract | Reference |
 | --- | --- | --- | --- | --- |
 | Exact-schema set operations | implemented | `union`, `unionByName`, `intersect`, `intersectAll`, `subtract`, `exceptAll` | Exact-schema relation set composition uses Spark duplicate/distinct semantics and makes no ordering claim | Missing-column composition deferred |
-| Branchable typed union | implemented | Union of compatible DataFrames | Independently materialized exact-schema lanes can converge through `union_all(...)` | Relevance-context expansion remains `@raw` |
+| Branchable typed union | implemented | Union of compatible DataFrames | Independently materialized exact-schema lanes can converge through `union_all(...)` | Retired relevance-context expansion hooks |
 | `relation_alias` self joins | implemented | DataFrame aliases for self joins | Named typed occurrence of the active rowset or an unjoined relation | [Joins API](api/Joins.api.md) |
 | Relation order/limit/offset | implemented | `orderBy`, `limit`, `offset` | Typed order descriptors and literal bounds; bounds require ordered current relation state | `sample` deferred |
-| `exactly_one` validation | implemented | Relation cardinality assertion | Declared assertion fails zero/multiple matches with `REL-E0701` | Search query construction remains `@raw` |
+| `exactly_one` validation | implemented | Relation cardinality assertion | Declared assertion fails zero/multiple matches with `REL-E0701` | Retired Search query construction hook |
 | `require_unique` / `require_all` / `require_reference` | implemented | Spark-plan assertions | Key, predicate, and nullable parent-reference checks fail through `REL-E0702`/`REL-E0703`/`REL-E0704` | [APIExtensions.md](APIExtensions.md) |
 | Parent hierarchy validation | implemented | Finite DataFrame self-join validation | `require_parent_hierarchy(...)` checks missing parents, cycles, depth overruns, and child ordering with `REL-E0706` | [APIExtensions.md](APIExtensions.md) |
-| First-qualified priority selection | implemented | Priority row selection pattern | `select_first_qualified(...)` selects at most one eligible row per key and reports `REL-E0705` for configured missing/tie failures | Reranking remains `@raw` |
-| Parent hierarchy closure | implemented | Finite iterative self-join expansion | `hierarchy_closure(...)` replaces the active rowset with typed `(node, ancestor, depth)` rows up to literal `max_depth` | Cohort migration pending |
-| Bounded parent hierarchy fallbacks | implemented | Hierarchy expansion patterns | `hierarchy_fallbacks(...)` emits ordered parent-substitution fallback IDs plus the terminal global fallback row | Cohort migration pending |
+| First-qualified priority selection | implemented | Priority row selection pattern | `select_first_qualified(...)` selects at most one eligible row per key and reports `REL-E0705` for configured missing/tie failures | Retired document reranking hook |
+| Parent hierarchy closure | implemented | Finite iterative self-join expansion | `hierarchy_closure(...)` replaces the active rowset with typed `(node, ancestor, depth)` rows up to literal `max_depth` | Retired cohort-band resolution hook |
+| Bounded parent hierarchy fallbacks | implemented | Hierarchy expansion patterns | `hierarchy_fallbacks(...)` emits ordered parent-substitution fallback IDs plus the terminal global fallback row | Retired cohort-band resolution hook |
 | Sampling | deferred | `sample` | Seed, replacement, and reproducibility contract is incomplete | Use `@raw` |
-| Bounded ordered `scan(...)` | scheduled | Ordered recurrence pattern | Separate typed recurrence plan | Sprint 26 |
+| Bounded ordered `scan(...)` | implemented | Ordered recurrence pattern | Batch-only typed state recurrence over a caller-supplied, partitioned, ordered timeline with duplicate-key and bound checks | [Ordered Timeline Scan](dev/specifications/OrderedTimelineScan.md) |
 | Matrix inversion | intentional raw | Driver-side numerical algorithm | Not a symbolic distributed DataFrame transformation | School example hook |
 
 ## Streaming

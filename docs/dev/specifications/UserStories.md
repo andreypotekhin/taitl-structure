@@ -465,3 +465,15 @@ the first analytical join slice.
   compiler-visible.
 - As a developer, I can keep loading, storing, actions, and orchestration in caller-owned PySpark code while Structure
   focuses on the transformation itself.
+
+## 26. Ordered Timeline Recurrence
+
+- + As a developer, I can use PySpark-plugin `scan(...)` to express a bounded, partitioned recurrence over a
+  caller-supplied ordered timeline.
+- + As a developer, I can declare the scan initial state as a fully populated Schema so that recurrence state is typed
+  and compiler-visible.
+- + As a developer, I can rely on online and generated PySpark execution to use the same grouped-array scan recipe so
+  recurrence behavior does not drift between modes.
+- + As a developer, I receive failures for null order keys, duplicate order keys, partition overrun, invalid state
+  shape, unsupported placement, and unsupported streaming use so that recurrence order and memory bounds remain
+  explicit.

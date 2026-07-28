@@ -1,54 +1,42 @@
-"""Example of non-PySpark schemas, defined by Iterable plugin."""
-
-from structure_iterable import field
+"""PySpark sequence and series schemas."""
 
 from structure import Schema
+from structure.plugin.pyspark import double, long, string
 
 
-class Student(Schema):
-    """One student score supplied to the Iterable projection example."""
+class SequenceTick(Schema):
+    """One ordered point in a PySpark sequence partition."""
 
-    student: str = field(nullable=False, description="Student identifier")
-    score: int = field(nullable=False, description="Recorded score")
-
-
-class StudentProfile(Schema):
-    """A finite lookup relation carrying a student's cohort."""
-
-    student: str = field(nullable=False)
-    cohort: str = field(nullable=False, description="Student cohort")
+    series = string(nullable=False)
+    index = long(nullable=False)
 
 
-class StudentAward(Schema):
-    """A finite lookup relation carrying a student's award label."""
+class FibonacciState(Schema):
+    """State carried between ordered Fibonacci rows."""
 
-    student: str = field(nullable=False)
-    award: str = field(nullable=False, description="Award label")
-
-
-class StudentReport(Schema):
-    """A score enriched from two Iterable lookup relations."""
-
-    student: str = field(nullable=False, alias="student_name")
-    score: int = field(nullable=False, alias="score_points")
-    cohort: str = field(alias="cohort_name", description="Lookup cohort; absent when no profile matches")
-    award: str = field(alias="award_name", description="Lookup award; absent when no award matches")
+    previous = long(nullable=False)
+    current = long(nullable=False)
 
 
-class StudentAudit(Schema):
-    """A second output proving one Iterable step may publish several relations."""
+class FibonacciRow(Schema):
+    """A PySpark Fibonacci value at one sequence position."""
 
-    student: str = field(nullable=False)
-    score: int = field(nullable=False)
-
-
-class SequenceRow(Schema):
-    """One caller-provided position in a finite sequence."""
-
-    index: int = field(nullable=False)
+    series = string(nullable=False)
+    index = long(nullable=False)
+    value = long(nullable=False)
 
 
-class FibonacciRow(SequenceRow):
-    """A sequence position with its generated Fibonacci value."""
+class SeriesState(Schema):
+    """State carried while summing a numerical series."""
 
-    fibonacci: int = field(nullable=False, alias="fibonacci_value")
+    term = double(nullable=False)
+    total = double(nullable=False)
+
+
+class SeriesApproximation(Schema):
+    """One partial sum of a numerical series."""
+
+    series = string(nullable=False)
+    index = long(nullable=False)
+    term = double(nullable=False)
+    value = double(nullable=False)

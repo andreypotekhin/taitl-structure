@@ -25,7 +25,7 @@ explain/traceability, and obtain equivalent online and generated batch PySpark o
 
 - Global, unbounded, persistent, input-less, or streaming scans.
 - UDF, RDD, Pandas, driver-loop, or raw-hook recurrence implementation.
-- General row generators; those are owned by Sprint 25.
+- Broader row-generator forms beyond the public row-expansion machinery already admitted in Sprint 25.
 
 ## Governing Plan
 
@@ -44,12 +44,24 @@ explain/traceability, and obtain equivalent online and generated batch PySpark o
 
 - Per-partition materialization can consume too much memory: enforce literal `max_rows`, document the bound, and do
   not claim unbounded/streaming support.
-- Relation-operation work can overlap Sprint 25: share extracted recipe infrastructure, but keep scan's state contract
-  and acceptance fixtures separate.
+- Scan uses the relation-operation infrastructure delivered in Sprint 25, but its state-carrying contract, diagnostics,
+  and acceptance fixtures remain separate from row-generation and set-composition features.
 
 ## Progress
 
-- [ ] Finalize public scan contract and diagnostics.
-- [ ] Implement capture, recipe, lowering, evaluation, and rendering.
-- [ ] Add Fibonacci/live evidence and documentation.
+- [x] (2026-07-27) Finalized the implementation-ready scan contract in
+  `docs/dev/specifications/OrderedTimelineScan.md` and refreshed the governing plan for current plugin paths and
+  Sprint 25 relation-operation capabilities.
+- [x] (2026-07-27) Implemented the first code slice: public PySpark `scan(...)`, typed state callback capture,
+  immutable scan operation/recipe records, ordinary-PySpark capability registration, and focused symbolic tests.
+- [x] (2026-07-27) Implemented grouped-array online execution and generated-source rendering with public Spark
+  `groupBy`, `collect_list`, `sort_array`, higher-order `aggregate`, `posexplode`, and `assert_true` guards.
+- [x] (2026-07-27) Added focused Docker Compose live evidence for two-partition Fibonacci, empty input, transition
+  reads from the current row, duplicate order-key failure, null order-key failure, and partition-bound failure:
+  `pyspark35` and `pyspark40` each passed `tests/integration/pyspark/v6/test_ordered_timeline_scan.py` with 6 tests.
+- [x] (2026-07-27) Added end-user scan documentation in `docs/QuickRef.md`, promoted the public catalog rows to
+  implemented, and added completed user stories for ordered timeline recurrence.
+- [x] (2026-07-27) Cleared unrelated PySpark 3.5 full-lane blockers found during release probing: passage-search
+  projection fields, search generated-schema fixture coverage/order, long-valued generated similarity query labels,
+  online higher-order lambda struct-field evaluation, and an integration-session AQE plan-string OOM.
 - [ ] Run full release regression evidence.

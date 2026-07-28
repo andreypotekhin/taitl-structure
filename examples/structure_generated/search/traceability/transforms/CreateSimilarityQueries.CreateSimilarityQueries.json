@@ -1849,7 +1849,7 @@
         },
         "operation": "project",
         "sources": [
-          "literal"
+          "DocumentSimilarityQueryText.content_tokens"
         ],
         "step": "publish_document_search_queries",
         "target": "SearchQuery.labels"
@@ -1916,7 +1916,7 @@
         },
         "operation": "project",
         "sources": [
-          "literal"
+          "SectionSimilarityQueryText.content_tokens"
         ],
         "step": "publish_section_search_queries",
         "target": "SearchQuery.labels"
@@ -1983,7 +1983,7 @@
         },
         "operation": "project",
         "sources": [
-          "literal"
+          "ParagraphSimilarityQueryText.content_tokens"
         ],
         "step": "publish_paragraph_search_queries",
         "target": "SearchQuery.labels"
@@ -2050,7 +2050,7 @@
         },
         "operation": "project",
         "sources": [
-          "literal"
+          "SentenceSimilarityQueryText.content_tokens"
         ],
         "step": "publish_sentence_search_queries",
         "target": "SearchQuery.labels"

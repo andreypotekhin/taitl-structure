@@ -5,9 +5,32 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.security.runtime.schema_assert import TransformResult, assert_schema, project_schema
-from examples.structure_generated.security.pyspark.schemas.organization import DEPARTMENT_SCHEMA, ORG_SCHEMA, PERSON_SCHEMA, TEAM_SCHEMA
-from examples.structure_generated.security.pyspark.schemas.remediate import DEPARTMENT_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA, EXPIRED_EXCEPTION_VULNERABILITY_SCHEMA, EXPIRING_EXCEPTION_VULNERABILITY_SCHEMA, ORG_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA, PENDING_EXCEPTION_VULNERABILITY_SCHEMA, PERSON_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA, REMEDIATION_CASE_AGGREGATE_SCHEMA, REMEDIATION_CASE_CHECK_SCHEMA, REMEDIATION_CASE_ISSUE_SCHEMA, REMEDIATION_CASE_SCHEMA, REMEDIATION_WORKFLOW_ACTIVITY_SCHEMA, TEAM_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA, UNACKNOWLEDGED_VULNERABILITY_SCHEMA, VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA
-from examples.structure_generated.security.pyspark.schemas.reporting import SECURITY_EVALUATION_SCHEMA, VULNERABILITY_EXPOSURE_SCHEMA
+from examples.structure_generated.security.pyspark.schemas.organization import (
+    DEPARTMENT_SCHEMA,
+    ORG_SCHEMA,
+    PERSON_SCHEMA,
+    TEAM_SCHEMA,
+)
+from examples.structure_generated.security.pyspark.schemas.remediate import (
+    DEPARTMENT_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA,
+    EXPIRED_EXCEPTION_VULNERABILITY_SCHEMA,
+    EXPIRING_EXCEPTION_VULNERABILITY_SCHEMA,
+    ORG_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA,
+    PENDING_EXCEPTION_VULNERABILITY_SCHEMA,
+    PERSON_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA,
+    REMEDIATION_CASE_AGGREGATE_SCHEMA,
+    REMEDIATION_CASE_CHECK_SCHEMA,
+    REMEDIATION_CASE_ISSUE_SCHEMA,
+    REMEDIATION_CASE_SCHEMA,
+    REMEDIATION_WORKFLOW_ACTIVITY_SCHEMA,
+    TEAM_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA,
+    UNACKNOWLEDGED_VULNERABILITY_SCHEMA,
+    VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA,
+)
+from examples.structure_generated.security.pyspark.schemas.reporting import (
+    SECURITY_EVALUATION_SCHEMA,
+    VULNERABILITY_EXPOSURE_SCHEMA,
+)
 from examples.structure_generated.security.pyspark.schemas.risk import VULN_SCHEMA
 
 
@@ -21,29 +44,39 @@ class VulnerabilityRemediationPrepareGenerated:
             (F.col("vulnerabilities.id") == F.col("remediation_case.vuln_id")),
             "left",
         )
-        prepared__case_aggregates = prepared__case_aggregates.groupBy(
-            F.col("remediation_case.vuln_id").alias("vuln_id"),
-        ).agg(
-            F.min(F.col("remediation_case.acknowledged_at")).cast(T.TimestampType()).alias("acknowledged_at"),
-            F.min(F.col("remediation_case.exception_requested_at")).cast(T.TimestampType()).alias("exception_requested_at"),
-            F.min(F.col("remediation_case.exception_reason")).cast(T.StringType()).alias("exception_reason"),
-            F.min(F.col("remediation_case.exception_approver")).cast(T.StringType()).alias("exception_approver"),
-            F.min(F.col("remediation_case.exception_approved_at")).cast(T.TimestampType()).alias("exception_approved_at"),
-            F.min(F.col("remediation_case.exception_expires_on")).cast(T.DateType()).alias("exception_expires_on"),
-            F.count(F.lit(1)).cast(T.LongType()).alias("case_count"),
-            F.bool_or(F.col("vulnerabilities.id").isNotNull()).cast(T.BooleanType()).alias("vulnerability_exists"),
-        ).select(
-            F.col("vuln_id"),
-            F.col("acknowledged_at"),
-            F.col("exception_requested_at"),
-            F.col("exception_reason"),
-            F.col("exception_approver"),
-            F.col("exception_approved_at"),
-            F.col("exception_expires_on"),
-            F.col("case_count"),
-            F.col("vulnerability_exists"),
+        prepared__case_aggregates = (
+            prepared__case_aggregates.groupBy(
+                F.col("remediation_case.vuln_id").alias("vuln_id"),
+            )
+            .agg(
+                F.min(F.col("remediation_case.acknowledged_at")).cast(T.TimestampType()).alias("acknowledged_at"),
+                F.min(F.col("remediation_case.exception_requested_at"))
+                .cast(T.TimestampType())
+                .alias("exception_requested_at"),
+                F.min(F.col("remediation_case.exception_reason")).cast(T.StringType()).alias("exception_reason"),
+                F.min(F.col("remediation_case.exception_approver")).cast(T.StringType()).alias("exception_approver"),
+                F.min(F.col("remediation_case.exception_approved_at"))
+                .cast(T.TimestampType())
+                .alias("exception_approved_at"),
+                F.min(F.col("remediation_case.exception_expires_on")).cast(T.DateType()).alias("exception_expires_on"),
+                F.count(F.lit(1)).cast(T.LongType()).alias("case_count"),
+                F.bool_or(F.col("vulnerabilities.id").isNotNull()).cast(T.BooleanType()).alias("vulnerability_exists"),
+            )
+            .select(
+                F.col("vuln_id"),
+                F.col("acknowledged_at"),
+                F.col("exception_requested_at"),
+                F.col("exception_reason"),
+                F.col("exception_approver"),
+                F.col("exception_approved_at"),
+                F.col("exception_expires_on"),
+                F.col("case_count"),
+                F.col("vulnerability_exists"),
+            )
         )
-        assert_schema(prepared__case_aggregates, REMEDIATION_CASE_AGGREGATE_SCHEMA, name="RemediationCaseAggregate", mode="strict")
+        assert_schema(
+            prepared__case_aggregates, REMEDIATION_CASE_AGGREGATE_SCHEMA, name="RemediationCaseAggregate", mode="strict"
+        )
         return {
             "prepared__case_aggregates": prepared__case_aggregates,
         }
@@ -61,8 +94,141 @@ class VulnerabilityRemediationPrepareGenerated:
             F.col("remediation_case_aggregate.exception_expires_on"),
             F.col("remediation_case_aggregate.case_count"),
             F.col("remediation_case_aggregate.vulnerability_exists"),
-            F.array_compact(F.array(F.when((F.col("remediation_case_aggregate.case_count") > F.lit(1)), F.lit('duplicate current cases')).otherwise(F.lit(None)), F.when(~(F.col("remediation_case_aggregate.vulnerability_exists")), F.lit('unknown vulnerability')).otherwise(F.lit(None)), F.when((F.col("remediation_case_aggregate.exception_approved_at").isNotNull() & F.col("remediation_case_aggregate.exception_requested_at").isNull()), F.lit('approved exception has no request')).otherwise(F.lit(None)), F.when(((F.col("remediation_case_aggregate.exception_approved_at").isNotNull() & F.col("remediation_case_aggregate.exception_requested_at").isNotNull()) & (F.col("remediation_case_aggregate.exception_approved_at") < F.col("remediation_case_aggregate.exception_requested_at"))), F.lit('exception approval precedes request')).otherwise(F.lit(None)), F.when((F.col("remediation_case_aggregate.exception_approved_at").isNotNull() & F.col("remediation_case_aggregate.exception_reason").isNull()), F.lit('approved exception has no reason')).otherwise(F.lit(None)), F.when((F.col("remediation_case_aggregate.exception_approved_at").isNotNull() & F.col("remediation_case_aggregate.exception_approver").isNull()), F.lit('approved exception has no approver')).otherwise(F.lit(None)), F.when((F.col("remediation_case_aggregate.exception_approved_at").isNotNull() & F.col("remediation_case_aggregate.exception_expires_on").isNull()), F.lit('approved exception has no expiry')).otherwise(F.lit(None)), F.when(((F.col("remediation_case_aggregate.exception_approved_at").isNotNull() & F.col("remediation_case_aggregate.exception_expires_on").isNotNull()) & (F.col("remediation_case_aggregate.exception_expires_on") < F.to_date(F.col("remediation_case_aggregate.exception_approved_at")))), F.lit('exception expires before approval')).otherwise(F.lit(None)))).alias("issues"),
-            (F.size(F.array_compact(F.array(F.when((F.col("remediation_case_aggregate.case_count") > F.lit(1)), F.lit('duplicate current cases')).otherwise(F.lit(None)), F.when(~(F.col("remediation_case_aggregate.vulnerability_exists")), F.lit('unknown vulnerability')).otherwise(F.lit(None)), F.when((F.col("remediation_case_aggregate.exception_approved_at").isNotNull() & F.col("remediation_case_aggregate.exception_requested_at").isNull()), F.lit('approved exception has no request')).otherwise(F.lit(None)), F.when(((F.col("remediation_case_aggregate.exception_approved_at").isNotNull() & F.col("remediation_case_aggregate.exception_requested_at").isNotNull()) & (F.col("remediation_case_aggregate.exception_approved_at") < F.col("remediation_case_aggregate.exception_requested_at"))), F.lit('exception approval precedes request')).otherwise(F.lit(None)), F.when((F.col("remediation_case_aggregate.exception_approved_at").isNotNull() & F.col("remediation_case_aggregate.exception_reason").isNull()), F.lit('approved exception has no reason')).otherwise(F.lit(None)), F.when((F.col("remediation_case_aggregate.exception_approved_at").isNotNull() & F.col("remediation_case_aggregate.exception_approver").isNull()), F.lit('approved exception has no approver')).otherwise(F.lit(None)), F.when((F.col("remediation_case_aggregate.exception_approved_at").isNotNull() & F.col("remediation_case_aggregate.exception_expires_on").isNull()), F.lit('approved exception has no expiry')).otherwise(F.lit(None)), F.when(((F.col("remediation_case_aggregate.exception_approved_at").isNotNull() & F.col("remediation_case_aggregate.exception_expires_on").isNotNull()) & (F.col("remediation_case_aggregate.exception_expires_on") < F.to_date(F.col("remediation_case_aggregate.exception_approved_at")))), F.lit('exception expires before approval')).otherwise(F.lit(None))))) == F.lit(0)).alias("is_valid"),
+            F.array_compact(
+                F.array(
+                    F.when(
+                        (F.col("remediation_case_aggregate.case_count") > F.lit(1)), F.lit('duplicate current cases')
+                    ).otherwise(F.lit(None)),
+                    F.when(
+                        ~(F.col("remediation_case_aggregate.vulnerability_exists")), F.lit('unknown vulnerability')
+                    ).otherwise(F.lit(None)),
+                    F.when(
+                        (
+                            F.col("remediation_case_aggregate.exception_approved_at").isNotNull()
+                            & F.col("remediation_case_aggregate.exception_requested_at").isNull()
+                        ),
+                        F.lit('approved exception has no request'),
+                    ).otherwise(F.lit(None)),
+                    F.when(
+                        (
+                            (
+                                F.col("remediation_case_aggregate.exception_approved_at").isNotNull()
+                                & F.col("remediation_case_aggregate.exception_requested_at").isNotNull()
+                            )
+                            & (
+                                F.col("remediation_case_aggregate.exception_approved_at")
+                                < F.col("remediation_case_aggregate.exception_requested_at")
+                            )
+                        ),
+                        F.lit('exception approval precedes request'),
+                    ).otherwise(F.lit(None)),
+                    F.when(
+                        (
+                            F.col("remediation_case_aggregate.exception_approved_at").isNotNull()
+                            & F.col("remediation_case_aggregate.exception_reason").isNull()
+                        ),
+                        F.lit('approved exception has no reason'),
+                    ).otherwise(F.lit(None)),
+                    F.when(
+                        (
+                            F.col("remediation_case_aggregate.exception_approved_at").isNotNull()
+                            & F.col("remediation_case_aggregate.exception_approver").isNull()
+                        ),
+                        F.lit('approved exception has no approver'),
+                    ).otherwise(F.lit(None)),
+                    F.when(
+                        (
+                            F.col("remediation_case_aggregate.exception_approved_at").isNotNull()
+                            & F.col("remediation_case_aggregate.exception_expires_on").isNull()
+                        ),
+                        F.lit('approved exception has no expiry'),
+                    ).otherwise(F.lit(None)),
+                    F.when(
+                        (
+                            (
+                                F.col("remediation_case_aggregate.exception_approved_at").isNotNull()
+                                & F.col("remediation_case_aggregate.exception_expires_on").isNotNull()
+                            )
+                            & (
+                                F.col("remediation_case_aggregate.exception_expires_on")
+                                < F.to_date(F.col("remediation_case_aggregate.exception_approved_at"))
+                            )
+                        ),
+                        F.lit('exception expires before approval'),
+                    ).otherwise(F.lit(None)),
+                )
+            ).alias("issues"),
+            (
+                F.size(
+                    F.array_compact(
+                        F.array(
+                            F.when(
+                                (F.col("remediation_case_aggregate.case_count") > F.lit(1)),
+                                F.lit('duplicate current cases'),
+                            ).otherwise(F.lit(None)),
+                            F.when(
+                                ~(F.col("remediation_case_aggregate.vulnerability_exists")),
+                                F.lit('unknown vulnerability'),
+                            ).otherwise(F.lit(None)),
+                            F.when(
+                                (
+                                    F.col("remediation_case_aggregate.exception_approved_at").isNotNull()
+                                    & F.col("remediation_case_aggregate.exception_requested_at").isNull()
+                                ),
+                                F.lit('approved exception has no request'),
+                            ).otherwise(F.lit(None)),
+                            F.when(
+                                (
+                                    (
+                                        F.col("remediation_case_aggregate.exception_approved_at").isNotNull()
+                                        & F.col("remediation_case_aggregate.exception_requested_at").isNotNull()
+                                    )
+                                    & (
+                                        F.col("remediation_case_aggregate.exception_approved_at")
+                                        < F.col("remediation_case_aggregate.exception_requested_at")
+                                    )
+                                ),
+                                F.lit('exception approval precedes request'),
+                            ).otherwise(F.lit(None)),
+                            F.when(
+                                (
+                                    F.col("remediation_case_aggregate.exception_approved_at").isNotNull()
+                                    & F.col("remediation_case_aggregate.exception_reason").isNull()
+                                ),
+                                F.lit('approved exception has no reason'),
+                            ).otherwise(F.lit(None)),
+                            F.when(
+                                (
+                                    F.col("remediation_case_aggregate.exception_approved_at").isNotNull()
+                                    & F.col("remediation_case_aggregate.exception_approver").isNull()
+                                ),
+                                F.lit('approved exception has no approver'),
+                            ).otherwise(F.lit(None)),
+                            F.when(
+                                (
+                                    F.col("remediation_case_aggregate.exception_approved_at").isNotNull()
+                                    & F.col("remediation_case_aggregate.exception_expires_on").isNull()
+                                ),
+                                F.lit('approved exception has no expiry'),
+                            ).otherwise(F.lit(None)),
+                            F.when(
+                                (
+                                    (
+                                        F.col("remediation_case_aggregate.exception_approved_at").isNotNull()
+                                        & F.col("remediation_case_aggregate.exception_expires_on").isNotNull()
+                                    )
+                                    & (
+                                        F.col("remediation_case_aggregate.exception_expires_on")
+                                        < F.to_date(F.col("remediation_case_aggregate.exception_approved_at"))
+                                    )
+                                ),
+                                F.lit('exception expires before approval'),
+                            ).otherwise(F.lit(None)),
+                        )
+                    )
+                )
+                == F.lit(0)
+            ).alias("is_valid"),
         )
         assert_schema(prepared__case_lane, REMEDIATION_CASE_CHECK_SCHEMA, name="RemediationCaseCheck", mode="strict")
         return {
@@ -120,7 +286,10 @@ class VulnerabilityRemediationAccessGenerated:
         prepared__case_checks_joined = frames["prepared__case_checks"].alias("prepared__case_checks")
         accessed__workflow_exposures = accessed__workflow_exposures.join(
             prepared__case_checks_joined,
-            ((F.col("prepared__case_checks.vuln_id") == F.col("vulnerability_exposure.vuln_id")) & F.col("prepared__case_checks.is_valid")),
+            (
+                (F.col("prepared__case_checks.vuln_id") == F.col("vulnerability_exposure.vuln_id"))
+                & F.col("prepared__case_checks.is_valid")
+            ),
             "left",
         )
         evaluation_2_joined = frames["evaluation"].alias("evaluation_2")
@@ -156,9 +325,23 @@ class VulnerabilityRemediationAccessGenerated:
             F.col("prepared__case_checks.exception_approved_at"),
             F.col("prepared__case_checks.exception_expires_on"),
             F.col("prepared__case_checks.acknowledged_at").isNotNull().alias("is_acknowledged"),
-            F.coalesce(((F.col("prepared__case_checks.exception_approved_at").isNotNull() & F.col("prepared__case_checks.exception_expires_on").isNotNull()) & (F.col("prepared__case_checks.exception_expires_on") >= F.col("evaluation_2.as_of_date"))), F.lit(False)).alias("is_deadline_paused"),
+            F.coalesce(
+                (
+                    (
+                        F.col("prepared__case_checks.exception_approved_at").isNotNull()
+                        & F.col("prepared__case_checks.exception_expires_on").isNotNull()
+                    )
+                    & (F.col("prepared__case_checks.exception_expires_on") >= F.col("evaluation_2.as_of_date"))
+                ),
+                F.lit(False),
+            ).alias("is_deadline_paused"),
         )
-        assert_schema(accessed__workflow_exposures, VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA, name="VulnerabilityWorkflowExposure", mode="strict")
+        assert_schema(
+            accessed__workflow_exposures,
+            VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA,
+            name="VulnerabilityWorkflowExposure",
+            mode="strict",
+        )
         return {
             "accessed__workflow_exposures": accessed__workflow_exposures,
         }
@@ -168,7 +351,14 @@ class VulnerabilityRemediationPublishGenerated:
     def _step_published_publish_unacknowledged_5(self, frames):
         # Step method: published.publish_unacknowledged
         published__unacknowledged = frames["accessed__workflow_exposures"].alias("vulnerability_workflow_exposure")
-        published__unacknowledged = published__unacknowledged.where(((F.col("vulnerability_workflow_exposure.is_active") & ~(F.col("vulnerability_workflow_exposure.is_acknowledged")))))
+        published__unacknowledged = published__unacknowledged.where(
+            (
+                (
+                    F.col("vulnerability_workflow_exposure.is_active")
+                    & ~(F.col("vulnerability_workflow_exposure.is_acknowledged"))
+                )
+            )
+        )
         published__unacknowledged = published__unacknowledged.select(
             F.col("vulnerability_workflow_exposure.vuln_id"),
             F.col("vulnerability_workflow_exposure.vuln_type"),
@@ -202,7 +392,12 @@ class VulnerabilityRemediationPublishGenerated:
             F.col("vulnerability_workflow_exposure.is_acknowledged"),
             F.col("vulnerability_workflow_exposure.is_deadline_paused"),
         )
-        assert_schema(published__unacknowledged, UNACKNOWLEDGED_VULNERABILITY_SCHEMA, name="UnacknowledgedVulnerability", mode="strict")
+        assert_schema(
+            published__unacknowledged,
+            UNACKNOWLEDGED_VULNERABILITY_SCHEMA,
+            name="UnacknowledgedVulnerability",
+            mode="strict",
+        )
         return {
             "published__unacknowledged": published__unacknowledged,
         }
@@ -210,7 +405,17 @@ class VulnerabilityRemediationPublishGenerated:
     def _step_published_publish_pending_6(self, frames):
         # Step method: published.publish_pending
         published__pending_exceptions = frames["accessed__workflow_exposures"].alias("vulnerability_workflow_exposure")
-        published__pending_exceptions = published__pending_exceptions.where((((F.col("vulnerability_workflow_exposure.is_active") & F.col("vulnerability_workflow_exposure.exception_requested_at").isNotNull()) & F.col("vulnerability_workflow_exposure.exception_approved_at").isNull())))
+        published__pending_exceptions = published__pending_exceptions.where(
+            (
+                (
+                    (
+                        F.col("vulnerability_workflow_exposure.is_active")
+                        & F.col("vulnerability_workflow_exposure.exception_requested_at").isNotNull()
+                    )
+                    & F.col("vulnerability_workflow_exposure.exception_approved_at").isNull()
+                )
+            )
+        )
         published__pending_exceptions = published__pending_exceptions.select(
             F.col("vulnerability_workflow_exposure.vuln_id"),
             F.col("vulnerability_workflow_exposure.vuln_type"),
@@ -244,7 +449,12 @@ class VulnerabilityRemediationPublishGenerated:
             F.col("vulnerability_workflow_exposure.is_acknowledged"),
             F.col("vulnerability_workflow_exposure.is_deadline_paused"),
         )
-        assert_schema(published__pending_exceptions, PENDING_EXCEPTION_VULNERABILITY_SCHEMA, name="PendingExceptionVulnerability", mode="strict")
+        assert_schema(
+            published__pending_exceptions,
+            PENDING_EXCEPTION_VULNERABILITY_SCHEMA,
+            name="PendingExceptionVulnerability",
+            mode="strict",
+        )
         return {
             "published__pending_exceptions": published__pending_exceptions,
         }
@@ -254,7 +464,29 @@ class VulnerabilityRemediationPublishGenerated:
         published__expiring_exceptions = frames["accessed__workflow_exposures"].alias("vulnerability_workflow_exposure")
         evaluation_joined = frames["evaluation"].alias("evaluation")
         published__expiring_exceptions = published__expiring_exceptions.crossJoin(evaluation_joined)
-        published__expiring_exceptions = published__expiring_exceptions.where((((((F.col("vulnerability_workflow_exposure.is_active") & F.col("vulnerability_workflow_exposure.exception_approved_at").isNotNull()) & F.col("vulnerability_workflow_exposure.exception_expires_on").isNotNull()) & (F.col("vulnerability_workflow_exposure.exception_expires_on") >= F.col("evaluation.as_of_date"))) & (F.col("vulnerability_workflow_exposure.exception_expires_on") <= F.date_add(F.col("evaluation.as_of_date"), 7)))))
+        published__expiring_exceptions = published__expiring_exceptions.where(
+            (
+                (
+                    (
+                        (
+                            (
+                                F.col("vulnerability_workflow_exposure.is_active")
+                                & F.col("vulnerability_workflow_exposure.exception_approved_at").isNotNull()
+                            )
+                            & F.col("vulnerability_workflow_exposure.exception_expires_on").isNotNull()
+                        )
+                        & (
+                            F.col("vulnerability_workflow_exposure.exception_expires_on")
+                            >= F.col("evaluation.as_of_date")
+                        )
+                    )
+                    & (
+                        F.col("vulnerability_workflow_exposure.exception_expires_on")
+                        <= F.date_add(F.col("evaluation.as_of_date"), 7)
+                    )
+                )
+            )
+        )
         published__expiring_exceptions = published__expiring_exceptions.select(
             F.col("vulnerability_workflow_exposure.vuln_id"),
             F.col("vulnerability_workflow_exposure.vuln_type"),
@@ -288,7 +520,12 @@ class VulnerabilityRemediationPublishGenerated:
             F.col("vulnerability_workflow_exposure.is_acknowledged"),
             F.col("vulnerability_workflow_exposure.is_deadline_paused"),
         )
-        assert_schema(published__expiring_exceptions, EXPIRING_EXCEPTION_VULNERABILITY_SCHEMA, name="ExpiringExceptionVulnerability", mode="strict")
+        assert_schema(
+            published__expiring_exceptions,
+            EXPIRING_EXCEPTION_VULNERABILITY_SCHEMA,
+            name="ExpiringExceptionVulnerability",
+            mode="strict",
+        )
         return {
             "published__expiring_exceptions": published__expiring_exceptions,
         }
@@ -298,7 +535,20 @@ class VulnerabilityRemediationPublishGenerated:
         published__expired_exceptions = frames["accessed__workflow_exposures"].alias("vulnerability_workflow_exposure")
         evaluation_joined = frames["evaluation"].alias("evaluation")
         published__expired_exceptions = published__expired_exceptions.crossJoin(evaluation_joined)
-        published__expired_exceptions = published__expired_exceptions.where(((((F.col("vulnerability_workflow_exposure.is_active") & F.col("vulnerability_workflow_exposure.exception_approved_at").isNotNull()) & F.col("vulnerability_workflow_exposure.exception_expires_on").isNotNull()) & (F.col("vulnerability_workflow_exposure.exception_expires_on") < F.col("evaluation.as_of_date")))))
+        published__expired_exceptions = published__expired_exceptions.where(
+            (
+                (
+                    (
+                        (
+                            F.col("vulnerability_workflow_exposure.is_active")
+                            & F.col("vulnerability_workflow_exposure.exception_approved_at").isNotNull()
+                        )
+                        & F.col("vulnerability_workflow_exposure.exception_expires_on").isNotNull()
+                    )
+                    & (F.col("vulnerability_workflow_exposure.exception_expires_on") < F.col("evaluation.as_of_date"))
+                )
+            )
+        )
         published__expired_exceptions = published__expired_exceptions.select(
             F.col("vulnerability_workflow_exposure.vuln_id"),
             F.col("vulnerability_workflow_exposure.vuln_type"),
@@ -332,7 +582,12 @@ class VulnerabilityRemediationPublishGenerated:
             F.col("vulnerability_workflow_exposure.is_acknowledged"),
             F.col("vulnerability_workflow_exposure.is_deadline_paused"),
         )
-        assert_schema(published__expired_exceptions, EXPIRED_EXCEPTION_VULNERABILITY_SCHEMA, name="ExpiredExceptionVulnerability", mode="strict")
+        assert_schema(
+            published__expired_exceptions,
+            EXPIRED_EXCEPTION_VULNERABILITY_SCHEMA,
+            name="ExpiredExceptionVulnerability",
+            mode="strict",
+        )
         return {
             "published__expired_exceptions": published__expired_exceptions,
         }
@@ -350,12 +605,73 @@ class VulnerabilityRemediationSummariesGenerated:
             F.col("vulnerability_workflow_exposure.department_id"),
             F.col("vulnerability_workflow_exposure.org_id"),
             F.col("evaluation.as_of_date"),
-            F.when((F.col("vulnerability_workflow_exposure.is_active") & ~(F.col("vulnerability_workflow_exposure.is_acknowledged"))), F.lit(1)).otherwise(F.lit(0)).alias("unacknowledged_count"),
-            F.when(((F.col("vulnerability_workflow_exposure.is_active") & F.col("vulnerability_workflow_exposure.exception_requested_at").isNotNull()) & F.col("vulnerability_workflow_exposure.exception_approved_at").isNull()), F.lit(1)).otherwise(F.lit(0)).alias("pending_exception_count"),
-            F.when(((((F.col("vulnerability_workflow_exposure.is_active") & F.col("vulnerability_workflow_exposure.exception_approved_at").isNotNull()) & F.col("vulnerability_workflow_exposure.exception_expires_on").isNotNull()) & (F.col("vulnerability_workflow_exposure.exception_expires_on") >= F.col("evaluation.as_of_date"))) & (F.col("vulnerability_workflow_exposure.exception_expires_on") <= F.date_add(F.col("evaluation.as_of_date"), 7))), F.lit(1)).otherwise(F.lit(0)).alias("expiring_exception_count"),
-            F.when((((F.col("vulnerability_workflow_exposure.is_active") & F.col("vulnerability_workflow_exposure.exception_approved_at").isNotNull()) & F.col("vulnerability_workflow_exposure.exception_expires_on").isNotNull()) & (F.col("vulnerability_workflow_exposure.exception_expires_on") < F.col("evaluation.as_of_date"))), F.lit(1)).otherwise(F.lit(0)).alias("expired_exception_count"),
+            F.when(
+                (
+                    F.col("vulnerability_workflow_exposure.is_active")
+                    & ~(F.col("vulnerability_workflow_exposure.is_acknowledged"))
+                ),
+                F.lit(1),
+            )
+            .otherwise(F.lit(0))
+            .alias("unacknowledged_count"),
+            F.when(
+                (
+                    (
+                        F.col("vulnerability_workflow_exposure.is_active")
+                        & F.col("vulnerability_workflow_exposure.exception_requested_at").isNotNull()
+                    )
+                    & F.col("vulnerability_workflow_exposure.exception_approved_at").isNull()
+                ),
+                F.lit(1),
+            )
+            .otherwise(F.lit(0))
+            .alias("pending_exception_count"),
+            F.when(
+                (
+                    (
+                        (
+                            (
+                                F.col("vulnerability_workflow_exposure.is_active")
+                                & F.col("vulnerability_workflow_exposure.exception_approved_at").isNotNull()
+                            )
+                            & F.col("vulnerability_workflow_exposure.exception_expires_on").isNotNull()
+                        )
+                        & (
+                            F.col("vulnerability_workflow_exposure.exception_expires_on")
+                            >= F.col("evaluation.as_of_date")
+                        )
+                    )
+                    & (
+                        F.col("vulnerability_workflow_exposure.exception_expires_on")
+                        <= F.date_add(F.col("evaluation.as_of_date"), 7)
+                    )
+                ),
+                F.lit(1),
+            )
+            .otherwise(F.lit(0))
+            .alias("expiring_exception_count"),
+            F.when(
+                (
+                    (
+                        (
+                            F.col("vulnerability_workflow_exposure.is_active")
+                            & F.col("vulnerability_workflow_exposure.exception_approved_at").isNotNull()
+                        )
+                        & F.col("vulnerability_workflow_exposure.exception_expires_on").isNotNull()
+                    )
+                    & (F.col("vulnerability_workflow_exposure.exception_expires_on") < F.col("evaluation.as_of_date"))
+                ),
+                F.lit(1),
+            )
+            .otherwise(F.lit(0))
+            .alias("expired_exception_count"),
         )
-        assert_schema(summarized__activities, REMEDIATION_WORKFLOW_ACTIVITY_SCHEMA, name="RemediationWorkflowActivity", mode="strict")
+        assert_schema(
+            summarized__activities,
+            REMEDIATION_WORKFLOW_ACTIVITY_SCHEMA,
+            name="RemediationWorkflowActivity",
+            mode="strict",
+        )
         return {
             "summarized__activities": summarized__activities,
         }
@@ -368,28 +684,48 @@ class VulnerabilityRemediationSummariesGenerated:
         summarized__activities_2_joined = frames["summarized__activities"].alias("summarized__activities_2")
         summarized__person_summaries = summarized__person_summaries.join(
             summarized__activities_2_joined,
-            ((F.col("summarized__activities_2.person_id") == F.col("person.id")) & (F.col("summarized__activities_2.as_of_date") == F.col("evaluation.as_of_date"))),
+            (
+                (F.col("summarized__activities_2.person_id") == F.col("person.id"))
+                & (F.col("summarized__activities_2.as_of_date") == F.col("evaluation.as_of_date"))
+            ),
             "left",
         )
-        summarized__person_summaries = summarized__person_summaries.groupBy(
-            F.col("person.id").alias("person_id"),
-            F.col("person.name").alias("person_name"),
-            F.col("evaluation.as_of_date").alias("as_of_date"),
-        ).agg(
-            F.sum(F.coalesce(F.col("summarized__activities_2.unacknowledged_count"), F.lit(0))).cast(T.LongType()).alias("unacknowledged_count"),
-            F.sum(F.coalesce(F.col("summarized__activities_2.pending_exception_count"), F.lit(0))).cast(T.LongType()).alias("pending_exception_count"),
-            F.sum(F.coalesce(F.col("summarized__activities_2.expiring_exception_count"), F.lit(0))).cast(T.LongType()).alias("expiring_exception_count"),
-            F.sum(F.coalesce(F.col("summarized__activities_2.expired_exception_count"), F.lit(0))).cast(T.LongType()).alias("expired_exception_count"),
-        ).select(
-            F.col("as_of_date"),
-            F.col("unacknowledged_count"),
-            F.col("pending_exception_count"),
-            F.col("expiring_exception_count"),
-            F.col("expired_exception_count"),
-            F.col("person_id"),
-            F.col("person_name"),
+        summarized__person_summaries = (
+            summarized__person_summaries.groupBy(
+                F.col("person.id").alias("person_id"),
+                F.col("person.name").alias("person_name"),
+                F.col("evaluation.as_of_date").alias("as_of_date"),
+            )
+            .agg(
+                F.sum(F.coalesce(F.col("summarized__activities_2.unacknowledged_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("unacknowledged_count"),
+                F.sum(F.coalesce(F.col("summarized__activities_2.pending_exception_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("pending_exception_count"),
+                F.sum(F.coalesce(F.col("summarized__activities_2.expiring_exception_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("expiring_exception_count"),
+                F.sum(F.coalesce(F.col("summarized__activities_2.expired_exception_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("expired_exception_count"),
+            )
+            .select(
+                F.col("as_of_date"),
+                F.col("unacknowledged_count"),
+                F.col("pending_exception_count"),
+                F.col("expiring_exception_count"),
+                F.col("expired_exception_count"),
+                F.col("person_id"),
+                F.col("person_name"),
+            )
         )
-        assert_schema(summarized__person_summaries, PERSON_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA, name="PersonRemediationWorkflowSummary", mode="strict")
+        assert_schema(
+            summarized__person_summaries,
+            PERSON_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA,
+            name="PersonRemediationWorkflowSummary",
+            mode="strict",
+        )
         return {
             "summarized__person_summaries": summarized__person_summaries,
         }
@@ -402,28 +738,48 @@ class VulnerabilityRemediationSummariesGenerated:
         summarized__activities_2_joined = frames["summarized__activities"].alias("summarized__activities_2")
         summarized__team_summaries = summarized__team_summaries.join(
             summarized__activities_2_joined,
-            ((F.col("summarized__activities_2.team_id") == F.col("team.id")) & (F.col("summarized__activities_2.as_of_date") == F.col("evaluation.as_of_date"))),
+            (
+                (F.col("summarized__activities_2.team_id") == F.col("team.id"))
+                & (F.col("summarized__activities_2.as_of_date") == F.col("evaluation.as_of_date"))
+            ),
             "left",
         )
-        summarized__team_summaries = summarized__team_summaries.groupBy(
-            F.col("team.id").alias("team_id"),
-            F.col("team.name").alias("team_name"),
-            F.col("evaluation.as_of_date").alias("as_of_date"),
-        ).agg(
-            F.sum(F.coalesce(F.col("summarized__activities_2.unacknowledged_count"), F.lit(0))).cast(T.LongType()).alias("unacknowledged_count"),
-            F.sum(F.coalesce(F.col("summarized__activities_2.pending_exception_count"), F.lit(0))).cast(T.LongType()).alias("pending_exception_count"),
-            F.sum(F.coalesce(F.col("summarized__activities_2.expiring_exception_count"), F.lit(0))).cast(T.LongType()).alias("expiring_exception_count"),
-            F.sum(F.coalesce(F.col("summarized__activities_2.expired_exception_count"), F.lit(0))).cast(T.LongType()).alias("expired_exception_count"),
-        ).select(
-            F.col("as_of_date"),
-            F.col("unacknowledged_count"),
-            F.col("pending_exception_count"),
-            F.col("expiring_exception_count"),
-            F.col("expired_exception_count"),
-            F.col("team_id"),
-            F.col("team_name"),
+        summarized__team_summaries = (
+            summarized__team_summaries.groupBy(
+                F.col("team.id").alias("team_id"),
+                F.col("team.name").alias("team_name"),
+                F.col("evaluation.as_of_date").alias("as_of_date"),
+            )
+            .agg(
+                F.sum(F.coalesce(F.col("summarized__activities_2.unacknowledged_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("unacknowledged_count"),
+                F.sum(F.coalesce(F.col("summarized__activities_2.pending_exception_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("pending_exception_count"),
+                F.sum(F.coalesce(F.col("summarized__activities_2.expiring_exception_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("expiring_exception_count"),
+                F.sum(F.coalesce(F.col("summarized__activities_2.expired_exception_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("expired_exception_count"),
+            )
+            .select(
+                F.col("as_of_date"),
+                F.col("unacknowledged_count"),
+                F.col("pending_exception_count"),
+                F.col("expiring_exception_count"),
+                F.col("expired_exception_count"),
+                F.col("team_id"),
+                F.col("team_name"),
+            )
         )
-        assert_schema(summarized__team_summaries, TEAM_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA, name="TeamRemediationWorkflowSummary", mode="strict")
+        assert_schema(
+            summarized__team_summaries,
+            TEAM_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA,
+            name="TeamRemediationWorkflowSummary",
+            mode="strict",
+        )
         return {
             "summarized__team_summaries": summarized__team_summaries,
         }
@@ -436,28 +792,48 @@ class VulnerabilityRemediationSummariesGenerated:
         summarized__activities_2_joined = frames["summarized__activities"].alias("summarized__activities_2")
         summarized__department_summaries = summarized__department_summaries.join(
             summarized__activities_2_joined,
-            ((F.col("summarized__activities_2.department_id") == F.col("department.id")) & (F.col("summarized__activities_2.as_of_date") == F.col("evaluation.as_of_date"))),
+            (
+                (F.col("summarized__activities_2.department_id") == F.col("department.id"))
+                & (F.col("summarized__activities_2.as_of_date") == F.col("evaluation.as_of_date"))
+            ),
             "left",
         )
-        summarized__department_summaries = summarized__department_summaries.groupBy(
-            F.col("department.id").alias("department_id"),
-            F.col("department.name").alias("department_name"),
-            F.col("evaluation.as_of_date").alias("as_of_date"),
-        ).agg(
-            F.sum(F.coalesce(F.col("summarized__activities_2.unacknowledged_count"), F.lit(0))).cast(T.LongType()).alias("unacknowledged_count"),
-            F.sum(F.coalesce(F.col("summarized__activities_2.pending_exception_count"), F.lit(0))).cast(T.LongType()).alias("pending_exception_count"),
-            F.sum(F.coalesce(F.col("summarized__activities_2.expiring_exception_count"), F.lit(0))).cast(T.LongType()).alias("expiring_exception_count"),
-            F.sum(F.coalesce(F.col("summarized__activities_2.expired_exception_count"), F.lit(0))).cast(T.LongType()).alias("expired_exception_count"),
-        ).select(
-            F.col("as_of_date"),
-            F.col("unacknowledged_count"),
-            F.col("pending_exception_count"),
-            F.col("expiring_exception_count"),
-            F.col("expired_exception_count"),
-            F.col("department_id"),
-            F.col("department_name"),
+        summarized__department_summaries = (
+            summarized__department_summaries.groupBy(
+                F.col("department.id").alias("department_id"),
+                F.col("department.name").alias("department_name"),
+                F.col("evaluation.as_of_date").alias("as_of_date"),
+            )
+            .agg(
+                F.sum(F.coalesce(F.col("summarized__activities_2.unacknowledged_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("unacknowledged_count"),
+                F.sum(F.coalesce(F.col("summarized__activities_2.pending_exception_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("pending_exception_count"),
+                F.sum(F.coalesce(F.col("summarized__activities_2.expiring_exception_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("expiring_exception_count"),
+                F.sum(F.coalesce(F.col("summarized__activities_2.expired_exception_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("expired_exception_count"),
+            )
+            .select(
+                F.col("as_of_date"),
+                F.col("unacknowledged_count"),
+                F.col("pending_exception_count"),
+                F.col("expiring_exception_count"),
+                F.col("expired_exception_count"),
+                F.col("department_id"),
+                F.col("department_name"),
+            )
         )
-        assert_schema(summarized__department_summaries, DEPARTMENT_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA, name="DepartmentRemediationWorkflowSummary", mode="strict")
+        assert_schema(
+            summarized__department_summaries,
+            DEPARTMENT_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA,
+            name="DepartmentRemediationWorkflowSummary",
+            mode="strict",
+        )
         return {
             "summarized__department_summaries": summarized__department_summaries,
         }
@@ -470,33 +846,53 @@ class VulnerabilityRemediationSummariesGenerated:
         summarized__activities_2_joined = frames["summarized__activities"].alias("summarized__activities_2")
         summarized__org_summaries = summarized__org_summaries.join(
             summarized__activities_2_joined,
-            ((F.col("summarized__activities_2.org_id") == F.col("org.id")) & (F.col("summarized__activities_2.as_of_date") == F.col("evaluation.as_of_date"))),
+            (
+                (F.col("summarized__activities_2.org_id") == F.col("org.id"))
+                & (F.col("summarized__activities_2.as_of_date") == F.col("evaluation.as_of_date"))
+            ),
             "left",
         )
-        summarized__org_summaries = summarized__org_summaries.groupBy(
-            F.col("org.id").alias("org_id"),
-            F.col("org.name").alias("org_name"),
-            F.col("evaluation.as_of_date").alias("as_of_date"),
-        ).agg(
-            F.sum(F.coalesce(F.col("summarized__activities_2.unacknowledged_count"), F.lit(0))).cast(T.LongType()).alias("unacknowledged_count"),
-            F.sum(F.coalesce(F.col("summarized__activities_2.pending_exception_count"), F.lit(0))).cast(T.LongType()).alias("pending_exception_count"),
-            F.sum(F.coalesce(F.col("summarized__activities_2.expiring_exception_count"), F.lit(0))).cast(T.LongType()).alias("expiring_exception_count"),
-            F.sum(F.coalesce(F.col("summarized__activities_2.expired_exception_count"), F.lit(0))).cast(T.LongType()).alias("expired_exception_count"),
-        ).select(
-            F.col("as_of_date"),
-            F.col("unacknowledged_count"),
-            F.col("pending_exception_count"),
-            F.col("expiring_exception_count"),
-            F.col("expired_exception_count"),
-            F.col("org_id"),
-            F.col("org_name"),
+        summarized__org_summaries = (
+            summarized__org_summaries.groupBy(
+                F.col("org.id").alias("org_id"),
+                F.col("org.name").alias("org_name"),
+                F.col("evaluation.as_of_date").alias("as_of_date"),
+            )
+            .agg(
+                F.sum(F.coalesce(F.col("summarized__activities_2.unacknowledged_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("unacknowledged_count"),
+                F.sum(F.coalesce(F.col("summarized__activities_2.pending_exception_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("pending_exception_count"),
+                F.sum(F.coalesce(F.col("summarized__activities_2.expiring_exception_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("expiring_exception_count"),
+                F.sum(F.coalesce(F.col("summarized__activities_2.expired_exception_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("expired_exception_count"),
+            )
+            .select(
+                F.col("as_of_date"),
+                F.col("unacknowledged_count"),
+                F.col("pending_exception_count"),
+                F.col("expiring_exception_count"),
+                F.col("expired_exception_count"),
+                F.col("org_id"),
+                F.col("org_name"),
+            )
         )
         return {
             "summarized__org_summaries": summarized__org_summaries,
         }
 
 
-class VulnerabilityRemediationWorkflowGenerated(VulnerabilityRemediationPrepareGenerated, VulnerabilityRemediationAccessGenerated, VulnerabilityRemediationPublishGenerated, VulnerabilityRemediationSummariesGenerated):
+class VulnerabilityRemediationWorkflowGenerated(
+    VulnerabilityRemediationPrepareGenerated,
+    VulnerabilityRemediationAccessGenerated,
+    VulnerabilityRemediationPublishGenerated,
+    VulnerabilityRemediationSummariesGenerated,
+):
 
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
@@ -573,37 +969,106 @@ class VulnerabilityRemediationWorkflowGenerated(VulnerabilityRemediationPrepareG
 
         # Step method: workflow_exposures
         workflow_exposures = frames["accessed__workflow_exposures"].alias("vulnerability_workflow_exposure")
-        assert_schema(workflow_exposures, VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA, name="VulnerabilityWorkflowExposure", mode="strict")
+        assert_schema(
+            workflow_exposures,
+            VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA,
+            name="VulnerabilityWorkflowExposure",
+            mode="strict",
+        )
 
         # Step method: unacknowledged
         unacknowledged = frames["published__unacknowledged"].alias("unacknowledged_vulnerability")
-        assert_schema(unacknowledged, UNACKNOWLEDGED_VULNERABILITY_SCHEMA, name="UnacknowledgedVulnerability", mode="strict")
+        assert_schema(
+            unacknowledged, UNACKNOWLEDGED_VULNERABILITY_SCHEMA, name="UnacknowledgedVulnerability", mode="strict"
+        )
 
         # Step method: pending_exceptions
         pending_exceptions = frames["published__pending_exceptions"].alias("pending_exception_vulnerability")
-        assert_schema(pending_exceptions, PENDING_EXCEPTION_VULNERABILITY_SCHEMA, name="PendingExceptionVulnerability", mode="strict")
+        assert_schema(
+            pending_exceptions,
+            PENDING_EXCEPTION_VULNERABILITY_SCHEMA,
+            name="PendingExceptionVulnerability",
+            mode="strict",
+        )
 
         # Step method: expiring_exceptions
         expiring_exceptions = frames["published__expiring_exceptions"].alias("expiring_exception_vulnerability")
-        assert_schema(expiring_exceptions, EXPIRING_EXCEPTION_VULNERABILITY_SCHEMA, name="ExpiringExceptionVulnerability", mode="strict")
+        assert_schema(
+            expiring_exceptions,
+            EXPIRING_EXCEPTION_VULNERABILITY_SCHEMA,
+            name="ExpiringExceptionVulnerability",
+            mode="strict",
+        )
 
         # Step method: expired_exceptions
         expired_exceptions = frames["published__expired_exceptions"].alias("expired_exception_vulnerability")
-        assert_schema(expired_exceptions, EXPIRED_EXCEPTION_VULNERABILITY_SCHEMA, name="ExpiredExceptionVulnerability", mode="strict")
+        assert_schema(
+            expired_exceptions,
+            EXPIRED_EXCEPTION_VULNERABILITY_SCHEMA,
+            name="ExpiredExceptionVulnerability",
+            mode="strict",
+        )
 
         # Step method: person_summaries
         person_summaries = frames["summarized__person_summaries"].alias("person_remediation_workflow_summary")
-        assert_schema(person_summaries, PERSON_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA, name="PersonRemediationWorkflowSummary", mode="strict")
+        assert_schema(
+            person_summaries,
+            PERSON_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA,
+            name="PersonRemediationWorkflowSummary",
+            mode="strict",
+        )
 
         # Step method: team_summaries
         team_summaries = frames["summarized__team_summaries"].alias("team_remediation_workflow_summary")
-        assert_schema(team_summaries, TEAM_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA, name="TeamRemediationWorkflowSummary", mode="strict")
+        assert_schema(
+            team_summaries,
+            TEAM_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA,
+            name="TeamRemediationWorkflowSummary",
+            mode="strict",
+        )
 
         # Step method: department_summaries
-        department_summaries = frames["summarized__department_summaries"].alias("department_remediation_workflow_summary")
-        assert_schema(department_summaries, DEPARTMENT_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA, name="DepartmentRemediationWorkflowSummary", mode="strict")
+        department_summaries = frames["summarized__department_summaries"].alias(
+            "department_remediation_workflow_summary"
+        )
+        assert_schema(
+            department_summaries,
+            DEPARTMENT_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA,
+            name="DepartmentRemediationWorkflowSummary",
+            mode="strict",
+        )
 
         # Step method: org_summaries
         org_summaries = frames["summarized__org_summaries"].alias("org_remediation_workflow_summary")
-        assert_schema(org_summaries, ORG_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA, name="OrgRemediationWorkflowSummary", mode="strict")
-        return TransformResult({"case_checks": case_checks, "case_issues": case_issues, "workflow_exposures": workflow_exposures, "unacknowledged": unacknowledged, "pending_exceptions": pending_exceptions, "expiring_exceptions": expiring_exceptions, "expired_exceptions": expired_exceptions, "person_summaries": person_summaries, "team_summaries": team_summaries, "department_summaries": department_summaries, "org_summaries": org_summaries}, single=False, schema={"case_checks": REMEDIATION_CASE_CHECK_SCHEMA, "case_issues": REMEDIATION_CASE_ISSUE_SCHEMA, "workflow_exposures": VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA, "unacknowledged": UNACKNOWLEDGED_VULNERABILITY_SCHEMA, "pending_exceptions": PENDING_EXCEPTION_VULNERABILITY_SCHEMA, "expiring_exceptions": EXPIRING_EXCEPTION_VULNERABILITY_SCHEMA, "expired_exceptions": EXPIRED_EXCEPTION_VULNERABILITY_SCHEMA, "person_summaries": PERSON_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA, "team_summaries": TEAM_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA, "department_summaries": DEPARTMENT_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA, "org_summaries": ORG_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA})
+        assert_schema(
+            org_summaries, ORG_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA, name="OrgRemediationWorkflowSummary", mode="strict"
+        )
+        return TransformResult(
+            {
+                "case_checks": case_checks,
+                "case_issues": case_issues,
+                "workflow_exposures": workflow_exposures,
+                "unacknowledged": unacknowledged,
+                "pending_exceptions": pending_exceptions,
+                "expiring_exceptions": expiring_exceptions,
+                "expired_exceptions": expired_exceptions,
+                "person_summaries": person_summaries,
+                "team_summaries": team_summaries,
+                "department_summaries": department_summaries,
+                "org_summaries": org_summaries,
+            },
+            single=False,
+            schema={
+                "case_checks": REMEDIATION_CASE_CHECK_SCHEMA,
+                "case_issues": REMEDIATION_CASE_ISSUE_SCHEMA,
+                "workflow_exposures": VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA,
+                "unacknowledged": UNACKNOWLEDGED_VULNERABILITY_SCHEMA,
+                "pending_exceptions": PENDING_EXCEPTION_VULNERABILITY_SCHEMA,
+                "expiring_exceptions": EXPIRING_EXCEPTION_VULNERABILITY_SCHEMA,
+                "expired_exceptions": EXPIRED_EXCEPTION_VULNERABILITY_SCHEMA,
+                "person_summaries": PERSON_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA,
+                "team_summaries": TEAM_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA,
+                "department_summaries": DEPARTMENT_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA,
+                "org_summaries": ORG_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA,
+            },
+        )

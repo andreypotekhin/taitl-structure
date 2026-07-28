@@ -1035,7 +1035,7 @@ def render_school_iterable_example() -> dict[str, str]:
         authoring = importlib.import_module("structure_iterable.authoring.Authoring")
         compiler = importlib.import_module("structure_iterable.compiler.Compiler")
         generation = importlib.import_module("structure_iterable.generation.Generation")
-        schemas = importlib.import_module("examples.school.schemas.sequences")
+        schemas = importlib.import_module("examples.school.schemas.iterable")
 
         scores = compiler.IterableRecipe(
             name="ProjectIterableScores",
@@ -1083,8 +1083,8 @@ def render_school_iterable_example() -> dict[str, str]:
                 ),
             ),
         )
-        sequences = compiler.IterableRecipe(
-            name="Fibonacci",
+        fibonacci = compiler.IterableRecipe(
+            name="IterableFibonacci",
             inputs=("rows",),
             outputs=("result",),
             steps=(
@@ -1096,7 +1096,7 @@ def render_school_iterable_example() -> dict[str, str]:
                         joins=(),
                         projections=(
                             authoring.Projection(
-                                schemas.FibonacciRow,
+                                schemas.IterableFibonacciRow,
                                 {"index": authoring.Field("rows", "index"), "fibonacci": authoring.StateValue(0)},
                             ),
                         ),
@@ -1117,29 +1117,74 @@ def render_school_iterable_example() -> dict[str, str]:
             generation.Generation()
             .generate(
                 GenerationRequest(
-                    payload={"examples.school.transforms.iterable.ProjectIterableScores": scores},
+                    payload={
+                        "examples.school.transforms.iterable.ProjectIterableScores": scores,
+                        "examples.school.transforms.iterable.IterableFibonacci": fibonacci,
+                    },
                     source_module="examples.school.transforms.iterable",
                     generated_package="structure_generated.school",
                 )
             )
             .files
         )
-        files = {
-            **files,
-            **generation.Generation()
-            .generate(
-                GenerationRequest(
-                    payload={"examples.school.transforms.sequences.Fibonacci": sequences},
-                    source_module="examples.school.transforms.sequences",
-                    generated_package="structure_generated.school",
-                )
-            )
-            .files,
-        }
-        return {f"examples/{path}": text for path, text in files.items()}
+        return {**{f"examples/{path}": text for path, text in files.items()}, **_render_school_pyspark_example()}
     finally:
         sys.path.remove(plugin)
         _drop("structure_iterable")
+
+
+def _render_school_pyspark_example() -> dict[str, str]:
+    from examples.school.schemas.sequences import (
+        FibonacciRow,
+        FibonacciState,
+        SequenceTick,
+        SeriesApproximation,
+        SeriesState,
+    )
+    from examples.school.transforms.sequences import Fibonacci
+    from examples.school.transforms.series import EAsSeries, Ln2AsSeries, PiAsSeries
+
+    schema_modules: dict[str, Sequence[type[Schema]]] = {
+        "examples.school.schemas.sequences": [
+            SequenceTick,
+            FibonacciState,
+            FibonacciRow,
+            SeriesState,
+            SeriesApproximation,
+        ]
+    }
+    files = PySpark.render.project().source_unit(
+        {
+            "examples.school.transforms.sequences.Fibonacci": cast(
+                PySparkExecutionPlan,
+                Compiler.frontend.compile()(Fibonacci, materialize_schemas=False).lowered,
+            )
+        },
+        source_module="examples.school.transforms.sequences",
+        generated_package="examples.structure_generated.school",
+        source_schema_modules=schema_modules,
+    )
+    files.update(
+        PySpark.render.project().source_unit(
+            {
+                f"examples.school.transforms.series.{transform.__name__}": cast(
+                    PySparkExecutionPlan,
+                    Compiler.frontend.compile()(transform, materialize_schemas=False).lowered,
+                )
+                for transform in (PiAsSeries, EAsSeries, Ln2AsSeries)
+            },
+            source_module="examples.school.transforms.series",
+            generated_package="examples.structure_generated.school",
+            source_schema_modules=schema_modules,
+        )
+    )
+    files["examples/structure_generated/school/traceability/__init__.py"] = (
+        "# Generated traceability package marker.\n"
+    )
+    files["examples/structure_generated/school/traceability/transforms/__init__.py"] = (
+        "# Generated transform traceability package marker.\n"
+    )
+    return files
 
 
 def expected_school_iterable_generated() -> dict[str, str]:

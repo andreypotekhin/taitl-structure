@@ -15,6 +15,7 @@ from structure.plugin.pyspark.compiler.model.PySparkValidationRecipe import PySp
 from structure.plugin.pyspark.dsl.types import StructureType
 from structure.plugin.pyspark.render.logic.expressions.RenderPySparkExpression import render_pyspark_expression
 from structure.plugin.pyspark.render.logic.GeneratedCodeOptions import GeneratedCodeOptions
+from structure.plugin.pyspark.render.logic.HardWrapGeneratedPython import HardWrapGeneratedPython
 from structure.plugin.pyspark.render.logic.RenderEmbeddedHooks import (
     EmbeddedHook,
     EmbeddedHookError,
@@ -28,6 +29,7 @@ class RenderPySparkTransformModule:
     def __init__(self) -> None:
         self._embedded_hooks = RenderEmbeddedHooks()
         self._options = GeneratedCodeOptions()
+        self._hard_wrap = HardWrapGeneratedPython()
 
     @property
     def _schema(self):
@@ -44,6 +46,7 @@ class RenderPySparkTransformModule:
         runtime_module: str,
         semantic_fingerprint: str | None = None,
         generated_code_options: tuple[str, ...] = (),
+        generated_code_hard_wrap: int = 120,
     ) -> str:
         imports = self._imports(
             plan,
@@ -57,7 +60,7 @@ class RenderPySparkTransformModule:
             {source_transform: semantic_fingerprint} if semantic_fingerprint else {},
             generated_code_options=generated_code_options,
         )
-        return f"{imports}\n\n\n{metadata}{body}\n"
+        return self._source(f"{imports}\n\n\n{metadata}{body}\n", width=generated_code_hard_wrap)
 
     def source_unit(
         self,
@@ -67,6 +70,7 @@ class RenderPySparkTransformModule:
         runtime_module: str,
         semantic_fingerprints: Mapping[str, str] | None = None,
         generated_code_options: tuple[str, ...] = (),
+        generated_code_hard_wrap: int = 120,
     ) -> str:
         imports: list[str] = []
         bodies: list[str] = []
@@ -85,7 +89,13 @@ class RenderPySparkTransformModule:
             )
         separator = "\n\n\n"
         metadata = self._fingerprints(semantic_fingerprints or {}, generated_code_options=generated_code_options)
-        return f"{self._unique(imports)}\n\n\n{metadata}{separator.join(bodies)}\n"
+        return self._source(
+            f"{self._unique(imports)}\n\n\n{metadata}{separator.join(bodies)}\n",
+            width=generated_code_hard_wrap,
+        )
+
+    def _source(self, source: str, *, width: int) -> str:
+        return self._hard_wrap(source, width=width)
 
     def _fingerprints(
         self,

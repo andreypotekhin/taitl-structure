@@ -5,7 +5,11 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.streams.runtime.schema_assert import TransformResult, assert_schema, project_schema
-from examples.structure_generated.streams.pyspark.schemas.events import JUDGE_CALL_SCHEMA, PASSAGE_SCHEMA, PENALTY_SCHEMA
+from examples.structure_generated.streams.pyspark.schemas.events import (
+    JUDGE_CALL_SCHEMA,
+    PASSAGE_SCHEMA,
+    PENALTY_SCHEMA,
+)
 
 
 class CorrelatePenaltiesGenerated:
@@ -31,7 +35,22 @@ class CorrelatePenaltiesGenerated:
         calls_joined = calls.withWatermark("at", '10 minutes').alias("calls")
         passages = passages.join(
             calls_joined,
-            (((((F.col("calls.race_id") == F.col("passage.race_id")) & (F.col("calls.run_id") == F.col("passage.run_id"))) & (F.col("calls.paddler_id") == F.col("passage.paddler_id"))) & (F.col("calls.gate_number") == F.col("passage.gate_number"))) & ((F.col("calls.at") >= (F.col("passage.at") - F.expr("INTERVAL 0 seconds"))) & (F.col("calls.at") <= (F.col("passage.at") + F.expr("INTERVAL 5 minutes"))))),
+            (
+                (
+                    (
+                        (
+                            (F.col("calls.race_id") == F.col("passage.race_id"))
+                            & (F.col("calls.run_id") == F.col("passage.run_id"))
+                        )
+                        & (F.col("calls.paddler_id") == F.col("passage.paddler_id"))
+                    )
+                    & (F.col("calls.gate_number") == F.col("passage.gate_number"))
+                )
+                & (
+                    (F.col("calls.at") >= (F.col("passage.at") - F.expr("INTERVAL 0 seconds")))
+                    & (F.col("calls.at") <= (F.col("passage.at") + F.expr("INTERVAL 5 minutes")))
+                )
+            ),
             "inner",
         )
         passages = passages.select(

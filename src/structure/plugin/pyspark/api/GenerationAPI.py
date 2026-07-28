@@ -16,6 +16,7 @@ class GenerationAPI(GenerationAPIV1):
             generated_package=request.generated_package,
             semantic_fingerprints=request.semantic_fingerprints,
             generated_code_options=request.generated_code_options,
+            generated_code_hard_wrap=request.generated_code_hard_wrap,
         )
         source = request.source_module.rsplit(".", 1)[1]
         plans = cast(dict[str, object], request.payload)

@@ -294,11 +294,11 @@ honest boundary for actions, driver algorithms, arbitrary Python, sources/sinks,
 - Sprint 24 (+): admitted lambda-bound struct field access, explicit analytic maxima, deterministic ordered
   collections, global aggregates, and `exactly_one` relation-cardinality assertions; replaced both Security raw hooks
   with ordinary steps and documented the scalar UDF boundary. Repository gate passed on 2026-07-26.
-- Sprint 25 (active): admit typed relation operations—generators, branch/set composition, self aliases, ordering, bounds,
-  assertions including parent references, bounded hierarchy/fallback expansion, and priority selection—and retire Search hooks in independently verifiable
-  slices.
-- Sprint 26: deliver the separately specified bounded ordered timeline `scan(...)` recurrence feature once the shared
-  relation/recipe boundaries are stable.
+- Sprint 25 (+): admitted typed relation operations—generators, branch/set composition, self aliases, ordering, bounds,
+  assertions including parent references, bounded hierarchy/fallback expansion, and priority selection—and retired the
+  scheduled Search hooks in independently verifiable slices.
+- Sprint 26 (active): deliver the separately specified bounded ordered timeline `scan(...)` recurrence feature using
+  the stable relation/recipe boundaries from Sprint 25.
 - Sprint 27: close release evidence and the unaddressed Challenges.md inventory, with no new feature family admitted.
 
 ### v6 must include

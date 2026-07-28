@@ -8,6 +8,7 @@ from structure.plugin.pyspark.compiler.model.PySparkHookRecipe import PySparkHoo
 from structure.plugin.pyspark.compiler.model.PySparkInputRecipe import PySparkInputRecipe
 from structure.plugin.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoinRecipe
 from structure.plugin.pyspark.compiler.model.PySparkJoinTemporalRecipe import PySparkJoinTemporalRecipe
+from structure.plugin.pyspark.compiler.model.PySparkOrderedTimelineScanRecipe import PySparkOrderedTimelineScanRecipe
 from structure.plugin.pyspark.compiler.model.PySparkOutputRecipe import PySparkOutputRecipe
 from structure.plugin.pyspark.compiler.model.PySparkPosexplodeStructRecipe import PySparkPosexplodeStructRecipe
 from structure.plugin.pyspark.compiler.model.PySparkProjectionRecipe import PySparkProjectionRecipe
@@ -31,6 +32,7 @@ __all__ = [
     "PySparkInputRecipe",
     "PySparkJoinRecipe",
     "PySparkJoinTemporalRecipe",
+    "PySparkOrderedTimelineScanRecipe",
     "PySparkOutputRecipe",
     "PySparkPosexplodeStructRecipe",
     "PySparkProjectionRecipe",

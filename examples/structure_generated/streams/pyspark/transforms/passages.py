@@ -45,13 +45,19 @@ class PreparePassagesGenerated:
         paddlers_2_joined = paddlers.alias("paddlers_2")
         events = events.join(
             paddlers_2_joined,
-            ((F.col("paddlers_2.race_id") == F.col("raw_event.race_id")) & (F.col("paddlers_2.id") == F.col("raw_event.paddler_id"))),
+            (
+                (F.col("paddlers_2.race_id") == F.col("raw_event.race_id"))
+                & (F.col("paddlers_2.id") == F.col("raw_event.paddler_id"))
+            ),
             "left",
         )
         gates_3_joined = gates.alias("gates_3")
         events = events.join(
             gates_3_joined,
-            ((F.col("gates_3.race_id") == F.col("raw_event.race_id")) & (F.col("gates_3.number") == F.col("raw_event.gate_number"))),
+            (
+                (F.col("gates_3.race_id") == F.col("raw_event.race_id"))
+                & (F.col("gates_3.number") == F.col("raw_event.gate_number"))
+            ),
             "left",
         )
         if events.isStreaming:

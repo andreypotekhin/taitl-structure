@@ -5,7 +5,11 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
-from examples.structure_generated.search.pyspark.schemas.similarity import DOCUMENT_SIMILARITY_SCHEMA, INDEXED_SIMILAR_DOCUMENT_SCHEMA, SIMILARITY_DOCUMENT_QUERY_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.similarity import (
+    DOCUMENT_SIMILARITY_SCHEMA,
+    INDEXED_SIMILAR_DOCUMENT_SCHEMA,
+    SIMILARITY_DOCUMENT_QUERY_SCHEMA,
+)
 from examples.structure_generated.search.pyspark.schemas.text import DOCUMENT_SCHEMA
 
 
@@ -88,4 +92,8 @@ class SearchSimilarityGenerated:
         # Step method: similar_documents
         similar_documents = query.alias("indexed_similar_document")
         assert_schema(similar_documents, INDEXED_SIMILAR_DOCUMENT_SCHEMA, name="IndexedSimilarDocument", mode="strict")
-        return TransformResult({"similar_documents": similar_documents}, single=True, schema={"similar_documents": INDEXED_SIMILAR_DOCUMENT_SCHEMA})
+        return TransformResult(
+            {"similar_documents": similar_documents},
+            single=True,
+            schema={"similar_documents": INDEXED_SIMILAR_DOCUMENT_SCHEMA},
+        )

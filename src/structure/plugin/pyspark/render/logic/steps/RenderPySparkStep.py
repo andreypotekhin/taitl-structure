@@ -10,6 +10,7 @@ from structure.plugin.pyspark.compiler.model.PySparkDuplicateRowsRecipe import P
 from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.plugin.pyspark.compiler.model.PySparkHookRecipe import PySparkHookRecipe
 from structure.plugin.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoinRecipe
+from structure.plugin.pyspark.compiler.model.PySparkOrderedTimelineScanRecipe import PySparkOrderedTimelineScanRecipe
 from structure.plugin.pyspark.compiler.model.PySparkOutputRecipe import PySparkOutputRecipe
 from structure.plugin.pyspark.compiler.model.PySparkPosexplodeStructRecipe import PySparkPosexplodeStructRecipe
 from structure.plugin.pyspark.compiler.model.PySparkSelectedRowsRecipe import PySparkSelectedRowsRecipe
@@ -258,6 +259,15 @@ class RenderPySparkStep:
                         step=step,
                         target=target,
                         index=generator_index,
+                    )
+                )
+            if operation.kind == "ordered_timeline_scan" and operation.ordered_timeline_scan is not None:
+                ordered_lines.extend(
+                    self._ordered_timeline_scan(
+                        operation.ordered_timeline_scan,
+                        step=step,
+                        target=target,
+                        index=index,
                     )
                 )
             if operation.relation_alias is not None:
@@ -619,6 +629,214 @@ class RenderPySparkStep:
             )
         lines.append(f"        {target} = {target}.drop({self._literal(position)}, {self._literal(item)})")
         return lines
+
+    def _ordered_timeline_scan(
+        self,
+        scan: PySparkOrderedTimelineScanRecipe,
+        *,
+        step: PySparkStepRecipe | PySparkOutputRecipe,
+        target: str,
+        index: int,
+    ) -> list[str]:
+        prefix = f"{target}_{self._identifier(scan.scope)}_{index}"
+        keyed = f"{prefix}_keyed"
+        grouped = f"{prefix}_grouped"
+        folded = f"{prefix}_folded"
+        expanded = f"{prefix}_expanded"
+        guard = f"{prefix}_guard"
+        partition_columns = tuple(f"{prefix}_partition_{position}" for position, _ in enumerate(scan.partition_by))
+        order_columns = tuple(f"{prefix}_order_{position}" for position, _ in enumerate(scan.order_by))
+        items = f"{prefix}_items"
+        folded_column = f"{prefix}_scan"
+        row = f"{prefix}_row"
+        position = f"{prefix}_pos"
+        guard_column = f"__structure_{scan.scope.strip('_')}_guard"
+        aliases = self._scope_aliases(step)
+        input_columns = tuple(field.column for field in step.input_schema._structure_fields.values())
+
+        lines = [f"        {keyed} = {target}"]
+        for column, expression in zip(partition_columns, scan.partition_by, strict=True):
+            rendered = render_pyspark_expression(expression, scope_aliases=aliases)
+            lines.append(f"        {keyed} = {keyed}.withColumn({self._literal(column)}, {rendered})")
+        for column, expression in zip(order_columns, scan.order_by, strict=True):
+            rendered = render_pyspark_expression(expression, scope_aliases=aliases)
+            lines.append(f"        {keyed} = {keyed}.withColumn({self._literal(column)}, {rendered})")
+
+        lines.extend(self._scan_guard(keyed, guard, partition_columns, order_columns, scan))
+        lines.append(f"        {keyed} = {guard}.crossJoin({keyed})")
+
+        payload = self._scan_payload(input_columns)
+        item = self._scan_item(order_columns, payload)
+        groups = ", ".join(self._literal(column) for column in (*partition_columns, guard_column))
+        initial_state = self._scan_initial_state(scan, aliases)
+        initial_accumulator = (
+            "F.struct("
+            f"{initial_state}.alias('__state'), "
+            f"F.array().cast({self._scan_rows_type(step, scan)}).alias('__rows')"
+            ")"
+        )
+        merge = self._scan_merge(scan)
+        lines.extend(
+            [
+                f"        {grouped} = {keyed}.groupBy({groups}).agg(",
+                f"            F.sort_array(F.collect_list({item})).alias({self._literal(items)})",
+                "        )",
+                f"        {folded} = {grouped}.select(",
+                f"            F.aggregate(F.col({self._literal(items)}), {initial_accumulator}, {merge})",
+                f"            .alias({self._literal(folded_column)})",
+                "        )",
+                f"        {expanded} = {folded}.select(",
+                f"            F.posexplode(F.col({self._literal(folded_column)}).getField('__rows'))",
+                f"            .alias({self._literal(position)}, {self._literal(row)})",
+                "        )",
+                f"        {target} = {expanded}.select(",
+            ]
+        )
+        for column in input_columns:
+            lines.append(
+                f"            F.col({self._literal(f'{row}.__payload.{column}')}).alias({self._literal(column)}),"
+            )
+        for field in scan.state_schema._structure_fields.values():
+            lines.append(
+                f"            F.col({self._literal(f'{row}.__state.{field.column}')}).alias({self._literal(field.column)}),"
+            )
+        lines.append("        )")
+        return lines
+
+    def _scan_guard(
+        self,
+        keyed: str,
+        guard: str,
+        partition_columns: tuple[str, ...],
+        order_columns: tuple[str, ...],
+        scan: PySparkOrderedTimelineScanRecipe,
+    ) -> list[str]:
+        violation = "__structure_scan_violation"
+        count = "__structure_scan_count"
+        null_order = " | ".join(f"F.col({self._literal(column)}).isNull()" for column in order_columns)
+        grouped_keys = ", ".join(self._literal(column) for column in (*partition_columns, *order_columns))
+        grouped_partitions = ", ".join(self._literal(column) for column in partition_columns)
+        message = (
+            "SCAN-E0801: scan(...) found null order keys, duplicate order keys, or a partition above max_rows; "
+            "see docs/dev/specifications/OrderedTimelineScan.md"
+        )
+        guard_column = f"__structure_{scan.scope.strip('_')}_guard"
+        return [
+            f"        {guard}_nulls = {keyed}.where({null_order}).select(F.lit(1).alias({self._literal(violation)}))",
+            f"        {guard}_duplicates = {keyed}.groupBy({grouped_keys}).agg(",
+            f"            F.count(F.lit(1)).alias({self._literal(count)})",
+            "        )",
+            f"        {guard}_duplicates = {guard}_duplicates.where(F.col({self._literal(count)}) > F.lit(1))",
+            f"        {guard}_duplicates = {guard}_duplicates.select(F.lit(1).alias({self._literal(violation)}))",
+            f"        {guard}_overruns = {keyed}.groupBy({grouped_partitions}).agg(",
+            f"            F.count(F.lit(1)).alias({self._literal(count)})",
+            "        )",
+            f"        {guard}_overruns = {guard}_overruns.where(F.col({self._literal(count)}) > F.lit({scan.max_rows}))",
+            f"        {guard}_overruns = {guard}_overruns.select(F.lit(1).alias({self._literal(violation)}))",
+            f"        {guard}_violations = {guard}_nulls.unionByName(",
+            f"            {guard}_duplicates,",
+            "            allowMissingColumns=False,",
+            f"        ).unionByName({guard}_overruns, allowMissingColumns=False)",
+            f"        {guard} = {guard}_violations.agg(F.count(F.lit(1)).alias({self._literal(count)}))",
+            f"        {guard} = {guard}.select(",
+            f"            F.assert_true(F.col({self._literal(count)}) == F.lit(0), {self._literal(message)})",
+            f"            .alias({self._literal(guard_column)})",
+            "        )",
+        ]
+
+    def _scan_payload(self, input_columns: tuple[str, ...]) -> str:
+        columns = ", ".join(
+            f"F.col({self._literal(column)}).alias({self._literal(column)})" for column in input_columns
+        )
+        return f"F.struct({columns}).alias('__payload')"
+
+    def _scan_item(self, order_columns: tuple[str, ...], payload: str) -> str:
+        order = ", ".join(f"F.col({self._literal(column)}).alias({self._literal(column)})" for column in order_columns)
+        return f"F.struct({order}, {payload})"
+
+    def _scan_initial_state(self, scan: PySparkOrderedTimelineScanRecipe, aliases: dict[str, str]) -> str:
+        fields = []
+        for name, expression in scan.initial:
+            field = scan.state_schema._structure_fields[name]
+            rendered = render_pyspark_expression(expression, scope_aliases=aliases)
+            fields.append(
+                f"{rendered}.cast({self._schema.render().type(field.type)}).alias({self._literal(field.column)})"
+            )
+        return f"F.struct({', '.join(fields)})"
+
+    def _scan_merge(self, scan: PySparkOrderedTimelineScanRecipe) -> str:
+        before = (
+            "F.struct("
+            "item.getField('__payload').alias('__payload'), "
+            "acc.getField('__state').alias('__state')"
+            ")"
+        )
+        next_state = self._scan_next_state(scan)
+        rows = f"F.concat(acc.getField('__rows'), F.array({before})).alias('__rows')"
+        return f"lambda acc, item: F.struct({next_state}.alias('__state'), {rows})"
+
+    def _scan_next_state(self, scan: PySparkOrderedTimelineScanRecipe) -> str:
+        fields = []
+        for name, expression in scan.transition:
+            field = scan.state_schema._structure_fields[name]
+            rewritten = self._scan_rewrite(expression, scan, state="acc", payload="item")
+            rendered = render_pyspark_expression(rewritten, scope_aliases={})
+            fields.append(
+                f"{rendered}.cast({self._schema.render().type(field.type)}).alias({self._literal(field.column)})"
+            )
+        return f"F.struct({', '.join(fields)})"
+
+    def _scan_rows_type(
+        self,
+        step: PySparkStepRecipe | PySparkOutputRecipe,
+        scan: PySparkOrderedTimelineScanRecipe,
+    ) -> str:
+        payload_fields = ", ".join(self._inline_field(field) for field in step.input_schema._structure_fields.values())
+        state_fields = ", ".join(self._inline_field(field) for field in scan.state_schema._structure_fields.values())
+        return (
+            "T.ArrayType("
+            "T.StructType(["
+            f"T.StructField('__payload', T.StructType([{payload_fields}]), False), "
+            f"T.StructField('__state', T.StructType([{state_fields}]), False)"
+            "]), containsNull=False)"
+        )
+
+    def _inline_field(self, field) -> str:
+        nullable = "True" if field.nullable else "False"
+        return f"T.StructField({self._literal(field.column)}, {self._schema.render().type(field.type)}, {nullable})"
+
+    def _scan_rewrite(self, expression, scan, *, state: str, payload: str):
+        if expression.kind == "field" and "scope" in expression.data:
+            scope = str(expression.data["scope"])
+            if scope == scan.state_scope:
+                return self._scan_field(expression, state, "__state")
+            if scope == scan.row_scope:
+                return self._scan_field(expression, payload, "__payload")
+        return PySparkExpressionRecipe(
+            kind=expression.kind,
+            type=expression.type,
+            nullable=expression.nullable,
+            data=expression.data,
+            args=tuple(self._scan_rewrite(argument, scan, state=state, payload=payload) for argument in expression.args),
+        )
+
+    def _scan_field(self, expression, root: str, first: str):
+        rewritten = PySparkExpressionRecipe(
+            kind="lambda_arg",
+            type=None,
+            nullable=False,
+            data={"name": root},
+        )
+        path = (first, *expression.data.get("path", (expression.data["field"],)))
+        for field in path:
+            rewritten = PySparkExpressionRecipe(
+                kind="get_field",
+                type=expression.type,
+                nullable=expression.nullable,
+                data={"field": str(field)},
+                args=(rewritten,),
+            )
+        return rewritten
 
     def _relation_set(self, source: str, relation_set, *, target: str) -> list[str]:
         if relation_set.by_name:
@@ -1421,6 +1639,13 @@ class RenderPySparkStep:
         for operation in step.operations:
             if operation.posexplode_struct is not None:
                 aliases[operation.posexplode_struct.scope] = ""
+            if operation.ordered_timeline_scan is not None:
+                aliases[operation.ordered_timeline_scan.row_scope] = ""
+                aliases[operation.ordered_timeline_scan.scope] = ""
+                aliases[step.input_schema.__name__] = ""
+                source_scope = getattr(step, "source_scope", None)
+                if source_scope is not None:
+                    aliases[source_scope] = ""
             if operation.relation_hierarchy_closure is not None:
                 aliases[operation.relation_hierarchy_closure.scope] = ""
             if operation.relation_hierarchy_fallback is not None:

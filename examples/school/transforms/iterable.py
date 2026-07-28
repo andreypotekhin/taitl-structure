@@ -1,8 +1,16 @@
 """Example of a non-PySpark transform. Powered by Iterable plugin."""
 
-from structure_iterable import left_join
+from structure_iterable import left_join, scan, state
 
-from examples.school.schemas.sequences import Student, StudentAudit, StudentAward, StudentProfile, StudentReport
+from examples.school.schemas.iterable import (
+    IterableFibonacciRow,
+    SequenceRow,
+    Student,
+    StudentAudit,
+    StudentAward,
+    StudentProfile,
+    StudentReport,
+)
 from structure import Transform, input, output, step, transform
 
 
@@ -28,4 +36,20 @@ class ProjectIterableScores(Transform):
         return (
             StudentReport(student=student.student, score=student.score, cohort=profile.cohort, award=award.award),
             StudentAudit(student=student.student, score=student.score),
+        )
+
+
+@transform(target="iterable")
+class IterableFibonacci(Transform):
+    """Emits Fibonacci values with the finite Iterable plugin."""
+
+    rows = input(SequenceRow)
+    result = output(IterableFibonacciRow)
+
+    @step(output=result)
+    def generate(self, row: SequenceRow) -> IterableFibonacciRow:
+        return scan(
+            initial=(0, 1),
+            output=IterableFibonacciRow(index=row.index, fibonacci=state[0]),
+            next=lambda previous, current: (current, previous + current),
         )

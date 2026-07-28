@@ -5,8 +5,20 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
-from examples.structure_generated.search.pyspark.schemas.resolve import BAND_ANCESTOR_SCHEMA, BAND_MATCH_SCHEMA, SINGLETON_USER_BAND_SCHEMA, USER_BAND_PATH_SCHEMA
-from examples.structure_generated.search.pyspark.schemas.user import BAND_FALLBACK_SCHEMA, BAND_MEMBERSHIP_SCHEMA, BAND_SCHEMA, USER_BAND_MEMBERSHIP_SCHEMA, USER_BAND_SCHEMA, USER_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.resolve import (
+    BAND_ANCESTOR_SCHEMA,
+    BAND_MATCH_SCHEMA,
+    SINGLETON_USER_BAND_SCHEMA,
+    USER_BAND_PATH_SCHEMA,
+)
+from examples.structure_generated.search.pyspark.schemas.user import (
+    BAND_FALLBACK_SCHEMA,
+    BAND_MEMBERSHIP_SCHEMA,
+    BAND_SCHEMA,
+    USER_BAND_MEMBERSHIP_SCHEMA,
+    USER_BAND_SCHEMA,
+    USER_SCHEMA,
+)
 
 
 class ResolveCohortBandsGenerated:
@@ -31,21 +43,36 @@ class ResolveCohortBandsGenerated:
         valid_bands_require_unique_0_duplicates = valid_bands.groupBy(F.col("band.id")).agg(
             F.count(F.lit(1)).alias("__structure_count")
         )
-        valid_bands_require_unique_0_duplicates = valid_bands_require_unique_0_duplicates.where(F.col("__structure_count") > F.lit(1))
+        valid_bands_require_unique_0_duplicates = valid_bands_require_unique_0_duplicates.where(
+            F.col("__structure_count") > F.lit(1)
+        )
         valid_bands_require_unique_0_violations = valid_bands_require_unique_0_duplicates.agg(
             F.count(F.lit(1)).alias("__structure_violations")
         )
         valid_bands_require_unique_0_assertion = valid_bands_require_unique_0_violations.select(
-            F.assert_true(F.col("__structure_violations") == F.lit(0), 'REL-E0702: require_unique(...) found duplicate keys; see docs/Diagnostics.md#rel-e0702')
-            .alias("__structure_require_unique")
+            F.assert_true(
+                F.col("__structure_violations") == F.lit(0),
+                'REL-E0702: require_unique(...) found duplicate keys; see docs/Diagnostics.md#rel-e0702',
+            ).alias("__structure_require_unique")
         )
         valid_bands = valid_bands_require_unique_0_assertion.crossJoin(valid_bands).drop("__structure_require_unique")
-        valid_bands_require_all_1_violations = valid_bands.where(~F.coalesce(((F.col("band.age_start").isNull() | F.col("band.age_end").isNull()) | (F.col("band.age_start") < F.col("band.age_end"))), F.lit(False))).agg(
-            F.count(F.lit(1)).alias("__structure_violations")
-        )
+        valid_bands_require_all_1_violations = valid_bands.where(
+            ~F.coalesce(
+                (
+                    (F.col("band.age_start").isNull() | F.col("band.age_end").isNull())
+                    | (F.col("band.age_start") < F.col("band.age_end"))
+                ),
+                F.lit(False),
+            )
+        ).agg(F.count(F.lit(1)).alias("__structure_violations"))
         valid_bands_require_all_1_assertion = valid_bands_require_all_1_violations.select(
-            F.assert_true(F.col("__structure_violations") == F.lit(0), 'REL-E0703: require_all(...) found rows that do not satisfy the predicate; see docs/Diagnostics.md#rel-e0703')
-            .alias("__structure_require_all")
+            F.assert_true(
+                F.col("__structure_violations") == F.lit(0),
+                (
+                    'REL-E0703: require_all(...) found rows that do not satisfy the predicate; see'
+                    'docs/Diagnostics.md#rel-e0703'
+                ),
+            ).alias("__structure_require_all")
         )
         valid_bands = valid_bands_require_all_1_assertion.crossJoin(valid_bands).drop("__structure_require_all")
         valid_bands_require_parent_hierarchy_2_nodes = valid_bands.select(
@@ -56,12 +83,16 @@ class ResolveCohortBandsGenerated:
         valid_bands_require_parent_hierarchy_2_ids = valid_bands_require_parent_hierarchy_2_nodes.select(
             F.col("__structure_hierarchy_node_2").alias("__structure_hierarchy_known_parent"),
         )
-        valid_bands_require_parent_hierarchy_2_missing = valid_bands_require_parent_hierarchy_2_nodes.where(F.col("__structure_hierarchy_parent_2").isNotNull()).join(
+        valid_bands_require_parent_hierarchy_2_missing = valid_bands_require_parent_hierarchy_2_nodes.where(
+            F.col("__structure_hierarchy_parent_2").isNotNull()
+        ).join(
             valid_bands_require_parent_hierarchy_2_ids,
             F.col("__structure_hierarchy_parent_2") == F.col("__structure_hierarchy_known_parent"),
             "left_anti",
         )
-        valid_bands_require_parent_hierarchy_2_parent_order = valid_bands_require_parent_hierarchy_2_nodes.alias("child").join(
+        valid_bands_require_parent_hierarchy_2_parent_order = valid_bands_require_parent_hierarchy_2_nodes.alias(
+            "child"
+        ).join(
             valid_bands_require_parent_hierarchy_2_nodes.alias("parent"),
             F.col("child.__structure_hierarchy_parent_2") == F.col("parent.__structure_hierarchy_node_2"),
             "inner",
@@ -69,12 +100,16 @@ class ResolveCohortBandsGenerated:
         valid_bands_require_parent_hierarchy_2_parent_order = valid_bands_require_parent_hierarchy_2_parent_order.where(
             ~(F.col("child.__structure_hierarchy_order_2") > F.col("parent.__structure_hierarchy_order_2"))
         )
-        valid_bands_require_parent_hierarchy_2_parent_order = valid_bands_require_parent_hierarchy_2_parent_order.select(
-            F.col("child.__structure_hierarchy_node_2").alias("__structure_hierarchy_node_2"),
-            F.col("child.__structure_hierarchy_parent_2").alias("__structure_hierarchy_parent_2"),
-            F.col("child.__structure_hierarchy_order_2").alias("__structure_hierarchy_order_2"),
+        valid_bands_require_parent_hierarchy_2_parent_order = (
+            valid_bands_require_parent_hierarchy_2_parent_order.select(
+                F.col("child.__structure_hierarchy_node_2").alias("__structure_hierarchy_node_2"),
+                F.col("child.__structure_hierarchy_parent_2").alias("__structure_hierarchy_parent_2"),
+                F.col("child.__structure_hierarchy_order_2").alias("__structure_hierarchy_order_2"),
+            )
         )
-        valid_bands_require_parent_hierarchy_2_frontier = valid_bands_require_parent_hierarchy_2_nodes.where(F.col("__structure_hierarchy_parent_2").isNotNull()).select(
+        valid_bands_require_parent_hierarchy_2_frontier = valid_bands_require_parent_hierarchy_2_nodes.where(
+            F.col("__structure_hierarchy_parent_2").isNotNull()
+        ).select(
             F.col("__structure_hierarchy_node_2"),
             F.col("__structure_hierarchy_parent_2"),
             F.col("__structure_hierarchy_order_2"),
@@ -88,40 +123,22 @@ class ResolveCohortBandsGenerated:
             & ~F.array_contains(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2"))
         )
         valid_bands_require_parent_hierarchy_2_frontier = valid_bands_require_parent_hierarchy_2_frontier.withColumn(
-            "__structure_hierarchy_path_2", F.array_append(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2"))
+            "__structure_hierarchy_path_2",
+            F.array_append(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2")),
         )
-        valid_bands_require_parent_hierarchy_2_frontier = valid_bands_require_parent_hierarchy_2_frontier.alias("frontier").join(
-            valid_bands_require_parent_hierarchy_2_nodes.alias("next_parent"),
-            F.col("frontier.__structure_hierarchy_parent_2") == F.col("next_parent.__structure_hierarchy_node_2"),
-            "left",
-        ).select(
-            F.col("frontier.__structure_hierarchy_node_2").alias("__structure_hierarchy_node_2"),
-            F.col("next_parent.__structure_hierarchy_parent_2").alias("__structure_hierarchy_parent_2"),
-            F.col("frontier.__structure_hierarchy_order_2").alias("__structure_hierarchy_order_2"),
-            F.col("frontier.__structure_hierarchy_path_2").alias("__structure_hierarchy_path_2"),
-        )
-        valid_bands_require_parent_hierarchy_2_cycles = valid_bands_require_parent_hierarchy_2_cycles.unionByName(
-            valid_bands_require_parent_hierarchy_2_frontier.where(
-                F.array_contains(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2"))
-            ),
-            allowMissingColumns=False,
-        )
-        valid_bands_require_parent_hierarchy_2_frontier = valid_bands_require_parent_hierarchy_2_frontier.where(
-            F.col("__structure_hierarchy_parent_2").isNotNull()
-            & ~F.array_contains(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2"))
-        )
-        valid_bands_require_parent_hierarchy_2_frontier = valid_bands_require_parent_hierarchy_2_frontier.withColumn(
-            "__structure_hierarchy_path_2", F.array_append(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2"))
-        )
-        valid_bands_require_parent_hierarchy_2_frontier = valid_bands_require_parent_hierarchy_2_frontier.alias("frontier").join(
-            valid_bands_require_parent_hierarchy_2_nodes.alias("next_parent"),
-            F.col("frontier.__structure_hierarchy_parent_2") == F.col("next_parent.__structure_hierarchy_node_2"),
-            "left",
-        ).select(
-            F.col("frontier.__structure_hierarchy_node_2").alias("__structure_hierarchy_node_2"),
-            F.col("next_parent.__structure_hierarchy_parent_2").alias("__structure_hierarchy_parent_2"),
-            F.col("frontier.__structure_hierarchy_order_2").alias("__structure_hierarchy_order_2"),
-            F.col("frontier.__structure_hierarchy_path_2").alias("__structure_hierarchy_path_2"),
+        valid_bands_require_parent_hierarchy_2_frontier = (
+            valid_bands_require_parent_hierarchy_2_frontier.alias("frontier")
+            .join(
+                valid_bands_require_parent_hierarchy_2_nodes.alias("next_parent"),
+                F.col("frontier.__structure_hierarchy_parent_2") == F.col("next_parent.__structure_hierarchy_node_2"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_2").alias("__structure_hierarchy_node_2"),
+                F.col("next_parent.__structure_hierarchy_parent_2").alias("__structure_hierarchy_parent_2"),
+                F.col("frontier.__structure_hierarchy_order_2").alias("__structure_hierarchy_order_2"),
+                F.col("frontier.__structure_hierarchy_path_2").alias("__structure_hierarchy_path_2"),
+            )
         )
         valid_bands_require_parent_hierarchy_2_cycles = valid_bands_require_parent_hierarchy_2_cycles.unionByName(
             valid_bands_require_parent_hierarchy_2_frontier.where(
@@ -134,40 +151,22 @@ class ResolveCohortBandsGenerated:
             & ~F.array_contains(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2"))
         )
         valid_bands_require_parent_hierarchy_2_frontier = valid_bands_require_parent_hierarchy_2_frontier.withColumn(
-            "__structure_hierarchy_path_2", F.array_append(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2"))
+            "__structure_hierarchy_path_2",
+            F.array_append(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2")),
         )
-        valid_bands_require_parent_hierarchy_2_frontier = valid_bands_require_parent_hierarchy_2_frontier.alias("frontier").join(
-            valid_bands_require_parent_hierarchy_2_nodes.alias("next_parent"),
-            F.col("frontier.__structure_hierarchy_parent_2") == F.col("next_parent.__structure_hierarchy_node_2"),
-            "left",
-        ).select(
-            F.col("frontier.__structure_hierarchy_node_2").alias("__structure_hierarchy_node_2"),
-            F.col("next_parent.__structure_hierarchy_parent_2").alias("__structure_hierarchy_parent_2"),
-            F.col("frontier.__structure_hierarchy_order_2").alias("__structure_hierarchy_order_2"),
-            F.col("frontier.__structure_hierarchy_path_2").alias("__structure_hierarchy_path_2"),
-        )
-        valid_bands_require_parent_hierarchy_2_cycles = valid_bands_require_parent_hierarchy_2_cycles.unionByName(
-            valid_bands_require_parent_hierarchy_2_frontier.where(
-                F.array_contains(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2"))
-            ),
-            allowMissingColumns=False,
-        )
-        valid_bands_require_parent_hierarchy_2_frontier = valid_bands_require_parent_hierarchy_2_frontier.where(
-            F.col("__structure_hierarchy_parent_2").isNotNull()
-            & ~F.array_contains(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2"))
-        )
-        valid_bands_require_parent_hierarchy_2_frontier = valid_bands_require_parent_hierarchy_2_frontier.withColumn(
-            "__structure_hierarchy_path_2", F.array_append(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2"))
-        )
-        valid_bands_require_parent_hierarchy_2_frontier = valid_bands_require_parent_hierarchy_2_frontier.alias("frontier").join(
-            valid_bands_require_parent_hierarchy_2_nodes.alias("next_parent"),
-            F.col("frontier.__structure_hierarchy_parent_2") == F.col("next_parent.__structure_hierarchy_node_2"),
-            "left",
-        ).select(
-            F.col("frontier.__structure_hierarchy_node_2").alias("__structure_hierarchy_node_2"),
-            F.col("next_parent.__structure_hierarchy_parent_2").alias("__structure_hierarchy_parent_2"),
-            F.col("frontier.__structure_hierarchy_order_2").alias("__structure_hierarchy_order_2"),
-            F.col("frontier.__structure_hierarchy_path_2").alias("__structure_hierarchy_path_2"),
+        valid_bands_require_parent_hierarchy_2_frontier = (
+            valid_bands_require_parent_hierarchy_2_frontier.alias("frontier")
+            .join(
+                valid_bands_require_parent_hierarchy_2_nodes.alias("next_parent"),
+                F.col("frontier.__structure_hierarchy_parent_2") == F.col("next_parent.__structure_hierarchy_node_2"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_2").alias("__structure_hierarchy_node_2"),
+                F.col("next_parent.__structure_hierarchy_parent_2").alias("__structure_hierarchy_parent_2"),
+                F.col("frontier.__structure_hierarchy_order_2").alias("__structure_hierarchy_order_2"),
+                F.col("frontier.__structure_hierarchy_path_2").alias("__structure_hierarchy_path_2"),
+            )
         )
         valid_bands_require_parent_hierarchy_2_cycles = valid_bands_require_parent_hierarchy_2_cycles.unionByName(
             valid_bands_require_parent_hierarchy_2_frontier.where(
@@ -180,40 +179,22 @@ class ResolveCohortBandsGenerated:
             & ~F.array_contains(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2"))
         )
         valid_bands_require_parent_hierarchy_2_frontier = valid_bands_require_parent_hierarchy_2_frontier.withColumn(
-            "__structure_hierarchy_path_2", F.array_append(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2"))
+            "__structure_hierarchy_path_2",
+            F.array_append(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2")),
         )
-        valid_bands_require_parent_hierarchy_2_frontier = valid_bands_require_parent_hierarchy_2_frontier.alias("frontier").join(
-            valid_bands_require_parent_hierarchy_2_nodes.alias("next_parent"),
-            F.col("frontier.__structure_hierarchy_parent_2") == F.col("next_parent.__structure_hierarchy_node_2"),
-            "left",
-        ).select(
-            F.col("frontier.__structure_hierarchy_node_2").alias("__structure_hierarchy_node_2"),
-            F.col("next_parent.__structure_hierarchy_parent_2").alias("__structure_hierarchy_parent_2"),
-            F.col("frontier.__structure_hierarchy_order_2").alias("__structure_hierarchy_order_2"),
-            F.col("frontier.__structure_hierarchy_path_2").alias("__structure_hierarchy_path_2"),
-        )
-        valid_bands_require_parent_hierarchy_2_cycles = valid_bands_require_parent_hierarchy_2_cycles.unionByName(
-            valid_bands_require_parent_hierarchy_2_frontier.where(
-                F.array_contains(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2"))
-            ),
-            allowMissingColumns=False,
-        )
-        valid_bands_require_parent_hierarchy_2_frontier = valid_bands_require_parent_hierarchy_2_frontier.where(
-            F.col("__structure_hierarchy_parent_2").isNotNull()
-            & ~F.array_contains(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2"))
-        )
-        valid_bands_require_parent_hierarchy_2_frontier = valid_bands_require_parent_hierarchy_2_frontier.withColumn(
-            "__structure_hierarchy_path_2", F.array_append(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2"))
-        )
-        valid_bands_require_parent_hierarchy_2_frontier = valid_bands_require_parent_hierarchy_2_frontier.alias("frontier").join(
-            valid_bands_require_parent_hierarchy_2_nodes.alias("next_parent"),
-            F.col("frontier.__structure_hierarchy_parent_2") == F.col("next_parent.__structure_hierarchy_node_2"),
-            "left",
-        ).select(
-            F.col("frontier.__structure_hierarchy_node_2").alias("__structure_hierarchy_node_2"),
-            F.col("next_parent.__structure_hierarchy_parent_2").alias("__structure_hierarchy_parent_2"),
-            F.col("frontier.__structure_hierarchy_order_2").alias("__structure_hierarchy_order_2"),
-            F.col("frontier.__structure_hierarchy_path_2").alias("__structure_hierarchy_path_2"),
+        valid_bands_require_parent_hierarchy_2_frontier = (
+            valid_bands_require_parent_hierarchy_2_frontier.alias("frontier")
+            .join(
+                valid_bands_require_parent_hierarchy_2_nodes.alias("next_parent"),
+                F.col("frontier.__structure_hierarchy_parent_2") == F.col("next_parent.__structure_hierarchy_node_2"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_2").alias("__structure_hierarchy_node_2"),
+                F.col("next_parent.__structure_hierarchy_parent_2").alias("__structure_hierarchy_parent_2"),
+                F.col("frontier.__structure_hierarchy_order_2").alias("__structure_hierarchy_order_2"),
+                F.col("frontier.__structure_hierarchy_path_2").alias("__structure_hierarchy_path_2"),
+            )
         )
         valid_bands_require_parent_hierarchy_2_cycles = valid_bands_require_parent_hierarchy_2_cycles.unionByName(
             valid_bands_require_parent_hierarchy_2_frontier.where(
@@ -226,17 +207,22 @@ class ResolveCohortBandsGenerated:
             & ~F.array_contains(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2"))
         )
         valid_bands_require_parent_hierarchy_2_frontier = valid_bands_require_parent_hierarchy_2_frontier.withColumn(
-            "__structure_hierarchy_path_2", F.array_append(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2"))
+            "__structure_hierarchy_path_2",
+            F.array_append(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2")),
         )
-        valid_bands_require_parent_hierarchy_2_frontier = valid_bands_require_parent_hierarchy_2_frontier.alias("frontier").join(
-            valid_bands_require_parent_hierarchy_2_nodes.alias("next_parent"),
-            F.col("frontier.__structure_hierarchy_parent_2") == F.col("next_parent.__structure_hierarchy_node_2"),
-            "left",
-        ).select(
-            F.col("frontier.__structure_hierarchy_node_2").alias("__structure_hierarchy_node_2"),
-            F.col("next_parent.__structure_hierarchy_parent_2").alias("__structure_hierarchy_parent_2"),
-            F.col("frontier.__structure_hierarchy_order_2").alias("__structure_hierarchy_order_2"),
-            F.col("frontier.__structure_hierarchy_path_2").alias("__structure_hierarchy_path_2"),
+        valid_bands_require_parent_hierarchy_2_frontier = (
+            valid_bands_require_parent_hierarchy_2_frontier.alias("frontier")
+            .join(
+                valid_bands_require_parent_hierarchy_2_nodes.alias("next_parent"),
+                F.col("frontier.__structure_hierarchy_parent_2") == F.col("next_parent.__structure_hierarchy_node_2"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_2").alias("__structure_hierarchy_node_2"),
+                F.col("next_parent.__structure_hierarchy_parent_2").alias("__structure_hierarchy_parent_2"),
+                F.col("frontier.__structure_hierarchy_order_2").alias("__structure_hierarchy_order_2"),
+                F.col("frontier.__structure_hierarchy_path_2").alias("__structure_hierarchy_path_2"),
+            )
         )
         valid_bands_require_parent_hierarchy_2_cycles = valid_bands_require_parent_hierarchy_2_cycles.unionByName(
             valid_bands_require_parent_hierarchy_2_frontier.where(
@@ -249,17 +235,22 @@ class ResolveCohortBandsGenerated:
             & ~F.array_contains(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2"))
         )
         valid_bands_require_parent_hierarchy_2_frontier = valid_bands_require_parent_hierarchy_2_frontier.withColumn(
-            "__structure_hierarchy_path_2", F.array_append(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2"))
+            "__structure_hierarchy_path_2",
+            F.array_append(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2")),
         )
-        valid_bands_require_parent_hierarchy_2_frontier = valid_bands_require_parent_hierarchy_2_frontier.alias("frontier").join(
-            valid_bands_require_parent_hierarchy_2_nodes.alias("next_parent"),
-            F.col("frontier.__structure_hierarchy_parent_2") == F.col("next_parent.__structure_hierarchy_node_2"),
-            "left",
-        ).select(
-            F.col("frontier.__structure_hierarchy_node_2").alias("__structure_hierarchy_node_2"),
-            F.col("next_parent.__structure_hierarchy_parent_2").alias("__structure_hierarchy_parent_2"),
-            F.col("frontier.__structure_hierarchy_order_2").alias("__structure_hierarchy_order_2"),
-            F.col("frontier.__structure_hierarchy_path_2").alias("__structure_hierarchy_path_2"),
+        valid_bands_require_parent_hierarchy_2_frontier = (
+            valid_bands_require_parent_hierarchy_2_frontier.alias("frontier")
+            .join(
+                valid_bands_require_parent_hierarchy_2_nodes.alias("next_parent"),
+                F.col("frontier.__structure_hierarchy_parent_2") == F.col("next_parent.__structure_hierarchy_node_2"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_2").alias("__structure_hierarchy_node_2"),
+                F.col("next_parent.__structure_hierarchy_parent_2").alias("__structure_hierarchy_parent_2"),
+                F.col("frontier.__structure_hierarchy_order_2").alias("__structure_hierarchy_order_2"),
+                F.col("frontier.__structure_hierarchy_path_2").alias("__structure_hierarchy_path_2"),
+            )
         )
         valid_bands_require_parent_hierarchy_2_cycles = valid_bands_require_parent_hierarchy_2_cycles.unionByName(
             valid_bands_require_parent_hierarchy_2_frontier.where(
@@ -267,25 +258,126 @@ class ResolveCohortBandsGenerated:
             ),
             allowMissingColumns=False,
         )
-        valid_bands_require_parent_hierarchy_2_overrun = valid_bands_require_parent_hierarchy_2_frontier.where(F.col("__structure_hierarchy_parent_2").isNotNull())
-        valid_bands_require_parent_hierarchy_2_violations = valid_bands_require_parent_hierarchy_2_missing.unionByName(
-            valid_bands_require_parent_hierarchy_2_parent_order,
+        valid_bands_require_parent_hierarchy_2_frontier = valid_bands_require_parent_hierarchy_2_frontier.where(
+            F.col("__structure_hierarchy_parent_2").isNotNull()
+            & ~F.array_contains(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2"))
+        )
+        valid_bands_require_parent_hierarchy_2_frontier = valid_bands_require_parent_hierarchy_2_frontier.withColumn(
+            "__structure_hierarchy_path_2",
+            F.array_append(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2")),
+        )
+        valid_bands_require_parent_hierarchy_2_frontier = (
+            valid_bands_require_parent_hierarchy_2_frontier.alias("frontier")
+            .join(
+                valid_bands_require_parent_hierarchy_2_nodes.alias("next_parent"),
+                F.col("frontier.__structure_hierarchy_parent_2") == F.col("next_parent.__structure_hierarchy_node_2"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_2").alias("__structure_hierarchy_node_2"),
+                F.col("next_parent.__structure_hierarchy_parent_2").alias("__structure_hierarchy_parent_2"),
+                F.col("frontier.__structure_hierarchy_order_2").alias("__structure_hierarchy_order_2"),
+                F.col("frontier.__structure_hierarchy_path_2").alias("__structure_hierarchy_path_2"),
+            )
+        )
+        valid_bands_require_parent_hierarchy_2_cycles = valid_bands_require_parent_hierarchy_2_cycles.unionByName(
+            valid_bands_require_parent_hierarchy_2_frontier.where(
+                F.array_contains(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2"))
+            ),
             allowMissingColumns=False,
-        ).unionByName(
-            valid_bands_require_parent_hierarchy_2_cycles.select(valid_bands_require_parent_hierarchy_2_missing.columns),
+        )
+        valid_bands_require_parent_hierarchy_2_frontier = valid_bands_require_parent_hierarchy_2_frontier.where(
+            F.col("__structure_hierarchy_parent_2").isNotNull()
+            & ~F.array_contains(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2"))
+        )
+        valid_bands_require_parent_hierarchy_2_frontier = valid_bands_require_parent_hierarchy_2_frontier.withColumn(
+            "__structure_hierarchy_path_2",
+            F.array_append(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2")),
+        )
+        valid_bands_require_parent_hierarchy_2_frontier = (
+            valid_bands_require_parent_hierarchy_2_frontier.alias("frontier")
+            .join(
+                valid_bands_require_parent_hierarchy_2_nodes.alias("next_parent"),
+                F.col("frontier.__structure_hierarchy_parent_2") == F.col("next_parent.__structure_hierarchy_node_2"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_2").alias("__structure_hierarchy_node_2"),
+                F.col("next_parent.__structure_hierarchy_parent_2").alias("__structure_hierarchy_parent_2"),
+                F.col("frontier.__structure_hierarchy_order_2").alias("__structure_hierarchy_order_2"),
+                F.col("frontier.__structure_hierarchy_path_2").alias("__structure_hierarchy_path_2"),
+            )
+        )
+        valid_bands_require_parent_hierarchy_2_cycles = valid_bands_require_parent_hierarchy_2_cycles.unionByName(
+            valid_bands_require_parent_hierarchy_2_frontier.where(
+                F.array_contains(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2"))
+            ),
             allowMissingColumns=False,
-        ).unionByName(
-            valid_bands_require_parent_hierarchy_2_overrun.select(valid_bands_require_parent_hierarchy_2_missing.columns),
+        )
+        valid_bands_require_parent_hierarchy_2_frontier = valid_bands_require_parent_hierarchy_2_frontier.where(
+            F.col("__structure_hierarchy_parent_2").isNotNull()
+            & ~F.array_contains(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2"))
+        )
+        valid_bands_require_parent_hierarchy_2_frontier = valid_bands_require_parent_hierarchy_2_frontier.withColumn(
+            "__structure_hierarchy_path_2",
+            F.array_append(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2")),
+        )
+        valid_bands_require_parent_hierarchy_2_frontier = (
+            valid_bands_require_parent_hierarchy_2_frontier.alias("frontier")
+            .join(
+                valid_bands_require_parent_hierarchy_2_nodes.alias("next_parent"),
+                F.col("frontier.__structure_hierarchy_parent_2") == F.col("next_parent.__structure_hierarchy_node_2"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_2").alias("__structure_hierarchy_node_2"),
+                F.col("next_parent.__structure_hierarchy_parent_2").alias("__structure_hierarchy_parent_2"),
+                F.col("frontier.__structure_hierarchy_order_2").alias("__structure_hierarchy_order_2"),
+                F.col("frontier.__structure_hierarchy_path_2").alias("__structure_hierarchy_path_2"),
+            )
+        )
+        valid_bands_require_parent_hierarchy_2_cycles = valid_bands_require_parent_hierarchy_2_cycles.unionByName(
+            valid_bands_require_parent_hierarchy_2_frontier.where(
+                F.array_contains(F.col("__structure_hierarchy_path_2"), F.col("__structure_hierarchy_parent_2"))
+            ),
             allowMissingColumns=False,
+        )
+        valid_bands_require_parent_hierarchy_2_overrun = valid_bands_require_parent_hierarchy_2_frontier.where(
+            F.col("__structure_hierarchy_parent_2").isNotNull()
+        )
+        valid_bands_require_parent_hierarchy_2_violations = (
+            valid_bands_require_parent_hierarchy_2_missing.unionByName(
+                valid_bands_require_parent_hierarchy_2_parent_order,
+                allowMissingColumns=False,
+            )
+            .unionByName(
+                valid_bands_require_parent_hierarchy_2_cycles.select(
+                    valid_bands_require_parent_hierarchy_2_missing.columns
+                ),
+                allowMissingColumns=False,
+            )
+            .unionByName(
+                valid_bands_require_parent_hierarchy_2_overrun.select(
+                    valid_bands_require_parent_hierarchy_2_missing.columns
+                ),
+                allowMissingColumns=False,
+            )
         )
         valid_bands_require_parent_hierarchy_2_violations = valid_bands_require_parent_hierarchy_2_violations.agg(
             F.count(F.lit(1)).alias("__structure_violations")
         )
         valid_bands_require_parent_hierarchy_2_assertion = valid_bands_require_parent_hierarchy_2_violations.select(
-            F.assert_true(F.col("__structure_violations") == F.lit(0), 'REL-E0706: require_parent_hierarchy(...) found missing parent, cycle, depth overrun, or non-increasing child order; see docs/Diagnostics.md#rel-e0706')
-            .alias("__structure_require_parent_hierarchy")
+            F.assert_true(
+                F.col("__structure_violations") == F.lit(0),
+                (
+                    'REL-E0706: require_parent_hierarchy(...) found missing parent, cycle, depth overrun, or'
+                    'non-increasing child order; see docs/Diagnostics.md#rel-e0706'
+                ),
+            ).alias("__structure_require_parent_hierarchy")
         )
-        valid_bands = valid_bands_require_parent_hierarchy_2_assertion.crossJoin(valid_bands).drop("__structure_require_parent_hierarchy")
+        valid_bands = valid_bands_require_parent_hierarchy_2_assertion.crossJoin(valid_bands).drop(
+            "__structure_require_parent_hierarchy"
+        )
         valid_bands = valid_bands.select(
             F.col("band.id"),
             F.col("band.name"),
@@ -306,7 +398,53 @@ class ResolveCohortBandsGenerated:
         matches = users.alias("user")
         valid_bands_joined = valid_bands.alias("valid_bands")
         matches = matches.crossJoin(valid_bands_joined)
-        matches = matches.where(((((((((((F.size(F.col("valid_bands.genders")) == F.lit(0)) | F.array_contains(F.col("valid_bands.genders"), F.col("user.gender"))) & ((F.size(F.col("valid_bands.locales")) == F.lit(0)) | F.array_contains(F.col("valid_bands.locales"), F.col("user.locale")))) & ((F.size(F.col("valid_bands.countries")) == F.lit(0)) | F.array_contains(F.col("valid_bands.countries"), F.col("user.country")))) & ((F.size(F.col("valid_bands.geo_tags")) == F.lit(0)) | F.array_contains(F.col("valid_bands.geo_tags"), F.col("user.geo_tag")))) & ((F.size(F.col("valid_bands.device_types")) == F.lit(0)) | F.array_contains(F.col("valid_bands.device_types"), F.col("user.device_type")))) & ((F.size(F.col("valid_bands.time_zones")) == F.lit(0)) | F.array_contains(F.col("valid_bands.time_zones"), F.col("user.time_zone")))) & (F.col("valid_bands.age_start").isNull() | (F.col("user.age") >= F.col("valid_bands.age_start")))) & (F.col("valid_bands.age_end").isNull() | (F.col("user.age") < F.col("valid_bands.age_end"))))))
+        matches = matches.where(
+            (
+                (
+                    (
+                        (
+                            (
+                                (
+                                    (
+                                        (
+                                            (
+                                                (F.size(F.col("valid_bands.genders")) == F.lit(0))
+                                                | F.array_contains(F.col("valid_bands.genders"), F.col("user.gender"))
+                                            )
+                                            & (
+                                                (F.size(F.col("valid_bands.locales")) == F.lit(0))
+                                                | F.array_contains(F.col("valid_bands.locales"), F.col("user.locale"))
+                                            )
+                                        )
+                                        & (
+                                            (F.size(F.col("valid_bands.countries")) == F.lit(0))
+                                            | F.array_contains(F.col("valid_bands.countries"), F.col("user.country"))
+                                        )
+                                    )
+                                    & (
+                                        (F.size(F.col("valid_bands.geo_tags")) == F.lit(0))
+                                        | F.array_contains(F.col("valid_bands.geo_tags"), F.col("user.geo_tag"))
+                                    )
+                                )
+                                & (
+                                    (F.size(F.col("valid_bands.device_types")) == F.lit(0))
+                                    | F.array_contains(F.col("valid_bands.device_types"), F.col("user.device_type"))
+                                )
+                            )
+                            & (
+                                (F.size(F.col("valid_bands.time_zones")) == F.lit(0))
+                                | F.array_contains(F.col("valid_bands.time_zones"), F.col("user.time_zone"))
+                            )
+                        )
+                        & (
+                            F.col("valid_bands.age_start").isNull()
+                            | (F.col("user.age") >= F.col("valid_bands.age_start"))
+                        )
+                    )
+                    & (F.col("valid_bands.age_end").isNull() | (F.col("user.age") < F.col("valid_bands.age_end")))
+                )
+            )
+        )
         matches = matches.select(
             F.col("user.id").alias("user_id"),
             F.col("valid_bands.id").alias("band_id"),
@@ -320,7 +458,10 @@ class ResolveCohortBandsGenerated:
         child_match_joined = matches.alias("child_match")
         leaf_matches = leaf_matches.join(
             child_match_joined,
-            ((F.col("child_match.user_id") == F.col("band_match.user_id")) & (F.col("child_match.parent_band_id") == F.col("band_match.band_id"))),
+            (
+                (F.col("child_match.user_id") == F.col("band_match.user_id"))
+                & (F.col("child_match.parent_band_id") == F.col("band_match.band_id"))
+            ),
             "left_anti",
         )
         leaf_matches = leaf_matches.select(
@@ -343,149 +484,213 @@ class ResolveCohortBandsGenerated:
             F.lit(0).cast(T.LongType()).alias("depth"),
         )
         band_ancestors_hierarchy_closure_0_frontier = band_ancestors_hierarchy_closure_0_nodes
-        band_ancestors_hierarchy_closure_0_depth_1 = band_ancestors_hierarchy_closure_0_frontier.where(F.col("__structure_hierarchy_parent_0").isNotNull())
+        band_ancestors_hierarchy_closure_0_depth_1 = band_ancestors_hierarchy_closure_0_frontier.where(
+            F.col("__structure_hierarchy_parent_0").isNotNull()
+        )
         band_ancestors_hierarchy_closure_0_depth_1 = band_ancestors_hierarchy_closure_0_depth_1.select(
             F.col("__structure_hierarchy_node_0").alias("band_id"),
             F.col("__structure_hierarchy_parent_0").alias("ancestor_band_id"),
             F.lit(1).cast(T.LongType()).alias("depth"),
         )
-        band_ancestors = band_ancestors.unionByName(band_ancestors_hierarchy_closure_0_depth_1, allowMissingColumns=False)
+        band_ancestors = band_ancestors.unionByName(
+            band_ancestors_hierarchy_closure_0_depth_1, allowMissingColumns=False
+        )
         band_ancestors_hierarchy_closure_0_frontier = band_ancestors_hierarchy_closure_0_frontier.where(
             F.col("__structure_hierarchy_parent_0").isNotNull()
         )
-        band_ancestors_hierarchy_closure_0_frontier = band_ancestors_hierarchy_closure_0_frontier.alias("frontier").join(
-            band_ancestors_hierarchy_closure_0_nodes.alias("parent"),
-            F.col("frontier.__structure_hierarchy_parent_0") == F.col("parent.__structure_hierarchy_node_0"),
-            "left",
-        ).select(
-            F.col("frontier.__structure_hierarchy_node_0").alias("__structure_hierarchy_node_0"),
-            F.col("parent.__structure_hierarchy_parent_0").alias("__structure_hierarchy_parent_0"),
+        band_ancestors_hierarchy_closure_0_frontier = (
+            band_ancestors_hierarchy_closure_0_frontier.alias("frontier")
+            .join(
+                band_ancestors_hierarchy_closure_0_nodes.alias("parent"),
+                F.col("frontier.__structure_hierarchy_parent_0") == F.col("parent.__structure_hierarchy_node_0"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_0").alias("__structure_hierarchy_node_0"),
+                F.col("parent.__structure_hierarchy_parent_0").alias("__structure_hierarchy_parent_0"),
+            )
         )
-        band_ancestors_hierarchy_closure_0_depth_2 = band_ancestors_hierarchy_closure_0_frontier.where(F.col("__structure_hierarchy_parent_0").isNotNull())
+        band_ancestors_hierarchy_closure_0_depth_2 = band_ancestors_hierarchy_closure_0_frontier.where(
+            F.col("__structure_hierarchy_parent_0").isNotNull()
+        )
         band_ancestors_hierarchy_closure_0_depth_2 = band_ancestors_hierarchy_closure_0_depth_2.select(
             F.col("__structure_hierarchy_node_0").alias("band_id"),
             F.col("__structure_hierarchy_parent_0").alias("ancestor_band_id"),
             F.lit(2).cast(T.LongType()).alias("depth"),
         )
-        band_ancestors = band_ancestors.unionByName(band_ancestors_hierarchy_closure_0_depth_2, allowMissingColumns=False)
+        band_ancestors = band_ancestors.unionByName(
+            band_ancestors_hierarchy_closure_0_depth_2, allowMissingColumns=False
+        )
         band_ancestors_hierarchy_closure_0_frontier = band_ancestors_hierarchy_closure_0_frontier.where(
             F.col("__structure_hierarchy_parent_0").isNotNull()
         )
-        band_ancestors_hierarchy_closure_0_frontier = band_ancestors_hierarchy_closure_0_frontier.alias("frontier").join(
-            band_ancestors_hierarchy_closure_0_nodes.alias("parent"),
-            F.col("frontier.__structure_hierarchy_parent_0") == F.col("parent.__structure_hierarchy_node_0"),
-            "left",
-        ).select(
-            F.col("frontier.__structure_hierarchy_node_0").alias("__structure_hierarchy_node_0"),
-            F.col("parent.__structure_hierarchy_parent_0").alias("__structure_hierarchy_parent_0"),
+        band_ancestors_hierarchy_closure_0_frontier = (
+            band_ancestors_hierarchy_closure_0_frontier.alias("frontier")
+            .join(
+                band_ancestors_hierarchy_closure_0_nodes.alias("parent"),
+                F.col("frontier.__structure_hierarchy_parent_0") == F.col("parent.__structure_hierarchy_node_0"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_0").alias("__structure_hierarchy_node_0"),
+                F.col("parent.__structure_hierarchy_parent_0").alias("__structure_hierarchy_parent_0"),
+            )
         )
-        band_ancestors_hierarchy_closure_0_depth_3 = band_ancestors_hierarchy_closure_0_frontier.where(F.col("__structure_hierarchy_parent_0").isNotNull())
+        band_ancestors_hierarchy_closure_0_depth_3 = band_ancestors_hierarchy_closure_0_frontier.where(
+            F.col("__structure_hierarchy_parent_0").isNotNull()
+        )
         band_ancestors_hierarchy_closure_0_depth_3 = band_ancestors_hierarchy_closure_0_depth_3.select(
             F.col("__structure_hierarchy_node_0").alias("band_id"),
             F.col("__structure_hierarchy_parent_0").alias("ancestor_band_id"),
             F.lit(3).cast(T.LongType()).alias("depth"),
         )
-        band_ancestors = band_ancestors.unionByName(band_ancestors_hierarchy_closure_0_depth_3, allowMissingColumns=False)
+        band_ancestors = band_ancestors.unionByName(
+            band_ancestors_hierarchy_closure_0_depth_3, allowMissingColumns=False
+        )
         band_ancestors_hierarchy_closure_0_frontier = band_ancestors_hierarchy_closure_0_frontier.where(
             F.col("__structure_hierarchy_parent_0").isNotNull()
         )
-        band_ancestors_hierarchy_closure_0_frontier = band_ancestors_hierarchy_closure_0_frontier.alias("frontier").join(
-            band_ancestors_hierarchy_closure_0_nodes.alias("parent"),
-            F.col("frontier.__structure_hierarchy_parent_0") == F.col("parent.__structure_hierarchy_node_0"),
-            "left",
-        ).select(
-            F.col("frontier.__structure_hierarchy_node_0").alias("__structure_hierarchy_node_0"),
-            F.col("parent.__structure_hierarchy_parent_0").alias("__structure_hierarchy_parent_0"),
+        band_ancestors_hierarchy_closure_0_frontier = (
+            band_ancestors_hierarchy_closure_0_frontier.alias("frontier")
+            .join(
+                band_ancestors_hierarchy_closure_0_nodes.alias("parent"),
+                F.col("frontier.__structure_hierarchy_parent_0") == F.col("parent.__structure_hierarchy_node_0"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_0").alias("__structure_hierarchy_node_0"),
+                F.col("parent.__structure_hierarchy_parent_0").alias("__structure_hierarchy_parent_0"),
+            )
         )
-        band_ancestors_hierarchy_closure_0_depth_4 = band_ancestors_hierarchy_closure_0_frontier.where(F.col("__structure_hierarchy_parent_0").isNotNull())
+        band_ancestors_hierarchy_closure_0_depth_4 = band_ancestors_hierarchy_closure_0_frontier.where(
+            F.col("__structure_hierarchy_parent_0").isNotNull()
+        )
         band_ancestors_hierarchy_closure_0_depth_4 = band_ancestors_hierarchy_closure_0_depth_4.select(
             F.col("__structure_hierarchy_node_0").alias("band_id"),
             F.col("__structure_hierarchy_parent_0").alias("ancestor_band_id"),
             F.lit(4).cast(T.LongType()).alias("depth"),
         )
-        band_ancestors = band_ancestors.unionByName(band_ancestors_hierarchy_closure_0_depth_4, allowMissingColumns=False)
+        band_ancestors = band_ancestors.unionByName(
+            band_ancestors_hierarchy_closure_0_depth_4, allowMissingColumns=False
+        )
         band_ancestors_hierarchy_closure_0_frontier = band_ancestors_hierarchy_closure_0_frontier.where(
             F.col("__structure_hierarchy_parent_0").isNotNull()
         )
-        band_ancestors_hierarchy_closure_0_frontier = band_ancestors_hierarchy_closure_0_frontier.alias("frontier").join(
-            band_ancestors_hierarchy_closure_0_nodes.alias("parent"),
-            F.col("frontier.__structure_hierarchy_parent_0") == F.col("parent.__structure_hierarchy_node_0"),
-            "left",
-        ).select(
-            F.col("frontier.__structure_hierarchy_node_0").alias("__structure_hierarchy_node_0"),
-            F.col("parent.__structure_hierarchy_parent_0").alias("__structure_hierarchy_parent_0"),
+        band_ancestors_hierarchy_closure_0_frontier = (
+            band_ancestors_hierarchy_closure_0_frontier.alias("frontier")
+            .join(
+                band_ancestors_hierarchy_closure_0_nodes.alias("parent"),
+                F.col("frontier.__structure_hierarchy_parent_0") == F.col("parent.__structure_hierarchy_node_0"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_0").alias("__structure_hierarchy_node_0"),
+                F.col("parent.__structure_hierarchy_parent_0").alias("__structure_hierarchy_parent_0"),
+            )
         )
-        band_ancestors_hierarchy_closure_0_depth_5 = band_ancestors_hierarchy_closure_0_frontier.where(F.col("__structure_hierarchy_parent_0").isNotNull())
+        band_ancestors_hierarchy_closure_0_depth_5 = band_ancestors_hierarchy_closure_0_frontier.where(
+            F.col("__structure_hierarchy_parent_0").isNotNull()
+        )
         band_ancestors_hierarchy_closure_0_depth_5 = band_ancestors_hierarchy_closure_0_depth_5.select(
             F.col("__structure_hierarchy_node_0").alias("band_id"),
             F.col("__structure_hierarchy_parent_0").alias("ancestor_band_id"),
             F.lit(5).cast(T.LongType()).alias("depth"),
         )
-        band_ancestors = band_ancestors.unionByName(band_ancestors_hierarchy_closure_0_depth_5, allowMissingColumns=False)
+        band_ancestors = band_ancestors.unionByName(
+            band_ancestors_hierarchy_closure_0_depth_5, allowMissingColumns=False
+        )
         band_ancestors_hierarchy_closure_0_frontier = band_ancestors_hierarchy_closure_0_frontier.where(
             F.col("__structure_hierarchy_parent_0").isNotNull()
         )
-        band_ancestors_hierarchy_closure_0_frontier = band_ancestors_hierarchy_closure_0_frontier.alias("frontier").join(
-            band_ancestors_hierarchy_closure_0_nodes.alias("parent"),
-            F.col("frontier.__structure_hierarchy_parent_0") == F.col("parent.__structure_hierarchy_node_0"),
-            "left",
-        ).select(
-            F.col("frontier.__structure_hierarchy_node_0").alias("__structure_hierarchy_node_0"),
-            F.col("parent.__structure_hierarchy_parent_0").alias("__structure_hierarchy_parent_0"),
+        band_ancestors_hierarchy_closure_0_frontier = (
+            band_ancestors_hierarchy_closure_0_frontier.alias("frontier")
+            .join(
+                band_ancestors_hierarchy_closure_0_nodes.alias("parent"),
+                F.col("frontier.__structure_hierarchy_parent_0") == F.col("parent.__structure_hierarchy_node_0"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_0").alias("__structure_hierarchy_node_0"),
+                F.col("parent.__structure_hierarchy_parent_0").alias("__structure_hierarchy_parent_0"),
+            )
         )
-        band_ancestors_hierarchy_closure_0_depth_6 = band_ancestors_hierarchy_closure_0_frontier.where(F.col("__structure_hierarchy_parent_0").isNotNull())
+        band_ancestors_hierarchy_closure_0_depth_6 = band_ancestors_hierarchy_closure_0_frontier.where(
+            F.col("__structure_hierarchy_parent_0").isNotNull()
+        )
         band_ancestors_hierarchy_closure_0_depth_6 = band_ancestors_hierarchy_closure_0_depth_6.select(
             F.col("__structure_hierarchy_node_0").alias("band_id"),
             F.col("__structure_hierarchy_parent_0").alias("ancestor_band_id"),
             F.lit(6).cast(T.LongType()).alias("depth"),
         )
-        band_ancestors = band_ancestors.unionByName(band_ancestors_hierarchy_closure_0_depth_6, allowMissingColumns=False)
+        band_ancestors = band_ancestors.unionByName(
+            band_ancestors_hierarchy_closure_0_depth_6, allowMissingColumns=False
+        )
         band_ancestors_hierarchy_closure_0_frontier = band_ancestors_hierarchy_closure_0_frontier.where(
             F.col("__structure_hierarchy_parent_0").isNotNull()
         )
-        band_ancestors_hierarchy_closure_0_frontier = band_ancestors_hierarchy_closure_0_frontier.alias("frontier").join(
-            band_ancestors_hierarchy_closure_0_nodes.alias("parent"),
-            F.col("frontier.__structure_hierarchy_parent_0") == F.col("parent.__structure_hierarchy_node_0"),
-            "left",
-        ).select(
-            F.col("frontier.__structure_hierarchy_node_0").alias("__structure_hierarchy_node_0"),
-            F.col("parent.__structure_hierarchy_parent_0").alias("__structure_hierarchy_parent_0"),
+        band_ancestors_hierarchy_closure_0_frontier = (
+            band_ancestors_hierarchy_closure_0_frontier.alias("frontier")
+            .join(
+                band_ancestors_hierarchy_closure_0_nodes.alias("parent"),
+                F.col("frontier.__structure_hierarchy_parent_0") == F.col("parent.__structure_hierarchy_node_0"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_0").alias("__structure_hierarchy_node_0"),
+                F.col("parent.__structure_hierarchy_parent_0").alias("__structure_hierarchy_parent_0"),
+            )
         )
-        band_ancestors_hierarchy_closure_0_depth_7 = band_ancestors_hierarchy_closure_0_frontier.where(F.col("__structure_hierarchy_parent_0").isNotNull())
+        band_ancestors_hierarchy_closure_0_depth_7 = band_ancestors_hierarchy_closure_0_frontier.where(
+            F.col("__structure_hierarchy_parent_0").isNotNull()
+        )
         band_ancestors_hierarchy_closure_0_depth_7 = band_ancestors_hierarchy_closure_0_depth_7.select(
             F.col("__structure_hierarchy_node_0").alias("band_id"),
             F.col("__structure_hierarchy_parent_0").alias("ancestor_band_id"),
             F.lit(7).cast(T.LongType()).alias("depth"),
         )
-        band_ancestors = band_ancestors.unionByName(band_ancestors_hierarchy_closure_0_depth_7, allowMissingColumns=False)
+        band_ancestors = band_ancestors.unionByName(
+            band_ancestors_hierarchy_closure_0_depth_7, allowMissingColumns=False
+        )
         band_ancestors_hierarchy_closure_0_frontier = band_ancestors_hierarchy_closure_0_frontier.where(
             F.col("__structure_hierarchy_parent_0").isNotNull()
         )
-        band_ancestors_hierarchy_closure_0_frontier = band_ancestors_hierarchy_closure_0_frontier.alias("frontier").join(
-            band_ancestors_hierarchy_closure_0_nodes.alias("parent"),
-            F.col("frontier.__structure_hierarchy_parent_0") == F.col("parent.__structure_hierarchy_node_0"),
-            "left",
-        ).select(
-            F.col("frontier.__structure_hierarchy_node_0").alias("__structure_hierarchy_node_0"),
-            F.col("parent.__structure_hierarchy_parent_0").alias("__structure_hierarchy_parent_0"),
+        band_ancestors_hierarchy_closure_0_frontier = (
+            band_ancestors_hierarchy_closure_0_frontier.alias("frontier")
+            .join(
+                band_ancestors_hierarchy_closure_0_nodes.alias("parent"),
+                F.col("frontier.__structure_hierarchy_parent_0") == F.col("parent.__structure_hierarchy_node_0"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_0").alias("__structure_hierarchy_node_0"),
+                F.col("parent.__structure_hierarchy_parent_0").alias("__structure_hierarchy_parent_0"),
+            )
         )
-        band_ancestors_hierarchy_closure_0_depth_8 = band_ancestors_hierarchy_closure_0_frontier.where(F.col("__structure_hierarchy_parent_0").isNotNull())
+        band_ancestors_hierarchy_closure_0_depth_8 = band_ancestors_hierarchy_closure_0_frontier.where(
+            F.col("__structure_hierarchy_parent_0").isNotNull()
+        )
         band_ancestors_hierarchy_closure_0_depth_8 = band_ancestors_hierarchy_closure_0_depth_8.select(
             F.col("__structure_hierarchy_node_0").alias("band_id"),
             F.col("__structure_hierarchy_parent_0").alias("ancestor_band_id"),
             F.lit(8).cast(T.LongType()).alias("depth"),
         )
-        band_ancestors = band_ancestors.unionByName(band_ancestors_hierarchy_closure_0_depth_8, allowMissingColumns=False)
+        band_ancestors = band_ancestors.unionByName(
+            band_ancestors_hierarchy_closure_0_depth_8, allowMissingColumns=False
+        )
         band_ancestors_hierarchy_closure_0_frontier = band_ancestors_hierarchy_closure_0_frontier.where(
             F.col("__structure_hierarchy_parent_0").isNotNull()
         )
-        band_ancestors_hierarchy_closure_0_frontier = band_ancestors_hierarchy_closure_0_frontier.alias("frontier").join(
-            band_ancestors_hierarchy_closure_0_nodes.alias("parent"),
-            F.col("frontier.__structure_hierarchy_parent_0") == F.col("parent.__structure_hierarchy_node_0"),
-            "left",
-        ).select(
-            F.col("frontier.__structure_hierarchy_node_0").alias("__structure_hierarchy_node_0"),
-            F.col("parent.__structure_hierarchy_parent_0").alias("__structure_hierarchy_parent_0"),
+        band_ancestors_hierarchy_closure_0_frontier = (
+            band_ancestors_hierarchy_closure_0_frontier.alias("frontier")
+            .join(
+                band_ancestors_hierarchy_closure_0_nodes.alias("parent"),
+                F.col("frontier.__structure_hierarchy_parent_0") == F.col("parent.__structure_hierarchy_node_0"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_0").alias("__structure_hierarchy_node_0"),
+                F.col("parent.__structure_hierarchy_parent_0").alias("__structure_hierarchy_parent_0"),
+            )
         )
         band_ancestors = band_ancestors.select(
             F.col("band_id"),
@@ -496,13 +701,31 @@ class ResolveCohortBandsGenerated:
 
         # Step method: build_user_band_paths
         user_band_paths = leaf_matches.alias("band_match")
-        user_band_paths = user_band_paths.groupBy(
-            F.col("band_match.user_id").alias("user_id"),
-        ).agg(
-            F.transform(F.sort_array(F.collect_list(F.when(F.col("band_match.band_id").isNotNull(), F.struct(F.col("band_match.priority").alias('_structure_order'), F.col("band_match.band_id").alias('_structure_value')))), asc=False), lambda item: item.getField('_structure_value')).alias("band_ids"),
-        ).select(
-            F.col("user_id"),
-            F.col("band_ids"),
+        user_band_paths = (
+            user_band_paths.groupBy(
+                F.col("band_match.user_id").alias("user_id"),
+            )
+            .agg(
+                F.transform(
+                    F.sort_array(
+                        F.collect_list(
+                            F.when(
+                                F.col("band_match.band_id").isNotNull(),
+                                F.struct(
+                                    F.col("band_match.priority").alias('_structure_order'),
+                                    F.col("band_match.band_id").alias('_structure_value'),
+                                ),
+                            )
+                        ),
+                        asc=False,
+                    ),
+                    lambda item: item.getField('_structure_value'),
+                ).alias("band_ids"),
+            )
+            .select(
+                F.col("user_id"),
+                F.col("band_ids"),
+            )
         )
         assert_schema(user_band_paths, USER_BAND_PATH_SCHEMA, name="UserBandPath", mode="strict")
 
@@ -566,9 +789,16 @@ class ResolveCohortBandsGenerated:
         )
         resolved_user_band_memberships = resolved_user_band_memberships.select(
             F.col("user.id").alias("user_id"),
-            F.when(F.col("user_band_paths.user_id").isNotNull(), F.sha2(F.concat_ws('\x1f', F.col("user_band_paths.band_ids")), 256)).otherwise(F.lit(None)).alias("user_band_id"),
+            F.when(
+                F.col("user_band_paths.user_id").isNotNull(),
+                F.sha2(F.concat_ws('\x1f', F.col("user_band_paths.band_ids")), 256),
+            )
+            .otherwise(F.lit(None))
+            .alias("user_band_id"),
         )
-        assert_schema(resolved_user_band_memberships, USER_BAND_MEMBERSHIP_SCHEMA, name="UserBandMembership", mode="strict")
+        assert_schema(
+            resolved_user_band_memberships, USER_BAND_MEMBERSHIP_SCHEMA, name="UserBandMembership", mode="strict"
+        )
 
         # Step method: publish_user_band_memberships
         user_band_memberships = resolved_user_band_memberships.alias("user_band_membership")
@@ -601,7 +831,9 @@ class ResolveCohortBandsGenerated:
 
         # Step method: build_resolved_band_memberships
         resolved_band_memberships = resolved_user_band_memberships.alias("user_band_membership")
-        resolved_band_memberships = resolved_band_memberships.where((F.col("user_band_membership.user_band_id").isNotNull()))
+        resolved_band_memberships = resolved_band_memberships.where(
+            (F.col("user_band_membership.user_band_id").isNotNull())
+        )
         resolved_band_memberships = resolved_band_memberships.select(
             F.col("user_band_membership.user_id"),
             F.lit(None).cast(T.StringType()).alias("band_id"),
@@ -631,10 +863,15 @@ class ResolveCohortBandsGenerated:
         )
         band_fallbacks = band_fallbacks_hierarchy_fallbacks_0_frontier.select(
             F.col("__structure_fallback_source_0").alias("user_band_id"),
-            F.when(F.size(F.col("__structure_fallback_path_0")) > F.lit(0), F.sha2(F.concat_ws('\x1f', F.col("__structure_fallback_path_0")), 256)).alias("user_band_fallback_id"),
+            F.when(
+                F.size(F.col("__structure_fallback_path_0")) > F.lit(0),
+                F.sha2(F.concat_ws('\x1f', F.col("__structure_fallback_path_0")), 256),
+            ).alias("user_band_fallback_id"),
             F.lit(0).cast(T.LongType()).alias("ordinal"),
         )
-        band_fallbacks_hierarchy_fallbacks_0_active_1 = band_fallbacks_hierarchy_fallbacks_0_frontier.where(F.size(F.col("__structure_fallback_path_0")) > F.lit(0))
+        band_fallbacks_hierarchy_fallbacks_0_active_1 = band_fallbacks_hierarchy_fallbacks_0_frontier.where(
+            F.size(F.col("__structure_fallback_path_0")) > F.lit(0)
+        )
         band_fallbacks_hierarchy_fallbacks_0_joined_1 = band_fallbacks_hierarchy_fallbacks_0_active_1.withColumn(
             "__structure_fallback_last_0", F.element_at(F.col("__structure_fallback_path_0"), F.lit(-1))
         ).join(
@@ -644,15 +881,55 @@ class ResolveCohortBandsGenerated:
         )
         band_fallbacks_hierarchy_fallbacks_0_frontier = band_fallbacks_hierarchy_fallbacks_0_joined_1.select(
             F.col("__structure_fallback_source_0").alias("__structure_fallback_source_0"),
-            F.when(F.col("__structure_fallback_parent_value_0").isNull(), F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1))).when(F.array_contains(F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1)), F.col("__structure_fallback_parent_value_0")), F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1))).otherwise(F.concat(F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1)), F.array(F.col("__structure_fallback_parent_value_0")))).alias("__structure_fallback_path_0"),
+            F.when(
+                F.col("__structure_fallback_parent_value_0").isNull(),
+                F.slice(
+                    F.col("__structure_fallback_path_0"),
+                    F.lit(1),
+                    F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                ),
+            )
+            .when(
+                F.array_contains(
+                    F.slice(
+                        F.col("__structure_fallback_path_0"),
+                        F.lit(1),
+                        F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                    ),
+                    F.col("__structure_fallback_parent_value_0"),
+                ),
+                F.slice(
+                    F.col("__structure_fallback_path_0"),
+                    F.lit(1),
+                    F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                ),
+            )
+            .otherwise(
+                F.concat(
+                    F.slice(
+                        F.col("__structure_fallback_path_0"),
+                        F.lit(1),
+                        F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                    ),
+                    F.array(F.col("__structure_fallback_parent_value_0")),
+                )
+            )
+            .alias("__structure_fallback_path_0"),
         )
         band_fallbacks_hierarchy_fallbacks_0_branch_1 = band_fallbacks_hierarchy_fallbacks_0_frontier.select(
             F.col("__structure_fallback_source_0").alias("user_band_id"),
-            F.when(F.size(F.col("__structure_fallback_path_0")) > F.lit(0), F.sha2(F.concat_ws('\x1f', F.col("__structure_fallback_path_0")), 256)).alias("user_band_fallback_id"),
+            F.when(
+                F.size(F.col("__structure_fallback_path_0")) > F.lit(0),
+                F.sha2(F.concat_ws('\x1f', F.col("__structure_fallback_path_0")), 256),
+            ).alias("user_band_fallback_id"),
             F.lit(1).cast(T.LongType()).alias("ordinal"),
         )
-        band_fallbacks = band_fallbacks.unionByName(band_fallbacks_hierarchy_fallbacks_0_branch_1, allowMissingColumns=False)
-        band_fallbacks_hierarchy_fallbacks_0_active_2 = band_fallbacks_hierarchy_fallbacks_0_frontier.where(F.size(F.col("__structure_fallback_path_0")) > F.lit(0))
+        band_fallbacks = band_fallbacks.unionByName(
+            band_fallbacks_hierarchy_fallbacks_0_branch_1, allowMissingColumns=False
+        )
+        band_fallbacks_hierarchy_fallbacks_0_active_2 = band_fallbacks_hierarchy_fallbacks_0_frontier.where(
+            F.size(F.col("__structure_fallback_path_0")) > F.lit(0)
+        )
         band_fallbacks_hierarchy_fallbacks_0_joined_2 = band_fallbacks_hierarchy_fallbacks_0_active_2.withColumn(
             "__structure_fallback_last_0", F.element_at(F.col("__structure_fallback_path_0"), F.lit(-1))
         ).join(
@@ -662,15 +939,55 @@ class ResolveCohortBandsGenerated:
         )
         band_fallbacks_hierarchy_fallbacks_0_frontier = band_fallbacks_hierarchy_fallbacks_0_joined_2.select(
             F.col("__structure_fallback_source_0").alias("__structure_fallback_source_0"),
-            F.when(F.col("__structure_fallback_parent_value_0").isNull(), F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1))).when(F.array_contains(F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1)), F.col("__structure_fallback_parent_value_0")), F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1))).otherwise(F.concat(F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1)), F.array(F.col("__structure_fallback_parent_value_0")))).alias("__structure_fallback_path_0"),
+            F.when(
+                F.col("__structure_fallback_parent_value_0").isNull(),
+                F.slice(
+                    F.col("__structure_fallback_path_0"),
+                    F.lit(1),
+                    F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                ),
+            )
+            .when(
+                F.array_contains(
+                    F.slice(
+                        F.col("__structure_fallback_path_0"),
+                        F.lit(1),
+                        F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                    ),
+                    F.col("__structure_fallback_parent_value_0"),
+                ),
+                F.slice(
+                    F.col("__structure_fallback_path_0"),
+                    F.lit(1),
+                    F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                ),
+            )
+            .otherwise(
+                F.concat(
+                    F.slice(
+                        F.col("__structure_fallback_path_0"),
+                        F.lit(1),
+                        F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                    ),
+                    F.array(F.col("__structure_fallback_parent_value_0")),
+                )
+            )
+            .alias("__structure_fallback_path_0"),
         )
         band_fallbacks_hierarchy_fallbacks_0_branch_2 = band_fallbacks_hierarchy_fallbacks_0_frontier.select(
             F.col("__structure_fallback_source_0").alias("user_band_id"),
-            F.when(F.size(F.col("__structure_fallback_path_0")) > F.lit(0), F.sha2(F.concat_ws('\x1f', F.col("__structure_fallback_path_0")), 256)).alias("user_band_fallback_id"),
+            F.when(
+                F.size(F.col("__structure_fallback_path_0")) > F.lit(0),
+                F.sha2(F.concat_ws('\x1f', F.col("__structure_fallback_path_0")), 256),
+            ).alias("user_band_fallback_id"),
             F.lit(2).cast(T.LongType()).alias("ordinal"),
         )
-        band_fallbacks = band_fallbacks.unionByName(band_fallbacks_hierarchy_fallbacks_0_branch_2, allowMissingColumns=False)
-        band_fallbacks_hierarchy_fallbacks_0_active_3 = band_fallbacks_hierarchy_fallbacks_0_frontier.where(F.size(F.col("__structure_fallback_path_0")) > F.lit(0))
+        band_fallbacks = band_fallbacks.unionByName(
+            band_fallbacks_hierarchy_fallbacks_0_branch_2, allowMissingColumns=False
+        )
+        band_fallbacks_hierarchy_fallbacks_0_active_3 = band_fallbacks_hierarchy_fallbacks_0_frontier.where(
+            F.size(F.col("__structure_fallback_path_0")) > F.lit(0)
+        )
         band_fallbacks_hierarchy_fallbacks_0_joined_3 = band_fallbacks_hierarchy_fallbacks_0_active_3.withColumn(
             "__structure_fallback_last_0", F.element_at(F.col("__structure_fallback_path_0"), F.lit(-1))
         ).join(
@@ -680,15 +997,55 @@ class ResolveCohortBandsGenerated:
         )
         band_fallbacks_hierarchy_fallbacks_0_frontier = band_fallbacks_hierarchy_fallbacks_0_joined_3.select(
             F.col("__structure_fallback_source_0").alias("__structure_fallback_source_0"),
-            F.when(F.col("__structure_fallback_parent_value_0").isNull(), F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1))).when(F.array_contains(F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1)), F.col("__structure_fallback_parent_value_0")), F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1))).otherwise(F.concat(F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1)), F.array(F.col("__structure_fallback_parent_value_0")))).alias("__structure_fallback_path_0"),
+            F.when(
+                F.col("__structure_fallback_parent_value_0").isNull(),
+                F.slice(
+                    F.col("__structure_fallback_path_0"),
+                    F.lit(1),
+                    F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                ),
+            )
+            .when(
+                F.array_contains(
+                    F.slice(
+                        F.col("__structure_fallback_path_0"),
+                        F.lit(1),
+                        F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                    ),
+                    F.col("__structure_fallback_parent_value_0"),
+                ),
+                F.slice(
+                    F.col("__structure_fallback_path_0"),
+                    F.lit(1),
+                    F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                ),
+            )
+            .otherwise(
+                F.concat(
+                    F.slice(
+                        F.col("__structure_fallback_path_0"),
+                        F.lit(1),
+                        F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                    ),
+                    F.array(F.col("__structure_fallback_parent_value_0")),
+                )
+            )
+            .alias("__structure_fallback_path_0"),
         )
         band_fallbacks_hierarchy_fallbacks_0_branch_3 = band_fallbacks_hierarchy_fallbacks_0_frontier.select(
             F.col("__structure_fallback_source_0").alias("user_band_id"),
-            F.when(F.size(F.col("__structure_fallback_path_0")) > F.lit(0), F.sha2(F.concat_ws('\x1f', F.col("__structure_fallback_path_0")), 256)).alias("user_band_fallback_id"),
+            F.when(
+                F.size(F.col("__structure_fallback_path_0")) > F.lit(0),
+                F.sha2(F.concat_ws('\x1f', F.col("__structure_fallback_path_0")), 256),
+            ).alias("user_band_fallback_id"),
             F.lit(3).cast(T.LongType()).alias("ordinal"),
         )
-        band_fallbacks = band_fallbacks.unionByName(band_fallbacks_hierarchy_fallbacks_0_branch_3, allowMissingColumns=False)
-        band_fallbacks_hierarchy_fallbacks_0_active_4 = band_fallbacks_hierarchy_fallbacks_0_frontier.where(F.size(F.col("__structure_fallback_path_0")) > F.lit(0))
+        band_fallbacks = band_fallbacks.unionByName(
+            band_fallbacks_hierarchy_fallbacks_0_branch_3, allowMissingColumns=False
+        )
+        band_fallbacks_hierarchy_fallbacks_0_active_4 = band_fallbacks_hierarchy_fallbacks_0_frontier.where(
+            F.size(F.col("__structure_fallback_path_0")) > F.lit(0)
+        )
         band_fallbacks_hierarchy_fallbacks_0_joined_4 = band_fallbacks_hierarchy_fallbacks_0_active_4.withColumn(
             "__structure_fallback_last_0", F.element_at(F.col("__structure_fallback_path_0"), F.lit(-1))
         ).join(
@@ -698,15 +1055,55 @@ class ResolveCohortBandsGenerated:
         )
         band_fallbacks_hierarchy_fallbacks_0_frontier = band_fallbacks_hierarchy_fallbacks_0_joined_4.select(
             F.col("__structure_fallback_source_0").alias("__structure_fallback_source_0"),
-            F.when(F.col("__structure_fallback_parent_value_0").isNull(), F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1))).when(F.array_contains(F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1)), F.col("__structure_fallback_parent_value_0")), F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1))).otherwise(F.concat(F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1)), F.array(F.col("__structure_fallback_parent_value_0")))).alias("__structure_fallback_path_0"),
+            F.when(
+                F.col("__structure_fallback_parent_value_0").isNull(),
+                F.slice(
+                    F.col("__structure_fallback_path_0"),
+                    F.lit(1),
+                    F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                ),
+            )
+            .when(
+                F.array_contains(
+                    F.slice(
+                        F.col("__structure_fallback_path_0"),
+                        F.lit(1),
+                        F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                    ),
+                    F.col("__structure_fallback_parent_value_0"),
+                ),
+                F.slice(
+                    F.col("__structure_fallback_path_0"),
+                    F.lit(1),
+                    F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                ),
+            )
+            .otherwise(
+                F.concat(
+                    F.slice(
+                        F.col("__structure_fallback_path_0"),
+                        F.lit(1),
+                        F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                    ),
+                    F.array(F.col("__structure_fallback_parent_value_0")),
+                )
+            )
+            .alias("__structure_fallback_path_0"),
         )
         band_fallbacks_hierarchy_fallbacks_0_branch_4 = band_fallbacks_hierarchy_fallbacks_0_frontier.select(
             F.col("__structure_fallback_source_0").alias("user_band_id"),
-            F.when(F.size(F.col("__structure_fallback_path_0")) > F.lit(0), F.sha2(F.concat_ws('\x1f', F.col("__structure_fallback_path_0")), 256)).alias("user_band_fallback_id"),
+            F.when(
+                F.size(F.col("__structure_fallback_path_0")) > F.lit(0),
+                F.sha2(F.concat_ws('\x1f', F.col("__structure_fallback_path_0")), 256),
+            ).alias("user_band_fallback_id"),
             F.lit(4).cast(T.LongType()).alias("ordinal"),
         )
-        band_fallbacks = band_fallbacks.unionByName(band_fallbacks_hierarchy_fallbacks_0_branch_4, allowMissingColumns=False)
-        band_fallbacks_hierarchy_fallbacks_0_active_5 = band_fallbacks_hierarchy_fallbacks_0_frontier.where(F.size(F.col("__structure_fallback_path_0")) > F.lit(0))
+        band_fallbacks = band_fallbacks.unionByName(
+            band_fallbacks_hierarchy_fallbacks_0_branch_4, allowMissingColumns=False
+        )
+        band_fallbacks_hierarchy_fallbacks_0_active_5 = band_fallbacks_hierarchy_fallbacks_0_frontier.where(
+            F.size(F.col("__structure_fallback_path_0")) > F.lit(0)
+        )
         band_fallbacks_hierarchy_fallbacks_0_joined_5 = band_fallbacks_hierarchy_fallbacks_0_active_5.withColumn(
             "__structure_fallback_last_0", F.element_at(F.col("__structure_fallback_path_0"), F.lit(-1))
         ).join(
@@ -716,15 +1113,55 @@ class ResolveCohortBandsGenerated:
         )
         band_fallbacks_hierarchy_fallbacks_0_frontier = band_fallbacks_hierarchy_fallbacks_0_joined_5.select(
             F.col("__structure_fallback_source_0").alias("__structure_fallback_source_0"),
-            F.when(F.col("__structure_fallback_parent_value_0").isNull(), F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1))).when(F.array_contains(F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1)), F.col("__structure_fallback_parent_value_0")), F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1))).otherwise(F.concat(F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1)), F.array(F.col("__structure_fallback_parent_value_0")))).alias("__structure_fallback_path_0"),
+            F.when(
+                F.col("__structure_fallback_parent_value_0").isNull(),
+                F.slice(
+                    F.col("__structure_fallback_path_0"),
+                    F.lit(1),
+                    F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                ),
+            )
+            .when(
+                F.array_contains(
+                    F.slice(
+                        F.col("__structure_fallback_path_0"),
+                        F.lit(1),
+                        F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                    ),
+                    F.col("__structure_fallback_parent_value_0"),
+                ),
+                F.slice(
+                    F.col("__structure_fallback_path_0"),
+                    F.lit(1),
+                    F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                ),
+            )
+            .otherwise(
+                F.concat(
+                    F.slice(
+                        F.col("__structure_fallback_path_0"),
+                        F.lit(1),
+                        F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                    ),
+                    F.array(F.col("__structure_fallback_parent_value_0")),
+                )
+            )
+            .alias("__structure_fallback_path_0"),
         )
         band_fallbacks_hierarchy_fallbacks_0_branch_5 = band_fallbacks_hierarchy_fallbacks_0_frontier.select(
             F.col("__structure_fallback_source_0").alias("user_band_id"),
-            F.when(F.size(F.col("__structure_fallback_path_0")) > F.lit(0), F.sha2(F.concat_ws('\x1f', F.col("__structure_fallback_path_0")), 256)).alias("user_band_fallback_id"),
+            F.when(
+                F.size(F.col("__structure_fallback_path_0")) > F.lit(0),
+                F.sha2(F.concat_ws('\x1f', F.col("__structure_fallback_path_0")), 256),
+            ).alias("user_band_fallback_id"),
             F.lit(5).cast(T.LongType()).alias("ordinal"),
         )
-        band_fallbacks = band_fallbacks.unionByName(band_fallbacks_hierarchy_fallbacks_0_branch_5, allowMissingColumns=False)
-        band_fallbacks_hierarchy_fallbacks_0_active_6 = band_fallbacks_hierarchy_fallbacks_0_frontier.where(F.size(F.col("__structure_fallback_path_0")) > F.lit(0))
+        band_fallbacks = band_fallbacks.unionByName(
+            band_fallbacks_hierarchy_fallbacks_0_branch_5, allowMissingColumns=False
+        )
+        band_fallbacks_hierarchy_fallbacks_0_active_6 = band_fallbacks_hierarchy_fallbacks_0_frontier.where(
+            F.size(F.col("__structure_fallback_path_0")) > F.lit(0)
+        )
         band_fallbacks_hierarchy_fallbacks_0_joined_6 = band_fallbacks_hierarchy_fallbacks_0_active_6.withColumn(
             "__structure_fallback_last_0", F.element_at(F.col("__structure_fallback_path_0"), F.lit(-1))
         ).join(
@@ -734,15 +1171,55 @@ class ResolveCohortBandsGenerated:
         )
         band_fallbacks_hierarchy_fallbacks_0_frontier = band_fallbacks_hierarchy_fallbacks_0_joined_6.select(
             F.col("__structure_fallback_source_0").alias("__structure_fallback_source_0"),
-            F.when(F.col("__structure_fallback_parent_value_0").isNull(), F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1))).when(F.array_contains(F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1)), F.col("__structure_fallback_parent_value_0")), F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1))).otherwise(F.concat(F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1)), F.array(F.col("__structure_fallback_parent_value_0")))).alias("__structure_fallback_path_0"),
+            F.when(
+                F.col("__structure_fallback_parent_value_0").isNull(),
+                F.slice(
+                    F.col("__structure_fallback_path_0"),
+                    F.lit(1),
+                    F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                ),
+            )
+            .when(
+                F.array_contains(
+                    F.slice(
+                        F.col("__structure_fallback_path_0"),
+                        F.lit(1),
+                        F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                    ),
+                    F.col("__structure_fallback_parent_value_0"),
+                ),
+                F.slice(
+                    F.col("__structure_fallback_path_0"),
+                    F.lit(1),
+                    F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                ),
+            )
+            .otherwise(
+                F.concat(
+                    F.slice(
+                        F.col("__structure_fallback_path_0"),
+                        F.lit(1),
+                        F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                    ),
+                    F.array(F.col("__structure_fallback_parent_value_0")),
+                )
+            )
+            .alias("__structure_fallback_path_0"),
         )
         band_fallbacks_hierarchy_fallbacks_0_branch_6 = band_fallbacks_hierarchy_fallbacks_0_frontier.select(
             F.col("__structure_fallback_source_0").alias("user_band_id"),
-            F.when(F.size(F.col("__structure_fallback_path_0")) > F.lit(0), F.sha2(F.concat_ws('\x1f', F.col("__structure_fallback_path_0")), 256)).alias("user_band_fallback_id"),
+            F.when(
+                F.size(F.col("__structure_fallback_path_0")) > F.lit(0),
+                F.sha2(F.concat_ws('\x1f', F.col("__structure_fallback_path_0")), 256),
+            ).alias("user_band_fallback_id"),
             F.lit(6).cast(T.LongType()).alias("ordinal"),
         )
-        band_fallbacks = band_fallbacks.unionByName(band_fallbacks_hierarchy_fallbacks_0_branch_6, allowMissingColumns=False)
-        band_fallbacks_hierarchy_fallbacks_0_active_7 = band_fallbacks_hierarchy_fallbacks_0_frontier.where(F.size(F.col("__structure_fallback_path_0")) > F.lit(0))
+        band_fallbacks = band_fallbacks.unionByName(
+            band_fallbacks_hierarchy_fallbacks_0_branch_6, allowMissingColumns=False
+        )
+        band_fallbacks_hierarchy_fallbacks_0_active_7 = band_fallbacks_hierarchy_fallbacks_0_frontier.where(
+            F.size(F.col("__structure_fallback_path_0")) > F.lit(0)
+        )
         band_fallbacks_hierarchy_fallbacks_0_joined_7 = band_fallbacks_hierarchy_fallbacks_0_active_7.withColumn(
             "__structure_fallback_last_0", F.element_at(F.col("__structure_fallback_path_0"), F.lit(-1))
         ).join(
@@ -752,15 +1229,55 @@ class ResolveCohortBandsGenerated:
         )
         band_fallbacks_hierarchy_fallbacks_0_frontier = band_fallbacks_hierarchy_fallbacks_0_joined_7.select(
             F.col("__structure_fallback_source_0").alias("__structure_fallback_source_0"),
-            F.when(F.col("__structure_fallback_parent_value_0").isNull(), F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1))).when(F.array_contains(F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1)), F.col("__structure_fallback_parent_value_0")), F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1))).otherwise(F.concat(F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1)), F.array(F.col("__structure_fallback_parent_value_0")))).alias("__structure_fallback_path_0"),
+            F.when(
+                F.col("__structure_fallback_parent_value_0").isNull(),
+                F.slice(
+                    F.col("__structure_fallback_path_0"),
+                    F.lit(1),
+                    F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                ),
+            )
+            .when(
+                F.array_contains(
+                    F.slice(
+                        F.col("__structure_fallback_path_0"),
+                        F.lit(1),
+                        F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                    ),
+                    F.col("__structure_fallback_parent_value_0"),
+                ),
+                F.slice(
+                    F.col("__structure_fallback_path_0"),
+                    F.lit(1),
+                    F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                ),
+            )
+            .otherwise(
+                F.concat(
+                    F.slice(
+                        F.col("__structure_fallback_path_0"),
+                        F.lit(1),
+                        F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                    ),
+                    F.array(F.col("__structure_fallback_parent_value_0")),
+                )
+            )
+            .alias("__structure_fallback_path_0"),
         )
         band_fallbacks_hierarchy_fallbacks_0_branch_7 = band_fallbacks_hierarchy_fallbacks_0_frontier.select(
             F.col("__structure_fallback_source_0").alias("user_band_id"),
-            F.when(F.size(F.col("__structure_fallback_path_0")) > F.lit(0), F.sha2(F.concat_ws('\x1f', F.col("__structure_fallback_path_0")), 256)).alias("user_band_fallback_id"),
+            F.when(
+                F.size(F.col("__structure_fallback_path_0")) > F.lit(0),
+                F.sha2(F.concat_ws('\x1f', F.col("__structure_fallback_path_0")), 256),
+            ).alias("user_band_fallback_id"),
             F.lit(7).cast(T.LongType()).alias("ordinal"),
         )
-        band_fallbacks = band_fallbacks.unionByName(band_fallbacks_hierarchy_fallbacks_0_branch_7, allowMissingColumns=False)
-        band_fallbacks_hierarchy_fallbacks_0_active_8 = band_fallbacks_hierarchy_fallbacks_0_frontier.where(F.size(F.col("__structure_fallback_path_0")) > F.lit(0))
+        band_fallbacks = band_fallbacks.unionByName(
+            band_fallbacks_hierarchy_fallbacks_0_branch_7, allowMissingColumns=False
+        )
+        band_fallbacks_hierarchy_fallbacks_0_active_8 = band_fallbacks_hierarchy_fallbacks_0_frontier.where(
+            F.size(F.col("__structure_fallback_path_0")) > F.lit(0)
+        )
         band_fallbacks_hierarchy_fallbacks_0_joined_8 = band_fallbacks_hierarchy_fallbacks_0_active_8.withColumn(
             "__structure_fallback_last_0", F.element_at(F.col("__structure_fallback_path_0"), F.lit(-1))
         ).join(
@@ -770,14 +1287,52 @@ class ResolveCohortBandsGenerated:
         )
         band_fallbacks_hierarchy_fallbacks_0_frontier = band_fallbacks_hierarchy_fallbacks_0_joined_8.select(
             F.col("__structure_fallback_source_0").alias("__structure_fallback_source_0"),
-            F.when(F.col("__structure_fallback_parent_value_0").isNull(), F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1))).when(F.array_contains(F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1)), F.col("__structure_fallback_parent_value_0")), F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1))).otherwise(F.concat(F.slice(F.col("__structure_fallback_path_0"), F.lit(1), F.size(F.col("__structure_fallback_path_0")) - F.lit(1)), F.array(F.col("__structure_fallback_parent_value_0")))).alias("__structure_fallback_path_0"),
+            F.when(
+                F.col("__structure_fallback_parent_value_0").isNull(),
+                F.slice(
+                    F.col("__structure_fallback_path_0"),
+                    F.lit(1),
+                    F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                ),
+            )
+            .when(
+                F.array_contains(
+                    F.slice(
+                        F.col("__structure_fallback_path_0"),
+                        F.lit(1),
+                        F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                    ),
+                    F.col("__structure_fallback_parent_value_0"),
+                ),
+                F.slice(
+                    F.col("__structure_fallback_path_0"),
+                    F.lit(1),
+                    F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                ),
+            )
+            .otherwise(
+                F.concat(
+                    F.slice(
+                        F.col("__structure_fallback_path_0"),
+                        F.lit(1),
+                        F.size(F.col("__structure_fallback_path_0")) - F.lit(1),
+                    ),
+                    F.array(F.col("__structure_fallback_parent_value_0")),
+                )
+            )
+            .alias("__structure_fallback_path_0"),
         )
         band_fallbacks_hierarchy_fallbacks_0_branch_8 = band_fallbacks_hierarchy_fallbacks_0_frontier.select(
             F.col("__structure_fallback_source_0").alias("user_band_id"),
-            F.when(F.size(F.col("__structure_fallback_path_0")) > F.lit(0), F.sha2(F.concat_ws('\x1f', F.col("__structure_fallback_path_0")), 256)).alias("user_band_fallback_id"),
+            F.when(
+                F.size(F.col("__structure_fallback_path_0")) > F.lit(0),
+                F.sha2(F.concat_ws('\x1f', F.col("__structure_fallback_path_0")), 256),
+            ).alias("user_band_fallback_id"),
             F.lit(8).cast(T.LongType()).alias("ordinal"),
         )
-        band_fallbacks = band_fallbacks.unionByName(band_fallbacks_hierarchy_fallbacks_0_branch_8, allowMissingColumns=False)
+        band_fallbacks = band_fallbacks.unionByName(
+            band_fallbacks_hierarchy_fallbacks_0_branch_8, allowMissingColumns=False
+        )
         band_fallbacks = band_fallbacks.select(
             F.col("user_band_id"),
             F.col("ordinal"),
@@ -799,4 +1354,18 @@ class ResolveCohortBandsGenerated:
         # Step method: band_fallbacks
         band_fallbacks = band_fallbacks.alias("band_fallback")
         assert_schema(band_fallbacks, BAND_FALLBACK_SCHEMA, name="BandFallback", mode="strict")
-        return TransformResult({"band_memberships": band_memberships, "user_bands": user_bands, "user_band_memberships": user_band_memberships, "band_fallbacks": band_fallbacks}, single=False, schema={"band_memberships": BAND_MEMBERSHIP_SCHEMA, "user_bands": USER_BAND_SCHEMA, "user_band_memberships": USER_BAND_MEMBERSHIP_SCHEMA, "band_fallbacks": BAND_FALLBACK_SCHEMA})
+        return TransformResult(
+            {
+                "band_memberships": band_memberships,
+                "user_bands": user_bands,
+                "user_band_memberships": user_band_memberships,
+                "band_fallbacks": band_fallbacks,
+            },
+            single=False,
+            schema={
+                "band_memberships": BAND_MEMBERSHIP_SCHEMA,
+                "user_bands": USER_BAND_SCHEMA,
+                "user_band_memberships": USER_BAND_MEMBERSHIP_SCHEMA,
+                "band_fallbacks": BAND_FALLBACK_SCHEMA,
+            },
+        )

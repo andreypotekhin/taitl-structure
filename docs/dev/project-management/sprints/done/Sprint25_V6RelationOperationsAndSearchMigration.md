@@ -159,3 +159,11 @@ reason rather than an accidental API gap.
   deterministic example/golden, differential, metamorphic, and v6 raw-hook inventory gates passed.
 - [x] (2026-07-27) Updated the hook ledger and ran regression evidence. The example raw-hook inventory now records only
   the intentional School matrix-inversion boundary as an active example hook.
+
+## Closeout
+
+Sprint 25 is complete as of 2026-07-27. The sprint delivered the typed relation-operation surface needed by the Search
+example and retired every scheduled Search raw hook after same-fixture and generated-output evidence. Deferred relation
+families, including broader generators, sampling, and physical-plan directives, remain tracked in `docs/dev/Gaps.md`.
+The closeout build passed with 1,295 tests passed and 30 live-PySpark skips; the release subset passed with 34 tests
+and 6 intentional live-test skips; source and wheel distributions built successfully.

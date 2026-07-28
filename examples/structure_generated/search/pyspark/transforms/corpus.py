@@ -5,7 +5,11 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
-from examples.structure_generated.search.pyspark.schemas.analytics import CORPUS_STATISTICS_SCHEMA, CORPUS_VOCABULARY_SCHEMA, DOCUMENT_STATISTICS_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.analytics import (
+    CORPUS_STATISTICS_SCHEMA,
+    CORPUS_VOCABULARY_SCHEMA,
+    DOCUMENT_STATISTICS_SCHEMA,
+)
 from examples.structure_generated.search.pyspark.schemas.text import WORD_SCHEMA
 
 
@@ -28,41 +32,63 @@ class CorpusTextGenerated:
 
         # Step method: corpus_stats
         corpus_statistics = documents.alias("document_statistics")
-        corpus_statistics = corpus_statistics.groupBy(
-            F.lit('all documents').alias("corpus"),
-        ).agg(
-            F.count(F.lit(1)).cast(T.LongType()).alias("document_count"),
-            F.avg(F.col("document_statistics.section_count")).cast(T.DoubleType()).alias("average_sections_per_document"),
-            F.avg(F.col("document_statistics.paragraph_count")).cast(T.DoubleType()).alias("average_paragraphs_per_document"),
-            F.avg(F.col("document_statistics.sentence_count")).cast(T.DoubleType()).alias("average_sentences_per_document"),
-            F.avg(F.col("document_statistics.word_count")).cast(T.DoubleType()).alias("average_words_per_document"),
-            F.avg(F.col("document_statistics.distinct_words")).cast(T.DoubleType()).alias("average_distinct_words_per_document"),
-            F.percentile_approx(F.col("document_statistics.average_word_length"), 0.5, 100).cast(T.DoubleType()).alias("median_document_average_word_length"),
-            F.skewness(F.col("document_statistics.average_word_length")).cast(T.DoubleType()).alias("document_average_word_length_skewness"),
-            F.kurtosis(F.col("document_statistics.average_word_length")).cast(T.DoubleType()).alias("document_average_word_length_kurtosis"),
-        ).select(
-            F.col("corpus"),
-            F.col("document_count"),
-            F.col("average_sections_per_document"),
-            F.col("average_paragraphs_per_document"),
-            F.col("average_sentences_per_document"),
-            F.col("average_words_per_document"),
-            F.col("average_distinct_words_per_document"),
-            F.col("median_document_average_word_length"),
-            F.col("document_average_word_length_skewness"),
-            F.col("document_average_word_length_kurtosis"),
+        corpus_statistics = (
+            corpus_statistics.groupBy(
+                F.lit('all documents').alias("corpus"),
+            )
+            .agg(
+                F.count(F.lit(1)).cast(T.LongType()).alias("document_count"),
+                F.avg(F.col("document_statistics.section_count"))
+                .cast(T.DoubleType())
+                .alias("average_sections_per_document"),
+                F.avg(F.col("document_statistics.paragraph_count"))
+                .cast(T.DoubleType())
+                .alias("average_paragraphs_per_document"),
+                F.avg(F.col("document_statistics.sentence_count"))
+                .cast(T.DoubleType())
+                .alias("average_sentences_per_document"),
+                F.avg(F.col("document_statistics.word_count")).cast(T.DoubleType()).alias("average_words_per_document"),
+                F.avg(F.col("document_statistics.distinct_words"))
+                .cast(T.DoubleType())
+                .alias("average_distinct_words_per_document"),
+                F.percentile_approx(F.col("document_statistics.average_word_length"), 0.5, 100)
+                .cast(T.DoubleType())
+                .alias("median_document_average_word_length"),
+                F.skewness(F.col("document_statistics.average_word_length"))
+                .cast(T.DoubleType())
+                .alias("document_average_word_length_skewness"),
+                F.kurtosis(F.col("document_statistics.average_word_length"))
+                .cast(T.DoubleType())
+                .alias("document_average_word_length_kurtosis"),
+            )
+            .select(
+                F.col("corpus"),
+                F.col("document_count"),
+                F.col("average_sections_per_document"),
+                F.col("average_paragraphs_per_document"),
+                F.col("average_sentences_per_document"),
+                F.col("average_words_per_document"),
+                F.col("average_distinct_words_per_document"),
+                F.col("median_document_average_word_length"),
+                F.col("document_average_word_length_skewness"),
+                F.col("document_average_word_length_kurtosis"),
+            )
         )
         assert_schema(corpus_statistics, CORPUS_STATISTICS_SCHEMA, name="CorpusStatistics", mode="strict")
 
         # Step method: corpus_vocabulary_stats
         corpus_vocabulary = words.alias("word")
-        corpus_vocabulary = corpus_vocabulary.groupBy(
-            F.lit('all documents').alias("corpus"),
-        ).agg(
-            F.approx_count_distinct(F.col("word.token")).cast(T.LongType()).alias("estimated_distinct_words"),
-        ).select(
-            F.col("corpus"),
-            F.col("estimated_distinct_words"),
+        corpus_vocabulary = (
+            corpus_vocabulary.groupBy(
+                F.lit('all documents').alias("corpus"),
+            )
+            .agg(
+                F.approx_count_distinct(F.col("word.token")).cast(T.LongType()).alias("estimated_distinct_words"),
+            )
+            .select(
+                F.col("corpus"),
+                F.col("estimated_distinct_words"),
+            )
         )
 
         # Step method: corpus_statistics
@@ -72,4 +98,8 @@ class CorpusTextGenerated:
         # Step method: corpus_vocabulary
         corpus_vocabulary = corpus_vocabulary.alias("corpus_vocabulary")
         assert_schema(corpus_vocabulary, CORPUS_VOCABULARY_SCHEMA, name="CorpusVocabulary", mode="strict")
-        return TransformResult({"corpus_statistics": corpus_statistics, "corpus_vocabulary": corpus_vocabulary}, single=False, schema={"corpus_statistics": CORPUS_STATISTICS_SCHEMA, "corpus_vocabulary": CORPUS_VOCABULARY_SCHEMA})
+        return TransformResult(
+            {"corpus_statistics": corpus_statistics, "corpus_vocabulary": corpus_vocabulary},
+            single=False,
+            schema={"corpus_statistics": CORPUS_STATISTICS_SCHEMA, "corpus_vocabulary": CORPUS_VOCABULARY_SCHEMA},
+        )

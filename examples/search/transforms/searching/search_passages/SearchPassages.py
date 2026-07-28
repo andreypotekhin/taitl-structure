@@ -59,6 +59,8 @@ class SearchPassages(Transform):
                     score.paragraph_id.asc_nulls_first(),
                 ),
             ),
+            document_id=score.document_id,
+            section_id=score.section_id,
             section_heading=section.heading,
             paragraph_id=score.paragraph_id,
             content=context.content,

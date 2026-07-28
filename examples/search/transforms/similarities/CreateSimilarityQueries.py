@@ -35,6 +35,8 @@ from structure.plugin.pyspark import (
     group_by,
     map_from_entries,
     require_all,
+    size,
+    types,
     union_all,
     where,
 )
@@ -222,13 +224,14 @@ class CreateSimilarityQueries(Transform):
         )
 
     def _search_query(self, query_id: object, tokens: object) -> SearchQuery:
+        zero = (size(tokens) * 0).cast(types.long())
         return SearchQuery(
             id=query_id,
             content=concat_ws(" ", tokens),
             labels=map_from_entries(
                 array(
-                    LabelMapEntry(key="is_question", value=0),
-                    LabelMapEntry(key="is_time_sensitive", value=0),
+                    LabelMapEntry(key="is_question", value=zero),
+                    LabelMapEntry(key="is_time_sensitive", value=zero),
                 )
             ),
             is_question=False,

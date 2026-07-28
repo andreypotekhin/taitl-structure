@@ -6,8 +6,22 @@ from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.security.runtime.schema_assert import TransformResult, assert_schema, project_schema
 from examples.structure_generated.security.pyspark.schemas.events import VULN_EVENT_SCHEMA
-from examples.structure_generated.security.pyspark.schemas.organization import DEPARTMENT_SCHEMA, ORG_SCHEMA, PERSON_SCHEMA, TEAM_SCHEMA
-from examples.structure_generated.security.pyspark.schemas.reporting import DEPARTMENT_VULNERABILITY_STATISTIC_SCHEMA, ORG_VULNERABILITY_STATISTIC_SCHEMA, PERSON_VULNERABILITY_STATISTIC_SCHEMA, REPORTING_PERIOD_SCHEMA, TEAM_VULNERABILITY_STATISTIC_SCHEMA, VULNERABILITY_EXPOSURE_SCHEMA, VULNERABILITY_LIFECYCLE_SCHEMA, VULNERABILITY_PERIOD_ACTIVITY_SCHEMA
+from examples.structure_generated.security.pyspark.schemas.organization import (
+    DEPARTMENT_SCHEMA,
+    ORG_SCHEMA,
+    PERSON_SCHEMA,
+    TEAM_SCHEMA,
+)
+from examples.structure_generated.security.pyspark.schemas.reporting import (
+    DEPARTMENT_VULNERABILITY_STATISTIC_SCHEMA,
+    ORG_VULNERABILITY_STATISTIC_SCHEMA,
+    PERSON_VULNERABILITY_STATISTIC_SCHEMA,
+    REPORTING_PERIOD_SCHEMA,
+    TEAM_VULNERABILITY_STATISTIC_SCHEMA,
+    VULNERABILITY_EXPOSURE_SCHEMA,
+    VULNERABILITY_LIFECYCLE_SCHEMA,
+    VULNERABILITY_PERIOD_ACTIVITY_SCHEMA,
+)
 
 
 class VulnerabilityStatisticsGenerated:
@@ -63,16 +77,26 @@ class VulnerabilityStatisticsGenerated:
 
         # Step method: lifecycle
         lifecycles = deduped_events.alias("vuln_event")
-        lifecycles = lifecycles.where((((F.col("vuln_event.action") == F.lit('Detected')) | (F.col("vuln_event.action") == F.lit('Addressed')))))
-        lifecycles = lifecycles.groupBy(
-            F.col("vuln_event.vuln_id").alias("vuln_id"),
-        ).agg(
-            F.min(F.when((F.col("vuln_event.action") == F.lit('Detected')), F.col("vuln_event.occurred_at"))).cast(T.TimestampType()).alias("detected_at"),
-            F.min(F.when((F.col("vuln_event.action") == F.lit('Addressed')), F.col("vuln_event.occurred_at"))).cast(T.TimestampType()).alias("addressed_at"),
-        ).select(
-            F.col("vuln_id"),
-            F.col("detected_at"),
-            F.col("addressed_at"),
+        lifecycles = lifecycles.where(
+            (((F.col("vuln_event.action") == F.lit('Detected')) | (F.col("vuln_event.action") == F.lit('Addressed'))))
+        )
+        lifecycles = (
+            lifecycles.groupBy(
+                F.col("vuln_event.vuln_id").alias("vuln_id"),
+            )
+            .agg(
+                F.min(F.when((F.col("vuln_event.action") == F.lit('Detected')), F.col("vuln_event.occurred_at")))
+                .cast(T.TimestampType())
+                .alias("detected_at"),
+                F.min(F.when((F.col("vuln_event.action") == F.lit('Addressed')), F.col("vuln_event.occurred_at")))
+                .cast(T.TimestampType())
+                .alias("addressed_at"),
+            )
+            .select(
+                F.col("vuln_id"),
+                F.col("detected_at"),
+                F.col("addressed_at"),
+            )
         )
         assert_schema(lifecycles, VULNERABILITY_LIFECYCLE_SCHEMA, name="VulnerabilityLifecycle", mode="strict")
 
@@ -94,11 +118,40 @@ class VulnerabilityStatisticsGenerated:
             F.col("periods.kind").alias("period_kind"),
             F.col("periods.start").alias("period_start"),
             F.col("periods.end").alias("period_end"),
-            F.when(((F.to_date(F.col("lifecycles_2.detected_at")) >= F.col("periods.start")) & (F.to_date(F.col("lifecycles_2.detected_at")) < F.date_add(F.col("periods.end"), 1))), F.lit(1)).otherwise(F.lit(0)).alias("discovered_count"),
-            F.when(((F.to_date(F.col("lifecycles_2.addressed_at")) >= F.col("periods.start")) & (F.to_date(F.col("lifecycles_2.addressed_at")) < F.date_add(F.col("periods.end"), 1))), F.lit(1)).otherwise(F.lit(0)).alias("addressed_count"),
-            F.when(((F.col("vulnerability_exposure.date_discovered") <= F.col("periods.end")) & (F.col("vulnerability_exposure.date_addressed").isNull() | (F.col("vulnerability_exposure.date_addressed") > F.col("periods.end")))), F.lit(1)).otherwise(F.lit(0)).alias("active_count"),
+            F.when(
+                (
+                    (F.to_date(F.col("lifecycles_2.detected_at")) >= F.col("periods.start"))
+                    & (F.to_date(F.col("lifecycles_2.detected_at")) < F.date_add(F.col("periods.end"), 1))
+                ),
+                F.lit(1),
+            )
+            .otherwise(F.lit(0))
+            .alias("discovered_count"),
+            F.when(
+                (
+                    (F.to_date(F.col("lifecycles_2.addressed_at")) >= F.col("periods.start"))
+                    & (F.to_date(F.col("lifecycles_2.addressed_at")) < F.date_add(F.col("periods.end"), 1))
+                ),
+                F.lit(1),
+            )
+            .otherwise(F.lit(0))
+            .alias("addressed_count"),
+            F.when(
+                (
+                    (F.col("vulnerability_exposure.date_discovered") <= F.col("periods.end"))
+                    & (
+                        F.col("vulnerability_exposure.date_addressed").isNull()
+                        | (F.col("vulnerability_exposure.date_addressed") > F.col("periods.end"))
+                    )
+                ),
+                F.lit(1),
+            )
+            .otherwise(F.lit(0))
+            .alias("active_count"),
         )
-        assert_schema(activities, VULNERABILITY_PERIOD_ACTIVITY_SCHEMA, name="VulnerabilityPeriodActivity", mode="strict")
+        assert_schema(
+            activities, VULNERABILITY_PERIOD_ACTIVITY_SCHEMA, name="VulnerabilityPeriodActivity", mode="strict"
+        )
 
         # Step method: person_periods
         person_statistics = people.alias("person")
@@ -107,30 +160,51 @@ class VulnerabilityStatisticsGenerated:
         activities_2_joined = activities.alias("activities_2")
         person_statistics = person_statistics.join(
             activities_2_joined,
-            ((((F.col("activities_2.person_id") == F.col("person.id")) & (F.col("activities_2.period_kind") == F.col("periods.kind"))) & (F.col("activities_2.period_start") == F.col("periods.start"))) & (F.col("activities_2.period_end") == F.col("periods.end"))),
+            (
+                (
+                    (
+                        (F.col("activities_2.person_id") == F.col("person.id"))
+                        & (F.col("activities_2.period_kind") == F.col("periods.kind"))
+                    )
+                    & (F.col("activities_2.period_start") == F.col("periods.start"))
+                )
+                & (F.col("activities_2.period_end") == F.col("periods.end"))
+            ),
             "left",
         )
-        person_statistics = person_statistics.groupBy(
-            F.col("person.id").alias("person_id"),
-            F.col("person.name").alias("person_name"),
-            F.col("periods.kind").alias("period_kind"),
-            F.col("periods.start").alias("period_start"),
-            F.col("periods.end").alias("period_end"),
-        ).agg(
-            F.sum(F.coalesce(F.col("activities_2.discovered_count"), F.lit(0))).cast(T.LongType()).alias("discovered_count"),
-            F.sum(F.coalesce(F.col("activities_2.addressed_count"), F.lit(0))).cast(T.LongType()).alias("addressed_count"),
-            F.sum(F.coalesce(F.col("activities_2.active_count"), F.lit(0))).cast(T.LongType()).alias("active_count"),
-        ).select(
-            F.col("period_kind"),
-            F.col("period_start"),
-            F.col("period_end"),
-            F.col("discovered_count"),
-            F.col("addressed_count"),
-            F.col("active_count"),
-            F.col("person_id"),
-            F.col("person_name"),
+        person_statistics = (
+            person_statistics.groupBy(
+                F.col("person.id").alias("person_id"),
+                F.col("person.name").alias("person_name"),
+                F.col("periods.kind").alias("period_kind"),
+                F.col("periods.start").alias("period_start"),
+                F.col("periods.end").alias("period_end"),
+            )
+            .agg(
+                F.sum(F.coalesce(F.col("activities_2.discovered_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("discovered_count"),
+                F.sum(F.coalesce(F.col("activities_2.addressed_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("addressed_count"),
+                F.sum(F.coalesce(F.col("activities_2.active_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("active_count"),
+            )
+            .select(
+                F.col("period_kind"),
+                F.col("period_start"),
+                F.col("period_end"),
+                F.col("discovered_count"),
+                F.col("addressed_count"),
+                F.col("active_count"),
+                F.col("person_id"),
+                F.col("person_name"),
+            )
         )
-        assert_schema(person_statistics, PERSON_VULNERABILITY_STATISTIC_SCHEMA, name="PersonVulnerabilityStatistic", mode="strict")
+        assert_schema(
+            person_statistics, PERSON_VULNERABILITY_STATISTIC_SCHEMA, name="PersonVulnerabilityStatistic", mode="strict"
+        )
 
         # Step method: team_periods
         team_statistics = teams.alias("team")
@@ -139,30 +213,51 @@ class VulnerabilityStatisticsGenerated:
         activities_2_joined = activities.alias("activities_2")
         team_statistics = team_statistics.join(
             activities_2_joined,
-            ((((F.col("activities_2.team_id") == F.col("team.id")) & (F.col("activities_2.period_kind") == F.col("periods.kind"))) & (F.col("activities_2.period_start") == F.col("periods.start"))) & (F.col("activities_2.period_end") == F.col("periods.end"))),
+            (
+                (
+                    (
+                        (F.col("activities_2.team_id") == F.col("team.id"))
+                        & (F.col("activities_2.period_kind") == F.col("periods.kind"))
+                    )
+                    & (F.col("activities_2.period_start") == F.col("periods.start"))
+                )
+                & (F.col("activities_2.period_end") == F.col("periods.end"))
+            ),
             "left",
         )
-        team_statistics = team_statistics.groupBy(
-            F.col("team.id").alias("team_id"),
-            F.col("team.name").alias("team_name"),
-            F.col("periods.kind").alias("period_kind"),
-            F.col("periods.start").alias("period_start"),
-            F.col("periods.end").alias("period_end"),
-        ).agg(
-            F.sum(F.coalesce(F.col("activities_2.discovered_count"), F.lit(0))).cast(T.LongType()).alias("discovered_count"),
-            F.sum(F.coalesce(F.col("activities_2.addressed_count"), F.lit(0))).cast(T.LongType()).alias("addressed_count"),
-            F.sum(F.coalesce(F.col("activities_2.active_count"), F.lit(0))).cast(T.LongType()).alias("active_count"),
-        ).select(
-            F.col("period_kind"),
-            F.col("period_start"),
-            F.col("period_end"),
-            F.col("discovered_count"),
-            F.col("addressed_count"),
-            F.col("active_count"),
-            F.col("team_id"),
-            F.col("team_name"),
+        team_statistics = (
+            team_statistics.groupBy(
+                F.col("team.id").alias("team_id"),
+                F.col("team.name").alias("team_name"),
+                F.col("periods.kind").alias("period_kind"),
+                F.col("periods.start").alias("period_start"),
+                F.col("periods.end").alias("period_end"),
+            )
+            .agg(
+                F.sum(F.coalesce(F.col("activities_2.discovered_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("discovered_count"),
+                F.sum(F.coalesce(F.col("activities_2.addressed_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("addressed_count"),
+                F.sum(F.coalesce(F.col("activities_2.active_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("active_count"),
+            )
+            .select(
+                F.col("period_kind"),
+                F.col("period_start"),
+                F.col("period_end"),
+                F.col("discovered_count"),
+                F.col("addressed_count"),
+                F.col("active_count"),
+                F.col("team_id"),
+                F.col("team_name"),
+            )
         )
-        assert_schema(team_statistics, TEAM_VULNERABILITY_STATISTIC_SCHEMA, name="TeamVulnerabilityStatistic", mode="strict")
+        assert_schema(
+            team_statistics, TEAM_VULNERABILITY_STATISTIC_SCHEMA, name="TeamVulnerabilityStatistic", mode="strict"
+        )
 
         # Step method: department_periods
         department_statistics = departments.alias("department")
@@ -171,30 +266,54 @@ class VulnerabilityStatisticsGenerated:
         activities_2_joined = activities.alias("activities_2")
         department_statistics = department_statistics.join(
             activities_2_joined,
-            ((((F.col("activities_2.department_id") == F.col("department.id")) & (F.col("activities_2.period_kind") == F.col("periods.kind"))) & (F.col("activities_2.period_start") == F.col("periods.start"))) & (F.col("activities_2.period_end") == F.col("periods.end"))),
+            (
+                (
+                    (
+                        (F.col("activities_2.department_id") == F.col("department.id"))
+                        & (F.col("activities_2.period_kind") == F.col("periods.kind"))
+                    )
+                    & (F.col("activities_2.period_start") == F.col("periods.start"))
+                )
+                & (F.col("activities_2.period_end") == F.col("periods.end"))
+            ),
             "left",
         )
-        department_statistics = department_statistics.groupBy(
-            F.col("department.id").alias("department_id"),
-            F.col("department.name").alias("department_name"),
-            F.col("periods.kind").alias("period_kind"),
-            F.col("periods.start").alias("period_start"),
-            F.col("periods.end").alias("period_end"),
-        ).agg(
-            F.sum(F.coalesce(F.col("activities_2.discovered_count"), F.lit(0))).cast(T.LongType()).alias("discovered_count"),
-            F.sum(F.coalesce(F.col("activities_2.addressed_count"), F.lit(0))).cast(T.LongType()).alias("addressed_count"),
-            F.sum(F.coalesce(F.col("activities_2.active_count"), F.lit(0))).cast(T.LongType()).alias("active_count"),
-        ).select(
-            F.col("period_kind"),
-            F.col("period_start"),
-            F.col("period_end"),
-            F.col("discovered_count"),
-            F.col("addressed_count"),
-            F.col("active_count"),
-            F.col("department_id"),
-            F.col("department_name"),
+        department_statistics = (
+            department_statistics.groupBy(
+                F.col("department.id").alias("department_id"),
+                F.col("department.name").alias("department_name"),
+                F.col("periods.kind").alias("period_kind"),
+                F.col("periods.start").alias("period_start"),
+                F.col("periods.end").alias("period_end"),
+            )
+            .agg(
+                F.sum(F.coalesce(F.col("activities_2.discovered_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("discovered_count"),
+                F.sum(F.coalesce(F.col("activities_2.addressed_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("addressed_count"),
+                F.sum(F.coalesce(F.col("activities_2.active_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("active_count"),
+            )
+            .select(
+                F.col("period_kind"),
+                F.col("period_start"),
+                F.col("period_end"),
+                F.col("discovered_count"),
+                F.col("addressed_count"),
+                F.col("active_count"),
+                F.col("department_id"),
+                F.col("department_name"),
+            )
         )
-        assert_schema(department_statistics, DEPARTMENT_VULNERABILITY_STATISTIC_SCHEMA, name="DepartmentVulnerabilityStatistic", mode="strict")
+        assert_schema(
+            department_statistics,
+            DEPARTMENT_VULNERABILITY_STATISTIC_SCHEMA,
+            name="DepartmentVulnerabilityStatistic",
+            mode="strict",
+        )
 
         # Step method: org_periods
         org_statistics = orgs.alias("org")
@@ -203,43 +322,87 @@ class VulnerabilityStatisticsGenerated:
         activities_2_joined = activities.alias("activities_2")
         org_statistics = org_statistics.join(
             activities_2_joined,
-            ((((F.col("activities_2.org_id") == F.col("org.id")) & (F.col("activities_2.period_kind") == F.col("periods.kind"))) & (F.col("activities_2.period_start") == F.col("periods.start"))) & (F.col("activities_2.period_end") == F.col("periods.end"))),
+            (
+                (
+                    (
+                        (F.col("activities_2.org_id") == F.col("org.id"))
+                        & (F.col("activities_2.period_kind") == F.col("periods.kind"))
+                    )
+                    & (F.col("activities_2.period_start") == F.col("periods.start"))
+                )
+                & (F.col("activities_2.period_end") == F.col("periods.end"))
+            ),
             "left",
         )
-        org_statistics = org_statistics.groupBy(
-            F.col("org.id").alias("org_id"),
-            F.col("org.name").alias("org_name"),
-            F.col("periods.kind").alias("period_kind"),
-            F.col("periods.start").alias("period_start"),
-            F.col("periods.end").alias("period_end"),
-        ).agg(
-            F.sum(F.coalesce(F.col("activities_2.discovered_count"), F.lit(0))).cast(T.LongType()).alias("discovered_count"),
-            F.sum(F.coalesce(F.col("activities_2.addressed_count"), F.lit(0))).cast(T.LongType()).alias("addressed_count"),
-            F.sum(F.coalesce(F.col("activities_2.active_count"), F.lit(0))).cast(T.LongType()).alias("active_count"),
-        ).select(
-            F.col("period_kind"),
-            F.col("period_start"),
-            F.col("period_end"),
-            F.col("discovered_count"),
-            F.col("addressed_count"),
-            F.col("active_count"),
-            F.col("org_id"),
-            F.col("org_name"),
+        org_statistics = (
+            org_statistics.groupBy(
+                F.col("org.id").alias("org_id"),
+                F.col("org.name").alias("org_name"),
+                F.col("periods.kind").alias("period_kind"),
+                F.col("periods.start").alias("period_start"),
+                F.col("periods.end").alias("period_end"),
+            )
+            .agg(
+                F.sum(F.coalesce(F.col("activities_2.discovered_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("discovered_count"),
+                F.sum(F.coalesce(F.col("activities_2.addressed_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("addressed_count"),
+                F.sum(F.coalesce(F.col("activities_2.active_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("active_count"),
+            )
+            .select(
+                F.col("period_kind"),
+                F.col("period_start"),
+                F.col("period_end"),
+                F.col("discovered_count"),
+                F.col("addressed_count"),
+                F.col("active_count"),
+                F.col("org_id"),
+                F.col("org_name"),
+            )
         )
 
         # Step method: person_statistics
         person_statistics = person_statistics.alias("person_vulnerability_statistic")
-        assert_schema(person_statistics, PERSON_VULNERABILITY_STATISTIC_SCHEMA, name="PersonVulnerabilityStatistic", mode="strict")
+        assert_schema(
+            person_statistics, PERSON_VULNERABILITY_STATISTIC_SCHEMA, name="PersonVulnerabilityStatistic", mode="strict"
+        )
 
         # Step method: team_statistics
         team_statistics = team_statistics.alias("team_vulnerability_statistic")
-        assert_schema(team_statistics, TEAM_VULNERABILITY_STATISTIC_SCHEMA, name="TeamVulnerabilityStatistic", mode="strict")
+        assert_schema(
+            team_statistics, TEAM_VULNERABILITY_STATISTIC_SCHEMA, name="TeamVulnerabilityStatistic", mode="strict"
+        )
 
         # Step method: department_statistics
         department_statistics = department_statistics.alias("department_vulnerability_statistic")
-        assert_schema(department_statistics, DEPARTMENT_VULNERABILITY_STATISTIC_SCHEMA, name="DepartmentVulnerabilityStatistic", mode="strict")
+        assert_schema(
+            department_statistics,
+            DEPARTMENT_VULNERABILITY_STATISTIC_SCHEMA,
+            name="DepartmentVulnerabilityStatistic",
+            mode="strict",
+        )
 
         # Step method: org_statistics
         org_statistics = org_statistics.alias("org_vulnerability_statistic")
-        assert_schema(org_statistics, ORG_VULNERABILITY_STATISTIC_SCHEMA, name="OrgVulnerabilityStatistic", mode="strict")
-        return TransformResult({"person_statistics": person_statistics, "team_statistics": team_statistics, "department_statistics": department_statistics, "org_statistics": org_statistics}, single=False, schema={"person_statistics": PERSON_VULNERABILITY_STATISTIC_SCHEMA, "team_statistics": TEAM_VULNERABILITY_STATISTIC_SCHEMA, "department_statistics": DEPARTMENT_VULNERABILITY_STATISTIC_SCHEMA, "org_statistics": ORG_VULNERABILITY_STATISTIC_SCHEMA})
+        assert_schema(
+            org_statistics, ORG_VULNERABILITY_STATISTIC_SCHEMA, name="OrgVulnerabilityStatistic", mode="strict"
+        )
+        return TransformResult(
+            {
+                "person_statistics": person_statistics,
+                "team_statistics": team_statistics,
+                "department_statistics": department_statistics,
+                "org_statistics": org_statistics,
+            },
+            single=False,
+            schema={
+                "person_statistics": PERSON_VULNERABILITY_STATISTIC_SCHEMA,
+                "team_statistics": TEAM_VULNERABILITY_STATISTIC_SCHEMA,
+                "department_statistics": DEPARTMENT_VULNERABILITY_STATISTIC_SCHEMA,
+                "org_statistics": ORG_VULNERABILITY_STATISTIC_SCHEMA,
+            },
+        )

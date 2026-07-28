@@ -17,6 +17,7 @@ from structure.plugin.pyspark.compiler.model.PySparkJoinDedupeRecipe import PySp
 from structure.plugin.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoinRecipe
 from structure.plugin.pyspark.compiler.model.PySparkJoinTemporalRecipe import PySparkJoinTemporalRecipe
 from structure.plugin.pyspark.compiler.model.PySparkOperationRecipe import PySparkOperationRecipe
+from structure.plugin.pyspark.compiler.model.PySparkOrderedTimelineScanRecipe import PySparkOrderedTimelineScanRecipe
 from structure.plugin.pyspark.compiler.model.PySparkPosexplodeStructRecipe import PySparkPosexplodeStructRecipe
 from structure.plugin.pyspark.compiler.model.PySparkProjectionRecipe import PySparkProjectionRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationAliasRecipe import PySparkRelationAliasRecipe
@@ -220,6 +221,39 @@ class MapPySparkStep:
                                 scope=operation.posexplode_struct.scope,
                                 schema=operation.posexplode_struct.schema,
                                 ordinal=operation.posexplode_struct.ordinal,
+                            )
+                        ),
+                        operation,
+                    )
+                )
+            if operation.kind == "ordered_timeline_scan" and operation.ordered_timeline_scan is not None:
+                scan = operation.ordered_timeline_scan
+                recipes.append(
+                    self._operation_modes(
+                        PySparkOperationRecipe.ordered_timeline_scan_operation(
+                            PySparkOrderedTimelineScanRecipe(
+                                scope=scan.scope,
+                                state_scope=scan.state_scope,
+                                row_scope=scan.row_scope,
+                                state_schema=scan.state_schema,
+                                initial=tuple(
+                                    (name, self._expressions.map(expression, capabilities=capabilities))
+                                    for name, expression in scan.initial
+                                ),
+                                transition=tuple(
+                                    (name, self._expressions.map(expression, capabilities=capabilities))
+                                    for name, expression in scan.transition
+                                ),
+                                partition_by=tuple(
+                                    self._expressions.map(expression, capabilities=capabilities)
+                                    for expression in scan.partition_by
+                                ),
+                                order_by=tuple(
+                                    self._expressions.map(expression, capabilities=capabilities)
+                                    for expression in scan.order_by
+                                ),
+                                max_rows=scan.max_rows,
+                                ties=scan.ties,
                             )
                         ),
                         operation,

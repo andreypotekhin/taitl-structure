@@ -8,6 +8,7 @@ from structure.plugin.pyspark.compiler.model.PySparkDuplicateRowsRecipe import P
 from structure.plugin.pyspark.compiler.model.PySparkExactlyOneRecipe import PySparkExactlyOneRecipe
 from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.plugin.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoinRecipe
+from structure.plugin.pyspark.compiler.model.PySparkOrderedTimelineScanRecipe import PySparkOrderedTimelineScanRecipe
 from structure.plugin.pyspark.compiler.model.PySparkPosexplodeStructRecipe import PySparkPosexplodeStructRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationAliasRecipe import PySparkRelationAliasRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationAssertionRecipe import PySparkRelationAssertionRecipe
@@ -38,6 +39,7 @@ class PySparkOperationRecipe:
     duplicate_rows: PySparkDuplicateRowsRecipe | None = None
     exactly_one: PySparkExactlyOneRecipe | None = None
     posexplode_struct: PySparkPosexplodeStructRecipe | None = None
+    ordered_timeline_scan: PySparkOrderedTimelineScanRecipe | None = None
     relation_alias: PySparkRelationAliasRecipe | None = None
     relation_assertion: PySparkRelationAssertionRecipe | None = None
     relation_hierarchy_closure: PySparkRelationHierarchyClosureRecipe | None = None
@@ -80,6 +82,10 @@ class PySparkOperationRecipe:
     @staticmethod
     def posexplode_struct_operation(posexplode_struct: PySparkPosexplodeStructRecipe) -> "PySparkOperationRecipe":
         return PySparkOperationRecipe(kind="posexplode_struct", posexplode_struct=posexplode_struct)
+
+    @staticmethod
+    def ordered_timeline_scan_operation(scan: PySparkOrderedTimelineScanRecipe) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="ordered_timeline_scan", ordered_timeline_scan=scan)
 
     @staticmethod
     def relation_alias_operation(relation_alias: PySparkRelationAliasRecipe) -> "PySparkOperationRecipe":

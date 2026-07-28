@@ -283,6 +283,10 @@ def test_online_expression_evaluator_preserves_pyspark_column_semantics() -> Non
             "filter(transform(col(RawTagBatch.tags), lambda item: lower(trim(item))), lambda item: item.isNotNull())",
         ),
         (
+            _array_transform(_field(RawTermBatch, "terms"), _call("lower", _lambda_item_field("token"))),
+            "transform(col(RawTermBatch.terms), lambda item: lower(item.getField('token')))",
+        ),
+        (
             _map_filter(
                 _map_transform_values(
                     _field(RawMapBatch, "attributes"), _call("lower", _call("trim", _lambda_value()))
@@ -2957,6 +2961,15 @@ def _event_time_between(
 
 def _lambda_item() -> PySparkExpressionRecipe:
     return PySparkExpressionRecipe("lambda_arg", types.string(), False, {"name": "item"})
+
+
+def _lambda_item_field(name: str) -> PySparkExpressionRecipe:
+    return PySparkExpressionRecipe(
+        "field",
+        types.string(),
+        False,
+        {"field": name, "name": f"item.{name}", "path": (name,), "name_path": ("item", name)},
+    )
 
 
 def _lambda_key() -> PySparkExpressionRecipe:

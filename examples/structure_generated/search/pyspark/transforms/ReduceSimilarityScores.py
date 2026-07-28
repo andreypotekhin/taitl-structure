@@ -6,10 +6,38 @@ from pyspark.sql import Window
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
-from examples.structure_generated.search.pyspark.schemas.bm25 import DOCUMENT_BM25_SCORE_SCHEMA, PARAGRAPH_BM25_SCORE_SCHEMA, SECTION_BM25_SCORE_SCHEMA, SENTENCE_BM25_SCORE_SCHEMA
-from examples.structure_generated.search.pyspark.schemas.overlap import DOCUMENT_OVERLAP_SCORE_SCHEMA, PARAGRAPH_OVERLAP_SCORE_SCHEMA, SECTION_OVERLAP_SCORE_SCHEMA, SENTENCE_OVERLAP_SCORE_SCHEMA
-from examples.structure_generated.search.pyspark.schemas.reduce import DOCUMENT_SIMILARITY_CANDIDATE_SCHEMA, DOCUMENT_SIMILARITY_PAIR_SCHEMA, PARAGRAPH_SIMILARITY_CANDIDATE_SCHEMA, PARAGRAPH_SIMILARITY_PAIR_SCHEMA, SECTION_SIMILARITY_CANDIDATE_SCHEMA, SECTION_SIMILARITY_PAIR_SCHEMA, SENTENCE_SIMILARITY_CANDIDATE_SCHEMA, SENTENCE_SIMILARITY_PAIR_SCHEMA
-from examples.structure_generated.search.pyspark.schemas.similarity import DOCUMENT_SIMILARITY_QUERY_SCHEMA, DOCUMENT_SIMILARITY_SCHEMA, PARAGRAPH_SIMILARITY_QUERY_SCHEMA, PARAGRAPH_SIMILARITY_SCHEMA, SECTION_SIMILARITY_QUERY_SCHEMA, SECTION_SIMILARITY_SCHEMA, SENTENCE_SIMILARITY_QUERY_SCHEMA, SENTENCE_SIMILARITY_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.bm25 import (
+    DOCUMENT_BM25_SCORE_SCHEMA,
+    PARAGRAPH_BM25_SCORE_SCHEMA,
+    SECTION_BM25_SCORE_SCHEMA,
+    SENTENCE_BM25_SCORE_SCHEMA,
+)
+from examples.structure_generated.search.pyspark.schemas.overlap import (
+    DOCUMENT_OVERLAP_SCORE_SCHEMA,
+    PARAGRAPH_OVERLAP_SCORE_SCHEMA,
+    SECTION_OVERLAP_SCORE_SCHEMA,
+    SENTENCE_OVERLAP_SCORE_SCHEMA,
+)
+from examples.structure_generated.search.pyspark.schemas.reduce import (
+    DOCUMENT_SIMILARITY_CANDIDATE_SCHEMA,
+    DOCUMENT_SIMILARITY_PAIR_SCHEMA,
+    PARAGRAPH_SIMILARITY_CANDIDATE_SCHEMA,
+    PARAGRAPH_SIMILARITY_PAIR_SCHEMA,
+    SECTION_SIMILARITY_CANDIDATE_SCHEMA,
+    SECTION_SIMILARITY_PAIR_SCHEMA,
+    SENTENCE_SIMILARITY_CANDIDATE_SCHEMA,
+    SENTENCE_SIMILARITY_PAIR_SCHEMA,
+)
+from examples.structure_generated.search.pyspark.schemas.similarity import (
+    DOCUMENT_SIMILARITY_QUERY_SCHEMA,
+    DOCUMENT_SIMILARITY_SCHEMA,
+    PARAGRAPH_SIMILARITY_QUERY_SCHEMA,
+    PARAGRAPH_SIMILARITY_SCHEMA,
+    SECTION_SIMILARITY_QUERY_SCHEMA,
+    SECTION_SIMILARITY_SCHEMA,
+    SENTENCE_SIMILARITY_QUERY_SCHEMA,
+    SENTENCE_SIMILARITY_SCHEMA,
+)
 
 
 class ReduceSimilarityScoresGenerated:
@@ -36,12 +64,20 @@ class ReduceSimilarityScoresGenerated:
     ) -> TransformResult:
         assert_schema(document_queries, DOCUMENT_SIMILARITY_QUERY_SCHEMA, name="DocumentSimilarityQuery", mode="strict")
         assert_schema(section_queries, SECTION_SIMILARITY_QUERY_SCHEMA, name="SectionSimilarityQuery", mode="strict")
-        assert_schema(paragraph_queries, PARAGRAPH_SIMILARITY_QUERY_SCHEMA, name="ParagraphSimilarityQuery", mode="strict")
+        assert_schema(
+            paragraph_queries, PARAGRAPH_SIMILARITY_QUERY_SCHEMA, name="ParagraphSimilarityQuery", mode="strict"
+        )
         assert_schema(sentence_queries, SENTENCE_SIMILARITY_QUERY_SCHEMA, name="SentenceSimilarityQuery", mode="strict")
-        assert_schema(document_overlap_scores, DOCUMENT_OVERLAP_SCORE_SCHEMA, name="DocumentOverlapScore", mode="strict")
+        assert_schema(
+            document_overlap_scores, DOCUMENT_OVERLAP_SCORE_SCHEMA, name="DocumentOverlapScore", mode="strict"
+        )
         assert_schema(section_overlap_scores, SECTION_OVERLAP_SCORE_SCHEMA, name="SectionOverlapScore", mode="strict")
-        assert_schema(paragraph_overlap_scores, PARAGRAPH_OVERLAP_SCORE_SCHEMA, name="ParagraphOverlapScore", mode="strict")
-        assert_schema(sentence_overlap_scores, SENTENCE_OVERLAP_SCORE_SCHEMA, name="SentenceOverlapScore", mode="strict")
+        assert_schema(
+            paragraph_overlap_scores, PARAGRAPH_OVERLAP_SCORE_SCHEMA, name="ParagraphOverlapScore", mode="strict"
+        )
+        assert_schema(
+            sentence_overlap_scores, SENTENCE_OVERLAP_SCORE_SCHEMA, name="SentenceOverlapScore", mode="strict"
+        )
         assert_schema(document_bm25_scores, DOCUMENT_BM25_SCORE_SCHEMA, name="DocumentBm25Score", mode="strict")
         assert_schema(section_bm25_scores, SECTION_BM25_SCORE_SCHEMA, name="SectionBm25Score", mode="strict")
         assert_schema(paragraph_bm25_scores, PARAGRAPH_BM25_SCORE_SCHEMA, name="ParagraphBm25Score", mode="strict")
@@ -64,7 +100,10 @@ class ReduceSimilarityScoresGenerated:
         document_bm25_scores_joined = document_bm25_scores.alias("document_bm25_scores")
         document_candidates = document_candidates.join(
             document_bm25_scores_joined,
-            ((F.col("document_bm25_scores.query_id") == F.col("document_overlap_score.query_id")) & (F.col("document_bm25_scores.document_id") == F.col("document_overlap_score.document_id"))),
+            (
+                (F.col("document_bm25_scores.query_id") == F.col("document_overlap_score.query_id"))
+                & (F.col("document_bm25_scores.document_id") == F.col("document_overlap_score.document_id"))
+            ),
             "inner",
         )
         document_queries_2_joined = document_queries.alias("document_queries_2")
@@ -79,26 +118,54 @@ class ReduceSimilarityScoresGenerated:
             F.col("document_overlap_score.score_overlap"),
             F.col("document_bm25_scores.score_bm25").alias("bm25_left_to_right"),
         )
-        assert_schema(document_candidates, DOCUMENT_SIMILARITY_CANDIDATE_SCHEMA, name="DocumentSimilarityCandidate", mode="strict")
+        assert_schema(
+            document_candidates, DOCUMENT_SIMILARITY_CANDIDATE_SCHEMA, name="DocumentSimilarityCandidate", mode="strict"
+        )
 
         # Step method: canonical_document_pairs
         document_canonical_pairs = document_candidates.alias("document_similarity_candidate")
-        document_canonical_pairs = document_canonical_pairs.where(((F.col("document_similarity_candidate.left_document_id") < F.col("document_similarity_candidate.right_document_id"))))
+        document_canonical_pairs = document_canonical_pairs.where(
+            (
+                (
+                    F.col("document_similarity_candidate.left_document_id")
+                    < F.col("document_similarity_candidate.right_document_id")
+                )
+            )
+        )
         reverse_document_joined = document_candidates.alias("reverse_document")
         document_canonical_pairs = document_canonical_pairs.join(
             reverse_document_joined,
-            ((F.col("document_similarity_candidate.left_document_id") == F.col("reverse_document.right_document_id")) & (F.col("document_similarity_candidate.right_document_id") == F.col("reverse_document.left_document_id"))),
+            (
+                (F.col("document_similarity_candidate.left_document_id") == F.col("reverse_document.right_document_id"))
+                & (
+                    F.col("document_similarity_candidate.right_document_id")
+                    == F.col("reverse_document.left_document_id")
+                )
+            ),
             "inner",
         )
         document_canonical_pairs = document_canonical_pairs.select(
             F.col("document_similarity_candidate.left_document_id"),
             F.col("document_similarity_candidate.right_document_id"),
-            F.when((F.col("document_similarity_candidate.score_overlap") <= F.col("reverse_document.score_overlap")), F.col("document_similarity_candidate.score_overlap")).otherwise(F.col("reverse_document.score_overlap")).alias("score_overlap"),
+            F.when(
+                (F.col("document_similarity_candidate.score_overlap") <= F.col("reverse_document.score_overlap")),
+                F.col("document_similarity_candidate.score_overlap"),
+            )
+            .otherwise(F.col("reverse_document.score_overlap"))
+            .alias("score_overlap"),
             F.col("document_similarity_candidate.bm25_left_to_right"),
             F.col("reverse_document.bm25_left_to_right").alias("bm25_right_to_left"),
-            ((F.col("document_similarity_candidate.bm25_left_to_right") + F.col("reverse_document.bm25_left_to_right")) / F.lit(2.0)).alias("bm25_mean"),
+            (
+                (
+                    F.col("document_similarity_candidate.bm25_left_to_right")
+                    + F.col("reverse_document.bm25_left_to_right")
+                )
+                / F.lit(2.0)
+            ).alias("bm25_mean"),
         )
-        assert_schema(document_canonical_pairs, DOCUMENT_SIMILARITY_PAIR_SCHEMA, name="DocumentSimilarityPair", mode="strict")
+        assert_schema(
+            document_canonical_pairs, DOCUMENT_SIMILARITY_PAIR_SCHEMA, name="DocumentSimilarityPair", mode="strict"
+        )
 
         # Step method: reverse_document_pairs
         document_reversed_pairs = document_canonical_pairs.alias("document_similarity_pair")
@@ -110,7 +177,9 @@ class ReduceSimilarityScoresGenerated:
             F.col("document_similarity_pair.bm25_left_to_right").alias("bm25_right_to_left"),
             F.col("document_similarity_pair.bm25_mean"),
         )
-        assert_schema(document_reversed_pairs, DOCUMENT_SIMILARITY_PAIR_SCHEMA, name="DocumentSimilarityPair", mode="strict")
+        assert_schema(
+            document_reversed_pairs, DOCUMENT_SIMILARITY_PAIR_SCHEMA, name="DocumentSimilarityPair", mode="strict"
+        )
 
         # Step method: merge_document_pairs
         document_pairs = document_canonical_pairs.alias("document_similarity_pair")
@@ -130,7 +199,16 @@ class ReduceSimilarityScoresGenerated:
         ranked_document_pairs = ranked_document_pairs.select(
             F.col("document_similarity_pair.left_document_id"),
             F.col("document_similarity_pair.right_document_id"),
-            F.row_number().over(Window.partitionBy(F.col("document_similarity_pair.left_document_id")).orderBy(F.col("document_similarity_pair.bm25_left_to_right").desc_nulls_last(), F.col("document_similarity_pair.score_overlap").desc_nulls_last(), F.col("document_similarity_pair.right_document_id").asc_nulls_first())).cast(T.LongType()).alias("rank"),
+            F.row_number()
+            .over(
+                Window.partitionBy(F.col("document_similarity_pair.left_document_id")).orderBy(
+                    F.col("document_similarity_pair.bm25_left_to_right").desc_nulls_last(),
+                    F.col("document_similarity_pair.score_overlap").desc_nulls_last(),
+                    F.col("document_similarity_pair.right_document_id").asc_nulls_first(),
+                )
+            )
+            .cast(T.LongType())
+            .alias("rank"),
             F.col("document_similarity_pair.score_overlap"),
             F.col("document_similarity_pair.bm25_left_to_right"),
             F.col("document_similarity_pair.bm25_right_to_left"),
@@ -157,7 +235,13 @@ class ReduceSimilarityScoresGenerated:
         section_bm25_scores_joined = section_bm25_scores.alias("section_bm25_scores")
         section_candidates = section_candidates.join(
             section_bm25_scores_joined,
-            (((F.col("section_bm25_scores.query_id") == F.col("section_overlap_score.query_id")) & (F.col("section_bm25_scores.document_id") == F.col("section_overlap_score.document_id"))) & (F.col("section_bm25_scores.section_id") == F.col("section_overlap_score.section_id"))),
+            (
+                (
+                    (F.col("section_bm25_scores.query_id") == F.col("section_overlap_score.query_id"))
+                    & (F.col("section_bm25_scores.document_id") == F.col("section_overlap_score.document_id"))
+                )
+                & (F.col("section_bm25_scores.section_id") == F.col("section_overlap_score.section_id"))
+            ),
             "inner",
         )
         section_queries_2_joined = section_queries.alias("section_queries_2")
@@ -174,15 +258,42 @@ class ReduceSimilarityScoresGenerated:
             F.col("section_overlap_score.score_overlap"),
             F.col("section_bm25_scores.score_bm25").alias("bm25_left_to_right"),
         )
-        assert_schema(section_candidates, SECTION_SIMILARITY_CANDIDATE_SCHEMA, name="SectionSimilarityCandidate", mode="strict")
+        assert_schema(
+            section_candidates, SECTION_SIMILARITY_CANDIDATE_SCHEMA, name="SectionSimilarityCandidate", mode="strict"
+        )
 
         # Step method: canonical_section_pairs
         section_canonical_pairs = section_candidates.alias("section_similarity_candidate")
-        section_canonical_pairs = section_canonical_pairs.where(((F.col("section_similarity_candidate.left_section_id") < F.col("section_similarity_candidate.right_section_id"))))
+        section_canonical_pairs = section_canonical_pairs.where(
+            (
+                (
+                    F.col("section_similarity_candidate.left_section_id")
+                    < F.col("section_similarity_candidate.right_section_id")
+                )
+            )
+        )
         reverse_section_joined = section_candidates.alias("reverse_section")
         section_canonical_pairs = section_canonical_pairs.join(
             reverse_section_joined,
-            ((((F.col("section_similarity_candidate.left_document_id") == F.col("reverse_section.right_document_id")) & (F.col("section_similarity_candidate.left_section_id") == F.col("reverse_section.right_section_id"))) & (F.col("section_similarity_candidate.right_document_id") == F.col("reverse_section.left_document_id"))) & (F.col("section_similarity_candidate.right_section_id") == F.col("reverse_section.left_section_id"))),
+            (
+                (
+                    (
+                        (
+                            F.col("section_similarity_candidate.left_document_id")
+                            == F.col("reverse_section.right_document_id")
+                        )
+                        & (
+                            F.col("section_similarity_candidate.left_section_id")
+                            == F.col("reverse_section.right_section_id")
+                        )
+                    )
+                    & (
+                        F.col("section_similarity_candidate.right_document_id")
+                        == F.col("reverse_section.left_document_id")
+                    )
+                )
+                & (F.col("section_similarity_candidate.right_section_id") == F.col("reverse_section.left_section_id"))
+            ),
             "inner",
         )
         section_canonical_pairs = section_canonical_pairs.select(
@@ -190,12 +301,22 @@ class ReduceSimilarityScoresGenerated:
             F.col("section_similarity_candidate.left_section_id"),
             F.col("section_similarity_candidate.right_document_id"),
             F.col("section_similarity_candidate.right_section_id"),
-            F.when((F.col("section_similarity_candidate.score_overlap") <= F.col("reverse_section.score_overlap")), F.col("section_similarity_candidate.score_overlap")).otherwise(F.col("reverse_section.score_overlap")).alias("score_overlap"),
+            F.when(
+                (F.col("section_similarity_candidate.score_overlap") <= F.col("reverse_section.score_overlap")),
+                F.col("section_similarity_candidate.score_overlap"),
+            )
+            .otherwise(F.col("reverse_section.score_overlap"))
+            .alias("score_overlap"),
             F.col("section_similarity_candidate.bm25_left_to_right"),
             F.col("reverse_section.bm25_left_to_right").alias("bm25_right_to_left"),
-            ((F.col("section_similarity_candidate.bm25_left_to_right") + F.col("reverse_section.bm25_left_to_right")) / F.lit(2.0)).alias("bm25_mean"),
+            (
+                (F.col("section_similarity_candidate.bm25_left_to_right") + F.col("reverse_section.bm25_left_to_right"))
+                / F.lit(2.0)
+            ).alias("bm25_mean"),
         )
-        assert_schema(section_canonical_pairs, SECTION_SIMILARITY_PAIR_SCHEMA, name="SectionSimilarityPair", mode="strict")
+        assert_schema(
+            section_canonical_pairs, SECTION_SIMILARITY_PAIR_SCHEMA, name="SectionSimilarityPair", mode="strict"
+        )
 
         # Step method: reverse_section_pairs
         section_reversed_pairs = section_canonical_pairs.alias("section_similarity_pair")
@@ -209,7 +330,9 @@ class ReduceSimilarityScoresGenerated:
             F.col("section_similarity_pair.bm25_left_to_right").alias("bm25_right_to_left"),
             F.col("section_similarity_pair.bm25_mean"),
         )
-        assert_schema(section_reversed_pairs, SECTION_SIMILARITY_PAIR_SCHEMA, name="SectionSimilarityPair", mode="strict")
+        assert_schema(
+            section_reversed_pairs, SECTION_SIMILARITY_PAIR_SCHEMA, name="SectionSimilarityPair", mode="strict"
+        )
 
         # Step method: merge_section_pairs
         section_pairs = section_canonical_pairs.alias("section_similarity_pair")
@@ -233,7 +356,19 @@ class ReduceSimilarityScoresGenerated:
             F.col("section_similarity_pair.left_section_id"),
             F.col("section_similarity_pair.right_document_id"),
             F.col("section_similarity_pair.right_section_id"),
-            F.row_number().over(Window.partitionBy(F.col("section_similarity_pair.left_document_id"), F.col("section_similarity_pair.left_section_id")).orderBy(F.col("section_similarity_pair.bm25_left_to_right").desc_nulls_last(), F.col("section_similarity_pair.score_overlap").desc_nulls_last(), F.col("section_similarity_pair.right_document_id").asc_nulls_first(), F.col("section_similarity_pair.right_section_id").asc_nulls_first())).cast(T.LongType()).alias("rank"),
+            F.row_number()
+            .over(
+                Window.partitionBy(
+                    F.col("section_similarity_pair.left_document_id"), F.col("section_similarity_pair.left_section_id")
+                ).orderBy(
+                    F.col("section_similarity_pair.bm25_left_to_right").desc_nulls_last(),
+                    F.col("section_similarity_pair.score_overlap").desc_nulls_last(),
+                    F.col("section_similarity_pair.right_document_id").asc_nulls_first(),
+                    F.col("section_similarity_pair.right_section_id").asc_nulls_first(),
+                )
+            )
+            .cast(T.LongType())
+            .alias("rank"),
             F.col("section_similarity_pair.score_overlap"),
             F.col("section_similarity_pair.bm25_left_to_right"),
             F.col("section_similarity_pair.bm25_right_to_left"),
@@ -262,7 +397,16 @@ class ReduceSimilarityScoresGenerated:
         paragraph_bm25_scores_joined = paragraph_bm25_scores.alias("paragraph_bm25_scores")
         paragraph_candidates = paragraph_candidates.join(
             paragraph_bm25_scores_joined,
-            ((((F.col("paragraph_bm25_scores.query_id") == F.col("paragraph_overlap_score.query_id")) & (F.col("paragraph_bm25_scores.document_id") == F.col("paragraph_overlap_score.document_id"))) & (F.col("paragraph_bm25_scores.section_id") == F.col("paragraph_overlap_score.section_id"))) & (F.col("paragraph_bm25_scores.paragraph_id") == F.col("paragraph_overlap_score.paragraph_id"))),
+            (
+                (
+                    (
+                        (F.col("paragraph_bm25_scores.query_id") == F.col("paragraph_overlap_score.query_id"))
+                        & (F.col("paragraph_bm25_scores.document_id") == F.col("paragraph_overlap_score.document_id"))
+                    )
+                    & (F.col("paragraph_bm25_scores.section_id") == F.col("paragraph_overlap_score.section_id"))
+                )
+                & (F.col("paragraph_bm25_scores.paragraph_id") == F.col("paragraph_overlap_score.paragraph_id"))
+            ),
             "inner",
         )
         paragraph_queries_2_joined = paragraph_queries.alias("paragraph_queries_2")
@@ -281,15 +425,60 @@ class ReduceSimilarityScoresGenerated:
             F.col("paragraph_overlap_score.score_overlap"),
             F.col("paragraph_bm25_scores.score_bm25").alias("bm25_left_to_right"),
         )
-        assert_schema(paragraph_candidates, PARAGRAPH_SIMILARITY_CANDIDATE_SCHEMA, name="ParagraphSimilarityCandidate", mode="strict")
+        assert_schema(
+            paragraph_candidates,
+            PARAGRAPH_SIMILARITY_CANDIDATE_SCHEMA,
+            name="ParagraphSimilarityCandidate",
+            mode="strict",
+        )
 
         # Step method: canonical_paragraph_pairs
         paragraph_canonical_pairs = paragraph_candidates.alias("paragraph_similarity_candidate")
-        paragraph_canonical_pairs = paragraph_canonical_pairs.where(((F.col("paragraph_similarity_candidate.left_paragraph_id") < F.col("paragraph_similarity_candidate.right_paragraph_id"))))
+        paragraph_canonical_pairs = paragraph_canonical_pairs.where(
+            (
+                (
+                    F.col("paragraph_similarity_candidate.left_paragraph_id")
+                    < F.col("paragraph_similarity_candidate.right_paragraph_id")
+                )
+            )
+        )
         reverse_paragraph_joined = paragraph_candidates.alias("reverse_paragraph")
         paragraph_canonical_pairs = paragraph_canonical_pairs.join(
             reverse_paragraph_joined,
-            ((((((F.col("paragraph_similarity_candidate.left_document_id") == F.col("reverse_paragraph.right_document_id")) & (F.col("paragraph_similarity_candidate.left_section_id") == F.col("reverse_paragraph.right_section_id"))) & (F.col("paragraph_similarity_candidate.left_paragraph_id") == F.col("reverse_paragraph.right_paragraph_id"))) & (F.col("paragraph_similarity_candidate.right_document_id") == F.col("reverse_paragraph.left_document_id"))) & (F.col("paragraph_similarity_candidate.right_section_id") == F.col("reverse_paragraph.left_section_id"))) & (F.col("paragraph_similarity_candidate.right_paragraph_id") == F.col("reverse_paragraph.left_paragraph_id"))),
+            (
+                (
+                    (
+                        (
+                            (
+                                (
+                                    F.col("paragraph_similarity_candidate.left_document_id")
+                                    == F.col("reverse_paragraph.right_document_id")
+                                )
+                                & (
+                                    F.col("paragraph_similarity_candidate.left_section_id")
+                                    == F.col("reverse_paragraph.right_section_id")
+                                )
+                            )
+                            & (
+                                F.col("paragraph_similarity_candidate.left_paragraph_id")
+                                == F.col("reverse_paragraph.right_paragraph_id")
+                            )
+                        )
+                        & (
+                            F.col("paragraph_similarity_candidate.right_document_id")
+                            == F.col("reverse_paragraph.left_document_id")
+                        )
+                    )
+                    & (
+                        F.col("paragraph_similarity_candidate.right_section_id")
+                        == F.col("reverse_paragraph.left_section_id")
+                    )
+                )
+                & (
+                    F.col("paragraph_similarity_candidate.right_paragraph_id")
+                    == F.col("reverse_paragraph.left_paragraph_id")
+                )
+            ),
             "inner",
         )
         paragraph_canonical_pairs = paragraph_canonical_pairs.select(
@@ -299,12 +488,25 @@ class ReduceSimilarityScoresGenerated:
             F.col("paragraph_similarity_candidate.right_document_id"),
             F.col("paragraph_similarity_candidate.right_section_id"),
             F.col("paragraph_similarity_candidate.right_paragraph_id"),
-            F.when((F.col("paragraph_similarity_candidate.score_overlap") <= F.col("reverse_paragraph.score_overlap")), F.col("paragraph_similarity_candidate.score_overlap")).otherwise(F.col("reverse_paragraph.score_overlap")).alias("score_overlap"),
+            F.when(
+                (F.col("paragraph_similarity_candidate.score_overlap") <= F.col("reverse_paragraph.score_overlap")),
+                F.col("paragraph_similarity_candidate.score_overlap"),
+            )
+            .otherwise(F.col("reverse_paragraph.score_overlap"))
+            .alias("score_overlap"),
             F.col("paragraph_similarity_candidate.bm25_left_to_right"),
             F.col("reverse_paragraph.bm25_left_to_right").alias("bm25_right_to_left"),
-            ((F.col("paragraph_similarity_candidate.bm25_left_to_right") + F.col("reverse_paragraph.bm25_left_to_right")) / F.lit(2.0)).alias("bm25_mean"),
+            (
+                (
+                    F.col("paragraph_similarity_candidate.bm25_left_to_right")
+                    + F.col("reverse_paragraph.bm25_left_to_right")
+                )
+                / F.lit(2.0)
+            ).alias("bm25_mean"),
         )
-        assert_schema(paragraph_canonical_pairs, PARAGRAPH_SIMILARITY_PAIR_SCHEMA, name="ParagraphSimilarityPair", mode="strict")
+        assert_schema(
+            paragraph_canonical_pairs, PARAGRAPH_SIMILARITY_PAIR_SCHEMA, name="ParagraphSimilarityPair", mode="strict"
+        )
 
         # Step method: reverse_paragraph_pairs
         paragraph_reversed_pairs = paragraph_canonical_pairs.alias("paragraph_similarity_pair")
@@ -320,7 +522,9 @@ class ReduceSimilarityScoresGenerated:
             F.col("paragraph_similarity_pair.bm25_left_to_right").alias("bm25_right_to_left"),
             F.col("paragraph_similarity_pair.bm25_mean"),
         )
-        assert_schema(paragraph_reversed_pairs, PARAGRAPH_SIMILARITY_PAIR_SCHEMA, name="ParagraphSimilarityPair", mode="strict")
+        assert_schema(
+            paragraph_reversed_pairs, PARAGRAPH_SIMILARITY_PAIR_SCHEMA, name="ParagraphSimilarityPair", mode="strict"
+        )
 
         # Step method: merge_paragraph_pairs
         paragraph_pairs = paragraph_canonical_pairs.alias("paragraph_similarity_pair")
@@ -348,7 +552,22 @@ class ReduceSimilarityScoresGenerated:
             F.col("paragraph_similarity_pair.right_document_id"),
             F.col("paragraph_similarity_pair.right_section_id"),
             F.col("paragraph_similarity_pair.right_paragraph_id"),
-            F.row_number().over(Window.partitionBy(F.col("paragraph_similarity_pair.left_document_id"), F.col("paragraph_similarity_pair.left_section_id"), F.col("paragraph_similarity_pair.left_paragraph_id")).orderBy(F.col("paragraph_similarity_pair.bm25_left_to_right").desc_nulls_last(), F.col("paragraph_similarity_pair.score_overlap").desc_nulls_last(), F.col("paragraph_similarity_pair.right_document_id").asc_nulls_first(), F.col("paragraph_similarity_pair.right_section_id").asc_nulls_first(), F.col("paragraph_similarity_pair.right_paragraph_id").asc_nulls_first())).cast(T.LongType()).alias("rank"),
+            F.row_number()
+            .over(
+                Window.partitionBy(
+                    F.col("paragraph_similarity_pair.left_document_id"),
+                    F.col("paragraph_similarity_pair.left_section_id"),
+                    F.col("paragraph_similarity_pair.left_paragraph_id"),
+                ).orderBy(
+                    F.col("paragraph_similarity_pair.bm25_left_to_right").desc_nulls_last(),
+                    F.col("paragraph_similarity_pair.score_overlap").desc_nulls_last(),
+                    F.col("paragraph_similarity_pair.right_document_id").asc_nulls_first(),
+                    F.col("paragraph_similarity_pair.right_section_id").asc_nulls_first(),
+                    F.col("paragraph_similarity_pair.right_paragraph_id").asc_nulls_first(),
+                )
+            )
+            .cast(T.LongType())
+            .alias("rank"),
             F.col("paragraph_similarity_pair.score_overlap"),
             F.col("paragraph_similarity_pair.bm25_left_to_right"),
             F.col("paragraph_similarity_pair.bm25_right_to_left"),
@@ -379,7 +598,19 @@ class ReduceSimilarityScoresGenerated:
         sentence_bm25_scores_joined = sentence_bm25_scores.alias("sentence_bm25_scores")
         sentence_candidates = sentence_candidates.join(
             sentence_bm25_scores_joined,
-            (((((F.col("sentence_bm25_scores.query_id") == F.col("sentence_overlap_score.query_id")) & (F.col("sentence_bm25_scores.document_id") == F.col("sentence_overlap_score.document_id"))) & (F.col("sentence_bm25_scores.section_id") == F.col("sentence_overlap_score.section_id"))) & (F.col("sentence_bm25_scores.paragraph_id") == F.col("sentence_overlap_score.paragraph_id"))) & (F.col("sentence_bm25_scores.sentence_id") == F.col("sentence_overlap_score.sentence_id"))),
+            (
+                (
+                    (
+                        (
+                            (F.col("sentence_bm25_scores.query_id") == F.col("sentence_overlap_score.query_id"))
+                            & (F.col("sentence_bm25_scores.document_id") == F.col("sentence_overlap_score.document_id"))
+                        )
+                        & (F.col("sentence_bm25_scores.section_id") == F.col("sentence_overlap_score.section_id"))
+                    )
+                    & (F.col("sentence_bm25_scores.paragraph_id") == F.col("sentence_overlap_score.paragraph_id"))
+                )
+                & (F.col("sentence_bm25_scores.sentence_id") == F.col("sentence_overlap_score.sentence_id"))
+            ),
             "inner",
         )
         sentence_queries_2_joined = sentence_queries.alias("sentence_queries_2")
@@ -400,15 +631,69 @@ class ReduceSimilarityScoresGenerated:
             F.col("sentence_overlap_score.score_overlap"),
             F.col("sentence_bm25_scores.score_bm25").alias("bm25_left_to_right"),
         )
-        assert_schema(sentence_candidates, SENTENCE_SIMILARITY_CANDIDATE_SCHEMA, name="SentenceSimilarityCandidate", mode="strict")
+        assert_schema(
+            sentence_candidates, SENTENCE_SIMILARITY_CANDIDATE_SCHEMA, name="SentenceSimilarityCandidate", mode="strict"
+        )
 
         # Step method: canonical_sentence_pairs
         sentence_canonical_pairs = sentence_candidates.alias("sentence_similarity_candidate")
-        sentence_canonical_pairs = sentence_canonical_pairs.where(((F.col("sentence_similarity_candidate.left_sentence_id") < F.col("sentence_similarity_candidate.right_sentence_id"))))
+        sentence_canonical_pairs = sentence_canonical_pairs.where(
+            (
+                (
+                    F.col("sentence_similarity_candidate.left_sentence_id")
+                    < F.col("sentence_similarity_candidate.right_sentence_id")
+                )
+            )
+        )
         reverse_sentence_joined = sentence_candidates.alias("reverse_sentence")
         sentence_canonical_pairs = sentence_canonical_pairs.join(
             reverse_sentence_joined,
-            ((((((((F.col("sentence_similarity_candidate.left_document_id") == F.col("reverse_sentence.right_document_id")) & (F.col("sentence_similarity_candidate.left_section_id") == F.col("reverse_sentence.right_section_id"))) & (F.col("sentence_similarity_candidate.left_paragraph_id") == F.col("reverse_sentence.right_paragraph_id"))) & (F.col("sentence_similarity_candidate.left_sentence_id") == F.col("reverse_sentence.right_sentence_id"))) & (F.col("sentence_similarity_candidate.right_document_id") == F.col("reverse_sentence.left_document_id"))) & (F.col("sentence_similarity_candidate.right_section_id") == F.col("reverse_sentence.left_section_id"))) & (F.col("sentence_similarity_candidate.right_paragraph_id") == F.col("reverse_sentence.left_paragraph_id"))) & (F.col("sentence_similarity_candidate.right_sentence_id") == F.col("reverse_sentence.left_sentence_id"))),
+            (
+                (
+                    (
+                        (
+                            (
+                                (
+                                    (
+                                        (
+                                            F.col("sentence_similarity_candidate.left_document_id")
+                                            == F.col("reverse_sentence.right_document_id")
+                                        )
+                                        & (
+                                            F.col("sentence_similarity_candidate.left_section_id")
+                                            == F.col("reverse_sentence.right_section_id")
+                                        )
+                                    )
+                                    & (
+                                        F.col("sentence_similarity_candidate.left_paragraph_id")
+                                        == F.col("reverse_sentence.right_paragraph_id")
+                                    )
+                                )
+                                & (
+                                    F.col("sentence_similarity_candidate.left_sentence_id")
+                                    == F.col("reverse_sentence.right_sentence_id")
+                                )
+                            )
+                            & (
+                                F.col("sentence_similarity_candidate.right_document_id")
+                                == F.col("reverse_sentence.left_document_id")
+                            )
+                        )
+                        & (
+                            F.col("sentence_similarity_candidate.right_section_id")
+                            == F.col("reverse_sentence.left_section_id")
+                        )
+                    )
+                    & (
+                        F.col("sentence_similarity_candidate.right_paragraph_id")
+                        == F.col("reverse_sentence.left_paragraph_id")
+                    )
+                )
+                & (
+                    F.col("sentence_similarity_candidate.right_sentence_id")
+                    == F.col("reverse_sentence.left_sentence_id")
+                )
+            ),
             "inner",
         )
         sentence_canonical_pairs = sentence_canonical_pairs.select(
@@ -420,12 +705,25 @@ class ReduceSimilarityScoresGenerated:
             F.col("sentence_similarity_candidate.right_section_id"),
             F.col("sentence_similarity_candidate.right_paragraph_id"),
             F.col("sentence_similarity_candidate.right_sentence_id"),
-            F.when((F.col("sentence_similarity_candidate.score_overlap") <= F.col("reverse_sentence.score_overlap")), F.col("sentence_similarity_candidate.score_overlap")).otherwise(F.col("reverse_sentence.score_overlap")).alias("score_overlap"),
+            F.when(
+                (F.col("sentence_similarity_candidate.score_overlap") <= F.col("reverse_sentence.score_overlap")),
+                F.col("sentence_similarity_candidate.score_overlap"),
+            )
+            .otherwise(F.col("reverse_sentence.score_overlap"))
+            .alias("score_overlap"),
             F.col("sentence_similarity_candidate.bm25_left_to_right"),
             F.col("reverse_sentence.bm25_left_to_right").alias("bm25_right_to_left"),
-            ((F.col("sentence_similarity_candidate.bm25_left_to_right") + F.col("reverse_sentence.bm25_left_to_right")) / F.lit(2.0)).alias("bm25_mean"),
+            (
+                (
+                    F.col("sentence_similarity_candidate.bm25_left_to_right")
+                    + F.col("reverse_sentence.bm25_left_to_right")
+                )
+                / F.lit(2.0)
+            ).alias("bm25_mean"),
         )
-        assert_schema(sentence_canonical_pairs, SENTENCE_SIMILARITY_PAIR_SCHEMA, name="SentenceSimilarityPair", mode="strict")
+        assert_schema(
+            sentence_canonical_pairs, SENTENCE_SIMILARITY_PAIR_SCHEMA, name="SentenceSimilarityPair", mode="strict"
+        )
 
         # Step method: reverse_sentence_pairs
         sentence_reversed_pairs = sentence_canonical_pairs.alias("sentence_similarity_pair")
@@ -443,7 +741,9 @@ class ReduceSimilarityScoresGenerated:
             F.col("sentence_similarity_pair.bm25_left_to_right").alias("bm25_right_to_left"),
             F.col("sentence_similarity_pair.bm25_mean"),
         )
-        assert_schema(sentence_reversed_pairs, SENTENCE_SIMILARITY_PAIR_SCHEMA, name="SentenceSimilarityPair", mode="strict")
+        assert_schema(
+            sentence_reversed_pairs, SENTENCE_SIMILARITY_PAIR_SCHEMA, name="SentenceSimilarityPair", mode="strict"
+        )
 
         # Step method: merge_sentence_pairs
         sentence_pairs = sentence_canonical_pairs.alias("sentence_similarity_pair")
@@ -475,7 +775,24 @@ class ReduceSimilarityScoresGenerated:
             F.col("sentence_similarity_pair.right_section_id"),
             F.col("sentence_similarity_pair.right_paragraph_id"),
             F.col("sentence_similarity_pair.right_sentence_id"),
-            F.row_number().over(Window.partitionBy(F.col("sentence_similarity_pair.left_document_id"), F.col("sentence_similarity_pair.left_section_id"), F.col("sentence_similarity_pair.left_paragraph_id"), F.col("sentence_similarity_pair.left_sentence_id")).orderBy(F.col("sentence_similarity_pair.bm25_left_to_right").desc_nulls_last(), F.col("sentence_similarity_pair.score_overlap").desc_nulls_last(), F.col("sentence_similarity_pair.right_document_id").asc_nulls_first(), F.col("sentence_similarity_pair.right_section_id").asc_nulls_first(), F.col("sentence_similarity_pair.right_paragraph_id").asc_nulls_first(), F.col("sentence_similarity_pair.right_sentence_id").asc_nulls_first())).cast(T.LongType()).alias("rank"),
+            F.row_number()
+            .over(
+                Window.partitionBy(
+                    F.col("sentence_similarity_pair.left_document_id"),
+                    F.col("sentence_similarity_pair.left_section_id"),
+                    F.col("sentence_similarity_pair.left_paragraph_id"),
+                    F.col("sentence_similarity_pair.left_sentence_id"),
+                ).orderBy(
+                    F.col("sentence_similarity_pair.bm25_left_to_right").desc_nulls_last(),
+                    F.col("sentence_similarity_pair.score_overlap").desc_nulls_last(),
+                    F.col("sentence_similarity_pair.right_document_id").asc_nulls_first(),
+                    F.col("sentence_similarity_pair.right_section_id").asc_nulls_first(),
+                    F.col("sentence_similarity_pair.right_paragraph_id").asc_nulls_first(),
+                    F.col("sentence_similarity_pair.right_sentence_id").asc_nulls_first(),
+                )
+            )
+            .cast(T.LongType())
+            .alias("rank"),
             F.col("sentence_similarity_pair.score_overlap"),
             F.col("sentence_similarity_pair.bm25_left_to_right"),
             F.col("sentence_similarity_pair.bm25_right_to_left"),
@@ -517,4 +834,18 @@ class ReduceSimilarityScoresGenerated:
         # Step method: sentence_similarities
         sentence_similarities = sentence_similarities.alias("sentence_similarity")
         assert_schema(sentence_similarities, SENTENCE_SIMILARITY_SCHEMA, name="SentenceSimilarity", mode="strict")
-        return TransformResult({"document_similarities": document_similarities, "section_similarities": section_similarities, "paragraph_similarities": paragraph_similarities, "sentence_similarities": sentence_similarities}, single=False, schema={"document_similarities": DOCUMENT_SIMILARITY_SCHEMA, "section_similarities": SECTION_SIMILARITY_SCHEMA, "paragraph_similarities": PARAGRAPH_SIMILARITY_SCHEMA, "sentence_similarities": SENTENCE_SIMILARITY_SCHEMA})
+        return TransformResult(
+            {
+                "document_similarities": document_similarities,
+                "section_similarities": section_similarities,
+                "paragraph_similarities": paragraph_similarities,
+                "sentence_similarities": sentence_similarities,
+            },
+            single=False,
+            schema={
+                "document_similarities": DOCUMENT_SIMILARITY_SCHEMA,
+                "section_similarities": SECTION_SIMILARITY_SCHEMA,
+                "paragraph_similarities": PARAGRAPH_SIMILARITY_SCHEMA,
+                "sentence_similarities": SENTENCE_SIMILARITY_SCHEMA,
+            },
+        )

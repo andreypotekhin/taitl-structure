@@ -54,7 +54,9 @@ class ProfileDocumentsGenerated:
             F.translate(F.col("document.title"), '_', '-').alias("translated_title"),
             F.instr(F.col("document.content"), 'Structure').alias("structure_position"),
             F.levenshtein(F.col("document.title"), F.lit('Structure Guide')).alias("title_distance_to_guide"),
-            F.concat_ws(' · ', F.col("document.source"), F.col("document.title"), F.col("document.url")).alias("display_name"),
+            F.concat_ws(' · ', F.col("document.source"), F.col("document.title"), F.col("document.url")).alias(
+                "display_name"
+            ),
             F.hash(F.col("document.title"), F.col("document.source")).alias("title_hash"),
             F.sha2(F.col("document.content"), 256).alias("content_sha2"),
             F.year(F.col("document.harvested_at")).alias("harvest_year"),
@@ -63,7 +65,14 @@ class ProfileDocumentsGenerated:
             F.log((F.length(F.col("document.content")) + F.lit(1))).alias("content_length_log"),
             F.bround(F.length(F.col("document.content")), 0).cast(T.DoubleType()).alias("rounded_content_length"),
             F.signum(F.length(F.col("document.content"))).alias("content_length_sign"),
-            F.row_number().over(Window.partitionBy(F.col("document.source")).orderBy(F.col("document.harvested_at").desc_nulls_last(), F.col("document.id").asc_nulls_first())).cast(T.LongType()).alias("source_recency_rank"),
+            F.row_number()
+            .over(
+                Window.partitionBy(F.col("document.source")).orderBy(
+                    F.col("document.harvested_at").desc_nulls_last(), F.col("document.id").asc_nulls_first()
+                )
+            )
+            .cast(T.LongType())
+            .alias("source_recency_rank"),
         )
 
         # Step method: features

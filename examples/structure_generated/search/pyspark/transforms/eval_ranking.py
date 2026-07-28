@@ -7,8 +7,21 @@ from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
 from examples.structure_generated.search.pyspark.schemas.batch import EVALUATION_BATCH_SCHEMA
-from examples.structure_generated.search.pyspark.schemas.judged_quality import DOCUMENT_EVALUATION_SUMMARY_SCHEMA, DOCUMENT_QUERY_EVALUATION_SCHEMA, DOCUMENT_RELEVANCE_JUDGMENT_SCHEMA, EVALUATION_IDEAL_DCG_SCHEMA, EVALUATION_JUDGMENT_SCHEMA, EVALUATION_JUDGMENT_TOTALS_SCHEMA, EVALUATION_QUERY_SCHEMA, EVALUATION_RESULT_SCHEMA, EVALUATION_RESULT_TOTALS_SCHEMA
-from examples.structure_generated.search.pyspark.schemas.search import DOCUMENT_SEARCH_RESULT_SCHEMA, SEARCH_QUERY_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.judged_quality import (
+    DOCUMENT_EVALUATION_SUMMARY_SCHEMA,
+    DOCUMENT_QUERY_EVALUATION_SCHEMA,
+    DOCUMENT_RELEVANCE_JUDGMENT_SCHEMA,
+    EVALUATION_IDEAL_DCG_SCHEMA,
+    EVALUATION_JUDGMENT_SCHEMA,
+    EVALUATION_JUDGMENT_TOTALS_SCHEMA,
+    EVALUATION_QUERY_SCHEMA,
+    EVALUATION_RESULT_SCHEMA,
+    EVALUATION_RESULT_TOTALS_SCHEMA,
+)
+from examples.structure_generated.search.pyspark.schemas.search import (
+    DOCUMENT_SEARCH_RESULT_SCHEMA,
+    SEARCH_QUERY_SCHEMA,
+)
 
 
 class EvaluateDocumentRankingQualityGenerated:
@@ -55,11 +68,21 @@ class EvaluateDocumentRankingQualityGenerated:
             (F.col("results.search_query_id") == F.col("evaluation_query.search_query_id")),
             "left",
         )
-        evaluated_results = evaluated_results.where((((F.col("results.experiment_id") == F.lit('')) & F.col("results.band_id").eqNullSafe(F.col("evaluation_query.band_id")))))
+        evaluated_results = evaluated_results.where(
+            (
+                (
+                    (F.col("results.experiment_id") == F.lit(''))
+                    & F.col("results.band_id").eqNullSafe(F.col("evaluation_query.band_id"))
+                )
+            )
+        )
         judgments_2_joined = judgments.alias("judgments_2")
         evaluated_results = evaluated_results.join(
             judgments_2_joined,
-            ((F.col("judgments_2.search_query_id") == F.col("evaluation_query.search_query_id")) & (F.col("judgments_2.document_id") == F.col("results.document_id"))),
+            (
+                (F.col("judgments_2.search_query_id") == F.col("evaluation_query.search_query_id"))
+                & (F.col("judgments_2.document_id") == F.col("results.document_id"))
+            ),
             "left",
         )
         evaluated_results = evaluated_results.select(
@@ -89,95 +112,272 @@ class EvaluateDocumentRankingQualityGenerated:
             F.col("evaluation_query.band_id"),
             F.col("evaluation_query.search_query_id"),
             F.col("judgments.relevance_grade"),
-            F.row_number().over(Window.partitionBy(F.col("evaluation_query.search_query_id"), F.col("evaluation_query.band_id")).orderBy(F.col("judgments.relevance_grade").desc())).cast(T.LongType()).alias("ideal_rank"),
+            F.row_number()
+            .over(
+                Window.partitionBy(
+                    F.col("evaluation_query.search_query_id"), F.col("evaluation_query.band_id")
+                ).orderBy(F.col("judgments.relevance_grade").desc())
+            )
+            .cast(T.LongType())
+            .alias("ideal_rank"),
         )
         assert_schema(ranked_judgments, EVALUATION_JUDGMENT_SCHEMA, name="EvaluationJudgment", mode="strict")
 
         # Step method: count_judgments
         judgment_totals = ranked_judgments.alias("evaluation_judgment")
-        judgment_totals = judgment_totals.groupBy(
-            F.col("evaluation_judgment.window").alias("window"),
-            F.col("evaluation_judgment.params").alias("params"),
-            F.col("evaluation_judgment.experiment_id").alias("experiment_id"),
-            F.col("evaluation_judgment.band_id").alias("band_id"),
-            F.col("evaluation_judgment.search_query_id").alias("search_query_id"),
-        ).agg(
-            F.sum(F.when((F.col("evaluation_judgment.relevance_grade") >= F.lit(2)), F.lit(1)).otherwise(F.lit(0))).cast(T.LongType()).alias("binary_relevant_judgment_count"),
-        ).select(
-            F.col("window"),
-            F.col("params"),
-            F.col("experiment_id"),
-            F.col("band_id"),
-            F.col("search_query_id"),
-            F.col("binary_relevant_judgment_count"),
+        judgment_totals = (
+            judgment_totals.groupBy(
+                F.col("evaluation_judgment.window").alias("window"),
+                F.col("evaluation_judgment.params").alias("params"),
+                F.col("evaluation_judgment.experiment_id").alias("experiment_id"),
+                F.col("evaluation_judgment.band_id").alias("band_id"),
+                F.col("evaluation_judgment.search_query_id").alias("search_query_id"),
+            )
+            .agg(
+                F.sum(F.when((F.col("evaluation_judgment.relevance_grade") >= F.lit(2)), F.lit(1)).otherwise(F.lit(0)))
+                .cast(T.LongType())
+                .alias("binary_relevant_judgment_count"),
+            )
+            .select(
+                F.col("window"),
+                F.col("params"),
+                F.col("experiment_id"),
+                F.col("band_id"),
+                F.col("search_query_id"),
+                F.col("binary_relevant_judgment_count"),
+            )
         )
-        assert_schema(judgment_totals, EVALUATION_JUDGMENT_TOTALS_SCHEMA, name="EvaluationJudgmentTotals", mode="strict")
+        assert_schema(
+            judgment_totals, EVALUATION_JUDGMENT_TOTALS_SCHEMA, name="EvaluationJudgmentTotals", mode="strict"
+        )
 
         # Step method: calculate_ideal_dcg
         ideal_dcgs = ranked_judgments.alias("evaluation_judgment")
-        ideal_dcgs = ideal_dcgs.groupBy(
-            F.col("evaluation_judgment.window").alias("window"),
-            F.col("evaluation_judgment.params").alias("params"),
-            F.col("evaluation_judgment.experiment_id").alias("experiment_id"),
-            F.col("evaluation_judgment.band_id").alias("band_id"),
-            F.col("evaluation_judgment.search_query_id").alias("search_query_id"),
-        ).agg(
-            F.sum(F.when((F.col("evaluation_judgment.ideal_rank") <= F.lit(5)), ((F.pow(F.lit(2.0), F.col("evaluation_judgment.relevance_grade")) - F.lit(1.0)) / F.log(2, (F.col("evaluation_judgment.ideal_rank") + F.lit(1.0))))).otherwise(F.lit(0.0))).cast(T.DoubleType()).alias("ideal_dcg_at_5"),
-            F.sum(F.when((F.col("evaluation_judgment.ideal_rank") <= F.lit(10)), ((F.pow(F.lit(2.0), F.col("evaluation_judgment.relevance_grade")) - F.lit(1.0)) / F.log(2, (F.col("evaluation_judgment.ideal_rank") + F.lit(1.0))))).otherwise(F.lit(0.0))).cast(T.DoubleType()).alias("ideal_dcg_at_10"),
-            F.sum(F.when((F.col("evaluation_judgment.ideal_rank") <= F.lit(15)), ((F.pow(F.lit(2.0), F.col("evaluation_judgment.relevance_grade")) - F.lit(1.0)) / F.log(2, (F.col("evaluation_judgment.ideal_rank") + F.lit(1.0))))).otherwise(F.lit(0.0))).cast(T.DoubleType()).alias("ideal_dcg_at_15"),
-        ).select(
-            F.col("window"),
-            F.col("params"),
-            F.col("experiment_id"),
-            F.col("band_id"),
-            F.col("search_query_id"),
-            F.col("ideal_dcg_at_5"),
-            F.col("ideal_dcg_at_10"),
-            F.col("ideal_dcg_at_15"),
+        ideal_dcgs = (
+            ideal_dcgs.groupBy(
+                F.col("evaluation_judgment.window").alias("window"),
+                F.col("evaluation_judgment.params").alias("params"),
+                F.col("evaluation_judgment.experiment_id").alias("experiment_id"),
+                F.col("evaluation_judgment.band_id").alias("band_id"),
+                F.col("evaluation_judgment.search_query_id").alias("search_query_id"),
+            )
+            .agg(
+                F.sum(
+                    F.when(
+                        (F.col("evaluation_judgment.ideal_rank") <= F.lit(5)),
+                        (
+                            (F.pow(F.lit(2.0), F.col("evaluation_judgment.relevance_grade")) - F.lit(1.0))
+                            / F.log(2, (F.col("evaluation_judgment.ideal_rank") + F.lit(1.0)))
+                        ),
+                    ).otherwise(F.lit(0.0))
+                )
+                .cast(T.DoubleType())
+                .alias("ideal_dcg_at_5"),
+                F.sum(
+                    F.when(
+                        (F.col("evaluation_judgment.ideal_rank") <= F.lit(10)),
+                        (
+                            (F.pow(F.lit(2.0), F.col("evaluation_judgment.relevance_grade")) - F.lit(1.0))
+                            / F.log(2, (F.col("evaluation_judgment.ideal_rank") + F.lit(1.0)))
+                        ),
+                    ).otherwise(F.lit(0.0))
+                )
+                .cast(T.DoubleType())
+                .alias("ideal_dcg_at_10"),
+                F.sum(
+                    F.when(
+                        (F.col("evaluation_judgment.ideal_rank") <= F.lit(15)),
+                        (
+                            (F.pow(F.lit(2.0), F.col("evaluation_judgment.relevance_grade")) - F.lit(1.0))
+                            / F.log(2, (F.col("evaluation_judgment.ideal_rank") + F.lit(1.0)))
+                        ),
+                    ).otherwise(F.lit(0.0))
+                )
+                .cast(T.DoubleType())
+                .alias("ideal_dcg_at_15"),
+            )
+            .select(
+                F.col("window"),
+                F.col("params"),
+                F.col("experiment_id"),
+                F.col("band_id"),
+                F.col("search_query_id"),
+                F.col("ideal_dcg_at_5"),
+                F.col("ideal_dcg_at_10"),
+                F.col("ideal_dcg_at_15"),
+            )
         )
         assert_schema(ideal_dcgs, EVALUATION_IDEAL_DCG_SCHEMA, name="EvaluationIdealDcg", mode="strict")
 
         # Step method: total_results
         result_totals = evaluated_results.alias("evaluation_result")
-        result_totals = result_totals.groupBy(
-            F.col("evaluation_result.window").alias("window"),
-            F.col("evaluation_result.params").alias("params"),
-            F.col("evaluation_result.experiment_id").alias("experiment_id"),
-            F.col("evaluation_result.band_id").alias("band_id"),
-            F.col("evaluation_result.search_query_id").alias("search_query_id"),
-        ).agg(
-            F.sum(F.when(F.col("evaluation_result.document_id").isNotNull(), F.lit(1)).otherwise(F.lit(0))).cast(T.LongType()).alias("returned_result_count"),
-            F.sum(F.when(F.col("evaluation_result.relevance_grade").isNotNull(), F.lit(1)).otherwise(F.lit(0))).cast(T.LongType()).alias("judged_result_count"),
-            F.sum(F.when((F.col("evaluation_result.document_id").isNotNull() & ~(F.col("evaluation_result.relevance_grade").isNotNull())), F.lit(1)).otherwise(F.lit(0))).cast(T.LongType()).alias("unjudged_result_count"),
-            F.sum(F.when((((F.col("evaluation_result.rank") <= F.lit(5)) & F.col("evaluation_result.document_id").isNotNull()) & ~(F.col("evaluation_result.relevance_grade").isNotNull())), F.lit(1)).otherwise(F.lit(0))).cast(T.LongType()).alias("unjudged_at_5"),
-            F.sum(F.when((((F.col("evaluation_result.rank") <= F.lit(10)) & F.col("evaluation_result.document_id").isNotNull()) & ~(F.col("evaluation_result.relevance_grade").isNotNull())), F.lit(1)).otherwise(F.lit(0))).cast(T.LongType()).alias("unjudged_at_10"),
-            F.sum(F.when((((F.col("evaluation_result.rank") <= F.lit(15)) & F.col("evaluation_result.document_id").isNotNull()) & ~(F.col("evaluation_result.relevance_grade").isNotNull())), F.lit(1)).otherwise(F.lit(0))).cast(T.LongType()).alias("unjudged_at_15"),
-            F.sum(F.when(((F.col("evaluation_result.rank") <= F.lit(5)) & (F.col("evaluation_result.relevance_grade") >= F.lit(2))), F.lit(1)).otherwise(F.lit(0))).cast(T.LongType()).alias("relevant_at_5"),
-            F.sum(F.when(((F.col("evaluation_result.rank") <= F.lit(10)) & (F.col("evaluation_result.relevance_grade") >= F.lit(2))), F.lit(1)).otherwise(F.lit(0))).cast(T.LongType()).alias("relevant_at_10"),
-            F.sum(F.when(((F.col("evaluation_result.rank") <= F.lit(15)) & (F.col("evaluation_result.relevance_grade") >= F.lit(2))), F.lit(1)).otherwise(F.lit(0))).cast(T.LongType()).alias("relevant_at_15"),
-            F.min(F.when((F.col("evaluation_result.relevance_grade") >= F.lit(2)), F.col("evaluation_result.rank"))).cast(T.LongType()).alias("first_relevant_rank"),
-            F.sum(F.when((F.col("evaluation_result.rank") <= F.lit(5)), ((F.pow(F.lit(2.0), F.coalesce(F.col("evaluation_result.relevance_grade"), F.lit(0))) - F.lit(1.0)) / F.log(2, (F.col("evaluation_result.rank") + F.lit(1.0))))).otherwise(F.lit(0.0))).cast(T.DoubleType()).alias("dcg_at_5"),
-            F.sum(F.when((F.col("evaluation_result.rank") <= F.lit(10)), ((F.pow(F.lit(2.0), F.coalesce(F.col("evaluation_result.relevance_grade"), F.lit(0))) - F.lit(1.0)) / F.log(2, (F.col("evaluation_result.rank") + F.lit(1.0))))).otherwise(F.lit(0.0))).cast(T.DoubleType()).alias("dcg_at_10"),
-            F.sum(F.when((F.col("evaluation_result.rank") <= F.lit(15)), ((F.pow(F.lit(2.0), F.coalesce(F.col("evaluation_result.relevance_grade"), F.lit(0))) - F.lit(1.0)) / F.log(2, (F.col("evaluation_result.rank") + F.lit(1.0))))).otherwise(F.lit(0.0))).cast(T.DoubleType()).alias("dcg_at_15"),
-        ).select(
-            F.col("window"),
-            F.col("params"),
-            F.col("experiment_id"),
-            F.col("band_id"),
-            F.col("search_query_id"),
-            F.col("returned_result_count"),
-            F.col("judged_result_count"),
-            F.col("unjudged_result_count"),
-            F.col("unjudged_at_5"),
-            F.col("unjudged_at_10"),
-            F.col("unjudged_at_15"),
-            F.col("relevant_at_5"),
-            F.col("relevant_at_10"),
-            F.col("relevant_at_15"),
-            F.col("first_relevant_rank"),
-            F.col("dcg_at_5"),
-            F.col("dcg_at_10"),
-            F.col("dcg_at_15"),
+        result_totals = (
+            result_totals.groupBy(
+                F.col("evaluation_result.window").alias("window"),
+                F.col("evaluation_result.params").alias("params"),
+                F.col("evaluation_result.experiment_id").alias("experiment_id"),
+                F.col("evaluation_result.band_id").alias("band_id"),
+                F.col("evaluation_result.search_query_id").alias("search_query_id"),
+            )
+            .agg(
+                F.sum(F.when(F.col("evaluation_result.document_id").isNotNull(), F.lit(1)).otherwise(F.lit(0)))
+                .cast(T.LongType())
+                .alias("returned_result_count"),
+                F.sum(F.when(F.col("evaluation_result.relevance_grade").isNotNull(), F.lit(1)).otherwise(F.lit(0)))
+                .cast(T.LongType())
+                .alias("judged_result_count"),
+                F.sum(
+                    F.when(
+                        (
+                            F.col("evaluation_result.document_id").isNotNull()
+                            & ~(F.col("evaluation_result.relevance_grade").isNotNull())
+                        ),
+                        F.lit(1),
+                    ).otherwise(F.lit(0))
+                )
+                .cast(T.LongType())
+                .alias("unjudged_result_count"),
+                F.sum(
+                    F.when(
+                        (
+                            (
+                                (F.col("evaluation_result.rank") <= F.lit(5))
+                                & F.col("evaluation_result.document_id").isNotNull()
+                            )
+                            & ~(F.col("evaluation_result.relevance_grade").isNotNull())
+                        ),
+                        F.lit(1),
+                    ).otherwise(F.lit(0))
+                )
+                .cast(T.LongType())
+                .alias("unjudged_at_5"),
+                F.sum(
+                    F.when(
+                        (
+                            (
+                                (F.col("evaluation_result.rank") <= F.lit(10))
+                                & F.col("evaluation_result.document_id").isNotNull()
+                            )
+                            & ~(F.col("evaluation_result.relevance_grade").isNotNull())
+                        ),
+                        F.lit(1),
+                    ).otherwise(F.lit(0))
+                )
+                .cast(T.LongType())
+                .alias("unjudged_at_10"),
+                F.sum(
+                    F.when(
+                        (
+                            (
+                                (F.col("evaluation_result.rank") <= F.lit(15))
+                                & F.col("evaluation_result.document_id").isNotNull()
+                            )
+                            & ~(F.col("evaluation_result.relevance_grade").isNotNull())
+                        ),
+                        F.lit(1),
+                    ).otherwise(F.lit(0))
+                )
+                .cast(T.LongType())
+                .alias("unjudged_at_15"),
+                F.sum(
+                    F.when(
+                        (
+                            (F.col("evaluation_result.rank") <= F.lit(5))
+                            & (F.col("evaluation_result.relevance_grade") >= F.lit(2))
+                        ),
+                        F.lit(1),
+                    ).otherwise(F.lit(0))
+                )
+                .cast(T.LongType())
+                .alias("relevant_at_5"),
+                F.sum(
+                    F.when(
+                        (
+                            (F.col("evaluation_result.rank") <= F.lit(10))
+                            & (F.col("evaluation_result.relevance_grade") >= F.lit(2))
+                        ),
+                        F.lit(1),
+                    ).otherwise(F.lit(0))
+                )
+                .cast(T.LongType())
+                .alias("relevant_at_10"),
+                F.sum(
+                    F.when(
+                        (
+                            (F.col("evaluation_result.rank") <= F.lit(15))
+                            & (F.col("evaluation_result.relevance_grade") >= F.lit(2))
+                        ),
+                        F.lit(1),
+                    ).otherwise(F.lit(0))
+                )
+                .cast(T.LongType())
+                .alias("relevant_at_15"),
+                F.min(F.when((F.col("evaluation_result.relevance_grade") >= F.lit(2)), F.col("evaluation_result.rank")))
+                .cast(T.LongType())
+                .alias("first_relevant_rank"),
+                F.sum(
+                    F.when(
+                        (F.col("evaluation_result.rank") <= F.lit(5)),
+                        (
+                            (
+                                F.pow(F.lit(2.0), F.coalesce(F.col("evaluation_result.relevance_grade"), F.lit(0)))
+                                - F.lit(1.0)
+                            )
+                            / F.log(2, (F.col("evaluation_result.rank") + F.lit(1.0)))
+                        ),
+                    ).otherwise(F.lit(0.0))
+                )
+                .cast(T.DoubleType())
+                .alias("dcg_at_5"),
+                F.sum(
+                    F.when(
+                        (F.col("evaluation_result.rank") <= F.lit(10)),
+                        (
+                            (
+                                F.pow(F.lit(2.0), F.coalesce(F.col("evaluation_result.relevance_grade"), F.lit(0)))
+                                - F.lit(1.0)
+                            )
+                            / F.log(2, (F.col("evaluation_result.rank") + F.lit(1.0)))
+                        ),
+                    ).otherwise(F.lit(0.0))
+                )
+                .cast(T.DoubleType())
+                .alias("dcg_at_10"),
+                F.sum(
+                    F.when(
+                        (F.col("evaluation_result.rank") <= F.lit(15)),
+                        (
+                            (
+                                F.pow(F.lit(2.0), F.coalesce(F.col("evaluation_result.relevance_grade"), F.lit(0)))
+                                - F.lit(1.0)
+                            )
+                            / F.log(2, (F.col("evaluation_result.rank") + F.lit(1.0)))
+                        ),
+                    ).otherwise(F.lit(0.0))
+                )
+                .cast(T.DoubleType())
+                .alias("dcg_at_15"),
+            )
+            .select(
+                F.col("window"),
+                F.col("params"),
+                F.col("experiment_id"),
+                F.col("band_id"),
+                F.col("search_query_id"),
+                F.col("returned_result_count"),
+                F.col("judged_result_count"),
+                F.col("unjudged_result_count"),
+                F.col("unjudged_at_5"),
+                F.col("unjudged_at_10"),
+                F.col("unjudged_at_15"),
+                F.col("relevant_at_5"),
+                F.col("relevant_at_10"),
+                F.col("relevant_at_15"),
+                F.col("first_relevant_rank"),
+                F.col("dcg_at_5"),
+                F.col("dcg_at_10"),
+                F.col("dcg_at_15"),
+            )
         )
         assert_schema(result_totals, EVALUATION_RESULT_TOTALS_SCHEMA, name="EvaluationResultTotals", mode="strict")
 
@@ -186,19 +386,28 @@ class EvaluateDocumentRankingQualityGenerated:
         result_totals_joined = result_totals.alias("result_totals")
         metrics = metrics.join(
             result_totals_joined,
-            ((F.col("result_totals.search_query_id") == F.col("evaluation_query.search_query_id")) & (F.col("result_totals.experiment_id") == F.col("evaluation_query.experiment_id"))),
+            (
+                (F.col("result_totals.search_query_id") == F.col("evaluation_query.search_query_id"))
+                & (F.col("result_totals.experiment_id") == F.col("evaluation_query.experiment_id"))
+            ),
             "left",
         )
         judgment_totals_2_joined = judgment_totals.alias("judgment_totals_2")
         metrics = metrics.join(
             judgment_totals_2_joined,
-            ((F.col("judgment_totals_2.search_query_id") == F.col("evaluation_query.search_query_id")) & (F.col("judgment_totals_2.experiment_id") == F.col("evaluation_query.experiment_id"))),
+            (
+                (F.col("judgment_totals_2.search_query_id") == F.col("evaluation_query.search_query_id"))
+                & (F.col("judgment_totals_2.experiment_id") == F.col("evaluation_query.experiment_id"))
+            ),
             "left",
         )
         ideal_dcgs_3_joined = ideal_dcgs.alias("ideal_dcgs_3")
         metrics = metrics.join(
             ideal_dcgs_3_joined,
-            ((F.col("ideal_dcgs_3.search_query_id") == F.col("evaluation_query.search_query_id")) & (F.col("ideal_dcgs_3.experiment_id") == F.col("evaluation_query.experiment_id"))),
+            (
+                (F.col("ideal_dcgs_3.search_query_id") == F.col("evaluation_query.search_query_id"))
+                & (F.col("ideal_dcgs_3.experiment_id") == F.col("evaluation_query.experiment_id"))
+            ),
             "left",
         )
         metrics = metrics.select(
@@ -209,24 +418,153 @@ class EvaluateDocumentRankingQualityGenerated:
             F.col("evaluation_query.search_query_id"),
             F.coalesce(F.col("result_totals.returned_result_count"), F.lit(0)).alias("returned_result_count"),
             F.coalesce(F.col("result_totals.judged_result_count"), F.lit(0)).alias("judged_result_count"),
-            F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0)).alias("binary_relevant_judgment_count"),
+            F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0)).alias(
+                "binary_relevant_judgment_count"
+            ),
             (F.coalesce(F.col("result_totals.unjudged_at_5"), F.lit(0)) == F.lit(0)).alias("covered_at_5"),
             (F.coalesce(F.col("result_totals.unjudged_at_10"), F.lit(0)) == F.lit(0)).alias("covered_at_10"),
             (F.coalesce(F.col("result_totals.unjudged_at_15"), F.lit(0)) == F.lit(0)).alias("covered_at_15"),
-            (F.coalesce(F.col("result_totals.unjudged_result_count"), F.lit(0)) == F.lit(0)).alias("reciprocal_rank_covered"),
-            F.when(((F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0)) > F.lit(0)) & (F.col("result_totals.unjudged_at_5") == F.lit(0))), (F.col("result_totals.relevant_at_5") / F.lit(5.0))).otherwise(F.lit(None)).alias("precision_at_5"),
-            F.when(((F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0)) > F.lit(0)) & (F.col("result_totals.unjudged_at_10") == F.lit(0))), (F.col("result_totals.relevant_at_10") / F.lit(10.0))).otherwise(F.lit(None)).alias("precision_at_10"),
-            F.when(((F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0)) > F.lit(0)) & (F.col("result_totals.unjudged_at_15") == F.lit(0))), (F.col("result_totals.relevant_at_15") / F.lit(15.0))).otherwise(F.lit(None)).alias("precision_at_15"),
-            F.when(((F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0)) > F.lit(0)) & (F.col("result_totals.unjudged_at_5") == F.lit(0))), (F.col("result_totals.relevant_at_5") / F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0)))).otherwise(F.lit(None)).alias("judged_recall_at_5"),
-            F.when(((F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0)) > F.lit(0)) & (F.col("result_totals.unjudged_at_10") == F.lit(0))), (F.col("result_totals.relevant_at_10") / F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0)))).otherwise(F.lit(None)).alias("judged_recall_at_10"),
-            F.when(((F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0)) > F.lit(0)) & (F.col("result_totals.unjudged_at_15") == F.lit(0))), (F.col("result_totals.relevant_at_15") / F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0)))).otherwise(F.lit(None)).alias("judged_recall_at_15"),
-            F.when(((F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0)) > F.lit(0)) & (F.col("result_totals.unjudged_at_5") == F.lit(0))), F.when((F.col("result_totals.relevant_at_5") > F.lit(0)), F.lit(1.0)).otherwise(F.lit(0.0))).otherwise(F.lit(None)).alias("success_at_5"),
-            F.when(((F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0)) > F.lit(0)) & (F.col("result_totals.unjudged_at_10") == F.lit(0))), F.when((F.col("result_totals.relevant_at_10") > F.lit(0)), F.lit(1.0)).otherwise(F.lit(0.0))).otherwise(F.lit(None)).alias("success_at_10"),
-            F.when(((F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0)) > F.lit(0)) & (F.col("result_totals.unjudged_at_15") == F.lit(0))), F.when((F.col("result_totals.relevant_at_15") > F.lit(0)), F.lit(1.0)).otherwise(F.lit(0.0))).otherwise(F.lit(None)).alias("success_at_15"),
-            F.when((((F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0)) > F.lit(0)) & (F.col("result_totals.unjudged_at_5") == F.lit(0))) & (F.col("ideal_dcgs_3.ideal_dcg_at_5") > F.lit(0.0))), (F.col("result_totals.dcg_at_5") / F.col("ideal_dcgs_3.ideal_dcg_at_5"))).otherwise(F.lit(None)).alias("ndcg_at_5"),
-            F.when((((F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0)) > F.lit(0)) & (F.col("result_totals.unjudged_at_10") == F.lit(0))) & (F.col("ideal_dcgs_3.ideal_dcg_at_10") > F.lit(0.0))), (F.col("result_totals.dcg_at_10") / F.col("ideal_dcgs_3.ideal_dcg_at_10"))).otherwise(F.lit(None)).alias("ndcg_at_10"),
-            F.when((((F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0)) > F.lit(0)) & (F.col("result_totals.unjudged_at_15") == F.lit(0))) & (F.col("ideal_dcgs_3.ideal_dcg_at_15") > F.lit(0.0))), (F.col("result_totals.dcg_at_15") / F.col("ideal_dcgs_3.ideal_dcg_at_15"))).otherwise(F.lit(None)).alias("ndcg_at_15"),
-            F.when(((F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0)) > F.lit(0)) & (F.coalesce(F.col("result_totals.unjudged_result_count"), F.lit(0)) == F.lit(0))), F.when(F.col("result_totals.first_relevant_rank").isNotNull(), (F.lit(1.0) / F.col("result_totals.first_relevant_rank"))).otherwise(F.lit(0.0))).otherwise(F.lit(None)).alias("reciprocal_rank"),
+            (F.coalesce(F.col("result_totals.unjudged_result_count"), F.lit(0)) == F.lit(0)).alias(
+                "reciprocal_rank_covered"
+            ),
+            F.when(
+                (
+                    (F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0)) > F.lit(0))
+                    & (F.col("result_totals.unjudged_at_5") == F.lit(0))
+                ),
+                (F.col("result_totals.relevant_at_5") / F.lit(5.0)),
+            )
+            .otherwise(F.lit(None))
+            .alias("precision_at_5"),
+            F.when(
+                (
+                    (F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0)) > F.lit(0))
+                    & (F.col("result_totals.unjudged_at_10") == F.lit(0))
+                ),
+                (F.col("result_totals.relevant_at_10") / F.lit(10.0)),
+            )
+            .otherwise(F.lit(None))
+            .alias("precision_at_10"),
+            F.when(
+                (
+                    (F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0)) > F.lit(0))
+                    & (F.col("result_totals.unjudged_at_15") == F.lit(0))
+                ),
+                (F.col("result_totals.relevant_at_15") / F.lit(15.0)),
+            )
+            .otherwise(F.lit(None))
+            .alias("precision_at_15"),
+            F.when(
+                (
+                    (F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0)) > F.lit(0))
+                    & (F.col("result_totals.unjudged_at_5") == F.lit(0))
+                ),
+                (
+                    F.col("result_totals.relevant_at_5")
+                    / F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0))
+                ),
+            )
+            .otherwise(F.lit(None))
+            .alias("judged_recall_at_5"),
+            F.when(
+                (
+                    (F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0)) > F.lit(0))
+                    & (F.col("result_totals.unjudged_at_10") == F.lit(0))
+                ),
+                (
+                    F.col("result_totals.relevant_at_10")
+                    / F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0))
+                ),
+            )
+            .otherwise(F.lit(None))
+            .alias("judged_recall_at_10"),
+            F.when(
+                (
+                    (F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0)) > F.lit(0))
+                    & (F.col("result_totals.unjudged_at_15") == F.lit(0))
+                ),
+                (
+                    F.col("result_totals.relevant_at_15")
+                    / F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0))
+                ),
+            )
+            .otherwise(F.lit(None))
+            .alias("judged_recall_at_15"),
+            F.when(
+                (
+                    (F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0)) > F.lit(0))
+                    & (F.col("result_totals.unjudged_at_5") == F.lit(0))
+                ),
+                F.when((F.col("result_totals.relevant_at_5") > F.lit(0)), F.lit(1.0)).otherwise(F.lit(0.0)),
+            )
+            .otherwise(F.lit(None))
+            .alias("success_at_5"),
+            F.when(
+                (
+                    (F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0)) > F.lit(0))
+                    & (F.col("result_totals.unjudged_at_10") == F.lit(0))
+                ),
+                F.when((F.col("result_totals.relevant_at_10") > F.lit(0)), F.lit(1.0)).otherwise(F.lit(0.0)),
+            )
+            .otherwise(F.lit(None))
+            .alias("success_at_10"),
+            F.when(
+                (
+                    (F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0)) > F.lit(0))
+                    & (F.col("result_totals.unjudged_at_15") == F.lit(0))
+                ),
+                F.when((F.col("result_totals.relevant_at_15") > F.lit(0)), F.lit(1.0)).otherwise(F.lit(0.0)),
+            )
+            .otherwise(F.lit(None))
+            .alias("success_at_15"),
+            F.when(
+                (
+                    (
+                        (F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0)) > F.lit(0))
+                        & (F.col("result_totals.unjudged_at_5") == F.lit(0))
+                    )
+                    & (F.col("ideal_dcgs_3.ideal_dcg_at_5") > F.lit(0.0))
+                ),
+                (F.col("result_totals.dcg_at_5") / F.col("ideal_dcgs_3.ideal_dcg_at_5")),
+            )
+            .otherwise(F.lit(None))
+            .alias("ndcg_at_5"),
+            F.when(
+                (
+                    (
+                        (F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0)) > F.lit(0))
+                        & (F.col("result_totals.unjudged_at_10") == F.lit(0))
+                    )
+                    & (F.col("ideal_dcgs_3.ideal_dcg_at_10") > F.lit(0.0))
+                ),
+                (F.col("result_totals.dcg_at_10") / F.col("ideal_dcgs_3.ideal_dcg_at_10")),
+            )
+            .otherwise(F.lit(None))
+            .alias("ndcg_at_10"),
+            F.when(
+                (
+                    (
+                        (F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0)) > F.lit(0))
+                        & (F.col("result_totals.unjudged_at_15") == F.lit(0))
+                    )
+                    & (F.col("ideal_dcgs_3.ideal_dcg_at_15") > F.lit(0.0))
+                ),
+                (F.col("result_totals.dcg_at_15") / F.col("ideal_dcgs_3.ideal_dcg_at_15")),
+            )
+            .otherwise(F.lit(None))
+            .alias("ndcg_at_15"),
+            F.when(
+                (
+                    (F.coalesce(F.col("judgment_totals_2.binary_relevant_judgment_count"), F.lit(0)) > F.lit(0))
+                    & (F.coalesce(F.col("result_totals.unjudged_result_count"), F.lit(0)) == F.lit(0))
+                ),
+                F.when(
+                    F.col("result_totals.first_relevant_rank").isNotNull(),
+                    (F.lit(1.0) / F.col("result_totals.first_relevant_rank")),
+                ).otherwise(F.lit(0.0)),
+            )
+            .otherwise(F.lit(None))
+            .alias("reciprocal_rank"),
         )
         assert_schema(metrics, DOCUMENT_QUERY_EVALUATION_SCHEMA, name="DocumentQueryEvaluation", mode="strict")
 
@@ -259,66 +597,117 @@ class EvaluateDocumentRankingQualityGenerated:
             F.col("document_query_evaluation.ndcg_at_15"),
             F.col("document_query_evaluation.reciprocal_rank"),
         )
-        assert_schema(query_evaluations, DOCUMENT_QUERY_EVALUATION_SCHEMA, name="DocumentQueryEvaluation", mode="strict")
+        assert_schema(
+            query_evaluations, DOCUMENT_QUERY_EVALUATION_SCHEMA, name="DocumentQueryEvaluation", mode="strict"
+        )
 
         # Step method: summarize
         summary = metrics.alias("document_query_evaluation")
-        summary = summary.groupBy(
-            F.col("document_query_evaluation.window").alias("window"),
-            F.col("document_query_evaluation.params").alias("params"),
-            F.col("document_query_evaluation.experiment_id").alias("experiment_id"),
-        ).agg(
-            F.count(F.lit(1)).cast(T.LongType()).alias("query_count"),
-            F.sum(F.when((F.col("document_query_evaluation.binary_relevant_judgment_count") > F.lit(0)), F.lit(1)).otherwise(F.lit(0))).cast(T.LongType()).alias("binary_relevant_query_count"),
-            F.sum(F.when((F.col("document_query_evaluation.binary_relevant_judgment_count") == F.lit(0)), F.lit(1)).otherwise(F.lit(0))).cast(T.LongType()).alias("no_binary_relevant_query_count"),
-            F.sum(F.when(F.col("document_query_evaluation.precision_at_5").isNotNull(), F.lit(1)).otherwise(F.lit(0))).cast(T.LongType()).alias("eligible_at_5_count"),
-            F.sum(F.when(F.col("document_query_evaluation.precision_at_10").isNotNull(), F.lit(1)).otherwise(F.lit(0))).cast(T.LongType()).alias("eligible_at_10_count"),
-            F.sum(F.when(F.col("document_query_evaluation.precision_at_15").isNotNull(), F.lit(1)).otherwise(F.lit(0))).cast(T.LongType()).alias("eligible_at_15_count"),
-            F.sum(F.when(F.col("document_query_evaluation.reciprocal_rank").isNotNull(), F.lit(1)).otherwise(F.lit(0))).cast(T.LongType()).alias("reciprocal_rank_eligible_count"),
-            F.avg(F.col("document_query_evaluation.precision_at_5")).cast(T.DoubleType()).alias("precision_at_5"),
-            F.avg(F.col("document_query_evaluation.precision_at_10")).cast(T.DoubleType()).alias("precision_at_10"),
-            F.avg(F.col("document_query_evaluation.precision_at_15")).cast(T.DoubleType()).alias("precision_at_15"),
-            F.avg(F.col("document_query_evaluation.judged_recall_at_5")).cast(T.DoubleType()).alias("judged_recall_at_5"),
-            F.avg(F.col("document_query_evaluation.judged_recall_at_10")).cast(T.DoubleType()).alias("judged_recall_at_10"),
-            F.avg(F.col("document_query_evaluation.judged_recall_at_15")).cast(T.DoubleType()).alias("judged_recall_at_15"),
-            F.avg(F.col("document_query_evaluation.success_at_5")).cast(T.DoubleType()).alias("success_at_5"),
-            F.avg(F.col("document_query_evaluation.success_at_10")).cast(T.DoubleType()).alias("success_at_10"),
-            F.avg(F.col("document_query_evaluation.success_at_15")).cast(T.DoubleType()).alias("success_at_15"),
-            F.avg(F.col("document_query_evaluation.ndcg_at_5")).cast(T.DoubleType()).alias("ndcg_at_5"),
-            F.avg(F.col("document_query_evaluation.ndcg_at_10")).cast(T.DoubleType()).alias("ndcg_at_10"),
-            F.avg(F.col("document_query_evaluation.ndcg_at_15")).cast(T.DoubleType()).alias("ndcg_at_15"),
-            F.avg(F.col("document_query_evaluation.reciprocal_rank")).cast(T.DoubleType()).alias("mean_reciprocal_rank"),
-        ).select(
-            F.col("window"),
-            F.col("params"),
-            F.col("experiment_id"),
-            F.col("query_count"),
-            F.col("binary_relevant_query_count"),
-            F.col("no_binary_relevant_query_count"),
-            F.col("eligible_at_5_count"),
-            F.col("eligible_at_10_count"),
-            F.col("eligible_at_15_count"),
-            F.col("reciprocal_rank_eligible_count"),
-            F.col("precision_at_5"),
-            F.col("precision_at_10"),
-            F.col("precision_at_15"),
-            F.col("judged_recall_at_5"),
-            F.col("judged_recall_at_10"),
-            F.col("judged_recall_at_15"),
-            F.col("success_at_5"),
-            F.col("success_at_10"),
-            F.col("success_at_15"),
-            F.col("ndcg_at_5"),
-            F.col("ndcg_at_10"),
-            F.col("ndcg_at_15"),
-            F.col("mean_reciprocal_rank"),
+        summary = (
+            summary.groupBy(
+                F.col("document_query_evaluation.window").alias("window"),
+                F.col("document_query_evaluation.params").alias("params"),
+                F.col("document_query_evaluation.experiment_id").alias("experiment_id"),
+            )
+            .agg(
+                F.count(F.lit(1)).cast(T.LongType()).alias("query_count"),
+                F.sum(
+                    F.when(
+                        (F.col("document_query_evaluation.binary_relevant_judgment_count") > F.lit(0)), F.lit(1)
+                    ).otherwise(F.lit(0))
+                )
+                .cast(T.LongType())
+                .alias("binary_relevant_query_count"),
+                F.sum(
+                    F.when(
+                        (F.col("document_query_evaluation.binary_relevant_judgment_count") == F.lit(0)), F.lit(1)
+                    ).otherwise(F.lit(0))
+                )
+                .cast(T.LongType())
+                .alias("no_binary_relevant_query_count"),
+                F.sum(
+                    F.when(F.col("document_query_evaluation.precision_at_5").isNotNull(), F.lit(1)).otherwise(F.lit(0))
+                )
+                .cast(T.LongType())
+                .alias("eligible_at_5_count"),
+                F.sum(
+                    F.when(F.col("document_query_evaluation.precision_at_10").isNotNull(), F.lit(1)).otherwise(F.lit(0))
+                )
+                .cast(T.LongType())
+                .alias("eligible_at_10_count"),
+                F.sum(
+                    F.when(F.col("document_query_evaluation.precision_at_15").isNotNull(), F.lit(1)).otherwise(F.lit(0))
+                )
+                .cast(T.LongType())
+                .alias("eligible_at_15_count"),
+                F.sum(
+                    F.when(F.col("document_query_evaluation.reciprocal_rank").isNotNull(), F.lit(1)).otherwise(F.lit(0))
+                )
+                .cast(T.LongType())
+                .alias("reciprocal_rank_eligible_count"),
+                F.avg(F.col("document_query_evaluation.precision_at_5")).cast(T.DoubleType()).alias("precision_at_5"),
+                F.avg(F.col("document_query_evaluation.precision_at_10")).cast(T.DoubleType()).alias("precision_at_10"),
+                F.avg(F.col("document_query_evaluation.precision_at_15")).cast(T.DoubleType()).alias("precision_at_15"),
+                F.avg(F.col("document_query_evaluation.judged_recall_at_5"))
+                .cast(T.DoubleType())
+                .alias("judged_recall_at_5"),
+                F.avg(F.col("document_query_evaluation.judged_recall_at_10"))
+                .cast(T.DoubleType())
+                .alias("judged_recall_at_10"),
+                F.avg(F.col("document_query_evaluation.judged_recall_at_15"))
+                .cast(T.DoubleType())
+                .alias("judged_recall_at_15"),
+                F.avg(F.col("document_query_evaluation.success_at_5")).cast(T.DoubleType()).alias("success_at_5"),
+                F.avg(F.col("document_query_evaluation.success_at_10")).cast(T.DoubleType()).alias("success_at_10"),
+                F.avg(F.col("document_query_evaluation.success_at_15")).cast(T.DoubleType()).alias("success_at_15"),
+                F.avg(F.col("document_query_evaluation.ndcg_at_5")).cast(T.DoubleType()).alias("ndcg_at_5"),
+                F.avg(F.col("document_query_evaluation.ndcg_at_10")).cast(T.DoubleType()).alias("ndcg_at_10"),
+                F.avg(F.col("document_query_evaluation.ndcg_at_15")).cast(T.DoubleType()).alias("ndcg_at_15"),
+                F.avg(F.col("document_query_evaluation.reciprocal_rank"))
+                .cast(T.DoubleType())
+                .alias("mean_reciprocal_rank"),
+            )
+            .select(
+                F.col("window"),
+                F.col("params"),
+                F.col("experiment_id"),
+                F.col("query_count"),
+                F.col("binary_relevant_query_count"),
+                F.col("no_binary_relevant_query_count"),
+                F.col("eligible_at_5_count"),
+                F.col("eligible_at_10_count"),
+                F.col("eligible_at_15_count"),
+                F.col("reciprocal_rank_eligible_count"),
+                F.col("precision_at_5"),
+                F.col("precision_at_10"),
+                F.col("precision_at_15"),
+                F.col("judged_recall_at_5"),
+                F.col("judged_recall_at_10"),
+                F.col("judged_recall_at_15"),
+                F.col("success_at_5"),
+                F.col("success_at_10"),
+                F.col("success_at_15"),
+                F.col("ndcg_at_5"),
+                F.col("ndcg_at_10"),
+                F.col("ndcg_at_15"),
+                F.col("mean_reciprocal_rank"),
+            )
         )
 
         # Step method: query_evaluations
         query_evaluations = query_evaluations.alias("document_query_evaluation")
-        assert_schema(query_evaluations, DOCUMENT_QUERY_EVALUATION_SCHEMA, name="DocumentQueryEvaluation", mode="strict")
+        assert_schema(
+            query_evaluations, DOCUMENT_QUERY_EVALUATION_SCHEMA, name="DocumentQueryEvaluation", mode="strict"
+        )
 
         # Step method: summary
         summary = summary.alias("document_evaluation_summary")
         assert_schema(summary, DOCUMENT_EVALUATION_SUMMARY_SCHEMA, name="DocumentEvaluationSummary", mode="strict")
-        return TransformResult({"query_evaluations": query_evaluations, "summary": summary}, single=False, schema={"query_evaluations": DOCUMENT_QUERY_EVALUATION_SCHEMA, "summary": DOCUMENT_EVALUATION_SUMMARY_SCHEMA})
+        return TransformResult(
+            {"query_evaluations": query_evaluations, "summary": summary},
+            single=False,
+            schema={
+                "query_evaluations": DOCUMENT_QUERY_EVALUATION_SCHEMA,
+                "summary": DOCUMENT_EVALUATION_SUMMARY_SCHEMA,
+            },
+        )

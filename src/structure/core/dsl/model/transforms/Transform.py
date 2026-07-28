@@ -156,6 +156,7 @@ class Transform:
             project_root=resolved.project_root,
             generated_package=resolved.generated_package,
             generated_code_options=resolved.generated_code_options,
+            generated_code_hard_wrap=resolved.generated_code_hard_wrap,
             plugin={
                 "default": resolved.target,
                 resolved.target: dict(resolved.selected_plugin_options()),
@@ -183,6 +184,7 @@ class Transform:
                 generated_package=resolved.generated_package,
                 semantic_fingerprints=fingerprints,
                 generated_code_options=resolved.generated_code_options,
+                generated_code_hard_wrap=resolved.generated_code_hard_wrap,
             )
         )
         target = storage or DiskStorage(resolved.generated_dir)

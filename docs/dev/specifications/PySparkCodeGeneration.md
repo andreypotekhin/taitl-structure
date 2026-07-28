@@ -100,6 +100,7 @@ Generation consumes the resolved Structure configuration used by `structure comp
 source_roots = ["src"]
 generated_dir = "generated"
 generated_package = "structure_generated"
+generated_code_hard_wrap = 120
 execution_mode = "online"
 target_backend = "pyspark"
 target_profile = ">=3.5,<4.1"

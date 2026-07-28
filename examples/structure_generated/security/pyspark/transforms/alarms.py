@@ -7,7 +7,10 @@ from pyspark.sql import types as T
 from examples.structure_generated.security.runtime.schema_assert import TransformResult, assert_schema, project_schema
 from examples.structure_generated.security.pyspark.schemas.alarms import TEAM_VULNERABILITY_ALARM_SCHEMA
 from examples.structure_generated.security.pyspark.schemas.remediate import VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA
-from examples.structure_generated.security.pyspark.schemas.reporting import DELIVERY_RECEIPT_SCHEMA, SECURITY_EVALUATION_SCHEMA
+from examples.structure_generated.security.pyspark.schemas.reporting import (
+    DELIVERY_RECEIPT_SCHEMA,
+    SECURITY_EVALUATION_SCHEMA,
+)
 
 
 class VulnerabilityAlarmsGenerated:
@@ -23,7 +26,9 @@ class VulnerabilityAlarmsGenerated:
         evaluation: DataFrame,
         receipts: DataFrame,
     ) -> TransformResult:
-        assert_schema(exposures, VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA, name="VulnerabilityWorkflowExposure", mode="strict")
+        assert_schema(
+            exposures, VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA, name="VulnerabilityWorkflowExposure", mode="strict"
+        )
         assert_schema(evaluation, SECURITY_EVALUATION_SCHEMA, name="SecurityEvaluation", mode="strict")
         assert_schema(receipts, DELIVERY_RECEIPT_SCHEMA, name="DeliveryReceipt", mode="strict")
         _input_exposures = exposures
@@ -37,12 +42,40 @@ class VulnerabilityAlarmsGenerated:
         receipts_2_joined = receipts.alias("receipts_2")
         overdue_alarms = overdue_alarms.join(
             receipts_2_joined,
-            (F.col("receipts_2.delivery_key") == F.concat_ws(':', F.col("vulnerability_workflow_exposure.vuln_id"), F.lit('team-overdue'), F.col("vulnerability_workflow_exposure.team_id"), F.col("vulnerability_workflow_exposure.target_date").cast('string'))),
+            (
+                F.col("receipts_2.delivery_key")
+                == F.concat_ws(
+                    ':',
+                    F.col("vulnerability_workflow_exposure.vuln_id"),
+                    F.lit('team-overdue'),
+                    F.col("vulnerability_workflow_exposure.team_id"),
+                    F.col("vulnerability_workflow_exposure.target_date").cast('string'),
+                )
+            ),
             "left",
         )
-        overdue_alarms = overdue_alarms.where(((((F.col("vulnerability_workflow_exposure.is_active") & ~(F.col("vulnerability_workflow_exposure.is_deadline_paused"))) & (F.col("evaluation.as_of_date") > F.col("vulnerability_workflow_exposure.target_date"))) & F.col("receipts_2.delivery_key").isNull())))
+        overdue_alarms = overdue_alarms.where(
+            (
+                (
+                    (
+                        (
+                            F.col("vulnerability_workflow_exposure.is_active")
+                            & ~(F.col("vulnerability_workflow_exposure.is_deadline_paused"))
+                        )
+                        & (F.col("evaluation.as_of_date") > F.col("vulnerability_workflow_exposure.target_date"))
+                    )
+                    & F.col("receipts_2.delivery_key").isNull()
+                )
+            )
+        )
         overdue_alarms = overdue_alarms.select(
-            F.concat_ws(':', F.col("vulnerability_workflow_exposure.vuln_id"), F.lit('team-overdue'), F.col("vulnerability_workflow_exposure.team_id"), F.col("vulnerability_workflow_exposure.target_date").cast('string')).alias("delivery_key"),
+            F.concat_ws(
+                ':',
+                F.col("vulnerability_workflow_exposure.vuln_id"),
+                F.lit('team-overdue'),
+                F.col("vulnerability_workflow_exposure.team_id"),
+                F.col("vulnerability_workflow_exposure.target_date").cast('string'),
+            ).alias("delivery_key"),
             F.col("vulnerability_workflow_exposure.vuln_id"),
             F.col("vulnerability_workflow_exposure.team_id"),
             F.col("vulnerability_workflow_exposure.team_name"),
@@ -54,4 +87,6 @@ class VulnerabilityAlarmsGenerated:
         # Step method: overdue_alarms
         overdue_alarms = overdue_alarms.alias("team_vulnerability_alarm")
         assert_schema(overdue_alarms, TEAM_VULNERABILITY_ALARM_SCHEMA, name="TeamVulnerabilityAlarm", mode="strict")
-        return TransformResult({"overdue_alarms": overdue_alarms}, single=True, schema={"overdue_alarms": TEAM_VULNERABILITY_ALARM_SCHEMA})
+        return TransformResult(
+            {"overdue_alarms": overdue_alarms}, single=True, schema={"overdue_alarms": TEAM_VULNERABILITY_ALARM_SCHEMA}
+        )

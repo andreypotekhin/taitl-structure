@@ -286,6 +286,9 @@ and only `self.spark` or `self.ctx` from the generated instance. Source globals,
 instance state are rejected with `GEN-E0903`. A transform that uses a Python UDF must omit `embed_hooks` or also select
 `embed_udfs`; the latter is required before the generated module can be source-transform-free.
 
+`generated_code_hard_wrap` controls the maximum generated Python line length. The default is `120`; values below `80`
+are rejected.
+
 ## Traceability Settings
 
 ```toml

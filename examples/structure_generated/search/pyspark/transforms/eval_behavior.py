@@ -6,8 +6,21 @@ from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
 from examples.structure_generated.search.pyspark.schemas.batch import EVALUATION_BATCH_SCHEMA
-from examples.structure_generated.search.pyspark.schemas.behavior import BEHAVIOR_DAILY_COUNTS_SCHEMA, BEHAVIOR_EXPOSURE_SCHEMA, BEHAVIOR_IMPRESSION_SCHEMA, BEHAVIOR_REQUEST_METRICS_SCHEMA, BEHAVIOR_REQUEST_SCHEMA, BEHAVIOR_REQUEST_TOTALS_SCHEMA, DAILY_DOCUMENT_SEARCH_BEHAVIOR_SCHEMA, DOCUMENT_SEARCH_REQUEST_BEHAVIOR_SCHEMA
-from examples.structure_generated.search.pyspark.schemas.clicks import CLICK_SCHEMA, IMPRESSION_SCHEMA, SEARCH_REQUEST_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.behavior import (
+    BEHAVIOR_DAILY_COUNTS_SCHEMA,
+    BEHAVIOR_EXPOSURE_SCHEMA,
+    BEHAVIOR_IMPRESSION_SCHEMA,
+    BEHAVIOR_REQUEST_METRICS_SCHEMA,
+    BEHAVIOR_REQUEST_SCHEMA,
+    BEHAVIOR_REQUEST_TOTALS_SCHEMA,
+    DAILY_DOCUMENT_SEARCH_BEHAVIOR_SCHEMA,
+    DOCUMENT_SEARCH_REQUEST_BEHAVIOR_SCHEMA,
+)
+from examples.structure_generated.search.pyspark.schemas.clicks import (
+    CLICK_SCHEMA,
+    IMPRESSION_SCHEMA,
+    SEARCH_REQUEST_SCHEMA,
+)
 
 
 class EvaluateDocumentSearchBehaviorGenerated:
@@ -37,7 +50,14 @@ class EvaluateDocumentSearchBehaviorGenerated:
         selected_requests = requests.alias("search_request")
         batch_joined = batch.alias("batch")
         selected_requests = selected_requests.crossJoin(batch_joined)
-        selected_requests = selected_requests.where((((F.col("search_request.requested_at") >= F.col("batch.window.start")) & (F.col("search_request.requested_at") < F.col("batch.window.end")))))
+        selected_requests = selected_requests.where(
+            (
+                (
+                    (F.col("search_request.requested_at") >= F.col("batch.window.start"))
+                    & (F.col("search_request.requested_at") < F.col("batch.window.end"))
+                )
+            )
+        )
         selected_requests = selected_requests.select(
             F.col("batch.window"),
             F.lit(None).alias("params"),
@@ -81,42 +101,87 @@ class EvaluateDocumentSearchBehaviorGenerated:
         clicks_joined = clicks.alias("clicks")
         clicked = clicked.join(
             clicks_joined,
-            ((F.col("clicks.impression_id") == F.col("behavior_impression.impression_id")) & ((F.col("clicks.occurred_at") >= (F.col("behavior_impression.shown_at") - F.expr("INTERVAL 0 seconds"))) & (F.col("clicks.occurred_at") <= (F.col("behavior_impression.shown_at") + F.expr("INTERVAL 24 hours"))))),
+            (
+                (F.col("clicks.impression_id") == F.col("behavior_impression.impression_id"))
+                & (
+                    (
+                        F.col("clicks.occurred_at")
+                        >= (F.col("behavior_impression.shown_at") - F.expr("INTERVAL 0 seconds"))
+                    )
+                    & (
+                        F.col("clicks.occurred_at")
+                        <= (F.col("behavior_impression.shown_at") + F.expr("INTERVAL 24 hours"))
+                    )
+                )
+            ),
             "inner",
         )
-        clicked = clicked.groupBy(
-            F.col("behavior_impression.window").alias("window"),
-            F.col("behavior_impression.params").alias("params"),
-            F.col("behavior_impression.experiment_id").alias("experiment_id"),
-            F.col("behavior_impression.band_id").alias("band_id"),
-            F.col("behavior_impression.search_request_id").alias("search_request_id"),
-            F.col("behavior_impression.ranking_version").alias("ranking_version"),
-            F.col("behavior_impression.query").alias("query"),
-            F.col("behavior_impression.impression_id").alias("impression_id"),
-            F.col("behavior_impression.shown_at").alias("shown_at"),
-            F.col("behavior_impression.document_id").alias("document_id"),
-            F.col("behavior_impression.position").alias("position"),
-            F.col("behavior_impression.examination_propensity").alias("examination_propensity"),
-        ).agg(
-            F.sum(F.lit(1)).cast(T.LongType()).alias("click_count"),
-            F.sum(F.when((F.when((F.col("clicks.dwell_seconds") > F.lit(0.0)), F.col("clicks.dwell_seconds")).otherwise(F.lit(0.0)) >= F.lit(10.0)), F.lit(1)).otherwise(F.lit(0))).cast(T.LongType()).alias("long_click_count"),
-            F.sum((F.when((F.when((F.col("clicks.dwell_seconds") > F.lit(0.0)), F.col("clicks.dwell_seconds")).otherwise(F.lit(0.0)) < F.lit(60.0)), F.when((F.col("clicks.dwell_seconds") > F.lit(0.0)), F.col("clicks.dwell_seconds")).otherwise(F.lit(0.0))).otherwise(F.lit(60.0)) / F.lit(60.0))).cast(T.DoubleType()).alias("dwell_credit"),
-        ).select(
-            F.col("window"),
-            F.col("params"),
-            F.col("experiment_id"),
-            F.col("band_id"),
-            F.col("search_request_id"),
-            F.col("ranking_version"),
-            F.col("query"),
-            F.col("impression_id"),
-            F.col("shown_at"),
-            F.col("document_id"),
-            F.col("position"),
-            F.col("examination_propensity"),
-            F.col("click_count"),
-            F.col("long_click_count"),
-            F.col("dwell_credit"),
+        clicked = (
+            clicked.groupBy(
+                F.col("behavior_impression.window").alias("window"),
+                F.col("behavior_impression.params").alias("params"),
+                F.col("behavior_impression.experiment_id").alias("experiment_id"),
+                F.col("behavior_impression.band_id").alias("band_id"),
+                F.col("behavior_impression.search_request_id").alias("search_request_id"),
+                F.col("behavior_impression.ranking_version").alias("ranking_version"),
+                F.col("behavior_impression.query").alias("query"),
+                F.col("behavior_impression.impression_id").alias("impression_id"),
+                F.col("behavior_impression.shown_at").alias("shown_at"),
+                F.col("behavior_impression.document_id").alias("document_id"),
+                F.col("behavior_impression.position").alias("position"),
+                F.col("behavior_impression.examination_propensity").alias("examination_propensity"),
+            )
+            .agg(
+                F.sum(F.lit(1)).cast(T.LongType()).alias("click_count"),
+                F.sum(
+                    F.when(
+                        (
+                            F.when(
+                                (F.col("clicks.dwell_seconds") > F.lit(0.0)), F.col("clicks.dwell_seconds")
+                            ).otherwise(F.lit(0.0))
+                            >= F.lit(10.0)
+                        ),
+                        F.lit(1),
+                    ).otherwise(F.lit(0))
+                )
+                .cast(T.LongType())
+                .alias("long_click_count"),
+                F.sum(
+                    (
+                        F.when(
+                            (
+                                F.when(
+                                    (F.col("clicks.dwell_seconds") > F.lit(0.0)), F.col("clicks.dwell_seconds")
+                                ).otherwise(F.lit(0.0))
+                                < F.lit(60.0)
+                            ),
+                            F.when(
+                                (F.col("clicks.dwell_seconds") > F.lit(0.0)), F.col("clicks.dwell_seconds")
+                            ).otherwise(F.lit(0.0)),
+                        ).otherwise(F.lit(60.0))
+                        / F.lit(60.0)
+                    )
+                )
+                .cast(T.DoubleType())
+                .alias("dwell_credit"),
+            )
+            .select(
+                F.col("window"),
+                F.col("params"),
+                F.col("experiment_id"),
+                F.col("band_id"),
+                F.col("search_request_id"),
+                F.col("ranking_version"),
+                F.col("query"),
+                F.col("impression_id"),
+                F.col("shown_at"),
+                F.col("document_id"),
+                F.col("position"),
+                F.col("examination_propensity"),
+                F.col("click_count"),
+                F.col("long_click_count"),
+                F.col("dwell_credit"),
+            )
         )
         assert_schema(clicked, BEHAVIOR_IMPRESSION_SCHEMA, name="BehaviorImpression", mode="strict")
 
@@ -155,43 +220,61 @@ class EvaluateDocumentSearchBehaviorGenerated:
             (F.col("measured.search_request_id") == F.col("behavior_request.search_request_id")),
             "left",
         )
-        request_totals = request_totals.groupBy(
-            F.col("behavior_request.window").alias("window"),
-            F.col("behavior_request.params").alias("params"),
-            F.col("behavior_request.experiment_id").alias("experiment_id"),
-            F.col("behavior_request.band_id").alias("band_id"),
-            F.col("behavior_request.search_request_id").alias("search_request_id"),
-            F.col("behavior_request.ranking_version").alias("ranking_version"),
-            F.col("behavior_request.query").alias("query"),
-        ).agg(
-            F.sum(F.when(F.col("measured.impression_id").isNotNull(), F.lit(1)).otherwise(F.lit(0))).cast(T.LongType()).alias("result_count"),
-            F.sum(F.when((F.col("measured.click_count") > F.lit(0)), F.lit(1)).otherwise(F.lit(0))).cast(T.LongType()).alias("clicked_result_count"),
-            F.sum(F.when((F.col("measured.long_click_count") > F.lit(0)), F.lit(1)).otherwise(F.lit(0))).cast(T.LongType()).alias("long_clicked_result_count"),
-            F.bool_or((F.col("measured.click_count") > F.lit(0))).cast(T.BooleanType()).alias("has_click"),
-            F.bool_or((F.col("measured.long_click_count") > F.lit(0))).cast(T.BooleanType()).alias("has_long_click"),
-            F.min(F.when((F.col("measured.click_count") > F.lit(0)), F.col("measured.position"))).cast(T.LongType()).alias("first_click_rank"),
-            F.min(F.when((F.col("measured.long_click_count") > F.lit(0)), F.col("measured.position"))).cast(T.LongType()).alias("first_long_click_rank"),
-            F.sum(F.lit(0.0)).cast(T.DoubleType()).alias("reciprocal_first_long_click_rank"),
-            F.sum(F.coalesce(F.col("measured.click_count"), F.lit(0))).cast(T.LongType()).alias("raw_click_count"),
-            F.sum(F.coalesce(F.col("measured.long_click_count"), F.lit(0))).cast(T.LongType()).alias("raw_long_click_count"),
-        ).select(
-            F.col("window"),
-            F.col("params"),
-            F.col("experiment_id"),
-            F.col("band_id"),
-            F.col("search_request_id"),
-            F.col("ranking_version"),
-            F.col("query"),
-            F.col("result_count"),
-            F.col("clicked_result_count"),
-            F.col("long_clicked_result_count"),
-            F.col("has_click"),
-            F.col("has_long_click"),
-            F.col("first_click_rank"),
-            F.col("first_long_click_rank"),
-            F.col("reciprocal_first_long_click_rank"),
-            F.col("raw_click_count"),
-            F.col("raw_long_click_count"),
+        request_totals = (
+            request_totals.groupBy(
+                F.col("behavior_request.window").alias("window"),
+                F.col("behavior_request.params").alias("params"),
+                F.col("behavior_request.experiment_id").alias("experiment_id"),
+                F.col("behavior_request.band_id").alias("band_id"),
+                F.col("behavior_request.search_request_id").alias("search_request_id"),
+                F.col("behavior_request.ranking_version").alias("ranking_version"),
+                F.col("behavior_request.query").alias("query"),
+            )
+            .agg(
+                F.sum(F.when(F.col("measured.impression_id").isNotNull(), F.lit(1)).otherwise(F.lit(0)))
+                .cast(T.LongType())
+                .alias("result_count"),
+                F.sum(F.when((F.col("measured.click_count") > F.lit(0)), F.lit(1)).otherwise(F.lit(0)))
+                .cast(T.LongType())
+                .alias("clicked_result_count"),
+                F.sum(F.when((F.col("measured.long_click_count") > F.lit(0)), F.lit(1)).otherwise(F.lit(0)))
+                .cast(T.LongType())
+                .alias("long_clicked_result_count"),
+                F.bool_or((F.col("measured.click_count") > F.lit(0))).cast(T.BooleanType()).alias("has_click"),
+                F.bool_or((F.col("measured.long_click_count") > F.lit(0)))
+                .cast(T.BooleanType())
+                .alias("has_long_click"),
+                F.min(F.when((F.col("measured.click_count") > F.lit(0)), F.col("measured.position")))
+                .cast(T.LongType())
+                .alias("first_click_rank"),
+                F.min(F.when((F.col("measured.long_click_count") > F.lit(0)), F.col("measured.position")))
+                .cast(T.LongType())
+                .alias("first_long_click_rank"),
+                F.sum(F.lit(0.0)).cast(T.DoubleType()).alias("reciprocal_first_long_click_rank"),
+                F.sum(F.coalesce(F.col("measured.click_count"), F.lit(0))).cast(T.LongType()).alias("raw_click_count"),
+                F.sum(F.coalesce(F.col("measured.long_click_count"), F.lit(0)))
+                .cast(T.LongType())
+                .alias("raw_long_click_count"),
+            )
+            .select(
+                F.col("window"),
+                F.col("params"),
+                F.col("experiment_id"),
+                F.col("band_id"),
+                F.col("search_request_id"),
+                F.col("ranking_version"),
+                F.col("query"),
+                F.col("result_count"),
+                F.col("clicked_result_count"),
+                F.col("long_clicked_result_count"),
+                F.col("has_click"),
+                F.col("has_long_click"),
+                F.col("first_click_rank"),
+                F.col("first_long_click_rank"),
+                F.col("reciprocal_first_long_click_rank"),
+                F.col("raw_click_count"),
+                F.col("raw_long_click_count"),
+            )
         )
         assert_schema(request_totals, BEHAVIOR_REQUEST_TOTALS_SCHEMA, name="BehaviorRequestTotals", mode="strict")
 
@@ -212,7 +295,13 @@ class EvaluateDocumentSearchBehaviorGenerated:
             F.col("behavior_request_totals.has_long_click"),
             F.col("behavior_request_totals.first_click_rank"),
             F.col("behavior_request_totals.first_long_click_rank"),
-            F.coalesce(F.when(F.col("behavior_request_totals.first_long_click_rank").isNotNull(), (F.lit(1.0) / F.col("behavior_request_totals.first_long_click_rank"))).otherwise(F.lit(0.0)), F.lit(0.0)).alias("reciprocal_first_long_click_rank"),
+            F.coalesce(
+                F.when(
+                    F.col("behavior_request_totals.first_long_click_rank").isNotNull(),
+                    (F.lit(1.0) / F.col("behavior_request_totals.first_long_click_rank")),
+                ).otherwise(F.lit(0.0)),
+                F.lit(0.0),
+            ).alias("reciprocal_first_long_click_rank"),
             F.col("behavior_request_totals.raw_click_count"),
             F.col("behavior_request_totals.raw_long_click_count"),
         )
@@ -237,73 +326,122 @@ class EvaluateDocumentSearchBehaviorGenerated:
             F.col("behavior_request_metrics.first_long_click_rank"),
             F.col("behavior_request_metrics.reciprocal_first_long_click_rank"),
         )
-        assert_schema(measured_requests, DOCUMENT_SEARCH_REQUEST_BEHAVIOR_SCHEMA, name="DocumentSearchRequestBehavior", mode="strict")
+        assert_schema(
+            measured_requests,
+            DOCUMENT_SEARCH_REQUEST_BEHAVIOR_SCHEMA,
+            name="DocumentSearchRequestBehavior",
+            mode="strict",
+        )
 
         # Step method: summarize_exposure
         exposure = measured.alias("behavior_impression")
-        exposure = exposure.groupBy(
-            F.col("behavior_impression.window").alias("window"),
-            F.col("behavior_impression.params").alias("params"),
-            F.col("behavior_impression.experiment_id").alias("experiment_id"),
-            F.col("behavior_impression.band_id").alias("band_id"),
-            F.col("behavior_impression.ranking_version").alias("ranking_version"),
-        ).agg(
-            F.sum((F.lit(1.0) / F.col("behavior_impression.examination_propensity"))).cast(T.DoubleType()).alias("ips_impression_weight"),
-            F.sum(F.when((F.col("behavior_impression.long_click_count") > F.lit(0)), (F.lit(1.0) / F.col("behavior_impression.examination_propensity"))).otherwise(F.lit(0.0))).cast(T.DoubleType()).alias("ips_long_click_weight"),
-            F.sum((F.col("behavior_impression.dwell_credit") * (F.lit(1.0) / F.col("behavior_impression.examination_propensity")))).cast(T.DoubleType()).alias("ips_dwell_credit"),
-        ).select(
-            F.col("window"),
-            F.col("params"),
-            F.col("experiment_id"),
-            F.col("band_id"),
-            F.col("ranking_version"),
-            F.col("ips_impression_weight"),
-            F.col("ips_long_click_weight"),
-            F.col("ips_dwell_credit"),
+        exposure = (
+            exposure.groupBy(
+                F.col("behavior_impression.window").alias("window"),
+                F.col("behavior_impression.params").alias("params"),
+                F.col("behavior_impression.experiment_id").alias("experiment_id"),
+                F.col("behavior_impression.band_id").alias("band_id"),
+                F.col("behavior_impression.ranking_version").alias("ranking_version"),
+            )
+            .agg(
+                F.sum((F.lit(1.0) / F.col("behavior_impression.examination_propensity")))
+                .cast(T.DoubleType())
+                .alias("ips_impression_weight"),
+                F.sum(
+                    F.when(
+                        (F.col("behavior_impression.long_click_count") > F.lit(0)),
+                        (F.lit(1.0) / F.col("behavior_impression.examination_propensity")),
+                    ).otherwise(F.lit(0.0))
+                )
+                .cast(T.DoubleType())
+                .alias("ips_long_click_weight"),
+                F.sum(
+                    (
+                        F.col("behavior_impression.dwell_credit")
+                        * (F.lit(1.0) / F.col("behavior_impression.examination_propensity"))
+                    )
+                )
+                .cast(T.DoubleType())
+                .alias("ips_dwell_credit"),
+            )
+            .select(
+                F.col("window"),
+                F.col("params"),
+                F.col("experiment_id"),
+                F.col("band_id"),
+                F.col("ranking_version"),
+                F.col("ips_impression_weight"),
+                F.col("ips_long_click_weight"),
+                F.col("ips_dwell_credit"),
+            )
         )
         assert_schema(exposure, BEHAVIOR_EXPOSURE_SCHEMA, name="BehaviorExposure", mode="strict")
 
         # Step method: summarize_requests
         daily_counts = request_metrics.alias("behavior_request_metrics")
-        daily_counts = daily_counts.groupBy(
-            F.col("behavior_request_metrics.window").alias("window"),
-            F.col("behavior_request_metrics.params").alias("params"),
-            F.col("behavior_request_metrics.experiment_id").alias("experiment_id"),
-            F.col("behavior_request_metrics.band_id").alias("band_id"),
-            F.col("behavior_request_metrics.ranking_version").alias("ranking_version"),
-        ).agg(
-            F.sum(F.lit(1)).cast(T.LongType()).alias("request_count"),
-            F.sum(F.when((F.col("behavior_request_metrics.result_count") == F.lit(0)), F.lit(1)).otherwise(F.lit(0))).cast(T.LongType()).alias("zero_result_request_count"),
-            F.sum(F.when(F.col("behavior_request_metrics.has_click"), F.lit(1)).otherwise(F.lit(0))).cast(T.LongType()).alias("clicked_request_count"),
-            F.sum(F.when(F.col("behavior_request_metrics.has_long_click"), F.lit(1)).otherwise(F.lit(0))).cast(T.LongType()).alias("long_clicked_request_count"),
-            F.sum(F.when(~(F.col("behavior_request_metrics.has_click")), F.lit(1)).otherwise(F.lit(0))).cast(T.LongType()).alias("no_click_request_count"),
-            F.sum(F.when(~(F.col("behavior_request_metrics.has_long_click")), F.lit(1)).otherwise(F.lit(0))).cast(T.LongType()).alias("no_long_click_request_count"),
-            F.sum(F.col("behavior_request_metrics.raw_click_count")).cast(T.LongType()).alias("raw_click_count"),
-            F.sum(F.col("behavior_request_metrics.raw_long_click_count")).cast(T.LongType()).alias("raw_long_click_count"),
-            F.avg(F.col("behavior_request_metrics.first_click_rank")).cast(T.DoubleType()).alias("mean_first_click_rank"),
-            F.avg(F.col("behavior_request_metrics.first_long_click_rank")).cast(T.DoubleType()).alias("mean_first_long_click_rank"),
-            F.avg(F.col("behavior_request_metrics.reciprocal_first_long_click_rank")).cast(T.DoubleType()).alias("mean_reciprocal_first_long_click_rank"),
-            F.sum(F.lit(0.0)).cast(T.DoubleType()).alias("ips_long_click_rate"),
-            F.sum(F.lit(0.0)).cast(T.DoubleType()).alias("ips_dwell_credit_per_impression"),
-        ).select(
-            F.col("window"),
-            F.col("params"),
-            F.col("experiment_id"),
-            F.col("band_id"),
-            F.col("ranking_version"),
-            F.col("request_count"),
-            F.col("zero_result_request_count"),
-            F.col("clicked_request_count"),
-            F.col("long_clicked_request_count"),
-            F.col("no_click_request_count"),
-            F.col("no_long_click_request_count"),
-            F.col("raw_click_count"),
-            F.col("raw_long_click_count"),
-            F.col("mean_first_click_rank"),
-            F.col("mean_first_long_click_rank"),
-            F.col("mean_reciprocal_first_long_click_rank"),
-            F.col("ips_long_click_rate"),
-            F.col("ips_dwell_credit_per_impression"),
+        daily_counts = (
+            daily_counts.groupBy(
+                F.col("behavior_request_metrics.window").alias("window"),
+                F.col("behavior_request_metrics.params").alias("params"),
+                F.col("behavior_request_metrics.experiment_id").alias("experiment_id"),
+                F.col("behavior_request_metrics.band_id").alias("band_id"),
+                F.col("behavior_request_metrics.ranking_version").alias("ranking_version"),
+            )
+            .agg(
+                F.sum(F.lit(1)).cast(T.LongType()).alias("request_count"),
+                F.sum(
+                    F.when((F.col("behavior_request_metrics.result_count") == F.lit(0)), F.lit(1)).otherwise(F.lit(0))
+                )
+                .cast(T.LongType())
+                .alias("zero_result_request_count"),
+                F.sum(F.when(F.col("behavior_request_metrics.has_click"), F.lit(1)).otherwise(F.lit(0)))
+                .cast(T.LongType())
+                .alias("clicked_request_count"),
+                F.sum(F.when(F.col("behavior_request_metrics.has_long_click"), F.lit(1)).otherwise(F.lit(0)))
+                .cast(T.LongType())
+                .alias("long_clicked_request_count"),
+                F.sum(F.when(~(F.col("behavior_request_metrics.has_click")), F.lit(1)).otherwise(F.lit(0)))
+                .cast(T.LongType())
+                .alias("no_click_request_count"),
+                F.sum(F.when(~(F.col("behavior_request_metrics.has_long_click")), F.lit(1)).otherwise(F.lit(0)))
+                .cast(T.LongType())
+                .alias("no_long_click_request_count"),
+                F.sum(F.col("behavior_request_metrics.raw_click_count")).cast(T.LongType()).alias("raw_click_count"),
+                F.sum(F.col("behavior_request_metrics.raw_long_click_count"))
+                .cast(T.LongType())
+                .alias("raw_long_click_count"),
+                F.avg(F.col("behavior_request_metrics.first_click_rank"))
+                .cast(T.DoubleType())
+                .alias("mean_first_click_rank"),
+                F.avg(F.col("behavior_request_metrics.first_long_click_rank"))
+                .cast(T.DoubleType())
+                .alias("mean_first_long_click_rank"),
+                F.avg(F.col("behavior_request_metrics.reciprocal_first_long_click_rank"))
+                .cast(T.DoubleType())
+                .alias("mean_reciprocal_first_long_click_rank"),
+                F.sum(F.lit(0.0)).cast(T.DoubleType()).alias("ips_long_click_rate"),
+                F.sum(F.lit(0.0)).cast(T.DoubleType()).alias("ips_dwell_credit_per_impression"),
+            )
+            .select(
+                F.col("window"),
+                F.col("params"),
+                F.col("experiment_id"),
+                F.col("band_id"),
+                F.col("ranking_version"),
+                F.col("request_count"),
+                F.col("zero_result_request_count"),
+                F.col("clicked_request_count"),
+                F.col("long_clicked_request_count"),
+                F.col("no_click_request_count"),
+                F.col("no_long_click_request_count"),
+                F.col("raw_click_count"),
+                F.col("raw_long_click_count"),
+                F.col("mean_first_click_rank"),
+                F.col("mean_first_long_click_rank"),
+                F.col("mean_reciprocal_first_long_click_rank"),
+                F.col("ips_long_click_rate"),
+                F.col("ips_dwell_credit_per_impression"),
+            )
         )
         assert_schema(daily_counts, BEHAVIOR_DAILY_COUNTS_SCHEMA, name="BehaviorDailyCounts", mode="strict")
 
@@ -312,7 +450,16 @@ class EvaluateDocumentSearchBehaviorGenerated:
         exposure_joined = exposure.alias("exposure")
         summarized_daily = summarized_daily.join(
             exposure_joined,
-            ((((F.col("exposure.window") == F.col("behavior_daily_counts.window")) & F.col("exposure.params").eqNullSafe(F.col("behavior_daily_counts.params"))) & (F.col("exposure.experiment_id") == F.col("behavior_daily_counts.experiment_id"))) & (F.col("exposure.ranking_version") == F.col("behavior_daily_counts.ranking_version"))),
+            (
+                (
+                    (
+                        (F.col("exposure.window") == F.col("behavior_daily_counts.window"))
+                        & F.col("exposure.params").eqNullSafe(F.col("behavior_daily_counts.params"))
+                    )
+                    & (F.col("exposure.experiment_id") == F.col("behavior_daily_counts.experiment_id"))
+                )
+                & (F.col("exposure.ranking_version") == F.col("behavior_daily_counts.ranking_version"))
+            ),
             "left",
         )
         summarized_daily = summarized_daily.select(
@@ -332,10 +479,22 @@ class EvaluateDocumentSearchBehaviorGenerated:
             F.col("behavior_daily_counts.mean_first_click_rank"),
             F.col("behavior_daily_counts.mean_first_long_click_rank"),
             F.col("behavior_daily_counts.mean_reciprocal_first_long_click_rank"),
-            F.when((F.col("exposure.ips_impression_weight") > F.lit(0.0)), (F.col("exposure.ips_long_click_weight") / F.col("exposure.ips_impression_weight"))).otherwise(F.lit(None)).alias("ips_long_click_rate"),
-            F.when((F.col("exposure.ips_impression_weight") > F.lit(0.0)), (F.col("exposure.ips_dwell_credit") / F.col("exposure.ips_impression_weight"))).otherwise(F.lit(None)).alias("ips_dwell_credit_per_impression"),
+            F.when(
+                (F.col("exposure.ips_impression_weight") > F.lit(0.0)),
+                (F.col("exposure.ips_long_click_weight") / F.col("exposure.ips_impression_weight")),
+            )
+            .otherwise(F.lit(None))
+            .alias("ips_long_click_rate"),
+            F.when(
+                (F.col("exposure.ips_impression_weight") > F.lit(0.0)),
+                (F.col("exposure.ips_dwell_credit") / F.col("exposure.ips_impression_weight")),
+            )
+            .otherwise(F.lit(None))
+            .alias("ips_dwell_credit_per_impression"),
         )
-        assert_schema(summarized_daily, DAILY_DOCUMENT_SEARCH_BEHAVIOR_SCHEMA, name="DailyDocumentSearchBehavior", mode="strict")
+        assert_schema(
+            summarized_daily, DAILY_DOCUMENT_SEARCH_BEHAVIOR_SCHEMA, name="DailyDocumentSearchBehavior", mode="strict"
+        )
 
         # Step method: publish_request_behaviors
         request_behaviors = measured_requests.alias("document_search_request_behavior")
@@ -356,7 +515,12 @@ class EvaluateDocumentSearchBehaviorGenerated:
             F.col("document_search_request_behavior.first_long_click_rank"),
             F.col("document_search_request_behavior.reciprocal_first_long_click_rank"),
         )
-        assert_schema(request_behaviors, DOCUMENT_SEARCH_REQUEST_BEHAVIOR_SCHEMA, name="DocumentSearchRequestBehavior", mode="strict")
+        assert_schema(
+            request_behaviors,
+            DOCUMENT_SEARCH_REQUEST_BEHAVIOR_SCHEMA,
+            name="DocumentSearchRequestBehavior",
+            mode="strict",
+        )
 
         # Step method: publish_daily_behavior
         daily_behavior = summarized_daily.alias("daily_document_search_behavior")
@@ -383,9 +547,23 @@ class EvaluateDocumentSearchBehaviorGenerated:
 
         # Step method: request_behaviors
         request_behaviors = request_behaviors.alias("document_search_request_behavior")
-        assert_schema(request_behaviors, DOCUMENT_SEARCH_REQUEST_BEHAVIOR_SCHEMA, name="DocumentSearchRequestBehavior", mode="strict")
+        assert_schema(
+            request_behaviors,
+            DOCUMENT_SEARCH_REQUEST_BEHAVIOR_SCHEMA,
+            name="DocumentSearchRequestBehavior",
+            mode="strict",
+        )
 
         # Step method: daily_behavior
         daily_behavior = daily_behavior.alias("daily_document_search_behavior")
-        assert_schema(daily_behavior, DAILY_DOCUMENT_SEARCH_BEHAVIOR_SCHEMA, name="DailyDocumentSearchBehavior", mode="strict")
-        return TransformResult({"request_behaviors": request_behaviors, "daily_behavior": daily_behavior}, single=False, schema={"request_behaviors": DOCUMENT_SEARCH_REQUEST_BEHAVIOR_SCHEMA, "daily_behavior": DAILY_DOCUMENT_SEARCH_BEHAVIOR_SCHEMA})
+        assert_schema(
+            daily_behavior, DAILY_DOCUMENT_SEARCH_BEHAVIOR_SCHEMA, name="DailyDocumentSearchBehavior", mode="strict"
+        )
+        return TransformResult(
+            {"request_behaviors": request_behaviors, "daily_behavior": daily_behavior},
+            single=False,
+            schema={
+                "request_behaviors": DOCUMENT_SEARCH_REQUEST_BEHAVIOR_SCHEMA,
+                "daily_behavior": DAILY_DOCUMENT_SEARCH_BEHAVIOR_SCHEMA,
+            },
+        )

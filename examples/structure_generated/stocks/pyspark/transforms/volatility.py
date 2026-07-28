@@ -29,14 +29,116 @@ class VolatilityGenerated:
         returns = returns.select(
             F.col("daily_return.symbol"),
             F.col("daily_return.trade_date"),
-            F.when((F.row_number().over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc())).cast(T.LongType()) >= F.lit(14)), F.avg((F.col("daily_return.high") - F.col("daily_return.low"))).over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc()).rowsBetween(-13, 0))).otherwise(F.lit(None)).alias("range_14"),
-            F.when((F.row_number().over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc())).cast(T.LongType()) >= F.lit(21)), F.stddev(F.col("daily_return.return_1d")).over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc()).rowsBetween(-19, Window.currentRow))).otherwise(F.lit(None)).alias("daily_return_stddev_20"),
-            F.when((F.row_number().over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc())).cast(T.LongType()) >= F.lit(20)), F.avg(F.col("daily_return.close")).over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc()).rowsBetween(-19, 0))).otherwise(F.lit(None)).alias("bollinger_middle"),
-            F.when((F.row_number().over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc())).cast(T.LongType()) >= F.lit(20)), (F.avg(F.col("daily_return.close")).over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc()).rowsBetween(-19, 0)) + (F.lit(2.0) * F.stddev(F.col("daily_return.close")).over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc()).rowsBetween(-19, Window.currentRow))))).otherwise(F.lit(None)).alias("bollinger_upper"),
-            F.when((F.row_number().over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc())).cast(T.LongType()) >= F.lit(20)), (F.avg(F.col("daily_return.close")).over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc()).rowsBetween(-19, 0)) - (F.lit(2.0) * F.stddev(F.col("daily_return.close")).over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc()).rowsBetween(-19, Window.currentRow))))).otherwise(F.lit(None)).alias("bollinger_lower"),
+            F.when(
+                (
+                    F.row_number()
+                    .over(
+                        Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc())
+                    )
+                    .cast(T.LongType())
+                    >= F.lit(14)
+                ),
+                F.avg((F.col("daily_return.high") - F.col("daily_return.low"))).over(
+                    Window.partitionBy(F.col("daily_return.symbol"))
+                    .orderBy(F.col("daily_return.trade_date").asc())
+                    .rowsBetween(-13, 0)
+                ),
+            )
+            .otherwise(F.lit(None))
+            .alias("range_14"),
+            F.when(
+                (
+                    F.row_number()
+                    .over(
+                        Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc())
+                    )
+                    .cast(T.LongType())
+                    >= F.lit(21)
+                ),
+                F.stddev(F.col("daily_return.return_1d")).over(
+                    Window.partitionBy(F.col("daily_return.symbol"))
+                    .orderBy(F.col("daily_return.trade_date").asc())
+                    .rowsBetween(-19, Window.currentRow)
+                ),
+            )
+            .otherwise(F.lit(None))
+            .alias("daily_return_stddev_20"),
+            F.when(
+                (
+                    F.row_number()
+                    .over(
+                        Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc())
+                    )
+                    .cast(T.LongType())
+                    >= F.lit(20)
+                ),
+                F.avg(F.col("daily_return.close")).over(
+                    Window.partitionBy(F.col("daily_return.symbol"))
+                    .orderBy(F.col("daily_return.trade_date").asc())
+                    .rowsBetween(-19, 0)
+                ),
+            )
+            .otherwise(F.lit(None))
+            .alias("bollinger_middle"),
+            F.when(
+                (
+                    F.row_number()
+                    .over(
+                        Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc())
+                    )
+                    .cast(T.LongType())
+                    >= F.lit(20)
+                ),
+                (
+                    F.avg(F.col("daily_return.close")).over(
+                        Window.partitionBy(F.col("daily_return.symbol"))
+                        .orderBy(F.col("daily_return.trade_date").asc())
+                        .rowsBetween(-19, 0)
+                    )
+                    + (
+                        F.lit(2.0)
+                        * F.stddev(F.col("daily_return.close")).over(
+                            Window.partitionBy(F.col("daily_return.symbol"))
+                            .orderBy(F.col("daily_return.trade_date").asc())
+                            .rowsBetween(-19, Window.currentRow)
+                        )
+                    )
+                ),
+            )
+            .otherwise(F.lit(None))
+            .alias("bollinger_upper"),
+            F.when(
+                (
+                    F.row_number()
+                    .over(
+                        Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc())
+                    )
+                    .cast(T.LongType())
+                    >= F.lit(20)
+                ),
+                (
+                    F.avg(F.col("daily_return.close")).over(
+                        Window.partitionBy(F.col("daily_return.symbol"))
+                        .orderBy(F.col("daily_return.trade_date").asc())
+                        .rowsBetween(-19, 0)
+                    )
+                    - (
+                        F.lit(2.0)
+                        * F.stddev(F.col("daily_return.close")).over(
+                            Window.partitionBy(F.col("daily_return.symbol"))
+                            .orderBy(F.col("daily_return.trade_date").asc())
+                            .rowsBetween(-19, Window.currentRow)
+                        )
+                    )
+                ),
+            )
+            .otherwise(F.lit(None))
+            .alias("bollinger_lower"),
         )
 
         # Step method: indicators
         indicators = returns.alias("volatility_indicator")
         assert_schema(indicators, VOLATILITY_INDICATOR_SCHEMA, name="VolatilityIndicator", mode="strict")
-        return TransformResult({"indicators": indicators}, single=True, schema={"indicators": VOLATILITY_INDICATOR_SCHEMA})
+        return TransformResult(
+            {"indicators": indicators}, single=True, schema={"indicators": VOLATILITY_INDICATOR_SCHEMA}
+        )

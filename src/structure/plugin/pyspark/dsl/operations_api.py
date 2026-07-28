@@ -6,7 +6,7 @@ from decimal import Decimal
 from functools import cache as cached
 from math import isfinite
 from re import fullmatch
-from typing import overload
+from typing import Any, cast, overload
 
 from structure.dsl import FieldDeclaration, Schema
 from structure.plugin.api.v1.model import SymbolicContext
@@ -14,7 +14,13 @@ from structure.plugin.api.v1.model import current_symbolic_context as current_co
 from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.expressions import literal
 from structure.plugin.pyspark.dsl.joins import TiePolicy
-from structure.plugin.pyspark.dsl.operations import CachePlan, DuplicateRowsPlan, OperationPlan, SelectedRowsPlan
+from structure.plugin.pyspark.dsl.operations import (
+    CachePlan,
+    DuplicateRowsPlan,
+    OperationPlan,
+    OrderedTimelineScanPlan,
+    SelectedRowsPlan,
+)
 from structure.plugin.pyspark.dsl.operations.CacheOperations import cache, cache_operation, reserved_operations
 from structure.plugin.pyspark.dsl.TimeWindow import TimeWindow
 from structure.plugin.pyspark.dsl.types import (
@@ -320,6 +326,65 @@ def dedupe_latest_by(order_by: object, *, partition_by: object, ties: TiePolicy 
 
 def dedupe_earliest_by(order_by: object, *, partition_by: object, ties: TiePolicy = TiePolicy.ERROR) -> None:
     _selected_rows("earliest", order_by, partition_by=partition_by, ties=ties, call="dedupe_earliest_by(...)")
+
+
+def scan(
+    *,
+    initial: Schema,
+    partition_by: object,
+    order_by: object,
+    max_rows: int,
+    step: Callable[[Any, Any], Schema],
+    ties: TiePolicy = TiePolicy.ERROR,
+) -> Any:
+    context = cast(Any, _context("scan(...)"))
+    if any(operation.ordered_timeline_scan is not None for operation in context.operations):
+        raise TypeError("scan(...) can only be declared once per step in v6")
+    if not isinstance(initial, Schema):
+        raise TypeError("scan(initial=...) requires a fully populated Schema state instance")
+    if not _positive_integer(max_rows):
+        raise TypeError("scan(max_rows=...) requires a positive integer literal")
+    if not callable(step):
+        raise TypeError("scan(step=...) requires a two-argument callback")
+    if not isinstance(ties, TiePolicy):
+        raise TypeError("scan(ties=...) requires a TiePolicy value")
+    if ties is not TiePolicy.ERROR:
+        raise TypeError("scan(...) currently supports ties=TiePolicy.ERROR only")
+
+    state_schema = type(initial)
+    fields = state_schema._structure_fields
+    missing = set(fields) - set(initial._structure_values)
+    if missing:
+        raise TypeError(f"scan(initial=...) must populate every state field; missing {', '.join(sorted(missing))}")
+
+    partitions = _scan_keys(partition_by, "partition_by")
+    ordering = _scan_keys(order_by, "order_by")
+    row_scope = _scan_row_scope(context, (*partitions, *ordering))
+    state_scope = "__scan_state"
+    state = context.input_scope(name=state_scope, schema=state_schema)
+    try:
+        returned = step(state, row_scope)
+    except TypeError as error:
+        raise TypeError("scan(step=...) requires a two-argument callback") from error
+    transition = _scan_state_values(returned, state_schema, call="scan(step=...)")
+    scope = "__scan"
+    context.operations.append(
+        OperationPlan.ordered_timeline_scan_operation(
+            OrderedTimelineScanPlan(
+                scope=scope,
+                state_scope=state_scope,
+                row_scope=row_scope._structure_scope_name,
+                state_schema=state_schema,
+                initial=_scan_state_values(initial, state_schema, call="scan(initial=...)"),
+                transition=transition,
+                partition_by=partitions,
+                order_by=ordering,
+                max_rows=max_rows,
+                ties=ties,
+            )
+        )
+    )
+    return context.input_scope(name=scope, schema=state_schema)
 
 
 def row_number(*, partition_by: object, order_by: object, descending: bool = False) -> Expression:
@@ -955,6 +1020,74 @@ def _order_by(order_by: object, *, call: str) -> tuple[Expression, ...]:
     if not ordering:
         raise TypeError(f"{call} requires at least one order_by expression")
     return ordering
+
+
+def _scan_keys(value: object, name: str) -> tuple[Expression, ...]:
+    values = value if isinstance(value, tuple) else (value,)
+    keys = tuple(_orderable_expression(item, f"scan({name}=...)") for item in values)
+    if not keys:
+        raise TypeError(f"scan({name}=...) requires at least one expression")
+    for key in keys:
+        if key.kind == "order":
+            raise TypeError(f"scan({name}=...) requires ascending unordered expressions in v6")
+    return keys
+
+
+def _scan_row_scope(context: SymbolicContext, keys: tuple[Expression, ...]):
+    scopes = {str(key.data["scope"]) for key in keys if key.kind == "field" and key.data and "scope" in key.data}
+    if len(scopes) != 1:
+        raise TypeError("scan(...) partition_by/order_by must reference exactly one timeline relation")
+    scope = next(iter(scopes))
+    if scope in context.current_scopes and context.default_project_source is not None:
+        return context.default_project_source
+    row = context.relation_scopes.get(scope)
+    if row is None:
+        raise TypeError("scan(...) could not resolve its timeline relation from partition_by/order_by")
+    return row
+
+
+def _scan_state_values(value: object, schema: type[Schema], *, call: str) -> tuple[tuple[str, Expression], ...]:
+    if not isinstance(value, schema):
+        raise TypeError(f"{call} must return {schema.__name__}")
+    values = value._structure_values
+    fields = schema._structure_fields
+    if set(values) != set(fields):
+        missing = sorted(set(fields) - set(values))
+        extra = sorted(set(values) - set(fields))
+        details = ", ".join((*[f"missing {name}" for name in missing], *[f"extra {name}" for name in extra]))
+        raise TypeError(f"{call} must populate exactly the {schema.__name__} fields: {details}")
+    expressions: list[tuple[str, Expression]] = []
+    for name, field in fields.items():
+        expression = literal(values[name])
+        if not _scan_assignable(expression, field.type):
+            raise TypeError(f"{call} field {name} must match its declared Structure type")
+        if expression.nullable and not field.nullable:
+            raise TypeError(f"{call} field {name} is nullable but the state field is not")
+        expressions.append((name, expression))
+    return tuple(expressions)
+
+
+def _scan_assignable(expression: Expression, target: StructureType) -> bool:
+    actual = expression.type
+    if actual is None:
+        return expression.kind == "literal" and (expression.data or {}).get("value") is None
+    if _same_type(actual, target):
+        return True
+    if target.name == "long" and actual.name == "integer":
+        return True
+    if target.name == "double" and actual.name in {"integer", "long", "float"}:
+        return True
+    if target.name == "float" and actual.name == "double" and isinstance((expression.data or {}).get("value"), float):
+        return True
+    if isinstance(target, DecimalType):
+        integer_digits = target.precision - target.scale
+        if actual.name == "integer":
+            return integer_digits >= 10
+        if actual.name == "long":
+            return integer_digits >= 19
+        if isinstance(actual, DecimalType):
+            return target.scale >= actual.scale and integer_digits >= actual.precision - actual.scale
+    return False
 
 
 def _window_frame(kind: str, start: "WindowBound", end: "WindowBound") -> "WindowFrame":

@@ -35,7 +35,7 @@ def test_streams_generated_code_keeps_lifecycle_with_the_caller() -> None:
     for fragment in (
         'withWatermark("at", \'10 minutes\')',
         '.dropDuplicates(["id"])',
-        'passages.groupBy(\n            F.col("passage.race_id").alias("race_id")',
+        'passages.groupBy(\n                F.col("passage.race_id").alias("race_id")',
         'F.expr("INTERVAL 5 minutes")',
     ):
         assert fragment in generated

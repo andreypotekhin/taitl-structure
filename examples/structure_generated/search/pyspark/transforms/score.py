@@ -5,9 +5,39 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
-from examples.structure_generated.search.pyspark.schemas.bm25 import DOCUMENT_BM25_SCORE_SCHEMA, PARAGRAPH_BM25_SCORE_SCHEMA, SECTION_BM25_SCORE_SCHEMA, SENTENCE_BM25_SCORE_SCHEMA
-from examples.structure_generated.search.pyspark.schemas.overlap import DOCUMENT_OVERLAP_MATCH_SCHEMA, DOCUMENT_OVERLAP_SCORE_SCHEMA, PARAGRAPH_OVERLAP_MATCH_SCHEMA, PARAGRAPH_OVERLAP_SCORE_SCHEMA, SECTION_OVERLAP_MATCH_SCHEMA, SECTION_OVERLAP_SCORE_SCHEMA, SENTENCE_OVERLAP_MATCH_SCHEMA, SENTENCE_OVERLAP_SCORE_SCHEMA
-from examples.structure_generated.search.pyspark.schemas.search import DOCUMENT_INDEX_SUMMARY_SCHEMA, DOCUMENT_INDEX_TERM_SCHEMA, DOCUMENT_SCORE_SCHEMA, PARAGRAPH_INDEX_SUMMARY_SCHEMA, PARAGRAPH_INDEX_TERM_SCHEMA, PARAGRAPH_SCORE_SCHEMA, QUERY_TERM_COUNT_SCHEMA, QUERY_TERM_SCHEMA, SEARCH_QUERY_SCHEMA, SECTION_INDEX_SUMMARY_SCHEMA, SECTION_INDEX_TERM_SCHEMA, SECTION_SCORE_SCHEMA, SENTENCE_INDEX_SUMMARY_SCHEMA, SENTENCE_INDEX_TERM_SCHEMA, SENTENCE_SCORE_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.bm25 import (
+    DOCUMENT_BM25_SCORE_SCHEMA,
+    PARAGRAPH_BM25_SCORE_SCHEMA,
+    SECTION_BM25_SCORE_SCHEMA,
+    SENTENCE_BM25_SCORE_SCHEMA,
+)
+from examples.structure_generated.search.pyspark.schemas.overlap import (
+    DOCUMENT_OVERLAP_MATCH_SCHEMA,
+    DOCUMENT_OVERLAP_SCORE_SCHEMA,
+    PARAGRAPH_OVERLAP_MATCH_SCHEMA,
+    PARAGRAPH_OVERLAP_SCORE_SCHEMA,
+    SECTION_OVERLAP_MATCH_SCHEMA,
+    SECTION_OVERLAP_SCORE_SCHEMA,
+    SENTENCE_OVERLAP_MATCH_SCHEMA,
+    SENTENCE_OVERLAP_SCORE_SCHEMA,
+)
+from examples.structure_generated.search.pyspark.schemas.search import (
+    DOCUMENT_INDEX_SUMMARY_SCHEMA,
+    DOCUMENT_INDEX_TERM_SCHEMA,
+    DOCUMENT_SCORE_SCHEMA,
+    PARAGRAPH_INDEX_SUMMARY_SCHEMA,
+    PARAGRAPH_INDEX_TERM_SCHEMA,
+    PARAGRAPH_SCORE_SCHEMA,
+    QUERY_TERM_COUNT_SCHEMA,
+    QUERY_TERM_SCHEMA,
+    SEARCH_QUERY_SCHEMA,
+    SECTION_INDEX_SUMMARY_SCHEMA,
+    SECTION_INDEX_TERM_SCHEMA,
+    SECTION_SCORE_SCHEMA,
+    SENTENCE_INDEX_SUMMARY_SCHEMA,
+    SENTENCE_INDEX_TERM_SCHEMA,
+    SENTENCE_SCORE_SCHEMA,
+)
 
 
 class ScoreBaseGenerated:
@@ -16,7 +46,14 @@ class ScoreBaseGenerated:
         expanded_query_terms = frames["queries"].alias("search_query")
         expanded_query_terms = expanded_query_terms.select(
             "*",
-            F.posexplode(F.transform(F.split(F.trim(F.col("search_query.content")), '\\s+', -1), lambda item: F.struct(F.lower(F.regexp_replace(F.trim(item), '^[^A-Za-z0-9]+|[^A-Za-z0-9]+$', '')).alias("token")))).alias("__structure_query_token_1_pos", "__structure_query_token_1_item"),
+            F.posexplode(
+                F.transform(
+                    F.split(F.trim(F.col("search_query.content")), '\\s+', -1),
+                    lambda item: F.struct(
+                        F.lower(F.regexp_replace(F.trim(item), '^[^A-Za-z0-9]+|[^A-Za-z0-9]+$', '')).alias("token")
+                    ),
+                )
+            ).alias("__structure_query_token_1_pos", "__structure_query_token_1_item"),
         )
         expanded_query_terms = expanded_query_terms.withColumn(
             "ordinal",
@@ -26,7 +63,9 @@ class ScoreBaseGenerated:
             "token",
             F.col("__structure_query_token_1_item.token"),
         )
-        expanded_query_terms = expanded_query_terms.drop("__structure_query_token_1_pos", "__structure_query_token_1_item")
+        expanded_query_terms = expanded_query_terms.drop(
+            "__structure_query_token_1_pos", "__structure_query_token_1_item"
+        )
         expanded_query_terms = expanded_query_terms.where(((F.col("token") != F.lit(''))))
         expanded_query_terms = expanded_query_terms.select(
             F.col("search_query.id").alias("query_id"),
@@ -56,13 +95,17 @@ class ScoreBaseGenerated:
     def _step_count_query_terms_2(self, frames):
         # Step method: count_query_terms
         query_sizes = frames["query_terms"].alias("query_term")
-        query_sizes = query_sizes.groupBy(
-            F.col("query_term.query_id").alias("query_id"),
-        ).agg(
-            F.count(F.lit(1)).cast(T.LongType()).alias("query_terms"),
-        ).select(
-            F.col("query_id"),
-            F.col("query_terms"),
+        query_sizes = (
+            query_sizes.groupBy(
+                F.col("query_term.query_id").alias("query_id"),
+            )
+            .agg(
+                F.count(F.lit(1)).cast(T.LongType()).alias("query_terms"),
+            )
+            .select(
+                F.col("query_id"),
+                F.col("query_terms"),
+            )
         )
         assert_schema(query_sizes, QUERY_TERM_COUNT_SCHEMA, name="QueryTermCount", mode="strict")
         return {
@@ -86,21 +129,27 @@ class ScoreOverlapGenerated:
             (F.col("query_sizes_2.query_id") == F.col("query_term.query_id")),
             "inner",
         )
-        document_overlap_matches = document_overlap_matches.groupBy(
-            F.col("query_term.query_id").alias("query_id"),
-            F.col("document_terms.document_id").alias("document_id"),
-            F.col("query_sizes_2.query_terms").alias("query_terms"),
-            F.col("document_terms.target_distinct_terms").alias("target_distinct_terms"),
-        ).agg(
-            F.countDistinct(F.col("query_term.token")).cast(T.LongType()).alias("matched_terms"),
-        ).select(
-            F.col("query_id"),
-            F.col("document_id"),
-            F.col("query_terms"),
-            F.col("target_distinct_terms"),
-            F.col("matched_terms"),
+        document_overlap_matches = (
+            document_overlap_matches.groupBy(
+                F.col("query_term.query_id").alias("query_id"),
+                F.col("document_terms.document_id").alias("document_id"),
+                F.col("query_sizes_2.query_terms").alias("query_terms"),
+                F.col("document_terms.target_distinct_terms").alias("target_distinct_terms"),
+            )
+            .agg(
+                F.countDistinct(F.col("query_term.token")).cast(T.LongType()).alias("matched_terms"),
+            )
+            .select(
+                F.col("query_id"),
+                F.col("document_id"),
+                F.col("query_terms"),
+                F.col("target_distinct_terms"),
+                F.col("matched_terms"),
+            )
         )
-        assert_schema(document_overlap_matches, DOCUMENT_OVERLAP_MATCH_SCHEMA, name="DocumentOverlapMatch", mode="strict")
+        assert_schema(
+            document_overlap_matches, DOCUMENT_OVERLAP_MATCH_SCHEMA, name="DocumentOverlapMatch", mode="strict"
+        )
         return {
             "document_overlap_matches": document_overlap_matches,
         }
@@ -120,21 +169,25 @@ class ScoreOverlapGenerated:
             (F.col("query_sizes_2.query_id") == F.col("query_term.query_id")),
             "inner",
         )
-        section_overlap_matches = section_overlap_matches.groupBy(
-            F.col("query_term.query_id").alias("query_id"),
-            F.col("section_terms.document_id").alias("document_id"),
-            F.col("section_terms.section_id").alias("section_id"),
-            F.col("query_sizes_2.query_terms").alias("query_terms"),
-            F.col("section_terms.target_distinct_terms").alias("target_distinct_terms"),
-        ).agg(
-            F.countDistinct(F.col("query_term.token")).cast(T.LongType()).alias("matched_terms"),
-        ).select(
-            F.col("query_id"),
-            F.col("document_id"),
-            F.col("query_terms"),
-            F.col("target_distinct_terms"),
-            F.col("matched_terms"),
-            F.col("section_id"),
+        section_overlap_matches = (
+            section_overlap_matches.groupBy(
+                F.col("query_term.query_id").alias("query_id"),
+                F.col("section_terms.document_id").alias("document_id"),
+                F.col("section_terms.section_id").alias("section_id"),
+                F.col("query_sizes_2.query_terms").alias("query_terms"),
+                F.col("section_terms.target_distinct_terms").alias("target_distinct_terms"),
+            )
+            .agg(
+                F.countDistinct(F.col("query_term.token")).cast(T.LongType()).alias("matched_terms"),
+            )
+            .select(
+                F.col("query_id"),
+                F.col("document_id"),
+                F.col("query_terms"),
+                F.col("target_distinct_terms"),
+                F.col("matched_terms"),
+                F.col("section_id"),
+            )
         )
         assert_schema(section_overlap_matches, SECTION_OVERLAP_MATCH_SCHEMA, name="SectionOverlapMatch", mode="strict")
         return {
@@ -156,25 +209,31 @@ class ScoreOverlapGenerated:
             (F.col("query_sizes_2.query_id") == F.col("query_term.query_id")),
             "inner",
         )
-        paragraph_overlap_matches = paragraph_overlap_matches.groupBy(
-            F.col("query_term.query_id").alias("query_id"),
-            F.col("paragraph_terms.document_id").alias("document_id"),
-            F.col("paragraph_terms.section_id").alias("section_id"),
-            F.col("paragraph_terms.paragraph_id").alias("paragraph_id"),
-            F.col("query_sizes_2.query_terms").alias("query_terms"),
-            F.col("paragraph_terms.target_distinct_terms").alias("target_distinct_terms"),
-        ).agg(
-            F.countDistinct(F.col("query_term.token")).cast(T.LongType()).alias("matched_terms"),
-        ).select(
-            F.col("query_id"),
-            F.col("document_id"),
-            F.col("query_terms"),
-            F.col("target_distinct_terms"),
-            F.col("matched_terms"),
-            F.col("section_id"),
-            F.col("paragraph_id"),
+        paragraph_overlap_matches = (
+            paragraph_overlap_matches.groupBy(
+                F.col("query_term.query_id").alias("query_id"),
+                F.col("paragraph_terms.document_id").alias("document_id"),
+                F.col("paragraph_terms.section_id").alias("section_id"),
+                F.col("paragraph_terms.paragraph_id").alias("paragraph_id"),
+                F.col("query_sizes_2.query_terms").alias("query_terms"),
+                F.col("paragraph_terms.target_distinct_terms").alias("target_distinct_terms"),
+            )
+            .agg(
+                F.countDistinct(F.col("query_term.token")).cast(T.LongType()).alias("matched_terms"),
+            )
+            .select(
+                F.col("query_id"),
+                F.col("document_id"),
+                F.col("query_terms"),
+                F.col("target_distinct_terms"),
+                F.col("matched_terms"),
+                F.col("section_id"),
+                F.col("paragraph_id"),
+            )
         )
-        assert_schema(paragraph_overlap_matches, PARAGRAPH_OVERLAP_MATCH_SCHEMA, name="ParagraphOverlapMatch", mode="strict")
+        assert_schema(
+            paragraph_overlap_matches, PARAGRAPH_OVERLAP_MATCH_SCHEMA, name="ParagraphOverlapMatch", mode="strict"
+        )
         return {
             "paragraph_overlap_matches": paragraph_overlap_matches,
         }
@@ -194,27 +253,33 @@ class ScoreOverlapGenerated:
             (F.col("query_sizes_2.query_id") == F.col("query_term.query_id")),
             "inner",
         )
-        sentence_overlap_matches = sentence_overlap_matches.groupBy(
-            F.col("query_term.query_id").alias("query_id"),
-            F.col("sentence_terms.document_id").alias("document_id"),
-            F.col("sentence_terms.section_id").alias("section_id"),
-            F.col("sentence_terms.paragraph_id").alias("paragraph_id"),
-            F.col("sentence_terms.sentence_id").alias("sentence_id"),
-            F.col("query_sizes_2.query_terms").alias("query_terms"),
-            F.col("sentence_terms.target_distinct_terms").alias("target_distinct_terms"),
-        ).agg(
-            F.countDistinct(F.col("query_term.token")).cast(T.LongType()).alias("matched_terms"),
-        ).select(
-            F.col("query_id"),
-            F.col("document_id"),
-            F.col("query_terms"),
-            F.col("target_distinct_terms"),
-            F.col("matched_terms"),
-            F.col("section_id"),
-            F.col("paragraph_id"),
-            F.col("sentence_id"),
+        sentence_overlap_matches = (
+            sentence_overlap_matches.groupBy(
+                F.col("query_term.query_id").alias("query_id"),
+                F.col("sentence_terms.document_id").alias("document_id"),
+                F.col("sentence_terms.section_id").alias("section_id"),
+                F.col("sentence_terms.paragraph_id").alias("paragraph_id"),
+                F.col("sentence_terms.sentence_id").alias("sentence_id"),
+                F.col("query_sizes_2.query_terms").alias("query_terms"),
+                F.col("sentence_terms.target_distinct_terms").alias("target_distinct_terms"),
+            )
+            .agg(
+                F.countDistinct(F.col("query_term.token")).cast(T.LongType()).alias("matched_terms"),
+            )
+            .select(
+                F.col("query_id"),
+                F.col("document_id"),
+                F.col("query_terms"),
+                F.col("target_distinct_terms"),
+                F.col("matched_terms"),
+                F.col("section_id"),
+                F.col("paragraph_id"),
+                F.col("sentence_id"),
+            )
         )
-        assert_schema(sentence_overlap_matches, SENTENCE_OVERLAP_MATCH_SCHEMA, name="SentenceOverlapMatch", mode="strict")
+        assert_schema(
+            sentence_overlap_matches, SENTENCE_OVERLAP_MATCH_SCHEMA, name="SentenceOverlapMatch", mode="strict"
+        )
         return {
             "sentence_overlap_matches": sentence_overlap_matches,
         }
@@ -225,9 +290,20 @@ class ScoreOverlapGenerated:
         document_overlap_scores = document_overlap_scores.select(
             F.col("document_overlap_match.query_id"),
             F.col("document_overlap_match.document_id"),
-            (F.col("document_overlap_match.matched_terms") / F.when((F.col("document_overlap_match.query_terms") < F.col("document_overlap_match.target_distinct_terms")), F.col("document_overlap_match.query_terms")).otherwise(F.col("document_overlap_match.target_distinct_terms"))).alias("score_overlap"),
+            (
+                F.col("document_overlap_match.matched_terms")
+                / F.when(
+                    (
+                        F.col("document_overlap_match.query_terms")
+                        < F.col("document_overlap_match.target_distinct_terms")
+                    ),
+                    F.col("document_overlap_match.query_terms"),
+                ).otherwise(F.col("document_overlap_match.target_distinct_terms"))
+            ).alias("score_overlap"),
         )
-        assert_schema(document_overlap_scores, DOCUMENT_OVERLAP_SCORE_SCHEMA, name="DocumentOverlapScore", mode="strict")
+        assert_schema(
+            document_overlap_scores, DOCUMENT_OVERLAP_SCORE_SCHEMA, name="DocumentOverlapScore", mode="strict"
+        )
         return {
             "document_overlap_scores": document_overlap_scores,
         }
@@ -239,7 +315,13 @@ class ScoreOverlapGenerated:
             F.col("section_overlap_match.query_id"),
             F.col("section_overlap_match.document_id"),
             F.col("section_overlap_match.section_id"),
-            (F.col("section_overlap_match.matched_terms") / F.when((F.col("section_overlap_match.query_terms") < F.col("section_overlap_match.target_distinct_terms")), F.col("section_overlap_match.query_terms")).otherwise(F.col("section_overlap_match.target_distinct_terms"))).alias("score_overlap"),
+            (
+                F.col("section_overlap_match.matched_terms")
+                / F.when(
+                    (F.col("section_overlap_match.query_terms") < F.col("section_overlap_match.target_distinct_terms")),
+                    F.col("section_overlap_match.query_terms"),
+                ).otherwise(F.col("section_overlap_match.target_distinct_terms"))
+            ).alias("score_overlap"),
         )
         assert_schema(section_overlap_scores, SECTION_OVERLAP_SCORE_SCHEMA, name="SectionOverlapScore", mode="strict")
         return {
@@ -254,9 +336,20 @@ class ScoreOverlapGenerated:
             F.col("paragraph_overlap_match.document_id"),
             F.col("paragraph_overlap_match.section_id"),
             F.col("paragraph_overlap_match.paragraph_id"),
-            (F.col("paragraph_overlap_match.matched_terms") / F.when((F.col("paragraph_overlap_match.query_terms") < F.col("paragraph_overlap_match.target_distinct_terms")), F.col("paragraph_overlap_match.query_terms")).otherwise(F.col("paragraph_overlap_match.target_distinct_terms"))).alias("score_overlap"),
+            (
+                F.col("paragraph_overlap_match.matched_terms")
+                / F.when(
+                    (
+                        F.col("paragraph_overlap_match.query_terms")
+                        < F.col("paragraph_overlap_match.target_distinct_terms")
+                    ),
+                    F.col("paragraph_overlap_match.query_terms"),
+                ).otherwise(F.col("paragraph_overlap_match.target_distinct_terms"))
+            ).alias("score_overlap"),
         )
-        assert_schema(paragraph_overlap_scores, PARAGRAPH_OVERLAP_SCORE_SCHEMA, name="ParagraphOverlapScore", mode="strict")
+        assert_schema(
+            paragraph_overlap_scores, PARAGRAPH_OVERLAP_SCORE_SCHEMA, name="ParagraphOverlapScore", mode="strict"
+        )
         return {
             "paragraph_overlap_scores": paragraph_overlap_scores,
         }
@@ -270,9 +363,20 @@ class ScoreOverlapGenerated:
             F.col("sentence_overlap_match.section_id"),
             F.col("sentence_overlap_match.paragraph_id"),
             F.col("sentence_overlap_match.sentence_id"),
-            (F.col("sentence_overlap_match.matched_terms") / F.when((F.col("sentence_overlap_match.query_terms") < F.col("sentence_overlap_match.target_distinct_terms")), F.col("sentence_overlap_match.query_terms")).otherwise(F.col("sentence_overlap_match.target_distinct_terms"))).alias("score_overlap"),
+            (
+                F.col("sentence_overlap_match.matched_terms")
+                / F.when(
+                    (
+                        F.col("sentence_overlap_match.query_terms")
+                        < F.col("sentence_overlap_match.target_distinct_terms")
+                    ),
+                    F.col("sentence_overlap_match.query_terms"),
+                ).otherwise(F.col("sentence_overlap_match.target_distinct_terms"))
+            ).alias("score_overlap"),
         )
-        assert_schema(sentence_overlap_scores, SENTENCE_OVERLAP_SCORE_SCHEMA, name="SentenceOverlapScore", mode="strict")
+        assert_schema(
+            sentence_overlap_scores, SENTENCE_OVERLAP_SCORE_SCHEMA, name="SentenceOverlapScore", mode="strict"
+        )
         return {
             "sentence_overlap_scores": sentence_overlap_scores,
         }
@@ -290,15 +394,58 @@ class ScoreBm25Generated:
         )
         document_summary_2_joined = frames["document_summary"].alias("document_summary_2")
         document_bm25_scores = document_bm25_scores.crossJoin(document_summary_2_joined)
-        document_bm25_scores = document_bm25_scores.groupBy(
-            F.col("query_term.query_id").alias("query_id"),
-            F.col("document_terms.document_id").alias("document_id"),
-        ).agg(
-            F.sum((((F.log((F.lit(1.0) + (((F.col("document_summary_2.target_count") - F.col("document_terms.document_frequency")) + F.lit(0.5)) / (F.col("document_terms.document_frequency") + F.lit(0.5))))) * F.col("document_terms.term_frequency")) * F.lit(2.2)) / (F.col("document_terms.term_frequency") + (F.lit(1.2) * (F.lit(0.25) + ((F.lit(0.75) * F.col("document_terms.target_word_count")) / F.col("document_summary_2.average_target_length"))))))).cast(T.DoubleType()).alias("score_bm25"),
-        ).select(
-            F.col("query_id"),
-            F.col("document_id"),
-            F.col("score_bm25"),
+        document_bm25_scores = (
+            document_bm25_scores.groupBy(
+                F.col("query_term.query_id").alias("query_id"),
+                F.col("document_terms.document_id").alias("document_id"),
+            )
+            .agg(
+                F.sum(
+                    (
+                        (
+                            (
+                                F.log(
+                                    (
+                                        F.lit(1.0)
+                                        + (
+                                            (
+                                                (
+                                                    F.col("document_summary_2.target_count")
+                                                    - F.col("document_terms.document_frequency")
+                                                )
+                                                + F.lit(0.5)
+                                            )
+                                            / (F.col("document_terms.document_frequency") + F.lit(0.5))
+                                        )
+                                    )
+                                )
+                                * F.col("document_terms.term_frequency")
+                            )
+                            * F.lit(2.2)
+                        )
+                        / (
+                            F.col("document_terms.term_frequency")
+                            + (
+                                F.lit(1.2)
+                                * (
+                                    F.lit(0.25)
+                                    + (
+                                        (F.lit(0.75) * F.col("document_terms.target_word_count"))
+                                        / F.col("document_summary_2.average_target_length")
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+                .cast(T.DoubleType())
+                .alias("score_bm25"),
+            )
+            .select(
+                F.col("query_id"),
+                F.col("document_id"),
+                F.col("score_bm25"),
+            )
         )
         assert_schema(document_bm25_scores, DOCUMENT_BM25_SCORE_SCHEMA, name="DocumentBm25Score", mode="strict")
         return {
@@ -316,17 +463,60 @@ class ScoreBm25Generated:
         )
         section_summary_2_joined = frames["section_summary"].alias("section_summary_2")
         section_bm25_scores = section_bm25_scores.crossJoin(section_summary_2_joined)
-        section_bm25_scores = section_bm25_scores.groupBy(
-            F.col("query_term.query_id").alias("query_id"),
-            F.col("section_terms.document_id").alias("document_id"),
-            F.col("section_terms.section_id").alias("section_id"),
-        ).agg(
-            F.sum((((F.log((F.lit(1.0) + (((F.col("section_summary_2.target_count") - F.col("section_terms.document_frequency")) + F.lit(0.5)) / (F.col("section_terms.document_frequency") + F.lit(0.5))))) * F.col("section_terms.term_frequency")) * F.lit(2.2)) / (F.col("section_terms.term_frequency") + (F.lit(1.2) * (F.lit(0.25) + ((F.lit(0.75) * F.col("section_terms.target_word_count")) / F.col("section_summary_2.average_target_length"))))))).cast(T.DoubleType()).alias("score_bm25"),
-        ).select(
-            F.col("query_id"),
-            F.col("document_id"),
-            F.col("section_id"),
-            F.col("score_bm25"),
+        section_bm25_scores = (
+            section_bm25_scores.groupBy(
+                F.col("query_term.query_id").alias("query_id"),
+                F.col("section_terms.document_id").alias("document_id"),
+                F.col("section_terms.section_id").alias("section_id"),
+            )
+            .agg(
+                F.sum(
+                    (
+                        (
+                            (
+                                F.log(
+                                    (
+                                        F.lit(1.0)
+                                        + (
+                                            (
+                                                (
+                                                    F.col("section_summary_2.target_count")
+                                                    - F.col("section_terms.document_frequency")
+                                                )
+                                                + F.lit(0.5)
+                                            )
+                                            / (F.col("section_terms.document_frequency") + F.lit(0.5))
+                                        )
+                                    )
+                                )
+                                * F.col("section_terms.term_frequency")
+                            )
+                            * F.lit(2.2)
+                        )
+                        / (
+                            F.col("section_terms.term_frequency")
+                            + (
+                                F.lit(1.2)
+                                * (
+                                    F.lit(0.25)
+                                    + (
+                                        (F.lit(0.75) * F.col("section_terms.target_word_count"))
+                                        / F.col("section_summary_2.average_target_length")
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+                .cast(T.DoubleType())
+                .alias("score_bm25"),
+            )
+            .select(
+                F.col("query_id"),
+                F.col("document_id"),
+                F.col("section_id"),
+                F.col("score_bm25"),
+            )
         )
         assert_schema(section_bm25_scores, SECTION_BM25_SCORE_SCHEMA, name="SectionBm25Score", mode="strict")
         return {
@@ -344,19 +534,62 @@ class ScoreBm25Generated:
         )
         paragraph_summary_2_joined = frames["paragraph_summary"].alias("paragraph_summary_2")
         paragraph_bm25_scores = paragraph_bm25_scores.crossJoin(paragraph_summary_2_joined)
-        paragraph_bm25_scores = paragraph_bm25_scores.groupBy(
-            F.col("query_term.query_id").alias("query_id"),
-            F.col("paragraph_terms.document_id").alias("document_id"),
-            F.col("paragraph_terms.section_id").alias("section_id"),
-            F.col("paragraph_terms.paragraph_id").alias("paragraph_id"),
-        ).agg(
-            F.sum((((F.log((F.lit(1.0) + (((F.col("paragraph_summary_2.target_count") - F.col("paragraph_terms.document_frequency")) + F.lit(0.5)) / (F.col("paragraph_terms.document_frequency") + F.lit(0.5))))) * F.col("paragraph_terms.term_frequency")) * F.lit(2.2)) / (F.col("paragraph_terms.term_frequency") + (F.lit(1.2) * (F.lit(0.25) + ((F.lit(0.75) * F.col("paragraph_terms.target_word_count")) / F.col("paragraph_summary_2.average_target_length"))))))).cast(T.DoubleType()).alias("score_bm25"),
-        ).select(
-            F.col("query_id"),
-            F.col("document_id"),
-            F.col("section_id"),
-            F.col("paragraph_id"),
-            F.col("score_bm25"),
+        paragraph_bm25_scores = (
+            paragraph_bm25_scores.groupBy(
+                F.col("query_term.query_id").alias("query_id"),
+                F.col("paragraph_terms.document_id").alias("document_id"),
+                F.col("paragraph_terms.section_id").alias("section_id"),
+                F.col("paragraph_terms.paragraph_id").alias("paragraph_id"),
+            )
+            .agg(
+                F.sum(
+                    (
+                        (
+                            (
+                                F.log(
+                                    (
+                                        F.lit(1.0)
+                                        + (
+                                            (
+                                                (
+                                                    F.col("paragraph_summary_2.target_count")
+                                                    - F.col("paragraph_terms.document_frequency")
+                                                )
+                                                + F.lit(0.5)
+                                            )
+                                            / (F.col("paragraph_terms.document_frequency") + F.lit(0.5))
+                                        )
+                                    )
+                                )
+                                * F.col("paragraph_terms.term_frequency")
+                            )
+                            * F.lit(2.2)
+                        )
+                        / (
+                            F.col("paragraph_terms.term_frequency")
+                            + (
+                                F.lit(1.2)
+                                * (
+                                    F.lit(0.25)
+                                    + (
+                                        (F.lit(0.75) * F.col("paragraph_terms.target_word_count"))
+                                        / F.col("paragraph_summary_2.average_target_length")
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+                .cast(T.DoubleType())
+                .alias("score_bm25"),
+            )
+            .select(
+                F.col("query_id"),
+                F.col("document_id"),
+                F.col("section_id"),
+                F.col("paragraph_id"),
+                F.col("score_bm25"),
+            )
         )
         assert_schema(paragraph_bm25_scores, PARAGRAPH_BM25_SCORE_SCHEMA, name="ParagraphBm25Score", mode="strict")
         return {
@@ -374,21 +607,64 @@ class ScoreBm25Generated:
         )
         sentence_summary_2_joined = frames["sentence_summary"].alias("sentence_summary_2")
         sentence_bm25_scores = sentence_bm25_scores.crossJoin(sentence_summary_2_joined)
-        sentence_bm25_scores = sentence_bm25_scores.groupBy(
-            F.col("query_term.query_id").alias("query_id"),
-            F.col("sentence_terms.document_id").alias("document_id"),
-            F.col("sentence_terms.section_id").alias("section_id"),
-            F.col("sentence_terms.paragraph_id").alias("paragraph_id"),
-            F.col("sentence_terms.sentence_id").alias("sentence_id"),
-        ).agg(
-            F.sum((((F.log((F.lit(1.0) + (((F.col("sentence_summary_2.target_count") - F.col("sentence_terms.document_frequency")) + F.lit(0.5)) / (F.col("sentence_terms.document_frequency") + F.lit(0.5))))) * F.col("sentence_terms.term_frequency")) * F.lit(2.2)) / (F.col("sentence_terms.term_frequency") + (F.lit(1.2) * (F.lit(0.25) + ((F.lit(0.75) * F.col("sentence_terms.target_word_count")) / F.col("sentence_summary_2.average_target_length"))))))).cast(T.DoubleType()).alias("score_bm25"),
-        ).select(
-            F.col("query_id"),
-            F.col("document_id"),
-            F.col("section_id"),
-            F.col("paragraph_id"),
-            F.col("sentence_id"),
-            F.col("score_bm25"),
+        sentence_bm25_scores = (
+            sentence_bm25_scores.groupBy(
+                F.col("query_term.query_id").alias("query_id"),
+                F.col("sentence_terms.document_id").alias("document_id"),
+                F.col("sentence_terms.section_id").alias("section_id"),
+                F.col("sentence_terms.paragraph_id").alias("paragraph_id"),
+                F.col("sentence_terms.sentence_id").alias("sentence_id"),
+            )
+            .agg(
+                F.sum(
+                    (
+                        (
+                            (
+                                F.log(
+                                    (
+                                        F.lit(1.0)
+                                        + (
+                                            (
+                                                (
+                                                    F.col("sentence_summary_2.target_count")
+                                                    - F.col("sentence_terms.document_frequency")
+                                                )
+                                                + F.lit(0.5)
+                                            )
+                                            / (F.col("sentence_terms.document_frequency") + F.lit(0.5))
+                                        )
+                                    )
+                                )
+                                * F.col("sentence_terms.term_frequency")
+                            )
+                            * F.lit(2.2)
+                        )
+                        / (
+                            F.col("sentence_terms.term_frequency")
+                            + (
+                                F.lit(1.2)
+                                * (
+                                    F.lit(0.25)
+                                    + (
+                                        (F.lit(0.75) * F.col("sentence_terms.target_word_count"))
+                                        / F.col("sentence_summary_2.average_target_length")
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+                .cast(T.DoubleType())
+                .alias("score_bm25"),
+            )
+            .select(
+                F.col("query_id"),
+                F.col("document_id"),
+                F.col("section_id"),
+                F.col("paragraph_id"),
+                F.col("sentence_id"),
+                F.col("score_bm25"),
+            )
         )
         assert_schema(sentence_bm25_scores, SENTENCE_BM25_SCORE_SCHEMA, name="SentenceBm25Score", mode="strict")
         return {
@@ -403,7 +679,10 @@ class AddScoresGenerated(ScoreBaseGenerated, ScoreOverlapGenerated, ScoreBm25Gen
         document_bm25_scores_joined = frames["document_bm25_scores"].alias("document_bm25_scores")
         document_scores = document_scores.join(
             document_bm25_scores_joined,
-            ((F.col("document_bm25_scores.document_id") == F.col("document_overlap_score.document_id")) & (F.col("document_bm25_scores.query_id") == F.col("document_overlap_score.query_id"))),
+            (
+                (F.col("document_bm25_scores.document_id") == F.col("document_overlap_score.document_id"))
+                & (F.col("document_bm25_scores.query_id") == F.col("document_overlap_score.query_id"))
+            ),
             "inner",
         )
         document_scores = document_scores.select(
@@ -423,7 +702,10 @@ class AddScoresGenerated(ScoreBaseGenerated, ScoreOverlapGenerated, ScoreBm25Gen
         section_bm25_scores_joined = frames["section_bm25_scores"].alias("section_bm25_scores")
         section_scores = section_scores.join(
             section_bm25_scores_joined,
-            ((F.col("section_bm25_scores.section_id") == F.col("section_overlap_score.section_id")) & (F.col("section_bm25_scores.query_id") == F.col("section_overlap_score.query_id"))),
+            (
+                (F.col("section_bm25_scores.section_id") == F.col("section_overlap_score.section_id"))
+                & (F.col("section_bm25_scores.query_id") == F.col("section_overlap_score.query_id"))
+            ),
             "inner",
         )
         section_scores = section_scores.select(
@@ -444,7 +726,10 @@ class AddScoresGenerated(ScoreBaseGenerated, ScoreOverlapGenerated, ScoreBm25Gen
         paragraph_bm25_scores_joined = frames["paragraph_bm25_scores"].alias("paragraph_bm25_scores")
         paragraph_scores = paragraph_scores.join(
             paragraph_bm25_scores_joined,
-            ((F.col("paragraph_bm25_scores.paragraph_id") == F.col("paragraph_overlap_score.paragraph_id")) & (F.col("paragraph_bm25_scores.query_id") == F.col("paragraph_overlap_score.query_id"))),
+            (
+                (F.col("paragraph_bm25_scores.paragraph_id") == F.col("paragraph_overlap_score.paragraph_id"))
+                & (F.col("paragraph_bm25_scores.query_id") == F.col("paragraph_overlap_score.query_id"))
+            ),
             "inner",
         )
         paragraph_scores = paragraph_scores.select(
@@ -466,7 +751,10 @@ class AddScoresGenerated(ScoreBaseGenerated, ScoreOverlapGenerated, ScoreBm25Gen
         sentence_bm25_scores_joined = frames["sentence_bm25_scores"].alias("sentence_bm25_scores")
         sentence_scores = sentence_scores.join(
             sentence_bm25_scores_joined,
-            ((F.col("sentence_bm25_scores.sentence_id") == F.col("sentence_overlap_score.sentence_id")) & (F.col("sentence_bm25_scores.query_id") == F.col("sentence_overlap_score.query_id"))),
+            (
+                (F.col("sentence_bm25_scores.sentence_id") == F.col("sentence_overlap_score.sentence_id"))
+                & (F.col("sentence_bm25_scores.query_id") == F.col("sentence_overlap_score.query_id"))
+            ),
             "inner",
         )
         sentence_scores = sentence_scores.select(
@@ -559,7 +847,9 @@ class AddScoresGenerated(ScoreBaseGenerated, ScoreOverlapGenerated, ScoreBm25Gen
 
         # Step method: document_overlap_scores
         document_overlap_scores = frames["document_overlap_scores"].alias("document_overlap_score")
-        assert_schema(document_overlap_scores, DOCUMENT_OVERLAP_SCORE_SCHEMA, name="DocumentOverlapScore", mode="strict")
+        assert_schema(
+            document_overlap_scores, DOCUMENT_OVERLAP_SCORE_SCHEMA, name="DocumentOverlapScore", mode="strict"
+        )
 
         # Step method: section_overlap_scores
         section_overlap_scores = frames["section_overlap_scores"].alias("section_overlap_score")
@@ -567,11 +857,15 @@ class AddScoresGenerated(ScoreBaseGenerated, ScoreOverlapGenerated, ScoreBm25Gen
 
         # Step method: paragraph_overlap_scores
         paragraph_overlap_scores = frames["paragraph_overlap_scores"].alias("paragraph_overlap_score")
-        assert_schema(paragraph_overlap_scores, PARAGRAPH_OVERLAP_SCORE_SCHEMA, name="ParagraphOverlapScore", mode="strict")
+        assert_schema(
+            paragraph_overlap_scores, PARAGRAPH_OVERLAP_SCORE_SCHEMA, name="ParagraphOverlapScore", mode="strict"
+        )
 
         # Step method: sentence_overlap_scores
         sentence_overlap_scores = frames["sentence_overlap_scores"].alias("sentence_overlap_score")
-        assert_schema(sentence_overlap_scores, SENTENCE_OVERLAP_SCORE_SCHEMA, name="SentenceOverlapScore", mode="strict")
+        assert_schema(
+            sentence_overlap_scores, SENTENCE_OVERLAP_SCORE_SCHEMA, name="SentenceOverlapScore", mode="strict"
+        )
 
         # Step method: document_bm25_scores
         document_bm25_scores = frames["document_bm25_scores"].alias("document_bm25_score")
@@ -604,4 +898,34 @@ class AddScoresGenerated(ScoreBaseGenerated, ScoreOverlapGenerated, ScoreBm25Gen
         # Step method: sentence_scores
         sentence_scores = frames["sentence_scores"].alias("sentence_score")
         assert_schema(sentence_scores, SENTENCE_SCORE_SCHEMA, name="SentenceScore", mode="strict")
-        return TransformResult({"document_overlap_scores": document_overlap_scores, "section_overlap_scores": section_overlap_scores, "paragraph_overlap_scores": paragraph_overlap_scores, "sentence_overlap_scores": sentence_overlap_scores, "document_bm25_scores": document_bm25_scores, "section_bm25_scores": section_bm25_scores, "paragraph_bm25_scores": paragraph_bm25_scores, "sentence_bm25_scores": sentence_bm25_scores, "document_scores": document_scores, "section_scores": section_scores, "paragraph_scores": paragraph_scores, "sentence_scores": sentence_scores}, single=False, schema={"document_overlap_scores": DOCUMENT_OVERLAP_SCORE_SCHEMA, "section_overlap_scores": SECTION_OVERLAP_SCORE_SCHEMA, "paragraph_overlap_scores": PARAGRAPH_OVERLAP_SCORE_SCHEMA, "sentence_overlap_scores": SENTENCE_OVERLAP_SCORE_SCHEMA, "document_bm25_scores": DOCUMENT_BM25_SCORE_SCHEMA, "section_bm25_scores": SECTION_BM25_SCORE_SCHEMA, "paragraph_bm25_scores": PARAGRAPH_BM25_SCORE_SCHEMA, "sentence_bm25_scores": SENTENCE_BM25_SCORE_SCHEMA, "document_scores": DOCUMENT_SCORE_SCHEMA, "section_scores": SECTION_SCORE_SCHEMA, "paragraph_scores": PARAGRAPH_SCORE_SCHEMA, "sentence_scores": SENTENCE_SCORE_SCHEMA})
+        return TransformResult(
+            {
+                "document_overlap_scores": document_overlap_scores,
+                "section_overlap_scores": section_overlap_scores,
+                "paragraph_overlap_scores": paragraph_overlap_scores,
+                "sentence_overlap_scores": sentence_overlap_scores,
+                "document_bm25_scores": document_bm25_scores,
+                "section_bm25_scores": section_bm25_scores,
+                "paragraph_bm25_scores": paragraph_bm25_scores,
+                "sentence_bm25_scores": sentence_bm25_scores,
+                "document_scores": document_scores,
+                "section_scores": section_scores,
+                "paragraph_scores": paragraph_scores,
+                "sentence_scores": sentence_scores,
+            },
+            single=False,
+            schema={
+                "document_overlap_scores": DOCUMENT_OVERLAP_SCORE_SCHEMA,
+                "section_overlap_scores": SECTION_OVERLAP_SCORE_SCHEMA,
+                "paragraph_overlap_scores": PARAGRAPH_OVERLAP_SCORE_SCHEMA,
+                "sentence_overlap_scores": SENTENCE_OVERLAP_SCORE_SCHEMA,
+                "document_bm25_scores": DOCUMENT_BM25_SCORE_SCHEMA,
+                "section_bm25_scores": SECTION_BM25_SCORE_SCHEMA,
+                "paragraph_bm25_scores": PARAGRAPH_BM25_SCORE_SCHEMA,
+                "sentence_bm25_scores": SENTENCE_BM25_SCORE_SCHEMA,
+                "document_scores": DOCUMENT_SCORE_SCHEMA,
+                "section_scores": SECTION_SCORE_SCHEMA,
+                "paragraph_scores": PARAGRAPH_SCORE_SCHEMA,
+                "sentence_scores": SENTENCE_SCORE_SCHEMA,
+            },
+        )

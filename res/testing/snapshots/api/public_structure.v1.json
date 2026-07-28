@@ -67,6 +67,7 @@
         "generated_dir",
         "generated_package",
         "generated_code_options",
+        "generated_code_hard_wrap",
         "target",
         "validate_inputs",
         "input_validation_mode",
@@ -83,7 +84,7 @@
       "kind": "class",
       "module": "structure.core.compiler.artifacts.model.CompilerOptions",
       "qualname": "CompilerOptions",
-      "signature": "(project_root: 'Path', source_roots: 'tuple[Path, ...]', generated_dir: 'Path', generated_package: 'str', generated_code_options: 'tuple[str, ...]', target: 'str', validate_inputs: 'bool', input_validation_mode: 'str', validate_intermediate: 'bool', intermediate_validation_mode: 'str', validate_outputs: 'bool', output_validation_mode: 'str', strict_performance: 'bool', warn_on_udfs: 'bool', schema_types_key: 'str | None' = None, plugin_options: 'Mapping[str, Mapping[str, object]]' = <factory>) -> None"
+      "signature": "(project_root: 'Path', source_roots: 'tuple[Path, ...]', generated_dir: 'Path', generated_package: 'str', generated_code_options: 'tuple[str, ...]', generated_code_hard_wrap: 'int', target: 'str', validate_inputs: 'bool', input_validation_mode: 'str', validate_intermediate: 'bool', intermediate_validation_mode: 'str', validate_outputs: 'bool', output_validation_mode: 'str', strict_performance: 'bool', warn_on_udfs: 'bool', schema_types_key: 'str | None' = None, plugin_options: 'Mapping[str, Mapping[str, object]]' = <factory>) -> None"
     },
     "DiskStorage": {
       "dataclass_fields": [],
@@ -181,6 +182,7 @@
         "generated_docs_dir",
         "generated_docs_formats",
         "generated_code_options",
+        "generated_code_hard_wrap",
         "execution_mode",
         "target",
         "hook_target_default",
@@ -202,7 +204,7 @@
       "kind": "class",
       "module": "structure.core.configuration.model.StructureConfig",
       "qualname": "StructureConfig",
-      "signature": "(project_root: 'Path', source_roots: 'tuple[Path, ...]', generated_dir: 'Path', generated_package: 'str', generated_docs: 'bool', generated_docs_dir: 'Path', generated_docs_formats: 'tuple[str, ...]', generated_code_options: 'tuple[str, ...]', execution_mode: 'str', target: 'str', hook_target_default: 'tuple[str, ...] | str', traceability: 'str', validate_inputs: 'bool', input_validation_mode: 'str', validate_intermediate: 'bool', intermediate_validation_mode: 'str', validate_outputs: 'bool', output_validation_mode: 'str', strict_performance: 'bool', warn_on_udfs: 'bool', fail_on_diff: 'bool', spark_sql: 'Mapping[str, object]', plugin_options: 'Mapping[str, Mapping[str, object]]', source_map: 'Mapping[str, str]') -> None"
+      "signature": "(project_root: 'Path', source_roots: 'tuple[Path, ...]', generated_dir: 'Path', generated_package: 'str', generated_docs: 'bool', generated_docs_dir: 'Path', generated_docs_formats: 'tuple[str, ...]', generated_code_options: 'tuple[str, ...]', generated_code_hard_wrap: 'int', execution_mode: 'str', target: 'str', hook_target_default: 'tuple[str, ...] | str', traceability: 'str', validate_inputs: 'bool', input_validation_mode: 'str', validate_intermediate: 'bool', intermediate_validation_mode: 'str', validate_outputs: 'bool', output_validation_mode: 'str', strict_performance: 'bool', warn_on_udfs: 'bool', fail_on_diff: 'bool', spark_sql: 'Mapping[str, object]', plugin_options: 'Mapping[str, Mapping[str, object]]', source_map: 'Mapping[str, str]') -> None"
     },
     "StructureRuntimeError": {
       "dataclass_fields": [],

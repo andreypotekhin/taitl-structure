@@ -46,7 +46,11 @@ def spark():
     else:
         builder = builder.master(master)
 
-    builder = builder.config("spark.sql.shuffle.partitions", "1").config("spark.sql.session.timeZone", "UTC")
+    builder = (
+        builder.config("spark.sql.shuffle.partitions", "1")
+        .config("spark.sql.session.timeZone", "UTC")
+        .config("spark.sql.adaptive.enabled", "false")
+    )
     if not remote:
         builder = builder.config("spark.sql.artifact.dir", "/tmp/spark-artifacts").config("spark.ui.enabled", "false")
 

@@ -30,11 +30,84 @@ class TrendGenerated:
             F.col("market_bar.symbol"),
             F.col("market_bar.trade_date"),
             F.col("market_bar.close"),
-            F.when((F.row_number().over(Window.partitionBy(F.col("market_bar.symbol")).orderBy(F.col("market_bar.trade_date").asc())).cast(T.LongType()) >= F.lit(20)), F.avg(F.col("market_bar.close")).over(Window.partitionBy(F.col("market_bar.symbol")).orderBy(F.col("market_bar.trade_date").asc()).rowsBetween(-19, 0))).otherwise(F.lit(None)).alias("sma_20"),
-            F.when((F.row_number().over(Window.partitionBy(F.col("market_bar.symbol")).orderBy(F.col("market_bar.trade_date").asc())).cast(T.LongType()) >= F.lit(50)), F.avg(F.col("market_bar.close")).over(Window.partitionBy(F.col("market_bar.symbol")).orderBy(F.col("market_bar.trade_date").asc()).rowsBetween(-49, 0))).otherwise(F.lit(None)).alias("sma_50"),
-            F.when((F.row_number().over(Window.partitionBy(F.col("market_bar.symbol")).orderBy(F.col("market_bar.trade_date").asc())).cast(T.LongType()) >= F.lit(20)), F.max(F.col("market_bar.high")).over(Window.partitionBy(F.col("market_bar.symbol")).orderBy(F.col("market_bar.trade_date").asc()).rowsBetween(-19, 0))).otherwise(F.lit(None)).alias("high_20"),
-            F.when((F.row_number().over(Window.partitionBy(F.col("market_bar.symbol")).orderBy(F.col("market_bar.trade_date").asc())).cast(T.LongType()) >= F.lit(20)), F.min(F.col("market_bar.low")).over(Window.partitionBy(F.col("market_bar.symbol")).orderBy(F.col("market_bar.trade_date").asc()).rowsBetween(-19, 0))).otherwise(F.lit(None)).alias("low_20"),
-            F.when((F.row_number().over(Window.partitionBy(F.col("market_bar.symbol")).orderBy(F.col("market_bar.trade_date").asc())).cast(T.LongType()) >= F.lit(50)), (F.col("market_bar.close") > F.avg(F.col("market_bar.close")).over(Window.partitionBy(F.col("market_bar.symbol")).orderBy(F.col("market_bar.trade_date").asc()).rowsBetween(-49, 0)))).otherwise(F.lit(None)).alias("above_sma_50"),
+            F.when(
+                (
+                    F.row_number()
+                    .over(Window.partitionBy(F.col("market_bar.symbol")).orderBy(F.col("market_bar.trade_date").asc()))
+                    .cast(T.LongType())
+                    >= F.lit(20)
+                ),
+                F.avg(F.col("market_bar.close")).over(
+                    Window.partitionBy(F.col("market_bar.symbol"))
+                    .orderBy(F.col("market_bar.trade_date").asc())
+                    .rowsBetween(-19, 0)
+                ),
+            )
+            .otherwise(F.lit(None))
+            .alias("sma_20"),
+            F.when(
+                (
+                    F.row_number()
+                    .over(Window.partitionBy(F.col("market_bar.symbol")).orderBy(F.col("market_bar.trade_date").asc()))
+                    .cast(T.LongType())
+                    >= F.lit(50)
+                ),
+                F.avg(F.col("market_bar.close")).over(
+                    Window.partitionBy(F.col("market_bar.symbol"))
+                    .orderBy(F.col("market_bar.trade_date").asc())
+                    .rowsBetween(-49, 0)
+                ),
+            )
+            .otherwise(F.lit(None))
+            .alias("sma_50"),
+            F.when(
+                (
+                    F.row_number()
+                    .over(Window.partitionBy(F.col("market_bar.symbol")).orderBy(F.col("market_bar.trade_date").asc()))
+                    .cast(T.LongType())
+                    >= F.lit(20)
+                ),
+                F.max(F.col("market_bar.high")).over(
+                    Window.partitionBy(F.col("market_bar.symbol"))
+                    .orderBy(F.col("market_bar.trade_date").asc())
+                    .rowsBetween(-19, 0)
+                ),
+            )
+            .otherwise(F.lit(None))
+            .alias("high_20"),
+            F.when(
+                (
+                    F.row_number()
+                    .over(Window.partitionBy(F.col("market_bar.symbol")).orderBy(F.col("market_bar.trade_date").asc()))
+                    .cast(T.LongType())
+                    >= F.lit(20)
+                ),
+                F.min(F.col("market_bar.low")).over(
+                    Window.partitionBy(F.col("market_bar.symbol"))
+                    .orderBy(F.col("market_bar.trade_date").asc())
+                    .rowsBetween(-19, 0)
+                ),
+            )
+            .otherwise(F.lit(None))
+            .alias("low_20"),
+            F.when(
+                (
+                    F.row_number()
+                    .over(Window.partitionBy(F.col("market_bar.symbol")).orderBy(F.col("market_bar.trade_date").asc()))
+                    .cast(T.LongType())
+                    >= F.lit(50)
+                ),
+                (
+                    F.col("market_bar.close")
+                    > F.avg(F.col("market_bar.close")).over(
+                        Window.partitionBy(F.col("market_bar.symbol"))
+                        .orderBy(F.col("market_bar.trade_date").asc())
+                        .rowsBetween(-49, 0)
+                    )
+                ),
+            )
+            .otherwise(F.lit(None))
+            .alias("above_sma_50"),
         )
 
         # Step method: indicators

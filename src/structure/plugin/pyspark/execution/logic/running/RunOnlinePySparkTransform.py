@@ -3,6 +3,7 @@ from __future__ import annotations
 from structure.dsl import Transform
 from structure.plugin.api.v1.model import RuntimeDiagnostic, StructureRuntimeError, TransformResult
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
+from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.plugin.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoinRecipe
 from structure.plugin.pyspark.compiler.model.PySparkOutputRecipe import PySparkOutputRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkStepRecipe
@@ -277,6 +278,14 @@ class RunOnlinePySparkTransform:
                     prepared_frames[scope] = prepared
             if operation.kind == "posexplode_struct" and operation.posexplode_struct is not None:
                 df = self._posexplode_struct(step, df, operation.posexplode_struct, functions=functions, types=types)
+            if operation.kind == "ordered_timeline_scan" and operation.ordered_timeline_scan is not None:
+                df = self._ordered_timeline_scan(
+                    step,
+                    df,
+                    operation.ordered_timeline_scan,
+                    functions=functions,
+                    types=types,
+                )
             if operation.relation_alias is not None:
                 continue
             if operation.relation_assertion is not None:
@@ -570,6 +579,164 @@ class RunOnlinePySparkTransform:
                 continue
             expanded = expanded.withColumn(field.column, functions.col(f"{item}.{field.column}"))
         return expanded.drop(position, item)
+
+    def _ordered_timeline_scan(self, step, frame, scan, *, functions, types):
+        prefix = f"__structure_{scan.scope.strip('_')}"
+        partition_columns = tuple(f"{prefix}_partition_{index}" for index, _ in enumerate(scan.partition_by))
+        order_columns = tuple(f"{prefix}_order_{index}" for index, _ in enumerate(scan.order_by))
+        items = f"{prefix}_items"
+        folded = f"{prefix}_folded"
+        row = f"{prefix}_row"
+        position = f"{prefix}_pos"
+        guard_column = f"__structure_{scan.scope.strip('_')}_guard"
+        payload = "__payload"
+        state = "__state"
+        rows = "__rows"
+        input_columns = tuple(frame.columns)
+        aliases = self._scope_aliases(step)
+
+        keyed = frame
+        for column, expression in zip(partition_columns, scan.partition_by, strict=True):
+            keyed = keyed.withColumn(column, self._expressions.evaluate(expression, functions=functions, aliases=aliases))
+        for column, expression in zip(order_columns, scan.order_by, strict=True):
+            keyed = keyed.withColumn(column, self._expressions.evaluate(expression, functions=functions, aliases=aliases))
+
+        guard = self._scan_guard(keyed, partition_columns, order_columns, scan, functions=functions)
+        keyed = guard.crossJoin(keyed)
+
+        item = functions.struct(
+            *(functions.col(column).alias(column) for column in order_columns),
+            functions.struct(*(functions.col(column).alias(column) for column in input_columns)).alias(payload),
+        )
+        grouped = keyed.groupBy(*partition_columns, guard_column).agg(
+            functions.sort_array(functions.collect_list(item)).alias(items)
+        )
+
+        state_schema = self._schema.materialize()(scan.state_schema, types=types)
+        initial_state = functions.struct(
+            *(
+                self._expressions.evaluate(expression, functions=functions, aliases=aliases)
+                .cast(state_schema[scan.state_schema._structure_fields[name].column].dataType)
+                .alias(scan.state_schema._structure_fields[name].column)
+                for name, expression in scan.initial
+            )
+        )
+        initial_accumulator = functions.struct(
+            initial_state.alias(state),
+            functions.array().cast(self._scan_rows_type(frame, input_columns, scan, types=types)).alias(rows),
+        )
+
+        def merge(accumulator, item):
+            current_state = accumulator.getField(state)
+            current_rows = accumulator.getField(rows)
+            before = functions.struct(item.getField(payload).alias(payload), current_state.alias(state))
+            next_state = functions.struct(
+                *(
+                    self._scan_transition_value(expression, scan, accumulator, item, functions=functions)
+                    .cast(state_schema[scan.state_schema._structure_fields[name].column].dataType)
+                    .alias(scan.state_schema._structure_fields[name].column)
+                    for name, expression in scan.transition
+                )
+            )
+            return functions.struct(
+                next_state.alias(state),
+                functions.concat(current_rows, functions.array(before)).alias(rows),
+            )
+
+        folded_frame = grouped.select(functions.aggregate(functions.col(items), initial_accumulator, merge).alias(folded))
+        expanded = folded_frame.select(functions.posexplode(functions.col(folded).getField(rows)).alias(position, row))
+        return expanded.select(
+            *(functions.col(f"{row}.{payload}.{column}").alias(column) for column in input_columns),
+            *(
+                functions.col(f"{row}.{state}.{field.column}").alias(field.column)
+                for field in scan.state_schema._structure_fields.values()
+            ),
+        )
+
+    def _scan_guard(self, keyed, partition_columns, order_columns, scan, *, functions):
+        violation = "__structure_scan_violation"
+        count = "__structure_scan_count"
+        null_order = None
+        for column in order_columns:
+            condition = functions.col(column).isNull()
+            null_order = condition if null_order is None else null_order | condition
+        assert null_order is not None
+        nulls = keyed.where(null_order).select(functions.lit(1).alias(violation))
+        duplicates = (
+            keyed.groupBy(*partition_columns, *order_columns)
+            .agg(functions.count(functions.lit(1)).alias(count))
+            .where(functions.col(count) > functions.lit(1))
+            .select(functions.lit(1).alias(violation))
+        )
+        overruns = (
+            keyed.groupBy(*partition_columns)
+            .agg(functions.count(functions.lit(1)).alias(count))
+            .where(functions.col(count) > functions.lit(scan.max_rows))
+            .select(functions.lit(1).alias(violation))
+        )
+        message = (
+            "SCAN-E0801: scan(...) found null order keys, duplicate order keys, or a partition above max_rows; "
+            "see docs/dev/specifications/OrderedTimelineScan.md"
+        )
+        violations = nulls.unionByName(duplicates, allowMissingColumns=False).unionByName(
+            overruns,
+            allowMissingColumns=False,
+        )
+        return violations.agg(functions.count(functions.lit(1)).alias(count)).select(
+            functions.assert_true(functions.col(count) == functions.lit(0), message).alias(
+                f"__structure_{scan.scope.strip('_')}_guard"
+            )
+        )
+
+    def _scan_rows_type(self, frame, input_columns, scan, *, types):
+        payload_type = types.StructType([frame.schema[column] for column in input_columns])
+        state_type = self._schema.materialize()(scan.state_schema, types=types)
+        row_type = types.StructType(
+            [
+                types.StructField("__payload", payload_type, nullable=False),
+                types.StructField("__state", state_type, nullable=False),
+            ]
+        )
+        return types.ArrayType(row_type, containsNull=False)
+
+    def _scan_transition_value(self, expression, scan, accumulator, item, *, functions):
+        state = accumulator.getField("__state")
+        payload = item.getField("__payload")
+        rewritten = self._scan_rewrite(expression, scan, state=state, payload=payload)
+        return self._expressions.evaluate(rewritten, functions=functions, aliases={})
+
+    def _scan_rewrite(self, expression, scan, *, state, payload):
+        if expression.kind == "field" and "scope" in expression.data:
+            scope = str(expression.data["scope"])
+            if scope == scan.state_scope:
+                return self._scan_field(expression, state)
+            if scope == scan.row_scope:
+                return self._scan_field(expression, payload)
+        return PySparkExpressionRecipe(
+            kind=expression.kind,
+            type=expression.type,
+            nullable=expression.nullable,
+            data=expression.data,
+            args=tuple(self._scan_rewrite(argument, scan, state=state, payload=payload) for argument in expression.args),
+        )
+
+    def _scan_field(self, expression, root):
+        rewritten = PySparkExpressionRecipe(
+            kind="lambda_arg",
+            type=None,
+            nullable=False,
+            data={"column": root},
+        )
+        path = expression.data.get("path", (expression.data["field"],))
+        for field in path:
+            rewritten = PySparkExpressionRecipe(
+                kind="get_field",
+                type=expression.type,
+                nullable=expression.nullable,
+                data={"field": str(field)},
+                args=(rewritten,),
+            )
+        return rewritten
 
     def _relation_set(self, left, right, relation_set):
         if relation_set.by_name:
@@ -1309,6 +1476,13 @@ class RunOnlinePySparkTransform:
         for operation in step.operations:
             if operation.posexplode_struct is not None:
                 aliases[operation.posexplode_struct.scope] = ""
+            if operation.ordered_timeline_scan is not None:
+                aliases[operation.ordered_timeline_scan.row_scope] = ""
+                aliases[operation.ordered_timeline_scan.scope] = ""
+                aliases[step.input_schema.__name__] = ""
+                source_scope = getattr(step, "source_scope", None)
+                if source_scope is not None:
+                    aliases[source_scope] = ""
             if operation.relation_hierarchy_closure is not None:
                 aliases[operation.relation_hierarchy_closure.scope] = ""
             if operation.relation_hierarchy_fallback is not None:

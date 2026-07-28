@@ -21,6 +21,7 @@ class StructureConfigDefaults:
             "generated_docs_dir": "docs",
             "generated_docs_formats": ["markdown", "json"],
             "generated_code_options": [],
+            "generated_code_hard_wrap": 120,
             "execution_mode": "online",
             "hook_target_default": ["pyspark"],
             "traceability": "compiler",

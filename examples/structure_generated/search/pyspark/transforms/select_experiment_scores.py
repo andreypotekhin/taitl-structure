@@ -6,7 +6,12 @@ from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
 from examples.structure_generated.search.pyspark.schemas.experiment import EXPERIMENT_SCHEMA
-from examples.structure_generated.search.pyspark.schemas.search import DOCUMENT_SCORE_SCHEMA, PARAGRAPH_SCORE_SCHEMA, SECTION_SCORE_SCHEMA, SENTENCE_SCORE_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.search import (
+    DOCUMENT_SCORE_SCHEMA,
+    PARAGRAPH_SCORE_SCHEMA,
+    SECTION_SCORE_SCHEMA,
+    SENTENCE_SCORE_SCHEMA,
+)
 
 
 class SelectExperimentScoresGenerated:
@@ -43,7 +48,9 @@ class SelectExperimentScoresGenerated:
             (F.col("experiments.experiment_id") == F.col("document_score.experiment_id")),
             "left",
         )
-        active_document_scores = active_document_scores.where((((F.col("document_score.experiment_id") == F.lit('')) | F.col("experiments.is_active"))))
+        active_document_scores = active_document_scores.where(
+            (((F.col("document_score.experiment_id") == F.lit('')) | F.col("experiments.is_active")))
+        )
         active_document_scores = active_document_scores.select(
             F.col("document_score.query_id"),
             F.col("document_score.document_id"),
@@ -60,7 +67,9 @@ class SelectExperimentScoresGenerated:
             (F.col("experiments.experiment_id") == F.col("section_score.experiment_id")),
             "left",
         )
-        active_section_scores = active_section_scores.where((((F.col("section_score.experiment_id") == F.lit('')) | F.col("experiments.is_active"))))
+        active_section_scores = active_section_scores.where(
+            (((F.col("section_score.experiment_id") == F.lit('')) | F.col("experiments.is_active")))
+        )
         active_section_scores = active_section_scores.select(
             F.col("section_score.query_id"),
             F.col("section_score.document_id"),
@@ -78,7 +87,9 @@ class SelectExperimentScoresGenerated:
             (F.col("experiments.experiment_id") == F.col("paragraph_score.experiment_id")),
             "left",
         )
-        active_paragraph_scores = active_paragraph_scores.where((((F.col("paragraph_score.experiment_id") == F.lit('')) | F.col("experiments.is_active"))))
+        active_paragraph_scores = active_paragraph_scores.where(
+            (((F.col("paragraph_score.experiment_id") == F.lit('')) | F.col("experiments.is_active")))
+        )
         active_paragraph_scores = active_paragraph_scores.select(
             F.col("paragraph_score.query_id"),
             F.col("paragraph_score.document_id"),
@@ -97,7 +108,9 @@ class SelectExperimentScoresGenerated:
             (F.col("experiments.experiment_id") == F.col("sentence_score.experiment_id")),
             "left",
         )
-        active_sentence_scores = active_sentence_scores.where((((F.col("sentence_score.experiment_id") == F.lit('')) | F.col("experiments.is_active"))))
+        active_sentence_scores = active_sentence_scores.where(
+            (((F.col("sentence_score.experiment_id") == F.lit('')) | F.col("experiments.is_active")))
+        )
         active_sentence_scores = active_sentence_scores.select(
             F.col("sentence_score.query_id"),
             F.col("sentence_score.document_id"),
@@ -123,4 +136,18 @@ class SelectExperimentScoresGenerated:
         # Step method: active_sentence_scores
         active_sentence_scores = active_sentence_scores.alias("sentence_score")
         assert_schema(active_sentence_scores, SENTENCE_SCORE_SCHEMA, name="SentenceScore", mode="strict")
-        return TransformResult({"active_document_scores": active_document_scores, "active_section_scores": active_section_scores, "active_paragraph_scores": active_paragraph_scores, "active_sentence_scores": active_sentence_scores}, single=False, schema={"active_document_scores": DOCUMENT_SCORE_SCHEMA, "active_section_scores": SECTION_SCORE_SCHEMA, "active_paragraph_scores": PARAGRAPH_SCORE_SCHEMA, "active_sentence_scores": SENTENCE_SCORE_SCHEMA})
+        return TransformResult(
+            {
+                "active_document_scores": active_document_scores,
+                "active_section_scores": active_section_scores,
+                "active_paragraph_scores": active_paragraph_scores,
+                "active_sentence_scores": active_sentence_scores,
+            },
+            single=False,
+            schema={
+                "active_document_scores": DOCUMENT_SCORE_SCHEMA,
+                "active_section_scores": SECTION_SCORE_SCHEMA,
+                "active_paragraph_scores": PARAGRAPH_SCORE_SCHEMA,
+                "active_sentence_scores": SENTENCE_SCORE_SCHEMA,
+            },
+        )

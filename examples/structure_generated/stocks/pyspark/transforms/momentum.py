@@ -30,12 +30,114 @@ class MomentumGenerated:
             F.col("daily_return.symbol"),
             F.col("daily_return.trade_date"),
             F.col("daily_return.return_1d"),
-            F.when((F.row_number().over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc())).cast(T.LongType()) >= F.lit(11)), ((F.col("daily_return.close") / F.lag(F.col("daily_return.close"), 10).over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc()))) - F.lit(1.0))).otherwise(F.lit(None)).alias("roc_10"),
-            F.when((F.row_number().over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc())).cast(T.LongType()) >= F.lit(15)), F.when((F.avg(F.col("daily_return.loss")).over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc()).rowsBetween(-13, Window.currentRow)) > F.lit(0)), (F.lit(100.0) - (F.lit(100.0) / (F.lit(1.0) + (F.avg(F.col("daily_return.gain")).over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc()).rowsBetween(-13, Window.currentRow)) / F.avg(F.col("daily_return.loss")).over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc()).rowsBetween(-13, Window.currentRow))))))).otherwise(F.lit(100.0))).otherwise(F.lit(None)).alias("cutler_rsi_14"),
-            F.when((F.row_number().over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc())).cast(T.LongType()) >= F.lit(14)), (((F.col("daily_return.close") - F.min(F.col("daily_return.low")).over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc()).rowsBetween(-13, 0))) / (F.max(F.col("daily_return.high")).over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc()).rowsBetween(-13, 0)) - F.min(F.col("daily_return.low")).over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc()).rowsBetween(-13, 0)))) * F.lit(100.0))).otherwise(F.lit(None)).alias("stochastic_k_14"),
+            F.when(
+                (
+                    F.row_number()
+                    .over(
+                        Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc())
+                    )
+                    .cast(T.LongType())
+                    >= F.lit(11)
+                ),
+                (
+                    (
+                        F.col("daily_return.close")
+                        / F.lag(F.col("daily_return.close"), 10).over(
+                            Window.partitionBy(F.col("daily_return.symbol")).orderBy(
+                                F.col("daily_return.trade_date").asc()
+                            )
+                        )
+                    )
+                    - F.lit(1.0)
+                ),
+            )
+            .otherwise(F.lit(None))
+            .alias("roc_10"),
+            F.when(
+                (
+                    F.row_number()
+                    .over(
+                        Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc())
+                    )
+                    .cast(T.LongType())
+                    >= F.lit(15)
+                ),
+                F.when(
+                    (
+                        F.avg(F.col("daily_return.loss")).over(
+                            Window.partitionBy(F.col("daily_return.symbol"))
+                            .orderBy(F.col("daily_return.trade_date").asc())
+                            .rowsBetween(-13, Window.currentRow)
+                        )
+                        > F.lit(0)
+                    ),
+                    (
+                        F.lit(100.0)
+                        - (
+                            F.lit(100.0)
+                            / (
+                                F.lit(1.0)
+                                + (
+                                    F.avg(F.col("daily_return.gain")).over(
+                                        Window.partitionBy(F.col("daily_return.symbol"))
+                                        .orderBy(F.col("daily_return.trade_date").asc())
+                                        .rowsBetween(-13, Window.currentRow)
+                                    )
+                                    / F.avg(F.col("daily_return.loss")).over(
+                                        Window.partitionBy(F.col("daily_return.symbol"))
+                                        .orderBy(F.col("daily_return.trade_date").asc())
+                                        .rowsBetween(-13, Window.currentRow)
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                ).otherwise(F.lit(100.0)),
+            )
+            .otherwise(F.lit(None))
+            .alias("cutler_rsi_14"),
+            F.when(
+                (
+                    F.row_number()
+                    .over(
+                        Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc())
+                    )
+                    .cast(T.LongType())
+                    >= F.lit(14)
+                ),
+                (
+                    (
+                        (
+                            F.col("daily_return.close")
+                            - F.min(F.col("daily_return.low")).over(
+                                Window.partitionBy(F.col("daily_return.symbol"))
+                                .orderBy(F.col("daily_return.trade_date").asc())
+                                .rowsBetween(-13, 0)
+                            )
+                        )
+                        / (
+                            F.max(F.col("daily_return.high")).over(
+                                Window.partitionBy(F.col("daily_return.symbol"))
+                                .orderBy(F.col("daily_return.trade_date").asc())
+                                .rowsBetween(-13, 0)
+                            )
+                            - F.min(F.col("daily_return.low")).over(
+                                Window.partitionBy(F.col("daily_return.symbol"))
+                                .orderBy(F.col("daily_return.trade_date").asc())
+                                .rowsBetween(-13, 0)
+                            )
+                        )
+                    )
+                    * F.lit(100.0)
+                ),
+            )
+            .otherwise(F.lit(None))
+            .alias("stochastic_k_14"),
         )
 
         # Step method: indicators
         indicators = returns.alias("momentum_indicator")
         assert_schema(indicators, MOMENTUM_INDICATOR_SCHEMA, name="MomentumIndicator", mode="strict")
-        return TransformResult({"indicators": indicators}, single=True, schema={"indicators": MOMENTUM_INDICATOR_SCHEMA})
+        return TransformResult(
+            {"indicators": indicators}, single=True, schema={"indicators": MOMENTUM_INDICATOR_SCHEMA}
+        )

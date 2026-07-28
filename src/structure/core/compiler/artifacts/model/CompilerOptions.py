@@ -15,6 +15,7 @@ class CompilerOptions:
     generated_dir: Path
     generated_package: str
     generated_code_options: tuple[str, ...]
+    generated_code_hard_wrap: int
     target: str
     validate_inputs: bool
     input_validation_mode: str
@@ -55,6 +56,7 @@ class CompilerOptions:
             generated_dir=config.generated_dir,
             generated_package=config.generated_package,
             generated_code_options=config.generated_code_options,
+            generated_code_hard_wrap=config.generated_code_hard_wrap,
             target=config.target,
             validate_inputs=config.validate_inputs,
             input_validation_mode=config.input_validation_mode,
@@ -72,6 +74,7 @@ class CompilerOptions:
         return (
             self.generated_package,
             self.generated_code_options,
+            self.generated_code_hard_wrap,
             self.target,
             self.validate_inputs,
             self.input_validation_mode,

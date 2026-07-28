@@ -53,11 +53,10 @@ def test_store_example_generation_keeps_public_behavior_fragments_stable() -> No
     assert 'promotions_joined = promotions.alias("promotions")' in transform
     assert '# Step method: discard_negative_totals' in transform
     assert 'assert_schema(orders, ORDER_FULFILLMENT_SCHEMA, name="OrderFulfillment", mode="strict")' in transform
-    assert 'F.filter(F.transform(F.col("order_raw.tags"), lambda item: F.lower(F.trim(item)))' in transform
-    assert (
-        'F.map_filter(F.transform_values(F.col("order_raw.attributes"), '
-        'lambda key, value: F.lower(F.trim(value)))' in transform
-    )
+    assert "F.filter(" in transform
+    assert 'F.transform(F.col("order_raw.tags"), lambda item: F.lower(F.trim(item)))' in transform
+    assert "F.map_filter(" in transform
+    assert 'F.transform_values(F.col("order_raw.attributes"), lambda key, value: F.lower(F.trim(value)))' in transform
 
     rowset = render_store_example()["examples/structure_generated/store/pyspark/transforms/rowset_join.py"]
 
@@ -69,14 +68,16 @@ def test_store_example_generation_keeps_public_behavior_fragments_stable() -> No
     analytics = render_store_example()["examples/structure_generated/store/pyspark/transforms/analytics.py"]
 
     assert "class OrderAnalyticsGenerated:" in analytics
-    assert 'product_summary = product_summary.groupBy(' in analytics
+    assert "product_summary = (" in analytics
+    assert "product_summary.groupBy(" in analytics
     assert 'F.avg(F.col("order_fulfillment.quantity")).cast(T.DoubleType()).alias("avg_units")' in analytics
 
     advanced = render_store_example()["examples/structure_generated/store/pyspark/transforms/adv_analytics.py"]
 
     assert "class AdvancedOrderAnalyticsGenerated:" in advanced
-    assert "revenue_rollups = revenue_rollups.rollup(" in advanced
-    assert "product_cubes = product_cubes.cube(" in advanced
+    assert "revenue_rollups.rollup(" in advanced
+    assert "product_cubes.cube(" in advanced
     assert "Window.partitionBy" in advanced
     assert "F.exists(" in advanced
-    assert "F.map_from_entries(F.map_entries(" in advanced
+    assert "F.map_from_entries(" in advanced
+    assert "F.map_entries(" in advanced

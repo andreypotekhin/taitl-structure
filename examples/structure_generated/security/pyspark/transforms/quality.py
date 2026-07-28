@@ -5,9 +5,24 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.security.runtime.schema_assert import TransformResult, assert_schema, project_schema
-from examples.structure_generated.security.pyspark.schemas.assets import DEVICE_SCHEMA, DEVICE_TYPE_SCHEMA, SOFTWARE_SCHEMA
-from examples.structure_generated.security.pyspark.schemas.organization import DEPARTMENT_SCHEMA, ORG_SCHEMA, PERSON_SCHEMA, TEAM_SCHEMA
-from examples.structure_generated.security.pyspark.schemas.reporting import VULNERABILITY_INVENTORY_CANDIDATE_SCHEMA, VULNERABILITY_INVENTORY_CHECK_SCHEMA, VULNERABILITY_INVENTORY_ISSUE_SCHEMA, VULNERABILITY_QUALITY_CHECK_SCHEMA, VULNERABILITY_QUALITY_ISSUE_SCHEMA
+from examples.structure_generated.security.pyspark.schemas.assets import (
+    DEVICE_SCHEMA,
+    DEVICE_TYPE_SCHEMA,
+    SOFTWARE_SCHEMA,
+)
+from examples.structure_generated.security.pyspark.schemas.organization import (
+    DEPARTMENT_SCHEMA,
+    ORG_SCHEMA,
+    PERSON_SCHEMA,
+    TEAM_SCHEMA,
+)
+from examples.structure_generated.security.pyspark.schemas.reporting import (
+    VULNERABILITY_INVENTORY_CANDIDATE_SCHEMA,
+    VULNERABILITY_INVENTORY_CHECK_SCHEMA,
+    VULNERABILITY_INVENTORY_ISSUE_SCHEMA,
+    VULNERABILITY_QUALITY_CHECK_SCHEMA,
+    VULNERABILITY_QUALITY_ISSUE_SCHEMA,
+)
 from examples.structure_generated.security.pyspark.schemas.risk import VULN_SCHEMA, VULN_TYPE_SCHEMA
 
 
@@ -105,8 +120,80 @@ class SecurityInventoryQualityGenerated:
             F.col("vuln.owner_id"),
             F.col("vuln.software_id"),
             F.col("vuln.vuln_type_id"),
-            F.array_compact(F.array(F.when(F.col("devices.id").isNull(), F.lit('missing device')).otherwise(F.lit(None)), F.when((F.col("devices.id").isNotNull() & F.col("device_types_2.id").isNull()), F.lit('missing device type')).otherwise(F.lit(None)), F.when(F.col("software_3.id").isNull(), F.lit('missing software')).otherwise(F.lit(None)), F.when(F.col("vuln_types_4.id").isNull(), F.lit('missing vulnerability type')).otherwise(F.lit(None)), F.when(F.col("people_5.id").isNull(), F.lit('missing person')).otherwise(F.lit(None)), F.when((F.col("people_5.id").isNotNull() & F.col("teams_6.id").isNull()), F.lit('missing team')).otherwise(F.lit(None)), F.when((F.col("teams_6.id").isNotNull() & F.col("departments_7.id").isNull()), F.lit('missing department')).otherwise(F.lit(None)), F.when((F.col("departments_7.id").isNotNull() & F.col("orgs_8.id").isNull()), F.lit('missing organization')).otherwise(F.lit(None)), F.when((F.col("devices.id").isNotNull() & (F.col("devices.owner_id") != F.col("vuln.owner_id"))), F.lit('device owner disagrees with vulnerability owner')).otherwise(F.lit(None)), F.when((F.col("vuln.is_active") != F.col("vuln.date_addressed").isNull()), F.lit('is_active disagrees with date_addressed')).otherwise(F.lit(None)))).alias("issues"),
-            (F.size(F.array_compact(F.array(F.when(F.col("devices.id").isNull(), F.lit('missing device')).otherwise(F.lit(None)), F.when((F.col("devices.id").isNotNull() & F.col("device_types_2.id").isNull()), F.lit('missing device type')).otherwise(F.lit(None)), F.when(F.col("software_3.id").isNull(), F.lit('missing software')).otherwise(F.lit(None)), F.when(F.col("vuln_types_4.id").isNull(), F.lit('missing vulnerability type')).otherwise(F.lit(None)), F.when(F.col("people_5.id").isNull(), F.lit('missing person')).otherwise(F.lit(None)), F.when((F.col("people_5.id").isNotNull() & F.col("teams_6.id").isNull()), F.lit('missing team')).otherwise(F.lit(None)), F.when((F.col("teams_6.id").isNotNull() & F.col("departments_7.id").isNull()), F.lit('missing department')).otherwise(F.lit(None)), F.when((F.col("departments_7.id").isNotNull() & F.col("orgs_8.id").isNull()), F.lit('missing organization')).otherwise(F.lit(None)), F.when((F.col("devices.id").isNotNull() & (F.col("devices.owner_id") != F.col("vuln.owner_id"))), F.lit('device owner disagrees with vulnerability owner')).otherwise(F.lit(None)), F.when((F.col("vuln.is_active") != F.col("vuln.date_addressed").isNull()), F.lit('is_active disagrees with date_addressed')).otherwise(F.lit(None))))) == F.lit(0)).alias("is_valid"),
+            F.array_compact(
+                F.array(
+                    F.when(F.col("devices.id").isNull(), F.lit('missing device')).otherwise(F.lit(None)),
+                    F.when(
+                        (F.col("devices.id").isNotNull() & F.col("device_types_2.id").isNull()),
+                        F.lit('missing device type'),
+                    ).otherwise(F.lit(None)),
+                    F.when(F.col("software_3.id").isNull(), F.lit('missing software')).otherwise(F.lit(None)),
+                    F.when(F.col("vuln_types_4.id").isNull(), F.lit('missing vulnerability type')).otherwise(
+                        F.lit(None)
+                    ),
+                    F.when(F.col("people_5.id").isNull(), F.lit('missing person')).otherwise(F.lit(None)),
+                    F.when(
+                        (F.col("people_5.id").isNotNull() & F.col("teams_6.id").isNull()), F.lit('missing team')
+                    ).otherwise(F.lit(None)),
+                    F.when(
+                        (F.col("teams_6.id").isNotNull() & F.col("departments_7.id").isNull()),
+                        F.lit('missing department'),
+                    ).otherwise(F.lit(None)),
+                    F.when(
+                        (F.col("departments_7.id").isNotNull() & F.col("orgs_8.id").isNull()),
+                        F.lit('missing organization'),
+                    ).otherwise(F.lit(None)),
+                    F.when(
+                        (F.col("devices.id").isNotNull() & (F.col("devices.owner_id") != F.col("vuln.owner_id"))),
+                        F.lit('device owner disagrees with vulnerability owner'),
+                    ).otherwise(F.lit(None)),
+                    F.when(
+                        (F.col("vuln.is_active") != F.col("vuln.date_addressed").isNull()),
+                        F.lit('is_active disagrees with date_addressed'),
+                    ).otherwise(F.lit(None)),
+                )
+            ).alias("issues"),
+            (
+                F.size(
+                    F.array_compact(
+                        F.array(
+                            F.when(F.col("devices.id").isNull(), F.lit('missing device')).otherwise(F.lit(None)),
+                            F.when(
+                                (F.col("devices.id").isNotNull() & F.col("device_types_2.id").isNull()),
+                                F.lit('missing device type'),
+                            ).otherwise(F.lit(None)),
+                            F.when(F.col("software_3.id").isNull(), F.lit('missing software')).otherwise(F.lit(None)),
+                            F.when(F.col("vuln_types_4.id").isNull(), F.lit('missing vulnerability type')).otherwise(
+                                F.lit(None)
+                            ),
+                            F.when(F.col("people_5.id").isNull(), F.lit('missing person')).otherwise(F.lit(None)),
+                            F.when(
+                                (F.col("people_5.id").isNotNull() & F.col("teams_6.id").isNull()), F.lit('missing team')
+                            ).otherwise(F.lit(None)),
+                            F.when(
+                                (F.col("teams_6.id").isNotNull() & F.col("departments_7.id").isNull()),
+                                F.lit('missing department'),
+                            ).otherwise(F.lit(None)),
+                            F.when(
+                                (F.col("departments_7.id").isNotNull() & F.col("orgs_8.id").isNull()),
+                                F.lit('missing organization'),
+                            ).otherwise(F.lit(None)),
+                            F.when(
+                                (
+                                    F.col("devices.id").isNotNull()
+                                    & (F.col("devices.owner_id") != F.col("vuln.owner_id"))
+                                ),
+                                F.lit('device owner disagrees with vulnerability owner'),
+                            ).otherwise(F.lit(None)),
+                            F.when(
+                                (F.col("vuln.is_active") != F.col("vuln.date_addressed").isNull()),
+                                F.lit('is_active disagrees with date_addressed'),
+                            ).otherwise(F.lit(None)),
+                        )
+                    )
+                )
+                == F.lit(0)
+            ).alias("is_valid"),
         )
         assert_schema(quality_lane, VULNERABILITY_QUALITY_CHECK_SCHEMA, name="VulnerabilityQualityCheck", mode="strict")
 
@@ -135,7 +222,9 @@ class SecurityInventoryQualityGenerated:
             F.col("vulnerability_quality_check.issues"),
             F.col("vulnerability_quality_check.is_valid"),
         )
-        assert_schema(reference_issues, VULNERABILITY_QUALITY_ISSUE_SCHEMA, name="VulnerabilityQualityIssue", mode="strict")
+        assert_schema(
+            reference_issues, VULNERABILITY_QUALITY_ISSUE_SCHEMA, name="VulnerabilityQualityIssue", mode="strict"
+        )
 
         # Step method: prepare_inventory_reconciliation
         inventory_candidates = vulnerabilities.alias("vuln")
@@ -152,10 +241,24 @@ class SecurityInventoryQualityGenerated:
             F.array_contains(F.col("devices.vuln_ids"), F.col("vuln.id")).alias("device_lists_vulnerability"),
             F.col("devices.os_id"),
             F.col("devices.apps"),
-            ((F.col("devices.os_id") == F.col("vuln.software_id")) | F.exists(F.col("devices.apps"), lambda item: (item.getField('id') == F.col("vuln.software_id")))).alias("device_has_software"),
-            (F.array_contains(F.col("devices.vuln_ids"), F.col("vuln.id")) & ((F.col("devices.os_id") == F.col("vuln.software_id")) | F.exists(F.col("devices.apps"), lambda item: (item.getField('id') == F.col("vuln.software_id"))))).alias("is_reconciled"),
+            (
+                (F.col("devices.os_id") == F.col("vuln.software_id"))
+                | F.exists(F.col("devices.apps"), lambda item: (item.getField('id') == F.col("vuln.software_id")))
+            ).alias("device_has_software"),
+            (
+                F.array_contains(F.col("devices.vuln_ids"), F.col("vuln.id"))
+                & (
+                    (F.col("devices.os_id") == F.col("vuln.software_id"))
+                    | F.exists(F.col("devices.apps"), lambda item: (item.getField('id') == F.col("vuln.software_id")))
+                )
+            ).alias("is_reconciled"),
         )
-        assert_schema(inventory_candidates, VULNERABILITY_INVENTORY_CANDIDATE_SCHEMA, name="VulnerabilityInventoryCandidate", mode="strict")
+        assert_schema(
+            inventory_candidates,
+            VULNERABILITY_INVENTORY_CANDIDATE_SCHEMA,
+            name="VulnerabilityInventoryCandidate",
+            mode="strict",
+        )
 
         # Step method: publish_reconciliation
         reconciliation_lane = inventory_candidates.alias("vulnerability_inventory_candidate")
@@ -167,7 +270,9 @@ class SecurityInventoryQualityGenerated:
             F.col("vulnerability_inventory_candidate.device_has_software"),
             F.col("vulnerability_inventory_candidate.is_reconciled"),
         )
-        assert_schema(reconciliation_lane, VULNERABILITY_INVENTORY_CHECK_SCHEMA, name="VulnerabilityInventoryCheck", mode="strict")
+        assert_schema(
+            reconciliation_lane, VULNERABILITY_INVENTORY_CHECK_SCHEMA, name="VulnerabilityInventoryCheck", mode="strict"
+        )
 
         # Step method: publish_reconciliation_checks
         reconciliation_lane = reconciliation_lane.alias("vulnerability_inventory_check")
@@ -179,7 +284,9 @@ class SecurityInventoryQualityGenerated:
             F.col("vulnerability_inventory_check.device_has_software"),
             F.col("vulnerability_inventory_check.is_reconciled"),
         )
-        assert_schema(reconciliation_lane, VULNERABILITY_INVENTORY_CHECK_SCHEMA, name="VulnerabilityInventoryCheck", mode="strict")
+        assert_schema(
+            reconciliation_lane, VULNERABILITY_INVENTORY_CHECK_SCHEMA, name="VulnerabilityInventoryCheck", mode="strict"
+        )
 
         # Step method: publish_reconciliation_issues
         reconciliation_issues = reconciliation_lane.alias("vulnerability_inventory_check")
@@ -195,17 +302,45 @@ class SecurityInventoryQualityGenerated:
 
         # Step method: reference_checks
         reference_checks = quality_lane.alias("vulnerability_quality_check")
-        assert_schema(reference_checks, VULNERABILITY_QUALITY_CHECK_SCHEMA, name="VulnerabilityQualityCheck", mode="strict")
+        assert_schema(
+            reference_checks, VULNERABILITY_QUALITY_CHECK_SCHEMA, name="VulnerabilityQualityCheck", mode="strict"
+        )
 
         # Step method: reference_issues
         reference_issues = reference_issues.alias("vulnerability_quality_issue")
-        assert_schema(reference_issues, VULNERABILITY_QUALITY_ISSUE_SCHEMA, name="VulnerabilityQualityIssue", mode="strict")
+        assert_schema(
+            reference_issues, VULNERABILITY_QUALITY_ISSUE_SCHEMA, name="VulnerabilityQualityIssue", mode="strict"
+        )
 
         # Step method: reconciliation_checks
         reconciliation_checks = reconciliation_lane.alias("vulnerability_inventory_check")
-        assert_schema(reconciliation_checks, VULNERABILITY_INVENTORY_CHECK_SCHEMA, name="VulnerabilityInventoryCheck", mode="strict")
+        assert_schema(
+            reconciliation_checks,
+            VULNERABILITY_INVENTORY_CHECK_SCHEMA,
+            name="VulnerabilityInventoryCheck",
+            mode="strict",
+        )
 
         # Step method: reconciliation_issues
         reconciliation_issues = reconciliation_issues.alias("vulnerability_inventory_issue")
-        assert_schema(reconciliation_issues, VULNERABILITY_INVENTORY_ISSUE_SCHEMA, name="VulnerabilityInventoryIssue", mode="strict")
-        return TransformResult({"reference_checks": reference_checks, "reference_issues": reference_issues, "reconciliation_checks": reconciliation_checks, "reconciliation_issues": reconciliation_issues}, single=False, schema={"reference_checks": VULNERABILITY_QUALITY_CHECK_SCHEMA, "reference_issues": VULNERABILITY_QUALITY_ISSUE_SCHEMA, "reconciliation_checks": VULNERABILITY_INVENTORY_CHECK_SCHEMA, "reconciliation_issues": VULNERABILITY_INVENTORY_ISSUE_SCHEMA})
+        assert_schema(
+            reconciliation_issues,
+            VULNERABILITY_INVENTORY_ISSUE_SCHEMA,
+            name="VulnerabilityInventoryIssue",
+            mode="strict",
+        )
+        return TransformResult(
+            {
+                "reference_checks": reference_checks,
+                "reference_issues": reference_issues,
+                "reconciliation_checks": reconciliation_checks,
+                "reconciliation_issues": reconciliation_issues,
+            },
+            single=False,
+            schema={
+                "reference_checks": VULNERABILITY_QUALITY_CHECK_SCHEMA,
+                "reference_issues": VULNERABILITY_QUALITY_ISSUE_SCHEMA,
+                "reconciliation_checks": VULNERABILITY_INVENTORY_CHECK_SCHEMA,
+                "reconciliation_issues": VULNERABILITY_INVENTORY_ISSUE_SCHEMA,
+            },
+        )

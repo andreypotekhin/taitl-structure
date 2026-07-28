@@ -598,6 +598,61 @@ Reference: [windows API](api/Windows.api.md),
 [IR](background/PySparkCodeGeneration.back.md), [PySpark code generation](background/PySparkCodeGeneration.back.md), and
 [streaming compatibility](background/StreamingCompatibility.back.md).
 
+## Ordered Timeline Scan
+
+Use `scan(...)` when an output row depends on state produced by earlier rows in the same explicitly ordered partition.
+Use `lag(...)` when the previous value already exists in the input relation; `scan(...)` is for feedback recurrence.
+
+```python
+class Tick(Schema):
+    series = string(nullable=False)
+    index = long(nullable=False)
+
+
+class FibonacciState(Schema):
+    previous = long(nullable=False)
+    current = long(nullable=False)
+
+
+class Fibonacci(Schema):
+    series = string(nullable=False)
+    index = long(nullable=False)
+    value = long(nullable=False)
+
+
+class FibonacciFromTimeline(Transform):
+    ticks = input(Tick)
+    values = output(Fibonacci)
+
+    def calculate(self, tick: Tick) -> Fibonacci:
+        state = scan(
+            initial=FibonacciState(previous=0, current=1),
+            partition_by=tick.series,
+            order_by=tick.index,
+            max_rows=10_000,
+            step=lambda state, row: FibonacciState(
+                previous=state.current,
+                current=state.previous + state.current,
+            ),
+        )
+        return Fibonacci(series=tick.series, index=tick.index, value=state.previous)
+```
+
+`scan(...)` returns the state before the transition for the current timeline row. Each partition starts from the same
+fully populated `initial` state; empty input returns an empty output relation with the declared schema. The current
+release requires nonempty `partition_by` and `order_by`, accepts only ascending order and `TiePolicy.ERROR`, rejects
+null order keys, fails duplicate order keys during Spark evaluation, and enforces a positive literal `max_rows` per
+partition.
+
+The PySpark target lowers the recurrence through public DataFrame and Column APIs: group by partition keys, collect and
+sort the payload timeline, fold it with higher-order `aggregate(...)`, then expand one output row per input row. It is
+batch-only and ordinary-PySpark-only; it does not use UDFs, Pandas, RDDs, Spark actions, driver loops, streaming state,
+or persistent state between transform runs.
+
+Reference: [Ordered Timeline Scan](dev/specifications/OrderedTimelineScan.md),
+[API extensions](APIExtensions.md), [IR](background/PySparkCodeGeneration.back.md), and
+[PySpark code generation](background/PySparkCodeGeneration.back.md).
+
 ## Duplicate Rows
 
 Use `distinct(relation)` for exact duplicate row removal over a relation. It is a synonym for

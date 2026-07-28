@@ -5,7 +5,25 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
-from examples.structure_generated.search.pyspark.schemas.search import DOCUMENT_INDEX_SUMMARY_SCHEMA, DOCUMENT_INDEX_TARGET_STATS_SCHEMA, DOCUMENT_INDEX_TERM_COUNT_SCHEMA, DOCUMENT_INDEX_TERM_SCHEMA, INDEX_TOKEN_FREQUENCY_SCHEMA, PARAGRAPH_INDEX_SUMMARY_SCHEMA, PARAGRAPH_INDEX_TARGET_STATS_SCHEMA, PARAGRAPH_INDEX_TERM_COUNT_SCHEMA, PARAGRAPH_INDEX_TERM_SCHEMA, SECTION_INDEX_SUMMARY_SCHEMA, SECTION_INDEX_TARGET_STATS_SCHEMA, SECTION_INDEX_TERM_COUNT_SCHEMA, SECTION_INDEX_TERM_SCHEMA, SENTENCE_INDEX_SUMMARY_SCHEMA, SENTENCE_INDEX_TARGET_STATS_SCHEMA, SENTENCE_INDEX_TERM_COUNT_SCHEMA, SENTENCE_INDEX_TERM_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.search import (
+    DOCUMENT_INDEX_SUMMARY_SCHEMA,
+    DOCUMENT_INDEX_TARGET_STATS_SCHEMA,
+    DOCUMENT_INDEX_TERM_COUNT_SCHEMA,
+    DOCUMENT_INDEX_TERM_SCHEMA,
+    INDEX_TOKEN_FREQUENCY_SCHEMA,
+    PARAGRAPH_INDEX_SUMMARY_SCHEMA,
+    PARAGRAPH_INDEX_TARGET_STATS_SCHEMA,
+    PARAGRAPH_INDEX_TERM_COUNT_SCHEMA,
+    PARAGRAPH_INDEX_TERM_SCHEMA,
+    SECTION_INDEX_SUMMARY_SCHEMA,
+    SECTION_INDEX_TARGET_STATS_SCHEMA,
+    SECTION_INDEX_TERM_COUNT_SCHEMA,
+    SECTION_INDEX_TERM_SCHEMA,
+    SENTENCE_INDEX_SUMMARY_SCHEMA,
+    SENTENCE_INDEX_TARGET_STATS_SCHEMA,
+    SENTENCE_INDEX_TERM_COUNT_SCHEMA,
+    SENTENCE_INDEX_TERM_SCHEMA,
+)
 from examples.structure_generated.search.pyspark.schemas.text import WORD_SCHEMA
 
 
@@ -13,17 +31,23 @@ class IndexGenerated:
     def _step_count_document_terms_0(self, frames):
         # Step method: count_document_terms
         document_term_counts = frames["words"].alias("word")
-        document_term_counts = document_term_counts.groupBy(
-            F.col("word.document_id").alias("document_id"),
-            F.col("word.token").alias("token"),
-        ).agg(
-            F.count(F.lit(1)).cast(T.LongType()).alias("term_frequency"),
-        ).select(
-            F.col("document_id"),
-            F.col("token"),
-            F.col("term_frequency"),
+        document_term_counts = (
+            document_term_counts.groupBy(
+                F.col("word.document_id").alias("document_id"),
+                F.col("word.token").alias("token"),
+            )
+            .agg(
+                F.count(F.lit(1)).cast(T.LongType()).alias("term_frequency"),
+            )
+            .select(
+                F.col("document_id"),
+                F.col("token"),
+                F.col("term_frequency"),
+            )
         )
-        assert_schema(document_term_counts, DOCUMENT_INDEX_TERM_COUNT_SCHEMA, name="DocumentIndexTermCount", mode="strict")
+        assert_schema(
+            document_term_counts, DOCUMENT_INDEX_TERM_COUNT_SCHEMA, name="DocumentIndexTermCount", mode="strict"
+        )
         return {
             "document_term_counts": document_term_counts,
         }
@@ -31,17 +55,23 @@ class IndexGenerated:
     def _step_summarize_documents_1(self, frames):
         # Step method: summarize_documents
         document_target_stats = frames["words"].alias("word")
-        document_target_stats = document_target_stats.groupBy(
-            F.col("word.document_id").alias("document_id"),
-        ).agg(
-            F.count(F.lit(1)).cast(T.LongType()).alias("target_word_count"),
-            F.countDistinct(F.col("word.token")).cast(T.LongType()).alias("target_distinct_terms"),
-        ).select(
-            F.col("document_id"),
-            F.col("target_word_count"),
-            F.col("target_distinct_terms"),
+        document_target_stats = (
+            document_target_stats.groupBy(
+                F.col("word.document_id").alias("document_id"),
+            )
+            .agg(
+                F.count(F.lit(1)).cast(T.LongType()).alias("target_word_count"),
+                F.countDistinct(F.col("word.token")).cast(T.LongType()).alias("target_distinct_terms"),
+            )
+            .select(
+                F.col("document_id"),
+                F.col("target_word_count"),
+                F.col("target_distinct_terms"),
+            )
         )
-        assert_schema(document_target_stats, DOCUMENT_INDEX_TARGET_STATS_SCHEMA, name="DocumentIndexTargetStats", mode="strict")
+        assert_schema(
+            document_target_stats, DOCUMENT_INDEX_TARGET_STATS_SCHEMA, name="DocumentIndexTargetStats", mode="strict"
+        )
         return {
             "document_target_stats": document_target_stats,
         }
@@ -49,15 +79,21 @@ class IndexGenerated:
     def _step_count_document_frequencies_2(self, frames):
         # Step method: count_document_frequencies
         document_token_frequencies = frames["document_term_counts"].alias("document_index_term_count")
-        document_token_frequencies = document_token_frequencies.groupBy(
-            F.col("document_index_term_count.token").alias("token"),
-        ).agg(
-            F.count(F.lit(1)).cast(T.LongType()).alias("document_frequency"),
-        ).select(
-            F.col("token"),
-            F.col("document_frequency"),
+        document_token_frequencies = (
+            document_token_frequencies.groupBy(
+                F.col("document_index_term_count.token").alias("token"),
+            )
+            .agg(
+                F.count(F.lit(1)).cast(T.LongType()).alias("document_frequency"),
+            )
+            .select(
+                F.col("token"),
+                F.col("document_frequency"),
+            )
         )
-        assert_schema(document_token_frequencies, INDEX_TOKEN_FREQUENCY_SCHEMA, name="IndexTokenFrequency", mode="strict")
+        assert_schema(
+            document_token_frequencies, INDEX_TOKEN_FREQUENCY_SCHEMA, name="IndexTokenFrequency", mode="strict"
+        )
         return {
             "document_token_frequencies": document_token_frequencies,
         }
@@ -95,7 +131,9 @@ class IndexGenerated:
         document_summary = frames["document_target_stats"].alias("document_index_target_stats")
         document_summary = document_summary.agg(
             F.count(F.lit(1)).cast(T.LongType()).alias("target_count"),
-            F.avg(F.col("document_index_target_stats.target_word_count")).cast(T.DoubleType()).alias("average_target_length"),
+            F.avg(F.col("document_index_target_stats.target_word_count"))
+            .cast(T.DoubleType())
+            .alias("average_target_length"),
         ).select(
             F.col("target_count"),
             F.col("average_target_length"),
@@ -108,17 +146,21 @@ class IndexGenerated:
     def _step_count_section_terms_5(self, frames):
         # Step method: count_section_terms
         section_term_counts = frames["words"].alias("word")
-        section_term_counts = section_term_counts.groupBy(
-            F.col("word.document_id").alias("document_id"),
-            F.col("word.section_id").alias("section_id"),
-            F.col("word.token").alias("token"),
-        ).agg(
-            F.count(F.lit(1)).cast(T.LongType()).alias("term_frequency"),
-        ).select(
-            F.col("document_id"),
-            F.col("section_id"),
-            F.col("token"),
-            F.col("term_frequency"),
+        section_term_counts = (
+            section_term_counts.groupBy(
+                F.col("word.document_id").alias("document_id"),
+                F.col("word.section_id").alias("section_id"),
+                F.col("word.token").alias("token"),
+            )
+            .agg(
+                F.count(F.lit(1)).cast(T.LongType()).alias("term_frequency"),
+            )
+            .select(
+                F.col("document_id"),
+                F.col("section_id"),
+                F.col("token"),
+                F.col("term_frequency"),
+            )
         )
         assert_schema(section_term_counts, SECTION_INDEX_TERM_COUNT_SCHEMA, name="SectionIndexTermCount", mode="strict")
         return {
@@ -128,19 +170,25 @@ class IndexGenerated:
     def _step_summarize_sections_6(self, frames):
         # Step method: summarize_sections
         section_target_stats = frames["words"].alias("word")
-        section_target_stats = section_target_stats.groupBy(
-            F.col("word.document_id").alias("document_id"),
-            F.col("word.section_id").alias("section_id"),
-        ).agg(
-            F.count(F.lit(1)).cast(T.LongType()).alias("target_word_count"),
-            F.countDistinct(F.col("word.token")).cast(T.LongType()).alias("target_distinct_terms"),
-        ).select(
-            F.col("document_id"),
-            F.col("section_id"),
-            F.col("target_word_count"),
-            F.col("target_distinct_terms"),
+        section_target_stats = (
+            section_target_stats.groupBy(
+                F.col("word.document_id").alias("document_id"),
+                F.col("word.section_id").alias("section_id"),
+            )
+            .agg(
+                F.count(F.lit(1)).cast(T.LongType()).alias("target_word_count"),
+                F.countDistinct(F.col("word.token")).cast(T.LongType()).alias("target_distinct_terms"),
+            )
+            .select(
+                F.col("document_id"),
+                F.col("section_id"),
+                F.col("target_word_count"),
+                F.col("target_distinct_terms"),
+            )
         )
-        assert_schema(section_target_stats, SECTION_INDEX_TARGET_STATS_SCHEMA, name="SectionIndexTargetStats", mode="strict")
+        assert_schema(
+            section_target_stats, SECTION_INDEX_TARGET_STATS_SCHEMA, name="SectionIndexTargetStats", mode="strict"
+        )
         return {
             "section_target_stats": section_target_stats,
         }
@@ -148,15 +196,21 @@ class IndexGenerated:
     def _step_count_section_frequencies_7(self, frames):
         # Step method: count_section_frequencies
         section_token_frequencies = frames["section_term_counts"].alias("section_index_term_count")
-        section_token_frequencies = section_token_frequencies.groupBy(
-            F.col("section_index_term_count.token").alias("token"),
-        ).agg(
-            F.count(F.lit(1)).cast(T.LongType()).alias("document_frequency"),
-        ).select(
-            F.col("token"),
-            F.col("document_frequency"),
+        section_token_frequencies = (
+            section_token_frequencies.groupBy(
+                F.col("section_index_term_count.token").alias("token"),
+            )
+            .agg(
+                F.count(F.lit(1)).cast(T.LongType()).alias("document_frequency"),
+            )
+            .select(
+                F.col("token"),
+                F.col("document_frequency"),
+            )
         )
-        assert_schema(section_token_frequencies, INDEX_TOKEN_FREQUENCY_SCHEMA, name="IndexTokenFrequency", mode="strict")
+        assert_schema(
+            section_token_frequencies, INDEX_TOKEN_FREQUENCY_SCHEMA, name="IndexTokenFrequency", mode="strict"
+        )
         return {
             "section_token_frequencies": section_token_frequencies,
         }
@@ -167,7 +221,10 @@ class IndexGenerated:
         section_target_stats_joined = frames["section_target_stats"].alias("section_target_stats")
         section_terms = section_terms.join(
             section_target_stats_joined,
-            ((F.col("section_target_stats.document_id") == F.col("section_index_term_count.document_id")) & (F.col("section_target_stats.section_id") == F.col("section_index_term_count.section_id"))),
+            (
+                (F.col("section_target_stats.document_id") == F.col("section_index_term_count.document_id"))
+                & (F.col("section_target_stats.section_id") == F.col("section_index_term_count.section_id"))
+            ),
             "inner",
         )
         section_token_frequencies_2_joined = frames["section_token_frequencies"].alias("section_token_frequencies_2")
@@ -195,7 +252,9 @@ class IndexGenerated:
         section_summary = frames["section_target_stats"].alias("section_index_target_stats")
         section_summary = section_summary.agg(
             F.count(F.lit(1)).cast(T.LongType()).alias("target_count"),
-            F.avg(F.col("section_index_target_stats.target_word_count")).cast(T.DoubleType()).alias("average_target_length"),
+            F.avg(F.col("section_index_target_stats.target_word_count"))
+            .cast(T.DoubleType())
+            .alias("average_target_length"),
         ).select(
             F.col("target_count"),
             F.col("average_target_length"),
@@ -208,21 +267,27 @@ class IndexGenerated:
     def _step_count_paragraph_terms_10(self, frames):
         # Step method: count_paragraph_terms
         paragraph_term_counts = frames["words"].alias("word")
-        paragraph_term_counts = paragraph_term_counts.groupBy(
-            F.col("word.document_id").alias("document_id"),
-            F.col("word.section_id").alias("section_id"),
-            F.col("word.paragraph_id").alias("paragraph_id"),
-            F.col("word.token").alias("token"),
-        ).agg(
-            F.count(F.lit(1)).cast(T.LongType()).alias("term_frequency"),
-        ).select(
-            F.col("document_id"),
-            F.col("section_id"),
-            F.col("paragraph_id"),
-            F.col("token"),
-            F.col("term_frequency"),
+        paragraph_term_counts = (
+            paragraph_term_counts.groupBy(
+                F.col("word.document_id").alias("document_id"),
+                F.col("word.section_id").alias("section_id"),
+                F.col("word.paragraph_id").alias("paragraph_id"),
+                F.col("word.token").alias("token"),
+            )
+            .agg(
+                F.count(F.lit(1)).cast(T.LongType()).alias("term_frequency"),
+            )
+            .select(
+                F.col("document_id"),
+                F.col("section_id"),
+                F.col("paragraph_id"),
+                F.col("token"),
+                F.col("term_frequency"),
+            )
         )
-        assert_schema(paragraph_term_counts, PARAGRAPH_INDEX_TERM_COUNT_SCHEMA, name="ParagraphIndexTermCount", mode="strict")
+        assert_schema(
+            paragraph_term_counts, PARAGRAPH_INDEX_TERM_COUNT_SCHEMA, name="ParagraphIndexTermCount", mode="strict"
+        )
         return {
             "paragraph_term_counts": paragraph_term_counts,
         }
@@ -230,21 +295,27 @@ class IndexGenerated:
     def _step_summarize_paragraphs_11(self, frames):
         # Step method: summarize_paragraphs
         paragraph_target_stats = frames["words"].alias("word")
-        paragraph_target_stats = paragraph_target_stats.groupBy(
-            F.col("word.document_id").alias("document_id"),
-            F.col("word.section_id").alias("section_id"),
-            F.col("word.paragraph_id").alias("paragraph_id"),
-        ).agg(
-            F.count(F.lit(1)).cast(T.LongType()).alias("target_word_count"),
-            F.countDistinct(F.col("word.token")).cast(T.LongType()).alias("target_distinct_terms"),
-        ).select(
-            F.col("document_id"),
-            F.col("section_id"),
-            F.col("paragraph_id"),
-            F.col("target_word_count"),
-            F.col("target_distinct_terms"),
+        paragraph_target_stats = (
+            paragraph_target_stats.groupBy(
+                F.col("word.document_id").alias("document_id"),
+                F.col("word.section_id").alias("section_id"),
+                F.col("word.paragraph_id").alias("paragraph_id"),
+            )
+            .agg(
+                F.count(F.lit(1)).cast(T.LongType()).alias("target_word_count"),
+                F.countDistinct(F.col("word.token")).cast(T.LongType()).alias("target_distinct_terms"),
+            )
+            .select(
+                F.col("document_id"),
+                F.col("section_id"),
+                F.col("paragraph_id"),
+                F.col("target_word_count"),
+                F.col("target_distinct_terms"),
+            )
         )
-        assert_schema(paragraph_target_stats, PARAGRAPH_INDEX_TARGET_STATS_SCHEMA, name="ParagraphIndexTargetStats", mode="strict")
+        assert_schema(
+            paragraph_target_stats, PARAGRAPH_INDEX_TARGET_STATS_SCHEMA, name="ParagraphIndexTargetStats", mode="strict"
+        )
         return {
             "paragraph_target_stats": paragraph_target_stats,
         }
@@ -252,15 +323,21 @@ class IndexGenerated:
     def _step_count_paragraph_frequencies_12(self, frames):
         # Step method: count_paragraph_frequencies
         paragraph_token_frequencies = frames["paragraph_term_counts"].alias("paragraph_index_term_count")
-        paragraph_token_frequencies = paragraph_token_frequencies.groupBy(
-            F.col("paragraph_index_term_count.token").alias("token"),
-        ).agg(
-            F.count(F.lit(1)).cast(T.LongType()).alias("document_frequency"),
-        ).select(
-            F.col("token"),
-            F.col("document_frequency"),
+        paragraph_token_frequencies = (
+            paragraph_token_frequencies.groupBy(
+                F.col("paragraph_index_term_count.token").alias("token"),
+            )
+            .agg(
+                F.count(F.lit(1)).cast(T.LongType()).alias("document_frequency"),
+            )
+            .select(
+                F.col("token"),
+                F.col("document_frequency"),
+            )
         )
-        assert_schema(paragraph_token_frequencies, INDEX_TOKEN_FREQUENCY_SCHEMA, name="IndexTokenFrequency", mode="strict")
+        assert_schema(
+            paragraph_token_frequencies, INDEX_TOKEN_FREQUENCY_SCHEMA, name="IndexTokenFrequency", mode="strict"
+        )
         return {
             "paragraph_token_frequencies": paragraph_token_frequencies,
         }
@@ -271,10 +348,18 @@ class IndexGenerated:
         paragraph_target_stats_joined = frames["paragraph_target_stats"].alias("paragraph_target_stats")
         paragraph_terms = paragraph_terms.join(
             paragraph_target_stats_joined,
-            (((F.col("paragraph_target_stats.document_id") == F.col("paragraph_index_term_count.document_id")) & (F.col("paragraph_target_stats.section_id") == F.col("paragraph_index_term_count.section_id"))) & (F.col("paragraph_target_stats.paragraph_id") == F.col("paragraph_index_term_count.paragraph_id"))),
+            (
+                (
+                    (F.col("paragraph_target_stats.document_id") == F.col("paragraph_index_term_count.document_id"))
+                    & (F.col("paragraph_target_stats.section_id") == F.col("paragraph_index_term_count.section_id"))
+                )
+                & (F.col("paragraph_target_stats.paragraph_id") == F.col("paragraph_index_term_count.paragraph_id"))
+            ),
             "inner",
         )
-        paragraph_token_frequencies_2_joined = frames["paragraph_token_frequencies"].alias("paragraph_token_frequencies_2")
+        paragraph_token_frequencies_2_joined = frames["paragraph_token_frequencies"].alias(
+            "paragraph_token_frequencies_2"
+        )
         paragraph_terms = paragraph_terms.join(
             paragraph_token_frequencies_2_joined,
             (F.col("paragraph_token_frequencies_2.token") == F.col("paragraph_index_term_count.token")),
@@ -300,7 +385,9 @@ class IndexGenerated:
         paragraph_summary = frames["paragraph_target_stats"].alias("paragraph_index_target_stats")
         paragraph_summary = paragraph_summary.agg(
             F.count(F.lit(1)).cast(T.LongType()).alias("target_count"),
-            F.avg(F.col("paragraph_index_target_stats.target_word_count")).cast(T.DoubleType()).alias("average_target_length"),
+            F.avg(F.col("paragraph_index_target_stats.target_word_count"))
+            .cast(T.DoubleType())
+            .alias("average_target_length"),
         ).select(
             F.col("target_count"),
             F.col("average_target_length"),
@@ -313,23 +400,29 @@ class IndexGenerated:
     def _step_count_sentence_terms_15(self, frames):
         # Step method: count_sentence_terms
         sentence_term_counts = frames["words"].alias("word")
-        sentence_term_counts = sentence_term_counts.groupBy(
-            F.col("word.document_id").alias("document_id"),
-            F.col("word.section_id").alias("section_id"),
-            F.col("word.paragraph_id").alias("paragraph_id"),
-            F.col("word.sentence_id").alias("sentence_id"),
-            F.col("word.token").alias("token"),
-        ).agg(
-            F.count(F.lit(1)).cast(T.LongType()).alias("term_frequency"),
-        ).select(
-            F.col("document_id"),
-            F.col("section_id"),
-            F.col("paragraph_id"),
-            F.col("sentence_id"),
-            F.col("token"),
-            F.col("term_frequency"),
+        sentence_term_counts = (
+            sentence_term_counts.groupBy(
+                F.col("word.document_id").alias("document_id"),
+                F.col("word.section_id").alias("section_id"),
+                F.col("word.paragraph_id").alias("paragraph_id"),
+                F.col("word.sentence_id").alias("sentence_id"),
+                F.col("word.token").alias("token"),
+            )
+            .agg(
+                F.count(F.lit(1)).cast(T.LongType()).alias("term_frequency"),
+            )
+            .select(
+                F.col("document_id"),
+                F.col("section_id"),
+                F.col("paragraph_id"),
+                F.col("sentence_id"),
+                F.col("token"),
+                F.col("term_frequency"),
+            )
         )
-        assert_schema(sentence_term_counts, SENTENCE_INDEX_TERM_COUNT_SCHEMA, name="SentenceIndexTermCount", mode="strict")
+        assert_schema(
+            sentence_term_counts, SENTENCE_INDEX_TERM_COUNT_SCHEMA, name="SentenceIndexTermCount", mode="strict"
+        )
         return {
             "sentence_term_counts": sentence_term_counts,
         }
@@ -337,23 +430,29 @@ class IndexGenerated:
     def _step_summarize_sentences_16(self, frames):
         # Step method: summarize_sentences
         sentence_target_stats = frames["words"].alias("word")
-        sentence_target_stats = sentence_target_stats.groupBy(
-            F.col("word.document_id").alias("document_id"),
-            F.col("word.section_id").alias("section_id"),
-            F.col("word.paragraph_id").alias("paragraph_id"),
-            F.col("word.sentence_id").alias("sentence_id"),
-        ).agg(
-            F.count(F.lit(1)).cast(T.LongType()).alias("target_word_count"),
-            F.countDistinct(F.col("word.token")).cast(T.LongType()).alias("target_distinct_terms"),
-        ).select(
-            F.col("document_id"),
-            F.col("section_id"),
-            F.col("paragraph_id"),
-            F.col("sentence_id"),
-            F.col("target_word_count"),
-            F.col("target_distinct_terms"),
+        sentence_target_stats = (
+            sentence_target_stats.groupBy(
+                F.col("word.document_id").alias("document_id"),
+                F.col("word.section_id").alias("section_id"),
+                F.col("word.paragraph_id").alias("paragraph_id"),
+                F.col("word.sentence_id").alias("sentence_id"),
+            )
+            .agg(
+                F.count(F.lit(1)).cast(T.LongType()).alias("target_word_count"),
+                F.countDistinct(F.col("word.token")).cast(T.LongType()).alias("target_distinct_terms"),
+            )
+            .select(
+                F.col("document_id"),
+                F.col("section_id"),
+                F.col("paragraph_id"),
+                F.col("sentence_id"),
+                F.col("target_word_count"),
+                F.col("target_distinct_terms"),
+            )
         )
-        assert_schema(sentence_target_stats, SENTENCE_INDEX_TARGET_STATS_SCHEMA, name="SentenceIndexTargetStats", mode="strict")
+        assert_schema(
+            sentence_target_stats, SENTENCE_INDEX_TARGET_STATS_SCHEMA, name="SentenceIndexTargetStats", mode="strict"
+        )
         return {
             "sentence_target_stats": sentence_target_stats,
         }
@@ -361,15 +460,21 @@ class IndexGenerated:
     def _step_count_sentence_frequencies_17(self, frames):
         # Step method: count_sentence_frequencies
         sentence_token_frequencies = frames["sentence_term_counts"].alias("sentence_index_term_count")
-        sentence_token_frequencies = sentence_token_frequencies.groupBy(
-            F.col("sentence_index_term_count.token").alias("token"),
-        ).agg(
-            F.count(F.lit(1)).cast(T.LongType()).alias("document_frequency"),
-        ).select(
-            F.col("token"),
-            F.col("document_frequency"),
+        sentence_token_frequencies = (
+            sentence_token_frequencies.groupBy(
+                F.col("sentence_index_term_count.token").alias("token"),
+            )
+            .agg(
+                F.count(F.lit(1)).cast(T.LongType()).alias("document_frequency"),
+            )
+            .select(
+                F.col("token"),
+                F.col("document_frequency"),
+            )
         )
-        assert_schema(sentence_token_frequencies, INDEX_TOKEN_FREQUENCY_SCHEMA, name="IndexTokenFrequency", mode="strict")
+        assert_schema(
+            sentence_token_frequencies, INDEX_TOKEN_FREQUENCY_SCHEMA, name="IndexTokenFrequency", mode="strict"
+        )
         return {
             "sentence_token_frequencies": sentence_token_frequencies,
         }
@@ -380,7 +485,16 @@ class IndexGenerated:
         sentence_target_stats_joined = frames["sentence_target_stats"].alias("sentence_target_stats")
         sentence_terms = sentence_terms.join(
             sentence_target_stats_joined,
-            ((((F.col("sentence_target_stats.document_id") == F.col("sentence_index_term_count.document_id")) & (F.col("sentence_target_stats.section_id") == F.col("sentence_index_term_count.section_id"))) & (F.col("sentence_target_stats.paragraph_id") == F.col("sentence_index_term_count.paragraph_id"))) & (F.col("sentence_target_stats.sentence_id") == F.col("sentence_index_term_count.sentence_id"))),
+            (
+                (
+                    (
+                        (F.col("sentence_target_stats.document_id") == F.col("sentence_index_term_count.document_id"))
+                        & (F.col("sentence_target_stats.section_id") == F.col("sentence_index_term_count.section_id"))
+                    )
+                    & (F.col("sentence_target_stats.paragraph_id") == F.col("sentence_index_term_count.paragraph_id"))
+                )
+                & (F.col("sentence_target_stats.sentence_id") == F.col("sentence_index_term_count.sentence_id"))
+            ),
             "inner",
         )
         sentence_token_frequencies_2_joined = frames["sentence_token_frequencies"].alias("sentence_token_frequencies_2")
@@ -410,7 +524,9 @@ class IndexGenerated:
         sentence_summary = frames["sentence_target_stats"].alias("sentence_index_target_stats")
         sentence_summary = sentence_summary.agg(
             F.count(F.lit(1)).cast(T.LongType()).alias("target_count"),
-            F.avg(F.col("sentence_index_target_stats.target_word_count")).cast(T.DoubleType()).alias("average_target_length"),
+            F.avg(F.col("sentence_index_target_stats.target_word_count"))
+            .cast(T.DoubleType())
+            .alias("average_target_length"),
         ).select(
             F.col("target_count"),
             F.col("average_target_length"),
@@ -489,4 +605,26 @@ class CreateIndexGenerated(IndexGenerated):
         # Step method: sentence_summary
         sentence_summary = frames["sentence_summary"].alias("sentence_index_summary")
         assert_schema(sentence_summary, SENTENCE_INDEX_SUMMARY_SCHEMA, name="SentenceIndexSummary", mode="strict")
-        return TransformResult({"document_terms": document_terms, "document_summary": document_summary, "section_terms": section_terms, "section_summary": section_summary, "paragraph_terms": paragraph_terms, "paragraph_summary": paragraph_summary, "sentence_terms": sentence_terms, "sentence_summary": sentence_summary}, single=False, schema={"document_terms": DOCUMENT_INDEX_TERM_SCHEMA, "document_summary": DOCUMENT_INDEX_SUMMARY_SCHEMA, "section_terms": SECTION_INDEX_TERM_SCHEMA, "section_summary": SECTION_INDEX_SUMMARY_SCHEMA, "paragraph_terms": PARAGRAPH_INDEX_TERM_SCHEMA, "paragraph_summary": PARAGRAPH_INDEX_SUMMARY_SCHEMA, "sentence_terms": SENTENCE_INDEX_TERM_SCHEMA, "sentence_summary": SENTENCE_INDEX_SUMMARY_SCHEMA})
+        return TransformResult(
+            {
+                "document_terms": document_terms,
+                "document_summary": document_summary,
+                "section_terms": section_terms,
+                "section_summary": section_summary,
+                "paragraph_terms": paragraph_terms,
+                "paragraph_summary": paragraph_summary,
+                "sentence_terms": sentence_terms,
+                "sentence_summary": sentence_summary,
+            },
+            single=False,
+            schema={
+                "document_terms": DOCUMENT_INDEX_TERM_SCHEMA,
+                "document_summary": DOCUMENT_INDEX_SUMMARY_SCHEMA,
+                "section_terms": SECTION_INDEX_TERM_SCHEMA,
+                "section_summary": SECTION_INDEX_SUMMARY_SCHEMA,
+                "paragraph_terms": PARAGRAPH_INDEX_TERM_SCHEMA,
+                "paragraph_summary": PARAGRAPH_INDEX_SUMMARY_SCHEMA,
+                "sentence_terms": SENTENCE_INDEX_TERM_SCHEMA,
+                "sentence_summary": SENTENCE_INDEX_SUMMARY_SCHEMA,
+            },
+        )

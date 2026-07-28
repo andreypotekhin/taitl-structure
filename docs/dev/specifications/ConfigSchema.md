@@ -37,6 +37,7 @@ generated_docs = true
 generated_docs_dir = "docs"
 generated_docs_formats = ["markdown", "json"]
 generated_code_options = []
+generated_code_hard_wrap = 120
 execution_mode = "online"
 target_backend = "pyspark"
 target_profile = ">=3.5,<4.1"
@@ -111,6 +112,17 @@ Rules:
   dependencies, parameters, Python builtins, and `self.spark`/`self.ctx`.
 - `embed_hooks` without `embed_udfs` is invalid for a transform that uses a Python UDF, because `_impl` would still
   require the source transform.
+
+### generated_code_hard_wrap
+
+Type: integer.
+
+Default: `120`.
+
+Rules:
+
+- Generated Python source should not contain lines longer than this value.
+- Values below `80` are rejected because deeply nested PySpark expressions need room to remain readable.
 
 ### generated_docs
 

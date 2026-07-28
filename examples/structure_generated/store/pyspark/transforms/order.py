@@ -7,7 +7,15 @@ from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.store.runtime.schema_assert import TransformResult, assert_schema, project_schema
 from examples.structure_generated.store.pyspark.schemas.customer import CUSTOMER_SCHEMA
-from examples.structure_generated.store.pyspark.schemas.order import ORDER_FULFILLMENT_SCHEMA, ORDER_NORMALIZED_SCHEMA, ORDER_PUBLISHED_SCHEMA, ORDER_RAW_SCHEMA, ORDER_WITH_CUSTOMER_SCHEMA, ORDER_WITH_PRODUCT_SCHEMA, ORDER_WITH_PROMOTION_SCHEMA
+from examples.structure_generated.store.pyspark.schemas.order import (
+    ORDER_FULFILLMENT_SCHEMA,
+    ORDER_NORMALIZED_SCHEMA,
+    ORDER_PUBLISHED_SCHEMA,
+    ORDER_RAW_SCHEMA,
+    ORDER_WITH_CUSTOMER_SCHEMA,
+    ORDER_WITH_PRODUCT_SCHEMA,
+    ORDER_WITH_PROMOTION_SCHEMA,
+)
 from examples.structure_generated.store.pyspark.schemas.product import BLOCKED_PRODUCT_SCHEMA, PRODUCT_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.promotion import PROMOTION_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.shipment import SHIPMENT_SCHEMA
@@ -44,7 +52,11 @@ class EnrichOrdersGenerated:
 
         # Step method: normalize
         orders = orders.alias("order_raw")
-        orders = orders.where((F.col("order_raw.id").isNotNull()) & (F.col("order_raw.customer_id").isNotNull()) & (F.col("order_raw.product_id").isNotNull()))
+        orders = orders.where(
+            (F.col("order_raw.id").isNotNull())
+            & (F.col("order_raw.customer_id").isNotNull())
+            & (F.col("order_raw.product_id").isNotNull())
+        )
         orders = orders.select(
             F.col("order_raw.tenant"),
             F.col("order_raw.audit"),
@@ -55,10 +67,20 @@ class EnrichOrdersGenerated:
             F.lower(F.trim(F.col("order_raw.promo-code"))).alias("promotion_code"),
             F.coalesce(F.col("order_raw.total").cast("decimal(12,2)"), F.lit(0)).alias("total"),
             F.coalesce(F.col("order_raw.discount").cast("decimal(12,2)"), F.lit(0)).alias("discount"),
-            (F.coalesce(F.col("order_raw.total").cast("decimal(12,2)"), F.lit(0)) - F.coalesce(F.col("order_raw.discount").cast("decimal(12,2)"), F.lit(0))).cast('decimal(12,2)').alias("net_total"),
+            (
+                F.coalesce(F.col("order_raw.total").cast("decimal(12,2)"), F.lit(0))
+                - F.coalesce(F.col("order_raw.discount").cast("decimal(12,2)"), F.lit(0))
+            )
+            .cast('decimal(12,2)')
+            .alias("net_total"),
             F.coalesce(F.col("order_raw.quantity"), F.lit(1)).cast(T.LongType()).alias("quantity"),
-            F.filter(F.transform(F.col("order_raw.tags"), lambda item: F.lower(F.trim(item))), lambda item: item.isNotNull()).alias("tags"),
-            F.map_filter(F.transform_values(F.col("order_raw.attributes"), lambda key, value: F.lower(F.trim(value))), lambda key, value: value.isNotNull()).alias("attributes"),
+            F.filter(
+                F.transform(F.col("order_raw.tags"), lambda item: F.lower(F.trim(item))), lambda item: item.isNotNull()
+            ).alias("tags"),
+            F.map_filter(
+                F.transform_values(F.col("order_raw.attributes"), lambda key, value: F.lower(F.trim(value))),
+                lambda key, value: value.isNotNull(),
+            ).alias("attributes"),
             F.col("order_raw.shipping"),
             (F.coalesce(F.col("order_raw.total").cast("decimal(12,2)"), F.lit(0)) > F.lit(1000)).alias("is_large"),
         )
@@ -91,7 +113,10 @@ class EnrichOrdersGenerated:
         customers_joined = F.broadcast(customers.alias("customers"))
         orders = orders.join(
             customers_joined,
-            ((F.col("customers.tenant.tenant_id") == F.col("order_normalized.tenant.tenant_id")) & (F.lower(F.trim(F.col("customers.id"))) == F.col("order_normalized.customer_id"))),
+            (
+                (F.col("customers.tenant.tenant_id") == F.col("order_normalized.tenant.tenant_id"))
+                & (F.lower(F.trim(F.col("customers.id"))) == F.col("order_normalized.customer_id"))
+            ),
             "left",
         )
         orders = orders.select(
@@ -121,19 +146,41 @@ class EnrichOrdersGenerated:
         products_joined = products.alias("products")
         orders = orders.join(
             products_joined,
-            ((F.col("products.tenant.tenant_id") == F.col("order_with_customer.tenant.tenant_id")) & (F.col("products.id") == F.col("order_with_customer.product_id"))),
+            (
+                (F.col("products.tenant.tenant_id") == F.col("order_with_customer.tenant.tenant_id"))
+                & (F.col("products.id") == F.col("order_with_customer.product_id"))
+            ),
             "left_semi",
         )
         blocked_products_2_joined = blocked_products.alias("blocked_products_2")
         orders = orders.join(
             blocked_products_2_joined,
-            ((F.col("blocked_products_2.tenant.tenant_id") == F.col("order_with_customer.tenant.tenant_id")) & (F.col("blocked_products_2.id") == F.col("order_with_customer.product_id"))),
+            (
+                (F.col("blocked_products_2.tenant.tenant_id") == F.col("order_with_customer.tenant.tenant_id"))
+                & (F.col("blocked_products_2.id") == F.col("order_with_customer.product_id"))
+            ),
             "left_anti",
         )
-        products_3_joined = products.alias("products_3").withColumn("__structure_products_3_rank", F.row_number().over(Window.partitionBy(F.col("products_3.tenant.tenant_id"), F.col("products_3.id")).orderBy(F.col("products_3.audit.ingested_at").desc()))).where(F.col("__structure_products_3_rank") == F.lit(1)).drop("__structure_products_3_rank").alias("products_3")
+        products_3_joined = (
+            products.alias("products_3")
+            .withColumn(
+                "__structure_products_3_rank",
+                F.row_number().over(
+                    Window.partitionBy(F.col("products_3.tenant.tenant_id"), F.col("products_3.id")).orderBy(
+                        F.col("products_3.audit.ingested_at").desc()
+                    )
+                ),
+            )
+            .where(F.col("__structure_products_3_rank") == F.lit(1))
+            .drop("__structure_products_3_rank")
+            .alias("products_3")
+        )
         orders = orders.join(
             products_3_joined,
-            ((F.col("products_3.tenant.tenant_id") == F.col("order_with_customer.tenant.tenant_id")) & (F.col("products_3.id") == F.col("order_with_customer.product_id"))),
+            (
+                (F.col("products_3.tenant.tenant_id") == F.col("order_with_customer.tenant.tenant_id"))
+                & (F.col("products_3.id") == F.col("order_with_customer.product_id"))
+            ),
             "left",
         )
         orders = orders.where((F.col("products_3.id").isNotNull()))
@@ -168,7 +215,19 @@ class EnrichOrdersGenerated:
         promotions_joined = promotions.alias("promotions")
         orders = orders.join(
             promotions_joined,
-            (((F.col("promotions.tenant.tenant_id") == F.col("order_with_product.tenant.tenant_id")) & F.lower(F.trim(F.col("promotions.code"))).eqNullSafe(F.col("order_with_product.promotion_code"))) & ((F.col("promotions.valid_from") <= F.col("order_with_product.business.order_date")) & ((F.col("order_with_product.business.order_date") < F.col("promotions.valid_to")) | F.col("promotions.valid_to").isNull()))),
+            (
+                (
+                    (F.col("promotions.tenant.tenant_id") == F.col("order_with_product.tenant.tenant_id"))
+                    & F.lower(F.trim(F.col("promotions.code"))).eqNullSafe(F.col("order_with_product.promotion_code"))
+                )
+                & (
+                    (F.col("promotions.valid_from") <= F.col("order_with_product.business.order_date"))
+                    & (
+                        (F.col("order_with_product.business.order_date") < F.col("promotions.valid_to"))
+                        | F.col("promotions.valid_to").isNull()
+                    )
+                )
+            ),
             "left",
         )
         orders = orders.select(
@@ -204,7 +263,10 @@ class EnrichOrdersGenerated:
         shipments_joined = shipments.hint("shuffle_hash").alias("shipments")
         orders = orders.join(
             shipments_joined,
-            ((F.col("shipments.tenant.tenant_id") == F.col("order_with_promotion.tenant.tenant_id")) & (F.col("shipments.order_id") == F.col("order_with_promotion.id"))),
+            (
+                (F.col("shipments.tenant.tenant_id") == F.col("order_with_promotion.tenant.tenant_id"))
+                & (F.col("shipments.order_id") == F.col("order_with_promotion.id"))
+            ),
             "inner",
         )
         orders = orders.select(

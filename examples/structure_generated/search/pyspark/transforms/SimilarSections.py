@@ -5,7 +5,11 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
-from examples.structure_generated.search.pyspark.schemas.similarity import INDEXED_SIMILAR_SECTION_SCHEMA, SECTION_SIMILARITY_SCHEMA, SIMILARITY_SECTION_QUERY_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.similarity import (
+    INDEXED_SIMILAR_SECTION_SCHEMA,
+    SECTION_SIMILARITY_SCHEMA,
+    SIMILARITY_SECTION_QUERY_SCHEMA,
+)
 from examples.structure_generated.search.pyspark.schemas.text import SECTION_SCHEMA
 
 
@@ -72,4 +76,8 @@ class SimilarSectionsGenerated:
         # Step method: similar_sections
         similar_sections = query.alias("indexed_similar_section")
         assert_schema(similar_sections, INDEXED_SIMILAR_SECTION_SCHEMA, name="IndexedSimilarSection", mode="strict")
-        return TransformResult({"similar_sections": similar_sections}, single=True, schema={"similar_sections": INDEXED_SIMILAR_SECTION_SCHEMA})
+        return TransformResult(
+            {"similar_sections": similar_sections},
+            single=True,
+            schema={"similar_sections": INDEXED_SIMILAR_SECTION_SCHEMA},
+        )

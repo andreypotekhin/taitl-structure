@@ -43,6 +43,7 @@ class StructureConfigValidator:
             'Use generated_docs_formats = ["markdown", "json"].',
         )
         self._validate_generated_code_options(values["generated_code_options"])
+        self._validate_generated_code_hard_wrap(values["generated_code_hard_wrap"])
         self._validate_hook_target_default(values["hook_target_default"])
         self._validate_plugin_options(values["plugin"])
         for key in self._bools:
@@ -153,6 +154,21 @@ class StructureConfigValidator:
                 "generated_code_options",
                 f"Unsupported generated code option(s): {', '.join(unknown)}",
                 'Use mirror_methods, embed_exprs, embed_hooks, or embed_udfs.',
+            )
+
+    def _validate_generated_code_hard_wrap(self, value: object) -> None:
+        if not isinstance(value, int) or isinstance(value, bool):
+            self._fail_invalid(
+                "generated_code_hard_wrap",
+                f"Expected int, got {type(value).__name__}",
+                "Use generated_code_hard_wrap = 120.",
+            )
+        hard_wrap = cast(int, value)
+        if hard_wrap < 80:
+            self._fail_invalid(
+                "generated_code_hard_wrap",
+                "generated_code_hard_wrap must be at least 80",
+                "Use generated_code_hard_wrap = 120.",
             )
 
     def _validate_plugin_options(self, value: object) -> None:

@@ -197,6 +197,7 @@ ORDINARY_ONLY_CAPABILITIES = frozenset(
         ("backend", "jvm_access"),
         ("backend", "private_classic_fields"),
         ("expression", "python_udf"),
+        ("pyspark", "ordered_timeline_scan"),
         ("relation", "exactly_one"),
         ("streaming", "session_window_aggregate"),
         ("streaming", "stream_static_left_semi_join"),

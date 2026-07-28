@@ -6,7 +6,12 @@ from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.store.runtime.schema_assert import TransformResult, assert_schema, project_schema
 from examples.structure_generated.store.pyspark.schemas.customer import CUSTOMER_SCHEMA
-from examples.structure_generated.store.pyspark.schemas.order import CUSTOMER_ORDER_BACKFILL_SCHEMA, ORDER_CUSTOMER_RECONCILIATION_SCHEMA, ORDER_PRODUCT_CANDIDATE_SCHEMA, ORDER_RAW_SCHEMA
+from examples.structure_generated.store.pyspark.schemas.order import (
+    CUSTOMER_ORDER_BACKFILL_SCHEMA,
+    ORDER_CUSTOMER_RECONCILIATION_SCHEMA,
+    ORDER_PRODUCT_CANDIDATE_SCHEMA,
+    ORDER_RAW_SCHEMA,
+)
 from examples.structure_generated.store.pyspark.schemas.product import PRODUCT_SCHEMA
 
 
@@ -35,7 +40,10 @@ class RowsetJoinExamplesGenerated:
         customers_joined = customers.alias("customers")
         orders = orders.join(
             customers_joined,
-            ((F.col("customers.tenant.tenant_id") == F.col("order_raw.tenant.tenant_id")) & (F.col("customers.id") == F.col("order_raw.customer_id"))),
+            (
+                (F.col("customers.tenant.tenant_id") == F.col("order_raw.tenant.tenant_id"))
+                & (F.col("customers.id") == F.col("order_raw.customer_id"))
+            ),
             "full",
         )
         orders = orders.select(
@@ -53,11 +61,16 @@ class RowsetJoinExamplesGenerated:
         customers_joined = customers.alias("customers")
         orders = orders.join(
             customers_joined,
-            ((F.col("customers.tenant.tenant_id") == F.col("order_customer_reconciliation.tenant_id")) & (F.col("customers.id") == F.col("order_customer_reconciliation.customer_id"))),
+            (
+                (F.col("customers.tenant.tenant_id") == F.col("order_customer_reconciliation.tenant_id"))
+                & (F.col("customers.id") == F.col("order_customer_reconciliation.customer_id"))
+            ),
             "right",
         )
         orders = orders.select(
-            F.coalesce(F.col("order_customer_reconciliation.tenant_id"), F.col("customers.tenant.tenant_id")).alias("tenant_id"),
+            F.coalesce(F.col("order_customer_reconciliation.tenant_id"), F.col("customers.tenant.tenant_id")).alias(
+                "tenant_id"
+            ),
             F.col("order_customer_reconciliation.order_id"),
             F.col("order_customer_reconciliation.order_customer_id"),
             F.col("customers.id").alias("customer_id"),
@@ -82,4 +95,6 @@ class RowsetJoinExamplesGenerated:
         # Step method: candidates
         candidates = candidates.alias("order_product_candidate")
         assert_schema(candidates, ORDER_PRODUCT_CANDIDATE_SCHEMA, name="OrderProductCandidate", mode="strict")
-        return TransformResult({"candidates": candidates}, single=True, schema={"candidates": ORDER_PRODUCT_CANDIDATE_SCHEMA})
+        return TransformResult(
+            {"candidates": candidates}, single=True, schema={"candidates": ORDER_PRODUCT_CANDIDATE_SCHEMA}
+        )

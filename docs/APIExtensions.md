@@ -21,7 +21,7 @@ For PySpark APIs, see [APICatalog.md](APICatalog.md). For Strucute APIs such as 
 | Priority row selection | implemented | Ordered grouping/window pattern | `select_first_qualified` selects one eligible row per declared business key and reports configured missing/tie failures as `REL-E0705` | [APICatalog.md](APICatalog.md#relation-operations) |
 | Parent hierarchy closure | implemented | Iterative relation expansion pattern | `hierarchy_closure` emits typed `(node, ancestor, depth)` closure rows from a bounded parent catalog without driver collection | [APICatalog.md](APICatalog.md#relation-operations) |
 | Bounded parent hierarchy fallbacks | implemented | Iterative relation expansion pattern | `hierarchy_fallbacks` emits deterministic fallback rows from a declared band-id path and unjoined parent catalog without driver collection | [APICatalog.md](APICatalog.md#relation-operations) |
-| Bounded ordered `scan(...)` | scheduled | Ordered recurrence pattern | A separate typed recurrence contract will expose bounded PySpark state progression without general recursive DataFrame semantics | Sprint 26 |
+| Bounded ordered `scan(...)` | implemented | Ordered recurrence pattern | Batch-only typed state progression over a caller-supplied, partitioned, ordered timeline without general recursive DataFrame semantics | [Ordered Timeline Scan](dev/specifications/OrderedTimelineScan.md) |
 
 ## Added Selection Helpers
 

@@ -6,7 +6,11 @@ from pyspark.sql import Window
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
-from examples.structure_generated.search.pyspark.schemas.label import QUERY_LABEL_ASSIGNMENTS_SCHEMA, QUERY_LABEL_ASSIGNMENT_ENTRIES_SCHEMA, QUERY_LABEL_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.label import (
+    QUERY_LABEL_ASSIGNMENTS_SCHEMA,
+    QUERY_LABEL_ASSIGNMENT_ENTRIES_SCHEMA,
+    QUERY_LABEL_SCHEMA,
+)
 from examples.structure_generated.search.pyspark.schemas.search import SEARCH_QUERY_SCHEMA
 
 
@@ -30,10 +34,19 @@ class MergeQueryLabelsGenerated:
         # Step method: select_latest
         latest_labels = query_labels.alias("query_label")
         if latest_labels.isStreaming:
-            latest_labels = latest_labels.dropDuplicatesWithinWatermark(["query_id", "label.name", "label.value", "assigned_at"])
+            latest_labels = latest_labels.dropDuplicatesWithinWatermark(
+                ["query_id", "label.name", "label.value", "assigned_at"]
+            )
         else:
             latest_labels = latest_labels.dropDuplicates(["query_id", "label.name", "label.value", "assigned_at"])
-        latest_labels = latest_labels.withColumn("__structure_select_latest_latest_rank", F.row_number().over(Window.partitionBy(F.col("query_label.query_id"), F.col("query_label.label.name")).orderBy(F.col("query_label.assigned_at").desc())))
+        latest_labels = latest_labels.withColumn(
+            "__structure_select_latest_latest_rank",
+            F.row_number().over(
+                Window.partitionBy(F.col("query_label.query_id"), F.col("query_label.label.name")).orderBy(
+                    F.col("query_label.assigned_at").desc()
+                )
+            ),
+        )
         latest_labels = latest_labels.where(F.col("__structure_select_latest_latest_rank") == F.lit(1))
         latest_labels = latest_labels.drop("__structure_select_latest_latest_rank")
         latest_labels = latest_labels.select(
@@ -45,13 +58,23 @@ class MergeQueryLabelsGenerated:
 
         # Step method: collect_assignments
         entries = latest_labels.alias("query_label")
-        entries = entries.groupBy(
-            F.col("query_label.query_id").alias("query_id"),
-        ).agg(
-            F.collect_list(F.struct(F.col("query_label.label.name").alias("key"), F.col("query_label.label.value").alias("value"))).cast(T.ArrayType(LABEL_MAP_ENTRY_SCHEMA, containsNull=False)).alias("entries"),
-        ).select(
-            F.col("query_id"),
-            F.col("entries"),
+        entries = (
+            entries.groupBy(
+                F.col("query_label.query_id").alias("query_id"),
+            )
+            .agg(
+                F.collect_list(
+                    F.struct(
+                        F.col("query_label.label.name").alias("key"), F.col("query_label.label.value").alias("value")
+                    )
+                )
+                .cast(T.ArrayType(LABEL_MAP_ENTRY_SCHEMA, containsNull=False))
+                .alias("entries"),
+            )
+            .select(
+                F.col("query_id"),
+                F.col("entries"),
+            )
         )
         assert_schema(entries, QUERY_LABEL_ASSIGNMENT_ENTRIES_SCHEMA, name="QueryLabelAssignmentEntries", mode="strict")
 
@@ -74,12 +97,72 @@ class MergeQueryLabelsGenerated:
         labeled_queries = labeled_queries.select(
             F.col("search_query.id"),
             F.col("search_query.content"),
-            F.coalesce(F.when(F.col("assignments.query_id").isNotNull(), F.map_concat(F.map_filter(F.col("search_query.labels"), lambda key, value: ~(F.array_contains(F.map_keys(F.col("assignments.labels")), key))), F.col("assignments.labels"))).otherwise(F.col("search_query.labels")), F.col("search_query.labels")).alias("labels"),
-            (F.coalesce(F.element_at(F.coalesce(F.when(F.col("assignments.query_id").isNotNull(), F.map_concat(F.map_filter(F.col("search_query.labels"), lambda key, value: ~(F.array_contains(F.map_keys(F.col("assignments.labels")), key))), F.col("assignments.labels"))).otherwise(F.col("search_query.labels")), F.col("search_query.labels")), F.lit('is_question')), F.lit(0)) == F.lit(1)).alias("is_question"),
-            (F.coalesce(F.element_at(F.coalesce(F.when(F.col("assignments.query_id").isNotNull(), F.map_concat(F.map_filter(F.col("search_query.labels"), lambda key, value: ~(F.array_contains(F.map_keys(F.col("assignments.labels")), key))), F.col("assignments.labels"))).otherwise(F.col("search_query.labels")), F.col("search_query.labels")), F.lit('is_time_sensitive')), F.lit(0)) == F.lit(1)).alias("is_time_sensitive"),
+            F.coalesce(
+                F.when(
+                    F.col("assignments.query_id").isNotNull(),
+                    F.map_concat(
+                        F.map_filter(
+                            F.col("search_query.labels"),
+                            lambda key, value: ~(F.array_contains(F.map_keys(F.col("assignments.labels")), key)),
+                        ),
+                        F.col("assignments.labels"),
+                    ),
+                ).otherwise(F.col("search_query.labels")),
+                F.col("search_query.labels"),
+            ).alias("labels"),
+            (
+                F.coalesce(
+                    F.element_at(
+                        F.coalesce(
+                            F.when(
+                                F.col("assignments.query_id").isNotNull(),
+                                F.map_concat(
+                                    F.map_filter(
+                                        F.col("search_query.labels"),
+                                        lambda key, value: ~(
+                                            F.array_contains(F.map_keys(F.col("assignments.labels")), key)
+                                        ),
+                                    ),
+                                    F.col("assignments.labels"),
+                                ),
+                            ).otherwise(F.col("search_query.labels")),
+                            F.col("search_query.labels"),
+                        ),
+                        F.lit('is_question'),
+                    ),
+                    F.lit(0),
+                )
+                == F.lit(1)
+            ).alias("is_question"),
+            (
+                F.coalesce(
+                    F.element_at(
+                        F.coalesce(
+                            F.when(
+                                F.col("assignments.query_id").isNotNull(),
+                                F.map_concat(
+                                    F.map_filter(
+                                        F.col("search_query.labels"),
+                                        lambda key, value: ~(
+                                            F.array_contains(F.map_keys(F.col("assignments.labels")), key)
+                                        ),
+                                    ),
+                                    F.col("assignments.labels"),
+                                ),
+                            ).otherwise(F.col("search_query.labels")),
+                            F.col("search_query.labels"),
+                        ),
+                        F.lit('is_time_sensitive'),
+                    ),
+                    F.lit(0),
+                )
+                == F.lit(1)
+            ).alias("is_time_sensitive"),
         )
 
         # Step method: labeled_queries
         labeled_queries = labeled_queries.alias("search_query")
         assert_schema(labeled_queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
-        return TransformResult({"labeled_queries": labeled_queries}, single=True, schema={"labeled_queries": SEARCH_QUERY_SCHEMA})
+        return TransformResult(
+            {"labeled_queries": labeled_queries}, single=True, schema={"labeled_queries": SEARCH_QUERY_SCHEMA}
+        )

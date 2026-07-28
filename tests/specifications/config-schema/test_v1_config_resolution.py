@@ -35,6 +35,7 @@ def test_v1_config_uses_defaults_and_tracks_sources() -> None:
         assert config.generated_docs_dir == root / "generated" / "docs"
         assert config.generated_docs_formats == ("markdown", "json")
         assert config.generated_code_options == ()
+        assert config.generated_code_hard_wrap == 120
         assert config.warn_on_udfs is True
         assert config.execution_mode == "online"
         assert dict(config.plugin_options["pyspark"])["profile"] == ">=3.5,<4.1"
@@ -286,6 +287,36 @@ def test_v1_config_accepts_canonical_generated_code_options() -> None:
         )
 
         assert config.generated_code_options == ("embed_exprs", "mirror_methods")
+
+
+def test_v1_config_accepts_generated_code_hard_wrap_and_changes_compiler_fingerprint() -> None:
+    with workspace_tmp() as root:
+        (root / "src").mkdir()
+        (root / "structure.toml").write_text(
+            "[tool.structure]\ngenerated_code_hard_wrap = 100\n",
+            encoding="utf-8",
+        )
+
+        narrow = StructureConfig.resolve(project_root=root)
+        default = StructureConfig.resolve(project_root=root, generated_code_hard_wrap=120)
+
+    assert narrow.generated_code_hard_wrap == 100
+    assert narrow.source_map["generated_code_hard_wrap"] == "structure.toml"
+    assert (
+        CompilerArtifactOptions.from_config(narrow).fingerprint()
+        != CompilerArtifactOptions.from_config(default).fingerprint()
+    )
+
+
+@pytest.mark.parametrize("value", (79, "120", True))
+def test_v1_config_rejects_invalid_generated_code_hard_wrap(value) -> None:
+    with workspace_tmp() as root:
+        (root / "src").mkdir()
+
+        with pytest.raises(ConfigError) as error:
+            StructureConfig.resolve(project_root=root, generated_code_hard_wrap=value)
+
+    assert error.value.diagnostic.setting == "generated_code_hard_wrap"
 
 
 def test_v1_config_resolves_embed_hooks_from_toml_and_changes_compiler_fingerprint() -> None:

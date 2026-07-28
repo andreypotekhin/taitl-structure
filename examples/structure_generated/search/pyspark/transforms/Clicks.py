@@ -5,7 +5,11 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
-from examples.structure_generated.search.pyspark.schemas.clicks import CLICK_SCHEMA, DAILY_CLICKS_SCHEMA, IMPRESSION_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.clicks import (
+    CLICK_SCHEMA,
+    DAILY_CLICKS_SCHEMA,
+    IMPRESSION_SCHEMA,
+)
 
 
 class ClicksGenerated:
@@ -33,39 +37,86 @@ class ClicksGenerated:
         clicks_joined = impressions_click_deduped_1.withWatermark("occurred_at", '7 days').alias("clicks")
         impressions = impressions.join(
             clicks_joined,
-            ((F.col("clicks.impression_id") == F.col("impression.id")) & ((F.col("clicks.occurred_at") >= (F.col("impression.shown_at") - F.expr("INTERVAL 0 seconds"))) & (F.col("clicks.occurred_at") <= (F.col("impression.shown_at") + F.expr("INTERVAL 24 hours"))))),
+            (
+                (F.col("clicks.impression_id") == F.col("impression.id"))
+                & (
+                    (F.col("clicks.occurred_at") >= (F.col("impression.shown_at") - F.expr("INTERVAL 0 seconds")))
+                    & (F.col("clicks.occurred_at") <= (F.col("impression.shown_at") + F.expr("INTERVAL 24 hours")))
+                )
+            ),
             "inner",
         )
-        impressions = impressions.groupBy(
-            F.window(F.col("impression.shown_at"), '1 day').alias("window"),
-            F.lower(F.regexp_replace(F.trim(F.col("impression.query")), '\\s+', ' ')).alias("query"),
-            F.col("impression.document_id").alias("document_id"),
-            F.col("impression.position").alias("position"),
-            F.col("impression.examination_propensity").alias("examination_propensity"),
-            F.col("impression.user_id").alias("user_id"),
-            F.lit(None).alias("band_id"),
-        ).agg(
-            F.count(F.lit(1)).cast(T.LongType()).alias("click_count"),
-            F.countDistinct(F.col("clicks.impression_id")).cast(T.LongType()).alias("clicked_impression_count"),
-            F.sum(F.when((F.col("clicks.dwell_seconds") > F.lit(0.0)), F.col("clicks.dwell_seconds")).otherwise(F.lit(0.0))).cast(T.DoubleType()).alias("dwell_seconds"),
-            F.sum((F.when((F.when((F.col("clicks.dwell_seconds") > F.lit(0.0)), F.col("clicks.dwell_seconds")).otherwise(F.lit(0.0)) < F.lit(60.0)), F.when((F.col("clicks.dwell_seconds") > F.lit(0.0)), F.col("clicks.dwell_seconds")).otherwise(F.lit(0.0))).otherwise(F.lit(60.0)) / F.lit(60.0))).cast(T.DoubleType()).alias("dwell_credit"),
-            F.sum(F.when((F.when((F.col("clicks.dwell_seconds") > F.lit(0.0)), F.col("clicks.dwell_seconds")).otherwise(F.lit(0.0)) >= F.lit(10.0)), F.lit(1)).otherwise(F.lit(0))).cast(T.LongType()).alias("long_click_count"),
-        ).select(
-            F.col("window"),
-            F.col("query"),
-            F.col("document_id"),
-            F.col("position"),
-            F.col("examination_propensity"),
-            F.col("user_id"),
-            F.col("band_id"),
-            F.col("click_count"),
-            F.col("clicked_impression_count"),
-            F.col("dwell_seconds"),
-            F.col("dwell_credit"),
-            F.col("long_click_count"),
+        impressions = (
+            impressions.groupBy(
+                F.window(F.col("impression.shown_at"), '1 day').alias("window"),
+                F.lower(F.regexp_replace(F.trim(F.col("impression.query")), '\\s+', ' ')).alias("query"),
+                F.col("impression.document_id").alias("document_id"),
+                F.col("impression.position").alias("position"),
+                F.col("impression.examination_propensity").alias("examination_propensity"),
+                F.col("impression.user_id").alias("user_id"),
+                F.lit(None).alias("band_id"),
+            )
+            .agg(
+                F.count(F.lit(1)).cast(T.LongType()).alias("click_count"),
+                F.countDistinct(F.col("clicks.impression_id")).cast(T.LongType()).alias("clicked_impression_count"),
+                F.sum(
+                    F.when((F.col("clicks.dwell_seconds") > F.lit(0.0)), F.col("clicks.dwell_seconds")).otherwise(
+                        F.lit(0.0)
+                    )
+                )
+                .cast(T.DoubleType())
+                .alias("dwell_seconds"),
+                F.sum(
+                    (
+                        F.when(
+                            (
+                                F.when(
+                                    (F.col("clicks.dwell_seconds") > F.lit(0.0)), F.col("clicks.dwell_seconds")
+                                ).otherwise(F.lit(0.0))
+                                < F.lit(60.0)
+                            ),
+                            F.when(
+                                (F.col("clicks.dwell_seconds") > F.lit(0.0)), F.col("clicks.dwell_seconds")
+                            ).otherwise(F.lit(0.0)),
+                        ).otherwise(F.lit(60.0))
+                        / F.lit(60.0)
+                    )
+                )
+                .cast(T.DoubleType())
+                .alias("dwell_credit"),
+                F.sum(
+                    F.when(
+                        (
+                            F.when(
+                                (F.col("clicks.dwell_seconds") > F.lit(0.0)), F.col("clicks.dwell_seconds")
+                            ).otherwise(F.lit(0.0))
+                            >= F.lit(10.0)
+                        ),
+                        F.lit(1),
+                    ).otherwise(F.lit(0))
+                )
+                .cast(T.LongType())
+                .alias("long_click_count"),
+            )
+            .select(
+                F.col("window"),
+                F.col("query"),
+                F.col("document_id"),
+                F.col("position"),
+                F.col("examination_propensity"),
+                F.col("user_id"),
+                F.col("band_id"),
+                F.col("click_count"),
+                F.col("clicked_impression_count"),
+                F.col("dwell_seconds"),
+                F.col("dwell_credit"),
+                F.col("long_click_count"),
+            )
         )
 
         # Step method: daily_clicks
         daily_clicks = impressions.alias("daily_clicks")
         assert_schema(daily_clicks, DAILY_CLICKS_SCHEMA, name="DailyClicks", mode="strict")
-        return TransformResult({"daily_clicks": daily_clicks}, single=True, schema={"daily_clicks": DAILY_CLICKS_SCHEMA})
+        return TransformResult(
+            {"daily_clicks": daily_clicks}, single=True, schema={"daily_clicks": DAILY_CLICKS_SCHEMA}
+        )

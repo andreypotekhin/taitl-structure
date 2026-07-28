@@ -5,10 +5,26 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.security.runtime.schema_assert import TransformResult, assert_schema, project_schema
-from examples.structure_generated.security.pyspark.schemas.assets import DEVICE_SCHEMA, DEVICE_TYPE_SCHEMA, SOFTWARE_SCHEMA
-from examples.structure_generated.security.pyspark.schemas.organization import DEPARTMENT_SCHEMA, ORG_SCHEMA, PERSON_SCHEMA, TEAM_SCHEMA
-from examples.structure_generated.security.pyspark.schemas.reporting import VULNERABILITY_EXPOSURE_SCHEMA, VULNERABILITY_POSTURE_CANDIDATE_SCHEMA
-from examples.structure_generated.security.pyspark.schemas.risk import REMEDIATION_POLICY_SCHEMA, VULN_SCHEMA, VULN_TYPE_SCHEMA
+from examples.structure_generated.security.pyspark.schemas.assets import (
+    DEVICE_SCHEMA,
+    DEVICE_TYPE_SCHEMA,
+    SOFTWARE_SCHEMA,
+)
+from examples.structure_generated.security.pyspark.schemas.organization import (
+    DEPARTMENT_SCHEMA,
+    ORG_SCHEMA,
+    PERSON_SCHEMA,
+    TEAM_SCHEMA,
+)
+from examples.structure_generated.security.pyspark.schemas.reporting import (
+    VULNERABILITY_EXPOSURE_SCHEMA,
+    VULNERABILITY_POSTURE_CANDIDATE_SCHEMA,
+)
+from examples.structure_generated.security.pyspark.schemas.risk import (
+    REMEDIATION_POLICY_SCHEMA,
+    VULN_SCHEMA,
+    VULN_TYPE_SCHEMA,
+)
 
 
 class SecurityPostureGenerated:
@@ -137,11 +153,41 @@ class SecurityPostureGenerated:
             F.col("devices.vuln_ids").alias("device_vuln_ids"),
             F.col("devices.apps").alias("device_apps"),
         )
-        assert_schema(posture_candidates, VULNERABILITY_POSTURE_CANDIDATE_SCHEMA, name="VulnerabilityPostureCandidate", mode="strict")
+        assert_schema(
+            posture_candidates,
+            VULNERABILITY_POSTURE_CANDIDATE_SCHEMA,
+            name="VulnerabilityPostureCandidate",
+            mode="strict",
+        )
 
         # Step method: expose
         exposure_lane = posture_candidates.alias("vulnerability_posture_candidate")
-        exposure_lane = exposure_lane.where(((((F.col("vulnerability_posture_candidate.device_owner_id") == F.col("vulnerability_posture_candidate.person_id")) & F.array_contains(F.col("vulnerability_posture_candidate.device_vuln_ids"), F.col("vulnerability_posture_candidate.vuln_id"))) & ((F.col("vulnerability_posture_candidate.device_os_id") == F.col("vulnerability_posture_candidate.software_id")) | F.exists(F.col("vulnerability_posture_candidate.device_apps"), lambda item: (item.getField('id') == F.col("vulnerability_posture_candidate.software_id")))))))
+        exposure_lane = exposure_lane.where(
+            (
+                (
+                    (
+                        (
+                            F.col("vulnerability_posture_candidate.device_owner_id")
+                            == F.col("vulnerability_posture_candidate.person_id")
+                        )
+                        & F.array_contains(
+                            F.col("vulnerability_posture_candidate.device_vuln_ids"),
+                            F.col("vulnerability_posture_candidate.vuln_id"),
+                        )
+                    )
+                    & (
+                        (
+                            F.col("vulnerability_posture_candidate.device_os_id")
+                            == F.col("vulnerability_posture_candidate.software_id")
+                        )
+                        | F.exists(
+                            F.col("vulnerability_posture_candidate.device_apps"),
+                            lambda item: (item.getField('id') == F.col("vulnerability_posture_candidate.software_id")),
+                        )
+                    )
+                )
+            )
+        )
         exposure_lane = exposure_lane.select(
             F.col("vulnerability_posture_candidate.vuln_id"),
             F.col("vulnerability_posture_candidate.vuln_type"),
@@ -200,4 +246,6 @@ class SecurityPostureGenerated:
         # Step method: exposures
         exposures = exposure_lane.alias("vulnerability_exposure")
         assert_schema(exposures, VULNERABILITY_EXPOSURE_SCHEMA, name="VulnerabilityExposure", mode="strict")
-        return TransformResult({"exposures": exposures}, single=True, schema={"exposures": VULNERABILITY_EXPOSURE_SCHEMA})
+        return TransformResult(
+            {"exposures": exposures}, single=True, schema={"exposures": VULNERABILITY_EXPOSURE_SCHEMA}
+        )

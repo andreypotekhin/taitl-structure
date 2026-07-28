@@ -10,6 +10,8 @@ data sources, stream lifecycle, checkpointing, and the choice to persist or disp
 | Matrix product | `MultiplyMatrices` | Matrix cells | Batch join and grouped sum. |
 | Matrix-vector product | `MultiplyMatrixVector` | Vector cells | Batch join and grouped sum. |
 | Matrix inversion | `InvertMatrices` | Inverse matrix cells | Explicit, small-matrix driver-side batch hook. |
+| Sequences | `Fibonacci` | Fibonacci value per ordered row | Batch PySpark recurrence with `scan(...)`. |
+| Series | `PiAsSeries`, `EAsSeries`, `Ln2AsSeries` | Partial sums | Batch PySpark recurrence for finite numerical approximations. |
 
 ## Scalar Algebra
 
@@ -87,6 +89,35 @@ Inconsistent metadata,
 incomplete matrices, non-square matrices, and singular matrices produce no rows. Use this only for small demonstration datasets. A distributed arbitrary-size inverse or determinant needs a dedicated
 distributed pivot algorithm, which is outside of this example.
 
+## Sequences
+
+`Fibonacci` demonstrates PySpark-plugin `scan(...)`. Each `series` partition starts from the same state, rows are ordered
+by `index`, and the transform emits the state before the transition for that row.
+
+```python
+from examples.school.transforms.sequences import Fibonacci
+
+terms = Fibonacci(ticks=ticks).run(session).result
+terms.orderBy("series", "index")
+```
+
+For indices `0..4`, each partition emits `0, 1, 1, 2, 3`.
+
+## Series
+
+`PiAsSeries`, `EAsSeries`, and `Ln2AsSeries` are direct transforms. Each one defines its initial state and transition
+inline, so the compiled Spark plan stays visible to the optimizer.
+
+```python
+from examples.school.transforms.series import EAsSeries, Ln2AsSeries, PiAsSeries
+
+pi = PiAsSeries(ticks=ticks).run(session).result
+e = EAsSeries(ticks=ticks).run(session).result
+ln2 = Ln2AsSeries(ticks=ticks).run(session).result
+```
+
+The output value is the partial sum after the current term. More input rows produce closer finite approximations.
+
 ## External Plugins
 
 Structure allows for external plugins, allowing to apply to non-Spark environments and alternate DSLs. We include one such plugin - Iterable example plugin - under `examples/plugins/iterable/`.
@@ -97,33 +128,36 @@ Install plugin before importing the transforms:
 poetry run pip install -e examples/plugins/iterable
 ```
 
-`ProjectIterableScores` demonstrates the use of the
-external Iterable plugin and its DSL. `ProjectIterableScores` declares its `Student` input model and receives row mappings
-as constructor argument:
+`ProjectIterableScores` demonstrates the use of the external Iterable plugin and its DSL. It receives row mappings as
+constructor arguments and emits named `reports` and `audits` outputs:
 
 ```python
 from examples.school.transforms.iterable import ProjectIterableScores
 from structure import StructureSession
 
 scores = [{"student": "Ada", "score": 100, "ignored": False}]
+profiles = [{"student": "Ada", "cohort": "math"}]
+awards = [{"student": "Ada", "award": "honors"}]
 
-result = ProjectIterableScores(students=scores).run(StructureSession())
-assert result.result.collect() == [{"student": "Ada", "score": 100}]
+result = ProjectIterableScores(students=scores, profiles=profiles, awards=awards).run(StructureSession())
+assert result.reports.collect() == [
+    {"student_name": "Ada", "score_points": 100, "cohort_name": "math", "award_name": "honors"}
+]
 ```
 
-`Fibonacci` is a second Iterable transform. It defines a recurrence with prior-state references. Its input contains
+`IterableFibonacci` is a second Iterable transform. It defines a recurrence with prior-state references. Its input contains
 contiguous `index` values beginning at zero.
 
 ```python
-from examples.school.transforms.sequences import Fibonacci
+from examples.school.transforms.iterable import IterableFibonacci
 
 rows=({"index": index} for index in range(4))
 
-terms = Fibonacci(rows).run(StructureSession())
+terms = IterableFibonacci(rows=rows).run(StructureSession())
 assert terms.result.collect() == [
-    {"index": 0, "fibonacci": 0},
-    {"index": 1, "fibonacci": 1},
-    {"index": 2, "fibonacci": 1},
-    {"index": 3, "fibonacci": 2},
+    {"index": 0, "fibonacci_value": 0},
+    {"index": 1, "fibonacci_value": 1},
+    {"index": 2, "fibonacci_value": 1},
+    {"index": 3, "fibonacci_value": 2},
 ]
 ```

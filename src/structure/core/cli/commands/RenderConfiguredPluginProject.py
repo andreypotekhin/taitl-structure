@@ -46,6 +46,7 @@ class RenderConfiguredPluginProject:
                         generated_package=config.generated_package,
                         semantic_fingerprints=fingerprints,
                         generated_code_options=config.generated_code_options,
+                        generated_code_hard_wrap=config.generated_code_hard_wrap,
                     )
                 ).files
             )

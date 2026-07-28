@@ -104,7 +104,7 @@ narrower typed capability from that family; no broader API is implied.
 | Bounded parent hierarchy and fallbacks | implemented | Sprint 25; `ResolveCohortBands` now uses `require_parent_hierarchy(...)`, `hierarchy_closure(...)`, and `hierarchy_fallbacks(...)` to retire its raw driver-collection traversal |
 | First-qualified priority selection | implemented | Sprint 25; `select_first_qualified(...)` is available. `RerankDocuments` now uses declared candidate keys to select the first eligible query and popularity feedback context without a raw surrogate row ID. |
 | Sampling | deferred | Seed, replacement, and reproducibility contract is incomplete |
-| Bounded ordered `scan(...)` | scheduled | Sprint 26; separate typed recurrence plan |
+| Bounded ordered `scan(...)` | implemented | Sprint 26; batch-only ordinary-PySpark recurrence over caller-supplied partitioned timelines, with a positive per-partition bound and `TiePolicy.ERROR` duplicate-key failure |
 | Binary/encoding; JSON/CSV parsing; Deterministic `mode` | deferred | Retain the documented `@raw` boundary until their type or tie contracts are complete |
 
 ## API Catalog

@@ -21,6 +21,7 @@ class ResolveStructureConfig:
         "generated_docs_dir",
         "generated_docs_formats",
         "generated_code_options",
+        "generated_code_hard_wrap",
         "execution_mode",
         "hook_target_default",
         "traceability",

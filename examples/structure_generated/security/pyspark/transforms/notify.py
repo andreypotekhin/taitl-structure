@@ -9,7 +9,11 @@ from examples.structure_generated.security.pyspark.schemas.events import VULN_EV
 from examples.structure_generated.security.pyspark.schemas.notifications import PERSON_VULNERABILITY_NOTIFICATION_SCHEMA
 from examples.structure_generated.security.pyspark.schemas.organization import PERSON_SCHEMA
 from examples.structure_generated.security.pyspark.schemas.remediate import VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA
-from examples.structure_generated.security.pyspark.schemas.reporting import DELIVERY_RECEIPT_SCHEMA, SECURITY_EVALUATION_SCHEMA, VULNERABILITY_DISCOVERY_SCHEMA
+from examples.structure_generated.security.pyspark.schemas.reporting import (
+    DELIVERY_RECEIPT_SCHEMA,
+    SECURITY_EVALUATION_SCHEMA,
+    VULNERABILITY_DISCOVERY_SCHEMA,
+)
 
 
 class VulnerabilityNotificationsGenerated:
@@ -27,7 +31,9 @@ class VulnerabilityNotificationsGenerated:
         evaluation: DataFrame,
         receipts: DataFrame,
     ) -> TransformResult:
-        assert_schema(exposures, VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA, name="VulnerabilityWorkflowExposure", mode="strict")
+        assert_schema(
+            exposures, VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA, name="VulnerabilityWorkflowExposure", mode="strict"
+        )
         assert_schema(events, VULN_EVENT_SCHEMA, name="VulnEvent", mode="strict")
         assert_schema(people, PERSON_SCHEMA, name="Person", mode="strict")
         assert_schema(evaluation, SECURITY_EVALUATION_SCHEMA, name="SecurityEvaluation", mode="strict")
@@ -60,13 +66,17 @@ class VulnerabilityNotificationsGenerated:
         # Step method: first_detection
         discoveries = deduped_events.alias("vuln_event")
         discoveries = discoveries.where(((F.col("vuln_event.action") == F.lit('Detected'))))
-        discoveries = discoveries.groupBy(
-            F.col("vuln_event.vuln_id").alias("vuln_id"),
-        ).agg(
-            F.min(F.col("vuln_event.occurred_at")).cast(T.TimestampType()).alias("discovered_at"),
-        ).select(
-            F.col("vuln_id"),
-            F.col("discovered_at"),
+        discoveries = (
+            discoveries.groupBy(
+                F.col("vuln_event.vuln_id").alias("vuln_id"),
+            )
+            .agg(
+                F.min(F.col("vuln_event.occurred_at")).cast(T.TimestampType()).alias("discovered_at"),
+            )
+            .select(
+                F.col("vuln_id"),
+                F.col("discovered_at"),
+            )
         )
         assert_schema(discoveries, VULNERABILITY_DISCOVERY_SCHEMA, name="VulnerabilityDiscovery", mode="strict")
 
@@ -87,12 +97,25 @@ class VulnerabilityNotificationsGenerated:
         receipts_3_joined = receipts.alias("receipts_3")
         discovery_notifications = discovery_notifications.join(
             receipts_3_joined,
-            (F.col("receipts_3.delivery_key") == F.concat_ws(':', F.col("vulnerability_workflow_exposure.vuln_id"), F.lit('discovered'), F.col("discoveries.discovered_at").cast('string'))),
+            (
+                F.col("receipts_3.delivery_key")
+                == F.concat_ws(
+                    ':',
+                    F.col("vulnerability_workflow_exposure.vuln_id"),
+                    F.lit('discovered'),
+                    F.col("discoveries.discovered_at").cast('string'),
+                )
+            ),
             "left",
         )
         discovery_notifications = discovery_notifications.where((F.col("receipts_3.delivery_key").isNull()))
         discovery_notifications = discovery_notifications.select(
-            F.concat_ws(':', F.col("vulnerability_workflow_exposure.vuln_id"), F.lit('discovered'), F.col("discoveries.discovered_at").cast('string')).alias("delivery_key"),
+            F.concat_ws(
+                ':',
+                F.col("vulnerability_workflow_exposure.vuln_id"),
+                F.lit('discovered'),
+                F.col("discoveries.discovered_at").cast('string'),
+            ).alias("delivery_key"),
             F.lit('discovered').alias("notification_type"),
             F.col("vulnerability_workflow_exposure.vuln_id"),
             F.col("people_2.id").alias("person_id"),
@@ -102,7 +125,12 @@ class VulnerabilityNotificationsGenerated:
             F.col("vulnerability_workflow_exposure.target_date"),
             F.col("vulnerability_workflow_exposure.instructions"),
         )
-        assert_schema(discovery_notifications, PERSON_VULNERABILITY_NOTIFICATION_SCHEMA, name="PersonVulnerabilityNotification", mode="strict")
+        assert_schema(
+            discovery_notifications,
+            PERSON_VULNERABILITY_NOTIFICATION_SCHEMA,
+            name="PersonVulnerabilityNotification",
+            mode="strict",
+        )
 
         # Step method: notify_imminent
         imminent_notifications = exposures.alias("vulnerability_workflow_exposure")
@@ -117,12 +145,46 @@ class VulnerabilityNotificationsGenerated:
         receipts_3_joined = receipts.alias("receipts_3")
         imminent_notifications = imminent_notifications.join(
             receipts_3_joined,
-            (F.col("receipts_3.delivery_key") == F.concat_ws(':', F.col("vulnerability_workflow_exposure.vuln_id"), F.lit('imminent'), F.col("people_2.id"), F.col("vulnerability_workflow_exposure.target_date").cast('string'))),
+            (
+                F.col("receipts_3.delivery_key")
+                == F.concat_ws(
+                    ':',
+                    F.col("vulnerability_workflow_exposure.vuln_id"),
+                    F.lit('imminent'),
+                    F.col("people_2.id"),
+                    F.col("vulnerability_workflow_exposure.target_date").cast('string'),
+                )
+            ),
             "left",
         )
-        imminent_notifications = imminent_notifications.where((((((F.col("vulnerability_workflow_exposure.is_active") & ~(F.col("vulnerability_workflow_exposure.is_deadline_paused"))) & (F.col("evaluation.as_of_date") >= F.date_sub(F.col("vulnerability_workflow_exposure.target_date"), 7))) & (F.col("evaluation.as_of_date") < F.col("vulnerability_workflow_exposure.target_date"))) & F.col("receipts_3.delivery_key").isNull())))
+        imminent_notifications = imminent_notifications.where(
+            (
+                (
+                    (
+                        (
+                            (
+                                F.col("vulnerability_workflow_exposure.is_active")
+                                & ~(F.col("vulnerability_workflow_exposure.is_deadline_paused"))
+                            )
+                            & (
+                                F.col("evaluation.as_of_date")
+                                >= F.date_sub(F.col("vulnerability_workflow_exposure.target_date"), 7)
+                            )
+                        )
+                        & (F.col("evaluation.as_of_date") < F.col("vulnerability_workflow_exposure.target_date"))
+                    )
+                    & F.col("receipts_3.delivery_key").isNull()
+                )
+            )
+        )
         imminent_notifications = imminent_notifications.select(
-            F.concat_ws(':', F.col("vulnerability_workflow_exposure.vuln_id"), F.lit('imminent'), F.col("people_2.id"), F.col("vulnerability_workflow_exposure.target_date").cast('string')).alias("delivery_key"),
+            F.concat_ws(
+                ':',
+                F.col("vulnerability_workflow_exposure.vuln_id"),
+                F.lit('imminent'),
+                F.col("people_2.id"),
+                F.col("vulnerability_workflow_exposure.target_date").cast('string'),
+            ).alias("delivery_key"),
             F.lit('imminent').alias("notification_type"),
             F.col("vulnerability_workflow_exposure.vuln_id"),
             F.col("people_2.id").alias("person_id"),
@@ -132,7 +194,12 @@ class VulnerabilityNotificationsGenerated:
             F.col("vulnerability_workflow_exposure.target_date"),
             F.col("vulnerability_workflow_exposure.instructions"),
         )
-        assert_schema(imminent_notifications, PERSON_VULNERABILITY_NOTIFICATION_SCHEMA, name="PersonVulnerabilityNotification", mode="strict")
+        assert_schema(
+            imminent_notifications,
+            PERSON_VULNERABILITY_NOTIFICATION_SCHEMA,
+            name="PersonVulnerabilityNotification",
+            mode="strict",
+        )
 
         # Step method: notify_overdue
         overdue_notifications = exposures.alias("vulnerability_workflow_exposure")
@@ -147,12 +214,40 @@ class VulnerabilityNotificationsGenerated:
         receipts_3_joined = receipts.alias("receipts_3")
         overdue_notifications = overdue_notifications.join(
             receipts_3_joined,
-            (F.col("receipts_3.delivery_key") == F.concat_ws(':', F.col("vulnerability_workflow_exposure.vuln_id"), F.lit('overdue'), F.col("people_2.id"), F.col("vulnerability_workflow_exposure.target_date").cast('string'))),
+            (
+                F.col("receipts_3.delivery_key")
+                == F.concat_ws(
+                    ':',
+                    F.col("vulnerability_workflow_exposure.vuln_id"),
+                    F.lit('overdue'),
+                    F.col("people_2.id"),
+                    F.col("vulnerability_workflow_exposure.target_date").cast('string'),
+                )
+            ),
             "left",
         )
-        overdue_notifications = overdue_notifications.where(((((F.col("vulnerability_workflow_exposure.is_active") & ~(F.col("vulnerability_workflow_exposure.is_deadline_paused"))) & (F.col("evaluation.as_of_date") > F.col("vulnerability_workflow_exposure.target_date"))) & F.col("receipts_3.delivery_key").isNull())))
+        overdue_notifications = overdue_notifications.where(
+            (
+                (
+                    (
+                        (
+                            F.col("vulnerability_workflow_exposure.is_active")
+                            & ~(F.col("vulnerability_workflow_exposure.is_deadline_paused"))
+                        )
+                        & (F.col("evaluation.as_of_date") > F.col("vulnerability_workflow_exposure.target_date"))
+                    )
+                    & F.col("receipts_3.delivery_key").isNull()
+                )
+            )
+        )
         overdue_notifications = overdue_notifications.select(
-            F.concat_ws(':', F.col("vulnerability_workflow_exposure.vuln_id"), F.lit('overdue'), F.col("people_2.id"), F.col("vulnerability_workflow_exposure.target_date").cast('string')).alias("delivery_key"),
+            F.concat_ws(
+                ':',
+                F.col("vulnerability_workflow_exposure.vuln_id"),
+                F.lit('overdue'),
+                F.col("people_2.id"),
+                F.col("vulnerability_workflow_exposure.target_date").cast('string'),
+            ).alias("delivery_key"),
             F.lit('overdue').alias("notification_type"),
             F.col("vulnerability_workflow_exposure.vuln_id"),
             F.col("people_2.id").alias("person_id"),
@@ -165,13 +260,40 @@ class VulnerabilityNotificationsGenerated:
 
         # Step method: discovery_notifications
         discovery_notifications = discovery_notifications.alias("person_vulnerability_notification")
-        assert_schema(discovery_notifications, PERSON_VULNERABILITY_NOTIFICATION_SCHEMA, name="PersonVulnerabilityNotification", mode="strict")
+        assert_schema(
+            discovery_notifications,
+            PERSON_VULNERABILITY_NOTIFICATION_SCHEMA,
+            name="PersonVulnerabilityNotification",
+            mode="strict",
+        )
 
         # Step method: imminent_notifications
         imminent_notifications = imminent_notifications.alias("person_vulnerability_notification")
-        assert_schema(imminent_notifications, PERSON_VULNERABILITY_NOTIFICATION_SCHEMA, name="PersonVulnerabilityNotification", mode="strict")
+        assert_schema(
+            imminent_notifications,
+            PERSON_VULNERABILITY_NOTIFICATION_SCHEMA,
+            name="PersonVulnerabilityNotification",
+            mode="strict",
+        )
 
         # Step method: overdue_notifications
         overdue_notifications = overdue_notifications.alias("person_vulnerability_notification")
-        assert_schema(overdue_notifications, PERSON_VULNERABILITY_NOTIFICATION_SCHEMA, name="PersonVulnerabilityNotification", mode="strict")
-        return TransformResult({"discovery_notifications": discovery_notifications, "imminent_notifications": imminent_notifications, "overdue_notifications": overdue_notifications}, single=False, schema={"discovery_notifications": PERSON_VULNERABILITY_NOTIFICATION_SCHEMA, "imminent_notifications": PERSON_VULNERABILITY_NOTIFICATION_SCHEMA, "overdue_notifications": PERSON_VULNERABILITY_NOTIFICATION_SCHEMA})
+        assert_schema(
+            overdue_notifications,
+            PERSON_VULNERABILITY_NOTIFICATION_SCHEMA,
+            name="PersonVulnerabilityNotification",
+            mode="strict",
+        )
+        return TransformResult(
+            {
+                "discovery_notifications": discovery_notifications,
+                "imminent_notifications": imminent_notifications,
+                "overdue_notifications": overdue_notifications,
+            },
+            single=False,
+            schema={
+                "discovery_notifications": PERSON_VULNERABILITY_NOTIFICATION_SCHEMA,
+                "imminent_notifications": PERSON_VULNERABILITY_NOTIFICATION_SCHEMA,
+                "overdue_notifications": PERSON_VULNERABILITY_NOTIFICATION_SCHEMA,
+            },
+        )

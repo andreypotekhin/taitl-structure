@@ -5,7 +5,11 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
-from examples.structure_generated.search.pyspark.schemas.similarity import INDEXED_SIMILAR_SENTENCE_SCHEMA, SENTENCE_SIMILARITY_SCHEMA, SIMILARITY_SENTENCE_QUERY_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.similarity import (
+    INDEXED_SIMILAR_SENTENCE_SCHEMA,
+    SENTENCE_SIMILARITY_SCHEMA,
+    SIMILARITY_SENTENCE_QUERY_SCHEMA,
+)
 from examples.structure_generated.search.pyspark.schemas.text import SENTENCE_SCHEMA
 
 
@@ -78,4 +82,8 @@ class SimilarSentencesGenerated:
         # Step method: similar_sentences
         similar_sentences = query.alias("indexed_similar_sentence")
         assert_schema(similar_sentences, INDEXED_SIMILAR_SENTENCE_SCHEMA, name="IndexedSimilarSentence", mode="strict")
-        return TransformResult({"similar_sentences": similar_sentences}, single=True, schema={"similar_sentences": INDEXED_SIMILAR_SENTENCE_SCHEMA})
+        return TransformResult(
+            {"similar_sentences": similar_sentences},
+            single=True,
+            schema={"similar_sentences": INDEXED_SIMILAR_SENTENCE_SCHEMA},
+        )

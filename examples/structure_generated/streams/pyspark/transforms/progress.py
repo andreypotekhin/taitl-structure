@@ -25,21 +25,25 @@ class BuildGateProgressGenerated:
         # Step method: summarize
         passages = passages.alias("passage")
         passages = passages.withWatermark("at", '10 minutes')
-        passages = passages.groupBy(
-            F.col("passage.race_id").alias("race_id"),
-            F.col("passage.run_id").alias("run_id"),
-            F.col("passage.gate_number").alias("gate_number"),
-        ).agg(
-            F.count(F.lit(1)).cast(T.LongType()).alias("passage_count"),
-            F.min(F.col("passage.elapsed_millis")).cast(T.LongType()).alias("fastest_millis"),
-            F.max(F.col("passage.elapsed_millis")).cast(T.LongType()).alias("slowest_millis"),
-        ).select(
-            F.col("race_id"),
-            F.col("run_id"),
-            F.col("gate_number"),
-            F.col("passage_count"),
-            F.col("fastest_millis"),
-            F.col("slowest_millis"),
+        passages = (
+            passages.groupBy(
+                F.col("passage.race_id").alias("race_id"),
+                F.col("passage.run_id").alias("run_id"),
+                F.col("passage.gate_number").alias("gate_number"),
+            )
+            .agg(
+                F.count(F.lit(1)).cast(T.LongType()).alias("passage_count"),
+                F.min(F.col("passage.elapsed_millis")).cast(T.LongType()).alias("fastest_millis"),
+                F.max(F.col("passage.elapsed_millis")).cast(T.LongType()).alias("slowest_millis"),
+            )
+            .select(
+                F.col("race_id"),
+                F.col("run_id"),
+                F.col("gate_number"),
+                F.col("passage_count"),
+                F.col("fastest_millis"),
+                F.col("slowest_millis"),
+            )
         )
 
         # Step method: progress

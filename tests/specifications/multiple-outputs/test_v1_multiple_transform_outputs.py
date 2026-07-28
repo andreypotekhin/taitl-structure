@@ -635,10 +635,12 @@ def test_v1_generated_pyspark_uses_per_lane_step_sources() -> None:
     assert "        # Step method: accept\n        accepted_lane = rows.alias(\"normalized\")" in text
     assert "        # Step method: keep_accepted\n        accepted = accepted_lane.alias(\"accepted\")" in text
     assert "        # Step method: reject\n        rejected = rows.alias(\"normalized\")" in text
-    assert (
-        'return TransformResult({"accepted": accepted, "rejected": rejected}, single=False, '
-        'schema={"accepted": ACCEPTED_SCHEMA, "rejected": REJECTED_SCHEMA})' in text
-    )
+    assert "return TransformResult(" in text
+    assert '"accepted": accepted' in text
+    assert '"rejected": rejected' in text
+    assert "single=False" in text
+    assert '"accepted": ACCEPTED_SCHEMA' in text
+    assert '"rejected": REJECTED_SCHEMA' in text
 
 
 def test_v1_online_executor_result_wraps_single_output() -> None:

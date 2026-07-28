@@ -20,3 +20,16 @@ class ProjectIterableScoresGenerated:
                     reports.append({'student_name': row.get('student'), 'score_points': row.get('score'), 'cohort_name': profiles.get('cohort'), 'award_name': awards.get('award')})
                     audits.append({'student': row.get('student'), 'score': row.get('score')})
         return {'reports': reports, 'audits': audits}
+
+class IterableFibonacciGenerated:
+    @staticmethod
+    def run(**inputs):
+        rows = [dict(row) for row in inputs['rows']]
+        result = []
+        _state = (0, 1)
+        for _ordinal, row in enumerate(rows):
+            if row.get('index') != _ordinal:
+                raise ValueError("Iterable scans require contiguous 'index' values starting at 0.")
+            result.append({'index': row.get('index'), 'fibonacci_value': _state[0]})
+            _state = (_state[1], (_state[0] + _state[1]),)
+        return result
