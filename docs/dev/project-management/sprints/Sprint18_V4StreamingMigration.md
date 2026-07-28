@@ -26,7 +26,7 @@ Developers can use Structure transforms for static-gap session aggregates, bound
 
 ## ExecPlan
 
-`docs/dev/planning/P07152602.V4-caller-owned-streaming-migration.plan.md`
+`docs/dev/planning/done/P07152602.V4-caller-owned-streaming-migration.plan.md`
 
 ## Engineering Tasks
 

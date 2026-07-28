@@ -638,7 +638,7 @@ boundaries and only when that phase allows `schema_and_constraints`.
 Resolved by [AnalyticalJoinCoverage.md](../specifications/AnalyticalJoinCoverage.md), design
 [AnalyticalJoinCoverage.md](AnalyticalJoinCoverage.md), decision
 [D06212601.Analytical-join-coverage.md](decisions/D06212601.Analytical-join-coverage.md), and plan
-[P06212601.Analytical-join-coverage.plan.md](../planning/P06212601.Analytical-join-coverage.plan.md).
+[P06212601.Analytical-join-coverage.plan.md](../planning/done/P06212601.Analytical-join-coverage.plan.md).
 
 The implemented join family now covers existence joins, row-multiplying joins, deterministic lookup dedupe, temporal
 lookups, as-of lookups, full/right/cross rowset joins, and named self aliases. Remaining work is no longer this

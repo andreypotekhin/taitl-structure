@@ -319,7 +319,7 @@ honest boundary for actions, driver algorithms, arbitrary Python, sources/sinks,
   branch/union composition, self aliases, ordering, limit, offset, relation assertions including parent references,
   bounded hierarchy closure/fallback expansion, and declared-key priority selection.
 - The bounded batch-only `scan(...)` recurrence feature from
-  `docs/dev/planning/P07182601.V6-timeline-scan-recurrence.plan.md`, including partitioned Fibonacci evidence.
+  `docs/dev/planning/done/P07182601.V6-timeline-scan-recurrence.plan.md`, including partitioned Fibonacci evidence.
 - A maintained disposition for Challenges C27--C34, executable specification coverage for each new feature, and
   runnable operational/adoption recipes where the challenge calls for documentation.
 
@@ -337,6 +337,49 @@ honest boundary for actions, driver algorithms, arbitrary Python, sources/sinks,
 - Replacing the School matrix-inversion hook, which deliberately materializes rows and runs a Python numerical
   algorithm rather than a DataFrame transformation.
 
+## v7 Scope
+
+v7 broadens the typed PySpark transformation API after v6's hook-retirement program and advances caller-owned
+streaming adoption only where state, output, and lifecycle semantics are explicit. The release remains a
+compiler-visible transformation library: it does not become a general PySpark wrapper or a streaming-job owner.
+
+### v7 sequence
+
+- Sprint 28: create a checked PySpark 3.5.x/4.0.x coverage catalog, reconcile v4--v6 deferrals, complete the next
+  streaming design gate, and specify focused-delegate extraction boundaries.
+- Sprint 29: complete focused delegate extraction and typed generator expansion.
+- Sprint 30: add the Binary type and typed encoding helpers; Sprint 31: add Schema-carrying JSON/CSV conversion;
+  Sprint 32: add PySpark-named `mode(...)` after `group_by(...)`, with a native 4.0 path and deterministic 3.5
+  compatibility lowering.
+- Streaming adoption Sprints 33--35: admit stream-static inner/left-semi enrichment, then left-outer lookup, then one
+  already admitted stateful operation followed only by stateless transforms. Each stage has target-matrix restart
+  evidence and preserves caller lifecycle ownership.
+- Final hardening sprint: reconcile catalog, docs, generated artifacts, public imports, diagnostics, parity, and
+  supported-target evidence without new feature scope.
+
+### v7 must include
+
+- One authoritative coverage catalog whose entries state user value, schema/cardinality effect, batch and streaming
+  eligibility, capability, diagnostics, traceability, generated form, target evidence, and disposition.
+- Broad typed transformation coverage across the high-value PySpark DataFrame and Column families selected by the
+  catalog, preserving online/generated parity and readable generated code.
+- Completion of the deferred v6 focused-delegate work for oversized operation, expression, scope, result, evaluation,
+  execution, rendering, and traceability components.
+- Admission of Binary encoding, Schema-carrying JSON/CSV conversion, and deterministic mode with typed contracts;
+  untyped/raw forms remain outside the DSL.
+- Staged caller-owned streaming support—stream-static enrichment, left-outer lookup, and one-stateful-plus-stateless
+  composition—with caller-retained sources, sinks, checkpoints, triggers, output-mode calls, and query lifecycle.
+
+### v7 non-goals
+
+- Raw DataFrame/Column APIs, actions, loading/storage, catalog management, raw SQL, RDD/Pandas, arbitrary Python
+  callbacks, untyped UDTFs, and automatic UDF fallback.
+- Structure-owned streaming sources, sinks, checkpoints, triggers, output modes, query lifecycle, or side effects.
+- Unbounded or chained stateful streaming, Spark Connect streaming, and physical-plan controls unless a separately
+  approved design changes the scope.
+- Production incremental compilation/cache diagnostics, general external-plugin expansion, data-quality constraints,
+  and Search-only evaluation follow-ups; these stay explicitly retained backlog.
+
 ## Release Milestones
 
 | Milestone | Goal | Sprints |
@@ -353,3 +396,4 @@ honest boundary for actions, driver algorithms, arbitrary Python, sources/sinks,
 | M9 | v4 PySpark transformation API coverage | Sprint 17, later v4 feature sprints including Sprint 18 streaming migration, then the final v4 hardening sprint |
 | M10 | v5 Core-orchestrated plugin architecture | Sprints 19-22 |
 | M11 | v6 typed PySpark API closure, example-hook retirement, and bounded recurrence | Sprints 23-27 |
+| M12 | v7 broad PySpark transformation coverage and caller-owned streaming adoption | Sprints 28--35 and v7 hardening |

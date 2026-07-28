@@ -346,11 +346,12 @@ the breaking v5 migration.
 - The full build and supported PySpark integration matrix pass, and v5 migration, extension, troubleshooting, and
   release documentation are complete.
 
-## M11: v6 Typed PySpark API Closure, Example-Hook Retirement, and Bounded Recurrence
+## +M11: v6 Typed PySpark API Closure, Example-Hook Retirement, and Bounded Recurrence
 
-Status: active (Sprint 27). Sprints 23--26 delivered the v6 API ledger, PySpark plugin decomposition, Security hook
-retirement, Search hook retirement, and bounded ordered timeline recurrence. Sprint 27 remains release evidence and
-challenge closure.
+Status: complete. Sprints 23--26 delivered the v6 API ledger, PySpark plugin decomposition, Security hook
+retirement, Search hook retirement, and bounded ordered timeline recurrence. Sprint 27 closed release evidence and
+the challenge disposition register. Local release evidence records 1,313 passing tests and 40 intentional skips;
+live PySpark lanes remain explicitly unclaimed in this workspace.
 
 ### Exit Criteria
 
@@ -377,3 +378,25 @@ challenge closure.
   documentation and test obligations are fulfilled and C31 is clearly marked as awaiting project-owner authority if
   it remains undecided.
 - `make build`, generated artifacts, capability/AST boundary checks, and required live PySpark 3.5/4.0 evidence pass.
+
+## M12: v7 Broad PySpark Transformation Coverage and Streaming Adoption
+
+Status: planned. v7 broadens the checked, typed PySpark transformation surface and takes the next safe step in
+caller-owned streaming adoption. It starts with Sprint 28's catalog and design gate rather than treating historical
+deferred plans as implicit implementation scope.
+
+### Exit Criteria
+
+- A checked PySpark 3.5.x/4.0.x catalog gives every reviewed transformation candidate a support state, contract,
+  dependency, and evidence location.
+- The admitted typed API families have schema/cardinality rules, capabilities, diagnostics, explain/traceability,
+  readable generated output, online/generated parity, and live classic-PySpark 3.5/4.0 evidence.
+- The oversized operation, expression, scope, result, evaluation, execution, rendering, and traceability modules have
+  focused delegates or a documented cohesive-boundary decision, with behavior characterization at every extraction.
+- The three kickoff-deferred transformation families—Binary encoding, Schema-carrying JSON/CSV conversion, and
+  deterministic mode—have typed contracts, exact status rows, diagnostics, parity, and live classic-PySpark evidence.
+- Caller-owned streaming progresses through independently verified stream-static enrichment, left-outer lookup, and a
+  single-stateful-plus-stateless-composition stage with explicit watermark/state/output-mode rules, static diagnostics,
+  file-stream restart evidence, and no Structure-owned lifecycle calls.
+- Historical v4--v6 deferred work is either delivered by a named v7 slice or retained in an explicit backlog with its
+  rationale; no stale plan is treated as active scope by implication.

@@ -52,7 +52,7 @@ scheduled, deferred, or unsupported and links each supported entry to capability
 The delivery design and first ExecPlan are [V4 Transformation API Coverage](design/V4TransformationApiCoverage.md) and
 [P07132601.V4-transformation-api-coverage.plan.md](planning/P07132601.V4-transformation-api-coverage.plan.md).
 [V4 Caller-Owned Streaming Migration](design/V4CallerOwnedStreamingMigration.md) and
-[P07152602.V4-caller-owned-streaming-migration.plan.md](planning/P07152602.V4-caller-owned-streaming-migration.plan.md)
+[P07152602.V4-caller-owned-streaming-migration.plan.md](planning/done/P07152602.V4-caller-owned-streaming-migration.plan.md)
 define the dedicated bounded-streaming transformation slice. Loading, storage, catalog/table management, actions, and
 streaming lifecycle ownership are excluded from this program.
 
@@ -65,10 +65,12 @@ page remains the durable register of postponed and deferred work. The design is
 JSON/reference, and the catalog in the same change. Keep the reason, the user-facing boundary (`step`, explicit scalar
 UDF, `@raw`, or caller-owned PySpark), and the owning plan together so an omitted API never becomes an implicit promise.
 
-The following v6 candidates remain deferred until their contracts are complete: binary/encoding values, JSON/CSV
-inline-schema parsing, row generators, missing-column relation set composition, sampling, deterministic `mode`, and
-physical-plan directives. Their relation-operation design/specification is
-[Typed Relation Operations](design/TypedRelationOperations.md). Scalar `@special(type="udf")` is already implemented
+The following candidates remain deferred in the catalog until their contracts and evidence are complete: binary/encoding
+values, JSON/CSV inline-schema parsing, row generators, missing-column relation set composition, sampling, deterministic
+`mode`, and physical-plan directives. V7 commits Binary encoding, schema-carrying JSON/CSV parsing, deterministic mode,
+and generator expansion to named delivery sprints; their contracts are [V7 Deferred PySpark Family Admission](design/V7DeferredPySparkFamilies.md)
+and [V7 Typed PySpark Generator Expansion](design/V7PySparkGeneratorExpansion.md). Missing-column union, sampling,
+and physical-plan directives remain retained backlog. Scalar `@special(type="udf")` is already implemented
 for ordinary PySpark; its user contract is [Explicit Scalar Python UDFs](specifications/ExplicitScalarUdfs.md). It is
 opt-in, type/nullability declared, warning-governed, and excluded from Spark Connect. It is not a substitute for an
 unsupported symbolic operation.
@@ -105,7 +107,7 @@ narrower typed capability from that family; no broader API is implied.
 | First-qualified priority selection | implemented | Sprint 25; `select_first_qualified(...)` is available. `RerankDocuments` now uses declared candidate keys to select the first eligible query and popularity feedback context without a raw surrogate row ID. |
 | Sampling | deferred | Seed, replacement, and reproducibility contract is incomplete |
 | Bounded ordered `scan(...)` | implemented | Sprint 26; batch-only ordinary-PySpark recurrence over caller-supplied partitioned timelines, with a positive per-partition bound and `TiePolicy.ERROR` duplicate-key failure |
-| Binary/encoding; JSON/CSV parsing; Deterministic `mode` | deferred | Retain the documented `@raw` boundary until their type or tie contracts are complete |
+| Binary/encoding; JSON/CSV parsing; Deterministic `mode` | scheduled v7 | Typed contracts are in `V7DeferredPySparkFamilies.md`; the public grouped spelling is `mode(value, deterministic=False)`, with a native 4.0 path and deterministic 3.5 compatibility lowering |
 
 ## API Catalog
 

@@ -36,12 +36,21 @@ project-management/
     Sprint07_AnalyticalJoinCoverage.md
     Sprint15_V3CollectionHelperParity.md
     Sprint16_V3StreamingOrchestration.md
-    Sprint23_V6ApiLedgerAndPluginDecomposition.md
-    Sprint24_V6SecurityReconciliation.md
-    Sprint27_V6ReleaseAndChallengeClosure.md
+    Sprint18_V4StreamingMigration.md
+    Sprint28_V7ScopeAndDesign.md
+    Sprint29_V7GeneratorExpansionAndDelegates.md
+    Sprint30_V7BinaryEncoding.md
+    Sprint31_V7SchemaCarryingParsing.md
+    Sprint32_V7DeterministicMode.md
+    Sprint33_V7StreamStaticEnrichment.md
+    Sprint34_V7StreamStaticOuterLookup.md
+    Sprint35_V7SingleStatefulStreamingComposition.md
     done/
+      Sprint27_V6ReleaseAndChallengeClosure.md
       Sprint26_V6OrderedTimelineRecurrence.md
       Sprint25_V6RelationOperationsAndSearchMigration.md
+      Sprint24_V6SecurityReconciliation.md
+      Sprint23_V6ApiLedgerAndPluginDecomposition.md
       Sprint12_V3JoinParityHardening.md
       Sprint13_V3AggregationParity.md
       Sprint14_V3WindowParity.md

@@ -21,7 +21,7 @@ presence, not evidence that the target passed.
 | Relation assertions and reference checks | `docs/dev/specifications/TypedRelationOperations.md` | `tests/specifications/v6-api-ledger/test_v6_relation_assertions.py` |
 | Parent hierarchy validation, closure, and fallbacks | `docs/dev/specifications/TypedRelationOperations.md` | `tests/specifications/v6-api-ledger/test_v6_relation_hierarchy.py` |
 | First-qualified priority selection | `docs/dev/specifications/TypedRelationOperations.md` | `tests/specifications/v6-api-ledger/test_v6_priority_selection.py` |
-| Bounded ordered `scan(...)` | `docs/dev/planning/P07182601.V6-timeline-scan-recurrence.plan.md` | `tests/specifications/symbolic-execution/test_ordered_timeline_scan.py`, `tests/integration/pyspark/v6/test_ordered_timeline_scan.py`, `tests/integration/pyspark/v6/test_school_sequence_series.py` |
+| Bounded ordered `scan(...)` | `docs/dev/planning/done/P07182601.V6-timeline-scan-recurrence.plan.md` | `tests/specifications/symbolic-execution/test_ordered_timeline_scan.py`, `tests/integration/pyspark/v6/test_ordered_timeline_scan.py`, `tests/integration/pyspark/v6/test_school_sequence_series.py` |
 | PySpark capability catalog consistency | `docs/APICatalog.md` | `tests/specifications/compatibility/test_pyspark_transformation_coverage.py`, `tests/specifications/backend-capabilities/test_backend_capabilities.py` |
 
 ## Release Rule

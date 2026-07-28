@@ -23,7 +23,7 @@ V6 has five delivery slices:
 5. Complete live target evidence, documentation, executable specification coverage, and the Challenges C27--C34 audit.
 
 The authoritative project-management decomposition is Sprint 23 through Sprint 27. The executable release plan is
-`docs/dev/planning/P07242604.V6-pyspark-api-and-example-hook-retirement.plan.md`.
+`docs/dev/planning/done/P07242604.V6-pyspark-api-and-example-hook-retirement.plan.md`.
 
 ## Ownership Boundary
 

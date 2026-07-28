@@ -73,7 +73,7 @@ deterministic first/last helpers.
 | Ordered `collect_list` | implemented | Ordered collection aggregate | Explicit ascending/descending aggregate keys preserve deterministic collection order | [Aggregations API](api/Aggregations.api.md) |
 | Aggregate aliases | planned | `GroupedData.agg` aliases | Schema constructors own output aliases | Future planning |
 | Exact percentile family | implemented | `percentile`, `percentile_approx` | `percentile(...)` uses scalar 0-1 percentage and positive literal frequency; `approx_percentile(...)` is bounded-memory | [Aggregations API](api/Aggregations.api.md) |
-| Additional stats | planned | `skewness`, `kurtosis`, `mode` | `skewness(...)` and `kurtosis(...)` are implemented; deterministic `mode(...)` is deferred because PySpark 3.5 lacks its deterministic tie option | [Aggregations API](api/Aggregations.api.md) |
+| Additional stats | planned | `skewness`, `kurtosis`, `mode` | `skewness(...)` and `kurtosis(...)` are implemented. V7 admits PySpark-named grouped `mode(value, deterministic=False)`: PySpark 4 uses its native deterministic argument and PySpark 3.5 uses an equivalent typed lowering when `deterministic=True`. | [Aggregations API](api/Aggregations.api.md) |
 | Deterministic selected-row helpers | implemented | Ordered aggregate/window selection patterns | `earliest_by`, `latest_by`, `dedupe_earliest_by`, and `dedupe_latest_by` encode deterministic row-selection policy | [Aggregations API](api/Aggregations.api.md) |
 | Dict/list aggregate syntax | unsupported | `GroupedData.agg({"x": "sum"})` | Use typed helpers | [Aggregations API](api/Aggregations.api.md) |
 
@@ -182,7 +182,7 @@ and
 | Priority selection | supported | `select_first_qualified` | Declared business keys, eligibility, and priority order select one row per key; configured missing/tie failures report `REL-E0705`. |
 | Distinct and deduplication | supported | `distinct`, `drop_duplicates` | Watermark form is streaming classified. |
 | Grouping and standard aggregates | supported | `group_by`, `rollup`, `cube`, typed aggregates | Declared aggregate output schema. |
-| Exact percentile and statistics | mixed | `percentile`, approximate and moment helpers; `@raw` for `mode` | Deterministic mode tie-breaking is unavailable in the 3.5 baseline. |
+| Exact percentile and statistics | mixed | `percentile`, approximate and moment helpers; planned `mode(...)` | V7 plans grouped `mode(value, deterministic=False)`, with a native 4.0 deterministic path and an equivalent typed 3.5 lowering. |
 | Ranking, selection, aggregate windows | supported | Typed window helpers | Raw `WindowSpec` is unsupported. |
 | Watermarks | supported | `watermark` | Caller owns source, sink, trigger, output mode, and lifecycle. |
 | Session window | supported | `session_window(event_time, gap)` | Static positive gap returns a typed `TimeWindow` grouping key. |

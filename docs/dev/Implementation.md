@@ -122,6 +122,18 @@
 - Prove online/generated parity, generated-code readability, and live PySpark recurrence fixtures.
 - Keep input-less transforms, persistent state, unbounded/global scans, and streaming scans out of scope.
 
+## Phase 8: v7
+
+- Publish and maintain a checked PySpark 3.5.x/4.0.x transformation coverage catalog.
+- Extend the typed, symbolic PySpark DSL across the catalog's selected relational, expression, nested/collection,
+  join, aggregation, and window families, with capability, diagnostics, traceability, generated rendering, and
+  online/generated parity evidence.
+- Extract focused delegates from oversized PySpark operation, expression, scope, result, evaluation, execution,
+  rendering, and traceability modules as the corresponding feature seams are exercised.
+- Design and implement the next caller-owned streaming slice only after proving state, watermark, output-mode, and
+  file-stream restart behavior on supported classic PySpark targets.
+- Preserve caller ownership of sources, sinks, checkpoints, triggers, output-mode application, and query lifecycle.
+
 ## Build Integration
 
 Initial build integration should rely on CLI commands:

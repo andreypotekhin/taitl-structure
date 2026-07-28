@@ -29,7 +29,7 @@ shim obscures which package owns target APIs.
 
 ## ExecPlan
 
-`docs/dev/planning/P07162601.V5-plugin-architecture.plan.md`
+`docs/dev/planning/done/P07162601.V5-plugin-architecture.plan.md`
 
 ## Acceptance Criteria
 

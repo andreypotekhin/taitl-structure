@@ -29,7 +29,7 @@ explain/traceability, and obtain equivalent online and generated batch PySpark o
 
 ## Governing Plan
 
-`docs/dev/planning/P07182601.V6-timeline-scan-recurrence.plan.md`
+`docs/dev/planning/done/P07182601.V6-timeline-scan-recurrence.plan.md`
 
 ## Acceptance Criteria
 

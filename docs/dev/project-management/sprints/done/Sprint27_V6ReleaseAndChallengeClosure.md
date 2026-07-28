@@ -28,7 +28,7 @@ the release. Maintainers have explicit evidence rather than inferred completion.
 
 ## Governing Plan
 
-`docs/dev/planning/P07242604.V6-pyspark-api-and-example-hook-retirement.plan.md`
+`docs/dev/planning/done/P07242604.V6-pyspark-api-and-example-hook-retirement.plan.md`
 
 ## Acceptance Criteria
 
