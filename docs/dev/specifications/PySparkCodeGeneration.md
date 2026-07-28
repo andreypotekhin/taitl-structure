@@ -507,9 +507,9 @@ Rules:
 - The right DataFrame receives a stable alias derived from the input name.
 - Repeated joins of the same input receive deterministic suffixes such as `customers_2`.
 - Diagnostics and traceability refer to repeated joins as `customers#1`, `customers#2`, and so on.
-- `Join.LEFT` lowers to Spark join type `"left"`.
-- `Join.INNER` lowers to Spark join type `"inner"`.
-- `JoinHint.BROADCAST` applies to the right side and may lower to `F.broadcast(right_df)`.
+- `"left"` lowers to Spark join type `"left"`.
+- `"inner"` lowers to Spark join type `"inner"`.
+- `"broadcast"` applies to the right side and may lower to `F.broadcast(right_df)`.
 - Composite keys render key comparisons in IR order, combined with `&`.
 - Null-safe key pairs render with the selected PySpark null-safe equality syntax.
 - Right-side projection should carry only right-side key expressions and fields needed by downstream filters,

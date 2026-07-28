@@ -14,7 +14,7 @@ and `e` denote a temporal predicate, event time, valid-from, and valid-to expres
 
 **Details And Differences**
 
-- `lookup_join(...)` enriches the current relation and defaults to `Join.LEFT`.
+- `lookup_join(...)` enriches the current relation and defaults to `"left"`.
 - `exists(...)` and `not_exists(...)` filter current rows without exposing right-side fields.
 - `on=` is a symbolic predicate; same-name key shorthand is covered below.
 
@@ -44,9 +44,9 @@ and `e` denote a temporal predicate, event time, valid-from, and valid-to expres
 | --- | --- | --- |
 | `temporal_one(...)` | Temporal join | `temporal_one(on=o.id == p.id, at=o.at, valid_from=p.from_, valid_to=p.to)` |
 | `as_of_one(...)` | As-of match | `as_of_one(on=o.id == r.id, left_time=o.at, right_time=r.at)` |
-| `AsOf` | — | `direction = AsOf.FORWARD` |
-| `OverlapPolicy` | Overlap | `temporal_one(on=j, at=t, valid_from=f, valid_to=e, overlaps=OverlapPolicy.ERROR)` |
-| `TiePolicy` | Selection policy | `as_of_one(on=o.id == r.id, left_time=o.at, right_time=r.at, ties=TiePolicy.ERROR)` |
+| `direction=` | Direction | `as_of_one(on=o.id == r.id, left_time=o.at, right_time=r.at, direction="forward")` |
+| `overlaps=` | Overlap policy | `temporal_one(on=j, at=t, valid_from=f, valid_to=e, overlaps="error")` |
+| `ties=` | Selection policy | `as_of_one(on=o.id == r.id, left_time=o.at, right_time=r.at, ties="error")` |
 
 **Details And Differences**
 
@@ -58,14 +58,14 @@ and `e` denote a temporal predicate, event time, valid-from, and valid-to expres
 
 | Structure API | PySpark parity | Example |
 | --- | --- | --- |
-| `Join` | PySpark `how` values | `rowset_join(c, on=o.customer_id == c.id, how=Join.LEFT)` |
-| `JoinHint` | DataFrame hint | `lookup_join(on=o.customer_id == c.id, hint=JoinHint.BROADCAST)` |
-| `JoinStrategy` | Join hint | `inner_join(on=o.id == c.id, strategy=JoinStrategy.SHUFFLE_HASH)` |
+| `how=` | PySpark `how` values | `rowset_join(c, on=o.customer_id == c.id, how="left")` |
+| `hint=` | DataFrame hint | `lookup_join(on=o.customer_id == c.id, hint="broadcast")` |
+| `strategy=` | Join hint | `inner_join(on=o.id == c.id, strategy="shuffle_hash")` |
 | `JoinDedupe.latest_by(...)` | `row_number` pre-dedupe | `JoinDedupe.latest_by(c.at)` |
 | `JoinDedupe.earliest_by(...)` | `row_number` pre-dedupe | `JoinDedupe.earliest_by(c.at)` |
 
 **Details And Differences**
 
-- `Join`, `JoinHint`, and `JoinStrategy` replace unvalidated string options with capability-checked values.
+- String options are validated and normalized before compilation; enum constants remain accepted as aliases.
 - Dedupe is only for lookup joins and must make the right-row selection rule explicit.
 - Raw SQL join predicates are unsupported. See the [Transforms reference](../background/DSL.back.md).

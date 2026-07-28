@@ -261,7 +261,7 @@ Composite joins should be supported early:
 lookup_join(
     on=(customer.country == order.country)
        & (customer.id == order.customer_id),
-    how=Join.LEFT,
+    how="left",
 )
 ```
 
@@ -325,7 +325,7 @@ Included in v1:
 - row-local filtering;
 - expression-based derived columns;
 - schema-only validation;
-- stream-static `Join.LEFT` and `Join.INNER` lookup joins;
+- stream-static `"left"` and `"inner"` lookup joins;
 - hooks explicitly marked `streaming=True`.
 
 Deferred or rejected in v1:

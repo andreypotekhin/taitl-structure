@@ -102,7 +102,7 @@ class EnrichOrders(Transform):
     def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
         left_join(
             on=order.customer_id == customer.id,
-            hint=JoinHint.BROADCAST,
+            hint="broadcast",
         )
 
         return OrderWithCustomer.base(order)(
@@ -627,7 +627,7 @@ Rules:
 - `order_by` is required and defines which row survives within each partition.
 - `latest_by(...)` and `dedupe_latest_by(...)` order descending.
 - `earliest_by(...)` and `dedupe_earliest_by(...)` order ascending.
-- The current public tie policy is `TiePolicy.ERROR`; other policies are rejected until their behavior is specified.
+- The current public tie policy is `"error"`; other policies are rejected until their behavior is specified.
 - These helpers are batch-only for streaming compatibility until explicit streaming state and watermark semantics
   exist.
 
@@ -672,7 +672,7 @@ When the `on` clause names exactly one unjoined relation, the call stays bare:
 def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
     left_join(
         on=order.customer_id == customer.id,
-        hint=JoinHint.BROADCAST,
+        hint="broadcast",
     )
 
     return OrderWithCustomer.base(order)(customer_name=customer.name)
@@ -683,7 +683,7 @@ Class input scopes may also be joined directly:
 ```python
 left_join(
     on=order.customer_id == self.customers.id,
-    hint=JoinHint.BROADCAST,
+    hint="broadcast",
 )
 return OrderWithCustomer.base(order)(customer_name=self.customers.name)
 ```
@@ -693,9 +693,9 @@ Documentation uses inferred bare joins as the default style.
 Public enum values required for v1:
 
 ```text
-Join.LEFT
-Join.INNER
-JoinHint.BROADCAST
+"left"
+"inner"
+"broadcast"
 ```
 
 Rules:

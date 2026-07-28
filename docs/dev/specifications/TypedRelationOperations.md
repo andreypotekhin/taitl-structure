@@ -140,7 +140,7 @@ the existing self-alias plus anti-existence relation pattern; no new raw DataFra
 
 ## First-Qualified Priority Selection
 
-`select_first_qualified(keys..., where=..., order_by=..., missing="allow", ties=TiePolicy.ERROR)` accepts stable
+`select_first_qualified(keys..., where=..., order_by=..., missing="allow", ties="error")` accepts stable
 declared row keys on the current candidate relation, an eligibility predicate, an ordered priority expression, and
 explicit missing/tie policies. It yields at most one selected candidate per key. `missing="error"` fails when a key has
 no eligible row; `missing="allow"` drops such keys. Ties on the same key and priority value fail with `REL-E0705`.

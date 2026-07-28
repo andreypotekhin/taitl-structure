@@ -938,8 +938,8 @@ Rules:
 - `where(expr.is_not_null())` narrows simple field references after the filter in the same step method.
 - `where(parent_struct.is_not_null())` narrows nested reads through that parent according to each nested field's own
   declared nullability.
-- `Join.LEFT` makes joined right-side fields nullable after the join.
-- `Join.INNER` preserves right-side declared nullability unless later operations narrow it.
+- `"left"` makes joined right-side fields nullable after the join.
+- `"inner"` preserves right-side declared nullability unless later operations narrow it.
 - Hooks do not provide compile-time nullability facts unless a later hook postcondition contract exists.
 
 Do not declare a field non-null merely because source data is expected to be clean. Narrow a direct field in the same

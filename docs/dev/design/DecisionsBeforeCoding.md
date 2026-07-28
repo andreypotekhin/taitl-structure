@@ -181,7 +181,7 @@ as opaque.
 
 ### Join Boundary
 
-v1 supports `lookup_join(...)` lookup joins with explicit `Join.LEFT` or `Join.INNER`. It must not silently deduplicate
+v1 supports `lookup_join(...)` lookup joins with explicit `"left"` or `"inner"`. It must not silently deduplicate
 right-side rows. If right-side uniqueness is not proven, Structure emits a warning by default.
 
 ### Extension Boundary

@@ -54,7 +54,7 @@ def with_items(self, order: OrderNormalized) -> OrderItemFact:
 
     inner_join(
         on=self.order_items.order_id == order.id,
-        how=Join.INNER,
+        how="inner",
     )
 
     return OrderItemFact(

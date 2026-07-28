@@ -105,7 +105,7 @@ order.id
 lower(trim(order.customer_id))
 upper(trim(order.customer_id))
 where(order.id.is_not_null())
-lookup_join(on=order.customer_id == customer.id, how=Join.LEFT)
+lookup_join(on=order.customer_id == customer.id, how="left")
 OrderNormalized(id=order.id)
 OrderWithCustomer.base(order)(customer_name=customer.name)
 ```

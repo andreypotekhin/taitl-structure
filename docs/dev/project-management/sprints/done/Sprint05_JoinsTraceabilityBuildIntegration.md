@@ -57,8 +57,8 @@ def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
     customer = lookup_join(
         self.customers,
         on=self.customers.id == order.customer_id,
-        how=Join.LEFT,
-        hint=JoinHint.BROADCAST,
+        how="left",
+        hint="broadcast",
     )
 
     return OrderWithCustomer.base(order)(

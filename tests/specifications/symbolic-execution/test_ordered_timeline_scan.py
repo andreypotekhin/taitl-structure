@@ -125,7 +125,7 @@ def test_scan_generated_source_uses_public_group_fold_expand_shape() -> None:
     ("options", "message"),
     [
         ({"max_rows": 0}, r"scan\(max_rows=\.\.\.\) requires a positive integer literal"),
-        ({"ties": cast(Any, "error")}, r"scan\(ties=\.\.\.\) requires a TiePolicy value"),
+        ({"ties": cast(Any, "panic")}, r'scan\(\.\.\.\) ties= must be one of "error"'),
         ({"initial": object()}, r"scan\(initial=\.\.\.\) requires a fully populated Schema state instance"),
     ],
 )

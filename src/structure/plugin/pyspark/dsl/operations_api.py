@@ -8,6 +8,7 @@ from math import isfinite
 from re import fullmatch
 from typing import Any, cast, overload
 
+import structure.plugin.pyspark.dsl.options as options
 from structure.dsl import FieldDeclaration, Schema
 from structure.plugin.api.v1.model import SymbolicContext
 from structure.plugin.api.v1.model import current_symbolic_context as current_context
@@ -257,7 +258,7 @@ def first_value(
     over: "WindowSpec | None" = None,
     ignore_nulls: bool = False,
     where: object | None = None,
-    ties: TiePolicy = TiePolicy.ERROR,
+    ties: TiePolicy | str = TiePolicy.ERROR,
 ) -> Expression:
     argument = literal(value)
     _boolean_option("first_value(...)", "ignore_nulls", ignore_nulls)
@@ -269,8 +270,9 @@ def first_value(
         raise TypeError("first_value(..., ignore_nulls=True) requires over=...")
     if order_by is None:
         raise TypeError("first_value(...) aggregate requires order_by=...")
+    ties = options.tie_policy(ties, call="first_value(...)")
     if ties is not TiePolicy.ERROR:
-        raise TypeError("first_value(...) currently supports ties=TiePolicy.ERROR only")
+        raise TypeError('first_value(...) currently supports ties="error" only')
     return _aggregate(
         "first_value",
         argument,
@@ -288,7 +290,7 @@ def last_value(
     over: "WindowSpec | None" = None,
     ignore_nulls: bool = False,
     where: object | None = None,
-    ties: TiePolicy = TiePolicy.ERROR,
+    ties: TiePolicy | str = TiePolicy.ERROR,
 ) -> Expression:
     argument = literal(value)
     _boolean_option("last_value(...)", "ignore_nulls", ignore_nulls)
@@ -300,8 +302,9 @@ def last_value(
         raise TypeError("last_value(..., ignore_nulls=True) requires over=...")
     if order_by is None:
         raise TypeError("last_value(...) aggregate requires order_by=...")
+    ties = options.tie_policy(ties, call="last_value(...)")
     if ties is not TiePolicy.ERROR:
-        raise TypeError("last_value(...) currently supports ties=TiePolicy.ERROR only")
+        raise TypeError('last_value(...) currently supports ties="error" only')
     return _aggregate(
         "last_value",
         argument,
@@ -312,19 +315,19 @@ def last_value(
     )
 
 
-def latest_by(order_by: object, *, partition_by: object, ties: TiePolicy = TiePolicy.ERROR) -> None:
+def latest_by(order_by: object, *, partition_by: object, ties: TiePolicy | str = TiePolicy.ERROR) -> None:
     _selected_rows("latest", order_by, partition_by=partition_by, ties=ties, call="latest_by(...)")
 
 
-def earliest_by(order_by: object, *, partition_by: object, ties: TiePolicy = TiePolicy.ERROR) -> None:
+def earliest_by(order_by: object, *, partition_by: object, ties: TiePolicy | str = TiePolicy.ERROR) -> None:
     _selected_rows("earliest", order_by, partition_by=partition_by, ties=ties, call="earliest_by(...)")
 
 
-def dedupe_latest_by(order_by: object, *, partition_by: object, ties: TiePolicy = TiePolicy.ERROR) -> None:
+def dedupe_latest_by(order_by: object, *, partition_by: object, ties: TiePolicy | str = TiePolicy.ERROR) -> None:
     _selected_rows("latest", order_by, partition_by=partition_by, ties=ties, call="dedupe_latest_by(...)")
 
 
-def dedupe_earliest_by(order_by: object, *, partition_by: object, ties: TiePolicy = TiePolicy.ERROR) -> None:
+def dedupe_earliest_by(order_by: object, *, partition_by: object, ties: TiePolicy | str = TiePolicy.ERROR) -> None:
     _selected_rows("earliest", order_by, partition_by=partition_by, ties=ties, call="dedupe_earliest_by(...)")
 
 
@@ -335,7 +338,7 @@ def scan(
     order_by: object,
     max_rows: int,
     step: Callable[[Any, Any], Schema],
-    ties: TiePolicy = TiePolicy.ERROR,
+    ties: TiePolicy | str = TiePolicy.ERROR,
 ) -> Any:
     context = cast(Any, _context("scan(...)"))
     if any(operation.ordered_timeline_scan is not None for operation in context.operations):
@@ -346,10 +349,9 @@ def scan(
         raise TypeError("scan(max_rows=...) requires a positive integer literal")
     if not callable(step):
         raise TypeError("scan(step=...) requires a two-argument callback")
-    if not isinstance(ties, TiePolicy):
-        raise TypeError("scan(ties=...) requires a TiePolicy value")
+    ties = options.tie_policy(ties, call="scan(...)")
     if ties is not TiePolicy.ERROR:
-        raise TypeError("scan(...) currently supports ties=TiePolicy.ERROR only")
+        raise TypeError('scan(...) currently supports ties="error" only')
 
     state_schema = type(initial)
     fields = state_schema._structure_fields
@@ -891,9 +893,10 @@ def _ordered_aggregate_key(value: object, call: str) -> Expression:
     return _orderable_expression(expression, f"{call} order_by")
 
 
-def _selected_rows(direction: str, order_by: object, *, partition_by: object, ties: TiePolicy, call: str) -> None:
+def _selected_rows(direction: str, order_by: object, *, partition_by: object, ties: TiePolicy | str, call: str) -> None:
+    ties = options.tie_policy(ties, call=call)
     if ties is not TiePolicy.ERROR:
-        raise TypeError(f"{call} currently supports ties=TiePolicy.ERROR only")
+        raise TypeError(f'{call} currently supports ties="error" only')
     order = _orderable_expression(order_by, f"{call} order_by")
     if order.kind == "order":
         raise TypeError(f"{call} order_by must be an unordered expression; {direction}_by(...) selects the direction")

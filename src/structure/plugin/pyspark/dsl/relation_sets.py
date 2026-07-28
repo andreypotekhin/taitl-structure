@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import structure.plugin.pyspark.dsl.options as options
 from structure.dsl import Schema
 from structure.plugin.api.v1.model import current_symbolic_context
 from structure.plugin.pyspark.dsl.Expression import Expression
@@ -272,7 +273,7 @@ def select_first_qualified(
     where: object,
     order_by: object,
     missing: str = "allow",
-    ties: TiePolicy = TiePolicy.ERROR,
+    ties: TiePolicy | str = TiePolicy.ERROR,
 ) -> RowScope:
     context = _context("select_first_qualified(...)")
     source_schema = _current_schema(context.default_project_source, function="select_first_qualified")
@@ -284,8 +285,9 @@ def select_first_qualified(
         raise TypeError("select_first_qualified(where=...) requires a Boolean expression")
     if missing not in {"allow", "error"}:
         raise TypeError("select_first_qualified(missing=...) must be 'allow' or 'error'")
+    ties = options.tie_policy(ties, call="select_first_qualified(...)")
     if ties is not TiePolicy.ERROR:
-        raise TypeError("select_first_qualified(ties=...) requires TiePolicy.ERROR")
+        raise TypeError('select_first_qualified(ties=...) requires "error"')
     context.operations.append(
         OperationPlan.relation_priority_selection_operation(
             RelationPrioritySelectionPlan(

@@ -4,7 +4,6 @@ from examples.search.schemas.label import LabelMapEntry, QueryLabel, QueryLabelA
 from examples.search.schemas.search import SearchQuery
 from structure import Transform, input, lane, output, step
 from structure.plugin.pyspark import (
-    TiePolicy,
     array_contains,
     coalesce,
     collect_list,
@@ -38,7 +37,7 @@ class MergeQueryLabels(Transform):
         dedupe_latest_by(
             label.assigned_at,
             partition_by=(label.query_id, label.label.name),
-            ties=TiePolicy.ERROR,
+            ties="error",
         )
         return QueryLabel.project(label)
 

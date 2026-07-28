@@ -82,7 +82,7 @@ class EnrichOrders(Transform):
             customer,
             on=(customer.tenant.tenant_id == order.tenant.tenant_id)
             & (self.clean_id(customer.id) == order.customer_id),
-            hint=JoinHint.BROADCAST,
+            hint="broadcast",
         )
 
         return OrderWithCustomer.base(order)(
@@ -105,8 +105,8 @@ class EnrichOrders(Transform):
         )
         lookup_join(
             on=(product.tenant.tenant_id == order.tenant.tenant_id) & (product.id == order.product_id),
-            how=Join.LEFT,
-            dedupe=JoinDedupe.latest_by(product.audit.ingested_at, ties=TiePolicy.ERROR),
+            how="left",
+            dedupe=JoinDedupe.latest_by(product.audit.ingested_at, ties="error"),
         )
 
         where(product.id.is_not_null())
@@ -126,7 +126,7 @@ class EnrichOrders(Transform):
             at=order.business.order_date,
             valid_from=promotion.valid_from,
             valid_to=promotion.valid_to,
-            how=Join.LEFT,
+            how="left",
         )
 
         return OrderWithPromotion.base(order)(
@@ -138,7 +138,7 @@ class EnrichOrders(Transform):
         inner_join(
             shipment,
             on=(shipment.tenant.tenant_id == order.tenant.tenant_id) & (shipment.order_id == order.id),
-            strategy=JoinStrategy.SHUFFLE_HASH,
+            strategy="shuffle_hash",
         )
 
         return OrderFulfillment.base(order)(

@@ -109,7 +109,7 @@ better choice. Keep the partition key aligned with the question the output answe
 - First purchase per customer, region, and campaign: add `purchase.campaign_id` to that list.
 
 As with latest-row selection, ties are not a silent "pick either" case. The current public policy is
-`TiePolicy.ERROR`, so ensure the chosen ordering gives each partition one earliest row before relying on the result.
+`"error"`, so ensure the chosen ordering gives each partition one earliest row before relying on the result.
 These helpers are batch-only; do not use this recipe for a streaming input.
 
 For the complete helper contract, see [Latest and Earliest Rows](../QuickRef.md#latest-and-earliest-rows) and the

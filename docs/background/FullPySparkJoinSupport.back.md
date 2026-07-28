@@ -21,7 +21,7 @@ Broad joins use `rowset_join(...)` or a shortcut helper:
 rowset_join(
     left=order,
     right=customer,
-    how=Join.FULL,
+    how="full",
     on=(order.tenant.tenant_id == customer.tenant.tenant_id)
     & (order.customer_id == customer.id),
 )
@@ -69,20 +69,20 @@ Available shortcuts are `left_join(...)`, `inner_join(...)`, `right_join(...)`, 
 
 ## Supported Join Types
 
-`Join.INNER` keeps matching row pairs.
+`"inner"` keeps matching row pairs.
 
-`Join.LEFT` keeps every left row and matching right rows.
+`"left"` keeps every left row and matching right rows.
 
-`Join.RIGHT` keeps every right row and matching left rows.
+`"right"` keeps every right row and matching left rows.
 
-`Join.FULL` keeps matching rows and unmatched rows from both sides.
+`"full"` keeps matching rows and unmatched rows from both sides.
 
-`Join.CROSS` emits every left/right pair. It requires `allow_cartesian=True` and does not accept `on`.
+`"cross"` emits every left/right pair. It requires `allow_cartesian=True` and does not accept `on`.
 
 ## Strategy Directives
 
-`strategy=` requests a physical Spark join strategy for the right relation. `JoinStrategy.BROADCAST_HASH`,
-`JoinStrategy.SHUFFLE_HASH`, `JoinStrategy.SORT_MERGE`, and `JoinStrategy.SHUFFLE_REPLICATE_NL` render Spark's
+`strategy=` requests a physical Spark join strategy for the right relation. `"broadcast"`,
+`"shuffle_hash"`, `"merge"`, and `"shuffle_replicate_nl"` render Spark's
 `broadcast`, `shuffle_hash`, `merge`, and `shuffle_replicate_nl` hints respectively. The backend checks the request
 before lowering; Spark may still choose a different physical plan.
 

@@ -160,19 +160,19 @@ Accepted:
 ```python
 lookup_join(
     on=order.customer_id == customer.id,
-    how=Join.LEFT,
-    hint=JoinHint.BROADCAST,
+    how="left",
+    hint="broadcast",
 )
 ```
 
 Rules:
 
-- `Join.LEFT` and `Join.INNER` are allowed for stream-static joins.
+- `"left"` and `"inner"` are allowed for stream-static joins.
 - The current pipeline side may be streaming.
 - The joined input side must be static.
 - Join conditions must satisfy `JoinSemantics.spec.md`.
 - `lookup_join(...)` uniqueness warnings still apply; streaming compatibility does not prove uniqueness.
-- `JoinHint.BROADCAST` is compatible only for the static joined side.
+- `"broadcast"` is compatible only for the static joined side.
 - A side input that may be streaming must be rejected for v1 streaming compatibility.
 
 Rejected:

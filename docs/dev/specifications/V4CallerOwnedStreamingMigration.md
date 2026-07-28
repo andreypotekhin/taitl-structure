@@ -14,7 +14,7 @@ The feature adds one source helper:
 
 No join API is added. The existing forms have these v4 meanings:
 
-    rowset_join(payments, on=..., how=Join.LEFT | Join.RIGHT | Join.FULL)
+    rowset_join(payments, on=..., how="left" | "right" | "full")
     where(exists(on=...))
 
 `rowset_join(...)` is the stream-stream outer-join form. `exists(...)` is the semi-join form for both stream-stream and stream-static shapes. `not_exists(...)` is not part of this v4 streaming slice.
@@ -33,7 +33,7 @@ The compiler classifies a global session window, an unwatermarked session window
 
 ## Stream-Stream Join Rules
 
-For `Join.LEFT`, `Join.RIGHT`, `Join.FULL`, and `exists(...)`, both relations must be declared `streaming=True`. The join predicate must include an `event_time_between(left_time, right_time, upper=..., lower=...)` term and equality join keys as required by the normal join contract.
+For `"left"`, `"right"`, `"full"`, and `exists(...)`, both relations must be declared `streaming=True`. The join predicate must include an `event_time_between(left_time, right_time, upper=..., lower=...)` term and equality join keys as required by the normal join contract.
 
 The compiler requires watermarks on both input event-time fields used by the bound. This conservative v4 rule gives one cross-target contract even where Spark can execute with fewer watermarks. All these shapes report and require `StreamingOutputMode.APPEND`.
 

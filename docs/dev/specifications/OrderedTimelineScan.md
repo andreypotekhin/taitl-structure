@@ -22,7 +22,7 @@ scan(
     order_by: Expression | tuple[Expression, ...],
     max_rows: int,
     step: Callable[[StateSchema, TimelineRow], StateSchema],
-    ties: TiePolicy = TiePolicy.ERROR,
+    ties: str = "error",
 ) -> StateSchema
 ```
 
@@ -76,7 +76,7 @@ the contract.
 - The input timeline is the active rowset of the containing step.
 - `partition_by` and `order_by` are required and must contain at least one expression each.
 - `max_rows` is a positive integer literal and applies independently to each partition.
-- The first release accepts only ascending order expressions with `TiePolicy.ERROR`.
+- The first release accepts only ascending order expressions with `"error"`.
 - Equal order keys inside one partition fail at Spark evaluation time with a registered scan diagnostic.
 - Null partition keys are allowed; null order keys fail because they make the recurrence order ambiguous.
 - Empty input yields an empty output relation with the declared output schema.

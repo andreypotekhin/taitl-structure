@@ -100,7 +100,7 @@ current_events_df = result.current
 ## Make The Ordering A Business Rule
 
 The ordering value must distinguish the winning row within each partition. The current public tie policy is
-`TiePolicy.ERROR`: equal ordering values do not express a valid choice of winner. Treat that as an upstream data
+`"error"`: equal ordering values do not express a valid choice of winner. Treat that as an upstream data
 quality issue and provide a sequence, version, or other unique business ordering before this transform runs.
 
 Use the smallest business key that identifies one current entity. For example, if account identifiers repeat across

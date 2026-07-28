@@ -64,7 +64,7 @@ Row-multiplying joins should use a distinct free function:
 ```python
 inner_join(
     on=order_item.order_id == order.id,
-    how=Join.INNER,
+    how="inner",
 )
 ```
 
@@ -76,16 +76,16 @@ Deterministic dedupe should be explicit on `lookup_join(...)`:
 ```python
 lookup_join(
     on=self.customer_snapshots.id == order.customer_id,
-    how=Join.LEFT,
+    how="left",
     dedupe=JoinDedupe.latest_by(
         self.customer_snapshots.updated_at,
-        ties=TiePolicy.ERROR,
+        ties="error",
     ),
 )
 ```
 
 The policy means "reduce the right side to one row per join key, then apply `lookup_join(...)`." Current PySpark lowering
-uses `row_number()` over the right-side join keys and explicit order expression. `TiePolicy.ERROR` is recorded in IR
+uses `row_number()` over the right-side join keys and explicit order expression. `"error"` is recorded in IR
 and traceability; runtime tie checks are still explicit follow-up work because they add Spark work.
 
 Temporal joins should name the event time and the right-side validity facts:
@@ -96,13 +96,13 @@ temporal_one(
     at=order.order_time,
     valid_from=self.customer_history.valid_from,
     valid_to=self.customer_history.valid_to,
-    how=Join.LEFT,
-    overlaps=OverlapPolicy.ERROR,
+    how="left",
+    overlaps="error",
 )
 ```
 
 The default interval is closed-open: `valid_from <= at < valid_to`. A null `valid_to` represents an open-ended current
-record. `OverlapPolicy.ERROR` means overlapping right windows are invalid for the chosen key.
+record. `"error"` means overlapping right windows are invalid for the chosen key.
 
 As-of lookups are a specialized temporal lookup where the nearest right-side timestamp is selected:
 
@@ -111,13 +111,13 @@ price = self.prices.as_of_one(
     on=self.prices.symbol == trade.symbol,
     left_time=trade.trade_time,
     right_time=self.prices.price_time,
-    direction=AsOf.BACKWARD,
+    direction="backward",
     tolerance=duration("1 day"),
-    how=Join.LEFT,
+    how="left",
 )
 ```
 
-`AsOf.BACKWARD` means choose the latest right row at or before the left time. Other directions should wait until the
+`"backward"` means choose the latest right row at or before the left time. Other directions should wait until the
 first backward implementation is stable.
 
 ## IR and Lowering

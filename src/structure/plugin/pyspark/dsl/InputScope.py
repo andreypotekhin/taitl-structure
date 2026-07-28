@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import TypeVar, cast, overload
 
+import structure.plugin.pyspark.dsl.options as options
 from structure.dsl import Schema
 from structure.plugin.api.v1.model import current_symbolic_context as current_context
 from structure.plugin.pyspark.dsl.Expression import Expression
@@ -34,17 +35,17 @@ class InputScope(RowScope):
         self._structure_input_schema = schema
         self._structure_joined_scope: RowScope | None = None
 
-    def lookup_join(self, *, on: Expression, how: Join = Join.LEFT, hint: JoinHint | None = None) -> RowScope:
+    def lookup_join(self, *, on: Expression, how: Join | str = Join.LEFT, hint: JoinHint | str | None = None) -> RowScope:
         raise TypeError(
             "self.customers.lookup_join(...) is not supported. "
             "Use lookup_join(self.customers, on=...) or add a relation parameter "
             "and use lookup_join(customer, on=...)."
         )
 
-    def exists(self, *, on: Expression, hint: JoinHint | None = None) -> Expression:
+    def exists(self, *, on: Expression, hint: JoinHint | str | None = None) -> Expression:
         return exists(self, on=on, hint=hint)
 
-    def not_exists(self, *, on: Expression, hint: JoinHint | None = None) -> Expression:
+    def not_exists(self, *, on: Expression, hint: JoinHint | str | None = None) -> Expression:
         return not_exists(self, on=on, hint=hint)
 
     def temporal_one(
@@ -54,9 +55,9 @@ class InputScope(RowScope):
         at: Expression,
         valid_from: Expression,
         valid_to: Expression,
-        how: Join = Join.LEFT,
-        overlaps: OverlapPolicy = OverlapPolicy.ERROR,
-        hint: JoinHint | None = None,
+        how: Join | str = Join.LEFT,
+        overlaps: OverlapPolicy | str = OverlapPolicy.ERROR,
+        hint: JoinHint | str | None = None,
     ) -> RowScope:
         return cast(
             RowScope,
@@ -80,9 +81,9 @@ class InputScope(RowScope):
         right_time: Expression,
         direction: AsOf = AsOf.BACKWARD,
         tolerance: Expression | None = None,
-        how: Join = Join.LEFT,
-        ties: TiePolicy = TiePolicy.ERROR,
-        hint: JoinHint | None = None,
+        how: Join | str = Join.LEFT,
+        ties: TiePolicy | str = TiePolicy.ERROR,
+        hint: JoinHint | str | None = None,
     ) -> RowScope:
         return cast(
             RowScope,
@@ -123,8 +124,8 @@ def lookup_join(
     relation: Relation,
     *,
     on: object,
-    how: Join = Join.LEFT,
-    hint: JoinHint | None = None,
+    how: Join | str = Join.LEFT,
+    hint: JoinHint | str | None = None,
     dedupe: JoinDedupe | None = None,
 ) -> Relation: ...
 
@@ -133,8 +134,8 @@ def lookup_join(
 def lookup_join(
     *,
     on: object,
-    how: Join = Join.LEFT,
-    hint: JoinHint | None = None,
+    how: Join | str = Join.LEFT,
+    hint: JoinHint | str | None = None,
     dedupe: JoinDedupe | None = None,
 ) -> InputScope: ...
 
@@ -143,8 +144,8 @@ def lookup_join(
     relation: Relation | None = None,
     *,
     on: object,
-    how: Join = Join.LEFT,
-    hint: JoinHint | None = None,
+    how: Join | str = Join.LEFT,
+    hint: JoinHint | str | None = None,
     dedupe: JoinDedupe | None = None,
 ) -> Relation | InputScope:
     context = current_context()
@@ -155,10 +156,8 @@ def lookup_join(
         relation = cast(Relation, _infer_relation("lookup_join", context, on))
     if not isinstance(relation, InputScope):
         raise TypeError("lookup_join(relation, ...) requires a Structure relation parameter or transform input")
-    if not isinstance(how, Join):
-        raise TypeError("lookup_join(how=...) requires a Join value")
-    if hint is not None and not isinstance(hint, JoinHint):
-        raise TypeError("lookup_join(hint=...) requires a JoinHint value")
+    how = options.join(how, call="lookup_join(...)")
+    hint = options.join_hint(hint, call="lookup_join(...)")
     if dedupe is not None and not isinstance(dedupe, JoinDedupe):
         raise TypeError("lookup_join(dedupe=...) requires a JoinDedupe policy")
 
@@ -183,7 +182,7 @@ def exists(
     relation: Relation,
     *,
     on: object,
-    hint: JoinHint | None = None,
+    hint: JoinHint | str | None = None,
 ) -> Expression: ...
 
 
@@ -191,7 +190,7 @@ def exists(
 def exists(
     *,
     on: object,
-    hint: JoinHint | None = None,
+    hint: JoinHint | str | None = None,
 ) -> Expression: ...
 
 
@@ -199,7 +198,7 @@ def exists(
     relation: Relation | None = None,
     *,
     on: object,
-    hint: JoinHint | None = None,
+    hint: JoinHint | str | None = None,
 ) -> Expression:
     return _existence_join(JoinMethod.EXISTS, relation, on=on, hint=hint)
 
@@ -209,7 +208,7 @@ def not_exists(
     relation: Relation,
     *,
     on: object,
-    hint: JoinHint | None = None,
+    hint: JoinHint | str | None = None,
 ) -> Expression: ...
 
 
@@ -217,7 +216,7 @@ def not_exists(
 def not_exists(
     *,
     on: object,
-    hint: JoinHint | None = None,
+    hint: JoinHint | str | None = None,
 ) -> Expression: ...
 
 
@@ -225,7 +224,7 @@ def not_exists(
     relation: Relation | None = None,
     *,
     on: object,
-    hint: JoinHint | None = None,
+    hint: JoinHint | str | None = None,
 ) -> Expression:
     return _existence_join(JoinMethod.NOT_EXISTS, relation, on=on, hint=hint)
 
@@ -237,9 +236,9 @@ def rowset_join(
     left: object | None = None,
     right: Relation | None = None,
     on: object | None = None,
-    how: Join = Join.INNER,
-    hint: JoinHint | None = None,
-    strategy: JoinStrategy | None = None,
+    how: Join | str = Join.INNER,
+    hint: JoinHint | str | None = None,
+    strategy: JoinStrategy | str | None = None,
     allow_cartesian: bool = False,
 ) -> Relation: ...
 
@@ -250,9 +249,9 @@ def rowset_join(
     left: object | None = None,
     right: Relation | None = None,
     on: object | None = None,
-    how: Join = Join.INNER,
-    hint: JoinHint | None = None,
-    strategy: JoinStrategy | None = None,
+    how: Join | str = Join.INNER,
+    hint: JoinHint | str | None = None,
+    strategy: JoinStrategy | str | None = None,
     allow_cartesian: bool = False,
 ) -> InputScope: ...
 
@@ -263,21 +262,18 @@ def rowset_join(
     left: object | None = None,
     right: Relation | None = None,
     on: object | None = None,
-    how: Join = Join.INNER,
-    hint: JoinHint | None = None,
-    strategy: JoinStrategy | None = None,
+    how: Join | str = Join.INNER,
+    hint: JoinHint | str | None = None,
+    strategy: JoinStrategy | str | None = None,
     allow_cartesian: bool = False,
 ) -> Relation | InputScope:
     context = _join_context("rowset_join")
     if relation is not None and right is not None:
         raise TypeError("rowset_join(...) accepts either a positional relation or right=, not both")
     relation = relation or right
-    if not isinstance(how, Join):
-        raise TypeError("rowset_join(how=...) requires a Join value")
-    if hint is not None and not isinstance(hint, JoinHint):
-        raise TypeError("rowset_join(hint=...) requires a JoinHint value")
-    if strategy is not None and not isinstance(strategy, JoinStrategy):
-        raise TypeError("rowset_join(strategy=...) requires a JoinStrategy value")
+    how = options.join(how, call="rowset_join(...)")
+    hint = options.join_hint(hint, call="rowset_join(...)")
+    strategy = options.join_strategy(strategy, call="rowset_join(...)")
     if not isinstance(allow_cartesian, bool):
         raise TypeError("rowset_join(allow_cartesian=...) requires a bool")
     if left is not None and not isinstance(left, (Schema, RowScope)):
@@ -327,8 +323,8 @@ def left_join(
     relation: Relation,
     *,
     on: object,
-    hint: JoinHint | None = None,
-    strategy: JoinStrategy | None = None,
+    hint: JoinHint | str | None = None,
+    strategy: JoinStrategy | str | None = None,
 ) -> Relation: ...
 
 
@@ -336,8 +332,8 @@ def left_join(
 def left_join(
     *,
     on: object,
-    hint: JoinHint | None = None,
-    strategy: JoinStrategy | None = None,
+    hint: JoinHint | str | None = None,
+    strategy: JoinStrategy | str | None = None,
 ) -> InputScope: ...
 
 
@@ -345,8 +341,8 @@ def left_join(
     relation: Relation | None = None,
     *,
     on: object,
-    hint: JoinHint | None = None,
-    strategy: JoinStrategy | None = None,
+    hint: JoinHint | str | None = None,
+    strategy: JoinStrategy | str | None = None,
 ) -> Relation | InputScope:
     if relation is None:
         return rowset_join(on=on, how=Join.LEFT, hint=hint, strategy=strategy)
@@ -358,8 +354,8 @@ def inner_join(
     relation: Relation,
     *,
     on: object,
-    hint: JoinHint | None = None,
-    strategy: JoinStrategy | None = None,
+    hint: JoinHint | str | None = None,
+    strategy: JoinStrategy | str | None = None,
 ) -> Relation: ...
 
 
@@ -367,8 +363,8 @@ def inner_join(
 def inner_join(
     *,
     on: object,
-    hint: JoinHint | None = None,
-    strategy: JoinStrategy | None = None,
+    hint: JoinHint | str | None = None,
+    strategy: JoinStrategy | str | None = None,
 ) -> InputScope: ...
 
 
@@ -376,8 +372,8 @@ def inner_join(
     relation: Relation | None = None,
     *,
     on: object,
-    hint: JoinHint | None = None,
-    strategy: JoinStrategy | None = None,
+    hint: JoinHint | str | None = None,
+    strategy: JoinStrategy | str | None = None,
 ) -> Relation | InputScope:
     if relation is None:
         return rowset_join(on=on, how=Join.INNER, hint=hint, strategy=strategy)
@@ -389,7 +385,7 @@ def right_join(
     relation: Relation,
     *,
     on: object,
-    strategy: JoinStrategy | None = None,
+    strategy: JoinStrategy | str | None = None,
 ) -> Relation: ...
 
 
@@ -397,7 +393,7 @@ def right_join(
 def right_join(
     *,
     on: object,
-    strategy: JoinStrategy | None = None,
+    strategy: JoinStrategy | str | None = None,
 ) -> InputScope: ...
 
 
@@ -405,7 +401,7 @@ def right_join(
     relation: Relation | None = None,
     *,
     on: object,
-    strategy: JoinStrategy | None = None,
+    strategy: JoinStrategy | str | None = None,
 ) -> Relation | InputScope:
     if relation is None:
         return rowset_join(on=on, how=Join.RIGHT, strategy=strategy)
@@ -417,7 +413,7 @@ def full_join(
     relation: Relation,
     *,
     on: object,
-    strategy: JoinStrategy | None = None,
+    strategy: JoinStrategy | str | None = None,
 ) -> Relation: ...
 
 
@@ -425,7 +421,7 @@ def full_join(
 def full_join(
     *,
     on: object,
-    strategy: JoinStrategy | None = None,
+    strategy: JoinStrategy | str | None = None,
 ) -> InputScope: ...
 
 
@@ -433,7 +429,7 @@ def full_join(
     relation: Relation | None = None,
     *,
     on: object,
-    strategy: JoinStrategy | None = None,
+    strategy: JoinStrategy | str | None = None,
 ) -> Relation | InputScope:
     if relation is None:
         return rowset_join(on=on, how=Join.FULL, strategy=strategy)
@@ -466,9 +462,9 @@ def temporal_one(
     at: object,
     valid_from: object,
     valid_to: object,
-    how: Join = Join.LEFT,
-    overlaps: OverlapPolicy = OverlapPolicy.ERROR,
-    hint: JoinHint | None = None,
+    how: Join | str = Join.LEFT,
+    overlaps: OverlapPolicy | str = OverlapPolicy.ERROR,
+    hint: JoinHint | str | None = None,
 ) -> Relation: ...
 
 
@@ -479,9 +475,9 @@ def temporal_one(
     at: object,
     valid_from: object,
     valid_to: object,
-    how: Join = Join.LEFT,
-    overlaps: OverlapPolicy = OverlapPolicy.ERROR,
-    hint: JoinHint | None = None,
+    how: Join | str = Join.LEFT,
+    overlaps: OverlapPolicy | str = OverlapPolicy.ERROR,
+    hint: JoinHint | str | None = None,
 ) -> InputScope: ...
 
 
@@ -492,9 +488,9 @@ def temporal_one(
     at: object,
     valid_from: object,
     valid_to: object,
-    how: Join = Join.LEFT,
-    overlaps: OverlapPolicy = OverlapPolicy.ERROR,
-    hint: JoinHint | None = None,
+    how: Join | str = Join.LEFT,
+    overlaps: OverlapPolicy | str = OverlapPolicy.ERROR,
+    hint: JoinHint | str | None = None,
 ) -> Relation | InputScope:
     context = _join_context("temporal_one")
     predicate = _join_predicate("temporal_one", on)
@@ -505,12 +501,9 @@ def temporal_one(
     at_expr = _expression("temporal_one", "at", at)
     valid_from_expr = _expression("temporal_one", "valid_from", valid_from)
     valid_to_expr = _expression("temporal_one", "valid_to", valid_to)
-    if not isinstance(how, Join):
-        raise TypeError("temporal_one(how=...) requires a Join value")
-    if not isinstance(overlaps, OverlapPolicy):
-        raise TypeError("temporal_one(overlaps=...) requires an OverlapPolicy value")
-    if hint is not None and not isinstance(hint, JoinHint):
-        raise TypeError("temporal_one(hint=...) requires a JoinHint value")
+    how = options.join(how, call="temporal_one(...)")
+    overlaps = options.overlap_policy(overlaps, call="temporal_one(...)")
+    hint = options.join_hint(hint, call="temporal_one(...)")
 
     join = JoinPlan(
         input_name=relation._structure_input_name,
@@ -538,11 +531,11 @@ def as_of_one(
     on: object,
     left_time: object,
     right_time: object,
-    direction: AsOf = AsOf.BACKWARD,
+    direction: AsOf | str = AsOf.BACKWARD,
     tolerance: object | None = None,
-    how: Join = Join.LEFT,
-    ties: TiePolicy = TiePolicy.ERROR,
-    hint: JoinHint | None = None,
+    how: Join | str = Join.LEFT,
+    ties: TiePolicy | str = TiePolicy.ERROR,
+    hint: JoinHint | str | None = None,
 ) -> Relation: ...
 
 
@@ -552,11 +545,11 @@ def as_of_one(
     on: object,
     left_time: object,
     right_time: object,
-    direction: AsOf = AsOf.BACKWARD,
+    direction: AsOf | str = AsOf.BACKWARD,
     tolerance: object | None = None,
-    how: Join = Join.LEFT,
-    ties: TiePolicy = TiePolicy.ERROR,
-    hint: JoinHint | None = None,
+    how: Join | str = Join.LEFT,
+    ties: TiePolicy | str = TiePolicy.ERROR,
+    hint: JoinHint | str | None = None,
 ) -> InputScope: ...
 
 
@@ -566,11 +559,11 @@ def as_of_one(
     on: object,
     left_time: object,
     right_time: object,
-    direction: AsOf = AsOf.BACKWARD,
+    direction: AsOf | str = AsOf.BACKWARD,
     tolerance: object | None = None,
-    how: Join = Join.LEFT,
-    ties: TiePolicy = TiePolicy.ERROR,
-    hint: JoinHint | None = None,
+    how: Join | str = Join.LEFT,
+    ties: TiePolicy | str = TiePolicy.ERROR,
+    hint: JoinHint | str | None = None,
 ) -> Relation | InputScope:
     context = _join_context("as_of_one")
     predicate = _join_predicate("as_of_one", on)
@@ -581,14 +574,10 @@ def as_of_one(
     left_time_expr = _expression("as_of_one", "left_time", left_time)
     right_time_expr = _expression("as_of_one", "right_time", right_time)
     tolerance_expr = None if tolerance is None else _expression("as_of_one", "tolerance", tolerance)
-    if not isinstance(direction, AsOf):
-        raise TypeError("as_of_one(direction=...) requires an AsOf value")
-    if not isinstance(how, Join):
-        raise TypeError("as_of_one(how=...) requires a Join value")
-    if not isinstance(ties, TiePolicy):
-        raise TypeError("as_of_one(ties=...) requires a TiePolicy value")
-    if hint is not None and not isinstance(hint, JoinHint):
-        raise TypeError("as_of_one(hint=...) requires a JoinHint value")
+    direction = options.as_of(direction, call="as_of_one(...)")
+    how = options.join(how, call="as_of_one(...)")
+    ties = options.tie_policy(ties, call="as_of_one(...)")
+    hint = options.join_hint(hint, call="as_of_one(...)")
 
     join = JoinPlan(
         input_name=relation._structure_input_name,
@@ -762,7 +751,7 @@ def _existence_join(
     relation: Relation | None,
     *,
     on: object,
-    hint: JoinHint | None,
+    hint: JoinHint | str | None,
 ) -> Expression:
     context = _join_context(method.value)
     predicate = _join_predicate(method.value, on)
@@ -770,8 +759,7 @@ def _existence_join(
         relation = cast(Relation, _infer_relation(method.value, context, predicate))
     if not isinstance(relation, InputScope):
         raise TypeError(f"{method.value}(relation, ...) requires a Structure relation parameter or transform input")
-    if hint is not None and not isinstance(hint, JoinHint):
-        raise TypeError(f"{method.value}(hint=...) requires a JoinHint value")
+    hint = options.join_hint(hint, call=f"{method.value}(...)")
 
     return Expression(
         kind="existence_join",

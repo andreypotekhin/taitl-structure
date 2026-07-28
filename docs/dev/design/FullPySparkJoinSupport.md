@@ -48,7 +48,7 @@ rowset_join(
     left=order,
     right=customer,
     on=order.customer_id == customer.id,
-    how=Join.FULL,
+    how="full",
 )
 
 return OrderCustomerReconciliation.project()(
@@ -90,7 +90,7 @@ joined = rowset_join(
     left=order,
     right=shipment,
     using=(order.id, order.tenant_id),
-    how=Join.INNER,
+    how="inner",
 )
 ```
 
@@ -103,11 +103,11 @@ coalescing behavior.
 `rowset_join(...)` is a rowset operation, not a lookup. It can preserve, filter, multiply, or admit rows depending on
 `how`:
 
-- `Join.INNER`: keeps matching left/right pairs;
-- `Join.LEFT`: keeps all left rows and matching right rows;
-- `Join.RIGHT`: keeps all right rows and matching left rows;
-- `Join.FULL`: keeps matching pairs and unmatched rows from both sides;
-- `Join.CROSS`: emits every left/right pair.
+- `"inner"`: keeps matching left/right pairs;
+- `"left"`: keeps all left rows and matching right rows;
+- `"right"`: keeps all right rows and matching left rows;
+- `"full"`: keeps matching pairs and unmatched rows from both sides;
+- `"cross"`: emits every left/right pair.
 
 Because right and full joins can produce rows with no current-row left source, schema construction must use
 `project()` or an equivalent no-base constructor. `OutputSchema.base(order)` is invalid when the chosen join can admit

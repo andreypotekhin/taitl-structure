@@ -89,14 +89,14 @@ order, row count, schema, null semantics, and diagnostics remain equivalent.
 ```python
 inner_join(
     on=order_item.order_id == order.id,
-    how=Join.INNER,
+    how="inner",
 )
 ```
 
 Rules:
 
-- `Join.INNER` keeps only current rows with at least one right match.
-- `Join.LEFT` keeps unmatched current rows with null right fields.
+- `"inner"` keeps only current rows with at least one right match.
+- `"left"` keeps unmatched current rows with null right fields.
 - Duplicate right rows are allowed and expected.
 - No uniqueness warning is emitted.
 - The joined scope exposes right-side fields.
@@ -113,10 +113,10 @@ That rule must be explicit:
 ```python
 lookup_join(
     on=self.customer_snapshots.id == order.customer_id,
-    how=Join.LEFT,
+    how="left",
     dedupe=JoinDedupe.latest_by(
         self.customer_snapshots.updated_at,
-        ties=TiePolicy.ERROR,
+        ties="error",
     ),
 )
 ```
@@ -125,7 +125,7 @@ Rules:
 
 - Dedupe policies reduce the right input before the lookup join.
 - A dedupe policy must name the ordering or selection rule.
-- The default tie policy is `TiePolicy.ERROR`.
+- The default tie policy is `"error"`.
 - Structure must not lower dedupe to arbitrary `first(...)` or nondeterministic `dropDuplicates(...)`.
 - A deduped `lookup_join(...)` records both the original right input and the deduped lookup dependency in traceability.
 - Runtime tie checks are explicit because they can add Spark work.
@@ -134,8 +134,8 @@ Rules:
 
 Initial policy family:
 
-- `JoinDedupe.latest_by(order_by, ties=TiePolicy.ERROR)`;
-- `JoinDedupe.earliest_by(order_by, ties=TiePolicy.ERROR)`;
+- `JoinDedupe.latest_by(order_by, ties="error")`;
+- `JoinDedupe.earliest_by(order_by, ties="error")`;
 - composite ordering by passing ordered expressions once the expression model supports it.
 
 ## Temporal Validity Lookups
@@ -148,8 +148,8 @@ temporal_one(
     at=order.order_time,
     valid_from=self.customer_history.valid_from,
     valid_to=self.customer_history.valid_to,
-    how=Join.LEFT,
-    overlaps=OverlapPolicy.ERROR,
+    how="left",
+    overlaps="error",
 )
 ```
 
@@ -168,7 +168,7 @@ Rules:
 - `valid_from` and `valid_to` come from the right input.
 - Overlapping windows for the same right key are invalid for `temporal_one(...)`.
 - Overlap checks are explicit runtime checks unless uniqueness and non-overlap can be proven from metadata.
-- `Join.LEFT` and `Join.INNER` are the initial supported join types.
+- `"left"` and `"inner"` are the initial supported join types.
 - Temporal fields participate in traceability and diagnostics.
 
 This form is the Structure model for SCD type 2 lookup joins. It should not assume any table format or storage
@@ -183,19 +183,19 @@ price = self.prices.as_of_one(
     on=self.prices.symbol == trade.symbol,
     left_time=trade.trade_time,
     right_time=self.prices.price_time,
-    direction=AsOf.BACKWARD,
+    direction="backward",
     tolerance=duration("1 day"),
-    how=Join.LEFT,
+    how="left",
 )
 ```
 
 Rules:
 
-- `AsOf.BACKWARD` chooses the latest right row whose `right_time <= left_time`.
-- `AsOf.FORWARD` chooses the earliest right row whose `right_time >= left_time`.
+- `"backward"` chooses the latest right row whose `right_time <= left_time`.
+- `"forward"` chooses the earliest right row whose `right_time >= left_time`.
 - `tolerance` is optional and rejects matches farther away than the supplied duration.
-- `Join.LEFT` keeps unmatched rows with null right fields.
-- `Join.INNER` removes unmatched rows.
+- `"left"` keeps unmatched rows with null right fields.
+- `"inner"` removes unmatched rows.
 - Ties on `right_time` require an explicit tie policy.
 - Nearest-direction as-of joins remain deferred because equal-distance ties need a separate contract.
 

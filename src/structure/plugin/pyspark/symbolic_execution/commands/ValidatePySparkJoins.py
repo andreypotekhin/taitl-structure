@@ -53,8 +53,8 @@ class ValidatePySparkJoins:
                 join,
                 occurrence,
                 request,
-                f"{join.method.value}(...) supports Join.LEFT and Join.INNER, not {join.how!r}.",
-                "Use Join.LEFT or Join.INNER, or use rowset_join(...) for broad rowset joins.",
+                f'{join.method.value}(...) supports "left" and "inner", not {join.how!r}.',
+                'Use "left" or "inner", or use rowset_join(...) for broad rowset joins.',
             )
         if join.method is JoinMethod.ROWSET and join.how not in {
             Join.LEFT,
@@ -68,7 +68,7 @@ class ValidatePySparkJoins:
                 occurrence,
                 request,
                 f"rowset_join(...) does not support join type {join.how!r}.",
-                "Use Join.LEFT, Join.INNER, Join.RIGHT, Join.FULL, or Join.CROSS.",
+                'Use "left", "inner", "right", "full", or "cross".',
             )
         if join.hint is not None and not isinstance(join.hint, JoinHint):
             self._error(
@@ -76,7 +76,7 @@ class ValidatePySparkJoins:
                 occurrence,
                 request,
                 f"{join.method.value}(...) hint must be a JoinHint value, not {type(join.hint).__name__}.",
-                "Use JoinHint.BROADCAST or omit hint=.",
+                'Use "broadcast" or omit hint=.',
             )
         if join.strategy is not None and not isinstance(join.strategy, JoinStrategy):
             self._error(
@@ -84,7 +84,7 @@ class ValidatePySparkJoins:
                 occurrence,
                 request,
                 f"{join.method.value}(...) strategy must be a JoinStrategy value, not {type(join.strategy).__name__}.",
-                "Use a JoinStrategy value or omit strategy=.",
+                'Use "broadcast", "shuffle_hash", "merge", "shuffle_replicate_nl", or omit strategy=.',
             )
 
     def _temporal(self, join, occurrence: int, request: StepAuthoringRequest) -> None:
@@ -96,7 +96,7 @@ class ValidatePySparkJoins:
                 occurrence,
                 request,
                 f"temporal_one(overlaps=...) policy {temporal.overlaps!r} is not supported.",
-                "Use OverlapPolicy.ERROR or omit overlaps=.",
+                'Use "error" or omit overlaps=.',
             )
         if join.input_name in self._scopes(temporal.at):
             self._error(
@@ -126,7 +126,7 @@ class ValidatePySparkJoins:
                 occurrence,
                 request,
                 f"as_of_one(direction=...) policy {as_of.direction!r} is not supported.",
-                "Use AsOf.BACKWARD, AsOf.FORWARD, or omit direction=.",
+                'Use "backward", "forward", or omit direction=.',
             )
         if as_of.ties is not TiePolicy.ERROR:
             self._error(
@@ -134,7 +134,7 @@ class ValidatePySparkJoins:
                 occurrence,
                 request,
                 f"as_of_one(ties=...) policy {as_of.ties!r} is not supported.",
-                "Use TiePolicy.ERROR or omit ties=.",
+                'Use "error" or omit ties=.',
             )
         if join.input_name in self._scopes(as_of.left_time):
             self._error(
@@ -194,7 +194,7 @@ class ValidatePySparkJoins:
                 occurrence,
                 request,
                 f"lookup_join(dedupe=...) ties must be a TiePolicy value, not {type(dedupe.ties).__name__}.",
-                "Use TiePolicy.ERROR or omit ties=.",
+                'Use "error" or omit ties=.',
             )
         if dedupe.direction not in {"latest", "earliest"}:
             self._error(

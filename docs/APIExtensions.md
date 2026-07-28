@@ -9,7 +9,7 @@ For PySpark APIs, see [APICatalog.md](APICatalog.md). For Strucute APIs such as 
 | Capability              | Status | Built on | Addition | Reference |
 |-------------------------------| --- | --- | --- | --- |
 | Schema fields in plain Python | implemented | Spark SQL types | `boolean`, `date`, `decimal`, `double`, `float`, `integer`, `long`, `map`, `string`, `struct`, `timestamp`, and field-form `array` declare fields lowering to PySpark schemas. | [Schema reference](reference/Schema.ref.md) |
-| Enums/options                 | implemented | PySpark enum/string options | `AsOf`, `DecimalType`, `Join`, `JoinDedupe`, `JoinHint`, `JoinStrategy`, `OverlapPolicy`, `StreamingOutputMode`, `TiePolicy`, and `TimeWindow` make PySpark options typed and discoverable | [APICatalog.md](APICatalog.md) |
+| Options                       | implemented | PySpark string options | Join, as-of, overlap, and tie options accept PySpark-style string literals and validate them before compilation; constants remain available as aliases. | [APICatalog.md](APICatalog.md) |
 
 ## Added Relation Helpers
 

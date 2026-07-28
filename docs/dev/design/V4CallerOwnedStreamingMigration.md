@@ -27,7 +27,7 @@ For a streaming input, the compiler admits a session aggregate only when a water
 
 ### Bounded Stream-Stream Joins
 
-The existing `rowset_join(...)` API remains the outer-join spelling. `Join.LEFT`, `Join.RIGHT`, and `Join.FULL` are admitted when both named inputs declare `streaming=True`, the required watermark is present on each input, and the predicate includes `event_time_between(...)`. `exists(...)` remains the semi-join spelling and is admitted for the same bounded stream-stream shape.
+The existing `rowset_join(...)` API remains the outer-join spelling. `"left"`, `"right"`, and `"full"` are admitted when both named inputs declare `streaming=True`, the required watermark is present on each input, and the predicate includes `event_time_between(...)`. `exists(...)` remains the semi-join spelling and is admitted for the same bounded stream-stream shape.
 
 Every admitted stream-stream outer or semi join requires `append`. Explain and diagnostics must say that unmatched outer rows can be emitted only after watermark progress establishes that a future match is no longer possible; a quiet input can therefore delay output. The plan records the join kind, both input modes, each watermark, and the time bound so the checker, online runner, and generated renderer consume the same contract.
 

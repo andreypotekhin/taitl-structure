@@ -121,8 +121,8 @@ Supported advanced aggregates:
 - `approx_percentile(value, percentage, accuracy=None, where=None)`;
 - `collect_list(value, element_type=None, where=None)`;
 - `collect_set(value, element_type=None, where=None)`;
-- `first_value(value, order_by=..., where=None, ties=TiePolicy.ERROR)`;
-- `last_value(value, order_by=..., where=None, ties=TiePolicy.ERROR)`.
+- `first_value(value, order_by=..., where=None, ties="error")`;
+- `last_value(value, order_by=..., where=None, ties="error")`.
 
 Aggregate helpers support `where=...` for metric-local filters. Use `having(lambda out: ...)` to filter aggregate
 output rows after all metrics and subtotal keys are computed.
@@ -131,7 +131,7 @@ Rules:
 
 - `where=...` filters only the metric that owns it. It does not filter grouping keys or other metrics.
 - `first_value(...)` and `last_value(...)` are deterministic aggregate helpers only when `order_by=...` is supplied.
-- `ties=TiePolicy.ERROR` is the admitted tie policy for deterministic first/last aggregate helpers.
+- `ties="error"` is the admitted tie policy for deterministic first/last aggregate helpers.
 - `collect_list(...)` and `collect_set(...)` produce Spark collection aggregates; element ordering is not guaranteed.
 - `element_type=...` is required when Structure cannot infer the collection aggregate element type.
 - Approximate metrics stay visibly approximate in generated PySpark.

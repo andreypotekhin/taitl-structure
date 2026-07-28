@@ -176,19 +176,19 @@ Accepted:
 ```python
 lookup_join(
     on=order.customer_id == customer.id,
-    how=Join.LEFT,
-    hint=JoinHint.BROADCAST,
+    how="left",
+    hint="broadcast",
 )
 ```
 
 Rules:
 
-- `Join.LEFT` and `Join.INNER` are allowed for stream-static joins.
+- `"left"` and `"inner"` are allowed for stream-static joins.
 - The current pipeline side may be streaming.
 - The joined input side must be static.
 - Join conditions must satisfy `JoinSemantics.spec.md`.
 - `lookup_join(...)` uniqueness warnings still apply; streaming compatibility does not prove uniqueness.
-- `JoinHint.BROADCAST` is compatible only for the static joined side.
+- `"broadcast"` is compatible only for the static joined side.
 - A side input that may be streaming must be rejected for v1 streaming compatibility.
 
 Rejected:
@@ -388,8 +388,8 @@ The implementation is complete when tests prove these scenarios:
 - A transform using `lower`, `trim`, `coalesce`, and explicit parsing helpers in projections is compatible.
 - Schema-only input, intermediate, and output validation are compatible and do not call Spark actions.
 - Any validation phase using `schema_and_constraints` is batch-only when enabled constraints are not schema-only.
-- A stream-static `Join.LEFT` lookup join is compatible when the joined side is static.
-- A stream-static `Join.INNER` lookup join is compatible when the joined side is static.
+- A stream-static `"left"` lookup join is compatible when the joined side is static.
+- A stream-static `"inner"` lookup join is compatible when the joined side is static.
 - `lookup_join(...)` uniqueness warnings still appear independently from streaming compatibility.
 - A possible stream-stream join is rejected for explicit streaming-compatible transforms.
 - A hook without `streaming=True` makes compatibility unknown or emits a warning.

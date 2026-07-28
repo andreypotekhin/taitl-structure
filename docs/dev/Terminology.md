@@ -216,8 +216,8 @@ Example:
 def add_customer(self, order: OrderRaw, customer: Customer) -> OrderWithCustomer:
     lookup_join(
         on=order.customer_id == customer.id,
-        how=Join.LEFT,
-        hint=JoinHint.BROADCAST,
+        how="left",
+        hint="broadcast",
     )
     return OrderWithCustomer.base(order)(customer_name=customer.name)
 ```
@@ -614,7 +614,7 @@ hints, ordered key pairs, and right-side field projection.
 Example:
 
 ```text
-lookup_join(on=order.customer_id == customer.id, how=Join.LEFT)
+lookup_join(on=order.customer_id == customer.id, how="left")
   -> orders.alias("order_normalized").join(customers.alias("customers"), ..., "left")
 ```
 

@@ -68,7 +68,7 @@ class EnrichOrders(Transform):
             customer,
             on=(customer.tenant.tenant_id == order.tenant.tenant_id)
             & (self.clean_id(customer.id) == order.customer_id),
-            hint=JoinHint.BROADCAST,
+            hint="broadcast",
         )
 
         return OrderWithCustomer.base(order)(

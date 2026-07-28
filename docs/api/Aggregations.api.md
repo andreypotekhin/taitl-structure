@@ -70,7 +70,7 @@ the current `order` row scope as `o`.
 - Statistical metrics return nullable doubles. Collection order is Spark-dependent.
 - `collect_list(...)` and `collect_set(...)` skip null inputs and return an empty non-null array when no values qualify.
 - `first_value(...)` and `last_value(...)` aggregate forms require a scalar `order_by=` and currently use
-  `TiePolicy.ERROR`; `ignore_nulls=` is supported only with `over=`.
+  `"error"`; `ignore_nulls=` is supported only with `over=`.
 - A filtered `first_value(...)` or `last_value(...)` masks nonqualifying order keys, so an excluded row cannot become
   the selected minimum or maximum.
 - Exact percentiles, aggregate aliases, and more statistics remain future work.

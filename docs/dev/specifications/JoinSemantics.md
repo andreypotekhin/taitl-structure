@@ -20,8 +20,8 @@ the compiler infer the joined relation from the `on` clause:
 ```python
 lookup_join(
     on=order.customer_id == customer.id,
-    how=Join.LEFT,
-    hint=JoinHint.BROADCAST,
+    how="left",
+    hint="broadcast",
 )
 ```
 
@@ -31,7 +31,7 @@ When a step method declares the relation as a schema parameter, the relation can
 def add_customer(self, order: OrderRaw, customer: Customer) -> OrderWithCustomer:
     lookup_join(
         on=order.customer_id == customer.id,
-        how=Join.LEFT,
+        how="left",
     )
     return OrderWithCustomer.base(order)(customer_name=customer.name)
 ```
@@ -65,10 +65,10 @@ Rules:
 
 The v1 compiled DSL supports:
 
-- `Join.LEFT`: keep every current row; right fields are null when no match exists.
-- `Join.INNER`: keep only current rows that have at least one right match.
+- `"left"`: keep every current row; right fields are null when no match exists.
+- `"inner"`: keep only current rows that have at least one right match.
 
-`Join.RIGHT`, `Join.FULL`, `Join.CROSS`, and semi/anti joins are deferred. They do not fit the v1 row-centric schema
+`"right"`, `"full"`, `"cross"`, and semi/anti joins are deferred. They do not fit the v1 row-centric schema
 constructor cleanly because they can introduce rows that do not have a current-row source, or they return existence
 semantics rather than a joined right scope. The v2+ plan for semi/anti predicates lives in
 [AnalyticalJoinCoverage.md](AnalyticalJoinCoverage.md).
@@ -106,7 +106,7 @@ Rejected in v1:
 Each equality comparison contributes one key pair. In a pair, one expression must reference the joined input scope and
 the other expression must reference the current row scope or a previously joined scope. The compiler accepts either
 operand order. Public examples place the current-row expression on the left and the joined-input expression on the
-right because that reads naturally for `Join.LEFT` enrichment steps.
+right because that reads naturally for `"left"` enrichment steps.
 
 In the bare form, all equality pairs in one `lookup_join(...)` call must point to the same unjoined relation. A predicate
 that mentions two unjoined relations is ambiguous and must be split into separate joins.
@@ -118,7 +118,7 @@ Composite joins are expressed by combining equality pairs with `&`:
 ```python
 lookup_join(
     on=(order.country == customer.country) & (order.customer_id == customer.id),
-    how=Join.LEFT,
+    how="left",
 )
 ```
 
@@ -150,9 +150,9 @@ Rules:
 - Structure must not infer null-safe equality from nullable fields.
 - Composite joins may mix normal equality and null-safe equality per key pair.
 - Diagnostics must name which key pair is null-safe when explaining generated join conditions.
-- For `Join.LEFT`, every field from the joined scope is nullable after the join, even if the right schema declares the
+- For `"left"`, every field from the joined scope is nullable after the join, even if the right schema declares the
   field as non-nullable.
-- For `Join.INNER`, joined fields keep their declared nullability unless the join condition or a filter narrows them.
+- For `"inner"`, joined fields keep their declared nullability unless the join condition or a filter narrows them.
 
 ## Case-Normalized Keys
 
@@ -161,7 +161,7 @@ Case normalization is expressed in the join condition with compileable expressio
 ```python
 lookup_join(
     on=lower(trim(order.email)) == lower(trim(customer.email)),
-    how=Join.LEFT,
+    how="left",
 )
 ```
 
@@ -213,8 +213,8 @@ Rules:
 
 - Duplicate right-side rows are allowed.
 - No uniqueness warning is emitted.
-- `Join.LEFT` preserves unmatched current rows with null joined fields.
-- `Join.INNER` removes current rows with no right match.
+- `"left"` preserves unmatched current rows with null joined fields.
+- `"inner"` removes current rows with no right match.
 - Output schema construction still decides which fields survive; right-side columns are not implicitly appended.
 
 Developers should choose `inner_join(...)` when the output is naturally one row per match, such as order-to-line-item
@@ -283,13 +283,13 @@ because it is easier to review and debug.
 
 ## Broadcast Hints
 
-`hint=JoinHint.BROADCAST` applies to the joined right input in v1:
+`hint="broadcast"` applies to the joined right input in v1:
 
 ```python
 lookup_join(
     on=order.customer_id == customer.id,
-    how=Join.LEFT,
-    hint=JoinHint.BROADCAST,
+    how="left",
+    hint="broadcast",
 )
 ```
 

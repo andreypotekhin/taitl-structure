@@ -62,10 +62,10 @@ Rules:
   exactly one unjoined relation.
 - `left` is optional documentation of the current row scope for explicit rowset joins.
 - `how` is required.
-- Supported initial values are `Join.INNER`, `Join.LEFT`, `Join.RIGHT`, `Join.FULL`, and `Join.CROSS`.
-- `on` is required for every value except `Join.CROSS`.
-- `on` is forbidden for `Join.CROSS`.
-- `allow_cartesian=True` is required for `Join.CROSS`.
+- Supported initial values are `"inner"`, `"left"`, `"right"`, `"full"`, and `"cross"`.
+- `on` is required for every value except `"cross"`.
+- `on` is forbidden for `"cross"`.
+- `allow_cartesian=True` is required for `"cross"`.
 - `strategy` is optional and follows Sprint 09 join strategy directive rules.
 - The return value is the joined right relation scope. The established no-assignment style is allowed when relation
   inference is unambiguous.
@@ -94,16 +94,16 @@ def reconcile(self, order: OrderRaw, customer: Customer) -> OrderCustomerReconci
 
 ## Join Types
 
-`Join.INNER` keeps matching row pairs.
+`"inner"` keeps matching row pairs.
 
-`Join.LEFT` keeps every left row and matching right rows. Unmatched right fields are null.
+`"left"` keeps every left row and matching right rows. Unmatched right fields are null.
 
-`Join.RIGHT` keeps every right row and matching left rows. Unmatched left fields are null.
+`"right"` keeps every right row and matching left rows. Unmatched left fields are null.
 
-`Join.FULL` keeps matching row pairs and unmatched rows from both sides. Left fields are null for right-only rows.
+`"full"` keeps matching row pairs and unmatched rows from both sides. Left fields are null for right-only rows.
 Right fields are null for left-only rows.
 
-`Join.CROSS` emits every left/right pair. It has no predicate and requires `allow_cartesian=True`.
+`"cross"` emits every left/right pair. It has no predicate and requires `allow_cartesian=True`.
 
 Semi and anti joins remain `exists(...)` and `not_exists(...)`, not `rowset_join(...)`.
 
@@ -142,7 +142,7 @@ joined = rowset_join(
     left=order,
     right=shipment,
     using=(order.id, order.tenant_id),
-    how=Join.INNER,
+    how="inner",
 )
 ```
 
@@ -155,7 +155,7 @@ Rules:
 
 ## Output Construction
 
-After `Join.RIGHT` or `Join.FULL`, the output cannot use a base constructor that assumes every output row has a current
+After `"right"` or `"full"`, the output cannot use a base constructor that assumes every output row has a current
 left row:
 
 ```python
@@ -234,9 +234,9 @@ Generated-code execution and execution consume the same PySpark join recipe.
 
 Lowering rules:
 
-- `Join.RIGHT` renders a right join.
-- `Join.FULL` renders a full outer join.
-- `Join.CROSS` renders `crossJoin(...)` or an equivalent target-supported cross join.
+- `"right"` renders a right join.
+- `"full"` renders a full outer join.
+- `"cross"` renders `crossJoin(...)` or an equivalent target-supported cross join.
 - Non-equi and disjunctive predicates render as PySpark Column expressions.
 - Strategy directives render as explicit right-side or join hints according to the optimization directive
   specification.
@@ -269,7 +269,7 @@ Join:
   CalendarExpansion.expand -> orders x calendar_days
 
 Problem:
-  Join.CROSS can multiply every left row by every right row. Structure requires allow_cartesian=True so accidental
+  "cross" can multiply every left row by every right row. Structure requires allow_cartesian=True so accidental
   missing predicates fail early.
 
 Use:
@@ -287,7 +287,7 @@ Join:
   ReconcileOrders.reconcile -> orders full customers
 
 Problem:
-  Join.FULL may produce rows with no orders row, so Output.base(order) is not valid.
+  "full" may produce rows with no orders row, so Output.base(order) is not valid.
 
 Use:
   Output.project()(...) and reference joined.left and joined.right fields explicitly.
@@ -311,7 +311,7 @@ Explain must not imply data-size estimates unless a later cost model adds measur
 
 ## Streaming Compatibility
 
-`rowset_join(...)` is batch-only for `Join.RIGHT`, `Join.FULL`, `Join.CROSS`, non-equi predicates, and disjunctive
+`rowset_join(...)` is batch-only for `"right"`, `"full"`, `"cross"`, non-equi predicates, and disjunctive
 predicates in the first implementation.
 
 Existing stream-static compatibility for left and inner lookup-style joins remains governed by

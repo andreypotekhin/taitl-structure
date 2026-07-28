@@ -525,7 +525,7 @@ def latest_events(self, event: RawEvent) -> LatestEvent:
 
 The PySpark target lowers these helpers to `row_number()` over
 `Window.partitionBy(...).orderBy(...)`, keeps rank `1`, then drops the temporary rank column. `partition_by` is
-required so the selection is reviewable, and the current public tie policy is `TiePolicy.ERROR`.
+required so the selection is reviewable, and the current public tie policy is `"error"`.
 
 Streaming: Selected-row helpers
 are batch-only in v2 streaming compatibility checks, because streaming-safe ranking needs explicit watermark and state
@@ -768,7 +768,7 @@ Prefer inferred `left_join(...)` for ordinary enrichment when the `on` clause na
 def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
     left_join(
         on=order.customer_id == customer.id,
-        hint=JoinHint.BROADCAST,
+        hint="broadcast",
     )
     return OrderWithCustomer.base(order)(
         customer_name=customer.name,
@@ -796,7 +796,7 @@ Use `inner_join(...)` when one current row should intentionally produce one outp
 ```python
 inner_join(
     on=(shipment.order_id == order.id),
-    strategy=JoinStrategy.SHUFFLE_HASH,
+    strategy="shuffle_hash",
 )
 ```
 
@@ -838,8 +838,8 @@ Use deterministic lookup dedupe when duplicate right-side rows exist but the bus
 ```python
 lookup_join(
     on=product.id == order.product_id,
-    how=Join.LEFT,
-    dedupe=JoinDedupe.latest_by(product.audit.ingested_at, ties=TiePolicy.ERROR),
+    how="left",
+    dedupe=JoinDedupe.latest_by(product.audit.ingested_at, ties="error"),
 )
 ```
 
@@ -853,8 +853,8 @@ temporal_one(
     at=order.business.order_date,
     valid_from=customer.valid_from,
     valid_to=customer.valid_to,
-    how=Join.LEFT,
-    overlaps=OverlapPolicy.ERROR,
+    how="left",
+    overlaps="error",
 )
 ```
 
@@ -1352,7 +1352,7 @@ class FibonacciFromTimeline(Transform):
 
 `scan(...)` returns the state before the transition for the current timeline row. Each partition starts from the same
 fully populated `initial` state; empty input returns an empty output relation with the declared schema. The current
-release requires nonempty `partition_by` and `order_by`, accepts only ascending order and `TiePolicy.ERROR`, rejects
+release requires nonempty `partition_by` and `order_by`, accepts only ascending order and `"error"`, rejects
 null order keys, fails duplicate order keys during Spark evaluation, and enforces a positive literal `max_rows` per
 partition.
 

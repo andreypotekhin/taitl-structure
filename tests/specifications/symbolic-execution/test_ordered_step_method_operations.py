@@ -58,8 +58,8 @@ class OuterEnriched(Schema):
 @pytest.mark.parametrize(
     ("argument", "message"),
     [
-        ("how", r"lookup_join\(how=\.\.\.\) requires a Join value"),
-        ("hint", r"lookup_join\(hint=\.\.\.\) requires a JoinHint value"),
+        ("how", r'lookup_join\(\.\.\.\) how= must be one of "left", "inner", "right", "full", "cross"'),
+        ("hint", r'lookup_join\(\.\.\.\) hint= must be one of "broadcast"'),
     ],
 )
 def test_lookup_join_rejects_invalid_options_at_the_dsl_boundary(argument: str, message: str) -> None:
@@ -78,7 +78,7 @@ def test_lookup_join_rejects_invalid_options_at_the_dsl_boundary(argument: str, 
         _compile(AddProduct)
 
 
-@pytest.mark.parametrize("ties", ["error", None])
+@pytest.mark.parametrize("ties", ["panic", None])
 def test_join_dedupe_factory_rejects_invalid_tie_policy(ties: object) -> None:
     @transform
     class AddProduct(Transform):
@@ -94,7 +94,7 @@ def test_join_dedupe_factory_rejects_invalid_tie_policy(ties: object) -> None:
             )
             return Enriched(id=order.id, product_name=product.name)
 
-    with pytest.raises(TypeError, match=r"JoinDedupe.latest_by\(ties=\.\.\.\) requires a TiePolicy value"):
+    with pytest.raises(TypeError, match=r'JoinDedupe.latest_by\(\.\.\.\) ties= must be one of "error"'):
         _compile(AddProduct)
 
 
@@ -333,7 +333,7 @@ def test_inner_join_records_row_multiplying_operation() -> None:
         def add_product(self, order: Order, product: Product) -> Enriched:
             inner_join(
                 on=product.id == order.product_id,
-                strategy=JoinStrategy.SHUFFLE_HASH,
+                strategy="shuffle_hash",
             )
             return Enriched(id=order.id, product_name=product.name)
 
@@ -575,8 +575,8 @@ def test_deduped_lookup_join_records_policy_and_renders_deterministic_lookup() -
             lookup_join(
                 product,
                 on=product.id == order.product_id,
-                how=Join.LEFT,
-                dedupe=JoinDedupe.latest_by(product.name),
+                how="left",
+                dedupe=JoinDedupe.latest_by(product.name, ties="error"),
             )
             return Enriched(id=order.id, product_name=product.name)
 
@@ -710,7 +710,7 @@ def test_temporal_one_rejects_non_lookup_join_modes(how: Join) -> None:
         _compile(AddProduct)
 
     assert raised.value.diagnostic.code == "JOIN-E0601"
-    assert "temporal_one(...) supports Join.LEFT and Join.INNER" in raised.value.diagnostic.problem_text()
+    assert 'temporal_one(...) supports "left" and "inner"' in raised.value.diagnostic.problem_text()
 
 
 def test_as_of_one_records_backward_lookup_and_renders_ranked_selection() -> None:
@@ -826,7 +826,7 @@ def test_as_of_one_rejects_non_lookup_join_modes(how: Join) -> None:
         _compile(AddProduct)
 
     assert raised.value.diagnostic.code == "JOIN-E0601"
-    assert "as_of_one(...) supports Join.LEFT and Join.INNER" in raised.value.diagnostic.problem_text()
+    assert 'as_of_one(...) supports "left" and "inner"' in raised.value.diagnostic.problem_text()
 
 
 def test_exists_join_does_not_make_relation_fields_readable() -> None:

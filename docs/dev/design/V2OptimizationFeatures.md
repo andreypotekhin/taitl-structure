@@ -58,8 +58,8 @@ Extend join hints beyond broadcast.
 ```python
 lookup_join(
     on=customer.id == order.customer_id,
-    how=Join.LEFT,
-    strategy=JoinStrategy.BROADCAST,
+    how="left",
+    strategy="broadcast",
 )
 ```
 

@@ -221,8 +221,8 @@ Example:
 def add_customer(self, order: OrderRaw, customer: Customer) -> OrderWithCustomer:
     lookup_join(
         on=order.customer_id == customer.id,
-        how=Join.LEFT,
-        hint=JoinHint.BROADCAST,
+        how="left",
+        hint="broadcast",
     )
     return OrderWithCustomer.base(order)(customer_name=customer.name)
 ```

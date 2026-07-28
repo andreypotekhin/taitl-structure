@@ -113,7 +113,7 @@ class EnrichOrders(Transform):
     def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
         left_join(
             on=order.customer_id == customer.id,
-            hint=JoinHint.BROADCAST,
+            hint="broadcast",
         )
         return OrderWithCustomer.base(order)(
             customer_name=customer.name,
@@ -274,7 +274,7 @@ Joins are symbolic and typed.
 ```python
 left_join(
     on=order.customer_id == customer.id,
-    hint=JoinHint.BROADCAST,
+    hint="broadcast",
 )
 ```
 

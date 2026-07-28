@@ -87,8 +87,8 @@ class EnrichOrders(Transform):
     def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
         lookup_join(
             on=order.customer_id == customer.id,
-            how=Join.LEFT,
-            hint=JoinHint.BROADCAST,
+            how="left",
+            hint="broadcast",
         )
         return OrderWithCustomer.base(order)(
             customer_name=customer.name,
@@ -510,7 +510,7 @@ Rules:
 - `order_by` is required and defines which row survives within each partition.
 - `latest_by(...)` and `dedupe_latest_by(...)` order descending.
 - `earliest_by(...)` and `dedupe_earliest_by(...)` order ascending.
-- The current public tie policy is `TiePolicy.ERROR`; other policies are rejected until their behavior is specified.
+- The current public tie policy is `"error"`; other policies are rejected until their behavior is specified.
 - These helpers are batch-only for streaming compatibility until explicit streaming state and watermark semantics
   exist.
 
@@ -555,8 +555,8 @@ one unjoined relation, the call stays bare:
 def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
     lookup_join(
         on=order.customer_id == customer.id,
-        how=Join.LEFT,
-        hint=JoinHint.BROADCAST,
+        how="left",
+        hint="broadcast",
     )
     return OrderWithCustomer.base(order)(customer_name=customer.name)
 ```
@@ -566,8 +566,8 @@ Class input scopes may also be joined directly:
 ```python
 lookup_join(
     on=order.customer_id == self.customers.id,
-    how=Join.LEFT,
-    hint=JoinHint.BROADCAST,
+    how="left",
+    hint="broadcast",
 )
 return OrderWithCustomer.base(order)(customer_name=self.customers.name)
 ```
@@ -577,9 +577,9 @@ Documentation uses inferred bare joins as the default style.
 Public enum values required for v1:
 
 ```text
-Join.LEFT
-Join.INNER
-JoinHint.BROADCAST
+"left"
+"inner"
+"broadcast"
 ```
 
 Rules:
@@ -607,7 +607,7 @@ Rules:
 Documentation keeps the join bare and reads later fields from the joined relation proxy:
 
 ```python
-lookup_join(on=order.customer_id == customer.id, how=Join.LEFT)
+lookup_join(on=order.customer_id == customer.id, how="left")
 return OrderWithCustomer.base(order)(customer_name=customer.name)
 ```
 
@@ -1006,7 +1006,7 @@ The implementation is complete when tests prove:
 - Multiple `where(...)` calls combine with logical AND.
 - `where(...)` outside a compiled step method fails clearly.
 - `where(expr.is_not_null())` participates in nullability narrowing.
-- `lookup_join(..., how=Join.LEFT)` and `lookup_join(..., how=Join.INNER)` record join IR.
+- `lookup_join(..., how="left")` and `lookup_join(..., how="inner")` record join IR.
 - Unsupported join enum values fail or warn according to `JoinSemantics.md`.
 - `@raw` hooks run at their Transform class declaration position.
 - Adjacent hooks preserve source order.

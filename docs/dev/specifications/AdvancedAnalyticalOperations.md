@@ -99,8 +99,8 @@ Additional exact metrics:
 
 - `bool_and(predicate)`;
 - `bool_or(predicate)`;
-- `first_value(value, order_by=..., ties=TiePolicy.ERROR)`;
-- `last_value(value, order_by=..., ties=TiePolicy.ERROR)`.
+- `first_value(value, order_by=..., ties="error")`;
+- `last_value(value, order_by=..., ties="error")`.
 
 Additional statistical metrics:
 

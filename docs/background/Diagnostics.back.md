@@ -87,7 +87,7 @@ Correct the referenced catalog, normalize both sides to the same business key, o
 
 `REL-E0705` means a `select_first_qualified(...)` relation operation could not choose one deterministic candidate for
 each declared key under its configured policies. With `missing="error"`, every key in the candidate relation must have
-at least one eligible row. With `ties=TiePolicy.ERROR`, no key may have two eligible rows with the same priority value.
+at least one eligible row. With `ties="error"`, no key may have two eligible rows with the same priority value.
 
 Common causes:
 
