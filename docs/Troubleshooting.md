@@ -28,6 +28,14 @@ Fix: Either raise `plugin.pyspark.profile` in project configuration or rewrite t
      the
 configured runtime. See [Compatibility.md](Compatibility.md).
 
+### Problem (generated-code review): generated output is stale
+
+When: Running CI or reviewing a pull request after changing schemas, transforms, or Structure configuration.
+Error: `structure compile --fail-on-diff` reports generated file differences.
+Cause: Source and generated artifacts were not updated together.
+Fix: Run `structure compile`, review the generated transform, schema, docs, and traceability diffs, then commit the
+     source and generated output together. See [OperationalIntegration.md](OperationalIntegration.md).
+
 ### Problem (tools): schema generation CLI cannot start Spark
 
 When: Running `structure tools schemas generate --from-path ...` or `structure tools schemas generate

@@ -8,7 +8,7 @@
     {
       "name": "ticks",
       "ordinal": 0,
-      "schema": "SequenceTick"
+      "schema": "Tick"
     }
   ],
   "provenance": [
@@ -26,11 +26,6 @@
       "generated": "generated:examples.structure_generated.school.pyspark.transforms.series.EAsSeriesGenerated.run.step.0.approximate",
       "ir": "ir:EAsSeries.step.0.approximate",
       "source": "source:examples.school.transforms.series.EAsSeries.approximate"
-    },
-    {
-      "generated": "generated:examples.structure_generated.school.pyspark.transforms.series.EAsSeriesGenerated.run.step.0.approximate.select.series",
-      "ir": "ir:EAsSeries.step.0.approximate.project.series",
-      "source": "source:examples.school.transforms.series.EAsSeries.approximate.field.series"
     },
     {
       "generated": "generated:examples.structure_generated.school.pyspark.transforms.series.EAsSeriesGenerated.run.step.0.approximate.select.index",
@@ -54,16 +49,20 @@
     }
   ],
   "schema_constants": {
-    "FibonacciRow": {
-      "constant": "FIBONACCI_ROW_SCHEMA",
+    "FibonacciNumber": {
+      "constant": "FIBONACCI_NUMBER_SCHEMA",
       "module": "examples.structure_generated.school.pyspark.schemas.sequences"
     },
     "FibonacciState": {
       "constant": "FIBONACCI_STATE_SCHEMA",
       "module": "examples.structure_generated.school.pyspark.schemas.sequences"
     },
-    "SequenceTick": {
-      "constant": "SEQUENCE_TICK_SCHEMA",
+    "PrimeNumber": {
+      "constant": "PRIME_NUMBER_SCHEMA",
+      "module": "examples.structure_generated.school.pyspark.schemas.sequences"
+    },
+    "PrimeState": {
+      "constant": "PRIME_STATE_SCHEMA",
       "module": "examples.structure_generated.school.pyspark.schemas.sequences"
     },
     "SeriesApproximation": {
@@ -72,6 +71,10 @@
     },
     "SeriesState": {
       "constant": "SERIES_STATE_SCHEMA",
+      "module": "examples.structure_generated.school.pyspark.schemas.sequences"
+    },
+    "Tick": {
+      "constant": "TICK_SCHEMA",
       "module": "examples.structure_generated.school.pyspark.schemas.sequences"
     }
   },
@@ -91,7 +94,7 @@
       },
       {
         "detail": {
-          "input_schema": "SequenceTick",
+          "input_schema": "Tick",
           "output_schema": "SeriesApproximation"
         },
         "operation": "step",
@@ -100,17 +103,6 @@
         ],
         "step": "approximate",
         "target": "approximate"
-      },
-      {
-        "detail": {
-          "field": "series"
-        },
-        "operation": "project",
-        "sources": [
-          "ticks.series"
-        ],
-        "step": "approximate",
-        "target": "SeriesApproximation.series"
       },
       {
         "detail": {
@@ -163,7 +155,7 @@
     {
       "after_hooks": [],
       "before_hooks": [],
-      "input_alias": "sequence_tick",
+      "input_alias": "tick",
       "joins": [],
       "name": "approximate",
       "output_alias": "series_approximation",

@@ -660,7 +660,12 @@ Recommended direction:
 - Add examples showing when to model a lookup as `lookup_join(...)`, when to wait for v2 syntax, and when a hook is the
   honest escape hatch.
 
-## C28. Operational Integration Recipes Are Missing
+## +C28. Operational Integration Recipes Are Missing
+
+Resolved for v6 adoption by [OperationalIntegration.md](../../OperationalIntegration.md) and linked troubleshooting
+entries for generated imports, stale generated output, target mismatch, and Spark-capable schema tooling. Managed Spark
+runtime certification remains evidence-driven: release notes must record the exact runtime and command that passed
+rather than infer target support from local tests.
 
 The docs mention Airflow as a caller and Linux as the runtime target, but there are no concrete recipes for CI,
 Databricks, EMR, Glue, local development, dependency packaging, generated artifact review, or multi-environment
@@ -693,7 +698,13 @@ fields such as source location, transform, field, hook, join, generated path, se
 assert the code and high-signal structured fields, and registry validation must reject duplicate codes, malformed
 codes, missing documentation links, and invalid lifecycle transitions.
 
-## C30. Fixtures Exist, but Executable Specification Tests Are Missing
+## +C30. Fixtures Exist, but Executable Specification Tests Are Missing
+
+Resolved for the v6 release scope by
+[V6ExecutableSpecificationMatrix.md](../specifications/V6ExecutableSpecificationMatrix.md) and its matrix guard test.
+The matrix links each admitted v6 capability to executable specification, generated, online, traceability,
+compatibility, or live-test evidence as applicable. Broader historical specification coverage remains ordinary backlog
+work and is not a v6 release blocker.
 
 The repository has rich model source and generated fixtures under `res/testing/model`, and it now has executable coverage
 for backend capabilities under `tests/specifications/backend-capabilities`. Most specification sections still do not have
@@ -712,6 +723,12 @@ Recommended direction:
 - Keep model fixtures as inputs and expected outputs, not as a substitute for executable tests.
 
 ## C31. Licensing, Governance, and Packaging Signals Conflict
+
+Escalated to project-owner decision by
+[D07282601.Release-governance-publication-gate.md](decisions/D07282601.Release-governance-publication-gate.md).
+Implementation and internal release evidence may continue, but external publication and open-source claims remain
+blocked until the owner chooses a license model, distribution name, contribution policy, security contact, release
+process, support window, and package metadata language.
 
 Risk: adoption can be blocked before technical evaluation. Some package indexes, companies, and open-source users may
 not treat ethical-use restrictions as open-source-compatible. Naming differences can also make installation,
@@ -734,7 +751,12 @@ contract is documented in [SchemaDeclarationSyntax.md](../specifications/SchemaD
 [Schema.ref.md](../../reference/Schema.ref.md), with executable coverage in the field-alias and schema-generation user
 story tests.
 
-## C33. Transform Composition Needs Hook Ownership Rules
+## +C33. Transform Composition Needs Hook Ownership Rules
+
+Resolved as a design boundary by [ComposedHookOwnership.md](ComposedHookOwnership.md). Hook-free composition remains the
+only implemented composition surface. Hook-bearing stages require a later implementation plan and parity tests, but the
+ownership model is now explicit: hooks execute on instances of their declaring source stage, not on the composed
+wrapper, and `lane(...)` remains an internal boundary.
 
 The first `.to(...)` composition slice deliberately supports hook-free transform stages. That keeps composition focused
 on declared `input(...)` and `output(...)` contracts and avoids pretending that `lane(...)` is a public transform

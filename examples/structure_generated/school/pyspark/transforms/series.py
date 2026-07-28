@@ -5,10 +5,7 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.school.runtime.schema_assert import TransformResult, assert_schema, project_schema
-from examples.structure_generated.school.pyspark.schemas.sequences import (
-    SEQUENCE_TICK_SCHEMA,
-    SERIES_APPROXIMATION_SCHEMA,
-)
+from examples.structure_generated.school.pyspark.schemas.sequences import SERIES_APPROXIMATION_SCHEMA, TICK_SCHEMA
 
 
 class PiAsSeriesGenerated:
@@ -22,13 +19,13 @@ class PiAsSeriesGenerated:
         *,
         ticks: DataFrame,
     ) -> TransformResult:
-        assert_schema(ticks, SEQUENCE_TICK_SCHEMA, name="SequenceTick", mode="strict")
+        assert_schema(ticks, TICK_SCHEMA, name="Tick", mode="strict")
         _input_ticks = ticks
 
         # Step method: approximate
-        ticks = ticks.alias("sequence_tick")
+        ticks = ticks.alias("tick")
         ticks___scan_0_keyed = ticks
-        ticks___scan_0_keyed = ticks___scan_0_keyed.withColumn("ticks___scan_0_partition_0", F.col("series"))
+        ticks___scan_0_keyed = ticks___scan_0_keyed.withColumn("ticks___scan_0_partition_0", F.lit(1))
         ticks___scan_0_keyed = ticks___scan_0_keyed.withColumn("ticks___scan_0_order_0", F.col("index"))
         ticks___scan_0_guard_nulls = ticks___scan_0_keyed.where(F.col("ticks___scan_0_order_0").isNull()).select(
             F.lit(1).alias("__structure_scan_violation")
@@ -73,7 +70,7 @@ class PiAsSeriesGenerated:
                 F.collect_list(
                     F.struct(
                         F.col("ticks___scan_0_order_0").alias("ticks___scan_0_order_0"),
-                        F.struct(F.col("series").alias("series"), F.col("index").alias("index")).alias('__payload'),
+                        F.struct(F.col("index").alias("index")).alias('__payload'),
                     )
                 )
             ).alias("ticks___scan_0_items")
@@ -91,14 +88,7 @@ class PiAsSeriesGenerated:
                             T.StructType(
                                 [
                                     T.StructField(
-                                        '__payload',
-                                        T.StructType(
-                                            [
-                                                T.StructField("series", T.StringType(), False),
-                                                T.StructField("index", T.LongType(), False),
-                                            ]
-                                        ),
-                                        False,
+                                        '__payload', T.StructType([T.StructField("index", T.LongType(), False)]), False
                                     ),
                                     T.StructField(
                                         '__state',
@@ -161,13 +151,11 @@ class PiAsSeriesGenerated:
             )
         )
         ticks = ticks___scan_0_expanded.select(
-            F.col("ticks___scan_0_row.__payload.series").alias("series"),
             F.col("ticks___scan_0_row.__payload.index").alias("index"),
             F.col("ticks___scan_0_row.__state.term").alias("term"),
             F.col("ticks___scan_0_row.__state.total").alias("total"),
         )
         ticks = ticks.select(
-            F.col("series"),
             F.col("index"),
             F.col("term"),
             F.col("total").alias("value"),
@@ -190,13 +178,13 @@ class EAsSeriesGenerated:
         *,
         ticks: DataFrame,
     ) -> TransformResult:
-        assert_schema(ticks, SEQUENCE_TICK_SCHEMA, name="SequenceTick", mode="strict")
+        assert_schema(ticks, TICK_SCHEMA, name="Tick", mode="strict")
         _input_ticks = ticks
 
         # Step method: approximate
-        ticks = ticks.alias("sequence_tick")
+        ticks = ticks.alias("tick")
         ticks___scan_0_keyed = ticks
-        ticks___scan_0_keyed = ticks___scan_0_keyed.withColumn("ticks___scan_0_partition_0", F.col("series"))
+        ticks___scan_0_keyed = ticks___scan_0_keyed.withColumn("ticks___scan_0_partition_0", F.lit(1))
         ticks___scan_0_keyed = ticks___scan_0_keyed.withColumn("ticks___scan_0_order_0", F.col("index"))
         ticks___scan_0_guard_nulls = ticks___scan_0_keyed.where(F.col("ticks___scan_0_order_0").isNull()).select(
             F.lit(1).alias("__structure_scan_violation")
@@ -241,7 +229,7 @@ class EAsSeriesGenerated:
                 F.collect_list(
                     F.struct(
                         F.col("ticks___scan_0_order_0").alias("ticks___scan_0_order_0"),
-                        F.struct(F.col("series").alias("series"), F.col("index").alias("index")).alias('__payload'),
+                        F.struct(F.col("index").alias("index")).alias('__payload'),
                     )
                 )
             ).alias("ticks___scan_0_items")
@@ -259,14 +247,7 @@ class EAsSeriesGenerated:
                             T.StructType(
                                 [
                                     T.StructField(
-                                        '__payload',
-                                        T.StructType(
-                                            [
-                                                T.StructField("series", T.StringType(), False),
-                                                T.StructField("index", T.LongType(), False),
-                                            ]
-                                        ),
-                                        False,
+                                        '__payload', T.StructType([T.StructField("index", T.LongType(), False)]), False
                                     ),
                                     T.StructField(
                                         '__state',
@@ -320,13 +301,11 @@ class EAsSeriesGenerated:
             )
         )
         ticks = ticks___scan_0_expanded.select(
-            F.col("ticks___scan_0_row.__payload.series").alias("series"),
             F.col("ticks___scan_0_row.__payload.index").alias("index"),
             F.col("ticks___scan_0_row.__state.term").alias("term"),
             F.col("ticks___scan_0_row.__state.total").alias("total"),
         )
         ticks = ticks.select(
-            F.col("series"),
             F.col("index"),
             F.col("term"),
             F.col("total").alias("value"),
@@ -349,13 +328,13 @@ class Ln2AsSeriesGenerated:
         *,
         ticks: DataFrame,
     ) -> TransformResult:
-        assert_schema(ticks, SEQUENCE_TICK_SCHEMA, name="SequenceTick", mode="strict")
+        assert_schema(ticks, TICK_SCHEMA, name="Tick", mode="strict")
         _input_ticks = ticks
 
         # Step method: approximate
-        ticks = ticks.alias("sequence_tick")
+        ticks = ticks.alias("tick")
         ticks___scan_0_keyed = ticks
-        ticks___scan_0_keyed = ticks___scan_0_keyed.withColumn("ticks___scan_0_partition_0", F.col("series"))
+        ticks___scan_0_keyed = ticks___scan_0_keyed.withColumn("ticks___scan_0_partition_0", F.lit(1))
         ticks___scan_0_keyed = ticks___scan_0_keyed.withColumn("ticks___scan_0_order_0", F.col("index"))
         ticks___scan_0_guard_nulls = ticks___scan_0_keyed.where(F.col("ticks___scan_0_order_0").isNull()).select(
             F.lit(1).alias("__structure_scan_violation")
@@ -400,7 +379,7 @@ class Ln2AsSeriesGenerated:
                 F.collect_list(
                     F.struct(
                         F.col("ticks___scan_0_order_0").alias("ticks___scan_0_order_0"),
-                        F.struct(F.col("series").alias("series"), F.col("index").alias("index")).alias('__payload'),
+                        F.struct(F.col("index").alias("index")).alias('__payload'),
                     )
                 )
             ).alias("ticks___scan_0_items")
@@ -418,14 +397,7 @@ class Ln2AsSeriesGenerated:
                             T.StructType(
                                 [
                                     T.StructField(
-                                        '__payload',
-                                        T.StructType(
-                                            [
-                                                T.StructField("series", T.StringType(), False),
-                                                T.StructField("index", T.LongType(), False),
-                                            ]
-                                        ),
-                                        False,
+                                        '__payload', T.StructType([T.StructField("index", T.LongType(), False)]), False
                                     ),
                                     T.StructField(
                                         '__state',
@@ -488,13 +460,11 @@ class Ln2AsSeriesGenerated:
             )
         )
         ticks = ticks___scan_0_expanded.select(
-            F.col("ticks___scan_0_row.__payload.series").alias("series"),
             F.col("ticks___scan_0_row.__payload.index").alias("index"),
             F.col("ticks___scan_0_row.__state.term").alias("term"),
             F.col("ticks___scan_0_row.__state.total").alias("total"),
         )
         ticks = ticks.select(
-            F.col("series"),
             F.col("index"),
             F.col("term"),
             F.col("total").alias("value"),

@@ -1139,7 +1139,6 @@ def _render_school_pyspark_example() -> dict[str, str]:
         FibonacciState,
         PrimeNumber,
         PrimeState,
-        SequenceTick,
         SeriesApproximation,
         SeriesState,
         Tick,

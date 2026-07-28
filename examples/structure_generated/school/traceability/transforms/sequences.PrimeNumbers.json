@@ -3,7 +3,7 @@
     "name": "pyspark",
     "target": ">=3.5,<4.1"
   },
-  "generated_transform_class": "FibonacciGenerated",
+  "generated_transform_class": "PrimeNumbersGenerated",
   "inputs": [
     {
       "name": "ticks",
@@ -13,34 +13,34 @@
   ],
   "provenance": [
     {
-      "generated": "generated:examples.structure_generated.school.pyspark.transforms.sequences.FibonacciGenerated",
-      "ir": "ir:Fibonacci",
-      "source": "source:examples.school.transforms.sequences.Fibonacci"
+      "generated": "generated:examples.structure_generated.school.pyspark.transforms.sequences.PrimeNumbersGenerated",
+      "ir": "ir:PrimeNumbers",
+      "source": "source:examples.school.transforms.sequences.PrimeNumbers"
     },
     {
-      "generated": "generated:examples.structure_generated.school.pyspark.transforms.sequences.FibonacciGenerated.run.input.ticks",
-      "ir": "ir:Fibonacci.input.0.ticks",
-      "source": "source:examples.school.transforms.sequences.Fibonacci.input.ticks"
+      "generated": "generated:examples.structure_generated.school.pyspark.transforms.sequences.PrimeNumbersGenerated.run.input.ticks",
+      "ir": "ir:PrimeNumbers.input.0.ticks",
+      "source": "source:examples.school.transforms.sequences.PrimeNumbers.input.ticks"
     },
     {
-      "generated": "generated:examples.structure_generated.school.pyspark.transforms.sequences.FibonacciGenerated.run.step.0.calculate",
-      "ir": "ir:Fibonacci.step.0.calculate",
-      "source": "source:examples.school.transforms.sequences.Fibonacci.calculate"
+      "generated": "generated:examples.structure_generated.school.pyspark.transforms.sequences.PrimeNumbersGenerated.run.step.0.calculate",
+      "ir": "ir:PrimeNumbers.step.0.calculate",
+      "source": "source:examples.school.transforms.sequences.PrimeNumbers.calculate"
     },
     {
-      "generated": "generated:examples.structure_generated.school.pyspark.transforms.sequences.FibonacciGenerated.run.step.0.calculate.select.index",
-      "ir": "ir:Fibonacci.step.0.calculate.project.index",
-      "source": "source:examples.school.transforms.sequences.Fibonacci.calculate.field.index"
+      "generated": "generated:examples.structure_generated.school.pyspark.transforms.sequences.PrimeNumbersGenerated.run.step.0.calculate.select.index",
+      "ir": "ir:PrimeNumbers.step.0.calculate.project.index",
+      "source": "source:examples.school.transforms.sequences.PrimeNumbers.calculate.field.index"
     },
     {
-      "generated": "generated:examples.structure_generated.school.pyspark.transforms.sequences.FibonacciGenerated.run.step.0.calculate.select.value",
-      "ir": "ir:Fibonacci.step.0.calculate.project.value",
-      "source": "source:examples.school.transforms.sequences.Fibonacci.calculate.field.value"
+      "generated": "generated:examples.structure_generated.school.pyspark.transforms.sequences.PrimeNumbersGenerated.run.step.0.calculate.select.prime",
+      "ir": "ir:PrimeNumbers.step.0.calculate.project.prime",
+      "source": "source:examples.school.transforms.sequences.PrimeNumbers.calculate.field.prime"
     },
     {
-      "generated": "generated:examples.structure_generated.school.pyspark.transforms.sequences.FibonacciGenerated.run.output.0.result.validation.final",
-      "ir": "ir:Fibonacci.output.0.result.validation.final",
-      "source": "source:examples.school.transforms.sequences.Fibonacci.output.result"
+      "generated": "generated:examples.structure_generated.school.pyspark.transforms.sequences.PrimeNumbersGenerated.run.output.0.result.validation.final",
+      "ir": "ir:PrimeNumbers.output.0.result.validation.final",
+      "source": "source:examples.school.transforms.sequences.PrimeNumbers.output.result"
     }
   ],
   "schema_constants": {
@@ -73,7 +73,7 @@
       "module": "examples.structure_generated.school.pyspark.schemas.sequences"
     }
   },
-  "source_transform": "examples.school.transforms.sequences.Fibonacci",
+  "source_transform": "examples.school.transforms.sequences.PrimeNumbers",
   "static_dataflow": {
     "dependencies": [
       {
@@ -85,12 +85,12 @@
           "ticks"
         ],
         "step": null,
-        "target": "Fibonacci"
+        "target": "PrimeNumbers"
       },
       {
         "detail": {
           "input_schema": "Tick",
-          "output_schema": "FibonacciNumber"
+          "output_schema": "PrimeNumber"
         },
         "operation": "step",
         "sources": [
@@ -108,18 +108,18 @@
           "ticks.index"
         ],
         "step": "calculate",
-        "target": "FibonacciNumber.index"
+        "target": "PrimeNumber.index"
       },
       {
         "detail": {
-          "field": "value"
+          "field": "prime"
         },
         "operation": "project",
         "sources": [
-          "__scan.previous"
+          "__scan.current"
         ],
         "step": "calculate",
-        "target": "FibonacciNumber.value"
+        "target": "PrimeNumber.prime"
       },
       {
         "detail": {
@@ -127,10 +127,10 @@
         },
         "operation": "validate_schema",
         "sources": [
-          "FibonacciNumber"
+          "PrimeNumber"
         ],
         "step": null,
-        "target": "FibonacciNumber.validation.final"
+        "target": "PrimeNumber.validation.final"
       }
     ],
     "opaque_boundaries": []
@@ -142,14 +142,14 @@
       "input_alias": "tick",
       "joins": [],
       "name": "calculate",
-      "output_alias": "fibonacci_number",
-      "output_schema": "FibonacciNumber",
+      "output_alias": "prime_number",
+      "output_schema": "PrimeNumber",
       "results": [
         {
           "after_hooks": [],
           "frame": "ticks",
           "lane": "ticks",
-          "schema": "FibonacciNumber"
+          "schema": "PrimeNumber"
         }
       ],
       "validation": []
@@ -161,7 +161,7 @@
       {
         "mode": "strict",
         "name": "result",
-        "schema": "FibonacciNumber"
+        "schema": "PrimeNumber"
       }
     ]
   }

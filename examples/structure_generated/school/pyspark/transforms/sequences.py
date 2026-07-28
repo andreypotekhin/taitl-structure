@@ -5,7 +5,8 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.school.runtime.schema_assert import TransformResult, assert_schema, project_schema
-from examples.structure_generated.school.pyspark.schemas.sequences import FIBONACCI_ROW_SCHEMA, SEQUENCE_TICK_SCHEMA
+from examples.structure_generated.school.pyspark.schemas.sequences import FIBONACCI_NUMBER_SCHEMA, TICK_SCHEMA
+from examples.structure_generated.school.pyspark.schemas.sequences import PRIME_NUMBER_SCHEMA, TICK_SCHEMA
 
 
 class FibonacciGenerated:
@@ -19,13 +20,13 @@ class FibonacciGenerated:
         *,
         ticks: DataFrame,
     ) -> TransformResult:
-        assert_schema(ticks, SEQUENCE_TICK_SCHEMA, name="SequenceTick", mode="strict")
+        assert_schema(ticks, TICK_SCHEMA, name="Tick", mode="strict")
         _input_ticks = ticks
 
         # Step method: calculate
-        ticks = ticks.alias("sequence_tick")
+        ticks = ticks.alias("tick")
         ticks___scan_0_keyed = ticks
-        ticks___scan_0_keyed = ticks___scan_0_keyed.withColumn("ticks___scan_0_partition_0", F.col("series"))
+        ticks___scan_0_keyed = ticks___scan_0_keyed.withColumn("ticks___scan_0_partition_0", F.lit(1))
         ticks___scan_0_keyed = ticks___scan_0_keyed.withColumn("ticks___scan_0_order_0", F.col("index"))
         ticks___scan_0_guard_nulls = ticks___scan_0_keyed.where(F.col("ticks___scan_0_order_0").isNull()).select(
             F.lit(1).alias("__structure_scan_violation")
@@ -70,7 +71,7 @@ class FibonacciGenerated:
                 F.collect_list(
                     F.struct(
                         F.col("ticks___scan_0_order_0").alias("ticks___scan_0_order_0"),
-                        F.struct(F.col("series").alias("series"), F.col("index").alias("index")).alias('__payload'),
+                        F.struct(F.col("index").alias("index")).alias('__payload'),
                     )
                 )
             ).alias("ticks___scan_0_items")
@@ -88,14 +89,7 @@ class FibonacciGenerated:
                             T.StructType(
                                 [
                                     T.StructField(
-                                        '__payload',
-                                        T.StructType(
-                                            [
-                                                T.StructField("series", T.StringType(), False),
-                                                T.StructField("index", T.LongType(), False),
-                                            ]
-                                        ),
-                                        False,
+                                        '__payload', T.StructType([T.StructField("index", T.LongType(), False)]), False
                                     ),
                                     T.StructField(
                                         '__state',
@@ -138,18 +132,192 @@ class FibonacciGenerated:
             )
         )
         ticks = ticks___scan_0_expanded.select(
-            F.col("ticks___scan_0_row.__payload.series").alias("series"),
             F.col("ticks___scan_0_row.__payload.index").alias("index"),
             F.col("ticks___scan_0_row.__state.previous").alias("previous"),
             F.col("ticks___scan_0_row.__state.current").alias("current"),
         )
         ticks = ticks.select(
-            F.col("series"),
             F.col("index"),
             F.col("previous").alias("value"),
         )
 
         # Step method: result
-        result = ticks.alias("fibonacci_row")
-        assert_schema(result, FIBONACCI_ROW_SCHEMA, name="FibonacciRow", mode="strict")
-        return TransformResult({"result": result}, single=True, schema={"result": FIBONACCI_ROW_SCHEMA})
+        result = ticks.alias("fibonacci_number")
+        assert_schema(result, FIBONACCI_NUMBER_SCHEMA, name="FibonacciNumber", mode="strict")
+        return TransformResult({"result": result}, single=True, schema={"result": FIBONACCI_NUMBER_SCHEMA})
+
+
+class PrimeNumbersGenerated:
+
+    def __init__(self, *, spark: SparkSession, ctx=None):
+        self.spark = spark
+        self.ctx = ctx
+
+    def run(
+        self,
+        *,
+        ticks: DataFrame,
+    ) -> TransformResult:
+        assert_schema(ticks, TICK_SCHEMA, name="Tick", mode="strict")
+        _input_ticks = ticks
+
+        # Step method: calculate
+        ticks = ticks.alias("tick")
+        ticks___scan_0_keyed = ticks
+        ticks___scan_0_keyed = ticks___scan_0_keyed.withColumn("ticks___scan_0_partition_0", F.lit(1))
+        ticks___scan_0_keyed = ticks___scan_0_keyed.withColumn("ticks___scan_0_order_0", F.col("index"))
+        ticks___scan_0_guard_nulls = ticks___scan_0_keyed.where(F.col("ticks___scan_0_order_0").isNull()).select(
+            F.lit(1).alias("__structure_scan_violation")
+        )
+        ticks___scan_0_guard_duplicates = ticks___scan_0_keyed.groupBy(
+            "ticks___scan_0_partition_0", "ticks___scan_0_order_0"
+        ).agg(F.count(F.lit(1)).alias("__structure_scan_count"))
+        ticks___scan_0_guard_duplicates = ticks___scan_0_guard_duplicates.where(
+            F.col("__structure_scan_count") > F.lit(1)
+        )
+        ticks___scan_0_guard_duplicates = ticks___scan_0_guard_duplicates.select(
+            F.lit(1).alias("__structure_scan_violation")
+        )
+        ticks___scan_0_guard_overruns = ticks___scan_0_keyed.groupBy("ticks___scan_0_partition_0").agg(
+            F.count(F.lit(1)).alias("__structure_scan_count")
+        )
+        ticks___scan_0_guard_overruns = ticks___scan_0_guard_overruns.where(
+            F.col("__structure_scan_count") > F.lit(10000)
+        )
+        ticks___scan_0_guard_overruns = ticks___scan_0_guard_overruns.select(
+            F.lit(1).alias("__structure_scan_violation")
+        )
+        ticks___scan_0_guard_violations = ticks___scan_0_guard_nulls.unionByName(
+            ticks___scan_0_guard_duplicates,
+            allowMissingColumns=False,
+        ).unionByName(ticks___scan_0_guard_overruns, allowMissingColumns=False)
+        ticks___scan_0_guard = ticks___scan_0_guard_violations.agg(F.count(F.lit(1)).alias("__structure_scan_count"))
+        ticks___scan_0_guard = ticks___scan_0_guard.select(
+            F.assert_true(
+                F.col("__structure_scan_count") == F.lit(0),
+                (
+                    "SCAN-E0801: scan(...) found null order keys, duplicate order keys, or a partition above"
+                    "max_rows; see docs/dev/specifications/OrderedTimelineScan.md"
+                ),
+            ).alias("__structure_scan_guard")
+        )
+        ticks___scan_0_keyed = ticks___scan_0_guard.crossJoin(ticks___scan_0_keyed)
+        ticks___scan_0_grouped = ticks___scan_0_keyed.groupBy(
+            "ticks___scan_0_partition_0", "__structure_scan_guard"
+        ).agg(
+            F.sort_array(
+                F.collect_list(
+                    F.struct(
+                        F.col("ticks___scan_0_order_0").alias("ticks___scan_0_order_0"),
+                        F.struct(F.col("index").alias("index")).alias('__payload'),
+                    )
+                )
+            ).alias("ticks___scan_0_items")
+        )
+        ticks___scan_0_folded = ticks___scan_0_grouped.select(
+            F.aggregate(
+                F.col("ticks___scan_0_items"),
+                F.struct(
+                    F.struct(
+                        F.array(F.lit(2)).cast(T.ArrayType(T.IntegerType(), containsNull=False)).alias("primes"),
+                        F.lit(2).cast(T.IntegerType()).alias("current"),
+                    ).alias('__state'),
+                    F.array()
+                    .cast(
+                        T.ArrayType(
+                            T.StructType(
+                                [
+                                    T.StructField(
+                                        '__payload', T.StructType([T.StructField("index", T.LongType(), False)]), False
+                                    ),
+                                    T.StructField(
+                                        '__state',
+                                        T.StructType(
+                                            [
+                                                T.StructField(
+                                                    "primes", T.ArrayType(T.IntegerType(), containsNull=False), False
+                                                ),
+                                                T.StructField("current", T.IntegerType(), False),
+                                            ]
+                                        ),
+                                        False,
+                                    ),
+                                ]
+                            ),
+                            containsNull=False,
+                        )
+                    )
+                    .alias('__rows'),
+                ),
+                lambda acc, item: F.struct(
+                    F.struct(
+                        F.array_append(
+                            acc.getField('__state').getField('primes'),
+                            F.coalesce(
+                                F.element_at(
+                                    F.filter(
+                                        F.sequence(
+                                            (acc.getField('__state').getField('current') + F.lit(1)),
+                                            (acc.getField('__state').getField('current') * F.lit(2)),
+                                        ),
+                                        lambda item: F.forall(
+                                            acc.getField('__state').getField('primes'),
+                                            lambda prime: ((item % prime) != F.lit(0)),
+                                        ),
+                                    ),
+                                    F.lit(1),
+                                ),
+                                acc.getField('__state').getField('current'),
+                            ),
+                        )
+                        .cast(T.ArrayType(T.IntegerType(), containsNull=False))
+                        .alias("primes"),
+                        F.coalesce(
+                            F.element_at(
+                                F.filter(
+                                    F.sequence(
+                                        (acc.getField('__state').getField('current') + F.lit(1)),
+                                        (acc.getField('__state').getField('current') * F.lit(2)),
+                                    ),
+                                    lambda item: F.forall(
+                                        acc.getField('__state').getField('primes'),
+                                        lambda prime: ((item % prime) != F.lit(0)),
+                                    ),
+                                ),
+                                F.lit(1),
+                            ),
+                            acc.getField('__state').getField('current'),
+                        )
+                        .cast(T.IntegerType())
+                        .alias("current"),
+                    ).alias('__state'),
+                    F.concat(
+                        acc.getField('__rows'),
+                        F.array(
+                            F.struct(
+                                item.getField('__payload').alias('__payload'), acc.getField('__state').alias('__state')
+                            )
+                        ),
+                    ).alias('__rows'),
+                ),
+            ).alias("ticks___scan_0_scan")
+        )
+        ticks___scan_0_expanded = ticks___scan_0_folded.select(
+            F.posexplode(F.col("ticks___scan_0_scan").getField('__rows')).alias(
+                "ticks___scan_0_pos", "ticks___scan_0_row"
+            )
+        )
+        ticks = ticks___scan_0_expanded.select(
+            F.col("ticks___scan_0_row.__payload.index").alias("index"),
+            F.col("ticks___scan_0_row.__state.primes").alias("primes"),
+            F.col("ticks___scan_0_row.__state.current").alias("current"),
+        )
+        ticks = ticks.select(
+            F.col("index"),
+            F.col("current").alias("prime"),
+        )
+
+        # Step method: result
+        result = ticks.alias("prime_number")
+        assert_schema(result, PRIME_NUMBER_SCHEMA, name="PrimeNumber", mode="strict")
+        return TransformResult({"result": result}, single=True, schema={"result": PRIME_NUMBER_SCHEMA})

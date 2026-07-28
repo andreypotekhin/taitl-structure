@@ -10,7 +10,7 @@ data sources, stream lifecycle, checkpointing, and the choice to persist or disp
 | Matrix product | `MultiplyMatrices` | Matrix cells | Batch join and grouped sum. |
 | Matrix-vector product | `MultiplyMatrixVector` | Vector cells | Batch join and grouped sum. |
 | Matrix inversion | `InvertMatrices` | Inverse matrix cells | Explicit, small-matrix driver-side batch hook. |
-| Sequences | `Fibonacci` | Fibonacci value per ordered row | Batch PySpark recurrence with `scan(...)`. |
+| Sequences | `Fibonacci`, `PrimeNumbers` | One number per ordered row | Batch PySpark recurrence with `scan(...)`. |
 | Series | `PiAsSeries`, `EAsSeries`, `Ln2AsSeries` | Partial sums | Batch PySpark recurrence for finite numerical approximations. |
 
 ## Scalar Algebra
@@ -91,17 +91,18 @@ distributed pivot algorithm, which is outside of this example.
 
 ## Sequences
 
-`Fibonacci` demonstrates PySpark-plugin `scan(...)`. Each `series` partition starts from the same state, rows are ordered
-by `index`, and the transform emits the state before the transition for that row.
+`Fibonacci` and `PrimeNumbers` demonstrate PySpark-plugin `scan(...)`. Rows are ordered by `index`, and each transform
+emits the state before the transition for that row.
 
 ```python
-from examples.school.transforms.sequences import Fibonacci
+from examples.school.transforms.sequences import Fibonacci, PrimeNumbers
 
-terms = Fibonacci(ticks=ticks).run(session).result
-terms.orderBy("series", "index")
+fibonacci = Fibonacci(ticks=ticks).run(session).result.orderBy("index")
+primes = PrimeNumbers(ticks=ticks).run(session).result.orderBy("index")
 ```
 
-For indices `0..4`, each partition emits `0, 1, 1, 2, 3`.
+For indices `0..4`, `Fibonacci` emits `0, 1, 1, 2, 3`.
+For indices `0..9`, `PrimeNumbers` emits `2, 3, 5, 7, 11, 13, 17, 19, 23, 29`.
 
 ## Series
 

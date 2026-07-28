@@ -48,7 +48,13 @@ the release. Maintainers have explicit evidence rather than inferred completion.
 
 ## Progress
 
-- [ ] Run and record release evidence.
-- [ ] Complete Challenge C27--C34 disposition.
-- [ ] Publish adoption and troubleshooting documentation.
+- [x] Run and record release evidence.
+- [x] Complete Challenge C27--C34 disposition.
+- [x] Publish adoption and troubleshooting documentation.
 - [ ] Prepare v6 release handoff.
+
+## Evidence
+
+- 2026-07-28 local `make build`: lint passed, mypy passed, pytest passed with 1,313 passed and 40 skipped, rigidity
+  subset passed with 34 passed and 6 skipped, and source/wheel distributions built. Live PySpark lanes were skipped in
+  this workspace and are not claimed as live target passes.

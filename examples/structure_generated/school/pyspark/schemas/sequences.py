@@ -4,8 +4,7 @@
 from pyspark.sql import types as T
 
 
-SEQUENCE_TICK_SCHEMA = T.StructType([
-    T.StructField("series", T.StringType(), False),
+TICK_SCHEMA = T.StructType([
     T.StructField("index", T.LongType(), False),
 ])
 
@@ -14,10 +13,19 @@ FIBONACCI_STATE_SCHEMA = T.StructType([
     T.StructField("current", T.LongType(), False),
 ])
 
-FIBONACCI_ROW_SCHEMA = T.StructType([
-    T.StructField("series", T.StringType(), False),
+FIBONACCI_NUMBER_SCHEMA = T.StructType([
     T.StructField("index", T.LongType(), False),
     T.StructField("value", T.LongType(), False),
+])
+
+PRIME_STATE_SCHEMA = T.StructType([
+    T.StructField("primes", T.ArrayType(T.IntegerType(), containsNull=False), False),
+    T.StructField("current", T.IntegerType(), False),
+])
+
+PRIME_NUMBER_SCHEMA = T.StructType([
+    T.StructField("index", T.LongType(), False),
+    T.StructField("prime", T.IntegerType(), False),
 ])
 
 SERIES_STATE_SCHEMA = T.StructType([
@@ -26,7 +34,6 @@ SERIES_STATE_SCHEMA = T.StructType([
 ])
 
 SERIES_APPROXIMATION_SCHEMA = T.StructType([
-    T.StructField("series", T.StringType(), False),
     T.StructField("index", T.LongType(), False),
     T.StructField("term", T.DoubleType(), False),
     T.StructField("value", T.DoubleType(), False),
