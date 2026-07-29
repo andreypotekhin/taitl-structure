@@ -26,7 +26,7 @@ class EvaluateDocumentRankingQuality(Super):
         return EvaluationQuery(
             window=batch.window,
             params=EvaluationParams(queryset=params.queryset, labels=params.labels, band_id=params.band_id),
-            experiment_id="",
+            experiment_id=None,
             band_id=None,
             search_query_id=query.id,
         )

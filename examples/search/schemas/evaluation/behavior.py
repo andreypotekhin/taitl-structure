@@ -10,7 +10,7 @@ class DocumentSearchRequestBehavior(Schema):
 
     window = struct(TimeWindow, nullable=False)
     params = struct(EvaluationParams, nullable=True)
-    experiment_id = string(nullable=False)
+    experiment_id = string(nullable=True)
     band_id = string(nullable=True)
     search_request_id = string(nullable=False)
     ranking_version = string(nullable=False)
@@ -30,7 +30,7 @@ class DailyDocumentSearchBehavior(Schema):
 
     window = struct(TimeWindow, nullable=False)
     params = struct(EvaluationParams, nullable=True)
-    experiment_id = string(nullable=False)
+    experiment_id = string(nullable=True)
     band_id = string(nullable=True)
     ranking_version = string(nullable=False)
     request_count = long(nullable=False)
@@ -51,7 +51,7 @@ class DailyDocumentSearchBehavior(Schema):
 class BehaviorRequest(Schema):
     window = struct(TimeWindow, nullable=False)
     params = struct(EvaluationParams, nullable=True)
-    experiment_id = string(nullable=False)
+    experiment_id = string(nullable=True)
     band_id = string(nullable=True)
     search_request_id = string(nullable=False)
     ranking_version = string(nullable=False)
@@ -72,7 +72,7 @@ class BehaviorImpression(BehaviorRequest):
 class BehaviorExposure(Schema):
     window = struct(TimeWindow, nullable=False)
     params = struct(EvaluationParams, nullable=True)
-    experiment_id = string(nullable=False)
+    experiment_id = string(nullable=True)
     band_id = string(nullable=True)
     ranking_version = string(nullable=False)
     ips_impression_weight = double(nullable=False)

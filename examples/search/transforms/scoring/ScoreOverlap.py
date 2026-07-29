@@ -1,22 +1,24 @@
 """Overlap scoring from reusable text-index artifacts."""
 
-from examples.search.schemas.scoring.overlap import (
-    DocumentOverlapMatch,
-    DocumentOverlapScore,
-    ParagraphOverlapMatch,
-    ParagraphOverlapScore,
-    SectionOverlapMatch,
-    SectionOverlapScore,
-    SentenceOverlapMatch,
-    SentenceOverlapScore,
-)
-from examples.search.schemas.search import (
+from examples.search.schemas.indexing.lexical.index import (
     DocumentIndexTerm,
     ParagraphIndexTerm,
-    QueryTerm,
-    QueryTermCount,
     SectionIndexTerm,
     SentenceIndexTerm,
+)
+from examples.search.schemas.scoring.intermediate import (
+    DocumentOverlapMatch,
+    ParagraphOverlapMatch,
+    QueryTerm,
+    QueryTermCount,
+    SectionOverlapMatch,
+    SentenceOverlapMatch,
+)
+from examples.search.schemas.scoring.overlap import (
+    DocumentOverlapScore,
+    ParagraphOverlapScore,
+    SectionOverlapScore,
+    SentenceOverlapScore,
 )
 from examples.search.transforms.scoring.ScoreBase import ScoreBase
 from structure import lane, output, step

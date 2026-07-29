@@ -2,7 +2,7 @@
 
 # ParagraphIndexTarget
 
-Module: `examples.search.schemas.search`
+Module: `examples.search.schemas.indexing.lexical.index`
 
 | Field | Column | Type | Nullable |
 | --- | --- | --- | --- |

@@ -84,7 +84,7 @@ class CreateQueryLabels(Transform):
             ).otherwise(functions.lit(0)),
         )
         return matches.groupBy("pair.query_id", "pair.content", "pair.language", "pair.intent_id", "pair.name").agg(
-            functions.max("value").cast("long").alias("value")
+            functions.coalesce(functions.max("value"), functions.lit(0)).cast("long").alias("value")
         )
 
     @step(input=query_intents, output=entries)

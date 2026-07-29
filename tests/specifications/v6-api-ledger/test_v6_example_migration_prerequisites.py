@@ -206,11 +206,11 @@ def test_search_index_build_is_typed_and_has_no_opaque_hook_boundary() -> None:
 
     assert traceability.opaque_boundaries == ()
     for grain in ("document", "section", "paragraph", "sentence"):
-        count_terms = _step(plan, f"count_{grain}_terms")
-        summarize_targets = _step(plan, f"summarize_{grain}s")
-        count_frequencies = _step(plan, f"count_{grain}_frequencies")
-        build_terms = _step(plan, f"build_{grain}_terms")
-        summarize_index = _step(plan, f"summarize_{grain}_index")
+        count_terms = _step(plan, f"lexical.count_{grain}_terms")
+        summarize_targets = _step(plan, f"lexical.summarize_{grain}s")
+        count_frequencies = _step(plan, f"lexical.count_{grain}_frequencies")
+        build_terms = _step(plan, f"lexical.build_{grain}_terms")
+        summarize_index = _step(plan, f"lexical.summarize_{grain}_index")
 
         assert count_terms.aggregate is not None
         assert count_terms.aggregate.grouping == "group_by"
@@ -282,22 +282,22 @@ def test_search_document_reranking_is_typed_and_has_no_opaque_hook_boundary() ->
     )
 
     assert traceability.opaque_boundaries == ()
-    assert [operation.kind for operation in _step(plan, "select_fallback_options").operations] == [
+    assert [operation.kind for operation in _step(plan, "reranked.select_fallback_options").operations] == [
         "filter",
         "filter",
         "join",
         "join",
     ]
-    assert [operation.kind for operation in _step(plan, "merge_feedback_options").operations] == ["union_all"]
-    assert [operation.kind for operation in _step(plan, "select_query_feedback").operations] == [
+    assert [operation.kind for operation in _step(plan, "reranked.merge_feedback_options").operations] == ["union_all"]
+    assert [operation.kind for operation in _step(plan, "reranked.select_query_feedback").operations] == [
         "join",
         "select_first_qualified",
     ]
-    assert [operation.kind for operation in _step(plan, "select_popularity_feedback").operations] == [
+    assert [operation.kind for operation in _step(plan, "reranked.select_popularity_feedback").operations] == [
         "join",
         "select_first_qualified",
     ]
-    assert [operation.kind for operation in _step(plan, "score_candidates").operations] == [
+    assert [operation.kind for operation in _step(plan, "reranked.score_candidates").operations] == [
         "filter",
         "join",
         "join",

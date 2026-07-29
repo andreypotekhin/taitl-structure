@@ -32,7 +32,10 @@ class RenderPySparkProject:
         generated_code_options: tuple[str, ...] = (),
         generated_code_hard_wrap: int = 120,
     ) -> dict[str, str]:
-        schema_modules = self._schema_modules(source_schema_modules, generated_package=generated_package)
+        schema_source_modules = self._schema_source_modules(
+            source_schema_modules, generated_package=generated_package
+        )
+        schema_modules = self._schema_modules(schema_source_modules, source_schema_modules)
         runtime_module = f"{generated_package}.runtime.schema_assert"
         transform_module = self._transform_module(source_transform, generated_package=generated_package)
 
@@ -45,7 +48,7 @@ class RenderPySparkProject:
         )
 
         for source_module in sorted(source_schema_modules):
-            module = self._schema_module(source_module, generated_package=generated_package)
+            module = schema_source_modules[source_module]
             schemas = source_schema_modules[source_module]
             files[self._module_path(module)] = self._header(source_module) + self._schema.module()(
                 schemas,
@@ -83,7 +86,10 @@ class RenderPySparkProject:
         generated_code_options: tuple[str, ...] = (),
         generated_code_hard_wrap: int = 120,
     ) -> dict[str, str]:
-        schema_modules = self._schema_modules(source_schema_modules, generated_package=generated_package)
+        schema_source_modules = self._schema_source_modules(
+            source_schema_modules, generated_package=generated_package
+        )
+        schema_modules = self._schema_modules(schema_source_modules, source_schema_modules)
         runtime_module = f"{generated_package}.runtime.schema_assert"
         transform_module = self._source_transform_module(source_module, generated_package=generated_package)
 
@@ -96,7 +102,7 @@ class RenderPySparkProject:
         )
 
         for schema_source_module in sorted(source_schema_modules):
-            module = self._schema_module(schema_source_module, generated_package=generated_package)
+            module = schema_source_modules[schema_source_module]
             schemas = source_schema_modules[schema_source_module]
             files[self._module_path(module)] = self._header(schema_source_module) + self._schema.module()(
                 schemas,
@@ -125,20 +131,44 @@ class RenderPySparkProject:
 
     def _schema_modules(
         self,
+        generated_modules: Mapping[str, str],
         source_schema_modules: Mapping[str, Sequence[type[Schema]]],
-        *,
-        generated_package: str,
     ) -> dict[type[Schema], str]:
         modules: dict[type[Schema], str] = {}
         for source_module, schemas in source_schema_modules.items():
-            module = self._schema_module(source_module, generated_package=generated_package)
+            module = generated_modules[source_module]
             for schema in schemas:
                 modules[schema] = module
         return modules
 
-    def _schema_module(self, source_module: str, *, generated_package: str) -> str:
-        name = source_module.rsplit(".", 1)[1]
-        return f"{generated_package}.pyspark.schemas.{name}"
+    def _schema_source_modules(
+        self,
+        source_schema_modules: Mapping[str, Sequence[type[Schema]]],
+        *,
+        generated_package: str,
+    ) -> dict[str, str]:
+        names = self._schema_module_names(tuple(source_schema_modules))
+        return {
+            source_module: f"{generated_package}.pyspark.schemas.{names[source_module]}"
+            for source_module in source_schema_modules
+        }
+
+    def _schema_module_names(self, source_modules: tuple[str, ...]) -> dict[str, str]:
+        names = {module: module.rsplit(".", 1)[1] for module in source_modules}
+        while True:
+            duplicates = {
+                name
+                for name in names.values()
+                if sum(candidate == name for candidate in names.values()) > 1
+            }
+            if not duplicates:
+                return names
+            for module, name in tuple(names.items()):
+                if name not in duplicates:
+                    continue
+                parts = module.split(".")
+                width = min(name.count("_") + 2, len(parts))
+                names[module] = "_".join(parts[-width:])
 
     def _transform_module(self, source_transform: str, *, generated_package: str) -> str:
         name = source_transform.rsplit(".", 2)[1]

@@ -157,7 +157,7 @@ def test_explode_struct_explain_names_row_expansion_and_streaming_status() -> No
     text = render_explain_report(ExpandTerms)
 
     assert "operations: explode_struct(row_multiplying scope=term schema=ExplodedTerm)" in text
-    assert "STREAM-E0801: batch_only in expand (explode_struct term)" in text
+    assert "STREAM-E0801: batch_only in expand (explode_struct term)" not in text
 
 
 def test_explode_struct_records_traceability_dependency() -> None:
@@ -219,7 +219,7 @@ def test_explode_outer_struct_explain_names_row_expansion_and_streaming_status()
     text = render_explain_report(ExpandOuterTerms)
 
     assert "operations: explode_outer_struct(row_multiplying scope=term schema=OuterExplodedTerm)" in text
-    assert "STREAM-E0801: batch_only in expand (explode_outer_struct term)" in text
+    assert "STREAM-E0801: batch_only in expand (explode_outer_struct term)" not in text
 
 
 def test_explode_outer_struct_records_traceability_dependency() -> None:
@@ -282,7 +282,7 @@ def test_posexplode_outer_struct_explain_names_row_expansion_and_streaming_statu
     text = render_explain_report(ExpandOuterPositionedTerms)
 
     assert "operations: posexplode_outer_struct(row_multiplying scope=term schema=OuterPositionedTerm)" in text
-    assert "STREAM-E0801: batch_only in expand (posexplode_outer_struct term)" in text
+    assert "STREAM-E0801: batch_only in expand (posexplode_outer_struct term)" not in text
 
 
 def test_posexplode_outer_struct_records_traceability_dependency() -> None:
@@ -370,7 +370,7 @@ def test_inline_outer_struct_explain_and_traceability_name_precise_kind() -> Non
     dependencies = {dependency.target: dependency for dependency in traceability.static_dataflow}
 
     assert "operations: inline_outer_struct(row_multiplying scope=term schema=OuterExplodedTerm)" in text
-    assert "STREAM-E0801: batch_only in expand (inline_outer_struct term)" in text
+    assert "STREAM-E0801: batch_only in expand (inline_outer_struct term)" not in text
     dependency = dependencies["expand.inline_outer_struct[0].term"]
     assert dependency.sources == ("documents.terms",)
     assert dependency.operation == "inline_outer_struct"

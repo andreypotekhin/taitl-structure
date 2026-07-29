@@ -100,10 +100,13 @@ class CompileTransform:
             _diagnostic_project_root.reset(token)
 
     def _compile(
-        self, transform_class: type[Transform] | TransformPipeline, *, config: StructureConfig
+        self, transform_class: type[Transform] | Transform | TransformPipeline, *, config: StructureConfig
     ) -> TransformPlan:
         if isinstance(transform_class, TransformPipeline):
             return self._compose_pipeline(transform_class, name="ComposedTransform", config=config)
+        invocation = transform_class if isinstance(transform_class, Transform) else None
+        if invocation is not None:
+            transform_class = type(invocation)
         if (
             not isinstance(transform_class, type)
             or not issubclass(transform_class, Transform)
@@ -142,6 +145,7 @@ class CompileTransform:
         steps, lanes, explicit_outputs, diagnostics = self._steps(
             transform_class,
             inputs,
+            instance=invocation,
             capture_special_exprs="embed_exprs" in config.generated_code_options,
         )
         outputs = self._outputs(transform_class, lanes, explicit_outputs)
@@ -209,7 +213,7 @@ class CompileTransform:
             raise RuntimeError("Core authoring requires a selected platform authoring facet.")
         return self._graph_composer(
             transform_class,
-            compile_stage=lambda stage_class: self._compile(stage_class, config=config),
+            compile_stage=lambda stage: self._compile(stage, config=config),
             rewrite_body=lambda body, frames: authoring_api.rewrite_body(body, frames=frames),
         )
 
@@ -218,9 +222,10 @@ class CompileTransform:
         transform_class: type[Transform],
         inputs: list[InputPlan],
         *,
+        instance: Transform | None,
         capture_special_exprs: bool,
     ) -> tuple[list[StepPlan], dict[str, dict[str, object]], set[str], list[Diagnostic]]:
-        instance = transform_class()
+        instance = instance or transform_class()
         members = self._member_collector.collect(transform_class)
         steps: list[StepPlan] = []
         lanes: dict[str, dict[str, object]] = {}

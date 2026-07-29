@@ -11,5 +11,5 @@ Module: `examples.search.schemas.search`
 | `section_id` | `section_id` | `string` | no |
 | `paragraph_id` | `paragraph_id` | `string` | no |
 | `sentence_id` | `sentence_id` | `string` | no |
-| `experiment_id` | `experiment_id` | `string` | no |
+| `experiment_id` | `experiment_id` | `string` | yes |
 | `score` | `score` | `double` | no |

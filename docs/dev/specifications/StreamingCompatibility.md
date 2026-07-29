@@ -2,10 +2,10 @@
 
 ## Purpose
 
-Structure v1/v2 generates PySpark DataFrame transforms. The current streaming compatibility contract does not generate
-Spark Structured Streaming jobs. A generated transform is streaming-compatible when a caller can pass a streaming
-DataFrame as the current pipeline input and Spark can analyze the resulting DataFrame plan without Structure adding
-unsupported streaming operations, actions, stateful streaming features, or streaming lifecycle code.
+Structure generates PySpark DataFrame transforms. The streaming compatibility contract does not generate Spark
+Structured Streaming jobs. A generated transform is streaming-compatible when a caller can pass streaming DataFrames
+into declared streaming inputs and Spark can analyze the resulting DataFrame plan without Structure adding unsupported
+streaming operations, actions, stateful streaming features, or streaming lifecycle code.
 
 The contract keeps lifecycle ownership with the caller. Row-local projection,
 row-local filtering, schema-only validation, stream-static joins, transform-scoped watermarks, watermarked grouped
@@ -32,8 +32,8 @@ shape.
 
 ## Runtime Shape
 
-The v1 streaming-compatible runtime shape is one streaming current pipeline DataFrame plus zero or more static side
-inputs.
+The base streaming-compatible runtime shape is one streaming current pipeline DataFrame plus zero or more static side
+inputs. Later admitted shapes may declare additional streaming inputs explicitly with `input(..., streaming=True)`.
 
 Example:
 
@@ -56,7 +56,9 @@ Rules:
 - The current pipeline DataFrame is the DataFrame flowing through the source-ordered step-method chain.
 - Additional named inputs referenced through joins are static side inputs unless declared `streaming=True`.
 - Passing a streaming DataFrame as a joined side input requires explicit `streaming=True`, watermarks on both
-  sides, and an event-time bound for the admitted inner stream-stream join shape.
+  sides, and an event-time bound for admitted stream-stream join shapes.
+- Passing a streaming DataFrame as a relation-set side input is admitted only for exact-schema `union_all(...)` and
+  `union_by_name(...)`; both relation inputs must be declared with `streaming=True`.
 - Generated code does not branch on `df.isStreaming` except for ordinary `drop_duplicates(...)`: that narrowly scoped
   branch selects batch `dropDuplicates` or streaming `dropDuplicatesWithinWatermark`. It owns no lifecycle behavior.
 
@@ -138,11 +140,20 @@ deduplication semantics.
 Inner stream-stream rowset joins are compatible when both inputs are declared `streaming=True`, both joined
 frames have watermarks, and the predicate includes `event_time_between(left_time, right_time, upper=...)`.
 
+Typed array-of-struct generators are compatible as stateless row expansion when the source relation is streaming:
+`posexplode_struct(...)`, `posexplode_outer_struct(...)`, `explode_struct(...)`, `explode_outer_struct(...)`,
+`inline_struct(...)`, and `inline_outer_struct(...)`. Structure still owns only the transformation; the caller owns
+the streaming query.
+
+Exact-schema stream-stream append composition is compatible through `union_all(...)` and `union_by_name(...)` when both
+relations are declared with `streaming=True`. Structure rejects stream-static unions and distinct-style set operations
+before query start.
+
 ## Deferred or Rejected Operations
 
 These operations are not streaming-compatible in v1:
 
-- global `orderBy(...)` or `sort(...)` on the streaming current DataFrame;
+- global `orderBy(...)` or `sort(...)` on the streaming current DataFrame, including Structure `order_by(...)`;
 - `limit(...)`, `offset(...)`, or global top-N operations;
 - `distinct(...)` or `dropDuplicates(...)`, including Structure `distinct(...)` and `drop_duplicates(...)` without a
   preceding watermark;
@@ -152,6 +163,10 @@ These operations are not streaming-compatible in v1:
   `lag(...)`, `lead(...)`, `rolling_sum(...)`, `rolling_avg(...)`, `rolling_min(...)`, and `rolling_max(...)`;
 - selected-row helpers, including Structure `latest_by(...)`, `earliest_by(...)`, `dedupe_latest_by(...)`, and
   `dedupe_earliest_by(...)`;
+- priority selection through `select_first_qualified(...)`;
+- relation set operations with distinct or subtract semantics: `intersect(...)`, `intersect_all(...)`, `subtract(...)`,
+  and `except_all(...)`;
+- stream-static `union_all(...)` or `union_by_name(...)`;
 - stream-stream joins that lack declared streaming input modes, watermarks, or event-time bounds;
 - right, full, cross, semi, or anti joins involving the streaming current DataFrame;
 - Pandas UDFs, RDD operations, `mapInPandas`, and `foreachPartition`;

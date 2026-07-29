@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "structure"
-version = "0.0.7"
+version = "0.0.8"
 description = "Taitl Structure Library"
 authors = [ "Andrey <andrey1@taitl.com>" ]
 license = "LGPL-2.1 + Ethical Use Policy"
@@ -12,6 +12,7 @@ readme = "Readme.md"
 include = [
     "Readme.md",
     { path = "src/structure/plugin/pyspark/resources/runtime.py.template", format = [ "sdist", "wheel" ] },
+    { path = "src/structure/plugin/pyspark/resources/pyspark-structured-streaming-coverage.json", format = [ "sdist", "wheel" ] },
     { path = "src/structure/plugin/pyspark/resources/pyspark-transformation-coverage.json", format = [ "sdist", "wheel" ] },
     { path = "src/structure/plugin/pyspark/resources/pyspark-transformation-inventory.json", format = [ "sdist", "wheel" ] },
 ]

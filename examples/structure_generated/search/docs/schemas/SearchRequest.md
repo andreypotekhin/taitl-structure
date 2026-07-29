@@ -10,6 +10,6 @@ Module: `examples.search.schemas.clicks`
 | `query_id` | `query_id` | `string` | no |
 | `query` | `query` | `string` | no |
 | `user_id` | `user_id` | `string` | yes |
-| `experiment_id` | `experiment_id` | `string` | no |
+| `experiment_id` | `experiment_id` | `string` | yes |
 | `ranking_version` | `ranking_version` | `string` | no |
 | `requested_at` | `requested_at` | `timestamp` | no |

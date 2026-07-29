@@ -9,7 +9,7 @@ from examples.structure_generated.search.pyspark.schemas.params import EVALUATIO
 DOCUMENT_SEARCH_REQUEST_BEHAVIOR_SCHEMA = T.StructType([
     T.StructField("window", TIME_WINDOW_SCHEMA, False),
     T.StructField("params", EVALUATION_PARAMS_SCHEMA, True),
-    T.StructField("experiment_id", T.StringType(), False),
+    T.StructField("experiment_id", T.StringType(), True),
     T.StructField("band_id", T.StringType(), True),
     T.StructField("search_request_id", T.StringType(), False),
     T.StructField("ranking_version", T.StringType(), False),
@@ -27,7 +27,7 @@ DOCUMENT_SEARCH_REQUEST_BEHAVIOR_SCHEMA = T.StructType([
 DAILY_DOCUMENT_SEARCH_BEHAVIOR_SCHEMA = T.StructType([
     T.StructField("window", TIME_WINDOW_SCHEMA, False),
     T.StructField("params", EVALUATION_PARAMS_SCHEMA, True),
-    T.StructField("experiment_id", T.StringType(), False),
+    T.StructField("experiment_id", T.StringType(), True),
     T.StructField("band_id", T.StringType(), True),
     T.StructField("ranking_version", T.StringType(), False),
     T.StructField("request_count", T.LongType(), False),
@@ -48,7 +48,7 @@ DAILY_DOCUMENT_SEARCH_BEHAVIOR_SCHEMA = T.StructType([
 BEHAVIOR_REQUEST_SCHEMA = T.StructType([
     T.StructField("window", TIME_WINDOW_SCHEMA, False),
     T.StructField("params", EVALUATION_PARAMS_SCHEMA, True),
-    T.StructField("experiment_id", T.StringType(), False),
+    T.StructField("experiment_id", T.StringType(), True),
     T.StructField("band_id", T.StringType(), True),
     T.StructField("search_request_id", T.StringType(), False),
     T.StructField("ranking_version", T.StringType(), False),
@@ -69,7 +69,7 @@ BEHAVIOR_IMPRESSION_SCHEMA = T.StructType(BEHAVIOR_REQUEST_SCHEMA.fields + [
 BEHAVIOR_EXPOSURE_SCHEMA = T.StructType([
     T.StructField("window", TIME_WINDOW_SCHEMA, False),
     T.StructField("params", EVALUATION_PARAMS_SCHEMA, True),
-    T.StructField("experiment_id", T.StringType(), False),
+    T.StructField("experiment_id", T.StringType(), True),
     T.StructField("band_id", T.StringType(), True),
     T.StructField("ranking_version", T.StringType(), False),
     T.StructField("ips_impression_weight", T.DoubleType(), False),

@@ -23,649 +23,649 @@
       "source": "source:examples.search.transforms.index.CreateIndex.input.words"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.count_document_terms",
-      "ir": "ir:CreateIndex.step.0.count_document_terms",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_document_terms"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.lexical.count_document_terms",
+      "ir": "ir:CreateIndex.step.0.lexical.count_document_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_document_terms"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.count_document_terms.aggregate.document_id",
-      "ir": "ir:CreateIndex.step.0.count_document_terms.aggregate.document_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_document_terms.aggregate.document_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.lexical.count_document_terms.aggregate.document_id",
+      "ir": "ir:CreateIndex.step.0.lexical.count_document_terms.aggregate.document_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_document_terms.aggregate.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.count_document_terms.aggregate.token",
-      "ir": "ir:CreateIndex.step.0.count_document_terms.aggregate.token",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_document_terms.aggregate.token"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.lexical.count_document_terms.aggregate.token",
+      "ir": "ir:CreateIndex.step.0.lexical.count_document_terms.aggregate.token",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_document_terms.aggregate.token"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.count_document_terms.aggregate.term_frequency",
-      "ir": "ir:CreateIndex.step.0.count_document_terms.aggregate.term_frequency",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_document_terms.aggregate.term_frequency"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.lexical.count_document_terms.aggregate.term_frequency",
+      "ir": "ir:CreateIndex.step.0.lexical.count_document_terms.aggregate.term_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_document_terms.aggregate.term_frequency"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.count_document_terms.validation.0.intermediate",
-      "ir": "ir:CreateIndex.step.0.count_document_terms.validation.0.intermediate",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_document_terms.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.0.lexical.count_document_terms.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.0.lexical.count_document_terms.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_document_terms.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.1.summarize_documents",
-      "ir": "ir:CreateIndex.step.1.summarize_documents",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_documents"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.1.lexical.summarize_documents",
+      "ir": "ir:CreateIndex.step.1.lexical.summarize_documents",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_documents"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.1.summarize_documents.aggregate.document_id",
-      "ir": "ir:CreateIndex.step.1.summarize_documents.aggregate.document_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_documents.aggregate.document_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.1.lexical.summarize_documents.aggregate.document_id",
+      "ir": "ir:CreateIndex.step.1.lexical.summarize_documents.aggregate.document_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_documents.aggregate.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.1.summarize_documents.aggregate.target_word_count",
-      "ir": "ir:CreateIndex.step.1.summarize_documents.aggregate.target_word_count",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_documents.aggregate.target_word_count"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.1.lexical.summarize_documents.aggregate.target_word_count",
+      "ir": "ir:CreateIndex.step.1.lexical.summarize_documents.aggregate.target_word_count",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_documents.aggregate.target_word_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.1.summarize_documents.aggregate.target_distinct_terms",
-      "ir": "ir:CreateIndex.step.1.summarize_documents.aggregate.target_distinct_terms",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_documents.aggregate.target_distinct_terms"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.1.lexical.summarize_documents.aggregate.target_distinct_terms",
+      "ir": "ir:CreateIndex.step.1.lexical.summarize_documents.aggregate.target_distinct_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_documents.aggregate.target_distinct_terms"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.1.summarize_documents.validation.0.intermediate",
-      "ir": "ir:CreateIndex.step.1.summarize_documents.validation.0.intermediate",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_documents.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.1.lexical.summarize_documents.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.1.lexical.summarize_documents.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_documents.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.2.count_document_frequencies",
-      "ir": "ir:CreateIndex.step.2.count_document_frequencies",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_document_frequencies"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.2.lexical.count_document_frequencies",
+      "ir": "ir:CreateIndex.step.2.lexical.count_document_frequencies",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_document_frequencies"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.2.count_document_frequencies.aggregate.token",
-      "ir": "ir:CreateIndex.step.2.count_document_frequencies.aggregate.token",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_document_frequencies.aggregate.token"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.2.lexical.count_document_frequencies.aggregate.token",
+      "ir": "ir:CreateIndex.step.2.lexical.count_document_frequencies.aggregate.token",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_document_frequencies.aggregate.token"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.2.count_document_frequencies.aggregate.document_frequency",
-      "ir": "ir:CreateIndex.step.2.count_document_frequencies.aggregate.document_frequency",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_document_frequencies.aggregate.document_frequency"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.2.lexical.count_document_frequencies.aggregate.document_frequency",
+      "ir": "ir:CreateIndex.step.2.lexical.count_document_frequencies.aggregate.document_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_document_frequencies.aggregate.document_frequency"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.2.count_document_frequencies.validation.0.intermediate",
-      "ir": "ir:CreateIndex.step.2.count_document_frequencies.validation.0.intermediate",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_document_frequencies.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.2.lexical.count_document_frequencies.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.2.lexical.count_document_frequencies.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_document_frequencies.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.3.build_document_terms",
-      "ir": "ir:CreateIndex.step.3.build_document_terms",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_document_terms"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.3.lexical.build_document_terms",
+      "ir": "ir:CreateIndex.step.3.lexical.build_document_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_document_terms"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.3.build_document_terms.join.1.stats",
-      "ir": "ir:CreateIndex.step.3.build_document_terms.join.1.stats",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_document_terms.join.1.stats"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.3.lexical.build_document_terms.join.1.stats",
+      "ir": "ir:CreateIndex.step.3.lexical.build_document_terms.join.1.stats",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_document_terms.join.1.stats"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.3.build_document_terms.join.2.frequency",
-      "ir": "ir:CreateIndex.step.3.build_document_terms.join.2.frequency",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_document_terms.join.2.frequency"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.3.lexical.build_document_terms.join.2.frequency",
+      "ir": "ir:CreateIndex.step.3.lexical.build_document_terms.join.2.frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_document_terms.join.2.frequency"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.3.build_document_terms.select.document_id",
-      "ir": "ir:CreateIndex.step.3.build_document_terms.project.document_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_document_terms.field.document_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.3.lexical.build_document_terms.select.document_id",
+      "ir": "ir:CreateIndex.step.3.lexical.build_document_terms.project.document_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_document_terms.field.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.3.build_document_terms.select.token",
-      "ir": "ir:CreateIndex.step.3.build_document_terms.project.token",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_document_terms.field.token"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.3.lexical.build_document_terms.select.token",
+      "ir": "ir:CreateIndex.step.3.lexical.build_document_terms.project.token",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_document_terms.field.token"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.3.build_document_terms.select.term_frequency",
-      "ir": "ir:CreateIndex.step.3.build_document_terms.project.term_frequency",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_document_terms.field.term_frequency"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.3.lexical.build_document_terms.select.term_frequency",
+      "ir": "ir:CreateIndex.step.3.lexical.build_document_terms.project.term_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_document_terms.field.term_frequency"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.3.build_document_terms.select.target_word_count",
-      "ir": "ir:CreateIndex.step.3.build_document_terms.project.target_word_count",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_document_terms.field.target_word_count"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.3.lexical.build_document_terms.select.target_word_count",
+      "ir": "ir:CreateIndex.step.3.lexical.build_document_terms.project.target_word_count",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_document_terms.field.target_word_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.3.build_document_terms.select.target_distinct_terms",
-      "ir": "ir:CreateIndex.step.3.build_document_terms.project.target_distinct_terms",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_document_terms.field.target_distinct_terms"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.3.lexical.build_document_terms.select.target_distinct_terms",
+      "ir": "ir:CreateIndex.step.3.lexical.build_document_terms.project.target_distinct_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_document_terms.field.target_distinct_terms"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.3.build_document_terms.select.document_frequency",
-      "ir": "ir:CreateIndex.step.3.build_document_terms.project.document_frequency",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_document_terms.field.document_frequency"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.3.lexical.build_document_terms.select.document_frequency",
+      "ir": "ir:CreateIndex.step.3.lexical.build_document_terms.project.document_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_document_terms.field.document_frequency"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.3.build_document_terms.validation.0.intermediate",
-      "ir": "ir:CreateIndex.step.3.build_document_terms.validation.0.intermediate",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_document_terms.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.3.lexical.build_document_terms.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.3.lexical.build_document_terms.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_document_terms.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.4.summarize_document_index",
-      "ir": "ir:CreateIndex.step.4.summarize_document_index",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_document_index"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.4.lexical.summarize_document_index",
+      "ir": "ir:CreateIndex.step.4.lexical.summarize_document_index",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_document_index"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.4.summarize_document_index.aggregate.target_count",
-      "ir": "ir:CreateIndex.step.4.summarize_document_index.aggregate.target_count",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_document_index.aggregate.target_count"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.4.lexical.summarize_document_index.aggregate.target_count",
+      "ir": "ir:CreateIndex.step.4.lexical.summarize_document_index.aggregate.target_count",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_document_index.aggregate.target_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.4.summarize_document_index.aggregate.average_target_length",
-      "ir": "ir:CreateIndex.step.4.summarize_document_index.aggregate.average_target_length",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_document_index.aggregate.average_target_length"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.4.lexical.summarize_document_index.aggregate.average_target_length",
+      "ir": "ir:CreateIndex.step.4.lexical.summarize_document_index.aggregate.average_target_length",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_document_index.aggregate.average_target_length"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.4.summarize_document_index.validation.0.intermediate",
-      "ir": "ir:CreateIndex.step.4.summarize_document_index.validation.0.intermediate",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_document_index.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.4.lexical.summarize_document_index.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.4.lexical.summarize_document_index.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_document_index.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.5.count_section_terms",
-      "ir": "ir:CreateIndex.step.5.count_section_terms",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_section_terms"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.5.lexical.count_section_terms",
+      "ir": "ir:CreateIndex.step.5.lexical.count_section_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_section_terms"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.5.count_section_terms.aggregate.document_id",
-      "ir": "ir:CreateIndex.step.5.count_section_terms.aggregate.document_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_section_terms.aggregate.document_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.5.lexical.count_section_terms.aggregate.document_id",
+      "ir": "ir:CreateIndex.step.5.lexical.count_section_terms.aggregate.document_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_section_terms.aggregate.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.5.count_section_terms.aggregate.section_id",
-      "ir": "ir:CreateIndex.step.5.count_section_terms.aggregate.section_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_section_terms.aggregate.section_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.5.lexical.count_section_terms.aggregate.section_id",
+      "ir": "ir:CreateIndex.step.5.lexical.count_section_terms.aggregate.section_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_section_terms.aggregate.section_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.5.count_section_terms.aggregate.token",
-      "ir": "ir:CreateIndex.step.5.count_section_terms.aggregate.token",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_section_terms.aggregate.token"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.5.lexical.count_section_terms.aggregate.token",
+      "ir": "ir:CreateIndex.step.5.lexical.count_section_terms.aggregate.token",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_section_terms.aggregate.token"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.5.count_section_terms.aggregate.term_frequency",
-      "ir": "ir:CreateIndex.step.5.count_section_terms.aggregate.term_frequency",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_section_terms.aggregate.term_frequency"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.5.lexical.count_section_terms.aggregate.term_frequency",
+      "ir": "ir:CreateIndex.step.5.lexical.count_section_terms.aggregate.term_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_section_terms.aggregate.term_frequency"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.5.count_section_terms.validation.0.intermediate",
-      "ir": "ir:CreateIndex.step.5.count_section_terms.validation.0.intermediate",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_section_terms.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.5.lexical.count_section_terms.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.5.lexical.count_section_terms.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_section_terms.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.6.summarize_sections",
-      "ir": "ir:CreateIndex.step.6.summarize_sections",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sections"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.6.lexical.summarize_sections",
+      "ir": "ir:CreateIndex.step.6.lexical.summarize_sections",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_sections"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.6.summarize_sections.aggregate.document_id",
-      "ir": "ir:CreateIndex.step.6.summarize_sections.aggregate.document_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sections.aggregate.document_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.6.lexical.summarize_sections.aggregate.document_id",
+      "ir": "ir:CreateIndex.step.6.lexical.summarize_sections.aggregate.document_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_sections.aggregate.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.6.summarize_sections.aggregate.section_id",
-      "ir": "ir:CreateIndex.step.6.summarize_sections.aggregate.section_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sections.aggregate.section_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.6.lexical.summarize_sections.aggregate.section_id",
+      "ir": "ir:CreateIndex.step.6.lexical.summarize_sections.aggregate.section_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_sections.aggregate.section_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.6.summarize_sections.aggregate.target_word_count",
-      "ir": "ir:CreateIndex.step.6.summarize_sections.aggregate.target_word_count",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sections.aggregate.target_word_count"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.6.lexical.summarize_sections.aggregate.target_word_count",
+      "ir": "ir:CreateIndex.step.6.lexical.summarize_sections.aggregate.target_word_count",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_sections.aggregate.target_word_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.6.summarize_sections.aggregate.target_distinct_terms",
-      "ir": "ir:CreateIndex.step.6.summarize_sections.aggregate.target_distinct_terms",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sections.aggregate.target_distinct_terms"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.6.lexical.summarize_sections.aggregate.target_distinct_terms",
+      "ir": "ir:CreateIndex.step.6.lexical.summarize_sections.aggregate.target_distinct_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_sections.aggregate.target_distinct_terms"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.6.summarize_sections.validation.0.intermediate",
-      "ir": "ir:CreateIndex.step.6.summarize_sections.validation.0.intermediate",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sections.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.6.lexical.summarize_sections.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.6.lexical.summarize_sections.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_sections.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.7.count_section_frequencies",
-      "ir": "ir:CreateIndex.step.7.count_section_frequencies",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_section_frequencies"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.7.lexical.count_section_frequencies",
+      "ir": "ir:CreateIndex.step.7.lexical.count_section_frequencies",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_section_frequencies"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.7.count_section_frequencies.aggregate.token",
-      "ir": "ir:CreateIndex.step.7.count_section_frequencies.aggregate.token",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_section_frequencies.aggregate.token"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.7.lexical.count_section_frequencies.aggregate.token",
+      "ir": "ir:CreateIndex.step.7.lexical.count_section_frequencies.aggregate.token",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_section_frequencies.aggregate.token"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.7.count_section_frequencies.aggregate.document_frequency",
-      "ir": "ir:CreateIndex.step.7.count_section_frequencies.aggregate.document_frequency",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_section_frequencies.aggregate.document_frequency"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.7.lexical.count_section_frequencies.aggregate.document_frequency",
+      "ir": "ir:CreateIndex.step.7.lexical.count_section_frequencies.aggregate.document_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_section_frequencies.aggregate.document_frequency"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.7.count_section_frequencies.validation.0.intermediate",
-      "ir": "ir:CreateIndex.step.7.count_section_frequencies.validation.0.intermediate",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_section_frequencies.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.7.lexical.count_section_frequencies.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.7.lexical.count_section_frequencies.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_section_frequencies.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.build_section_terms",
-      "ir": "ir:CreateIndex.step.8.build_section_terms",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_section_terms"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.lexical.build_section_terms",
+      "ir": "ir:CreateIndex.step.8.lexical.build_section_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_section_terms"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.build_section_terms.join.1.stats",
-      "ir": "ir:CreateIndex.step.8.build_section_terms.join.1.stats",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_section_terms.join.1.stats"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.lexical.build_section_terms.join.1.stats",
+      "ir": "ir:CreateIndex.step.8.lexical.build_section_terms.join.1.stats",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_section_terms.join.1.stats"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.build_section_terms.join.2.frequency",
-      "ir": "ir:CreateIndex.step.8.build_section_terms.join.2.frequency",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_section_terms.join.2.frequency"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.lexical.build_section_terms.join.2.frequency",
+      "ir": "ir:CreateIndex.step.8.lexical.build_section_terms.join.2.frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_section_terms.join.2.frequency"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.build_section_terms.select.document_id",
-      "ir": "ir:CreateIndex.step.8.build_section_terms.project.document_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_section_terms.field.document_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.lexical.build_section_terms.select.document_id",
+      "ir": "ir:CreateIndex.step.8.lexical.build_section_terms.project.document_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_section_terms.field.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.build_section_terms.select.section_id",
-      "ir": "ir:CreateIndex.step.8.build_section_terms.project.section_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_section_terms.field.section_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.lexical.build_section_terms.select.section_id",
+      "ir": "ir:CreateIndex.step.8.lexical.build_section_terms.project.section_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_section_terms.field.section_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.build_section_terms.select.token",
-      "ir": "ir:CreateIndex.step.8.build_section_terms.project.token",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_section_terms.field.token"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.lexical.build_section_terms.select.token",
+      "ir": "ir:CreateIndex.step.8.lexical.build_section_terms.project.token",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_section_terms.field.token"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.build_section_terms.select.term_frequency",
-      "ir": "ir:CreateIndex.step.8.build_section_terms.project.term_frequency",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_section_terms.field.term_frequency"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.lexical.build_section_terms.select.term_frequency",
+      "ir": "ir:CreateIndex.step.8.lexical.build_section_terms.project.term_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_section_terms.field.term_frequency"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.build_section_terms.select.target_word_count",
-      "ir": "ir:CreateIndex.step.8.build_section_terms.project.target_word_count",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_section_terms.field.target_word_count"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.lexical.build_section_terms.select.target_word_count",
+      "ir": "ir:CreateIndex.step.8.lexical.build_section_terms.project.target_word_count",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_section_terms.field.target_word_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.build_section_terms.select.target_distinct_terms",
-      "ir": "ir:CreateIndex.step.8.build_section_terms.project.target_distinct_terms",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_section_terms.field.target_distinct_terms"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.lexical.build_section_terms.select.target_distinct_terms",
+      "ir": "ir:CreateIndex.step.8.lexical.build_section_terms.project.target_distinct_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_section_terms.field.target_distinct_terms"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.build_section_terms.select.document_frequency",
-      "ir": "ir:CreateIndex.step.8.build_section_terms.project.document_frequency",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_section_terms.field.document_frequency"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.lexical.build_section_terms.select.document_frequency",
+      "ir": "ir:CreateIndex.step.8.lexical.build_section_terms.project.document_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_section_terms.field.document_frequency"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.build_section_terms.validation.0.intermediate",
-      "ir": "ir:CreateIndex.step.8.build_section_terms.validation.0.intermediate",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_section_terms.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.8.lexical.build_section_terms.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.8.lexical.build_section_terms.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_section_terms.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.9.summarize_section_index",
-      "ir": "ir:CreateIndex.step.9.summarize_section_index",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_section_index"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.9.lexical.summarize_section_index",
+      "ir": "ir:CreateIndex.step.9.lexical.summarize_section_index",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_section_index"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.9.summarize_section_index.aggregate.target_count",
-      "ir": "ir:CreateIndex.step.9.summarize_section_index.aggregate.target_count",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_section_index.aggregate.target_count"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.9.lexical.summarize_section_index.aggregate.target_count",
+      "ir": "ir:CreateIndex.step.9.lexical.summarize_section_index.aggregate.target_count",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_section_index.aggregate.target_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.9.summarize_section_index.aggregate.average_target_length",
-      "ir": "ir:CreateIndex.step.9.summarize_section_index.aggregate.average_target_length",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_section_index.aggregate.average_target_length"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.9.lexical.summarize_section_index.aggregate.average_target_length",
+      "ir": "ir:CreateIndex.step.9.lexical.summarize_section_index.aggregate.average_target_length",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_section_index.aggregate.average_target_length"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.9.summarize_section_index.validation.0.intermediate",
-      "ir": "ir:CreateIndex.step.9.summarize_section_index.validation.0.intermediate",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_section_index.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.9.lexical.summarize_section_index.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.9.lexical.summarize_section_index.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_section_index.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.10.count_paragraph_terms",
-      "ir": "ir:CreateIndex.step.10.count_paragraph_terms",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_paragraph_terms"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.10.lexical.count_paragraph_terms",
+      "ir": "ir:CreateIndex.step.10.lexical.count_paragraph_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_paragraph_terms"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.10.count_paragraph_terms.aggregate.document_id",
-      "ir": "ir:CreateIndex.step.10.count_paragraph_terms.aggregate.document_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_paragraph_terms.aggregate.document_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.10.lexical.count_paragraph_terms.aggregate.document_id",
+      "ir": "ir:CreateIndex.step.10.lexical.count_paragraph_terms.aggregate.document_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_paragraph_terms.aggregate.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.10.count_paragraph_terms.aggregate.section_id",
-      "ir": "ir:CreateIndex.step.10.count_paragraph_terms.aggregate.section_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_paragraph_terms.aggregate.section_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.10.lexical.count_paragraph_terms.aggregate.section_id",
+      "ir": "ir:CreateIndex.step.10.lexical.count_paragraph_terms.aggregate.section_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_paragraph_terms.aggregate.section_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.10.count_paragraph_terms.aggregate.paragraph_id",
-      "ir": "ir:CreateIndex.step.10.count_paragraph_terms.aggregate.paragraph_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_paragraph_terms.aggregate.paragraph_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.10.lexical.count_paragraph_terms.aggregate.paragraph_id",
+      "ir": "ir:CreateIndex.step.10.lexical.count_paragraph_terms.aggregate.paragraph_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_paragraph_terms.aggregate.paragraph_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.10.count_paragraph_terms.aggregate.token",
-      "ir": "ir:CreateIndex.step.10.count_paragraph_terms.aggregate.token",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_paragraph_terms.aggregate.token"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.10.lexical.count_paragraph_terms.aggregate.token",
+      "ir": "ir:CreateIndex.step.10.lexical.count_paragraph_terms.aggregate.token",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_paragraph_terms.aggregate.token"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.10.count_paragraph_terms.aggregate.term_frequency",
-      "ir": "ir:CreateIndex.step.10.count_paragraph_terms.aggregate.term_frequency",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_paragraph_terms.aggregate.term_frequency"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.10.lexical.count_paragraph_terms.aggregate.term_frequency",
+      "ir": "ir:CreateIndex.step.10.lexical.count_paragraph_terms.aggregate.term_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_paragraph_terms.aggregate.term_frequency"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.10.count_paragraph_terms.validation.0.intermediate",
-      "ir": "ir:CreateIndex.step.10.count_paragraph_terms.validation.0.intermediate",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_paragraph_terms.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.10.lexical.count_paragraph_terms.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.10.lexical.count_paragraph_terms.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_paragraph_terms.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.11.summarize_paragraphs",
-      "ir": "ir:CreateIndex.step.11.summarize_paragraphs",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_paragraphs"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.11.lexical.summarize_paragraphs",
+      "ir": "ir:CreateIndex.step.11.lexical.summarize_paragraphs",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_paragraphs"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.11.summarize_paragraphs.aggregate.document_id",
-      "ir": "ir:CreateIndex.step.11.summarize_paragraphs.aggregate.document_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_paragraphs.aggregate.document_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.11.lexical.summarize_paragraphs.aggregate.document_id",
+      "ir": "ir:CreateIndex.step.11.lexical.summarize_paragraphs.aggregate.document_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_paragraphs.aggregate.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.11.summarize_paragraphs.aggregate.section_id",
-      "ir": "ir:CreateIndex.step.11.summarize_paragraphs.aggregate.section_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_paragraphs.aggregate.section_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.11.lexical.summarize_paragraphs.aggregate.section_id",
+      "ir": "ir:CreateIndex.step.11.lexical.summarize_paragraphs.aggregate.section_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_paragraphs.aggregate.section_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.11.summarize_paragraphs.aggregate.paragraph_id",
-      "ir": "ir:CreateIndex.step.11.summarize_paragraphs.aggregate.paragraph_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_paragraphs.aggregate.paragraph_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.11.lexical.summarize_paragraphs.aggregate.paragraph_id",
+      "ir": "ir:CreateIndex.step.11.lexical.summarize_paragraphs.aggregate.paragraph_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_paragraphs.aggregate.paragraph_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.11.summarize_paragraphs.aggregate.target_word_count",
-      "ir": "ir:CreateIndex.step.11.summarize_paragraphs.aggregate.target_word_count",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_paragraphs.aggregate.target_word_count"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.11.lexical.summarize_paragraphs.aggregate.target_word_count",
+      "ir": "ir:CreateIndex.step.11.lexical.summarize_paragraphs.aggregate.target_word_count",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_paragraphs.aggregate.target_word_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.11.summarize_paragraphs.aggregate.target_distinct_terms",
-      "ir": "ir:CreateIndex.step.11.summarize_paragraphs.aggregate.target_distinct_terms",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_paragraphs.aggregate.target_distinct_terms"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.11.lexical.summarize_paragraphs.aggregate.target_distinct_terms",
+      "ir": "ir:CreateIndex.step.11.lexical.summarize_paragraphs.aggregate.target_distinct_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_paragraphs.aggregate.target_distinct_terms"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.11.summarize_paragraphs.validation.0.intermediate",
-      "ir": "ir:CreateIndex.step.11.summarize_paragraphs.validation.0.intermediate",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_paragraphs.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.11.lexical.summarize_paragraphs.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.11.lexical.summarize_paragraphs.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_paragraphs.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.12.count_paragraph_frequencies",
-      "ir": "ir:CreateIndex.step.12.count_paragraph_frequencies",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_paragraph_frequencies"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.12.lexical.count_paragraph_frequencies",
+      "ir": "ir:CreateIndex.step.12.lexical.count_paragraph_frequencies",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_paragraph_frequencies"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.12.count_paragraph_frequencies.aggregate.token",
-      "ir": "ir:CreateIndex.step.12.count_paragraph_frequencies.aggregate.token",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_paragraph_frequencies.aggregate.token"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.12.lexical.count_paragraph_frequencies.aggregate.token",
+      "ir": "ir:CreateIndex.step.12.lexical.count_paragraph_frequencies.aggregate.token",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_paragraph_frequencies.aggregate.token"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.12.count_paragraph_frequencies.aggregate.document_frequency",
-      "ir": "ir:CreateIndex.step.12.count_paragraph_frequencies.aggregate.document_frequency",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_paragraph_frequencies.aggregate.document_frequency"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.12.lexical.count_paragraph_frequencies.aggregate.document_frequency",
+      "ir": "ir:CreateIndex.step.12.lexical.count_paragraph_frequencies.aggregate.document_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_paragraph_frequencies.aggregate.document_frequency"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.12.count_paragraph_frequencies.validation.0.intermediate",
-      "ir": "ir:CreateIndex.step.12.count_paragraph_frequencies.validation.0.intermediate",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_paragraph_frequencies.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.12.lexical.count_paragraph_frequencies.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.12.lexical.count_paragraph_frequencies.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_paragraph_frequencies.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.build_paragraph_terms",
-      "ir": "ir:CreateIndex.step.13.build_paragraph_terms",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_paragraph_terms"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.lexical.build_paragraph_terms",
+      "ir": "ir:CreateIndex.step.13.lexical.build_paragraph_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_paragraph_terms"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.build_paragraph_terms.join.1.stats",
-      "ir": "ir:CreateIndex.step.13.build_paragraph_terms.join.1.stats",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_paragraph_terms.join.1.stats"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.lexical.build_paragraph_terms.join.1.stats",
+      "ir": "ir:CreateIndex.step.13.lexical.build_paragraph_terms.join.1.stats",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_paragraph_terms.join.1.stats"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.build_paragraph_terms.join.2.frequency",
-      "ir": "ir:CreateIndex.step.13.build_paragraph_terms.join.2.frequency",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_paragraph_terms.join.2.frequency"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.lexical.build_paragraph_terms.join.2.frequency",
+      "ir": "ir:CreateIndex.step.13.lexical.build_paragraph_terms.join.2.frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_paragraph_terms.join.2.frequency"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.build_paragraph_terms.select.document_id",
-      "ir": "ir:CreateIndex.step.13.build_paragraph_terms.project.document_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_paragraph_terms.field.document_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.lexical.build_paragraph_terms.select.document_id",
+      "ir": "ir:CreateIndex.step.13.lexical.build_paragraph_terms.project.document_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_paragraph_terms.field.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.build_paragraph_terms.select.section_id",
-      "ir": "ir:CreateIndex.step.13.build_paragraph_terms.project.section_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_paragraph_terms.field.section_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.lexical.build_paragraph_terms.select.section_id",
+      "ir": "ir:CreateIndex.step.13.lexical.build_paragraph_terms.project.section_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_paragraph_terms.field.section_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.build_paragraph_terms.select.paragraph_id",
-      "ir": "ir:CreateIndex.step.13.build_paragraph_terms.project.paragraph_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_paragraph_terms.field.paragraph_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.lexical.build_paragraph_terms.select.paragraph_id",
+      "ir": "ir:CreateIndex.step.13.lexical.build_paragraph_terms.project.paragraph_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_paragraph_terms.field.paragraph_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.build_paragraph_terms.select.token",
-      "ir": "ir:CreateIndex.step.13.build_paragraph_terms.project.token",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_paragraph_terms.field.token"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.lexical.build_paragraph_terms.select.token",
+      "ir": "ir:CreateIndex.step.13.lexical.build_paragraph_terms.project.token",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_paragraph_terms.field.token"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.build_paragraph_terms.select.term_frequency",
-      "ir": "ir:CreateIndex.step.13.build_paragraph_terms.project.term_frequency",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_paragraph_terms.field.term_frequency"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.lexical.build_paragraph_terms.select.term_frequency",
+      "ir": "ir:CreateIndex.step.13.lexical.build_paragraph_terms.project.term_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_paragraph_terms.field.term_frequency"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.build_paragraph_terms.select.target_word_count",
-      "ir": "ir:CreateIndex.step.13.build_paragraph_terms.project.target_word_count",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_paragraph_terms.field.target_word_count"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.lexical.build_paragraph_terms.select.target_word_count",
+      "ir": "ir:CreateIndex.step.13.lexical.build_paragraph_terms.project.target_word_count",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_paragraph_terms.field.target_word_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.build_paragraph_terms.select.target_distinct_terms",
-      "ir": "ir:CreateIndex.step.13.build_paragraph_terms.project.target_distinct_terms",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_paragraph_terms.field.target_distinct_terms"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.lexical.build_paragraph_terms.select.target_distinct_terms",
+      "ir": "ir:CreateIndex.step.13.lexical.build_paragraph_terms.project.target_distinct_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_paragraph_terms.field.target_distinct_terms"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.build_paragraph_terms.select.document_frequency",
-      "ir": "ir:CreateIndex.step.13.build_paragraph_terms.project.document_frequency",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_paragraph_terms.field.document_frequency"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.lexical.build_paragraph_terms.select.document_frequency",
+      "ir": "ir:CreateIndex.step.13.lexical.build_paragraph_terms.project.document_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_paragraph_terms.field.document_frequency"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.build_paragraph_terms.validation.0.intermediate",
-      "ir": "ir:CreateIndex.step.13.build_paragraph_terms.validation.0.intermediate",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_paragraph_terms.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.13.lexical.build_paragraph_terms.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.13.lexical.build_paragraph_terms.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_paragraph_terms.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.14.summarize_paragraph_index",
-      "ir": "ir:CreateIndex.step.14.summarize_paragraph_index",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_paragraph_index"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.14.lexical.summarize_paragraph_index",
+      "ir": "ir:CreateIndex.step.14.lexical.summarize_paragraph_index",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_paragraph_index"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.14.summarize_paragraph_index.aggregate.target_count",
-      "ir": "ir:CreateIndex.step.14.summarize_paragraph_index.aggregate.target_count",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_paragraph_index.aggregate.target_count"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.14.lexical.summarize_paragraph_index.aggregate.target_count",
+      "ir": "ir:CreateIndex.step.14.lexical.summarize_paragraph_index.aggregate.target_count",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_paragraph_index.aggregate.target_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.14.summarize_paragraph_index.aggregate.average_target_length",
-      "ir": "ir:CreateIndex.step.14.summarize_paragraph_index.aggregate.average_target_length",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_paragraph_index.aggregate.average_target_length"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.14.lexical.summarize_paragraph_index.aggregate.average_target_length",
+      "ir": "ir:CreateIndex.step.14.lexical.summarize_paragraph_index.aggregate.average_target_length",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_paragraph_index.aggregate.average_target_length"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.14.summarize_paragraph_index.validation.0.intermediate",
-      "ir": "ir:CreateIndex.step.14.summarize_paragraph_index.validation.0.intermediate",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_paragraph_index.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.14.lexical.summarize_paragraph_index.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.14.lexical.summarize_paragraph_index.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_paragraph_index.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.15.count_sentence_terms",
-      "ir": "ir:CreateIndex.step.15.count_sentence_terms",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_sentence_terms"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.15.lexical.count_sentence_terms",
+      "ir": "ir:CreateIndex.step.15.lexical.count_sentence_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_sentence_terms"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.15.count_sentence_terms.aggregate.document_id",
-      "ir": "ir:CreateIndex.step.15.count_sentence_terms.aggregate.document_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_sentence_terms.aggregate.document_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.15.lexical.count_sentence_terms.aggregate.document_id",
+      "ir": "ir:CreateIndex.step.15.lexical.count_sentence_terms.aggregate.document_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_sentence_terms.aggregate.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.15.count_sentence_terms.aggregate.section_id",
-      "ir": "ir:CreateIndex.step.15.count_sentence_terms.aggregate.section_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_sentence_terms.aggregate.section_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.15.lexical.count_sentence_terms.aggregate.section_id",
+      "ir": "ir:CreateIndex.step.15.lexical.count_sentence_terms.aggregate.section_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_sentence_terms.aggregate.section_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.15.count_sentence_terms.aggregate.paragraph_id",
-      "ir": "ir:CreateIndex.step.15.count_sentence_terms.aggregate.paragraph_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_sentence_terms.aggregate.paragraph_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.15.lexical.count_sentence_terms.aggregate.paragraph_id",
+      "ir": "ir:CreateIndex.step.15.lexical.count_sentence_terms.aggregate.paragraph_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_sentence_terms.aggregate.paragraph_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.15.count_sentence_terms.aggregate.sentence_id",
-      "ir": "ir:CreateIndex.step.15.count_sentence_terms.aggregate.sentence_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_sentence_terms.aggregate.sentence_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.15.lexical.count_sentence_terms.aggregate.sentence_id",
+      "ir": "ir:CreateIndex.step.15.lexical.count_sentence_terms.aggregate.sentence_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_sentence_terms.aggregate.sentence_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.15.count_sentence_terms.aggregate.token",
-      "ir": "ir:CreateIndex.step.15.count_sentence_terms.aggregate.token",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_sentence_terms.aggregate.token"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.15.lexical.count_sentence_terms.aggregate.token",
+      "ir": "ir:CreateIndex.step.15.lexical.count_sentence_terms.aggregate.token",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_sentence_terms.aggregate.token"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.15.count_sentence_terms.aggregate.term_frequency",
-      "ir": "ir:CreateIndex.step.15.count_sentence_terms.aggregate.term_frequency",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_sentence_terms.aggregate.term_frequency"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.15.lexical.count_sentence_terms.aggregate.term_frequency",
+      "ir": "ir:CreateIndex.step.15.lexical.count_sentence_terms.aggregate.term_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_sentence_terms.aggregate.term_frequency"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.15.count_sentence_terms.validation.0.intermediate",
-      "ir": "ir:CreateIndex.step.15.count_sentence_terms.validation.0.intermediate",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_sentence_terms.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.15.lexical.count_sentence_terms.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.15.lexical.count_sentence_terms.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_sentence_terms.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.16.summarize_sentences",
-      "ir": "ir:CreateIndex.step.16.summarize_sentences",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sentences"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.16.lexical.summarize_sentences",
+      "ir": "ir:CreateIndex.step.16.lexical.summarize_sentences",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_sentences"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.16.summarize_sentences.aggregate.document_id",
-      "ir": "ir:CreateIndex.step.16.summarize_sentences.aggregate.document_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sentences.aggregate.document_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.16.lexical.summarize_sentences.aggregate.document_id",
+      "ir": "ir:CreateIndex.step.16.lexical.summarize_sentences.aggregate.document_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_sentences.aggregate.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.16.summarize_sentences.aggregate.section_id",
-      "ir": "ir:CreateIndex.step.16.summarize_sentences.aggregate.section_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sentences.aggregate.section_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.16.lexical.summarize_sentences.aggregate.section_id",
+      "ir": "ir:CreateIndex.step.16.lexical.summarize_sentences.aggregate.section_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_sentences.aggregate.section_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.16.summarize_sentences.aggregate.paragraph_id",
-      "ir": "ir:CreateIndex.step.16.summarize_sentences.aggregate.paragraph_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sentences.aggregate.paragraph_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.16.lexical.summarize_sentences.aggregate.paragraph_id",
+      "ir": "ir:CreateIndex.step.16.lexical.summarize_sentences.aggregate.paragraph_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_sentences.aggregate.paragraph_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.16.summarize_sentences.aggregate.sentence_id",
-      "ir": "ir:CreateIndex.step.16.summarize_sentences.aggregate.sentence_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sentences.aggregate.sentence_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.16.lexical.summarize_sentences.aggregate.sentence_id",
+      "ir": "ir:CreateIndex.step.16.lexical.summarize_sentences.aggregate.sentence_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_sentences.aggregate.sentence_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.16.summarize_sentences.aggregate.target_word_count",
-      "ir": "ir:CreateIndex.step.16.summarize_sentences.aggregate.target_word_count",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sentences.aggregate.target_word_count"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.16.lexical.summarize_sentences.aggregate.target_word_count",
+      "ir": "ir:CreateIndex.step.16.lexical.summarize_sentences.aggregate.target_word_count",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_sentences.aggregate.target_word_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.16.summarize_sentences.aggregate.target_distinct_terms",
-      "ir": "ir:CreateIndex.step.16.summarize_sentences.aggregate.target_distinct_terms",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sentences.aggregate.target_distinct_terms"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.16.lexical.summarize_sentences.aggregate.target_distinct_terms",
+      "ir": "ir:CreateIndex.step.16.lexical.summarize_sentences.aggregate.target_distinct_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_sentences.aggregate.target_distinct_terms"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.16.summarize_sentences.validation.0.intermediate",
-      "ir": "ir:CreateIndex.step.16.summarize_sentences.validation.0.intermediate",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sentences.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.16.lexical.summarize_sentences.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.16.lexical.summarize_sentences.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_sentences.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.17.count_sentence_frequencies",
-      "ir": "ir:CreateIndex.step.17.count_sentence_frequencies",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_sentence_frequencies"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.17.lexical.count_sentence_frequencies",
+      "ir": "ir:CreateIndex.step.17.lexical.count_sentence_frequencies",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_sentence_frequencies"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.17.count_sentence_frequencies.aggregate.token",
-      "ir": "ir:CreateIndex.step.17.count_sentence_frequencies.aggregate.token",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_sentence_frequencies.aggregate.token"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.17.lexical.count_sentence_frequencies.aggregate.token",
+      "ir": "ir:CreateIndex.step.17.lexical.count_sentence_frequencies.aggregate.token",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_sentence_frequencies.aggregate.token"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.17.count_sentence_frequencies.aggregate.document_frequency",
-      "ir": "ir:CreateIndex.step.17.count_sentence_frequencies.aggregate.document_frequency",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_sentence_frequencies.aggregate.document_frequency"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.17.lexical.count_sentence_frequencies.aggregate.document_frequency",
+      "ir": "ir:CreateIndex.step.17.lexical.count_sentence_frequencies.aggregate.document_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_sentence_frequencies.aggregate.document_frequency"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.17.count_sentence_frequencies.validation.0.intermediate",
-      "ir": "ir:CreateIndex.step.17.count_sentence_frequencies.validation.0.intermediate",
-      "source": "source:examples.search.transforms.index.CreateIndex.count_sentence_frequencies.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.17.lexical.count_sentence_frequencies.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.17.lexical.count_sentence_frequencies.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.count_sentence_frequencies.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.build_sentence_terms",
-      "ir": "ir:CreateIndex.step.18.build_sentence_terms",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_sentence_terms"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.lexical.build_sentence_terms",
+      "ir": "ir:CreateIndex.step.18.lexical.build_sentence_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_sentence_terms"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.build_sentence_terms.join.1.stats",
-      "ir": "ir:CreateIndex.step.18.build_sentence_terms.join.1.stats",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_sentence_terms.join.1.stats"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.lexical.build_sentence_terms.join.1.stats",
+      "ir": "ir:CreateIndex.step.18.lexical.build_sentence_terms.join.1.stats",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_sentence_terms.join.1.stats"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.build_sentence_terms.join.2.frequency",
-      "ir": "ir:CreateIndex.step.18.build_sentence_terms.join.2.frequency",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_sentence_terms.join.2.frequency"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.lexical.build_sentence_terms.join.2.frequency",
+      "ir": "ir:CreateIndex.step.18.lexical.build_sentence_terms.join.2.frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_sentence_terms.join.2.frequency"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.build_sentence_terms.select.document_id",
-      "ir": "ir:CreateIndex.step.18.build_sentence_terms.project.document_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_sentence_terms.field.document_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.lexical.build_sentence_terms.select.document_id",
+      "ir": "ir:CreateIndex.step.18.lexical.build_sentence_terms.project.document_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_sentence_terms.field.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.build_sentence_terms.select.section_id",
-      "ir": "ir:CreateIndex.step.18.build_sentence_terms.project.section_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_sentence_terms.field.section_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.lexical.build_sentence_terms.select.section_id",
+      "ir": "ir:CreateIndex.step.18.lexical.build_sentence_terms.project.section_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_sentence_terms.field.section_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.build_sentence_terms.select.paragraph_id",
-      "ir": "ir:CreateIndex.step.18.build_sentence_terms.project.paragraph_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_sentence_terms.field.paragraph_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.lexical.build_sentence_terms.select.paragraph_id",
+      "ir": "ir:CreateIndex.step.18.lexical.build_sentence_terms.project.paragraph_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_sentence_terms.field.paragraph_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.build_sentence_terms.select.sentence_id",
-      "ir": "ir:CreateIndex.step.18.build_sentence_terms.project.sentence_id",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_sentence_terms.field.sentence_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.lexical.build_sentence_terms.select.sentence_id",
+      "ir": "ir:CreateIndex.step.18.lexical.build_sentence_terms.project.sentence_id",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_sentence_terms.field.sentence_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.build_sentence_terms.select.token",
-      "ir": "ir:CreateIndex.step.18.build_sentence_terms.project.token",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_sentence_terms.field.token"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.lexical.build_sentence_terms.select.token",
+      "ir": "ir:CreateIndex.step.18.lexical.build_sentence_terms.project.token",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_sentence_terms.field.token"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.build_sentence_terms.select.term_frequency",
-      "ir": "ir:CreateIndex.step.18.build_sentence_terms.project.term_frequency",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_sentence_terms.field.term_frequency"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.lexical.build_sentence_terms.select.term_frequency",
+      "ir": "ir:CreateIndex.step.18.lexical.build_sentence_terms.project.term_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_sentence_terms.field.term_frequency"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.build_sentence_terms.select.target_word_count",
-      "ir": "ir:CreateIndex.step.18.build_sentence_terms.project.target_word_count",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_sentence_terms.field.target_word_count"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.lexical.build_sentence_terms.select.target_word_count",
+      "ir": "ir:CreateIndex.step.18.lexical.build_sentence_terms.project.target_word_count",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_sentence_terms.field.target_word_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.build_sentence_terms.select.target_distinct_terms",
-      "ir": "ir:CreateIndex.step.18.build_sentence_terms.project.target_distinct_terms",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_sentence_terms.field.target_distinct_terms"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.lexical.build_sentence_terms.select.target_distinct_terms",
+      "ir": "ir:CreateIndex.step.18.lexical.build_sentence_terms.project.target_distinct_terms",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_sentence_terms.field.target_distinct_terms"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.build_sentence_terms.select.document_frequency",
-      "ir": "ir:CreateIndex.step.18.build_sentence_terms.project.document_frequency",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_sentence_terms.field.document_frequency"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.lexical.build_sentence_terms.select.document_frequency",
+      "ir": "ir:CreateIndex.step.18.lexical.build_sentence_terms.project.document_frequency",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_sentence_terms.field.document_frequency"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.build_sentence_terms.validation.0.intermediate",
-      "ir": "ir:CreateIndex.step.18.build_sentence_terms.validation.0.intermediate",
-      "source": "source:examples.search.transforms.index.CreateIndex.build_sentence_terms.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.18.lexical.build_sentence_terms.validation.0.intermediate",
+      "ir": "ir:CreateIndex.step.18.lexical.build_sentence_terms.validation.0.intermediate",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.build_sentence_terms.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.19.summarize_sentence_index",
-      "ir": "ir:CreateIndex.step.19.summarize_sentence_index",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sentence_index"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.19.lexical.summarize_sentence_index",
+      "ir": "ir:CreateIndex.step.19.lexical.summarize_sentence_index",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_sentence_index"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.19.summarize_sentence_index.aggregate.target_count",
-      "ir": "ir:CreateIndex.step.19.summarize_sentence_index.aggregate.target_count",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sentence_index.aggregate.target_count"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.19.lexical.summarize_sentence_index.aggregate.target_count",
+      "ir": "ir:CreateIndex.step.19.lexical.summarize_sentence_index.aggregate.target_count",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_sentence_index.aggregate.target_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.19.summarize_sentence_index.aggregate.average_target_length",
-      "ir": "ir:CreateIndex.step.19.summarize_sentence_index.aggregate.average_target_length",
-      "source": "source:examples.search.transforms.index.CreateIndex.summarize_sentence_index.aggregate.average_target_length"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.step.19.lexical.summarize_sentence_index.aggregate.average_target_length",
+      "ir": "ir:CreateIndex.step.19.lexical.summarize_sentence_index.aggregate.average_target_length",
+      "source": "source:examples.search.transforms.index.CreateIndex.lexical.summarize_sentence_index.aggregate.average_target_length"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.index.CreateIndexGenerated.run.output.0.document_terms.validation.final",
@@ -807,23 +807,23 @@
     },
     "DocumentIndexSummary": {
       "constant": "DOCUMENT_INDEX_SUMMARY_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.index"
     },
     "DocumentIndexTarget": {
       "constant": "DOCUMENT_INDEX_TARGET_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.index"
     },
     "DocumentIndexTargetStats": {
       "constant": "DOCUMENT_INDEX_TARGET_STATS_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.lexical_intermediate"
     },
     "DocumentIndexTerm": {
       "constant": "DOCUMENT_INDEX_TERM_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.index"
     },
     "DocumentIndexTermCount": {
       "constant": "DOCUMENT_INDEX_TERM_COUNT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.lexical_intermediate"
     },
     "DocumentLine": {
       "constant": "DOCUMENT_LINE_SCHEMA",
@@ -831,7 +831,7 @@
     },
     "DocumentOverlapMatch": {
       "constant": "DOCUMENT_OVERLAP_MATCH_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+      "module": "examples.structure_generated.search.pyspark.schemas.scoring_intermediate"
     },
     "DocumentOverlapScore": {
       "constant": "DOCUMENT_OVERLAP_SCORE_SCHEMA",
@@ -935,7 +935,7 @@
     },
     "ExpandedQueryToken": {
       "constant": "EXPANDED_QUERY_TOKEN_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.scoring_intermediate"
     },
     "ExpandedSentenceText": {
       "constant": "EXPANDED_SENTENCE_TEXT_SCHEMA",
@@ -955,7 +955,7 @@
     },
     "IndexTokenFrequency": {
       "constant": "INDEX_TOKEN_FREQUENCY_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.lexical_intermediate"
     },
     "IndexedSimilarDocument": {
       "constant": "INDEXED_SIMILAR_DOCUMENT_SCHEMA",
@@ -1011,23 +1011,23 @@
     },
     "ParagraphIndexSummary": {
       "constant": "PARAGRAPH_INDEX_SUMMARY_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.index"
     },
     "ParagraphIndexTarget": {
       "constant": "PARAGRAPH_INDEX_TARGET_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.index"
     },
     "ParagraphIndexTargetStats": {
       "constant": "PARAGRAPH_INDEX_TARGET_STATS_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.lexical_intermediate"
     },
     "ParagraphIndexTerm": {
       "constant": "PARAGRAPH_INDEX_TERM_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.index"
     },
     "ParagraphIndexTermCount": {
       "constant": "PARAGRAPH_INDEX_TERM_COUNT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.lexical_intermediate"
     },
     "ParagraphLine": {
       "constant": "PARAGRAPH_LINE_SCHEMA",
@@ -1039,7 +1039,7 @@
     },
     "ParagraphOverlapMatch": {
       "constant": "PARAGRAPH_OVERLAP_MATCH_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+      "module": "examples.structure_generated.search.pyspark.schemas.scoring_intermediate"
     },
     "ParagraphOverlapScore": {
       "constant": "PARAGRAPH_OVERLAP_SCORE_SCHEMA",
@@ -1111,15 +1111,15 @@
     },
     "QueryTerm": {
       "constant": "QUERY_TERM_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.scoring_intermediate"
     },
     "QueryTermCount": {
       "constant": "QUERY_TERM_COUNT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.scoring_intermediate"
     },
     "QueryToken": {
       "constant": "QUERY_TOKEN_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.scoring_intermediate"
     },
     "RelevancePolicy": {
       "constant": "RELEVANCE_POLICY_SCHEMA",
@@ -1147,23 +1147,23 @@
     },
     "SectionIndexSummary": {
       "constant": "SECTION_INDEX_SUMMARY_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.index"
     },
     "SectionIndexTarget": {
       "constant": "SECTION_INDEX_TARGET_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.index"
     },
     "SectionIndexTargetStats": {
       "constant": "SECTION_INDEX_TARGET_STATS_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.lexical_intermediate"
     },
     "SectionIndexTerm": {
       "constant": "SECTION_INDEX_TERM_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.index"
     },
     "SectionIndexTermCount": {
       "constant": "SECTION_INDEX_TERM_COUNT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.lexical_intermediate"
     },
     "SectionKey": {
       "constant": "SECTION_KEY_SCHEMA",
@@ -1171,7 +1171,7 @@
     },
     "SectionOverlapMatch": {
       "constant": "SECTION_OVERLAP_MATCH_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+      "module": "examples.structure_generated.search.pyspark.schemas.scoring_intermediate"
     },
     "SectionOverlapScore": {
       "constant": "SECTION_OVERLAP_SCORE_SCHEMA",
@@ -1219,27 +1219,27 @@
     },
     "SentenceIndexSummary": {
       "constant": "SENTENCE_INDEX_SUMMARY_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.index"
     },
     "SentenceIndexTarget": {
       "constant": "SENTENCE_INDEX_TARGET_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.index"
     },
     "SentenceIndexTargetStats": {
       "constant": "SENTENCE_INDEX_TARGET_STATS_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.lexical_intermediate"
     },
     "SentenceIndexTerm": {
       "constant": "SENTENCE_INDEX_TERM_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.index"
     },
     "SentenceIndexTermCount": {
       "constant": "SENTENCE_INDEX_TERM_COUNT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.lexical_intermediate"
     },
     "SentenceOverlapMatch": {
       "constant": "SENTENCE_OVERLAP_MATCH_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+      "module": "examples.structure_generated.search.pyspark.schemas.scoring_intermediate"
     },
     "SentenceOverlapScore": {
       "constant": "SENTENCE_OVERLAP_SCORE_SCHEMA",
@@ -1365,8 +1365,8 @@
         "sources": [
           "words"
         ],
-        "step": "count_document_terms",
-        "target": "count_document_terms"
+        "step": "lexical.count_document_terms",
+        "target": "lexical.count_document_terms"
       },
       {
         "detail": {
@@ -1378,7 +1378,7 @@
         "sources": [
           "words.document_id"
         ],
-        "step": "count_document_terms",
+        "step": "lexical.count_document_terms",
         "target": "DocumentIndexTermCount.document_id"
       },
       {
@@ -1391,7 +1391,7 @@
         "sources": [
           "words.token"
         ],
-        "step": "count_document_terms",
+        "step": "lexical.count_document_terms",
         "target": "DocumentIndexTermCount.token"
       },
       {
@@ -1404,7 +1404,7 @@
         "sources": [
           "words"
         ],
-        "step": "count_document_terms",
+        "step": "lexical.count_document_terms",
         "target": "DocumentIndexTermCount.term_frequency"
       },
       {
@@ -1416,8 +1416,8 @@
         "sources": [
           "DocumentIndexTermCount"
         ],
-        "step": "summarize_documents",
-        "target": "summarize_documents"
+        "step": "lexical.summarize_documents",
+        "target": "lexical.summarize_documents"
       },
       {
         "detail": {
@@ -1429,7 +1429,7 @@
         "sources": [
           "words.document_id"
         ],
-        "step": "summarize_documents",
+        "step": "lexical.summarize_documents",
         "target": "DocumentIndexTargetStats.document_id"
       },
       {
@@ -1442,7 +1442,7 @@
         "sources": [
           "words"
         ],
-        "step": "summarize_documents",
+        "step": "lexical.summarize_documents",
         "target": "DocumentIndexTargetStats.target_word_count"
       },
       {
@@ -1455,7 +1455,7 @@
         "sources": [
           "words.token"
         ],
-        "step": "summarize_documents",
+        "step": "lexical.summarize_documents",
         "target": "DocumentIndexTargetStats.target_distinct_terms"
       },
       {
@@ -1467,8 +1467,8 @@
         "sources": [
           "DocumentIndexTargetStats"
         ],
-        "step": "count_document_frequencies",
-        "target": "count_document_frequencies"
+        "step": "lexical.count_document_frequencies",
+        "target": "lexical.count_document_frequencies"
       },
       {
         "detail": {
@@ -1480,7 +1480,7 @@
         "sources": [
           "DocumentIndexTermCount.token"
         ],
-        "step": "count_document_frequencies",
+        "step": "lexical.count_document_frequencies",
         "target": "IndexTokenFrequency.token"
       },
       {
@@ -1491,9 +1491,9 @@
         },
         "operation": "aggregate",
         "sources": [
-          "document_term_counts"
+          "lexical__document_term_counts"
         ],
-        "step": "count_document_frequencies",
+        "step": "lexical.count_document_frequencies",
         "target": "IndexTokenFrequency.document_frequency"
       },
       {
@@ -1507,38 +1507,38 @@
           "stats",
           "frequency"
         ],
-        "step": "build_document_terms",
-        "target": "build_document_terms"
+        "step": "lexical.build_document_terms",
+        "target": "lexical.build_document_terms"
       },
       {
         "detail": {
           "cardinality": "row_multiplying",
           "hint": null,
           "how": "inner",
-          "right_alias": "document_target_stats"
+          "right_alias": "lexical__document_target_stats"
         },
         "operation": "rowset_join",
         "sources": [
           "stats.document_id",
           "term.document_id"
         ],
-        "step": "build_document_terms",
-        "target": "build_document_terms.join[1].stats"
+        "step": "lexical.build_document_terms",
+        "target": "lexical.build_document_terms.join[1].stats"
       },
       {
         "detail": {
           "cardinality": "row_multiplying",
           "hint": null,
           "how": "inner",
-          "right_alias": "document_token_frequencies_2"
+          "right_alias": "lexical__document_token_frequencies_2"
         },
         "operation": "rowset_join",
         "sources": [
           "frequency.token",
           "term.token"
         ],
-        "step": "build_document_terms",
-        "target": "build_document_terms.join[2].frequency"
+        "step": "lexical.build_document_terms",
+        "target": "lexical.build_document_terms.join[2].frequency"
       },
       {
         "detail": {
@@ -1548,7 +1548,7 @@
         "sources": [
           "term.document_id"
         ],
-        "step": "build_document_terms",
+        "step": "lexical.build_document_terms",
         "target": "DocumentIndexTerm.document_id"
       },
       {
@@ -1559,7 +1559,7 @@
         "sources": [
           "term.token"
         ],
-        "step": "build_document_terms",
+        "step": "lexical.build_document_terms",
         "target": "DocumentIndexTerm.token"
       },
       {
@@ -1570,7 +1570,7 @@
         "sources": [
           "term.term_frequency"
         ],
-        "step": "build_document_terms",
+        "step": "lexical.build_document_terms",
         "target": "DocumentIndexTerm.term_frequency"
       },
       {
@@ -1581,7 +1581,7 @@
         "sources": [
           "stats.target_word_count"
         ],
-        "step": "build_document_terms",
+        "step": "lexical.build_document_terms",
         "target": "DocumentIndexTerm.target_word_count"
       },
       {
@@ -1592,7 +1592,7 @@
         "sources": [
           "stats.target_distinct_terms"
         ],
-        "step": "build_document_terms",
+        "step": "lexical.build_document_terms",
         "target": "DocumentIndexTerm.target_distinct_terms"
       },
       {
@@ -1603,7 +1603,7 @@
         "sources": [
           "frequency.document_frequency"
         ],
-        "step": "build_document_terms",
+        "step": "lexical.build_document_terms",
         "target": "DocumentIndexTerm.document_frequency"
       },
       {
@@ -1615,8 +1615,8 @@
         "sources": [
           "DocumentIndexTerm"
         ],
-        "step": "summarize_document_index",
-        "target": "summarize_document_index"
+        "step": "lexical.summarize_document_index",
+        "target": "lexical.summarize_document_index"
       },
       {
         "detail": {
@@ -1626,9 +1626,9 @@
         },
         "operation": "aggregate",
         "sources": [
-          "document_target_stats"
+          "lexical__document_target_stats"
         ],
-        "step": "summarize_document_index",
+        "step": "lexical.summarize_document_index",
         "target": "DocumentIndexSummary.target_count"
       },
       {
@@ -1641,7 +1641,7 @@
         "sources": [
           "DocumentIndexTargetStats.target_word_count"
         ],
-        "step": "summarize_document_index",
+        "step": "lexical.summarize_document_index",
         "target": "DocumentIndexSummary.average_target_length"
       },
       {
@@ -1653,8 +1653,8 @@
         "sources": [
           "DocumentIndexSummary"
         ],
-        "step": "count_section_terms",
-        "target": "count_section_terms"
+        "step": "lexical.count_section_terms",
+        "target": "lexical.count_section_terms"
       },
       {
         "detail": {
@@ -1666,7 +1666,7 @@
         "sources": [
           "words.document_id"
         ],
-        "step": "count_section_terms",
+        "step": "lexical.count_section_terms",
         "target": "SectionIndexTermCount.document_id"
       },
       {
@@ -1679,7 +1679,7 @@
         "sources": [
           "words.section_id"
         ],
-        "step": "count_section_terms",
+        "step": "lexical.count_section_terms",
         "target": "SectionIndexTermCount.section_id"
       },
       {
@@ -1692,7 +1692,7 @@
         "sources": [
           "words.token"
         ],
-        "step": "count_section_terms",
+        "step": "lexical.count_section_terms",
         "target": "SectionIndexTermCount.token"
       },
       {
@@ -1705,7 +1705,7 @@
         "sources": [
           "words"
         ],
-        "step": "count_section_terms",
+        "step": "lexical.count_section_terms",
         "target": "SectionIndexTermCount.term_frequency"
       },
       {
@@ -1717,8 +1717,8 @@
         "sources": [
           "SectionIndexTermCount"
         ],
-        "step": "summarize_sections",
-        "target": "summarize_sections"
+        "step": "lexical.summarize_sections",
+        "target": "lexical.summarize_sections"
       },
       {
         "detail": {
@@ -1730,7 +1730,7 @@
         "sources": [
           "words.document_id"
         ],
-        "step": "summarize_sections",
+        "step": "lexical.summarize_sections",
         "target": "SectionIndexTargetStats.document_id"
       },
       {
@@ -1743,7 +1743,7 @@
         "sources": [
           "words.section_id"
         ],
-        "step": "summarize_sections",
+        "step": "lexical.summarize_sections",
         "target": "SectionIndexTargetStats.section_id"
       },
       {
@@ -1756,7 +1756,7 @@
         "sources": [
           "words"
         ],
-        "step": "summarize_sections",
+        "step": "lexical.summarize_sections",
         "target": "SectionIndexTargetStats.target_word_count"
       },
       {
@@ -1769,7 +1769,7 @@
         "sources": [
           "words.token"
         ],
-        "step": "summarize_sections",
+        "step": "lexical.summarize_sections",
         "target": "SectionIndexTargetStats.target_distinct_terms"
       },
       {
@@ -1781,8 +1781,8 @@
         "sources": [
           "SectionIndexTargetStats"
         ],
-        "step": "count_section_frequencies",
-        "target": "count_section_frequencies"
+        "step": "lexical.count_section_frequencies",
+        "target": "lexical.count_section_frequencies"
       },
       {
         "detail": {
@@ -1794,7 +1794,7 @@
         "sources": [
           "SectionIndexTermCount.token"
         ],
-        "step": "count_section_frequencies",
+        "step": "lexical.count_section_frequencies",
         "target": "IndexTokenFrequency.token"
       },
       {
@@ -1805,9 +1805,9 @@
         },
         "operation": "aggregate",
         "sources": [
-          "section_term_counts"
+          "lexical__section_term_counts"
         ],
-        "step": "count_section_frequencies",
+        "step": "lexical.count_section_frequencies",
         "target": "IndexTokenFrequency.document_frequency"
       },
       {
@@ -1821,15 +1821,15 @@
           "stats",
           "frequency"
         ],
-        "step": "build_section_terms",
-        "target": "build_section_terms"
+        "step": "lexical.build_section_terms",
+        "target": "lexical.build_section_terms"
       },
       {
         "detail": {
           "cardinality": "row_multiplying",
           "hint": null,
           "how": "inner",
-          "right_alias": "section_target_stats"
+          "right_alias": "lexical__section_target_stats"
         },
         "operation": "rowset_join",
         "sources": [
@@ -1838,23 +1838,23 @@
           "stats.section_id",
           "term.section_id"
         ],
-        "step": "build_section_terms",
-        "target": "build_section_terms.join[1].stats"
+        "step": "lexical.build_section_terms",
+        "target": "lexical.build_section_terms.join[1].stats"
       },
       {
         "detail": {
           "cardinality": "row_multiplying",
           "hint": null,
           "how": "inner",
-          "right_alias": "section_token_frequencies_2"
+          "right_alias": "lexical__section_token_frequencies_2"
         },
         "operation": "rowset_join",
         "sources": [
           "frequency.token",
           "term.token"
         ],
-        "step": "build_section_terms",
-        "target": "build_section_terms.join[2].frequency"
+        "step": "lexical.build_section_terms",
+        "target": "lexical.build_section_terms.join[2].frequency"
       },
       {
         "detail": {
@@ -1864,7 +1864,7 @@
         "sources": [
           "term.document_id"
         ],
-        "step": "build_section_terms",
+        "step": "lexical.build_section_terms",
         "target": "SectionIndexTerm.document_id"
       },
       {
@@ -1875,7 +1875,7 @@
         "sources": [
           "term.section_id"
         ],
-        "step": "build_section_terms",
+        "step": "lexical.build_section_terms",
         "target": "SectionIndexTerm.section_id"
       },
       {
@@ -1886,7 +1886,7 @@
         "sources": [
           "term.token"
         ],
-        "step": "build_section_terms",
+        "step": "lexical.build_section_terms",
         "target": "SectionIndexTerm.token"
       },
       {
@@ -1897,7 +1897,7 @@
         "sources": [
           "term.term_frequency"
         ],
-        "step": "build_section_terms",
+        "step": "lexical.build_section_terms",
         "target": "SectionIndexTerm.term_frequency"
       },
       {
@@ -1908,7 +1908,7 @@
         "sources": [
           "stats.target_word_count"
         ],
-        "step": "build_section_terms",
+        "step": "lexical.build_section_terms",
         "target": "SectionIndexTerm.target_word_count"
       },
       {
@@ -1919,7 +1919,7 @@
         "sources": [
           "stats.target_distinct_terms"
         ],
-        "step": "build_section_terms",
+        "step": "lexical.build_section_terms",
         "target": "SectionIndexTerm.target_distinct_terms"
       },
       {
@@ -1930,7 +1930,7 @@
         "sources": [
           "frequency.document_frequency"
         ],
-        "step": "build_section_terms",
+        "step": "lexical.build_section_terms",
         "target": "SectionIndexTerm.document_frequency"
       },
       {
@@ -1942,8 +1942,8 @@
         "sources": [
           "SectionIndexTerm"
         ],
-        "step": "summarize_section_index",
-        "target": "summarize_section_index"
+        "step": "lexical.summarize_section_index",
+        "target": "lexical.summarize_section_index"
       },
       {
         "detail": {
@@ -1953,9 +1953,9 @@
         },
         "operation": "aggregate",
         "sources": [
-          "section_target_stats"
+          "lexical__section_target_stats"
         ],
-        "step": "summarize_section_index",
+        "step": "lexical.summarize_section_index",
         "target": "SectionIndexSummary.target_count"
       },
       {
@@ -1968,7 +1968,7 @@
         "sources": [
           "SectionIndexTargetStats.target_word_count"
         ],
-        "step": "summarize_section_index",
+        "step": "lexical.summarize_section_index",
         "target": "SectionIndexSummary.average_target_length"
       },
       {
@@ -1980,8 +1980,8 @@
         "sources": [
           "SectionIndexSummary"
         ],
-        "step": "count_paragraph_terms",
-        "target": "count_paragraph_terms"
+        "step": "lexical.count_paragraph_terms",
+        "target": "lexical.count_paragraph_terms"
       },
       {
         "detail": {
@@ -1993,7 +1993,7 @@
         "sources": [
           "words.document_id"
         ],
-        "step": "count_paragraph_terms",
+        "step": "lexical.count_paragraph_terms",
         "target": "ParagraphIndexTermCount.document_id"
       },
       {
@@ -2006,7 +2006,7 @@
         "sources": [
           "words.section_id"
         ],
-        "step": "count_paragraph_terms",
+        "step": "lexical.count_paragraph_terms",
         "target": "ParagraphIndexTermCount.section_id"
       },
       {
@@ -2019,7 +2019,7 @@
         "sources": [
           "words.paragraph_id"
         ],
-        "step": "count_paragraph_terms",
+        "step": "lexical.count_paragraph_terms",
         "target": "ParagraphIndexTermCount.paragraph_id"
       },
       {
@@ -2032,7 +2032,7 @@
         "sources": [
           "words.token"
         ],
-        "step": "count_paragraph_terms",
+        "step": "lexical.count_paragraph_terms",
         "target": "ParagraphIndexTermCount.token"
       },
       {
@@ -2045,7 +2045,7 @@
         "sources": [
           "words"
         ],
-        "step": "count_paragraph_terms",
+        "step": "lexical.count_paragraph_terms",
         "target": "ParagraphIndexTermCount.term_frequency"
       },
       {
@@ -2057,8 +2057,8 @@
         "sources": [
           "ParagraphIndexTermCount"
         ],
-        "step": "summarize_paragraphs",
-        "target": "summarize_paragraphs"
+        "step": "lexical.summarize_paragraphs",
+        "target": "lexical.summarize_paragraphs"
       },
       {
         "detail": {
@@ -2070,7 +2070,7 @@
         "sources": [
           "words.document_id"
         ],
-        "step": "summarize_paragraphs",
+        "step": "lexical.summarize_paragraphs",
         "target": "ParagraphIndexTargetStats.document_id"
       },
       {
@@ -2083,7 +2083,7 @@
         "sources": [
           "words.section_id"
         ],
-        "step": "summarize_paragraphs",
+        "step": "lexical.summarize_paragraphs",
         "target": "ParagraphIndexTargetStats.section_id"
       },
       {
@@ -2096,7 +2096,7 @@
         "sources": [
           "words.paragraph_id"
         ],
-        "step": "summarize_paragraphs",
+        "step": "lexical.summarize_paragraphs",
         "target": "ParagraphIndexTargetStats.paragraph_id"
       },
       {
@@ -2109,7 +2109,7 @@
         "sources": [
           "words"
         ],
-        "step": "summarize_paragraphs",
+        "step": "lexical.summarize_paragraphs",
         "target": "ParagraphIndexTargetStats.target_word_count"
       },
       {
@@ -2122,7 +2122,7 @@
         "sources": [
           "words.token"
         ],
-        "step": "summarize_paragraphs",
+        "step": "lexical.summarize_paragraphs",
         "target": "ParagraphIndexTargetStats.target_distinct_terms"
       },
       {
@@ -2134,8 +2134,8 @@
         "sources": [
           "ParagraphIndexTargetStats"
         ],
-        "step": "count_paragraph_frequencies",
-        "target": "count_paragraph_frequencies"
+        "step": "lexical.count_paragraph_frequencies",
+        "target": "lexical.count_paragraph_frequencies"
       },
       {
         "detail": {
@@ -2147,7 +2147,7 @@
         "sources": [
           "ParagraphIndexTermCount.token"
         ],
-        "step": "count_paragraph_frequencies",
+        "step": "lexical.count_paragraph_frequencies",
         "target": "IndexTokenFrequency.token"
       },
       {
@@ -2158,9 +2158,9 @@
         },
         "operation": "aggregate",
         "sources": [
-          "paragraph_term_counts"
+          "lexical__paragraph_term_counts"
         ],
-        "step": "count_paragraph_frequencies",
+        "step": "lexical.count_paragraph_frequencies",
         "target": "IndexTokenFrequency.document_frequency"
       },
       {
@@ -2174,15 +2174,15 @@
           "stats",
           "frequency"
         ],
-        "step": "build_paragraph_terms",
-        "target": "build_paragraph_terms"
+        "step": "lexical.build_paragraph_terms",
+        "target": "lexical.build_paragraph_terms"
       },
       {
         "detail": {
           "cardinality": "row_multiplying",
           "hint": null,
           "how": "inner",
-          "right_alias": "paragraph_target_stats"
+          "right_alias": "lexical__paragraph_target_stats"
         },
         "operation": "rowset_join",
         "sources": [
@@ -2193,23 +2193,23 @@
           "stats.paragraph_id",
           "term.paragraph_id"
         ],
-        "step": "build_paragraph_terms",
-        "target": "build_paragraph_terms.join[1].stats"
+        "step": "lexical.build_paragraph_terms",
+        "target": "lexical.build_paragraph_terms.join[1].stats"
       },
       {
         "detail": {
           "cardinality": "row_multiplying",
           "hint": null,
           "how": "inner",
-          "right_alias": "paragraph_token_frequencies_2"
+          "right_alias": "lexical__paragraph_token_frequencies_2"
         },
         "operation": "rowset_join",
         "sources": [
           "frequency.token",
           "term.token"
         ],
-        "step": "build_paragraph_terms",
-        "target": "build_paragraph_terms.join[2].frequency"
+        "step": "lexical.build_paragraph_terms",
+        "target": "lexical.build_paragraph_terms.join[2].frequency"
       },
       {
         "detail": {
@@ -2219,7 +2219,7 @@
         "sources": [
           "term.document_id"
         ],
-        "step": "build_paragraph_terms",
+        "step": "lexical.build_paragraph_terms",
         "target": "ParagraphIndexTerm.document_id"
       },
       {
@@ -2230,7 +2230,7 @@
         "sources": [
           "term.section_id"
         ],
-        "step": "build_paragraph_terms",
+        "step": "lexical.build_paragraph_terms",
         "target": "ParagraphIndexTerm.section_id"
       },
       {
@@ -2241,7 +2241,7 @@
         "sources": [
           "term.paragraph_id"
         ],
-        "step": "build_paragraph_terms",
+        "step": "lexical.build_paragraph_terms",
         "target": "ParagraphIndexTerm.paragraph_id"
       },
       {
@@ -2252,7 +2252,7 @@
         "sources": [
           "term.token"
         ],
-        "step": "build_paragraph_terms",
+        "step": "lexical.build_paragraph_terms",
         "target": "ParagraphIndexTerm.token"
       },
       {
@@ -2263,7 +2263,7 @@
         "sources": [
           "term.term_frequency"
         ],
-        "step": "build_paragraph_terms",
+        "step": "lexical.build_paragraph_terms",
         "target": "ParagraphIndexTerm.term_frequency"
       },
       {
@@ -2274,7 +2274,7 @@
         "sources": [
           "stats.target_word_count"
         ],
-        "step": "build_paragraph_terms",
+        "step": "lexical.build_paragraph_terms",
         "target": "ParagraphIndexTerm.target_word_count"
       },
       {
@@ -2285,7 +2285,7 @@
         "sources": [
           "stats.target_distinct_terms"
         ],
-        "step": "build_paragraph_terms",
+        "step": "lexical.build_paragraph_terms",
         "target": "ParagraphIndexTerm.target_distinct_terms"
       },
       {
@@ -2296,7 +2296,7 @@
         "sources": [
           "frequency.document_frequency"
         ],
-        "step": "build_paragraph_terms",
+        "step": "lexical.build_paragraph_terms",
         "target": "ParagraphIndexTerm.document_frequency"
       },
       {
@@ -2308,8 +2308,8 @@
         "sources": [
           "ParagraphIndexTerm"
         ],
-        "step": "summarize_paragraph_index",
-        "target": "summarize_paragraph_index"
+        "step": "lexical.summarize_paragraph_index",
+        "target": "lexical.summarize_paragraph_index"
       },
       {
         "detail": {
@@ -2319,9 +2319,9 @@
         },
         "operation": "aggregate",
         "sources": [
-          "paragraph_target_stats"
+          "lexical__paragraph_target_stats"
         ],
-        "step": "summarize_paragraph_index",
+        "step": "lexical.summarize_paragraph_index",
         "target": "ParagraphIndexSummary.target_count"
       },
       {
@@ -2334,7 +2334,7 @@
         "sources": [
           "ParagraphIndexTargetStats.target_word_count"
         ],
-        "step": "summarize_paragraph_index",
+        "step": "lexical.summarize_paragraph_index",
         "target": "ParagraphIndexSummary.average_target_length"
       },
       {
@@ -2346,8 +2346,8 @@
         "sources": [
           "ParagraphIndexSummary"
         ],
-        "step": "count_sentence_terms",
-        "target": "count_sentence_terms"
+        "step": "lexical.count_sentence_terms",
+        "target": "lexical.count_sentence_terms"
       },
       {
         "detail": {
@@ -2359,7 +2359,7 @@
         "sources": [
           "words.document_id"
         ],
-        "step": "count_sentence_terms",
+        "step": "lexical.count_sentence_terms",
         "target": "SentenceIndexTermCount.document_id"
       },
       {
@@ -2372,7 +2372,7 @@
         "sources": [
           "words.section_id"
         ],
-        "step": "count_sentence_terms",
+        "step": "lexical.count_sentence_terms",
         "target": "SentenceIndexTermCount.section_id"
       },
       {
@@ -2385,7 +2385,7 @@
         "sources": [
           "words.paragraph_id"
         ],
-        "step": "count_sentence_terms",
+        "step": "lexical.count_sentence_terms",
         "target": "SentenceIndexTermCount.paragraph_id"
       },
       {
@@ -2398,7 +2398,7 @@
         "sources": [
           "words.sentence_id"
         ],
-        "step": "count_sentence_terms",
+        "step": "lexical.count_sentence_terms",
         "target": "SentenceIndexTermCount.sentence_id"
       },
       {
@@ -2411,7 +2411,7 @@
         "sources": [
           "words.token"
         ],
-        "step": "count_sentence_terms",
+        "step": "lexical.count_sentence_terms",
         "target": "SentenceIndexTermCount.token"
       },
       {
@@ -2424,7 +2424,7 @@
         "sources": [
           "words"
         ],
-        "step": "count_sentence_terms",
+        "step": "lexical.count_sentence_terms",
         "target": "SentenceIndexTermCount.term_frequency"
       },
       {
@@ -2436,8 +2436,8 @@
         "sources": [
           "SentenceIndexTermCount"
         ],
-        "step": "summarize_sentences",
-        "target": "summarize_sentences"
+        "step": "lexical.summarize_sentences",
+        "target": "lexical.summarize_sentences"
       },
       {
         "detail": {
@@ -2449,7 +2449,7 @@
         "sources": [
           "words.document_id"
         ],
-        "step": "summarize_sentences",
+        "step": "lexical.summarize_sentences",
         "target": "SentenceIndexTargetStats.document_id"
       },
       {
@@ -2462,7 +2462,7 @@
         "sources": [
           "words.section_id"
         ],
-        "step": "summarize_sentences",
+        "step": "lexical.summarize_sentences",
         "target": "SentenceIndexTargetStats.section_id"
       },
       {
@@ -2475,7 +2475,7 @@
         "sources": [
           "words.paragraph_id"
         ],
-        "step": "summarize_sentences",
+        "step": "lexical.summarize_sentences",
         "target": "SentenceIndexTargetStats.paragraph_id"
       },
       {
@@ -2488,7 +2488,7 @@
         "sources": [
           "words.sentence_id"
         ],
-        "step": "summarize_sentences",
+        "step": "lexical.summarize_sentences",
         "target": "SentenceIndexTargetStats.sentence_id"
       },
       {
@@ -2501,7 +2501,7 @@
         "sources": [
           "words"
         ],
-        "step": "summarize_sentences",
+        "step": "lexical.summarize_sentences",
         "target": "SentenceIndexTargetStats.target_word_count"
       },
       {
@@ -2514,7 +2514,7 @@
         "sources": [
           "words.token"
         ],
-        "step": "summarize_sentences",
+        "step": "lexical.summarize_sentences",
         "target": "SentenceIndexTargetStats.target_distinct_terms"
       },
       {
@@ -2526,8 +2526,8 @@
         "sources": [
           "SentenceIndexTargetStats"
         ],
-        "step": "count_sentence_frequencies",
-        "target": "count_sentence_frequencies"
+        "step": "lexical.count_sentence_frequencies",
+        "target": "lexical.count_sentence_frequencies"
       },
       {
         "detail": {
@@ -2539,7 +2539,7 @@
         "sources": [
           "SentenceIndexTermCount.token"
         ],
-        "step": "count_sentence_frequencies",
+        "step": "lexical.count_sentence_frequencies",
         "target": "IndexTokenFrequency.token"
       },
       {
@@ -2550,9 +2550,9 @@
         },
         "operation": "aggregate",
         "sources": [
-          "sentence_term_counts"
+          "lexical__sentence_term_counts"
         ],
-        "step": "count_sentence_frequencies",
+        "step": "lexical.count_sentence_frequencies",
         "target": "IndexTokenFrequency.document_frequency"
       },
       {
@@ -2566,15 +2566,15 @@
           "stats",
           "frequency"
         ],
-        "step": "build_sentence_terms",
-        "target": "build_sentence_terms"
+        "step": "lexical.build_sentence_terms",
+        "target": "lexical.build_sentence_terms"
       },
       {
         "detail": {
           "cardinality": "row_multiplying",
           "hint": null,
           "how": "inner",
-          "right_alias": "sentence_target_stats"
+          "right_alias": "lexical__sentence_target_stats"
         },
         "operation": "rowset_join",
         "sources": [
@@ -2587,23 +2587,23 @@
           "stats.sentence_id",
           "term.sentence_id"
         ],
-        "step": "build_sentence_terms",
-        "target": "build_sentence_terms.join[1].stats"
+        "step": "lexical.build_sentence_terms",
+        "target": "lexical.build_sentence_terms.join[1].stats"
       },
       {
         "detail": {
           "cardinality": "row_multiplying",
           "hint": null,
           "how": "inner",
-          "right_alias": "sentence_token_frequencies_2"
+          "right_alias": "lexical__sentence_token_frequencies_2"
         },
         "operation": "rowset_join",
         "sources": [
           "frequency.token",
           "term.token"
         ],
-        "step": "build_sentence_terms",
-        "target": "build_sentence_terms.join[2].frequency"
+        "step": "lexical.build_sentence_terms",
+        "target": "lexical.build_sentence_terms.join[2].frequency"
       },
       {
         "detail": {
@@ -2613,7 +2613,7 @@
         "sources": [
           "term.document_id"
         ],
-        "step": "build_sentence_terms",
+        "step": "lexical.build_sentence_terms",
         "target": "SentenceIndexTerm.document_id"
       },
       {
@@ -2624,7 +2624,7 @@
         "sources": [
           "term.section_id"
         ],
-        "step": "build_sentence_terms",
+        "step": "lexical.build_sentence_terms",
         "target": "SentenceIndexTerm.section_id"
       },
       {
@@ -2635,7 +2635,7 @@
         "sources": [
           "term.paragraph_id"
         ],
-        "step": "build_sentence_terms",
+        "step": "lexical.build_sentence_terms",
         "target": "SentenceIndexTerm.paragraph_id"
       },
       {
@@ -2646,7 +2646,7 @@
         "sources": [
           "term.sentence_id"
         ],
-        "step": "build_sentence_terms",
+        "step": "lexical.build_sentence_terms",
         "target": "SentenceIndexTerm.sentence_id"
       },
       {
@@ -2657,7 +2657,7 @@
         "sources": [
           "term.token"
         ],
-        "step": "build_sentence_terms",
+        "step": "lexical.build_sentence_terms",
         "target": "SentenceIndexTerm.token"
       },
       {
@@ -2668,7 +2668,7 @@
         "sources": [
           "term.term_frequency"
         ],
-        "step": "build_sentence_terms",
+        "step": "lexical.build_sentence_terms",
         "target": "SentenceIndexTerm.term_frequency"
       },
       {
@@ -2679,7 +2679,7 @@
         "sources": [
           "stats.target_word_count"
         ],
-        "step": "build_sentence_terms",
+        "step": "lexical.build_sentence_terms",
         "target": "SentenceIndexTerm.target_word_count"
       },
       {
@@ -2690,7 +2690,7 @@
         "sources": [
           "stats.target_distinct_terms"
         ],
-        "step": "build_sentence_terms",
+        "step": "lexical.build_sentence_terms",
         "target": "SentenceIndexTerm.target_distinct_terms"
       },
       {
@@ -2701,7 +2701,7 @@
         "sources": [
           "frequency.document_frequency"
         ],
-        "step": "build_sentence_terms",
+        "step": "lexical.build_sentence_terms",
         "target": "SentenceIndexTerm.document_frequency"
       },
       {
@@ -2713,8 +2713,8 @@
         "sources": [
           "SentenceIndexTerm"
         ],
-        "step": "summarize_sentence_index",
-        "target": "summarize_sentence_index"
+        "step": "lexical.summarize_sentence_index",
+        "target": "lexical.summarize_sentence_index"
       },
       {
         "detail": {
@@ -2724,9 +2724,9 @@
         },
         "operation": "aggregate",
         "sources": [
-          "sentence_target_stats"
+          "lexical__sentence_target_stats"
         ],
-        "step": "summarize_sentence_index",
+        "step": "lexical.summarize_sentence_index",
         "target": "SentenceIndexSummary.target_count"
       },
       {
@@ -2739,7 +2739,7 @@
         "sources": [
           "SentenceIndexTargetStats.target_word_count"
         ],
-        "step": "summarize_sentence_index",
+        "step": "lexical.summarize_sentence_index",
         "target": "SentenceIndexSummary.average_target_length"
       },
       {
@@ -2839,14 +2839,14 @@
       "before_hooks": [],
       "input_alias": "word",
       "joins": [],
-      "name": "count_document_terms",
+      "name": "lexical.count_document_terms",
       "output_alias": "document_index_term_count",
       "output_schema": "DocumentIndexTermCount",
       "results": [
         {
           "after_hooks": [],
-          "frame": "document_term_counts",
-          "lane": "document_term_counts",
+          "frame": "lexical__document_term_counts",
+          "lane": "lexical__document_term_counts",
           "schema": "DocumentIndexTermCount"
         }
       ],
@@ -2864,14 +2864,14 @@
       "before_hooks": [],
       "input_alias": "word",
       "joins": [],
-      "name": "summarize_documents",
+      "name": "lexical.summarize_documents",
       "output_alias": "document_index_target_stats",
       "output_schema": "DocumentIndexTargetStats",
       "results": [
         {
           "after_hooks": [],
-          "frame": "document_target_stats",
-          "lane": "document_target_stats",
+          "frame": "lexical__document_target_stats",
+          "lane": "lexical__document_target_stats",
           "schema": "DocumentIndexTargetStats"
         }
       ],
@@ -2889,14 +2889,14 @@
       "before_hooks": [],
       "input_alias": "document_index_term_count",
       "joins": [],
-      "name": "count_document_frequencies",
+      "name": "lexical.count_document_frequencies",
       "output_alias": "index_token_frequency",
       "output_schema": "IndexTokenFrequency",
       "results": [
         {
           "after_hooks": [],
-          "frame": "document_token_frequencies",
-          "lane": "document_token_frequencies",
+          "frame": "lexical__document_token_frequencies",
+          "lane": "lexical__document_token_frequencies",
           "schema": "IndexTokenFrequency"
         }
       ],
@@ -2917,22 +2917,22 @@
         {
           "how": "inner",
           "input": "stats",
-          "right_alias": "document_target_stats"
+          "right_alias": "lexical__document_target_stats"
         },
         {
           "how": "inner",
           "input": "frequency",
-          "right_alias": "document_token_frequencies_2"
+          "right_alias": "lexical__document_token_frequencies_2"
         }
       ],
-      "name": "build_document_terms",
+      "name": "lexical.build_document_terms",
       "output_alias": "document_index_term",
       "output_schema": "DocumentIndexTerm",
       "results": [
         {
           "after_hooks": [],
-          "frame": "document_terms",
-          "lane": "document_terms",
+          "frame": "lexical__document_terms",
+          "lane": "lexical__document_terms",
           "schema": "DocumentIndexTerm"
         }
       ],
@@ -2950,14 +2950,14 @@
       "before_hooks": [],
       "input_alias": "document_index_target_stats",
       "joins": [],
-      "name": "summarize_document_index",
+      "name": "lexical.summarize_document_index",
       "output_alias": "document_index_summary",
       "output_schema": "DocumentIndexSummary",
       "results": [
         {
           "after_hooks": [],
-          "frame": "document_summary",
-          "lane": "document_summary",
+          "frame": "lexical__document_summary",
+          "lane": "lexical__document_summary",
           "schema": "DocumentIndexSummary"
         }
       ],
@@ -2975,14 +2975,14 @@
       "before_hooks": [],
       "input_alias": "word",
       "joins": [],
-      "name": "count_section_terms",
+      "name": "lexical.count_section_terms",
       "output_alias": "section_index_term_count",
       "output_schema": "SectionIndexTermCount",
       "results": [
         {
           "after_hooks": [],
-          "frame": "section_term_counts",
-          "lane": "section_term_counts",
+          "frame": "lexical__section_term_counts",
+          "lane": "lexical__section_term_counts",
           "schema": "SectionIndexTermCount"
         }
       ],
@@ -3000,14 +3000,14 @@
       "before_hooks": [],
       "input_alias": "word",
       "joins": [],
-      "name": "summarize_sections",
+      "name": "lexical.summarize_sections",
       "output_alias": "section_index_target_stats",
       "output_schema": "SectionIndexTargetStats",
       "results": [
         {
           "after_hooks": [],
-          "frame": "section_target_stats",
-          "lane": "section_target_stats",
+          "frame": "lexical__section_target_stats",
+          "lane": "lexical__section_target_stats",
           "schema": "SectionIndexTargetStats"
         }
       ],
@@ -3025,14 +3025,14 @@
       "before_hooks": [],
       "input_alias": "section_index_term_count",
       "joins": [],
-      "name": "count_section_frequencies",
+      "name": "lexical.count_section_frequencies",
       "output_alias": "index_token_frequency",
       "output_schema": "IndexTokenFrequency",
       "results": [
         {
           "after_hooks": [],
-          "frame": "section_token_frequencies",
-          "lane": "section_token_frequencies",
+          "frame": "lexical__section_token_frequencies",
+          "lane": "lexical__section_token_frequencies",
           "schema": "IndexTokenFrequency"
         }
       ],
@@ -3053,22 +3053,22 @@
         {
           "how": "inner",
           "input": "stats",
-          "right_alias": "section_target_stats"
+          "right_alias": "lexical__section_target_stats"
         },
         {
           "how": "inner",
           "input": "frequency",
-          "right_alias": "section_token_frequencies_2"
+          "right_alias": "lexical__section_token_frequencies_2"
         }
       ],
-      "name": "build_section_terms",
+      "name": "lexical.build_section_terms",
       "output_alias": "section_index_term",
       "output_schema": "SectionIndexTerm",
       "results": [
         {
           "after_hooks": [],
-          "frame": "section_terms",
-          "lane": "section_terms",
+          "frame": "lexical__section_terms",
+          "lane": "lexical__section_terms",
           "schema": "SectionIndexTerm"
         }
       ],
@@ -3086,14 +3086,14 @@
       "before_hooks": [],
       "input_alias": "section_index_target_stats",
       "joins": [],
-      "name": "summarize_section_index",
+      "name": "lexical.summarize_section_index",
       "output_alias": "section_index_summary",
       "output_schema": "SectionIndexSummary",
       "results": [
         {
           "after_hooks": [],
-          "frame": "section_summary",
-          "lane": "section_summary",
+          "frame": "lexical__section_summary",
+          "lane": "lexical__section_summary",
           "schema": "SectionIndexSummary"
         }
       ],
@@ -3111,14 +3111,14 @@
       "before_hooks": [],
       "input_alias": "word",
       "joins": [],
-      "name": "count_paragraph_terms",
+      "name": "lexical.count_paragraph_terms",
       "output_alias": "paragraph_index_term_count",
       "output_schema": "ParagraphIndexTermCount",
       "results": [
         {
           "after_hooks": [],
-          "frame": "paragraph_term_counts",
-          "lane": "paragraph_term_counts",
+          "frame": "lexical__paragraph_term_counts",
+          "lane": "lexical__paragraph_term_counts",
           "schema": "ParagraphIndexTermCount"
         }
       ],
@@ -3136,14 +3136,14 @@
       "before_hooks": [],
       "input_alias": "word",
       "joins": [],
-      "name": "summarize_paragraphs",
+      "name": "lexical.summarize_paragraphs",
       "output_alias": "paragraph_index_target_stats",
       "output_schema": "ParagraphIndexTargetStats",
       "results": [
         {
           "after_hooks": [],
-          "frame": "paragraph_target_stats",
-          "lane": "paragraph_target_stats",
+          "frame": "lexical__paragraph_target_stats",
+          "lane": "lexical__paragraph_target_stats",
           "schema": "ParagraphIndexTargetStats"
         }
       ],
@@ -3161,14 +3161,14 @@
       "before_hooks": [],
       "input_alias": "paragraph_index_term_count",
       "joins": [],
-      "name": "count_paragraph_frequencies",
+      "name": "lexical.count_paragraph_frequencies",
       "output_alias": "index_token_frequency",
       "output_schema": "IndexTokenFrequency",
       "results": [
         {
           "after_hooks": [],
-          "frame": "paragraph_token_frequencies",
-          "lane": "paragraph_token_frequencies",
+          "frame": "lexical__paragraph_token_frequencies",
+          "lane": "lexical__paragraph_token_frequencies",
           "schema": "IndexTokenFrequency"
         }
       ],
@@ -3189,22 +3189,22 @@
         {
           "how": "inner",
           "input": "stats",
-          "right_alias": "paragraph_target_stats"
+          "right_alias": "lexical__paragraph_target_stats"
         },
         {
           "how": "inner",
           "input": "frequency",
-          "right_alias": "paragraph_token_frequencies_2"
+          "right_alias": "lexical__paragraph_token_frequencies_2"
         }
       ],
-      "name": "build_paragraph_terms",
+      "name": "lexical.build_paragraph_terms",
       "output_alias": "paragraph_index_term",
       "output_schema": "ParagraphIndexTerm",
       "results": [
         {
           "after_hooks": [],
-          "frame": "paragraph_terms",
-          "lane": "paragraph_terms",
+          "frame": "lexical__paragraph_terms",
+          "lane": "lexical__paragraph_terms",
           "schema": "ParagraphIndexTerm"
         }
       ],
@@ -3222,14 +3222,14 @@
       "before_hooks": [],
       "input_alias": "paragraph_index_target_stats",
       "joins": [],
-      "name": "summarize_paragraph_index",
+      "name": "lexical.summarize_paragraph_index",
       "output_alias": "paragraph_index_summary",
       "output_schema": "ParagraphIndexSummary",
       "results": [
         {
           "after_hooks": [],
-          "frame": "paragraph_summary",
-          "lane": "paragraph_summary",
+          "frame": "lexical__paragraph_summary",
+          "lane": "lexical__paragraph_summary",
           "schema": "ParagraphIndexSummary"
         }
       ],
@@ -3247,14 +3247,14 @@
       "before_hooks": [],
       "input_alias": "word",
       "joins": [],
-      "name": "count_sentence_terms",
+      "name": "lexical.count_sentence_terms",
       "output_alias": "sentence_index_term_count",
       "output_schema": "SentenceIndexTermCount",
       "results": [
         {
           "after_hooks": [],
-          "frame": "sentence_term_counts",
-          "lane": "sentence_term_counts",
+          "frame": "lexical__sentence_term_counts",
+          "lane": "lexical__sentence_term_counts",
           "schema": "SentenceIndexTermCount"
         }
       ],
@@ -3272,14 +3272,14 @@
       "before_hooks": [],
       "input_alias": "word",
       "joins": [],
-      "name": "summarize_sentences",
+      "name": "lexical.summarize_sentences",
       "output_alias": "sentence_index_target_stats",
       "output_schema": "SentenceIndexTargetStats",
       "results": [
         {
           "after_hooks": [],
-          "frame": "sentence_target_stats",
-          "lane": "sentence_target_stats",
+          "frame": "lexical__sentence_target_stats",
+          "lane": "lexical__sentence_target_stats",
           "schema": "SentenceIndexTargetStats"
         }
       ],
@@ -3297,14 +3297,14 @@
       "before_hooks": [],
       "input_alias": "sentence_index_term_count",
       "joins": [],
-      "name": "count_sentence_frequencies",
+      "name": "lexical.count_sentence_frequencies",
       "output_alias": "index_token_frequency",
       "output_schema": "IndexTokenFrequency",
       "results": [
         {
           "after_hooks": [],
-          "frame": "sentence_token_frequencies",
-          "lane": "sentence_token_frequencies",
+          "frame": "lexical__sentence_token_frequencies",
+          "lane": "lexical__sentence_token_frequencies",
           "schema": "IndexTokenFrequency"
         }
       ],
@@ -3325,22 +3325,22 @@
         {
           "how": "inner",
           "input": "stats",
-          "right_alias": "sentence_target_stats"
+          "right_alias": "lexical__sentence_target_stats"
         },
         {
           "how": "inner",
           "input": "frequency",
-          "right_alias": "sentence_token_frequencies_2"
+          "right_alias": "lexical__sentence_token_frequencies_2"
         }
       ],
-      "name": "build_sentence_terms",
+      "name": "lexical.build_sentence_terms",
       "output_alias": "sentence_index_term",
       "output_schema": "SentenceIndexTerm",
       "results": [
         {
           "after_hooks": [],
-          "frame": "sentence_terms",
-          "lane": "sentence_terms",
+          "frame": "lexical__sentence_terms",
+          "lane": "lexical__sentence_terms",
           "schema": "SentenceIndexTerm"
         }
       ],
@@ -3358,14 +3358,14 @@
       "before_hooks": [],
       "input_alias": "sentence_index_target_stats",
       "joins": [],
-      "name": "summarize_sentence_index",
+      "name": "lexical.summarize_sentence_index",
       "output_alias": "sentence_index_summary",
       "output_schema": "SentenceIndexSummary",
       "results": [
         {
           "after_hooks": [],
-          "frame": "sentence_summary",
-          "lane": "sentence_summary",
+          "frame": "lexical__sentence_summary",
+          "lane": "lexical__sentence_summary",
           "schema": "SentenceIndexSummary"
         }
       ],

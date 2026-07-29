@@ -492,6 +492,31 @@ def render_search_example() -> dict[str, str]:
             SentenceText,
             WordText,
         )
+        from examples.search.schemas.indexing.lexical.index import (
+            DocumentIndexSummary,
+            DocumentIndexTarget,
+            DocumentIndexTerm,
+            ParagraphIndexSummary,
+            ParagraphIndexTarget,
+            ParagraphIndexTerm,
+            SectionIndexSummary,
+            SectionIndexTarget,
+            SectionIndexTerm,
+            SentenceIndexSummary,
+            SentenceIndexTarget,
+            SentenceIndexTerm,
+        )
+        from examples.search.schemas.indexing.lexical.intermediate import (
+            DocumentIndexTargetStats,
+            DocumentIndexTermCount,
+            IndexTokenFrequency,
+            ParagraphIndexTargetStats,
+            ParagraphIndexTermCount,
+            SectionIndexTargetStats,
+            SectionIndexTermCount,
+            SentenceIndexTargetStats,
+            SentenceIndexTermCount,
+        )
         from examples.search.schemas.label import (
             Intent,
             IntentPattern,
@@ -515,54 +540,35 @@ def render_search_example() -> dict[str, str]:
             SectionBm25Score,
             SentenceBm25Score,
         )
-        from examples.search.schemas.scoring.overlap import (
+        from examples.search.schemas.scoring.intermediate import (
             DocumentOverlapMatch,
-            DocumentOverlapScore,
+            ExpandedQueryToken,
             ParagraphOverlapMatch,
-            ParagraphOverlapScore,
+            QueryTerm,
+            QueryTermCount,
+            QueryToken,
             SectionOverlapMatch,
-            SectionOverlapScore,
             SentenceOverlapMatch,
+        )
+        from examples.search.schemas.scoring.overlap import (
+            DocumentOverlapScore,
+            ParagraphOverlapScore,
+            SectionOverlapScore,
             SentenceOverlapScore,
         )
         from examples.search.schemas.search import (
             DocumentFeedbackOption,
-            DocumentIndexSummary,
-            DocumentIndexTarget,
-            DocumentIndexTargetStats,
-            DocumentIndexTerm,
-            DocumentIndexTermCount,
             DocumentScore,
             DocumentSearchCandidate,
             DocumentSearchResult,
             DocumentSearchTarget,
-            ExpandedQueryToken,
-            IndexTokenFrequency,
-            ParagraphIndexSummary,
-            ParagraphIndexTarget,
-            ParagraphIndexTargetStats,
-            ParagraphIndexTerm,
-            ParagraphIndexTermCount,
             ParagraphScore,
             ParagraphSearchTarget,
             PopularityFeedback,
             QueryDocumentFeedback,
-            QueryTerm,
-            QueryTermCount,
-            QueryToken,
             SearchQuery,
-            SectionIndexSummary,
-            SectionIndexTarget,
-            SectionIndexTargetStats,
-            SectionIndexTerm,
-            SectionIndexTermCount,
             SectionScore,
             SectionSearchTarget,
-            SentenceIndexSummary,
-            SentenceIndexTarget,
-            SentenceIndexTargetStats,
-            SentenceIndexTerm,
-            SentenceIndexTermCount,
             SentenceScore,
             SentenceSearchResult,
             SentenceSearchTarget,
@@ -625,13 +631,17 @@ def render_search_example() -> dict[str, str]:
         from examples.search.transforms.experiment import (
             EvaluateDocumentSearchBehavior as EvaluateExperimentDocumentSearchBehavior,
         )
-        from examples.search.transforms.experiment import SelectExperimentScores
+        from examples.search.transforms.experiment import (
+            Scoring001AdjustBm,
+            Searching001AdjustRerankSearchDocuments,
+            SelectExperimentScores,
+        )
         from examples.search.transforms.extract import ExtractText
         from examples.search.transforms.index import CreateIndex
         from examples.search.transforms.labeling import CreateQueryLabels, LabelQueries, MergeQueryLabels
         from examples.search.transforms.profile import ProfileDocuments
         from examples.search.transforms.relevance.BuildRelevanceSignals import BuildRelevanceSignals
-        from examples.search.transforms.score import ScoreAll
+        from examples.search.transforms.score import Scoring
         from examples.search.transforms.scoring.ScoreBm25 import ScoreBm25
         from examples.search.transforms.scoring.ScoreOverlap import ScoreOverlap
         from examples.search.transforms.search import SearchDocuments, SearchSentences
@@ -683,31 +693,6 @@ def render_search_example() -> dict[str, str]:
                 SectionSearchTarget,
                 ParagraphSearchTarget,
                 SentenceSearchTarget,
-                DocumentIndexTarget,
-                SectionIndexTarget,
-                ParagraphIndexTarget,
-                SentenceIndexTarget,
-                IndexTokenFrequency,
-                DocumentIndexTermCount,
-                DocumentIndexTargetStats,
-                DocumentIndexTerm,
-                DocumentIndexSummary,
-                SectionIndexTermCount,
-                SectionIndexTargetStats,
-                SectionIndexTerm,
-                SectionIndexSummary,
-                ParagraphIndexTermCount,
-                ParagraphIndexTargetStats,
-                ParagraphIndexTerm,
-                ParagraphIndexSummary,
-                SentenceIndexTermCount,
-                SentenceIndexTargetStats,
-                SentenceIndexTerm,
-                SentenceIndexSummary,
-                QueryToken,
-                ExpandedQueryToken,
-                QueryTerm,
-                QueryTermCount,
                 DocumentScore,
                 SectionScore,
                 ParagraphScore,
@@ -719,14 +704,45 @@ def render_search_example() -> dict[str, str]:
                 DocumentSearchResult,
             ],
             "examples.search.schemas.scoring.overlap": [
-                DocumentOverlapMatch,
                 DocumentOverlapScore,
-                SectionOverlapMatch,
                 SectionOverlapScore,
-                ParagraphOverlapMatch,
                 ParagraphOverlapScore,
-                SentenceOverlapMatch,
                 SentenceOverlapScore,
+            ],
+            "examples.search.schemas.scoring.intermediate": [
+                QueryToken,
+                ExpandedQueryToken,
+                QueryTerm,
+                QueryTermCount,
+                DocumentOverlapMatch,
+                SectionOverlapMatch,
+                ParagraphOverlapMatch,
+                SentenceOverlapMatch,
+            ],
+            "examples.search.schemas.indexing.lexical.index": [
+                DocumentIndexTarget,
+                SectionIndexTarget,
+                ParagraphIndexTarget,
+                SentenceIndexTarget,
+                DocumentIndexTerm,
+                DocumentIndexSummary,
+                SectionIndexTerm,
+                SectionIndexSummary,
+                ParagraphIndexTerm,
+                ParagraphIndexSummary,
+                SentenceIndexTerm,
+                SentenceIndexSummary,
+            ],
+            "examples.search.schemas.indexing.lexical.intermediate": [
+                IndexTokenFrequency,
+                DocumentIndexTermCount,
+                DocumentIndexTargetStats,
+                SectionIndexTermCount,
+                SectionIndexTargetStats,
+                ParagraphIndexTermCount,
+                ParagraphIndexTargetStats,
+                SentenceIndexTermCount,
+                SentenceIndexTargetStats,
             ],
             "examples.search.schemas.scoring.bm25": [
                 DocumentBm25Score,
@@ -849,7 +865,11 @@ def render_search_example() -> dict[str, str]:
             ),
             (ScoreOverlap, "examples.search.transforms.scoring.ScoreOverlap.ScoreOverlap"),
             (ScoreBm25, "examples.search.transforms.scoring.ScoreBm25.ScoreBm25"),
-            (ScoreAll, "examples.search.transforms.scoring.ScoreAll.ScoreAll"),
+            (Scoring, "examples.search.transforms.scoring.Scoring.Scoring"),
+            (
+                Scoring001AdjustBm,
+                "examples.search.transforms.experiments.scoring.scoring001_adjust_bm.Scoring001AdjustBm",
+            ),
             (
                 ReduceSimilarityScores,
                 "examples.search.transforms.similarities.ReduceSimilarityScores.ReduceSimilarityScores",
@@ -878,12 +898,16 @@ def render_search_example() -> dict[str, str]:
             ),
             (SearchDocuments, "examples.search.transforms.search.SearchDocuments"),
             (
+                Searching001AdjustRerankSearchDocuments,
+                "examples.search.transforms.experiments.searching.search_docs.searching001_adjust_rerank.Searching001AdjustRerankSearchDocuments",
+            ),
+            (
                 EvaluateExperimentDocumentRankingQuality,
-                "examples.search.transforms.experiments.search_docs.eval_ranking.EvaluateDocumentRankingQuality",
+                "examples.search.transforms.experiments.evaluation.search_docs.eval_ranking.EvaluateDocumentRankingQuality",
             ),
             (
                 EvaluateExperimentDocumentSearchBehavior,
-                "examples.search.transforms.experiments.search_docs.eval_behavior.EvaluateDocumentSearchBehavior",
+                "examples.search.transforms.experiments.evaluation.search_docs.eval_behavior.EvaluateDocumentSearchBehavior",
             ),
             (
                 EvaluateDocumentRankingQuality,

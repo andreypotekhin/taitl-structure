@@ -141,7 +141,7 @@ class OperationPlan:
             family="generator",
             capability=OperationCapability("generator", "posexplode_struct"),
             cardinality=OperationCardinality.ROW_MULTIPLYING,
-            streaming=StreamingSupport.BATCH_ONLY,
+            streaming=StreamingSupport.COMPATIBLE,
         )
 
     @staticmethod
@@ -152,7 +152,7 @@ class OperationPlan:
             family="generator",
             capability=OperationCapability("generator", "posexplode_outer_struct"),
             cardinality=OperationCardinality.ROW_MULTIPLYING,
-            streaming=StreamingSupport.BATCH_ONLY,
+            streaming=StreamingSupport.COMPATIBLE,
         )
 
     @staticmethod
@@ -163,7 +163,7 @@ class OperationPlan:
             family="generator",
             capability=OperationCapability("generator", "explode_struct"),
             cardinality=OperationCardinality.ROW_MULTIPLYING,
-            streaming=StreamingSupport.BATCH_ONLY,
+            streaming=StreamingSupport.COMPATIBLE,
         )
 
     @staticmethod
@@ -174,7 +174,7 @@ class OperationPlan:
             family="generator",
             capability=OperationCapability("generator", "explode_outer_struct"),
             cardinality=OperationCardinality.ROW_MULTIPLYING,
-            streaming=StreamingSupport.BATCH_ONLY,
+            streaming=StreamingSupport.COMPATIBLE,
         )
 
     @staticmethod
@@ -185,7 +185,7 @@ class OperationPlan:
             family="generator",
             capability=OperationCapability("generator", "inline_struct"),
             cardinality=OperationCardinality.ROW_MULTIPLYING,
-            streaming=StreamingSupport.BATCH_ONLY,
+            streaming=StreamingSupport.COMPATIBLE,
         )
 
     @staticmethod
@@ -196,7 +196,7 @@ class OperationPlan:
             family="generator",
             capability=OperationCapability("generator", "inline_outer_struct"),
             cardinality=OperationCardinality.ROW_MULTIPLYING,
-            streaming=StreamingSupport.BATCH_ONLY,
+            streaming=StreamingSupport.COMPATIBLE,
         )
 
     @staticmethod
@@ -304,7 +304,11 @@ class OperationPlan:
             family="set",
             capability=OperationCapability("set", relation_set.operation),
             cardinality=cardinality,
-            streaming=StreamingSupport.BATCH_ONLY,
+            streaming=(
+                StreamingSupport.COMPATIBLE
+                if relation_set.operation in {"union_all", "union_by_name"}
+                else StreamingSupport.BATCH_ONLY
+            ),
         )
 
     @staticmethod

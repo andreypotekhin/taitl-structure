@@ -389,14 +389,15 @@ orchestrator. The release measures caller-owned streaming transformation support
 transformation catalog used for batch coverage, then closes the percentage gap with honest operation-level accounting
 where Spark supports only part of a batch family.
 
-### v8 sequence
+### v8 sequence (complete)
 
-- Sprint 36: publish the checked Structured Streaming coverage ledger and guard tests.
-- Sprint 37: admit safe stateless streaming gaps, beginning with design-gated row expansion and union-like set
-  operations where live PySpark accepts them.
-- Sprint 38: resolve stateful and order-sensitive gaps, either with narrow watermark/output-mode contracts or explicit
-  streaming-ineligible diagnostics.
-- Sprint 39: harden v8 release evidence without adding new feature scope.
+- Sprint 36 complete: published the checked Structured Streaming coverage ledger and guard tests.
+- Sprint 37 complete: admitted typed struct generators and exact-schema stream-stream union-like set operations, and
+  closed ordering and priority selection as explicit streaming-ineligible rows with targeted live PySpark 3.5/4.0
+  restart evidence.
+- Sprint 38 complete locally: resolved stateful and order-sensitive gaps with explicit streaming-ineligible
+  diagnostics.
+- Sprint 39 complete: hardened v8 release evidence without adding new feature scope.
 
 ### v8 must include
 

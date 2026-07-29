@@ -107,7 +107,7 @@ class AnalyzeTransform(CompileTransform):
     def _compose_graph(self, transform_class: type[Transform], *, config: StructureConfig) -> TransformPlan:
         return self._graph_composer(
             transform_class,
-            compile_stage=lambda stage_class: self._analyze(stage_class, config=config),
+            compile_stage=lambda stage: self._analyze(type(stage), config=config),
         )
 
     def _structural_steps(self, transform_class, inputs):

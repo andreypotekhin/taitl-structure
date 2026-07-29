@@ -119,3 +119,27 @@ def test_v1_project_renderer_is_deterministic() -> None:
     }
 
     assert PySpark.render.project()(plan, **kwargs) == PySpark.render.project()(plan, **kwargs)
+
+
+def test_v1_project_renderer_qualifies_duplicate_schema_module_basenames() -> None:
+    from testing.model.v1.orders.transforms.order import EnrichOrders
+
+    class LeftCollision(Schema):
+        id = string(nullable=False)
+
+    class RightCollision(Schema):
+        id = string(nullable=False)
+
+    files = PySpark.render.project()(
+        _recipe(EnrichOrders),
+        source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
+        generated_package="testing.model.v1.structure_generated.orders",
+        source_schema_modules={
+            **_source_schema_modules(),
+            "testing.model.v1.orders.schemas.left.common": [LeftCollision],
+            "testing.model.v1.orders.schemas.right.common": [RightCollision],
+        },
+    )
+
+    assert "testing/model/v1/structure_generated/orders/pyspark/schemas/left_common.py" in files
+    assert "testing/model/v1/structure_generated/orders/pyspark/schemas/right_common.py" in files

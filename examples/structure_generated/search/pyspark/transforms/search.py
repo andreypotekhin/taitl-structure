@@ -7,6 +7,7 @@ from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
 from examples.structure_generated.search.pyspark.schemas.clicks import SEARCH_REQUEST_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.overlap import DOCUMENT_OVERLAP_SCORE_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.relevance import (
     DOCUMENT_POPULARITY_SCHEMA,
     QUERY_DOCUMENT_SIGNALS_SCHEMA,
@@ -26,50 +27,41 @@ from examples.structure_generated.search.pyspark.schemas.user import BAND_FALLBA
 
 
 class RetrieveDocumentsGenerated:
-    def _step_select_candidates_0(self, frames):
-        # Step method: select_candidates
-        candidates = frames["documents"].alias("document")
+    def _step_retrieved_select_stored_candidates_0(self, frames):
+        # Step method: retrieved.select_stored_candidates
+        retrieved__stored_candidates = frames["documents"].alias("document")
         document_scores_joined = frames["document_scores"].alias("document_scores")
-        candidates = candidates.join(
+        retrieved__stored_candidates = retrieved__stored_candidates.join(
             document_scores_joined,
             (F.col("document.id") == F.col("document_scores.document_id")),
             "inner",
         )
         queries_2_joined = frames["queries"].alias("queries_2")
-        candidates = candidates.join(
+        retrieved__stored_candidates = retrieved__stored_candidates.join(
             queries_2_joined,
             (F.col("queries_2.id") == F.col("document_scores.query_id")),
             "inner",
         )
         requests_3_joined = frames["requests"].alias("requests_3")
-        candidates = candidates.join(
+        retrieved__stored_candidates = retrieved__stored_candidates.join(
             requests_3_joined,
             (F.col("requests_3.query_id") == F.col("queries_2.id")),
             "inner",
         )
         band_memberships_4_joined = frames["band_memberships"].alias("band_memberships_4")
-        candidates = candidates.join(
+        retrieved__stored_candidates = retrieved__stored_candidates.join(
             band_memberships_4_joined,
             (F.col("band_memberships_4.user_id") == F.col("requests_3.user_id")),
             "left",
         )
-        candidates = candidates.where((F.col("document_scores.score").isNotNull()))
-        candidates = candidates.select(
+        retrieved__stored_candidates = retrieved__stored_candidates.where((F.col("document_scores.score").isNotNull()))
+        retrieved__stored_candidates = retrieved__stored_candidates.select(
             F.col("queries_2.id").alias("search_query_id"),
             F.col("document_scores.experiment_id"),
             F.coalesce(F.col("band_memberships_4.user_band_id"), F.lit(None)).alias("user_band_id"),
             F.col("band_memberships_4.band_id"),
             F.lower(F.regexp_replace(F.trim(F.col("queries_2.content")), '\\s+', ' ')).alias("query"),
-            F.row_number()
-            .over(
-                Window.partitionBy(
-                    F.col("queries_2.id"),
-                    F.col("band_memberships_4.user_band_id"),
-                    F.col("document_scores.experiment_id"),
-                ).orderBy(F.col("document_scores.score").desc_nulls_last(), F.col("document.id").asc_nulls_first())
-            )
-            .cast(T.LongType())
-            .alias("candidate_rank"),
+            F.lit(0).cast(T.LongType()).alias("candidate_rank"),
             F.col("document.id").alias("document_id"),
             F.col("document.title"),
             F.col("document.url"),
@@ -79,29 +71,212 @@ class RetrieveDocumentsGenerated:
             F.lit(0.0).alias("score_weight"),
             F.lit(0.0).alias("feedback_weight"),
         )
-        assert_schema(candidates, DOCUMENT_SEARCH_CANDIDATE_SCHEMA, name="DocumentSearchCandidate", mode="strict")
+        assert_schema(
+            retrieved__stored_candidates,
+            DOCUMENT_SEARCH_CANDIDATE_SCHEMA,
+            name="DocumentSearchCandidate",
+            mode="strict",
+        )
         return {
-            "candidates": candidates,
+            "retrieved__stored_candidates": retrieved__stored_candidates,
+        }
+
+    def _step_retrieved_select_streamed_candidates_1(self, frames):
+        # Step method: retrieved.select_streamed_candidates
+        retrieved__streamed_candidates = frames["streamed_documents"].alias("document")
+        streamed_document_scores_joined = frames["streamed_document_scores"].alias("streamed_document_scores")
+        retrieved__streamed_candidates = retrieved__streamed_candidates.join(
+            streamed_document_scores_joined,
+            (F.col("document.id") == F.col("streamed_document_scores.document_id")),
+            "inner",
+        )
+        queries_2_joined = frames["queries"].alias("queries_2")
+        retrieved__streamed_candidates = retrieved__streamed_candidates.join(
+            queries_2_joined,
+            (F.col("queries_2.id") == F.col("streamed_document_scores.query_id")),
+            "inner",
+        )
+        requests_3_joined = frames["requests"].alias("requests_3")
+        retrieved__streamed_candidates = retrieved__streamed_candidates.join(
+            requests_3_joined,
+            (F.col("requests_3.query_id") == F.col("queries_2.id")),
+            "inner",
+        )
+        band_memberships_4_joined = frames["band_memberships"].alias("band_memberships_4")
+        retrieved__streamed_candidates = retrieved__streamed_candidates.join(
+            band_memberships_4_joined,
+            (F.col("band_memberships_4.user_id") == F.col("requests_3.user_id")),
+            "left",
+        )
+        retrieved__streamed_candidates = retrieved__streamed_candidates.where(
+            (F.col("streamed_document_scores.score").isNotNull())
+        )
+        retrieved__streamed_candidates = retrieved__streamed_candidates.select(
+            F.col("queries_2.id").alias("search_query_id"),
+            F.col("streamed_document_scores.experiment_id"),
+            F.coalesce(F.col("band_memberships_4.user_band_id"), F.lit(None)).alias("user_band_id"),
+            F.col("band_memberships_4.band_id"),
+            F.lower(F.regexp_replace(F.trim(F.col("queries_2.content")), '\\s+', ' ')).alias("query"),
+            F.lit(0).cast(T.LongType()).alias("candidate_rank"),
+            F.col("document.id").alias("document_id"),
+            F.col("document.title"),
+            F.col("document.url"),
+            F.col("streamed_document_scores.score"),
+            F.lit(0.0).alias("score_feedback"),
+            F.lit(0.0).alias("score_rank"),
+            F.lit(0.0).alias("score_weight"),
+            F.lit(0.0).alias("feedback_weight"),
+        )
+        assert_schema(
+            retrieved__streamed_candidates,
+            DOCUMENT_SEARCH_CANDIDATE_SCHEMA,
+            name="DocumentSearchCandidate",
+            mode="strict",
+        )
+        return {
+            "retrieved__streamed_candidates": retrieved__streamed_candidates,
+        }
+
+    def _step_retrieved_rank_candidates_2(self, frames):
+        # Step method: retrieved.rank_candidates
+        retrieved__candidates = frames["retrieved__stored_candidates"].alias("document_search_candidate")
+        retrieved__candidates = retrieved__candidates.union(frames["retrieved__streamed_candidates"])
+        retrieved__candidates = retrieved__candidates.select(
+            F.col("search_query_id"),
+            F.col("experiment_id"),
+            F.col("user_band_id"),
+            F.col("band_id"),
+            F.col("query"),
+            F.row_number()
+            .over(
+                Window.partitionBy(F.col("search_query_id"), F.col("user_band_id"), F.col("experiment_id")).orderBy(
+                    F.col("score").desc_nulls_last(), F.col("document_id").asc_nulls_first()
+                )
+            )
+            .cast(T.LongType())
+            .alias("candidate_rank"),
+            F.col("document_id"),
+            F.col("title"),
+            F.col("url"),
+            F.col("score"),
+            F.col("score_feedback"),
+            F.col("score_rank"),
+            F.col("score_weight"),
+            F.col("feedback_weight"),
+        )
+        assert_schema(
+            retrieved__candidates, DOCUMENT_SEARCH_CANDIDATE_SCHEMA, name="DocumentSearchCandidate", mode="strict"
+        )
+        return {
+            "retrieved__candidates": retrieved__candidates,
+        }
+
+
+class OverlapDocumentsGenerated:
+    def _step_overlapped_rank_candidates_3(self, frames):
+        # Step method: overlapped.rank_candidates
+        overlapped__ranked_candidates = frames["retrieved__candidates"].alias("document_search_candidate")
+        overlapped__ranked_candidates = overlapped__ranked_candidates.where(
+            ((F.col("document_search_candidate.candidate_rank") <= F.lit(1000)))
+        )
+        document_overlap_scores_joined = frames["document_overlap_scores"].alias("document_overlap_scores")
+        overlapped__ranked_candidates = overlapped__ranked_candidates.join(
+            document_overlap_scores_joined,
+            (
+                (F.col("document_overlap_scores.query_id") == F.col("document_search_candidate.search_query_id"))
+                & (F.col("document_overlap_scores.document_id") == F.col("document_search_candidate.document_id"))
+            ),
+            "inner",
+        )
+        overlapped__ranked_candidates = overlapped__ranked_candidates.select(
+            F.col("document_search_candidate.search_query_id"),
+            F.col("document_search_candidate.experiment_id"),
+            F.col("document_search_candidate.user_band_id"),
+            F.col("document_search_candidate.band_id"),
+            F.col("document_search_candidate.query"),
+            F.row_number()
+            .over(
+                Window.partitionBy(
+                    F.col("document_search_candidate.search_query_id"),
+                    F.col("document_search_candidate.user_band_id"),
+                    F.col("document_search_candidate.experiment_id"),
+                ).orderBy(
+                    F.col("document_overlap_scores.score_overlap").desc_nulls_last(),
+                    F.col("document_search_candidate.score").desc_nulls_last(),
+                    F.col("document_search_candidate.document_id").asc_nulls_first(),
+                )
+            )
+            .cast(T.LongType())
+            .alias("candidate_rank"),
+            F.col("document_search_candidate.document_id"),
+            F.col("document_search_candidate.title"),
+            F.col("document_search_candidate.url"),
+            F.col("document_search_candidate.score"),
+            F.col("document_search_candidate.score_feedback"),
+            F.col("document_search_candidate.score_rank"),
+            F.col("document_search_candidate.score_weight"),
+            F.col("document_search_candidate.feedback_weight"),
+        )
+        assert_schema(
+            overlapped__ranked_candidates,
+            DOCUMENT_SEARCH_CANDIDATE_SCHEMA,
+            name="DocumentSearchCandidate",
+            mode="strict",
+        )
+        return {
+            "overlapped__ranked_candidates": overlapped__ranked_candidates,
+        }
+
+    def _step_overlapped_select_candidates_4(self, frames):
+        # Step method: overlapped.select_candidates
+        overlapped__overlapped_candidates = frames["overlapped__ranked_candidates"].alias("document_search_candidate")
+        overlapped__overlapped_candidates = overlapped__overlapped_candidates.where(
+            ((F.col("document_search_candidate.candidate_rank") <= F.lit(100)))
+        )
+        overlapped__overlapped_candidates = overlapped__overlapped_candidates.select(
+            F.col("document_search_candidate.search_query_id"),
+            F.col("document_search_candidate.experiment_id"),
+            F.col("document_search_candidate.user_band_id"),
+            F.col("document_search_candidate.band_id"),
+            F.col("document_search_candidate.query"),
+            F.col("document_search_candidate.candidate_rank"),
+            F.col("document_search_candidate.document_id"),
+            F.col("document_search_candidate.title"),
+            F.col("document_search_candidate.url"),
+            F.col("document_search_candidate.score"),
+            F.col("document_search_candidate.score_feedback"),
+            F.col("document_search_candidate.score_rank"),
+            F.col("document_search_candidate.score_weight"),
+            F.col("document_search_candidate.feedback_weight"),
+        )
+        assert_schema(
+            overlapped__overlapped_candidates,
+            DOCUMENT_SEARCH_CANDIDATE_SCHEMA,
+            name="DocumentSearchCandidate",
+            mode="strict",
+        )
+        return {
+            "overlapped__overlapped_candidates": overlapped__overlapped_candidates,
         }
 
 
 class RerankDocumentsGenerated:
-    def _step_select_fallback_options_1(self, frames):
-        # Step method: select_fallback_options
-        fallback_options = frames["candidates"].alias("document_search_candidate")
-        fallback_options = fallback_options.where(
+    def _step_reranked_select_fallback_options_5(self, frames):
+        # Step method: reranked.select_fallback_options
+        reranked__fallback_options = frames["overlapped__overlapped_candidates"].alias("document_search_candidate")
+        reranked__fallback_options = reranked__fallback_options.where(
             ((F.col("document_search_candidate.candidate_rank") <= F.lit(100)))
             & (F.col("document_search_candidate.user_band_id").isNotNull())
         )
         band_fallbacks_joined = frames["band_fallbacks"].alias("band_fallbacks")
-        fallback_options = fallback_options.join(
+        reranked__fallback_options = reranked__fallback_options.join(
             band_fallbacks_joined,
             (F.col("band_fallbacks.user_band_id") == F.col("document_search_candidate.user_band_id")),
             "inner",
         )
         policy_2_joined = frames["policy"].alias("policy_2")
-        fallback_options = fallback_options.crossJoin(policy_2_joined)
-        fallback_options = fallback_options.select(
+        reranked__fallback_options = reranked__fallback_options.crossJoin(policy_2_joined)
+        reranked__fallback_options = reranked__fallback_options.select(
             F.col("document_search_candidate.search_query_id"),
             F.col("document_search_candidate.experiment_id"),
             F.col("document_search_candidate.user_band_id"),
@@ -120,21 +295,23 @@ class RerankDocumentsGenerated:
             F.col("band_fallbacks.ordinal").alias("fallback_ordinal"),
             F.col("policy_2.minimum_band_impressions"),
         )
-        assert_schema(fallback_options, DOCUMENT_FEEDBACK_OPTION_SCHEMA, name="DocumentFeedbackOption", mode="strict")
+        assert_schema(
+            reranked__fallback_options, DOCUMENT_FEEDBACK_OPTION_SCHEMA, name="DocumentFeedbackOption", mode="strict"
+        )
         return {
-            "fallback_options": fallback_options,
+            "reranked__fallback_options": reranked__fallback_options,
         }
 
-    def _step_select_global_options_2(self, frames):
-        # Step method: select_global_options
-        global_options = frames["candidates"].alias("document_search_candidate")
-        global_options = global_options.where(
+    def _step_reranked_select_global_options_6(self, frames):
+        # Step method: reranked.select_global_options
+        reranked__global_options = frames["overlapped__overlapped_candidates"].alias("document_search_candidate")
+        reranked__global_options = reranked__global_options.where(
             ((F.col("document_search_candidate.candidate_rank") <= F.lit(100)))
             & (F.col("document_search_candidate.user_band_id").isNull())
         )
         policy_joined = frames["policy"].alias("policy")
-        global_options = global_options.crossJoin(policy_joined)
-        global_options = global_options.select(
+        reranked__global_options = reranked__global_options.crossJoin(policy_joined)
+        reranked__global_options = reranked__global_options.select(
             F.col("document_search_candidate.search_query_id"),
             F.col("document_search_candidate.experiment_id"),
             F.col("document_search_candidate.user_band_id"),
@@ -153,16 +330,18 @@ class RerankDocumentsGenerated:
             F.lit(0).cast(T.LongType()).alias("fallback_ordinal"),
             F.col("policy.minimum_band_impressions"),
         )
-        assert_schema(global_options, DOCUMENT_FEEDBACK_OPTION_SCHEMA, name="DocumentFeedbackOption", mode="strict")
+        assert_schema(
+            reranked__global_options, DOCUMENT_FEEDBACK_OPTION_SCHEMA, name="DocumentFeedbackOption", mode="strict"
+        )
         return {
-            "global_options": global_options,
+            "reranked__global_options": reranked__global_options,
         }
 
-    def _step_merge_feedback_options_3(self, frames):
-        # Step method: merge_feedback_options
-        feedback_options = frames["fallback_options"].alias("document_feedback_option")
-        feedback_options = feedback_options.union(frames["global_options"])
-        feedback_options = feedback_options.select(
+    def _step_reranked_merge_feedback_options_7(self, frames):
+        # Step method: reranked.merge_feedback_options
+        reranked__feedback_options = frames["reranked__fallback_options"].alias("document_feedback_option")
+        reranked__feedback_options = reranked__feedback_options.union(frames["reranked__global_options"])
+        reranked__feedback_options = reranked__feedback_options.select(
             F.col("search_query_id"),
             F.col("experiment_id"),
             F.col("user_band_id"),
@@ -181,16 +360,18 @@ class RerankDocumentsGenerated:
             F.col("fallback_ordinal"),
             F.col("minimum_band_impressions"),
         )
-        assert_schema(feedback_options, DOCUMENT_FEEDBACK_OPTION_SCHEMA, name="DocumentFeedbackOption", mode="strict")
+        assert_schema(
+            reranked__feedback_options, DOCUMENT_FEEDBACK_OPTION_SCHEMA, name="DocumentFeedbackOption", mode="strict"
+        )
         return {
-            "feedback_options": feedback_options,
+            "reranked__feedback_options": reranked__feedback_options,
         }
 
-    def _step_select_query_feedback_4(self, frames):
-        # Step method: select_query_feedback
-        query_feedback = frames["feedback_options"].alias("document_feedback_option")
+    def _step_reranked_select_query_feedback_8(self, frames):
+        # Step method: reranked.select_query_feedback
+        reranked__query_feedback = frames["reranked__feedback_options"].alias("document_feedback_option")
         query_document_signals_joined = frames["query_document_signals"].alias("query_document_signals")
-        query_feedback = query_feedback.join(
+        reranked__query_feedback = reranked__query_feedback.join(
             query_document_signals_joined,
             (
                 (
@@ -201,23 +382,25 @@ class RerankDocumentsGenerated:
             ),
             "left",
         )
-        query_feedback_select_first_qualified_1_keys = query_feedback.select(
+        reranked__query_feedback_select_first_qualified_1_keys = reranked__query_feedback.select(
             F.col("document_feedback_option.search_query_id").alias("__structure_priority_key_1_0"),
             F.col("document_feedback_option.experiment_id").alias("__structure_priority_key_1_1"),
             F.col("document_feedback_option.user_band_id").alias("__structure_priority_key_1_2"),
             F.col("document_feedback_option.candidate_rank").alias("__structure_priority_key_1_3"),
             F.col("document_feedback_option.document_id").alias("__structure_priority_key_1_4"),
         )
-        query_feedback_select_first_qualified_1_keys = query_feedback_select_first_qualified_1_keys.dropDuplicates(
-            [
-                '__structure_priority_key_1_0',
-                '__structure_priority_key_1_1',
-                '__structure_priority_key_1_2',
-                '__structure_priority_key_1_3',
-                '__structure_priority_key_1_4',
-            ]
+        reranked__query_feedback_select_first_qualified_1_keys = (
+            reranked__query_feedback_select_first_qualified_1_keys.dropDuplicates(
+                [
+                    '__structure_priority_key_1_0',
+                    '__structure_priority_key_1_1',
+                    '__structure_priority_key_1_2',
+                    '__structure_priority_key_1_3',
+                    '__structure_priority_key_1_4',
+                ]
+            )
         )
-        query_feedback_select_first_qualified_1_eligible = query_feedback.where(
+        reranked__query_feedback_select_first_qualified_1_eligible = reranked__query_feedback.where(
             F.coalesce(
                 (
                     F.col("document_feedback_option.feedback_band_id").isNull()
@@ -229,143 +412,13 @@ class RerankDocumentsGenerated:
                 F.lit(False),
             )
         )
-        query_feedback_select_first_qualified_1_eligible = query_feedback_select_first_qualified_1_eligible.withColumn(
-            "__structure_priority_order_1", F.col("document_feedback_option.fallback_ordinal")
-        )
-        query_feedback_select_first_qualified_1_eligible_keys = query_feedback_select_first_qualified_1_eligible.select(
-            F.col("document_feedback_option.search_query_id").alias("__structure_priority_key_1_0"),
-            F.col("document_feedback_option.experiment_id").alias("__structure_priority_key_1_1"),
-            F.col("document_feedback_option.user_band_id").alias("__structure_priority_key_1_2"),
-            F.col("document_feedback_option.candidate_rank").alias("__structure_priority_key_1_3"),
-            F.col("document_feedback_option.document_id").alias("__structure_priority_key_1_4"),
-        )
-        query_feedback_select_first_qualified_1_eligible_keys = (
-            query_feedback_select_first_qualified_1_eligible_keys.dropDuplicates(
-                [
-                    '__structure_priority_key_1_0',
-                    '__structure_priority_key_1_1',
-                    '__structure_priority_key_1_2',
-                    '__structure_priority_key_1_3',
-                    '__structure_priority_key_1_4',
-                ]
-            )
-        )
-        query_feedback_select_first_qualified_1_ties = query_feedback_select_first_qualified_1_eligible.select(
-            F.col("document_feedback_option.search_query_id").alias("__structure_priority_key_1_0"),
-            F.col("document_feedback_option.experiment_id").alias("__structure_priority_key_1_1"),
-            F.col("document_feedback_option.user_band_id").alias("__structure_priority_key_1_2"),
-            F.col("document_feedback_option.candidate_rank").alias("__structure_priority_key_1_3"),
-            F.col("document_feedback_option.document_id").alias("__structure_priority_key_1_4"),
-            F.col("__structure_priority_order_1"),
-        )
-        query_feedback_select_first_qualified_1_ties = query_feedback_select_first_qualified_1_ties.groupBy(
-            "__structure_priority_key_1_0",
-            "__structure_priority_key_1_1",
-            "__structure_priority_key_1_2",
-            "__structure_priority_key_1_3",
-            "__structure_priority_key_1_4",
-            "__structure_priority_order_1",
-        ).agg(F.count(F.lit(1)).alias("__structure_count"))
-        query_feedback_select_first_qualified_1_ties = query_feedback_select_first_qualified_1_ties.where(
-            F.col("__structure_count") > F.lit(1)
-        )
-        query_feedback_select_first_qualified_1_ties = query_feedback_select_first_qualified_1_ties.agg(
-            F.count(F.lit(1)).alias("__structure_violations")
-        )
-        query_feedback_select_first_qualified_1_tie_assertion = query_feedback_select_first_qualified_1_ties.select(
-            F.assert_true(
-                F.col("__structure_violations") == F.lit(0),
-                (
-                    'REL-E0705: select_first_qualified(...) found tied eligible candidates; see'
-                    'docs/Diagnostics.md#rel-e0705'
-                ),
-            ).alias("__structure_select_first_ties")
-        )
-        query_feedback_select_first_qualified_1_ranked = query_feedback_select_first_qualified_1_eligible.withColumn(
-            "__structure_priority_rank_1",
-            F.row_number().over(
-                Window.partitionBy(
-                    F.col("document_feedback_option.search_query_id"),
-                    F.col("document_feedback_option.experiment_id"),
-                    F.col("document_feedback_option.user_band_id"),
-                    F.col("document_feedback_option.candidate_rank"),
-                    F.col("document_feedback_option.document_id"),
-                ).orderBy(F.col("document_feedback_option.fallback_ordinal").asc())
-            ),
-        )
-        query_feedback_select_first_qualified_1_ranked = query_feedback_select_first_qualified_1_ranked.where(
-            F.col("__structure_priority_rank_1") == F.lit(1)
-        )
-        query_feedback = query_feedback_select_first_qualified_1_tie_assertion
-        query_feedback = query_feedback.crossJoin(query_feedback_select_first_qualified_1_ranked)
-        query_feedback = query_feedback.drop(
-            "__structure_priority_rank_1",
-            "__structure_priority_order_1",
-            "__structure_select_first_missing",
-            "__structure_select_first_ties",
-        )
-        query_feedback = query_feedback.select(
-            F.col("document_feedback_option.search_query_id"),
-            F.col("document_feedback_option.experiment_id"),
-            F.col("document_feedback_option.user_band_id"),
-            F.col("document_feedback_option.candidate_rank"),
-            F.col("document_feedback_option.document_id"),
-            F.col("query_document_signals.normalized_score").alias("query_feedback"),
-        )
-        assert_schema(query_feedback, QUERY_DOCUMENT_FEEDBACK_SCHEMA, name="QueryDocumentFeedback", mode="strict")
-        return {
-            "query_feedback": query_feedback,
-        }
-
-    def _step_select_popularity_feedback_5(self, frames):
-        # Step method: select_popularity_feedback
-        popularity_feedback = frames["feedback_options"].alias("document_feedback_option")
-        document_popularity_joined = frames["document_popularity"].alias("document_popularity")
-        popularity_feedback = popularity_feedback.join(
-            document_popularity_joined,
-            (
-                (F.col("document_popularity.document_id") == F.col("document_feedback_option.document_id"))
-                & F.col("document_popularity.band_id").eqNullSafe(F.col("document_feedback_option.feedback_band_id"))
-            ),
-            "left",
-        )
-        popularity_feedback_select_first_qualified_1_keys = popularity_feedback.select(
-            F.col("document_feedback_option.search_query_id").alias("__structure_priority_key_1_0"),
-            F.col("document_feedback_option.experiment_id").alias("__structure_priority_key_1_1"),
-            F.col("document_feedback_option.user_band_id").alias("__structure_priority_key_1_2"),
-            F.col("document_feedback_option.candidate_rank").alias("__structure_priority_key_1_3"),
-            F.col("document_feedback_option.document_id").alias("__structure_priority_key_1_4"),
-        )
-        popularity_feedback_select_first_qualified_1_keys = (
-            popularity_feedback_select_first_qualified_1_keys.dropDuplicates(
-                [
-                    '__structure_priority_key_1_0',
-                    '__structure_priority_key_1_1',
-                    '__structure_priority_key_1_2',
-                    '__structure_priority_key_1_3',
-                    '__structure_priority_key_1_4',
-                ]
-            )
-        )
-        popularity_feedback_select_first_qualified_1_eligible = popularity_feedback.where(
-            F.coalesce(
-                (
-                    F.col("document_feedback_option.feedback_band_id").isNull()
-                    | (
-                        F.col("document_popularity.impression_count")
-                        >= F.col("document_feedback_option.minimum_band_impressions")
-                    )
-                ),
-                F.lit(False),
-            )
-        )
-        popularity_feedback_select_first_qualified_1_eligible = (
-            popularity_feedback_select_first_qualified_1_eligible.withColumn(
+        reranked__query_feedback_select_first_qualified_1_eligible = (
+            reranked__query_feedback_select_first_qualified_1_eligible.withColumn(
                 "__structure_priority_order_1", F.col("document_feedback_option.fallback_ordinal")
             )
         )
-        popularity_feedback_select_first_qualified_1_eligible_keys = (
-            popularity_feedback_select_first_qualified_1_eligible.select(
+        reranked__query_feedback_select_first_qualified_1_eligible_keys = (
+            reranked__query_feedback_select_first_qualified_1_eligible.select(
                 F.col("document_feedback_option.search_query_id").alias("__structure_priority_key_1_0"),
                 F.col("document_feedback_option.experiment_id").alias("__structure_priority_key_1_1"),
                 F.col("document_feedback_option.user_band_id").alias("__structure_priority_key_1_2"),
@@ -373,8 +426,8 @@ class RerankDocumentsGenerated:
                 F.col("document_feedback_option.document_id").alias("__structure_priority_key_1_4"),
             )
         )
-        popularity_feedback_select_first_qualified_1_eligible_keys = (
-            popularity_feedback_select_first_qualified_1_eligible_keys.dropDuplicates(
+        reranked__query_feedback_select_first_qualified_1_eligible_keys = (
+            reranked__query_feedback_select_first_qualified_1_eligible_keys.dropDuplicates(
                 [
                     '__structure_priority_key_1_0',
                     '__structure_priority_key_1_1',
@@ -384,8 +437,8 @@ class RerankDocumentsGenerated:
                 ]
             )
         )
-        popularity_feedback_select_first_qualified_1_ties = (
-            popularity_feedback_select_first_qualified_1_eligible.select(
+        reranked__query_feedback_select_first_qualified_1_ties = (
+            reranked__query_feedback_select_first_qualified_1_eligible.select(
                 F.col("document_feedback_option.search_query_id").alias("__structure_priority_key_1_0"),
                 F.col("document_feedback_option.experiment_id").alias("__structure_priority_key_1_1"),
                 F.col("document_feedback_option.user_band_id").alias("__structure_priority_key_1_2"),
@@ -394,22 +447,26 @@ class RerankDocumentsGenerated:
                 F.col("__structure_priority_order_1"),
             )
         )
-        popularity_feedback_select_first_qualified_1_ties = popularity_feedback_select_first_qualified_1_ties.groupBy(
-            "__structure_priority_key_1_0",
-            "__structure_priority_key_1_1",
-            "__structure_priority_key_1_2",
-            "__structure_priority_key_1_3",
-            "__structure_priority_key_1_4",
-            "__structure_priority_order_1",
-        ).agg(F.count(F.lit(1)).alias("__structure_count"))
-        popularity_feedback_select_first_qualified_1_ties = popularity_feedback_select_first_qualified_1_ties.where(
-            F.col("__structure_count") > F.lit(1)
+        reranked__query_feedback_select_first_qualified_1_ties = (
+            reranked__query_feedback_select_first_qualified_1_ties.groupBy(
+                "__structure_priority_key_1_0",
+                "__structure_priority_key_1_1",
+                "__structure_priority_key_1_2",
+                "__structure_priority_key_1_3",
+                "__structure_priority_key_1_4",
+                "__structure_priority_order_1",
+            ).agg(F.count(F.lit(1)).alias("__structure_count"))
         )
-        popularity_feedback_select_first_qualified_1_ties = popularity_feedback_select_first_qualified_1_ties.agg(
-            F.count(F.lit(1)).alias("__structure_violations")
+        reranked__query_feedback_select_first_qualified_1_ties = (
+            reranked__query_feedback_select_first_qualified_1_ties.where(F.col("__structure_count") > F.lit(1))
         )
-        popularity_feedback_select_first_qualified_1_tie_assertion = (
-            popularity_feedback_select_first_qualified_1_ties
+        reranked__query_feedback_select_first_qualified_1_ties = (
+            reranked__query_feedback_select_first_qualified_1_ties.agg(
+                F.count(F.lit(1)).alias("__structure_violations")
+            )
+        )
+        reranked__query_feedback_select_first_qualified_1_tie_assertion = (
+            reranked__query_feedback_select_first_qualified_1_ties
             .select(
                  F.assert_true(
                      F.col(
@@ -426,8 +483,8 @@ class RerankDocumentsGenerated:
                 )
             )
         )
-        popularity_feedback_select_first_qualified_1_ranked = (
-            popularity_feedback_select_first_qualified_1_eligible.withColumn(
+        reranked__query_feedback_select_first_qualified_1_ranked = (
+            reranked__query_feedback_select_first_qualified_1_eligible.withColumn(
                 "__structure_priority_rank_1",
                 F.row_number().over(
                     Window.partitionBy(
@@ -440,18 +497,179 @@ class RerankDocumentsGenerated:
                 ),
             )
         )
-        popularity_feedback_select_first_qualified_1_ranked = popularity_feedback_select_first_qualified_1_ranked.where(
-            F.col("__structure_priority_rank_1") == F.lit(1)
+        reranked__query_feedback_select_first_qualified_1_ranked = (
+            reranked__query_feedback_select_first_qualified_1_ranked.where(
+                F.col("__structure_priority_rank_1") == F.lit(1)
+            )
         )
-        popularity_feedback = popularity_feedback_select_first_qualified_1_tie_assertion
-        popularity_feedback = popularity_feedback.crossJoin(popularity_feedback_select_first_qualified_1_ranked)
-        popularity_feedback = popularity_feedback.drop(
+        reranked__query_feedback = reranked__query_feedback_select_first_qualified_1_tie_assertion
+        reranked__query_feedback = reranked__query_feedback.crossJoin(
+            reranked__query_feedback_select_first_qualified_1_ranked
+        )
+        reranked__query_feedback = reranked__query_feedback.drop(
             "__structure_priority_rank_1",
             "__structure_priority_order_1",
             "__structure_select_first_missing",
             "__structure_select_first_ties",
         )
-        popularity_feedback = popularity_feedback.select(
+        reranked__query_feedback = reranked__query_feedback.select(
+            F.col("document_feedback_option.search_query_id"),
+            F.col("document_feedback_option.experiment_id"),
+            F.col("document_feedback_option.user_band_id"),
+            F.col("document_feedback_option.candidate_rank"),
+            F.col("document_feedback_option.document_id"),
+            F.col("query_document_signals.normalized_score").alias("query_feedback"),
+        )
+        assert_schema(
+            reranked__query_feedback, QUERY_DOCUMENT_FEEDBACK_SCHEMA, name="QueryDocumentFeedback", mode="strict"
+        )
+        return {
+            "reranked__query_feedback": reranked__query_feedback,
+        }
+
+    def _step_reranked_select_popularity_feedback_9(self, frames):
+        # Step method: reranked.select_popularity_feedback
+        reranked__popularity_feedback = frames["reranked__feedback_options"].alias("document_feedback_option")
+        document_popularity_joined = frames["document_popularity"].alias("document_popularity")
+        reranked__popularity_feedback = reranked__popularity_feedback.join(
+            document_popularity_joined,
+            (
+                (F.col("document_popularity.document_id") == F.col("document_feedback_option.document_id"))
+                & F.col("document_popularity.band_id").eqNullSafe(F.col("document_feedback_option.feedback_band_id"))
+            ),
+            "left",
+        )
+        reranked__popularity_feedback_select_first_qualified_1_keys = reranked__popularity_feedback.select(
+            F.col("document_feedback_option.search_query_id").alias("__structure_priority_key_1_0"),
+            F.col("document_feedback_option.experiment_id").alias("__structure_priority_key_1_1"),
+            F.col("document_feedback_option.user_band_id").alias("__structure_priority_key_1_2"),
+            F.col("document_feedback_option.candidate_rank").alias("__structure_priority_key_1_3"),
+            F.col("document_feedback_option.document_id").alias("__structure_priority_key_1_4"),
+        )
+        reranked__popularity_feedback_select_first_qualified_1_keys = (
+            reranked__popularity_feedback_select_first_qualified_1_keys.dropDuplicates(
+                [
+                    '__structure_priority_key_1_0',
+                    '__structure_priority_key_1_1',
+                    '__structure_priority_key_1_2',
+                    '__structure_priority_key_1_3',
+                    '__structure_priority_key_1_4',
+                ]
+            )
+        )
+        reranked__popularity_feedback_select_first_qualified_1_eligible = reranked__popularity_feedback.where(
+            F.coalesce(
+                (
+                    F.col("document_feedback_option.feedback_band_id").isNull()
+                    | (
+                        F.col("document_popularity.impression_count")
+                        >= F.col("document_feedback_option.minimum_band_impressions")
+                    )
+                ),
+                F.lit(False),
+            )
+        )
+        reranked__popularity_feedback_select_first_qualified_1_eligible = (
+            reranked__popularity_feedback_select_first_qualified_1_eligible.withColumn(
+                "__structure_priority_order_1", F.col("document_feedback_option.fallback_ordinal")
+            )
+        )
+        reranked__popularity_feedback_select_first_qualified_1_eligible_keys = (
+            reranked__popularity_feedback_select_first_qualified_1_eligible.select(
+                F.col("document_feedback_option.search_query_id").alias("__structure_priority_key_1_0"),
+                F.col("document_feedback_option.experiment_id").alias("__structure_priority_key_1_1"),
+                F.col("document_feedback_option.user_band_id").alias("__structure_priority_key_1_2"),
+                F.col("document_feedback_option.candidate_rank").alias("__structure_priority_key_1_3"),
+                F.col("document_feedback_option.document_id").alias("__structure_priority_key_1_4"),
+            )
+        )
+        reranked__popularity_feedback_select_first_qualified_1_eligible_keys = (
+            reranked__popularity_feedback_select_first_qualified_1_eligible_keys.dropDuplicates(
+                [
+                    '__structure_priority_key_1_0',
+                    '__structure_priority_key_1_1',
+                    '__structure_priority_key_1_2',
+                    '__structure_priority_key_1_3',
+                    '__structure_priority_key_1_4',
+                ]
+            )
+        )
+        reranked__popularity_feedback_select_first_qualified_1_ties = (
+            reranked__popularity_feedback_select_first_qualified_1_eligible.select(
+                F.col("document_feedback_option.search_query_id").alias("__structure_priority_key_1_0"),
+                F.col("document_feedback_option.experiment_id").alias("__structure_priority_key_1_1"),
+                F.col("document_feedback_option.user_band_id").alias("__structure_priority_key_1_2"),
+                F.col("document_feedback_option.candidate_rank").alias("__structure_priority_key_1_3"),
+                F.col("document_feedback_option.document_id").alias("__structure_priority_key_1_4"),
+                F.col("__structure_priority_order_1"),
+            )
+        )
+        reranked__popularity_feedback_select_first_qualified_1_ties = (
+            reranked__popularity_feedback_select_first_qualified_1_ties.groupBy(
+                "__structure_priority_key_1_0",
+                "__structure_priority_key_1_1",
+                "__structure_priority_key_1_2",
+                "__structure_priority_key_1_3",
+                "__structure_priority_key_1_4",
+                "__structure_priority_order_1",
+            ).agg(F.count(F.lit(1)).alias("__structure_count"))
+        )
+        reranked__popularity_feedback_select_first_qualified_1_ties = (
+            reranked__popularity_feedback_select_first_qualified_1_ties.where(F.col("__structure_count") > F.lit(1))
+        )
+        reranked__popularity_feedback_select_first_qualified_1_ties = (
+            reranked__popularity_feedback_select_first_qualified_1_ties.agg(
+                F.count(F.lit(1)).alias("__structure_violations")
+            )
+        )
+        reranked__popularity_feedback_select_first_qualified_1_tie_assertion = (
+            reranked__popularity_feedback_select_first_qualified_1_ties
+            .select(
+                 F.assert_true(
+                     F.col(
+                        "__structure_violations"
+                    ) == F.lit(
+                        0
+                    ),
+                     (
+                         'REL-E0705: select_first_qualified(...) found tied eligible candidates; see'
+                         'docs/Diagnostics.md#rel-e0705'
+                     ),
+                ).alias(
+                    "__structure_select_first_ties"
+                )
+            )
+        )
+        reranked__popularity_feedback_select_first_qualified_1_ranked = (
+            reranked__popularity_feedback_select_first_qualified_1_eligible.withColumn(
+                "__structure_priority_rank_1",
+                F.row_number().over(
+                    Window.partitionBy(
+                        F.col("document_feedback_option.search_query_id"),
+                        F.col("document_feedback_option.experiment_id"),
+                        F.col("document_feedback_option.user_band_id"),
+                        F.col("document_feedback_option.candidate_rank"),
+                        F.col("document_feedback_option.document_id"),
+                    ).orderBy(F.col("document_feedback_option.fallback_ordinal").asc())
+                ),
+            )
+        )
+        reranked__popularity_feedback_select_first_qualified_1_ranked = (
+            reranked__popularity_feedback_select_first_qualified_1_ranked.where(
+                F.col("__structure_priority_rank_1") == F.lit(1)
+            )
+        )
+        reranked__popularity_feedback = reranked__popularity_feedback_select_first_qualified_1_tie_assertion
+        reranked__popularity_feedback = reranked__popularity_feedback.crossJoin(
+            reranked__popularity_feedback_select_first_qualified_1_ranked
+        )
+        reranked__popularity_feedback = reranked__popularity_feedback.drop(
+            "__structure_priority_rank_1",
+            "__structure_priority_order_1",
+            "__structure_select_first_missing",
+            "__structure_select_first_ties",
+        )
+        reranked__popularity_feedback = reranked__popularity_feedback.select(
             F.col("document_feedback_option.search_query_id"),
             F.col("document_feedback_option.experiment_id"),
             F.col("document_feedback_option.user_band_id"),
@@ -459,73 +677,83 @@ class RerankDocumentsGenerated:
             F.col("document_feedback_option.document_id"),
             F.col("document_popularity.normalized_score").alias("popularity_feedback"),
         )
-        assert_schema(popularity_feedback, POPULARITY_FEEDBACK_SCHEMA, name="PopularityFeedback", mode="strict")
+        assert_schema(
+            reranked__popularity_feedback, POPULARITY_FEEDBACK_SCHEMA, name="PopularityFeedback", mode="strict"
+        )
         return {
-            "popularity_feedback": popularity_feedback,
+            "reranked__popularity_feedback": reranked__popularity_feedback,
         }
 
-    def _step_score_candidates_6(self, frames):
-        # Step method: score_candidates
-        scored_candidates = frames["candidates"].alias("document_search_candidate")
-        scored_candidates = scored_candidates.where(((F.col("document_search_candidate.candidate_rank") <= F.lit(100))))
-        query_feedback_joined = frames["query_feedback"].alias("query_feedback")
-        scored_candidates = scored_candidates.join(
-            query_feedback_joined,
-            (
-                (
-                    (
-                        (
-                            (
-                                F.col("query_feedback.search_query_id")
-                                == F.col("document_search_candidate.search_query_id")
-                            )
-                            & (
-                                F.col("query_feedback.experiment_id")
-                                == F.col("document_search_candidate.experiment_id")
-                            )
-                        )
-                        & F.col("query_feedback.user_band_id").eqNullSafe(
-                            F.col("document_search_candidate.user_band_id")
-                        )
-                    )
-                    & (F.col("query_feedback.candidate_rank") == F.col("document_search_candidate.candidate_rank"))
-                )
-                & (F.col("query_feedback.document_id") == F.col("document_search_candidate.document_id"))
-            ),
-            "left",
+    def _step_reranked_score_candidates_10(self, frames):
+        # Step method: reranked.score_candidates
+        reranked__scored_candidates = frames["overlapped__overlapped_candidates"].alias("document_search_candidate")
+        reranked__scored_candidates = reranked__scored_candidates.where(
+            ((F.col("document_search_candidate.candidate_rank") <= F.lit(100)))
         )
-        popularity_feedback_2_joined = frames["popularity_feedback"].alias("popularity_feedback_2")
-        scored_candidates = scored_candidates.join(
-            popularity_feedback_2_joined,
+        reranked__query_feedback_joined = frames["reranked__query_feedback"].alias("reranked__query_feedback")
+        reranked__scored_candidates = reranked__scored_candidates.join(
+            reranked__query_feedback_joined,
             (
                 (
                     (
                         (
                             (
-                                F.col("popularity_feedback_2.search_query_id")
+                                F.col("reranked__query_feedback.search_query_id")
                                 == F.col("document_search_candidate.search_query_id")
                             )
-                            & (
-                                F.col("popularity_feedback_2.experiment_id")
-                                == F.col("document_search_candidate.experiment_id")
+                            & F.col("reranked__query_feedback.experiment_id").eqNullSafe(
+                                F.col("document_search_candidate.experiment_id")
                             )
                         )
-                        & F.col("popularity_feedback_2.user_band_id").eqNullSafe(
+                        & F.col("reranked__query_feedback.user_band_id").eqNullSafe(
                             F.col("document_search_candidate.user_band_id")
                         )
                     )
                     & (
-                        F.col("popularity_feedback_2.candidate_rank")
+                        F.col("reranked__query_feedback.candidate_rank")
                         == F.col("document_search_candidate.candidate_rank")
                     )
                 )
-                & (F.col("popularity_feedback_2.document_id") == F.col("document_search_candidate.document_id"))
+                & (F.col("reranked__query_feedback.document_id") == F.col("document_search_candidate.document_id"))
+            ),
+            "left",
+        )
+        reranked__popularity_feedback_2_joined = frames["reranked__popularity_feedback"].alias(
+            "reranked__popularity_feedback_2"
+        )
+        reranked__scored_candidates = reranked__scored_candidates.join(
+            reranked__popularity_feedback_2_joined,
+            (
+                (
+                    (
+                        (
+                            (
+                                F.col("reranked__popularity_feedback_2.search_query_id")
+                                == F.col("document_search_candidate.search_query_id")
+                            )
+                            & F.col("reranked__popularity_feedback_2.experiment_id").eqNullSafe(
+                                F.col("document_search_candidate.experiment_id")
+                            )
+                        )
+                        & F.col("reranked__popularity_feedback_2.user_band_id").eqNullSafe(
+                            F.col("document_search_candidate.user_band_id")
+                        )
+                    )
+                    & (
+                        F.col("reranked__popularity_feedback_2.candidate_rank")
+                        == F.col("document_search_candidate.candidate_rank")
+                    )
+                )
+                & (
+                    F.col("reranked__popularity_feedback_2.document_id")
+                    == F.col("document_search_candidate.document_id")
+                )
             ),
             "left",
         )
         policy_3_joined = frames["policy"].alias("policy_3")
-        scored_candidates = scored_candidates.crossJoin(policy_3_joined)
-        scored_candidates = scored_candidates.select(
+        reranked__scored_candidates = reranked__scored_candidates.crossJoin(policy_3_joined)
+        reranked__scored_candidates = reranked__scored_candidates.select(
             F.col("document_search_candidate.search_query_id"),
             F.col("document_search_candidate.experiment_id"),
             F.col("document_search_candidate.user_band_id"),
@@ -537,24 +765,24 @@ class RerankDocumentsGenerated:
             F.col("document_search_candidate.url"),
             F.col("document_search_candidate.score"),
             (
-                (F.lit(0.8) * F.coalesce(F.col("query_feedback.query_feedback"), F.lit(0.0)))
-                + (F.lit(0.2) * F.coalesce(F.col("popularity_feedback_2.popularity_feedback"), F.lit(0.0)))
+                (F.lit(0.8) * F.coalesce(F.col("reranked__query_feedback.query_feedback"), F.lit(0.0)))
+                + (F.lit(0.2) * F.coalesce(F.col("reranked__popularity_feedback_2.popularity_feedback"), F.lit(0.0)))
             ).alias("score_feedback"),
             F.lit(0.0).alias("score_rank"),
             F.col("policy_3.score_weight"),
             F.col("policy_3.feedback_weight"),
         )
         assert_schema(
-            scored_candidates, DOCUMENT_SEARCH_CANDIDATE_SCHEMA, name="DocumentSearchCandidate", mode="strict"
+            reranked__scored_candidates, DOCUMENT_SEARCH_CANDIDATE_SCHEMA, name="DocumentSearchCandidate", mode="strict"
         )
         return {
-            "scored_candidates": scored_candidates,
+            "reranked__scored_candidates": reranked__scored_candidates,
         }
 
-    def _step_normalize_score_7(self, frames):
-        # Step method: normalize_score
-        normalized_candidates = frames["scored_candidates"].alias("document_search_candidate")
-        normalized_candidates = normalized_candidates.select(
+    def _step_reranked_normalize_score_11(self, frames):
+        # Step method: reranked.normalize_score
+        reranked__normalized_candidates = frames["reranked__scored_candidates"].alias("document_search_candidate")
+        reranked__normalized_candidates = reranked__normalized_candidates.select(
             F.col("document_search_candidate.search_query_id"),
             F.col("document_search_candidate.experiment_id"),
             F.col("document_search_candidate.user_band_id"),
@@ -588,16 +816,19 @@ class RerankDocumentsGenerated:
             F.col("document_search_candidate.feedback_weight"),
         )
         assert_schema(
-            normalized_candidates, DOCUMENT_SEARCH_CANDIDATE_SCHEMA, name="DocumentSearchCandidate", mode="strict"
+            reranked__normalized_candidates,
+            DOCUMENT_SEARCH_CANDIDATE_SCHEMA,
+            name="DocumentSearchCandidate",
+            mode="strict",
         )
         return {
-            "normalized_candidates": normalized_candidates,
+            "reranked__normalized_candidates": reranked__normalized_candidates,
         }
 
-    def _step_rank_results_8(self, frames):
-        # Step method: rank_results
-        results = frames["normalized_candidates"].alias("document_search_candidate")
-        results = results.select(
+    def _step_reranked_rank_results_12(self, frames):
+        # Step method: reranked.rank_results
+        reranked__results = frames["reranked__normalized_candidates"].alias("document_search_candidate")
+        reranked__results = reranked__results.select(
             F.col("document_search_candidate.search_query_id"),
             F.col("document_search_candidate.experiment_id"),
             F.col("document_search_candidate.user_band_id"),
@@ -624,11 +855,11 @@ class RerankDocumentsGenerated:
             F.col("document_search_candidate.score_rank"),
         )
         return {
-            "results": results,
+            "reranked__results": reranked__results,
         }
 
 
-class SearchDocumentsGenerated(RetrieveDocumentsGenerated, RerankDocumentsGenerated):
+class SearchDocumentsGenerated(RetrieveDocumentsGenerated, OverlapDocumentsGenerated, RerankDocumentsGenerated):
 
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
@@ -640,8 +871,11 @@ class SearchDocumentsGenerated(RetrieveDocumentsGenerated, RerankDocumentsGenera
         queries: DataFrame,
         documents: DataFrame,
         document_scores: DataFrame,
+        streamed_documents: DataFrame,
+        streamed_document_scores: DataFrame,
         requests: DataFrame,
         band_memberships: DataFrame,
+        document_overlap_scores: DataFrame,
         query_document_signals: DataFrame,
         document_popularity: DataFrame,
         band_fallbacks: DataFrame,
@@ -650,8 +884,13 @@ class SearchDocumentsGenerated(RetrieveDocumentsGenerated, RerankDocumentsGenera
         assert_schema(queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
         assert_schema(documents, DOCUMENT_SCHEMA, name="Document", mode="strict")
         assert_schema(document_scores, DOCUMENT_SCORE_SCHEMA, name="DocumentScore", mode="strict")
+        assert_schema(streamed_documents, DOCUMENT_SCHEMA, name="Document", mode="strict")
+        assert_schema(streamed_document_scores, DOCUMENT_SCORE_SCHEMA, name="DocumentScore", mode="strict")
         assert_schema(requests, SEARCH_REQUEST_SCHEMA, name="SearchRequest", mode="strict")
         assert_schema(band_memberships, BAND_MEMBERSHIP_SCHEMA, name="BandMembership", mode="strict")
+        assert_schema(
+            document_overlap_scores, DOCUMENT_OVERLAP_SCORE_SCHEMA, name="DocumentOverlapScore", mode="strict"
+        )
         assert_schema(query_document_signals, QUERY_DOCUMENT_SIGNALS_SCHEMA, name="QueryDocumentSignals", mode="strict")
         assert_schema(document_popularity, DOCUMENT_POPULARITY_SCHEMA, name="DocumentPopularity", mode="strict")
         assert_schema(band_fallbacks, BAND_FALLBACK_SCHEMA, name="BandFallback", mode="strict")
@@ -659,8 +898,11 @@ class SearchDocumentsGenerated(RetrieveDocumentsGenerated, RerankDocumentsGenera
         _input_queries = queries
         _input_documents = documents
         _input_document_scores = document_scores
+        _input_streamed_documents = streamed_documents
+        _input_streamed_document_scores = streamed_document_scores
         _input_requests = requests
         _input_band_memberships = band_memberships
+        _input_document_overlap_scores = document_overlap_scores
         _input_query_document_signals = query_document_signals
         _input_document_popularity = document_popularity
         _input_band_fallbacks = band_fallbacks
@@ -669,8 +911,11 @@ class SearchDocumentsGenerated(RetrieveDocumentsGenerated, RerankDocumentsGenera
             "queries": queries,
             "documents": documents,
             "document_scores": document_scores,
+            "streamed_documents": streamed_documents,
+            "streamed_document_scores": streamed_document_scores,
             "requests": requests,
             "band_memberships": band_memberships,
+            "document_overlap_scores": document_overlap_scores,
             "query_document_signals": query_document_signals,
             "document_popularity": document_popularity,
             "band_fallbacks": band_fallbacks,
@@ -678,32 +923,31 @@ class SearchDocumentsGenerated(RetrieveDocumentsGenerated, RerankDocumentsGenera
             "input:queries": _input_queries,
             "input:documents": _input_documents,
             "input:document_scores": _input_document_scores,
+            "input:streamed_documents": _input_streamed_documents,
+            "input:streamed_document_scores": _input_streamed_document_scores,
             "input:requests": _input_requests,
             "input:band_memberships": _input_band_memberships,
+            "input:document_overlap_scores": _input_document_overlap_scores,
             "input:query_document_signals": _input_query_document_signals,
             "input:document_popularity": _input_document_popularity,
             "input:band_fallbacks": _input_band_fallbacks,
             "input:policy": _input_policy,
         }
-        frames.update(self._step_select_candidates_0(frames))
-        frames.update(self._step_select_fallback_options_1(frames))
-        frames.update(self._step_select_global_options_2(frames))
-        frames.update(self._step_merge_feedback_options_3(frames))
-        frames.update(self._step_select_query_feedback_4(frames))
-        frames.update(self._step_select_popularity_feedback_5(frames))
-        frames.update(self._step_score_candidates_6(frames))
-        frames.update(self._step_normalize_score_7(frames))
-        frames.update(self._step_rank_results_8(frames))
-
-        # Step method: candidates
-        candidates = frames["candidates"].alias("document_search_candidate")
-        assert_schema(candidates, DOCUMENT_SEARCH_CANDIDATE_SCHEMA, name="DocumentSearchCandidate", mode="strict")
+        frames.update(self._step_retrieved_select_stored_candidates_0(frames))
+        frames.update(self._step_retrieved_select_streamed_candidates_1(frames))
+        frames.update(self._step_retrieved_rank_candidates_2(frames))
+        frames.update(self._step_overlapped_rank_candidates_3(frames))
+        frames.update(self._step_overlapped_select_candidates_4(frames))
+        frames.update(self._step_reranked_select_fallback_options_5(frames))
+        frames.update(self._step_reranked_select_global_options_6(frames))
+        frames.update(self._step_reranked_merge_feedback_options_7(frames))
+        frames.update(self._step_reranked_select_query_feedback_8(frames))
+        frames.update(self._step_reranked_select_popularity_feedback_9(frames))
+        frames.update(self._step_reranked_score_candidates_10(frames))
+        frames.update(self._step_reranked_normalize_score_11(frames))
+        frames.update(self._step_reranked_rank_results_12(frames))
 
         # Step method: results
-        results = frames["results"].alias("document_search_result")
+        results = frames["reranked__results"].alias("document_search_result")
         assert_schema(results, DOCUMENT_SEARCH_RESULT_SCHEMA, name="DocumentSearchResult", mode="strict")
-        return TransformResult(
-            {"candidates": candidates, "results": results},
-            single=False,
-            schema={"candidates": DOCUMENT_SEARCH_CANDIDATE_SCHEMA, "results": DOCUMENT_SEARCH_RESULT_SCHEMA},
-        )
+        return TransformResult({"results": results}, single=True, schema={"results": DOCUMENT_SEARCH_RESULT_SCHEMA})

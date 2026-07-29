@@ -17,24 +17,24 @@ Source: `examples.search.transforms.labeling.label_queries.LabelQueries`
 
 ## Step methods
 
-- `create_query_labels.validate_intents`: `Intent` -> `Intent`
-- `create_query_labels.validate_patterns`: `IntentPattern` -> `IntentPattern`
-- `create_query_labels.create_query_intents`: `SearchQuery` -> `QueryIntentLabel`
-- `create_query_labels.collect_labels`: `QueryIntentLabel` -> `QueryLabelAssignmentEntries`
-- `create_query_labels.create_labels`: `QueryLabelAssignmentEntries` -> `QueryLabelAssignments`
-- `merge_query_labels.select_latest`: `QueryLabel` -> `QueryLabel`
-- `merge_query_labels.collect_assignments`: `QueryLabel` -> `QueryLabelAssignmentEntries`
-- `merge_query_labels.create_assignments`: `QueryLabelAssignmentEntries` -> `QueryLabelAssignments`
-- `merge_query_labels.merge_caller_labels`: `SearchQuery` -> `SearchQuery`
-- `merge_query_labels.merge_created_labels`: `SearchQuery` -> `SearchQuery`
+- `created.validate_intents`: `Intent` -> `Intent`
+- `created.validate_patterns`: `IntentPattern` -> `IntentPattern`
+- `created.create_query_intents`: `SearchQuery` -> `QueryIntentLabel`
+- `created.collect_labels`: `QueryIntentLabel` -> `QueryLabelAssignmentEntries`
+- `created.create_labels`: `QueryLabelAssignmentEntries` -> `QueryLabelAssignments`
+- `merged.select_latest`: `QueryLabel` -> `QueryLabel`
+- `merged.collect_assignments`: `QueryLabel` -> `QueryLabelAssignmentEntries`
+- `merged.create_assignments`: `QueryLabelAssignmentEntries` -> `QueryLabelAssignments`
+- `merged.merge_caller_labels`: `SearchQuery` -> `SearchQuery`
+- `merged.merge_created_labels`: `SearchQuery` -> `SearchQuery`
 
 ## Dependencies
 
 - `assignment`
-- `create_query_labels__labels`
-- `create_query_labels__valid_intents`
+- `created__labels`
+- `created__valid_intents`
 - `intent`
-- `merge_query_labels__assignments`
+- `merged__assignments`
 
 ## Target Artifacts
 

@@ -9,8 +9,11 @@ Source: `examples.search.transforms.searching.search_docs.SearchDocuments.Search
 - `queries`: `SearchQuery`
 - `documents`: `Document`
 - `document_scores`: `DocumentScore`
+- `streamed_documents`: `Document`
+- `streamed_document_scores`: `DocumentScore`
 - `requests`: `SearchRequest`
 - `band_memberships`: `BandMembership`
+- `document_overlap_scores`: `DocumentOverlapScore`
 - `query_document_signals`: `QueryDocumentSignals`
 - `document_popularity`: `DocumentPopularity`
 - `band_fallbacks`: `BandFallback`
@@ -18,41 +21,48 @@ Source: `examples.search.transforms.searching.search_docs.SearchDocuments.Search
 
 ## Outputs
 
-- `candidates`: `DocumentSearchCandidate`
 - `results`: `DocumentSearchResult`
 
 ## Step methods
 
-- `select_candidates`: `Document` -> `DocumentSearchCandidate`
-- `select_fallback_options`: `DocumentSearchCandidate` -> `DocumentFeedbackOption`
-- `select_global_options`: `DocumentSearchCandidate` -> `DocumentFeedbackOption`
-- `merge_feedback_options`: `DocumentFeedbackOption` -> `DocumentFeedbackOption`
-- `select_query_feedback`: `DocumentFeedbackOption` -> `QueryDocumentFeedback`
-- `select_popularity_feedback`: `DocumentFeedbackOption` -> `PopularityFeedback`
-- `score_candidates`: `DocumentSearchCandidate` -> `DocumentSearchCandidate`
-- `normalize_score`: `DocumentSearchCandidate` -> `DocumentSearchCandidate`
-- `rank_results`: `DocumentSearchCandidate` -> `DocumentSearchResult`
+- `retrieved.select_stored_candidates`: `Document` -> `DocumentSearchCandidate`
+- `retrieved.select_streamed_candidates`: `Document` -> `DocumentSearchCandidate`
+- `retrieved.rank_candidates`: `DocumentSearchCandidate` -> `DocumentSearchCandidate`
+- `overlapped.rank_candidates`: `DocumentSearchCandidate` -> `DocumentSearchCandidate`
+- `overlapped.select_candidates`: `DocumentSearchCandidate` -> `DocumentSearchCandidate`
+- `reranked.select_fallback_options`: `DocumentSearchCandidate` -> `DocumentFeedbackOption`
+- `reranked.select_global_options`: `DocumentSearchCandidate` -> `DocumentFeedbackOption`
+- `reranked.merge_feedback_options`: `DocumentFeedbackOption` -> `DocumentFeedbackOption`
+- `reranked.select_query_feedback`: `DocumentFeedbackOption` -> `QueryDocumentFeedback`
+- `reranked.select_popularity_feedback`: `DocumentFeedbackOption` -> `PopularityFeedback`
+- `reranked.score_candidates`: `DocumentSearchCandidate` -> `DocumentSearchCandidate`
+- `reranked.normalize_score`: `DocumentSearchCandidate` -> `DocumentSearchCandidate`
+- `reranked.rank_results`: `DocumentSearchCandidate` -> `DocumentSearchResult`
 
 ## Dependencies
 
 - `band`
 - `band_fallbacks`
 - `band_memberships`
+- `document_overlap_scores`
 - `document_popularity`
 - `document_scores`
 - `fallback`
-- `global_options`
+- `overlap`
 - `policy`
 - `popularity`
-- `popularity_feedback`
 - `queries`
 - `query`
 - `query_document_signals`
-- `query_feedback`
 - `request`
 - `requests`
+- `reranked__global_options`
+- `reranked__popularity_feedback`
+- `reranked__query_feedback`
+- `retrieved__streamed_candidates`
 - `score`
 - `signal`
+- `streamed_document_scores`
 
 ## Target Artifacts
 

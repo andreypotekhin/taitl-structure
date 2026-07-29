@@ -7,6 +7,7 @@ from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
 from examples.structure_generated.search.pyspark.schemas.label import (
+    LABEL_MAP_ENTRY_SCHEMA,
     QUERY_LABEL_ASSIGNMENTS_SCHEMA,
     QUERY_LABEL_ASSIGNMENT_ENTRIES_SCHEMA,
     QUERY_LABEL_SCHEMA,
@@ -37,11 +38,9 @@ class MergeQueryLabelsGenerated:
         # Step method: select_latest
         latest_labels = query_labels.alias("query_label")
         if latest_labels.isStreaming:
-            latest_labels = latest_labels.dropDuplicatesWithinWatermark(
-                ["query_id", "label.name", "label.value", "assigned_at"]
-            )
+            latest_labels = latest_labels.dropDuplicatesWithinWatermark()
         else:
-            latest_labels = latest_labels.dropDuplicates(["query_id", "label.name", "label.value", "assigned_at"])
+            latest_labels = latest_labels.dropDuplicates()
         latest_labels = latest_labels.withColumn(
             "__structure_select_latest_latest_rank",
             F.row_number().over(

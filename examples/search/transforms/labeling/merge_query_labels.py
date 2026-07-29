@@ -35,7 +35,7 @@ class MergeQueryLabels(Transform):
 
     @step(input=query_labels, output=latest_labels)
     def select_latest(self, label: QueryLabel) -> QueryLabel:
-        drop_duplicates(label.query_id, label.label.name, label.label.value, label.assigned_at)
+        drop_duplicates()
         dedupe_latest_by(
             label.assigned_at,
             partition_by=(label.query_id, label.label.name),

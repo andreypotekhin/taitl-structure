@@ -11,7 +11,7 @@ class SearchRequest(Schema):
     query_id = string(nullable=False)
     query = string(nullable=False)
     user_id = string(nullable=True)
-    experiment_id = string(nullable=False)
+    experiment_id = string(nullable=True)
     ranking_version = string(nullable=False)
     requested_at = timestamp(nullable=False)
 

@@ -9,6 +9,7 @@ from examples.structure_generated.search.runtime.schema_assert import TransformR
 from examples.structure_generated.search.pyspark.schemas.label import (
     INTENT_PATTERN_SCHEMA,
     INTENT_SCHEMA,
+    LABEL_MAP_ENTRY_SCHEMA,
     QUERY_INTENT_LABEL_SCHEMA,
     QUERY_LABEL_ASSIGNMENTS_SCHEMA,
     QUERY_LABEL_ASSIGNMENT_ENTRIES_SCHEMA,

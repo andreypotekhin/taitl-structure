@@ -73,6 +73,14 @@ Stateful streaming support is admitted by operation family:
 Each family must define accepted output modes, required watermarks, state growth risks, deterministic tie policy, and
 live streaming tests. Until then, the operation remains `batch_only` for streaming compatibility.
 
+V8 closes two previously ambiguous families as explicitly ineligible rather than deferred:
+
+- arbitrary relation ordering and bounds: `order_by(...)`, `limit(...)`, and `offset(...)`;
+- row-number style priority selection: `select_first_qualified(...)`.
+
+These require a batch materialization boundary for v8 caller-owned streaming. They are not hidden implementation gaps
+in the v8 coverage denominator.
+
 ## Hooks And Foreach
 
 `streaming=True` only admits ordinary DataFrame-returning hooks inside the first slice. Future `foreachBatch`,

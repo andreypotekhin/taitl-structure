@@ -23,6 +23,6 @@
     }
   ],
   "generated_by": "Structure",
-  "module": "examples.search.schemas.search",
+  "module": "examples.search.schemas.indexing.lexical.index",
   "name": "ParagraphIndexTarget"
 }

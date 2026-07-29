@@ -56,6 +56,31 @@ from examples.search.schemas.extraction.extract import (
     SentenceText,
     WordText,
 )
+from examples.search.schemas.indexing.lexical.index import (
+    DocumentIndexSummary,
+    DocumentIndexTarget,
+    DocumentIndexTerm,
+    ParagraphIndexSummary,
+    ParagraphIndexTarget,
+    ParagraphIndexTerm,
+    SectionIndexSummary,
+    SectionIndexTarget,
+    SectionIndexTerm,
+    SentenceIndexSummary,
+    SentenceIndexTarget,
+    SentenceIndexTerm,
+)
+from examples.search.schemas.indexing.lexical.intermediate import (
+    DocumentIndexTargetStats,
+    DocumentIndexTermCount,
+    IndexTokenFrequency,
+    ParagraphIndexTargetStats,
+    ParagraphIndexTermCount,
+    SectionIndexTargetStats,
+    SectionIndexTermCount,
+    SentenceIndexTargetStats,
+    SentenceIndexTermCount,
+)
 from examples.search.schemas.label import (
     Intent,
     IntentPattern,
@@ -79,56 +104,37 @@ from examples.search.schemas.scoring.bm25 import (
     SectionBm25Score,
     SentenceBm25Score,
 )
-from examples.search.schemas.scoring.overlap import (
+from examples.search.schemas.scoring.intermediate import (
     DocumentOverlapMatch,
-    DocumentOverlapScore,
+    ExpandedQueryToken,
     ParagraphOverlapMatch,
-    ParagraphOverlapScore,
+    QueryTerm,
+    QueryTermCount,
+    QueryToken,
     SectionOverlapMatch,
-    SectionOverlapScore,
     SentenceOverlapMatch,
+)
+from examples.search.schemas.scoring.overlap import (
+    DocumentOverlapScore,
+    ParagraphOverlapScore,
+    SectionOverlapScore,
     SentenceOverlapScore,
 )
 from examples.search.schemas.search import (
     DocumentFeedbackOption,
-    DocumentIndexSummary,
-    DocumentIndexTarget,
-    DocumentIndexTargetStats,
-    DocumentIndexTerm,
-    DocumentIndexTermCount,
     DocumentScore,
     DocumentSearchCandidate,
     DocumentSearchResult,
     DocumentSearchTarget,
-    ExpandedQueryToken,
-    IndexTokenFrequency,
     ParagraphContext,
-    ParagraphIndexSummary,
-    ParagraphIndexTarget,
-    ParagraphIndexTargetStats,
-    ParagraphIndexTerm,
-    ParagraphIndexTermCount,
     ParagraphScore,
     ParagraphSearchTarget,
     PassageSearchResult,
     PopularityFeedback,
     QueryDocumentFeedback,
-    QueryTerm,
-    QueryTermCount,
-    QueryToken,
     SearchQuery,
-    SectionIndexSummary,
-    SectionIndexTarget,
-    SectionIndexTargetStats,
-    SectionIndexTerm,
-    SectionIndexTermCount,
     SectionScore,
     SectionSearchTarget,
-    SentenceIndexSummary,
-    SentenceIndexTarget,
-    SentenceIndexTargetStats,
-    SentenceIndexTerm,
-    SentenceIndexTermCount,
     SentenceScore,
     SentenceSearchResult,
     SentenceSearchTarget,
@@ -191,13 +197,17 @@ from examples.search.transforms.experiment import (
 from examples.search.transforms.experiment import (
     EvaluateDocumentSearchBehavior as EvaluateExperimentDocumentSearchBehavior,
 )
-from examples.search.transforms.experiment import SelectExperimentScores
+from examples.search.transforms.experiment import (
+    Scoring001AdjustBm,
+    Searching001AdjustRerankSearchDocuments,
+    SelectExperimentScores,
+)
 from examples.search.transforms.extract import ExtractText
 from examples.search.transforms.index import CreateIndex
 from examples.search.transforms.labeling import CreateQueryLabels, LabelQueries, MergeQueryLabels
 from examples.search.transforms.profile import ProfileDocuments
 from examples.search.transforms.relevance.BuildRelevanceSignals import BuildRelevanceSignals
-from examples.search.transforms.score import ScoreAll
+from examples.search.transforms.score import Scoring
 from examples.search.transforms.scoring.ScoreBm25 import ScoreBm25
 from examples.search.transforms.scoring.ScoreOverlap import ScoreOverlap
 from examples.search.transforms.search import SearchDocuments, SearchPassages, SearchSentences
@@ -227,35 +237,10 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
     ],
     "examples.search.schemas.search": [
         SearchQuery,
-        QueryToken,
-        ExpandedQueryToken,
-        QueryTerm,
-        QueryTermCount,
         DocumentSearchTarget,
         SectionSearchTarget,
         ParagraphSearchTarget,
         SentenceSearchTarget,
-        DocumentIndexTarget,
-        SectionIndexTarget,
-        ParagraphIndexTarget,
-        SentenceIndexTarget,
-        IndexTokenFrequency,
-        DocumentIndexTermCount,
-        DocumentIndexTargetStats,
-        DocumentIndexTerm,
-        DocumentIndexSummary,
-        SectionIndexTermCount,
-        SectionIndexTargetStats,
-        SectionIndexTerm,
-        SectionIndexSummary,
-        ParagraphIndexTermCount,
-        ParagraphIndexTargetStats,
-        ParagraphIndexTerm,
-        ParagraphIndexSummary,
-        SentenceIndexTermCount,
-        SentenceIndexTargetStats,
-        SentenceIndexTerm,
-        SentenceIndexSummary,
         SentenceSearchResult,
         PassageSearchResult,
         ParagraphContext,
@@ -270,14 +255,45 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         DocumentSearchResult,
     ],
     "examples.search.schemas.scoring.overlap": [
-        DocumentOverlapMatch,
         DocumentOverlapScore,
-        SectionOverlapMatch,
         SectionOverlapScore,
-        ParagraphOverlapMatch,
         ParagraphOverlapScore,
-        SentenceOverlapMatch,
         SentenceOverlapScore,
+    ],
+    "examples.search.schemas.scoring.intermediate": [
+        QueryToken,
+        ExpandedQueryToken,
+        QueryTerm,
+        QueryTermCount,
+        DocumentOverlapMatch,
+        SectionOverlapMatch,
+        ParagraphOverlapMatch,
+        SentenceOverlapMatch,
+    ],
+    "examples.search.schemas.indexing.lexical.index": [
+        DocumentIndexTarget,
+        SectionIndexTarget,
+        ParagraphIndexTarget,
+        SentenceIndexTarget,
+        DocumentIndexTerm,
+        DocumentIndexSummary,
+        SectionIndexTerm,
+        SectionIndexSummary,
+        ParagraphIndexTerm,
+        ParagraphIndexSummary,
+        SentenceIndexTerm,
+        SentenceIndexSummary,
+    ],
+    "examples.search.schemas.indexing.lexical.intermediate": [
+        IndexTokenFrequency,
+        DocumentIndexTermCount,
+        DocumentIndexTargetStats,
+        SectionIndexTermCount,
+        SectionIndexTargetStats,
+        ParagraphIndexTermCount,
+        ParagraphIndexTargetStats,
+        SentenceIndexTermCount,
+        SentenceIndexTargetStats,
     ],
     "examples.search.schemas.scoring.bm25": [
         DocumentBm25Score,
@@ -425,6 +441,10 @@ TRANSFORMS = (
         "examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevanceSignals",
     ),
     (SearchDocuments, "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments"),
+    (
+        Searching001AdjustRerankSearchDocuments,
+        "examples.search.transforms.experiments.searching.search_docs.searching001_adjust_rerank.Searching001AdjustRerankSearchDocuments",
+    ),
     (MergeQueryLabels, "examples.search.transforms.labeling.merge_query_labels.MergeQueryLabels"),
     (CreateQueryLabels, "examples.search.transforms.labeling.create_query_labels.CreateQueryLabels"),
     (LabelQueries, "examples.search.transforms.labeling.label_queries.LabelQueries"),
@@ -434,11 +454,11 @@ TRANSFORMS = (
     ),
     (
         EvaluateExperimentDocumentRankingQuality,
-        "examples.search.transforms.experiments.search_docs.eval_ranking.EvaluateDocumentRankingQuality",
+        "examples.search.transforms.experiments.evaluation.search_docs.eval_ranking.EvaluateDocumentRankingQuality",
     ),
     (
         EvaluateExperimentDocumentSearchBehavior,
-        "examples.search.transforms.experiments.search_docs.eval_behavior.EvaluateDocumentSearchBehavior",
+        "examples.search.transforms.experiments.evaluation.search_docs.eval_behavior.EvaluateDocumentSearchBehavior",
     ),
     (
         EvaluateDocumentRankingQuality,
@@ -478,7 +498,11 @@ TRANSFORMS = (
     ),
     (ScoreOverlap, "examples.search.transforms.scoring.ScoreOverlap.ScoreOverlap"),
     (ScoreBm25, "examples.search.transforms.scoring.ScoreBm25.ScoreBm25"),
-    (ScoreAll, "examples.search.transforms.scoring.ScoreAll.ScoreAll"),
+    (Scoring, "examples.search.transforms.scoring.Scoring.Scoring"),
+    (
+        Scoring001AdjustBm,
+        "examples.search.transforms.experiments.scoring.scoring001_adjust_bm.Scoring001AdjustBm",
+    ),
     (
         ReduceSimilarityScores,
         "examples.search.transforms.similarities.ReduceSimilarityScores.ReduceSimilarityScores",
@@ -502,16 +526,10 @@ def test_query_labeling_pipeline_renders_with_stage_owned_raw_hook() -> None:
         source_schema_modules=SCHEMA_MODULES,
     )
 
-    text = files[f"{PACKAGE}/pyspark/transforms/labeling/label_queries.py"]
-    hook_call = (
-        "create_query_labels__query_intents = "
-        "self._impl_create_query_labels_CreateQueryLabels.match_patterns("
-    )
-
+    text = files[f"{PACKAGE}/pyspark/transforms/label_queries.py"]
     assert "from examples.search.transforms.labeling.create_query_labels import CreateQueryLabels" in text
-    assert "self._impl_create_query_labels_CreateQueryLabels = CreateQueryLabels()" in text
-    assert hook_call in text
-    assert "merge_query_labels.merge_created_labels" in text
+    assert "match_patterns(" in text
+    assert "merge_created_labels" in text
 
 
 def test_query_intents_create_multilingual_english_labels_online_and_generated(spark, tmp_path) -> None:
@@ -520,6 +538,14 @@ def test_query_intents_create_multilingual_english_labels_online_and_generated(s
         source_transform="examples.search.transforms.labeling.create_query_labels.CreateQueryLabels",
         generated_package=PACKAGE,
         source_schema_modules=SCHEMA_MODULES,
+    )
+    files.update(
+        render_generated_project(
+            MergeQueryLabels,
+            source_transform="examples.search.transforms.labeling.merge_query_labels.MergeQueryLabels",
+            generated_package=PACKAGE,
+            source_schema_modules=SCHEMA_MODULES,
+        )
     )
     with generated_project(tmp_path, PACKAGE, files):
         labels = __import__(f"{PACKAGE}.pyspark.schemas.label", fromlist=["INTENT_SCHEMA"])
@@ -823,11 +849,14 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             queries=generated_similarity_queries.queries,
             **{name: value for name, value in similarity_index_inputs.items() if name != "policy"},
         )
-        online_similarity_overlap_scores = ScoreOverlap(**similarity_score_inputs).run(
+        similarity_overlap_inputs = {
+            name: value for name, value in similarity_score_inputs.items() if not name.endswith("_summary")
+        }
+        online_similarity_overlap_scores = ScoreOverlap(**similarity_overlap_inputs).run(
             session(spark, execution_mode="online")
         )
         online_similarity_bm25_scores = ScoreBm25(**similarity_score_inputs).run(session(spark, execution_mode="online"))
-        generated_similarity_overlap_scores = ScoreOverlap(**similarity_score_inputs).run(
+        generated_similarity_overlap_scores = ScoreOverlap(**similarity_overlap_inputs).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
         generated_similarity_bm25_scores = ScoreBm25(**similarity_score_inputs).run(
@@ -976,8 +1005,8 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             sentence_terms=generated_index.sentence_terms,
             sentence_summary=generated_index.sentence_summary,
         )
-        online_scores = ScoreAll(**search_inputs).run(session(spark, execution_mode="online"))
-        generated_scores = ScoreAll(**search_inputs).run(
+        online_scores = Scoring(**search_inputs).run(session(spark, execution_mode="online"))
+        generated_scores = Scoring(**search_inputs).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
         assert rows(online_scores.document_scores, "query_id", "document_id") == rows(
@@ -990,7 +1019,7 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             generated_scores.document_scores,
             lambda row: row["query_id"] == "q-structure" and row["document_id"] == "d-1",
         )
-        assert structure_document["experiment_id"] == ""
+        assert structure_document["experiment_id"] is None
         assert cast(float, structure_document["score"]) > 0
 
 
@@ -1025,7 +1054,7 @@ def test_search_ranks_fixture_sentences_online_and_generated(spark, tmp_path) ->
         index = CreateIndex(words=segments.words).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
-        scores = ScoreAll(
+        scores = Scoring(
             queries=queries,
             document_terms=index.document_terms,
             document_summary=index.document_summary,
@@ -1125,7 +1154,7 @@ def test_passage_search_ranks_paragraphs_with_same_section_context(spark, tmp_pa
         index = CreateIndex(words=segments.words).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
-        scores = ScoreAll(
+        scores = Scoring(
             queries=queries,
             document_terms=index.document_terms,
             document_summary=index.document_summary,
@@ -1271,6 +1300,9 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
         search_schemas = __import__(
             f"{PACKAGE}.pyspark.schemas.search", fromlist=["SEARCH_QUERY_SCHEMA", "DOCUMENT_SCORE_SCHEMA"]
         )
+        overlap_schemas = __import__(
+            f"{PACKAGE}.pyspark.schemas.overlap", fromlist=["DOCUMENT_OVERLAP_SCORE_SCHEMA"]
+        )
         relevance_schemas = __import__(f"{PACKAGE}.pyspark.schemas.relevance", fromlist=["RELEVANCE_POLICY_SCHEMA"])
         click_schemas = __import__(f"{PACKAGE}.pyspark.schemas.clicks", fromlist=["SEARCH_REQUEST_SCHEMA"])
         user_schemas = __import__(
@@ -1292,6 +1324,14 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
             for row in _search_documents()
         ]
         document_scores = spark.createDataFrame(document_score_rows, search_schemas.DOCUMENT_SCORE_SCHEMA)
+        document_overlap_scores = spark.createDataFrame(
+            [
+                (query_id, cast(str, row[0]), scores[cast(str, row[0])])
+                for query_id in ("q-free-form", "q-navigation")
+                for row in _search_documents()
+            ],
+            overlap_schemas.DOCUMENT_OVERLAP_SCORE_SCHEMA,
+        )
         query_signals = spark.createDataFrame(
             [
                 ("aurora, beacon!", "d-12", None, 1, 1, 1, 60.0, 1, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0),
@@ -1311,6 +1351,9 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
             queries=queries,
             documents=documents,
             document_scores=document_scores,
+            streamed_documents=spark.createDataFrame([], text_schemas.DOCUMENT_SCHEMA),
+            streamed_document_scores=spark.createDataFrame([], search_schemas.DOCUMENT_SCORE_SCHEMA),
+            document_overlap_scores=document_overlap_scores,
             requests=spark.createDataFrame(
                 [
                     ("r-free-form", "q-free-form", "aurora, beacon!", None, "", "", datetime(2026, 7, 21)),

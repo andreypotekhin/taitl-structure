@@ -14,6 +14,12 @@ so existing batch coverage is 34 / 36, or 94.4 percent. Thirty streaming-compati
 family-level streaming coverage is 30 / 36, or 83.3 percent. Among batch-supported families only, streaming coverage is
 30 / 34, or 88.2 percent.
 
+After the Sprint 37 stateless and ineligible-gate slices, typed array-of-struct generators and stream-stream
+`union_all(...)` / `union_by_name(...)` are admitted, while arbitrary ordering and priority selection are explicit
+streaming-ineligible rows. Raw family-level streaming coverage is 32 / 36, or 88.9 percent. Raw streaming coverage
+among batch-supported families is 32 / 34, or 94.1 percent. Effective v8 parity coverage is 32 / 32, or 100.0 percent,
+after excluding the two explicit Spark-ineligible families from the denominator.
+
 V8 parity means the streaming percentage must be no lower than the batch percentage for the same measured catalog. If a
 family is impossible or unsafe on streaming DataFrames for the supported PySpark 3.5.x and 4.0.x targets, v8 must record
 that family as streaming-ineligible with evidence and remove it from the streaming denominator. A streaming-ineligible
@@ -51,6 +57,15 @@ At kickoff the batch-supported families still marked batch-only for streaming ar
 
 V8 must not broaden these by optimism. Each candidate starts as unsupported for streaming until a design gate describes
 state, output-mode, cardinality, generated source, diagnostics, and restart evidence.
+
+The first stateless design gate admits `functions.generators` as row-expanding but stateless, and splits
+`dataframe.set`: exact-schema `union_all(...)` and `union_by_name(...)` are supported only when both relation inputs
+are declared with `streaming=True`; `intersect(...)`, `intersect_all(...)`, `subtract(...)`, and `except_all(...)`
+remain streaming-ineligible.
+
+The ordering and priority-selection design gates are closed as ineligible for v8. `order_by(...)`, `limit(...)`, and
+`offset(...)` require a batch materialization boundary for unbounded streaming relations. `select_first_qualified(...)`
+remains batch-only because it lowers through ranking and validation aggregates.
 
 ## Admission Rules
 

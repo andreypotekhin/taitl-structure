@@ -7,7 +7,7 @@ Module: `examples.search.schemas.search`
 | Field | Column | Type | Nullable |
 | --- | --- | --- | --- |
 | `search_query_id` | `search_query_id` | `string` | no |
-| `experiment_id` | `experiment_id` | `string` | no |
+| `experiment_id` | `experiment_id` | `string` | yes |
 | `rank` | `rank` | `long` | no |
 | `document_id` | `document_id` | `string` | no |
 | `section_id` | `section_id` | `string` | no |

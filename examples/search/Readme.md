@@ -14,10 +14,10 @@ For the architecture, evidence boundaries, and ownership model, see the
 | --- | --- | --- | --- |
 | Extraction | `ExtractText` | sections, paragraphs, sentences, words | Plain-text hierarchy and shared token normalization. |
 | Indexing | `CreateIndex` | target-grain terms and summaries | Build once; score many query batches. |
-| Scoring | `ScoreAll` | external production score relations | Keep algorithms separate from immutable corpus rows. |
+| Scoring | `Scoring` | external production score relations | Keep algorithms separate from immutable corpus rows. |
 | Similarity | `CreateSimilarityQueries`, `ReduceSimilarityScores` | same-grain corpus pairs | Reuse the lexical index; BM25 stays directional. |
 | Feedback | `Impressions`, `Clicks`, `BuildRelevanceSignals` | daily facts and batch signals | Exposure-aware, attributed, propensity-corrected evidence. |
-| Presentation | `SearchSentences`, `SearchPassages`, `SearchDocuments` | deterministic ranks | Sentence and passage ranking are lexical; document ranking is two-stage. |
+| Presentation | `SearchSentences`, `SearchPassages`, `SearchDocuments` | deterministic ranks | Sentence and passage ranking are lexical; document ranking is staged retrieval, overlap narrowing, and reranking. |
 | Experiments | `SelectExperimentScores`, experiment evaluators | comparable named runs | Named score variants flow through serving and evaluation. |
 | Evaluation | judged-quality and behavior evaluators | daily quality and serving metrics | Slice by labels and inclusive band hierarchies. |
 
@@ -84,11 +84,12 @@ passage-level presentation to share normalization without conflating their retri
 
 `ScoreBase` declares the shared query and four target-grain index inputs. `ScoreOverlap` and `ScoreBm25` independently
 inherit that base when callers need reusable score families directly. `SelectScores` joins overlap and BM25 outputs
-into production score rows, and `ScoreAll` stages `ScoreOverlap`, `ScoreBm25`, and `SelectScores` as the app-facing
-scoring pipeline. Together they accept a DataFrame conforming to `SearchQuery` and reusable indexes, emit separate
-overlap/BM25 score families, and preserve the distinction between lexical scoring and result presentation.
+into score rows, while `Scoring` stages `ScoreOverlap`, `ScoreBm25`, and `SelectScores` as the app-facing scoring
+composition and owns the score `experiment_id`. Together they accept a DataFrame conforming to `SearchQuery` and
+reusable indexes, emit separate overlap/BM25 score families, and preserve the distinction between lexical scoring and
+result presentation.
 
-`ScoreAll` accepts a caller-supplied DataFrame conforming to `SearchQuery` (`id`, `queryset`, and `content`) plus matching index
+`Scoring` accepts a caller-supplied DataFrame conforming to `SearchQuery` (`id`, `queryset`, and `content`) plus matching index
 artifacts and creates a score row for every document, section, paragraph, and sentence that shares a keyword with the
 query. `content` is free-form text: callers do not pre-tokenize it. For example, `"  AURORA,   beacon! navigation?  "` is equivalent to
 `"aurora beacon navigation"`.
@@ -226,12 +227,12 @@ document_pairs = similarities.document_similarities
 
 ## Sentence Search
 
-The shared `ScoreAll` output supplies the sentence candidates. `SearchSentences`
-accepts immutable sentences and `ScoreAll.sentence_scores`, emits one-based `SentenceSearchResult` ranks per query and experiment.
+The shared `Scoring` output supplies the sentence candidates. `SearchSentences`
+accepts immutable sentences and `Scoring.sentence_scores`, emits one-based `SentenceSearchResult` ranks per query and experiment.
 
 ```python
 index = CreateIndex(words=segments.words).run(session)
-scores = ScoreAll(
+scores = Scoring(
     queries=queries,
     document_terms=index.document_terms,
     document_summary=index.document_summary,
@@ -247,7 +248,7 @@ bm25 = scores.document_bm25_scores
 ```
 
 `SearchSentences` accepts a caller-supplied DataFrame conforming to `SearchQuery` and the scored output from
-`ScoreAll`, and returns matching sentences as a `SentenceSearchResult`.
+`Scoring`, and returns matching sentences as a `SentenceSearchResult`.
 `rank` is a one-based, deterministic ordering by BM25, overlap, document ID, and sentence ID; Spark DataFrames do not
 promise physical row order, so consumers sort or page by `rank`.
 
@@ -360,9 +361,10 @@ document_popularity = signals.document_popularity
 
 ### Retrieve and rerank documents
 
-`SearchDocuments` transform subclasses both `RetrieveDocuments` and `RerankDocuments`, which puts  them into a  two-stage ranking process. `RetrieveDocuments` creates a candidate lane by selecting  100
-documents per query by descending BM25. `RerankDocuments` consumes that lane, joins user click feedback, and
-emits results.
+`SearchDocuments` composes `RetrieveDocuments`, `OverlapDocuments`, and `RerankDocuments` as explicit stages.
+`RetrieveDocuments` admits up to 1000 persisted or streamed documents per query by descending score.
+`OverlapDocuments` narrows those candidates to 100 by overlap score, then `RerankDocuments` joins user click feedback
+and emits results.
 
 Feedback combines 80% of the normalized query-document signal with 20% global document popularity. Within each BM25
 candidate set, the reranker calculates:
@@ -377,7 +379,7 @@ The fixture policy uses a 30-day half-life and 70/30 lexical-feedback weights. D
 eligible with zero feedback. Final rank is descending `rank_score`, then document ID. A candidate outside the BM25 top
 100 cannot enter through feedback, and a no-history query preserves BM25 order.
 
-`SearchDocuments` uses the same free-form `SearchQuery` DataFrame, immutable documents, and `ScoreAll.document_scores` as
+`SearchDocuments` uses the same free-form `SearchQuery` DataFrame, immutable documents, and `Scoring.document_scores` as
 the other search boundaries. Its additional inputs only rerank those lexical candidates; they do not change query
 parsing.
 
@@ -386,8 +388,14 @@ ranked_documents = SearchDocuments(
     queries=queries,
     documents=documents,
     document_scores=scores.document_scores,
+    streamed_documents=streamed_documents,
+    streamed_document_scores=streamed_document_scores,
+    document_overlap_scores=scores.document_overlap_scores,
+    requests=requests,
+    band_memberships=band_memberships,
     query_document_signals=signals.query_document_signals,
     document_popularity=signals.document_popularity,
+    band_fallbacks=band_fallbacks,
     policy=policy,
 ).run(session).results
 
@@ -479,7 +487,7 @@ Passage Search can be used as a foundation for quesion-answer search engine.
 
 `SearchPassages` ranks the scored paragraph and holds its immediate preceding and trailing paragraphs as context.
 It returns `PassageSearchResult` rows with the document title and URL for citations, the section heading, and `preceding_content` and `following_content` if they exist. Context stays within a document section -  no heading transitions. The adjacent paragraphs do not affect lexical relevance or rank.
-It uses the same free-form `SearchQuery` DataFrame, immutable paragraphs, and `ScoreAll.paragraph_scores` as sentence and
+It uses the same free-form `SearchQuery` DataFrame, immutable paragraphs, and `Scoring.paragraph_scores` as sentence and
 document search.
 
 ```python
@@ -533,11 +541,18 @@ the requested `band_id`, label slice, and active experiment identity.
 ## Experiments
 
 Corpus rows never carry experiment state. `DocumentScore`, `SectionScore`, `ParagraphScore`, and `SentenceScore` are
-query-target relations with an `experiment_id` and unified `score`; production rows use the empty ID. `ScoreAll`
+query-target relations with a nullable `experiment_id` and unified `score`; `null` identifies production. `Scoring`
 creates those production rows from the default grain algorithm, while callers may supply identically shaped named
 experiment scores that combine any algorithms. `SelectExperimentScores` preserves production and admits only currently
 active named experiments before presentation or reranking. A single experiment ID flows from score through results and
 the caller-recorded `SearchRequest`; there is no separate reranking experiment.
+
+Experiments inherit production compositions. `Scoring001AdjustBm` replaces the `Scoring.bm25` stage with a configured
+`ScoreBm25(k1=1.35, b=0.70)` instance. `k1`, `b`, and score-selection `experiment_id` are declared transform
+parameters, not custom constructors. The experiment replaces score selection only to attach its named identity.
+`Searching001AdjustRerankSearchDocuments` replaces the `SearchDocuments.reranked` stage with an
+`Searching001AdjustRerankDocuments` subclass that changes the query-feedback and popularity weights. Experiment evaluators
+live under `experiments/evaluation/search_docs`, separate from experiment definitions that affect serving.
 
 Experiment evaluators compare active experiment result rows using the same judgments, labels, band slice, and
 batch as the production evaluation. This keeps experiments comparable without mixing them into one ranking.

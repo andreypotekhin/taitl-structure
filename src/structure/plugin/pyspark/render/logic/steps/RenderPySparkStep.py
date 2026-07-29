@@ -45,6 +45,7 @@ class RenderPySparkStep:
         sources: dict[str, str] | None = None,
         source_transform: str | None = None,
         generated_hooks: bool = False,
+        backend_target: str = ">=3.5,<4.1",
     ) -> str:
         if isinstance(step, PySparkStepRecipe) and len(step.results) > 1:
             return self._multiple(
@@ -53,6 +54,7 @@ class RenderPySparkStep:
                 sources=sources or {},
                 source_transform=source_transform,
                 generated_hooks=generated_hooks,
+                backend_target=backend_target,
             )
         target = self._target(step)
         lines = [f"        # Step method: {step.name}"]
@@ -67,7 +69,7 @@ class RenderPySparkStep:
                 )
             )
         lines.append(f'        {target} = {active}.alias("{step.input_alias}")')
-        lines.extend(self._operations(step, sources=sources or {}, target=target))
+        lines.extend(self._operations(step, sources=sources or {}, target=target, backend_target=backend_target))
         lines.extend(self._projection(step, target=target))
         if isinstance(step, PySparkStepRecipe):
             hook_sources = {**(sources or {}), step.results[0].frame: target}
@@ -91,6 +93,7 @@ class RenderPySparkStep:
         sources: dict[str, str],
         source_transform: str | None,
         generated_hooks: bool,
+        backend_target: str,
     ) -> str:
         lines = [f"        # Step method: {step.name}"]
         active = current
@@ -105,7 +108,7 @@ class RenderPySparkStep:
             )
         base = f"{step.name}_base"
         lines.append(f'        {base} = {active}.alias("{step.input_alias}")')
-        lines.extend(self._operations(step, sources=sources, target=base))
+        lines.extend(self._operations(step, sources=sources, target=base, backend_target=backend_target))
         for result in step.results:
             lines.extend(self._result_projection(step, result, base=base))
         for result in step.results:
@@ -199,6 +202,7 @@ class RenderPySparkStep:
         *,
         sources: dict[str, str],
         target: str,
+        backend_target: str,
     ) -> list[str]:
         if not step.operations:
             lines = self._joins(step, sources=sources, target=target)
@@ -230,7 +234,9 @@ class RenderPySparkStep:
                 ordered_lines.extend(self._join(step, operation.join, sources=prepared_sources, target=target))
                 joined_scopes.add(operation.join.input_name)
             if operation.kind == "aggregate" and operation.aggregate is not None:
-                ordered_lines.extend(self._aggregate_renderer(step, operation.aggregate, target=target))
+                ordered_lines.extend(
+                    self._aggregate_renderer(step, operation.aggregate, target=target, backend_target=backend_target)
+                )
             if operation.kind == "selected_rows" and operation.selected_rows is not None:
                 ordered_lines.extend(self._selected_rows(step, operation.selected_rows, target=target))
             if operation.kind == "drop_duplicates":
@@ -1293,6 +1299,7 @@ class RenderPySparkStep:
         step,
         aggregate: PySparkAggregateRecipe,
         key_columns: tuple[tuple[PySparkAggregateKey, str], ...],
+        backend_target: str = ">=3.5,<4.1",
     ) -> str:
         alias = self._literal(assignment.field.column)
         if assignment.function == "count":
@@ -1349,10 +1356,10 @@ class RenderPySparkStep:
                     rendered_arguments.append(repr(options["accuracy"]))
             if assignment.function == "percentile":
                 rendered_arguments.extend((repr(options["percentage"]), repr(options["frequency"])))
-            return (
-                f"{function}({', '.join(rendered_arguments)}).cast({self._schema.render().type(assignment.field.type)})"
-                f".alias({alias})"
-            )
+            expression = f"{function}({', '.join(rendered_arguments)})"
+            if not self._keeps_struct_collection_type(assignment, backend_target=backend_target):
+                expression = f"{expression}.cast({self._schema.render().type(assignment.field.type)})"
+            return f"{expression}.alias({alias})"
         if assignment.function in {"first_value", "last_value"} and assignment.expression is not None:
             if assignment.order_by is None:
                 raise TypeError(f"{assignment.function}(...) requires order_by")
@@ -1382,6 +1389,14 @@ class RenderPySparkStep:
         item = f"F.struct({rendered_key}.alias('_structure_order'), {value}.alias('_structure_value'))"
         collected = f"F.collect_list(F.when({condition}, {item}))"
         return f"F.transform(F.sort_array({collected}, asc={not descending}), lambda item: item.getField('_structure_value')).alias({alias})"
+
+    def _keeps_struct_collection_type(self, assignment: PySparkAggregateAssignment, *, backend_target: str) -> bool:
+        return (
+            backend_target == ">=3.5,<4.0"
+            and assignment.function in {"collect_list", "collect_set"}
+            and isinstance(assignment.field.type, ArrayType)
+            and isinstance(assignment.field.type.element, StructType)
+        )
 
     def _deterministic_mode(self, expression: str) -> str:
         collected = f"F.collect_list({expression})"

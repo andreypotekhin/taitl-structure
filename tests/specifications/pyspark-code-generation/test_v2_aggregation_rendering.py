@@ -19,6 +19,15 @@ def _recipe(transform) -> PySparkExecutionPlan:
     return cast(PySparkExecutionPlan, _compile(transform).lowered)
 
 
+def _recipe_profile(transform, profile: str) -> PySparkExecutionPlan:
+    compilation = Compiler.frontend.compile()(
+        transform,
+        materialize_schemas=False,
+        plugin={"pyspark": {"profile": profile, "variant": "ordinary"}},
+    )
+    return cast(PySparkExecutionPlan, compilation.lowered)
+
+
 class RawOrder(Schema):
     customer_id = string(nullable=False)
     quantity = long(nullable=False)
@@ -56,6 +65,16 @@ class AdvancedCustomerTotal(Schema):
     ordered_first_customer = string(nullable=True)
     ordered_last_customer = string(nullable=True)
     customers = array(string(), contains_null=False, nullable=True)
+
+
+class LabelEntry(Schema):
+    key = string(nullable=False)
+    value = long(nullable=False)
+
+
+class LabelEntries(Schema):
+    query_id = string(nullable=False)
+    entries = array(struct(LabelEntry), contains_null=False, nullable=False)
 
 
 class RawSale(Schema):
@@ -212,6 +231,38 @@ def test_grouped_mode_renders_portable_deterministic_tie_selection() -> None:
     assert "F.array_min(" in text
     assert "candidate.alias('_structure_value')" in text
     assert 'alias("preferred_category")' in text
+
+
+def test_struct_collect_list_cast_is_skipped_only_for_pyspark_35() -> None:
+    @transform
+    class LabelCollections(Transform):
+        rows = input(LabelEntry)
+        grouped = output(LabelEntries)
+
+        @step(input=rows, output=grouped)
+        def collect(self, row: LabelEntry) -> LabelEntries:
+            group_by(query_id=row.key)
+            entries = collect_list(
+                LabelEntry(key=row.key, value=row.value),
+                element_type=types.struct(LabelEntry),
+            )
+            return LabelEntries(query_id=row.key, entries=entries)
+
+    pyspark35 = render_pyspark_step(
+        _recipe_profile(LabelCollections, ">=3.5,<4.0").steps[0],
+        current="rows",
+        sources={"rows": "rows"},
+        backend_target=">=3.5,<4.0",
+    )
+    pyspark40 = render_pyspark_step(
+        _recipe_profile(LabelCollections, ">=4.0,<4.1").steps[0],
+        current="rows",
+        sources={"rows": "rows"},
+        backend_target=">=4.0,<4.1",
+    )
+
+    assert ".cast(T.ArrayType(" not in pyspark35
+    assert ".cast(T.ArrayType(" in pyspark40
 
 
 def test_global_aggregate_without_group_by_is_lowered() -> None:

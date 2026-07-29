@@ -18,7 +18,7 @@
     {
       "column": "experiment_id",
       "name": "experiment_id",
-      "nullable": false,
+      "nullable": true,
       "type": "string"
     },
     {

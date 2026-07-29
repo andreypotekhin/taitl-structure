@@ -11,6 +11,7 @@ from examples.structure_generated.store.pyspark.schemas.analytics import (
     CUSTOMER_EVENT_RANK_SCHEMA,
     PRODUCT_DAILY_SUMMARY_SCHEMA,
 )
+from examples.structure_generated.store.pyspark.schemas.common import TENANT_KEY_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.order import ORDER_FULFILLMENT_SCHEMA
 
 

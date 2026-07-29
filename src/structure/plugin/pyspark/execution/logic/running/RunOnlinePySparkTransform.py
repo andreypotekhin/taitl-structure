@@ -9,6 +9,7 @@ from structure.plugin.pyspark.compiler.model.PySparkOutputRecipe import PySparkO
 from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.plugin.pyspark.compiler.model.PySparkWatermarkRecipe import PySparkWatermarkRecipe
 from structure.plugin.pyspark.dsl.joins import JoinMethod
+from structure.plugin.pyspark.dsl.types import ArrayType, StructType
 from structure.plugin.pyspark.execution.logic.expressions.EvaluatePySparkExpression import EvaluatePySparkExpression
 from structure.plugin.pyspark.execution.logic.InvokePySparkHooks import InvokePySparkHooks
 from structure.plugin.pyspark.execution.logic.running.RunOnlinePySparkStructGenerator import (
@@ -24,6 +25,7 @@ class RunOnlinePySparkTransform:
         self._hooks = InvokePySparkHooks()
         self._struct_generators = RunOnlinePySparkStructGenerator()
         self._validator = ValidatePySparkFrame()
+        self._backend_target = ">=3.5,<4.1"
 
     @property
     def _schema(self):
@@ -65,6 +67,7 @@ class RunOnlinePySparkTransform:
         from pyspark.sql import types as T  # type: ignore[import-not-found]
 
         inputs = invocation._structure_bound_inputs
+        self._backend_target = plan.backend.target
         for input in plan.inputs:
             self._validator.validate(inputs[input.name], input.validation, types=T)
 
@@ -1229,11 +1232,10 @@ class RunOnlinePySparkTransform:
                     columns.append(options["accuracy"])
             if assignment.function == "percentile":
                 columns.extend((options["percentage"], options["frequency"]))
-            return (
-                self._aggregate_function(functions, assignment.function)(*columns)
-                .cast(self._spark_type(assignment.field.type, types))
-                .alias(assignment.field.column)
-            )
+            result = self._aggregate_function(functions, assignment.function)(*columns)
+            if not self._keeps_struct_collection_type(assignment):
+                result = result.cast(self._spark_type(assignment.field.type, types))
+            return result.alias(assignment.field.column)
         if assignment.function in {"first_value", "last_value"} and assignment.expression is not None:
             if assignment.order_by is None:
                 raise TypeError(f"{assignment.function}(...) requires order_by")
@@ -1286,6 +1288,14 @@ class RunOnlinePySparkTransform:
             functions.sort_array(collected, asc=not descending),
             lambda item: item.getField("_structure_value"),
         ).alias(assignment.field.column)
+
+    def _keeps_struct_collection_type(self, assignment) -> bool:
+        return (
+            self._backend_target == ">=3.5,<4.0"
+            and assignment.function in {"collect_list", "collect_set"}
+            and isinstance(assignment.field.type, ArrayType)
+            and isinstance(assignment.field.type.element, StructType)
+        )
 
     def _deterministic_mode(self, column, *, functions):
         collected = functions.collect_list(column)

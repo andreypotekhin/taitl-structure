@@ -16,7 +16,7 @@ SEARCH_QUERY_SCHEMA = T.StructType([
 
 SENTENCE_SEARCH_RESULT_SCHEMA = T.StructType([
     T.StructField("search_query_id", T.StringType(), False),
-    T.StructField("experiment_id", T.StringType(), False),
+    T.StructField("experiment_id", T.StringType(), True),
     T.StructField("rank", T.LongType(), False),
     T.StructField("document_id", T.StringType(), False),
     T.StructField("section_id", T.StringType(), False),
@@ -43,146 +43,23 @@ SENTENCE_SEARCH_TARGET_SCHEMA = T.StructType(PARAGRAPH_SEARCH_TARGET_SCHEMA.fiel
     T.StructField("sentence_id", T.StringType(), False),
 ])
 
-DOCUMENT_INDEX_TARGET_SCHEMA = T.StructType([
-    T.StructField("document_id", T.StringType(), False),
-])
-
-SECTION_INDEX_TARGET_SCHEMA = T.StructType(DOCUMENT_INDEX_TARGET_SCHEMA.fields + [
-    T.StructField("section_id", T.StringType(), False),
-])
-
-PARAGRAPH_INDEX_TARGET_SCHEMA = T.StructType(SECTION_INDEX_TARGET_SCHEMA.fields + [
-    T.StructField("paragraph_id", T.StringType(), False),
-])
-
-SENTENCE_INDEX_TARGET_SCHEMA = T.StructType(PARAGRAPH_INDEX_TARGET_SCHEMA.fields + [
-    T.StructField("sentence_id", T.StringType(), False),
-])
-
-INDEX_TOKEN_FREQUENCY_SCHEMA = T.StructType([
-    T.StructField("token", T.StringType(), False),
-    T.StructField("document_frequency", T.LongType(), False),
-])
-
-DOCUMENT_INDEX_TERM_COUNT_SCHEMA = T.StructType(DOCUMENT_INDEX_TARGET_SCHEMA.fields + [
-    T.StructField("token", T.StringType(), False),
-    T.StructField("term_frequency", T.LongType(), False),
-])
-
-DOCUMENT_INDEX_TARGET_STATS_SCHEMA = T.StructType(DOCUMENT_INDEX_TARGET_SCHEMA.fields + [
-    T.StructField("target_word_count", T.LongType(), False),
-    T.StructField("target_distinct_terms", T.LongType(), False),
-])
-
-DOCUMENT_INDEX_TERM_SCHEMA = T.StructType(DOCUMENT_INDEX_TARGET_SCHEMA.fields + [
-    T.StructField("token", T.StringType(), False),
-    T.StructField("term_frequency", T.LongType(), False),
-    T.StructField("target_word_count", T.LongType(), False),
-    T.StructField("target_distinct_terms", T.LongType(), False),
-    T.StructField("document_frequency", T.LongType(), False),
-])
-
-DOCUMENT_INDEX_SUMMARY_SCHEMA = T.StructType([
-    T.StructField("target_count", T.LongType(), False),
-    T.StructField("average_target_length", T.DoubleType(), False),
-])
-
-SECTION_INDEX_TERM_COUNT_SCHEMA = T.StructType(SECTION_INDEX_TARGET_SCHEMA.fields + [
-    T.StructField("token", T.StringType(), False),
-    T.StructField("term_frequency", T.LongType(), False),
-])
-
-SECTION_INDEX_TARGET_STATS_SCHEMA = T.StructType(SECTION_INDEX_TARGET_SCHEMA.fields + [
-    T.StructField("target_word_count", T.LongType(), False),
-    T.StructField("target_distinct_terms", T.LongType(), False),
-])
-
-SECTION_INDEX_TERM_SCHEMA = T.StructType(SECTION_INDEX_TARGET_SCHEMA.fields + [
-    T.StructField("token", T.StringType(), False),
-    T.StructField("term_frequency", T.LongType(), False),
-    T.StructField("target_word_count", T.LongType(), False),
-    T.StructField("target_distinct_terms", T.LongType(), False),
-    T.StructField("document_frequency", T.LongType(), False),
-])
-
-SECTION_INDEX_SUMMARY_SCHEMA = T.StructType(DOCUMENT_INDEX_SUMMARY_SCHEMA.fields)
-
-PARAGRAPH_INDEX_TERM_COUNT_SCHEMA = T.StructType(PARAGRAPH_INDEX_TARGET_SCHEMA.fields + [
-    T.StructField("token", T.StringType(), False),
-    T.StructField("term_frequency", T.LongType(), False),
-])
-
-PARAGRAPH_INDEX_TARGET_STATS_SCHEMA = T.StructType(PARAGRAPH_INDEX_TARGET_SCHEMA.fields + [
-    T.StructField("target_word_count", T.LongType(), False),
-    T.StructField("target_distinct_terms", T.LongType(), False),
-])
-
-PARAGRAPH_INDEX_TERM_SCHEMA = T.StructType(PARAGRAPH_INDEX_TARGET_SCHEMA.fields + [
-    T.StructField("token", T.StringType(), False),
-    T.StructField("term_frequency", T.LongType(), False),
-    T.StructField("target_word_count", T.LongType(), False),
-    T.StructField("target_distinct_terms", T.LongType(), False),
-    T.StructField("document_frequency", T.LongType(), False),
-])
-
-PARAGRAPH_INDEX_SUMMARY_SCHEMA = T.StructType(DOCUMENT_INDEX_SUMMARY_SCHEMA.fields)
-
-SENTENCE_INDEX_TERM_COUNT_SCHEMA = T.StructType(SENTENCE_INDEX_TARGET_SCHEMA.fields + [
-    T.StructField("token", T.StringType(), False),
-    T.StructField("term_frequency", T.LongType(), False),
-])
-
-SENTENCE_INDEX_TARGET_STATS_SCHEMA = T.StructType(SENTENCE_INDEX_TARGET_SCHEMA.fields + [
-    T.StructField("target_word_count", T.LongType(), False),
-    T.StructField("target_distinct_terms", T.LongType(), False),
-])
-
-SENTENCE_INDEX_TERM_SCHEMA = T.StructType(SENTENCE_INDEX_TARGET_SCHEMA.fields + [
-    T.StructField("token", T.StringType(), False),
-    T.StructField("term_frequency", T.LongType(), False),
-    T.StructField("target_word_count", T.LongType(), False),
-    T.StructField("target_distinct_terms", T.LongType(), False),
-    T.StructField("document_frequency", T.LongType(), False),
-])
-
-SENTENCE_INDEX_SUMMARY_SCHEMA = T.StructType(DOCUMENT_INDEX_SUMMARY_SCHEMA.fields)
-
-QUERY_TOKEN_SCHEMA = T.StructType([
-    T.StructField("token", T.StringType(), False),
-])
-
-EXPANDED_QUERY_TOKEN_SCHEMA = T.StructType([
-    T.StructField("ordinal", T.LongType(), False),
-    T.StructField("token", T.StringType(), False),
-])
-
-QUERY_TERM_SCHEMA = T.StructType([
-    T.StructField("query_id", T.StringType(), False),
-    T.StructField("token", T.StringType(), False),
-])
-
-QUERY_TERM_COUNT_SCHEMA = T.StructType([
-    T.StructField("query_id", T.StringType(), False),
-    T.StructField("query_terms", T.LongType(), False),
-])
-
 DOCUMENT_SCORE_SCHEMA = T.StructType(DOCUMENT_SEARCH_TARGET_SCHEMA.fields + [
-    T.StructField("experiment_id", T.StringType(), False),
+    T.StructField("experiment_id", T.StringType(), True),
     T.StructField("score", T.DoubleType(), False),
 ])
 
 SECTION_SCORE_SCHEMA = T.StructType(SECTION_SEARCH_TARGET_SCHEMA.fields + [
-    T.StructField("experiment_id", T.StringType(), False),
+    T.StructField("experiment_id", T.StringType(), True),
     T.StructField("score", T.DoubleType(), False),
 ])
 
 PARAGRAPH_SCORE_SCHEMA = T.StructType(PARAGRAPH_SEARCH_TARGET_SCHEMA.fields + [
-    T.StructField("experiment_id", T.StringType(), False),
+    T.StructField("experiment_id", T.StringType(), True),
     T.StructField("score", T.DoubleType(), False),
 ])
 
 SENTENCE_SCORE_SCHEMA = T.StructType(SENTENCE_SEARCH_TARGET_SCHEMA.fields + [
-    T.StructField("experiment_id", T.StringType(), False),
+    T.StructField("experiment_id", T.StringType(), True),
     T.StructField("score", T.DoubleType(), False),
 ])
 
@@ -194,7 +71,7 @@ DOCUMENT_FEEDBACK_OPTION_SCHEMA = T.StructType(DOCUMENT_SEARCH_CANDIDATE_SCHEMA.
 
 QUERY_DOCUMENT_FEEDBACK_SCHEMA = T.StructType([
     T.StructField("search_query_id", T.StringType(), False),
-    T.StructField("experiment_id", T.StringType(), False),
+    T.StructField("experiment_id", T.StringType(), True),
     T.StructField("user_band_id", T.StringType(), True),
     T.StructField("candidate_rank", T.LongType(), False),
     T.StructField("document_id", T.StringType(), False),
@@ -203,7 +80,7 @@ QUERY_DOCUMENT_FEEDBACK_SCHEMA = T.StructType([
 
 POPULARITY_FEEDBACK_SCHEMA = T.StructType([
     T.StructField("search_query_id", T.StringType(), False),
-    T.StructField("experiment_id", T.StringType(), False),
+    T.StructField("experiment_id", T.StringType(), True),
     T.StructField("user_band_id", T.StringType(), True),
     T.StructField("candidate_rank", T.LongType(), False),
     T.StructField("document_id", T.StringType(), False),
@@ -212,7 +89,7 @@ POPULARITY_FEEDBACK_SCHEMA = T.StructType([
 
 DOCUMENT_SEARCH_CANDIDATE_SCHEMA = T.StructType([
     T.StructField("search_query_id", T.StringType(), False),
-    T.StructField("experiment_id", T.StringType(), False),
+    T.StructField("experiment_id", T.StringType(), True),
     T.StructField("user_band_id", T.StringType(), True),
     T.StructField("band_id", T.StringType(), True),
     T.StructField("query", T.StringType(), False),
@@ -229,7 +106,7 @@ DOCUMENT_SEARCH_CANDIDATE_SCHEMA = T.StructType([
 
 DOCUMENT_SEARCH_RESULT_SCHEMA = T.StructType([
     T.StructField("search_query_id", T.StringType(), False),
-    T.StructField("experiment_id", T.StringType(), False),
+    T.StructField("experiment_id", T.StringType(), True),
     T.StructField("user_band_id", T.StringType(), True),
     T.StructField("band_id", T.StringType(), True),
     T.StructField("rank", T.LongType(), False),

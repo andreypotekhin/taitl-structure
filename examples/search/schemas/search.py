@@ -14,38 +14,11 @@ class SearchQuery(Schema):
     language = string(nullable=True)
 
 
-class QueryToken(Schema):
-    """One normalized query token before row expansion."""
-
-    token = string(nullable=False)
-
-
-class ExpandedQueryToken(Schema):
-    """One expanded query token with its original query-local ordinal."""
-
-    ordinal = long(nullable=False)
-    token = string(nullable=False)
-
-
-class QueryTerm(Schema):
-    """One distinct normalized query term."""
-
-    query_id = string(nullable=False)
-    token = string(nullable=False)
-
-
-class QueryTermCount(Schema):
-    """Number of distinct normalized terms in one query."""
-
-    query_id = string(nullable=False)
-    query_terms = long(nullable=False)
-
-
 class SentenceSearchResult(Schema):
     """One ranked sentence match for a caller-supplied query."""
 
     search_query_id = string(nullable=False)
-    experiment_id = string(nullable=False)
+    experiment_id = string(nullable=True)
     rank = long(nullable=False)
     document_id = string(nullable=False)
     section_id = string(nullable=False)
@@ -59,7 +32,7 @@ class PassageSearchResult(Schema):
     """One ranked paragraph match with same-section answer context."""
 
     search_query_id = string(nullable=False)
-    experiment_id = string(nullable=False)
+    experiment_id = string(nullable=True)
     rank = long(nullable=False)
     document_id = string(nullable=False)
     title = string(nullable=False)
@@ -88,7 +61,7 @@ class DocumentSearchResult(Schema):
     """A document search result."""
 
     search_query_id = string(nullable=False)
-    experiment_id = string(nullable=False)
+    experiment_id = string(nullable=True)
     user_band_id = string(nullable=True)
     band_id = string(nullable=True)
     rank = long(nullable=False)
@@ -103,7 +76,7 @@ class DocumentSearchResult(Schema):
 
 class DocumentSearchCandidate(Schema):
     search_query_id = string(nullable=False)
-    experiment_id = string(nullable=False)
+    experiment_id = string(nullable=True)
     user_band_id = string(nullable=True)
     band_id = string(nullable=True)
     query = string(nullable=False)
@@ -130,7 +103,7 @@ class QueryDocumentFeedback(Schema):
     """Internal selected query/document feedback for one search candidate."""
 
     search_query_id = string(nullable=False)
-    experiment_id = string(nullable=False)
+    experiment_id = string(nullable=True)
     user_band_id = string(nullable=True)
     candidate_rank = long(nullable=False)
     document_id = string(nullable=False)
@@ -141,7 +114,7 @@ class PopularityFeedback(Schema):
     """Internal selected document-popularity feedback for one search candidate."""
 
     search_query_id = string(nullable=False)
-    experiment_id = string(nullable=False)
+    experiment_id = string(nullable=True)
     user_band_id = string(nullable=True)
     candidate_rank = long(nullable=False)
     document_id = string(nullable=False)
@@ -165,157 +138,29 @@ class SentenceSearchTarget(ParagraphSearchTarget):
     sentence_id = string(nullable=False)
 
 
-class DocumentIndexTarget(Schema):
-    document_id = string(nullable=False)
-
-
-class SectionIndexTarget(DocumentIndexTarget):
-    section_id = string(nullable=False)
-
-
-class ParagraphIndexTarget(SectionIndexTarget):
-    paragraph_id = string(nullable=False)
-
-
-class SentenceIndexTarget(ParagraphIndexTarget):
-    sentence_id = string(nullable=False)
-
-
-class IndexTokenFrequency(Schema):
-    """Internal count of indexed targets containing one token."""
-
-    token = string(nullable=False)
-    document_frequency = long(nullable=False)
-
-
-class DocumentIndexTargetStats(DocumentIndexTarget):
-    """Internal document-level token totals."""
-
-    target_word_count = long(nullable=False)
-    target_distinct_terms = long(nullable=False)
-
-
-class SectionIndexTargetStats(SectionIndexTarget):
-    """Internal section-level token totals."""
-
-    target_word_count = long(nullable=False)
-    target_distinct_terms = long(nullable=False)
-
-
-class ParagraphIndexTargetStats(ParagraphIndexTarget):
-    """Internal paragraph-level token totals."""
-
-    target_word_count = long(nullable=False)
-    target_distinct_terms = long(nullable=False)
-
-
-class SentenceIndexTargetStats(SentenceIndexTarget):
-    """Internal sentence-level token totals."""
-
-    target_word_count = long(nullable=False)
-    target_distinct_terms = long(nullable=False)
-
-
-class DocumentIndexTermCount(DocumentIndexTarget):
-    """Internal document-level term frequency."""
-
-    token = string(nullable=False)
-    term_frequency = long(nullable=False)
-
-
-class SectionIndexTermCount(SectionIndexTarget):
-    """Internal section-level term frequency."""
-
-    token = string(nullable=False)
-    term_frequency = long(nullable=False)
-
-
-class ParagraphIndexTermCount(ParagraphIndexTarget):
-    """Internal paragraph-level term frequency."""
-
-    token = string(nullable=False)
-    term_frequency = long(nullable=False)
-
-
-class SentenceIndexTermCount(SentenceIndexTarget):
-    """Internal sentence-level term frequency."""
-
-    token = string(nullable=False)
-    term_frequency = long(nullable=False)
-
-
-class DocumentIndexTerm(DocumentIndexTarget):
-    token = string(nullable=False)
-    term_frequency = long(nullable=False)
-    target_word_count = long(nullable=False)
-    target_distinct_terms = long(nullable=False)
-    document_frequency = long(nullable=False)
-
-
-class SectionIndexTerm(SectionIndexTarget):
-    token = string(nullable=False)
-    term_frequency = long(nullable=False)
-    target_word_count = long(nullable=False)
-    target_distinct_terms = long(nullable=False)
-    document_frequency = long(nullable=False)
-
-
-class ParagraphIndexTerm(ParagraphIndexTarget):
-    token = string(nullable=False)
-    term_frequency = long(nullable=False)
-    target_word_count = long(nullable=False)
-    target_distinct_terms = long(nullable=False)
-    document_frequency = long(nullable=False)
-
-
-class SentenceIndexTerm(SentenceIndexTarget):
-    token = string(nullable=False)
-    term_frequency = long(nullable=False)
-    target_word_count = long(nullable=False)
-    target_distinct_terms = long(nullable=False)
-    document_frequency = long(nullable=False)
-
-
-class DocumentIndexSummary(Schema):
-    target_count = long(nullable=False)
-    average_target_length = double(nullable=False)
-
-
-class SectionIndexSummary(DocumentIndexSummary):
-    pass
-
-
-class ParagraphIndexSummary(DocumentIndexSummary):
-    pass
-
-
-class SentenceIndexSummary(DocumentIndexSummary):
-    pass
-
-
 class DocumentScore(DocumentSearchTarget):
     """One experiment-scoped unified document score."""
 
-    experiment_id = string(nullable=False)
+    experiment_id = string(nullable=True)
     score = double(nullable=False)
 
 
 class SectionScore(SectionSearchTarget):
     """One experiment-scoped unified section score."""
 
-    experiment_id = string(nullable=False)
+    experiment_id = string(nullable=True)
     score = double(nullable=False)
 
 
 class ParagraphScore(ParagraphSearchTarget):
     """One experiment-scoped unified paragraph score."""
 
-    experiment_id = string(nullable=False)
+    experiment_id = string(nullable=True)
     score = double(nullable=False)
 
 
 class SentenceScore(SentenceSearchTarget):
     """One experiment-scoped unified sentence score."""
 
-    experiment_id = string(nullable=False)
+    experiment_id = string(nullable=True)
     score = double(nullable=False)

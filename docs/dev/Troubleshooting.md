@@ -73,6 +73,17 @@ Fix: Rerun `make integration`. For repeated failures, inspect the matching servi
 `docker compose --env-file infra/compose/.env -f infra/compose/docker-compose.yaml logs spark35-master spark35-worker`
 or the `spark40-*` services for the PySpark 4.0 lane.
 
+### Problem (integration): PySpark 4.0 tries to write `/workspace/artifacts`
+
+When: Running a targeted PySpark 4.0 integration command inside the Compose container from the default `/workspace`
+directory.
+Error: Spark logs `Failed to create directory artifacts/...` and `FileSystemException: /workspace/artifacts:
+Read-only file system`; a later setup may report `Only one SparkContext should be running in this JVM`.
+Cause: Spark 4.0's artifact manager resolves a relative artifact root under the read-only mounted workspace before the
+test can proceed. The failed context startup can leave the JVM in a partially initialized state.
+Fix: Run the targeted pytest command from writable `/tmp` and pass the repository pytest config explicitly:
+`docker compose --env-file infra/compose/.env -f infra/compose/docker-compose.yaml run --rm --workdir /tmp structure-integration-pyspark40 pytest -q /workspace/tests/integration/pyspark/v8/test_stateless_streaming_gaps.py --run-integration -c /workspace/pyproject.toml -rs`.
+
 ### Problem (integration): Spark Connect reports `Java heap space`
 
 When: A Spark Connect integration test fails while collecting a generated DataFrame, often after a large search or

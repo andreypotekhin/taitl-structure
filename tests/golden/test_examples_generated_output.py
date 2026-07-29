@@ -51,13 +51,39 @@ def test_search_scoring_subpackage_transform_is_discovered_and_compiled() -> Non
 
     config = StructureConfig.resolve(project_root=ROOT, source_roots=["examples/search"])
     project = DiscoverStructureProject()(config)
-    score_all = next(
+    scoring = next(
         transform
         for transform in project.transforms
-        if transform.__module__ == "examples.search.transforms.scoring.ScoreAll" and transform.__name__ == "ScoreAll"
+        if transform.__module__ == "examples.search.transforms.scoring.Scoring" and transform.__name__ == "Scoring"
     )
 
-    Compiler.frontend.compile()(score_all, config=config, materialize_schemas=False)
+    Compiler.frontend.compile()(scoring, config=config, materialize_schemas=False)
+
+
+def test_search_experiments_replace_production_stages() -> None:
+    """Experiment transforms inherit the production graph and replace only their variant stages."""
+
+    from examples.search.transforms.experiments.scoring.scoring001_adjust_bm import Scoring001AdjustBm
+    from examples.search.transforms.experiments.searching.search_docs.searching001_adjust_rerank import (
+        Searching001AdjustRerankDocuments,
+        Searching001AdjustRerankSearchDocuments,
+    )
+    from examples.search.transforms.scoring.Scoring import Scoring
+
+    scoring = cast(TransformPlan, Compiler.frontend.compile()(Scoring001AdjustBm, materialize_schemas=False).analysis)
+    searching = cast(
+        TransformPlan,
+        Compiler.frontend.compile()(Searching001AdjustRerankSearchDocuments, materialize_schemas=False).analysis,
+    )
+
+    assert {step.name.split(".")[0] for step in scoring.steps} == {"overlap", "bm25", "selected"}
+    assert Scoring001AdjustBm.bm25.invocation.k1 == 1.35
+    assert Scoring001AdjustBm.bm25.invocation.b == 0.70
+    assert Scoring001AdjustBm.experiment_id == "scoring001_adjust_bm"
+    assert Scoring001AdjustBm.selected is Scoring.selected
+    rerank = next(step for step in searching.steps if step.name == "reranked.score_candidates")
+    assert rerank.origin is not None
+    assert rerank.origin.class_name == Searching001AdjustRerankDocuments.__name__
 
 
 def test_similarity_public_transform_inherits_its_searching_implementation() -> None:
@@ -101,8 +127,12 @@ def test_behavior_evaluator_keeps_its_request_to_daily_pipeline_local() -> None:
 def test_experiment_evaluators_schedule_combined_selection_before_their_override() -> None:
     """Experiment evaluators reuse combined selection before adding experiment context."""
 
-    from examples.search.transforms.experiments.search_docs.eval_behavior import EvaluateDocumentSearchBehavior
-    from examples.search.transforms.experiments.search_docs.eval_ranking import EvaluateDocumentRankingQuality
+    from examples.search.transforms.experiments.evaluation.search_docs.eval_behavior import (
+        EvaluateDocumentSearchBehavior,
+    )
+    from examples.search.transforms.experiments.evaluation.search_docs.eval_ranking import (
+        EvaluateDocumentRankingQuality,
+    )
 
     for evaluator, parent_step in (
         (EvaluateDocumentRankingQuality, "select_queries"),

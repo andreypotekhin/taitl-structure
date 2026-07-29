@@ -86,7 +86,16 @@ class ClassifyStreamingCompatibility:
                 if operation.relation_hierarchy_fallback is not None:
                     findings.extend(self._hierarchy_fallbacks(step.name))
                 if operation.relation_set is not None:
-                    findings.extend(self._relation_set(step.name, operation.kind, operation.relation_set.input_name))
+                    findings.extend(
+                        self._relation_set(
+                            step.name,
+                            operation.kind,
+                            operation.relation_set.input_name,
+                            operation.relation_set.source,
+                            current_streaming=streaming_source,
+                            input_modes=input_modes,
+                        )
+                    )
                 if operation.join is not None:
                     operation_findings = self._join(
                         step.name,
@@ -303,15 +312,44 @@ class ClassifyStreamingCompatibility:
             ),
         )
 
-    def _relation_set(self, step: str, operation: str, input_name: str) -> tuple[StreamingFinding, ...]:
+    def _relation_set(
+        self,
+        step: str,
+        operation: str,
+        input_name: str,
+        input_source: str,
+        *,
+        current_streaming: bool,
+        input_modes: dict[str, bool],
+    ) -> tuple[StreamingFinding, ...]:
+        input_streaming = bool(input_modes.get(input_source))
+        if operation in {"union_all", "union_by_name"}:
+            if current_streaming and input_streaming:
+                return ()
+            return (
+                StreamingFinding(
+                    code="STREAM-E0801",
+                    support=StreamingSupport.BATCH_ONLY,
+                    step=step,
+                    operation=f"{operation} {input_name}",
+                    problem=(
+                        f"{operation}(...) is admitted for streaming only when both exact-schema relations are "
+                        "declared with streaming=True."
+                    ),
+                    use=(
+                        "Declare both union inputs with streaming=True, or materialize the static side before a "
+                        "batch-only union boundary."
+                    ),
+                ),
+            )
         return (
             StreamingFinding(
                 code="STREAM-E0801",
                 support=StreamingSupport.BATCH_ONLY,
                 step=step,
                 operation=f"{operation} {input_name}",
-                problem="Relation union output modes and watermarks are not admitted for streaming transforms yet.",
-                use="Keep this transform batch-only or union the streams outside Structure with explicit lifecycle ownership.",
+                problem=f"{operation}(...) is Spark-ineligible for caller-owned streaming relation sets in v8.",
+                use="Use union_all(...) or union_by_name(...) for stream-stream append composition, or keep this transform batch-only.",
             ),
         )
 
@@ -323,8 +361,8 @@ class ClassifyStreamingCompatibility:
                 step=step,
                 operation="select_first_qualified",
                 problem=(
-                    "select_first_qualified(...) uses ranking and validation aggregates and is batch-only in v1 "
-                    "streaming compatibility."
+                    "select_first_qualified(...) uses ranking and validation aggregates and is streaming-ineligible "
+                    "for caller-owned v8 Structured Streaming."
                 ),
                 use="Keep this transform batch-only or perform priority selection before the streaming transform.",
             ),
@@ -361,7 +399,10 @@ class ClassifyStreamingCompatibility:
                 support=StreamingSupport.BATCH_ONLY,
                 step=step,
                 operation=operation,
-                problem="Relation ordering and bounded selection are batch-only until streaming output semantics are admitted.",
+                problem=(
+                    f"{operation}(...) is streaming-ineligible for unbounded caller-owned Structured Streaming "
+                    "relations."
+                ),
                 use="Keep this transform batch-only or move ordering and bounded selection to a batch materialization boundary.",
             ),
         )

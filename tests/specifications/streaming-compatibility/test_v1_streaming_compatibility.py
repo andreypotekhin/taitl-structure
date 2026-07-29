@@ -75,6 +75,27 @@ class StreamGlobalWindowSummary(Schema):
     row_count = long(nullable=False)
 
 
+class StreamTerm(Schema):
+    token = string(nullable=False)
+    weight = integer(nullable=False)
+
+
+class StreamDocument(Schema):
+    id = string(nullable=False)
+    terms = array(struct(StreamTerm), contains_null=False, nullable=False)
+
+
+class StreamExplodedTerm(Schema):
+    token = string(nullable=False)
+    weight = integer(nullable=False)
+
+
+class StreamDocumentTerm(Schema):
+    id = string(nullable=False)
+    token = string(nullable=False)
+    weight = integer(nullable=False)
+
+
 @transform(streaming=True)
 class StreamingSessionAggregate(Transform):
     rows = input(StreamRaw, streaming=True)
@@ -95,6 +116,60 @@ class StreamingGlobalSessionAggregate(Transform):
         watermark(row.event_time, delay="10 minutes")
         group_by(bucket=session_window(row.event_time, "5 minutes"))
         return StreamGlobalWindowSummary(bucket=session_window(row.event_time, "5 minutes"), row_count=count())
+
+
+@transform(streaming=True)
+class StreamingStructGenerator(Transform):
+    documents = input(StreamDocument, streaming=True)
+    terms = output(StreamDocumentTerm)
+
+    def expand(self, document: StreamDocument) -> StreamDocumentTerm:
+        term = explode_struct(document.terms, as_=StreamExplodedTerm, scope="term")
+        return StreamDocumentTerm(id=document.id, token=term.token, weight=term.weight)
+
+
+@transform(streaming=True)
+class StreamingUnionAll(Transform):
+    rows = input(StreamRaw, streaming=True)
+    more_rows = input(StreamRaw, streaming=True)
+    clean = output(StreamClean)
+
+    def merge(self, row: StreamRaw, more: StreamRaw) -> StreamClean:
+        merged = union_all(more)
+        return StreamClean(id=merged.id)
+
+
+@transform(streaming=True)
+class StreamingUnionByName(Transform):
+    rows = input(StreamRaw, streaming=True)
+    more_rows = input(StreamRaw, streaming=True)
+    clean = output(StreamClean)
+
+    def merge(self, row: StreamRaw, more: StreamRaw) -> StreamClean:
+        merged = union_by_name(more)
+        return StreamClean(id=merged.id)
+
+
+@transform(streaming=True)
+class StreamingUnionStaticSide(Transform):
+    rows = input(StreamRaw, streaming=True)
+    more_rows = input(StreamRaw)
+    clean = output(StreamClean)
+
+    def merge(self, row: StreamRaw, more: StreamRaw) -> StreamClean:
+        merged = union_all(more)
+        return StreamClean(id=merged.id)
+
+
+@transform(streaming=True)
+class StreamingIntersect(Transform):
+    rows = input(StreamRaw, streaming=True)
+    more_rows = input(StreamRaw, streaming=True)
+    clean = output(StreamClean)
+
+    def merge(self, row: StreamRaw, more: StreamRaw) -> StreamClean:
+        merged = intersect(more)
+        return StreamClean(id=merged.id)
 
 
 def test_event_time_between_rejects_non_timestamp_expressions() -> None:
@@ -541,6 +616,37 @@ def test_v1_streaming_projection_filter_and_schema_validation_are_compatible_wit
     assert report.findings == ()
 
 
+def test_v8_struct_generator_is_streaming_compatible_without_spark() -> None:
+    report = Compiler.compileability.streaming()(_recipe(StreamingStructGenerator), required=True)
+
+    assert report.support is StreamingSupport.COMPATIBLE
+    assert report.findings == ()
+
+
+@pytest.mark.parametrize("transform_type", [StreamingUnionAll, StreamingUnionByName])
+def test_v8_stream_stream_union_is_compatible_without_spark(transform_type: type[Transform]) -> None:
+    report = Compiler.compileability.streaming()(_recipe(transform_type), required=True)
+
+    assert report.support is StreamingSupport.COMPATIBLE
+    assert report.findings == ()
+
+
+def test_v8_union_requires_both_relations_declared_streaming() -> None:
+    report = Compiler.compileability.streaming()(_recipe(StreamingUnionStaticSide), required=True)
+
+    assert report.support is StreamingSupport.BATCH_ONLY
+    assert report.findings[0].operation == "union_all more"
+    assert "both exact-schema relations are declared with streaming=True" in report.findings[0].problem
+
+
+def test_v8_distinct_style_relation_sets_remain_streaming_ineligible() -> None:
+    report = Compiler.compileability.streaming()(_recipe(StreamingIntersect), required=True)
+
+    assert report.support is StreamingSupport.BATCH_ONLY
+    assert report.findings[0].operation == "intersect more"
+    assert "Spark-ineligible" in report.findings[0].problem
+
+
 def test_v2_stream_static_analytical_joins_are_compatible_without_spark() -> None:
     for transform_type in (StreamingExists, StreamingJoinMany):
         plan = _analysis(transform_type)
@@ -950,3 +1056,41 @@ def test_v4_generated_explicit_dedupe_has_no_adaptive_branch() -> None:
 
     assert ".dropDuplicatesWithinWatermark([\"id\"])" in generated
     assert ".isStreaming" not in generated
+
+
+@pytest.mark.parametrize(
+    ("transform_type", "schemas"),
+    [
+        (StreamingStructGenerator, [StreamTerm, StreamDocument, StreamExplodedTerm, StreamDocumentTerm]),
+        (StreamingUnionAll, [StreamRaw, StreamClean]),
+        (StreamingUnionByName, [StreamRaw, StreamClean]),
+    ],
+)
+def test_v8_generated_stateless_gap_code_avoids_streaming_lifecycle_and_actions(
+    transform_type: type[Transform],
+    schemas: list[type[Schema]],
+) -> None:
+    files = PySpark.render.project()(
+        _recipe(transform_type),
+        source_transform=f"tests.fixtures.streaming.transforms.{transform_type.__name__}",
+        generated_package="streaming_generated",
+        source_schema_modules={"tests.fixtures.streaming.schemas": schemas},
+    )
+
+    generated = "\n".join(files.values())
+
+    forbidden = (
+        "readStream",
+        "writeStream",
+        ".trigger(",
+        ".outputMode(",
+        ".start(",
+        "awaitTermination",
+        "checkpoint",
+        "collect(",
+        "count(",
+        "toPandas",
+        ".rdd",
+        "foreachBatch",
+    )
+    assert all(value not in generated for value in forbidden)

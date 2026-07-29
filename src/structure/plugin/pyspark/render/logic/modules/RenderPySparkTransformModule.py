@@ -12,7 +12,7 @@ from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySp
 from structure.plugin.pyspark.compiler.model.PySparkOutputRecipe import PySparkOutputRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.plugin.pyspark.compiler.model.PySparkValidationRecipe import PySparkValidationRecipe
-from structure.plugin.pyspark.dsl.types import StructureType
+from structure.plugin.pyspark.dsl.types import ArrayType, MapType, StructType, StructureType
 from structure.plugin.pyspark.render.logic.expressions.RenderPySparkExpression import render_pyspark_expression
 from structure.plugin.pyspark.render.logic.GeneratedCodeOptions import GeneratedCodeOptions
 from structure.plugin.pyspark.render.logic.HardWrapGeneratedPython import HardWrapGeneratedPython
@@ -261,7 +261,14 @@ class RenderPySparkTransformModule:
         schema_entries: list[str] = []
         for output in plan.outputs:
             lines.append("")
-            lines.append(render_pyspark_step(output, current=sources[output.source], sources=sources))
+            lines.append(
+                render_pyspark_step(
+                    output,
+                    current=sources[output.source],
+                    sources=sources,
+                    backend_target=plan.backend.target,
+                )
+            )
             lines.append(f"        self.{fields[output.name]} = {output.name}")
             result_entries.append(f'"{output.name}": self.{fields[output.name]}')
             schema_entries.append(f'"{output.name}": {self._schema.render().constant_name(output.output_schema)}')
@@ -306,6 +313,7 @@ class RenderPySparkTransformModule:
                     sources=sources,
                     source_transform=source_transform,
                     generated_hooks=True,
+                    backend_target=plan.backend.target,
                 )
             )
             for result in step.results:
@@ -436,6 +444,7 @@ class RenderPySparkTransformModule:
                     current=sources[step.source],
                     sources=sources,
                     generated_hooks=self._options.enabled(generated_code_options, "embed_hooks"),
+                    backend_target=plan.backend.target,
                 )
             )
             for result in step.results:
@@ -445,7 +454,14 @@ class RenderPySparkTransformModule:
         schema_entries: list[str] = []
         for output in plan.outputs:
             lines.append("")
-            lines.append(render_pyspark_step(output, current=sources[output.source], sources=sources))
+            lines.append(
+                render_pyspark_step(
+                    output,
+                    current=sources[output.source],
+                    sources=sources,
+                    backend_target=plan.backend.target,
+                )
+            )
             result_entries.append(f'"{output.name}": {output.name}')
             schema_entries.append(f'"{output.name}": {self._schema.render().constant_name(output.output_schema)}')
         single = "True" if len(plan.outputs) == 1 else "False"
@@ -539,7 +555,14 @@ class RenderPySparkTransformModule:
         schema_entries: list[str] = []
         for output in plan.outputs:
             lines.append("")
-            lines.append(render_pyspark_step(output, current=sources[output.source], sources=sources))
+            lines.append(
+                render_pyspark_step(
+                    output,
+                    current=sources[output.source],
+                    sources=sources,
+                    backend_target=plan.backend.target,
+                )
+            )
             result_entries.append(f'"{output.name}": {output.name}')
             schema_entries.append(f'"{output.name}": {self._schema.render().constant_name(output.output_schema)}')
         single = "True" if len(plan.outputs) == 1 else "False"
@@ -581,6 +604,7 @@ class RenderPySparkTransformModule:
                     sources=sources,
                     source_transform=source_transform,
                     generated_hooks=generated_hooks,
+                    backend_target=plan.backend.target,
                 )
             )
             methods.append("        return {")
@@ -935,7 +959,9 @@ class RenderPySparkTransformModule:
     ) -> dict[str, tuple[str, ...]]:
         modules: dict[str, set[str]] = defaultdict(set)
         for schema in self._schemas(plan):
-            module = schema_modules[schema]
+            module = schema_modules.get(schema)
+            if module is None:
+                continue
             modules[module].add(self._schema.render().constant_name(schema))
         return {module: tuple(sorted(constants)) for module, constants in sorted(modules.items())}
 
@@ -946,7 +972,30 @@ class RenderPySparkTransformModule:
         for step in plan.steps:
             schemas.add(step.output_schema)
             schemas.update(result.schema for result in step.results)
+            schemas.update(self._step_type_schemas(step))
         return schemas
+
+    def _step_type_schemas(self, step: PySparkStepRecipe) -> set[type[Schema]]:
+        schemas: set[type[Schema]] = set()
+        for operation in step.operations:
+            aggregate = operation.aggregate
+            if aggregate is None:
+                continue
+            for assignment in aggregate.assignments:
+                schemas.update(self._type_schemas(assignment.field.type))
+        if step.aggregate is not None:
+            for assignment in step.aggregate.assignments:
+                schemas.update(self._type_schemas(assignment.field.type))
+        return schemas
+
+    def _type_schemas(self, type_: StructureType) -> set[type[Schema]]:
+        if isinstance(type_, StructType):
+            return {type_.schema}
+        if isinstance(type_, ArrayType):
+            return self._type_schemas(type_.element)
+        if isinstance(type_, MapType):
+            return self._type_schemas(type_.key) | self._type_schemas(type_.value)
+        return set()
 
     def _output_aliases(self, plan: PySparkExecutionPlan) -> dict[str, tuple[str, ...]]:
         return {output.name: output.aliases for output in plan.outputs if output.aliases}

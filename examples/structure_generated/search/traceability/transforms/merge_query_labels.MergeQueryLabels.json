@@ -317,23 +317,23 @@
     },
     "DocumentIndexSummary": {
       "constant": "DOCUMENT_INDEX_SUMMARY_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.index"
     },
     "DocumentIndexTarget": {
       "constant": "DOCUMENT_INDEX_TARGET_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.index"
     },
     "DocumentIndexTargetStats": {
       "constant": "DOCUMENT_INDEX_TARGET_STATS_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.lexical_intermediate"
     },
     "DocumentIndexTerm": {
       "constant": "DOCUMENT_INDEX_TERM_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.index"
     },
     "DocumentIndexTermCount": {
       "constant": "DOCUMENT_INDEX_TERM_COUNT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.lexical_intermediate"
     },
     "DocumentLine": {
       "constant": "DOCUMENT_LINE_SCHEMA",
@@ -341,7 +341,7 @@
     },
     "DocumentOverlapMatch": {
       "constant": "DOCUMENT_OVERLAP_MATCH_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+      "module": "examples.structure_generated.search.pyspark.schemas.scoring_intermediate"
     },
     "DocumentOverlapScore": {
       "constant": "DOCUMENT_OVERLAP_SCORE_SCHEMA",
@@ -445,7 +445,7 @@
     },
     "ExpandedQueryToken": {
       "constant": "EXPANDED_QUERY_TOKEN_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.scoring_intermediate"
     },
     "ExpandedSentenceText": {
       "constant": "EXPANDED_SENTENCE_TEXT_SCHEMA",
@@ -465,7 +465,7 @@
     },
     "IndexTokenFrequency": {
       "constant": "INDEX_TOKEN_FREQUENCY_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.lexical_intermediate"
     },
     "IndexedSimilarDocument": {
       "constant": "INDEXED_SIMILAR_DOCUMENT_SCHEMA",
@@ -521,23 +521,23 @@
     },
     "ParagraphIndexSummary": {
       "constant": "PARAGRAPH_INDEX_SUMMARY_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.index"
     },
     "ParagraphIndexTarget": {
       "constant": "PARAGRAPH_INDEX_TARGET_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.index"
     },
     "ParagraphIndexTargetStats": {
       "constant": "PARAGRAPH_INDEX_TARGET_STATS_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.lexical_intermediate"
     },
     "ParagraphIndexTerm": {
       "constant": "PARAGRAPH_INDEX_TERM_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.index"
     },
     "ParagraphIndexTermCount": {
       "constant": "PARAGRAPH_INDEX_TERM_COUNT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.lexical_intermediate"
     },
     "ParagraphLine": {
       "constant": "PARAGRAPH_LINE_SCHEMA",
@@ -549,7 +549,7 @@
     },
     "ParagraphOverlapMatch": {
       "constant": "PARAGRAPH_OVERLAP_MATCH_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+      "module": "examples.structure_generated.search.pyspark.schemas.scoring_intermediate"
     },
     "ParagraphOverlapScore": {
       "constant": "PARAGRAPH_OVERLAP_SCORE_SCHEMA",
@@ -621,15 +621,15 @@
     },
     "QueryTerm": {
       "constant": "QUERY_TERM_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.scoring_intermediate"
     },
     "QueryTermCount": {
       "constant": "QUERY_TERM_COUNT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.scoring_intermediate"
     },
     "QueryToken": {
       "constant": "QUERY_TOKEN_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.scoring_intermediate"
     },
     "RelevancePolicy": {
       "constant": "RELEVANCE_POLICY_SCHEMA",
@@ -657,23 +657,23 @@
     },
     "SectionIndexSummary": {
       "constant": "SECTION_INDEX_SUMMARY_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.index"
     },
     "SectionIndexTarget": {
       "constant": "SECTION_INDEX_TARGET_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.index"
     },
     "SectionIndexTargetStats": {
       "constant": "SECTION_INDEX_TARGET_STATS_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.lexical_intermediate"
     },
     "SectionIndexTerm": {
       "constant": "SECTION_INDEX_TERM_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.index"
     },
     "SectionIndexTermCount": {
       "constant": "SECTION_INDEX_TERM_COUNT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.lexical_intermediate"
     },
     "SectionKey": {
       "constant": "SECTION_KEY_SCHEMA",
@@ -681,7 +681,7 @@
     },
     "SectionOverlapMatch": {
       "constant": "SECTION_OVERLAP_MATCH_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+      "module": "examples.structure_generated.search.pyspark.schemas.scoring_intermediate"
     },
     "SectionOverlapScore": {
       "constant": "SECTION_OVERLAP_SCORE_SCHEMA",
@@ -729,27 +729,27 @@
     },
     "SentenceIndexSummary": {
       "constant": "SENTENCE_INDEX_SUMMARY_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.index"
     },
     "SentenceIndexTarget": {
       "constant": "SENTENCE_INDEX_TARGET_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.index"
     },
     "SentenceIndexTargetStats": {
       "constant": "SENTENCE_INDEX_TARGET_STATS_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.lexical_intermediate"
     },
     "SentenceIndexTerm": {
       "constant": "SENTENCE_INDEX_TERM_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.index"
     },
     "SentenceIndexTermCount": {
       "constant": "SENTENCE_INDEX_TERM_COUNT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.search"
+      "module": "examples.structure_generated.search.pyspark.schemas.lexical_intermediate"
     },
     "SentenceOverlapMatch": {
       "constant": "SENTENCE_OVERLAP_MATCH_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+      "module": "examples.structure_generated.search.pyspark.schemas.scoring_intermediate"
     },
     "SentenceOverlapScore": {
       "constant": "SENTENCE_OVERLAP_SCORE_SCHEMA",
@@ -897,15 +897,12 @@
       },
       {
         "detail": {
-          "scope": "query_labels",
-          "subset": "4"
+          "scope": "current_step_frame",
+          "subset": "0"
         },
         "operation": "drop_duplicates",
         "sources": [
-          "query_labels.query_id",
-          "query_labels.label.name",
-          "query_labels.label.value",
-          "query_labels.assigned_at"
+          "current_frame.*"
         ],
         "step": "select_latest",
         "target": "select_latest.drop_duplicates[0]"

@@ -1,24 +1,24 @@
 """BM25 scoring from reusable text-index artifacts."""
 
+from examples.search.schemas.indexing.lexical.index import (
+    DocumentIndexSummary,
+    DocumentIndexTerm,
+    ParagraphIndexSummary,
+    ParagraphIndexTerm,
+    SectionIndexSummary,
+    SectionIndexTerm,
+    SentenceIndexSummary,
+    SentenceIndexTerm,
+)
 from examples.search.schemas.scoring.bm25 import (
     DocumentBm25Score,
     ParagraphBm25Score,
     SectionBm25Score,
     SentenceBm25Score,
 )
-from examples.search.schemas.search import (
-    DocumentIndexSummary,
-    DocumentIndexTerm,
-    ParagraphIndexSummary,
-    ParagraphIndexTerm,
-    QueryTerm,
-    SectionIndexSummary,
-    SectionIndexTerm,
-    SentenceIndexSummary,
-    SentenceIndexTerm,
-)
+from examples.search.schemas.scoring.intermediate import QueryTerm
 from examples.search.transforms.scoring.ScoreBase import ScoreBase
-from structure import input, output, step
+from structure import input, output, parameter, step
 from structure.plugin.pyspark import cross_join, group_by, inner_join, log
 from structure.plugin.pyspark import sum as sum_
 
@@ -34,6 +34,8 @@ class ScoreBm25(ScoreBase):
     section_bm25_scores = output(SectionBm25Score)
     paragraph_bm25_scores = output(ParagraphBm25Score)
     sentence_bm25_scores = output(SentenceBm25Score)
+    k1 = parameter(1.2)
+    b = parameter(0.75)
 
     @step(input=[ScoreBase.query_terms, ScoreBase.document_terms, document_summary], output=document_bm25_scores)
     def score_document_bm25(
@@ -112,7 +114,7 @@ class ScoreBm25(ScoreBase):
         inverse_frequency = log(
             1.0 + (summary.target_count - term.document_frequency + 0.5) / (term.document_frequency + 0.5)
         )
-        normalization = term.term_frequency + 1.2 * (
-            0.25 + 0.75 * term.target_word_count / summary.average_target_length
+        normalization = term.term_frequency + self.k1 * (
+            1.0 - self.b + self.b * term.target_word_count / summary.average_target_length
         )
-        return inverse_frequency * term.term_frequency * 2.2 / normalization
+        return inverse_frequency * term.term_frequency * (self.k1 + 1.0) / normalization

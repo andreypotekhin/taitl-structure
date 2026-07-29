@@ -657,6 +657,99 @@ def test_stage_graph_uses_explicit_output_binding_for_ambiguous_schema() -> None
     assert [output.name for output in _analysis(OrderGraph).outputs] == ["selected"]
 
 
+def test_stage_graph_subclass_replaces_inherited_stage_and_rewires_dependents() -> None:
+    class OrderGraph(Transform):
+        orders = input(Raw)
+        products = input(Product)
+        published = output(Published)
+
+        normalized_stage = stage(NormalizeOrders(orders=orders))
+        enriched_stage = stage(AddProduct(normalized=normalized_stage.normalized, products=products))
+        published_stage = stage(PublishOrders(enriched=enriched_stage.enriched))
+
+    class AdjustedProduct(AddProduct):
+        def add_product(self, order: Normalized, product: Product) -> Enriched:
+            left_join(product, on=product.id == order.product_id)
+            return Enriched(id=order.id, product_name=product.name)
+
+    class AdjustedGraph(OrderGraph):
+        enriched_stage = stage(
+            AdjustedProduct(normalized=OrderGraph.normalized_stage.normalized, products=OrderGraph.products)
+        )
+
+    plan = _analysis(AdjustedGraph)
+
+    assert [step.name for step in plan.steps] == [
+        "normalized_stage.normalize",
+        "enriched_stage.add_product",
+        "published_stage.publish",
+    ]
+    assert plan.steps[1].origin is not None
+    assert plan.steps[1].origin.class_name == "AdjustedProduct"
+
+
+def test_stage_graph_subclass_replaces_several_inherited_stages() -> None:
+    class OrderGraph(Transform):
+        orders = input(Raw)
+        products = input(Product)
+        published = output(Published)
+
+        normalized_stage = stage(NormalizeOrders(orders=orders))
+        enriched_stage = stage(AddProduct(normalized=normalized_stage.normalized, products=products))
+        published_stage = stage(PublishOrders(enriched=enriched_stage.enriched))
+
+    class AdjustedNormalize(NormalizeOrders):
+        def normalize(self, order: Raw) -> Normalized:
+            return Normalized(id=order.id, product_id=order.product_id)
+
+    class AdjustedProduct(AddProduct):
+        def add_product(self, order: Normalized, product: Product) -> Enriched:
+            left_join(product, on=product.id == order.product_id)
+            return Enriched(id=order.id, product_name=product.name)
+
+    class AdjustedGraph(OrderGraph):
+        normalized_stage = stage(AdjustedNormalize(orders=OrderGraph.orders))
+        enriched_stage = stage(
+            AdjustedProduct(normalized=normalized_stage.normalized, products=OrderGraph.products)
+        )
+
+    plan = _analysis(AdjustedGraph)
+
+    assert [step.origin.class_name for step in plan.steps if step.origin is not None] == [
+        "AdjustedNormalize",
+        "AdjustedProduct",
+        "PublishOrders",
+    ]
+
+
+def test_stage_graph_subclass_constant_resolves_parent_parameter_bound_to_stage() -> None:
+    class PublishExperiment(Transform):
+        source = input(TextRow)
+        published = output(Audit)
+        experiment_id = parameter(None)
+
+        def publish(self, row: TextRow) -> Audit:
+            return Audit(id=row.value, note=self.experiment_id)
+
+    class ExperimentGraph(Transform):
+        source = input(TextRow)
+        published = output(Audit)
+        experiment_id = parameter(None)
+
+        published_stage = stage(PublishExperiment(source=source, experiment_id=experiment_id))
+
+    class AdjustedGraph(ExperimentGraph):
+        experiment_id = "adjusted"
+
+    plan = _analysis(AdjustedGraph)
+
+    assert [step.name for step in plan.steps] == ["published_stage.publish"]
+    assert ExperimentGraph.published_stage is AdjustedGraph.published_stage
+    assert "experiment_id" not in AdjustedGraph._structure_parameters
+    with pytest.raises(TypeError, match="unknown input"):
+        AdjustedGraph(experiment_id="other")
+
+
 def test_stage_graph_ambiguous_output_inference_fails() -> None:
     class OrderGraph(Transform):
         orders = input(Raw)
@@ -719,11 +812,11 @@ def test_inherited_lane_remains_available_to_override() -> None:
     assert len(cast(PySparkStepBody, plan.steps[0].plugin_body).filters) == 1
 
 
-def test_search_score_all_uses_scoring_pipeline_stages() -> None:
+def test_search_scoring_uses_stage_composition() -> None:
     from examples.search.transforms.index import EnrichWithScores
-    from examples.search.transforms.scoring.pipeline import ScoreAll
+    from examples.search.transforms.scoring.pipeline import Scoring
 
-    for transform in (ScoreAll, EnrichWithScores):
+    for transform in (Scoring, EnrichWithScores):
         plan = _analysis(transform)
 
         assert [output.name for output in plan.outputs] == [

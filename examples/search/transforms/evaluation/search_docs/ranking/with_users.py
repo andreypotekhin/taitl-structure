@@ -33,14 +33,14 @@ class EvaluateDocumentRankingQuality(Super):
         group_by(
             window=batch.window,
             params=params,
-            experiment_id="",
+            experiment_id=None,
             band_id=result.band_id,
             search_query_id=query.id,
         )
         return EvaluationQuery(
             window=batch.window,
             params=EvaluationParams(queryset=params.queryset, labels=params.labels, band_id=params.band_id),
-            experiment_id="",
+            experiment_id=None,
             band_id=result.band_id,
             search_query_id=query.id,
         )

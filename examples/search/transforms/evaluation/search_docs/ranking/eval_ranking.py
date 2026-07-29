@@ -55,7 +55,7 @@ class EvaluateDocumentRankingQuality(Transform):
         return EvaluationQuery(
             window=batch.window,
             params=None,
-            experiment_id="",
+            experiment_id=None,
             band_id=None,
             search_query_id=query.id,
         )
@@ -68,7 +68,7 @@ class EvaluateDocumentRankingQuality(Transform):
         judgment: DocumentRelevanceJudgment,
     ) -> EvaluationResult:
         left_join(on=result.search_query_id == query.search_query_id)
-        where((result.experiment_id == "") & result.band_id.null_safe_eq(query.band_id))
+        where(result.experiment_id.is_null() & result.band_id.null_safe_eq(query.band_id))
         left_join(
             on=(judgment.search_query_id == query.search_query_id) & (judgment.document_id == result.document_id),
         )
@@ -158,12 +158,17 @@ class EvaluateDocumentRankingQuality(Transform):
         ideal: EvaluationIdealDcg,
     ) -> DocumentQueryEvaluation:
         left_join(
-            on=(results.search_query_id == query.search_query_id) & (results.experiment_id == query.experiment_id)
+            on=(results.search_query_id == query.search_query_id)
+            & results.experiment_id.null_safe_eq(query.experiment_id)
         )
         left_join(
-            on=(judgments.search_query_id == query.search_query_id) & (judgments.experiment_id == query.experiment_id)
+            on=(judgments.search_query_id == query.search_query_id)
+            & judgments.experiment_id.null_safe_eq(query.experiment_id)
         )
-        left_join(on=(ideal.search_query_id == query.search_query_id) & (ideal.experiment_id == query.experiment_id))
+        left_join(
+            on=(ideal.search_query_id == query.search_query_id)
+            & ideal.experiment_id.null_safe_eq(query.experiment_id)
+        )
         relevant_count = coalesce(judgments.binary_relevant_judgment_count, 0)
         reciprocal_rank_covered = coalesce(results.unjudged_result_count, 0) == 0
         return DocumentQueryEvaluation.project(query)(

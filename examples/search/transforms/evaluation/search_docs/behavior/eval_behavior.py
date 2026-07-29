@@ -207,7 +207,7 @@ class EvaluateDocumentSearchBehavior(Transform):
         left_join(
             on=(exposure.window == daily.window)
             & exposure.params.null_safe_eq(daily.params)
-            & (exposure.experiment_id == daily.experiment_id)
+            & exposure.experiment_id.null_safe_eq(daily.experiment_id)
             & (exposure.ranking_version == daily.ranking_version)
         )
         return DailyDocumentSearchBehavior.project(daily)(

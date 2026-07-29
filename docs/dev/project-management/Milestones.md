@@ -403,11 +403,12 @@ coverage-percentage parity is the separate v8 milestone.
 - Historical v4--v6 deferred work is either delivered by a named v7 slice or retained in an explicit backlog with its
   rationale; no stale plan is treated as active scope by implication.
 
-## M13: v8 PySpark Structured Streaming Coverage Parity
+## +M13: v8 PySpark Structured Streaming Coverage Parity
 
-Status: ready. V8 focuses on bringing caller-owned PySpark Structured Streaming transformation coverage up to the
-same percentage as the existing checked PySpark batch transformation catalog. The governing plan is
-`docs/dev/planning/P07292601.V8-pyspark-structured-streaming-coverage-parity.plan.md`.
+Status: complete. Sprints 36--39 published the checked coverage ledger, admitted typed struct generators and
+exact-schema stream-stream unions, closed ordering and priority selection as explicit streaming-ineligible rows, and
+recorded targeted live PySpark 3.5/4.0 restart evidence. Effective checked parity is 32 / 32. The governing plan is
+`docs/dev/planning/done/P07292601.V8-pyspark-structured-streaming-coverage-parity.plan.md`.
 
 ### Exit Criteria
 

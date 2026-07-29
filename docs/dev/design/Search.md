@@ -63,14 +63,15 @@ prompt assembly. This preserves lexical evidence and avoids imposing an answer-m
 
 ### Documents
 
-`SearchDocuments` is a two-stage document path. It first selects at most 100 candidates per query using descending
-BM25 and document ID as the deterministic tie-breaker. It then enriches only those candidates with feedback and ranks
-by the final combined score. A document outside the lexical candidate set cannot enter through popularity or click
-history. Documents without feedback remain eligible with zero feedback.
+`SearchDocuments` is a three-stage document path. It first admits up to 1000 persisted or streamed candidates per query
+using descending score and document ID as the deterministic tie-breaker. It then filters to 100 candidates by overlap
+score before enriching only those candidates with feedback and ranking by the final combined score. A document outside
+the lexical candidate set cannot enter through popularity or click history. Documents without feedback remain eligible
+with zero feedback.
 
 The feedback score combines query-document evidence and document-wide popularity. Within each candidate set, BM25 is
 normalized by that query's maximum candidate BM25. The final score blends normalized BM25 and feedback with the
-caller-supplied policy weights. Overlap is intentionally not used in the document retrieval or final tie-breaker path.
+caller-supplied policy weights. Overlap is used only as the explicit candidate-narrowing boundary.
 
 ## Feedback Evidence
 

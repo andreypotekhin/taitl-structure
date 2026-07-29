@@ -11,6 +11,7 @@ from structure.core.dsl.model.transforms.InOutBinding import InOutBinding
 from structure.core.dsl.model.transforms.InputDeclaration import InputDeclaration
 from structure.core.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.core.dsl.model.transforms.OutputDeclaration import OutputDeclaration
+from structure.core.dsl.model.transforms.ParameterDeclaration import ParameterDeclaration
 from structure.core.dsl.model.transforms.SchemaMode import SchemaMode
 from structure.core.dsl.model.transforms.SpecialFunction import SpecialFunction
 from structure.core.dsl.model.transforms.StageDeclaration import StageDeclaration
@@ -129,6 +130,17 @@ def lane(value: type[Schema] | SelectedDeclaration) -> LaneDeclaration | Binding
     if not isinstance(value, type) or not issubclass(value, Schema):
         raise TypeError("lane(...) requires a Schema class")
     return LaneDeclaration(schema=value)
+
+
+def parameter(default: object) -> ParameterDeclaration:
+    """Declare a scalar transform parameter with a default value.
+
+    Parameters are configured through the standard transform invocation, for
+    example ``ScoreBm25(k1=1.35)``. They are distinct from schema inputs and
+    are captured when a composed stage is compiled.
+    """
+
+    return ParameterDeclaration(default=default)
 
 
 def stage(value: Transform) -> StageDeclaration:

@@ -64,14 +64,15 @@ the application because they depend on its model, citation policy, latency budge
 
 ## Document Retrieval and Feedback
 
-Document search has two stages. `RetrieveDocuments` selects at most 100 candidates per query by descending BM25 with a
-document-ID tie-breaker. `RerankDocuments` enriches only those candidates with feedback and ranks their combined score.
+Document search has three stages. `RetrieveDocuments` admits up to 1000 persisted or streamed candidates per query by
+descending score with a document-ID tie-breaker. `OverlapDocuments` narrows those candidates to 100 by overlap score.
+`RerankDocuments` enriches only those candidates with feedback and ranks their combined score.
 A document outside the lexical candidate set cannot enter only because it is popular or has historical clicks.
 
 Within a candidate set, BM25 is normalized by the query's maximum candidate score. Caller-supplied relevance-policy
 weights combine that normalized lexical score with feedback evidence. A document with no feedback remains eligible and
-has zero feedback contribution. Overlap is intentionally absent from this document path so the retrieval and reranking
-contracts remain explicit.
+has zero feedback contribution. Overlap is an explicit narrowing boundary before feedback, not a final reranking
+ingredient.
 
 Feedback starts with immutable `SearchRequest`, `Impression`, and `Click` records. Every attempt produces a request,
 including a no-result attempt. An impression records the displayed position and its logged examination propensity; a

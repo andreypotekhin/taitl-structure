@@ -1,10 +1,10 @@
 {
   "dependencies": [
     "assignment",
-    "create_query_labels__labels",
-    "create_query_labels__valid_intents",
+    "created__labels",
+    "created__valid_intents",
     "intent",
-    "merge_query_labels__assignments"
+    "merged__assignments"
   ],
   "generated_by": "Structure",
   "inputs": [
@@ -50,13 +50,13 @@
           "source": "intents"
         }
       ],
-      "name": "create_query_labels.validate_intents",
-      "output_lane": "create_query_labels__valid_intents",
+      "name": "created.validate_intents",
+      "output_lane": "created__valid_intents",
       "output_schema": "Intent",
       "results": [
         {
-          "frame": "create_query_labels__valid_intents",
-          "lane": "create_query_labels__valid_intents",
+          "frame": "created__valid_intents",
+          "lane": "created__valid_intents",
           "schema": "Intent"
         }
       ]
@@ -75,16 +75,16 @@
           "driving": false,
           "parameter": "intent",
           "schema": "Intent",
-          "source": "create_query_labels__valid_intents"
+          "source": "created__valid_intents"
         }
       ],
-      "name": "create_query_labels.validate_patterns",
-      "output_lane": "create_query_labels__valid_patterns",
+      "name": "created.validate_patterns",
+      "output_lane": "created__valid_patterns",
       "output_schema": "IntentPattern",
       "results": [
         {
-          "frame": "create_query_labels__valid_patterns",
-          "lane": "create_query_labels__valid_patterns",
+          "frame": "created__valid_patterns",
+          "lane": "created__valid_patterns",
           "schema": "IntentPattern"
         }
       ]
@@ -106,7 +106,7 @@
           "driving": false,
           "parameter": "intent",
           "schema": "Intent",
-          "source": "create_query_labels__valid_intents"
+          "source": "created__valid_intents"
         }
       ],
       "joins": [
@@ -115,57 +115,57 @@
           "input": "intent"
         }
       ],
-      "name": "create_query_labels.create_query_intents",
-      "output_lane": "create_query_labels__query_intents",
+      "name": "created.create_query_intents",
+      "output_lane": "created__query_intents",
       "output_schema": "QueryIntentLabel",
       "results": [
         {
-          "frame": "create_query_labels__query_intents",
-          "lane": "create_query_labels__query_intents",
+          "frame": "created__query_intents",
+          "lane": "created__query_intents",
           "schema": "QueryIntentLabel"
         }
       ]
     },
     {
-      "input_lane": "create_query_labels__query_intents",
+      "input_lane": "created__query_intents",
       "input_schema": "QueryIntentLabel",
       "inputs": [
         {
           "driving": true,
           "parameter": "label",
           "schema": "QueryIntentLabel",
-          "source": "create_query_labels__query_intents"
+          "source": "created__query_intents"
         }
       ],
-      "name": "create_query_labels.collect_labels",
-      "output_lane": "create_query_labels__entries",
+      "name": "created.collect_labels",
+      "output_lane": "created__entries",
       "output_schema": "QueryLabelAssignmentEntries",
       "results": [
         {
-          "frame": "create_query_labels__entries",
-          "lane": "create_query_labels__entries",
+          "frame": "created__entries",
+          "lane": "created__entries",
           "schema": "QueryLabelAssignmentEntries"
         }
       ]
     },
     {
-      "input_lane": "create_query_labels__entries",
+      "input_lane": "created__entries",
       "input_schema": "QueryLabelAssignmentEntries",
       "inputs": [
         {
           "driving": true,
           "parameter": "entry",
           "schema": "QueryLabelAssignmentEntries",
-          "source": "create_query_labels__entries"
+          "source": "created__entries"
         }
       ],
-      "name": "create_query_labels.create_labels",
-      "output_lane": "create_query_labels__labels",
+      "name": "created.create_labels",
+      "output_lane": "created__labels",
       "output_schema": "QueryLabelAssignments",
       "results": [
         {
-          "frame": "create_query_labels__labels",
-          "lane": "create_query_labels__labels",
+          "frame": "created__labels",
+          "lane": "created__labels",
           "schema": "QueryLabelAssignments"
         }
       ]
@@ -181,57 +181,57 @@
           "source": "query_labels"
         }
       ],
-      "name": "merge_query_labels.select_latest",
-      "output_lane": "merge_query_labels__latest_labels",
+      "name": "merged.select_latest",
+      "output_lane": "merged__latest_labels",
       "output_schema": "QueryLabel",
       "results": [
         {
-          "frame": "merge_query_labels__latest_labels",
-          "lane": "merge_query_labels__latest_labels",
+          "frame": "merged__latest_labels",
+          "lane": "merged__latest_labels",
           "schema": "QueryLabel"
         }
       ]
     },
     {
-      "input_lane": "merge_query_labels__latest_labels",
+      "input_lane": "merged__latest_labels",
       "input_schema": "QueryLabel",
       "inputs": [
         {
           "driving": true,
           "parameter": "label",
           "schema": "QueryLabel",
-          "source": "merge_query_labels__latest_labels"
+          "source": "merged__latest_labels"
         }
       ],
-      "name": "merge_query_labels.collect_assignments",
-      "output_lane": "merge_query_labels__entries",
+      "name": "merged.collect_assignments",
+      "output_lane": "merged__entries",
       "output_schema": "QueryLabelAssignmentEntries",
       "results": [
         {
-          "frame": "merge_query_labels__entries",
-          "lane": "merge_query_labels__entries",
+          "frame": "merged__entries",
+          "lane": "merged__entries",
           "schema": "QueryLabelAssignmentEntries"
         }
       ]
     },
     {
-      "input_lane": "merge_query_labels__entries",
+      "input_lane": "merged__entries",
       "input_schema": "QueryLabelAssignmentEntries",
       "inputs": [
         {
           "driving": true,
           "parameter": "entry",
           "schema": "QueryLabelAssignmentEntries",
-          "source": "merge_query_labels__entries"
+          "source": "merged__entries"
         }
       ],
-      "name": "merge_query_labels.create_assignments",
-      "output_lane": "merge_query_labels__assignments",
+      "name": "merged.create_assignments",
+      "output_lane": "merged__assignments",
       "output_schema": "QueryLabelAssignments",
       "results": [
         {
-          "frame": "merge_query_labels__assignments",
-          "lane": "merge_query_labels__assignments",
+          "frame": "merged__assignments",
+          "lane": "merged__assignments",
           "schema": "QueryLabelAssignments"
         }
       ]
@@ -250,7 +250,7 @@
           "driving": false,
           "parameter": "assignment",
           "schema": "QueryLabelAssignments",
-          "source": "merge_query_labels__assignments"
+          "source": "merged__assignments"
         }
       ],
       "joins": [
@@ -259,32 +259,32 @@
           "input": "assignment"
         }
       ],
-      "name": "merge_query_labels.merge_caller_labels",
-      "output_lane": "merge_query_labels__caller_labeled_queries",
+      "name": "merged.merge_caller_labels",
+      "output_lane": "merged__caller_labeled_queries",
       "output_schema": "SearchQuery",
       "results": [
         {
-          "frame": "merge_query_labels__caller_labeled_queries",
-          "lane": "merge_query_labels__caller_labeled_queries",
+          "frame": "merged__caller_labeled_queries",
+          "lane": "merged__caller_labeled_queries",
           "schema": "SearchQuery"
         }
       ]
     },
     {
-      "input_lane": "merge_query_labels__caller_labeled_queries",
+      "input_lane": "merged__caller_labeled_queries",
       "input_schema": "SearchQuery",
       "inputs": [
         {
           "driving": true,
           "parameter": "query",
           "schema": "SearchQuery",
-          "source": "merge_query_labels__caller_labeled_queries"
+          "source": "merged__caller_labeled_queries"
         },
         {
           "driving": false,
           "parameter": "assignment",
           "schema": "QueryLabelAssignments",
-          "source": "create_query_labels__labels"
+          "source": "created__labels"
         }
       ],
       "joins": [
@@ -293,13 +293,13 @@
           "input": "assignment"
         }
       ],
-      "name": "merge_query_labels.merge_created_labels",
-      "output_lane": "labeled_queries",
+      "name": "merged.merge_created_labels",
+      "output_lane": "merged__labeled_queries",
       "output_schema": "SearchQuery",
       "results": [
         {
-          "frame": "labeled_queries",
-          "lane": "labeled_queries",
+          "frame": "merged__labeled_queries",
+          "lane": "merged__labeled_queries",
           "schema": "SearchQuery"
         }
       ]

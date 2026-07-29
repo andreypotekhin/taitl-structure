@@ -1,16 +1,13 @@
 """Shared reusable-index scoring inputs."""
 
-from examples.search.schemas.search import (
+from examples.search.schemas.indexing.lexical.index import (
     DocumentIndexTerm,
-    ExpandedQueryToken,
     ParagraphIndexTerm,
-    QueryTerm,
-    QueryTermCount,
-    QueryToken,
-    SearchQuery,
     SectionIndexTerm,
     SentenceIndexTerm,
 )
+from examples.search.schemas.scoring.intermediate import ExpandedQueryToken, QueryTerm, QueryTermCount, QueryToken
+from examples.search.schemas.search import SearchQuery
 from structure import Transform, input, lane, step
 from structure.plugin.pyspark import (
     arr_transform,

@@ -5,34 +5,36 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
-from examples.structure_generated.search.pyspark.schemas.search import (
+from examples.structure_generated.search.pyspark.schemas.index import (
     DOCUMENT_INDEX_SUMMARY_SCHEMA,
-    DOCUMENT_INDEX_TARGET_STATS_SCHEMA,
-    DOCUMENT_INDEX_TERM_COUNT_SCHEMA,
     DOCUMENT_INDEX_TERM_SCHEMA,
-    INDEX_TOKEN_FREQUENCY_SCHEMA,
     PARAGRAPH_INDEX_SUMMARY_SCHEMA,
-    PARAGRAPH_INDEX_TARGET_STATS_SCHEMA,
-    PARAGRAPH_INDEX_TERM_COUNT_SCHEMA,
     PARAGRAPH_INDEX_TERM_SCHEMA,
     SECTION_INDEX_SUMMARY_SCHEMA,
-    SECTION_INDEX_TARGET_STATS_SCHEMA,
-    SECTION_INDEX_TERM_COUNT_SCHEMA,
     SECTION_INDEX_TERM_SCHEMA,
     SENTENCE_INDEX_SUMMARY_SCHEMA,
+    SENTENCE_INDEX_TERM_SCHEMA,
+)
+from examples.structure_generated.search.pyspark.schemas.lexical_intermediate import (
+    DOCUMENT_INDEX_TARGET_STATS_SCHEMA,
+    DOCUMENT_INDEX_TERM_COUNT_SCHEMA,
+    INDEX_TOKEN_FREQUENCY_SCHEMA,
+    PARAGRAPH_INDEX_TARGET_STATS_SCHEMA,
+    PARAGRAPH_INDEX_TERM_COUNT_SCHEMA,
+    SECTION_INDEX_TARGET_STATS_SCHEMA,
+    SECTION_INDEX_TERM_COUNT_SCHEMA,
     SENTENCE_INDEX_TARGET_STATS_SCHEMA,
     SENTENCE_INDEX_TERM_COUNT_SCHEMA,
-    SENTENCE_INDEX_TERM_SCHEMA,
 )
 from examples.structure_generated.search.pyspark.schemas.text import WORD_SCHEMA
 
 
-class IndexGenerated:
-    def _step_count_document_terms_0(self, frames):
-        # Step method: count_document_terms
-        document_term_counts = frames["words"].alias("word")
-        document_term_counts = (
-            document_term_counts.groupBy(
+class LexIndexGenerated:
+    def _step_lexical_count_document_terms_0(self, frames):
+        # Step method: lexical.count_document_terms
+        lexical__document_term_counts = frames["words"].alias("word")
+        lexical__document_term_counts = (
+            lexical__document_term_counts.groupBy(
                 F.col("word.document_id").alias("document_id"),
                 F.col("word.token").alias("token"),
             )
@@ -46,17 +48,20 @@ class IndexGenerated:
             )
         )
         assert_schema(
-            document_term_counts, DOCUMENT_INDEX_TERM_COUNT_SCHEMA, name="DocumentIndexTermCount", mode="strict"
+            lexical__document_term_counts,
+            DOCUMENT_INDEX_TERM_COUNT_SCHEMA,
+            name="DocumentIndexTermCount",
+            mode="strict",
         )
         return {
-            "document_term_counts": document_term_counts,
+            "lexical__document_term_counts": lexical__document_term_counts,
         }
 
-    def _step_summarize_documents_1(self, frames):
-        # Step method: summarize_documents
-        document_target_stats = frames["words"].alias("word")
-        document_target_stats = (
-            document_target_stats.groupBy(
+    def _step_lexical_summarize_documents_1(self, frames):
+        # Step method: lexical.summarize_documents
+        lexical__document_target_stats = frames["words"].alias("word")
+        lexical__document_target_stats = (
+            lexical__document_target_stats.groupBy(
                 F.col("word.document_id").alias("document_id"),
             )
             .agg(
@@ -70,17 +75,20 @@ class IndexGenerated:
             )
         )
         assert_schema(
-            document_target_stats, DOCUMENT_INDEX_TARGET_STATS_SCHEMA, name="DocumentIndexTargetStats", mode="strict"
+            lexical__document_target_stats,
+            DOCUMENT_INDEX_TARGET_STATS_SCHEMA,
+            name="DocumentIndexTargetStats",
+            mode="strict",
         )
         return {
-            "document_target_stats": document_target_stats,
+            "lexical__document_target_stats": lexical__document_target_stats,
         }
 
-    def _step_count_document_frequencies_2(self, frames):
-        # Step method: count_document_frequencies
-        document_token_frequencies = frames["document_term_counts"].alias("document_index_term_count")
-        document_token_frequencies = (
-            document_token_frequencies.groupBy(
+    def _step_lexical_count_document_frequencies_2(self, frames):
+        # Step method: lexical.count_document_frequencies
+        lexical__document_token_frequencies = frames["lexical__document_term_counts"].alias("document_index_term_count")
+        lexical__document_token_frequencies = (
+            lexical__document_token_frequencies.groupBy(
                 F.col("document_index_term_count.token").alias("token"),
             )
             .agg(
@@ -92,44 +100,48 @@ class IndexGenerated:
             )
         )
         assert_schema(
-            document_token_frequencies, INDEX_TOKEN_FREQUENCY_SCHEMA, name="IndexTokenFrequency", mode="strict"
+            lexical__document_token_frequencies, INDEX_TOKEN_FREQUENCY_SCHEMA, name="IndexTokenFrequency", mode="strict"
         )
         return {
-            "document_token_frequencies": document_token_frequencies,
+            "lexical__document_token_frequencies": lexical__document_token_frequencies,
         }
 
-    def _step_build_document_terms_3(self, frames):
-        # Step method: build_document_terms
-        document_terms = frames["document_term_counts"].alias("document_index_term_count")
-        document_target_stats_joined = frames["document_target_stats"].alias("document_target_stats")
-        document_terms = document_terms.join(
-            document_target_stats_joined,
-            (F.col("document_target_stats.document_id") == F.col("document_index_term_count.document_id")),
+    def _step_lexical_build_document_terms_3(self, frames):
+        # Step method: lexical.build_document_terms
+        lexical__document_terms = frames["lexical__document_term_counts"].alias("document_index_term_count")
+        lexical__document_target_stats_joined = frames["lexical__document_target_stats"].alias(
+            "lexical__document_target_stats"
+        )
+        lexical__document_terms = lexical__document_terms.join(
+            lexical__document_target_stats_joined,
+            (F.col("lexical__document_target_stats.document_id") == F.col("document_index_term_count.document_id")),
             "inner",
         )
-        document_token_frequencies_2_joined = frames["document_token_frequencies"].alias("document_token_frequencies_2")
-        document_terms = document_terms.join(
-            document_token_frequencies_2_joined,
-            (F.col("document_token_frequencies_2.token") == F.col("document_index_term_count.token")),
+        lexical__document_token_frequencies_2_joined = frames["lexical__document_token_frequencies"].alias(
+            "lexical__document_token_frequencies_2"
+        )
+        lexical__document_terms = lexical__document_terms.join(
+            lexical__document_token_frequencies_2_joined,
+            (F.col("lexical__document_token_frequencies_2.token") == F.col("document_index_term_count.token")),
             "inner",
         )
-        document_terms = document_terms.select(
+        lexical__document_terms = lexical__document_terms.select(
             F.col("document_index_term_count.document_id"),
             F.col("document_index_term_count.token"),
             F.col("document_index_term_count.term_frequency"),
-            F.col("document_target_stats.target_word_count"),
-            F.col("document_target_stats.target_distinct_terms"),
-            F.col("document_token_frequencies_2.document_frequency"),
+            F.col("lexical__document_target_stats.target_word_count"),
+            F.col("lexical__document_target_stats.target_distinct_terms"),
+            F.col("lexical__document_token_frequencies_2.document_frequency"),
         )
-        assert_schema(document_terms, DOCUMENT_INDEX_TERM_SCHEMA, name="DocumentIndexTerm", mode="strict")
+        assert_schema(lexical__document_terms, DOCUMENT_INDEX_TERM_SCHEMA, name="DocumentIndexTerm", mode="strict")
         return {
-            "document_terms": document_terms,
+            "lexical__document_terms": lexical__document_terms,
         }
 
-    def _step_summarize_document_index_4(self, frames):
-        # Step method: summarize_document_index
-        document_summary = frames["document_target_stats"].alias("document_index_target_stats")
-        document_summary = document_summary.agg(
+    def _step_lexical_summarize_document_index_4(self, frames):
+        # Step method: lexical.summarize_document_index
+        lexical__document_summary = frames["lexical__document_target_stats"].alias("document_index_target_stats")
+        lexical__document_summary = lexical__document_summary.agg(
             F.count(F.lit(1)).cast(T.LongType()).alias("target_count"),
             F.avg(F.col("document_index_target_stats.target_word_count"))
             .cast(T.DoubleType())
@@ -138,16 +150,18 @@ class IndexGenerated:
             F.col("target_count"),
             F.col("average_target_length"),
         )
-        assert_schema(document_summary, DOCUMENT_INDEX_SUMMARY_SCHEMA, name="DocumentIndexSummary", mode="strict")
+        assert_schema(
+            lexical__document_summary, DOCUMENT_INDEX_SUMMARY_SCHEMA, name="DocumentIndexSummary", mode="strict"
+        )
         return {
-            "document_summary": document_summary,
+            "lexical__document_summary": lexical__document_summary,
         }
 
-    def _step_count_section_terms_5(self, frames):
-        # Step method: count_section_terms
-        section_term_counts = frames["words"].alias("word")
-        section_term_counts = (
-            section_term_counts.groupBy(
+    def _step_lexical_count_section_terms_5(self, frames):
+        # Step method: lexical.count_section_terms
+        lexical__section_term_counts = frames["words"].alias("word")
+        lexical__section_term_counts = (
+            lexical__section_term_counts.groupBy(
                 F.col("word.document_id").alias("document_id"),
                 F.col("word.section_id").alias("section_id"),
                 F.col("word.token").alias("token"),
@@ -162,16 +176,18 @@ class IndexGenerated:
                 F.col("term_frequency"),
             )
         )
-        assert_schema(section_term_counts, SECTION_INDEX_TERM_COUNT_SCHEMA, name="SectionIndexTermCount", mode="strict")
+        assert_schema(
+            lexical__section_term_counts, SECTION_INDEX_TERM_COUNT_SCHEMA, name="SectionIndexTermCount", mode="strict"
+        )
         return {
-            "section_term_counts": section_term_counts,
+            "lexical__section_term_counts": lexical__section_term_counts,
         }
 
-    def _step_summarize_sections_6(self, frames):
-        # Step method: summarize_sections
-        section_target_stats = frames["words"].alias("word")
-        section_target_stats = (
-            section_target_stats.groupBy(
+    def _step_lexical_summarize_sections_6(self, frames):
+        # Step method: lexical.summarize_sections
+        lexical__section_target_stats = frames["words"].alias("word")
+        lexical__section_target_stats = (
+            lexical__section_target_stats.groupBy(
                 F.col("word.document_id").alias("document_id"),
                 F.col("word.section_id").alias("section_id"),
             )
@@ -187,17 +203,20 @@ class IndexGenerated:
             )
         )
         assert_schema(
-            section_target_stats, SECTION_INDEX_TARGET_STATS_SCHEMA, name="SectionIndexTargetStats", mode="strict"
+            lexical__section_target_stats,
+            SECTION_INDEX_TARGET_STATS_SCHEMA,
+            name="SectionIndexTargetStats",
+            mode="strict",
         )
         return {
-            "section_target_stats": section_target_stats,
+            "lexical__section_target_stats": lexical__section_target_stats,
         }
 
-    def _step_count_section_frequencies_7(self, frames):
-        # Step method: count_section_frequencies
-        section_token_frequencies = frames["section_term_counts"].alias("section_index_term_count")
-        section_token_frequencies = (
-            section_token_frequencies.groupBy(
+    def _step_lexical_count_section_frequencies_7(self, frames):
+        # Step method: lexical.count_section_frequencies
+        lexical__section_token_frequencies = frames["lexical__section_term_counts"].alias("section_index_term_count")
+        lexical__section_token_frequencies = (
+            lexical__section_token_frequencies.groupBy(
                 F.col("section_index_term_count.token").alias("token"),
             )
             .agg(
@@ -209,48 +228,52 @@ class IndexGenerated:
             )
         )
         assert_schema(
-            section_token_frequencies, INDEX_TOKEN_FREQUENCY_SCHEMA, name="IndexTokenFrequency", mode="strict"
+            lexical__section_token_frequencies, INDEX_TOKEN_FREQUENCY_SCHEMA, name="IndexTokenFrequency", mode="strict"
         )
         return {
-            "section_token_frequencies": section_token_frequencies,
+            "lexical__section_token_frequencies": lexical__section_token_frequencies,
         }
 
-    def _step_build_section_terms_8(self, frames):
-        # Step method: build_section_terms
-        section_terms = frames["section_term_counts"].alias("section_index_term_count")
-        section_target_stats_joined = frames["section_target_stats"].alias("section_target_stats")
-        section_terms = section_terms.join(
-            section_target_stats_joined,
+    def _step_lexical_build_section_terms_8(self, frames):
+        # Step method: lexical.build_section_terms
+        lexical__section_terms = frames["lexical__section_term_counts"].alias("section_index_term_count")
+        lexical__section_target_stats_joined = frames["lexical__section_target_stats"].alias(
+            "lexical__section_target_stats"
+        )
+        lexical__section_terms = lexical__section_terms.join(
+            lexical__section_target_stats_joined,
             (
-                (F.col("section_target_stats.document_id") == F.col("section_index_term_count.document_id"))
-                & (F.col("section_target_stats.section_id") == F.col("section_index_term_count.section_id"))
+                (F.col("lexical__section_target_stats.document_id") == F.col("section_index_term_count.document_id"))
+                & (F.col("lexical__section_target_stats.section_id") == F.col("section_index_term_count.section_id"))
             ),
             "inner",
         )
-        section_token_frequencies_2_joined = frames["section_token_frequencies"].alias("section_token_frequencies_2")
-        section_terms = section_terms.join(
-            section_token_frequencies_2_joined,
-            (F.col("section_token_frequencies_2.token") == F.col("section_index_term_count.token")),
+        lexical__section_token_frequencies_2_joined = frames["lexical__section_token_frequencies"].alias(
+            "lexical__section_token_frequencies_2"
+        )
+        lexical__section_terms = lexical__section_terms.join(
+            lexical__section_token_frequencies_2_joined,
+            (F.col("lexical__section_token_frequencies_2.token") == F.col("section_index_term_count.token")),
             "inner",
         )
-        section_terms = section_terms.select(
+        lexical__section_terms = lexical__section_terms.select(
             F.col("section_index_term_count.document_id"),
             F.col("section_index_term_count.section_id"),
             F.col("section_index_term_count.token"),
             F.col("section_index_term_count.term_frequency"),
-            F.col("section_target_stats.target_word_count"),
-            F.col("section_target_stats.target_distinct_terms"),
-            F.col("section_token_frequencies_2.document_frequency"),
+            F.col("lexical__section_target_stats.target_word_count"),
+            F.col("lexical__section_target_stats.target_distinct_terms"),
+            F.col("lexical__section_token_frequencies_2.document_frequency"),
         )
-        assert_schema(section_terms, SECTION_INDEX_TERM_SCHEMA, name="SectionIndexTerm", mode="strict")
+        assert_schema(lexical__section_terms, SECTION_INDEX_TERM_SCHEMA, name="SectionIndexTerm", mode="strict")
         return {
-            "section_terms": section_terms,
+            "lexical__section_terms": lexical__section_terms,
         }
 
-    def _step_summarize_section_index_9(self, frames):
-        # Step method: summarize_section_index
-        section_summary = frames["section_target_stats"].alias("section_index_target_stats")
-        section_summary = section_summary.agg(
+    def _step_lexical_summarize_section_index_9(self, frames):
+        # Step method: lexical.summarize_section_index
+        lexical__section_summary = frames["lexical__section_target_stats"].alias("section_index_target_stats")
+        lexical__section_summary = lexical__section_summary.agg(
             F.count(F.lit(1)).cast(T.LongType()).alias("target_count"),
             F.avg(F.col("section_index_target_stats.target_word_count"))
             .cast(T.DoubleType())
@@ -259,16 +282,16 @@ class IndexGenerated:
             F.col("target_count"),
             F.col("average_target_length"),
         )
-        assert_schema(section_summary, SECTION_INDEX_SUMMARY_SCHEMA, name="SectionIndexSummary", mode="strict")
+        assert_schema(lexical__section_summary, SECTION_INDEX_SUMMARY_SCHEMA, name="SectionIndexSummary", mode="strict")
         return {
-            "section_summary": section_summary,
+            "lexical__section_summary": lexical__section_summary,
         }
 
-    def _step_count_paragraph_terms_10(self, frames):
-        # Step method: count_paragraph_terms
-        paragraph_term_counts = frames["words"].alias("word")
-        paragraph_term_counts = (
-            paragraph_term_counts.groupBy(
+    def _step_lexical_count_paragraph_terms_10(self, frames):
+        # Step method: lexical.count_paragraph_terms
+        lexical__paragraph_term_counts = frames["words"].alias("word")
+        lexical__paragraph_term_counts = (
+            lexical__paragraph_term_counts.groupBy(
                 F.col("word.document_id").alias("document_id"),
                 F.col("word.section_id").alias("section_id"),
                 F.col("word.paragraph_id").alias("paragraph_id"),
@@ -286,17 +309,20 @@ class IndexGenerated:
             )
         )
         assert_schema(
-            paragraph_term_counts, PARAGRAPH_INDEX_TERM_COUNT_SCHEMA, name="ParagraphIndexTermCount", mode="strict"
+            lexical__paragraph_term_counts,
+            PARAGRAPH_INDEX_TERM_COUNT_SCHEMA,
+            name="ParagraphIndexTermCount",
+            mode="strict",
         )
         return {
-            "paragraph_term_counts": paragraph_term_counts,
+            "lexical__paragraph_term_counts": lexical__paragraph_term_counts,
         }
 
-    def _step_summarize_paragraphs_11(self, frames):
-        # Step method: summarize_paragraphs
-        paragraph_target_stats = frames["words"].alias("word")
-        paragraph_target_stats = (
-            paragraph_target_stats.groupBy(
+    def _step_lexical_summarize_paragraphs_11(self, frames):
+        # Step method: lexical.summarize_paragraphs
+        lexical__paragraph_target_stats = frames["words"].alias("word")
+        lexical__paragraph_target_stats = (
+            lexical__paragraph_target_stats.groupBy(
                 F.col("word.document_id").alias("document_id"),
                 F.col("word.section_id").alias("section_id"),
                 F.col("word.paragraph_id").alias("paragraph_id"),
@@ -314,17 +340,22 @@ class IndexGenerated:
             )
         )
         assert_schema(
-            paragraph_target_stats, PARAGRAPH_INDEX_TARGET_STATS_SCHEMA, name="ParagraphIndexTargetStats", mode="strict"
+            lexical__paragraph_target_stats,
+            PARAGRAPH_INDEX_TARGET_STATS_SCHEMA,
+            name="ParagraphIndexTargetStats",
+            mode="strict",
         )
         return {
-            "paragraph_target_stats": paragraph_target_stats,
+            "lexical__paragraph_target_stats": lexical__paragraph_target_stats,
         }
 
-    def _step_count_paragraph_frequencies_12(self, frames):
-        # Step method: count_paragraph_frequencies
-        paragraph_token_frequencies = frames["paragraph_term_counts"].alias("paragraph_index_term_count")
-        paragraph_token_frequencies = (
-            paragraph_token_frequencies.groupBy(
+    def _step_lexical_count_paragraph_frequencies_12(self, frames):
+        # Step method: lexical.count_paragraph_frequencies
+        lexical__paragraph_token_frequencies = frames["lexical__paragraph_term_counts"].alias(
+            "paragraph_index_term_count"
+        )
+        lexical__paragraph_token_frequencies = (
+            lexical__paragraph_token_frequencies.groupBy(
                 F.col("paragraph_index_term_count.token").alias("token"),
             )
             .agg(
@@ -336,54 +367,68 @@ class IndexGenerated:
             )
         )
         assert_schema(
-            paragraph_token_frequencies, INDEX_TOKEN_FREQUENCY_SCHEMA, name="IndexTokenFrequency", mode="strict"
+            lexical__paragraph_token_frequencies,
+            INDEX_TOKEN_FREQUENCY_SCHEMA,
+            name="IndexTokenFrequency",
+            mode="strict",
         )
         return {
-            "paragraph_token_frequencies": paragraph_token_frequencies,
+            "lexical__paragraph_token_frequencies": lexical__paragraph_token_frequencies,
         }
 
-    def _step_build_paragraph_terms_13(self, frames):
-        # Step method: build_paragraph_terms
-        paragraph_terms = frames["paragraph_term_counts"].alias("paragraph_index_term_count")
-        paragraph_target_stats_joined = frames["paragraph_target_stats"].alias("paragraph_target_stats")
-        paragraph_terms = paragraph_terms.join(
-            paragraph_target_stats_joined,
+    def _step_lexical_build_paragraph_terms_13(self, frames):
+        # Step method: lexical.build_paragraph_terms
+        lexical__paragraph_terms = frames["lexical__paragraph_term_counts"].alias("paragraph_index_term_count")
+        lexical__paragraph_target_stats_joined = frames["lexical__paragraph_target_stats"].alias(
+            "lexical__paragraph_target_stats"
+        )
+        lexical__paragraph_terms = lexical__paragraph_terms.join(
+            lexical__paragraph_target_stats_joined,
             (
                 (
-                    (F.col("paragraph_target_stats.document_id") == F.col("paragraph_index_term_count.document_id"))
-                    & (F.col("paragraph_target_stats.section_id") == F.col("paragraph_index_term_count.section_id"))
+                    (
+                        F.col("lexical__paragraph_target_stats.document_id")
+                        == F.col("paragraph_index_term_count.document_id")
+                    )
+                    & (
+                        F.col("lexical__paragraph_target_stats.section_id")
+                        == F.col("paragraph_index_term_count.section_id")
+                    )
                 )
-                & (F.col("paragraph_target_stats.paragraph_id") == F.col("paragraph_index_term_count.paragraph_id"))
+                & (
+                    F.col("lexical__paragraph_target_stats.paragraph_id")
+                    == F.col("paragraph_index_term_count.paragraph_id")
+                )
             ),
             "inner",
         )
-        paragraph_token_frequencies_2_joined = frames["paragraph_token_frequencies"].alias(
-            "paragraph_token_frequencies_2"
+        lexical__paragraph_token_frequencies_2_joined = frames["lexical__paragraph_token_frequencies"].alias(
+            "lexical__paragraph_token_frequencies_2"
         )
-        paragraph_terms = paragraph_terms.join(
-            paragraph_token_frequencies_2_joined,
-            (F.col("paragraph_token_frequencies_2.token") == F.col("paragraph_index_term_count.token")),
+        lexical__paragraph_terms = lexical__paragraph_terms.join(
+            lexical__paragraph_token_frequencies_2_joined,
+            (F.col("lexical__paragraph_token_frequencies_2.token") == F.col("paragraph_index_term_count.token")),
             "inner",
         )
-        paragraph_terms = paragraph_terms.select(
+        lexical__paragraph_terms = lexical__paragraph_terms.select(
             F.col("paragraph_index_term_count.document_id"),
             F.col("paragraph_index_term_count.section_id"),
             F.col("paragraph_index_term_count.paragraph_id"),
             F.col("paragraph_index_term_count.token"),
             F.col("paragraph_index_term_count.term_frequency"),
-            F.col("paragraph_target_stats.target_word_count"),
-            F.col("paragraph_target_stats.target_distinct_terms"),
-            F.col("paragraph_token_frequencies_2.document_frequency"),
+            F.col("lexical__paragraph_target_stats.target_word_count"),
+            F.col("lexical__paragraph_target_stats.target_distinct_terms"),
+            F.col("lexical__paragraph_token_frequencies_2.document_frequency"),
         )
-        assert_schema(paragraph_terms, PARAGRAPH_INDEX_TERM_SCHEMA, name="ParagraphIndexTerm", mode="strict")
+        assert_schema(lexical__paragraph_terms, PARAGRAPH_INDEX_TERM_SCHEMA, name="ParagraphIndexTerm", mode="strict")
         return {
-            "paragraph_terms": paragraph_terms,
+            "lexical__paragraph_terms": lexical__paragraph_terms,
         }
 
-    def _step_summarize_paragraph_index_14(self, frames):
-        # Step method: summarize_paragraph_index
-        paragraph_summary = frames["paragraph_target_stats"].alias("paragraph_index_target_stats")
-        paragraph_summary = paragraph_summary.agg(
+    def _step_lexical_summarize_paragraph_index_14(self, frames):
+        # Step method: lexical.summarize_paragraph_index
+        lexical__paragraph_summary = frames["lexical__paragraph_target_stats"].alias("paragraph_index_target_stats")
+        lexical__paragraph_summary = lexical__paragraph_summary.agg(
             F.count(F.lit(1)).cast(T.LongType()).alias("target_count"),
             F.avg(F.col("paragraph_index_target_stats.target_word_count"))
             .cast(T.DoubleType())
@@ -392,16 +437,18 @@ class IndexGenerated:
             F.col("target_count"),
             F.col("average_target_length"),
         )
-        assert_schema(paragraph_summary, PARAGRAPH_INDEX_SUMMARY_SCHEMA, name="ParagraphIndexSummary", mode="strict")
+        assert_schema(
+            lexical__paragraph_summary, PARAGRAPH_INDEX_SUMMARY_SCHEMA, name="ParagraphIndexSummary", mode="strict"
+        )
         return {
-            "paragraph_summary": paragraph_summary,
+            "lexical__paragraph_summary": lexical__paragraph_summary,
         }
 
-    def _step_count_sentence_terms_15(self, frames):
-        # Step method: count_sentence_terms
-        sentence_term_counts = frames["words"].alias("word")
-        sentence_term_counts = (
-            sentence_term_counts.groupBy(
+    def _step_lexical_count_sentence_terms_15(self, frames):
+        # Step method: lexical.count_sentence_terms
+        lexical__sentence_term_counts = frames["words"].alias("word")
+        lexical__sentence_term_counts = (
+            lexical__sentence_term_counts.groupBy(
                 F.col("word.document_id").alias("document_id"),
                 F.col("word.section_id").alias("section_id"),
                 F.col("word.paragraph_id").alias("paragraph_id"),
@@ -421,17 +468,20 @@ class IndexGenerated:
             )
         )
         assert_schema(
-            sentence_term_counts, SENTENCE_INDEX_TERM_COUNT_SCHEMA, name="SentenceIndexTermCount", mode="strict"
+            lexical__sentence_term_counts,
+            SENTENCE_INDEX_TERM_COUNT_SCHEMA,
+            name="SentenceIndexTermCount",
+            mode="strict",
         )
         return {
-            "sentence_term_counts": sentence_term_counts,
+            "lexical__sentence_term_counts": lexical__sentence_term_counts,
         }
 
-    def _step_summarize_sentences_16(self, frames):
-        # Step method: summarize_sentences
-        sentence_target_stats = frames["words"].alias("word")
-        sentence_target_stats = (
-            sentence_target_stats.groupBy(
+    def _step_lexical_summarize_sentences_16(self, frames):
+        # Step method: lexical.summarize_sentences
+        lexical__sentence_target_stats = frames["words"].alias("word")
+        lexical__sentence_target_stats = (
+            lexical__sentence_target_stats.groupBy(
                 F.col("word.document_id").alias("document_id"),
                 F.col("word.section_id").alias("section_id"),
                 F.col("word.paragraph_id").alias("paragraph_id"),
@@ -451,17 +501,20 @@ class IndexGenerated:
             )
         )
         assert_schema(
-            sentence_target_stats, SENTENCE_INDEX_TARGET_STATS_SCHEMA, name="SentenceIndexTargetStats", mode="strict"
+            lexical__sentence_target_stats,
+            SENTENCE_INDEX_TARGET_STATS_SCHEMA,
+            name="SentenceIndexTargetStats",
+            mode="strict",
         )
         return {
-            "sentence_target_stats": sentence_target_stats,
+            "lexical__sentence_target_stats": lexical__sentence_target_stats,
         }
 
-    def _step_count_sentence_frequencies_17(self, frames):
-        # Step method: count_sentence_frequencies
-        sentence_token_frequencies = frames["sentence_term_counts"].alias("sentence_index_term_count")
-        sentence_token_frequencies = (
-            sentence_token_frequencies.groupBy(
+    def _step_lexical_count_sentence_frequencies_17(self, frames):
+        # Step method: lexical.count_sentence_frequencies
+        lexical__sentence_token_frequencies = frames["lexical__sentence_term_counts"].alias("sentence_index_term_count")
+        lexical__sentence_token_frequencies = (
+            lexical__sentence_token_frequencies.groupBy(
                 F.col("sentence_index_term_count.token").alias("token"),
             )
             .agg(
@@ -473,56 +526,72 @@ class IndexGenerated:
             )
         )
         assert_schema(
-            sentence_token_frequencies, INDEX_TOKEN_FREQUENCY_SCHEMA, name="IndexTokenFrequency", mode="strict"
+            lexical__sentence_token_frequencies, INDEX_TOKEN_FREQUENCY_SCHEMA, name="IndexTokenFrequency", mode="strict"
         )
         return {
-            "sentence_token_frequencies": sentence_token_frequencies,
+            "lexical__sentence_token_frequencies": lexical__sentence_token_frequencies,
         }
 
-    def _step_build_sentence_terms_18(self, frames):
-        # Step method: build_sentence_terms
-        sentence_terms = frames["sentence_term_counts"].alias("sentence_index_term_count")
-        sentence_target_stats_joined = frames["sentence_target_stats"].alias("sentence_target_stats")
-        sentence_terms = sentence_terms.join(
-            sentence_target_stats_joined,
+    def _step_lexical_build_sentence_terms_18(self, frames):
+        # Step method: lexical.build_sentence_terms
+        lexical__sentence_terms = frames["lexical__sentence_term_counts"].alias("sentence_index_term_count")
+        lexical__sentence_target_stats_joined = frames["lexical__sentence_target_stats"].alias(
+            "lexical__sentence_target_stats"
+        )
+        lexical__sentence_terms = lexical__sentence_terms.join(
+            lexical__sentence_target_stats_joined,
             (
                 (
                     (
-                        (F.col("sentence_target_stats.document_id") == F.col("sentence_index_term_count.document_id"))
-                        & (F.col("sentence_target_stats.section_id") == F.col("sentence_index_term_count.section_id"))
+                        (
+                            F.col("lexical__sentence_target_stats.document_id")
+                            == F.col("sentence_index_term_count.document_id")
+                        )
+                        & (
+                            F.col("lexical__sentence_target_stats.section_id")
+                            == F.col("sentence_index_term_count.section_id")
+                        )
                     )
-                    & (F.col("sentence_target_stats.paragraph_id") == F.col("sentence_index_term_count.paragraph_id"))
+                    & (
+                        F.col("lexical__sentence_target_stats.paragraph_id")
+                        == F.col("sentence_index_term_count.paragraph_id")
+                    )
                 )
-                & (F.col("sentence_target_stats.sentence_id") == F.col("sentence_index_term_count.sentence_id"))
+                & (
+                    F.col("lexical__sentence_target_stats.sentence_id")
+                    == F.col("sentence_index_term_count.sentence_id")
+                )
             ),
             "inner",
         )
-        sentence_token_frequencies_2_joined = frames["sentence_token_frequencies"].alias("sentence_token_frequencies_2")
-        sentence_terms = sentence_terms.join(
-            sentence_token_frequencies_2_joined,
-            (F.col("sentence_token_frequencies_2.token") == F.col("sentence_index_term_count.token")),
+        lexical__sentence_token_frequencies_2_joined = frames["lexical__sentence_token_frequencies"].alias(
+            "lexical__sentence_token_frequencies_2"
+        )
+        lexical__sentence_terms = lexical__sentence_terms.join(
+            lexical__sentence_token_frequencies_2_joined,
+            (F.col("lexical__sentence_token_frequencies_2.token") == F.col("sentence_index_term_count.token")),
             "inner",
         )
-        sentence_terms = sentence_terms.select(
+        lexical__sentence_terms = lexical__sentence_terms.select(
             F.col("sentence_index_term_count.document_id"),
             F.col("sentence_index_term_count.section_id"),
             F.col("sentence_index_term_count.paragraph_id"),
             F.col("sentence_index_term_count.sentence_id"),
             F.col("sentence_index_term_count.token"),
             F.col("sentence_index_term_count.term_frequency"),
-            F.col("sentence_target_stats.target_word_count"),
-            F.col("sentence_target_stats.target_distinct_terms"),
-            F.col("sentence_token_frequencies_2.document_frequency"),
+            F.col("lexical__sentence_target_stats.target_word_count"),
+            F.col("lexical__sentence_target_stats.target_distinct_terms"),
+            F.col("lexical__sentence_token_frequencies_2.document_frequency"),
         )
-        assert_schema(sentence_terms, SENTENCE_INDEX_TERM_SCHEMA, name="SentenceIndexTerm", mode="strict")
+        assert_schema(lexical__sentence_terms, SENTENCE_INDEX_TERM_SCHEMA, name="SentenceIndexTerm", mode="strict")
         return {
-            "sentence_terms": sentence_terms,
+            "lexical__sentence_terms": lexical__sentence_terms,
         }
 
-    def _step_summarize_sentence_index_19(self, frames):
-        # Step method: summarize_sentence_index
-        sentence_summary = frames["sentence_target_stats"].alias("sentence_index_target_stats")
-        sentence_summary = sentence_summary.agg(
+    def _step_lexical_summarize_sentence_index_19(self, frames):
+        # Step method: lexical.summarize_sentence_index
+        lexical__sentence_summary = frames["lexical__sentence_target_stats"].alias("sentence_index_target_stats")
+        lexical__sentence_summary = lexical__sentence_summary.agg(
             F.count(F.lit(1)).cast(T.LongType()).alias("target_count"),
             F.avg(F.col("sentence_index_target_stats.target_word_count"))
             .cast(T.DoubleType())
@@ -532,11 +601,11 @@ class IndexGenerated:
             F.col("average_target_length"),
         )
         return {
-            "sentence_summary": sentence_summary,
+            "lexical__sentence_summary": lexical__sentence_summary,
         }
 
 
-class CreateIndexGenerated(IndexGenerated):
+class CreateIndexGenerated(LexIndexGenerated):
 
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
@@ -553,57 +622,57 @@ class CreateIndexGenerated(IndexGenerated):
             "words": words,
             "input:words": _input_words,
         }
-        frames.update(self._step_count_document_terms_0(frames))
-        frames.update(self._step_summarize_documents_1(frames))
-        frames.update(self._step_count_document_frequencies_2(frames))
-        frames.update(self._step_build_document_terms_3(frames))
-        frames.update(self._step_summarize_document_index_4(frames))
-        frames.update(self._step_count_section_terms_5(frames))
-        frames.update(self._step_summarize_sections_6(frames))
-        frames.update(self._step_count_section_frequencies_7(frames))
-        frames.update(self._step_build_section_terms_8(frames))
-        frames.update(self._step_summarize_section_index_9(frames))
-        frames.update(self._step_count_paragraph_terms_10(frames))
-        frames.update(self._step_summarize_paragraphs_11(frames))
-        frames.update(self._step_count_paragraph_frequencies_12(frames))
-        frames.update(self._step_build_paragraph_terms_13(frames))
-        frames.update(self._step_summarize_paragraph_index_14(frames))
-        frames.update(self._step_count_sentence_terms_15(frames))
-        frames.update(self._step_summarize_sentences_16(frames))
-        frames.update(self._step_count_sentence_frequencies_17(frames))
-        frames.update(self._step_build_sentence_terms_18(frames))
-        frames.update(self._step_summarize_sentence_index_19(frames))
+        frames.update(self._step_lexical_count_document_terms_0(frames))
+        frames.update(self._step_lexical_summarize_documents_1(frames))
+        frames.update(self._step_lexical_count_document_frequencies_2(frames))
+        frames.update(self._step_lexical_build_document_terms_3(frames))
+        frames.update(self._step_lexical_summarize_document_index_4(frames))
+        frames.update(self._step_lexical_count_section_terms_5(frames))
+        frames.update(self._step_lexical_summarize_sections_6(frames))
+        frames.update(self._step_lexical_count_section_frequencies_7(frames))
+        frames.update(self._step_lexical_build_section_terms_8(frames))
+        frames.update(self._step_lexical_summarize_section_index_9(frames))
+        frames.update(self._step_lexical_count_paragraph_terms_10(frames))
+        frames.update(self._step_lexical_summarize_paragraphs_11(frames))
+        frames.update(self._step_lexical_count_paragraph_frequencies_12(frames))
+        frames.update(self._step_lexical_build_paragraph_terms_13(frames))
+        frames.update(self._step_lexical_summarize_paragraph_index_14(frames))
+        frames.update(self._step_lexical_count_sentence_terms_15(frames))
+        frames.update(self._step_lexical_summarize_sentences_16(frames))
+        frames.update(self._step_lexical_count_sentence_frequencies_17(frames))
+        frames.update(self._step_lexical_build_sentence_terms_18(frames))
+        frames.update(self._step_lexical_summarize_sentence_index_19(frames))
 
         # Step method: document_terms
-        document_terms = frames["document_terms"].alias("document_index_term")
+        document_terms = frames["lexical__document_terms"].alias("document_index_term")
         assert_schema(document_terms, DOCUMENT_INDEX_TERM_SCHEMA, name="DocumentIndexTerm", mode="strict")
 
         # Step method: document_summary
-        document_summary = frames["document_summary"].alias("document_index_summary")
+        document_summary = frames["lexical__document_summary"].alias("document_index_summary")
         assert_schema(document_summary, DOCUMENT_INDEX_SUMMARY_SCHEMA, name="DocumentIndexSummary", mode="strict")
 
         # Step method: section_terms
-        section_terms = frames["section_terms"].alias("section_index_term")
+        section_terms = frames["lexical__section_terms"].alias("section_index_term")
         assert_schema(section_terms, SECTION_INDEX_TERM_SCHEMA, name="SectionIndexTerm", mode="strict")
 
         # Step method: section_summary
-        section_summary = frames["section_summary"].alias("section_index_summary")
+        section_summary = frames["lexical__section_summary"].alias("section_index_summary")
         assert_schema(section_summary, SECTION_INDEX_SUMMARY_SCHEMA, name="SectionIndexSummary", mode="strict")
 
         # Step method: paragraph_terms
-        paragraph_terms = frames["paragraph_terms"].alias("paragraph_index_term")
+        paragraph_terms = frames["lexical__paragraph_terms"].alias("paragraph_index_term")
         assert_schema(paragraph_terms, PARAGRAPH_INDEX_TERM_SCHEMA, name="ParagraphIndexTerm", mode="strict")
 
         # Step method: paragraph_summary
-        paragraph_summary = frames["paragraph_summary"].alias("paragraph_index_summary")
+        paragraph_summary = frames["lexical__paragraph_summary"].alias("paragraph_index_summary")
         assert_schema(paragraph_summary, PARAGRAPH_INDEX_SUMMARY_SCHEMA, name="ParagraphIndexSummary", mode="strict")
 
         # Step method: sentence_terms
-        sentence_terms = frames["sentence_terms"].alias("sentence_index_term")
+        sentence_terms = frames["lexical__sentence_terms"].alias("sentence_index_term")
         assert_schema(sentence_terms, SENTENCE_INDEX_TERM_SCHEMA, name="SentenceIndexTerm", mode="strict")
 
         # Step method: sentence_summary
-        sentence_summary = frames["sentence_summary"].alias("sentence_index_summary")
+        sentence_summary = frames["lexical__sentence_summary"].alias("sentence_index_summary")
         assert_schema(sentence_summary, SENTENCE_INDEX_SUMMARY_SCHEMA, name="SentenceIndexSummary", mode="strict")
         return TransformResult(
             {

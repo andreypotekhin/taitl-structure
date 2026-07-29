@@ -5,23 +5,23 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
+from examples.structure_generated.search.pyspark.schemas.index import (
+    DOCUMENT_INDEX_SUMMARY_SCHEMA,
+    DOCUMENT_INDEX_TERM_SCHEMA,
+    PARAGRAPH_INDEX_SUMMARY_SCHEMA,
+    PARAGRAPH_INDEX_TERM_SCHEMA,
+    SECTION_INDEX_SUMMARY_SCHEMA,
+    SECTION_INDEX_TERM_SCHEMA,
+    SENTENCE_INDEX_SUMMARY_SCHEMA,
+    SENTENCE_INDEX_TERM_SCHEMA,
+)
 from examples.structure_generated.search.pyspark.schemas.query import (
     DOCUMENT_SIMILARITY_QUERY_TEXT_SCHEMA,
     PARAGRAPH_SIMILARITY_QUERY_TEXT_SCHEMA,
     SECTION_SIMILARITY_QUERY_TEXT_SCHEMA,
     SENTENCE_SIMILARITY_QUERY_TEXT_SCHEMA,
 )
-from examples.structure_generated.search.pyspark.schemas.search import (
-    DOCUMENT_INDEX_SUMMARY_SCHEMA,
-    DOCUMENT_INDEX_TERM_SCHEMA,
-    PARAGRAPH_INDEX_SUMMARY_SCHEMA,
-    PARAGRAPH_INDEX_TERM_SCHEMA,
-    SEARCH_QUERY_SCHEMA,
-    SECTION_INDEX_SUMMARY_SCHEMA,
-    SECTION_INDEX_TERM_SCHEMA,
-    SENTENCE_INDEX_SUMMARY_SCHEMA,
-    SENTENCE_INDEX_TERM_SCHEMA,
-)
+from examples.structure_generated.search.pyspark.schemas.search import SEARCH_QUERY_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.similarity import (
     DOCUMENT_SIMILARITY_QUERY_SCHEMA,
     PARAGRAPH_SIMILARITY_QUERY_SCHEMA,

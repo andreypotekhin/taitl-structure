@@ -6,6 +6,7 @@ from pyspark.sql import Window
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
+from examples.structure_generated.search.pyspark.schemas.TimeWindow import TIME_WINDOW_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.batch import EVALUATION_BATCH_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.judged_quality import (
     DOCUMENT_EVALUATION_SUMMARY_SCHEMA,
@@ -18,6 +19,7 @@ from examples.structure_generated.search.pyspark.schemas.judged_quality import (
     EVALUATION_RESULT_SCHEMA,
     EVALUATION_RESULT_TOTALS_SCHEMA,
 )
+from examples.structure_generated.search.pyspark.schemas.params import EVALUATION_PARAMS_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.search import (
     DOCUMENT_SEARCH_RESULT_SCHEMA,
     SEARCH_QUERY_SCHEMA,
@@ -54,7 +56,7 @@ class EvaluateDocumentRankingQualityGenerated:
         evaluated_queries = evaluated_queries.select(
             F.col("batch.window"),
             F.lit(None).alias("params"),
-            F.lit('').alias("experiment_id"),
+            F.lit(None).cast(T.StringType()).alias("experiment_id"),
             F.lit(None).cast(T.StringType()).alias("band_id"),
             F.col("search_query.id").alias("search_query_id"),
         )
@@ -71,7 +73,7 @@ class EvaluateDocumentRankingQualityGenerated:
         evaluated_results = evaluated_results.where(
             (
                 (
-                    (F.col("results.experiment_id") == F.lit(''))
+                    F.col("results.experiment_id").isNull()
                     & F.col("results.band_id").eqNullSafe(F.col("evaluation_query.band_id"))
                 )
             )
@@ -388,7 +390,7 @@ class EvaluateDocumentRankingQualityGenerated:
             result_totals_joined,
             (
                 (F.col("result_totals.search_query_id") == F.col("evaluation_query.search_query_id"))
-                & (F.col("result_totals.experiment_id") == F.col("evaluation_query.experiment_id"))
+                & F.col("result_totals.experiment_id").eqNullSafe(F.col("evaluation_query.experiment_id"))
             ),
             "left",
         )
@@ -397,7 +399,7 @@ class EvaluateDocumentRankingQualityGenerated:
             judgment_totals_2_joined,
             (
                 (F.col("judgment_totals_2.search_query_id") == F.col("evaluation_query.search_query_id"))
-                & (F.col("judgment_totals_2.experiment_id") == F.col("evaluation_query.experiment_id"))
+                & F.col("judgment_totals_2.experiment_id").eqNullSafe(F.col("evaluation_query.experiment_id"))
             ),
             "left",
         )
@@ -406,7 +408,7 @@ class EvaluateDocumentRankingQualityGenerated:
             ideal_dcgs_3_joined,
             (
                 (F.col("ideal_dcgs_3.search_query_id") == F.col("evaluation_query.search_query_id"))
-                & (F.col("ideal_dcgs_3.experiment_id") == F.col("evaluation_query.experiment_id"))
+                & F.col("ideal_dcgs_3.experiment_id").eqNullSafe(F.col("evaluation_query.experiment_id"))
             ),
             "left",
         )

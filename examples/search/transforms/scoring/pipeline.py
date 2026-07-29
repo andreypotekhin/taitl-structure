@@ -1,5 +1,5 @@
 """Compatibility import for the production scoring pipeline."""
 
-from examples.search.transforms.scoring.ScoreAll import ScoreAll
+from examples.search.transforms.scoring.Scoring import Scoring
 
-__all__ = ["ScoreAll"]
+__all__ = ["Scoring"]

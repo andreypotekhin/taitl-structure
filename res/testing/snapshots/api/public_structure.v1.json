@@ -295,6 +295,14 @@
       "qualname": "output",
       "signature": "(value: 'type[Schema] | OutputDeclaration') -> 'OutputDeclaration | BindingSelector'"
     },
+    "parameter": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.core.dsl.model.transforms.transform_api",
+      "qualname": "parameter",
+      "signature": "(default: 'object') -> 'ParameterDeclaration'"
+    },
     "raw": {
       "dataclass_fields": [],
       "enum_members": [],

@@ -21,7 +21,7 @@ class DocumentQueryEvaluation(Schema):
 
     window = struct(TimeWindow, nullable=False)
     params = struct(EvaluationParams, nullable=True)
-    experiment_id = string(nullable=False)
+    experiment_id = string(nullable=True)
     band_id = string(nullable=True)
     search_query_id = string(nullable=False)
     returned_result_count = long(nullable=False)
@@ -51,7 +51,7 @@ class DocumentEvaluationSummary(Schema):
 
     window = struct(TimeWindow, nullable=False)
     params = struct(EvaluationParams, nullable=True)
-    experiment_id = string(nullable=False)
+    experiment_id = string(nullable=True)
     query_count = long(nullable=False)
     binary_relevant_query_count = long(nullable=False)
     no_binary_relevant_query_count = long(nullable=False)
@@ -77,7 +77,7 @@ class DocumentEvaluationSummary(Schema):
 class EvaluationQuery(Schema):
     window = struct(TimeWindow, nullable=False)
     params = struct(EvaluationParams, nullable=True)
-    experiment_id = string(nullable=False)
+    experiment_id = string(nullable=True)
     band_id = string(nullable=True)
     search_query_id = string(nullable=False)
 

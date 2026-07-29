@@ -1,17 +1,17 @@
 """Create tagged self-queries from reusable text indexes."""
 
-from examples.search.schemas.label import LabelMapEntry
-from examples.search.schemas.search import (
+from examples.search.schemas.indexing.lexical.index import (
     DocumentIndexSummary,
     DocumentIndexTerm,
     ParagraphIndexSummary,
     ParagraphIndexTerm,
-    SearchQuery,
     SectionIndexSummary,
     SectionIndexTerm,
     SentenceIndexSummary,
     SentenceIndexTerm,
 )
+from examples.search.schemas.label import LabelMapEntry
+from examples.search.schemas.search import SearchQuery
 from examples.search.schemas.similarities.query import (
     DocumentSimilarityQueryText,
     ParagraphSimilarityQueryText,

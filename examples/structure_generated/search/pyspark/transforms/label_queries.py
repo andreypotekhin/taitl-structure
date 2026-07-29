@@ -11,6 +11,7 @@ from examples.structure_generated.search.runtime.schema_assert import TransformR
 from examples.structure_generated.search.pyspark.schemas.label import (
     INTENT_PATTERN_SCHEMA,
     INTENT_SCHEMA,
+    LABEL_MAP_ENTRY_SCHEMA,
     QUERY_INTENT_LABEL_SCHEMA,
     QUERY_LABEL_ASSIGNMENTS_SCHEMA,
     QUERY_LABEL_ASSIGNMENT_ENTRIES_SCHEMA,
@@ -20,112 +21,91 @@ from examples.structure_generated.search.pyspark.schemas.search import SEARCH_QU
 
 
 class CreateQueryLabelsGenerated:
-    def _step_create_query_labels_validate_intents_0(self, frames):
-        # Step method: create_query_labels.validate_intents
-        create_query_labels__valid_intents = frames["intents"].alias("intent")
-        create_query_labels__valid_intents_require_unique_0_duplicates = create_query_labels__valid_intents.groupBy(
-            F.col("intent.id")
-        ).agg(F.count(F.lit(1)).alias("__structure_count"))
-        create_query_labels__valid_intents_require_unique_0_duplicates = (
-            create_query_labels__valid_intents_require_unique_0_duplicates.where(F.col("__structure_count") > F.lit(1))
+    def _step_created_validate_intents_0(self, frames):
+        # Step method: created.validate_intents
+        created__valid_intents = frames["intents"].alias("intent")
+        created__valid_intents_require_unique_0_duplicates = created__valid_intents.groupBy(F.col("intent.id")).agg(
+            F.count(F.lit(1)).alias("__structure_count")
         )
-        create_query_labels__valid_intents_require_unique_0_violations = (
-            create_query_labels__valid_intents_require_unique_0_duplicates.agg(
-                F.count(F.lit(1)).alias("__structure_violations")
-            )
+        created__valid_intents_require_unique_0_duplicates = created__valid_intents_require_unique_0_duplicates.where(
+            F.col("__structure_count") > F.lit(1)
         )
-        create_query_labels__valid_intents_require_unique_0_assertion = (
-            create_query_labels__valid_intents_require_unique_0_violations.select(
-                F.assert_true(
-                    F.col("__structure_violations") == F.lit(0),
-                    'REL-E0702: require_unique(...) found duplicate keys; see docs/Diagnostics.md#rel-e0702',
-                ).alias("__structure_require_unique")
-            )
+        created__valid_intents_require_unique_0_violations = created__valid_intents_require_unique_0_duplicates.agg(
+            F.count(F.lit(1)).alias("__structure_violations")
         )
-        create_query_labels__valid_intents = create_query_labels__valid_intents_require_unique_0_assertion.crossJoin(
-            create_query_labels__valid_intents
+        created__valid_intents_require_unique_0_assertion = created__valid_intents_require_unique_0_violations.select(
+            F.assert_true(
+                F.col("__structure_violations") == F.lit(0),
+                'REL-E0702: require_unique(...) found duplicate keys; see docs/Diagnostics.md#rel-e0702',
+            ).alias("__structure_require_unique")
+        )
+        created__valid_intents = created__valid_intents_require_unique_0_assertion.crossJoin(
+            created__valid_intents
         ).drop("__structure_require_unique")
-        create_query_labels__valid_intents_require_unique_1_duplicates = create_query_labels__valid_intents.groupBy(
-            F.col("intent.name")
-        ).agg(F.count(F.lit(1)).alias("__structure_count"))
-        create_query_labels__valid_intents_require_unique_1_duplicates = (
-            create_query_labels__valid_intents_require_unique_1_duplicates.where(F.col("__structure_count") > F.lit(1))
+        created__valid_intents_require_unique_1_duplicates = created__valid_intents.groupBy(F.col("intent.name")).agg(
+            F.count(F.lit(1)).alias("__structure_count")
         )
-        create_query_labels__valid_intents_require_unique_1_violations = (
-            create_query_labels__valid_intents_require_unique_1_duplicates.agg(
-                F.count(F.lit(1)).alias("__structure_violations")
-            )
+        created__valid_intents_require_unique_1_duplicates = created__valid_intents_require_unique_1_duplicates.where(
+            F.col("__structure_count") > F.lit(1)
         )
-        create_query_labels__valid_intents_require_unique_1_assertion = (
-            create_query_labels__valid_intents_require_unique_1_violations.select(
-                F.assert_true(
-                    F.col("__structure_violations") == F.lit(0),
-                    'REL-E0702: require_unique(...) found duplicate keys; see docs/Diagnostics.md#rel-e0702',
-                ).alias("__structure_require_unique")
-            )
+        created__valid_intents_require_unique_1_violations = created__valid_intents_require_unique_1_duplicates.agg(
+            F.count(F.lit(1)).alias("__structure_violations")
         )
-        create_query_labels__valid_intents = create_query_labels__valid_intents_require_unique_1_assertion.crossJoin(
-            create_query_labels__valid_intents
+        created__valid_intents_require_unique_1_assertion = created__valid_intents_require_unique_1_violations.select(
+            F.assert_true(
+                F.col("__structure_violations") == F.lit(0),
+                'REL-E0702: require_unique(...) found duplicate keys; see docs/Diagnostics.md#rel-e0702',
+            ).alias("__structure_require_unique")
+        )
+        created__valid_intents = created__valid_intents_require_unique_1_assertion.crossJoin(
+            created__valid_intents
         ).drop("__structure_require_unique")
-        create_query_labels__valid_intents_require_all_2_violations = create_query_labels__valid_intents.where(
+        created__valid_intents_require_all_2_violations = created__valid_intents.where(
             ~F.coalesce((F.trim(F.col("intent.name")) != F.lit('')), F.lit(False))
         ).agg(F.count(F.lit(1)).alias("__structure_violations"))
-        create_query_labels__valid_intents_require_all_2_assertion = (
-            create_query_labels__valid_intents_require_all_2_violations
-            .select(
-                 F.assert_true(
-                     F.col(
-                        "__structure_violations"
-                    ) == F.lit(
-                        0
-                    ),
-                     (
-                         'REL-E0703: require_all(...) found rows that do not satisfy the predicate; see'
-                         'docs/Diagnostics.md#rel-e0703'
-                     ),
-                ).alias(
-                    "__structure_require_all"
-                )
-            )
+        created__valid_intents_require_all_2_assertion = created__valid_intents_require_all_2_violations.select(
+            F.assert_true(
+                F.col("__structure_violations") == F.lit(0),
+                (
+                    'REL-E0703: require_all(...) found rows that do not satisfy the predicate; see'
+                    'docs/Diagnostics.md#rel-e0703'
+                ),
+            ).alias("__structure_require_all")
         )
-        create_query_labels__valid_intents = create_query_labels__valid_intents_require_all_2_assertion.crossJoin(
-            create_query_labels__valid_intents
-        ).drop("__structure_require_all")
-        create_query_labels__valid_intents = create_query_labels__valid_intents.select(
+        created__valid_intents = created__valid_intents_require_all_2_assertion.crossJoin(created__valid_intents).drop(
+            "__structure_require_all"
+        )
+        created__valid_intents = created__valid_intents.select(
             F.col("intent.id"),
             F.col("intent.name"),
         )
-        assert_schema(create_query_labels__valid_intents, INTENT_SCHEMA, name="Intent", mode="strict")
+        assert_schema(created__valid_intents, INTENT_SCHEMA, name="Intent", mode="strict")
         return {
-            "create_query_labels__valid_intents": create_query_labels__valid_intents,
+            "created__valid_intents": created__valid_intents,
         }
 
-    def _step_create_query_labels_validate_patterns_1(self, frames):
-        # Step method: create_query_labels.validate_patterns
-        create_query_labels__valid_patterns = frames["patterns"].alias("intent_pattern")
-        create_query_labels__valid_patterns_require_unique_0_duplicates = create_query_labels__valid_patterns.groupBy(
+    def _step_created_validate_patterns_1(self, frames):
+        # Step method: created.validate_patterns
+        created__valid_patterns = frames["patterns"].alias("intent_pattern")
+        created__valid_patterns_require_unique_0_duplicates = created__valid_patterns.groupBy(
             F.col("intent_pattern.intent_id"), F.col("intent_pattern.language"), F.col("intent_pattern.pattern")
         ).agg(F.count(F.lit(1)).alias("__structure_count"))
-        create_query_labels__valid_patterns_require_unique_0_duplicates = (
-            create_query_labels__valid_patterns_require_unique_0_duplicates.where(F.col("__structure_count") > F.lit(1))
+        created__valid_patterns_require_unique_0_duplicates = created__valid_patterns_require_unique_0_duplicates.where(
+            F.col("__structure_count") > F.lit(1)
         )
-        create_query_labels__valid_patterns_require_unique_0_violations = (
-            create_query_labels__valid_patterns_require_unique_0_duplicates.agg(
-                F.count(F.lit(1)).alias("__structure_violations")
-            )
+        created__valid_patterns_require_unique_0_violations = created__valid_patterns_require_unique_0_duplicates.agg(
+            F.count(F.lit(1)).alias("__structure_violations")
         )
-        create_query_labels__valid_patterns_require_unique_0_assertion = (
-            create_query_labels__valid_patterns_require_unique_0_violations.select(
-                F.assert_true(
-                    F.col("__structure_violations") == F.lit(0),
-                    'REL-E0702: require_unique(...) found duplicate keys; see docs/Diagnostics.md#rel-e0702',
-                ).alias("__structure_require_unique")
-            )
+        created__valid_patterns_require_unique_0_assertion = created__valid_patterns_require_unique_0_violations.select(
+            F.assert_true(
+                F.col("__structure_violations") == F.lit(0),
+                'REL-E0702: require_unique(...) found duplicate keys; see docs/Diagnostics.md#rel-e0702',
+            ).alias("__structure_require_unique")
         )
-        create_query_labels__valid_patterns = create_query_labels__valid_patterns_require_unique_0_assertion.crossJoin(
-            create_query_labels__valid_patterns
+        created__valid_patterns = created__valid_patterns_require_unique_0_assertion.crossJoin(
+            created__valid_patterns
         ).drop("__structure_require_unique")
-        create_query_labels__valid_patterns_require_all_1_violations = create_query_labels__valid_patterns.where(
+        created__valid_patterns_require_all_1_violations = created__valid_patterns.where(
             ~F.coalesce(
                 (
                     (F.trim(F.col("intent_pattern.language")) != F.lit(''))
@@ -134,55 +114,42 @@ class CreateQueryLabelsGenerated:
                 F.lit(False),
             )
         ).agg(F.count(F.lit(1)).alias("__structure_violations"))
-        create_query_labels__valid_patterns_require_all_1_assertion = (
-            create_query_labels__valid_patterns_require_all_1_violations
-            .select(
-                 F.assert_true(
-                     F.col(
-                        "__structure_violations"
-                    ) == F.lit(
-                        0
-                    ),
-                     (
-                         'REL-E0703: require_all(...) found rows that do not satisfy the predicate; see'
-                         'docs/Diagnostics.md#rel-e0703'
-                     ),
-                ).alias(
-                    "__structure_require_all"
-                )
-            )
+        created__valid_patterns_require_all_1_assertion = created__valid_patterns_require_all_1_violations.select(
+            F.assert_true(
+                F.col("__structure_violations") == F.lit(0),
+                (
+                    'REL-E0703: require_all(...) found rows that do not satisfy the predicate; see'
+                    'docs/Diagnostics.md#rel-e0703'
+                ),
+            ).alias("__structure_require_all")
         )
-        create_query_labels__valid_patterns = create_query_labels__valid_patterns_require_all_1_assertion.crossJoin(
-            create_query_labels__valid_patterns
+        created__valid_patterns = created__valid_patterns_require_all_1_assertion.crossJoin(
+            created__valid_patterns
         ).drop("__structure_require_all")
-        create_query_labels__valid_patterns_require_reference_2_left = create_query_labels__valid_patterns.withColumn(
+        created__valid_patterns_require_reference_2_left = created__valid_patterns.withColumn(
             "__structure_reference_value_2", F.col("intent_pattern.intent_id")
         )
-        create_query_labels__valid_patterns_require_reference_2_right = valid_intents.select(
+        created__valid_patterns_require_reference_2_right = valid_intents.select(
             F.col("id").alias("__structure_reference_key_2")
         )
-        create_query_labels__valid_patterns_require_reference_2_right = (
-            create_query_labels__valid_patterns_require_reference_2_right.dropDuplicates(
-                ["__structure_reference_key_2"]
-            )
+        created__valid_patterns_require_reference_2_right = (
+            created__valid_patterns_require_reference_2_right.dropDuplicates(["__structure_reference_key_2"])
         )
-        create_query_labels__valid_patterns_require_reference_2_candidates = (
-            create_query_labels__valid_patterns_require_reference_2_left
-        )
-        create_query_labels__valid_patterns_require_reference_2_violations = (
-            create_query_labels__valid_patterns_require_reference_2_candidates.join(
-                create_query_labels__valid_patterns_require_reference_2_right,
+        created__valid_patterns_require_reference_2_candidates = created__valid_patterns_require_reference_2_left
+        created__valid_patterns_require_reference_2_violations = (
+            created__valid_patterns_require_reference_2_candidates.join(
+                created__valid_patterns_require_reference_2_right,
                 F.col("__structure_reference_value_2") == F.col("__structure_reference_key_2"),
                 "left_anti",
             )
         )
-        create_query_labels__valid_patterns_require_reference_2_violations = (
-            create_query_labels__valid_patterns_require_reference_2_violations.agg(
+        created__valid_patterns_require_reference_2_violations = (
+            created__valid_patterns_require_reference_2_violations.agg(
                 F.count(F.lit(1)).alias("__structure_violations")
             )
         )
-        create_query_labels__valid_patterns_require_reference_2_assertion = (
-            create_query_labels__valid_patterns_require_reference_2_violations
+        created__valid_patterns_require_reference_2_assertion = (
+            created__valid_patterns_require_reference_2_violations
             .select(
                  F.assert_true(
                      F.col(
@@ -199,59 +166,49 @@ class CreateQueryLabelsGenerated:
                 )
             )
         )
-        create_query_labels__valid_patterns = (
-            create_query_labels__valid_patterns_require_reference_2_assertion.crossJoin(
-                create_query_labels__valid_patterns
-            ).drop("__structure_require_reference")
-        )
-        create_query_labels__valid_patterns = create_query_labels__valid_patterns.select(
+        created__valid_patterns = created__valid_patterns_require_reference_2_assertion.crossJoin(
+            created__valid_patterns
+        ).drop("__structure_require_reference")
+        created__valid_patterns = created__valid_patterns.select(
             F.col("intent_pattern.intent_id"),
             F.col("intent_pattern.language"),
             F.col("intent_pattern.pattern"),
         )
-        assert_schema(create_query_labels__valid_patterns, INTENT_PATTERN_SCHEMA, name="IntentPattern", mode="strict")
+        assert_schema(created__valid_patterns, INTENT_PATTERN_SCHEMA, name="IntentPattern", mode="strict")
         return {
-            "create_query_labels__valid_patterns": create_query_labels__valid_patterns,
+            "created__valid_patterns": created__valid_patterns,
         }
 
-    def _step_create_query_labels_create_query_intents_2(self, frames):
-        # Step method: create_query_labels.create_query_intents
-        create_query_labels__query_intents = frames["queries"].alias("search_query")
-        create_query_labels__valid_intents_joined = frames["create_query_labels__valid_intents"].alias(
-            "create_query_labels__valid_intents"
-        )
-        create_query_labels__query_intents = create_query_labels__query_intents.crossJoin(
-            create_query_labels__valid_intents_joined
-        )
-        create_query_labels__query_intents = create_query_labels__query_intents.select(
+    def _step_created_create_query_intents_2(self, frames):
+        # Step method: created.create_query_intents
+        created__query_intents = frames["queries"].alias("search_query")
+        created__valid_intents_joined = frames["created__valid_intents"].alias("created__valid_intents")
+        created__query_intents = created__query_intents.crossJoin(created__valid_intents_joined)
+        created__query_intents = created__query_intents.select(
             F.col("search_query.id").alias("query_id"),
             F.col("search_query.content"),
             F.lower(F.coalesce(F.col("search_query.language"), F.lit('en_US'))).alias("language"),
-            F.col("create_query_labels__valid_intents.id").alias("intent_id"),
-            F.col("create_query_labels__valid_intents.name"),
+            F.col("created__valid_intents.id").alias("intent_id"),
+            F.col("created__valid_intents.name"),
             F.lit(0).cast(T.LongType()).alias("value"),
         )
-        create_query_labels__query_intents = self._impl_create_query_labels_CreateQueryLabels.match_patterns(
-            query_intents=create_query_labels__query_intents,
-            valid_patterns=frames["create_query_labels__valid_patterns"],
+        created__query_intents = self._impl_created_CreateQueryLabels.match_patterns(
+            query_intents=created__query_intents,
+            valid_patterns=frames["created__valid_patterns"],
             spark=self.spark,
             ctx=self.ctx,
         )
-        assert_schema(
-            create_query_labels__query_intents, QUERY_INTENT_LABEL_SCHEMA, name="QueryIntentLabel", mode="strict"
-        )
-        assert_schema(
-            create_query_labels__query_intents, QUERY_INTENT_LABEL_SCHEMA, name="QueryIntentLabel", mode="strict"
-        )
+        assert_schema(created__query_intents, QUERY_INTENT_LABEL_SCHEMA, name="QueryIntentLabel", mode="strict")
+        assert_schema(created__query_intents, QUERY_INTENT_LABEL_SCHEMA, name="QueryIntentLabel", mode="strict")
         return {
-            "create_query_labels__query_intents": create_query_labels__query_intents,
+            "created__query_intents": created__query_intents,
         }
 
-    def _step_create_query_labels_collect_labels_3(self, frames):
-        # Step method: create_query_labels.collect_labels
-        create_query_labels__entries = frames["create_query_labels__query_intents"].alias("query_intent_label")
-        create_query_labels__entries = (
-            create_query_labels__entries.groupBy(
+    def _step_created_collect_labels_3(self, frames):
+        # Step method: created.collect_labels
+        created__entries = frames["created__query_intents"].alias("query_intent_label")
+        created__entries = (
+            created__entries.groupBy(
                 F.col("query_intent_label.query_id").alias("query_id"),
             )
             .agg(
@@ -269,71 +226,60 @@ class CreateQueryLabelsGenerated:
             )
         )
         assert_schema(
-            create_query_labels__entries,
-            QUERY_LABEL_ASSIGNMENT_ENTRIES_SCHEMA,
-            name="QueryLabelAssignmentEntries",
-            mode="strict",
+            created__entries, QUERY_LABEL_ASSIGNMENT_ENTRIES_SCHEMA, name="QueryLabelAssignmentEntries", mode="strict"
         )
         return {
-            "create_query_labels__entries": create_query_labels__entries,
+            "created__entries": created__entries,
         }
 
-    def _step_create_query_labels_create_labels_4(self, frames):
-        # Step method: create_query_labels.create_labels
-        create_query_labels__labels = frames["create_query_labels__entries"].alias("query_label_assignment_entries")
-        create_query_labels__labels = create_query_labels__labels.select(
+    def _step_created_create_labels_4(self, frames):
+        # Step method: created.create_labels
+        created__labels = frames["created__entries"].alias("query_label_assignment_entries")
+        created__labels = created__labels.select(
             F.col("query_label_assignment_entries.query_id"),
             F.map_from_entries(F.col("query_label_assignment_entries.entries")).alias("labels"),
         )
-        assert_schema(
-            create_query_labels__labels, QUERY_LABEL_ASSIGNMENTS_SCHEMA, name="QueryLabelAssignments", mode="strict"
-        )
+        assert_schema(created__labels, QUERY_LABEL_ASSIGNMENTS_SCHEMA, name="QueryLabelAssignments", mode="strict")
         return {
-            "create_query_labels__labels": create_query_labels__labels,
+            "created__labels": created__labels,
         }
 
 
 class MergeQueryLabelsGenerated:
-    def _step_merge_query_labels_select_latest_5(self, frames):
-        # Step method: merge_query_labels.select_latest
-        merge_query_labels__latest_labels = frames["query_labels"].alias("query_label")
-        if merge_query_labels__latest_labels.isStreaming:
-            merge_query_labels__latest_labels = merge_query_labels__latest_labels.dropDuplicatesWithinWatermark(
-                ["query_id", "label.name", "label.value", "assigned_at"]
-            )
+    def _step_merged_select_latest_5(self, frames):
+        # Step method: merged.select_latest
+        merged__latest_labels = frames["query_labels"].alias("query_label")
+        if merged__latest_labels.isStreaming:
+            merged__latest_labels = merged__latest_labels.dropDuplicatesWithinWatermark()
         else:
-            merge_query_labels__latest_labels = merge_query_labels__latest_labels.dropDuplicates(
-                ["query_id", "label.name", "label.value", "assigned_at"]
-            )
-        merge_query_labels__latest_labels = merge_query_labels__latest_labels.withColumn(
-            "__structure_merge_query_labels.select_latest_latest_rank",
+            merged__latest_labels = merged__latest_labels.dropDuplicates()
+        merged__latest_labels = merged__latest_labels.withColumn(
+            "__structure_merged.select_latest_latest_rank",
             F.row_number().over(
                 Window.partitionBy(F.col("query_label.query_id"), F.col("query_label.label.name")).orderBy(
                     F.col("query_label.assigned_at").desc()
                 )
             ),
         )
-        merge_query_labels__latest_labels = merge_query_labels__latest_labels.where(
-            F.col("__structure_merge_query_labels.select_latest_latest_rank") == F.lit(1)
+        merged__latest_labels = merged__latest_labels.where(
+            F.col("__structure_merged.select_latest_latest_rank") == F.lit(1)
         )
-        merge_query_labels__latest_labels = merge_query_labels__latest_labels.drop(
-            "__structure_merge_query_labels.select_latest_latest_rank"
-        )
-        merge_query_labels__latest_labels = merge_query_labels__latest_labels.select(
+        merged__latest_labels = merged__latest_labels.drop("__structure_merged.select_latest_latest_rank")
+        merged__latest_labels = merged__latest_labels.select(
             F.col("query_label.query_id"),
             F.col("query_label.label"),
             F.col("query_label.assigned_at"),
         )
-        assert_schema(merge_query_labels__latest_labels, QUERY_LABEL_SCHEMA, name="QueryLabel", mode="strict")
+        assert_schema(merged__latest_labels, QUERY_LABEL_SCHEMA, name="QueryLabel", mode="strict")
         return {
-            "merge_query_labels__latest_labels": merge_query_labels__latest_labels,
+            "merged__latest_labels": merged__latest_labels,
         }
 
-    def _step_merge_query_labels_collect_assignments_6(self, frames):
-        # Step method: merge_query_labels.collect_assignments
-        merge_query_labels__entries = frames["merge_query_labels__latest_labels"].alias("query_label")
-        merge_query_labels__entries = (
-            merge_query_labels__entries.groupBy(
+    def _step_merged_collect_assignments_6(self, frames):
+        # Step method: merged.collect_assignments
+        merged__entries = frames["merged__latest_labels"].alias("query_label")
+        merged__entries = (
+            merged__entries.groupBy(
                 F.col("query_label.query_id").alias("query_id"),
             )
             .agg(
@@ -351,55 +297,48 @@ class MergeQueryLabelsGenerated:
             )
         )
         assert_schema(
-            merge_query_labels__entries,
-            QUERY_LABEL_ASSIGNMENT_ENTRIES_SCHEMA,
-            name="QueryLabelAssignmentEntries",
-            mode="strict",
+            merged__entries, QUERY_LABEL_ASSIGNMENT_ENTRIES_SCHEMA, name="QueryLabelAssignmentEntries", mode="strict"
         )
         return {
-            "merge_query_labels__entries": merge_query_labels__entries,
+            "merged__entries": merged__entries,
         }
 
-    def _step_merge_query_labels_create_assignments_7(self, frames):
-        # Step method: merge_query_labels.create_assignments
-        merge_query_labels__assignments = frames["merge_query_labels__entries"].alias("query_label_assignment_entries")
-        merge_query_labels__assignments = merge_query_labels__assignments.select(
+    def _step_merged_create_assignments_7(self, frames):
+        # Step method: merged.create_assignments
+        merged__assignments = frames["merged__entries"].alias("query_label_assignment_entries")
+        merged__assignments = merged__assignments.select(
             F.col("query_label_assignment_entries.query_id"),
             F.map_from_entries(F.col("query_label_assignment_entries.entries")).alias("labels"),
         )
-        assert_schema(
-            merge_query_labels__assignments, QUERY_LABEL_ASSIGNMENTS_SCHEMA, name="QueryLabelAssignments", mode="strict"
-        )
+        assert_schema(merged__assignments, QUERY_LABEL_ASSIGNMENTS_SCHEMA, name="QueryLabelAssignments", mode="strict")
         return {
-            "merge_query_labels__assignments": merge_query_labels__assignments,
+            "merged__assignments": merged__assignments,
         }
 
-    def _step_merge_query_labels_merge_caller_labels_8(self, frames):
-        # Step method: merge_query_labels.merge_caller_labels
-        merge_query_labels__caller_labeled_queries = frames["queries"].alias("search_query")
-        merge_query_labels__assignments_joined = frames["merge_query_labels__assignments"].alias(
-            "merge_query_labels__assignments"
-        )
-        merge_query_labels__caller_labeled_queries = merge_query_labels__caller_labeled_queries.join(
-            merge_query_labels__assignments_joined,
-            (F.col("merge_query_labels__assignments.query_id") == F.col("search_query.id")),
+    def _step_merged_merge_caller_labels_8(self, frames):
+        # Step method: merged.merge_caller_labels
+        merged__caller_labeled_queries = frames["queries"].alias("search_query")
+        merged__assignments_joined = frames["merged__assignments"].alias("merged__assignments")
+        merged__caller_labeled_queries = merged__caller_labeled_queries.join(
+            merged__assignments_joined,
+            (F.col("merged__assignments.query_id") == F.col("search_query.id")),
             "left",
         )
-        merge_query_labels__caller_labeled_queries = merge_query_labels__caller_labeled_queries.select(
+        merged__caller_labeled_queries = merged__caller_labeled_queries.select(
             F.col("search_query.id"),
             F.col("search_query.queryset"),
             F.col("search_query.content"),
             F.coalesce(
                 F.when(
-                    F.col("merge_query_labels__assignments.query_id").isNotNull(),
+                    F.col("merged__assignments.query_id").isNotNull(),
                     F.map_concat(
                         F.map_filter(
                             F.col("search_query.labels"),
                             lambda key, value: ~(
-                                F.array_contains(F.map_keys(F.col("merge_query_labels__assignments.labels")), key)
+                                F.array_contains(F.map_keys(F.col("merged__assignments.labels")), key)
                             ),
                         ),
-                        F.col("merge_query_labels__assignments.labels"),
+                        F.col("merged__assignments.labels"),
                     ),
                 ).otherwise(F.col("search_query.labels")),
                 F.col("search_query.labels"),
@@ -409,17 +348,15 @@ class MergeQueryLabelsGenerated:
                     F.element_at(
                         F.coalesce(
                             F.when(
-                                F.col("merge_query_labels__assignments.query_id").isNotNull(),
+                                F.col("merged__assignments.query_id").isNotNull(),
                                 F.map_concat(
                                     F.map_filter(
                                         F.col("search_query.labels"),
                                         lambda key, value: ~(
-                                            F.array_contains(
-                                                F.map_keys(F.col("merge_query_labels__assignments.labels")), key
-                                            )
+                                            F.array_contains(F.map_keys(F.col("merged__assignments.labels")), key)
                                         ),
                                     ),
-                                    F.col("merge_query_labels__assignments.labels"),
+                                    F.col("merged__assignments.labels"),
                                 ),
                             ).otherwise(F.col("search_query.labels")),
                             F.col("search_query.labels"),
@@ -435,17 +372,15 @@ class MergeQueryLabelsGenerated:
                     F.element_at(
                         F.coalesce(
                             F.when(
-                                F.col("merge_query_labels__assignments.query_id").isNotNull(),
+                                F.col("merged__assignments.query_id").isNotNull(),
                                 F.map_concat(
                                     F.map_filter(
                                         F.col("search_query.labels"),
                                         lambda key, value: ~(
-                                            F.array_contains(
-                                                F.map_keys(F.col("merge_query_labels__assignments.labels")), key
-                                            )
+                                            F.array_contains(F.map_keys(F.col("merged__assignments.labels")), key)
                                         ),
                                     ),
-                                    F.col("merge_query_labels__assignments.labels"),
+                                    F.col("merged__assignments.labels"),
                                 ),
                             ).otherwise(F.col("search_query.labels")),
                             F.col("search_query.labels"),
@@ -458,37 +393,33 @@ class MergeQueryLabelsGenerated:
             ).alias("is_time_sensitive"),
             F.col("search_query.language"),
         )
-        assert_schema(
-            merge_query_labels__caller_labeled_queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict"
-        )
+        assert_schema(merged__caller_labeled_queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
         return {
-            "merge_query_labels__caller_labeled_queries": merge_query_labels__caller_labeled_queries,
+            "merged__caller_labeled_queries": merged__caller_labeled_queries,
         }
 
-    def _step_merge_query_labels_merge_created_labels_9(self, frames):
-        # Step method: merge_query_labels.merge_created_labels
-        labeled_queries = frames["merge_query_labels__caller_labeled_queries"].alias("search_query")
-        create_query_labels__labels_joined = frames["create_query_labels__labels"].alias("create_query_labels__labels")
-        labeled_queries = labeled_queries.join(
-            create_query_labels__labels_joined,
-            (F.col("create_query_labels__labels.query_id") == F.col("search_query.id")),
+    def _step_merged_merge_created_labels_9(self, frames):
+        # Step method: merged.merge_created_labels
+        merged__labeled_queries = frames["merged__caller_labeled_queries"].alias("search_query")
+        created__labels_joined = frames["created__labels"].alias("created__labels")
+        merged__labeled_queries = merged__labeled_queries.join(
+            created__labels_joined,
+            (F.col("created__labels.query_id") == F.col("search_query.id")),
             "left",
         )
-        labeled_queries = labeled_queries.select(
+        merged__labeled_queries = merged__labeled_queries.select(
             F.col("search_query.id"),
             F.col("search_query.queryset"),
             F.col("search_query.content"),
             F.coalesce(
                 F.when(
-                    F.col("create_query_labels__labels.query_id").isNotNull(),
+                    F.col("created__labels.query_id").isNotNull(),
                     F.map_concat(
                         F.map_filter(
                             F.col("search_query.labels"),
-                            lambda key, value: ~(
-                                F.array_contains(F.map_keys(F.col("create_query_labels__labels.labels")), key)
-                            ),
+                            lambda key, value: ~(F.array_contains(F.map_keys(F.col("created__labels.labels")), key)),
                         ),
-                        F.col("create_query_labels__labels.labels"),
+                        F.col("created__labels.labels"),
                     ),
                 ).otherwise(F.col("search_query.labels")),
                 F.col("search_query.labels"),
@@ -498,17 +429,15 @@ class MergeQueryLabelsGenerated:
                     F.element_at(
                         F.coalesce(
                             F.when(
-                                F.col("create_query_labels__labels.query_id").isNotNull(),
+                                F.col("created__labels.query_id").isNotNull(),
                                 F.map_concat(
                                     F.map_filter(
                                         F.col("search_query.labels"),
                                         lambda key, value: ~(
-                                            F.array_contains(
-                                                F.map_keys(F.col("create_query_labels__labels.labels")), key
-                                            )
+                                            F.array_contains(F.map_keys(F.col("created__labels.labels")), key)
                                         ),
                                     ),
-                                    F.col("create_query_labels__labels.labels"),
+                                    F.col("created__labels.labels"),
                                 ),
                             ).otherwise(F.col("search_query.labels")),
                             F.col("search_query.labels"),
@@ -524,17 +453,15 @@ class MergeQueryLabelsGenerated:
                     F.element_at(
                         F.coalesce(
                             F.when(
-                                F.col("create_query_labels__labels.query_id").isNotNull(),
+                                F.col("created__labels.query_id").isNotNull(),
                                 F.map_concat(
                                     F.map_filter(
                                         F.col("search_query.labels"),
                                         lambda key, value: ~(
-                                            F.array_contains(
-                                                F.map_keys(F.col("create_query_labels__labels.labels")), key
-                                            )
+                                            F.array_contains(F.map_keys(F.col("created__labels.labels")), key)
                                         ),
                                     ),
-                                    F.col("create_query_labels__labels.labels"),
+                                    F.col("created__labels.labels"),
                                 ),
                             ).otherwise(F.col("search_query.labels")),
                             F.col("search_query.labels"),
@@ -548,7 +475,7 @@ class MergeQueryLabelsGenerated:
             F.col("search_query.language"),
         )
         return {
-            "labeled_queries": labeled_queries,
+            "merged__labeled_queries": merged__labeled_queries,
         }
 
 
@@ -558,7 +485,7 @@ class LabelQueriesGenerated(CreateQueryLabelsGenerated, MergeQueryLabelsGenerate
         self.spark = spark
         self.ctx = ctx
         self._impl = LabelQueries()
-        self._impl_create_query_labels_CreateQueryLabels = CreateQueryLabels()
+        self._impl_created_CreateQueryLabels = CreateQueryLabels()
 
     def run(
         self,
@@ -586,19 +513,19 @@ class LabelQueriesGenerated(CreateQueryLabelsGenerated, MergeQueryLabelsGenerate
             "input:patterns": _input_patterns,
             "input:query_labels": _input_query_labels,
         }
-        frames.update(self._step_create_query_labels_validate_intents_0(frames))
-        frames.update(self._step_create_query_labels_validate_patterns_1(frames))
-        frames.update(self._step_create_query_labels_create_query_intents_2(frames))
-        frames.update(self._step_create_query_labels_collect_labels_3(frames))
-        frames.update(self._step_create_query_labels_create_labels_4(frames))
-        frames.update(self._step_merge_query_labels_select_latest_5(frames))
-        frames.update(self._step_merge_query_labels_collect_assignments_6(frames))
-        frames.update(self._step_merge_query_labels_create_assignments_7(frames))
-        frames.update(self._step_merge_query_labels_merge_caller_labels_8(frames))
-        frames.update(self._step_merge_query_labels_merge_created_labels_9(frames))
+        frames.update(self._step_created_validate_intents_0(frames))
+        frames.update(self._step_created_validate_patterns_1(frames))
+        frames.update(self._step_created_create_query_intents_2(frames))
+        frames.update(self._step_created_collect_labels_3(frames))
+        frames.update(self._step_created_create_labels_4(frames))
+        frames.update(self._step_merged_select_latest_5(frames))
+        frames.update(self._step_merged_collect_assignments_6(frames))
+        frames.update(self._step_merged_create_assignments_7(frames))
+        frames.update(self._step_merged_merge_caller_labels_8(frames))
+        frames.update(self._step_merged_merge_created_labels_9(frames))
 
         # Step method: labeled_queries
-        labeled_queries = frames["labeled_queries"].alias("search_query")
+        labeled_queries = frames["merged__labeled_queries"].alias("search_query")
         assert_schema(labeled_queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
         return TransformResult(
             {"labeled_queries": labeled_queries}, single=True, schema={"labeled_queries": SEARCH_QUERY_SCHEMA}

@@ -11,19 +11,21 @@ from examples.structure_generated.search.pyspark.schemas.bm25 import (
     SECTION_BM25_SCORE_SCHEMA,
     SENTENCE_BM25_SCORE_SCHEMA,
 )
-from examples.structure_generated.search.pyspark.schemas.search import (
+from examples.structure_generated.search.pyspark.schemas.index import (
     DOCUMENT_INDEX_SUMMARY_SCHEMA,
     DOCUMENT_INDEX_TERM_SCHEMA,
     PARAGRAPH_INDEX_SUMMARY_SCHEMA,
     PARAGRAPH_INDEX_TERM_SCHEMA,
-    QUERY_TERM_COUNT_SCHEMA,
-    QUERY_TERM_SCHEMA,
-    SEARCH_QUERY_SCHEMA,
     SECTION_INDEX_SUMMARY_SCHEMA,
     SECTION_INDEX_TERM_SCHEMA,
     SENTENCE_INDEX_SUMMARY_SCHEMA,
     SENTENCE_INDEX_TERM_SCHEMA,
 )
+from examples.structure_generated.search.pyspark.schemas.scoring_intermediate import (
+    QUERY_TERM_COUNT_SCHEMA,
+    QUERY_TERM_SCHEMA,
+)
+from examples.structure_generated.search.pyspark.schemas.search import SEARCH_QUERY_SCHEMA
 
 
 class ScoreBaseGenerated:

@@ -3,7 +3,15 @@
 from examples.search.transforms.experiments import (
     EvaluateDocumentRankingQuality,
     EvaluateDocumentSearchBehavior,
+    Scoring001AdjustBm,
+    Searching001AdjustRerankSearchDocuments,
     SelectExperimentScores,
 )
 
-__all__ = ["EvaluateDocumentRankingQuality", "EvaluateDocumentSearchBehavior", "SelectExperimentScores"]
+__all__ = [
+    "EvaluateDocumentRankingQuality",
+    "EvaluateDocumentSearchBehavior",
+    "Scoring001AdjustBm",
+    "Searching001AdjustRerankSearchDocuments",
+    "SelectExperimentScores",
+]

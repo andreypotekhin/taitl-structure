@@ -9,6 +9,7 @@ from structure.core.dsl.model.transforms.aliases import require_alias
 from structure.core.dsl.model.transforms.InputDeclaration import InputDeclaration
 from structure.core.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.core.dsl.model.transforms.OutputDeclaration import OutputDeclaration
+from structure.core.dsl.model.transforms.ParameterDeclaration import ParameterDeclaration
 from structure.core.dsl.model.transforms.StageDeclaration import StageDeclaration
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline
 
@@ -36,6 +37,7 @@ class Transform:
     _structure_inputs: dict[str, InputDeclaration] = {}
     _structure_lanes: dict[str, LaneDeclaration] = {}
     _structure_outputs: dict[str, OutputDeclaration] = {}
+    _structure_parameters: dict[str, ParameterDeclaration] = {}
     _structure_input_aliases: dict[str, str] = {}
     _structure_lane_aliases: dict[str, str] = {}
     _structure_output_aliases: dict[str, str] = {}
@@ -51,29 +53,39 @@ class Transform:
         inputs: dict[str, InputDeclaration] = {}
         lanes: dict[str, LaneDeclaration] = {}
         outputs: dict[str, OutputDeclaration] = {}
+        parameters: dict[str, ParameterDeclaration] = {}
         for base in cls.__bases__:
             inputs.update(getattr(base, "_structure_inputs", {}))
             lanes.update(getattr(base, "_structure_lanes", {}))
             outputs.update(getattr(base, "_structure_outputs", {}))
+            parameters.update(getattr(base, "_structure_parameters", {}))
 
-        for value in cls.__dict__.values():
+        for name, value in cls.__dict__.items():
             if isinstance(value, InputDeclaration):
                 inputs[value.name] = value
             if isinstance(value, LaneDeclaration):
                 lanes[value.name] = value
             if isinstance(value, OutputDeclaration):
                 outputs[value.name] = value
+            if isinstance(value, ParameterDeclaration):
+                parameters[value.name] = value
+            elif name in parameters:
+                del parameters[name]
 
         cls._structure_inputs = inputs
         cls._structure_lanes = lanes
         cls._structure_outputs = outputs
+        cls._structure_parameters = parameters
         cls._structure_input_aliases = cls._alias_index("input", inputs)
         cls._structure_lane_aliases = cls._alias_index("lane", lanes)
         cls._structure_output_aliases = cls._alias_index("output", outputs)
         pipelines = [value for value in cls.__dict__.values() if isinstance(value, TransformPipeline)]
         if len(pipelines) > 1:
             raise TypeError(f"{cls.__name__} declares more than one transform pipeline field")
-        stages = {value.name: value for value in cls.__dict__.values() if isinstance(value, StageDeclaration)}
+        stages: dict[str, StageDeclaration] = {}
+        for base in cls.__bases__:
+            stages.update(getattr(base, "_structure_stages", {}))
+        stages.update({value.name: value for value in cls.__dict__.values() if isinstance(value, StageDeclaration)})
         if pipelines and stages:
             raise TypeError(f"{cls.__name__} cannot combine Transform.to(...) pipeline and stage(...) composition")
         cls._structure_pipeline = pipelines[0] if pipelines else None
@@ -84,24 +96,31 @@ class Transform:
 
     def __init__(self, **inputs: object) -> None:
         normalized: dict[str, object] = {}
+        parameters: dict[str, object] = {}
         unknown = []
         for name, value in inputs.items():
             canonical = self._structure_input_aliases.get(name, name)
+            if canonical in self._structure_inputs:
+                if canonical in normalized:
+                    raise TypeError(
+                        f"{type(self).__name__} got input {canonical} more than once. "
+                        "Pass either the canonical input name or one alias."
+                    )
+                normalized[canonical] = value
+                continue
+            if name in self._structure_parameters:
+                parameters[name] = value
+                continue
             if canonical not in self._structure_inputs:
                 unknown.append(name)
                 continue
-            if canonical in normalized:
-                raise TypeError(
-                    f"{type(self).__name__} got input {canonical} more than once. "
-                    "Pass either the canonical input name or one alias."
-                )
-            normalized[canonical] = value
         if unknown:
-            allowed = ", ".join((*self._structure_inputs, *self._structure_input_aliases))
+            allowed = ", ".join((*self._structure_inputs, *self._structure_input_aliases, *self._structure_parameters))
             raise TypeError(
                 f"{type(self).__name__} got unknown input(s): {', '.join(sorted(unknown))}. Allowed: {allowed}"
             )
         self._structure_bound_inputs = normalized
+        self._structure_bound_parameters = parameters
         self._structure_output_renames: dict[str, str] = {}
 
     def run(self, session):

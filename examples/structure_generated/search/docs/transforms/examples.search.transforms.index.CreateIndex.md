@@ -21,38 +21,38 @@ Source: `examples.search.transforms.index.CreateIndex`
 
 ## Step methods
 
-- `count_document_terms`: `Word` -> `DocumentIndexTermCount`
-- `summarize_documents`: `Word` -> `DocumentIndexTargetStats`
-- `count_document_frequencies`: `DocumentIndexTermCount` -> `IndexTokenFrequency`
-- `build_document_terms`: `DocumentIndexTermCount` -> `DocumentIndexTerm`
-- `summarize_document_index`: `DocumentIndexTargetStats` -> `DocumentIndexSummary`
-- `count_section_terms`: `Word` -> `SectionIndexTermCount`
-- `summarize_sections`: `Word` -> `SectionIndexTargetStats`
-- `count_section_frequencies`: `SectionIndexTermCount` -> `IndexTokenFrequency`
-- `build_section_terms`: `SectionIndexTermCount` -> `SectionIndexTerm`
-- `summarize_section_index`: `SectionIndexTargetStats` -> `SectionIndexSummary`
-- `count_paragraph_terms`: `Word` -> `ParagraphIndexTermCount`
-- `summarize_paragraphs`: `Word` -> `ParagraphIndexTargetStats`
-- `count_paragraph_frequencies`: `ParagraphIndexTermCount` -> `IndexTokenFrequency`
-- `build_paragraph_terms`: `ParagraphIndexTermCount` -> `ParagraphIndexTerm`
-- `summarize_paragraph_index`: `ParagraphIndexTargetStats` -> `ParagraphIndexSummary`
-- `count_sentence_terms`: `Word` -> `SentenceIndexTermCount`
-- `summarize_sentences`: `Word` -> `SentenceIndexTargetStats`
-- `count_sentence_frequencies`: `SentenceIndexTermCount` -> `IndexTokenFrequency`
-- `build_sentence_terms`: `SentenceIndexTermCount` -> `SentenceIndexTerm`
-- `summarize_sentence_index`: `SentenceIndexTargetStats` -> `SentenceIndexSummary`
+- `lexical.count_document_terms`: `Word` -> `DocumentIndexTermCount`
+- `lexical.summarize_documents`: `Word` -> `DocumentIndexTargetStats`
+- `lexical.count_document_frequencies`: `DocumentIndexTermCount` -> `IndexTokenFrequency`
+- `lexical.build_document_terms`: `DocumentIndexTermCount` -> `DocumentIndexTerm`
+- `lexical.summarize_document_index`: `DocumentIndexTargetStats` -> `DocumentIndexSummary`
+- `lexical.count_section_terms`: `Word` -> `SectionIndexTermCount`
+- `lexical.summarize_sections`: `Word` -> `SectionIndexTargetStats`
+- `lexical.count_section_frequencies`: `SectionIndexTermCount` -> `IndexTokenFrequency`
+- `lexical.build_section_terms`: `SectionIndexTermCount` -> `SectionIndexTerm`
+- `lexical.summarize_section_index`: `SectionIndexTargetStats` -> `SectionIndexSummary`
+- `lexical.count_paragraph_terms`: `Word` -> `ParagraphIndexTermCount`
+- `lexical.summarize_paragraphs`: `Word` -> `ParagraphIndexTargetStats`
+- `lexical.count_paragraph_frequencies`: `ParagraphIndexTermCount` -> `IndexTokenFrequency`
+- `lexical.build_paragraph_terms`: `ParagraphIndexTermCount` -> `ParagraphIndexTerm`
+- `lexical.summarize_paragraph_index`: `ParagraphIndexTargetStats` -> `ParagraphIndexSummary`
+- `lexical.count_sentence_terms`: `Word` -> `SentenceIndexTermCount`
+- `lexical.summarize_sentences`: `Word` -> `SentenceIndexTargetStats`
+- `lexical.count_sentence_frequencies`: `SentenceIndexTermCount` -> `IndexTokenFrequency`
+- `lexical.build_sentence_terms`: `SentenceIndexTermCount` -> `SentenceIndexTerm`
+- `lexical.summarize_sentence_index`: `SentenceIndexTargetStats` -> `SentenceIndexSummary`
 
 ## Dependencies
 
-- `document_target_stats`
-- `document_token_frequencies`
 - `frequency`
-- `paragraph_target_stats`
-- `paragraph_token_frequencies`
-- `section_target_stats`
-- `section_token_frequencies`
-- `sentence_target_stats`
-- `sentence_token_frequencies`
+- `lexical__document_target_stats`
+- `lexical__document_token_frequencies`
+- `lexical__paragraph_target_stats`
+- `lexical__paragraph_token_frequencies`
+- `lexical__section_target_stats`
+- `lexical__section_token_frequencies`
+- `lexical__sentence_target_stats`
+- `lexical__sentence_token_frequencies`
 - `stats`
 
 ## Target Artifacts

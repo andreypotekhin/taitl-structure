@@ -8,7 +8,7 @@ Module: `examples.search.schemas.evaluation.behavior`
 | --- | --- | --- | --- |
 | `window` | `window` | `TimeWindow` | no |
 | `params` | `params` | `EvaluationParams` | yes |
-| `experiment_id` | `experiment_id` | `string` | no |
+| `experiment_id` | `experiment_id` | `string` | yes |
 | `band_id` | `band_id` | `string` | yes |
 | `ranking_version` | `ranking_version` | `string` | no |
 | `request_count` | `request_count` | `long` | no |

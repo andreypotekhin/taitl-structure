@@ -5,25 +5,27 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
-from examples.structure_generated.search.pyspark.schemas.overlap import (
-    DOCUMENT_OVERLAP_MATCH_SCHEMA,
-    DOCUMENT_OVERLAP_SCORE_SCHEMA,
-    PARAGRAPH_OVERLAP_MATCH_SCHEMA,
-    PARAGRAPH_OVERLAP_SCORE_SCHEMA,
-    SECTION_OVERLAP_MATCH_SCHEMA,
-    SECTION_OVERLAP_SCORE_SCHEMA,
-    SENTENCE_OVERLAP_MATCH_SCHEMA,
-    SENTENCE_OVERLAP_SCORE_SCHEMA,
-)
-from examples.structure_generated.search.pyspark.schemas.search import (
+from examples.structure_generated.search.pyspark.schemas.index import (
     DOCUMENT_INDEX_TERM_SCHEMA,
     PARAGRAPH_INDEX_TERM_SCHEMA,
-    QUERY_TERM_COUNT_SCHEMA,
-    QUERY_TERM_SCHEMA,
-    SEARCH_QUERY_SCHEMA,
     SECTION_INDEX_TERM_SCHEMA,
     SENTENCE_INDEX_TERM_SCHEMA,
 )
+from examples.structure_generated.search.pyspark.schemas.overlap import (
+    DOCUMENT_OVERLAP_SCORE_SCHEMA,
+    PARAGRAPH_OVERLAP_SCORE_SCHEMA,
+    SECTION_OVERLAP_SCORE_SCHEMA,
+    SENTENCE_OVERLAP_SCORE_SCHEMA,
+)
+from examples.structure_generated.search.pyspark.schemas.scoring_intermediate import (
+    DOCUMENT_OVERLAP_MATCH_SCHEMA,
+    PARAGRAPH_OVERLAP_MATCH_SCHEMA,
+    QUERY_TERM_COUNT_SCHEMA,
+    QUERY_TERM_SCHEMA,
+    SECTION_OVERLAP_MATCH_SCHEMA,
+    SENTENCE_OVERLAP_MATCH_SCHEMA,
+)
+from examples.structure_generated.search.pyspark.schemas.search import SEARCH_QUERY_SCHEMA
 
 
 class ScoreBaseGenerated:

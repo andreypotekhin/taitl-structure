@@ -16,9 +16,10 @@ class RenderPySparkAggregatePlan:
         aggregate: PySparkAggregateRecipe,
         *,
         target: str,
+        backend_target: str,
     ) -> list[str]:
         if aggregate.grouping == "grouping_sets":
-            return self._grouping_sets(step, aggregate, target=target)
+            return self._grouping_sets(step, aggregate, target=target, backend_target=backend_target)
         grouping = {"group_by": "groupBy", "rollup": "rollup", "cube": "cube"}.get(aggregate.grouping)
         if grouping is None:
             raise TypeError(f"Unsupported aggregate grouping: {aggregate.grouping}")
@@ -28,7 +29,7 @@ class RenderPySparkAggregatePlan:
             lines.append(f"        {target} = {target}.agg(")
             for assignment in aggregate.assignments:
                 if assignment.function != "key":
-                    lines.append(f"            {self._step._aggregate_assignment(assignment, step=step, aggregate=aggregate, key_columns=key_columns)},")
+                    lines.append(f"            {self._step._aggregate_assignment(assignment, step=step, aggregate=aggregate, key_columns=key_columns, backend_target=backend_target)},")
             lines.append("        ).select(")
             for assignment in aggregate.assignments:
                 lines.append(f"            {self._step._aggregate_select(assignment, key_columns=key_columns)},")
@@ -49,7 +50,7 @@ class RenderPySparkAggregatePlan:
         lines.append("        ).agg(")
         for assignment in aggregate.assignments:
             if assignment.function != "key":
-                lines.append(f"            {self._step._aggregate_assignment(assignment, step=step, aggregate=aggregate, key_columns=key_columns)},")
+                lines.append(f"            {self._step._aggregate_assignment(assignment, step=step, aggregate=aggregate, key_columns=key_columns, backend_target=backend_target)},")
         lines.append("        ).select(")
         for assignment in aggregate.assignments:
             lines.append(f"            {self._step._aggregate_select(assignment, key_columns=key_columns)},")
@@ -63,6 +64,7 @@ class RenderPySparkAggregatePlan:
         aggregate: PySparkAggregateRecipe,
         *,
         target: str,
+        backend_target: str,
     ) -> list[str]:
         key_columns = self._step._aggregate_key_columns(aggregate)
         lines: list[str] = []
@@ -81,7 +83,7 @@ class RenderPySparkAggregatePlan:
             lines.append("        ).agg(")
             for assignment in aggregate.assignments:
                 if assignment.function not in {"key", "grouping_id", "is_grouped"}:
-                    lines.append(f"            {self._step._aggregate_assignment(assignment, step=step, aggregate=aggregate, key_columns=key_columns)},")
+                    lines.append(f"            {self._step._aggregate_assignment(assignment, step=step, aggregate=aggregate, key_columns=key_columns, backend_target=backend_target)},")
             lines.append("        ).select(")
             for assignment in aggregate.assignments:
                 lines.append(f"            {self._step._grouping_set_select(assignment, aggregate=aggregate, level=level_keys, key_columns=key_columns)},")

@@ -10,7 +10,7 @@ SEARCH_REQUEST_SCHEMA = T.StructType([
     T.StructField("query_id", T.StringType(), False),
     T.StructField("query", T.StringType(), False),
     T.StructField("user_id", T.StringType(), True),
-    T.StructField("experiment_id", T.StringType(), False),
+    T.StructField("experiment_id", T.StringType(), True),
     T.StructField("ranking_version", T.StringType(), False),
     T.StructField("requested_at", T.TimestampType(), False),
 ])

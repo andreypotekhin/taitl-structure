@@ -5,6 +5,7 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
+from examples.structure_generated.search.pyspark.schemas.TimeWindow import TIME_WINDOW_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.batch import EVALUATION_BATCH_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.behavior import (
     BEHAVIOR_DAILY_COUNTS_SCHEMA,
@@ -488,7 +489,7 @@ class EvaluateDocumentSearchBehaviorGenerated:
                         (F.col("exposure.window") == F.col("behavior_daily_counts.window"))
                         & F.col("exposure.params").eqNullSafe(F.col("behavior_daily_counts.params"))
                     )
-                    & (F.col("exposure.experiment_id") == F.col("behavior_daily_counts.experiment_id"))
+                    & F.col("exposure.experiment_id").eqNullSafe(F.col("behavior_daily_counts.experiment_id"))
                 )
                 & (F.col("exposure.ranking_version") == F.col("behavior_daily_counts.ranking_version"))
             ),

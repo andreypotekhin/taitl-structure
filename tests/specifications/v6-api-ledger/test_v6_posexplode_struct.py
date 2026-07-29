@@ -76,7 +76,7 @@ def test_posexplode_struct_explain_names_row_expansion_and_streaming_status() ->
     text = render_explain_report(ExpandTerms)
 
     assert "operations: posexplode_struct(row_multiplying scope=term schema=ExpandedTerm)" in text
-    assert "STREAM-E0801: batch_only in expand (posexplode_struct term)" in text
+    assert "STREAM-E0801: batch_only in expand (posexplode_struct term)" not in text
 
 
 def test_posexplode_struct_records_traceability_dependency() -> None:

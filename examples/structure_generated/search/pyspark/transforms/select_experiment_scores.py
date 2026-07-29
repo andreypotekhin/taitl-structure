@@ -49,7 +49,7 @@ class SelectExperimentScoresGenerated:
             "left",
         )
         active_document_scores = active_document_scores.where(
-            (((F.col("document_score.experiment_id") == F.lit('')) | F.col("experiments.is_active")))
+            ((F.col("document_score.experiment_id").isNull() | F.col("experiments.is_active")))
         )
         active_document_scores = active_document_scores.select(
             F.col("document_score.query_id"),
@@ -68,7 +68,7 @@ class SelectExperimentScoresGenerated:
             "left",
         )
         active_section_scores = active_section_scores.where(
-            (((F.col("section_score.experiment_id") == F.lit('')) | F.col("experiments.is_active")))
+            ((F.col("section_score.experiment_id").isNull() | F.col("experiments.is_active")))
         )
         active_section_scores = active_section_scores.select(
             F.col("section_score.query_id"),
@@ -88,7 +88,7 @@ class SelectExperimentScoresGenerated:
             "left",
         )
         active_paragraph_scores = active_paragraph_scores.where(
-            (((F.col("paragraph_score.experiment_id") == F.lit('')) | F.col("experiments.is_active")))
+            ((F.col("paragraph_score.experiment_id").isNull() | F.col("experiments.is_active")))
         )
         active_paragraph_scores = active_paragraph_scores.select(
             F.col("paragraph_score.query_id"),
@@ -109,7 +109,7 @@ class SelectExperimentScoresGenerated:
             "left",
         )
         active_sentence_scores = active_sentence_scores.where(
-            (((F.col("sentence_score.experiment_id") == F.lit('')) | F.col("experiments.is_active")))
+            ((F.col("sentence_score.experiment_id").isNull() | F.col("experiments.is_active")))
         )
         active_sentence_scores = active_sentence_scores.select(
             F.col("sentence_score.query_id"),

@@ -13,12 +13,13 @@ from structure.core.compiler.ir.model.StepResultPlan import StepResultPlan
 from structure.core.compiler.ir.model.TransformPlan import TransformPlan
 from structure.core.dsl.model.transforms.InputDeclaration import InputDeclaration
 from structure.core.dsl.model.transforms.OutputDeclaration import OutputDeclaration
+from structure.core.dsl.model.transforms.ParameterDeclaration import ParameterDeclaration
 from structure.core.dsl.model.transforms.StageDeclaration import StageDeclaration, StageOutputReference
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
 from structure.plugin.api.v1 import InputPlan
 
-CompileStage = Callable[[type[Transform]], TransformPlan]
+CompileStage = Callable[[Transform], TransformPlan]
 RewriteBody = Callable[[object, Mapping[str, str]], object]
 
 
@@ -31,7 +32,7 @@ class ComposeTransformGraph:
         rewrite_body: RewriteBody | None = None,
     ) -> TransformPlan:
         rewrite = rewrite_body or (lambda body, _: body)
-        stages = tuple(wrapper_class._structure_stages.values())
+        stages = tuple(self._stage(wrapper_class, stage) for stage in wrapper_class._structure_stages.values())
         if not stages:
             raise self._error(wrapper_class.__name__, "Transform graph has no stages.", "Declare at least one stage(...).")
         if not wrapper_class._structure_outputs:
@@ -40,17 +41,19 @@ class ComposeTransformGraph:
                 "Transform graph declares no outputs.",
                 "Declare public outputs with name = output(Schema).",
             )
-        stage_plans = tuple(compile_stage(type(stage.invocation)) for stage in stages)
+        stage_plans = tuple(compile_stage(stage.invocation) for stage in stages)
         self._validate_references(wrapper_class, stages)
 
         inputs = self._inputs(wrapper_class, stages, stage_plans)
+        stage_by_name = {stage.name: stage for stage in stages}
         steps, stage_outputs, output_sources = self._rewrite(
             wrapper_class,
             stages,
             stage_plans,
+            stage_by_name=stage_by_name,
             rewrite_body=rewrite,
         )
-        outputs = self._outputs(wrapper_class, stage_outputs, output_sources)
+        outputs = self._outputs(wrapper_class, stage_outputs, output_sources, stage_by_name=stage_by_name)
         return TransformPlan(
             name=wrapper_class.__name__,
             inputs=tuple(inputs),
@@ -59,6 +62,23 @@ class ComposeTransformGraph:
             options={},
             diagnostics=tuple(diagnostic for plan in stage_plans for diagnostic in plan.diagnostics),
         )
+
+    def _stage(self, wrapper_class: type[Transform], stage: StageDeclaration) -> StageDeclaration:
+        parameters = {
+            name: self._parameter(wrapper_class, value)
+            for name, value in stage.invocation._structure_bound_parameters.items()
+        }
+        if parameters == stage.invocation._structure_bound_parameters:
+            return stage
+        invocation = type(stage.invocation)(**stage.invocation._structure_bound_inputs, **parameters)
+        invocation._structure_output_renames = dict(stage.invocation._structure_output_renames)
+        return replace(stage, invocation=invocation)
+
+    def _parameter(self, wrapper_class: type[Transform], value: object) -> object:
+        if not isinstance(value, ParameterDeclaration):
+            return value
+        resolved = getattr(wrapper_class, value.name, value)
+        return value.default if isinstance(resolved, ParameterDeclaration) else resolved
 
     def _inputs(
         self,
@@ -139,6 +159,7 @@ class ComposeTransformGraph:
         stages: tuple[StageDeclaration, ...],
         stage_plans: tuple[TransformPlan, ...],
         *,
+        stage_by_name: Mapping[str, StageDeclaration],
         rewrite_body: RewriteBody,
     ) -> tuple[list[StepPlan], list[OutputPlan], dict[tuple[StageDeclaration, str], OutputPlan]]:
         steps: list[StepPlan] = []
@@ -147,7 +168,9 @@ class ComposeTransformGraph:
 
         for stage, plan in zip(stages, stage_plans, strict=True):
             label = stage.name or self._snake(type(stage.invocation).__name__)
-            frame_map = self._stage_input_sources(wrapper_class, stage, plan, output_sources)
+            frame_map = self._stage_input_sources(
+                wrapper_class, stage, plan, output_sources, stage_by_name=stage_by_name
+            )
             for step in plan.steps:
                 rewritten = self._step(step, label=label, frame_map=frame_map, rewrite_body=rewrite_body)
                 rewritten = replace(rewritten, name=f"{label}.{step.name}", ordinal=len(steps))
@@ -172,13 +195,15 @@ class ComposeTransformGraph:
         stage: StageDeclaration,
         plan: TransformPlan,
         output_sources: dict[tuple[StageDeclaration, str], OutputPlan],
+        *,
+        stage_by_name: Mapping[str, StageDeclaration],
     ) -> dict[str, str]:
         sources: dict[str, str] = {}
         bound = stage.invocation._structure_bound_inputs
         for input_plan in plan.inputs:
             value = bound[input_plan.name]
             if isinstance(value, StageOutputReference):
-                upstream = output_sources.get((value.stage, value.name))
+                upstream = output_sources.get((stage_by_name.get(value.stage.name, value.stage), value.name))
                 if upstream is None:
                     raise self._error(
                         wrapper_class.__name__,
@@ -262,10 +287,14 @@ class ComposeTransformGraph:
         wrapper_class: type[Transform],
         stage_outputs: list[OutputPlan],
         output_sources: dict[tuple[StageDeclaration, str], OutputPlan],
+        *,
+        stage_by_name: Mapping[str, StageDeclaration],
     ) -> list[OutputPlan]:
         outputs: list[OutputPlan] = []
         for ordinal, declaration in enumerate(wrapper_class._structure_outputs.values()):
-            source = self._declared_output(wrapper_class, declaration, stage_outputs, output_sources)
+            source = self._declared_output(
+                wrapper_class, declaration, stage_outputs, output_sources, stage_by_name=stage_by_name
+            )
             outputs.append(
                 OutputPlan(
                     name=declaration.name,
@@ -285,9 +314,13 @@ class ComposeTransformGraph:
         declaration: OutputDeclaration,
         stage_outputs: list[OutputPlan],
         output_sources: dict[tuple[StageDeclaration, str], OutputPlan],
+        *,
+        stage_by_name: Mapping[str, StageDeclaration],
     ) -> OutputPlan:
         if isinstance(declaration.source, StageOutputReference):
-            output = output_sources.get((declaration.source.stage, declaration.source.name))
+            output = output_sources.get(
+                (stage_by_name.get(declaration.source.stage.name, declaration.source.stage), declaration.source.name)
+            )
             if output is None:
                 raise self._error(
                     wrapper_class.__name__,
@@ -326,25 +359,25 @@ class ComposeTransformGraph:
         )
 
     def _validate_references(self, wrapper_class: type[Transform], stages: tuple[StageDeclaration, ...]) -> None:
-        known: set[StageDeclaration] = set()
-        declared = set(stages)
+        known: set[str] = set()
+        declared = {stage.name for stage in stages}
         for stage in stages:
             for value in stage.invocation._structure_bound_inputs.values():
                 if not isinstance(value, StageOutputReference):
                     continue
-                if value.stage not in declared:
+                if value.stage.name not in declared:
                     raise self._error(
                         wrapper_class.__name__,
                         f"{stage.name} references a stage that is not declared on {wrapper_class.__name__}.",
                         "Use only stage(...) fields declared on the same transform.",
                     )
-                if value.stage not in known:
+                if value.stage.name not in known:
                     raise self._error(
                         wrapper_class.__name__,
                         f"{stage.name} references {value.stage.name}.{value.name} before it is available.",
                         "Declare dependency stages before stages that consume them.",
                     )
-            known.add(stage)
+            known.add(stage.name)
 
     def _aliases(self, aliases: tuple[str, ...]) -> tuple[str, ...]:
         return tuple(dict.fromkeys(aliases))
