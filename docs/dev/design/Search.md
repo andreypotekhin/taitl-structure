@@ -160,8 +160,8 @@ requested persisted band, while combined evaluation applies both that membership
 Caller-owned intent catalogs map stable intent IDs to English label names. `SearchQuery.language` holds a caller locale,
 such as `en_UK`, and falls back to `en_US` when null. One-pattern `IntentPattern` rows map an intent and locale to a
 regular expression. `CreateQueryLabels` creates binary label maps, and `MergeQueryLabels` overlays them after caller
-labels. This makes multilingual intent slices reproducible without claiming language understanding, relevance, or a
-ranking effect.
+labels. `LabelQueries` composes both stages as the Search app labeling pipeline. This makes multilingual intent slices
+reproducible without claiming language understanding, relevance, or a ranking effect.
 
 `EvaluationParams.queryset` optionally narrows evaluation to one `SearchQuery.queryset`; null keeps all query sets in the
 same batch.

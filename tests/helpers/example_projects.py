@@ -628,11 +628,12 @@ def render_search_example() -> dict[str, str]:
         from examples.search.transforms.experiment import SelectExperimentScores
         from examples.search.transforms.extract import ExtractText
         from examples.search.transforms.index import CreateIndex
-        from examples.search.transforms.labeling import CreateQueryLabels, MergeQueryLabels
+        from examples.search.transforms.labeling import CreateQueryLabels, LabelQueries, MergeQueryLabels
         from examples.search.transforms.profile import ProfileDocuments
         from examples.search.transforms.relevance.BuildRelevanceSignals import BuildRelevanceSignals
-        from examples.search.transforms.score import AddScores
-        from examples.search.transforms.scoring.ScoreAll import ScoreAll
+        from examples.search.transforms.score import ScoreAll
+        from examples.search.transforms.scoring.ScoreBm25 import ScoreBm25
+        from examples.search.transforms.scoring.ScoreOverlap import ScoreOverlap
         from examples.search.transforms.search import SearchDocuments, SearchSentences
         from examples.search.transforms.searching.search_similarity import SearchSimilarity
         from examples.search.transforms.similarities.CreateSimilarityQueries import CreateSimilarityQueries
@@ -846,6 +847,8 @@ def render_search_example() -> dict[str, str]:
                 CreateSimilarityQueries,
                 "examples.search.transforms.similarities.CreateSimilarityQueries.CreateSimilarityQueries",
             ),
+            (ScoreOverlap, "examples.search.transforms.scoring.ScoreOverlap.ScoreOverlap"),
+            (ScoreBm25, "examples.search.transforms.scoring.ScoreBm25.ScoreBm25"),
             (ScoreAll, "examples.search.transforms.scoring.ScoreAll.ScoreAll"),
             (
                 ReduceSimilarityScores,
@@ -858,10 +861,10 @@ def render_search_example() -> dict[str, str]:
             (SimilarSections, "examples.search.transforms.similarities.SimilarSections.SimilarSections"),
             (SimilarParagraphs, "examples.search.transforms.similarities.SimilarParagraphs.SimilarParagraphs"),
             (SimilarSentences, "examples.search.transforms.similarities.SimilarSentences.SimilarSentences"),
-            (AddScores, "examples.search.transforms.score.AddScores"),
             (ResolveCohortBands, "examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands"),
             (MergeQueryLabels, "examples.search.transforms.labeling.merge_query_labels.MergeQueryLabels"),
             (CreateQueryLabels, "examples.search.transforms.labeling.create_query_labels.CreateQueryLabels"),
+            (LabelQueries, "examples.search.transforms.labeling.label_queries.LabelQueries"),
             (
                 SelectExperimentScores,
                 "examples.search.transforms.experiments.select_experiment_scores.SelectExperimentScores",

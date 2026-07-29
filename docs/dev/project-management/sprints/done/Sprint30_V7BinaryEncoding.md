@@ -1,5 +1,8 @@
 # Sprint 30: V7 Binary Values and Encoding
 
+Status: complete. Binary fields and typed encoding helpers shipped with schema materialization, expression rendering,
+online/generated parity, catalog status, and live PySpark 3.5/4.0 evidence.
+
 ## Sprint Goal
 
 Add an exact public Binary type and compiler-visible base64/charset conversions.
@@ -17,6 +20,12 @@ Add an exact public Binary type and compiler-visible base64/charset conversions.
 ## Acceptance
 
 - The catalog marks binary encoding supported only after the exact Binary/nullability and invalid-input behavior is proven on both classic targets.
+
+## Evidence
+
+- Focused source/schema/expression checks passed with 173 tests, as recorded in the consolidated v7 plan.
+- Live integration evidence records PySpark 3.5 passing with 4 tests and 3 skips, and PySpark 4.0 passing with 7 tests
+  for `tests/integration/pyspark/v7/test_binary_encoding.py`.
 
 ## Governing Documents
 

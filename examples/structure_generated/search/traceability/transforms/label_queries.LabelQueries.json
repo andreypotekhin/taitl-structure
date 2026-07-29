@@ -1,0 +1,2057 @@
+{
+  "backend": {
+    "name": "pyspark",
+    "target": ">=3.5,<4.1"
+  },
+  "generated_transform_class": "LabelQueriesGenerated",
+  "inputs": [
+    {
+      "name": "queries",
+      "ordinal": 0,
+      "schema": "SearchQuery"
+    },
+    {
+      "name": "intents",
+      "ordinal": 1,
+      "schema": "Intent"
+    },
+    {
+      "name": "patterns",
+      "ordinal": 2,
+      "schema": "IntentPattern"
+    },
+    {
+      "name": "query_labels",
+      "ordinal": 3,
+      "schema": "QueryLabel"
+    }
+  ],
+  "provenance": [
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated",
+      "ir": "ir:LabelQueries",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.input.queries",
+      "ir": "ir:LabelQueries.input.0.queries",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.input.queries"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.input.intents",
+      "ir": "ir:LabelQueries.input.1.intents",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.input.intents"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.input.patterns",
+      "ir": "ir:LabelQueries.input.2.patterns",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.input.patterns"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.input.query_labels",
+      "ir": "ir:LabelQueries.input.3.query_labels",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.input.query_labels"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.0.create_query_labels.validate_intents",
+      "ir": "ir:LabelQueries.step.0.create_query_labels.validate_intents",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.validate_intents"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.0.create_query_labels.validate_intents.require_unique.0",
+      "ir": "ir:LabelQueries.step.0.create_query_labels.validate_intents.require_unique.0",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.validate_intents.require_unique.0"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.0.create_query_labels.validate_intents.require_unique.1",
+      "ir": "ir:LabelQueries.step.0.create_query_labels.validate_intents.require_unique.1",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.validate_intents.require_unique.1"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.0.create_query_labels.validate_intents.require_all.2",
+      "ir": "ir:LabelQueries.step.0.create_query_labels.validate_intents.require_all.2",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.validate_intents.require_all.2"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.0.create_query_labels.validate_intents.select.id",
+      "ir": "ir:LabelQueries.step.0.create_query_labels.validate_intents.project.id",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.validate_intents.field.id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.0.create_query_labels.validate_intents.select.name",
+      "ir": "ir:LabelQueries.step.0.create_query_labels.validate_intents.project.name",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.validate_intents.field.name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.0.create_query_labels.validate_intents.validation.0.intermediate",
+      "ir": "ir:LabelQueries.step.0.create_query_labels.validate_intents.validation.0.intermediate",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.validate_intents.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.1.create_query_labels.validate_patterns",
+      "ir": "ir:LabelQueries.step.1.create_query_labels.validate_patterns",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.validate_patterns"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.1.create_query_labels.validate_patterns.require_unique.0",
+      "ir": "ir:LabelQueries.step.1.create_query_labels.validate_patterns.require_unique.0",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.validate_patterns.require_unique.0"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.1.create_query_labels.validate_patterns.require_all.1",
+      "ir": "ir:LabelQueries.step.1.create_query_labels.validate_patterns.require_all.1",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.validate_patterns.require_all.1"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.1.create_query_labels.validate_patterns.require_reference.2",
+      "ir": "ir:LabelQueries.step.1.create_query_labels.validate_patterns.require_reference.2",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.validate_patterns.require_reference.2"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.1.create_query_labels.validate_patterns.select.intent_id",
+      "ir": "ir:LabelQueries.step.1.create_query_labels.validate_patterns.project.intent_id",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.validate_patterns.field.intent_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.1.create_query_labels.validate_patterns.select.language",
+      "ir": "ir:LabelQueries.step.1.create_query_labels.validate_patterns.project.language",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.validate_patterns.field.language"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.1.create_query_labels.validate_patterns.select.pattern",
+      "ir": "ir:LabelQueries.step.1.create_query_labels.validate_patterns.project.pattern",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.validate_patterns.field.pattern"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.1.create_query_labels.validate_patterns.validation.0.intermediate",
+      "ir": "ir:LabelQueries.step.1.create_query_labels.validate_patterns.validation.0.intermediate",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.validate_patterns.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.2.create_query_labels.create_query_intents",
+      "ir": "ir:LabelQueries.step.2.create_query_labels.create_query_intents",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.create_query_intents"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.2.create_query_labels.create_query_intents.join.1.intent",
+      "ir": "ir:LabelQueries.step.2.create_query_labels.create_query_intents.join.1.intent",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.create_query_intents.join.1.intent"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.2.create_query_labels.create_query_intents.select.query_id",
+      "ir": "ir:LabelQueries.step.2.create_query_labels.create_query_intents.project.query_id",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.create_query_intents.field.query_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.2.create_query_labels.create_query_intents.select.content",
+      "ir": "ir:LabelQueries.step.2.create_query_labels.create_query_intents.project.content",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.create_query_intents.field.content"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.2.create_query_labels.create_query_intents.select.language",
+      "ir": "ir:LabelQueries.step.2.create_query_labels.create_query_intents.project.language",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.create_query_intents.field.language"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.2.create_query_labels.create_query_intents.select.intent_id",
+      "ir": "ir:LabelQueries.step.2.create_query_labels.create_query_intents.project.intent_id",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.create_query_intents.field.intent_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.2.create_query_labels.create_query_intents.select.name",
+      "ir": "ir:LabelQueries.step.2.create_query_labels.create_query_intents.project.name",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.create_query_intents.field.name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.2.create_query_labels.create_query_intents.select.value",
+      "ir": "ir:LabelQueries.step.2.create_query_labels.create_query_intents.project.value",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.create_query_intents.field.value"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.2.create_query_labels.create_query_intents.hook.raw.match_patterns",
+      "ir": "ir:LabelQueries.step.2.create_query_labels.create_query_intents.hook.raw.match_patterns",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.match_patterns"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.2.create_query_labels.create_query_intents.validation.0.hook",
+      "ir": "ir:LabelQueries.step.2.create_query_labels.create_query_intents.validation.0.hook",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.create_query_intents.validation.0.hook"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.2.create_query_labels.create_query_intents.validation.1.intermediate",
+      "ir": "ir:LabelQueries.step.2.create_query_labels.create_query_intents.validation.1.intermediate",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.create_query_intents.validation.1.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.3.create_query_labels.collect_labels",
+      "ir": "ir:LabelQueries.step.3.create_query_labels.collect_labels",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.collect_labels"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.3.create_query_labels.collect_labels.aggregate.query_id",
+      "ir": "ir:LabelQueries.step.3.create_query_labels.collect_labels.aggregate.query_id",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.collect_labels.aggregate.query_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.3.create_query_labels.collect_labels.aggregate.entries",
+      "ir": "ir:LabelQueries.step.3.create_query_labels.collect_labels.aggregate.entries",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.collect_labels.aggregate.entries"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.3.create_query_labels.collect_labels.validation.0.intermediate",
+      "ir": "ir:LabelQueries.step.3.create_query_labels.collect_labels.validation.0.intermediate",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.collect_labels.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.4.create_query_labels.create_labels",
+      "ir": "ir:LabelQueries.step.4.create_query_labels.create_labels",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.create_labels"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.4.create_query_labels.create_labels.select.query_id",
+      "ir": "ir:LabelQueries.step.4.create_query_labels.create_labels.project.query_id",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.create_labels.field.query_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.4.create_query_labels.create_labels.select.labels",
+      "ir": "ir:LabelQueries.step.4.create_query_labels.create_labels.project.labels",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.create_labels.field.labels"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.4.create_query_labels.create_labels.validation.0.intermediate",
+      "ir": "ir:LabelQueries.step.4.create_query_labels.create_labels.validation.0.intermediate",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.create_query_labels.create_labels.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.5.merge_query_labels.select_latest",
+      "ir": "ir:LabelQueries.step.5.merge_query_labels.select_latest",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.select_latest"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.5.merge_query_labels.select_latest.latest_by.1",
+      "ir": "ir:LabelQueries.step.5.merge_query_labels.select_latest.latest_by.1",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.select_latest.latest_by.1"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.5.merge_query_labels.select_latest.drop_duplicates.0",
+      "ir": "ir:LabelQueries.step.5.merge_query_labels.select_latest.drop_duplicates.0",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.select_latest.drop_duplicates.0"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.5.merge_query_labels.select_latest.select.query_id",
+      "ir": "ir:LabelQueries.step.5.merge_query_labels.select_latest.project.query_id",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.select_latest.field.query_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.5.merge_query_labels.select_latest.select.label",
+      "ir": "ir:LabelQueries.step.5.merge_query_labels.select_latest.project.label",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.select_latest.field.label"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.5.merge_query_labels.select_latest.select.assigned_at",
+      "ir": "ir:LabelQueries.step.5.merge_query_labels.select_latest.project.assigned_at",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.select_latest.field.assigned_at"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.5.merge_query_labels.select_latest.validation.0.intermediate",
+      "ir": "ir:LabelQueries.step.5.merge_query_labels.select_latest.validation.0.intermediate",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.select_latest.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.6.merge_query_labels.collect_assignments",
+      "ir": "ir:LabelQueries.step.6.merge_query_labels.collect_assignments",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.collect_assignments"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.6.merge_query_labels.collect_assignments.aggregate.query_id",
+      "ir": "ir:LabelQueries.step.6.merge_query_labels.collect_assignments.aggregate.query_id",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.collect_assignments.aggregate.query_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.6.merge_query_labels.collect_assignments.aggregate.entries",
+      "ir": "ir:LabelQueries.step.6.merge_query_labels.collect_assignments.aggregate.entries",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.collect_assignments.aggregate.entries"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.6.merge_query_labels.collect_assignments.validation.0.intermediate",
+      "ir": "ir:LabelQueries.step.6.merge_query_labels.collect_assignments.validation.0.intermediate",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.collect_assignments.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.7.merge_query_labels.create_assignments",
+      "ir": "ir:LabelQueries.step.7.merge_query_labels.create_assignments",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.create_assignments"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.7.merge_query_labels.create_assignments.select.query_id",
+      "ir": "ir:LabelQueries.step.7.merge_query_labels.create_assignments.project.query_id",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.create_assignments.field.query_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.7.merge_query_labels.create_assignments.select.labels",
+      "ir": "ir:LabelQueries.step.7.merge_query_labels.create_assignments.project.labels",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.create_assignments.field.labels"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.7.merge_query_labels.create_assignments.validation.0.intermediate",
+      "ir": "ir:LabelQueries.step.7.merge_query_labels.create_assignments.validation.0.intermediate",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.create_assignments.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.8.merge_query_labels.merge_caller_labels",
+      "ir": "ir:LabelQueries.step.8.merge_query_labels.merge_caller_labels",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.merge_caller_labels"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.8.merge_query_labels.merge_caller_labels.join.1.assignment",
+      "ir": "ir:LabelQueries.step.8.merge_query_labels.merge_caller_labels.join.1.assignment",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.merge_caller_labels.join.1.assignment"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.8.merge_query_labels.merge_caller_labels.select.id",
+      "ir": "ir:LabelQueries.step.8.merge_query_labels.merge_caller_labels.project.id",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.merge_caller_labels.field.id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.8.merge_query_labels.merge_caller_labels.select.queryset",
+      "ir": "ir:LabelQueries.step.8.merge_query_labels.merge_caller_labels.project.queryset",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.merge_caller_labels.field.queryset"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.8.merge_query_labels.merge_caller_labels.select.content",
+      "ir": "ir:LabelQueries.step.8.merge_query_labels.merge_caller_labels.project.content",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.merge_caller_labels.field.content"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.8.merge_query_labels.merge_caller_labels.select.labels",
+      "ir": "ir:LabelQueries.step.8.merge_query_labels.merge_caller_labels.project.labels",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.merge_caller_labels.field.labels"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.8.merge_query_labels.merge_caller_labels.select.is_question",
+      "ir": "ir:LabelQueries.step.8.merge_query_labels.merge_caller_labels.project.is_question",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.merge_caller_labels.field.is_question"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.8.merge_query_labels.merge_caller_labels.select.is_time_sensitive",
+      "ir": "ir:LabelQueries.step.8.merge_query_labels.merge_caller_labels.project.is_time_sensitive",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.merge_caller_labels.field.is_time_sensitive"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.8.merge_query_labels.merge_caller_labels.select.language",
+      "ir": "ir:LabelQueries.step.8.merge_query_labels.merge_caller_labels.project.language",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.merge_caller_labels.field.language"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.8.merge_query_labels.merge_caller_labels.validation.0.intermediate",
+      "ir": "ir:LabelQueries.step.8.merge_query_labels.merge_caller_labels.validation.0.intermediate",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.merge_caller_labels.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.9.merge_query_labels.merge_created_labels",
+      "ir": "ir:LabelQueries.step.9.merge_query_labels.merge_created_labels",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.merge_created_labels"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.9.merge_query_labels.merge_created_labels.join.1.assignment",
+      "ir": "ir:LabelQueries.step.9.merge_query_labels.merge_created_labels.join.1.assignment",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.merge_created_labels.join.1.assignment"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.9.merge_query_labels.merge_created_labels.select.id",
+      "ir": "ir:LabelQueries.step.9.merge_query_labels.merge_created_labels.project.id",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.merge_created_labels.field.id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.9.merge_query_labels.merge_created_labels.select.queryset",
+      "ir": "ir:LabelQueries.step.9.merge_query_labels.merge_created_labels.project.queryset",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.merge_created_labels.field.queryset"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.9.merge_query_labels.merge_created_labels.select.content",
+      "ir": "ir:LabelQueries.step.9.merge_query_labels.merge_created_labels.project.content",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.merge_created_labels.field.content"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.9.merge_query_labels.merge_created_labels.select.labels",
+      "ir": "ir:LabelQueries.step.9.merge_query_labels.merge_created_labels.project.labels",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.merge_created_labels.field.labels"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.9.merge_query_labels.merge_created_labels.select.is_question",
+      "ir": "ir:LabelQueries.step.9.merge_query_labels.merge_created_labels.project.is_question",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.merge_created_labels.field.is_question"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.9.merge_query_labels.merge_created_labels.select.is_time_sensitive",
+      "ir": "ir:LabelQueries.step.9.merge_query_labels.merge_created_labels.project.is_time_sensitive",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.merge_created_labels.field.is_time_sensitive"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.step.9.merge_query_labels.merge_created_labels.select.language",
+      "ir": "ir:LabelQueries.step.9.merge_query_labels.merge_created_labels.project.language",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.merge_query_labels.merge_created_labels.field.language"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.label_queries.LabelQueriesGenerated.run.output.0.labeled_queries.validation.final",
+      "ir": "ir:LabelQueries.output.0.labeled_queries.validation.final",
+      "source": "source:examples.search.transforms.labeling.label_queries.LabelQueries.output.labeled_queries"
+    }
+  ],
+  "schema_constants": {
+    "Band": {
+      "constant": "BAND_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.user"
+    },
+    "BandAncestor": {
+      "constant": "BAND_ANCESTOR_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.resolve"
+    },
+    "BandFallback": {
+      "constant": "BAND_FALLBACK_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.user"
+    },
+    "BandMatch": {
+      "constant": "BAND_MATCH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.resolve"
+    },
+    "BandMembership": {
+      "constant": "BAND_MEMBERSHIP_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.user"
+    },
+    "BehaviorDailyCounts": {
+      "constant": "BEHAVIOR_DAILY_COUNTS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.behavior"
+    },
+    "BehaviorExposure": {
+      "constant": "BEHAVIOR_EXPOSURE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.behavior"
+    },
+    "BehaviorImpression": {
+      "constant": "BEHAVIOR_IMPRESSION_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.behavior"
+    },
+    "BehaviorRequest": {
+      "constant": "BEHAVIOR_REQUEST_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.behavior"
+    },
+    "BehaviorRequestMetrics": {
+      "constant": "BEHAVIOR_REQUEST_METRICS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.behavior"
+    },
+    "BehaviorRequestTotals": {
+      "constant": "BEHAVIOR_REQUEST_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.behavior"
+    },
+    "Click": {
+      "constant": "CLICK_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.clicks"
+    },
+    "ContextDailyClicks": {
+      "constant": "CONTEXT_DAILY_CLICKS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.build"
+    },
+    "ContextDailyImpressions": {
+      "constant": "CONTEXT_DAILY_IMPRESSIONS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.build"
+    },
+    "CorpusStatistics": {
+      "constant": "CORPUS_STATISTICS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "CorpusVocabulary": {
+      "constant": "CORPUS_VOCABULARY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "DailyClicks": {
+      "constant": "DAILY_CLICKS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.clicks"
+    },
+    "DailyDocumentSearchBehavior": {
+      "constant": "DAILY_DOCUMENT_SEARCH_BEHAVIOR_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.behavior"
+    },
+    "DailyImpressions": {
+      "constant": "DAILY_IMPRESSIONS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.clicks"
+    },
+    "Document": {
+      "constant": "DOCUMENT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.text"
+    },
+    "DocumentBm25Score": {
+      "constant": "DOCUMENT_BM25_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.bm25"
+    },
+    "DocumentEvaluationSummary": {
+      "constant": "DOCUMENT_EVALUATION_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
+    },
+    "DocumentFeatures": {
+      "constant": "DOCUMENT_FEATURES_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "DocumentFeedbackOption": {
+      "constant": "DOCUMENT_FEEDBACK_OPTION_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "DocumentIndexSummary": {
+      "constant": "DOCUMENT_INDEX_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "DocumentIndexTarget": {
+      "constant": "DOCUMENT_INDEX_TARGET_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "DocumentIndexTargetStats": {
+      "constant": "DOCUMENT_INDEX_TARGET_STATS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "DocumentIndexTerm": {
+      "constant": "DOCUMENT_INDEX_TERM_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "DocumentIndexTermCount": {
+      "constant": "DOCUMENT_INDEX_TERM_COUNT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "DocumentLine": {
+      "constant": "DOCUMENT_LINE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "DocumentOverlapMatch": {
+      "constant": "DOCUMENT_OVERLAP_MATCH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+    },
+    "DocumentOverlapScore": {
+      "constant": "DOCUMENT_OVERLAP_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+    },
+    "DocumentPopularity": {
+      "constant": "DOCUMENT_POPULARITY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.relevance"
+    },
+    "DocumentPopularityTotals": {
+      "constant": "DOCUMENT_POPULARITY_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.build"
+    },
+    "DocumentQueryEvaluation": {
+      "constant": "DOCUMENT_QUERY_EVALUATION_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
+    },
+    "DocumentRelevanceJudgment": {
+      "constant": "DOCUMENT_RELEVANCE_JUDGMENT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
+    },
+    "DocumentScore": {
+      "constant": "DOCUMENT_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "DocumentSearchCandidate": {
+      "constant": "DOCUMENT_SEARCH_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "DocumentSearchRequestBehavior": {
+      "constant": "DOCUMENT_SEARCH_REQUEST_BEHAVIOR_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.behavior"
+    },
+    "DocumentSearchResult": {
+      "constant": "DOCUMENT_SEARCH_RESULT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "DocumentSearchTarget": {
+      "constant": "DOCUMENT_SEARCH_TARGET_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "DocumentSimilarity": {
+      "constant": "DOCUMENT_SIMILARITY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "DocumentSimilarityCandidate": {
+      "constant": "DOCUMENT_SIMILARITY_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
+    "DocumentSimilarityPair": {
+      "constant": "DOCUMENT_SIMILARITY_PAIR_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
+    "DocumentSimilarityQuery": {
+      "constant": "DOCUMENT_SIMILARITY_QUERY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "DocumentSimilarityQueryText": {
+      "constant": "DOCUMENT_SIMILARITY_QUERY_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.query"
+    },
+    "DocumentStatistics": {
+      "constant": "DOCUMENT_STATISTICS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "EvaluationBatch": {
+      "constant": "EVALUATION_BATCH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.batch"
+    },
+    "EvaluationIdealDcg": {
+      "constant": "EVALUATION_IDEAL_DCG_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
+    },
+    "EvaluationJudgment": {
+      "constant": "EVALUATION_JUDGMENT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
+    },
+    "EvaluationJudgmentTotals": {
+      "constant": "EVALUATION_JUDGMENT_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
+    },
+    "EvaluationParams": {
+      "constant": "EVALUATION_PARAMS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.params"
+    },
+    "EvaluationQuery": {
+      "constant": "EVALUATION_QUERY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
+    },
+    "EvaluationResult": {
+      "constant": "EVALUATION_RESULT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
+    },
+    "EvaluationResultTotals": {
+      "constant": "EVALUATION_RESULT_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
+    },
+    "ExpandedDocumentLine": {
+      "constant": "EXPANDED_DOCUMENT_LINE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "ExpandedQueryToken": {
+      "constant": "EXPANDED_QUERY_TOKEN_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ExpandedSentenceText": {
+      "constant": "EXPANDED_SENTENCE_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "ExpandedWordText": {
+      "constant": "EXPANDED_WORD_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "Experiment": {
+      "constant": "EXPERIMENT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.experiment"
+    },
+    "Impression": {
+      "constant": "IMPRESSION_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.clicks"
+    },
+    "IndexTokenFrequency": {
+      "constant": "INDEX_TOKEN_FREQUENCY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "IndexedSimilarDocument": {
+      "constant": "INDEXED_SIMILAR_DOCUMENT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "IndexedSimilarParagraph": {
+      "constant": "INDEXED_SIMILAR_PARAGRAPH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "IndexedSimilarSection": {
+      "constant": "INDEXED_SIMILAR_SECTION_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "IndexedSimilarSentence": {
+      "constant": "INDEXED_SIMILAR_SENTENCE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "Intent": {
+      "constant": "INTENT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "IntentPattern": {
+      "constant": "INTENT_PATTERN_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "Label": {
+      "constant": "LABEL_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "LabelMapEntry": {
+      "constant": "LABEL_MAP_ENTRY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "MarkedDocumentLine": {
+      "constant": "MARKED_DOCUMENT_LINE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "Paragraph": {
+      "constant": "PARAGRAPH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.text"
+    },
+    "ParagraphBm25Score": {
+      "constant": "PARAGRAPH_BM25_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.bm25"
+    },
+    "ParagraphContent": {
+      "constant": "PARAGRAPH_CONTENT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "ParagraphDraft": {
+      "constant": "PARAGRAPH_DRAFT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "ParagraphIndexSummary": {
+      "constant": "PARAGRAPH_INDEX_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ParagraphIndexTarget": {
+      "constant": "PARAGRAPH_INDEX_TARGET_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ParagraphIndexTargetStats": {
+      "constant": "PARAGRAPH_INDEX_TARGET_STATS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ParagraphIndexTerm": {
+      "constant": "PARAGRAPH_INDEX_TERM_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ParagraphIndexTermCount": {
+      "constant": "PARAGRAPH_INDEX_TERM_COUNT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ParagraphLine": {
+      "constant": "PARAGRAPH_LINE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "ParagraphLineGroup": {
+      "constant": "PARAGRAPH_LINE_GROUP_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "ParagraphOverlapMatch": {
+      "constant": "PARAGRAPH_OVERLAP_MATCH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+    },
+    "ParagraphOverlapScore": {
+      "constant": "PARAGRAPH_OVERLAP_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+    },
+    "ParagraphScore": {
+      "constant": "PARAGRAPH_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ParagraphSearchTarget": {
+      "constant": "PARAGRAPH_SEARCH_TARGET_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ParagraphSimilarity": {
+      "constant": "PARAGRAPH_SIMILARITY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "ParagraphSimilarityCandidate": {
+      "constant": "PARAGRAPH_SIMILARITY_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
+    "ParagraphSimilarityPair": {
+      "constant": "PARAGRAPH_SIMILARITY_PAIR_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
+    "ParagraphSimilarityQuery": {
+      "constant": "PARAGRAPH_SIMILARITY_QUERY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "ParagraphSimilarityQueryText": {
+      "constant": "PARAGRAPH_SIMILARITY_QUERY_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.query"
+    },
+    "ParagraphStatistics": {
+      "constant": "PARAGRAPH_STATISTICS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "PopularityFeedback": {
+      "constant": "POPULARITY_FEEDBACK_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "QueryDocumentFeedback": {
+      "constant": "QUERY_DOCUMENT_FEEDBACK_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "QueryDocumentSignalTotals": {
+      "constant": "QUERY_DOCUMENT_SIGNAL_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.build"
+    },
+    "QueryDocumentSignals": {
+      "constant": "QUERY_DOCUMENT_SIGNALS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.relevance"
+    },
+    "QueryIntentLabel": {
+      "constant": "QUERY_INTENT_LABEL_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "QueryLabel": {
+      "constant": "QUERY_LABEL_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "QueryLabelAssignmentEntries": {
+      "constant": "QUERY_LABEL_ASSIGNMENT_ENTRIES_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "QueryLabelAssignments": {
+      "constant": "QUERY_LABEL_ASSIGNMENTS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "QueryTerm": {
+      "constant": "QUERY_TERM_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "QueryTermCount": {
+      "constant": "QUERY_TERM_COUNT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "QueryToken": {
+      "constant": "QUERY_TOKEN_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "RelevancePolicy": {
+      "constant": "RELEVANCE_POLICY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.relevance"
+    },
+    "SearchQuery": {
+      "constant": "SEARCH_QUERY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SearchRequest": {
+      "constant": "SEARCH_REQUEST_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.clicks"
+    },
+    "Section": {
+      "constant": "SECTION_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.text"
+    },
+    "SectionBm25Score": {
+      "constant": "SECTION_BM25_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.bm25"
+    },
+    "SectionHeading": {
+      "constant": "SECTION_HEADING_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "SectionIndexSummary": {
+      "constant": "SECTION_INDEX_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SectionIndexTarget": {
+      "constant": "SECTION_INDEX_TARGET_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SectionIndexTargetStats": {
+      "constant": "SECTION_INDEX_TARGET_STATS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SectionIndexTerm": {
+      "constant": "SECTION_INDEX_TERM_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SectionIndexTermCount": {
+      "constant": "SECTION_INDEX_TERM_COUNT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SectionKey": {
+      "constant": "SECTION_KEY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "SectionOverlapMatch": {
+      "constant": "SECTION_OVERLAP_MATCH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+    },
+    "SectionOverlapScore": {
+      "constant": "SECTION_OVERLAP_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+    },
+    "SectionScore": {
+      "constant": "SECTION_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SectionSearchTarget": {
+      "constant": "SECTION_SEARCH_TARGET_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SectionSimilarity": {
+      "constant": "SECTION_SIMILARITY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "SectionSimilarityCandidate": {
+      "constant": "SECTION_SIMILARITY_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
+    "SectionSimilarityPair": {
+      "constant": "SECTION_SIMILARITY_PAIR_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
+    "SectionSimilarityQuery": {
+      "constant": "SECTION_SIMILARITY_QUERY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "SectionSimilarityQueryText": {
+      "constant": "SECTION_SIMILARITY_QUERY_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.query"
+    },
+    "SectionStatistics": {
+      "constant": "SECTION_STATISTICS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "Sentence": {
+      "constant": "SENTENCE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.text"
+    },
+    "SentenceBm25Score": {
+      "constant": "SENTENCE_BM25_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.bm25"
+    },
+    "SentenceIndexSummary": {
+      "constant": "SENTENCE_INDEX_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SentenceIndexTarget": {
+      "constant": "SENTENCE_INDEX_TARGET_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SentenceIndexTargetStats": {
+      "constant": "SENTENCE_INDEX_TARGET_STATS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SentenceIndexTerm": {
+      "constant": "SENTENCE_INDEX_TERM_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SentenceIndexTermCount": {
+      "constant": "SENTENCE_INDEX_TERM_COUNT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SentenceOverlapMatch": {
+      "constant": "SENTENCE_OVERLAP_MATCH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+    },
+    "SentenceOverlapScore": {
+      "constant": "SENTENCE_OVERLAP_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.overlap"
+    },
+    "SentenceScore": {
+      "constant": "SENTENCE_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SentenceSearchResult": {
+      "constant": "SENTENCE_SEARCH_RESULT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SentenceSearchTarget": {
+      "constant": "SENTENCE_SEARCH_TARGET_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SentenceSimilarity": {
+      "constant": "SENTENCE_SIMILARITY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "SentenceSimilarityCandidate": {
+      "constant": "SENTENCE_SIMILARITY_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
+    "SentenceSimilarityPair": {
+      "constant": "SENTENCE_SIMILARITY_PAIR_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.reduce"
+    },
+    "SentenceSimilarityQuery": {
+      "constant": "SENTENCE_SIMILARITY_QUERY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "SentenceSimilarityQueryText": {
+      "constant": "SENTENCE_SIMILARITY_QUERY_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.query"
+    },
+    "SentenceStatistics": {
+      "constant": "SENTENCE_STATISTICS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "SentenceText": {
+      "constant": "SENTENCE_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    },
+    "SimilarDocument": {
+      "constant": "SIMILAR_DOCUMENT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "SimilarityDocumentQuery": {
+      "constant": "SIMILARITY_DOCUMENT_QUERY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "SimilarityParagraphQuery": {
+      "constant": "SIMILARITY_PARAGRAPH_QUERY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "SimilarityPolicy": {
+      "constant": "SIMILARITY_POLICY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "SimilaritySectionQuery": {
+      "constant": "SIMILARITY_SECTION_QUERY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "SimilaritySentenceQuery": {
+      "constant": "SIMILARITY_SENTENCE_QUERY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "SingletonUserBand": {
+      "constant": "SINGLETON_USER_BAND_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.resolve"
+    },
+    "TimeWindow": {
+      "constant": "TIME_WINDOW_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.TimeWindow"
+    },
+    "User": {
+      "constant": "USER_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.user"
+    },
+    "UserBand": {
+      "constant": "USER_BAND_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.user"
+    },
+    "UserBandMembership": {
+      "constant": "USER_BAND_MEMBERSHIP_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.user"
+    },
+    "UserBandPath": {
+      "constant": "USER_BAND_PATH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.resolve"
+    },
+    "Word": {
+      "constant": "WORD_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.text"
+    },
+    "WordText": {
+      "constant": "WORD_TEXT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+    }
+  },
+  "source_transform": "examples.search.transforms.labeling.label_queries.LabelQueries",
+  "static_dataflow": {
+    "dependencies": [
+      {
+        "detail": {
+          "backend": "pyspark"
+        },
+        "operation": "transform",
+        "sources": [
+          "queries",
+          "intents",
+          "patterns",
+          "query_labels"
+        ],
+        "step": null,
+        "target": "LabelQueries"
+      },
+      {
+        "detail": {
+          "input_schema": "Intent",
+          "output_schema": "Intent"
+        },
+        "operation": "step",
+        "sources": [
+          "queries"
+        ],
+        "step": "create_query_labels.validate_intents",
+        "target": "create_query_labels.validate_intents"
+      },
+      {
+        "detail": {
+          "diagnostic": "REL-E0702",
+          "keys": 1
+        },
+        "operation": "require_unique",
+        "sources": [
+          "intents.id"
+        ],
+        "step": "create_query_labels.validate_intents",
+        "target": "create_query_labels.validate_intents.require_unique[0]"
+      },
+      {
+        "detail": {
+          "diagnostic": "REL-E0702",
+          "keys": 1
+        },
+        "operation": "require_unique",
+        "sources": [
+          "intents.name"
+        ],
+        "step": "create_query_labels.validate_intents",
+        "target": "create_query_labels.validate_intents.require_unique[1]"
+      },
+      {
+        "detail": {
+          "diagnostic": "REL-E0703"
+        },
+        "operation": "require_all",
+        "sources": [
+          "intents.name"
+        ],
+        "step": "create_query_labels.validate_intents",
+        "target": "create_query_labels.validate_intents.require_all[2]"
+      },
+      {
+        "detail": {
+          "field": "id"
+        },
+        "operation": "project",
+        "sources": [
+          "intents.id"
+        ],
+        "step": "create_query_labels.validate_intents",
+        "target": "Intent.id"
+      },
+      {
+        "detail": {
+          "field": "name"
+        },
+        "operation": "project",
+        "sources": [
+          "intents.name"
+        ],
+        "step": "create_query_labels.validate_intents",
+        "target": "Intent.name"
+      },
+      {
+        "detail": {
+          "input_schema": "IntentPattern",
+          "output_schema": "IntentPattern"
+        },
+        "operation": "step",
+        "sources": [
+          "Intent"
+        ],
+        "step": "create_query_labels.validate_patterns",
+        "target": "create_query_labels.validate_patterns"
+      },
+      {
+        "detail": {
+          "diagnostic": "REL-E0702",
+          "keys": 3
+        },
+        "operation": "require_unique",
+        "sources": [
+          "pattern.intent_id",
+          "pattern.language",
+          "pattern.pattern"
+        ],
+        "step": "create_query_labels.validate_patterns",
+        "target": "create_query_labels.validate_patterns.require_unique[0]"
+      },
+      {
+        "detail": {
+          "diagnostic": "REL-E0703"
+        },
+        "operation": "require_all",
+        "sources": [
+          "pattern.language",
+          "pattern.pattern"
+        ],
+        "step": "create_query_labels.validate_patterns",
+        "target": "create_query_labels.validate_patterns.require_all[1]"
+      },
+      {
+        "detail": {
+          "diagnostic": "REL-E0704",
+          "nulls": "reject",
+          "reference": "intent"
+        },
+        "operation": "require_reference",
+        "sources": [
+          "pattern.intent_id",
+          "intent.id"
+        ],
+        "step": "create_query_labels.validate_patterns",
+        "target": "create_query_labels.validate_patterns.require_reference[2]"
+      },
+      {
+        "detail": {
+          "field": "intent_id"
+        },
+        "operation": "project",
+        "sources": [
+          "pattern.intent_id"
+        ],
+        "step": "create_query_labels.validate_patterns",
+        "target": "IntentPattern.intent_id"
+      },
+      {
+        "detail": {
+          "field": "language"
+        },
+        "operation": "project",
+        "sources": [
+          "pattern.language"
+        ],
+        "step": "create_query_labels.validate_patterns",
+        "target": "IntentPattern.language"
+      },
+      {
+        "detail": {
+          "field": "pattern"
+        },
+        "operation": "project",
+        "sources": [
+          "pattern.pattern"
+        ],
+        "step": "create_query_labels.validate_patterns",
+        "target": "IntentPattern.pattern"
+      },
+      {
+        "detail": {
+          "input_schema": "SearchQuery",
+          "output_schema": "QueryIntentLabel"
+        },
+        "operation": "step",
+        "sources": [
+          "IntentPattern",
+          "intent"
+        ],
+        "step": "create_query_labels.create_query_intents",
+        "target": "create_query_labels.create_query_intents"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "cross",
+          "right_alias": "create_query_labels__valid_intents"
+        },
+        "operation": "rowset_join",
+        "sources": [],
+        "step": "create_query_labels.create_query_intents",
+        "target": "create_query_labels.create_query_intents.join[1].intent"
+      },
+      {
+        "detail": {
+          "field": "query_id"
+        },
+        "operation": "project",
+        "sources": [
+          "query.id"
+        ],
+        "step": "create_query_labels.create_query_intents",
+        "target": "QueryIntentLabel.query_id"
+      },
+      {
+        "detail": {
+          "field": "content"
+        },
+        "operation": "project",
+        "sources": [
+          "query.content"
+        ],
+        "step": "create_query_labels.create_query_intents",
+        "target": "QueryIntentLabel.content"
+      },
+      {
+        "detail": {
+          "field": "language"
+        },
+        "operation": "project",
+        "sources": [
+          "query.language"
+        ],
+        "step": "create_query_labels.create_query_intents",
+        "target": "QueryIntentLabel.language"
+      },
+      {
+        "detail": {
+          "field": "intent_id"
+        },
+        "operation": "project",
+        "sources": [
+          "intent.id"
+        ],
+        "step": "create_query_labels.create_query_intents",
+        "target": "QueryIntentLabel.intent_id"
+      },
+      {
+        "detail": {
+          "field": "name"
+        },
+        "operation": "project",
+        "sources": [
+          "intent.name"
+        ],
+        "step": "create_query_labels.create_query_intents",
+        "target": "QueryIntentLabel.name"
+      },
+      {
+        "detail": {
+          "field": "value"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "create_query_labels.create_query_intents",
+        "target": "QueryIntentLabel.value"
+      },
+      {
+        "detail": {
+          "phase": "raw",
+          "project_output": false,
+          "schema_mode": "strict"
+        },
+        "operation": "hook",
+        "sources": [
+          "QueryIntentLabel"
+        ],
+        "step": "create_query_labels.create_query_intents",
+        "target": "create_query_labels.create_query_intents.hook.match_patterns"
+      },
+      {
+        "detail": {
+          "input_schema": "QueryIntentLabel",
+          "output_schema": "QueryLabelAssignmentEntries"
+        },
+        "operation": "step",
+        "sources": [
+          "QueryIntentLabel"
+        ],
+        "step": "create_query_labels.collect_labels",
+        "target": "create_query_labels.collect_labels"
+      },
+      {
+        "detail": {
+          "field": "query_id",
+          "function": "key",
+          "key": "query_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "QueryIntentLabel.query_id"
+        ],
+        "step": "create_query_labels.collect_labels",
+        "target": "QueryLabelAssignmentEntries.query_id"
+      },
+      {
+        "detail": {
+          "field": "entries",
+          "function": "collect_list",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "QueryIntentLabel.name",
+          "QueryIntentLabel.value"
+        ],
+        "step": "create_query_labels.collect_labels",
+        "target": "QueryLabelAssignmentEntries.entries"
+      },
+      {
+        "detail": {
+          "input_schema": "QueryLabelAssignmentEntries",
+          "output_schema": "QueryLabelAssignments"
+        },
+        "operation": "step",
+        "sources": [
+          "QueryLabelAssignmentEntries"
+        ],
+        "step": "create_query_labels.create_labels",
+        "target": "create_query_labels.create_labels"
+      },
+      {
+        "detail": {
+          "field": "query_id"
+        },
+        "operation": "project",
+        "sources": [
+          "QueryLabelAssignmentEntries.query_id"
+        ],
+        "step": "create_query_labels.create_labels",
+        "target": "QueryLabelAssignments.query_id"
+      },
+      {
+        "detail": {
+          "field": "labels"
+        },
+        "operation": "project",
+        "sources": [
+          "QueryLabelAssignmentEntries.entries"
+        ],
+        "step": "create_query_labels.create_labels",
+        "target": "QueryLabelAssignments.labels"
+      },
+      {
+        "detail": {
+          "input_schema": "QueryLabel",
+          "output_schema": "QueryLabel"
+        },
+        "operation": "step",
+        "sources": [
+          "QueryLabelAssignments"
+        ],
+        "step": "merge_query_labels.select_latest",
+        "target": "merge_query_labels.select_latest"
+      },
+      {
+        "detail": {
+          "direction": "latest",
+          "partitions": "2",
+          "ties": "error"
+        },
+        "operation": "latest_by",
+        "sources": [
+          "query_labels.assigned_at",
+          "query_labels.query_id",
+          "query_labels.label.name"
+        ],
+        "step": "merge_query_labels.select_latest",
+        "target": "merge_query_labels.select_latest.latest_by[1]"
+      },
+      {
+        "detail": {
+          "scope": "query_labels",
+          "subset": "4"
+        },
+        "operation": "drop_duplicates",
+        "sources": [
+          "query_labels.query_id",
+          "query_labels.label.name",
+          "query_labels.label.value",
+          "query_labels.assigned_at"
+        ],
+        "step": "merge_query_labels.select_latest",
+        "target": "merge_query_labels.select_latest.drop_duplicates[0]"
+      },
+      {
+        "detail": {
+          "field": "query_id"
+        },
+        "operation": "project",
+        "sources": [
+          "query_labels.query_id"
+        ],
+        "step": "merge_query_labels.select_latest",
+        "target": "QueryLabel.query_id"
+      },
+      {
+        "detail": {
+          "field": "label"
+        },
+        "operation": "project",
+        "sources": [
+          "query_labels.label"
+        ],
+        "step": "merge_query_labels.select_latest",
+        "target": "QueryLabel.label"
+      },
+      {
+        "detail": {
+          "field": "assigned_at"
+        },
+        "operation": "project",
+        "sources": [
+          "query_labels.assigned_at"
+        ],
+        "step": "merge_query_labels.select_latest",
+        "target": "QueryLabel.assigned_at"
+      },
+      {
+        "detail": {
+          "input_schema": "QueryLabel",
+          "output_schema": "QueryLabelAssignmentEntries"
+        },
+        "operation": "step",
+        "sources": [
+          "QueryLabel"
+        ],
+        "step": "merge_query_labels.collect_assignments",
+        "target": "merge_query_labels.collect_assignments"
+      },
+      {
+        "detail": {
+          "field": "query_id",
+          "function": "key",
+          "key": "query_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "QueryLabel.query_id"
+        ],
+        "step": "merge_query_labels.collect_assignments",
+        "target": "QueryLabelAssignmentEntries.query_id"
+      },
+      {
+        "detail": {
+          "field": "entries",
+          "function": "collect_list",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "QueryLabel.label.name",
+          "QueryLabel.label.value"
+        ],
+        "step": "merge_query_labels.collect_assignments",
+        "target": "QueryLabelAssignmentEntries.entries"
+      },
+      {
+        "detail": {
+          "input_schema": "QueryLabelAssignmentEntries",
+          "output_schema": "QueryLabelAssignments"
+        },
+        "operation": "step",
+        "sources": [
+          "QueryLabelAssignmentEntries"
+        ],
+        "step": "merge_query_labels.create_assignments",
+        "target": "merge_query_labels.create_assignments"
+      },
+      {
+        "detail": {
+          "field": "query_id"
+        },
+        "operation": "project",
+        "sources": [
+          "QueryLabelAssignmentEntries.query_id"
+        ],
+        "step": "merge_query_labels.create_assignments",
+        "target": "QueryLabelAssignments.query_id"
+      },
+      {
+        "detail": {
+          "field": "labels"
+        },
+        "operation": "project",
+        "sources": [
+          "QueryLabelAssignmentEntries.entries"
+        ],
+        "step": "merge_query_labels.create_assignments",
+        "target": "QueryLabelAssignments.labels"
+      },
+      {
+        "detail": {
+          "input_schema": "SearchQuery",
+          "output_schema": "SearchQuery"
+        },
+        "operation": "step",
+        "sources": [
+          "QueryLabelAssignments",
+          "assignment"
+        ],
+        "step": "merge_query_labels.merge_caller_labels",
+        "target": "merge_query_labels.merge_caller_labels"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "left",
+          "right_alias": "merge_query_labels__assignments"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "assignment.query_id",
+          "query.id"
+        ],
+        "step": "merge_query_labels.merge_caller_labels",
+        "target": "merge_query_labels.merge_caller_labels.join[1].assignment"
+      },
+      {
+        "detail": {
+          "field": "id"
+        },
+        "operation": "project",
+        "sources": [
+          "query.id"
+        ],
+        "step": "merge_query_labels.merge_caller_labels",
+        "target": "SearchQuery.id"
+      },
+      {
+        "detail": {
+          "field": "queryset"
+        },
+        "operation": "project",
+        "sources": [
+          "query.queryset"
+        ],
+        "step": "merge_query_labels.merge_caller_labels",
+        "target": "SearchQuery.queryset"
+      },
+      {
+        "detail": {
+          "field": "content"
+        },
+        "operation": "project",
+        "sources": [
+          "query.content"
+        ],
+        "step": "merge_query_labels.merge_caller_labels",
+        "target": "SearchQuery.content"
+      },
+      {
+        "detail": {
+          "field": "labels"
+        },
+        "operation": "project",
+        "sources": [
+          "assignment.query_id",
+          "query.labels",
+          "assignment.labels"
+        ],
+        "step": "merge_query_labels.merge_caller_labels",
+        "target": "SearchQuery.labels"
+      },
+      {
+        "detail": {
+          "field": "is_question"
+        },
+        "operation": "project",
+        "sources": [
+          "assignment.query_id",
+          "query.labels",
+          "assignment.labels"
+        ],
+        "step": "merge_query_labels.merge_caller_labels",
+        "target": "SearchQuery.is_question"
+      },
+      {
+        "detail": {
+          "field": "is_time_sensitive"
+        },
+        "operation": "project",
+        "sources": [
+          "assignment.query_id",
+          "query.labels",
+          "assignment.labels"
+        ],
+        "step": "merge_query_labels.merge_caller_labels",
+        "target": "SearchQuery.is_time_sensitive"
+      },
+      {
+        "detail": {
+          "field": "language"
+        },
+        "operation": "project",
+        "sources": [
+          "query.language"
+        ],
+        "step": "merge_query_labels.merge_caller_labels",
+        "target": "SearchQuery.language"
+      },
+      {
+        "detail": {
+          "input_schema": "SearchQuery",
+          "output_schema": "SearchQuery"
+        },
+        "operation": "step",
+        "sources": [
+          "SearchQuery",
+          "assignment"
+        ],
+        "step": "merge_query_labels.merge_created_labels",
+        "target": "merge_query_labels.merge_created_labels"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "left",
+          "right_alias": "create_query_labels__labels"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "assignment.query_id",
+          "query.id"
+        ],
+        "step": "merge_query_labels.merge_created_labels",
+        "target": "merge_query_labels.merge_created_labels.join[1].assignment"
+      },
+      {
+        "detail": {
+          "field": "id"
+        },
+        "operation": "project",
+        "sources": [
+          "query.id"
+        ],
+        "step": "merge_query_labels.merge_created_labels",
+        "target": "SearchQuery.id"
+      },
+      {
+        "detail": {
+          "field": "queryset"
+        },
+        "operation": "project",
+        "sources": [
+          "query.queryset"
+        ],
+        "step": "merge_query_labels.merge_created_labels",
+        "target": "SearchQuery.queryset"
+      },
+      {
+        "detail": {
+          "field": "content"
+        },
+        "operation": "project",
+        "sources": [
+          "query.content"
+        ],
+        "step": "merge_query_labels.merge_created_labels",
+        "target": "SearchQuery.content"
+      },
+      {
+        "detail": {
+          "field": "labels"
+        },
+        "operation": "project",
+        "sources": [
+          "assignment.query_id",
+          "query.labels",
+          "assignment.labels"
+        ],
+        "step": "merge_query_labels.merge_created_labels",
+        "target": "SearchQuery.labels"
+      },
+      {
+        "detail": {
+          "field": "is_question"
+        },
+        "operation": "project",
+        "sources": [
+          "assignment.query_id",
+          "query.labels",
+          "assignment.labels"
+        ],
+        "step": "merge_query_labels.merge_created_labels",
+        "target": "SearchQuery.is_question"
+      },
+      {
+        "detail": {
+          "field": "is_time_sensitive"
+        },
+        "operation": "project",
+        "sources": [
+          "assignment.query_id",
+          "query.labels",
+          "assignment.labels"
+        ],
+        "step": "merge_query_labels.merge_created_labels",
+        "target": "SearchQuery.is_time_sensitive"
+      },
+      {
+        "detail": {
+          "field": "language"
+        },
+        "operation": "project",
+        "sources": [
+          "query.language"
+        ],
+        "step": "merge_query_labels.merge_created_labels",
+        "target": "SearchQuery.language"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "SearchQuery"
+        ],
+        "step": null,
+        "target": "SearchQuery.validation.final"
+      }
+    ],
+    "opaque_boundaries": [
+      {
+        "hook": "match_patterns",
+        "phase": "raw",
+        "reason": "arbitrary PySpark hook body",
+        "schema": "QueryIntentLabel",
+        "step": "create_query_labels.create_query_intents",
+        "target": "create_query_labels.create_query_intents"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "intent",
+      "joins": [],
+      "name": "create_query_labels.validate_intents",
+      "output_alias": "intent",
+      "output_schema": "Intent",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "create_query_labels__valid_intents",
+          "lane": "create_query_labels__valid_intents",
+          "schema": "Intent"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "Intent"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "intent_pattern",
+      "joins": [],
+      "name": "create_query_labels.validate_patterns",
+      "output_alias": "intent_pattern",
+      "output_schema": "IntentPattern",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "create_query_labels__valid_patterns",
+          "lane": "create_query_labels__valid_patterns",
+          "schema": "IntentPattern"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "IntentPattern"
+        }
+      ]
+    },
+    {
+      "after_hooks": [
+        "match_patterns"
+      ],
+      "before_hooks": [],
+      "input_alias": "search_query",
+      "joins": [
+        {
+          "how": "cross",
+          "input": "intent",
+          "right_alias": "create_query_labels__valid_intents"
+        }
+      ],
+      "name": "create_query_labels.create_query_intents",
+      "output_alias": "query_intent_label",
+      "output_schema": "QueryIntentLabel",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "create_query_labels__query_intents",
+          "lane": "create_query_labels__query_intents",
+          "schema": "QueryIntentLabel"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "hook",
+          "schema": "QueryIntentLabel"
+        },
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "QueryIntentLabel"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "query_intent_label",
+      "joins": [],
+      "name": "create_query_labels.collect_labels",
+      "output_alias": "query_label_assignment_entries",
+      "output_schema": "QueryLabelAssignmentEntries",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "create_query_labels__entries",
+          "lane": "create_query_labels__entries",
+          "schema": "QueryLabelAssignmentEntries"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "QueryLabelAssignmentEntries"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "query_label_assignment_entries",
+      "joins": [],
+      "name": "create_query_labels.create_labels",
+      "output_alias": "query_label_assignments",
+      "output_schema": "QueryLabelAssignments",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "create_query_labels__labels",
+          "lane": "create_query_labels__labels",
+          "schema": "QueryLabelAssignments"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "QueryLabelAssignments"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "query_label",
+      "joins": [],
+      "name": "merge_query_labels.select_latest",
+      "output_alias": "query_label",
+      "output_schema": "QueryLabel",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "merge_query_labels__latest_labels",
+          "lane": "merge_query_labels__latest_labels",
+          "schema": "QueryLabel"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "QueryLabel"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "query_label",
+      "joins": [],
+      "name": "merge_query_labels.collect_assignments",
+      "output_alias": "query_label_assignment_entries",
+      "output_schema": "QueryLabelAssignmentEntries",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "merge_query_labels__entries",
+          "lane": "merge_query_labels__entries",
+          "schema": "QueryLabelAssignmentEntries"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "QueryLabelAssignmentEntries"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "query_label_assignment_entries",
+      "joins": [],
+      "name": "merge_query_labels.create_assignments",
+      "output_alias": "query_label_assignments",
+      "output_schema": "QueryLabelAssignments",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "merge_query_labels__assignments",
+          "lane": "merge_query_labels__assignments",
+          "schema": "QueryLabelAssignments"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "QueryLabelAssignments"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "search_query",
+      "joins": [
+        {
+          "how": "left",
+          "input": "assignment",
+          "right_alias": "merge_query_labels__assignments"
+        }
+      ],
+      "name": "merge_query_labels.merge_caller_labels",
+      "output_alias": "search_query",
+      "output_schema": "SearchQuery",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "merge_query_labels__caller_labeled_queries",
+          "lane": "merge_query_labels__caller_labeled_queries",
+          "schema": "SearchQuery"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "SearchQuery"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "search_query",
+      "joins": [
+        {
+          "how": "left",
+          "input": "assignment",
+          "right_alias": "create_query_labels__labels"
+        }
+      ],
+      "name": "merge_query_labels.merge_created_labels",
+      "output_alias": "search_query",
+      "output_schema": "SearchQuery",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "labeled_queries",
+          "lane": "labeled_queries",
+          "schema": "SearchQuery"
+        }
+      ],
+      "validation": []
+    }
+  ],
+  "target_module": "examples.structure_generated.search.pyspark.transforms.label_queries",
+  "validation": {
+    "outputs": [
+      {
+        "mode": "strict",
+        "name": "labeled_queries",
+        "schema": "SearchQuery"
+      }
+    ]
+  }
+}

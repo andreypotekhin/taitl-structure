@@ -1,0 +1,312 @@
+{
+  "dependencies": [
+    "assignment",
+    "create_query_labels__labels",
+    "create_query_labels__valid_intents",
+    "intent",
+    "merge_query_labels__assignments"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "queries",
+      "ordinal": 0,
+      "schema": "SearchQuery"
+    },
+    {
+      "name": "intents",
+      "ordinal": 1,
+      "schema": "Intent"
+    },
+    {
+      "name": "patterns",
+      "ordinal": 2,
+      "schema": "IntentPattern"
+    },
+    {
+      "name": "query_labels",
+      "ordinal": 3,
+      "schema": "QueryLabel"
+    }
+  ],
+  "name": "LabelQueries",
+  "outputs": [
+    {
+      "name": "labeled_queries",
+      "ordinal": 0,
+      "schema": "SearchQuery"
+    }
+  ],
+  "source": "examples.search.transforms.labeling.label_queries.LabelQueries",
+  "step_methods": [
+    {
+      "input_lane": "intents",
+      "input_schema": "Intent",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "intent",
+          "schema": "Intent",
+          "source": "intents"
+        }
+      ],
+      "name": "create_query_labels.validate_intents",
+      "output_lane": "create_query_labels__valid_intents",
+      "output_schema": "Intent",
+      "results": [
+        {
+          "frame": "create_query_labels__valid_intents",
+          "lane": "create_query_labels__valid_intents",
+          "schema": "Intent"
+        }
+      ]
+    },
+    {
+      "input_lane": "patterns",
+      "input_schema": "IntentPattern",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "pattern",
+          "schema": "IntentPattern",
+          "source": "patterns"
+        },
+        {
+          "driving": false,
+          "parameter": "intent",
+          "schema": "Intent",
+          "source": "create_query_labels__valid_intents"
+        }
+      ],
+      "name": "create_query_labels.validate_patterns",
+      "output_lane": "create_query_labels__valid_patterns",
+      "output_schema": "IntentPattern",
+      "results": [
+        {
+          "frame": "create_query_labels__valid_patterns",
+          "lane": "create_query_labels__valid_patterns",
+          "schema": "IntentPattern"
+        }
+      ]
+    },
+    {
+      "after_hooks": [
+        "match_patterns"
+      ],
+      "input_lane": "queries",
+      "input_schema": "SearchQuery",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "SearchQuery",
+          "source": "queries"
+        },
+        {
+          "driving": false,
+          "parameter": "intent",
+          "schema": "Intent",
+          "source": "create_query_labels__valid_intents"
+        }
+      ],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "intent"
+        }
+      ],
+      "name": "create_query_labels.create_query_intents",
+      "output_lane": "create_query_labels__query_intents",
+      "output_schema": "QueryIntentLabel",
+      "results": [
+        {
+          "frame": "create_query_labels__query_intents",
+          "lane": "create_query_labels__query_intents",
+          "schema": "QueryIntentLabel"
+        }
+      ]
+    },
+    {
+      "input_lane": "create_query_labels__query_intents",
+      "input_schema": "QueryIntentLabel",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "label",
+          "schema": "QueryIntentLabel",
+          "source": "create_query_labels__query_intents"
+        }
+      ],
+      "name": "create_query_labels.collect_labels",
+      "output_lane": "create_query_labels__entries",
+      "output_schema": "QueryLabelAssignmentEntries",
+      "results": [
+        {
+          "frame": "create_query_labels__entries",
+          "lane": "create_query_labels__entries",
+          "schema": "QueryLabelAssignmentEntries"
+        }
+      ]
+    },
+    {
+      "input_lane": "create_query_labels__entries",
+      "input_schema": "QueryLabelAssignmentEntries",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "entry",
+          "schema": "QueryLabelAssignmentEntries",
+          "source": "create_query_labels__entries"
+        }
+      ],
+      "name": "create_query_labels.create_labels",
+      "output_lane": "create_query_labels__labels",
+      "output_schema": "QueryLabelAssignments",
+      "results": [
+        {
+          "frame": "create_query_labels__labels",
+          "lane": "create_query_labels__labels",
+          "schema": "QueryLabelAssignments"
+        }
+      ]
+    },
+    {
+      "input_lane": "query_labels",
+      "input_schema": "QueryLabel",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "label",
+          "schema": "QueryLabel",
+          "source": "query_labels"
+        }
+      ],
+      "name": "merge_query_labels.select_latest",
+      "output_lane": "merge_query_labels__latest_labels",
+      "output_schema": "QueryLabel",
+      "results": [
+        {
+          "frame": "merge_query_labels__latest_labels",
+          "lane": "merge_query_labels__latest_labels",
+          "schema": "QueryLabel"
+        }
+      ]
+    },
+    {
+      "input_lane": "merge_query_labels__latest_labels",
+      "input_schema": "QueryLabel",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "label",
+          "schema": "QueryLabel",
+          "source": "merge_query_labels__latest_labels"
+        }
+      ],
+      "name": "merge_query_labels.collect_assignments",
+      "output_lane": "merge_query_labels__entries",
+      "output_schema": "QueryLabelAssignmentEntries",
+      "results": [
+        {
+          "frame": "merge_query_labels__entries",
+          "lane": "merge_query_labels__entries",
+          "schema": "QueryLabelAssignmentEntries"
+        }
+      ]
+    },
+    {
+      "input_lane": "merge_query_labels__entries",
+      "input_schema": "QueryLabelAssignmentEntries",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "entry",
+          "schema": "QueryLabelAssignmentEntries",
+          "source": "merge_query_labels__entries"
+        }
+      ],
+      "name": "merge_query_labels.create_assignments",
+      "output_lane": "merge_query_labels__assignments",
+      "output_schema": "QueryLabelAssignments",
+      "results": [
+        {
+          "frame": "merge_query_labels__assignments",
+          "lane": "merge_query_labels__assignments",
+          "schema": "QueryLabelAssignments"
+        }
+      ]
+    },
+    {
+      "input_lane": "queries",
+      "input_schema": "SearchQuery",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "SearchQuery",
+          "source": "queries"
+        },
+        {
+          "driving": false,
+          "parameter": "assignment",
+          "schema": "QueryLabelAssignments",
+          "source": "merge_query_labels__assignments"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "assignment"
+        }
+      ],
+      "name": "merge_query_labels.merge_caller_labels",
+      "output_lane": "merge_query_labels__caller_labeled_queries",
+      "output_schema": "SearchQuery",
+      "results": [
+        {
+          "frame": "merge_query_labels__caller_labeled_queries",
+          "lane": "merge_query_labels__caller_labeled_queries",
+          "schema": "SearchQuery"
+        }
+      ]
+    },
+    {
+      "input_lane": "merge_query_labels__caller_labeled_queries",
+      "input_schema": "SearchQuery",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "SearchQuery",
+          "source": "merge_query_labels__caller_labeled_queries"
+        },
+        {
+          "driving": false,
+          "parameter": "assignment",
+          "schema": "QueryLabelAssignments",
+          "source": "create_query_labels__labels"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "assignment"
+        }
+      ],
+      "name": "merge_query_labels.merge_created_labels",
+      "output_lane": "labeled_queries",
+      "output_schema": "SearchQuery",
+      "results": [
+        {
+          "frame": "labeled_queries",
+          "lane": "labeled_queries",
+          "schema": "SearchQuery"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/label_queries.py",
+    "traceability": "traceability/transforms/label_queries.LabelQueries.json"
+  }
+}

@@ -18,40 +18,48 @@ Source: `examples.search.transforms.scoring.ScoreAll.ScoreAll`
 
 ## Outputs
 
-- `document_overlap_scores`: `DocumentOverlapScore`
-- `section_overlap_scores`: `SectionOverlapScore`
-- `paragraph_overlap_scores`: `ParagraphOverlapScore`
-- `sentence_overlap_scores`: `SentenceOverlapScore`
-- `document_bm25_scores`: `DocumentBm25Score`
-- `section_bm25_scores`: `SectionBm25Score`
-- `paragraph_bm25_scores`: `ParagraphBm25Score`
-- `sentence_bm25_scores`: `SentenceBm25Score`
+- `document_scores`: `DocumentScore`
+- `section_scores`: `SectionScore`
+- `paragraph_scores`: `ParagraphScore`
+- `sentence_scores`: `SentenceScore`
 
 ## Step methods
 
-- `expand_query_terms`: `SearchQuery` -> `QueryTerm`
-- `select_distinct_query_terms`: `QueryTerm` -> `QueryTerm`
-- `count_query_terms`: `QueryTerm` -> `QueryTermCount`
-- `match_documents`: `QueryTerm` -> `DocumentOverlapMatch`
-- `match_sections`: `QueryTerm` -> `SectionOverlapMatch`
-- `match_paragraphs`: `QueryTerm` -> `ParagraphOverlapMatch`
-- `match_sentences`: `QueryTerm` -> `SentenceOverlapMatch`
-- `publish_document_overlap_scores`: `DocumentOverlapMatch` -> `DocumentOverlapScore`
-- `publish_section_overlap_scores`: `SectionOverlapMatch` -> `SectionOverlapScore`
-- `publish_paragraph_overlap_scores`: `ParagraphOverlapMatch` -> `ParagraphOverlapScore`
-- `publish_sentence_overlap_scores`: `SentenceOverlapMatch` -> `SentenceOverlapScore`
-- `score_document_bm25`: `QueryTerm` -> `DocumentBm25Score`
-- `score_section_bm25`: `QueryTerm` -> `SectionBm25Score`
-- `score_paragraph_bm25`: `QueryTerm` -> `ParagraphBm25Score`
-- `score_sentence_bm25`: `QueryTerm` -> `SentenceBm25Score`
+- `overlap.expand_query_terms`: `SearchQuery` -> `QueryTerm`
+- `overlap.select_distinct_query_terms`: `QueryTerm` -> `QueryTerm`
+- `overlap.count_query_terms`: `QueryTerm` -> `QueryTermCount`
+- `overlap.match_documents`: `QueryTerm` -> `DocumentOverlapMatch`
+- `overlap.match_sections`: `QueryTerm` -> `SectionOverlapMatch`
+- `overlap.match_paragraphs`: `QueryTerm` -> `ParagraphOverlapMatch`
+- `overlap.match_sentences`: `QueryTerm` -> `SentenceOverlapMatch`
+- `overlap.publish_document_overlap_scores`: `DocumentOverlapMatch` -> `DocumentOverlapScore`
+- `overlap.publish_section_overlap_scores`: `SectionOverlapMatch` -> `SectionOverlapScore`
+- `overlap.publish_paragraph_overlap_scores`: `ParagraphOverlapMatch` -> `ParagraphOverlapScore`
+- `overlap.publish_sentence_overlap_scores`: `SentenceOverlapMatch` -> `SentenceOverlapScore`
+- `bm25.expand_query_terms`: `SearchQuery` -> `QueryTerm`
+- `bm25.select_distinct_query_terms`: `QueryTerm` -> `QueryTerm`
+- `bm25.count_query_terms`: `QueryTerm` -> `QueryTermCount`
+- `bm25.score_document_bm25`: `QueryTerm` -> `DocumentBm25Score`
+- `bm25.score_section_bm25`: `QueryTerm` -> `SectionBm25Score`
+- `bm25.score_paragraph_bm25`: `QueryTerm` -> `ParagraphBm25Score`
+- `bm25.score_sentence_bm25`: `QueryTerm` -> `SentenceBm25Score`
+- `selected.score_documents`: `DocumentOverlapScore` -> `DocumentScore`
+- `selected.score_sections`: `SectionOverlapScore` -> `SectionScore`
+- `selected.score_paragraphs`: `ParagraphOverlapScore` -> `ParagraphScore`
+- `selected.score_sentences`: `SentenceOverlapScore` -> `SentenceScore`
 
 ## Dependencies
 
+- `bm25`
+- `bm25__document_bm25_scores`
+- `bm25__paragraph_bm25_scores`
+- `bm25__section_bm25_scores`
+- `bm25__sentence_bm25_scores`
 - `document_summary`
 - `document_terms`
+- `overlap__query_sizes`
 - `paragraph_summary`
 - `paragraph_terms`
-- `query_sizes`
 - `section_summary`
 - `section_terms`
 - `sentence_summary`

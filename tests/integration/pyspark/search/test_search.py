@@ -194,11 +194,12 @@ from examples.search.transforms.experiment import (
 from examples.search.transforms.experiment import SelectExperimentScores
 from examples.search.transforms.extract import ExtractText
 from examples.search.transforms.index import CreateIndex
-from examples.search.transforms.labeling import CreateQueryLabels, MergeQueryLabels
+from examples.search.transforms.labeling import CreateQueryLabels, LabelQueries, MergeQueryLabels
 from examples.search.transforms.profile import ProfileDocuments
 from examples.search.transforms.relevance.BuildRelevanceSignals import BuildRelevanceSignals
-from examples.search.transforms.score import AddScores
-from examples.search.transforms.scoring.ScoreAll import ScoreAll
+from examples.search.transforms.score import ScoreAll
+from examples.search.transforms.scoring.ScoreBm25 import ScoreBm25
+from examples.search.transforms.scoring.ScoreOverlap import ScoreOverlap
 from examples.search.transforms.search import SearchDocuments, SearchPassages, SearchSentences
 from examples.search.transforms.searching.search_similarity import SearchSimilarity
 from examples.search.transforms.similarities.CreateSimilarityQueries import CreateSimilarityQueries
@@ -426,7 +427,11 @@ TRANSFORMS = (
     (SearchDocuments, "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments"),
     (MergeQueryLabels, "examples.search.transforms.labeling.merge_query_labels.MergeQueryLabels"),
     (CreateQueryLabels, "examples.search.transforms.labeling.create_query_labels.CreateQueryLabels"),
-    (SelectExperimentScores, "examples.search.transforms.experiments.select_experiment_scores.SelectExperimentScores"),
+    (LabelQueries, "examples.search.transforms.labeling.label_queries.LabelQueries"),
+    (
+        SelectExperimentScores,
+        "examples.search.transforms.experiments.select_experiment_scores.SelectExperimentScores",
+    ),
     (
         EvaluateExperimentDocumentRankingQuality,
         "examples.search.transforms.experiments.search_docs.eval_ranking.EvaluateDocumentRankingQuality",
@@ -471,6 +476,8 @@ TRANSFORMS = (
         CreateSimilarityQueries,
         "examples.search.transforms.similarities.CreateSimilarityQueries.CreateSimilarityQueries",
     ),
+    (ScoreOverlap, "examples.search.transforms.scoring.ScoreOverlap.ScoreOverlap"),
+    (ScoreBm25, "examples.search.transforms.scoring.ScoreBm25.ScoreBm25"),
     (ScoreAll, "examples.search.transforms.scoring.ScoreAll.ScoreAll"),
     (
         ReduceSimilarityScores,
@@ -483,9 +490,28 @@ TRANSFORMS = (
     (SimilarSections, "examples.search.transforms.similarities.SimilarSections.SimilarSections"),
     (SimilarParagraphs, "examples.search.transforms.similarities.SimilarParagraphs.SimilarParagraphs"),
     (SimilarSentences, "examples.search.transforms.similarities.SimilarSentences.SimilarSentences"),
-    (AddScores, "examples.search.transforms.score.AddScores"),
     (ResolveCohortBands, "examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands"),
 )
+
+
+def test_query_labeling_pipeline_renders_with_stage_owned_raw_hook() -> None:
+    files = render_generated_project(
+        LabelQueries,
+        source_transform="examples.search.transforms.labeling.label_queries.LabelQueries",
+        generated_package=PACKAGE,
+        source_schema_modules=SCHEMA_MODULES,
+    )
+
+    text = files[f"{PACKAGE}/pyspark/transforms/labeling/label_queries.py"]
+    hook_call = (
+        "create_query_labels__query_intents = "
+        "self._impl_create_query_labels_CreateQueryLabels.match_patterns("
+    )
+
+    assert "from examples.search.transforms.labeling.create_query_labels import CreateQueryLabels" in text
+    assert "self._impl_create_query_labels_CreateQueryLabels = CreateQueryLabels()" in text
+    assert hook_call in text
+    assert "merge_query_labels.merge_created_labels" in text
 
 
 def test_query_intents_create_multilingual_english_labels_online_and_generated(spark, tmp_path) -> None:
@@ -797,8 +823,14 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             queries=generated_similarity_queries.queries,
             **{name: value for name, value in similarity_index_inputs.items() if name != "policy"},
         )
-        online_similarity_scores = ScoreAll(**similarity_score_inputs).run(session(spark, execution_mode="online"))
-        generated_similarity_scores = ScoreAll(**similarity_score_inputs).run(
+        online_similarity_overlap_scores = ScoreOverlap(**similarity_score_inputs).run(
+            session(spark, execution_mode="online")
+        )
+        online_similarity_bm25_scores = ScoreBm25(**similarity_score_inputs).run(session(spark, execution_mode="online"))
+        generated_similarity_overlap_scores = ScoreOverlap(**similarity_score_inputs).run(
+            session(spark, execution_mode="generated", generated_package=PACKAGE)
+        )
+        generated_similarity_bm25_scores = ScoreBm25(**similarity_score_inputs).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
         similarity_reducer_inputs = dict(
@@ -807,12 +839,17 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             paragraph_queries=generated_similarity_queries.paragraph_queries,
             sentence_queries=generated_similarity_queries.sentence_queries,
             **{
-                name: getattr(generated_similarity_scores, name)
+                name: getattr(generated_similarity_overlap_scores, name)
                 for name in (
                     "document_overlap_scores",
                     "section_overlap_scores",
                     "paragraph_overlap_scores",
                     "sentence_overlap_scores",
+                )
+            },
+            **{
+                name: getattr(generated_similarity_bm25_scores, name)
+                for name in (
                     "document_bm25_scores",
                     "section_bm25_scores",
                     "paragraph_bm25_scores",
@@ -826,12 +863,17 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             paragraph_queries=online_similarity_queries.paragraph_queries,
             sentence_queries=online_similarity_queries.sentence_queries,
             **{
-                name: getattr(online_similarity_scores, name)
+                name: getattr(online_similarity_overlap_scores, name)
                 for name in (
                     "document_overlap_scores",
                     "section_overlap_scores",
                     "paragraph_overlap_scores",
                     "sentence_overlap_scores",
+                )
+            },
+            **{
+                name: getattr(online_similarity_bm25_scores, name)
+                for name in (
                     "document_bm25_scores",
                     "section_bm25_scores",
                     "paragraph_bm25_scores",
@@ -934,8 +976,8 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             sentence_terms=generated_index.sentence_terms,
             sentence_summary=generated_index.sentence_summary,
         )
-        online_scores = AddScores(**search_inputs).run(session(spark, execution_mode="online"))
-        generated_scores = AddScores(**search_inputs).run(
+        online_scores = ScoreAll(**search_inputs).run(session(spark, execution_mode="online"))
+        generated_scores = ScoreAll(**search_inputs).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
         assert rows(online_scores.document_scores, "query_id", "document_id") == rows(
@@ -983,7 +1025,7 @@ def test_search_ranks_fixture_sentences_online_and_generated(spark, tmp_path) ->
         index = CreateIndex(words=segments.words).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
-        scores = AddScores(
+        scores = ScoreAll(
             queries=queries,
             document_terms=index.document_terms,
             document_summary=index.document_summary,
@@ -1083,7 +1125,7 @@ def test_passage_search_ranks_paragraphs_with_same_section_context(spark, tmp_pa
         index = CreateIndex(words=segments.words).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
-        scores = AddScores(
+        scores = ScoreAll(
             queries=queries,
             document_terms=index.document_terms,
             document_summary=index.document_summary,

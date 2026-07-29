@@ -14,7 +14,7 @@ For the architecture, evidence boundaries, and ownership model, see the
 | --- | --- | --- | --- |
 | Extraction | `ExtractText` | sections, paragraphs, sentences, words | Plain-text hierarchy and shared token normalization. |
 | Indexing | `CreateIndex` | target-grain terms and summaries | Build once; score many query batches. |
-| Scoring | `ScoreAll`, `AddScores` | external production score relations | Keep algorithms separate from immutable corpus rows. |
+| Scoring | `ScoreAll` | external production score relations | Keep algorithms separate from immutable corpus rows. |
 | Similarity | `CreateSimilarityQueries`, `ReduceSimilarityScores` | same-grain corpus pairs | Reuse the lexical index; BM25 stays directional. |
 | Feedback | `Impressions`, `Clicks`, `BuildRelevanceSignals` | daily facts and batch signals | Exposure-aware, attributed, propensity-corrected evidence. |
 | Presentation | `SearchSentences`, `SearchPassages`, `SearchDocuments` | deterministic ranks | Sentence and passage ranking are lexical; document ranking is two-stage. |
@@ -83,11 +83,12 @@ passage-level presentation to share normalization without conflating their retri
 ## Keyword Search
 
 `ScoreBase` declares the shared query and four target-grain index inputs. `ScoreOverlap` and `ScoreBm25` independently
-inherit that base; `ScoreAll(ScoreOverlap, ScoreBm25)` composes both score families. `AddScores` joins their outputs
-onto corpus rows. Together they accept a DataFrame conforming to `SearchQuery` and reusable indexes, emit separate
-overlap/BM25 score lanes, and preserve the distinction between lexical scoring and result presentation.
+inherit that base when callers need reusable score families directly. `SelectScores` joins overlap and BM25 outputs
+into production score rows, and `ScoreAll` stages `ScoreOverlap`, `ScoreBm25`, and `SelectScores` as the app-facing
+scoring pipeline. Together they accept a DataFrame conforming to `SearchQuery` and reusable indexes, emit separate
+overlap/BM25 score families, and preserve the distinction between lexical scoring and result presentation.
 
-`AddScores` accepts a caller-supplied DataFrame conforming to `SearchQuery` (`id`, `queryset`, and `content`) plus matching index
+`ScoreAll` accepts a caller-supplied DataFrame conforming to `SearchQuery` (`id`, `queryset`, and `content`) plus matching index
 artifacts and creates a score row for every document, section, paragraph, and sentence that shares a keyword with the
 query. `content` is free-form text: callers do not pre-tokenize it. For example, `"  AURORA,   beacon! navigation?  "` is equivalent to
 `"aurora beacon navigation"`.
@@ -144,8 +145,9 @@ evaluator for one band, or the combined evaluator when both query labels and a b
 
 `CreateSimilarityQueries` and `ReduceSimilarityScores` reuse those same artifacts for corpus self-similarity. The first
 turns each document, section, paragraph, and sentence vocabulary into a tagged query; pass the combined query rows to
-`ScoreAll`, then give its directed score rows to the reducer. The reducer returns at most 10 neighbors per source target
-and grain, ordered by descending source-to-candidate BM25, descending overlap, and candidate identifiers. Each directed
+`ScoreOverlap` and `ScoreBm25`, then give their directed score rows to the reducer. The reducer returns at most 10
+neighbors per source target and grain, ordered by descending source-to-candidate BM25, descending overlap, and candidate
+identifiers. Each directed
 pair retains the bounded symmetric overlap coefficient, both BM25 directions, and their arithmetic mean. BM25 remains
 directional and corpus-dependent, so `bm25_mean` is a convenience for inspection rather than a calibrated probability.
 
@@ -183,7 +185,15 @@ similarity_queries = CreateSimilarityQueries(
     sentence_summary=index.sentence_summary,
 ).run(session)
 
-directed = ScoreAll(
+overlap = ScoreOverlap(
+    queries=similarity_queries.queries,
+    document_terms=index.document_terms,
+    section_terms=index.section_terms,
+    paragraph_terms=index.paragraph_terms,
+    sentence_terms=index.sentence_terms,
+).run(session)
+
+bm25 = ScoreBm25(
     queries=similarity_queries.queries,
     document_terms=index.document_terms,
     document_summary=index.document_summary,
@@ -200,14 +210,14 @@ similarities = ReduceSimilarityScores(
     section_queries=similarity_queries.section_queries,
     paragraph_queries=similarity_queries.paragraph_queries,
     sentence_queries=similarity_queries.sentence_queries,
-    document_overlap_scores=directed.document_overlap_scores,
-    section_overlap_scores=directed.section_overlap_scores,
-    paragraph_overlap_scores=directed.paragraph_overlap_scores,
-    sentence_overlap_scores=directed.sentence_overlap_scores,
-    document_bm25_scores=directed.document_bm25_scores,
-    section_bm25_scores=directed.section_bm25_scores,
-    paragraph_bm25_scores=directed.paragraph_bm25_scores,
-    sentence_bm25_scores=directed.sentence_bm25_scores,
+    document_overlap_scores=overlap.document_overlap_scores,
+    section_overlap_scores=overlap.section_overlap_scores,
+    paragraph_overlap_scores=overlap.paragraph_overlap_scores,
+    sentence_overlap_scores=overlap.sentence_overlap_scores,
+    document_bm25_scores=bm25.document_bm25_scores,
+    section_bm25_scores=bm25.section_bm25_scores,
+    paragraph_bm25_scores=bm25.paragraph_bm25_scores,
+    sentence_bm25_scores=bm25.sentence_bm25_scores,
 ).run(session)
 
 # Reuse a same-grain pair set for the corresponding presentation transform.
@@ -216,12 +226,12 @@ document_pairs = similarities.document_similarities
 
 ## Sentence Search
 
-The shared `AddScores` output supplies the sentence candidates. `SearchSentences`
-accepts immutable sentences and `AddScores.sentence_scores`, emits one-based `SentenceSearchResult` ranks per query and experiment.
+The shared `ScoreAll` output supplies the sentence candidates. `SearchSentences`
+accepts immutable sentences and `ScoreAll.sentence_scores`, emits one-based `SentenceSearchResult` ranks per query and experiment.
 
 ```python
 index = CreateIndex(words=segments.words).run(session)
-scores = AddScores(
+scores = ScoreAll(
     queries=queries,
     document_terms=index.document_terms,
     document_summary=index.document_summary,
@@ -237,7 +247,7 @@ bm25 = scores.document_bm25_scores
 ```
 
 `SearchSentences` accepts a caller-supplied DataFrame conforming to `SearchQuery` and the scored output from
-`AddScores`, and returns matching sentences as a `SentenceSearchResult`.
+`ScoreAll`, and returns matching sentences as a `SentenceSearchResult`.
 `rank` is a one-based, deterministic ordering by BM25, overlap, document ID, and sentence ID; Spark DataFrames do not
 promise physical row order, so consumers sort or page by `rank`.
 
@@ -367,7 +377,7 @@ The fixture policy uses a 30-day half-life and 70/30 lexical-feedback weights. D
 eligible with zero feedback. Final rank is descending `rank_score`, then document ID. A candidate outside the BM25 top
 100 cannot enter through feedback, and a no-history query preserves BM25 order.
 
-`SearchDocuments` uses the same free-form `SearchQuery` DataFrame, immutable documents, and `AddScores.document_scores` as
+`SearchDocuments` uses the same free-form `SearchQuery` DataFrame, immutable documents, and `ScoreAll.document_scores` as
 the other search boundaries. Its additional inputs only rerank those lexical candidates; they do not change query
 parsing.
 
@@ -469,7 +479,7 @@ Passage Search can be used as a foundation for quesion-answer search engine.
 
 `SearchPassages` ranks the scored paragraph and holds its immediate preceding and trailing paragraphs as context.
 It returns `PassageSearchResult` rows with the document title and URL for citations, the section heading, and `preceding_content` and `following_content` if they exist. Context stays within a document section -  no heading transitions. The adjacent paragraphs do not affect lexical relevance or rank.
-It uses the same free-form `SearchQuery` DataFrame, immutable paragraphs, and `AddScores.paragraph_scores` as sentence and
+It uses the same free-form `SearchQuery` DataFrame, immutable paragraphs, and `ScoreAll.paragraph_scores` as sentence and
 document search.
 
 ```python
@@ -502,6 +512,7 @@ Evaluation is caller-owned and batch-only. `EvaluateDocumentRankingQuality` meas
 `SearchQuery.labels`. `EvaluationParams.labels` requires different label names to match and treats multiple values for
 one name as alternatives. An empty label map evaluates every query.
 
+`LabelQueries` composes `CreateQueryLabels` and `MergeQueryLabels` into the app-facing labeling pipeline.
 `CreateQueryLabels` creates deterministic intent-label maps for `MergeQueryLabels`. Supply an `Intent` catalog with
 stable English label names and one or more `IntentPattern` rows for each locale-specific regular-expression pattern.
 Each pattern row contains one expression; multiple patterns for an intent are alternatives. `SearchQuery.language` is a
@@ -522,7 +533,7 @@ the requested `band_id`, label slice, and active experiment identity.
 ## Experiments
 
 Corpus rows never carry experiment state. `DocumentScore`, `SectionScore`, `ParagraphScore`, and `SentenceScore` are
-query-target relations with an `experiment_id` and unified `score`; production rows use the empty ID. `AddScores`
+query-target relations with an `experiment_id` and unified `score`; production rows use the empty ID. `ScoreAll`
 creates those production rows from the default grain algorithm, while callers may supply identically shaped named
 experiment scores that combine any algorithms. `SelectExperimentScores` preserves production and admits only currently
 active named experiments before presentation or reranking. A single experiment ID flows from score through results and

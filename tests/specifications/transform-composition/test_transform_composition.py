@@ -719,6 +719,27 @@ def test_inherited_lane_remains_available_to_override() -> None:
     assert len(cast(PySparkStepBody, plan.steps[0].plugin_body).filters) == 1
 
 
+def test_search_score_all_uses_scoring_pipeline_stages() -> None:
+    from examples.search.transforms.index import EnrichWithScores
+    from examples.search.transforms.scoring.pipeline import ScoreAll
+
+    for transform in (ScoreAll, EnrichWithScores):
+        plan = _analysis(transform)
+
+        assert [output.name for output in plan.outputs] == [
+            "document_scores",
+            "section_scores",
+            "paragraph_scores",
+            "sentence_scores",
+        ]
+        assert [step.name for step in plan.steps][-4:] == [
+            "selected.score_documents",
+            "selected.score_sections",
+            "selected.score_paragraphs",
+            "selected.score_sentences",
+        ]
+
+
 class FakeTypes:
     @staticmethod
     def StructType(fields):

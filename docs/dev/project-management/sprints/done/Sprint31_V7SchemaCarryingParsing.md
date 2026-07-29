@@ -1,5 +1,8 @@
 # Sprint 31: V7 Schema-Carrying JSON and CSV Parsing
 
+Status: complete. Schema-carrying JSON/CSV conversion shipped with immutable options, inline generated schemas,
+diagnostics, online/generated parity, catalog status, and live PySpark 3.5/4.0 evidence.
+
 ## Sprint Goal
 
 Add exact Schema-carrying JSON/CSV conversion with a normalized, compiler-visible option record.
@@ -17,6 +20,12 @@ Add exact Schema-carrying JSON/CSV conversion with a normalized, compiler-visibl
 ## Acceptance
 
 - Every admitted conversion has an exact result schema and documented target-consistent parse-failure behavior.
+
+## Evidence
+
+- Focused expression, rendering, and integration-skip checks passed with 145 tests and 1 expected local live skip.
+- Live integration evidence records PySpark 3.5 passing with 4 tests and 3 skips, and PySpark 4.0 passing with 7 tests
+  for `tests/integration/pyspark/v7/test_schema_carrying_parsing.py`.
 
 ## Governing Documents
 

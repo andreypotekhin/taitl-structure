@@ -345,12 +345,14 @@ compiler-visible transformation library: it does not become a general PySpark wr
 
 ### v7 sequence
 
-- Sprint 28: create a checked PySpark 3.5.x/4.0.x coverage catalog, reconcile v4--v6 deferrals, complete the next
-  streaming design gate, and specify focused-delegate extraction boundaries.
-- Sprint 29: complete focused delegate extraction and typed generator expansion.
-- Sprint 30: add the Binary type and typed encoding helpers; Sprint 31: add Schema-carrying JSON/CSV conversion;
-  Sprint 32: add PySpark-named `mode(...)` after grouped keys, with portable deterministic tie lowering.
-- Streaming adoption Sprints 33--35: admit stream-static inner/left-semi enrichment, then left-outer lookup, then one
+- Sprint 28 complete: created the checked PySpark 3.5.x/4.0.x coverage catalog, reconciled v4--v6 deferrals, delivered
+  the first v7 typed coverage slices, admitted raw-hook-bearing composition, and moved Search labeling onto that generic
+  path.
+- Sprint 29 complete: completed focused generator delegate extraction and typed struct-generator expansion.
+- Sprints 30--32 complete: added Binary encoding, Schema-carrying JSON/CSV conversion, and PySpark-named grouped
+  `mode(...)` with portable deterministic tie lowering.
+- Sprint 33 complete: admitted stream-static inner, left, and left-semi enrichment with caller-owned restart evidence.
+- Streaming adoption Sprints 34--35: admit stream-static left-outer lookup, then one
   already admitted stateful operation followed only by stateless transforms. Each stage has target-matrix restart
   evidence and preserves caller lifecycle ownership.
 - Final hardening sprint: reconcile catalog, docs, generated artifacts, public imports, diagnostics, parity, and

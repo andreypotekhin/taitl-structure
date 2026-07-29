@@ -381,9 +381,10 @@ live PySpark lanes remain explicitly unclaimed in this workspace.
 
 ## M12: v7 Broad PySpark Transformation Coverage and Streaming Adoption
 
-Status: planned. v7 broadens the checked, typed PySpark transformation surface and takes the next safe step in
-caller-owned streaming adoption. It starts with Sprint 28's catalog and design gate rather than treating historical
-deferred plans as implicit implementation scope.
+Status: in progress. Sprints 28--33 completed the checked catalog, historical deferral reconciliation, focused
+generator delegates, struct-generator expansion, Binary encoding, schema-carrying parsing, deterministic grouped
+`mode(...)`, Stage One stream-static restart evidence, raw-hook-bearing composition, and Search's first composed
+hook-bearing consumer. Later v7 sprints continue the remaining streaming-adoption and hardening scope.
 
 ### Exit Criteria
 

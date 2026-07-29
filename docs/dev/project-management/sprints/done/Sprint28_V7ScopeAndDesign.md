@@ -89,3 +89,7 @@ Maintainers have one checked v7 backlog, a dependency-ordered feature sequence, 
   `stage(...)`, delegated generated code constructs stage-local hook delegates, `embed_hooks` emits owner-qualified
   copied hooks, and focused coverage proves repeated same-class delegates, online dispatch, traceability, and streaming
   reporting.
+- [x] (2026-07-28) Moved the Search query-labeling workflow onto the generic composition path with `LabelQueries`, and
+  kept production scoring behind the stable `score.ScoreAll` facade while using a composed scoring pipeline internally.
+- [x] (2026-07-28) Closed Sprint 28 release evidence: `make build` passed with mypy clean, main pytest
+  `1361 passed, 47 skipped`, secondary pytest `34 passed, 6 skipped`, and wheel/sdist artifacts built.

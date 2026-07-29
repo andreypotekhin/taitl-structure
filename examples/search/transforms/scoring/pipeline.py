@@ -1,4 +1,4 @@
-"""Public production-score selection boundary."""
+"""Compatibility import for the production scoring pipeline."""
 
 from examples.search.transforms.scoring.ScoreAll import ScoreAll
 

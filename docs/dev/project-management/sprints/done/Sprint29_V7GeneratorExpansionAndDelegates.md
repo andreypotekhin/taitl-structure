@@ -1,5 +1,8 @@
 # Sprint 29: V7 Generator Expansion and Focused Delegates
 
+Status: complete. The focused generator delegates and the typed struct-generator family shipped with specification,
+recipe, rendering, online/generated parity, traceability, diagnostics, catalog, and live PySpark 3.5/4.0 evidence.
+
 ## Sprint Goal
 
 Extract the generator seams from oversized PySpark components and add the typed array-of-struct generator variants.
@@ -18,6 +21,13 @@ Extract the generator seams from oversized PySpark components and add the typed 
 
 - Every admitted generator has source, recipe, online/generated, traceability, diagnostic, and live PySpark 3.5/4.0 evidence.
 - Generator delegates have direct characterization coverage and no behavior drift for `posexplode_struct(...)`.
+
+## Evidence
+
+- Focused generator specifications and runtime-contract checks passed with 29 tests:
+  `PYTHONPATH=.:src:tests poetry run pytest -q tests/specifications/v7-api-ledger/test_v7_explode_struct.py tests/specifications/v6-api-ledger/test_v6_posexplode_struct.py tests/user_stories/10_generated_code/shared_pyspark_semantic_contract/test_online_recipe_runtime.py -k 'explode_struct or posexplode_struct or inline_struct' --maxfail=3`.
+- Live integration evidence in the consolidated v7 plan records PySpark 3.5 passing with 5 tests and 3 skips, and
+  PySpark 4.0 passing with 8 tests for `tests/integration/pyspark/v7/test_struct_generators.py`.
 
 ## Governing Documents
 
