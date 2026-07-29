@@ -1,5 +1,6 @@
 """Shared reusable-index scoring inputs."""
 
+from examples.search.algorithms.text import normalized_token
 from examples.search.schemas.indexing.lexical.index import (
     DocumentIndexTerm,
     ParagraphIndexTerm,
@@ -14,9 +15,7 @@ from structure.plugin.pyspark import (
     count,
     drop_duplicates,
     group_by,
-    lower,
     posexplode_struct,
-    regexp_replace,
     split,
     trim,
     where,
@@ -40,13 +39,7 @@ class ScoreBase(Transform):
         tokens = arr_transform(
             split(trim(query.content), pattern=r"\s+"),
             lambda token: QueryToken(
-                token=lower(
-                    regexp_replace(
-                        trim(token),
-                        pattern=r"^[^A-Za-z0-9]+|[^A-Za-z0-9]+$",
-                        replacement="",
-                    )
-                )
+                token=normalized_token(token)
             ),
         )
         token = posexplode_struct(tokens, as_=ExpandedQueryToken, scope="query_token")

@@ -690,7 +690,9 @@ class ClassifyStreamingCompatibility:
                 problem="Hooks are arbitrary PySpark code. Structure cannot prove this hook is streaming-compatible.",
                 use=(
                     f"Mark {hook.name} with streaming=True only if it avoids Spark actions, "
-                    "RDD/Pandas conversion, streaming lifecycle APIs, and stateful streaming operations."
+                    "RDD/Pandas conversion, streaming lifecycle APIs, and stateful streaming operations. Keep "
+                    "readStream, writeStream, checkpoints, triggers, output modes, query start/stop, and foreach "
+                    "side effects in caller-owned PySpark code such as examples/streams/adoption.py."
                 ),
             ),
         )

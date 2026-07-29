@@ -1,0 +1,48 @@
+{
+  "dependencies": [],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "sentences",
+      "ordinal": 0,
+      "schema": "Sentence"
+    }
+  ],
+  "name": "WordChunking",
+  "outputs": [
+    {
+      "name": "words",
+      "ordinal": 0,
+      "schema": "Word"
+    }
+  ],
+  "source": "examples.search.transforms.chunking.WordChunking.WordChunking",
+  "step_methods": [
+    {
+      "input_lane": "sentences",
+      "input_schema": "Sentence",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "sentence",
+          "schema": "Sentence",
+          "source": "sentences"
+        }
+      ],
+      "name": "chunk",
+      "output_lane": "words",
+      "output_schema": "Word",
+      "results": [
+        {
+          "frame": "words",
+          "lane": "words",
+          "schema": "Word"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/WordChunking.py",
+    "traceability": "traceability/transforms/WordChunking.WordChunking.json"
+  }
+}

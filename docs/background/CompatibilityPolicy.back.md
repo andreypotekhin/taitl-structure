@@ -80,10 +80,10 @@ target_profile = ">=3.5,<4.1"
 target_variant = "spark-connect"
 ```
 
-Mainstream execution/generated-code execution targets ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs. Sprint
-09 promotes Spark Connect from experimental parity to supported status for completed compiler-visible batch features
-only, after live runtime evidence, diagnostics, and CI or documented verification are in place. V3 hardens streaming
-transformations while callers retain lifecycle ownership.
+Mainstream execution/generated-code execution targets ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs.
+Spark Connect is supported for completed compiler-visible batch features only, after live runtime evidence, diagnostics,
+and CI or documented verification are in place. The streaming API coverage ledger hardens admitted Structured Streaming
+transform shapes while callers retain lifecycle ownership.
 
 Spark Connect support is intentionally narrow:
 

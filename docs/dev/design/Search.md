@@ -17,7 +17,7 @@ Structure owns the typed transformations between caller-provided DataFrames. The
 source validation, persistence, index-refresh scheduling, query serving, streaming sources and sinks, checkpoints,
 ranking-version deployment, and answer generation.
 
-The current corpus is the corpus snapshot supplied to extraction, indexing, and scoring. A caller refreshes the corpus
+The current corpus is the corpus snapshot supplied to chunking, indexing, and scoring. A caller refreshes the corpus
 by replacing those inputs and persisted artifacts; Search has no hidden corpus cache or freshness policy.
 
 The example deliberately does not invoke a language model, synthesize an answer, collect driver-side corpus data, or
@@ -26,8 +26,7 @@ pass to another system.
 
 ## Text Model and Lexical Pipeline
 
-`Document.content` is plain text. Heading lines create sections, blank lines create paragraphs, sentences are derived
-within paragraphs, and words are normalized once for every later lexical path. The hierarchy preserves document,
+`Document.content` is plain text. `Chunking` turns heading lines into sections and blank-line groups into paragraphs. Its default sentence supplier is an explicitly declared punctuation-based Python UDF; it is a replaceable starting point, not a source-faithful segmenter. Callers that require exact sentence text or spans supply a `Paragraph`-to-`Sentence` transform and then reuse `WordChunking`. Words are normalized once for every later lexical path. The hierarchy preserves document,
 section, paragraph, sentence, and word identifiers plus deterministic ordinals.
 
 `CreateIndex` produces independent document, section, paragraph, and sentence index artifacts. Each grain has its own
@@ -201,7 +200,7 @@ uses a typed full-partition `window_max` step.
 
 Raw boundaries remain only where the DSL cannot yet express the necessary relation semantics:
 
-- text extraction needs row expansion and hierarchical parsing;
+- document chunking uses typed row expansion and hierarchical parsing; its deliberately replaceable default sentence supplier is a declared Python UDF, because exact source-faithful sentence spans are caller-owned;
 - lexical scoring needs query-token row expansion;
 - index summaries need a global aggregate with a defined empty-corpus result;
 - similarity-query creation needs sorted token collection and exact-one policy validation; and

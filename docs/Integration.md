@@ -97,6 +97,11 @@ result = EnrichOrders(
 ).run(session)
 ```
 
+For Structured Streaming jobs, keep source construction, sink configuration, checkpoints, triggers, output modes, query
+names, `start()`, `stop()`, and `awaitTermination()` in the Airflow/runner-owned PySpark layer. Pass the streaming
+DataFrame into Structure as a caller-supplied input, then apply the sink and lifecycle policy around the returned
+DataFrame. The tested recipe shape is [`examples/streams/adoption.py`](../examples/streams/adoption.py).
+
 ## Managed Spark Jobs
 
 For Databricks, EMR, Glue, or another managed Spark runtime:

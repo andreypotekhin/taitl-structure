@@ -16,6 +16,7 @@ from integration.pyspark.support.backend_matrix import (
 )
 from integration.pyspark.support.rows import rows
 
+from examples.streams.adoption import read_json_stream, start_memory_query, stop_query
 from examples.streams.schemas.events import GateProgress, JudgeCall, Passage, Penalty, RawEvent
 from examples.streams.schemas.race import Gate, Paddler, Race
 from examples.streams.transforms.passages import PreparePassages
@@ -97,12 +98,12 @@ def test_caller_owned_file_streams_run_online_and_generated_transforms(spark, tm
                 [("r-1", "p-1", 12, "Ava Stone", "NZL", "women-k1")], race_schemas.PADDLER_SCHEMA
             )
             gates = spark.createDataFrame([("r-1", 4, "upstream", "Narrows")], race_schemas.GATE_SCHEMA)
-            event_stream = spark.readStream.schema(schemas.RAW_EVENT_SCHEMA).json(str(events_path))
-            progress_passages = spark.readStream.schema(schemas.PASSAGE_SCHEMA).json(str(passages_path))
-            penalty_passages = spark.readStream.schema(schemas.PASSAGE_SCHEMA).json(str(passages_path))
-            call_stream = spark.readStream.schema(schemas.JUDGE_CALL_SCHEMA).json(str(calls_path))
-            online_penalty_passages = spark.readStream.schema(schemas.PASSAGE_SCHEMA).json(str(passages_path))
-            online_call_stream = spark.readStream.schema(schemas.JUDGE_CALL_SCHEMA).json(str(calls_path))
+            event_stream = read_json_stream(spark, schemas.RAW_EVENT_SCHEMA, events_path)
+            progress_passages = read_json_stream(spark, schemas.PASSAGE_SCHEMA, passages_path)
+            penalty_passages = read_json_stream(spark, schemas.PASSAGE_SCHEMA, passages_path)
+            call_stream = read_json_stream(spark, schemas.JUDGE_CALL_SCHEMA, calls_path)
+            online_penalty_passages = read_json_stream(spark, schemas.PASSAGE_SCHEMA, passages_path)
+            online_call_stream = read_json_stream(spark, schemas.JUDGE_CALL_SCHEMA, calls_path)
 
             online_passages = (
                 PreparePassages(events=event_stream, races=races, paddlers=paddlers, gates=gates)
@@ -202,8 +203,8 @@ def test_scalar_udf_runs_as_a_row_local_caller_owned_file_stream_transform(spark
             from pyspark.sql.types import StringType, StructField, StructType
 
             schema = StructType([StructField("id", StringType(), nullable=False)])
-            online_input = spark.readStream.schema(schema).json(str(source))
-            generated_input = spark.readStream.schema(schema).json(str(source))
+            online_input = read_json_stream(spark, schema, source)
+            generated_input = read_json_stream(spark, schema, source)
             online = StreamingScalarUdf(rows=online_input).run(session(spark, execution_mode="online")).clean
             generated = (
                 StreamingScalarUdf(rows=generated_input)
@@ -229,18 +230,12 @@ def test_scalar_udf_runs_as_a_row_local_caller_owned_file_stream_transform(spark
 
 def _collect_stream(frame, checkpoint, *, output_mode: str, order_by: str) -> list[dict[str, object]]:
     name = f"streams_{uuid4().hex}"
-    query = (
-        frame.writeStream.format("memory")
-        .queryName(name)
-        .outputMode(output_mode)
-        .option("checkpointLocation", str(checkpoint))
-        .start()
-    )
+    query = start_memory_query(frame, query_name=name, checkpoint=checkpoint, output_mode=output_mode)
     try:
         query.processAllAvailable()
         return rows(frame.sparkSession.table(name), order_by)
     finally:
-        query.stop()
+        stop_query(query)
 
 
 def _write_json(path, values) -> None:

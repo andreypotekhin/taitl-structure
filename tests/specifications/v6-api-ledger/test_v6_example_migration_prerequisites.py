@@ -22,9 +22,9 @@ COMPOSED_TRANSFORMS = {
     ),
 }
 RETIRED_TRANSFORMS = {
-    "search.extract-text.extract": (
-        "examples.search.transforms.extract",
-        "ExtractText",
+    "search.chunking.chunk": (
+        "examples.search.transforms.chunking.DocumentChunking",
+        "DocumentChunking",
     ),
     "security.vulnerability-posture.retain-reconciled-inventory": (
         "examples.security.transforms.posture",
@@ -339,8 +339,8 @@ def test_search_cohort_band_resolution_is_typed_and_has_no_opaque_hook_boundary(
     ]
 
 
-def test_search_text_extraction_is_typed_and_has_no_opaque_hook_boundary() -> None:
-    plan, traceability = _lowered("examples.search.transforms.extract", "ExtractText")
+def test_search_document_chunking_is_typed_and_has_no_opaque_hook_boundary() -> None:
+    plan, traceability = _lowered("examples.search.transforms.chunking.DocumentChunking", "DocumentChunking")
 
     assert traceability.opaque_boundaries == ()
     assert [operation.kind for operation in _step(plan, "mark_lines").operations] == ["posexplode_struct"]
@@ -354,14 +354,6 @@ def test_search_text_extraction_is_typed_and_has_no_opaque_hook_boundary() -> No
     assert paragraph_collect.aggregate.assignments[-1].order_by is not None
     assert [operation.kind for operation in _step(plan, "select_section_keys").operations] == ["drop_duplicates"]
     assert [operation.kind for operation in _step(plan, "build_sections").operations] == ["join"]
-    assert [operation.kind for operation in _step(plan, "build_sentences").operations] == [
-        "posexplode_struct",
-        "filter",
-    ]
-    assert [operation.kind for operation in _step(plan, "build_words").operations] == [
-        "posexplode_struct",
-        "filter",
-    ]
 
 
 def _entries() -> tuple[dict[str, Any], ...]:

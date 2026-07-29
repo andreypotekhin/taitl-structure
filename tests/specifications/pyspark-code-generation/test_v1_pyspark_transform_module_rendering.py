@@ -133,7 +133,7 @@ def test_v1_transform_module_renderer_is_spark_free() -> None:
 
     after = {name for name in sys.modules if name.startswith("pyspark")}
     assert after == before
-    assert text.startswith("from pyspark.sql import DataFrame, SparkSession\n")
+    assert text.startswith("from __future__ import annotations\nfrom pyspark.sql import DataFrame, SparkSession\n")
 
 
 def test_v1_transform_module_renderer_renders_class_runtime_shape() -> None:
@@ -314,6 +314,7 @@ def test_embed_udfs_copies_udf_source() -> None:
 
     ast.parse(text)
 
+    assert "from __future__ import annotations" in text
     assert "self._impl" not in text
     assert ".udf(" in text
     assert "self.normalize" in text

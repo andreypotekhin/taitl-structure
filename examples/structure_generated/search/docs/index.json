@@ -799,21 +799,9 @@
           "type": "string"
         },
         {
-          "column": "title",
-          "name": "title",
-          "nullable": false,
-          "type": "string"
-        },
-        {
-          "column": "url",
-          "name": "url",
-          "nullable": true,
-          "type": "string"
-        },
-        {
           "column": "normalized_title",
           "name": "normalized_title",
-          "nullable": true,
+          "nullable": false,
           "type": "string"
         },
         {
@@ -823,82 +811,10 @@
           "type": "string"
         },
         {
-          "column": "title_starts_with_the",
-          "name": "title_starts_with_the",
-          "nullable": true,
-          "type": "boolean"
-        },
-        {
-          "column": "title_ends_with_guide",
-          "name": "title_ends_with_guide",
-          "nullable": true,
-          "type": "boolean"
-        },
-        {
-          "column": "url_is_https",
-          "name": "url_is_https",
-          "nullable": true,
-          "type": "boolean"
-        },
-        {
-          "column": "content_contains_structure",
-          "name": "content_contains_structure",
+          "column": "title_length",
+          "name": "title_length",
           "nullable": false,
-          "type": "boolean"
-        },
-        {
-          "column": "content_like_guide",
-          "name": "content_like_guide",
-          "nullable": false,
-          "type": "boolean"
-        },
-        {
-          "column": "content_ilike_structure",
-          "name": "content_ilike_structure",
-          "nullable": false,
-          "type": "boolean"
-        },
-        {
-          "column": "content_matches_sentence",
-          "name": "content_matches_sentence",
-          "nullable": false,
-          "type": "boolean"
-        },
-        {
-          "column": "title_prefix",
-          "name": "title_prefix",
-          "nullable": false,
-          "type": "string"
-        },
-        {
-          "column": "title_words",
-          "name": "title_words",
-          "nullable": false,
-          "type": "array<string!>"
-        },
-        {
-          "column": "leading_title_words",
-          "name": "leading_title_words",
-          "nullable": false,
-          "type": "array<string!>"
-        },
-        {
-          "column": "sorted_title_words",
-          "name": "sorted_title_words",
-          "nullable": false,
-          "type": "array<string!>"
-        },
-        {
-          "column": "title_slug",
-          "name": "title_slug",
-          "nullable": false,
-          "type": "string"
-        },
-        {
-          "column": "first_number",
-          "name": "first_number",
-          "nullable": false,
-          "type": "string"
+          "type": "integer"
         },
         {
           "column": "content_length",
@@ -907,97 +823,13 @@
           "type": "integer"
         },
         {
-          "column": "title_case",
-          "name": "title_case",
-          "nullable": false,
-          "type": "string"
-        },
-        {
-          "column": "reversed_title",
-          "name": "reversed_title",
-          "nullable": false,
-          "type": "string"
-        },
-        {
-          "column": "translated_title",
-          "name": "translated_title",
-          "nullable": false,
-          "type": "string"
-        },
-        {
-          "column": "structure_position",
-          "name": "structure_position",
-          "nullable": false,
-          "type": "integer"
-        },
-        {
-          "column": "title_distance_to_guide",
-          "name": "title_distance_to_guide",
-          "nullable": false,
-          "type": "integer"
-        },
-        {
-          "column": "display_name",
-          "name": "display_name",
-          "nullable": false,
-          "type": "string"
-        },
-        {
-          "column": "title_hash",
-          "name": "title_hash",
-          "nullable": false,
-          "type": "integer"
-        },
-        {
-          "column": "content_sha2",
-          "name": "content_sha2",
-          "nullable": false,
-          "type": "string"
-        },
-        {
-          "column": "harvest_year",
-          "name": "harvest_year",
-          "nullable": false,
-          "type": "integer"
-        },
-        {
-          "column": "age_days",
-          "name": "age_days",
+          "column": "url_is_https",
+          "name": "url_is_https",
           "nullable": true,
-          "type": "integer"
-        },
-        {
-          "column": "content_length_sqrt",
-          "name": "content_length_sqrt",
-          "nullable": false,
-          "type": "double"
-        },
-        {
-          "column": "content_length_log",
-          "name": "content_length_log",
-          "nullable": false,
-          "type": "double"
-        },
-        {
-          "column": "rounded_content_length",
-          "name": "rounded_content_length",
-          "nullable": false,
-          "type": "double"
-        },
-        {
-          "column": "content_length_sign",
-          "name": "content_length_sign",
-          "nullable": false,
-          "type": "double"
-        },
-        {
-          "column": "source_recency_rank",
-          "name": "source_recency_rank",
-          "nullable": false,
-          "type": "long"
+          "type": "boolean"
         }
       ],
-      "module": "examples.search.schemas.analytics",
+      "module": "examples.search.schemas.features",
       "name": "DocumentFeatures"
     },
     {
@@ -1206,6 +1038,235 @@
       ],
       "module": "examples.search.schemas.relevance",
       "name": "DocumentPopularity"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "collection_id",
+          "name": "collection_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "source",
+          "name": "source",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "language",
+          "name": "language",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "title",
+          "name": "title",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "url",
+          "name": "url",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "normalized_title",
+          "name": "normalized_title",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "normalized_content",
+          "name": "normalized_content",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "title_starts_with_the",
+          "name": "title_starts_with_the",
+          "nullable": true,
+          "type": "boolean"
+        },
+        {
+          "column": "title_ends_with_guide",
+          "name": "title_ends_with_guide",
+          "nullable": true,
+          "type": "boolean"
+        },
+        {
+          "column": "url_is_https",
+          "name": "url_is_https",
+          "nullable": true,
+          "type": "boolean"
+        },
+        {
+          "column": "content_contains_structure",
+          "name": "content_contains_structure",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "content_like_guide",
+          "name": "content_like_guide",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "content_ilike_structure",
+          "name": "content_ilike_structure",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "content_matches_sentence",
+          "name": "content_matches_sentence",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "title_prefix",
+          "name": "title_prefix",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "title_words",
+          "name": "title_words",
+          "nullable": false,
+          "type": "array<string!>"
+        },
+        {
+          "column": "leading_title_words",
+          "name": "leading_title_words",
+          "nullable": false,
+          "type": "array<string!>"
+        },
+        {
+          "column": "sorted_title_words",
+          "name": "sorted_title_words",
+          "nullable": false,
+          "type": "array<string!>"
+        },
+        {
+          "column": "title_slug",
+          "name": "title_slug",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "first_number",
+          "name": "first_number",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "content_length",
+          "name": "content_length",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "column": "title_case",
+          "name": "title_case",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "reversed_title",
+          "name": "reversed_title",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "translated_title",
+          "name": "translated_title",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "structure_position",
+          "name": "structure_position",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "column": "title_distance_to_guide",
+          "name": "title_distance_to_guide",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "column": "display_name",
+          "name": "display_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "title_hash",
+          "name": "title_hash",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "column": "content_sha2",
+          "name": "content_sha2",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "harvest_year",
+          "name": "harvest_year",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "column": "age_days",
+          "name": "age_days",
+          "nullable": true,
+          "type": "integer"
+        },
+        {
+          "column": "content_length_sqrt",
+          "name": "content_length_sqrt",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "content_length_log",
+          "name": "content_length_log",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "rounded_content_length",
+          "name": "rounded_content_length",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "content_length_sign",
+          "name": "content_length_sign",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "source_recency_rank",
+          "name": "source_recency_rank",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.search.schemas.analytics",
+      "name": "DocumentProfile"
     },
     {
       "bases": [],
@@ -1829,6 +1890,61 @@
       "bases": [],
       "fields": [
         {
+          "column": "search_query_id",
+          "name": "search_query_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "relevance_grade",
+          "name": "relevance_grade",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "lexical_score",
+          "name": "lexical_score",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "query_token_count",
+          "name": "query_token_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "query_distinct_token_count",
+          "name": "query_distinct_token_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "document_content_length",
+          "name": "document_content_length",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "column": "document_url_is_https",
+          "name": "document_url_is_https",
+          "nullable": true,
+          "type": "boolean"
+        }
+      ],
+      "module": "examples.search.schemas.training.data",
+      "name": "DocumentTrainingData"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
           "column": "window",
           "name": "window",
           "nullable": false,
@@ -1862,6 +1978,33 @@
       ],
       "module": "examples.search.schemas.evaluation.params",
       "name": "EvaluationParams"
+    },
+    {
+      "bases": [
+        "QueryFeatureToken"
+      ],
+      "fields": [
+        {
+          "column": "query_id",
+          "name": "query_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "token",
+          "name": "token",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "ordinal",
+          "name": "ordinal",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.search.schemas.features",
+      "name": "ExpandedQueryFeatureToken"
     },
     {
       "bases": [],
@@ -2902,6 +3045,80 @@
           "type": "string"
         },
         {
+          "column": "token",
+          "name": "token",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.search.schemas.features",
+      "name": "QueryFeatureToken"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "query_id",
+          "name": "query_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "queryset",
+          "name": "queryset",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "language",
+          "name": "language",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "normalized_content",
+          "name": "normalized_content",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "token_count",
+          "name": "token_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "distinct_token_count",
+          "name": "distinct_token_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "is_question",
+          "name": "is_question",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "is_time_sensitive",
+          "name": "is_time_sensitive",
+          "nullable": false,
+          "type": "boolean"
+        }
+      ],
+      "module": "examples.search.schemas.features",
+      "name": "QueryFeatures"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "query_id",
+          "name": "query_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
           "column": "content",
           "name": "content",
           "nullable": false,
@@ -2959,6 +3176,31 @@
       ],
       "module": "examples.search.schemas.label",
       "name": "QueryLabel"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "query_id",
+          "name": "query_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "token_count",
+          "name": "token_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "distinct_token_count",
+          "name": "distinct_token_count",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.search.schemas.features",
+      "name": "QueryTokenSummary"
     },
     {
       "bases": [],
@@ -4655,12 +4897,12 @@
         {
           "name": "comparison_left",
           "ordinal": 4,
-          "schema": "DocumentFeatures"
+          "schema": "DocumentProfile"
         },
         {
           "name": "comparison_right",
           "ordinal": 5,
-          "schema": "DocumentFeatures"
+          "schema": "DocumentProfile"
         }
       ],
       "name": "AnalyzeText",
@@ -4807,18 +5049,18 @@
         },
         {
           "input_lane": "comparison_left",
-          "input_schema": "DocumentFeatures",
+          "input_schema": "DocumentProfile",
           "inputs": [
             {
               "driving": true,
               "parameter": "left",
-              "schema": "DocumentFeatures",
+              "schema": "DocumentProfile",
               "source": "comparison_left"
             },
             {
               "driving": false,
               "parameter": "right",
-              "schema": "DocumentFeatures",
+              "schema": "DocumentProfile",
               "source": "comparison_right"
             }
           ],
@@ -4843,6 +5085,640 @@
       "target_artifacts": {
         "pyspark_transform": "pyspark/transforms/analyze.py",
         "traceability": "traceability/transforms/analyze.AnalyzeText.json"
+      }
+    },
+    {
+      "dependencies": [
+        "documents_chunked__section_headings",
+        "heading"
+      ],
+      "inputs": [
+        {
+          "name": "documents",
+          "ordinal": 0,
+          "schema": "Document"
+        }
+      ],
+      "name": "Chunking",
+      "outputs": [
+        {
+          "name": "sections",
+          "ordinal": 0,
+          "schema": "Section"
+        },
+        {
+          "name": "paragraphs",
+          "ordinal": 1,
+          "schema": "Paragraph"
+        },
+        {
+          "name": "sentences",
+          "ordinal": 2,
+          "schema": "Sentence"
+        },
+        {
+          "name": "words",
+          "ordinal": 3,
+          "schema": "Word"
+        }
+      ],
+      "source": "examples.search.transforms.chunking.Chunking.Chunking",
+      "step_methods": [
+        {
+          "input_lane": "documents",
+          "input_schema": "Document",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "document",
+              "schema": "Document",
+              "source": "documents"
+            }
+          ],
+          "name": "documents_chunked.mark_lines",
+          "output_lane": "documents_chunked__marked_lines",
+          "output_schema": "MarkedDocumentLine",
+          "results": [
+            {
+              "frame": "documents_chunked__marked_lines",
+              "lane": "documents_chunked__marked_lines",
+              "schema": "MarkedDocumentLine"
+            }
+          ]
+        },
+        {
+          "input_lane": "documents_chunked__marked_lines",
+          "input_schema": "MarkedDocumentLine",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "line",
+              "schema": "MarkedDocumentLine",
+              "source": "documents_chunked__marked_lines"
+            }
+          ],
+          "name": "documents_chunked.select_paragraph_lines",
+          "output_lane": "documents_chunked__paragraph_lines",
+          "output_schema": "ParagraphLine",
+          "results": [
+            {
+              "frame": "documents_chunked__paragraph_lines",
+              "lane": "documents_chunked__paragraph_lines",
+              "schema": "ParagraphLine"
+            }
+          ]
+        },
+        {
+          "input_lane": "documents_chunked__marked_lines",
+          "input_schema": "MarkedDocumentLine",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "line",
+              "schema": "MarkedDocumentLine",
+              "source": "documents_chunked__marked_lines"
+            }
+          ],
+          "name": "documents_chunked.select_section_headings",
+          "output_lane": "documents_chunked__section_headings",
+          "output_schema": "SectionHeading",
+          "results": [
+            {
+              "frame": "documents_chunked__section_headings",
+              "lane": "documents_chunked__section_headings",
+              "schema": "SectionHeading"
+            }
+          ]
+        },
+        {
+          "input_lane": "documents_chunked__paragraph_lines",
+          "input_schema": "ParagraphLine",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "line",
+              "schema": "ParagraphLine",
+              "source": "documents_chunked__paragraph_lines"
+            }
+          ],
+          "name": "documents_chunked.collect_paragraph_lines",
+          "output_lane": "documents_chunked__paragraph_line_groups",
+          "output_schema": "ParagraphLineGroup",
+          "results": [
+            {
+              "frame": "documents_chunked__paragraph_line_groups",
+              "lane": "documents_chunked__paragraph_line_groups",
+              "schema": "ParagraphLineGroup"
+            }
+          ]
+        },
+        {
+          "input_lane": "documents_chunked__paragraph_line_groups",
+          "input_schema": "ParagraphLineGroup",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "group",
+              "schema": "ParagraphLineGroup",
+              "source": "documents_chunked__paragraph_line_groups"
+            }
+          ],
+          "name": "documents_chunked.assemble_paragraph_content",
+          "output_lane": "documents_chunked__paragraph_content",
+          "output_schema": "ParagraphContent",
+          "results": [
+            {
+              "frame": "documents_chunked__paragraph_content",
+              "lane": "documents_chunked__paragraph_content",
+              "schema": "ParagraphContent"
+            }
+          ]
+        },
+        {
+          "input_lane": "documents_chunked__paragraph_content",
+          "input_schema": "ParagraphContent",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "paragraph",
+              "schema": "ParagraphContent",
+              "source": "documents_chunked__paragraph_content"
+            }
+          ],
+          "name": "documents_chunked.number_paragraphs",
+          "output_lane": "documents_chunked__paragraph_drafts",
+          "output_schema": "ParagraphDraft",
+          "results": [
+            {
+              "frame": "documents_chunked__paragraph_drafts",
+              "lane": "documents_chunked__paragraph_drafts",
+              "schema": "ParagraphDraft"
+            }
+          ]
+        },
+        {
+          "input_lane": "documents_chunked__paragraph_drafts",
+          "input_schema": "ParagraphDraft",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "paragraph",
+              "schema": "ParagraphDraft",
+              "source": "documents_chunked__paragraph_drafts"
+            }
+          ],
+          "name": "documents_chunked.publish_paragraphs",
+          "output_lane": "documents_chunked__paragraphs",
+          "output_schema": "Paragraph",
+          "results": [
+            {
+              "frame": "documents_chunked__paragraphs",
+              "lane": "documents_chunked__paragraphs",
+              "schema": "Paragraph"
+            }
+          ]
+        },
+        {
+          "input_lane": "documents_chunked__paragraph_drafts",
+          "input_schema": "ParagraphDraft",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "paragraph",
+              "schema": "ParagraphDraft",
+              "source": "documents_chunked__paragraph_drafts"
+            }
+          ],
+          "name": "documents_chunked.select_section_keys",
+          "output_lane": "documents_chunked__section_keys",
+          "output_schema": "SectionKey",
+          "results": [
+            {
+              "frame": "documents_chunked__section_keys",
+              "lane": "documents_chunked__section_keys",
+              "schema": "SectionKey"
+            }
+          ]
+        },
+        {
+          "input_lane": "documents_chunked__section_keys",
+          "input_schema": "SectionKey",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "key",
+              "schema": "SectionKey",
+              "source": "documents_chunked__section_keys"
+            },
+            {
+              "driving": false,
+              "parameter": "heading",
+              "schema": "SectionHeading",
+              "source": "documents_chunked__section_headings"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "heading"
+            }
+          ],
+          "name": "documents_chunked.build_sections",
+          "output_lane": "documents_chunked__sections",
+          "output_schema": "Section",
+          "results": [
+            {
+              "frame": "documents_chunked__sections",
+              "lane": "documents_chunked__sections",
+              "schema": "Section"
+            }
+          ]
+        },
+        {
+          "input_lane": "documents_chunked__paragraphs",
+          "input_schema": "Paragraph",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "paragraph",
+              "schema": "Paragraph",
+              "source": "documents_chunked__paragraphs"
+            }
+          ],
+          "name": "sentences_chunked.chunk",
+          "output_lane": "sentences_chunked__sentences",
+          "output_schema": "Sentence",
+          "results": [
+            {
+              "frame": "sentences_chunked__sentences",
+              "lane": "sentences_chunked__sentences",
+              "schema": "Sentence"
+            }
+          ]
+        },
+        {
+          "input_lane": "sentences_chunked__sentences",
+          "input_schema": "Sentence",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "sentence",
+              "schema": "Sentence",
+              "source": "sentences_chunked__sentences"
+            }
+          ],
+          "name": "words_chunked.chunk",
+          "output_lane": "words_chunked__words",
+          "output_schema": "Word",
+          "results": [
+            {
+              "frame": "words_chunked__words",
+              "lane": "words_chunked__words",
+              "schema": "Word"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/Chunking.py",
+        "traceability": "traceability/transforms/Chunking.Chunking.json"
+      }
+    },
+    {
+      "dependencies": [
+        "heading",
+        "section_headings"
+      ],
+      "inputs": [
+        {
+          "name": "documents",
+          "ordinal": 0,
+          "schema": "Document"
+        }
+      ],
+      "name": "DocumentChunking",
+      "outputs": [
+        {
+          "name": "sections",
+          "ordinal": 0,
+          "schema": "Section"
+        },
+        {
+          "name": "paragraphs",
+          "ordinal": 1,
+          "schema": "Paragraph"
+        }
+      ],
+      "source": "examples.search.transforms.chunking.DocumentChunking.DocumentChunking",
+      "step_methods": [
+        {
+          "input_lane": "documents",
+          "input_schema": "Document",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "document",
+              "schema": "Document",
+              "source": "documents"
+            }
+          ],
+          "name": "mark_lines",
+          "output_lane": "marked_lines",
+          "output_schema": "MarkedDocumentLine",
+          "results": [
+            {
+              "frame": "marked_lines",
+              "lane": "marked_lines",
+              "schema": "MarkedDocumentLine"
+            }
+          ]
+        },
+        {
+          "input_lane": "marked_lines",
+          "input_schema": "MarkedDocumentLine",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "line",
+              "schema": "MarkedDocumentLine",
+              "source": "marked_lines"
+            }
+          ],
+          "name": "select_paragraph_lines",
+          "output_lane": "paragraph_lines",
+          "output_schema": "ParagraphLine",
+          "results": [
+            {
+              "frame": "paragraph_lines",
+              "lane": "paragraph_lines",
+              "schema": "ParagraphLine"
+            }
+          ]
+        },
+        {
+          "input_lane": "marked_lines",
+          "input_schema": "MarkedDocumentLine",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "line",
+              "schema": "MarkedDocumentLine",
+              "source": "marked_lines"
+            }
+          ],
+          "name": "select_section_headings",
+          "output_lane": "section_headings",
+          "output_schema": "SectionHeading",
+          "results": [
+            {
+              "frame": "section_headings",
+              "lane": "section_headings",
+              "schema": "SectionHeading"
+            }
+          ]
+        },
+        {
+          "input_lane": "paragraph_lines",
+          "input_schema": "ParagraphLine",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "line",
+              "schema": "ParagraphLine",
+              "source": "paragraph_lines"
+            }
+          ],
+          "name": "collect_paragraph_lines",
+          "output_lane": "paragraph_line_groups",
+          "output_schema": "ParagraphLineGroup",
+          "results": [
+            {
+              "frame": "paragraph_line_groups",
+              "lane": "paragraph_line_groups",
+              "schema": "ParagraphLineGroup"
+            }
+          ]
+        },
+        {
+          "input_lane": "paragraph_line_groups",
+          "input_schema": "ParagraphLineGroup",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "group",
+              "schema": "ParagraphLineGroup",
+              "source": "paragraph_line_groups"
+            }
+          ],
+          "name": "assemble_paragraph_content",
+          "output_lane": "paragraph_content",
+          "output_schema": "ParagraphContent",
+          "results": [
+            {
+              "frame": "paragraph_content",
+              "lane": "paragraph_content",
+              "schema": "ParagraphContent"
+            }
+          ]
+        },
+        {
+          "input_lane": "paragraph_content",
+          "input_schema": "ParagraphContent",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "paragraph",
+              "schema": "ParagraphContent",
+              "source": "paragraph_content"
+            }
+          ],
+          "name": "number_paragraphs",
+          "output_lane": "paragraph_drafts",
+          "output_schema": "ParagraphDraft",
+          "results": [
+            {
+              "frame": "paragraph_drafts",
+              "lane": "paragraph_drafts",
+              "schema": "ParagraphDraft"
+            }
+          ]
+        },
+        {
+          "input_lane": "paragraph_drafts",
+          "input_schema": "ParagraphDraft",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "paragraph",
+              "schema": "ParagraphDraft",
+              "source": "paragraph_drafts"
+            }
+          ],
+          "name": "publish_paragraphs",
+          "output_lane": "paragraphs",
+          "output_schema": "Paragraph",
+          "results": [
+            {
+              "frame": "paragraphs",
+              "lane": "paragraphs",
+              "schema": "Paragraph"
+            }
+          ]
+        },
+        {
+          "input_lane": "paragraph_drafts",
+          "input_schema": "ParagraphDraft",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "paragraph",
+              "schema": "ParagraphDraft",
+              "source": "paragraph_drafts"
+            }
+          ],
+          "name": "select_section_keys",
+          "output_lane": "section_keys",
+          "output_schema": "SectionKey",
+          "results": [
+            {
+              "frame": "section_keys",
+              "lane": "section_keys",
+              "schema": "SectionKey"
+            }
+          ]
+        },
+        {
+          "input_lane": "section_keys",
+          "input_schema": "SectionKey",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "key",
+              "schema": "SectionKey",
+              "source": "section_keys"
+            },
+            {
+              "driving": false,
+              "parameter": "heading",
+              "schema": "SectionHeading",
+              "source": "section_headings"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "heading"
+            }
+          ],
+          "name": "build_sections",
+          "output_lane": "sections",
+          "output_schema": "Section",
+          "results": [
+            {
+              "frame": "sections",
+              "lane": "sections",
+              "schema": "Section"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/DocumentChunking.py",
+        "traceability": "traceability/transforms/DocumentChunking.DocumentChunking.json"
+      }
+    },
+    {
+      "dependencies": [],
+      "inputs": [
+        {
+          "name": "paragraphs",
+          "ordinal": 0,
+          "schema": "Paragraph"
+        }
+      ],
+      "name": "SentenceChunking",
+      "outputs": [
+        {
+          "name": "sentences",
+          "ordinal": 0,
+          "schema": "Sentence"
+        }
+      ],
+      "source": "examples.search.transforms.chunking.SentenceChunking.SentenceChunking",
+      "step_methods": [
+        {
+          "input_lane": "paragraphs",
+          "input_schema": "Paragraph",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "paragraph",
+              "schema": "Paragraph",
+              "source": "paragraphs"
+            }
+          ],
+          "name": "chunk",
+          "output_lane": "sentences",
+          "output_schema": "Sentence",
+          "results": [
+            {
+              "frame": "sentences",
+              "lane": "sentences",
+              "schema": "Sentence"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/SentenceChunking.py",
+        "traceability": "traceability/transforms/SentenceChunking.SentenceChunking.json"
+      }
+    },
+    {
+      "dependencies": [],
+      "inputs": [
+        {
+          "name": "sentences",
+          "ordinal": 0,
+          "schema": "Sentence"
+        }
+      ],
+      "name": "WordChunking",
+      "outputs": [
+        {
+          "name": "words",
+          "ordinal": 0,
+          "schema": "Word"
+        }
+      ],
+      "source": "examples.search.transforms.chunking.WordChunking.WordChunking",
+      "step_methods": [
+        {
+          "input_lane": "sentences",
+          "input_schema": "Sentence",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "sentence",
+              "schema": "Sentence",
+              "source": "sentences"
+            }
+          ],
+          "name": "chunk",
+          "output_lane": "words",
+          "output_schema": "Word",
+          "results": [
+            {
+              "frame": "words",
+              "lane": "words",
+              "schema": "Word"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/WordChunking.py",
+        "traceability": "traceability/transforms/WordChunking.WordChunking.json"
       }
     },
     {
@@ -11116,10 +11992,7 @@
       }
     },
     {
-      "dependencies": [
-        "heading",
-        "section_headings"
-      ],
+      "dependencies": [],
       "inputs": [
         {
           "name": "documents",
@@ -11127,30 +12000,15 @@
           "schema": "Document"
         }
       ],
-      "name": "ExtractText",
+      "name": "BuildDocumentFeatures",
       "outputs": [
         {
-          "name": "sections",
+          "name": "document_features",
           "ordinal": 0,
-          "schema": "Section"
-        },
-        {
-          "name": "paragraphs",
-          "ordinal": 1,
-          "schema": "Paragraph"
-        },
-        {
-          "name": "sentences",
-          "ordinal": 2,
-          "schema": "Sentence"
-        },
-        {
-          "name": "words",
-          "ordinal": 3,
-          "schema": "Word"
+          "schema": "DocumentFeatures"
         }
       ],
-      "source": "examples.search.transforms.extract.ExtractText",
+      "source": "examples.search.transforms.features.BuildDocumentFeatures",
       "step_methods": [
         {
           "input_lane": "documents",
@@ -11163,275 +12021,149 @@
               "source": "documents"
             }
           ],
-          "name": "mark_lines",
-          "output_lane": "marked_lines",
-          "output_schema": "MarkedDocumentLine",
+          "name": "build",
+          "output_lane": "document_features",
+          "output_schema": "DocumentFeatures",
           "results": [
             {
-              "frame": "marked_lines",
-              "lane": "marked_lines",
-              "schema": "MarkedDocumentLine"
-            }
-          ]
-        },
-        {
-          "input_lane": "marked_lines",
-          "input_schema": "MarkedDocumentLine",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "line",
-              "schema": "MarkedDocumentLine",
-              "source": "marked_lines"
-            }
-          ],
-          "name": "select_paragraph_lines",
-          "output_lane": "paragraph_lines",
-          "output_schema": "ParagraphLine",
-          "results": [
-            {
-              "frame": "paragraph_lines",
-              "lane": "paragraph_lines",
-              "schema": "ParagraphLine"
-            }
-          ]
-        },
-        {
-          "input_lane": "marked_lines",
-          "input_schema": "MarkedDocumentLine",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "line",
-              "schema": "MarkedDocumentLine",
-              "source": "marked_lines"
-            }
-          ],
-          "name": "select_section_headings",
-          "output_lane": "section_headings",
-          "output_schema": "SectionHeading",
-          "results": [
-            {
-              "frame": "section_headings",
-              "lane": "section_headings",
-              "schema": "SectionHeading"
-            }
-          ]
-        },
-        {
-          "input_lane": "paragraph_lines",
-          "input_schema": "ParagraphLine",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "line",
-              "schema": "ParagraphLine",
-              "source": "paragraph_lines"
-            }
-          ],
-          "name": "collect_paragraph_lines",
-          "output_lane": "paragraph_line_groups",
-          "output_schema": "ParagraphLineGroup",
-          "results": [
-            {
-              "frame": "paragraph_line_groups",
-              "lane": "paragraph_line_groups",
-              "schema": "ParagraphLineGroup"
-            }
-          ]
-        },
-        {
-          "input_lane": "paragraph_line_groups",
-          "input_schema": "ParagraphLineGroup",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "group",
-              "schema": "ParagraphLineGroup",
-              "source": "paragraph_line_groups"
-            }
-          ],
-          "name": "assemble_paragraph_content",
-          "output_lane": "paragraph_content",
-          "output_schema": "ParagraphContent",
-          "results": [
-            {
-              "frame": "paragraph_content",
-              "lane": "paragraph_content",
-              "schema": "ParagraphContent"
-            }
-          ]
-        },
-        {
-          "input_lane": "paragraph_content",
-          "input_schema": "ParagraphContent",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "paragraph",
-              "schema": "ParagraphContent",
-              "source": "paragraph_content"
-            }
-          ],
-          "name": "rank_paragraphs",
-          "output_lane": "paragraph_drafts",
-          "output_schema": "ParagraphDraft",
-          "results": [
-            {
-              "frame": "paragraph_drafts",
-              "lane": "paragraph_drafts",
-              "schema": "ParagraphDraft"
-            }
-          ]
-        },
-        {
-          "input_lane": "paragraph_drafts",
-          "input_schema": "ParagraphDraft",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "paragraph",
-              "schema": "ParagraphDraft",
-              "source": "paragraph_drafts"
-            }
-          ],
-          "name": "publish_paragraphs",
-          "output_lane": "paragraphs",
-          "output_schema": "Paragraph",
-          "results": [
-            {
-              "frame": "paragraphs",
-              "lane": "paragraphs",
-              "schema": "Paragraph"
-            }
-          ]
-        },
-        {
-          "input_lane": "paragraph_drafts",
-          "input_schema": "ParagraphDraft",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "paragraph",
-              "schema": "ParagraphDraft",
-              "source": "paragraph_drafts"
-            }
-          ],
-          "name": "select_section_keys",
-          "output_lane": "section_keys",
-          "output_schema": "SectionKey",
-          "results": [
-            {
-              "frame": "section_keys",
-              "lane": "section_keys",
-              "schema": "SectionKey"
-            }
-          ]
-        },
-        {
-          "input_lane": "section_keys",
-          "input_schema": "SectionKey",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "key",
-              "schema": "SectionKey",
-              "source": "section_keys"
-            },
-            {
-              "driving": false,
-              "parameter": "heading",
-              "schema": "SectionHeading",
-              "source": "section_headings"
-            }
-          ],
-          "joins": [
-            {
-              "how": "left",
-              "input": "heading"
-            }
-          ],
-          "name": "build_sections",
-          "output_lane": "sections",
-          "output_schema": "Section",
-          "results": [
-            {
-              "frame": "sections",
-              "lane": "sections",
-              "schema": "Section"
-            }
-          ]
-        },
-        {
-          "input_lane": "paragraph_drafts",
-          "input_schema": "ParagraphDraft",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "paragraph",
-              "schema": "ParagraphDraft",
-              "source": "paragraph_drafts"
-            }
-          ],
-          "name": "build_sentences",
-          "output_lane": "sentence_rows",
-          "output_schema": "Sentence",
-          "results": [
-            {
-              "frame": "sentence_rows",
-              "lane": "sentence_rows",
-              "schema": "Sentence"
-            }
-          ]
-        },
-        {
-          "input_lane": "sentence_rows",
-          "input_schema": "Sentence",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "sentence",
-              "schema": "Sentence",
-              "source": "sentence_rows"
-            }
-          ],
-          "name": "publish_sentences",
-          "output_lane": "sentences",
-          "output_schema": "Sentence",
-          "results": [
-            {
-              "frame": "sentences",
-              "lane": "sentences",
-              "schema": "Sentence"
-            }
-          ]
-        },
-        {
-          "input_lane": "sentence_rows",
-          "input_schema": "Sentence",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "sentence",
-              "schema": "Sentence",
-              "source": "sentence_rows"
-            }
-          ],
-          "name": "build_words",
-          "output_lane": "words",
-          "output_schema": "Word",
-          "results": [
-            {
-              "frame": "words",
-              "lane": "words",
-              "schema": "Word"
+              "frame": "document_features",
+              "lane": "document_features",
+              "schema": "DocumentFeatures"
             }
           ]
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/extract.py",
-        "traceability": "traceability/transforms/extract.ExtractText.json"
+        "pyspark_transform": "pyspark/transforms/features.py",
+        "traceability": "traceability/transforms/features.BuildDocumentFeatures.json"
+      }
+    },
+    {
+      "dependencies": [
+        "query_token_summaries",
+        "summary"
+      ],
+      "inputs": [
+        {
+          "name": "queries",
+          "ordinal": 0,
+          "schema": "SearchQuery"
+        }
+      ],
+      "name": "BuildQueryFeatures",
+      "outputs": [
+        {
+          "name": "query_features",
+          "ordinal": 0,
+          "schema": "QueryFeatures"
+        }
+      ],
+      "source": "examples.search.transforms.features.BuildQueryFeatures",
+      "step_methods": [
+        {
+          "input_lane": "queries",
+          "input_schema": "SearchQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "SearchQuery",
+              "source": "queries"
+            }
+          ],
+          "name": "expand_tokens",
+          "output_lane": "expanded_query_tokens",
+          "output_schema": "ExpandedQueryFeatureToken",
+          "results": [
+            {
+              "frame": "expanded_query_tokens",
+              "lane": "expanded_query_tokens",
+              "schema": "ExpandedQueryFeatureToken"
+            }
+          ]
+        },
+        {
+          "input_lane": "expanded_query_tokens",
+          "input_schema": "ExpandedQueryFeatureToken",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "token",
+              "schema": "ExpandedQueryFeatureToken",
+              "source": "expanded_query_tokens"
+            }
+          ],
+          "name": "select_tokens",
+          "output_lane": "query_tokens",
+          "output_schema": "QueryFeatureToken",
+          "results": [
+            {
+              "frame": "query_tokens",
+              "lane": "query_tokens",
+              "schema": "QueryFeatureToken"
+            }
+          ]
+        },
+        {
+          "input_lane": "query_tokens",
+          "input_schema": "QueryFeatureToken",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "token",
+              "schema": "QueryFeatureToken",
+              "source": "query_tokens"
+            }
+          ],
+          "name": "summarize",
+          "output_lane": "query_token_summaries",
+          "output_schema": "QueryTokenSummary",
+          "results": [
+            {
+              "frame": "query_token_summaries",
+              "lane": "query_token_summaries",
+              "schema": "QueryTokenSummary"
+            }
+          ]
+        },
+        {
+          "input_lane": "queries",
+          "input_schema": "SearchQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "SearchQuery",
+              "source": "queries"
+            },
+            {
+              "driving": false,
+              "parameter": "summary",
+              "schema": "QueryTokenSummary",
+              "source": "query_token_summaries"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "summary"
+            }
+          ],
+          "name": "build",
+          "output_lane": "query_features",
+          "output_schema": "QueryFeatures",
+          "results": [
+            {
+              "frame": "query_features",
+              "lane": "query_features",
+              "schema": "QueryFeatures"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/features.py",
+        "traceability": "traceability/transforms/features.BuildQueryFeatures.json"
       }
     },
     {
@@ -12700,7 +13432,7 @@
         {
           "name": "features",
           "ordinal": 0,
-          "schema": "DocumentFeatures"
+          "schema": "DocumentProfile"
         }
       ],
       "source": "examples.search.transforms.profile.ProfileDocuments",
@@ -12718,12 +13450,12 @@
           ],
           "name": "profile",
           "output_lane": "documents",
-          "output_schema": "DocumentFeatures",
+          "output_schema": "DocumentProfile",
           "results": [
             {
               "frame": "documents",
               "lane": "documents",
-              "schema": "DocumentFeatures"
+              "schema": "DocumentProfile"
             }
           ]
         }
@@ -17143,6 +17875,107 @@
       "target_artifacts": {
         "pyspark_transform": "pyspark/transforms/SimilarSentences.py",
         "traceability": "traceability/transforms/SimilarSentences.SimilarSentences.json"
+      }
+    },
+    {
+      "dependencies": [
+        "document",
+        "document_features",
+        "judgment",
+        "judgments",
+        "query",
+        "query_features"
+      ],
+      "inputs": [
+        {
+          "name": "document_scores",
+          "ordinal": 0,
+          "schema": "DocumentScore"
+        },
+        {
+          "name": "judgments",
+          "ordinal": 1,
+          "schema": "DocumentRelevanceJudgment"
+        },
+        {
+          "name": "document_features",
+          "ordinal": 2,
+          "schema": "DocumentFeatures"
+        },
+        {
+          "name": "query_features",
+          "ordinal": 3,
+          "schema": "QueryFeatures"
+        }
+      ],
+      "name": "BuildTrainingData",
+      "outputs": [
+        {
+          "name": "training_data",
+          "ordinal": 0,
+          "schema": "DocumentTrainingData"
+        }
+      ],
+      "source": "examples.search.transforms.training.BuildTrainingData.BuildTrainingData",
+      "step_methods": [
+        {
+          "input_lane": "document_scores",
+          "input_schema": "DocumentScore",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "score",
+              "schema": "DocumentScore",
+              "source": "document_scores"
+            },
+            {
+              "driving": false,
+              "parameter": "judgment",
+              "schema": "DocumentRelevanceJudgment",
+              "source": "judgments"
+            },
+            {
+              "driving": false,
+              "parameter": "document",
+              "schema": "DocumentFeatures",
+              "source": "document_features"
+            },
+            {
+              "driving": false,
+              "parameter": "query",
+              "schema": "QueryFeatures",
+              "source": "query_features"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "judgment"
+            },
+            {
+              "how": "inner",
+              "input": "document"
+            },
+            {
+              "how": "inner",
+              "input": "query"
+            }
+          ],
+          "name": "build",
+          "output_lane": "training_data",
+          "output_schema": "DocumentTrainingData",
+          "results": [
+            {
+              "frame": "training_data",
+              "lane": "training_data",
+              "schema": "DocumentTrainingData"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/BuildTrainingData.py",
+        "traceability": "traceability/transforms/BuildTrainingData.BuildTrainingData.json"
       }
     }
   ]

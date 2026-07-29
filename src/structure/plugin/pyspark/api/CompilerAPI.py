@@ -18,11 +18,12 @@ class CompilerAPI(CompilerAPIV1):
         if any(not isinstance(step.plugin_body, PySparkStepBody) for step in plan.steps):
             raise ValueError("PLUGIN-E2708: PySpark compilation requires a PySpark-owned body for every step.")
         PySpark.compiler.hooks()(plan)
+        warn_on_udfs = self._warn_on_udfs(plan, default=bool(options.get("warn_on_udfs", True)))
         if request.purpose is CompilationPurpose.DOCUMENTATION:
             return PluginCompilation(
                 lowered=None,
                 fingerprint=plan.name,
-                diagnostics=self._udf_diagnostics(plan, enabled=bool(options.get("warn_on_udfs", True))),
+                diagnostics=self._udf_diagnostics(plan, enabled=warn_on_udfs),
             )
         plugin_options = request.plugin_options
         capabilities = PySpark.capabilities.resolve()(
@@ -42,5 +43,9 @@ class CompilerAPI(CompilerAPIV1):
             lowered=lowered,
             fingerprint=plan.name,
             schemas=schemas,
-            diagnostics=self._udf_diagnostics(plan, enabled=bool(options.get("warn_on_udfs", True))),
+            diagnostics=self._udf_diagnostics(plan, enabled=warn_on_udfs),
         )
+
+    @staticmethod
+    def _warn_on_udfs(plan: TransformPlan, *, default: bool) -> bool:
+        return bool((plan.options or {}).get("warn_on_udfs", default))

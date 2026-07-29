@@ -52,6 +52,38 @@ query = (
 Because this output is a streaming aggregate, write it in `update` or `complete` mode. The caller chooses how results
 are materialized and must use a stable checkpoint location when the query needs recovery.
 
+## Caller-owned lifecycle recipe
+
+`examples.streams.adoption` keeps the PySpark lifecycle code visible and separate from generated Structure transforms.
+The helper is intentionally ordinary application code: it creates sources, applies output modes, supplies checkpoints,
+starts queries, drains available test input, and stops queries.
+
+```python
+from examples.streams.adoption import read_json_stream, start_memory_query, stop_query
+
+events = read_json_stream(spark, raw_event_schema, events_path)
+passages = PreparePassages(
+    events=events,
+    races=races,
+    paddlers=paddlers,
+    gates=gates,
+).run(session).passages
+
+query = start_memory_query(
+    passages,
+    query_name="passages",
+    checkpoint=checkpoint,
+    output_mode="append",
+)
+try:
+    query.processAllAvailable()
+finally:
+    stop_query(query)
+```
+
+The generated Structure module still contains only DataFrame transformations. The application owns `readStream`,
+`writeStream`, output mode, checkpoint, start, progress, stop, deployment, and recovery behavior.
+
 ## Correlate judge penalties
 
 `CorrelatePenalties` joins prepared passages to independently streamed `JudgeCall` rows. Both sides use a ten-minute

@@ -2,7 +2,7 @@ from structure import Schema
 from structure.plugin.pyspark import *
 
 
-class DocumentFeatures(Schema):
+class DocumentProfile(Schema):
     document_id = string(nullable=False)
     collection_id = string(nullable=False)
     source = string(nullable=False)

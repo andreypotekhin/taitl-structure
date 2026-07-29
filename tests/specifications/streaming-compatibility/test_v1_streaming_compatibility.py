@@ -1,4 +1,6 @@
+import json
 import sys
+from pathlib import Path
 from typing import Any, cast
 
 import pytest
@@ -10,6 +12,9 @@ from structure.plugin.pyspark import *
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.plugin.pyspark.dsl.types import StructType
 from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
+
+ROOT = Path(__file__).resolve().parents[3]
+V9_LEDGER = ROOT / "src/structure/plugin/pyspark/resources/pyspark-streaming-api-coverage.json"
 
 
 def _compile(transform):
@@ -26,6 +31,11 @@ def _recipe(transform) -> PySparkExecutionPlan:
 
 def _body(transform) -> PySparkStepBody:
     return cast(PySparkStepBody, _analysis(transform).steps[0].plugin_body)
+
+
+def _v9_ledger_entry(api_id: str) -> dict[str, Any]:
+    entries = json.loads(V9_LEDGER.read_text(encoding="utf-8"))["entries"]
+    return next(entry for entry in entries if entry["id"] == api_id)
 
 
 class StreamRaw(Schema):
@@ -94,6 +104,11 @@ class StreamDocumentTerm(Schema):
     id = string(nullable=False)
     token = string(nullable=False)
     weight = integer(nullable=False)
+
+
+class StreamRanked(Schema):
+    id = string(nullable=False)
+    rank = long(nullable=False)
 
 
 @transform(streaming=True)
@@ -170,6 +185,54 @@ class StreamingIntersect(Transform):
     def merge(self, row: StreamRaw, more: StreamRaw) -> StreamClean:
         merged = intersect(more)
         return StreamClean(id=merged.id)
+
+
+@transform(streaming=True)
+class StreamingOrderLimitOffset(Transform):
+    rows = input(StreamRaw, streaming=True)
+    clean = output(StreamClean)
+
+    def rank(self, row: StreamRaw) -> StreamClean:
+        order_by(row.event_time.desc(), row.id)
+        limit(10)
+        page = offset(2)
+        return StreamClean(id=page.id)
+
+
+@transform(streaming=True)
+class StreamingPrioritySelection(Transform):
+    rows = input(StreamRaw, streaming=True)
+    clean = output(StreamClean)
+
+    def pick(self, row: StreamRaw) -> StreamClean:
+        selected = select_first_qualified(
+            row.id,
+            where=row.id.is_not_null(),  # type: ignore[attr-defined]
+            order_by=row.event_time.asc(),
+        )
+        return StreamClean(id=selected.id)
+
+
+@transform(streaming=True)
+class StreamingSelectedRows(Transform):
+    rows = input(StreamRaw, streaming=True)
+    clean = output(StreamClean)
+
+    def latest(self, row: StreamRaw) -> StreamClean:
+        latest_by(row.event_time, partition_by=row.id)
+        return StreamClean(id=row.id)
+
+
+@transform(streaming=True)
+class StreamingWindowProjection(Transform):
+    rows = input(StreamRaw, streaming=True)
+    ranked = output(StreamRanked)
+
+    def rank(self, row: StreamRaw) -> StreamRanked:
+        return StreamRanked(
+            id=row.id,
+            rank=row_number(partition_by=row.id, order_by=row.event_time),
+        )
 
 
 def test_event_time_between_rejects_non_timestamp_expressions() -> None:
@@ -647,6 +710,42 @@ def test_v8_distinct_style_relation_sets_remain_streaming_ineligible() -> None:
     assert "Spark-ineligible" in report.findings[0].problem
 
 
+def test_v9_stateful_and_order_sensitive_gap_diagnostics_match_api_ledger() -> None:
+    cases = [
+        (StreamingIntersect, "streaming.distinct-style-sets", "intersect more", "Spark-ineligible"),
+        (StreamingOrderLimitOffset, "streaming.ordering-bounds", "order_by", "batch materialization boundary"),
+        (
+            StreamingPrioritySelection,
+            "streaming.priority-selection",
+            "select_first_qualified",
+            "perform priority selection before the streaming transform",
+        ),
+        (StreamingSelectedRows, "streaming.selected-row-helpers", "latest-row selection", "move selected-row streaming state"),
+        (StreamingWindowProjection, "streaming.analytic-windows", "window projection", "move streaming window state"),
+        (
+            StreamingDedupeThenAggregate,
+            "streaming.stateful-composition",
+            "stateful streaming composition",
+            "split any later stateful work",
+        ),
+    ]
+
+    for transform_type, ledger_id, operation, guidance in cases:
+        report = Compiler.compileability.streaming()(_recipe(transform_type), required=True)
+        entry = _v9_ledger_entry(ledger_id)
+
+        assert report.support is StreamingSupport.BATCH_ONLY
+        assert any(finding.operation == operation for finding in report.findings), ledger_id
+        assert any(guidance in f"{finding.problem} {finding.use}" for finding in report.findings), ledger_id
+        assert entry["status"] in {"structure-supported", "streaming-ineligible", "design-gated"}
+        assert entry["support_claim"] in {
+            "transformed-dataframe-partial",
+            "no-streaming-support",
+            "no-structure-support",
+            "compile-time-state-policy",
+        }
+
+
 def test_v2_stream_static_analytical_joins_are_compatible_without_spark() -> None:
     for transform_type in (StreamingExists, StreamingJoinMany):
         plan = _analysis(transform_type)
@@ -923,6 +1022,9 @@ def test_v1_streaming_unsafe_hook_is_unknown_with_registered_finding() -> None:
     assert finding.step == "normalize"
     assert finding.operation == "raw hook arbitrary_hook"
     assert finding.to_diagnostic().docs == "docs/Diagnostics.md#stream-w0801"
+    assert "caller-owned PySpark code" in finding.use
+    assert "readStream" in finding.use
+    assert "foreach side effects" in finding.use
 
 
 def test_v1_streaming_report_is_included_in_explain_output() -> None:

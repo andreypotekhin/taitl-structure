@@ -124,7 +124,14 @@ class BuildCompilerTraceability:
                     self._udf_boundaries(
                         step=step.name,
                         schema=step.output_schema.__name__,
-                        expressions=(assignment.expression for assignment in step.projection),
+                        expressions=(
+                            *(assignment.expression for assignment in step.projection),
+                            *(
+                                operation.posexplode_struct.expression
+                                for operation in step.operations
+                                if operation.posexplode_struct is not None
+                            ),
+                        ),
                     )
                 )
             else:
@@ -137,7 +144,14 @@ class BuildCompilerTraceability:
                         self._udf_boundaries(
                             step=step.name,
                             schema=result.schema.__name__,
-                            expressions=(assignment.expression for assignment in result.projection),
+                            expressions=(
+                                *(assignment.expression for assignment in result.projection),
+                                *(
+                                    operation.posexplode_struct.expression
+                                    for operation in step.operations
+                                    if operation.posexplode_struct is not None
+                                ),
+                            ),
                         )
                     )
                     for hook in result.after_hooks:

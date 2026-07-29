@@ -4,7 +4,7 @@
 from pyspark.sql import types as T
 
 
-DOCUMENT_FEATURES_SCHEMA = T.StructType([
+DOCUMENT_PROFILE_SCHEMA = T.StructType([
     T.StructField("document_id", T.StringType(), False),
     T.StructField("collection_id", T.StringType(), False),
     T.StructField("source", T.StringType(), False),

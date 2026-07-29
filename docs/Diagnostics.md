@@ -127,5 +127,16 @@ See [Diagnostics.md](background/Diagnostics.back.md#cli-x1101).
 ### STREAM-E0801
 See [Diagnostics.md](background/Diagnostics.back.md#stream-e0801).
 
+The transform contains an operation that is batch-only or design-gated for caller-owned Structured Streaming. Fix the
+Structure source when the diagnostic names a missing watermark, input-mode declaration, event-time bound, or unsupported
+stateful composition. Keep sources, sinks, checkpoints, triggers, output modes, query lifecycle, and side effects in
+caller-owned PySpark code. See [Streaming API](api/Streaming.api.md) and
+[V9 PySpark Streaming API Coverage](dev/specifications/V9PySparkStreamingApiCoverage.md).
+
 ### STREAM-W0801
 See [Diagnostics.md](background/Diagnostics.back.md#stream-w0801).
+
+Structure cannot prove an arbitrary hook is streaming-compatible. Mark the hook `streaming=True` only when it returns a
+DataFrame and avoids Spark actions, RDD/Pandas conversion, `readStream`, `writeStream`, query start/stop, checkpoints,
+triggers, output-mode application, `foreach`, `foreachBatch`, and unmodeled stateful streaming operations. Keep
+lifecycle code in caller-owned PySpark recipes such as `examples/streams/adoption.py`.

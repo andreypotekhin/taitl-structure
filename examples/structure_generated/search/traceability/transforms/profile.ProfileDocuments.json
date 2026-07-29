@@ -309,7 +309,7 @@
     },
     "DocumentFeatures": {
       "constant": "DOCUMENT_FEATURES_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+      "module": "examples.structure_generated.search.pyspark.schemas.features"
     },
     "DocumentFeedbackOption": {
       "constant": "DOCUMENT_FEEDBACK_OPTION_SCHEMA",
@@ -337,7 +337,7 @@
     },
     "DocumentLine": {
       "constant": "DOCUMENT_LINE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "DocumentOverlapMatch": {
       "constant": "DOCUMENT_OVERLAP_MATCH_SCHEMA",
@@ -354,6 +354,10 @@
     "DocumentPopularityTotals": {
       "constant": "DOCUMENT_POPULARITY_TOTALS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.build"
+    },
+    "DocumentProfile": {
+      "constant": "DOCUMENT_PROFILE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.analytics"
     },
     "DocumentQueryEvaluation": {
       "constant": "DOCUMENT_QUERY_EVALUATION_SCHEMA",
@@ -407,6 +411,10 @@
       "constant": "DOCUMENT_STATISTICS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.analytics"
     },
+    "DocumentTrainingData": {
+      "constant": "DOCUMENT_TRAINING_DATA_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.data"
+    },
     "EvaluationBatch": {
       "constant": "EVALUATION_BATCH_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.batch"
@@ -441,7 +449,11 @@
     },
     "ExpandedDocumentLine": {
       "constant": "EXPANDED_DOCUMENT_LINE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
+    },
+    "ExpandedQueryFeatureToken": {
+      "constant": "EXPANDED_QUERY_FEATURE_TOKEN_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.features"
     },
     "ExpandedQueryToken": {
       "constant": "EXPANDED_QUERY_TOKEN_SCHEMA",
@@ -449,11 +461,11 @@
     },
     "ExpandedSentenceText": {
       "constant": "EXPANDED_SENTENCE_TEXT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "ExpandedWordText": {
       "constant": "EXPANDED_WORD_TEXT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "Experiment": {
       "constant": "EXPERIMENT_SCHEMA",
@@ -501,7 +513,7 @@
     },
     "MarkedDocumentLine": {
       "constant": "MARKED_DOCUMENT_LINE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "Paragraph": {
       "constant": "PARAGRAPH_SCHEMA",
@@ -513,11 +525,11 @@
     },
     "ParagraphContent": {
       "constant": "PARAGRAPH_CONTENT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "ParagraphDraft": {
       "constant": "PARAGRAPH_DRAFT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "ParagraphIndexSummary": {
       "constant": "PARAGRAPH_INDEX_SUMMARY_SCHEMA",
@@ -541,11 +553,11 @@
     },
     "ParagraphLine": {
       "constant": "PARAGRAPH_LINE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "ParagraphLineGroup": {
       "constant": "PARAGRAPH_LINE_GROUP_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "ParagraphOverlapMatch": {
       "constant": "PARAGRAPH_OVERLAP_MATCH_SCHEMA",
@@ -603,6 +615,14 @@
       "constant": "QUERY_DOCUMENT_SIGNALS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.relevance"
     },
+    "QueryFeatureToken": {
+      "constant": "QUERY_FEATURE_TOKEN_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.features"
+    },
+    "QueryFeatures": {
+      "constant": "QUERY_FEATURES_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.features"
+    },
     "QueryIntentLabel": {
       "constant": "QUERY_INTENT_LABEL_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.label"
@@ -631,6 +651,10 @@
       "constant": "QUERY_TOKEN_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.scoring_intermediate"
     },
+    "QueryTokenSummary": {
+      "constant": "QUERY_TOKEN_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.features"
+    },
     "RelevancePolicy": {
       "constant": "RELEVANCE_POLICY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.relevance"
@@ -653,7 +677,7 @@
     },
     "SectionHeading": {
       "constant": "SECTION_HEADING_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "SectionIndexSummary": {
       "constant": "SECTION_INDEX_SUMMARY_SCHEMA",
@@ -677,7 +701,7 @@
     },
     "SectionKey": {
       "constant": "SECTION_KEY_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "SectionOverlapMatch": {
       "constant": "SECTION_OVERLAP_MATCH_SCHEMA",
@@ -793,7 +817,7 @@
     },
     "SentenceText": {
       "constant": "SENTENCE_TEXT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "SimilarDocument": {
       "constant": "SIMILAR_DOCUMENT_SCHEMA",
@@ -849,7 +873,7 @@
     },
     "WordText": {
       "constant": "WORD_TEXT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     }
   },
   "source_transform": "examples.search.transforms.profile.ProfileDocuments",
@@ -869,7 +893,7 @@
       {
         "detail": {
           "input_schema": "Document",
-          "output_schema": "DocumentFeatures"
+          "output_schema": "DocumentProfile"
         },
         "operation": "step",
         "sources": [
@@ -887,7 +911,7 @@
           "documents.id"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.document_id"
+        "target": "DocumentProfile.document_id"
       },
       {
         "detail": {
@@ -898,7 +922,7 @@
           "documents.collection_id"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.collection_id"
+        "target": "DocumentProfile.collection_id"
       },
       {
         "detail": {
@@ -909,7 +933,7 @@
           "documents.source"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.source"
+        "target": "DocumentProfile.source"
       },
       {
         "detail": {
@@ -920,7 +944,7 @@
           "documents.language"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.language"
+        "target": "DocumentProfile.language"
       },
       {
         "detail": {
@@ -931,7 +955,7 @@
           "documents.title"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.title"
+        "target": "DocumentProfile.title"
       },
       {
         "detail": {
@@ -942,7 +966,7 @@
           "documents.url"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.url"
+        "target": "DocumentProfile.url"
       },
       {
         "detail": {
@@ -953,7 +977,7 @@
           "documents.title"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.normalized_title"
+        "target": "DocumentProfile.normalized_title"
       },
       {
         "detail": {
@@ -964,7 +988,7 @@
           "documents.content"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.normalized_content"
+        "target": "DocumentProfile.normalized_content"
       },
       {
         "detail": {
@@ -975,7 +999,7 @@
           "documents.title"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.title_starts_with_the"
+        "target": "DocumentProfile.title_starts_with_the"
       },
       {
         "detail": {
@@ -986,7 +1010,7 @@
           "documents.title"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.title_ends_with_guide"
+        "target": "DocumentProfile.title_ends_with_guide"
       },
       {
         "detail": {
@@ -997,7 +1021,7 @@
           "documents.url"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.url_is_https"
+        "target": "DocumentProfile.url_is_https"
       },
       {
         "detail": {
@@ -1008,7 +1032,7 @@
           "documents.content"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.content_contains_structure"
+        "target": "DocumentProfile.content_contains_structure"
       },
       {
         "detail": {
@@ -1019,7 +1043,7 @@
           "documents.content"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.content_like_guide"
+        "target": "DocumentProfile.content_like_guide"
       },
       {
         "detail": {
@@ -1030,7 +1054,7 @@
           "documents.content"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.content_ilike_structure"
+        "target": "DocumentProfile.content_ilike_structure"
       },
       {
         "detail": {
@@ -1041,7 +1065,7 @@
           "documents.content"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.content_matches_sentence"
+        "target": "DocumentProfile.content_matches_sentence"
       },
       {
         "detail": {
@@ -1052,7 +1076,7 @@
           "documents.title"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.title_prefix"
+        "target": "DocumentProfile.title_prefix"
       },
       {
         "detail": {
@@ -1063,7 +1087,7 @@
           "documents.title"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.title_words"
+        "target": "DocumentProfile.title_words"
       },
       {
         "detail": {
@@ -1074,7 +1098,7 @@
           "documents.title"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.leading_title_words"
+        "target": "DocumentProfile.leading_title_words"
       },
       {
         "detail": {
@@ -1085,7 +1109,7 @@
           "documents.title"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.sorted_title_words"
+        "target": "DocumentProfile.sorted_title_words"
       },
       {
         "detail": {
@@ -1096,7 +1120,7 @@
           "documents.title"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.title_slug"
+        "target": "DocumentProfile.title_slug"
       },
       {
         "detail": {
@@ -1107,7 +1131,7 @@
           "documents.title"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.first_number"
+        "target": "DocumentProfile.first_number"
       },
       {
         "detail": {
@@ -1118,7 +1142,7 @@
           "documents.content"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.content_length"
+        "target": "DocumentProfile.content_length"
       },
       {
         "detail": {
@@ -1129,7 +1153,7 @@
           "documents.title"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.title_case"
+        "target": "DocumentProfile.title_case"
       },
       {
         "detail": {
@@ -1140,7 +1164,7 @@
           "documents.title"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.reversed_title"
+        "target": "DocumentProfile.reversed_title"
       },
       {
         "detail": {
@@ -1151,7 +1175,7 @@
           "documents.title"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.translated_title"
+        "target": "DocumentProfile.translated_title"
       },
       {
         "detail": {
@@ -1162,7 +1186,7 @@
           "documents.content"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.structure_position"
+        "target": "DocumentProfile.structure_position"
       },
       {
         "detail": {
@@ -1173,7 +1197,7 @@
           "documents.title"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.title_distance_to_guide"
+        "target": "DocumentProfile.title_distance_to_guide"
       },
       {
         "detail": {
@@ -1186,7 +1210,7 @@
           "documents.url"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.display_name"
+        "target": "DocumentProfile.display_name"
       },
       {
         "detail": {
@@ -1198,7 +1222,7 @@
           "documents.source"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.title_hash"
+        "target": "DocumentProfile.title_hash"
       },
       {
         "detail": {
@@ -1209,7 +1233,7 @@
           "documents.content"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.content_sha2"
+        "target": "DocumentProfile.content_sha2"
       },
       {
         "detail": {
@@ -1220,7 +1244,7 @@
           "documents.harvested_at"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.harvest_year"
+        "target": "DocumentProfile.harvest_year"
       },
       {
         "detail": {
@@ -1232,7 +1256,7 @@
           "documents.created_at"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.age_days"
+        "target": "DocumentProfile.age_days"
       },
       {
         "detail": {
@@ -1243,7 +1267,7 @@
           "documents.content"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.content_length_sqrt"
+        "target": "DocumentProfile.content_length_sqrt"
       },
       {
         "detail": {
@@ -1254,7 +1278,7 @@
           "documents.content"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.content_length_log"
+        "target": "DocumentProfile.content_length_log"
       },
       {
         "detail": {
@@ -1265,7 +1289,7 @@
           "documents.content"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.rounded_content_length"
+        "target": "DocumentProfile.rounded_content_length"
       },
       {
         "detail": {
@@ -1276,7 +1300,7 @@
           "documents.content"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.content_length_sign"
+        "target": "DocumentProfile.content_length_sign"
       },
       {
         "detail": {
@@ -1289,7 +1313,7 @@
           "documents.source"
         ],
         "step": "profile",
-        "target": "DocumentFeatures.source_recency_rank"
+        "target": "DocumentProfile.source_recency_rank"
       },
       {
         "detail": {
@@ -1297,10 +1321,10 @@
         },
         "operation": "validate_schema",
         "sources": [
-          "DocumentFeatures"
+          "DocumentProfile"
         ],
         "step": null,
-        "target": "DocumentFeatures.validation.final"
+        "target": "DocumentProfile.validation.final"
       }
     ],
     "opaque_boundaries": []
@@ -1312,14 +1336,14 @@
       "input_alias": "document",
       "joins": [],
       "name": "profile",
-      "output_alias": "document_features",
-      "output_schema": "DocumentFeatures",
+      "output_alias": "document_profile",
+      "output_schema": "DocumentProfile",
       "results": [
         {
           "after_hooks": [],
           "frame": "documents",
           "lane": "documents",
-          "schema": "DocumentFeatures"
+          "schema": "DocumentProfile"
         }
       ],
       "validation": []
@@ -1331,7 +1355,7 @@
       {
         "mode": "strict",
         "name": "features",
-        "schema": "DocumentFeatures"
+        "schema": "DocumentProfile"
       }
     ]
   }

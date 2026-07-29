@@ -99,3 +99,11 @@ A deferred feature can move into a sprint only when its plan includes:
 - execution/generated-code parity where relevant;
 - live Spark Structured Streaming evidence;
 - troubleshooting entries for likely operational failures.
+
+## V9 Reclassification
+
+V9 reclassifies these deferred features in a checked PySpark streaming API ledger before implementing any new support
+claim. Lifecycle APIs may become `caller-owned-guided` through runnable examples and diagnostics while still remaining
+outside generated transform modules. A lifecycle API can become Structure-owned only after a separate product decision
+records operational semantics, checkpoint/recovery behavior, side-effect idempotence, security review, and live
+evidence.

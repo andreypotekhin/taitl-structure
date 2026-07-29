@@ -13,7 +13,7 @@
     {
       "name": "features",
       "ordinal": 0,
-      "schema": "DocumentFeatures"
+      "schema": "DocumentProfile"
     }
   ],
   "source": "examples.search.transforms.profile.ProfileDocuments",
@@ -31,12 +31,12 @@
       ],
       "name": "profile",
       "output_lane": "documents",
-      "output_schema": "DocumentFeatures",
+      "output_schema": "DocumentProfile",
       "results": [
         {
           "frame": "documents",
           "lane": "documents",
-          "schema": "DocumentFeatures"
+          "schema": "DocumentProfile"
         }
       ]
     }

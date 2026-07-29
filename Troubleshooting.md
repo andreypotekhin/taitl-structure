@@ -36,3 +36,14 @@ shipping=Address(
 Structure checks the nested schema identity, so another schema with the same fields is not enough. If you only need to
 change one child field, construct the full nested value for now; partial nested updates are planned but not part of the
 current supported surface.
+
+## Streaming Lifecycle Code Appears in a Transform or Hook
+
+If streaming diagnostics mention `STREAM-E0801` or `STREAM-W0801` around lifecycle code, keep `readStream`,
+`writeStream`, checkpoint locations, triggers, output modes, query names, `start()`, `stop()`, `awaitTermination()`,
+`foreach`, and `foreachBatch` outside Structure transforms.
+
+Structure transforms should return DataFrame plans. Put lifecycle calls in caller-owned PySpark code such as
+`examples/streams/adoption.py`, then pass the streaming DataFrame into online or generated Structure execution. See
+[Streaming API](docs/api/Streaming.api.md) and
+[V9 PySpark Streaming API Coverage](docs/dev/specifications/V9PySparkStreamingApiCoverage.md).

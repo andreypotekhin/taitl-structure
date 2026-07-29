@@ -446,12 +446,27 @@ def render_search_example() -> dict[str, str]:
         from examples.search.schemas.analytics import (
             CorpusStatistics,
             CorpusVocabulary,
-            DocumentFeatures,
+            DocumentProfile,
             DocumentStatistics,
             ParagraphStatistics,
             SectionStatistics,
             SentenceStatistics,
             SimilarDocument,
+        )
+        from examples.search.schemas.chunking.chunk import (
+            DocumentLine,
+            ExpandedDocumentLine,
+            ExpandedSentenceText,
+            ExpandedWordText,
+            MarkedDocumentLine,
+            ParagraphContent,
+            ParagraphDraft,
+            ParagraphLine,
+            ParagraphLineGroup,
+            SectionHeading,
+            SectionKey,
+            SentenceText,
+            WordText,
         )
         from examples.search.schemas.clicks import Click, DailyClicks, DailyImpressions, Impression, SearchRequest
         from examples.search.schemas.cohorts.resolve import BandAncestor, BandMatch, SingletonUserBand, UserBandPath
@@ -477,20 +492,12 @@ def render_search_example() -> dict[str, str]:
             EvaluationResultTotals,
         )
         from examples.search.schemas.experiment import Experiment
-        from examples.search.schemas.extraction.extract import (
-            DocumentLine,
-            ExpandedDocumentLine,
-            ExpandedSentenceText,
-            ExpandedWordText,
-            MarkedDocumentLine,
-            ParagraphContent,
-            ParagraphDraft,
-            ParagraphLine,
-            ParagraphLineGroup,
-            SectionHeading,
-            SectionKey,
-            SentenceText,
-            WordText,
+        from examples.search.schemas.features import (
+            DocumentFeatures,
+            ExpandedQueryFeatureToken,
+            QueryFeatures,
+            QueryFeatureToken,
+            QueryTokenSummary,
         )
         from examples.search.schemas.indexing.lexical.index import (
             DocumentIndexSummary,
@@ -609,8 +616,10 @@ def render_search_example() -> dict[str, str]:
             SimilaritySentenceQuery,
         )
         from examples.search.schemas.text import Document, Paragraph, Section, Sentence, Word
+        from examples.search.schemas.training import DocumentTrainingData
         from examples.search.schemas.user import Band, BandFallback, BandMembership, User, UserBand, UserBandMembership
         from examples.search.transforms.analyze import AnalyzeText
+        from examples.search.transforms.chunking import Chunking, DocumentChunking, SentenceChunking, WordChunking
         from examples.search.transforms.clicks.Clicks import Clicks
         from examples.search.transforms.clicks.Impressions import Impressions
         from examples.search.transforms.cohorts import ResolveCohortBands
@@ -636,7 +645,7 @@ def render_search_example() -> dict[str, str]:
             Searching001AdjustRerankSearchDocuments,
             SelectExperimentScores,
         )
-        from examples.search.transforms.extract import ExtractText
+        from examples.search.transforms.features import BuildDocumentFeatures, BuildQueryFeatures
         from examples.search.transforms.index import CreateIndex
         from examples.search.transforms.labeling import CreateQueryLabels, LabelQueries, MergeQueryLabels
         from examples.search.transforms.profile import ProfileDocuments
@@ -651,11 +660,12 @@ def render_search_example() -> dict[str, str]:
         from examples.search.transforms.similarities.SimilarParagraphs import SimilarParagraphs
         from examples.search.transforms.similarities.SimilarSections import SimilarSections
         from examples.search.transforms.similarities.SimilarSentences import SimilarSentences
+        from examples.search.transforms.training import BuildTrainingData
         from structure.plugin.pyspark import TimeWindow
 
         schema_modules: dict[str, Sequence[type[Schema]]] = {
             "examples.search.schemas.analytics": [
-                DocumentFeatures,
+                DocumentProfile,
                 SentenceStatistics,
                 ParagraphStatistics,
                 SectionStatistics,
@@ -671,7 +681,7 @@ def render_search_example() -> dict[str, str]:
                 Sentence,
                 Word,
             ],
-            "examples.search.schemas.extraction.extract": [
+            "examples.search.schemas.chunking.chunk": [
                 DocumentLine,
                 ExpandedDocumentLine,
                 MarkedDocumentLine,
@@ -792,6 +802,14 @@ def render_search_example() -> dict[str, str]:
                 BehaviorRequestTotals,
                 BehaviorDailyCounts,
             ],
+            "examples.search.schemas.training.data": [DocumentTrainingData],
+            "examples.search.schemas.features": [
+                DocumentFeatures,
+                QueryFeatures,
+                QueryFeatureToken,
+                ExpandedQueryFeatureToken,
+                QueryTokenSummary,
+            ],
             "examples.search.schemas.relevance": [
                 RelevancePolicy,
                 QueryDocumentSignals,
@@ -854,8 +872,14 @@ def render_search_example() -> dict[str, str]:
             ],
         }
         transforms = (
-            (ExtractText, "examples.search.transforms.extract.ExtractText"),
+            (Chunking, "examples.search.transforms.chunking.Chunking.Chunking"),
+            (DocumentChunking, "examples.search.transforms.chunking.DocumentChunking.DocumentChunking"),
+            (SentenceChunking, "examples.search.transforms.chunking.SentenceChunking.SentenceChunking"),
+            (WordChunking, "examples.search.transforms.chunking.WordChunking.WordChunking"),
             (ProfileDocuments, "examples.search.transforms.profile.ProfileDocuments"),
+            (BuildDocumentFeatures, "examples.search.transforms.features.BuildDocumentFeatures"),
+            (BuildQueryFeatures, "examples.search.transforms.features.BuildQueryFeatures"),
+            (BuildTrainingData, "examples.search.transforms.training.BuildTrainingData.BuildTrainingData"),
             (AnalyzeText, "examples.search.transforms.analyze.AnalyzeText"),
             (CorpusText, "examples.search.transforms.corpus.CorpusText"),
             (CreateIndex, "examples.search.transforms.index.CreateIndex"),
@@ -948,11 +972,16 @@ def render_search_example() -> dict[str, str]:
                 PySpark.render.project()(
                     cast(
                         PySparkExecutionPlan,
-                        Compiler.frontend.compile()(transform_class, materialize_schemas=False).lowered,
+                        Compiler.frontend.compile()(
+                            transform_class,
+                            materialize_schemas=False,
+                            project_root=EXAMPLES / "search",
+                        ).lowered,
                     ),
                     source_transform=source_transform,
                     generated_package="examples.structure_generated.search",
                     source_schema_modules=schema_modules,
+                    generated_code_options=("embed_udfs",),
                 )
             )
         documented_schema_modules = {

@@ -32,12 +32,12 @@
     {
       "name": "comparison_left",
       "ordinal": 4,
-      "schema": "DocumentFeatures"
+      "schema": "DocumentProfile"
     },
     {
       "name": "comparison_right",
       "ordinal": 5,
-      "schema": "DocumentFeatures"
+      "schema": "DocumentProfile"
     }
   ],
   "name": "AnalyzeText",
@@ -184,18 +184,18 @@
     },
     {
       "input_lane": "comparison_left",
-      "input_schema": "DocumentFeatures",
+      "input_schema": "DocumentProfile",
       "inputs": [
         {
           "driving": true,
           "parameter": "left",
-          "schema": "DocumentFeatures",
+          "schema": "DocumentProfile",
           "source": "comparison_left"
         },
         {
           "driving": false,
           "parameter": "right",
-          "schema": "DocumentFeatures",
+          "schema": "DocumentProfile",
           "source": "comparison_right"
         }
       ],

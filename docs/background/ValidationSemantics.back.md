@@ -143,7 +143,7 @@ operations.
 
 Rules:
 
-- Default validation must be compatible with v1 streaming-compatible transforms.
+- Default validation must be compatible with streaming-compatible transforms.
 - Constraint modes must be rejected or warned for streaming when the constraint cost class is unsupported.
 - Validation must not own streaming query lifecycle.
 

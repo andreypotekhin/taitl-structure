@@ -1,0 +1,129 @@
+{
+  "dependencies": [
+    "query_token_summaries",
+    "summary"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "queries",
+      "ordinal": 0,
+      "schema": "SearchQuery"
+    }
+  ],
+  "name": "BuildQueryFeatures",
+  "outputs": [
+    {
+      "name": "query_features",
+      "ordinal": 0,
+      "schema": "QueryFeatures"
+    }
+  ],
+  "source": "examples.search.transforms.features.BuildQueryFeatures",
+  "step_methods": [
+    {
+      "input_lane": "queries",
+      "input_schema": "SearchQuery",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "SearchQuery",
+          "source": "queries"
+        }
+      ],
+      "name": "expand_tokens",
+      "output_lane": "expanded_query_tokens",
+      "output_schema": "ExpandedQueryFeatureToken",
+      "results": [
+        {
+          "frame": "expanded_query_tokens",
+          "lane": "expanded_query_tokens",
+          "schema": "ExpandedQueryFeatureToken"
+        }
+      ]
+    },
+    {
+      "input_lane": "expanded_query_tokens",
+      "input_schema": "ExpandedQueryFeatureToken",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "token",
+          "schema": "ExpandedQueryFeatureToken",
+          "source": "expanded_query_tokens"
+        }
+      ],
+      "name": "select_tokens",
+      "output_lane": "query_tokens",
+      "output_schema": "QueryFeatureToken",
+      "results": [
+        {
+          "frame": "query_tokens",
+          "lane": "query_tokens",
+          "schema": "QueryFeatureToken"
+        }
+      ]
+    },
+    {
+      "input_lane": "query_tokens",
+      "input_schema": "QueryFeatureToken",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "token",
+          "schema": "QueryFeatureToken",
+          "source": "query_tokens"
+        }
+      ],
+      "name": "summarize",
+      "output_lane": "query_token_summaries",
+      "output_schema": "QueryTokenSummary",
+      "results": [
+        {
+          "frame": "query_token_summaries",
+          "lane": "query_token_summaries",
+          "schema": "QueryTokenSummary"
+        }
+      ]
+    },
+    {
+      "input_lane": "queries",
+      "input_schema": "SearchQuery",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "SearchQuery",
+          "source": "queries"
+        },
+        {
+          "driving": false,
+          "parameter": "summary",
+          "schema": "QueryTokenSummary",
+          "source": "query_token_summaries"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "summary"
+        }
+      ],
+      "name": "build",
+      "output_lane": "query_features",
+      "output_schema": "QueryFeatures",
+      "results": [
+        {
+          "frame": "query_features",
+          "lane": "query_features",
+          "schema": "QueryFeatures"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/features.py",
+    "traceability": "traceability/transforms/features.BuildQueryFeatures.json"
+  }
+}

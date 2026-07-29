@@ -10,8 +10,8 @@ Source: `examples.search.transforms.analyze.AnalyzeText`
 - `sentences`: `Sentence`
 - `paragraphs`: `Paragraph`
 - `sections`: `Section`
-- `comparison_left`: `DocumentFeatures`
-- `comparison_right`: `DocumentFeatures`
+- `comparison_left`: `DocumentProfile`
+- `comparison_right`: `DocumentProfile`
 
 ## Outputs
 
@@ -27,7 +27,7 @@ Source: `examples.search.transforms.analyze.AnalyzeText`
 - `paragraph_stats`: `Word` -> `ParagraphStatistics`
 - `section_stats`: `Word` -> `SectionStatistics`
 - `document_stats`: `Word` -> `DocumentStatistics`
-- `similar`: `DocumentFeatures` -> `SimilarDocument`
+- `similar`: `DocumentProfile` -> `SimilarDocument`
 
 ## Dependencies
 

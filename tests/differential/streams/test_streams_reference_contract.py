@@ -1,6 +1,9 @@
 from datetime import datetime
+from pathlib import Path
 
 from helpers.example_projects import render_streams_example
+
+from examples.streams import adoption
 
 
 def test_streams_reference_enrichment_removes_duplicate_timing_messages() -> None:
@@ -41,6 +44,13 @@ def test_streams_generated_code_keeps_lifecycle_with_the_caller() -> None:
         assert fragment in generated
     for lifecycle_api in ("readStream", "writeStream", ".start(", "awaitTermination"):
         assert lifecycle_api not in generated
+
+
+def test_streams_adoption_recipe_names_caller_owned_lifecycle_apis() -> None:
+    recipe = Path(adoption.__file__).read_text(encoding="utf-8")
+
+    for lifecycle_api in ("readStream", "writeStream", "outputMode", "checkpointLocation", ".start()", ".stop()"):
+        assert lifecycle_api in recipe
 
 
 def _prepare_passages(*, events, races, paddlers, gates):

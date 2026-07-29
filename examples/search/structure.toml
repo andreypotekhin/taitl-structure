@@ -1,0 +1,3 @@
+[tool.structure]
+# SentenceChunking intentionally embeds its caller-replaceable Python UDF.
+generated_code_options = ["embed_udfs"]

@@ -2,7 +2,7 @@
 
 This page lists additions to PySpark APIs added to facilitate writing data transforms. They are contracts that do not correspond to a direct PySpark method or function.
 
-For PySpark APIs, see [APICatalog.md](APICatalog.md). For Strucute APIs such as schemas, transforms, hooks etc. see Core APIs in [API.md](API.md).
+For PySpark APIs, see [APICatalog.md](APICatalog.md). For Structure APIs such as schemas, transforms, hooks etc. see Core APIs in [API.md](API.md).
 
 ## Added PySpark Vocabulary
 

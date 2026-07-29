@@ -1,0 +1,56 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "search_query_id",
+      "name": "search_query_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "document_id",
+      "name": "document_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "relevance_grade",
+      "name": "relevance_grade",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "lexical_score",
+      "name": "lexical_score",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "query_token_count",
+      "name": "query_token_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "query_distinct_token_count",
+      "name": "query_distinct_token_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "document_content_length",
+      "name": "document_content_length",
+      "nullable": false,
+      "type": "integer"
+    },
+    {
+      "column": "document_url_is_https",
+      "name": "document_url_is_https",
+      "nullable": true,
+      "type": "boolean"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.search.schemas.training.data",
+  "name": "DocumentTrainingData"
+}

@@ -26,16 +26,19 @@ In the caller-owned compatibility shape, Structure owns the transform plan. Your
 
 ## Supported Operations
 
-The first slice supports:
+The supported streaming transform surface includes:
 
 - row-local projections;
 - row-local filters;
 - schema-only validation;
 - stream-static left and inner lookup joins;
+- stream-static left-semi filtering through `exists(...)`;
 - `watermark(...)` as a DataFrame transformation;
-- watermarked grouped aggregations and dedupe;
-- inner stream-stream joins when both inputs are declared `streaming=True`, both sides have watermarks, and the
-  predicate includes `event_time_between(...)`;
+- event-time tumbling/sliding aggregations;
+- session-window aggregations;
+- watermarked grouped aggregations and bounded dedupe;
+- bounded inner, left/right/full outer, and left-semi stream-stream joins when both inputs are declared
+  `streaming=True`, both sides have watermarks, and the predicate includes `event_time_between(...)`;
 - static-side broadcast hints when supported by the PySpark target;
 - hooks marked `streaming=True`;
 - compatibility and explain reports that classify transforms as `compatible`, `batch_only`, or `unknown`.
@@ -63,13 +66,11 @@ The caller-owned compatibility slice does not include:
 - generated lifecycle, deployment, or recovery code;
 - arbitrary state APIs;
 - selected-row, ranking, lag/lead, and rolling-window helpers on streaming inputs;
-- outer and semi stream-stream joins;
-- windowed aggregations beyond admitted watermarked aggregate shapes;
 - right, full, cross, non-equi, or disjunctive rowset joins involving streaming inputs;
 - Spark actions such as `collect()`, `count()`, `toPandas()`, and `show()`;
 - RDD conversion, Pandas conversion, Python UDF fallback, or local row loops.
 
-See [Spark streaming deferred features](SparkStreamingDeferredFeatures.back.md)) for the future feature boundary.
+See [Spark streaming deferred features](SparkStreamingDeferredFeatures.back.md) for the future feature boundary.
 
 ## Hooks
 

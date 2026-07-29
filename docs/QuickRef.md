@@ -369,7 +369,7 @@ Reference: [expressions API](api/Expressions.api.md) and [DSL expression helpers
 
 Use `@special(type="udf")` only for deliberately opaque, row-local Python logic that cannot be expressed with the
 typed DSL. Declare both its Spark return type and nullability. Structure records `DSL-W0403` by default because Spark
-cannot inspect or optimize the Python body; set `warn_on_udfs = false` only after accepting that trade-off.
+cannot inspect or optimize the Python body; set `@transform(warn_on_udfs=False)` only after accepting that trade-off.
 
 ```python
 class Publish(Transform):
@@ -386,7 +386,8 @@ class Publish(Transform):
 
 This is an ordinary-PySpark-only escape hatch, not an implicit fallback for unsupported expressions: Spark Connect
 rejects Python UDF capability requirements. Keep the body scalar and self-contained. Generated modules delegate to
-the source transform unless `generated_code_options` includes `embed_udfs`.
+the source transform unless `generated_code_options` includes `embed_udfs`; embedding affects generated module
+self-containment, not compiler visibility or warning policy.
 
 ## Aggregation
 
@@ -527,9 +528,8 @@ The PySpark target lowers these helpers to `row_number()` over
 `Window.partitionBy(...).orderBy(...)`, keeps rank `1`, then drops the temporary rank column. `partition_by` is
 required so the selection is reviewable, and the current public tie policy is `"error"`.
 
-Streaming: Selected-row helpers
-are batch-only in v2 streaming compatibility checks, because streaming-safe ranking needs explicit watermark and state
-semantics (planned).
+Streaming: selected-row helpers are batch-only. Keep streaming-safe ranking and top-N state policy in caller-owned
+PySpark until Structure admits a symbolic state contract.
 
 For complete, outcome-oriented examples, see the [Latest Rows recipe](recipes/LatestRows.md) and the
 [Earliest Rows recipe](recipes/EarliestRows.md).
@@ -591,7 +591,8 @@ Reusable windows require explicit frames such as `rows_between(preceding(2), cur
 `window_stddev`, `window_variance`, `window_collect_list`, and `window_collect_set`. Spark does not permit distinct
 window aggregates; use grouped `count_distinct(...)` instead.
 
-Streaming: broad window helpers are batch-only in v2 streaming compatibility.
+Streaming: analytical window helpers are batch-only. Use event-time `window(...)` or `session_window(...)` grouping for
+the admitted Structured Streaming aggregate shapes.
 
 Reference: [windows API](api/Windows.api.md),
 [advanced analytical operations](background/DSL.back.md), [DSL](background/DSL.back.md),
@@ -645,8 +646,8 @@ def latest_events(self, event: RawEvent) -> RawEvent:
     return RawEvent.project(event)
 ```
 
-Streaming: exact duplicate removal is batch-only in v2 streaming compatibility because streaming dedupe needs explicit
-watermark, state, and output-mode semantics.
+Streaming: `distinct(...)` remains batch-only. For streaming dedupe, declare a watermark first and use
+`drop_duplicates(...)` or `drop_duplicates_within_watermark(...)`; the caller owns the required output mode.
 
 Use `select_first_qualified(...)` when a relation contains several candidate rows and one eligible row should survive
 per declared business key:
@@ -664,7 +665,7 @@ def choose_feedback(self, option: FeedbackOption) -> FeedbackOption:
 ```
 
 Keys must be declared field references. Tied eligible candidates fail with `REL-E0705`; `missing="error"` also fails
-when a key has no eligible candidate. The helper is batch-only in v1 streaming compatibility.
+when a key has no eligible candidate. The helper is batch-only for streaming inputs.
 
 Reference: [aggregations API](api/Aggregations.api.md), [DSL](background/DSL.back.md),
 [IR](background/PySparkCodeGeneration.back.md),
@@ -1155,7 +1156,9 @@ Reference: [schemas API](api/Schemas.api.md), [validation semantics](reference/S
 Structure transforms operate on DataFrames. If the input DataFrame is streaming and every compiled operation
 is supported by Spark Structured Streaming, the transform can run in a streaming pipeline.
 
-Structure does not generate `readStream` or `writeStream`; the caller owns streaming orchestration.
+Structure admits row-local projection/filter, stream-static joins, watermarks, event-time and session-window
+aggregation, bounded dedupe, and admitted bounded stream-stream joins. It does not generate `readStream` or
+`writeStream`; the caller owns sources, sinks, checkpoints, triggers, output modes, and query lifecycle.
 
 Reference: [streaming API](api/Streaming.api.md) and
 [streaming compatibility](background/StreamingCompatibility.back.md).

@@ -2,7 +2,7 @@
 
 # DocumentFeatures
 
-Module: `examples.search.schemas.analytics`
+Module: `examples.search.schemas.features`
 
 | Field | Column | Type | Nullable |
 | --- | --- | --- | --- |
@@ -10,36 +10,8 @@ Module: `examples.search.schemas.analytics`
 | `collection_id` | `collection_id` | `string` | no |
 | `source` | `source` | `string` | no |
 | `language` | `language` | `string` | no |
-| `title` | `title` | `string` | no |
-| `url` | `url` | `string` | yes |
-| `normalized_title` | `normalized_title` | `string` | yes |
+| `normalized_title` | `normalized_title` | `string` | no |
 | `normalized_content` | `normalized_content` | `string` | no |
-| `title_starts_with_the` | `title_starts_with_the` | `boolean` | yes |
-| `title_ends_with_guide` | `title_ends_with_guide` | `boolean` | yes |
-| `url_is_https` | `url_is_https` | `boolean` | yes |
-| `content_contains_structure` | `content_contains_structure` | `boolean` | no |
-| `content_like_guide` | `content_like_guide` | `boolean` | no |
-| `content_ilike_structure` | `content_ilike_structure` | `boolean` | no |
-| `content_matches_sentence` | `content_matches_sentence` | `boolean` | no |
-| `title_prefix` | `title_prefix` | `string` | no |
-| `title_words` | `title_words` | `array<string!>` | no |
-| `leading_title_words` | `leading_title_words` | `array<string!>` | no |
-| `sorted_title_words` | `sorted_title_words` | `array<string!>` | no |
-| `title_slug` | `title_slug` | `string` | no |
-| `first_number` | `first_number` | `string` | no |
+| `title_length` | `title_length` | `integer` | no |
 | `content_length` | `content_length` | `integer` | no |
-| `title_case` | `title_case` | `string` | no |
-| `reversed_title` | `reversed_title` | `string` | no |
-| `translated_title` | `translated_title` | `string` | no |
-| `structure_position` | `structure_position` | `integer` | no |
-| `title_distance_to_guide` | `title_distance_to_guide` | `integer` | no |
-| `display_name` | `display_name` | `string` | no |
-| `title_hash` | `title_hash` | `integer` | no |
-| `content_sha2` | `content_sha2` | `string` | no |
-| `harvest_year` | `harvest_year` | `integer` | no |
-| `age_days` | `age_days` | `integer` | yes |
-| `content_length_sqrt` | `content_length_sqrt` | `double` | no |
-| `content_length_log` | `content_length_log` | `double` | no |
-| `rounded_content_length` | `rounded_content_length` | `double` | no |
-| `content_length_sign` | `content_length_sign` | `double` | no |
-| `source_recency_rank` | `source_recency_rank` | `long` | no |
+| `url_is_https` | `url_is_https` | `boolean` | yes |

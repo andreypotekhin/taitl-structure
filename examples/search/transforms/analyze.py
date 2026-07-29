@@ -1,5 +1,5 @@
 from examples.search.schemas.analytics import (
-    DocumentFeatures,
+    DocumentProfile,
     DocumentStatistics,
     ParagraphStatistics,
     SectionStatistics,
@@ -18,8 +18,8 @@ class AnalyzeText(Transform):
     sentences = input(Sentence)
     paragraphs = input(Paragraph)
     sections = input(Section)
-    comparison_left = input(DocumentFeatures)
-    comparison_right = input(DocumentFeatures)
+    comparison_left = input(DocumentProfile)
+    comparison_right = input(DocumentProfile)
     sentence_statistics = output(SentenceStatistics)
     paragraph_statistics = output(ParagraphStatistics)
     section_statistics = output(SectionStatistics)
@@ -90,7 +90,7 @@ class AnalyzeText(Transform):
         )
 
     @step(input=[comparison_left, comparison_right], output=similar_documents)
-    def similar(self, left: DocumentFeatures, right: DocumentFeatures) -> SimilarDocument:
+    def similar(self, left: DocumentProfile, right: DocumentProfile) -> SimilarDocument:
         inner_join(
             on=(left.source == right.source)
             & (left.language == right.language)

@@ -338,6 +338,17 @@ class OrderAnalytics(Transform):
 
 More examples: [here](examples/search/transforms/evaluation/search_docs/eval_doc_ranking_quality.py), [here](examples/school/transforms/vectors.py), [here](examples/security/transforms/reports.py), [here](examples/store/transforms/analytics.py).
 
+## Streaming
+
+Structure supports compiler-visible PySpark Structured Streaming transforms for caller-supplied streaming DataFrames:
+row-local projection/filter, stream-static joins, watermarks, event-time and session-window aggregation, bounded
+deduplication, and admitted bounded stream-stream joins. Streaming sources, sinks, checkpoints, triggers, output modes,
+query start/stop, and `foreach` side effects remain caller-owned PySpark code.
+
+See the [Streaming API](docs/api/Streaming.api.md), the checked
+[PySpark streaming API coverage](docs/dev/specifications/V9PySparkStreamingApiCoverage.md), and the tested
+[caller-owned streaming recipe](examples/streams/adoption.py).
+
 ## Performance Focus
 
 Structure is intentionally strict: compiled methods must lower to Spark Optimizer-visible expressions.

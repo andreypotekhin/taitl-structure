@@ -1,4 +1,4 @@
-from examples.search.schemas.analytics import DocumentFeatures
+from examples.search.schemas.analytics import DocumentProfile
 from examples.search.schemas.text import Document
 from structure import *
 from structure.plugin.pyspark import *
@@ -8,14 +8,14 @@ class ProfileDocuments(Transform):
     """Extract document features."""
 
     documents = input(Document)
-    features = output(DocumentFeatures)
+    features = output(DocumentProfile)
 
-    def profile(self, row: Document) -> DocumentFeatures:
+    def profile(self, row: Document) -> DocumentProfile:
         normalized_title = nullif(trim(row.title), "Untitled")
         normalized_content = lower(regexp_replace(trim(row.content), pattern=r"\s+", replacement=" "))
         title_words = split(row.title, pattern=r"\s+")
         content_length = length(row.content)
-        return DocumentFeatures.project(row)(
+        return DocumentProfile.project(row)(
             document_id=row.id,
             normalized_title=normalized_title,
             normalized_content=normalized_content,

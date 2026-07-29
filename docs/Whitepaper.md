@@ -300,8 +300,10 @@ The caller owns:
 - checkpoint
 - lifecycle
 
-Lifecycle remains caller-owned permanently. Future streaming work expands transformation coverage, state diagnostics,
-and live streaming evidence.
+Lifecycle remains caller-owned permanently. The current streaming ledger expands transformation coverage, state
+diagnostics, and live streaming evidence. It covers adoption APIs, lifecycle boundaries, output-mode
+requirements, watermarks, event-time/session windows, bounded dedupe, admitted stream-static and bounded stream-stream
+joins, and explicit deferred/unsupported stateful families.
 
 ## Compatibility Policy
 
@@ -430,8 +432,9 @@ transforms, diagnostic links, and setup checks.
 
 Structure provides typed, compiler-visible PySpark transformations across expressions, nested values, relation
 operations, joins, aggregations, windows, collections, and the admitted streaming shapes. The checked coverage catalog
-separates a Structure equivalent from a deliberate boundary. Source, sink, checkpoint, trigger, output-mode
-application, query lifecycle, loading, storage, orchestration, and actions remain caller-owned.
+separates a Structure equivalent from a deliberate boundary, with a companion streaming ledger for adoption APIs and
+stateful/lifecycle boundaries. Source, sink, checkpoint, trigger, output-mode application, query lifecycle, loading,
+storage, orchestration, and actions remain caller-owned.
 
 ## Summary
 

@@ -12,7 +12,7 @@ For the architecture, evidence boundaries, and ownership model, see the
 
 | Concern | Typed boundary | Result | Details |
 | --- | --- | --- | --- |
-| Extraction | `ExtractText` | sections, paragraphs, sentences, words | Plain-text hierarchy and shared token normalization. |
+| Chunking | `Chunking` | sections, paragraphs, sentences, words | Plain-text hierarchy and shared token normalization. |
 | Indexing | `CreateIndex` | target-grain terms and summaries | Build once; score many query batches. |
 | Scoring | `Scoring` | external production score relations | Keep algorithms separate from immutable corpus rows. |
 | Similarity | `CreateSimilarityQueries`, `ReduceSimilarityScores` | same-grain corpus pairs | Reuse the lexical index; BM25 stays directional. |
@@ -21,17 +21,31 @@ For the architecture, evidence boundaries, and ownership model, see the
 | Experiments | `SelectExperimentScores`, experiment evaluators | comparable named runs | Named score variants flow through serving and evaluation. |
 | Evaluation | judged-quality and behavior evaluators | daily quality and serving metrics | Slice by labels and inclusive band hierarchies. |
 
-## Extraction
+## Chunking
 
 `Document.content` is plain text similar to MarkDown: a line beginning with `#` starts a
 section and supplies its heading; blank lines separate paragraphs. Documents
 without a heading use an implicit `Document` section.
 
-`ExtractText` accepts raw `Document` rows and emits hierarchical sections, paragraphs, sentences, and normalized words. All later
+`Chunking` accepts raw `Document` rows and emits hierarchical sections, paragraphs, sentences, and normalized words. All later
 lexical paths use that one text-normalization contract.
 
+`Chunking` composes `DocumentChunking`, the default `SentenceChunking`, and
+`WordChunking`. The default sentence supplier is an explicitly declared Python
+UDF that splits on terminal punctuation. It is intentionally only a starting
+point: abbreviations, initials, versions, domains, and locale-specific rules
+can split incorrectly. When source-faithful sentence text or spans matter,
+callers run `DocumentChunking`, replace `SentenceChunking` with a transform
+that emits the same `Sentence` relation, then pass those sentences to
+`WordChunking`.
+
+`SentenceChunking` marks this deliberate UDF boundary on the transform with
+`@transform(warn_on_udfs=False)`. The example's [`structure.toml`](structure.toml)
+only selects `embed_udfs` so generated PySpark contains the default splitter
+body instead of depending on the source transform.
+
 ```python
-segments = ExtractText(documents=documents).run(session)
+segments = Chunking(documents=documents).run(session)
 features = ProfileDocuments(documents=documents).run(session).features
 analytics = AnalyzeText(
     words=segments.words,
@@ -52,6 +66,21 @@ document_statistics = corpus.corpus_statistics
 `corpus.corpus_statistics` reports document-level averages and the distribution of document-average word length.
 `corpus.corpus_vocabulary` independently estimates distinct corpus vocabulary; it never sums per-document vocabularies,
 which would double-count shared terms.
+
+## Text profiling demonstration
+
+`ProfileDocuments` remains a Search-local DSL demonstration. It intentionally
+exercises string, array, numeric, hash, date, and window expressions over the
+document corpus; it is not a production feature-store contract.
+
+## Offline training
+
+`transforms/training/` is intentionally separate from Search serving.
+It supplies a deterministic linear-ranking baseline for caller-built,
+judgment-labeled feature rows. `BuildDocumentFeatures` and
+`BuildQueryFeatures` publish the reusable relations; `BuildTrainingData`
+explicitly joins them to lexical candidates and caller-supplied judgments. The
+caller owns snapshots, persistence, deployment, and inference.
 
 ## Indexing
 
@@ -94,7 +123,7 @@ artifacts and creates a score row for every document, section, paragraph, and se
 query. `content` is free-form text: callers do not pre-tokenize it. For example, `"  AURORA,   beacon! navigation?  "` is equivalent to
 `"aurora beacon navigation"`.
 The algorithms normalize query terms exactly as
-`ExtractText` normalizes document words. `score_overlap` is the standard overlap coefficient: matching distinct terms
+`Chunking` normalizes document words. `score_overlap` is the standard overlap coefficient: matching distinct terms
 divided by the smaller of the query and target vocabularies. `score_bm25` uses fixed `k1=1.2` and `b=0.75` constants.
 The scores remain separate: choosing an algorithm or combining parent and child targets is deliberately caller-owned.
 

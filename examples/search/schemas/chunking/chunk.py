@@ -1,4 +1,4 @@
-"""Intermediate schemas for extracting searchable text rows."""
+"""Intermediate schemas for chunking searchable text rows."""
 
 from structure import Schema
 from structure.plugin.pyspark import array, boolean, double, integer, long, string

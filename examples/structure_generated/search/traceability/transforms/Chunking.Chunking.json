@@ -3,7 +3,7 @@
     "name": "pyspark",
     "target": ">=3.5,<4.1"
   },
-  "generated_transform_class": "ExtractTextGenerated",
+  "generated_transform_class": "ChunkingGenerated",
   "inputs": [
     {
       "name": "documents",
@@ -13,609 +13,549 @@
   ],
   "provenance": [
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated",
-      "ir": "ir:ExtractText",
-      "source": "source:examples.search.transforms.extract.ExtractText"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated",
+      "ir": "ir:Chunking",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.input.documents",
-      "ir": "ir:ExtractText.input.0.documents",
-      "source": "source:examples.search.transforms.extract.ExtractText.input.documents"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.input.documents",
+      "ir": "ir:Chunking.input.0.documents",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.input.documents"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.mark_lines",
-      "ir": "ir:ExtractText.step.0.mark_lines",
-      "source": "source:examples.search.transforms.extract.ExtractText.mark_lines"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.0.documents_chunked.mark_lines",
+      "ir": "ir:Chunking.step.0.documents_chunked.mark_lines",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.mark_lines"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.mark_lines.posexplode_struct.0",
-      "ir": "ir:ExtractText.step.0.mark_lines.posexplode_struct.0",
-      "source": "source:examples.search.transforms.extract.ExtractText.mark_lines.posexplode_struct.0"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.0.documents_chunked.mark_lines.posexplode_struct.0",
+      "ir": "ir:Chunking.step.0.documents_chunked.mark_lines.posexplode_struct.0",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.mark_lines.posexplode_struct.0"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.mark_lines.select.document_id",
-      "ir": "ir:ExtractText.step.0.mark_lines.project.document_id",
-      "source": "source:examples.search.transforms.extract.ExtractText.mark_lines.field.document_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.0.documents_chunked.mark_lines.select.document_id",
+      "ir": "ir:Chunking.step.0.documents_chunked.mark_lines.project.document_id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.mark_lines.field.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.mark_lines.select.line_ordinal",
-      "ir": "ir:ExtractText.step.0.mark_lines.project.line_ordinal",
-      "source": "source:examples.search.transforms.extract.ExtractText.mark_lines.field.line_ordinal"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.0.documents_chunked.mark_lines.select.line_ordinal",
+      "ir": "ir:Chunking.step.0.documents_chunked.mark_lines.project.line_ordinal",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.mark_lines.field.line_ordinal"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.mark_lines.select.line",
-      "ir": "ir:ExtractText.step.0.mark_lines.project.line",
-      "source": "source:examples.search.transforms.extract.ExtractText.mark_lines.field.line"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.0.documents_chunked.mark_lines.select.line",
+      "ir": "ir:Chunking.step.0.documents_chunked.mark_lines.project.line",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.mark_lines.field.line"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.mark_lines.select.heading",
-      "ir": "ir:ExtractText.step.0.mark_lines.project.heading",
-      "source": "source:examples.search.transforms.extract.ExtractText.mark_lines.field.heading"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.0.documents_chunked.mark_lines.select.heading",
+      "ir": "ir:Chunking.step.0.documents_chunked.mark_lines.project.heading",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.mark_lines.field.heading"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.mark_lines.select.is_blank",
-      "ir": "ir:ExtractText.step.0.mark_lines.project.is_blank",
-      "source": "source:examples.search.transforms.extract.ExtractText.mark_lines.field.is_blank"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.0.documents_chunked.mark_lines.select.is_blank",
+      "ir": "ir:Chunking.step.0.documents_chunked.mark_lines.project.is_blank",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.mark_lines.field.is_blank"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.mark_lines.select.section_ordinal",
-      "ir": "ir:ExtractText.step.0.mark_lines.project.section_ordinal",
-      "source": "source:examples.search.transforms.extract.ExtractText.mark_lines.field.section_ordinal"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.0.documents_chunked.mark_lines.select.section_ordinal",
+      "ir": "ir:Chunking.step.0.documents_chunked.mark_lines.project.section_ordinal",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.mark_lines.field.section_ordinal"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.mark_lines.select.paragraph_group",
-      "ir": "ir:ExtractText.step.0.mark_lines.project.paragraph_group",
-      "source": "source:examples.search.transforms.extract.ExtractText.mark_lines.field.paragraph_group"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.0.documents_chunked.mark_lines.select.paragraph_group",
+      "ir": "ir:Chunking.step.0.documents_chunked.mark_lines.project.paragraph_group",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.mark_lines.field.paragraph_group"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.mark_lines.validation.0.intermediate",
-      "ir": "ir:ExtractText.step.0.mark_lines.validation.0.intermediate",
-      "source": "source:examples.search.transforms.extract.ExtractText.mark_lines.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.0.documents_chunked.mark_lines.validation.0.intermediate",
+      "ir": "ir:Chunking.step.0.documents_chunked.mark_lines.validation.0.intermediate",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.mark_lines.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.1.select_paragraph_lines",
-      "ir": "ir:ExtractText.step.1.select_paragraph_lines",
-      "source": "source:examples.search.transforms.extract.ExtractText.select_paragraph_lines"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.1.documents_chunked.select_paragraph_lines",
+      "ir": "ir:Chunking.step.1.documents_chunked.select_paragraph_lines",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.select_paragraph_lines"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.1.select_paragraph_lines.where.0",
-      "ir": "ir:ExtractText.step.1.select_paragraph_lines.filter.0",
-      "source": "source:examples.search.transforms.extract.ExtractText.select_paragraph_lines.filter.0"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.1.documents_chunked.select_paragraph_lines.where.0",
+      "ir": "ir:Chunking.step.1.documents_chunked.select_paragraph_lines.filter.0",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.select_paragraph_lines.filter.0"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.1.select_paragraph_lines.select.document_id",
-      "ir": "ir:ExtractText.step.1.select_paragraph_lines.project.document_id",
-      "source": "source:examples.search.transforms.extract.ExtractText.select_paragraph_lines.field.document_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.1.documents_chunked.select_paragraph_lines.select.document_id",
+      "ir": "ir:Chunking.step.1.documents_chunked.select_paragraph_lines.project.document_id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.select_paragraph_lines.field.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.1.select_paragraph_lines.select.section_ordinal",
-      "ir": "ir:ExtractText.step.1.select_paragraph_lines.project.section_ordinal",
-      "source": "source:examples.search.transforms.extract.ExtractText.select_paragraph_lines.field.section_ordinal"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.1.documents_chunked.select_paragraph_lines.select.section_ordinal",
+      "ir": "ir:Chunking.step.1.documents_chunked.select_paragraph_lines.project.section_ordinal",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.select_paragraph_lines.field.section_ordinal"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.1.select_paragraph_lines.select.paragraph_group",
-      "ir": "ir:ExtractText.step.1.select_paragraph_lines.project.paragraph_group",
-      "source": "source:examples.search.transforms.extract.ExtractText.select_paragraph_lines.field.paragraph_group"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.1.documents_chunked.select_paragraph_lines.select.paragraph_group",
+      "ir": "ir:Chunking.step.1.documents_chunked.select_paragraph_lines.project.paragraph_group",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.select_paragraph_lines.field.paragraph_group"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.1.select_paragraph_lines.select.line_ordinal",
-      "ir": "ir:ExtractText.step.1.select_paragraph_lines.project.line_ordinal",
-      "source": "source:examples.search.transforms.extract.ExtractText.select_paragraph_lines.field.line_ordinal"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.1.documents_chunked.select_paragraph_lines.select.line_ordinal",
+      "ir": "ir:Chunking.step.1.documents_chunked.select_paragraph_lines.project.line_ordinal",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.select_paragraph_lines.field.line_ordinal"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.1.select_paragraph_lines.select.line",
-      "ir": "ir:ExtractText.step.1.select_paragraph_lines.project.line",
-      "source": "source:examples.search.transforms.extract.ExtractText.select_paragraph_lines.field.line"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.1.documents_chunked.select_paragraph_lines.select.line",
+      "ir": "ir:Chunking.step.1.documents_chunked.select_paragraph_lines.project.line",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.select_paragraph_lines.field.line"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.1.select_paragraph_lines.validation.0.intermediate",
-      "ir": "ir:ExtractText.step.1.select_paragraph_lines.validation.0.intermediate",
-      "source": "source:examples.search.transforms.extract.ExtractText.select_paragraph_lines.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.1.documents_chunked.select_paragraph_lines.validation.0.intermediate",
+      "ir": "ir:Chunking.step.1.documents_chunked.select_paragraph_lines.validation.0.intermediate",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.select_paragraph_lines.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.2.select_section_headings",
-      "ir": "ir:ExtractText.step.2.select_section_headings",
-      "source": "source:examples.search.transforms.extract.ExtractText.select_section_headings"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.2.documents_chunked.select_section_headings",
+      "ir": "ir:Chunking.step.2.documents_chunked.select_section_headings",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.select_section_headings"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.2.select_section_headings.where.0",
-      "ir": "ir:ExtractText.step.2.select_section_headings.filter.0",
-      "source": "source:examples.search.transforms.extract.ExtractText.select_section_headings.filter.0"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.2.documents_chunked.select_section_headings.where.0",
+      "ir": "ir:Chunking.step.2.documents_chunked.select_section_headings.filter.0",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.select_section_headings.filter.0"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.2.select_section_headings.select.document_id",
-      "ir": "ir:ExtractText.step.2.select_section_headings.project.document_id",
-      "source": "source:examples.search.transforms.extract.ExtractText.select_section_headings.field.document_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.2.documents_chunked.select_section_headings.select.document_id",
+      "ir": "ir:Chunking.step.2.documents_chunked.select_section_headings.project.document_id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.select_section_headings.field.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.2.select_section_headings.select.section_ordinal",
-      "ir": "ir:ExtractText.step.2.select_section_headings.project.section_ordinal",
-      "source": "source:examples.search.transforms.extract.ExtractText.select_section_headings.field.section_ordinal"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.2.documents_chunked.select_section_headings.select.section_ordinal",
+      "ir": "ir:Chunking.step.2.documents_chunked.select_section_headings.project.section_ordinal",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.select_section_headings.field.section_ordinal"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.2.select_section_headings.select.heading",
-      "ir": "ir:ExtractText.step.2.select_section_headings.project.heading",
-      "source": "source:examples.search.transforms.extract.ExtractText.select_section_headings.field.heading"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.2.documents_chunked.select_section_headings.select.heading",
+      "ir": "ir:Chunking.step.2.documents_chunked.select_section_headings.project.heading",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.select_section_headings.field.heading"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.2.select_section_headings.validation.0.intermediate",
-      "ir": "ir:ExtractText.step.2.select_section_headings.validation.0.intermediate",
-      "source": "source:examples.search.transforms.extract.ExtractText.select_section_headings.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.2.documents_chunked.select_section_headings.validation.0.intermediate",
+      "ir": "ir:Chunking.step.2.documents_chunked.select_section_headings.validation.0.intermediate",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.select_section_headings.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.3.collect_paragraph_lines",
-      "ir": "ir:ExtractText.step.3.collect_paragraph_lines",
-      "source": "source:examples.search.transforms.extract.ExtractText.collect_paragraph_lines"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.3.documents_chunked.collect_paragraph_lines",
+      "ir": "ir:Chunking.step.3.documents_chunked.collect_paragraph_lines",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.collect_paragraph_lines"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.3.collect_paragraph_lines.aggregate.id",
-      "ir": "ir:ExtractText.step.3.collect_paragraph_lines.aggregate.id",
-      "source": "source:examples.search.transforms.extract.ExtractText.collect_paragraph_lines.aggregate.id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.3.documents_chunked.collect_paragraph_lines.aggregate.id",
+      "ir": "ir:Chunking.step.3.documents_chunked.collect_paragraph_lines.aggregate.id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.collect_paragraph_lines.aggregate.id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.3.collect_paragraph_lines.aggregate.document_id",
-      "ir": "ir:ExtractText.step.3.collect_paragraph_lines.aggregate.document_id",
-      "source": "source:examples.search.transforms.extract.ExtractText.collect_paragraph_lines.aggregate.document_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.3.documents_chunked.collect_paragraph_lines.aggregate.document_id",
+      "ir": "ir:Chunking.step.3.documents_chunked.collect_paragraph_lines.aggregate.document_id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.collect_paragraph_lines.aggregate.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.3.collect_paragraph_lines.aggregate.section_id",
-      "ir": "ir:ExtractText.step.3.collect_paragraph_lines.aggregate.section_id",
-      "source": "source:examples.search.transforms.extract.ExtractText.collect_paragraph_lines.aggregate.section_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.3.documents_chunked.collect_paragraph_lines.aggregate.section_id",
+      "ir": "ir:Chunking.step.3.documents_chunked.collect_paragraph_lines.aggregate.section_id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.collect_paragraph_lines.aggregate.section_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.3.collect_paragraph_lines.aggregate.section_ordinal",
-      "ir": "ir:ExtractText.step.3.collect_paragraph_lines.aggregate.section_ordinal",
-      "source": "source:examples.search.transforms.extract.ExtractText.collect_paragraph_lines.aggregate.section_ordinal"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.3.documents_chunked.collect_paragraph_lines.aggregate.section_ordinal",
+      "ir": "ir:Chunking.step.3.documents_chunked.collect_paragraph_lines.aggregate.section_ordinal",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.collect_paragraph_lines.aggregate.section_ordinal"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.3.collect_paragraph_lines.aggregate.paragraph_group",
-      "ir": "ir:ExtractText.step.3.collect_paragraph_lines.aggregate.paragraph_group",
-      "source": "source:examples.search.transforms.extract.ExtractText.collect_paragraph_lines.aggregate.paragraph_group"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.3.documents_chunked.collect_paragraph_lines.aggregate.paragraph_group",
+      "ir": "ir:Chunking.step.3.documents_chunked.collect_paragraph_lines.aggregate.paragraph_group",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.collect_paragraph_lines.aggregate.paragraph_group"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.3.collect_paragraph_lines.aggregate.lines",
-      "ir": "ir:ExtractText.step.3.collect_paragraph_lines.aggregate.lines",
-      "source": "source:examples.search.transforms.extract.ExtractText.collect_paragraph_lines.aggregate.lines"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.3.documents_chunked.collect_paragraph_lines.aggregate.lines",
+      "ir": "ir:Chunking.step.3.documents_chunked.collect_paragraph_lines.aggregate.lines",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.collect_paragraph_lines.aggregate.lines"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.3.collect_paragraph_lines.validation.0.intermediate",
-      "ir": "ir:ExtractText.step.3.collect_paragraph_lines.validation.0.intermediate",
-      "source": "source:examples.search.transforms.extract.ExtractText.collect_paragraph_lines.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.3.documents_chunked.collect_paragraph_lines.validation.0.intermediate",
+      "ir": "ir:Chunking.step.3.documents_chunked.collect_paragraph_lines.validation.0.intermediate",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.collect_paragraph_lines.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.4.assemble_paragraph_content",
-      "ir": "ir:ExtractText.step.4.assemble_paragraph_content",
-      "source": "source:examples.search.transforms.extract.ExtractText.assemble_paragraph_content"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.4.documents_chunked.assemble_paragraph_content",
+      "ir": "ir:Chunking.step.4.documents_chunked.assemble_paragraph_content",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.assemble_paragraph_content"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.4.assemble_paragraph_content.select.id",
-      "ir": "ir:ExtractText.step.4.assemble_paragraph_content.project.id",
-      "source": "source:examples.search.transforms.extract.ExtractText.assemble_paragraph_content.field.id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.4.documents_chunked.assemble_paragraph_content.select.id",
+      "ir": "ir:Chunking.step.4.documents_chunked.assemble_paragraph_content.project.id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.assemble_paragraph_content.field.id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.4.assemble_paragraph_content.select.document_id",
-      "ir": "ir:ExtractText.step.4.assemble_paragraph_content.project.document_id",
-      "source": "source:examples.search.transforms.extract.ExtractText.assemble_paragraph_content.field.document_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.4.documents_chunked.assemble_paragraph_content.select.document_id",
+      "ir": "ir:Chunking.step.4.documents_chunked.assemble_paragraph_content.project.document_id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.assemble_paragraph_content.field.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.4.assemble_paragraph_content.select.section_id",
-      "ir": "ir:ExtractText.step.4.assemble_paragraph_content.project.section_id",
-      "source": "source:examples.search.transforms.extract.ExtractText.assemble_paragraph_content.field.section_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.4.documents_chunked.assemble_paragraph_content.select.section_id",
+      "ir": "ir:Chunking.step.4.documents_chunked.assemble_paragraph_content.project.section_id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.assemble_paragraph_content.field.section_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.4.assemble_paragraph_content.select.section_ordinal",
-      "ir": "ir:ExtractText.step.4.assemble_paragraph_content.project.section_ordinal",
-      "source": "source:examples.search.transforms.extract.ExtractText.assemble_paragraph_content.field.section_ordinal"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.4.documents_chunked.assemble_paragraph_content.select.section_ordinal",
+      "ir": "ir:Chunking.step.4.documents_chunked.assemble_paragraph_content.project.section_ordinal",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.assemble_paragraph_content.field.section_ordinal"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.4.assemble_paragraph_content.select.paragraph_group",
-      "ir": "ir:ExtractText.step.4.assemble_paragraph_content.project.paragraph_group",
-      "source": "source:examples.search.transforms.extract.ExtractText.assemble_paragraph_content.field.paragraph_group"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.4.documents_chunked.assemble_paragraph_content.select.paragraph_group",
+      "ir": "ir:Chunking.step.4.documents_chunked.assemble_paragraph_content.project.paragraph_group",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.assemble_paragraph_content.field.paragraph_group"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.4.assemble_paragraph_content.select.content",
-      "ir": "ir:ExtractText.step.4.assemble_paragraph_content.project.content",
-      "source": "source:examples.search.transforms.extract.ExtractText.assemble_paragraph_content.field.content"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.4.documents_chunked.assemble_paragraph_content.select.content",
+      "ir": "ir:Chunking.step.4.documents_chunked.assemble_paragraph_content.project.content",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.assemble_paragraph_content.field.content"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.4.assemble_paragraph_content.validation.0.intermediate",
-      "ir": "ir:ExtractText.step.4.assemble_paragraph_content.validation.0.intermediate",
-      "source": "source:examples.search.transforms.extract.ExtractText.assemble_paragraph_content.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.4.documents_chunked.assemble_paragraph_content.validation.0.intermediate",
+      "ir": "ir:Chunking.step.4.documents_chunked.assemble_paragraph_content.validation.0.intermediate",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.assemble_paragraph_content.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.5.rank_paragraphs",
-      "ir": "ir:ExtractText.step.5.rank_paragraphs",
-      "source": "source:examples.search.transforms.extract.ExtractText.rank_paragraphs"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.5.documents_chunked.number_paragraphs",
+      "ir": "ir:Chunking.step.5.documents_chunked.number_paragraphs",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.number_paragraphs"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.5.rank_paragraphs.select.id",
-      "ir": "ir:ExtractText.step.5.rank_paragraphs.project.id",
-      "source": "source:examples.search.transforms.extract.ExtractText.rank_paragraphs.field.id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.5.documents_chunked.number_paragraphs.select.id",
+      "ir": "ir:Chunking.step.5.documents_chunked.number_paragraphs.project.id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.number_paragraphs.field.id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.5.rank_paragraphs.select.document_id",
-      "ir": "ir:ExtractText.step.5.rank_paragraphs.project.document_id",
-      "source": "source:examples.search.transforms.extract.ExtractText.rank_paragraphs.field.document_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.5.documents_chunked.number_paragraphs.select.document_id",
+      "ir": "ir:Chunking.step.5.documents_chunked.number_paragraphs.project.document_id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.number_paragraphs.field.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.5.rank_paragraphs.select.section_id",
-      "ir": "ir:ExtractText.step.5.rank_paragraphs.project.section_id",
-      "source": "source:examples.search.transforms.extract.ExtractText.rank_paragraphs.field.section_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.5.documents_chunked.number_paragraphs.select.section_id",
+      "ir": "ir:Chunking.step.5.documents_chunked.number_paragraphs.project.section_id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.number_paragraphs.field.section_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.5.rank_paragraphs.select.section_ordinal",
-      "ir": "ir:ExtractText.step.5.rank_paragraphs.project.section_ordinal",
-      "source": "source:examples.search.transforms.extract.ExtractText.rank_paragraphs.field.section_ordinal"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.5.documents_chunked.number_paragraphs.select.section_ordinal",
+      "ir": "ir:Chunking.step.5.documents_chunked.number_paragraphs.project.section_ordinal",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.number_paragraphs.field.section_ordinal"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.5.rank_paragraphs.select.ordinal",
-      "ir": "ir:ExtractText.step.5.rank_paragraphs.project.ordinal",
-      "source": "source:examples.search.transforms.extract.ExtractText.rank_paragraphs.field.ordinal"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.5.documents_chunked.number_paragraphs.select.ordinal",
+      "ir": "ir:Chunking.step.5.documents_chunked.number_paragraphs.project.ordinal",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.number_paragraphs.field.ordinal"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.5.rank_paragraphs.select.content",
-      "ir": "ir:ExtractText.step.5.rank_paragraphs.project.content",
-      "source": "source:examples.search.transforms.extract.ExtractText.rank_paragraphs.field.content"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.5.documents_chunked.number_paragraphs.select.content",
+      "ir": "ir:Chunking.step.5.documents_chunked.number_paragraphs.project.content",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.number_paragraphs.field.content"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.5.rank_paragraphs.select.search_query_id",
-      "ir": "ir:ExtractText.step.5.rank_paragraphs.project.search_query_id",
-      "source": "source:examples.search.transforms.extract.ExtractText.rank_paragraphs.field.search_query_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.5.documents_chunked.number_paragraphs.select.search_query_id",
+      "ir": "ir:Chunking.step.5.documents_chunked.number_paragraphs.project.search_query_id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.number_paragraphs.field.search_query_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.5.rank_paragraphs.select.score_overlap",
-      "ir": "ir:ExtractText.step.5.rank_paragraphs.project.score_overlap",
-      "source": "source:examples.search.transforms.extract.ExtractText.rank_paragraphs.field.score_overlap"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.5.documents_chunked.number_paragraphs.select.score_overlap",
+      "ir": "ir:Chunking.step.5.documents_chunked.number_paragraphs.project.score_overlap",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.number_paragraphs.field.score_overlap"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.5.rank_paragraphs.select.score_bm25",
-      "ir": "ir:ExtractText.step.5.rank_paragraphs.project.score_bm25",
-      "source": "source:examples.search.transforms.extract.ExtractText.rank_paragraphs.field.score_bm25"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.5.documents_chunked.number_paragraphs.select.score_bm25",
+      "ir": "ir:Chunking.step.5.documents_chunked.number_paragraphs.project.score_bm25",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.number_paragraphs.field.score_bm25"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.5.rank_paragraphs.validation.0.intermediate",
-      "ir": "ir:ExtractText.step.5.rank_paragraphs.validation.0.intermediate",
-      "source": "source:examples.search.transforms.extract.ExtractText.rank_paragraphs.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.5.documents_chunked.number_paragraphs.validation.0.intermediate",
+      "ir": "ir:Chunking.step.5.documents_chunked.number_paragraphs.validation.0.intermediate",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.number_paragraphs.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.6.publish_paragraphs",
-      "ir": "ir:ExtractText.step.6.publish_paragraphs",
-      "source": "source:examples.search.transforms.extract.ExtractText.publish_paragraphs"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.6.documents_chunked.publish_paragraphs",
+      "ir": "ir:Chunking.step.6.documents_chunked.publish_paragraphs",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.publish_paragraphs"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.6.publish_paragraphs.select.id",
-      "ir": "ir:ExtractText.step.6.publish_paragraphs.project.id",
-      "source": "source:examples.search.transforms.extract.ExtractText.publish_paragraphs.field.id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.6.documents_chunked.publish_paragraphs.select.id",
+      "ir": "ir:Chunking.step.6.documents_chunked.publish_paragraphs.project.id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.publish_paragraphs.field.id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.6.publish_paragraphs.select.document_id",
-      "ir": "ir:ExtractText.step.6.publish_paragraphs.project.document_id",
-      "source": "source:examples.search.transforms.extract.ExtractText.publish_paragraphs.field.document_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.6.documents_chunked.publish_paragraphs.select.document_id",
+      "ir": "ir:Chunking.step.6.documents_chunked.publish_paragraphs.project.document_id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.publish_paragraphs.field.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.6.publish_paragraphs.select.section_id",
-      "ir": "ir:ExtractText.step.6.publish_paragraphs.project.section_id",
-      "source": "source:examples.search.transforms.extract.ExtractText.publish_paragraphs.field.section_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.6.documents_chunked.publish_paragraphs.select.section_id",
+      "ir": "ir:Chunking.step.6.documents_chunked.publish_paragraphs.project.section_id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.publish_paragraphs.field.section_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.6.publish_paragraphs.select.ordinal",
-      "ir": "ir:ExtractText.step.6.publish_paragraphs.project.ordinal",
-      "source": "source:examples.search.transforms.extract.ExtractText.publish_paragraphs.field.ordinal"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.6.documents_chunked.publish_paragraphs.select.ordinal",
+      "ir": "ir:Chunking.step.6.documents_chunked.publish_paragraphs.project.ordinal",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.publish_paragraphs.field.ordinal"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.6.publish_paragraphs.select.content",
-      "ir": "ir:ExtractText.step.6.publish_paragraphs.project.content",
-      "source": "source:examples.search.transforms.extract.ExtractText.publish_paragraphs.field.content"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.6.documents_chunked.publish_paragraphs.select.content",
+      "ir": "ir:Chunking.step.6.documents_chunked.publish_paragraphs.project.content",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.publish_paragraphs.field.content"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.6.publish_paragraphs.select.search_query_id",
-      "ir": "ir:ExtractText.step.6.publish_paragraphs.project.search_query_id",
-      "source": "source:examples.search.transforms.extract.ExtractText.publish_paragraphs.field.search_query_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.6.documents_chunked.publish_paragraphs.select.search_query_id",
+      "ir": "ir:Chunking.step.6.documents_chunked.publish_paragraphs.project.search_query_id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.publish_paragraphs.field.search_query_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.6.publish_paragraphs.select.score_overlap",
-      "ir": "ir:ExtractText.step.6.publish_paragraphs.project.score_overlap",
-      "source": "source:examples.search.transforms.extract.ExtractText.publish_paragraphs.field.score_overlap"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.6.documents_chunked.publish_paragraphs.select.score_overlap",
+      "ir": "ir:Chunking.step.6.documents_chunked.publish_paragraphs.project.score_overlap",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.publish_paragraphs.field.score_overlap"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.6.publish_paragraphs.select.score_bm25",
-      "ir": "ir:ExtractText.step.6.publish_paragraphs.project.score_bm25",
-      "source": "source:examples.search.transforms.extract.ExtractText.publish_paragraphs.field.score_bm25"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.6.documents_chunked.publish_paragraphs.select.score_bm25",
+      "ir": "ir:Chunking.step.6.documents_chunked.publish_paragraphs.project.score_bm25",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.publish_paragraphs.field.score_bm25"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.6.publish_paragraphs.validation.0.intermediate",
-      "ir": "ir:ExtractText.step.6.publish_paragraphs.validation.0.intermediate",
-      "source": "source:examples.search.transforms.extract.ExtractText.publish_paragraphs.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.6.documents_chunked.publish_paragraphs.validation.0.intermediate",
+      "ir": "ir:Chunking.step.6.documents_chunked.publish_paragraphs.validation.0.intermediate",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.publish_paragraphs.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.7.select_section_keys",
-      "ir": "ir:ExtractText.step.7.select_section_keys",
-      "source": "source:examples.search.transforms.extract.ExtractText.select_section_keys"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.7.documents_chunked.select_section_keys",
+      "ir": "ir:Chunking.step.7.documents_chunked.select_section_keys",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.select_section_keys"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.7.select_section_keys.drop_duplicates.0",
-      "ir": "ir:ExtractText.step.7.select_section_keys.drop_duplicates.0",
-      "source": "source:examples.search.transforms.extract.ExtractText.select_section_keys.drop_duplicates.0"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.7.documents_chunked.select_section_keys.drop_duplicates.0",
+      "ir": "ir:Chunking.step.7.documents_chunked.select_section_keys.drop_duplicates.0",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.select_section_keys.drop_duplicates.0"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.7.select_section_keys.select.id",
-      "ir": "ir:ExtractText.step.7.select_section_keys.project.id",
-      "source": "source:examples.search.transforms.extract.ExtractText.select_section_keys.field.id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.7.documents_chunked.select_section_keys.select.id",
+      "ir": "ir:Chunking.step.7.documents_chunked.select_section_keys.project.id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.select_section_keys.field.id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.7.select_section_keys.select.document_id",
-      "ir": "ir:ExtractText.step.7.select_section_keys.project.document_id",
-      "source": "source:examples.search.transforms.extract.ExtractText.select_section_keys.field.document_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.7.documents_chunked.select_section_keys.select.document_id",
+      "ir": "ir:Chunking.step.7.documents_chunked.select_section_keys.project.document_id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.select_section_keys.field.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.7.select_section_keys.select.section_ordinal",
-      "ir": "ir:ExtractText.step.7.select_section_keys.project.section_ordinal",
-      "source": "source:examples.search.transforms.extract.ExtractText.select_section_keys.field.section_ordinal"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.7.documents_chunked.select_section_keys.select.section_ordinal",
+      "ir": "ir:Chunking.step.7.documents_chunked.select_section_keys.project.section_ordinal",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.select_section_keys.field.section_ordinal"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.7.select_section_keys.select.ordinal",
-      "ir": "ir:ExtractText.step.7.select_section_keys.project.ordinal",
-      "source": "source:examples.search.transforms.extract.ExtractText.select_section_keys.field.ordinal"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.7.documents_chunked.select_section_keys.select.ordinal",
+      "ir": "ir:Chunking.step.7.documents_chunked.select_section_keys.project.ordinal",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.select_section_keys.field.ordinal"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.7.select_section_keys.validation.0.intermediate",
-      "ir": "ir:ExtractText.step.7.select_section_keys.validation.0.intermediate",
-      "source": "source:examples.search.transforms.extract.ExtractText.select_section_keys.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.7.documents_chunked.select_section_keys.validation.0.intermediate",
+      "ir": "ir:Chunking.step.7.documents_chunked.select_section_keys.validation.0.intermediate",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.select_section_keys.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.8.build_sections",
-      "ir": "ir:ExtractText.step.8.build_sections",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_sections"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.8.documents_chunked.build_sections",
+      "ir": "ir:Chunking.step.8.documents_chunked.build_sections",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.build_sections"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.8.build_sections.join.1.heading",
-      "ir": "ir:ExtractText.step.8.build_sections.join.1.heading",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_sections.join.1.heading"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.8.documents_chunked.build_sections.join.1.heading",
+      "ir": "ir:Chunking.step.8.documents_chunked.build_sections.join.1.heading",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.build_sections.join.1.heading"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.8.build_sections.select.id",
-      "ir": "ir:ExtractText.step.8.build_sections.project.id",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_sections.field.id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.8.documents_chunked.build_sections.select.id",
+      "ir": "ir:Chunking.step.8.documents_chunked.build_sections.project.id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.build_sections.field.id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.8.build_sections.select.document_id",
-      "ir": "ir:ExtractText.step.8.build_sections.project.document_id",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_sections.field.document_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.8.documents_chunked.build_sections.select.document_id",
+      "ir": "ir:Chunking.step.8.documents_chunked.build_sections.project.document_id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.build_sections.field.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.8.build_sections.select.ordinal",
-      "ir": "ir:ExtractText.step.8.build_sections.project.ordinal",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_sections.field.ordinal"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.8.documents_chunked.build_sections.select.ordinal",
+      "ir": "ir:Chunking.step.8.documents_chunked.build_sections.project.ordinal",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.build_sections.field.ordinal"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.8.build_sections.select.heading",
-      "ir": "ir:ExtractText.step.8.build_sections.project.heading",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_sections.field.heading"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.8.documents_chunked.build_sections.select.heading",
+      "ir": "ir:Chunking.step.8.documents_chunked.build_sections.project.heading",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.build_sections.field.heading"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.8.build_sections.select.search_query_id",
-      "ir": "ir:ExtractText.step.8.build_sections.project.search_query_id",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_sections.field.search_query_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.8.documents_chunked.build_sections.select.search_query_id",
+      "ir": "ir:Chunking.step.8.documents_chunked.build_sections.project.search_query_id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.build_sections.field.search_query_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.8.build_sections.select.score_overlap",
-      "ir": "ir:ExtractText.step.8.build_sections.project.score_overlap",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_sections.field.score_overlap"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.8.documents_chunked.build_sections.select.score_overlap",
+      "ir": "ir:Chunking.step.8.documents_chunked.build_sections.project.score_overlap",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.build_sections.field.score_overlap"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.8.build_sections.select.score_bm25",
-      "ir": "ir:ExtractText.step.8.build_sections.project.score_bm25",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_sections.field.score_bm25"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.8.documents_chunked.build_sections.select.score_bm25",
+      "ir": "ir:Chunking.step.8.documents_chunked.build_sections.project.score_bm25",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.build_sections.field.score_bm25"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.8.build_sections.validation.0.intermediate",
-      "ir": "ir:ExtractText.step.8.build_sections.validation.0.intermediate",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_sections.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.8.documents_chunked.build_sections.validation.0.intermediate",
+      "ir": "ir:Chunking.step.8.documents_chunked.build_sections.validation.0.intermediate",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.documents_chunked.build_sections.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.9.build_sentences",
-      "ir": "ir:ExtractText.step.9.build_sentences",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_sentences"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.9.sentences_chunked.chunk",
+      "ir": "ir:Chunking.step.9.sentences_chunked.chunk",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.sentences_chunked.chunk"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.9.build_sentences.where.0",
-      "ir": "ir:ExtractText.step.9.build_sentences.filter.0",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_sentences.filter.0"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.9.sentences_chunked.chunk.where.0",
+      "ir": "ir:Chunking.step.9.sentences_chunked.chunk.filter.0",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.sentences_chunked.chunk.filter.0"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.9.build_sentences.posexplode_struct.0",
-      "ir": "ir:ExtractText.step.9.build_sentences.posexplode_struct.0",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_sentences.posexplode_struct.0"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.9.sentences_chunked.chunk.posexplode_struct.0",
+      "ir": "ir:Chunking.step.9.sentences_chunked.chunk.posexplode_struct.0",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.sentences_chunked.chunk.posexplode_struct.0"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.9.build_sentences.select.id",
-      "ir": "ir:ExtractText.step.9.build_sentences.project.id",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_sentences.field.id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.9.sentences_chunked.chunk.select.id",
+      "ir": "ir:Chunking.step.9.sentences_chunked.chunk.project.id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.sentences_chunked.chunk.field.id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.9.build_sentences.select.document_id",
-      "ir": "ir:ExtractText.step.9.build_sentences.project.document_id",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_sentences.field.document_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.9.sentences_chunked.chunk.select.document_id",
+      "ir": "ir:Chunking.step.9.sentences_chunked.chunk.project.document_id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.sentences_chunked.chunk.field.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.9.build_sentences.select.section_id",
-      "ir": "ir:ExtractText.step.9.build_sentences.project.section_id",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_sentences.field.section_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.9.sentences_chunked.chunk.select.section_id",
+      "ir": "ir:Chunking.step.9.sentences_chunked.chunk.project.section_id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.sentences_chunked.chunk.field.section_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.9.build_sentences.select.paragraph_id",
-      "ir": "ir:ExtractText.step.9.build_sentences.project.paragraph_id",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_sentences.field.paragraph_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.9.sentences_chunked.chunk.select.paragraph_id",
+      "ir": "ir:Chunking.step.9.sentences_chunked.chunk.project.paragraph_id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.sentences_chunked.chunk.field.paragraph_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.9.build_sentences.select.paragraph_ordinal",
-      "ir": "ir:ExtractText.step.9.build_sentences.project.paragraph_ordinal",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_sentences.field.paragraph_ordinal"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.9.sentences_chunked.chunk.select.paragraph_ordinal",
+      "ir": "ir:Chunking.step.9.sentences_chunked.chunk.project.paragraph_ordinal",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.sentences_chunked.chunk.field.paragraph_ordinal"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.9.build_sentences.select.ordinal",
-      "ir": "ir:ExtractText.step.9.build_sentences.project.ordinal",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_sentences.field.ordinal"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.9.sentences_chunked.chunk.select.ordinal",
+      "ir": "ir:Chunking.step.9.sentences_chunked.chunk.project.ordinal",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.sentences_chunked.chunk.field.ordinal"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.9.build_sentences.select.content",
-      "ir": "ir:ExtractText.step.9.build_sentences.project.content",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_sentences.field.content"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.9.sentences_chunked.chunk.select.content",
+      "ir": "ir:Chunking.step.9.sentences_chunked.chunk.project.content",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.sentences_chunked.chunk.field.content"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.9.build_sentences.select.search_query_id",
-      "ir": "ir:ExtractText.step.9.build_sentences.project.search_query_id",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_sentences.field.search_query_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.9.sentences_chunked.chunk.select.search_query_id",
+      "ir": "ir:Chunking.step.9.sentences_chunked.chunk.project.search_query_id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.sentences_chunked.chunk.field.search_query_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.9.build_sentences.select.score_overlap",
-      "ir": "ir:ExtractText.step.9.build_sentences.project.score_overlap",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_sentences.field.score_overlap"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.9.sentences_chunked.chunk.select.score_overlap",
+      "ir": "ir:Chunking.step.9.sentences_chunked.chunk.project.score_overlap",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.sentences_chunked.chunk.field.score_overlap"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.9.build_sentences.select.score_bm25",
-      "ir": "ir:ExtractText.step.9.build_sentences.project.score_bm25",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_sentences.field.score_bm25"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.9.sentences_chunked.chunk.select.score_bm25",
+      "ir": "ir:Chunking.step.9.sentences_chunked.chunk.project.score_bm25",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.sentences_chunked.chunk.field.score_bm25"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.9.build_sentences.validation.0.intermediate",
-      "ir": "ir:ExtractText.step.9.build_sentences.validation.0.intermediate",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_sentences.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.9.sentences_chunked.chunk.validation.0.intermediate",
+      "ir": "ir:Chunking.step.9.sentences_chunked.chunk.validation.0.intermediate",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.sentences_chunked.chunk.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.10.publish_sentences",
-      "ir": "ir:ExtractText.step.10.publish_sentences",
-      "source": "source:examples.search.transforms.extract.ExtractText.publish_sentences"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.10.words_chunked.chunk",
+      "ir": "ir:Chunking.step.10.words_chunked.chunk",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.words_chunked.chunk"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.10.publish_sentences.select.id",
-      "ir": "ir:ExtractText.step.10.publish_sentences.project.id",
-      "source": "source:examples.search.transforms.extract.ExtractText.publish_sentences.field.id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.10.words_chunked.chunk.where.0",
+      "ir": "ir:Chunking.step.10.words_chunked.chunk.filter.0",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.words_chunked.chunk.filter.0"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.10.publish_sentences.select.document_id",
-      "ir": "ir:ExtractText.step.10.publish_sentences.project.document_id",
-      "source": "source:examples.search.transforms.extract.ExtractText.publish_sentences.field.document_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.10.words_chunked.chunk.posexplode_struct.0",
+      "ir": "ir:Chunking.step.10.words_chunked.chunk.posexplode_struct.0",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.words_chunked.chunk.posexplode_struct.0"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.10.publish_sentences.select.section_id",
-      "ir": "ir:ExtractText.step.10.publish_sentences.project.section_id",
-      "source": "source:examples.search.transforms.extract.ExtractText.publish_sentences.field.section_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.10.words_chunked.chunk.select.id",
+      "ir": "ir:Chunking.step.10.words_chunked.chunk.project.id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.words_chunked.chunk.field.id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.10.publish_sentences.select.paragraph_id",
-      "ir": "ir:ExtractText.step.10.publish_sentences.project.paragraph_id",
-      "source": "source:examples.search.transforms.extract.ExtractText.publish_sentences.field.paragraph_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.10.words_chunked.chunk.select.document_id",
+      "ir": "ir:Chunking.step.10.words_chunked.chunk.project.document_id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.words_chunked.chunk.field.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.10.publish_sentences.select.paragraph_ordinal",
-      "ir": "ir:ExtractText.step.10.publish_sentences.project.paragraph_ordinal",
-      "source": "source:examples.search.transforms.extract.ExtractText.publish_sentences.field.paragraph_ordinal"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.10.words_chunked.chunk.select.section_id",
+      "ir": "ir:Chunking.step.10.words_chunked.chunk.project.section_id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.words_chunked.chunk.field.section_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.10.publish_sentences.select.ordinal",
-      "ir": "ir:ExtractText.step.10.publish_sentences.project.ordinal",
-      "source": "source:examples.search.transforms.extract.ExtractText.publish_sentences.field.ordinal"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.10.words_chunked.chunk.select.paragraph_id",
+      "ir": "ir:Chunking.step.10.words_chunked.chunk.project.paragraph_id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.words_chunked.chunk.field.paragraph_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.10.publish_sentences.select.content",
-      "ir": "ir:ExtractText.step.10.publish_sentences.project.content",
-      "source": "source:examples.search.transforms.extract.ExtractText.publish_sentences.field.content"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.10.words_chunked.chunk.select.paragraph_ordinal",
+      "ir": "ir:Chunking.step.10.words_chunked.chunk.project.paragraph_ordinal",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.words_chunked.chunk.field.paragraph_ordinal"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.10.publish_sentences.select.search_query_id",
-      "ir": "ir:ExtractText.step.10.publish_sentences.project.search_query_id",
-      "source": "source:examples.search.transforms.extract.ExtractText.publish_sentences.field.search_query_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.10.words_chunked.chunk.select.sentence_id",
+      "ir": "ir:Chunking.step.10.words_chunked.chunk.project.sentence_id",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.words_chunked.chunk.field.sentence_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.10.publish_sentences.select.score_overlap",
-      "ir": "ir:ExtractText.step.10.publish_sentences.project.score_overlap",
-      "source": "source:examples.search.transforms.extract.ExtractText.publish_sentences.field.score_overlap"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.10.words_chunked.chunk.select.ordinal",
+      "ir": "ir:Chunking.step.10.words_chunked.chunk.project.ordinal",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.words_chunked.chunk.field.ordinal"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.10.publish_sentences.select.score_bm25",
-      "ir": "ir:ExtractText.step.10.publish_sentences.project.score_bm25",
-      "source": "source:examples.search.transforms.extract.ExtractText.publish_sentences.field.score_bm25"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.step.10.words_chunked.chunk.select.token",
+      "ir": "ir:Chunking.step.10.words_chunked.chunk.project.token",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.words_chunked.chunk.field.token"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.10.publish_sentences.validation.0.intermediate",
-      "ir": "ir:ExtractText.step.10.publish_sentences.validation.0.intermediate",
-      "source": "source:examples.search.transforms.extract.ExtractText.publish_sentences.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.output.0.sections.validation.final",
+      "ir": "ir:Chunking.output.0.sections.validation.final",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.output.sections"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.11.build_words",
-      "ir": "ir:ExtractText.step.11.build_words",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_words"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.output.1.paragraphs.validation.final",
+      "ir": "ir:Chunking.output.1.paragraphs.validation.final",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.output.paragraphs"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.11.build_words.where.0",
-      "ir": "ir:ExtractText.step.11.build_words.filter.0",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_words.filter.0"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.output.2.sentences.validation.final",
+      "ir": "ir:Chunking.output.2.sentences.validation.final",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.output.sentences"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.11.build_words.posexplode_struct.0",
-      "ir": "ir:ExtractText.step.11.build_words.posexplode_struct.0",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_words.posexplode_struct.0"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.11.build_words.select.id",
-      "ir": "ir:ExtractText.step.11.build_words.project.id",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_words.field.id"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.11.build_words.select.document_id",
-      "ir": "ir:ExtractText.step.11.build_words.project.document_id",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_words.field.document_id"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.11.build_words.select.section_id",
-      "ir": "ir:ExtractText.step.11.build_words.project.section_id",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_words.field.section_id"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.11.build_words.select.paragraph_id",
-      "ir": "ir:ExtractText.step.11.build_words.project.paragraph_id",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_words.field.paragraph_id"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.11.build_words.select.paragraph_ordinal",
-      "ir": "ir:ExtractText.step.11.build_words.project.paragraph_ordinal",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_words.field.paragraph_ordinal"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.11.build_words.select.sentence_id",
-      "ir": "ir:ExtractText.step.11.build_words.project.sentence_id",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_words.field.sentence_id"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.11.build_words.select.ordinal",
-      "ir": "ir:ExtractText.step.11.build_words.project.ordinal",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_words.field.ordinal"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.step.11.build_words.select.token",
-      "ir": "ir:ExtractText.step.11.build_words.project.token",
-      "source": "source:examples.search.transforms.extract.ExtractText.build_words.field.token"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.output.0.sections.validation.final",
-      "ir": "ir:ExtractText.output.0.sections.validation.final",
-      "source": "source:examples.search.transforms.extract.ExtractText.output.sections"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.output.1.paragraphs.validation.final",
-      "ir": "ir:ExtractText.output.1.paragraphs.validation.final",
-      "source": "source:examples.search.transforms.extract.ExtractText.output.paragraphs"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.output.2.sentences.validation.final",
-      "ir": "ir:ExtractText.output.2.sentences.validation.final",
-      "source": "source:examples.search.transforms.extract.ExtractText.output.sentences"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.extract.ExtractTextGenerated.run.output.3.words.validation.final",
-      "ir": "ir:ExtractText.output.3.words.validation.final",
-      "source": "source:examples.search.transforms.extract.ExtractText.output.words"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Chunking.ChunkingGenerated.run.output.3.words.validation.final",
+      "ir": "ir:Chunking.output.3.words.validation.final",
+      "source": "source:examples.search.transforms.chunking.Chunking.Chunking.output.words"
     }
   ],
   "schema_constants": {
@@ -709,7 +649,7 @@
     },
     "DocumentFeatures": {
       "constant": "DOCUMENT_FEATURES_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+      "module": "examples.structure_generated.search.pyspark.schemas.features"
     },
     "DocumentFeedbackOption": {
       "constant": "DOCUMENT_FEEDBACK_OPTION_SCHEMA",
@@ -737,7 +677,7 @@
     },
     "DocumentLine": {
       "constant": "DOCUMENT_LINE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "DocumentOverlapMatch": {
       "constant": "DOCUMENT_OVERLAP_MATCH_SCHEMA",
@@ -754,6 +694,10 @@
     "DocumentPopularityTotals": {
       "constant": "DOCUMENT_POPULARITY_TOTALS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.build"
+    },
+    "DocumentProfile": {
+      "constant": "DOCUMENT_PROFILE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.analytics"
     },
     "DocumentQueryEvaluation": {
       "constant": "DOCUMENT_QUERY_EVALUATION_SCHEMA",
@@ -807,6 +751,10 @@
       "constant": "DOCUMENT_STATISTICS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.analytics"
     },
+    "DocumentTrainingData": {
+      "constant": "DOCUMENT_TRAINING_DATA_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.data"
+    },
     "EvaluationBatch": {
       "constant": "EVALUATION_BATCH_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.batch"
@@ -841,7 +789,11 @@
     },
     "ExpandedDocumentLine": {
       "constant": "EXPANDED_DOCUMENT_LINE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
+    },
+    "ExpandedQueryFeatureToken": {
+      "constant": "EXPANDED_QUERY_FEATURE_TOKEN_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.features"
     },
     "ExpandedQueryToken": {
       "constant": "EXPANDED_QUERY_TOKEN_SCHEMA",
@@ -849,11 +801,11 @@
     },
     "ExpandedSentenceText": {
       "constant": "EXPANDED_SENTENCE_TEXT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "ExpandedWordText": {
       "constant": "EXPANDED_WORD_TEXT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "Experiment": {
       "constant": "EXPERIMENT_SCHEMA",
@@ -901,7 +853,7 @@
     },
     "MarkedDocumentLine": {
       "constant": "MARKED_DOCUMENT_LINE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "Paragraph": {
       "constant": "PARAGRAPH_SCHEMA",
@@ -913,11 +865,11 @@
     },
     "ParagraphContent": {
       "constant": "PARAGRAPH_CONTENT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "ParagraphDraft": {
       "constant": "PARAGRAPH_DRAFT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "ParagraphIndexSummary": {
       "constant": "PARAGRAPH_INDEX_SUMMARY_SCHEMA",
@@ -941,11 +893,11 @@
     },
     "ParagraphLine": {
       "constant": "PARAGRAPH_LINE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "ParagraphLineGroup": {
       "constant": "PARAGRAPH_LINE_GROUP_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "ParagraphOverlapMatch": {
       "constant": "PARAGRAPH_OVERLAP_MATCH_SCHEMA",
@@ -1003,6 +955,14 @@
       "constant": "QUERY_DOCUMENT_SIGNALS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.relevance"
     },
+    "QueryFeatureToken": {
+      "constant": "QUERY_FEATURE_TOKEN_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.features"
+    },
+    "QueryFeatures": {
+      "constant": "QUERY_FEATURES_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.features"
+    },
     "QueryIntentLabel": {
       "constant": "QUERY_INTENT_LABEL_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.label"
@@ -1031,6 +991,10 @@
       "constant": "QUERY_TOKEN_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.scoring_intermediate"
     },
+    "QueryTokenSummary": {
+      "constant": "QUERY_TOKEN_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.features"
+    },
     "RelevancePolicy": {
       "constant": "RELEVANCE_POLICY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.relevance"
@@ -1053,7 +1017,7 @@
     },
     "SectionHeading": {
       "constant": "SECTION_HEADING_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "SectionIndexSummary": {
       "constant": "SECTION_INDEX_SUMMARY_SCHEMA",
@@ -1077,7 +1041,7 @@
     },
     "SectionKey": {
       "constant": "SECTION_KEY_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "SectionOverlapMatch": {
       "constant": "SECTION_OVERLAP_MATCH_SCHEMA",
@@ -1193,7 +1157,7 @@
     },
     "SentenceText": {
       "constant": "SENTENCE_TEXT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "SimilarDocument": {
       "constant": "SIMILAR_DOCUMENT_SCHEMA",
@@ -1249,10 +1213,10 @@
     },
     "WordText": {
       "constant": "WORD_TEXT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     }
   },
-  "source_transform": "examples.search.transforms.extract.ExtractText",
+  "source_transform": "examples.search.transforms.chunking.Chunking.Chunking",
   "static_dataflow": {
     "dependencies": [
       {
@@ -1264,7 +1228,7 @@
           "documents"
         ],
         "step": null,
-        "target": "ExtractText"
+        "target": "Chunking"
       },
       {
         "detail": {
@@ -1275,8 +1239,8 @@
         "sources": [
           "documents"
         ],
-        "step": "mark_lines",
-        "target": "mark_lines"
+        "step": "documents_chunked.mark_lines",
+        "target": "documents_chunked.mark_lines"
       },
       {
         "detail": {
@@ -1288,8 +1252,8 @@
         "sources": [
           "documents.content"
         ],
-        "step": "mark_lines",
-        "target": "mark_lines.posexplode_struct[0].document_line"
+        "step": "documents_chunked.mark_lines",
+        "target": "documents_chunked.mark_lines.posexplode_struct[0].document_line"
       },
       {
         "detail": {
@@ -1299,7 +1263,7 @@
         "sources": [
           "documents.id"
         ],
-        "step": "mark_lines",
+        "step": "documents_chunked.mark_lines",
         "target": "MarkedDocumentLine.document_id"
       },
       {
@@ -1310,7 +1274,7 @@
         "sources": [
           "document_line.ordinal"
         ],
-        "step": "mark_lines",
+        "step": "documents_chunked.mark_lines",
         "target": "MarkedDocumentLine.line_ordinal"
       },
       {
@@ -1321,7 +1285,7 @@
         "sources": [
           "document_line.line"
         ],
-        "step": "mark_lines",
+        "step": "documents_chunked.mark_lines",
         "target": "MarkedDocumentLine.line"
       },
       {
@@ -1332,7 +1296,7 @@
         "sources": [
           "document_line.line"
         ],
-        "step": "mark_lines",
+        "step": "documents_chunked.mark_lines",
         "target": "MarkedDocumentLine.heading"
       },
       {
@@ -1343,7 +1307,7 @@
         "sources": [
           "document_line.line"
         ],
-        "step": "mark_lines",
+        "step": "documents_chunked.mark_lines",
         "target": "MarkedDocumentLine.is_blank"
       },
       {
@@ -1356,7 +1320,7 @@
           "document_line.ordinal",
           "documents.id"
         ],
-        "step": "mark_lines",
+        "step": "documents_chunked.mark_lines",
         "target": "MarkedDocumentLine.section_ordinal"
       },
       {
@@ -1369,7 +1333,7 @@
           "document_line.ordinal",
           "documents.id"
         ],
-        "step": "mark_lines",
+        "step": "documents_chunked.mark_lines",
         "target": "MarkedDocumentLine.paragraph_group"
       },
       {
@@ -1381,8 +1345,8 @@
         "sources": [
           "MarkedDocumentLine"
         ],
-        "step": "select_paragraph_lines",
-        "target": "select_paragraph_lines"
+        "step": "documents_chunked.select_paragraph_lines",
+        "target": "documents_chunked.select_paragraph_lines"
       },
       {
         "detail": {},
@@ -1391,8 +1355,8 @@
           "MarkedDocumentLine.is_blank",
           "MarkedDocumentLine.heading"
         ],
-        "step": "select_paragraph_lines",
-        "target": "select_paragraph_lines.filter[0]"
+        "step": "documents_chunked.select_paragraph_lines",
+        "target": "documents_chunked.select_paragraph_lines.filter[0]"
       },
       {
         "detail": {
@@ -1402,7 +1366,7 @@
         "sources": [
           "MarkedDocumentLine.document_id"
         ],
-        "step": "select_paragraph_lines",
+        "step": "documents_chunked.select_paragraph_lines",
         "target": "ParagraphLine.document_id"
       },
       {
@@ -1413,7 +1377,7 @@
         "sources": [
           "MarkedDocumentLine.section_ordinal"
         ],
-        "step": "select_paragraph_lines",
+        "step": "documents_chunked.select_paragraph_lines",
         "target": "ParagraphLine.section_ordinal"
       },
       {
@@ -1424,7 +1388,7 @@
         "sources": [
           "MarkedDocumentLine.paragraph_group"
         ],
-        "step": "select_paragraph_lines",
+        "step": "documents_chunked.select_paragraph_lines",
         "target": "ParagraphLine.paragraph_group"
       },
       {
@@ -1435,7 +1399,7 @@
         "sources": [
           "MarkedDocumentLine.line_ordinal"
         ],
-        "step": "select_paragraph_lines",
+        "step": "documents_chunked.select_paragraph_lines",
         "target": "ParagraphLine.line_ordinal"
       },
       {
@@ -1446,7 +1410,7 @@
         "sources": [
           "MarkedDocumentLine.line"
         ],
-        "step": "select_paragraph_lines",
+        "step": "documents_chunked.select_paragraph_lines",
         "target": "ParagraphLine.line"
       },
       {
@@ -1458,8 +1422,8 @@
         "sources": [
           "ParagraphLine"
         ],
-        "step": "select_section_headings",
-        "target": "select_section_headings"
+        "step": "documents_chunked.select_section_headings",
+        "target": "documents_chunked.select_section_headings"
       },
       {
         "detail": {},
@@ -1467,8 +1431,8 @@
         "sources": [
           "MarkedDocumentLine.heading"
         ],
-        "step": "select_section_headings",
-        "target": "select_section_headings.filter[0]"
+        "step": "documents_chunked.select_section_headings",
+        "target": "documents_chunked.select_section_headings.filter[0]"
       },
       {
         "detail": {
@@ -1478,7 +1442,7 @@
         "sources": [
           "MarkedDocumentLine.document_id"
         ],
-        "step": "select_section_headings",
+        "step": "documents_chunked.select_section_headings",
         "target": "SectionHeading.document_id"
       },
       {
@@ -1489,7 +1453,7 @@
         "sources": [
           "MarkedDocumentLine.section_ordinal"
         ],
-        "step": "select_section_headings",
+        "step": "documents_chunked.select_section_headings",
         "target": "SectionHeading.section_ordinal"
       },
       {
@@ -1500,7 +1464,7 @@
         "sources": [
           "MarkedDocumentLine.heading"
         ],
-        "step": "select_section_headings",
+        "step": "documents_chunked.select_section_headings",
         "target": "SectionHeading.heading"
       },
       {
@@ -1512,8 +1476,8 @@
         "sources": [
           "SectionHeading"
         ],
-        "step": "collect_paragraph_lines",
-        "target": "collect_paragraph_lines"
+        "step": "documents_chunked.collect_paragraph_lines",
+        "target": "documents_chunked.collect_paragraph_lines"
       },
       {
         "detail": {
@@ -1526,7 +1490,7 @@
           "ParagraphLine.document_id",
           "ParagraphLine.paragraph_group"
         ],
-        "step": "collect_paragraph_lines",
+        "step": "documents_chunked.collect_paragraph_lines",
         "target": "ParagraphLineGroup.id"
       },
       {
@@ -1539,7 +1503,7 @@
         "sources": [
           "ParagraphLine.document_id"
         ],
-        "step": "collect_paragraph_lines",
+        "step": "documents_chunked.collect_paragraph_lines",
         "target": "ParagraphLineGroup.document_id"
       },
       {
@@ -1553,7 +1517,7 @@
           "ParagraphLine.document_id",
           "ParagraphLine.section_ordinal"
         ],
-        "step": "collect_paragraph_lines",
+        "step": "documents_chunked.collect_paragraph_lines",
         "target": "ParagraphLineGroup.section_id"
       },
       {
@@ -1566,7 +1530,7 @@
         "sources": [
           "ParagraphLine.section_ordinal"
         ],
-        "step": "collect_paragraph_lines",
+        "step": "documents_chunked.collect_paragraph_lines",
         "target": "ParagraphLineGroup.section_ordinal"
       },
       {
@@ -1579,7 +1543,7 @@
         "sources": [
           "ParagraphLine.paragraph_group"
         ],
-        "step": "collect_paragraph_lines",
+        "step": "documents_chunked.collect_paragraph_lines",
         "target": "ParagraphLineGroup.paragraph_group"
       },
       {
@@ -1593,7 +1557,7 @@
           "ParagraphLine.line",
           "ParagraphLine.line_ordinal"
         ],
-        "step": "collect_paragraph_lines",
+        "step": "documents_chunked.collect_paragraph_lines",
         "target": "ParagraphLineGroup.lines"
       },
       {
@@ -1605,8 +1569,8 @@
         "sources": [
           "ParagraphLineGroup"
         ],
-        "step": "assemble_paragraph_content",
-        "target": "assemble_paragraph_content"
+        "step": "documents_chunked.assemble_paragraph_content",
+        "target": "documents_chunked.assemble_paragraph_content"
       },
       {
         "detail": {
@@ -1616,7 +1580,7 @@
         "sources": [
           "ParagraphLineGroup.id"
         ],
-        "step": "assemble_paragraph_content",
+        "step": "documents_chunked.assemble_paragraph_content",
         "target": "ParagraphContent.id"
       },
       {
@@ -1627,7 +1591,7 @@
         "sources": [
           "ParagraphLineGroup.document_id"
         ],
-        "step": "assemble_paragraph_content",
+        "step": "documents_chunked.assemble_paragraph_content",
         "target": "ParagraphContent.document_id"
       },
       {
@@ -1638,7 +1602,7 @@
         "sources": [
           "ParagraphLineGroup.section_id"
         ],
-        "step": "assemble_paragraph_content",
+        "step": "documents_chunked.assemble_paragraph_content",
         "target": "ParagraphContent.section_id"
       },
       {
@@ -1649,7 +1613,7 @@
         "sources": [
           "ParagraphLineGroup.section_ordinal"
         ],
-        "step": "assemble_paragraph_content",
+        "step": "documents_chunked.assemble_paragraph_content",
         "target": "ParagraphContent.section_ordinal"
       },
       {
@@ -1660,7 +1624,7 @@
         "sources": [
           "ParagraphLineGroup.paragraph_group"
         ],
-        "step": "assemble_paragraph_content",
+        "step": "documents_chunked.assemble_paragraph_content",
         "target": "ParagraphContent.paragraph_group"
       },
       {
@@ -1671,7 +1635,7 @@
         "sources": [
           "ParagraphLineGroup.lines"
         ],
-        "step": "assemble_paragraph_content",
+        "step": "documents_chunked.assemble_paragraph_content",
         "target": "ParagraphContent.content"
       },
       {
@@ -1683,8 +1647,8 @@
         "sources": [
           "ParagraphContent"
         ],
-        "step": "rank_paragraphs",
-        "target": "rank_paragraphs"
+        "step": "documents_chunked.number_paragraphs",
+        "target": "documents_chunked.number_paragraphs"
       },
       {
         "detail": {
@@ -1694,7 +1658,7 @@
         "sources": [
           "ParagraphContent.id"
         ],
-        "step": "rank_paragraphs",
+        "step": "documents_chunked.number_paragraphs",
         "target": "ParagraphDraft.id"
       },
       {
@@ -1705,7 +1669,7 @@
         "sources": [
           "ParagraphContent.document_id"
         ],
-        "step": "rank_paragraphs",
+        "step": "documents_chunked.number_paragraphs",
         "target": "ParagraphDraft.document_id"
       },
       {
@@ -1716,7 +1680,7 @@
         "sources": [
           "ParagraphContent.section_id"
         ],
-        "step": "rank_paragraphs",
+        "step": "documents_chunked.number_paragraphs",
         "target": "ParagraphDraft.section_id"
       },
       {
@@ -1727,7 +1691,7 @@
         "sources": [
           "ParagraphContent.section_ordinal"
         ],
-        "step": "rank_paragraphs",
+        "step": "documents_chunked.number_paragraphs",
         "target": "ParagraphDraft.section_ordinal"
       },
       {
@@ -1740,7 +1704,7 @@
           "ParagraphContent.document_id",
           "ParagraphContent.section_ordinal"
         ],
-        "step": "rank_paragraphs",
+        "step": "documents_chunked.number_paragraphs",
         "target": "ParagraphDraft.ordinal"
       },
       {
@@ -1751,7 +1715,7 @@
         "sources": [
           "ParagraphContent.content"
         ],
-        "step": "rank_paragraphs",
+        "step": "documents_chunked.number_paragraphs",
         "target": "ParagraphDraft.content"
       },
       {
@@ -1762,7 +1726,7 @@
         "sources": [
           "literal"
         ],
-        "step": "rank_paragraphs",
+        "step": "documents_chunked.number_paragraphs",
         "target": "ParagraphDraft.search_query_id"
       },
       {
@@ -1773,7 +1737,7 @@
         "sources": [
           "literal"
         ],
-        "step": "rank_paragraphs",
+        "step": "documents_chunked.number_paragraphs",
         "target": "ParagraphDraft.score_overlap"
       },
       {
@@ -1784,7 +1748,7 @@
         "sources": [
           "literal"
         ],
-        "step": "rank_paragraphs",
+        "step": "documents_chunked.number_paragraphs",
         "target": "ParagraphDraft.score_bm25"
       },
       {
@@ -1796,8 +1760,8 @@
         "sources": [
           "ParagraphDraft"
         ],
-        "step": "publish_paragraphs",
-        "target": "publish_paragraphs"
+        "step": "documents_chunked.publish_paragraphs",
+        "target": "documents_chunked.publish_paragraphs"
       },
       {
         "detail": {
@@ -1807,7 +1771,7 @@
         "sources": [
           "ParagraphDraft.id"
         ],
-        "step": "publish_paragraphs",
+        "step": "documents_chunked.publish_paragraphs",
         "target": "Paragraph.id"
       },
       {
@@ -1818,7 +1782,7 @@
         "sources": [
           "ParagraphDraft.document_id"
         ],
-        "step": "publish_paragraphs",
+        "step": "documents_chunked.publish_paragraphs",
         "target": "Paragraph.document_id"
       },
       {
@@ -1829,7 +1793,7 @@
         "sources": [
           "ParagraphDraft.section_id"
         ],
-        "step": "publish_paragraphs",
+        "step": "documents_chunked.publish_paragraphs",
         "target": "Paragraph.section_id"
       },
       {
@@ -1840,7 +1804,7 @@
         "sources": [
           "ParagraphDraft.ordinal"
         ],
-        "step": "publish_paragraphs",
+        "step": "documents_chunked.publish_paragraphs",
         "target": "Paragraph.ordinal"
       },
       {
@@ -1851,7 +1815,7 @@
         "sources": [
           "ParagraphDraft.content"
         ],
-        "step": "publish_paragraphs",
+        "step": "documents_chunked.publish_paragraphs",
         "target": "Paragraph.content"
       },
       {
@@ -1862,7 +1826,7 @@
         "sources": [
           "ParagraphDraft.search_query_id"
         ],
-        "step": "publish_paragraphs",
+        "step": "documents_chunked.publish_paragraphs",
         "target": "Paragraph.search_query_id"
       },
       {
@@ -1873,7 +1837,7 @@
         "sources": [
           "ParagraphDraft.score_overlap"
         ],
-        "step": "publish_paragraphs",
+        "step": "documents_chunked.publish_paragraphs",
         "target": "Paragraph.score_overlap"
       },
       {
@@ -1884,7 +1848,7 @@
         "sources": [
           "ParagraphDraft.score_bm25"
         ],
-        "step": "publish_paragraphs",
+        "step": "documents_chunked.publish_paragraphs",
         "target": "Paragraph.score_bm25"
       },
       {
@@ -1896,8 +1860,8 @@
         "sources": [
           "Paragraph"
         ],
-        "step": "select_section_keys",
-        "target": "select_section_keys"
+        "step": "documents_chunked.select_section_keys",
+        "target": "documents_chunked.select_section_keys"
       },
       {
         "detail": {
@@ -1909,8 +1873,8 @@
           "ParagraphDraft.document_id",
           "ParagraphDraft.section_id"
         ],
-        "step": "select_section_keys",
-        "target": "select_section_keys.drop_duplicates[0]"
+        "step": "documents_chunked.select_section_keys",
+        "target": "documents_chunked.select_section_keys.drop_duplicates[0]"
       },
       {
         "detail": {
@@ -1920,7 +1884,7 @@
         "sources": [
           "ParagraphDraft.section_id"
         ],
-        "step": "select_section_keys",
+        "step": "documents_chunked.select_section_keys",
         "target": "SectionKey.id"
       },
       {
@@ -1931,7 +1895,7 @@
         "sources": [
           "ParagraphDraft.document_id"
         ],
-        "step": "select_section_keys",
+        "step": "documents_chunked.select_section_keys",
         "target": "SectionKey.document_id"
       },
       {
@@ -1942,7 +1906,7 @@
         "sources": [
           "ParagraphDraft.section_ordinal"
         ],
-        "step": "select_section_keys",
+        "step": "documents_chunked.select_section_keys",
         "target": "SectionKey.section_ordinal"
       },
       {
@@ -1953,7 +1917,7 @@
         "sources": [
           "ParagraphDraft.section_ordinal"
         ],
-        "step": "select_section_keys",
+        "step": "documents_chunked.select_section_keys",
         "target": "SectionKey.ordinal"
       },
       {
@@ -1966,15 +1930,15 @@
           "SectionKey",
           "heading"
         ],
-        "step": "build_sections",
-        "target": "build_sections"
+        "step": "documents_chunked.build_sections",
+        "target": "documents_chunked.build_sections"
       },
       {
         "detail": {
           "cardinality": "row_multiplying",
           "hint": null,
           "how": "left",
-          "right_alias": "section_headings"
+          "right_alias": "documents_chunked__section_headings"
         },
         "operation": "rowset_join",
         "sources": [
@@ -1983,8 +1947,8 @@
           "heading.section_ordinal",
           "key.section_ordinal"
         ],
-        "step": "build_sections",
-        "target": "build_sections.join[1].heading"
+        "step": "documents_chunked.build_sections",
+        "target": "documents_chunked.build_sections.join[1].heading"
       },
       {
         "detail": {
@@ -1994,7 +1958,7 @@
         "sources": [
           "key.id"
         ],
-        "step": "build_sections",
+        "step": "documents_chunked.build_sections",
         "target": "Section.id"
       },
       {
@@ -2005,7 +1969,7 @@
         "sources": [
           "key.document_id"
         ],
-        "step": "build_sections",
+        "step": "documents_chunked.build_sections",
         "target": "Section.document_id"
       },
       {
@@ -2016,7 +1980,7 @@
         "sources": [
           "key.ordinal"
         ],
-        "step": "build_sections",
+        "step": "documents_chunked.build_sections",
         "target": "Section.ordinal"
       },
       {
@@ -2027,7 +1991,7 @@
         "sources": [
           "heading.heading"
         ],
-        "step": "build_sections",
+        "step": "documents_chunked.build_sections",
         "target": "Section.heading"
       },
       {
@@ -2038,7 +2002,7 @@
         "sources": [
           "literal"
         ],
-        "step": "build_sections",
+        "step": "documents_chunked.build_sections",
         "target": "Section.search_query_id"
       },
       {
@@ -2049,7 +2013,7 @@
         "sources": [
           "literal"
         ],
-        "step": "build_sections",
+        "step": "documents_chunked.build_sections",
         "target": "Section.score_overlap"
       },
       {
@@ -2060,20 +2024,20 @@
         "sources": [
           "literal"
         ],
-        "step": "build_sections",
+        "step": "documents_chunked.build_sections",
         "target": "Section.score_bm25"
       },
       {
         "detail": {
-          "input_schema": "ParagraphDraft",
+          "input_schema": "Paragraph",
           "output_schema": "Sentence"
         },
         "operation": "step",
         "sources": [
           "Section"
         ],
-        "step": "build_sentences",
-        "target": "build_sentences"
+        "step": "sentences_chunked.chunk",
+        "target": "sentences_chunked.chunk"
       },
       {
         "detail": {},
@@ -2081,8 +2045,8 @@
         "sources": [
           "sentence_text.sentence_content"
         ],
-        "step": "build_sentences",
-        "target": "build_sentences.filter[0]"
+        "step": "sentences_chunked.chunk",
+        "target": "sentences_chunked.chunk.filter[0]"
       },
       {
         "detail": {
@@ -2092,10 +2056,10 @@
         },
         "operation": "posexplode_struct",
         "sources": [
-          "ParagraphDraft.content"
+          "paragraphs.content"
         ],
-        "step": "build_sentences",
-        "target": "build_sentences.posexplode_struct[0].sentence_text"
+        "step": "sentences_chunked.chunk",
+        "target": "sentences_chunked.chunk.posexplode_struct[0].sentence_text"
       },
       {
         "detail": {
@@ -2103,10 +2067,10 @@
         },
         "operation": "project",
         "sources": [
-          "ParagraphDraft.id",
+          "paragraphs.id",
           "sentence_text.position"
         ],
-        "step": "build_sentences",
+        "step": "sentences_chunked.chunk",
         "target": "Sentence.id"
       },
       {
@@ -2115,9 +2079,9 @@
         },
         "operation": "project",
         "sources": [
-          "ParagraphDraft.document_id"
+          "paragraphs.document_id"
         ],
-        "step": "build_sentences",
+        "step": "sentences_chunked.chunk",
         "target": "Sentence.document_id"
       },
       {
@@ -2126,9 +2090,9 @@
         },
         "operation": "project",
         "sources": [
-          "ParagraphDraft.section_id"
+          "paragraphs.section_id"
         ],
-        "step": "build_sentences",
+        "step": "sentences_chunked.chunk",
         "target": "Sentence.section_id"
       },
       {
@@ -2137,9 +2101,9 @@
         },
         "operation": "project",
         "sources": [
-          "ParagraphDraft.id"
+          "paragraphs.id"
         ],
-        "step": "build_sentences",
+        "step": "sentences_chunked.chunk",
         "target": "Sentence.paragraph_id"
       },
       {
@@ -2148,9 +2112,9 @@
         },
         "operation": "project",
         "sources": [
-          "ParagraphDraft.ordinal"
+          "paragraphs.ordinal"
         ],
-        "step": "build_sentences",
+        "step": "sentences_chunked.chunk",
         "target": "Sentence.paragraph_ordinal"
       },
       {
@@ -2161,7 +2125,7 @@
         "sources": [
           "sentence_text.position"
         ],
-        "step": "build_sentences",
+        "step": "sentences_chunked.chunk",
         "target": "Sentence.ordinal"
       },
       {
@@ -2172,7 +2136,7 @@
         "sources": [
           "sentence_text.sentence_content"
         ],
-        "step": "build_sentences",
+        "step": "sentences_chunked.chunk",
         "target": "Sentence.content"
       },
       {
@@ -2183,7 +2147,7 @@
         "sources": [
           "literal"
         ],
-        "step": "build_sentences",
+        "step": "sentences_chunked.chunk",
         "target": "Sentence.search_query_id"
       },
       {
@@ -2194,7 +2158,7 @@
         "sources": [
           "literal"
         ],
-        "step": "build_sentences",
+        "step": "sentences_chunked.chunk",
         "target": "Sentence.score_overlap"
       },
       {
@@ -2205,129 +2169,7 @@
         "sources": [
           "literal"
         ],
-        "step": "build_sentences",
-        "target": "Sentence.score_bm25"
-      },
-      {
-        "detail": {
-          "input_schema": "Sentence",
-          "output_schema": "Sentence"
-        },
-        "operation": "step",
-        "sources": [
-          "Sentence"
-        ],
-        "step": "publish_sentences",
-        "target": "publish_sentences"
-      },
-      {
-        "detail": {
-          "field": "id"
-        },
-        "operation": "project",
-        "sources": [
-          "Sentence.id"
-        ],
-        "step": "publish_sentences",
-        "target": "Sentence.id"
-      },
-      {
-        "detail": {
-          "field": "document_id"
-        },
-        "operation": "project",
-        "sources": [
-          "Sentence.document_id"
-        ],
-        "step": "publish_sentences",
-        "target": "Sentence.document_id"
-      },
-      {
-        "detail": {
-          "field": "section_id"
-        },
-        "operation": "project",
-        "sources": [
-          "Sentence.section_id"
-        ],
-        "step": "publish_sentences",
-        "target": "Sentence.section_id"
-      },
-      {
-        "detail": {
-          "field": "paragraph_id"
-        },
-        "operation": "project",
-        "sources": [
-          "Sentence.paragraph_id"
-        ],
-        "step": "publish_sentences",
-        "target": "Sentence.paragraph_id"
-      },
-      {
-        "detail": {
-          "field": "paragraph_ordinal"
-        },
-        "operation": "project",
-        "sources": [
-          "Sentence.paragraph_ordinal"
-        ],
-        "step": "publish_sentences",
-        "target": "Sentence.paragraph_ordinal"
-      },
-      {
-        "detail": {
-          "field": "ordinal"
-        },
-        "operation": "project",
-        "sources": [
-          "Sentence.ordinal"
-        ],
-        "step": "publish_sentences",
-        "target": "Sentence.ordinal"
-      },
-      {
-        "detail": {
-          "field": "content"
-        },
-        "operation": "project",
-        "sources": [
-          "Sentence.content"
-        ],
-        "step": "publish_sentences",
-        "target": "Sentence.content"
-      },
-      {
-        "detail": {
-          "field": "search_query_id"
-        },
-        "operation": "project",
-        "sources": [
-          "Sentence.search_query_id"
-        ],
-        "step": "publish_sentences",
-        "target": "Sentence.search_query_id"
-      },
-      {
-        "detail": {
-          "field": "score_overlap"
-        },
-        "operation": "project",
-        "sources": [
-          "Sentence.score_overlap"
-        ],
-        "step": "publish_sentences",
-        "target": "Sentence.score_overlap"
-      },
-      {
-        "detail": {
-          "field": "score_bm25"
-        },
-        "operation": "project",
-        "sources": [
-          "Sentence.score_bm25"
-        ],
-        "step": "publish_sentences",
+        "step": "sentences_chunked.chunk",
         "target": "Sentence.score_bm25"
       },
       {
@@ -2339,8 +2181,8 @@
         "sources": [
           "Sentence"
         ],
-        "step": "build_words",
-        "target": "build_words"
+        "step": "words_chunked.chunk",
+        "target": "words_chunked.chunk"
       },
       {
         "detail": {},
@@ -2348,8 +2190,8 @@
         "sources": [
           "word_text.word_token"
         ],
-        "step": "build_words",
-        "target": "build_words.filter[0]"
+        "step": "words_chunked.chunk",
+        "target": "words_chunked.chunk.filter[0]"
       },
       {
         "detail": {
@@ -2359,10 +2201,10 @@
         },
         "operation": "posexplode_struct",
         "sources": [
-          "Sentence.content"
+          "sentences.content"
         ],
-        "step": "build_words",
-        "target": "build_words.posexplode_struct[0].word_text"
+        "step": "words_chunked.chunk",
+        "target": "words_chunked.chunk.posexplode_struct[0].word_text"
       },
       {
         "detail": {
@@ -2370,10 +2212,10 @@
         },
         "operation": "project",
         "sources": [
-          "Sentence.id",
+          "sentences.id",
           "word_text.position"
         ],
-        "step": "build_words",
+        "step": "words_chunked.chunk",
         "target": "Word.id"
       },
       {
@@ -2382,9 +2224,9 @@
         },
         "operation": "project",
         "sources": [
-          "Sentence.document_id"
+          "sentences.document_id"
         ],
-        "step": "build_words",
+        "step": "words_chunked.chunk",
         "target": "Word.document_id"
       },
       {
@@ -2393,9 +2235,9 @@
         },
         "operation": "project",
         "sources": [
-          "Sentence.section_id"
+          "sentences.section_id"
         ],
-        "step": "build_words",
+        "step": "words_chunked.chunk",
         "target": "Word.section_id"
       },
       {
@@ -2404,9 +2246,9 @@
         },
         "operation": "project",
         "sources": [
-          "Sentence.paragraph_id"
+          "sentences.paragraph_id"
         ],
-        "step": "build_words",
+        "step": "words_chunked.chunk",
         "target": "Word.paragraph_id"
       },
       {
@@ -2415,9 +2257,9 @@
         },
         "operation": "project",
         "sources": [
-          "Sentence.paragraph_ordinal"
+          "sentences.paragraph_ordinal"
         ],
-        "step": "build_words",
+        "step": "words_chunked.chunk",
         "target": "Word.paragraph_ordinal"
       },
       {
@@ -2426,9 +2268,9 @@
         },
         "operation": "project",
         "sources": [
-          "Sentence.id"
+          "sentences.id"
         ],
-        "step": "build_words",
+        "step": "words_chunked.chunk",
         "target": "Word.sentence_id"
       },
       {
@@ -2439,7 +2281,7 @@
         "sources": [
           "word_text.position"
         ],
-        "step": "build_words",
+        "step": "words_chunked.chunk",
         "target": "Word.ordinal"
       },
       {
@@ -2450,7 +2292,7 @@
         "sources": [
           "word_text.word_token"
         ],
-        "step": "build_words",
+        "step": "words_chunked.chunk",
         "target": "Word.token"
       },
       {
@@ -2498,7 +2340,16 @@
         "target": "Word.validation.final"
       }
     ],
-    "opaque_boundaries": []
+    "opaque_boundaries": [
+      {
+        "hook": "default_sentence_texts",
+        "phase": "expression",
+        "reason": "python UDF body",
+        "schema": "Sentence",
+        "step": "sentences_chunked.chunk",
+        "target": "python_udf"
+      }
+    ]
   },
   "steps": [
     {
@@ -2506,14 +2357,14 @@
       "before_hooks": [],
       "input_alias": "document",
       "joins": [],
-      "name": "mark_lines",
+      "name": "documents_chunked.mark_lines",
       "output_alias": "marked_document_line",
       "output_schema": "MarkedDocumentLine",
       "results": [
         {
           "after_hooks": [],
-          "frame": "marked_lines",
-          "lane": "marked_lines",
+          "frame": "documents_chunked__marked_lines",
+          "lane": "documents_chunked__marked_lines",
           "schema": "MarkedDocumentLine"
         }
       ],
@@ -2531,14 +2382,14 @@
       "before_hooks": [],
       "input_alias": "marked_document_line",
       "joins": [],
-      "name": "select_paragraph_lines",
+      "name": "documents_chunked.select_paragraph_lines",
       "output_alias": "paragraph_line",
       "output_schema": "ParagraphLine",
       "results": [
         {
           "after_hooks": [],
-          "frame": "paragraph_lines",
-          "lane": "paragraph_lines",
+          "frame": "documents_chunked__paragraph_lines",
+          "lane": "documents_chunked__paragraph_lines",
           "schema": "ParagraphLine"
         }
       ],
@@ -2556,14 +2407,14 @@
       "before_hooks": [],
       "input_alias": "marked_document_line",
       "joins": [],
-      "name": "select_section_headings",
+      "name": "documents_chunked.select_section_headings",
       "output_alias": "section_heading",
       "output_schema": "SectionHeading",
       "results": [
         {
           "after_hooks": [],
-          "frame": "section_headings",
-          "lane": "section_headings",
+          "frame": "documents_chunked__section_headings",
+          "lane": "documents_chunked__section_headings",
           "schema": "SectionHeading"
         }
       ],
@@ -2581,14 +2432,14 @@
       "before_hooks": [],
       "input_alias": "paragraph_line",
       "joins": [],
-      "name": "collect_paragraph_lines",
+      "name": "documents_chunked.collect_paragraph_lines",
       "output_alias": "paragraph_line_group",
       "output_schema": "ParagraphLineGroup",
       "results": [
         {
           "after_hooks": [],
-          "frame": "paragraph_line_groups",
-          "lane": "paragraph_line_groups",
+          "frame": "documents_chunked__paragraph_line_groups",
+          "lane": "documents_chunked__paragraph_line_groups",
           "schema": "ParagraphLineGroup"
         }
       ],
@@ -2606,14 +2457,14 @@
       "before_hooks": [],
       "input_alias": "paragraph_line_group",
       "joins": [],
-      "name": "assemble_paragraph_content",
+      "name": "documents_chunked.assemble_paragraph_content",
       "output_alias": "paragraph_content",
       "output_schema": "ParagraphContent",
       "results": [
         {
           "after_hooks": [],
-          "frame": "paragraph_content",
-          "lane": "paragraph_content",
+          "frame": "documents_chunked__paragraph_content",
+          "lane": "documents_chunked__paragraph_content",
           "schema": "ParagraphContent"
         }
       ],
@@ -2631,14 +2482,14 @@
       "before_hooks": [],
       "input_alias": "paragraph_content",
       "joins": [],
-      "name": "rank_paragraphs",
+      "name": "documents_chunked.number_paragraphs",
       "output_alias": "paragraph_draft",
       "output_schema": "ParagraphDraft",
       "results": [
         {
           "after_hooks": [],
-          "frame": "paragraph_drafts",
-          "lane": "paragraph_drafts",
+          "frame": "documents_chunked__paragraph_drafts",
+          "lane": "documents_chunked__paragraph_drafts",
           "schema": "ParagraphDraft"
         }
       ],
@@ -2656,14 +2507,14 @@
       "before_hooks": [],
       "input_alias": "paragraph_draft",
       "joins": [],
-      "name": "publish_paragraphs",
+      "name": "documents_chunked.publish_paragraphs",
       "output_alias": "paragraph",
       "output_schema": "Paragraph",
       "results": [
         {
           "after_hooks": [],
-          "frame": "paragraphs",
-          "lane": "paragraphs",
+          "frame": "documents_chunked__paragraphs",
+          "lane": "documents_chunked__paragraphs",
           "schema": "Paragraph"
         }
       ],
@@ -2681,14 +2532,14 @@
       "before_hooks": [],
       "input_alias": "paragraph_draft",
       "joins": [],
-      "name": "select_section_keys",
+      "name": "documents_chunked.select_section_keys",
       "output_alias": "section_key",
       "output_schema": "SectionKey",
       "results": [
         {
           "after_hooks": [],
-          "frame": "section_keys",
-          "lane": "section_keys",
+          "frame": "documents_chunked__section_keys",
+          "lane": "documents_chunked__section_keys",
           "schema": "SectionKey"
         }
       ],
@@ -2709,17 +2560,17 @@
         {
           "how": "left",
           "input": "heading",
-          "right_alias": "section_headings"
+          "right_alias": "documents_chunked__section_headings"
         }
       ],
-      "name": "build_sections",
+      "name": "documents_chunked.build_sections",
       "output_alias": "section",
       "output_schema": "Section",
       "results": [
         {
           "after_hooks": [],
-          "frame": "sections",
-          "lane": "sections",
+          "frame": "documents_chunked__sections",
+          "lane": "documents_chunked__sections",
           "schema": "Section"
         }
       ],
@@ -2735,16 +2586,16 @@
     {
       "after_hooks": [],
       "before_hooks": [],
-      "input_alias": "paragraph_draft",
+      "input_alias": "paragraph",
       "joins": [],
-      "name": "build_sentences",
+      "name": "sentences_chunked.chunk",
       "output_alias": "sentence",
       "output_schema": "Sentence",
       "results": [
         {
           "after_hooks": [],
-          "frame": "sentence_rows",
-          "lane": "sentence_rows",
+          "frame": "sentences_chunked__sentences",
+          "lane": "sentences_chunked__sentences",
           "schema": "Sentence"
         }
       ],
@@ -2762,46 +2613,21 @@
       "before_hooks": [],
       "input_alias": "sentence",
       "joins": [],
-      "name": "publish_sentences",
-      "output_alias": "sentence",
-      "output_schema": "Sentence",
-      "results": [
-        {
-          "after_hooks": [],
-          "frame": "sentences",
-          "lane": "sentences",
-          "schema": "Sentence"
-        }
-      ],
-      "validation": [
-        {
-          "mode": "strict",
-          "project": false,
-          "reason": "intermediate",
-          "schema": "Sentence"
-        }
-      ]
-    },
-    {
-      "after_hooks": [],
-      "before_hooks": [],
-      "input_alias": "sentence",
-      "joins": [],
-      "name": "build_words",
+      "name": "words_chunked.chunk",
       "output_alias": "word",
       "output_schema": "Word",
       "results": [
         {
           "after_hooks": [],
-          "frame": "words",
-          "lane": "words",
+          "frame": "words_chunked__words",
+          "lane": "words_chunked__words",
           "schema": "Word"
         }
       ],
       "validation": []
     }
   ],
-  "target_module": "examples.structure_generated.search.pyspark.transforms.extract",
+  "target_module": "examples.structure_generated.search.pyspark.transforms.Chunking",
   "validation": {
     "outputs": [
       {

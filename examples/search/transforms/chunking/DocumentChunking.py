@@ -1,10 +1,8 @@
-"""Expand caller-extracted text into searchable hierarchy rows."""
+"""Chunk caller-provided documents into sections and paragraphs."""
 
-from examples.search.schemas.extraction.extract import (
+from examples.search.schemas.chunking.chunk import (
     DocumentLine,
     ExpandedDocumentLine,
-    ExpandedSentenceText,
-    ExpandedWordText,
     MarkedDocumentLine,
     ParagraphContent,
     ParagraphDraft,
@@ -12,10 +10,8 @@ from examples.search.schemas.extraction.extract import (
     ParagraphLineGroup,
     SectionHeading,
     SectionKey,
-    SentenceText,
-    WordText,
 )
-from examples.search.schemas.text import Document, Paragraph, Section, Sentence, Word
+from examples.search.schemas.text import Document, Paragraph, Section
 from structure import Transform, input, lane, output, step
 from structure.plugin.pyspark import (
     arr_transform,
@@ -26,7 +22,6 @@ from structure.plugin.pyspark import (
     drop_duplicates,
     group_by,
     left_join,
-    lower,
     posexplode_struct,
     regexp_extract,
     regexp_replace,
@@ -43,8 +38,8 @@ from structure.plugin.pyspark import (
 )
 
 
-class ExtractText(Transform):
-    """Expand caller-extracted text into sections, paragraphs, sentences, and words."""
+class DocumentChunking(Transform):
+    """Chunk caller-provided documents into sections and paragraphs."""
 
     documents = input(Document)
     marked_lines = lane(MarkedDocumentLine)
@@ -54,11 +49,8 @@ class ExtractText(Transform):
     paragraph_content = lane(ParagraphContent)
     paragraph_drafts = lane(ParagraphDraft)
     section_keys = lane(SectionKey)
-    sentence_rows = lane(Sentence)
     sections = output(Section)
     paragraphs = output(Paragraph)
-    sentences = output(Sentence)
-    words = output(Word)
 
     @step(input=documents, output=marked_lines)
     def mark_lines(self, document: Document) -> MarkedDocumentLine:
@@ -137,7 +129,7 @@ class ExtractText(Transform):
         )
 
     @step(input=paragraph_content, output=paragraph_drafts)
-    def rank_paragraphs(self, paragraph: ParagraphContent) -> ParagraphDraft:
+    def number_paragraphs(self, paragraph: ParagraphContent) -> ParagraphDraft:
         ordinal = row_number(
             partition_by=(paragraph.document_id, paragraph.section_ordinal),
             order_by=paragraph.paragraph_group,
@@ -191,60 +183,4 @@ class ExtractText(Transform):
             search_query_id=None,
             score_overlap=None,
             score_bm25=None,
-        )
-
-    @step(input=paragraph_drafts, output=sentence_rows)
-    def build_sentences(self, paragraph: ParagraphDraft) -> Sentence:
-        sentence_texts = arr_transform(
-            split(paragraph.content, pattern=r"(?<=[.!?])\s+"),
-            lambda content: SentenceText(sentence_content=content),
-        )
-        sentence = posexplode_struct(
-            sentence_texts,
-            as_=ExpandedSentenceText,
-            ordinal="position",
-            scope="sentence_text",
-        )
-        content = trim(sentence.sentence_content)
-        where(content != "")
-        return Sentence(
-            id=concat_ws("#s", paragraph.id, sentence.position.cast(types.string())),
-            document_id=paragraph.document_id,
-            section_id=paragraph.section_id,
-            paragraph_id=paragraph.id,
-            paragraph_ordinal=paragraph.ordinal,
-            ordinal=(sentence.position + 1).cast(types.integer()),
-            content=content,
-            search_query_id=None,
-            score_overlap=None,
-            score_bm25=None,
-        )
-
-    @step(input=sentence_rows, output=sentences)
-    def publish_sentences(self, sentence: Sentence) -> Sentence:
-        return Sentence.project(sentence)
-
-    @step(input=sentence_rows, output=words)
-    def build_words(self, sentence: Sentence) -> Word:
-        word_texts = arr_transform(
-            split(sentence.content, pattern=r"\s+"),
-            lambda token: WordText(word_token=token),
-        )
-        word = posexplode_struct(
-            word_texts,
-            as_=ExpandedWordText,
-            ordinal="position",
-            scope="word_text",
-        )
-        token = lower(regexp_replace(trim(word.word_token), pattern=r"^[^A-Za-z0-9]+|[^A-Za-z0-9]+$", replacement=""))
-        where(token != "")
-        return Word(
-            id=concat_ws("#w", sentence.id, word.position.cast(types.string())),
-            document_id=sentence.document_id,
-            section_id=sentence.section_id,
-            paragraph_id=sentence.paragraph_id,
-            paragraph_ordinal=sentence.paragraph_ordinal,
-            sentence_id=sentence.id,
-            ordinal=(word.position + 1).cast(types.integer()),
-            token=token,
         )

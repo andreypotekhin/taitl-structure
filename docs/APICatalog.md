@@ -2,7 +2,7 @@
 
 This catalog is the reference for API compatibility decisions. Use `@raw` or caller-owned PySpark if it says the symbolic contract is deferred or unsupported.
 
-For extensions on top of PySpark, see [APIExtentions.md](APIExtentions.md). For Strucute own APIs such as schemas, transforms, hooks, see Core APIs in [API.md](API.md).
+For extensions on top of PySpark, see [APIExtensions.md](APIExtensions.md). For Structure own APIs such as schemas, transforms, hooks, see Core APIs in [API.md](API.md).
 
 ## Column API
 
@@ -131,6 +131,11 @@ Structure additions over public DataFrame transformation patterns, not raw DataF
 The streaming slice accepts compatible streaming DataFrames as inputs for row-local, watermarked stateful, and admitted
 stream-stream operations. Structure intentionally does not own streaming lifecycle.
 
+The checked streaming inventory lives in
+[`pyspark-streaming-api-coverage.json`](../src/structure/plugin/pyspark/resources/pyspark-streaming-api-coverage.json).
+Use [`examples/streams/adoption.py`](../examples/streams/adoption.py) as the tested caller-owned source/sink/query
+lifecycle recipe.
+
 | Capability | Status | PySpark parity | Structure contract | Reference |
 | --- | --- | --- | --- | --- |
 | Generated streaming sources | unsupported | `spark.readStream` | Callers own source selection and configuration | [Streaming API](api/Streaming.api.md) |
@@ -156,10 +161,14 @@ stream-stream operations. Structure intentionally does not own streaming lifecyc
 
 This section is Structure's checked catalog for its PySpark `>=3.5,<4.1` transformation baseline. It covers typed
 transformations over caller-supplied DataFrames, not readers, writers, sessions, catalog/table management, actions, or
-streaming lifecycle. The machine-checked inventory and entries remain in
+streaming lifecycle. The companion streaming API ledger classifies PySpark Structured Streaming adoption APIs,
+stateful operations, lifecycle boundaries, and deferred/unsupported families. The machine-checked inventory and entries
+remain in
 [`pyspark-transformation-inventory.json`](../src/structure/plugin/pyspark/resources/pyspark-transformation-inventory.json)
 and
-[`pyspark-transformation-coverage.json`](../src/structure/plugin/pyspark/resources/pyspark-transformation-coverage.json).
+[`pyspark-transformation-coverage.json`](../src/structure/plugin/pyspark/resources/pyspark-transformation-coverage.json);
+streaming-specific rows remain in
+[`pyspark-streaming-api-coverage.json`](../src/structure/plugin/pyspark/resources/pyspark-streaming-api-coverage.json).
 
 | PySpark family | Status | Structure spelling or alternative | Contract / notes |
 | --- | --- | --- | --- |

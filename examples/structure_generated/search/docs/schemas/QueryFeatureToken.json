@@ -1,0 +1,20 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "query_id",
+      "name": "query_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "token",
+      "name": "token",
+      "nullable": false,
+      "type": "string"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.search.schemas.features",
+  "name": "QueryFeatureToken"
+}

@@ -17,7 +17,7 @@ from structure.core.dsl.model.transforms.SpecialFunction import SpecialFunction
 from structure.core.dsl.model.transforms.StageDeclaration import StageDeclaration
 from structure.core.dsl.model.transforms.Transform import Transform
 
-_CLASS_OPTIONS = {"target", "validate_intermediate", "streaming"}
+_CLASS_OPTIONS = {"target", "validate_intermediate", "streaming", "warn_on_udfs"}
 _STEP_METHOD_OPTIONS = {"target", "target_platform", "target_profile"}
 _METHOD_BINDING_OPTIONS = {"input", "output", "inout"}
 _METHOD_OPTIMIZATION_OPTIONS = {"cache"}
@@ -168,8 +168,8 @@ def transform(target=None, **kwargs):
         target: Optional target name or class. Passing ``"pyspark"`` selects a
             default target for the class.
         **kwargs: Class-level options such as ``target``,
-            ``validate_intermediate``, and ``streaming``. Step defaults such as
-            ``target_platform`` may also be supplied.
+            ``validate_intermediate``, ``streaming``, and ``warn_on_udfs``.
+            Step defaults such as ``target_platform`` may also be supplied.
 
     Returns:
         A class decorator, or the decorated class when used as ``@transform``.

@@ -13,13 +13,14 @@ arbitrary state APIs.
 
 ## Transformation Features
 
-Structure supports transform-scoped `watermark(...)`, watermarked aggregations, watermarked dedupe, and inner
-stream-stream joins with `event_time_between(...)` when the relevant inputs are declared streaming.
+Structure supports transform-scoped `watermark(...)`, event-time and session-window aggregations, watermarked dedupe,
+stream-static joins and left-semi filtering, and admitted bounded stream-stream joins with `event_time_between(...)`
+when the relevant inputs are declared streaming.
 
 More complex stateful transformation features remain deferred until their state semantics are compiler-visible:
 
-- windowed aggregations beyond the admitted aggregate shape;
-- outer and semi stream-stream joins;
+- chained windowed/stateful aggregations beyond the admitted single-stage event-time and session-window shapes;
+- cross and anti stream joins;
 - selected-row helpers such as latest or earliest on streaming inputs;
 - ranking, lag/lead, and rolling windows;
 - arbitrary state APIs.

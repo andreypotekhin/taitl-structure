@@ -77,6 +77,24 @@ def test_special_udf_warning_can_be_disabled_by_compiler_config() -> None:
     assert plan.diagnostics == ()
 
 
+def test_special_udf_warning_can_be_disabled_by_transform_option() -> None:
+    @transform(warn_on_udfs=False)
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        @special(type="udf", return_type=types.string(), nullable=False)
+        def clean(value: Any):
+            return value.strip()
+
+        def publish(self, row: Raw) -> Published:
+            return Published(id=self.clean(row.id))
+
+    plan = _compile(Publish).analysis
+
+    assert plan.diagnostics == ()
+
+
 def test_special_udf_requires_return_type_or_supported_annotation() -> None:
     class Publish(Transform):
         rows = input(Raw)
@@ -102,7 +120,7 @@ def test_special_udf_requires_a_boolean_nullable_declaration(nullable: object) -
         special(type="udf", nullable=nullable)(lambda value: value)
 
 
-@pytest.mark.parametrize("option", ["streaming", "validate_intermediate"])
+@pytest.mark.parametrize("option", ["streaming", "validate_intermediate", "warn_on_udfs"])
 @pytest.mark.parametrize("value", [1, "true", None])
 def test_transform_requires_boolean_class_options(option: str, value: object) -> None:
     with pytest.raises(TypeError, match=rf"{option} must be a Boolean"):

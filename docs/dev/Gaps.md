@@ -95,7 +95,7 @@ narrower typed capability from that family; no broader API is implied.
 | `exactly_one` validation | implemented | Sprint 24 P0; batch-only ordinary-PySpark relation assertion with generated/online `REL-E0701` failure. `CreateSimilarityQueries` now uses it with ordered token aggregation and typed query union. |
 | Implicit global aggregation | implemented | Sprint 24; aggregate-only steps retain global semantics and enforce empty-input nullability. `CreateIndex` now uses grouped term aggregates plus aggregate-only summaries without a raw hook. |
 | Explicit scalar UDF example | implemented documentation | Sprint 24; documented opt-in ordinary-PySpark exception with warning and Spark Connect boundary |
-| `posexplode` over array of structs | implemented | Sprint 25; `posexplode_struct(...)` is available, and `ExtractText`, `ScoreOverlap`, and `ScoreBm25` now use typed struct-wrapped expansion instead of raw hooks |
+| `posexplode` over array of structs | implemented | Sprint 25; `posexplode_struct(...)` is available, and `Chunking`, `ScoreOverlap`, and `ScoreBm25` now use typed struct-wrapped expansion instead of raw hooks |
 | Other generator forms | deferred | Admit only after a separate cardinality/null/streaming contract |
 | Exact-schema relation set composition and self-alias | implemented | Sprint 25; exact-schema set operations, branchable lane rejoin, and `relation_alias(...)` are implemented. `ReduceSimilarityScores` now uses them for reciprocal pair matching, exact-schema pair union, and typed per-source ranking. |
 | Relation order/limit/offset | implemented | Sprint 25; `order_by(...)`, `limit(n)`, and `offset(n)` are compiler-visible. `sample` remains deferred. |

@@ -29,7 +29,7 @@ class BuildPySparkUdfDiagnostics:
                         Diagnostic(
                             entry=diagnostic_registry.get("DSL-W0403"),
                             problem=f"{owner_name} uses Python UDF {qualname}; Spark cannot inspect or optimize the UDF body.",
-                            use="Prefer Structure expression helpers when logic can stay compiler-visible, or set warn_on_udfs = false.",
+                            use="Prefer Structure expression helpers when logic can stay compiler-visible, or set @transform(warn_on_udfs=False).",
                             context={"udf": qualname},
                             source=f"{owner_module}.{owner_name}".strip("."),
                         )
@@ -41,6 +41,11 @@ class BuildPySparkUdfDiagnostics:
         return (
             *body.filters,
             *(assignment.expression for assignment in body.projection),
+            *(
+                operation.posexplode_struct.expression
+                for operation in body.operations
+                if operation.posexplode_struct is not None
+            ),
             *(operation.filter for operation in body.operations if operation.filter is not None),
             *(assignment.expression for result in body.results for assignment in result.projection),
         )

@@ -268,7 +268,7 @@ the caller.
 
 ## Streaming Compatibility
 
-Execution does not change the v1/v2 streaming compatibility contract. A transform is streaming-compatible when
+Execution does not change the streaming compatibility contract. A transform is streaming-compatible when
 its compiled operations are valid for the caller's streaming DataFrame shape. The caller owns `readStream`,
 `writeStream`, triggers, checkpoints, output modes, and query lifecycle.
 

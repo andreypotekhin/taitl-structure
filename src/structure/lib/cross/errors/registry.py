@@ -56,7 +56,7 @@ diagnostic_registry = DiagnosticRegistry(
             docs="docs/Diagnostics.md#dsl-w0403",
             introduced="1.0.0",
             problem_template="Transform code uses a Python UDF that Spark cannot inspect or optimize.",
-            use_template='Keep the UDF only when Python execution is intentional, or set warn_on_udfs = false.',
+            use_template='Keep the UDF only when Python execution is intentional, or set @transform(warn_on_udfs=False).',
         ),
         DiagnosticEntry(
             code="SCHEMA-E0301",

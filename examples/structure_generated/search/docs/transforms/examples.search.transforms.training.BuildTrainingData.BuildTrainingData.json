@@ -1,0 +1,102 @@
+{
+  "dependencies": [
+    "document",
+    "document_features",
+    "judgment",
+    "judgments",
+    "query",
+    "query_features"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "document_scores",
+      "ordinal": 0,
+      "schema": "DocumentScore"
+    },
+    {
+      "name": "judgments",
+      "ordinal": 1,
+      "schema": "DocumentRelevanceJudgment"
+    },
+    {
+      "name": "document_features",
+      "ordinal": 2,
+      "schema": "DocumentFeatures"
+    },
+    {
+      "name": "query_features",
+      "ordinal": 3,
+      "schema": "QueryFeatures"
+    }
+  ],
+  "name": "BuildTrainingData",
+  "outputs": [
+    {
+      "name": "training_data",
+      "ordinal": 0,
+      "schema": "DocumentTrainingData"
+    }
+  ],
+  "source": "examples.search.transforms.training.BuildTrainingData.BuildTrainingData",
+  "step_methods": [
+    {
+      "input_lane": "document_scores",
+      "input_schema": "DocumentScore",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "score",
+          "schema": "DocumentScore",
+          "source": "document_scores"
+        },
+        {
+          "driving": false,
+          "parameter": "judgment",
+          "schema": "DocumentRelevanceJudgment",
+          "source": "judgments"
+        },
+        {
+          "driving": false,
+          "parameter": "document",
+          "schema": "DocumentFeatures",
+          "source": "document_features"
+        },
+        {
+          "driving": false,
+          "parameter": "query",
+          "schema": "QueryFeatures",
+          "source": "query_features"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "judgment"
+        },
+        {
+          "how": "inner",
+          "input": "document"
+        },
+        {
+          "how": "inner",
+          "input": "query"
+        }
+      ],
+      "name": "build",
+      "output_lane": "training_data",
+      "output_schema": "DocumentTrainingData",
+      "results": [
+        {
+          "frame": "training_data",
+          "lane": "training_data",
+          "schema": "DocumentTrainingData"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/BuildTrainingData.py",
+    "traceability": "traceability/transforms/BuildTrainingData.BuildTrainingData.json"
+  }
+}

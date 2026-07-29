@@ -53,5 +53,7 @@ Supported transform shapes include row-local projection/filter (including scalar
 joins and `exists(...)` filtering, event-time and session-window aggregation, bounded dedupe, bounded inner
 stream-stream joins, and bounded left/right/full outer and semi stream-stream joins. Callers own
 `readStream`, `writeStream`, checkpoints, triggers, output-mode application, and query lifecycle. `foreachBatch` and
-`foreach` remain unsupported. See [V4 Caller-Owned Streaming Migration](../dev/design/V4CallerOwnedStreamingMigration.md)
-and the [Execution reference](../background/Execution.back.md).
+`foreach` remain unsupported. Use `examples/streams/adoption.py` as the tested caller-owned recipe shape. See
+[V4 Caller-Owned Streaming Migration](../dev/specifications/V4CallerOwnedStreamingMigration.md),
+[V9 PySpark Streaming API Coverage](../dev/specifications/V9PySparkStreamingApiCoverage.md), and the
+[Execution reference](../background/Execution.back.md).

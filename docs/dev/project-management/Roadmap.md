@@ -417,6 +417,47 @@ where Spark supports only part of a batch family.
 - Two-stateful chains unless a later explicit Spark-supported contract changes this scope.
 - Arbitrary global ordering, limits, offsets, or selected-row ranking over unbounded streaming inputs.
 
+## v9 Scope
+
+v9 focuses on broad PySpark streaming API coverage and adoption after v8 closed transformation percentage parity. The
+release creates a checked Structured Streaming API ledger that covers more than transformation families: input modes,
+watermarks, stateful transformations, DataStreamReader, DataStreamWriter, output modes, triggers, checkpoints, query
+lifecycle, side-effect APIs, listener/progress APIs, arbitrary state APIs, and Spark Connect streaming. The ledger must
+separate Structure-owned typed transformations from caller-owned PySpark lifecycle code.
+
+### v9 sequence
+
+- Sprint 40 complete: published the checked PySpark streaming API ledger and reconciled streaming-relevant v7/v8 deferrals.
+- Sprint 41 complete: published and tested caller-owned adoption recipes for sources, sinks, checkpoints, triggers, output modes,
+  query lifecycle, and generated Structure transforms.
+- Sprint 42 complete: re-evaluated stateful and order-sensitive streaming API gaps, admitting only shapes with explicit state,
+  watermark, output-mode, diagnostics, and live restart evidence.
+- Sprint 43 complete: hardened lifecycle diagnostics, explain output, troubleshooting, and owner-boundary documentation.
+- Sprint 44: close v9 release evidence without adding new API scope.
+
+### v9 must include
+
+- A checked PySpark streaming API ledger with status, owner boundary, evidence path, and support-claim accounting for
+  each selected API family.
+- Runnable caller-owned adoption examples showing Structure inside a real Structured Streaming application without
+  hidden lifecycle generation.
+- Reconciliation of deferred streaming-related items from v7 and v8 into implemented support, explicit ineligibility,
+  design-gated backlog, or caller-owned guidance.
+- Corrective diagnostics and explain output that name whether the fix belongs in Structure source, caller-owned PySpark
+  lifecycle code, or a batch materialization boundary.
+- Live PySpark 3.5 and 4.0 evidence for every admitted Structure-owned streaming claim, plus `make build` in the final
+  hardening sprint.
+
+### v9 non-goals
+
+- Making Structure a default streaming job orchestrator.
+- Hidden generation of sources, sinks, triggers, checkpoints, output modes, starts, stops, deployment, or recovery.
+- Side-effect ownership through `foreach` or `foreachBatch` without a separate idempotence and recovery design.
+- Spark Connect streaming promotion without a separate target contract and live evidence.
+- Non-streaming retained backlog from v7, including Search evaluation follow-ups, plugin-owned DSL completion,
+  data-quality constraints, and incremental compile cache diagnostics, unless a selected v9 streaming slice directly
+  needs it.
+
 ## Release Milestones
 
 | Milestone | Goal | Sprints |
@@ -435,3 +476,4 @@ where Spark supports only part of a batch family.
 | M11 | v6 typed PySpark API closure, example-hook retirement, and bounded recurrence | Sprints 23-27 |
 | M12 | v7 broad PySpark transformation coverage and caller-owned streaming adoption | Sprints 28--35 |
 | M13 | v8 PySpark Structured Streaming coverage parity | Sprints 36--39 and v8 hardening |
+| M14 | v9 PySpark streaming API coverage and adoption | Sprints 40--44 |

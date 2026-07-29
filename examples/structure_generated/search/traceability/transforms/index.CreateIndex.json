@@ -799,7 +799,7 @@
     },
     "DocumentFeatures": {
       "constant": "DOCUMENT_FEATURES_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+      "module": "examples.structure_generated.search.pyspark.schemas.features"
     },
     "DocumentFeedbackOption": {
       "constant": "DOCUMENT_FEEDBACK_OPTION_SCHEMA",
@@ -827,7 +827,7 @@
     },
     "DocumentLine": {
       "constant": "DOCUMENT_LINE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "DocumentOverlapMatch": {
       "constant": "DOCUMENT_OVERLAP_MATCH_SCHEMA",
@@ -844,6 +844,10 @@
     "DocumentPopularityTotals": {
       "constant": "DOCUMENT_POPULARITY_TOTALS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.build"
+    },
+    "DocumentProfile": {
+      "constant": "DOCUMENT_PROFILE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.analytics"
     },
     "DocumentQueryEvaluation": {
       "constant": "DOCUMENT_QUERY_EVALUATION_SCHEMA",
@@ -897,6 +901,10 @@
       "constant": "DOCUMENT_STATISTICS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.analytics"
     },
+    "DocumentTrainingData": {
+      "constant": "DOCUMENT_TRAINING_DATA_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.data"
+    },
     "EvaluationBatch": {
       "constant": "EVALUATION_BATCH_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.batch"
@@ -931,7 +939,11 @@
     },
     "ExpandedDocumentLine": {
       "constant": "EXPANDED_DOCUMENT_LINE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
+    },
+    "ExpandedQueryFeatureToken": {
+      "constant": "EXPANDED_QUERY_FEATURE_TOKEN_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.features"
     },
     "ExpandedQueryToken": {
       "constant": "EXPANDED_QUERY_TOKEN_SCHEMA",
@@ -939,11 +951,11 @@
     },
     "ExpandedSentenceText": {
       "constant": "EXPANDED_SENTENCE_TEXT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "ExpandedWordText": {
       "constant": "EXPANDED_WORD_TEXT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "Experiment": {
       "constant": "EXPERIMENT_SCHEMA",
@@ -991,7 +1003,7 @@
     },
     "MarkedDocumentLine": {
       "constant": "MARKED_DOCUMENT_LINE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "Paragraph": {
       "constant": "PARAGRAPH_SCHEMA",
@@ -1003,11 +1015,11 @@
     },
     "ParagraphContent": {
       "constant": "PARAGRAPH_CONTENT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "ParagraphDraft": {
       "constant": "PARAGRAPH_DRAFT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "ParagraphIndexSummary": {
       "constant": "PARAGRAPH_INDEX_SUMMARY_SCHEMA",
@@ -1031,11 +1043,11 @@
     },
     "ParagraphLine": {
       "constant": "PARAGRAPH_LINE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "ParagraphLineGroup": {
       "constant": "PARAGRAPH_LINE_GROUP_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "ParagraphOverlapMatch": {
       "constant": "PARAGRAPH_OVERLAP_MATCH_SCHEMA",
@@ -1093,6 +1105,14 @@
       "constant": "QUERY_DOCUMENT_SIGNALS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.relevance"
     },
+    "QueryFeatureToken": {
+      "constant": "QUERY_FEATURE_TOKEN_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.features"
+    },
+    "QueryFeatures": {
+      "constant": "QUERY_FEATURES_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.features"
+    },
     "QueryIntentLabel": {
       "constant": "QUERY_INTENT_LABEL_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.label"
@@ -1121,6 +1141,10 @@
       "constant": "QUERY_TOKEN_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.scoring_intermediate"
     },
+    "QueryTokenSummary": {
+      "constant": "QUERY_TOKEN_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.features"
+    },
     "RelevancePolicy": {
       "constant": "RELEVANCE_POLICY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.relevance"
@@ -1143,7 +1167,7 @@
     },
     "SectionHeading": {
       "constant": "SECTION_HEADING_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "SectionIndexSummary": {
       "constant": "SECTION_INDEX_SUMMARY_SCHEMA",
@@ -1167,7 +1191,7 @@
     },
     "SectionKey": {
       "constant": "SECTION_KEY_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "SectionOverlapMatch": {
       "constant": "SECTION_OVERLAP_MATCH_SCHEMA",
@@ -1283,7 +1307,7 @@
     },
     "SentenceText": {
       "constant": "SENTENCE_TEXT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     },
     "SimilarDocument": {
       "constant": "SIMILAR_DOCUMENT_SCHEMA",
@@ -1339,7 +1363,7 @@
     },
     "WordText": {
       "constant": "WORD_TEXT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.extract"
+      "module": "examples.structure_generated.search.pyspark.schemas.chunk"
     }
   },
   "source_transform": "examples.search.transforms.index.CreateIndex",

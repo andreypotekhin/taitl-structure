@@ -42,6 +42,11 @@ project-management/
     Sprint38_V8StatefulAndOrderedStreamingGaps.md
     Sprint39_V8StreamingHardening.md
     done/
+      Sprint44_V9StreamingHardening.md
+      Sprint43_V9LifecycleDiagnosticsAndBoundaries.md
+      Sprint42_V9StatefulStreamingApiGaps.md
+      Sprint41_V9CallerOwnedAdoptionRecipes.md
+      Sprint40_V9StreamingApiLedger.md
       Sprint35_V7SingleStatefulStreamingComposition.md
       Sprint34_V7StreamStaticOuterLookup.md
       Sprint33_V7StreamStaticEnrichment.md
@@ -146,3 +151,16 @@ v6 follows the v5 plugin hardening work with a deliberately bounded typed-PySpar
 4. **Sprint 26 (+): bounded timeline recurrence**: the separately specified batch-only ordered `scan(...)` feature.
 5. **Sprint 27 (active): release and challenge closure**: live evidence, documentation, executable specifications, and C27--C34
    disposition, with no new feature family.
+
+V9 starts after the v8 Structured Streaming parity milestone. It broadens coverage from transformation-family parity to
+the PySpark Structured Streaming API surface while keeping lifecycle ownership explicit:
+
+1. **Sprint 40: streaming API ledger**: classify transformation, source, sink, trigger, checkpoint, output-mode, query,
+   side-effect, listener, state, and Spark Connect streaming API families.
+2. **Sprint 41: caller-owned adoption recipes**: provide executable examples that put Structure transforms inside
+   ordinary PySpark streaming jobs without generated lifecycle code.
+3. **Sprint 42: stateful streaming API gaps**: admit or reject remaining stateful and order-sensitive deferred items
+   with live evidence and diagnostics.
+4. **Sprint 43: lifecycle diagnostics and boundaries**: make owner boundaries visible in diagnostics, explain output,
+   troubleshooting, and public docs.
+5. **Sprint 44: v9 hardening**: collect final evidence, refresh generated artifacts, and run `make build`.

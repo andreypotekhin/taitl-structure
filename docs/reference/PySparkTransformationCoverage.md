@@ -7,3 +7,8 @@ The machine-checked inventory and entries remain beside this page:
 
 - [`pyspark-transformation-inventory.json`](../../src/structure/plugin/pyspark/resources/pyspark-transformation-inventory.json)
 - [`pyspark-transformation-coverage.json`](../../src/structure/plugin/pyspark/resources/pyspark-transformation-coverage.json)
+
+The companion PySpark Structured Streaming API ledger records the v9 adoption surface, admitted stateful transform
+families, lifecycle boundaries, and caller-owned/deferred items:
+
+- [`pyspark-streaming-api-coverage.json`](../../src/structure/plugin/pyspark/resources/pyspark-streaming-api-coverage.json)

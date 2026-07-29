@@ -119,18 +119,19 @@ class RenderPySparkTransformModule:
         generated_code_options: tuple[str, ...],
     ) -> str:
         lines = [
+            "from __future__ import annotations",
             "from pyspark.sql import DataFrame, SparkSession",
             "from pyspark.sql import functions as F",
             "from pyspark.sql import types as T",
         ]
         if self._has_temporal_literal(plan):
-            lines.insert(0, "import datetime")
+            lines.insert(1, "import datetime")
         if self._has_decimal_literal(plan):
-            lines.insert(0, "from decimal import Decimal")
+            lines.insert(1, "from decimal import Decimal")
         if self._has_window(plan):
-            lines.insert(1, "from pyspark.sql import Window")
+            lines.insert(2, "from pyspark.sql import Window")
         if self._has_explicit_cache_level(plan):
-            lines.insert(1, "from pyspark import StorageLevel")
+            lines.insert(2, "from pyspark import StorageLevel")
         lines.extend(
             self._source_imports(
                 plan,
@@ -833,6 +834,8 @@ class RenderPySparkTransformModule:
             yield from self._operation_expressions(operation)
 
     def _operation_expressions(self, operation):
+        if operation.posexplode_struct is not None:
+            yield operation.posexplode_struct.expression
         if operation.filter is not None:
             yield operation.filter
         if operation.join is not None:

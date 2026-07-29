@@ -56,15 +56,18 @@ Connect. See [Compatibility.md](../Compatibility.md) for the full target policy,
 **Details And Differences**
 
 - Callers own streaming sources, sinks, triggers, checkpoints, output modes, and query lifecycle. Event-time
-  tumbling/sliding aggregation, watermark-bounded dedupe, and scalar Python UDFs are compiler-visible transformations;
-  scalar UDFs remain ordinary-PySpark only.
+  tumbling/sliding aggregation, session-window aggregation, watermark-bounded dedupe, bounded stream-stream joins,
+  stream-static joins, and scalar Python UDFs are compiler-visible transformations; scalar UDFs remain
+  ordinary-PySpark only. Use the tested caller-owned recipe in
+  [`examples/streams/adoption.py`](../../examples/streams/adoption.py) for source/sink/query lifecycle code.
 - Classic-only Spark internals such as SparkContext, RDDs, JVM access, and `_jdf` are unsupported for Spark Connect.
 
 ## Planned And Unsupported Surface
 
-The [API Coverage](../APICatalog.md#api-coverage) table classifies the current PySpark transformation baseline. The rows
-below remain a compact orientation aid. Loading, storage, actions, and orchestration are not transformation APIs and
-stay outside Structure's scope.
+The [API Coverage](../APICatalog.md#api-coverage) table classifies the current PySpark transformation baseline, and
+the [Streaming](../APICatalog.md#streaming) section classifies the current PySpark Structured Streaming surface. The
+rows below remain a compact orientation aid. Loading, storage, actions, and orchestration are not transformation APIs
+and stay outside Structure's scope.
 
 | API Area | Status | PySpark Parity | Details |
 | --- | --- | --- | --- |

@@ -6,10 +6,10 @@ the current pipeline input and Spark can analyze the resulting DataFrame plan wi
 streaming operations, actions, stateful streaming features, or streaming lifecycle code.
 
 The streaming-compatible contract keeps lifecycle ownership with the caller. Row-local
-projection, row-local filtering, schema-only validation, stream-static joins, transform-scoped watermarks, watermarked
-grouped aggregations, watermarked dedupe, and bounded inner stream-stream joins are in scope. Triggers, checkpoints,
-streaming sources, streaming sinks, query start, query stop, deployment, and recovery are outside this compatibility
-contract and remain caller-owned.
+projection, row-local filtering, schema-only validation, stream-static joins and left-semi filtering,
+transform-scoped watermarks, event-time and session-window aggregations, watermarked dedupe, and admitted bounded
+stream-stream joins are in scope. Triggers, checkpoints, streaming sources, streaming sinks, query start, query stop,
+deployment, and recovery are outside this compatibility contract and remain caller-owned.
 
 See the exhaustive [streaming API table](../api/Streaming.api.md) for supported declarations, parity, and examples.
 
@@ -56,7 +56,7 @@ Rules:
 - The current pipeline DataFrame is the DataFrame flowing through the source-ordered step-method chain.
 - Additional named inputs referenced through joins are static side inputs unless declared `streaming=True`.
 - Passing a streaming DataFrame as a joined side input requires explicit `streaming=True`, watermarks on both
-  sides, and an event-time bound for the admitted inner stream-stream join shape.
+  sides, and an event-time bound for the admitted bounded stream-stream join shapes.
 - Generated code does not branch on `df.isStreaming` except for ordinary `drop_duplicates(...)`: that narrowly scoped
   branch selects batch `dropDuplicates` or streaming `dropDuplicatesWithinWatermark`. It owns no lifecycle behavior.
 
@@ -119,30 +119,30 @@ Schema-only validation is compatible. It may inspect `df.schema`, column names, 
 It must not trigger Spark jobs.
 
 Compiler traceability generation is compatible when it records compile-time or generated-code metadata. Runtime traceability
-hooks are out of scope for v1 and must not be introduced by streaming-compatible generated code.
+hooks are out of scope and must not be introduced by streaming-compatible generated code.
 
 Watermarks are compatible when declared with `watermark(field, delay=...)` before the stateful operation they support.
 Grouped aggregations and exact/subset dedupe are compatible when the current streaming frame has a prior
-compiler-visible watermark. Inner stream-stream rowset joins are compatible when both inputs are declared
-`streaming=True`, both joined frames have watermarks, and the predicate includes
-`event_time_between(left_time, right_time, upper=...)`.
+compiler-visible watermark. Session-window aggregations require a static positive gap and at least one ordinary
+grouping key. Bounded stream-stream rowset joins are compatible when both inputs are declared `streaming=True`, both
+joined frames have watermarks, and the predicate includes `event_time_between(left_time, right_time, upper=...)`.
 
 ## Deferred or Rejected Operations
 
-These operations are not streaming-compatible in v1:
+These operations are not streaming-compatible:
 
 - global `orderBy(...)` or `sort(...)` on the streaming current DataFrame;
 - `limit(...)`, `offset(...)`, or global top-N operations;
 - `distinct(...)` or `dropDuplicates(...)`, including Structure `distinct(...)` and `drop_duplicates(...)` without a
   preceding watermark;
 - aggregations, including `groupBy(...).agg(...)` without a preceding watermark;
-- windowed aggregations;
+- chained windowed/stateful aggregations beyond the admitted single-stage event-time and session-window shapes;
 - ranking or analytic window functions, including Structure `row_number(...)`, `rank(...)`, `dense_rank(...)`,
   `lag(...)`, `lead(...)`, `rolling_sum(...)`, `rolling_avg(...)`, `rolling_min(...)`, and `rolling_max(...)`;
 - selected-row helpers, including Structure `latest_by(...)`, `earliest_by(...)`, `dedupe_latest_by(...)`, and
   `dedupe_earliest_by(...)`;
 - stream-stream joins that lack declared streaming input modes, watermarks, or event-time bounds;
-- right, full, cross, semi, or anti joins involving the streaming current DataFrame;
+- cross or anti joins involving the streaming current DataFrame;
 - Pandas UDFs, RDD operations, `mapInPandas`, and `foreachPartition`;
 - local Spark actions such as `collect()`, `count()`, `toPandas()`, `show()`, and `take()`;
 - arbitrary hooks unless marked streaming-safe.
@@ -152,8 +152,9 @@ policies. Structure admits only the shapes whose transformation policy is compil
 
 ## Joins
 
-Structure v1 allows stream-static joins only when the current pipeline DataFrame may be streaming and the joined input
-is static.
+Structure allows stream-static joins when the current pipeline DataFrame may be streaming and the joined input is
+static. It also admits bounded stream-stream joins when both inputs declare streaming mode, both sides have watermarks,
+and the predicate includes a compiler-visible `event_time_between(...)` bound.
 
 Accepted:
 
@@ -168,22 +169,22 @@ lookup_join(
 Rules:
 
 - `"left"` and `"inner"` are allowed for stream-static joins.
+- `exists(...)` is allowed as stream-static left-semi filtering.
 - The current pipeline side may be streaming.
-- The joined input side must be static.
+- The joined input side is static unless the input declaration says `streaming=True`.
 - Join conditions must satisfy `JoinSemantics.spec.md`.
 - `lookup_join(...)` uniqueness warnings still apply; streaming compatibility does not prove uniqueness.
 - `"broadcast"` is compatible only for the static joined side.
-- A side input that may be streaming must be rejected for v1 streaming compatibility.
 
 Rejected:
 
 - stream-stream joins without explicit streaming input modes, watermarks, or event-time bounds;
-- outer stream-stream joins;
-- stateful deduplication before or after a join;
+- cross and anti stream joins;
+- unmodeled chains of stateful dedupe, aggregation, and joins;
 - join hints that apply to the streaming side.
 
-`exists(...)`, `not_exists(...)`, and `inner_join(...)` are compatible with static side inputs in principle because they
-do not require streaming state by themselves. Deduped lookup joins remain batch-only until a streaming-specific design
+`exists(...)` and `inner_join(...)` are compatible with static side inputs in principle because they do not require
+streaming state by themselves. Deduped lookup joins remain batch-only until a streaming-specific design
 owns tie checking, watermark assumptions, and output-mode behavior.
 
 The checker should make the runtime-shape assumption explicit in diagnostics. If Structure later adds input metadata,
@@ -306,11 +307,11 @@ Operation:
   join customers#1
 
 Problem:
-  v1 streaming compatibility supports stream-static joins only. The joined input may be streaming, which would create
-  a stream-stream join.
+  stream-stream joins require declared streaming input modes, watermarks on both event-time fields, and a compiler-
+  visible event-time bound.
 
 Use:
-  pass a static lookup DataFrame for customers, or keep this transform batch-only.
+  declare both streaming inputs, add watermarks, add event_time_between(...), or keep this transform batch-only.
 
 See docs/background/Execution.back.md
 ```

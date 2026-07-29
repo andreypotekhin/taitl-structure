@@ -34,8 +34,8 @@ inference beyond its declared result contract.
 - `nullable` is a Boolean and is authoritative because Structure cannot inspect arbitrary UDF behavior.
 - The function is scalar and row-local. It must not receive a DataFrame, Spark session, context, or iterator.
 - The selected PySpark runtime registers/renders the UDF for online and generated execution.
-- `warn_on_udfs=true` emits the documented optimizer-opacity warning. Setting it false suppresses the warning but does
-  not turn the UDF into symbolic logic.
+- `warn_on_udfs=true` emits the documented optimizer-opacity warning. Setting `@transform(warn_on_udfs=False)`
+  suppresses the warning for that transform but does not turn the UDF into symbolic logic.
 - UDFs are unsupported for Spark Connect and must fail capability validation before execution/generation on that
   variant.
 - Python UDTFs, Pandas UDFs, RDD APIs, actions, and implicit conversion of unsupported Python to a UDF are outside

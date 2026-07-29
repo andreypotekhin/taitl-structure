@@ -406,7 +406,7 @@ boundary; unimplemented parity work is now marked `planned` in `docs/dev/Gaps.md
 - Implement branchable union, relation assertions including parent references, bounded parent-hierarchy closure and
   deterministic fallback expansion, and declared-key
   first-qualified priority selection.
-- Migrate `ExtractText`, overlap/BM25 scoring, index summaries, similarity queries, score reduction, relevance-context
+- Migrate `Chunking`, overlap/BM25 scoring, index summaries, similarity queries, score reduction, relevance-context
   expansion, document reranking, and cohort-band resolution only after their prerequisite operations are proven.
 - Compare normalized, deterministic rows from the raw and typed implementations before removing every hook.
 

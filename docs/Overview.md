@@ -15,7 +15,7 @@ PySpark is very powerful, but large pipelines can become difficult to maintain:
 
 Structure makes schemas and transformations first-class citizen Python classes.
 
-Some advantages of Strucutre:
+Some advantages of Structure:
 
 - Performance: resulting PySpark code is visible
   to Spark's optimizer. End-eser needs to the relax configuration to take less-optimal avenues, such as UDFs.
@@ -253,6 +253,17 @@ Unsupported Python operations are rejected at compile time. This is a performanc
 For custom logic, create expression helpers with `@special(type="expr")`. This keeps expression logic compiler-visible and reusable.
 
 Arbitrary PySpark is still supported, but only through explicit hooks. Hooks receive the underlying DataFrame(s) for arbitrary manipulation. Hooks are escape hatches: Structure calls them, records them as opaque boundaries, but does not treat their body as compiler-visible logic.
+
+## Streaming
+
+Structure admits PySpark Structured Streaming where it can keep the transform as an optimizer-visible DataFrame plan:
+row-local projection/filter, stream-static joins, watermarks, event-time and session-window aggregation, bounded
+deduplication, and admitted bounded stream-stream joins. Streaming adoption remains caller-owned around that plan:
+sources, sinks, checkpoints, triggers, output modes, query lifecycle, and `foreach` side effects stay in ordinary
+PySpark code such as [`examples/streams/adoption.py`](../examples/streams/adoption.py).
+
+See [Streaming API](api/Streaming.api.md) and the checked
+[PySpark streaming API coverage](dev/specifications/V9PySparkStreamingApiCoverage.md).
 
 ## Configuration
 

@@ -10,12 +10,27 @@ from integration.pyspark.support.rows import rows, single
 from examples.search.schemas.analytics import (
     CorpusStatistics,
     CorpusVocabulary,
-    DocumentFeatures,
+    DocumentProfile,
     DocumentStatistics,
     ParagraphStatistics,
     SectionStatistics,
     SentenceStatistics,
     SimilarDocument,
+)
+from examples.search.schemas.chunking.chunk import (
+    DocumentLine,
+    ExpandedDocumentLine,
+    ExpandedSentenceText,
+    ExpandedWordText,
+    MarkedDocumentLine,
+    ParagraphContent,
+    ParagraphDraft,
+    ParagraphLine,
+    ParagraphLineGroup,
+    SectionHeading,
+    SectionKey,
+    SentenceText,
+    WordText,
 )
 from examples.search.schemas.clicks import Click, DailyClicks, DailyImpressions, Impression, SearchRequest
 from examples.search.schemas.cohorts.resolve import BandAncestor, BandMatch, SingletonUserBand, UserBandPath
@@ -41,20 +56,12 @@ from examples.search.schemas.evaluation import (
     EvaluationResultTotals,
 )
 from examples.search.schemas.experiment import Experiment
-from examples.search.schemas.extraction.extract import (
-    DocumentLine,
-    ExpandedDocumentLine,
-    ExpandedSentenceText,
-    ExpandedWordText,
-    MarkedDocumentLine,
-    ParagraphContent,
-    ParagraphDraft,
-    ParagraphLine,
-    ParagraphLineGroup,
-    SectionHeading,
-    SectionKey,
-    SentenceText,
-    WordText,
+from examples.search.schemas.features import (
+    DocumentFeatures,
+    ExpandedQueryFeatureToken,
+    QueryFeatures,
+    QueryFeatureToken,
+    QueryTokenSummary,
 )
 from examples.search.schemas.indexing.lexical.index import (
     DocumentIndexSummary,
@@ -175,8 +182,10 @@ from examples.search.schemas.similarity import (
     SimilaritySentenceQuery,
 )
 from examples.search.schemas.text import Document, Paragraph, Section, Sentence, Word
+from examples.search.schemas.training import DocumentTrainingData
 from examples.search.schemas.user import Band, BandFallback, BandMembership, User, UserBand, UserBandMembership
 from examples.search.transforms.analyze import AnalyzeText
+from examples.search.transforms.chunking import Chunking, DocumentChunking, SentenceChunking, WordChunking
 from examples.search.transforms.clicks.Clicks import Clicks
 from examples.search.transforms.clicks.Impressions import Impressions
 from examples.search.transforms.cohorts import ResolveCohortBands
@@ -202,7 +211,7 @@ from examples.search.transforms.experiment import (
     Searching001AdjustRerankSearchDocuments,
     SelectExperimentScores,
 )
-from examples.search.transforms.extract import ExtractText
+from examples.search.transforms.features import BuildDocumentFeatures, BuildQueryFeatures
 from examples.search.transforms.index import CreateIndex
 from examples.search.transforms.labeling import CreateQueryLabels, LabelQueries, MergeQueryLabels
 from examples.search.transforms.profile import ProfileDocuments
@@ -217,6 +226,7 @@ from examples.search.transforms.similarities.ReduceSimilarityScores import Reduc
 from examples.search.transforms.similarities.SimilarParagraphs import SimilarParagraphs
 from examples.search.transforms.similarities.SimilarSections import SimilarSections
 from examples.search.transforms.similarities.SimilarSentences import SimilarSentences
+from examples.search.transforms.training import BuildTrainingData
 from structure import Schema
 from structure.plugin.pyspark import TimeWindow
 
@@ -226,7 +236,7 @@ PACKAGE = "integration_search_generated"
 FIXTURES = Path(__file__).resolve().parents[4] / "examples" / "fixtures" / "search"
 SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
     "examples.search.schemas.analytics": [
-        DocumentFeatures,
+        DocumentProfile,
         SentenceStatistics,
         ParagraphStatistics,
         SectionStatistics,
@@ -343,6 +353,14 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         BehaviorRequestTotals,
         BehaviorDailyCounts,
     ],
+    "examples.search.schemas.training.data": [DocumentTrainingData],
+    "examples.search.schemas.features": [
+        DocumentFeatures,
+        QueryFeatures,
+        QueryFeatureToken,
+        ExpandedQueryFeatureToken,
+        QueryTokenSummary,
+    ],
     "examples.search.schemas.relevance": [
         RelevancePolicy,
         QueryDocumentSignals,
@@ -410,7 +428,7 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         Sentence,
         Word,
     ],
-    "examples.search.schemas.extraction.extract": [
+    "examples.search.schemas.chunking.chunk": [
         DocumentLine,
         ExpandedDocumentLine,
         MarkedDocumentLine,
@@ -427,8 +445,14 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
     ],
 }
 TRANSFORMS = (
-    (ExtractText, "examples.search.transforms.extract.ExtractText"),
+    (Chunking, "examples.search.transforms.chunking.Chunking.Chunking"),
+    (DocumentChunking, "examples.search.transforms.chunking.DocumentChunking.DocumentChunking"),
+    (SentenceChunking, "examples.search.transforms.chunking.SentenceChunking.SentenceChunking"),
+    (WordChunking, "examples.search.transforms.chunking.WordChunking.WordChunking"),
     (ProfileDocuments, "examples.search.transforms.profile.ProfileDocuments"),
+    (BuildDocumentFeatures, "examples.search.transforms.features.BuildDocumentFeatures"),
+    (BuildQueryFeatures, "examples.search.transforms.features.BuildQueryFeatures"),
+    (BuildTrainingData, "examples.search.transforms.training.BuildTrainingData.BuildTrainingData"),
     (AnalyzeText, "examples.search.transforms.analyze.AnalyzeText"),
     (CorpusText, "examples.search.transforms.corpus.CorpusText"),
     (CreateIndex, "examples.search.transforms.index.CreateIndex"),
@@ -696,8 +720,8 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             ],
             schemas.DOCUMENT_SCHEMA,
         )
-        online_segments = ExtractText(documents=documents).run(session(spark, execution_mode="online"))
-        generated_segments = ExtractText(documents=documents).run(
+        online_segments = Chunking(documents=documents).run(session(spark, execution_mode="online"))
+        generated_segments = Chunking(documents=documents).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
         assert rows(online_segments.words, "id") == rows(generated_segments.words, "id")
@@ -1048,7 +1072,7 @@ def test_search_ranks_fixture_sentences_online_and_generated(spark, tmp_path) ->
             ],
             search_schemas.SEARCH_QUERY_SCHEMA,
         )
-        segments = ExtractText(documents=documents).run(
+        segments = Chunking(documents=documents).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
         index = CreateIndex(words=segments.words).run(
@@ -1148,7 +1172,7 @@ def test_passage_search_ranks_paragraphs_with_same_section_context(spark, tmp_pa
             ],
             search_schemas.SEARCH_QUERY_SCHEMA,
         )
-        segments = ExtractText(documents=documents).run(
+        segments = Chunking(documents=documents).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
         index = CreateIndex(words=segments.words).run(

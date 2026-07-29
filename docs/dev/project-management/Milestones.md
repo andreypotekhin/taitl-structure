@@ -426,3 +426,28 @@ recorded targeted live PySpark 3.5/4.0 restart evidence. Effective checked parit
   names, starts, stops, deployment, and recovery remain caller-owned.
 - The final v8 hardening sprint refreshes documentation and generated artifacts, records release evidence, and passes
   `make build` without admitting new feature scope.
+
+## +M14: v9 PySpark Streaming API Coverage and Adoption
+
+Status: complete. Sprints 40--44 delivered the checked PySpark streaming API ledger, caller-owned adoption recipe,
+stateful/order-sensitive gap reclassification, lifecycle diagnostics, documentation, live PySpark 3.5/4.0 recipe
+evidence, and final build evidence. The governing plan is
+`docs/dev/planning/done/P07292602.V9-pyspark-streaming-api-coverage.plan.md`, and the governing specification is
+`docs/dev/specifications/V9PySparkStreamingApiCoverage.md`.
+
+### Exit Criteria
+
+- A checked PySpark Structured Streaming API ledger classifies every selected API family as Structure-supported,
+  caller-owned-guided, design-gated, streaming-ineligible, or out of scope.
+- The ledger separates typed DataFrame transformation support from caller-owned DataStreamReader, DataStreamWriter,
+  checkpoint, trigger, output-mode, query lifecycle, side-effect, listener, arbitrary state, and Spark Connect
+  streaming APIs.
+- Runnable adoption examples show caller-created streaming sources and sinks around online and generated Structure
+  transforms, including restart from caller-owned checkpoints.
+- Streaming-related deferred items from v7 and v8 are implemented, explicitly rejected, design-gated, or retained with
+  a current rationale.
+- Diagnostics and explain output tell users whether a streaming issue should be fixed in Structure source,
+  caller-owned lifecycle code, or a batch materialization boundary.
+- Every admitted Structure-owned streaming claim has PySpark 3.5/4.0 live evidence, generated-source lifecycle scans,
+  online/generated parity, documentation, and troubleshooting coverage.
+- The final v9 hardening sprint records release evidence and passes `make build` without adding new API scope.

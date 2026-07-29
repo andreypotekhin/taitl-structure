@@ -83,8 +83,9 @@ variant = "spark-connect"
 ```
 
 Ordinary PySpark is the default target. Spark Connect supports completed compiler-visible batch features; streaming
-transforms remain caller-owned ordinary PySpark work. V3 hardens admitted transformation contracts while callers retain
-streaming lifecycle ownership.
+transforms remain caller-owned ordinary PySpark work. The streaming API coverage ledger hardens admitted Structured
+Streaming transform shapes while callers retain source, sink, checkpoint, trigger, output-mode, and query lifecycle
+ownership.
 
 Spark Connect must not change public DSL syntax, generated class APIs, transform `run(...)` signatures, generated-code
 review shape, or streaming orchestration semantics. It must also avoid classic-only internals such as SparkContext,
@@ -236,5 +237,6 @@ Config schema rules:
 ## Current Boundary
 
 Structure supports execution and generated PySpark transformations, completed Spark Connect batch features, and
-compiler-visible streaming transformations. Loading, storage, orchestration, alternative backends, and non-batch Spark
-Connect work remain outside the current contract unless a later decision explicitly admits them.
+compiler-visible streaming transformations backed by the checked streaming API coverage ledger. Loading, storage,
+streaming lifecycle, orchestration, alternative backends, and non-batch Spark Connect work remain outside the current
+contract unless a later decision explicitly admits them.

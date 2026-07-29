@@ -10,11 +10,11 @@ Source: `examples.search.transforms.profile.ProfileDocuments`
 
 ## Outputs
 
-- `features`: `DocumentFeatures`
+- `features`: `DocumentProfile`
 
 ## Step methods
 
-- `profile`: `Document` -> `DocumentFeatures`
+- `profile`: `Document` -> `DocumentProfile`
 
 ## Dependencies
 
