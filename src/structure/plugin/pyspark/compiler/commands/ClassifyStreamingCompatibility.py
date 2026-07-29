@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from structure.plugin.api.v1.model import StreamingFinding, StreamingReport
 from structure.plugin.pyspark.compiler.logic.streaming.ClassifyGeneratorStreamingCompatibility import (
     ClassifyGeneratorStreamingCompatibility,
@@ -12,6 +14,12 @@ from structure.plugin.pyspark.dsl.joins import Join, JoinMethod
 from structure.plugin.pyspark.dsl.operations import StreamingSupport
 
 
+@dataclass(frozen=True)
+class _StatefulStreamingOperation:
+    step: str
+    operation: str
+
+
 class ClassifyStreamingCompatibility:
 
     def __init__(self) -> None:
@@ -21,7 +29,9 @@ class ClassifyStreamingCompatibility:
         findings: list[StreamingFinding] = []
         input_modes = {input.name: input.streaming for input in plan.inputs}
         watermarks: dict[str, set[str]] = {}
+        stateful_operations: list[_StatefulStreamingOperation] = []
         for step in plan.steps:
+            streaming_source = bool(input_modes.get(step.source))
             expressions = tuple(assignment.expression for assignment in step.projection)
             findings.extend(self._window_projection(step.name, expressions))
             for result in step.results:
@@ -32,27 +42,33 @@ class ClassifyStreamingCompatibility:
                     watermarks.setdefault(operation.watermark.scope, set()).add(operation.watermark.column)
                     continue
                 if operation.aggregate is not None:
-                    findings.extend(
-                        self._aggregate(
-                            step.name,
-                            operation.aggregate,
-                            watermark_columns=watermarks.get(step.source_scope, set()),
-                            scope=step.source_scope,
-                        )
+                    operation_findings = self._aggregate(
+                        step.name,
+                        operation.aggregate,
+                        watermark_columns=watermarks.get(step.source_scope, set()),
+                        scope=step.source_scope,
                     )
+                    findings.extend(operation_findings)
+                    if streaming_source and not operation_findings:
+                        stateful_operations.append(
+                            _StatefulStreamingOperation(step.name, self._aggregate_operation(operation.aggregate))
+                        )
                 if operation.selected_rows is not None:
                     findings.extend(self._selected_rows(step.name, operation.selected_rows.direction))
                 if operation.kind == "drop_duplicates":
                     subset = 0 if operation.duplicate_rows is None else len(operation.duplicate_rows.subset)
-                    findings.extend(
-                        self._drop_duplicates(
-                            step.name,
-                            subset=subset,
-                            watermarked=bool(watermarks.get(step.source_scope)),
-                            explicit=bool(operation.duplicate_rows and operation.duplicate_rows.within_watermark),
-                            streaming_input=bool(input_modes.get(step.source)),
-                        )
+                    operation_findings = self._drop_duplicates(
+                        step.name,
+                        subset=subset,
+                        watermarked=bool(watermarks.get(step.source_scope)),
+                        explicit=bool(operation.duplicate_rows and operation.duplicate_rows.within_watermark),
+                        streaming_input=streaming_source,
                     )
+                    findings.extend(operation_findings)
+                    if streaming_source and not operation_findings:
+                        stateful_operations.append(
+                            _StatefulStreamingOperation(step.name, "watermark-bounded duplicate removal")
+                        )
                 if operation.exactly_one is not None:
                     findings.extend(self._exactly_one(step.name, operation.exactly_one.scope))
                 if operation.relation_assertion is not None:
@@ -72,32 +88,72 @@ class ClassifyStreamingCompatibility:
                 if operation.relation_set is not None:
                     findings.extend(self._relation_set(step.name, operation.kind, operation.relation_set.input_name))
                 if operation.join is not None:
-                    findings.extend(
-                        self._join(
-                            step.name,
-                            operation.join,
-                            input_modes=input_modes,
-                            current_input=step.source,
-                            current_scope=step.source_scope,
-                            watermarks=watermarks,
-                        )
+                    operation_findings = self._join(
+                        step.name,
+                        operation.join,
+                        input_modes=input_modes,
+                        current_input=step.source,
+                        current_scope=step.source_scope,
+                        watermarks=watermarks,
                     )
+                    findings.extend(operation_findings)
+                    if not operation_findings and self._admitted_stream_stream_join(
+                        operation.join,
+                        input_modes=input_modes,
+                        current_input=step.source,
+                        current_scope=step.source_scope,
+                        watermarks=watermarks,
+                    ):
+                        stateful_operations.append(_StatefulStreamingOperation(step.name, "bounded stream-stream join"))
             for hook in (
                 *step.before_hooks,
                 *step.after_hooks,
                 *(hook for result in step.results for hook in result.after_hooks if len(step.results) > 1),
             ):
                 findings.extend(self._hook(step.name, hook))
+            input_modes.setdefault(step.name, streaming_source)
+            for result in step.results:
+                input_modes.setdefault(result.lane, streaming_source)
         for output in plan.outputs:
             findings.extend(
                 self._window_projection(output.name, tuple(assignment.expression for assignment in output.projection))
             )
+        findings.extend(self._stateful_composition(stateful_operations))
 
         return StreamingReport(
             transform=plan.transform,
             support=self._fold(findings),
             required=required,
             findings=tuple(findings),
+        )
+
+    def _aggregate_operation(self, aggregate) -> str:
+        if any(self._is_session_window(key.expression) for key in aggregate.keys):
+            return "session-window aggregate"
+        return "watermark-bounded grouped aggregate"
+
+    def _stateful_composition(
+        self,
+        operations: list[_StatefulStreamingOperation],
+    ) -> tuple[StreamingFinding, ...]:
+        if len(operations) <= 1:
+            return ()
+        first, second = operations[0], operations[1]
+        return (
+            StreamingFinding(
+                code="STREAM-E0801",
+                support=StreamingSupport.BATCH_ONLY,
+                step=second.step,
+                operation="stateful streaming composition",
+                problem=(
+                    "A v7 streaming transform may contain one admitted stateful operation followed only by "
+                    f"stateless work; found {first.operation} in {first.step} and {second.operation} in {second.step}."
+                ),
+                use=(
+                    "Keep one watermarked dedupe, window/session aggregate, or bounded stream-stream join in this "
+                    "transform, then split any later stateful work into a separate pipeline boundary."
+                ),
+            ),
         )
 
     def _aggregate(
@@ -511,6 +567,25 @@ class ClassifyStreamingCompatibility:
                     "and include event_time_between(left_time, right_time, upper=...) in the join predicate."
                 ),
             ),
+        )
+
+    def _admitted_stream_stream_join(
+        self,
+        join: PySparkJoinRecipe,
+        *,
+        input_modes: dict[str, bool],
+        current_input: str,
+        current_scope: str,
+        watermarks: dict[str, set[str]],
+    ) -> bool:
+        admitted = (
+            join.method is JoinMethod.ROWSET and join.how in {Join.INNER, Join.LEFT, Join.RIGHT, Join.FULL}
+        ) or join.method is JoinMethod.EXISTS
+        return (
+            admitted
+            and bool(input_modes.get(join.source))
+            and bool(input_modes.get(current_input))
+            and self._watermarked_time_bound(join.predicate, current_scope, join.input_name, watermarks)
         )
 
     def _has_event_time_between(self, expression: PySparkExpressionRecipe) -> bool:

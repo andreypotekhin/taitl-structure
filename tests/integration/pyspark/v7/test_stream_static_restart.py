@@ -17,7 +17,7 @@ from integration.pyspark.support.backend_matrix import (
 from integration.pyspark.support.rows import rows
 
 from structure import Schema, Transform, input, output, transform
-from structure.plugin.pyspark import exists, inner_join, left_join, string, where
+from structure.plugin.pyspark import drop_duplicates, exists, inner_join, left_join, string, timestamp, watermark, where
 
 pytestmark = pytest.mark.integration
 
@@ -42,6 +42,7 @@ LIFECYCLE_TOKENS = (
 class StreamEvent(Schema):
     event_id = string(nullable=False)
     account_id = string(nullable=False)
+    event_time = timestamp(nullable=False)
 
 
 class Account(Schema):
@@ -94,6 +95,19 @@ class StreamStaticSemiFilter(Transform):
     def keep(self, event: StreamEvent, account: Account) -> KeptEvent:
         where(exists(account, on=account.account_id == event.account_id))
         return KeptEvent(event_id=event.event_id)
+
+
+@transform(streaming=True)
+class StreamStatefulStaticLeftEnrichment(Transform):
+    events = input(StreamEvent, streaming=True)
+    accounts = input(Account)
+    enriched = output(OptionalEnrichment)
+
+    def enrich(self, event: StreamEvent, account: Account) -> OptionalEnrichment:
+        watermark(event.event_time, delay="1 hour")
+        drop_duplicates(event.event_id, event.event_time)
+        left_join(account, on=account.account_id == event.account_id)
+        return OptionalEnrichment(event_id=event.event_id, tier=account.tier)
 
 
 def test_v7_stream_static_enrichment_restarts_with_caller_checkpoint(spark, tmp_path) -> None:
@@ -189,6 +203,111 @@ def test_v7_stream_static_enrichment_restarts_with_caller_checkpoint(spark, tmp_
         shutil.rmtree(stream_root, ignore_errors=True)
 
 
+def test_v7_stream_static_left_outer_lookup_restarts_online_and_generated(spark, tmp_path) -> None:
+    if backend_name().startswith("spark-connect"):
+        pytest.skip("Structured Streaming restart evidence is classic PySpark only")
+
+    files = render_generated_projects(
+        ((StreamStaticLeftEnrichment, f"{SOURCE_MODULE}.StreamStaticLeftEnrichment"),),
+        generated_package=PACKAGE,
+        source_schema_modules={SOURCE_MODULE: [StreamEvent, Account, OptionalEnrichment]},
+    )
+    _assert_no_lifecycle_calls(files)
+
+    stream_root = Path(__file__).resolve().parents[4] / ".pytest-workspace-tmp" / "integration" / f"v7-{uuid4().hex}"
+    try:
+        with generated_project(tmp_path, PACKAGE, files):
+            from importlib import import_module
+
+            schemas = import_module(f"{PACKAGE}.pyspark.schemas.test_stream_static_restart")
+            accounts = spark.createDataFrame(
+                [("a-1", "gold"), ("a-2", "silver")],
+                schemas.ACCOUNT_SCHEMA,
+            )
+            source = stream_root / "events"
+            expected_first: list[dict[str, object]] = [
+                {"event_id": "e-1", "tier": "gold"},
+                {"event_id": "e-2", "tier": None},
+            ]
+            expected_second: list[dict[str, object]] = [
+                {"event_id": "e-3", "tier": "silver"},
+                {"event_id": "e-4", "tier": None},
+            ]
+
+            _assert_restarts(
+                spark,
+                source / "online",
+                stream_root / "left-online-checkpoint",
+                stream_root / "left-online-output",
+                StreamStaticLeftEnrichment,
+                lambda stream: StreamStaticLeftEnrichment(events=stream, accounts=accounts)
+                .run(session(spark, execution_mode="online"))
+                .enriched,
+                expected_first,
+                expected_second,
+                schemas.STREAM_EVENT_SCHEMA,
+            )
+            _assert_restarts(
+                spark,
+                source / "generated",
+                stream_root / "left-generated-checkpoint",
+                stream_root / "left-generated-output",
+                StreamStaticLeftEnrichment,
+                lambda stream: StreamStaticLeftEnrichment(events=stream, accounts=accounts)
+                .run(session(spark, execution_mode="generated", generated_package=PACKAGE))
+                .enriched,
+                expected_first,
+                expected_second,
+                schemas.STREAM_EVENT_SCHEMA,
+            )
+    finally:
+        shutil.rmtree(stream_root, ignore_errors=True)
+
+
+def test_v7_stateful_stream_static_left_outer_lookup_restarts_online_and_generated(spark, tmp_path) -> None:
+    if backend_name().startswith("spark-connect"):
+        pytest.skip("Structured Streaming restart evidence is classic PySpark only")
+
+    files = render_generated_projects(
+        ((StreamStatefulStaticLeftEnrichment, f"{SOURCE_MODULE}.StreamStatefulStaticLeftEnrichment"),),
+        generated_package=PACKAGE,
+        source_schema_modules={SOURCE_MODULE: [StreamEvent, Account, OptionalEnrichment]},
+    )
+    _assert_no_lifecycle_calls(files)
+
+    stream_root = Path(__file__).resolve().parents[4] / ".pytest-workspace-tmp" / "integration" / f"v7-{uuid4().hex}"
+    try:
+        with generated_project(tmp_path, PACKAGE, files):
+            from importlib import import_module
+
+            schemas = import_module(f"{PACKAGE}.pyspark.schemas.test_stream_static_restart")
+            accounts = spark.createDataFrame(
+                [("a-1", "gold"), ("a-2", "silver")],
+                schemas.ACCOUNT_SCHEMA,
+            )
+            expected_first: list[dict[str, object]] = [
+                {"event_id": "e-1", "tier": "gold"},
+                {"event_id": "e-2", "tier": None},
+            ]
+            expected_second: list[dict[str, object]] = [
+                {"event_id": "e-3", "tier": "silver"},
+            ]
+
+            for mode in ("online", "generated"):
+                _assert_stateful_restarts(
+                    spark,
+                    stream_root / f"events-{mode}",
+                    stream_root / f"stateful-{mode}-checkpoint",
+                    stream_root / f"stateful-{mode}-output",
+                    _stateful_enrichment_frame(spark, accounts, mode),
+                    expected_first,
+                    expected_second,
+                    schemas.STREAM_EVENT_SCHEMA,
+                )
+    finally:
+        shutil.rmtree(stream_root, ignore_errors=True)
+
+
 def _assert_restarts(
     spark,
     source: Path,
@@ -208,6 +327,36 @@ def _assert_restarts(
 
     assert first == first_expected
     assert second == [*first_expected, *second_expected]
+
+
+def _assert_stateful_restarts(
+    spark,
+    source: Path,
+    checkpoint: Path,
+    sink: Path,
+    build_frame: Callable[[object], Any],
+    first_expected: list[dict[str, object]],
+    second_expected: list[dict[str, object]],
+    schema,
+) -> None:
+    _write_json(source / "batch-1.json", [_event("e-1", "a-1"), _event("e-2", "missing")])
+    first = _run_once(spark, source, checkpoint, sink, build_frame, schema)
+    _write_json(source / "batch-2.json", [_event("e-1", "a-1"), _event("e-3", "a-2")])
+    second = _run_once(spark, source, checkpoint, sink, build_frame, schema)
+
+    assert first == first_expected
+    assert second == [*first_expected, *second_expected]
+
+
+def _stateful_enrichment_frame(spark, accounts, execution_mode: str) -> Callable[[object], Any]:
+    def build(stream: object) -> Any:
+        return (
+            StreamStatefulStaticLeftEnrichment(events=stream, accounts=accounts)
+            .run(session(spark, execution_mode=execution_mode, generated_package=PACKAGE))
+            .enriched
+        )
+
+    return build
 
 
 def _run_once(
@@ -247,4 +396,10 @@ def _write_json(path: Path, values: list[dict[str, object]]) -> None:
 
 
 def _event(event_id: str, account_id: str) -> dict[str, object]:
-    return {"event_id": event_id, "account_id": account_id}
+    times = {
+        "e-1": "2026-01-01 00:00:00",
+        "e-2": "2026-01-01 00:01:00",
+        "e-3": "2026-01-01 00:02:00",
+        "e-4": "2026-01-01 00:03:00",
+    }
+    return {"event_id": event_id, "account_id": account_id, "event_time": times[event_id]}

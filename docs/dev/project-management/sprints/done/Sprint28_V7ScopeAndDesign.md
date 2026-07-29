@@ -32,7 +32,7 @@ Maintainers have one checked v7 backlog, a dependency-ordered feature sequence, 
 
 ## Governing Plan
 
-`docs/dev/planning/P07282601.V7-pyspark-transform-coverage-and-streaming-adoption.plan.md`
+`docs/dev/planning/done/P07282601.V7-pyspark-transform-coverage-and-streaming-adoption.plan.md`
 
 ## Acceptance Criteria
 

@@ -30,4 +30,4 @@ Add an exact public Binary type and compiler-visible base64/charset conversions.
 ## Governing Documents
 
 `docs/dev/design/V7DeferredPySparkFamilies.md`, `docs/dev/specifications/V7BinaryEncoding.md`, and
-`docs/dev/planning/P07282601.V7-pyspark-transform-coverage-and-streaming-adoption.plan.md`
+`docs/dev/planning/done/P07282601.V7-pyspark-transform-coverage-and-streaming-adoption.plan.md`

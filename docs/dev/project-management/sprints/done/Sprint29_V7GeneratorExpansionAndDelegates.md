@@ -32,4 +32,4 @@ Extract the generator seams from oversized PySpark components and add the typed 
 ## Governing Documents
 
 `docs/dev/design/V7PySparkGeneratorExpansion.md`, `docs/dev/specifications/V7GeneratorExpansion.md`, and
-`docs/dev/planning/P07282601.V7-pyspark-transform-coverage-and-streaming-adoption.plan.md`
+`docs/dev/planning/done/P07282601.V7-pyspark-transform-coverage-and-streaming-adoption.plan.md`

@@ -49,6 +49,11 @@ class StreamEnriched(Schema):
     value = string(nullable=True)
 
 
+class StreamRequiredLookupEnriched(Schema):
+    id = string(nullable=False)
+    value = string(nullable=False)
+
+
 class StreamOuter(Schema):
     id = string(nullable=True)
     value = string(nullable=True)
@@ -170,6 +175,61 @@ class StreamingJoinMany(Transform):
     def expand(self, row: StreamRaw, lookup: StreamLookup) -> StreamEnriched:
         inner_join(on=lookup.id == row.id)
         return StreamEnriched(id=row.id, value=lookup.value)
+
+
+@transform(streaming=True)
+class StreamingStaticLeftOuterLookup(Transform):
+    rows = input(StreamRaw, streaming=True)
+    lookups = input(StreamLookup)
+    enriched = output(StreamEnriched)
+
+    def enrich(self, row: StreamRaw, lookup: StreamLookup) -> StreamEnriched:
+        left_join(lookup, on=lookup.id == row.id)
+        return StreamEnriched(id=row.id, value=lookup.value)
+
+
+@transform(streaming=True)
+class StreamingStaticLeftOuterLookupRequiredField(Transform):
+    rows = input(StreamRaw, streaming=True)
+    lookups = input(StreamLookup)
+    enriched = output(StreamRequiredLookupEnriched)
+
+    def enrich(self, row: StreamRaw, lookup: StreamLookup) -> StreamRequiredLookupEnriched:
+        left_join(lookup, on=lookup.id == row.id)
+        return StreamRequiredLookupEnriched(id=row.id, value=lookup.value)
+
+
+@transform(streaming=True)
+class StreamingStaticRightJoin(Transform):
+    rows = input(StreamRaw, streaming=True)
+    lookups = input(StreamLookup)
+    enriched = output(StreamOuter)
+
+    def enrich(self, row: StreamRaw, lookup: StreamLookup) -> StreamOuter:
+        right_join(lookup, on=lookup.id == row.id)
+        return StreamOuter(id=row.id, value=lookup.value)
+
+
+@transform(streaming=True)
+class StreamingStaticFullJoin(Transform):
+    rows = input(StreamRaw, streaming=True)
+    lookups = input(StreamLookup)
+    enriched = output(StreamOuter)
+
+    def enrich(self, row: StreamRaw, lookup: StreamLookup) -> StreamOuter:
+        full_join(lookup, on=lookup.id == row.id)
+        return StreamOuter(id=row.id, value=lookup.value)
+
+
+@transform(streaming=True)
+class StreamingStaticCrossJoin(Transform):
+    rows = input(StreamRaw, streaming=True)
+    lookups = input(StreamLookup)
+    enriched = output(StreamOuter)
+
+    def enrich(self, row: StreamRaw, lookup: StreamLookup) -> StreamOuter:
+        cross_join(lookup, allow_cartesian=True)
+        return StreamOuter(id=row.id, value=lookup.value)
 
 
 @transform(streaming=True)
@@ -302,6 +362,32 @@ class StreamingExplicitWatermarkedDedupe(Transform):
         watermark(row.event_time, delay="10 minutes")
         drop_duplicates_within_watermark(row.id)
         return StreamClean(id=row.id)
+
+
+@transform(streaming=True)
+class StreamingDedupeThenStaticLeftEnrichment(Transform):
+    rows = input(StreamRaw, streaming=True)
+    lookups = input(StreamLookup)
+    enriched = output(StreamEnriched)
+
+    def unique_enriched_rows(self, row: StreamRaw, lookup: StreamLookup) -> StreamEnriched:
+        watermark(row.event_time, delay="10 minutes")
+        drop_duplicates(row.id)
+        left_join(lookup, on=lookup.id == row.id)
+        where(row.id.is_not_null())  # type: ignore[attr-defined]
+        return StreamEnriched(id=row.id, value=lookup.value)
+
+
+@transform(streaming=True)
+class StreamingDedupeThenAggregate(Transform):
+    rows = input(StreamRaw, streaming=True)
+    summary = output(StreamWindowSummary)
+
+    def summarize(self, row: StreamRaw) -> StreamWindowSummary:
+        watermark(row.event_time, delay="10 minutes")
+        drop_duplicates(row.id)
+        group_by(bucket=window(row.event_time, "10 minutes"), id=row.id)
+        return StreamWindowSummary(bucket=window(row.event_time, "10 minutes"), id=row.id, row_count=count())
 
 
 @transform(streaming=True)
@@ -467,6 +553,39 @@ def test_v2_stream_static_analytical_joins_are_compatible_without_spark() -> Non
         assert report.findings == ()
 
 
+def test_v7_stream_static_left_outer_lookup_is_compatible_without_spark() -> None:
+    plan = _analysis(StreamingStaticLeftOuterLookup)
+    report = Compiler.compileability.streaming()(PySpark.compiler.lower()(plan), required=True)
+
+    assert report.support is StreamingSupport.COMPATIBLE
+    assert report.findings == ()
+
+
+def test_v7_stream_static_left_outer_lookup_requires_nullable_lookup_fields() -> None:
+    with pytest.raises(StructureCompileError) as raised:
+        _compile(StreamingStaticLeftOuterLookupRequiredField)
+
+    assert raised.value.diagnostic.code == "SCHEMA-E0301"
+    assert raised.value.diagnostic.context == {"field": "value", "schema": "StreamRequiredLookupEnriched"}
+
+
+@pytest.mark.parametrize(
+    "transform_type",
+    [
+        StreamingStaticRightJoin,
+        StreamingStaticFullJoin,
+        StreamingStaticCrossJoin,
+    ],
+)
+def test_v7_stream_static_reverse_and_broad_outer_joins_are_batch_only(transform_type: type[Transform]) -> None:
+    plan = _analysis(transform_type)
+    report = Compiler.compileability.streaming()(PySpark.compiler.lower()(plan), required=True)
+
+    assert report.support is StreamingSupport.BATCH_ONLY
+    assert report.findings[0].operation == "rowset join lookup"
+    assert "streaming state" in report.findings[0].problem
+
+
 def test_v2_windowed_lookup_joins_are_batch_only_without_spark() -> None:
     expected = {
         StreamingDedupedLookup: "deduped lookup join lookup",
@@ -591,6 +710,22 @@ def test_v4_explicit_watermarked_dedupe_is_streaming_without_spark() -> None:
 
     assert report.support is StreamingSupport.COMPATIBLE
     assert report.findings == ()
+
+
+def test_v7_single_stateful_operation_can_feed_static_enrichment_without_spark() -> None:
+    report = Compiler.compileability.streaming()(_recipe(StreamingDedupeThenStaticLeftEnrichment), required=True)
+
+    assert report.support is StreamingSupport.COMPATIBLE
+    assert report.findings == ()
+
+
+def test_v7_second_admitted_stateful_operation_is_batch_only_without_spark() -> None:
+    report = Compiler.compileability.streaming()(_recipe(StreamingDedupeThenAggregate), required=True)
+
+    assert report.support is StreamingSupport.BATCH_ONLY
+    assert report.findings[-1].operation == "stateful streaming composition"
+    assert "watermark-bounded duplicate removal" in report.findings[-1].problem
+    assert "watermark-bounded grouped aggregate" in report.findings[-1].problem
 
 
 def test_v2_inner_stream_stream_join_is_compatible_with_watermarks_and_time_bounds() -> None:

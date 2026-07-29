@@ -134,6 +134,17 @@
   file-stream restart behavior on supported classic PySpark targets.
 - Preserve caller ownership of sources, sinks, checkpoints, triggers, output-mode application, and query lifecycle.
 
+## Phase 9: v8
+
+- Add a checked PySpark Structured Streaming coverage ledger beside the batch transformation catalog.
+- Measure streaming coverage against the same selected PySpark 3.5.x/4.0.x transformation families used for batch
+  coverage, with operation-level rows where family-level accounting would hide Spark-ineligible shapes.
+- Admit only design-gated streaming operations with compiler-visible state, cardinality, output-mode, diagnostics,
+  explain/traceability, generated-source lifecycle scans, online/generated parity, and live PySpark 3.5/4.0 restart
+  evidence.
+- Preserve the caller-owned streaming boundary from v7: Structure returns transformed DataFrames and never owns
+  sources, sinks, checkpoints, triggers, output modes, query names, starts, stops, deployment, or recovery.
+
 ## Build Integration
 
 Initial build integration should rely on CLI commands:

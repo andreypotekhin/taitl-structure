@@ -30,4 +30,4 @@ Add exact Schema-carrying JSON/CSV conversion with a normalized, compiler-visibl
 ## Governing Documents
 
 `docs/dev/design/V7DeferredPySparkFamilies.md`, `docs/dev/specifications/V7SchemaCarryingParsing.md`, and
-`docs/dev/planning/P07282601.V7-pyspark-transform-coverage-and-streaming-adoption.plan.md`
+`docs/dev/planning/done/P07282601.V7-pyspark-transform-coverage-and-streaming-adoption.plan.md`

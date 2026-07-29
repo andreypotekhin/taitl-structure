@@ -187,7 +187,11 @@ Content style:
 Help a new user to get familiar with the library by making it easy to absorb content for first-time reader. 
 - Avoid, if possible, refering to concepts which haven't been introduced, or include a link or a brief definition; 
 - Prioritize content from more general/common path to less general/less common use cases.
-- Do not overspecify nouns. Right: Wrong: 
+- Do not overspecify nouns: 
+ - Wrong -> Right: 
+   - adds deterministic intent labels -> adds intent labels 
+   - containing each stable English label name -> containing each English label name
+
 Typical reading order for first-time reader:
 - [Readme.md](../../Readme.md) is the main entry point for end-users
 - [QuickRef.md](../QuickRef.md)

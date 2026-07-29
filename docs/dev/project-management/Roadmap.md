@@ -352,11 +352,12 @@ compiler-visible transformation library: it does not become a general PySpark wr
 - Sprints 30--32 complete: added Binary encoding, Schema-carrying JSON/CSV conversion, and PySpark-named grouped
   `mode(...)` with portable deterministic tie lowering.
 - Sprint 33 complete: admitted stream-static inner, left, and left-semi enrichment with caller-owned restart evidence.
-- Streaming adoption Sprints 34--35: admit stream-static left-outer lookup, then one
-  already admitted stateful operation followed only by stateless transforms. Each stage has target-matrix restart
-  evidence and preserves caller lifecycle ownership.
-- Final hardening sprint: reconcile catalog, docs, generated artifacts, public imports, diagnostics, parity, and
-  supported-target evidence without new feature scope.
+- Sprint 34 complete: hardened stream-static left-outer lookup with nullable lookup projection diagnostics and
+  online/generated restart evidence on PySpark 3.5 and 4.0.
+- Sprint 35 complete: admitted one already admitted stateful operation followed only by stateless transforms, with
+  target-matrix restart evidence and caller lifecycle ownership preserved.
+- V7 closeout complete: the coverage and staged caller-owned streaming adoption work is wrapped; percentage-based
+  Structured Streaming parity moves to v8.
 
 ### v7 must include
 
@@ -381,6 +382,40 @@ compiler-visible transformation library: it does not become a general PySpark wr
 - Production incremental compilation/cache diagnostics, general external-plugin expansion, data-quality constraints,
   and Search-only evaluation follow-ups; these stay explicitly retained backlog.
 
+## v8 Scope
+
+v8 focuses on PySpark Structured Streaming coverage parity. It does not broaden Structure into a streaming job
+orchestrator. The release measures caller-owned streaming transformation support against the same checked PySpark
+transformation catalog used for batch coverage, then closes the percentage gap with honest operation-level accounting
+where Spark supports only part of a batch family.
+
+### v8 sequence
+
+- Sprint 36: publish the checked Structured Streaming coverage ledger and guard tests.
+- Sprint 37: admit safe stateless streaming gaps, beginning with design-gated row expansion and union-like set
+  operations where live PySpark accepts them.
+- Sprint 38: resolve stateful and order-sensitive gaps, either with narrow watermark/output-mode contracts or explicit
+  streaming-ineligible diagnostics.
+- Sprint 39: harden v8 release evidence without adding new feature scope.
+
+### v8 must include
+
+- A measured streaming coverage percentage that is at least the current batch coverage percentage under the checked v8
+  rule.
+- Operation-level ledger rows for mixed families such as set operations and ordering.
+- Live PySpark 3.5 and 4.0 file-stream restart evidence for every admitted streaming operation.
+- Generated-source scans proving Structure emits no streaming lifecycle, action, RDD, Pandas, or hidden UDF calls in
+  streaming-compatible generated transforms.
+- Corrective diagnostics for Spark-ineligible streaming shapes.
+
+### v8 non-goals
+
+- Generated streaming sources, sinks, checkpoints, triggers, output modes, query names, start/stop behavior, deployment,
+  or recovery.
+- Spark Connect streaming.
+- Two-stateful chains unless a later explicit Spark-supported contract changes this scope.
+- Arbitrary global ordering, limits, offsets, or selected-row ranking over unbounded streaming inputs.
+
 ## Release Milestones
 
 | Milestone | Goal | Sprints |
@@ -397,4 +432,5 @@ compiler-visible transformation library: it does not become a general PySpark wr
 | M9 | v4 PySpark transformation API coverage | Sprint 17, later v4 feature sprints including Sprint 18 streaming migration, then the final v4 hardening sprint |
 | M10 | v5 Core-orchestrated plugin architecture | Sprints 19-22 |
 | M11 | v6 typed PySpark API closure, example-hook retirement, and bounded recurrence | Sprints 23-27 |
-| M12 | v7 broad PySpark transformation coverage and caller-owned streaming adoption | Sprints 28--35 and v7 hardening |
+| M12 | v7 broad PySpark transformation coverage and caller-owned streaming adoption | Sprints 28--35 |
+| M13 | v8 PySpark Structured Streaming coverage parity | Sprints 36--39 and v8 hardening |

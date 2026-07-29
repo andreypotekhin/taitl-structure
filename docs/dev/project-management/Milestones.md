@@ -379,12 +379,13 @@ live PySpark lanes remain explicitly unclaimed in this workspace.
   it remains undecided.
 - `make build`, generated artifacts, capability/AST boundary checks, and required live PySpark 3.5/4.0 evidence pass.
 
-## M12: v7 Broad PySpark Transformation Coverage and Streaming Adoption
+## +M12: v7 Broad PySpark Transformation Coverage and Streaming Adoption
 
-Status: in progress. Sprints 28--33 completed the checked catalog, historical deferral reconciliation, focused
+Status: complete. Sprints 28--35 completed the checked catalog, historical deferral reconciliation, focused
 generator delegates, struct-generator expansion, Binary encoding, schema-carrying parsing, deterministic grouped
-`mode(...)`, Stage One stream-static restart evidence, raw-hook-bearing composition, and Search's first composed
-hook-bearing consumer. Later v7 sprints continue the remaining streaming-adoption and hardening scope.
+`mode(...)`, Stage One stream-static restart evidence, stream-static left-outer lookup hardening, single-stateful
+streaming composition, raw-hook-bearing composition, and Search's first composed hook-bearing consumer. Streaming
+coverage-percentage parity is the separate v8 milestone.
 
 ### Exit Criteria
 
@@ -401,3 +402,26 @@ hook-bearing consumer. Later v7 sprints continue the remaining streaming-adoptio
   file-stream restart evidence, and no Structure-owned lifecycle calls.
 - Historical v4--v6 deferred work is either delivered by a named v7 slice or retained in an explicit backlog with its
   rationale; no stale plan is treated as active scope by implication.
+
+## M13: v8 PySpark Structured Streaming Coverage Parity
+
+Status: ready. V8 focuses on bringing caller-owned PySpark Structured Streaming transformation coverage up to the
+same percentage as the existing checked PySpark batch transformation catalog. The governing plan is
+`docs/dev/planning/P07292601.V8-pyspark-structured-streaming-coverage-parity.plan.md`.
+
+### Exit Criteria
+
+- A checked Structured Streaming coverage ledger classifies every batch-supported PySpark catalog family as supported,
+  partially supported, ineligible, or deferred for caller-owned streaming.
+- The measured streaming coverage percentage is at least the current batch coverage percentage under the v8 measurement
+  rule, with operation-level denominator splits where family-level rows mix Spark-supported and Spark-ineligible
+  operations.
+- Every admitted streaming operation has compiler-visible state/cardinality/output-mode rules, capability checks,
+  diagnostics, explain/traceability, generated-source lifecycle scans, online/generated parity, and live PySpark
+  3.5/4.0 restart evidence.
+- Every Spark-ineligible or Structure-excluded streaming shape fails before query start with a corrective diagnostic and
+  documentation link.
+- Structure continues to return transformed DataFrames only; sources, sinks, checkpoints, triggers, output modes, query
+  names, starts, stops, deployment, and recovery remain caller-owned.
+- The final v8 hardening sprint refreshes documentation and generated artifacts, records release evidence, and passes
+  `make build` without admitting new feature scope.

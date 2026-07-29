@@ -32,4 +32,4 @@ Provide PySpark-named grouped `mode(...)` with deterministic results on both sup
 ## Governing Documents
 
 `docs/dev/design/V7DeferredPySparkFamilies.md`, `docs/dev/specifications/V7DeterministicMode.md`, and
-`docs/dev/planning/P07282601.V7-pyspark-transform-coverage-and-streaming-adoption.plan.md`
+`docs/dev/planning/done/P07282601.V7-pyspark-transform-coverage-and-streaming-adoption.plan.md`
