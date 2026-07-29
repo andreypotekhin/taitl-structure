@@ -145,12 +145,56 @@ class OperationPlan:
         )
 
     @staticmethod
+    def posexplode_outer_struct_operation(posexplode_outer_struct: PosexplodeStructPlan) -> OperationPlan:
+        return OperationPlan(
+            "posexplode_outer_struct",
+            posexplode_struct=posexplode_outer_struct,
+            family="generator",
+            capability=OperationCapability("generator", "posexplode_outer_struct"),
+            cardinality=OperationCardinality.ROW_MULTIPLYING,
+            streaming=StreamingSupport.BATCH_ONLY,
+        )
+
+    @staticmethod
     def explode_struct_operation(explode_struct: PosexplodeStructPlan) -> OperationPlan:
         return OperationPlan(
             "explode_struct",
             posexplode_struct=explode_struct,
             family="generator",
             capability=OperationCapability("generator", "explode_struct"),
+            cardinality=OperationCardinality.ROW_MULTIPLYING,
+            streaming=StreamingSupport.BATCH_ONLY,
+        )
+
+    @staticmethod
+    def explode_outer_struct_operation(explode_outer_struct: PosexplodeStructPlan) -> OperationPlan:
+        return OperationPlan(
+            "explode_outer_struct",
+            posexplode_struct=explode_outer_struct,
+            family="generator",
+            capability=OperationCapability("generator", "explode_outer_struct"),
+            cardinality=OperationCardinality.ROW_MULTIPLYING,
+            streaming=StreamingSupport.BATCH_ONLY,
+        )
+
+    @staticmethod
+    def inline_struct_operation(inline_struct: PosexplodeStructPlan) -> OperationPlan:
+        return OperationPlan(
+            "inline_struct",
+            posexplode_struct=inline_struct,
+            family="generator",
+            capability=OperationCapability("generator", "inline_struct"),
+            cardinality=OperationCardinality.ROW_MULTIPLYING,
+            streaming=StreamingSupport.BATCH_ONLY,
+        )
+
+    @staticmethod
+    def inline_outer_struct_operation(inline_outer_struct: PosexplodeStructPlan) -> OperationPlan:
+        return OperationPlan(
+            "inline_outer_struct",
+            posexplode_struct=inline_outer_struct,
+            family="generator",
+            capability=OperationCapability("generator", "inline_outer_struct"),
             cardinality=OperationCardinality.ROW_MULTIPLYING,
             streaming=StreamingSupport.BATCH_ONLY,
         )

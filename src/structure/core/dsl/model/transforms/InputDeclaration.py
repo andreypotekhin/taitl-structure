@@ -1,3 +1,5 @@
+"""Input declarations for Structure transform classes."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -13,6 +15,13 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class InputDeclaration:
+    """A named external relation consumed by a transform.
+
+    Users create input declarations with ``input(Schema)`` on a ``Transform``
+    class.  During symbolic step authoring, reading the descriptor returns the
+    active plugin's row scope for the declared schema.
+    """
+
     schema: type[Schema]
     name: str = ""
     streaming: bool = False
@@ -41,4 +50,5 @@ class InputDeclaration:
         return bind_inout(inputs, self)
 
     def alias(self, *names: str) -> InputDeclaration:
+        """Add alternate invocation names for this input declaration."""
         return declaration_alias(self, names)

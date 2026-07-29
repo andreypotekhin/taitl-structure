@@ -282,7 +282,15 @@ class RunOnlinePySparkTransform:
                     prepared_frames[scope] = prepared
             if operation.kind == "posexplode_struct" and operation.posexplode_struct is not None:
                 df = self._posexplode_struct(step, df, operation.posexplode_struct, functions=functions, types=types)
+            if operation.kind == "posexplode_outer_struct" and operation.posexplode_struct is not None:
+                df = self._posexplode_struct(step, df, operation.posexplode_struct, functions=functions, types=types)
             if operation.kind == "explode_struct" and operation.posexplode_struct is not None:
+                df = self._posexplode_struct(step, df, operation.posexplode_struct, functions=functions, types=types)
+            if operation.kind == "explode_outer_struct" and operation.posexplode_struct is not None:
+                df = self._posexplode_struct(step, df, operation.posexplode_struct, functions=functions, types=types)
+            if operation.kind == "inline_struct" and operation.posexplode_struct is not None:
+                df = self._posexplode_struct(step, df, operation.posexplode_struct, functions=functions, types=types)
+            if operation.kind == "inline_outer_struct" and operation.posexplode_struct is not None:
                 df = self._posexplode_struct(step, df, operation.posexplode_struct, functions=functions, types=types)
             if operation.kind == "ordered_timeline_scan" and operation.ordered_timeline_scan is not None:
                 df = self._ordered_timeline_scan(
@@ -606,7 +614,7 @@ class RunOnlinePySparkTransform:
             functions.sort_array(functions.collect_list(item)).alias(items)
         )
 
-        state_schema = self._schema.materialize()(scan.state_schema, types=types)
+        state_schema = self._scan_state_schema(scan.state_schema, types=types)
         initial_state = functions.struct(
             *(
                 self._expressions.evaluate(expression, functions=functions, aliases=aliases)
@@ -684,7 +692,7 @@ class RunOnlinePySparkTransform:
 
     def _scan_rows_type(self, frame, input_columns, scan, *, types):
         payload_type = types.StructType([frame.schema[column] for column in input_columns])
-        state_type = self._schema.materialize()(scan.state_schema, types=types)
+        state_type = self._scan_state_schema(scan.state_schema, types=types)
         row_type = types.StructType(
             [
                 types.StructField("__payload", payload_type, nullable=False),
@@ -692,6 +700,29 @@ class RunOnlinePySparkTransform:
             ]
         )
         return types.ArrayType(row_type, containsNull=False)
+
+    def _scan_state_schema(self, schema, *, types):
+        return types.StructType(
+            [
+                types.StructField(field.column, self._scan_state_type(field.type, types=types), field.nullable)
+                for field in schema._structure_fields.values()
+            ]
+        )
+
+    def _scan_state_type(self, type_, *, types):
+        from structure.plugin.pyspark.dsl.types import ArrayType, MapType, StructType
+
+        if isinstance(type_, ArrayType):
+            return types.ArrayType(self._scan_state_type(type_.element, types=types), containsNull=True)
+        if isinstance(type_, MapType):
+            return types.MapType(
+                self._scan_state_type(type_.key, types=types),
+                self._scan_state_type(type_.value, types=types),
+                valueContainsNull=True,
+            )
+        if isinstance(type_, StructType):
+            return self._scan_state_schema(type_.schema, types=types)
+        return self._schema.materialize().type(type_, types=types)
 
     def _scan_transition_value(self, expression, scan, accumulator, item, *, functions):
         state = accumulator.getField("__state")
@@ -1157,6 +1188,25 @@ class RunOnlinePySparkTransform:
             and assignment.expression is not None
         ):
             return self._ordered_collect_list(assignment, step=step, functions=functions)
+        if assignment.function == "mode" and assignment.expression is not None:
+            column = self._expressions.evaluate(
+                assignment.expression,
+                functions=functions,
+                aliases=self._scope_aliases(step),
+            )
+            if assignment.filter is not None:
+                predicate = self._expressions.evaluate(
+                    assignment.filter,
+                    functions=functions,
+                    aliases=self._scope_aliases(step),
+                )
+                column = functions.when(predicate, column)
+            options = dict(assignment.options)
+            if options.get("deterministic") is True:
+                result = self._deterministic_mode(column, functions=functions)
+            else:
+                result = functions.mode(column)
+            return result.cast(self._spark_type(assignment.field.type, types)).alias(assignment.field.column)
         arguments = assignment.arguments or (() if assignment.expression is None else (assignment.expression,))
         if assignment.function in self._aggregate_functions() and arguments:
             columns = [
@@ -1237,6 +1287,22 @@ class RunOnlinePySparkTransform:
             lambda item: item.getField("_structure_value"),
         ).alias(assignment.field.column)
 
+    def _deterministic_mode(self, column, *, functions):
+        collected = functions.collect_list(column)
+        counts = functions.transform(
+            functions.array_distinct(collected),
+            lambda candidate: functions.struct(
+                candidate.alias("_structure_value"),
+                functions.size(functions.filter(collected, lambda item: item == candidate)).alias("_structure_count"),
+            ),
+        )
+        max_count = functions.array_max(functions.transform(counts, lambda item: item.getField("_structure_count")))
+        tied = functions.transform(
+            functions.filter(counts, lambda item: item.getField("_structure_count") == max_count),
+            lambda item: item.getField("_structure_value"),
+        )
+        return functions.array_min(tied)
+
     def _aggregate_grouping_column(self, assignment, *, step, aggregate, key_columns, functions):
         if assignment.expression is None:
             raise TypeError("is_grouped(...) requires a grouping expression")
@@ -1271,6 +1337,7 @@ class RunOnlinePySparkTransform:
             "covar",
             "count_distinct",
             "max",
+            "mode",
             "min",
             "kurtosis",
             "percentile",
@@ -1293,6 +1360,7 @@ class RunOnlinePySparkTransform:
             "covar": "covar_samp",
             "count_distinct": "countDistinct",
             "max": "max",
+            "mode": "mode",
             "min": "min",
             "kurtosis": "kurtosis",
             "percentile": "percentile",

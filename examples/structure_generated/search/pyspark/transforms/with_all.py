@@ -40,23 +40,23 @@ class EvaluateDocumentSearchBehaviorGenerated:
         impressions: DataFrame,
         clicks: DataFrame,
         band_memberships: DataFrame,
-        params: DataFrame,
         queries: DataFrame,
+        params: DataFrame,
     ) -> TransformResult:
         assert_schema(batch, EVALUATION_BATCH_SCHEMA, name="EvaluationBatch", mode="strict")
         assert_schema(requests, SEARCH_REQUEST_SCHEMA, name="SearchRequest", mode="strict")
         assert_schema(impressions, IMPRESSION_SCHEMA, name="Impression", mode="strict")
         assert_schema(clicks, CLICK_SCHEMA, name="Click", mode="strict")
         assert_schema(band_memberships, BAND_MEMBERSHIP_SCHEMA, name="BandMembership", mode="strict")
-        assert_schema(params, EVALUATION_PARAMS_SCHEMA, name="EvaluationParams", mode="strict")
         assert_schema(queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
+        assert_schema(params, EVALUATION_PARAMS_SCHEMA, name="EvaluationParams", mode="strict")
         _input_batch = batch
         _input_requests = requests
         _input_impressions = impressions
         _input_clicks = clicks
         _input_band_memberships = band_memberships
-        _input_params = params
         _input_queries = queries
+        _input_params = params
 
         # Step method: select_requests
         selected_requests = queries.alias("search_query")
@@ -79,18 +79,24 @@ class EvaluateDocumentSearchBehaviorGenerated:
         selected_requests = selected_requests.where(
             (F.col("params_2.band_id").eqNullSafe(F.col("band_memberships_4.band_id")))
             & (
-                F.forall(
-                    F.col("params_2.labels"),
-                    lambda requested: F.exists(
+                (
+                    (
+                        F.col("params_2.queryset").isNull()
+                        | (F.col("search_query.queryset") == F.col("params_2.queryset"))
+                    )
+                    & F.forall(
                         F.col("params_2.labels"),
-                        lambda candidate: (
-                            (candidate.getField('name') == requested.getField('name'))
-                            & (
-                                F.element_at(F.col("search_query.labels"), candidate.getField('name'))
-                                == candidate.getField('value')
-                            )
+                        lambda requested: F.exists(
+                            F.col("params_2.labels"),
+                            lambda candidate: (
+                                (candidate.getField('name') == requested.getField('name'))
+                                & (
+                                    F.element_at(F.col("search_query.labels"), candidate.getField('name'))
+                                    == candidate.getField('value')
+                                )
+                            ),
                         ),
-                    ),
+                    )
                 )
             )
             & (
@@ -102,9 +108,11 @@ class EvaluateDocumentSearchBehaviorGenerated:
         )
         selected_requests = selected_requests.select(
             F.col("batch.window"),
-            F.struct(F.col("params_2.labels").alias("labels"), F.col("params_2.band_id").alias("band_id")).alias(
-                "params"
-            ),
+            F.struct(
+                F.col("params_2.queryset").alias("queryset"),
+                F.col("params_2.labels").alias("labels"),
+                F.col("params_2.band_id").alias("band_id"),
+            ).alias("params"),
             F.col("requests_3.experiment_id"),
             F.col("band_memberships_4.user_band_id").alias("band_id"),
             F.col("requests_3.id").alias("search_request_id"),

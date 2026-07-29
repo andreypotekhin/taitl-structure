@@ -2,7 +2,7 @@ from typing import Callable, cast
 
 from structure.dsl import Schema
 from structure.plugin.api.v1.model.StepAuthoringRequest import StepAuthoringRequest
-from structure.plugin.pyspark.dsl.Projection import Projection
+from structure.plugin.pyspark.dsl.model.Projection import Projection
 
 
 class ValidatePySparkResultReturn:

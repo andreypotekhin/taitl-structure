@@ -31,8 +31,13 @@
       "schema": "BandMembership"
     },
     {
-      "name": "params",
+      "name": "queries",
       "ordinal": 5,
+      "schema": "SearchQuery"
+    },
+    {
+      "name": "params",
+      "ordinal": 6,
       "schema": "EvaluationParams"
     }
   ],
@@ -68,8 +73,13 @@
       "source": "source:examples.search.transforms.evaluation.search_docs.behavior.with_users.EvaluateDocumentSearchBehavior.input.band_memberships"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.with_users.EvaluateDocumentSearchBehaviorGenerated.run.input.queries",
+      "ir": "ir:EvaluateDocumentSearchBehavior.input.5.queries",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.with_users.EvaluateDocumentSearchBehavior.input.queries"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.with_users.EvaluateDocumentSearchBehaviorGenerated.run.input.params",
-      "ir": "ir:EvaluateDocumentSearchBehavior.input.5.params",
+      "ir": "ir:EvaluateDocumentSearchBehavior.input.6.params",
       "source": "source:examples.search.transforms.evaluation.search_docs.behavior.with_users.EvaluateDocumentSearchBehavior.input.params"
     },
     {
@@ -88,6 +98,11 @@
       "source": "source:examples.search.transforms.evaluation.search_docs.behavior.with_users.EvaluateDocumentSearchBehavior.select_requests.filter.1"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.with_users.EvaluateDocumentSearchBehaviorGenerated.run.step.0.select_requests.where.2",
+      "ir": "ir:EvaluateDocumentSearchBehavior.step.0.select_requests.filter.2",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.with_users.EvaluateDocumentSearchBehavior.select_requests.filter.2"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.with_users.EvaluateDocumentSearchBehaviorGenerated.run.step.0.select_requests.join.1.batch",
       "ir": "ir:EvaluateDocumentSearchBehavior.step.0.select_requests.join.1.batch",
       "source": "source:examples.search.transforms.evaluation.search_docs.behavior.with_users.EvaluateDocumentSearchBehavior.select_requests.join.1.batch"
@@ -98,9 +113,14 @@
       "source": "source:examples.search.transforms.evaluation.search_docs.behavior.with_users.EvaluateDocumentSearchBehavior.select_requests.join.2.params"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.with_users.EvaluateDocumentSearchBehaviorGenerated.run.step.0.select_requests.join.3.band",
-      "ir": "ir:EvaluateDocumentSearchBehavior.step.0.select_requests.join.3.band",
-      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.with_users.EvaluateDocumentSearchBehavior.select_requests.join.3.band"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.with_users.EvaluateDocumentSearchBehaviorGenerated.run.step.0.select_requests.join.3.query",
+      "ir": "ir:EvaluateDocumentSearchBehavior.step.0.select_requests.join.3.query",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.with_users.EvaluateDocumentSearchBehavior.select_requests.join.3.query"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.with_users.EvaluateDocumentSearchBehaviorGenerated.run.step.0.select_requests.join.4.band",
+      "ir": "ir:EvaluateDocumentSearchBehavior.step.0.select_requests.join.4.band",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.with_users.EvaluateDocumentSearchBehavior.select_requests.join.4.band"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.with_users.EvaluateDocumentSearchBehaviorGenerated.run.step.0.select_requests.select.window",
@@ -1403,6 +1423,14 @@
       "constant": "INDEXED_SIMILAR_SENTENCE_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "Intent": {
+      "constant": "INTENT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "IntentPattern": {
+      "constant": "INTENT_PATTERN_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
     "Label": {
       "constant": "LABEL_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.label"
@@ -1514,6 +1542,10 @@
     "QueryDocumentSignals": {
       "constant": "QUERY_DOCUMENT_SIGNALS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.relevance"
+    },
+    "QueryIntentLabel": {
+      "constant": "QUERY_INTENT_LABEL_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
     },
     "QueryLabel": {
       "constant": "QUERY_LABEL_SCHEMA",
@@ -1774,6 +1806,7 @@
           "impressions",
           "clicks",
           "band_memberships",
+          "queries",
           "params"
         ],
         "step": null,
@@ -1789,6 +1822,7 @@
           "batch",
           "batch",
           "params",
+          "query",
           "band"
         ],
         "step": "select_requests",
@@ -1808,12 +1842,22 @@
         "detail": {},
         "operation": "filter",
         "sources": [
+          "params.queryset",
+          "query.queryset"
+        ],
+        "step": "select_requests",
+        "target": "select_requests.filter[1]"
+      },
+      {
+        "detail": {},
+        "operation": "filter",
+        "sources": [
           "request.requested_at",
           "batch.window.start",
           "batch.window.end"
         ],
         "step": "select_requests",
-        "target": "select_requests.filter[1]"
+        "target": "select_requests.filter[2]"
       },
       {
         "detail": {
@@ -1844,7 +1888,22 @@
           "cardinality": "row_multiplying",
           "hint": null,
           "how": "inner",
-          "right_alias": "band_memberships_3"
+          "right_alias": "queries_3"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "query.id",
+          "request.query_id"
+        ],
+        "step": "select_requests",
+        "target": "select_requests.join[3].query"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "band_memberships_4"
         },
         "operation": "rowset_join",
         "sources": [
@@ -1852,7 +1911,7 @@
           "request.user_id"
         ],
         "step": "select_requests",
-        "target": "select_requests.join[3].band"
+        "target": "select_requests.join[4].band"
       },
       {
         "detail": {
@@ -1871,6 +1930,7 @@
         },
         "operation": "project",
         "sources": [
+          "params.queryset",
           "params.labels",
           "params.band_id"
         ],
@@ -4198,8 +4258,13 @@
         },
         {
           "how": "inner",
+          "input": "query",
+          "right_alias": "queries_3"
+        },
+        {
+          "how": "inner",
           "input": "band",
-          "right_alias": "band_memberships_3"
+          "right_alias": "band_memberships_4"
         }
       ],
       "name": "select_requests",

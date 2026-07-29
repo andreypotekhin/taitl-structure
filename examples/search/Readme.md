@@ -87,7 +87,7 @@ inherit that base; `ScoreAll(ScoreOverlap, ScoreBm25)` composes both score famil
 onto corpus rows. Together they accept a DataFrame conforming to `SearchQuery` and reusable indexes, emit separate
 overlap/BM25 score lanes, and preserve the distinction between lexical scoring and result presentation.
 
-`AddScores` accepts a caller-supplied DataFrame conforming to `SearchQuery` (`id` and `content`) plus matching index
+`AddScores` accepts a caller-supplied DataFrame conforming to `SearchQuery` (`id`, `queryset`, and `content`) plus matching index
 artifacts and creates a score row for every document, section, paragraph, and sentence that shares a keyword with the
 query. `content` is free-form text: callers do not pre-tokenize it. For example, `"  AURORA,   beacon! navigation?  "` is equivalent to
 `"aurora beacon navigation"`.
@@ -99,6 +99,7 @@ The scores remain separate: choosing an algorithm or combining parent and child 
 `SearchQuery.id` is the request-local key used to partition scores and ranks; one invocation can contain many query
 rows. Query text is normalized with the same lowercasing, whitespace, punctuation, and token rules as extraction.
 This is also the feedback join key, letting equivalent searches share evidence across request IDs.
+`SearchQuery.queryset` is a required caller-owned collection name, such as `natural` or `synthetic`.
 
 ```text
 overlap = matching_distinct_terms / min(query_distinct_terms, target_distinct_terms)
@@ -495,9 +496,18 @@ Evaluation is caller-owned and batch-only. `EvaluateDocumentRankingQuality` meas
 
 ### Labels
 
+`EvaluationParams.queryset` selects one `SearchQuery.queryset`; `null` evaluates every query set in the batch.
+
 `QueryLabel` records a timestamped integral value for a query ID; `MergeQueryLabels` materializes the latest values in
 `SearchQuery.labels`. `EvaluationParams.labels` requires different label names to match and treats multiple values for
 one name as alternatives. An empty label map evaluates every query.
+
+`CreateQueryLabels` creates deterministic intent-label maps for `MergeQueryLabels`. Supply an `Intent` catalog with
+stable English label names and one or more `IntentPattern` rows for each locale-specific regular-expression pattern.
+Each pattern row contains one expression; multiple patterns for an intent are alternatives. `SearchQuery.language` is a
+locale such as `en_UK`; a missing value uses `en_US`. `MergeQueryLabels` applies caller labels first and then replaces
+those intent-label values while preserving unrelated labels. `is_question` and `is_time_sensitive` remain convenience
+fields derived from the final label map. Intent labels are evaluation slices, not relevance judgments or ranking inputs.
 
 ### Bands
 

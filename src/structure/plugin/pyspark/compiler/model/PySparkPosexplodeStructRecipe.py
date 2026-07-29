@@ -13,3 +13,4 @@ class PySparkPosexplodeStructRecipe:
     schema: type[Schema]
     ordinal: str | None
     function: str = "posexplode"
+    outer: bool = False

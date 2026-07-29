@@ -1,3 +1,5 @@
+"""Internal wrapper for PySpark ``@special`` function behavior."""
+
 from __future__ import annotations
 
 from datetime import date, datetime
@@ -19,6 +21,14 @@ from structure.plugin.pyspark.dsl.types import (
 
 
 class SpecialFunction:
+    """Dispatch a decorated Python helper according to its special mode.
+
+    ``expr`` helpers expand into symbolic expression trees, ``udf`` helpers
+    become Python UDF expression nodes inside compilation, and ``opaque``
+    helpers are rejected during compilation because Spark cannot inspect their
+    implementation.
+    """
+
     def __init__(
         self,
         function: Callable,
@@ -36,6 +46,7 @@ class SpecialFunction:
         self.__module__ = function.__module__
 
     def __call__(self, *args, **kwargs):
+        """Evaluate normally outside compilation or return a symbolic special expression."""
         context = current_symbolic_context()
         if self.type == "expr":
             return self._expr(args, kwargs, context=context)

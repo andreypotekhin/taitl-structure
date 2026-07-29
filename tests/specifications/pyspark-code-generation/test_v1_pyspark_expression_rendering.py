@@ -176,6 +176,99 @@ def test_v4_expression_renderer_renders_remaining_null_control_helpers() -> None
     assert render(projection["amount"], scope_aliases={"rows": "orders"}) == 'F.zeroifnull(F.col("orders.amount"))'
 
 
+def test_v7_expression_renderer_renders_binary_encoding_helpers() -> None:
+    class Raw(Schema):
+        payload = binary(nullable=True)
+        text = string(nullable=True)
+
+    class Published(Schema):
+        base64_text = string(nullable=True)
+        decoded_payload = binary(nullable=True)
+        encoded_text = binary(nullable=True)
+        decoded_text = string(nullable=True)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(
+                base64_text=base64(row.payload),
+                decoded_payload=unbase64(row.text),
+                encoded_text=encode(row.text, charset="UTF-8"),
+                decoded_text=decode(row.payload, charset="UTF-8"),
+            )
+
+    recipe = _recipe(Publish)
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    assert render(projection["base64_text"], scope_aliases={"rows": "raw"}) == 'F.base64(F.col("raw.payload"))'
+    assert render(projection["decoded_payload"], scope_aliases={"rows": "raw"}) == 'F.unbase64(F.col("raw.text"))'
+    assert render(projection["encoded_text"], scope_aliases={"rows": "raw"}) == (
+        'F.encode(F.col("raw.text"), \'UTF-8\')'
+    )
+    assert render(projection["decoded_text"], scope_aliases={"rows": "raw"}) == (
+        'F.decode(F.col("raw.payload"), \'UTF-8\')'
+    )
+
+
+def test_v7_expression_renderer_renders_schema_carrying_parsing_helpers() -> None:
+    class Details(Schema):
+        region = string(nullable=True)
+
+    class Payload(Schema):
+        code = string(nullable=True)
+        amount = integer(nullable=True)
+        details = struct(Details, nullable=True)
+
+    class Raw(Schema):
+        payload_json = string(nullable=True)
+        payload_csv = string(nullable=True)
+        payload = struct(Payload, nullable=True)
+
+    class Published(Schema):
+        from_json_payload = struct(Payload, nullable=True)
+        from_csv_payload = struct(Payload, nullable=True)
+        payload_json = string(nullable=True)
+        payload_csv = string(nullable=True)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(
+                from_json_payload=from_json(row.payload_json, as_=Payload),
+                from_csv_payload=from_csv(row.payload_csv, as_=Payload, options=CsvOptions(delimiter="|")),
+                payload_json=to_json(row.payload),
+                payload_csv=to_csv(row.payload, options=CsvOptions(delimiter="|")),
+            )
+
+    recipe = _recipe(Publish)
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    inline_schema = (
+        'T.StructType([T.StructField("code", T.StringType(), True), '
+        'T.StructField("amount", T.IntegerType(), True), '
+        'T.StructField("details", T.StructType([T.StructField("region", T.StringType(), True)]), True)])'
+    )
+    assert render(projection["from_json_payload"], scope_aliases={"rows": "raw"}) == (
+        f'F.from_json(F.col("raw.payload_json"), {inline_schema}, {{\'mode\': \'PERMISSIVE\'}})'
+    )
+    assert render(projection["from_csv_payload"], scope_aliases={"rows": "raw"}) == (
+        'F.from_csv(F.col("raw.payload_csv"), '
+        "'code STRING, amount INT, details STRUCT<region:STRING>', {'sep': '|', 'mode': 'PERMISSIVE'})"
+    )
+    assert render(projection["payload_json"], scope_aliases={"rows": "raw"}) == 'F.to_json(F.col("raw.payload"), {})'
+    assert render(projection["payload_csv"], scope_aliases={"rows": "raw"}) == (
+        'F.to_csv(F.col("raw.payload"), {\'sep\': \'|\'})'
+    )
+
+
 def test_v4_expression_renderer_renders_nanvl() -> None:
     class Raw(Schema):
         observed = double(nullable=True)

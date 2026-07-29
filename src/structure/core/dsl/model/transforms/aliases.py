@@ -1,3 +1,5 @@
+"""Alias validation for transform declarations and invocation outputs."""
+
 from __future__ import annotations
 
 import keyword
@@ -8,6 +10,18 @@ Declaration = TypeVar("Declaration")
 
 
 def alias(declaration: Declaration, names: tuple[str, ...]) -> Declaration:
+    """Return a declaration with additional public aliases.
+
+    Args:
+        declaration: Input, lane, or output declaration.
+        names: Public Python identifiers accepted as alternate names.
+
+    Returns:
+        A copy of the declaration with aliases appended.
+
+    Example:
+        customers = input(Customer).alias("customer_rows")
+    """
     if not names:
         raise TypeError("alias(...) requires at least one name")
     existing = tuple(getattr(declaration, "aliases", ()))
@@ -18,6 +32,7 @@ def alias(declaration: Declaration, names: tuple[str, ...]) -> Declaration:
 
 
 def require_alias(name: str) -> str:
+    """Validate and return one public alias name."""
     return _alias(name)
 
 

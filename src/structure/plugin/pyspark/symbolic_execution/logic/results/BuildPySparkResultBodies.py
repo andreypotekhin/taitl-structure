@@ -7,7 +7,7 @@ from structure.plugin.api.v1.model.StepAuthoringRequest import StepAuthoringRequ
 from structure.plugin.pyspark.dsl.aggregation import AggregateAssignment, AggregateKey, AggregatePlan, ProjectAssignment
 from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.expressions import literal
-from structure.plugin.pyspark.dsl.Projection import Projection
+from structure.plugin.pyspark.dsl.model.Projection import Projection
 from structure.plugin.pyspark.dsl.RowScope import RowScope
 from structure.plugin.pyspark.dsl.types import DecimalType, Struct, StructType, StructureType
 from structure.plugin.pyspark.symbolic_execution.logic.results.ValidatePySparkResultReturn import (
@@ -177,6 +177,15 @@ class BuildPySparkResultBodies:
                 )
                 data = expression.data or {}
                 function = str(data.get("function"))
+                if function == "mode" and not aggregate_keys:
+                    raise self._error(
+                        "DSL-E0402",
+                        transform_class=transform_class,
+                        member=member,
+                        problem=f"{output_schema.__name__}.{field.name} uses mode(...) without grouped keys.",
+                        use="Declare group_by(...), rollup(...), cube(...), or grouping_sets(...) keys before mode(...).",
+                        context={"field": field.name, "schema": output_schema.__name__},
+                    )
                 arg_count = self._int_data(data, "arg_count", len(expression.args))
                 arguments = expression.args[:arg_count]
                 where_index = self._optional_int_data(data, "where_index")

@@ -231,6 +231,7 @@ class RenderPySparkTransformModule:
             lines.append(f"        self.{fields[f'input:{input.name}']} = {input.name}")
         if self._requires_impl(plan, generated_code_options=generated_code_options):
             lines.append(f"        self._impl = {source_name}()")
+            lines.extend(self._hook_impl_initializers(plan, source_transform=source_transform))
         lines.extend(
             self._udf_initializers(plan, source_name=source_name, generated_code_options=generated_code_options)
         )
@@ -412,6 +413,7 @@ class RenderPySparkTransformModule:
         lines.append("        self.ctx = ctx")
         if self._requires_impl(plan, generated_code_options=generated_code_options):
             lines.append(f"        self._impl = {source_name}()")
+            lines.extend(self._hook_impl_initializers(plan, source_transform=source_transform))
         lines.extend(
             self._udf_initializers(plan, source_name=source_name, generated_code_options=generated_code_options)
         )
@@ -515,6 +517,7 @@ class RenderPySparkTransformModule:
         lines.append("        self.ctx = ctx")
         if self._requires_impl(plan, generated_code_options=generated_code_options):
             lines.append(f"        self._impl = {source_name}()")
+            lines.extend(self._hook_impl_initializers(plan, source_transform=source_transform))
         lines.extend(
             self._udf_initializers(plan, source_name=source_name, generated_code_options=generated_code_options)
         )
@@ -714,6 +717,35 @@ class RenderPySparkTransformModule:
                 continue
             imports[hook.origin.module].add(hook.origin.class_name)
         return [f"from {module} import {', '.join(sorted(names))}" for module, names in sorted(imports.items())]
+
+    def _hook_impl_initializers(self, plan: PySparkExecutionPlan, *, source_transform: str) -> list[str]:
+        lines: list[str] = []
+        seen: set[tuple[str, str]] = set()
+        for hook in self._hooks(plan):
+            origin = hook.origin
+            if origin is None or origin.import_name == source_transform:
+                continue
+            key = (self._hook_stage(hook), origin.import_name)
+            if key in seen:
+                continue
+            seen.add(key)
+            lines.append(f"        self.{self._hook_impl_field(hook)} = {origin.class_name}()")
+        return lines
+
+    def _hook_impl_field(self, hook) -> str:
+        origin = hook.origin
+        if origin is None:
+            return "_impl"
+        return f"_impl_{self._identifier(f'{self._hook_stage(hook)}_{origin.class_name}')}"
+
+    def _hook_stage(self, hook) -> str:
+        origin = hook.origin
+        if "." in hook.target:
+            return hook.target.split(".", 1)[0]
+        return "" if origin is None else origin.class_name
+
+    def _identifier(self, value: str) -> str:
+        return "".join(character if character.isalnum() else "_" for character in value)
 
     def _requires_impl(self, plan: PySparkExecutionPlan, *, generated_code_options: tuple[str, ...] = ()) -> bool:
         return (self._has_hooks(plan) and not self._options.enabled(generated_code_options, "embed_hooks")) or (

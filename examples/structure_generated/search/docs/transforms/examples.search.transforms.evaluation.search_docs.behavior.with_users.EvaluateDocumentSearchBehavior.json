@@ -10,7 +10,9 @@
     "impression",
     "impressions",
     "measured",
-    "params"
+    "params",
+    "queries",
+    "query"
   ],
   "generated_by": "Structure",
   "inputs": [
@@ -40,8 +42,13 @@
       "schema": "BandMembership"
     },
     {
-      "name": "params",
+      "name": "queries",
       "ordinal": 5,
+      "schema": "SearchQuery"
+    },
+    {
+      "name": "params",
+      "ordinal": 6,
       "schema": "EvaluationParams"
     }
   ],
@@ -72,6 +79,12 @@
         },
         {
           "driving": false,
+          "parameter": "query",
+          "schema": "SearchQuery",
+          "source": "queries"
+        },
+        {
+          "driving": false,
           "parameter": "band",
           "schema": "BandMembership",
           "source": "band_memberships"
@@ -97,6 +110,10 @@
         {
           "how": "cross",
           "input": "params"
+        },
+        {
+          "how": "inner",
+          "input": "query"
         },
         {
           "how": "inner",

@@ -1,3 +1,5 @@
+"""Public decorators and declaration helpers for Structure transforms."""
+
 from __future__ import annotations
 
 import inspect
@@ -21,11 +23,15 @@ _METHOD_OPTIMIZATION_OPTIONS = {"cache"}
 
 
 @overload
-def input(value: type[Schema], *, streaming: bool = False) -> InputDeclaration: ...
+def input(value: type[Schema], *, streaming: bool = False) -> InputDeclaration:
+    """Declare an external transform input from a schema class."""
+    ...
 
 
 @overload
-def input(value: InputDeclaration) -> BindingSelector: ...
+def input(value: InputDeclaration) -> BindingSelector:
+    """Select an existing declaration for input-side step binding."""
+    ...
 
 
 def input(
@@ -33,6 +39,21 @@ def input(
     *,
     streaming: bool = False,
 ) -> InputDeclaration | BindingSelector:
+    """Declare or select a transform input.
+
+    Args:
+        value: Schema class for a new input declaration, or an existing input
+            declaration to select for a binding.
+        streaming: Whether the input is an unbounded streaming relation.
+
+    Returns:
+        An ``InputDeclaration`` for class attributes, or a ``BindingSelector``
+        when selecting an existing declaration.
+
+    Example:
+        class PublishOrders(Transform):
+            orders = input(Order, streaming=True)
+    """
     if not isinstance(streaming, bool):
         raise TypeError("input(streaming=...) must be a Boolean")
     if isinstance(value, InputDeclaration):
@@ -45,14 +66,31 @@ def input(
 
 
 @overload
-def output(value: type[Schema]) -> OutputDeclaration: ...
+def output(value: type[Schema]) -> OutputDeclaration:
+    """Declare a transform output from a schema class."""
+    ...
 
 
 @overload
-def output(value: OutputDeclaration) -> BindingSelector: ...
+def output(value: OutputDeclaration) -> BindingSelector:
+    """Select an existing declaration for output-side step binding."""
+    ...
 
 
 def output(value: type[Schema] | OutputDeclaration) -> OutputDeclaration | BindingSelector:
+    """Declare or select a transform output.
+
+    Args:
+        value: Schema class for a new output declaration, or an existing output
+            declaration to select for a binding.
+
+    Returns:
+        An ``OutputDeclaration`` for class attributes, or a ``BindingSelector``
+        for binding expressions.
+
+    Example:
+        published = output(PublishedOrder)
+    """
     if isinstance(value, OutputDeclaration):
         return BindingSelector("output", value)
     if not isinstance(value, type) or not issubclass(value, Schema):
@@ -61,14 +99,31 @@ def output(value: type[Schema] | OutputDeclaration) -> OutputDeclaration | Bindi
 
 
 @overload
-def lane(value: type[Schema]) -> LaneDeclaration: ...
+def lane(value: type[Schema]) -> LaneDeclaration:
+    """Declare an intermediate relation from a schema class."""
+    ...
 
 
 @overload
-def lane(value: SelectedDeclaration) -> BindingSelector: ...
+def lane(value: SelectedDeclaration) -> BindingSelector:
+    """Select a declaration for lane-side step binding."""
+    ...
 
 
 def lane(value: type[Schema] | SelectedDeclaration) -> LaneDeclaration | BindingSelector:
+    """Declare or select an intermediate lane.
+
+    Args:
+        value: Schema class for a new lane, or an existing declaration selected
+            for lane binding.
+
+    Returns:
+        A ``LaneDeclaration`` for class attributes, or a ``BindingSelector`` for
+        binding expressions.
+
+    Example:
+        enriched = lane(EnrichedOrder)
+    """
     if isinstance(value, (InputDeclaration, LaneDeclaration, OutputDeclaration)):
         return BindingSelector("lane", value)
     if not isinstance(value, type) or not issubclass(value, Schema):
@@ -77,12 +132,42 @@ def lane(value: type[Schema] | SelectedDeclaration) -> LaneDeclaration | Binding
 
 
 def stage(value: Transform) -> StageDeclaration:
+    """Declare a named child transform invocation for composition.
+
+    Args:
+        value: Transform invocation, not the transform class.
+
+    Returns:
+        A stage declaration whose outputs can be referenced by attribute.
+
+    Example:
+        enrich = stage(EnrichOrders())
+        published = output(PublishedOrder).from_(enrich.published)
+    """
     if not isinstance(value, Transform):
         raise TypeError("stage(...) requires a Transform invocation")
     return StageDeclaration(invocation=value)
 
 
 def transform(target=None, **kwargs):
+    """Decorate a ``Transform`` subclass as a Structure transform.
+
+    Args:
+        target: Optional target name or class. Passing ``"pyspark"`` selects a
+            default target for the class.
+        **kwargs: Class-level options such as ``target``,
+            ``validate_intermediate``, and ``streaming``. Step defaults such as
+            ``target_platform`` may also be supplied.
+
+    Returns:
+        A class decorator, or the decorated class when used as ``@transform``.
+
+    Example:
+        @transform(target="pyspark")
+        class PublishOrders(Transform):
+            orders = input(Order)
+            published = output(PublishedOrder)
+    """
     if isinstance(target, str):
         kwargs = {**kwargs, "target": target}
         target = None
@@ -104,6 +189,21 @@ def transform(target=None, **kwargs):
 
 
 def step(target=None, **kwargs):
+    """Decorate a transform method as a schema-bound step.
+
+    Args:
+        target: Optional method when used as ``@step`` without parentheses.
+        **kwargs: Binding options. Use ``input=...`` and ``output=...`` or a
+            pipe expression through ``inout=...``.
+
+    Returns:
+        A method decorator, or the decorated method.
+
+    Example:
+        @step(inout=orders | published)
+        def publish(self, order):
+            return PublishedOrder.project(order)
+    """
     def decorate(item):
         if not inspect.isfunction(item):
             raise TypeError("@step can decorate Transform methods only")
@@ -117,6 +217,24 @@ def step(target=None, **kwargs):
 
 
 def special(function: Callable | None = None, *, type: str, **kwargs):
+    """Decorate a helper function with plugin-visible symbolic behavior.
+
+    Args:
+        function: Helper function when used without decorator parentheses.
+        type: ``"expr"`` for transparent symbolic expansion, ``"udf"`` for a
+            plugin UDF expression, or ``"opaque"`` for target-specific runtime
+            behavior.
+        **kwargs: ``return_type`` and ``nullable`` for UDF helpers.
+
+    Returns:
+        A callable wrapper that runs normally outside compilation and delegates
+        symbolic calls to the active plugin during compilation.
+
+    Example:
+        @special(type="expr")
+        def normalized_email(value):
+            return lower(trim(value))
+    """
     allowed = {"expr", "udf", "opaque"}
     if type not in allowed:
         raise TypeError(f"@special(type=...) must use one of: {', '.join(sorted(allowed))}")
@@ -338,6 +456,31 @@ def raw(
     target: str | Iterable[str] | None = None,
     target_platform: str | None = None,
 ):
+    """Decorate a target-specific raw hook method.
+
+    Raw hooks are escape hatches for target behavior that the portable Core DSL
+    cannot model directly.  For PySpark, the hook receives plugin-specific
+    runtime objects according to the selected input/output binding.
+
+    Args:
+        function: Hook method when used without decorator parentheses.
+        input: Single input or lane declaration consumed by the hook.
+        output: Single lane or output declaration produced by the hook.
+        inout: Pipe binding such as ``orders | published``.
+        schema_mode: How strictly hook results must match declared schemas.
+        project_output: Whether generated code should project hook output.
+        streaming: Whether the hook is compatible with streaming execution.
+        target: Target name or names. Defaults to PySpark when configured.
+        target_platform: Optional platform qualifier.
+
+    Returns:
+        A hook decorator, or the decorated hook method.
+
+    Example:
+        @raw(inout=orders | enriched, target="pyspark")
+        def enrich_with_spark(self, df):
+            return df
+    """
     if not isinstance(schema_mode, SchemaMode):
         raise TypeError("@raw(schema_mode=...) requires a SchemaMode value")
     for name, value in (("project_output", project_output), ("streaming", streaming)):

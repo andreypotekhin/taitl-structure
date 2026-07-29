@@ -58,6 +58,7 @@ the current `order` row scope as `o`.
 | `approx_count_distinct(...)` | `approx_count_distinct` | `approx_count_distinct(o.customer_id, relative_sd=0.05)` |
 | `approx_percentile(...)` | `approx_percentile` | `approx_percentile(order.total, 0.5, accuracy=100)` |
 | `percentile(...)` | `percentile` | `percentile(order.total, 0.5)` |
+| `mode(...)` | `mode` | `mode(order.category, deterministic=True)` |
 | `skewness(...)` | `skewness` | `skewness(order.total)` |
 | `kurtosis(...)` | `kurtosis` | `kurtosis(order.total)` |
 | `collect_list(...)` | `collect_list` | `collect_list(order.customer_id)` |
@@ -73,7 +74,9 @@ the current `order` row scope as `o`.
   `"error"`; `ignore_nulls=` is supported only with `over=`.
 - A filtered `first_value(...)` or `last_value(...)` masks nonqualifying order keys, so an excluded row cannot become
   the selected minimum or maximum.
-- Exact percentiles, aggregate aliases, and more statistics remain future work.
+- `mode(value, deterministic=False)` requires grouped keys. With `deterministic=True`, ties return the lowest
+  orderable candidate across supported PySpark targets.
+- Aggregate aliases and additional statistics remain future work.
 
 ## Selection And Dedupe
 

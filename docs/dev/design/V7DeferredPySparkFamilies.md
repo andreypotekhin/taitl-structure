@@ -37,17 +37,16 @@ For example, a step calls `group_by(order.customer_id)` and returns
 The normal Structure aggregate placement and declared output Schema remain unchanged; callers do not learn a separate
 `select_mode` API.
 
-`deterministic=False` is the PySpark-compatible default and may return any tied most-frequent value. On PySpark 4.0,
-`deterministic=True` lowers to the native `pyspark.sql.functions.mode(..., deterministic=True)` call. The Apache Spark
+`deterministic=False` is the PySpark-compatible default and may return any tied most-frequent value. The Apache Spark
 API documents `mode` as available since Spark 3.4 and the deterministic argument as added in 4.0. [Apache Spark mode
 reference](https://spark.apache.org/docs/latest/api/python/reference/pyspark.sql/api/pyspark.sql.functions.mode.html)
 
-On PySpark 3.5, `deterministic=True` lowers behind the same public spelling to a typed compatibility aggregate: count
-each candidate inside the existing grouping keys, select the greatest count, then select the lowest candidate through a
-declared ascending order. This lowering requires an orderable candidate type and is visible in the recipe, explain,
-traceability, online evaluator, and generated code. It must return the same result as the PySpark 4.0 deterministic
-call for the shared target types. `mode(...)` is batch-only initially: no global/unbounded streaming mode and no
-implicit stateful composition.
+`deterministic=True` lowers behind the same public spelling to a typed portable aggregate: collect non-null candidates
+inside the existing grouping keys, compute candidate counts with Spark higher-order array expressions, select the
+greatest count, then select the lowest tied candidate through Spark's ascending order. This lowering requires an
+orderable candidate type and is visible in the recipe, online evaluator, and generated code. It returns the same result
+on PySpark 3.5 and 4.0 for the shared target types. `mode(...)` is batch-only initially: no global/unbounded streaming
+mode and no implicit stateful composition.
 
 ## Required Evidence
 

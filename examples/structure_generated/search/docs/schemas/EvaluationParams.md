@@ -6,5 +6,6 @@ Module: `examples.search.schemas.evaluation.params`
 
 | Field | Column | Type | Nullable |
 | --- | --- | --- | --- |
+| `queryset` | `queryset` | `string` | yes |
 | `labels` | `labels` | `array<Label!>` | no |
 | `band_id` | `band_id` | `string` | yes |

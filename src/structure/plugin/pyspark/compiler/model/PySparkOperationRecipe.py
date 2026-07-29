@@ -84,8 +84,28 @@ class PySparkOperationRecipe:
         return PySparkOperationRecipe(kind="posexplode_struct", posexplode_struct=posexplode_struct)
 
     @staticmethod
+    def posexplode_outer_struct_operation(
+        posexplode_outer_struct: PySparkPosexplodeStructRecipe,
+    ) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="posexplode_outer_struct", posexplode_struct=posexplode_outer_struct)
+
+    @staticmethod
     def explode_struct_operation(explode_struct: PySparkPosexplodeStructRecipe) -> "PySparkOperationRecipe":
         return PySparkOperationRecipe(kind="explode_struct", posexplode_struct=explode_struct)
+
+    @staticmethod
+    def explode_outer_struct_operation(
+        explode_outer_struct: PySparkPosexplodeStructRecipe,
+    ) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="explode_outer_struct", posexplode_struct=explode_outer_struct)
+
+    @staticmethod
+    def inline_struct_operation(inline_struct: PySparkPosexplodeStructRecipe) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="inline_struct", posexplode_struct=inline_struct)
+
+    @staticmethod
+    def inline_outer_struct_operation(inline_outer_struct: PySparkPosexplodeStructRecipe) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="inline_outer_struct", posexplode_struct=inline_outer_struct)
 
     @staticmethod
     def ordered_timeline_scan_operation(scan: PySparkOrderedTimelineScanRecipe) -> "PySparkOperationRecipe":

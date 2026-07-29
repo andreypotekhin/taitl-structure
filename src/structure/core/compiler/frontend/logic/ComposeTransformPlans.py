@@ -5,6 +5,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import replace
 
 from structure.core.compiler.diagnostics.api import StructureCompileError
+from structure.core.compiler.ir.model.HookPlan import HookPlan
 from structure.core.compiler.ir.model.OutputPlan import OutputPlan
 from structure.core.compiler.ir.model.StepInputPlan import StepInputPlan
 from structure.core.compiler.ir.model.StepPlan import StepPlan
@@ -41,7 +42,6 @@ class ComposeTransformPlans:
                 name, "Transform pipeline has no stages.", "Call Transform.to(...) with at least one stage."
             )
         stage_plans = tuple(compile_stage(stage.transform_class) for stage in stages)
-        self._reject_hooks(name, stage_plans)
 
         labels = self._labels(stages)
         inputs, external = self._inputs(name, stages, stage_plans, wrapper_class=wrapper_class)
@@ -283,13 +283,19 @@ class ComposeTransformPlans:
     ) -> StepPlan:
         results = tuple(self._result(result, label=label, final_names=final_names) for result in step.results)
         primary = results[0]
+        result_frames = {
+            key: result.frame
+            for original, result in zip(step.results, results, strict=True)
+            for key in (original.lane, original.frame)
+        }
+        hook_frame_map = {**frame_map, **result_frames}
         return replace(
             step,
             source=frame_map.get(step.source, self._frame(label, step.source)),
             input_lane=frame_map.get(step.input_lane, self._frame(label, step.input_lane)),
             output_lane=primary.frame,
-            before_hooks=(),
-            after_hooks=(),
+            before_hooks=tuple(self._hook(hook, label=label, frame_map=frame_map) for hook in step.before_hooks),
+            after_hooks=tuple(self._hook(hook, label=label, frame_map=hook_frame_map) for hook in step.after_hooks),
             inputs=tuple(self._input(input, label=label, frame_map=frame_map) for input in step.inputs),
             results=results,
             plugin_body=None if step.plugin_body is None else rewrite_body(step.plugin_body, frame_map),
@@ -308,8 +314,22 @@ class ComposeTransformPlans:
             result,
             lane=frame,
             frame=frame,
-            after_hooks=(),
+            after_hooks=tuple(
+                self._hook(hook, label=label, frame_map={result.lane: frame, result.frame: frame})
+                for hook in result.after_hooks
+            ),
         )
+
+    def _hook(self, hook: HookPlan, *, label: str, frame_map: dict[str, str]) -> HookPlan:
+        return replace(
+            hook,
+            target=f"{label}.{hook.target}",
+            sources=tuple(frame_map.get(source, self._frame(label, source)) for source in hook.sources),
+            outputs=tuple(self._hook_output(output, label=label, frame_map=frame_map) for output in hook.outputs),
+        )
+
+    def _hook_output(self, output, *, label: str, frame_map: dict[str, str]):
+        return replace(output, name=frame_map.get(output.name, self._frame(label, output.name)))
 
     def _output(self, output: OutputPlan, *, frame_map: dict[str, str], ordinal: int) -> OutputPlan:
         return replace(
@@ -351,16 +371,6 @@ class ComposeTransformPlans:
         if not output.aliases:
             return output.name
         return f"{output.name} alias {', '.join(output.aliases)}"
-
-    def _reject_hooks(self, pipeline_name: str, plans: tuple[TransformPlan, ...]) -> None:
-        for plan in plans:
-            for step in plan.steps:
-                if step.before_hooks or step.after_hooks or any(result.after_hooks for result in step.results):
-                    raise self._error(
-                        pipeline_name,
-                        f"{plan.name} declares hooks and cannot be used in .to(...) composition yet.",
-                        "Run hook-bearing transforms separately until composition hook ownership is designed.",
-                    )
 
     def _labels(self, stages: tuple[TransformPipelineStage, ...]) -> tuple[str, ...]:
         counts: dict[str, int] = {}

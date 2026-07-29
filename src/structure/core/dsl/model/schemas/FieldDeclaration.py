@@ -1,3 +1,5 @@
+"""Intermediate field declarations produced by plugin field factories."""
+
 from __future__ import annotations
 
 from builtins import type as class_type
@@ -11,6 +13,13 @@ from structure.core.dsl.model.schemas.FieldDefinition import FieldDefinition
 
 @dataclass(frozen=True)
 class FieldDeclaration:
+    """A field before Python assigns its final schema attribute name.
+
+    Plugin field factories return this object so ``Schema.__init_subclass__``
+    can attach the field name, annotation, alias, metadata, and plugin
+    validator in one immutable :class:`FieldDefinition`.
+    """
+
     type: Any
     nullable: bool = True
     alias: str | None = None
@@ -25,6 +34,7 @@ class FieldDeclaration:
         object.__setattr__(self, "metadata", MappingProxyType(dict(self.metadata)))
 
     def definition(self, name: str, hint: object | None = None) -> FieldDefinition:
+        """Create the finalized field definition for a schema attribute."""
         return FieldDefinition(
             name=name,
             type=self.type,

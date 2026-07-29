@@ -21,6 +21,8 @@ The installable package lives under `src/structure`. Inside that package, projec
 
 - `src/structure/core` - Core implementation
 - `src/structure/lib` - libs
+- `src/structure/plugin/api` - Plugin API  
+- `src/structure/plugin/pyspark` - PySpark plugin (PySpark DSL and compiler implementation)   
 
 Core components: configuration, cli, dsl, compiler, target, runtime
 and other system components (and subcomponents) defined by project architecture. Compiler subapps include
@@ -56,7 +58,7 @@ src/structure/
     helper/ - shared helpers (no business logic)
 ```
 
-We refer to Core components and libraries with slash notation (`core/cli/`, `core/cli`), full slash notation
+We refer to apps and libraries with slash notation (`core/cli/`, `core/cli`), full slash notation
 (`structure/core/cli/`), dot notation (`structure.core.cli`), space notation (Core CLI, CLI Core), canonic notation
 (CLI Core, Helper Library), and sometimes reverse notation (lib common).
 
@@ -140,3 +142,32 @@ Rationale: we want to keep business classes code slim and focused, and in the sa
 by creating helpers.
 Example: `structure/lib/helper/strings.py` for string helper functions.
 Organize the helpers by general concept (e.g. files.py, os_paths.py, strings.py) or even subconcept (file_extentions.py)
+
+###  High traffic areas
+There are parts of this open source library that are frequently visited by end users, who browse library code
+in to clarify its behavior or to troubleshoot an issue. We call certain areas of Structure library code
+'high traffic' because of that, because they constitute the public surface end-user sees first, e.g. when 
+navigating to a public-facing class or DSL method definition in an IDE. These areas should be kept helpful 
+to end-user with comprehensive doc comments and references to PySpark parity functions/methods.  
+
+High-traffic areas:
+- `src/structure/plugin/pyspark/dsl` - PySpark DSL
+- `src/structure/core/dsl` - Core DSL
+
+Of these areas, the top (outmost) package is most critical for commenting, whereas 
+subpackages need more balanced approach. No need to add comments to small classes such
+as constant definitiosn (JoinHint) whose purpose is evident from context.
+
+Implementation classes (under logic/) do not need to change from scarce commenting.
+
+We should also try keeping implementation details in subpackages rather than on the top (outmost) package.  
+
+Comments should describe purpose/behavior to end-user, not jsut give implementation-level detail.
+
+Adopt Args/Returns/Example comments to the main member of each function family. 
+Ok for one-liner comments on other members of the family.
+In examples, avoid extra lines like "```python" or other backtick lines, '...' lines.
+Change 'Examples:' to singular 'Example:' if only showing one example. 
+
+Mention PySpark DSL counterpart, if non-obvious/non-exact.
+

@@ -53,6 +53,26 @@ def test_exact_percentile_and_moment_statistics_require_numeric_values() -> None
         percentile(1, 0.5, frequency=0)
 
 
+def test_mode_preserves_candidate_type_and_deterministic_tie_contract() -> None:
+    required_text = Expression(kind="text", type=types.string(), nullable=False)
+    nullable_text = Expression(kind="nullable_text", type=types.string(), nullable=True)
+
+    default_mode = mode(nullable_text)
+    deterministic_mode = mode(required_text, deterministic=True)
+
+    assert default_mode.type is nullable_text.type
+    assert default_mode.nullable is True
+    assert dict(default_mode.data or {})["deterministic"] is False
+    assert deterministic_mode.type is required_text.type
+    assert deterministic_mode.nullable is True
+    assert dict(deterministic_mode.data or {})["deterministic"] is True
+
+    with pytest.raises(TypeError, match="deterministic must be a Boolean"):
+        mode(required_text, deterministic=cast(bool, "yes"))
+    with pytest.raises(TypeError, match="requires an orderable scalar expression"):
+        mode(array("category"), deterministic=True)
+
+
 def test_sum_uses_spark_widened_types_and_filtered_aggregate_nullability() -> None:
     required_integer = Expression(kind="test_integer", type=types.integer(), nullable=False)
     required_float = Expression(kind="test_float", type=types.float(), nullable=False)

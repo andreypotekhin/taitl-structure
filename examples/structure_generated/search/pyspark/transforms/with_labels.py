@@ -68,18 +68,21 @@ class EvaluateDocumentSearchBehaviorGenerated:
         )
         selected_requests = selected_requests.where(
             (
-                F.forall(
-                    F.col("params_2.labels"),
-                    lambda requested: F.exists(
+                (
+                    (F.col("params_2.queryset").isNull() | (F.col("queries_3.queryset") == F.col("params_2.queryset")))
+                    & F.forall(
                         F.col("params_2.labels"),
-                        lambda candidate: (
-                            (candidate.getField('name') == requested.getField('name'))
-                            & (
-                                F.element_at(F.col("queries_3.labels"), candidate.getField('name'))
-                                == candidate.getField('value')
-                            )
+                        lambda requested: F.exists(
+                            F.col("params_2.labels"),
+                            lambda candidate: (
+                                (candidate.getField('name') == requested.getField('name'))
+                                & (
+                                    F.element_at(F.col("queries_3.labels"), candidate.getField('name'))
+                                    == candidate.getField('value')
+                                )
+                            ),
                         ),
-                    ),
+                    )
                 )
             )
             & (
@@ -91,9 +94,11 @@ class EvaluateDocumentSearchBehaviorGenerated:
         )
         selected_requests = selected_requests.select(
             F.col("batch.window"),
-            F.struct(F.col("params_2.labels").alias("labels"), F.col("params_2.band_id").alias("band_id")).alias(
-                "params"
-            ),
+            F.struct(
+                F.col("params_2.queryset").alias("queryset"),
+                F.col("params_2.labels").alias("labels"),
+                F.col("params_2.band_id").alias("band_id"),
+            ).alias("params"),
             F.col("search_request.experiment_id"),
             F.lit(None).cast(T.StringType()).alias("band_id"),
             F.col("search_request.id").alias("search_request_id"),

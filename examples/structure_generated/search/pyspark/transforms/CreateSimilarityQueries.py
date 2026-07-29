@@ -359,6 +359,7 @@ class CreateSimilarityQueriesGenerated:
         document_search_queries = document_query_text.alias("document_similarity_query_text")
         document_search_queries = document_search_queries.select(
             F.col("document_similarity_query_text.query_id").alias("id"),
+            F.lit('synthetic').alias("queryset"),
             F.concat_ws(' ', F.col("document_similarity_query_text.content_tokens")).alias("content"),
             F.map_from_entries(
                 F.array(
@@ -378,6 +379,7 @@ class CreateSimilarityQueriesGenerated:
             ).alias("labels"),
             F.lit(False).alias("is_question"),
             F.lit(False).alias("is_time_sensitive"),
+            F.lit(None).cast(T.StringType()).alias("language"),
         )
         assert_schema(document_search_queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
 
@@ -385,6 +387,7 @@ class CreateSimilarityQueriesGenerated:
         section_search_queries = section_query_text.alias("section_similarity_query_text")
         section_search_queries = section_search_queries.select(
             F.col("section_similarity_query_text.query_id").alias("id"),
+            F.lit('synthetic').alias("queryset"),
             F.concat_ws(' ', F.col("section_similarity_query_text.content_tokens")).alias("content"),
             F.map_from_entries(
                 F.array(
@@ -404,6 +407,7 @@ class CreateSimilarityQueriesGenerated:
             ).alias("labels"),
             F.lit(False).alias("is_question"),
             F.lit(False).alias("is_time_sensitive"),
+            F.lit(None).cast(T.StringType()).alias("language"),
         )
         assert_schema(section_search_queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
 
@@ -411,6 +415,7 @@ class CreateSimilarityQueriesGenerated:
         paragraph_search_queries = paragraph_query_text.alias("paragraph_similarity_query_text")
         paragraph_search_queries = paragraph_search_queries.select(
             F.col("paragraph_similarity_query_text.query_id").alias("id"),
+            F.lit('synthetic').alias("queryset"),
             F.concat_ws(' ', F.col("paragraph_similarity_query_text.content_tokens")).alias("content"),
             F.map_from_entries(
                 F.array(
@@ -430,6 +435,7 @@ class CreateSimilarityQueriesGenerated:
             ).alias("labels"),
             F.lit(False).alias("is_question"),
             F.lit(False).alias("is_time_sensitive"),
+            F.lit(None).cast(T.StringType()).alias("language"),
         )
         assert_schema(paragraph_search_queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
 
@@ -437,6 +443,7 @@ class CreateSimilarityQueriesGenerated:
         sentence_search_queries = sentence_query_text.alias("sentence_similarity_query_text")
         sentence_search_queries = sentence_search_queries.select(
             F.col("sentence_similarity_query_text.query_id").alias("id"),
+            F.lit('synthetic').alias("queryset"),
             F.concat_ws(' ', F.col("sentence_similarity_query_text.content_tokens")).alias("content"),
             F.map_from_entries(
                 F.array(
@@ -456,6 +463,7 @@ class CreateSimilarityQueriesGenerated:
             ).alias("labels"),
             F.lit(False).alias("is_question"),
             F.lit(False).alias("is_time_sensitive"),
+            F.lit(None).cast(T.StringType()).alias("language"),
         )
         assert_schema(sentence_search_queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
 
@@ -506,10 +514,12 @@ class CreateSimilarityQueriesGenerated:
         queries = queries.union(sentence_search_queries)
         queries = queries.select(
             F.col("id"),
+            F.col("queryset"),
             F.col("content"),
             F.col("labels"),
             F.col("is_question"),
             F.col("is_time_sensitive"),
+            F.col("language"),
         )
 
         # Step method: queries

@@ -7,6 +7,22 @@ from contextvars import ContextVar, Token
 from typing import Any, Mapping, cast
 
 from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
+from structure.plugin.pyspark.dsl.types import (
+    ArrayType,
+    BinaryType,
+    BooleanType,
+    DateType,
+    DecimalType,
+    DoubleType,
+    FloatType,
+    IntegerType,
+    LongType,
+    MapType,
+    StringType,
+    StructType,
+    StructureType,
+    TimestampType,
+)
 
 _embed_exprs: ContextVar[bool] = ContextVar("structure_embed_exprs", default=False)
 
@@ -468,6 +484,21 @@ class RenderPySparkExpression:
         args = [self._render(argument, aliases) for argument in expression.args]
         if function in {"lower", "ltrim", "rtrim", "trim", "upper"}:
             return f"F.{function}({args[0]})"
+        if function in {"base64", "unbase64"}:
+            return f"F.{function}({args[0]})"
+        if function in {"encode", "decode"}:
+            return f"F.{function}({args[0]}, {expression.data['charset']!r})"
+        if function == "from_json":
+            schema = self._inline_schema(cast(type, expression.data["schema"]))
+            options = cast(dict[str, str], expression.data["options"])
+            return f"F.{function}({args[0]}, {schema}, {options!r})"
+        if function == "from_csv":
+            schema = self._ddl_schema(cast(type, expression.data["schema"]))
+            options = cast(dict[str, str], expression.data["options"])
+            return f"F.from_csv({args[0]}, {schema!r}, {options!r})"
+        if function in {"to_json", "to_csv"}:
+            options = cast(dict[str, str], expression.data["options"])
+            return f"F.{function}({args[0]}, {options!r})"
         if function == "coalesce":
             return f"F.coalesce({', '.join(args)})"
         if function in {"nvl", "ifnull"}:
@@ -554,6 +585,89 @@ class RenderPySparkExpression:
             for field, argument in zip(fields, expression.args, strict=True)
         )
         return f"F.struct({', '.join(columns)})"
+
+    def _inline_schema(self, schema: Any) -> str:
+        fields = ", ".join(self._inline_field(field) for field in schema._structure_fields.values())
+        return f"T.StructType([{fields}])"
+
+    def _inline_field(self, field) -> str:
+        nullable = "True" if field.nullable else "False"
+        return f"T.StructField({json.dumps(field.column)}, {self._inline_type(field.type)}, {nullable})"
+
+    def _inline_type(self, type: StructureType) -> str:
+        if isinstance(type, StringType):
+            return "T.StringType()"
+        if isinstance(type, BinaryType):
+            return "T.BinaryType()"
+        if isinstance(type, IntegerType):
+            return "T.IntegerType()"
+        if isinstance(type, LongType):
+            return "T.LongType()"
+        if isinstance(type, FloatType):
+            return "T.FloatType()"
+        if isinstance(type, DoubleType):
+            return "T.DoubleType()"
+        if isinstance(type, BooleanType):
+            return "T.BooleanType()"
+        if isinstance(type, DateType):
+            return "T.DateType()"
+        if isinstance(type, TimestampType):
+            return "T.TimestampType()"
+        if isinstance(type, DecimalType):
+            return f"T.DecimalType({type.precision}, {type.scale})"
+        if isinstance(type, ArrayType):
+            contains_null = "True" if type.contains_null else "False"
+            return f"T.ArrayType({self._inline_type(type.element)}, containsNull={contains_null})"
+        if isinstance(type, MapType):
+            value_contains_null = "True" if type.value_contains_null else "False"
+            return (
+                f"T.MapType({self._inline_type(type.key)}, {self._inline_type(type.value)}, "
+                f"valueContainsNull={value_contains_null})"
+            )
+        if isinstance(type, StructType):
+            return self._inline_schema(type.schema)
+        raise TypeError(f"Unsupported Structure type: {type!r}")
+
+    def _ddl_schema(self, schema: Any) -> str:
+        return ", ".join(f"{self._ddl_field(field.column)} {self._ddl_type(field.type)}" for field in schema._structure_fields.values())
+
+    def _ddl_field(self, name: str) -> str:
+        if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", name):
+            return name
+        return f"`{name.replace('`', '``')}`"
+
+    def _ddl_type(self, type: StructureType) -> str:
+        if isinstance(type, StringType):
+            return "STRING"
+        if isinstance(type, BinaryType):
+            return "BINARY"
+        if isinstance(type, IntegerType):
+            return "INT"
+        if isinstance(type, LongType):
+            return "BIGINT"
+        if isinstance(type, FloatType):
+            return "FLOAT"
+        if isinstance(type, DoubleType):
+            return "DOUBLE"
+        if isinstance(type, BooleanType):
+            return "BOOLEAN"
+        if isinstance(type, DateType):
+            return "DATE"
+        if isinstance(type, TimestampType):
+            return "TIMESTAMP"
+        if isinstance(type, DecimalType):
+            return f"DECIMAL({type.precision},{type.scale})"
+        if isinstance(type, ArrayType):
+            return f"ARRAY<{self._ddl_type(type.element)}>"
+        if isinstance(type, MapType):
+            return f"MAP<{self._ddl_type(type.key)},{self._ddl_type(type.value)}>"
+        if isinstance(type, StructType):
+            fields = ",".join(
+                f"{self._ddl_field(field.column)}:{self._ddl_type(field.type)}"
+                for field in type.schema._structure_fields.values()
+            )
+            return f"STRUCT<{fields}>"
+        raise TypeError(f"Unsupported Structure type: {type!r}")
 
     def _int_data(self, expression: PySparkExpressionRecipe, key: str, default: int) -> int:
         value = expression.data.get(key, default)

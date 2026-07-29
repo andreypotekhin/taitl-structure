@@ -1,7 +1,22 @@
 from typing import Any, cast
 
 from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
-from structure.plugin.pyspark.dsl.types import StructureType
+from structure.plugin.pyspark.dsl.types import (
+    ArrayType,
+    BinaryType,
+    BooleanType,
+    DateType,
+    DecimalType,
+    DoubleType,
+    FloatType,
+    IntegerType,
+    LongType,
+    MapType,
+    StringType,
+    StructType,
+    StructureType,
+    TimestampType,
+)
 
 
 class EvaluatePySparkExpression:
@@ -178,34 +193,38 @@ class EvaluatePySparkExpression:
             )
         if function == "array_transform":
             array, body = expression.args
+            name = self._lambda_name(expression)
             return functions.transform(
                 self.evaluate(array, functions=functions, aliases=aliases, window=window),
                 lambda item: self.evaluate(
-                    self._bind_lambdas(body, {"item": item}), functions=functions, aliases=aliases, window=window
+                    self._bind_lambdas(body, {name: item}), functions=functions, aliases=aliases, window=window
                 ),
             )
         if function == "array_filter":
             array, body = expression.args
+            name = self._lambda_name(expression)
             return functions.filter(
                 self.evaluate(array, functions=functions, aliases=aliases, window=window),
                 lambda item: self.evaluate(
-                    self._bind_lambdas(body, {"item": item}), functions=functions, aliases=aliases, window=window
+                    self._bind_lambdas(body, {name: item}), functions=functions, aliases=aliases, window=window
                 ),
             )
         if function == "array_exists":
             array, body = expression.args
+            name = self._lambda_name(expression)
             return functions.exists(
                 self.evaluate(array, functions=functions, aliases=aliases, window=window),
                 lambda item: self.evaluate(
-                    self._bind_lambdas(body, {"item": item}), functions=functions, aliases=aliases, window=window
+                    self._bind_lambdas(body, {name: item}), functions=functions, aliases=aliases, window=window
                 ),
             )
         if function == "array_forall":
             array, body = expression.args
+            name = self._lambda_name(expression)
             return functions.forall(
                 self.evaluate(array, functions=functions, aliases=aliases, window=window),
                 lambda item: self.evaluate(
-                    self._bind_lambdas(body, {"item": item}), functions=functions, aliases=aliases, window=window
+                    self._bind_lambdas(body, {name: item}), functions=functions, aliases=aliases, window=window
                 ),
             )
         if function == "array_zip_with":
@@ -632,6 +651,9 @@ class EvaluatePySparkExpression:
             args=tuple(self._bind_lambdas(argument, columns) for argument in expression.args),
         )
 
+    def _lambda_name(self, expression: PySparkExpressionRecipe) -> str:
+        return str(expression.data.get("lambda_name", "item"))
+
     def _bound_lambda_field(self, expression: PySparkExpressionRecipe, columns):
         name_path = expression.data.get("name_path")
         if not isinstance(name_path, tuple) or not name_path:
@@ -659,6 +681,18 @@ class EvaluatePySparkExpression:
         ]
         if function in {"lower", "ltrim", "rtrim", "trim", "upper"}:
             return getattr(functions, function)(args[0])
+        if function in {"base64", "unbase64"}:
+            return getattr(functions, function)(args[0])
+        if function in {"encode", "decode"}:
+            return getattr(functions, function)(args[0], expression.data["charset"])
+        if function == "from_json":
+            schema = self._schema.materialize()(cast(type, expression.data["schema"]))
+            return functions.from_json(args[0], schema, expression.data["options"])
+        if function == "from_csv":
+            schema = self._ddl_schema(cast(type, expression.data["schema"]))
+            return functions.from_csv(args[0], schema, expression.data["options"])
+        if function in {"to_json", "to_csv"}:
+            return getattr(functions, function)(args[0], expression.data["options"])
         if function == "coalesce":
             return functions.coalesce(*args)
         if function in {"nvl", "ifnull"}:
@@ -783,6 +817,50 @@ class EvaluatePySparkExpression:
         if operator == "mod":
             return left % right
         raise TypeError(f"Unsupported PySpark binary operator: {operator}")
+
+    def _ddl_schema(self, schema: Any) -> str:
+        return ", ".join(
+            f"{self._ddl_field(field.column)} {self._ddl_type(field.type)}"
+            for field in schema._structure_fields.values()
+        )
+
+    def _ddl_field(self, name: str) -> str:
+        if name.replace("_", "a").isalnum() and not name[:1].isdigit():
+            return name
+        return f"`{name.replace('`', '``')}`"
+
+    def _ddl_type(self, type: StructureType) -> str:
+        if isinstance(type, StringType):
+            return "STRING"
+        if isinstance(type, BinaryType):
+            return "BINARY"
+        if isinstance(type, IntegerType):
+            return "INT"
+        if isinstance(type, LongType):
+            return "BIGINT"
+        if isinstance(type, FloatType):
+            return "FLOAT"
+        if isinstance(type, DoubleType):
+            return "DOUBLE"
+        if isinstance(type, BooleanType):
+            return "BOOLEAN"
+        if isinstance(type, DateType):
+            return "DATE"
+        if isinstance(type, TimestampType):
+            return "TIMESTAMP"
+        if isinstance(type, DecimalType):
+            return f"DECIMAL({type.precision},{type.scale})"
+        if isinstance(type, ArrayType):
+            return f"ARRAY<{self._ddl_type(type.element)}>"
+        if isinstance(type, MapType):
+            return f"MAP<{self._ddl_type(type.key)},{self._ddl_type(type.value)}>"
+        if isinstance(type, StructType):
+            fields = ",".join(
+                f"{self._ddl_field(field.column)}:{self._ddl_type(field.type)}"
+                for field in type.schema._structure_fields.values()
+            )
+            return f"STRUCT<{fields}>"
+        raise TypeError(f"Unsupported Structure type: {type!r}")
 
     def _bitwise_binary(self, expression: PySparkExpressionRecipe, *, functions, aliases, window):
         left, right = (

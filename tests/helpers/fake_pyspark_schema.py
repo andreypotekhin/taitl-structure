@@ -17,6 +17,10 @@ class StringType:
     pass
 
 
+class BinaryType:
+    pass
+
+
 class IntegerType:
     pass
 

@@ -31,14 +31,14 @@
       "schema": "BandMembership"
     },
     {
-      "name": "params",
+      "name": "queries",
       "ordinal": 5,
-      "schema": "EvaluationParams"
+      "schema": "SearchQuery"
     },
     {
-      "name": "queries",
+      "name": "params",
       "ordinal": 6,
-      "schema": "SearchQuery"
+      "schema": "EvaluationParams"
     }
   ],
   "provenance": [
@@ -73,14 +73,14 @@
       "source": "source:examples.search.transforms.evaluation.search_docs.behavior.with_all.EvaluateDocumentSearchBehavior.input.band_memberships"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.with_all.EvaluateDocumentSearchBehaviorGenerated.run.input.params",
-      "ir": "ir:EvaluateDocumentSearchBehavior.input.5.params",
-      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.with_all.EvaluateDocumentSearchBehavior.input.params"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.with_all.EvaluateDocumentSearchBehaviorGenerated.run.input.queries",
+      "ir": "ir:EvaluateDocumentSearchBehavior.input.5.queries",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.with_all.EvaluateDocumentSearchBehavior.input.queries"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.with_all.EvaluateDocumentSearchBehaviorGenerated.run.input.queries",
-      "ir": "ir:EvaluateDocumentSearchBehavior.input.6.queries",
-      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.with_all.EvaluateDocumentSearchBehavior.input.queries"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.with_all.EvaluateDocumentSearchBehaviorGenerated.run.input.params",
+      "ir": "ir:EvaluateDocumentSearchBehavior.input.6.params",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.with_all.EvaluateDocumentSearchBehavior.input.params"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.with_all.EvaluateDocumentSearchBehaviorGenerated.run.step.0.select_requests",
@@ -1423,6 +1423,14 @@
       "constant": "INDEXED_SIMILAR_SENTENCE_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "Intent": {
+      "constant": "INTENT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "IntentPattern": {
+      "constant": "INTENT_PATTERN_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
     "Label": {
       "constant": "LABEL_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.label"
@@ -1534,6 +1542,10 @@
     "QueryDocumentSignals": {
       "constant": "QUERY_DOCUMENT_SIGNALS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.relevance"
+    },
+    "QueryIntentLabel": {
+      "constant": "QUERY_INTENT_LABEL_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
     },
     "QueryLabel": {
       "constant": "QUERY_LABEL_SCHEMA",
@@ -1794,8 +1806,8 @@
           "impressions",
           "clicks",
           "band_memberships",
-          "params",
-          "queries"
+          "queries",
+          "params"
         ],
         "step": null,
         "target": "EvaluateDocumentSearchBehavior"
@@ -1830,6 +1842,8 @@
         "detail": {},
         "operation": "filter",
         "sources": [
+          "params.queryset",
+          "query.queryset",
           "params.labels",
           "query.labels"
         ],
@@ -1918,6 +1932,7 @@
         },
         "operation": "project",
         "sources": [
+          "params.queryset",
           "params.labels",
           "params.band_id"
         ],

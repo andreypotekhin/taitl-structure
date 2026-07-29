@@ -13,8 +13,14 @@ Hand-written PySpark is powerful, but large pipelines often become difficult to 
 - Airflow DAGs can become tightly coupled to transformation details.
 - Generated or repeated transformation code is hard to review consistently.
 
-Structure makes schemas and transformations explicit Python classes while keeping the emitted PySpark visible
-to Spark's optimizer.
+Structure makes schemas and transformations first-class citizens by using Python classes.
+
+Some advantages of Strucutre:
+
+- Performance: resulting PySpark code is visible
+  to Spark's optimizer. End-eser needs to the relax configuration to take less-optimal avenues, such as UDFs.
+- IDE-friendly: fully utilize go to definition/known uses/hierarchy views provided by modern IDE.
+- Pre-compilation: optional compilation as part of project build allows to check code without accessing Spark instance. 
 
 ## Less Code, More Spark
 

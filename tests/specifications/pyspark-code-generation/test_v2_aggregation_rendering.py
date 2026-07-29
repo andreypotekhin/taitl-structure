@@ -22,6 +22,7 @@ def _recipe(transform) -> PySparkExecutionPlan:
 class RawOrder(Schema):
     customer_id = string(nullable=False)
     quantity = long(nullable=False)
+    category = string(nullable=True)
 
 
 class CustomerTotal(Schema):
@@ -32,6 +33,15 @@ class CustomerTotal(Schema):
     min_quantity = long(nullable=False)
     max_quantity = long(nullable=False)
     avg_quantity = double(nullable=False)
+
+
+class CustomerPreference(Schema):
+    customer_id = string(nullable=False)
+    preferred_category = string(nullable=True)
+
+
+class GlobalPreferenceValue(Schema):
+    preferred_category = string(nullable=True)
 
 
 class AdvancedCustomerTotal(Schema):
@@ -92,6 +102,19 @@ class CustomerTotals(Transform):
             min_quantity=min(row.quantity),
             max_quantity=max(row.quantity),
             avg_quantity=avg(row.quantity),
+        )
+
+
+@transform
+class CustomerPreferences(Transform):
+    rows = input(RawOrder)
+    totals = output(CustomerPreference)
+
+    def summarize(self, row: RawOrder) -> CustomerPreference:
+        group_by(row.customer_id)
+        return CustomerPreference(
+            customer_id=row.customer_id,
+            preferred_category=mode(row.category, deterministic=True),
         )
 
 
@@ -177,6 +200,20 @@ def test_grouped_aggregate_step_renders_spark_visible_group_by() -> None:
     assert 'F.col("customer_id")' in text
 
 
+def test_grouped_mode_renders_portable_deterministic_tie_selection() -> None:
+    recipe = _recipe(CustomerPreferences)
+    text = render_pyspark_step(recipe.steps[0], current="rows", sources={"rows": "rows"})
+    assert recipe.steps[0].aggregate is not None
+    assignment = recipe.steps[0].aggregate.assignments[1]
+
+    assert assignment.function == "mode"
+    assert dict(assignment.options)["deterministic"] is True
+    assert "F.collect_list(F.col(\"raw_order.category\"))" in text
+    assert "F.array_min(" in text
+    assert "candidate.alias('_structure_value')" in text
+    assert 'alias("preferred_category")' in text
+
+
 def test_global_aggregate_without_group_by_is_lowered() -> None:
     @transform
     class GlobalTotals(Transform):
@@ -199,6 +236,21 @@ def test_global_aggregate_without_group_by_is_lowered() -> None:
     assert recipe.steps[0].aggregate is not None
     assert ".groupBy(" not in text
     assert 'F.sum(F.col("raw_sale.quantity"))' in text
+
+
+def test_mode_without_grouped_keys_is_rejected() -> None:
+    @transform
+    class GlobalPreference(Transform):
+        rows = input(RawOrder)
+        totals = output(GlobalPreferenceValue)
+
+        def summarize(self, row: RawOrder) -> GlobalPreferenceValue:
+            return GlobalPreferenceValue(
+                preferred_category=mode(row.category, deterministic=True),
+            )
+
+    with pytest.raises(StructureCompileError, match=r"uses mode\(\.\.\.\) without grouped keys"):
+        _recipe(GlobalPreference)
 
 
 def test_grouped_aggregate_traceability_records_static_dataflow() -> None:

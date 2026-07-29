@@ -19,6 +19,9 @@ Maintainers have one checked v7 backlog, a dependency-ordered feature sequence, 
 - Create the first design-ready execution slices and update roadmap, milestone, and backlog records.
 - Extend v7 with typed admission plans for Binary encoding, Schema-carrying JSON/CSV conversion, and deterministic mode.
 - Define the staged streaming-adoption sequence beyond the first feasibility gate.
+- Deliver raw-hook-bearing `.to(...)` pipelines and `stage(...)` graphs with owner-qualified online/generated dispatch,
+  caller-selected delegated or `embed_hooks` generated packaging, validation, traceability, and streaming
+  compatibility parity.
 
 ### Out of Scope
 
@@ -37,14 +40,15 @@ Maintainers have one checked v7 backlog, a dependency-ordered feature sequence, 
 - The catalog records support status and contract facts for each selected PySpark API candidate.
 - The next streaming stage has a written design and a live feasibility result for PySpark 3.5.x and 4.0.x.
 - The first implementation sprint can begin with a self-contained specification and no unresolved public-semantic question.
+- Raw-hook pipelines and stage graphs preserve source-stage hook ownership, honor the caller's `embed_hooks` preference
+  for generated output, and pass online/generated parity before Search adopts the composed labeling pipeline.
 
 ## Progress
 
 - [x] Close v6, archive its completed execution plan and Sprint 27 record, and consolidate unfinished historical work.
 - [x] (2026-07-27) Published the v7 coverage specification and selected generator expansion as the first batch slice.
   The existing checked coverage JSON remains the canonical machine-readable catalog.
-- [x] (2026-07-27) Published the caller-owned stream-static enrichment feasibility gate; live target evidence remains
-  the next task.
+- [x] (2026-07-27) Published the caller-owned stream-static enrichment feasibility gate.
 - [x] (2026-07-27) Published focused-delegate extraction boundaries for the generator slice. Characterization and the
   first implementation ExecPlan remain next.
 - [x] (2026-07-27) Expanded v7 to commit the three deferred transformation families and three streaming-adoption
@@ -61,4 +65,27 @@ Maintainers have one checked v7 backlog, a dependency-ordered feature sequence, 
   `CapturePySparkGenerator`.
 - [x] (2026-07-28) Added the first v7 generator helper, `explode_struct(...)`, through DSL capture, capability
   admission, lowering, generated rendering, online execution, explain, traceability, streaming diagnostics, tests, and
-  the checked coverage catalog. Live PySpark 3.5/4.0 evidence remains for the release gate.
+  the checked coverage catalog.
+- [x] (2026-07-28) Added `explode_outer_struct(...)` with explicit outer recipe state and nullable generated-field
+  validation, preserving the same compiler-visible generator path and batch-only streaming diagnostic.
+- [x] (2026-07-28) Added `posexplode_outer_struct(...)` with nullable long ordinal validation, public rendering and
+  online parity through `posexplode_outer`, traceability, streaming diagnostics, and catalog evidence.
+- [x] (2026-07-28) Added `inline_struct(...)` and `inline_outer_struct(...)`, completing the focused non-live v7
+  typed struct-generator family with compiler-owned temporary columns for generated and online parity.
+- [x] (2026-07-28) Added live classic-PySpark evidence for the typed struct-generator family on PySpark 3.5 and 4.0,
+  and fixed the ordered `scan(...)` nested higher-order lambda/state-array regression found during that evidence run.
+- [x] (2026-07-28) Added V7 Stage One caller-owned streaming restart evidence for stream-static inner, left, and
+  left-semi enrichment with test-owned file sources, Parquet sinks, and caller checkpoints on PySpark 3.5 and 4.0.
+- [x] (2026-07-28) Added the v7 Binary encoding slice with public `binary()`/`BinaryType`, typed
+  `base64(...)`, `unbase64(...)`, `encode(...)`, and `decode(...)`, schema import/render/materialization, focused
+  contract tests, and live PySpark 3.5/4.0 parity evidence.
+- [x] (2026-07-28) Added the v7 schema-carrying parsing slice with public `JsonOptions`/`CsvOptions`, typed
+  `from_json(...)`, `to_json(...)`, `from_csv(...)`, and `to_csv(...)`, parser nullability diagnostics, generated
+  source coverage, and live PySpark 3.5/4.0 parity evidence.
+- [x] (2026-07-28) Added deterministic grouped `mode(...)` with PySpark-compatible public spelling,
+  `deterministic=True` orderable tie semantics, grouped-only diagnostics, portable generated lowering, and live
+  PySpark 3.5/4.0 parity evidence.
+- [x] (2026-07-28) Delivered raw-hook-bearing transform composition: stage-owned hooks now survive `.to(...)` and
+  `stage(...)`, delegated generated code constructs stage-local hook delegates, `embed_hooks` emits owner-qualified
+  copied hooks, and focused coverage proves repeated same-class delegates, online dispatch, traceability, and streaming
+  reporting.

@@ -2,6 +2,12 @@
   "bases": [],
   "fields": [
     {
+      "column": "queryset",
+      "name": "queryset",
+      "nullable": true,
+      "type": "string"
+    },
+    {
       "column": "labels",
       "name": "labels",
       "nullable": false,

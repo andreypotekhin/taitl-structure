@@ -6,10 +6,12 @@ class SearchQuery(Schema):
     """One caller-supplied full-text query."""
 
     id = string(nullable=False)
+    queryset = string(nullable=False)
     content = string(nullable=False)
     labels = map(string(), long(), value_contains_null=False, nullable=False)
     is_question = boolean(nullable=False)
     is_time_sensitive = boolean(nullable=False)
+    language = string(nullable=True)
 
 
 class QueryToken(Schema):

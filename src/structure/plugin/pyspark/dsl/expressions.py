@@ -1,3 +1,11 @@
+"""PySpark-compatible scalar expression helpers.
+
+The functions in this module mirror common ``pyspark.sql.functions`` behavior
+while returning Structure :class:`Expression` objects instead of Spark
+``Column`` objects.  They validate types at authoring time so generated Spark
+code is predictable and failures point to the DSL call that caused them.
+"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -5,10 +13,12 @@ from datetime import date, datetime
 from decimal import Decimal
 from math import isfinite
 from re import fullmatch
+from typing import Any, Mapping
 
 from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.types import (
     ArrayType,
+    BinaryType,
     BooleanType,
     DateType,
     DecimalType,
@@ -24,16 +34,113 @@ from structure.plugin.pyspark.dsl.types import (
 )
 
 __all__ = [
-    "abs", "bround", "ceil", "coalesce", "concat_ws", "date_add", "date_sub", "date_trunc", "datediff",
-    "dayofmonth", "event_time_between", "exp", "floor", "hash", "hour", "ifnull", "initcap", "instr",
-    "isnan", "isnotnull", "isnull", "length", "levenshtein", "literal", "log", "lower", "ltrim", "md5",
+    "abs", "base64", "bround", "ceil", "coalesce", "concat_ws", "date_add", "date_sub", "date_trunc", "datediff",
+    "dayofmonth", "event_time_between", "exp", "floor", "from_csv", "from_json", "hash", "hour", "ifnull", "initcap",
+    "instr", "isnan", "isnotnull", "isnull", "CsvOptions", "JsonOptions", "length", "levenshtein", "literal", "log",
+    "lower", "ltrim", "md5",
     "minute", "month", "nanvl", "nullif", "nvl", "nvl2", "pow", "regexp_extract", "regexp_replace", "reverse",
-    "round", "rtrim", "sha1", "sha2", "second", "signum", "split", "sqrt", "substring", "to_date",
-    "to_decimal", "to_timestamp", "translate", "trim", "trunc", "upper", "when", "xxhash64", "year", "zeroifnull",
+    "round", "rtrim", "sha1", "sha2", "second", "signum", "split", "sqrt", "substring", "to_csv", "to_date",
+    "to_decimal", "to_json", "to_timestamp", "translate", "trim", "trunc", "unbase64", "decode", "encode", "upper",
+    "when", "xxhash64", "year", "zeroifnull",
 ]
 
 
+@dataclass(frozen=True)
+class JsonOptions:
+    """Literal JSON parser/renderer options for ``from_json`` and ``to_json``.
+
+    Args:
+        null_value: String token Spark treats as null.
+        date_format: Java date pattern used by Spark.
+        timestamp_format: Java timestamp pattern used by Spark.
+        mode: Parsing mode. V7 admits only ``"PERMISSIVE"``.
+
+    Returns:
+        An immutable option record accepted by JSON conversion helpers.
+
+    Example:
+        options = JsonOptions(date_format="yyyy-MM-dd")
+    """
+
+    null_value: str | None = None
+    date_format: str | None = None
+    timestamp_format: str | None = None
+    mode: str = "PERMISSIVE"
+
+    def spark_options(self, *, writer: bool = False) -> dict[str, str]:
+        """Return normalized Spark option names and values."""
+        return _spark_options(
+            self,
+            writer=writer,
+            keys={
+                "null_value": "nullValue",
+                "date_format": "dateFormat",
+                "timestamp_format": "timestampFormat",
+                "mode": "mode",
+            },
+        )
+
+
+@dataclass(frozen=True)
+class CsvOptions:
+    """Literal CSV parser/renderer options for ``from_csv`` and ``to_csv``.
+
+    Args:
+        delimiter: One-character field delimiter, rendered as Spark ``sep``.
+        quote: One-character quote marker.
+        escape: One-character escape marker.
+        null_value: String token Spark treats as null.
+        date_format: Java date pattern used by Spark.
+        timestamp_format: Java timestamp pattern used by Spark.
+        mode: Parsing mode. V7 admits only ``"PERMISSIVE"``.
+
+    Returns:
+        An immutable option record accepted by CSV conversion helpers.
+
+    Example:
+        options = CsvOptions(delimiter="|", null_value="")
+    """
+
+    delimiter: str | None = None
+    quote: str | None = None
+    escape: str | None = None
+    null_value: str | None = None
+    date_format: str | None = None
+    timestamp_format: str | None = None
+    mode: str = "PERMISSIVE"
+
+    def spark_options(self, *, writer: bool = False) -> dict[str, str]:
+        """Return normalized Spark option names and values."""
+        return _spark_options(
+            self,
+            writer=writer,
+            keys={
+                "delimiter": "sep",
+                "quote": "quote",
+                "escape": "escape",
+                "null_value": "nullValue",
+                "date_format": "dateFormat",
+                "timestamp_format": "timestampFormat",
+                "mode": "mode",
+            },
+        )
+
+
 def literal(value: object) -> Expression:
+    """Convert a Python value or Structure object into a symbolic expression.
+
+    Args:
+        value: A Python literal, Structure schema instance, existing
+            ``Expression``, or null.
+
+    Returns:
+        A typed expression whenever Structure can infer the Spark type.
+
+    Examples:
+        literal("paid")
+        literal(Decimal("10.50"))
+        literal(None)
+    """
     if isinstance(value, Expression):
         return value
 
@@ -57,6 +164,9 @@ def literal(value: object) -> Expression:
 
     if isinstance(value, str):
         return Expression(kind="literal", type=StringType(), nullable=False, data={"value": value})
+
+    if isinstance(value, (bytes, bytearray)):
+        return Expression(kind="literal", type=BinaryType(), nullable=False, data={"value": bytes(value)})
 
     if isinstance(value, int):
         type = IntegerType() if -(2**31) <= value <= 2**31 - 1 else LongType()
@@ -94,26 +204,230 @@ def _decimal_literal_type(value: Decimal) -> DecimalType:
 
 
 def lower(value: object) -> Expression:
+    """Lowercase a string expression, like Spark ``lower``."""
     return _string_call("lower", value)
 
 
 def ltrim(value: object) -> Expression:
+    """Trim leading whitespace from a string expression, like Spark ``ltrim``."""
     return _string_call("ltrim", value)
 
 
 def rtrim(value: object) -> Expression:
+    """Trim trailing whitespace from a string expression, like Spark ``rtrim``."""
     return _string_call("rtrim", value)
 
 
 def trim(value: object) -> Expression:
+    """Trim leading and trailing whitespace from a string expression."""
     return _string_call("trim", value)
 
 
 def upper(value: object) -> Expression:
+    """Uppercase a string expression, like Spark ``upper``."""
     return _string_call("upper", value)
 
 
+def base64(value: object) -> Expression:
+    """Encode binary data as Base64 text, like PySpark ``base64``.
+
+    Args:
+        value: Binary Structure expression or Python ``bytes`` literal.
+
+    Returns:
+        A nullable string expression containing Base64 text.
+
+    Example:
+        token_text = base64(raw.token_bytes)
+    """
+    argument = _binary_argument(value, "base64(...)")
+    return Expression(
+        kind="call",
+        type=StringType(),
+        nullable=argument.nullable,
+        data={"function": "base64"},
+        args=(argument,),
+    )
+
+
+def unbase64(value: object) -> Expression:
+    """Decode Base64 text into binary data, like PySpark ``unbase64``.
+
+    Args:
+        value: String Structure expression or Python string literal.
+
+    Returns:
+        A nullable binary expression.
+
+    Example:
+        token_bytes = unbase64(raw.token_text)
+    """
+    argument = _string_argument(value, "unbase64(...)")
+    return Expression(
+        kind="call",
+        type=BinaryType(),
+        nullable=True,
+        data={"function": "unbase64"},
+        args=(argument,),
+    )
+
+
+def encode(value: object, *, charset: str = "UTF-8") -> Expression:
+    """Encode text into binary data, like PySpark ``encode``.
+
+    Args:
+        value: String Structure expression or Python string literal.
+        charset: Non-empty Java charset name accepted by Spark.
+
+    Returns:
+        A nullable binary expression.
+
+    Example:
+        payload = encode(raw.text, charset="UTF-8")
+    """
+    argument = _string_argument(value, "encode(...)")
+    return Expression(
+        kind="call",
+        type=BinaryType(),
+        nullable=argument.nullable,
+        data={"function": "encode", "charset": _charset(charset, "encode(...)")},
+        args=(argument,),
+    )
+
+
+def decode(value: object, *, charset: str = "UTF-8") -> Expression:
+    """Decode binary data into text, like PySpark ``decode``.
+
+    Args:
+        value: Binary Structure expression or Python ``bytes`` literal.
+        charset: Non-empty Java charset name accepted by Spark.
+
+    Returns:
+        A nullable string expression.
+
+    Example:
+        text = decode(raw.payload, charset="UTF-8")
+    """
+    argument = _binary_argument(value, "decode(...)")
+    return Expression(
+        kind="call",
+        type=StringType(),
+        nullable=argument.nullable,
+        data={"function": "decode", "charset": _charset(charset, "decode(...)")},
+        args=(argument,),
+    )
+
+
+def from_json(value: object, *, as_: type, options: JsonOptions = JsonOptions()) -> Expression:
+    """Parse JSON text into a declared Structure record, like PySpark ``from_json``.
+
+    Args:
+        value: String Structure expression or Python string literal containing JSON.
+        as_: ``Schema`` class that declares the parsed struct shape.
+        options: Immutable JSON parser options.
+
+    Returns:
+        A nullable struct expression with the exact declared ``as_`` schema.
+
+    Example:
+        payload = from_json(raw.payload_json, as_=Payload)
+    """
+    argument = _string_argument(value, "from_json(...)")
+    schema = _parser_schema_argument(as_, "from_json(...)")
+    return Expression(
+        kind="call",
+        type=StructType(schema),
+        nullable=True,
+        data={"function": "from_json", "schema": schema, "options": _json_options(options).spark_options()},
+        args=(argument,),
+    )
+
+
+def to_json(value: object, *, options: JsonOptions = JsonOptions()) -> Expression:
+    """Render a struct expression as JSON text, like PySpark ``to_json``.
+
+    Args:
+        value: Struct Structure expression.
+        options: Immutable JSON rendering options.
+
+    Returns:
+        A nullable string expression.
+
+    Example:
+        payload_json = to_json(row.payload)
+    """
+    argument = _struct_argument(value, "to_json(...)")
+    return Expression(
+        kind="call",
+        type=StringType(),
+        nullable=True,
+        data={"function": "to_json", "options": _json_options(options).spark_options(writer=True)},
+        args=(argument,),
+    )
+
+
+def from_csv(value: object, *, as_: type, options: CsvOptions = CsvOptions()) -> Expression:
+    """Parse CSV text into a declared Structure record, like PySpark ``from_csv``.
+
+    Args:
+        value: String Structure expression or Python string literal containing one CSV row.
+        as_: ``Schema`` class that declares the parsed struct shape.
+        options: Immutable CSV parser options.
+
+    Returns:
+        A nullable struct expression with the exact declared ``as_`` schema.
+
+    Example:
+        payload = from_csv(raw.payload_csv, as_=Payload, options=CsvOptions(delimiter="|"))
+    """
+    argument = _string_argument(value, "from_csv(...)")
+    schema = _parser_schema_argument(as_, "from_csv(...)")
+    return Expression(
+        kind="call",
+        type=StructType(schema),
+        nullable=True,
+        data={"function": "from_csv", "schema": schema, "options": _csv_options(options).spark_options()},
+        args=(argument,),
+    )
+
+
+def to_csv(value: object, *, options: CsvOptions = CsvOptions()) -> Expression:
+    """Render a struct expression as CSV text, like PySpark ``to_csv``.
+
+    Args:
+        value: Struct Structure expression.
+        options: Immutable CSV rendering options.
+
+    Returns:
+        A nullable string expression.
+
+    Example:
+        payload_csv = to_csv(row.payload, options=CsvOptions(delimiter="|"))
+    """
+    argument = _struct_argument(value, "to_csv(...)")
+    return Expression(
+        kind="call",
+        type=StringType(),
+        nullable=True,
+        data={"function": "to_csv", "options": _csv_options(options).spark_options(writer=True)},
+        args=(argument,),
+    )
+
+
 def substring(value: object, *, start: int, length: int) -> Expression:
+    """Return a substring expression using Spark's one-based indexing.
+
+    Args:
+        value: String expression.
+        start: One-based starting position, matching PySpark ``substring``.
+        length: Number of characters to return.
+
+    Returns:
+        A nullable string expression.
+
+    Example:
+        short_code = substring(order.code, start=1, length=3)
+    """
     argument = _string_argument(value, "substring(...)")
     if isinstance(start, bool) or not isinstance(start, int) or start < 1:
         raise TypeError("substring(...) start must be a positive integer")
@@ -129,6 +443,7 @@ def substring(value: object, *, start: int, length: int) -> Expression:
 
 
 def split(value: object, *, pattern: str, limit: int = -1) -> Expression:
+    """Split a string expression into an array of non-null strings."""
     argument = _string_argument(value, "split(...)")
     _string_literal(pattern, "split(...)", "pattern")
     if isinstance(limit, bool) or not isinstance(limit, int):
@@ -143,6 +458,7 @@ def split(value: object, *, pattern: str, limit: int = -1) -> Expression:
 
 
 def regexp_replace(value: object, *, pattern: str, replacement: str) -> Expression:
+    """Replace text matched by a regular expression."""
     argument = _string_argument(value, "regexp_replace(...)")
     _string_literal(pattern, "regexp_replace(...)", "pattern")
     _string_literal(replacement, "regexp_replace(...)", "replacement")
@@ -156,6 +472,7 @@ def regexp_replace(value: object, *, pattern: str, replacement: str) -> Expressi
 
 
 def regexp_extract(value: object, *, pattern: str, group: int = 1) -> Expression:
+    """Extract a regex capture group as a string expression."""
     argument = _string_argument(value, "regexp_extract(...)")
     _string_literal(pattern, "regexp_extract(...)", "pattern")
     if isinstance(group, bool) or not isinstance(group, int) or group < 0:
@@ -170,6 +487,7 @@ def regexp_extract(value: object, *, pattern: str, group: int = 1) -> Expression
 
 
 def length(value: object) -> Expression:
+    """Return the length of a string expression."""
     argument = _string_argument(value, "length(...)")
     return Expression(
         kind="call",
@@ -181,14 +499,17 @@ def length(value: object) -> Expression:
 
 
 def initcap(value: object) -> Expression:
+    """Title-case words in a string expression, like Spark ``initcap``."""
     return _string_call("initcap", value)
 
 
 def reverse(value: object) -> Expression:
+    """Reverse a string expression, like Spark ``reverse`` for strings."""
     return _string_call("reverse", value)
 
 
 def translate(value: object, *, matching: str, replacement: str) -> Expression:
+    """Translate characters in a string expression."""
     argument = _string_argument(value, "translate(...)")
     _string_literal(matching, "translate(...)", "matching")
     _string_literal(replacement, "translate(...)", "replacement")
@@ -202,6 +523,7 @@ def translate(value: object, *, matching: str, replacement: str) -> Expression:
 
 
 def instr(value: object, *, substring: str) -> Expression:
+    """Return the one-based position of a substring, like Spark ``instr``."""
     argument = _string_argument(value, "instr(...)")
     _string_literal(substring, "instr(...)", "substring")
     return Expression(
@@ -214,6 +536,7 @@ def instr(value: object, *, substring: str) -> Expression:
 
 
 def levenshtein(left: object, right: object) -> Expression:
+    """Return the Levenshtein distance between two string expressions."""
     left_argument = _string_argument(left, "levenshtein(...)")
     right_argument = _string_argument(right, "levenshtein(...)")
     return Expression(
@@ -226,6 +549,7 @@ def levenshtein(left: object, right: object) -> Expression:
 
 
 def concat_ws(separator: str, *values: object) -> Expression:
+    """Concatenate string or ``array<string>`` expressions with a separator."""
     if not isinstance(separator, str):
         raise TypeError("concat_ws(...) separator must be a string literal")
     if not values:
@@ -241,22 +565,27 @@ def concat_ws(separator: str, *values: object) -> Expression:
 
 
 def hash(*values: object) -> Expression:
+    """Return Spark's 32-bit hash for one or more scalar expressions."""
     return _hash_call("hash", IntegerType(), values)
 
 
 def xxhash64(*values: object) -> Expression:
+    """Return Spark's 64-bit xxHash for one or more scalar expressions."""
     return _hash_call("xxhash64", LongType(), values)
 
 
 def md5(value: object) -> Expression:
+    """Return the MD5 hex digest for a string expression."""
     return _string_call("md5", value)
 
 
 def sha1(value: object) -> Expression:
+    """Return the SHA-1 hex digest for a string expression."""
     return _string_call("sha1", value)
 
 
 def sha2(value: object, *, bits: int = 256) -> Expression:
+    """Return a SHA-2 hex digest for a string expression."""
     argument = _string_argument(value, "sha2(...)")
     if bits not in {224, 256, 384, 512}:
         raise TypeError("sha2(...) bits must be one of 224, 256, 384, or 512")
@@ -270,6 +599,18 @@ def sha2(value: object, *, bits: int = 256) -> Expression:
 
 
 def date_add(value: object, *, days: object) -> Expression:
+    """Add whole days to a Date or Timestamp expression.
+
+    Args:
+        value: Date or Timestamp expression.
+        days: Integer literal or integral Structure expression.
+
+    Returns:
+        A Date expression, following PySpark ``date_add``.
+
+    Example:
+        ship_date = date_add(order.created_at, days=2)
+    """
     argument = _date_or_timestamp_argument(value, "date_add(...)")
     if isinstance(days, bool):
         raise TypeError("date_add(...) days must be an integer or integral Structure expression")
@@ -294,6 +635,7 @@ def date_add(value: object, *, days: object) -> Expression:
 
 
 def date_sub(value: object, *, days: int) -> Expression:
+    """Subtract whole days from a Date or Timestamp expression."""
     argument = _date_or_timestamp_argument(value, "date_sub(...)")
     if isinstance(days, bool) or not isinstance(days, int):
         raise TypeError("date_sub(...) days must be an integer")
@@ -307,6 +649,7 @@ def date_sub(value: object, *, days: int) -> Expression:
 
 
 def datediff(end: object, start: object) -> Expression:
+    """Return the day difference between two Date or Timestamp expressions."""
     end_argument = _date_or_timestamp_argument(end, "datediff(...)")
     start_argument = _date_or_timestamp_argument(start, "datediff(...)")
     return Expression(
@@ -319,6 +662,7 @@ def datediff(end: object, start: object) -> Expression:
 
 
 def date_trunc(value: object, *, unit: str) -> Expression:
+    """Truncate a Date or Timestamp expression to a supported Spark unit."""
     argument = _date_or_timestamp_argument(value, "date_trunc(...)")
     unit = _date_trunc_unit(unit)
     return Expression(
@@ -331,6 +675,7 @@ def date_trunc(value: object, *, unit: str) -> Expression:
 
 
 def trunc(value: object, *, unit: str) -> Expression:
+    """Truncate a Date expression to a supported Spark date unit."""
     argument = _date_argument(value, "trunc(...)")
     unit = _trunc_unit(unit)
     return Expression(
@@ -343,30 +688,37 @@ def trunc(value: object, *, unit: str) -> Expression:
 
 
 def year(value: object) -> Expression:
+    """Extract the year from a Date or Timestamp expression."""
     return _calendar_part("year", value, _date_or_timestamp_argument)
 
 
 def month(value: object) -> Expression:
+    """Extract the month from a Date or Timestamp expression."""
     return _calendar_part("month", value, _date_or_timestamp_argument)
 
 
 def dayofmonth(value: object) -> Expression:
+    """Extract the day of month from a Date or Timestamp expression."""
     return _calendar_part("dayofmonth", value, _date_or_timestamp_argument)
 
 
 def hour(value: object) -> Expression:
+    """Extract the hour from a Timestamp expression."""
     return _calendar_part("hour", value, _timestamp_argument)
 
 
 def minute(value: object) -> Expression:
+    """Extract the minute from a Timestamp expression."""
     return _calendar_part("minute", value, _timestamp_argument)
 
 
 def second(value: object) -> Expression:
+    """Extract the second from a Timestamp expression."""
     return _calendar_part("second", value, _timestamp_argument)
 
 
 def to_date(value: object, *, format: str | None = None) -> Expression:
+    """Convert a String, Date, or Timestamp expression to Date."""
     argument = _temporal_conversion_argument(value, "to_date(...)")
     format = _temporal_format(format, "to_date(...)")
     return Expression(
@@ -379,6 +731,7 @@ def to_date(value: object, *, format: str | None = None) -> Expression:
 
 
 def to_timestamp(value: object, *, format: str | None = None) -> Expression:
+    """Convert a String, Date, or Timestamp expression to Timestamp."""
     argument = _temporal_conversion_argument(value, "to_timestamp(...)")
     format = _temporal_format(format, "to_timestamp(...)")
     return Expression(
@@ -391,6 +744,7 @@ def to_timestamp(value: object, *, format: str | None = None) -> Expression:
 
 
 def abs(value: object) -> Expression:
+    """Return the absolute value of a numeric expression."""
     argument = _numeric_argument(value, "abs(...)")
     return Expression(
         kind="call", type=argument.type, nullable=argument.nullable, data={"function": "abs"}, args=(argument,)
@@ -398,6 +752,7 @@ def abs(value: object) -> Expression:
 
 
 def round(value: object, *, scale: int = 0) -> Expression:
+    """Round a numeric expression with Spark ``round`` semantics."""
     argument = _numeric_argument(value, "round(...)")
     if isinstance(scale, bool) or not isinstance(scale, int):
         raise TypeError("round(...) scale must be an integer")
@@ -413,6 +768,7 @@ def round(value: object, *, scale: int = 0) -> Expression:
 
 
 def bround(value: object, *, scale: int = 0) -> Expression:
+    """Round a numeric expression with Spark banker's rounding."""
     argument = _numeric_argument(value, "bround(...)")
     if isinstance(scale, bool) or not isinstance(scale, int):
         raise TypeError("bround(...) scale must be an integer")
@@ -428,6 +784,7 @@ def bround(value: object, *, scale: int = 0) -> Expression:
 
 
 def ceil(value: object) -> Expression:
+    """Return the ceiling of a numeric expression."""
     argument = _numeric_argument(value, "ceil(...)")
     return Expression(
         kind="call",
@@ -439,6 +796,7 @@ def ceil(value: object) -> Expression:
 
 
 def floor(value: object) -> Expression:
+    """Return the floor of a numeric expression."""
     argument = _numeric_argument(value, "floor(...)")
     return Expression(
         kind="call",
@@ -450,10 +808,12 @@ def floor(value: object) -> Expression:
 
 
 def sqrt(value: object) -> Expression:
+    """Return the square root of a numeric expression."""
     return _double_numeric_call("sqrt", value)
 
 
 def pow(value: object, exponent: object) -> Expression:
+    """Raise a numeric expression to a numeric exponent."""
     base = _numeric_argument(value, "pow(...)")
     power = _numeric_argument(exponent, "pow(...)")
     return Expression(
@@ -466,6 +826,7 @@ def pow(value: object, exponent: object) -> Expression:
 
 
 def log(value: object, *, base: float | int | None = None) -> Expression:
+    """Return the natural logarithm or a logarithm with a literal base."""
     argument = _numeric_argument(value, "log(...)")
     if base is None:
         return Expression(
@@ -483,22 +844,27 @@ def log(value: object, *, base: float | int | None = None) -> Expression:
 
 
 def exp(value: object) -> Expression:
+    """Return ``e`` raised to a numeric expression."""
     return _double_numeric_call("exp", value)
 
 
 def signum(value: object) -> Expression:
+    """Return the sign of a numeric expression."""
     return _double_numeric_call("signum", value)
 
 
 def isnull(value: object) -> Expression:
+    """Return whether an expression is null."""
     return literal(value).is_null()
 
 
 def isnotnull(value: object) -> Expression:
+    """Return whether an expression is not null."""
     return literal(value).is_not_null()
 
 
 def isnan(value: object) -> Expression:
+    """Return whether a Float or Double expression is NaN."""
     argument = literal(value)
     if not isinstance(argument.type, (FloatType, DoubleType)):
         raise TypeError("isnan(...) requires a Float or Double Structure expression")
@@ -506,6 +872,7 @@ def isnan(value: object) -> Expression:
 
 
 def to_decimal(value: object, *, precision: int, scale: int) -> Expression:
+    """Convert a compatible scalar expression to nullable Decimal."""
     argument = _decimal_argument(value)
     return Expression(
         kind="call",
@@ -519,6 +886,17 @@ def to_decimal(value: object, *, precision: int, scale: int) -> Expression:
 
 
 def coalesce(*values: object) -> Expression:
+    """Return the first non-null value using Structure common-type rules.
+
+    Args:
+        *values: Compatible expressions or literals.
+
+    Returns:
+        A symbolic expression with the common Structure type.
+
+    Example:
+        display_name = coalesce(customer.nickname, customer.full_name, "unknown")
+    """
     if not values:
         raise TypeError("coalesce(...) requires at least one value")
     arguments = tuple(literal(value) for value in values)
@@ -532,14 +910,17 @@ def coalesce(*values: object) -> Expression:
 
 
 def nvl(value: object, fallback: object) -> Expression:
+    """Return ``fallback`` when ``value`` is null, like Spark ``nvl``."""
     return _null_fallback("nvl", value, fallback)
 
 
 def ifnull(value: object, fallback: object) -> Expression:
+    """Return ``fallback`` when ``value`` is null, like Spark ``ifnull``."""
     return _null_fallback("ifnull", value, fallback)
 
 
 def nvl2(value: object, when_not_null: object, when_null: object) -> Expression:
+    """Choose between two values based on whether an expression is null."""
     tested = literal(value)
     present = literal(when_not_null)
     missing = literal(when_null)
@@ -553,6 +934,7 @@ def nvl2(value: object, when_not_null: object, when_null: object) -> Expression:
 
 
 def zeroifnull(value: object) -> Expression:
+    """Return zero for null numeric values."""
     argument = _numeric_argument(value, "zeroifnull(...)")
     if argument.type is None:
         raise AssertionError("numeric argument validation must reject untyped expressions")
@@ -562,6 +944,7 @@ def zeroifnull(value: object) -> Expression:
 
 
 def nullif(value: object, other: object) -> Expression:
+    """Return null when two compatible expressions are equal."""
     left = literal(value)
     right = literal(other)
     if left.type is None:
@@ -579,6 +962,7 @@ def nullif(value: object, other: object) -> Expression:
 
 
 def nanvl(value: object, fallback: object) -> Expression:
+    """Return fallback when a Float or Double expression is NaN."""
     left = literal(value)
     right = literal(fallback)
     if not isinstance(left.type, (FloatType, DoubleType)) or not isinstance(right.type, (FloatType, DoubleType)):
@@ -593,6 +977,20 @@ def nanvl(value: object, fallback: object) -> Expression:
 
 
 def event_time_between(left: object, right: object, *, upper: str, lower: str = "0 seconds") -> Expression:
+    """Compare two event-time expressions with an inclusive interval bound.
+
+    Args:
+        left: Timestamp expression from one side of the comparison.
+        right: Timestamp expression from the other side.
+        upper: Non-negative fixed Spark interval upper bound.
+        lower: Non-negative fixed Spark interval lower bound.
+
+    Returns:
+        A boolean expression suitable for streaming joins.
+
+    Example:
+        on_time = event_time_between(order.created_at, event.created_at, upper="5 minutes")
+    """
     left_argument = literal(left)
     right_argument = literal(right)
     if not isinstance(left_argument.type, TimestampType) or not isinstance(right_argument.type, TimestampType):
@@ -611,6 +1009,18 @@ def event_time_between(left: object, right: object, *, upper: str, lower: str = 
 
 
 def when(condition: object, value: object) -> "WhenBuilder":
+    """Start a Spark ``when(...).otherwise(...)`` conditional expression.
+
+    Args:
+        condition: Boolean Structure expression.
+        value: Expression or literal returned when ``condition`` is true.
+
+    Returns:
+        A builder that must be completed with ``otherwise(...)``.
+
+    Example:
+        tier = when(order.total >= 100, "premium").otherwise("standard")
+    """
     predicate = literal(condition)
     if not isinstance(predicate.type, BooleanType):
         raise TypeError("when(...) requires a boolean Structure expression as its condition")
@@ -619,10 +1029,13 @@ def when(condition: object, value: object) -> "WhenBuilder":
 
 @dataclass(frozen=True)
 class WhenBuilder:
+    """Intermediate conditional expression that requires ``otherwise(...)``."""
+
     condition: Expression
     value: Expression
 
     def otherwise(self, fallback: object) -> Expression:
+        """Complete the conditional expression with the fallback branch."""
         alternative = literal(fallback)
         return Expression(
             kind="when",
@@ -637,6 +1050,80 @@ def _string_argument(value: object, call: str) -> Expression:
     if not isinstance(argument.type, StringType):
         raise TypeError(f"{call} requires a String Structure expression")
     return argument
+
+
+def _binary_argument(value: object, call: str) -> Expression:
+    argument = literal(value)
+    if not isinstance(argument.type, BinaryType):
+        raise TypeError(f"{call} requires a Binary Structure expression")
+    return argument
+
+
+def _struct_argument(value: object, call: str) -> Expression:
+    argument = literal(value)
+    if not isinstance(argument.type, StructType):
+        raise TypeError(f"{call} requires a Struct Structure expression")
+    return argument
+
+
+def _schema_argument(value: object, call: str):
+    from structure.dsl import Schema
+
+    if not isinstance(value, type) or not issubclass(value, Schema):
+        raise TypeError(f"{call} as_= must be a Schema class")
+    return value
+
+
+def _parser_schema_argument(value: object, call: str):
+    schema = _schema_argument(value, call)
+    _parser_nullable_schema(schema, call, path=schema.__name__)
+    return schema
+
+
+def _parser_nullable_schema(schema: Any, call: str, *, path: str) -> None:
+    for field in schema._structure_fields.values():
+        field_path = f"{path}.{field.name}"
+        if not field.nullable:
+            raise TypeError(f"{call} as_= schema field {field_path} must be nullable for permissive parsing")
+        if isinstance(field.type, StructType):
+            _parser_nullable_schema(field.type.schema, call, path=field_path)
+
+
+def _json_options(value: object) -> JsonOptions:
+    if not isinstance(value, JsonOptions):
+        raise TypeError("JSON conversion options must be a JsonOptions value")
+    return value
+
+
+def _csv_options(value: object) -> CsvOptions:
+    if not isinstance(value, CsvOptions):
+        raise TypeError("CSV conversion options must be a CsvOptions value")
+    return value
+
+
+def _spark_options(value: object, *, writer: bool, keys: Mapping[str, str]) -> dict[str, str]:
+    options: dict[str, str] = {}
+    for field, spark_name in keys.items():
+        if writer and field == "mode":
+            continue
+        option = getattr(value, field)
+        if option is None:
+            continue
+        if not isinstance(option, str):
+            raise TypeError(f"{value.__class__.__name__}.{field} must be a string or None")
+        if field == "mode":
+            if option != "PERMISSIVE":
+                raise TypeError(f'{value.__class__.__name__}.mode must be "PERMISSIVE"')
+        elif option == "" and field != "null_value":
+            raise TypeError(f"{value.__class__.__name__}.{field} must be a non-empty string or None")
+        options[spark_name] = option
+    return options
+
+
+def _charset(value: object, call: str) -> str:
+    if not isinstance(value, str) or not value:
+        raise TypeError(f"{call} charset must be a non-empty string literal")
+    return value
 
 
 def _concat_ws_argument(value: object) -> Expression:
@@ -692,7 +1179,18 @@ def _hash_argument(value: object, call: str) -> Expression:
     argument = literal(value)
     if not isinstance(
         argument.type,
-        (BooleanType, StringType, IntegerType, LongType, FloatType, DoubleType, DecimalType, DateType, TimestampType),
+        (
+            BinaryType,
+            BooleanType,
+            StringType,
+            IntegerType,
+            LongType,
+            FloatType,
+            DoubleType,
+            DecimalType,
+            DateType,
+            TimestampType,
+        ),
     ):
         raise TypeError(f"{call} requires scalar Structure expressions")
     return argument

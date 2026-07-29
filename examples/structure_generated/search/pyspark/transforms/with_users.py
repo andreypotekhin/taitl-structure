@@ -22,6 +22,7 @@ from examples.structure_generated.search.pyspark.schemas.clicks import (
     SEARCH_REQUEST_SCHEMA,
 )
 from examples.structure_generated.search.pyspark.schemas.params import EVALUATION_PARAMS_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.search import SEARCH_QUERY_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.user import BAND_MEMBERSHIP_SCHEMA
 
 
@@ -39,6 +40,7 @@ class EvaluateDocumentSearchBehaviorGenerated:
         impressions: DataFrame,
         clicks: DataFrame,
         band_memberships: DataFrame,
+        queries: DataFrame,
         params: DataFrame,
     ) -> TransformResult:
         assert_schema(batch, EVALUATION_BATCH_SCHEMA, name="EvaluationBatch", mode="strict")
@@ -46,12 +48,14 @@ class EvaluateDocumentSearchBehaviorGenerated:
         assert_schema(impressions, IMPRESSION_SCHEMA, name="Impression", mode="strict")
         assert_schema(clicks, CLICK_SCHEMA, name="Click", mode="strict")
         assert_schema(band_memberships, BAND_MEMBERSHIP_SCHEMA, name="BandMembership", mode="strict")
+        assert_schema(queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
         assert_schema(params, EVALUATION_PARAMS_SCHEMA, name="EvaluationParams", mode="strict")
         _input_batch = batch
         _input_requests = requests
         _input_impressions = impressions
         _input_clicks = clicks
         _input_band_memberships = band_memberships
+        _input_queries = queries
         _input_params = params
 
         # Step method: select_requests
@@ -60,14 +64,21 @@ class EvaluateDocumentSearchBehaviorGenerated:
         selected_requests = selected_requests.crossJoin(batch_joined)
         params_2_joined = params.alias("params_2")
         selected_requests = selected_requests.crossJoin(params_2_joined)
-        band_memberships_3_joined = band_memberships.alias("band_memberships_3")
+        queries_3_joined = queries.alias("queries_3")
         selected_requests = selected_requests.join(
-            band_memberships_3_joined,
-            (F.col("band_memberships_3.user_id") == F.col("search_request.user_id")),
+            queries_3_joined,
+            (F.col("queries_3.id") == F.col("search_request.query_id")),
+            "inner",
+        )
+        band_memberships_4_joined = band_memberships.alias("band_memberships_4")
+        selected_requests = selected_requests.join(
+            band_memberships_4_joined,
+            (F.col("band_memberships_4.user_id") == F.col("search_request.user_id")),
             "inner",
         )
         selected_requests = selected_requests.where(
-            (F.col("params_2.band_id").eqNullSafe(F.col("band_memberships_3.band_id")))
+            (F.col("params_2.band_id").eqNullSafe(F.col("band_memberships_4.band_id")))
+            & ((F.col("params_2.queryset").isNull() | (F.col("queries_3.queryset") == F.col("params_2.queryset"))))
             & (
                 (
                     (F.col("search_request.requested_at") >= F.col("batch.window.start"))
@@ -77,11 +88,13 @@ class EvaluateDocumentSearchBehaviorGenerated:
         )
         selected_requests = selected_requests.select(
             F.col("batch.window"),
-            F.struct(F.col("params_2.labels").alias("labels"), F.col("params_2.band_id").alias("band_id")).alias(
-                "params"
-            ),
+            F.struct(
+                F.col("params_2.queryset").alias("queryset"),
+                F.col("params_2.labels").alias("labels"),
+                F.col("params_2.band_id").alias("band_id"),
+            ).alias("params"),
             F.col("search_request.experiment_id"),
-            F.col("band_memberships_3.user_band_id").alias("band_id"),
+            F.col("band_memberships_4.user_band_id").alias("band_id"),
             F.col("search_request.id").alias("search_request_id"),
             F.col("search_request.ranking_version"),
             F.col("search_request.query"),

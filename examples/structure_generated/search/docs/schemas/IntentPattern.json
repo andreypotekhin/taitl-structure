@@ -1,0 +1,26 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "intent_id",
+      "name": "intent_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "language",
+      "name": "language",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "pattern",
+      "name": "pattern",
+      "nullable": false,
+      "type": "string"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.search.schemas.label",
+  "name": "IntentPattern"
+}

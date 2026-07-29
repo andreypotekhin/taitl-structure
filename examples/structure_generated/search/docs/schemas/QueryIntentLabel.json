@@ -1,0 +1,44 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "query_id",
+      "name": "query_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "content",
+      "name": "content",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "language",
+      "name": "language",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "intent_id",
+      "name": "intent_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "name",
+      "name": "name",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "value",
+      "name": "value",
+      "nullable": false,
+      "type": "long"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.search.schemas.label",
+  "name": "QueryIntentLabel"
+}

@@ -29,7 +29,7 @@ class EvaluateDocumentRankingQuality(Super):
         cross_join(batch, allow_cartesian=True)
         cross_join(params, allow_cartesian=True)
         inner_join(on=result.search_query_id == query.id)
-        where(params.matches_band(result.band_id))
+        where(params.matches_band(result.band_id), params.matches_queryset(query))
         group_by(
             window=batch.window,
             params=params,
@@ -39,7 +39,7 @@ class EvaluateDocumentRankingQuality(Super):
         )
         return EvaluationQuery(
             window=batch.window,
-            params=EvaluationParams(labels=params.labels, band_id=params.band_id),
+            params=EvaluationParams(queryset=params.queryset, labels=params.labels, band_id=params.band_id),
             experiment_id="",
             band_id=result.band_id,
             search_query_id=query.id,

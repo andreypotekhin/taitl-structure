@@ -25,11 +25,14 @@ class MergeQueryLabelsGenerated:
         *,
         queries: DataFrame,
         query_labels: DataFrame,
+        created_labels: DataFrame,
     ) -> TransformResult:
         assert_schema(queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
         assert_schema(query_labels, QUERY_LABEL_SCHEMA, name="QueryLabel", mode="strict")
+        assert_schema(created_labels, QUERY_LABEL_ASSIGNMENTS_SCHEMA, name="QueryLabelAssignments", mode="strict")
         _input_queries = queries
         _input_query_labels = query_labels
+        _input_created_labels = created_labels
 
         # Step method: select_latest
         latest_labels = query_labels.alias("query_label")
@@ -86,16 +89,17 @@ class MergeQueryLabelsGenerated:
         )
         assert_schema(assignments, QUERY_LABEL_ASSIGNMENTS_SCHEMA, name="QueryLabelAssignments", mode="strict")
 
-        # Step method: merge
-        labeled_queries = queries.alias("search_query")
+        # Step method: merge_caller_labels
+        caller_labeled_queries = queries.alias("search_query")
         assignments_joined = assignments.alias("assignments")
-        labeled_queries = labeled_queries.join(
+        caller_labeled_queries = caller_labeled_queries.join(
             assignments_joined,
             (F.col("assignments.query_id") == F.col("search_query.id")),
             "left",
         )
-        labeled_queries = labeled_queries.select(
+        caller_labeled_queries = caller_labeled_queries.select(
             F.col("search_query.id"),
+            F.col("search_query.queryset"),
             F.col("search_query.content"),
             F.coalesce(
                 F.when(
@@ -158,6 +162,84 @@ class MergeQueryLabelsGenerated:
                 )
                 == F.lit(1)
             ).alias("is_time_sensitive"),
+            F.col("search_query.language"),
+        )
+        assert_schema(caller_labeled_queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
+
+        # Step method: merge_created_labels
+        labeled_queries = caller_labeled_queries.alias("search_query")
+        created_labels_joined = created_labels.alias("created_labels")
+        labeled_queries = labeled_queries.join(
+            created_labels_joined,
+            (F.col("created_labels.query_id") == F.col("search_query.id")),
+            "left",
+        )
+        labeled_queries = labeled_queries.select(
+            F.col("search_query.id"),
+            F.col("search_query.queryset"),
+            F.col("search_query.content"),
+            F.coalesce(
+                F.when(
+                    F.col("created_labels.query_id").isNotNull(),
+                    F.map_concat(
+                        F.map_filter(
+                            F.col("search_query.labels"),
+                            lambda key, value: ~(F.array_contains(F.map_keys(F.col("created_labels.labels")), key)),
+                        ),
+                        F.col("created_labels.labels"),
+                    ),
+                ).otherwise(F.col("search_query.labels")),
+                F.col("search_query.labels"),
+            ).alias("labels"),
+            (
+                F.coalesce(
+                    F.element_at(
+                        F.coalesce(
+                            F.when(
+                                F.col("created_labels.query_id").isNotNull(),
+                                F.map_concat(
+                                    F.map_filter(
+                                        F.col("search_query.labels"),
+                                        lambda key, value: ~(
+                                            F.array_contains(F.map_keys(F.col("created_labels.labels")), key)
+                                        ),
+                                    ),
+                                    F.col("created_labels.labels"),
+                                ),
+                            ).otherwise(F.col("search_query.labels")),
+                            F.col("search_query.labels"),
+                        ),
+                        F.lit('is_question'),
+                    ),
+                    F.lit(0),
+                )
+                == F.lit(1)
+            ).alias("is_question"),
+            (
+                F.coalesce(
+                    F.element_at(
+                        F.coalesce(
+                            F.when(
+                                F.col("created_labels.query_id").isNotNull(),
+                                F.map_concat(
+                                    F.map_filter(
+                                        F.col("search_query.labels"),
+                                        lambda key, value: ~(
+                                            F.array_contains(F.map_keys(F.col("created_labels.labels")), key)
+                                        ),
+                                    ),
+                                    F.col("created_labels.labels"),
+                                ),
+                            ).otherwise(F.col("search_query.labels")),
+                            F.col("search_query.labels"),
+                        ),
+                        F.lit('is_time_sensitive'),
+                    ),
+                    F.lit(0),
+                )
+                == F.lit(1)
+            ).alias("is_time_sensitive"),
+            F.col("search_query.language"),
         )
 
         # Step method: labeled_queries

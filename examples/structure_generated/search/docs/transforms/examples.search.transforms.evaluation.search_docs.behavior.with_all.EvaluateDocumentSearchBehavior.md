@@ -11,8 +11,8 @@ Source: `examples.search.transforms.evaluation.search_docs.behavior.with_all.Eva
 - `impressions`: `Impression`
 - `clicks`: `Click`
 - `band_memberships`: `BandMembership`
-- `params`: `EvaluationParams`
 - `queries`: `SearchQuery`
+- `params`: `EvaluationParams`
 
 ## Outputs
 

@@ -8,6 +8,7 @@ Source: `examples.search.transforms.labeling.merge_query_labels.MergeQueryLabels
 
 - `queries`: `SearchQuery`
 - `query_labels`: `QueryLabel`
+- `created_labels`: `QueryLabelAssignments`
 
 ## Outputs
 
@@ -18,12 +19,14 @@ Source: `examples.search.transforms.labeling.merge_query_labels.MergeQueryLabels
 - `select_latest`: `QueryLabel` -> `QueryLabel`
 - `collect_assignments`: `QueryLabel` -> `QueryLabelAssignmentEntries`
 - `create_assignments`: `QueryLabelAssignmentEntries` -> `QueryLabelAssignments`
-- `merge`: `SearchQuery` -> `SearchQuery`
+- `merge_caller_labels`: `SearchQuery` -> `SearchQuery`
+- `merge_created_labels`: `SearchQuery` -> `SearchQuery`
 
 ## Dependencies
 
 - `assignment`
 - `assignments`
+- `created_labels`
 
 ## Target Artifacts
 

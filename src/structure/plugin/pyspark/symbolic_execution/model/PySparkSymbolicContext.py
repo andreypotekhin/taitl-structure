@@ -79,12 +79,12 @@ class PySparkSymbolicContext:
 
         if len(sources) == 1:
             return project(sources[0], cast(Any, target))
-        from structure.plugin.pyspark.dsl.Projection import Projection
+        from structure.plugin.pyspark.dsl.model.Projection import Projection
 
         return Projection(sources=sources, target=cast(Any, target))
 
     def special(self, function, *, type: str, return_type: object | None, nullable: bool, args, kwargs):
-        from structure.plugin.pyspark.dsl.SpecialFunction import SpecialFunction
+        from structure.plugin.pyspark.dsl.model.SpecialFunction import SpecialFunction
 
         return SpecialFunction(function, type=type, return_type=return_type, nullable=nullable)(*args, **kwargs)
 

@@ -22,15 +22,15 @@ mode value types. It returns the candidate type and is nullable when the group h
 ## Tie Semantics
 
 `deterministic=False` is the PySpark-compatible default: tied most-frequent values may yield any tied candidate.
-`deterministic=True` returns the lowest tied candidate using ascending target ordering. PySpark 4.0 lowers this directly
-through `functions.mode(value, deterministic=True)`. PySpark 3.5 lowers a compiler-visible candidate-count and
-tie-selection aggregate that produces the same result.
+`deterministic=True` returns the lowest tied candidate using ascending target ordering. Structure lowers this through a
+compiler-visible Spark higher-order aggregate expression over the grouped non-null candidates so PySpark 3.5 and 4.0
+produce the same result.
 
 The first release is batch-only. Global mode, streaming mode, and mode inside a scalar lambda or window are rejected.
 
 ## Compiler Contract and Evidence
 
-The aggregate plan records `mode` and its deterministic flag. The PySpark 3.5 compatibility lowering remains within the
-same aggregate recipe and is visible in generated source, explain, and traceability; it does not use raw SQL, driver
-collection, Python UDFs, or a hidden action. Tests cover grouped unique values, ties, nulls, non-orderable deterministic
-input, placement errors, target rendering, online/generated parity, and live 3.5/4.0 equivalence.
+The aggregate plan records `mode` and its deterministic flag. The deterministic lowering remains within the same
+aggregate recipe and is visible in generated source; it does not use raw SQL, driver collection, Python UDFs, or a
+hidden action. Tests cover grouped unique values, ties, nulls, non-orderable deterministic input, placement errors,
+target rendering, online/generated parity, and live 3.5/4.0 equivalence.

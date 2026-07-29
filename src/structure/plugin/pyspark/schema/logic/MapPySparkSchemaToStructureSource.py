@@ -47,6 +47,7 @@ class MapPySparkSchemaToStructureSource:
         name = type.__class__.__name__
         scalar = {
             "StringType": "string()",
+            "BinaryType": "binary()",
             "IntegerType": "integer()",
             "LongType": "long()",
             "FloatType": "float()",

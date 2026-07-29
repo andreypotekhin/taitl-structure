@@ -355,7 +355,7 @@ Python-first approach allows for IDE conveniences:
 
 ## Code Examples
 
-I include example apps to demonstrate how Structure applies to various domains.
+I included some example apps to illustrate how Structure applies to various domains.
 
 | Example                                 | Focus                                          | Details                                         |
 | --------------------------------------- | ---------------------------------------------- | ----------------------------------------------- |

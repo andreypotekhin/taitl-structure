@@ -57,8 +57,11 @@ from examples.search.schemas.extraction.extract import (
     WordText,
 )
 from examples.search.schemas.label import (
+    Intent,
+    IntentPattern,
     Label,
     LabelMapEntry,
+    QueryIntentLabel,
     QueryLabel,
     QueryLabelAssignmentEntries,
     QueryLabelAssignments,
@@ -191,7 +194,7 @@ from examples.search.transforms.experiment import (
 from examples.search.transforms.experiment import SelectExperimentScores
 from examples.search.transforms.extract import ExtractText
 from examples.search.transforms.index import CreateIndex
-from examples.search.transforms.labeling import MergeQueryLabels
+from examples.search.transforms.labeling import CreateQueryLabels, MergeQueryLabels
 from examples.search.transforms.profile import ProfileDocuments
 from examples.search.transforms.relevance.BuildRelevanceSignals import BuildRelevanceSignals
 from examples.search.transforms.score import AddScores
@@ -293,9 +296,12 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
     "examples.search.schemas.evaluation.batch": [EvaluationBatch],
     "examples.search.schemas.evaluation.params": [EvaluationParams],
     "examples.search.schemas.label": [
+        Intent,
+        IntentPattern,
         Label,
         QueryLabel,
         LabelMapEntry,
+        QueryIntentLabel,
         QueryLabelAssignmentEntries,
         QueryLabelAssignments,
     ],
@@ -419,6 +425,7 @@ TRANSFORMS = (
     ),
     (SearchDocuments, "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments"),
     (MergeQueryLabels, "examples.search.transforms.labeling.merge_query_labels.MergeQueryLabels"),
+    (CreateQueryLabels, "examples.search.transforms.labeling.create_query_labels.CreateQueryLabels"),
     (SelectExperimentScores, "examples.search.transforms.experiments.select_experiment_scores.SelectExperimentScores"),
     (
         EvaluateExperimentDocumentRankingQuality,
@@ -479,6 +486,92 @@ TRANSFORMS = (
     (AddScores, "examples.search.transforms.score.AddScores"),
     (ResolveCohortBands, "examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands"),
 )
+
+
+def test_query_intents_create_multilingual_english_labels_online_and_generated(spark, tmp_path) -> None:
+    files = render_generated_project(
+        CreateQueryLabels,
+        source_transform="examples.search.transforms.labeling.create_query_labels.CreateQueryLabels",
+        generated_package=PACKAGE,
+        source_schema_modules=SCHEMA_MODULES,
+    )
+    with generated_project(tmp_path, PACKAGE, files):
+        labels = __import__(f"{PACKAGE}.pyspark.schemas.label", fromlist=["INTENT_SCHEMA"])
+        search = __import__(f"{PACKAGE}.pyspark.schemas.search", fromlist=["SEARCH_QUERY_SCHEMA"])
+        queries = spark.createDataFrame(
+            [
+                (
+                    "q-en",
+                    "natural",
+                    "What is the current status?",
+                    {"is_question": 0, "is_time_sensitive": 0, "tier": 2},
+                    False,
+                    False,
+                    None,
+                ),
+                ("q-uk", "natural", "What is the status?", {"tier": 1}, False, False, "en_UK"),
+                ("q-es", "natural", "¿Qué es Structure?", {"tier": 3}, False, True, "es_ES"),
+            ],
+            search.SEARCH_QUERY_SCHEMA,
+        )
+        intents = spark.createDataFrame(
+            [("question", "is_question"), ("time_sensitive", "is_time_sensitive")], labels.INTENT_SCHEMA
+        )
+        patterns = spark.createDataFrame(
+            [
+                ("question", "en_US", r"^(what|how|why|when|where|who|is|are|can|do|does)\b|.*\?$"),
+                ("question", "en_UK", r"^(what|how|why|when|where|who|is|are|can|do|does)\b|.*\?$"),
+                ("question", "es_ES", r"^(qué|como|cómo|cuándo|dónde|quién|es|son)\b|.*\?$"),
+                ("time_sensitive", "en_US", r"\b(current|latest|today)\b"),
+                ("time_sensitive", "es_ES", r"\b(actual|hoy)\b"),
+            ],
+            labels.INTENT_PATTERN_SCHEMA,
+        )
+        empty_labels = spark.createDataFrame([], labels.QUERY_LABEL_SCHEMA)
+        inputs = dict(queries=queries, intents=intents, patterns=patterns)
+        online_created = CreateQueryLabels(**inputs).run(session(spark, execution_mode="online"))
+        generated_created = CreateQueryLabels(**inputs).run(
+            session(spark, execution_mode="generated", generated_package=PACKAGE)
+        )
+        online = MergeQueryLabels(
+            queries=queries, query_labels=empty_labels, created_labels=online_created.labels
+        ).run(session(spark, execution_mode="online"))
+        generated = MergeQueryLabels(
+            queries=queries, query_labels=empty_labels, created_labels=generated_created.labels
+        ).run(session(spark, execution_mode="generated", generated_package=PACKAGE))
+
+        expected = [
+            {
+                "id": "q-en",
+                "queryset": "natural",
+                "content": "What is the current status?",
+                "labels": {"is_question": 1, "is_time_sensitive": 1, "tier": 2},
+                "is_question": True,
+                "is_time_sensitive": True,
+                "language": None,
+            },
+            {
+                "id": "q-es",
+                "queryset": "natural",
+                "content": "¿Qué es Structure?",
+                "labels": {"is_question": 1, "is_time_sensitive": 0, "tier": 3},
+                "is_question": True,
+                "is_time_sensitive": False,
+                "language": "es_ES",
+            },
+            {
+                "id": "q-uk",
+                "queryset": "natural",
+                "content": "What is the status?",
+                "labels": {"is_question": 1, "is_time_sensitive": 0, "tier": 1},
+                "is_question": True,
+                "is_time_sensitive": False,
+                "language": "en_UK",
+            },
+        ]
+        assert rows(online_created.labels, "query_id") == rows(generated_created.labels, "query_id")
+        assert rows(online.labeled_queries, "id") == expected
+        assert rows(generated.labeled_queries, "id") == expected
 
 
 def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -> None:
@@ -621,8 +714,8 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
 
         queries = spark.createDataFrame(
             [
-                ("q-structure", "Structure transformations", {"is_question": 0, "is_time_sensitive": 0}, False, False),
-                ("q-reference", "reference text", {"is_question": 0, "is_time_sensitive": 0}, False, False),
+                ("q-structure", "natural", "Structure transformations", {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
+                ("q-reference", "natural", "reference text", {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
             ],
             __import__(f"{PACKAGE}.pyspark.schemas.search", fromlist=["SEARCH_QUERY_SCHEMA"]).SEARCH_QUERY_SCHEMA,
         )
@@ -879,8 +972,8 @@ def test_search_ranks_fixture_sentences_online_and_generated(spark, tmp_path) ->
         documents = spark.createDataFrame(_search_documents(), text_schemas.DOCUMENT_SCHEMA)
         queries = spark.createDataFrame(
             [
-                ("q-aurora", "aurora beacon navigation", {"is_question": 0, "is_time_sensitive": 0}, False, False),
-                ("q-free-form", "  AURORA,   beacon! navigation?  ", {"is_question": 0, "is_time_sensitive": 0}, False, False),
+                ("q-aurora", "natural", "aurora beacon navigation", {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
+                ("q-free-form", "natural", "  AURORA,   beacon! navigation?  ", {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
             ],
             search_schemas.SEARCH_QUERY_SCHEMA,
         )
@@ -979,8 +1072,8 @@ def test_passage_search_ranks_paragraphs_with_same_section_context(spark, tmp_pa
         )
         queries = spark.createDataFrame(
             [
-                ("q-free-form", "  SIGNAL!  ", {"is_question": 0, "is_time_sensitive": 0}, False, False),
-                ("q-boundary", "next section", {"is_question": 0, "is_time_sensitive": 0}, False, False),
+                ("q-free-form", "natural", "  SIGNAL!  ", {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
+                ("q-boundary", "natural", "next section", {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
             ],
             search_schemas.SEARCH_QUERY_SCHEMA,
         )
@@ -1144,8 +1237,8 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
         )
         queries = spark.createDataFrame(
             [
-                ("q-free-form", "  AURORA,   beacon!  ", {"is_question": 0, "is_time_sensitive": 0}, False, False),
-                ("q-navigation", "navigation", {"is_question": 0, "is_time_sensitive": 0}, False, False),
+                ("q-free-form", "natural", "  AURORA,   beacon!  ", {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
+                ("q-navigation", "natural", "navigation", {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
             ],
             search_schemas.SEARCH_QUERY_SCHEMA,
         )

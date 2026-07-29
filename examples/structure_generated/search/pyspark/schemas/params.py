@@ -6,6 +6,7 @@ from examples.structure_generated.search.pyspark.schemas.label import LABEL_SCHE
 
 
 EVALUATION_PARAMS_SCHEMA = T.StructType([
+    T.StructField("queryset", T.StringType(), True),
     T.StructField("labels", T.ArrayType(LABEL_SCHEMA, containsNull=False), False),
     T.StructField("band_id", T.StringType(), True),
 ])

@@ -1,3 +1,5 @@
+"""Relation-aware row scopes and join helpers for compiled PySpark steps."""
+
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -27,6 +29,13 @@ from structure.plugin.pyspark.dsl.types import BooleanType
 
 
 class InputScope(RowScope):
+    """A named transform input or relation visible to a step method.
+
+    ``InputScope`` behaves like :class:`RowScope` for field access, but it also
+    remembers the input name, source frame, and declared schema needed to record
+    joins.  Users normally receive instances as transform parameters; they do
+    not construct scopes directly.
+    """
 
     def __init__(self, *, name: str, schema: type[Schema], source: str | None = None) -> None:
         super().__init__(name=name, schema=schema)
@@ -36,6 +45,7 @@ class InputScope(RowScope):
         self._structure_joined_scope: RowScope | None = None
 
     def lookup_join(self, *, on: Expression, how: Join | str = Join.LEFT, hint: JoinHint | str | None = None) -> RowScope:
+        """Reject method-style lookup joins in favor of unambiguous helper calls."""
         raise TypeError(
             "self.customers.lookup_join(...) is not supported. "
             "Use lookup_join(self.customers, on=...) or add a relation parameter "
@@ -127,7 +137,9 @@ def lookup_join(
     how: Join | str = Join.LEFT,
     hint: JoinHint | str | None = None,
     dedupe: JoinDedupe | None = None,
-) -> Relation: ...
+) -> Relation:
+    """Join an explicitly passed lookup relation and return that relation scope."""
+    ...
 
 
 @overload
@@ -137,7 +149,9 @@ def lookup_join(
     how: Join | str = Join.LEFT,
     hint: JoinHint | str | None = None,
     dedupe: JoinDedupe | None = None,
-) -> InputScope: ...
+) -> InputScope:
+    """Join an inferred lookup relation and return its scope."""
+    ...
 
 
 def lookup_join(
@@ -148,6 +162,26 @@ def lookup_join(
     hint: JoinHint | str | None = None,
     dedupe: JoinDedupe | None = None,
 ) -> Relation | InputScope:
+    """Add a key-preserving lookup join against a relation.
+
+    Args:
+        relation: Relation parameter or transform input to join. When omitted,
+            Structure infers the relation from the join predicate.
+        on: Boolean Structure expression connecting the current row to the
+            relation row.
+        how: Join direction; defaults to a left lookup.
+        hint: Optional Spark join hint.
+        dedupe: Optional single-row policy for lookup relations.
+
+    Returns:
+        The joined relation scope so users can read its fields in later
+        expressions.
+
+    Example:
+        def enrich(self, order, customer):
+            customer = lookup_join(customer, on=order.customer_id == customer.id)
+            return EnrichedOrder(customer_name=customer.name)
+    """
     context = current_context()
     if context is None:
         raise RuntimeError("lookup_join(...) can only be used inside a compiled Structure step method")
@@ -166,6 +200,7 @@ def lookup_join(
 
 
 def exactly_one(relation: Relation) -> Relation:
+    """Assert that a relation contributes exactly one matching row."""
     context = current_context()
     if context is None:
         raise RuntimeError("exactly_one(...) can only be used inside a compiled Structure step method")
@@ -183,7 +218,9 @@ def exists(
     *,
     on: object,
     hint: JoinHint | str | None = None,
-) -> Expression: ...
+) -> Expression:
+    """Test an explicitly passed relation for a matching row."""
+    ...
 
 
 @overload
@@ -191,7 +228,9 @@ def exists(
     *,
     on: object,
     hint: JoinHint | str | None = None,
-) -> Expression: ...
+) -> Expression:
+    """Test an inferred relation for a matching row."""
+    ...
 
 
 def exists(
@@ -200,6 +239,7 @@ def exists(
     on: object,
     hint: JoinHint | str | None = None,
 ) -> Expression:
+    """Return a boolean expression that is true when a matching relation row exists."""
     return _existence_join(JoinMethod.EXISTS, relation, on=on, hint=hint)
 
 
@@ -209,7 +249,9 @@ def not_exists(
     *,
     on: object,
     hint: JoinHint | str | None = None,
-) -> Expression: ...
+) -> Expression:
+    """Test an explicitly passed relation for absence of matching rows."""
+    ...
 
 
 @overload
@@ -217,7 +259,9 @@ def not_exists(
     *,
     on: object,
     hint: JoinHint | str | None = None,
-) -> Expression: ...
+) -> Expression:
+    """Test an inferred relation for absence of matching rows."""
+    ...
 
 
 def not_exists(
@@ -226,6 +270,7 @@ def not_exists(
     on: object,
     hint: JoinHint | str | None = None,
 ) -> Expression:
+    """Return a boolean expression that is true when no matching relation row exists."""
     return _existence_join(JoinMethod.NOT_EXISTS, relation, on=on, hint=hint)
 
 
@@ -240,7 +285,9 @@ def rowset_join(
     hint: JoinHint | str | None = None,
     strategy: JoinStrategy | str | None = None,
     allow_cartesian: bool = False,
-) -> Relation: ...
+) -> Relation:
+    """Join an explicitly passed rowset relation."""
+    ...
 
 
 @overload
@@ -253,7 +300,9 @@ def rowset_join(
     hint: JoinHint | str | None = None,
     strategy: JoinStrategy | str | None = None,
     allow_cartesian: bool = False,
-) -> InputScope: ...
+) -> InputScope:
+    """Join an inferred or keyword-provided rowset relation."""
+    ...
 
 
 def rowset_join(
@@ -267,6 +316,32 @@ def rowset_join(
     strategy: JoinStrategy | str | None = None,
     allow_cartesian: bool = False,
 ) -> Relation | InputScope:
+    """Add a general rowset join that may change row cardinality.
+
+    Use this helper for ordinary Spark joins where duplicate matches are
+    meaningful.  The helper validates explicit cross joins, relation inference,
+    join hints, and join strategy values before adding the operation plan.
+
+    Args:
+        relation: Right-side relation. When omitted, Structure may infer it from
+            field references in ``on``.
+        left: Optional left row scope when joining from a previously joined row.
+        right: Keyword form of ``relation``.
+        on: Boolean join predicate, or key names accepted by ``using``-style
+            validation.
+        how: Spark join type. Defaults to ``Join.INNER``.
+        hint: Optional Spark join hint.
+        strategy: Optional physical join strategy.
+        allow_cartesian: Required guard for ``Join.CROSS``.
+
+    Returns:
+        The joined relation scope.
+
+    Example:
+        def enrich(self, order, line):
+            line = rowset_join(line, on=order.id == line.order_id)
+            return OrderLineView(order_id=order.id, sku=line.sku)
+    """
     context = _join_context("rowset_join")
     if relation is not None and right is not None:
         raise TypeError("rowset_join(...) accepts either a positional relation or right=, not both")
@@ -325,7 +400,9 @@ def left_join(
     on: object,
     hint: JoinHint | str | None = None,
     strategy: JoinStrategy | str | None = None,
-) -> Relation: ...
+) -> Relation:
+    """Left join an explicitly passed relation."""
+    ...
 
 
 @overload
@@ -334,7 +411,9 @@ def left_join(
     on: object,
     hint: JoinHint | str | None = None,
     strategy: JoinStrategy | str | None = None,
-) -> InputScope: ...
+) -> InputScope:
+    """Left join an inferred relation."""
+    ...
 
 
 def left_join(
@@ -344,6 +423,7 @@ def left_join(
     hint: JoinHint | str | None = None,
     strategy: JoinStrategy | str | None = None,
 ) -> Relation | InputScope:
+    """Add a Spark left rowset join."""
     if relation is None:
         return rowset_join(on=on, how=Join.LEFT, hint=hint, strategy=strategy)
     return rowset_join(relation, on=on, how=Join.LEFT, hint=hint, strategy=strategy)
@@ -356,7 +436,9 @@ def inner_join(
     on: object,
     hint: JoinHint | str | None = None,
     strategy: JoinStrategy | str | None = None,
-) -> Relation: ...
+) -> Relation:
+    """Inner join an explicitly passed relation."""
+    ...
 
 
 @overload
@@ -365,7 +447,9 @@ def inner_join(
     on: object,
     hint: JoinHint | str | None = None,
     strategy: JoinStrategy | str | None = None,
-) -> InputScope: ...
+) -> InputScope:
+    """Inner join an inferred relation."""
+    ...
 
 
 def inner_join(
@@ -375,6 +459,7 @@ def inner_join(
     hint: JoinHint | str | None = None,
     strategy: JoinStrategy | str | None = None,
 ) -> Relation | InputScope:
+    """Add a Spark inner rowset join."""
     if relation is None:
         return rowset_join(on=on, how=Join.INNER, hint=hint, strategy=strategy)
     return rowset_join(relation, on=on, how=Join.INNER, hint=hint, strategy=strategy)
@@ -386,7 +471,9 @@ def right_join(
     *,
     on: object,
     strategy: JoinStrategy | str | None = None,
-) -> Relation: ...
+) -> Relation:
+    """Right join an explicitly passed relation."""
+    ...
 
 
 @overload
@@ -394,7 +481,9 @@ def right_join(
     *,
     on: object,
     strategy: JoinStrategy | str | None = None,
-) -> InputScope: ...
+) -> InputScope:
+    """Right join an inferred relation."""
+    ...
 
 
 def right_join(
@@ -403,6 +492,7 @@ def right_join(
     on: object,
     strategy: JoinStrategy | str | None = None,
 ) -> Relation | InputScope:
+    """Add a Spark right rowset join."""
     if relation is None:
         return rowset_join(on=on, how=Join.RIGHT, strategy=strategy)
     return rowset_join(relation, on=on, how=Join.RIGHT, strategy=strategy)
@@ -414,7 +504,9 @@ def full_join(
     *,
     on: object,
     strategy: JoinStrategy | str | None = None,
-) -> Relation: ...
+) -> Relation:
+    """Full join an explicitly passed relation."""
+    ...
 
 
 @overload
@@ -422,7 +514,9 @@ def full_join(
     *,
     on: object,
     strategy: JoinStrategy | str | None = None,
-) -> InputScope: ...
+) -> InputScope:
+    """Full join an inferred relation."""
+    ...
 
 
 def full_join(
@@ -431,6 +525,7 @@ def full_join(
     on: object,
     strategy: JoinStrategy | str | None = None,
 ) -> Relation | InputScope:
+    """Add a Spark full rowset join."""
     if relation is None:
         return rowset_join(on=on, how=Join.FULL, strategy=strategy)
     return rowset_join(relation, on=on, how=Join.FULL, strategy=strategy)
@@ -443,6 +538,20 @@ def cross_join(
     allow_cartesian: bool = False,
     strategy: JoinStrategy | None = None,
 ) -> Relation | InputScope:
+    """Add an explicit Spark cross join.
+
+    Args:
+        relation: Right-side relation, when passed positionally.
+        right: Right-side relation, when keyword style is clearer.
+        allow_cartesian: Required ``True`` guard for cartesian joins.
+        strategy: Optional physical join strategy.
+
+    Returns:
+        The joined relation scope.
+
+    Example:
+        joined = cross_join(calendar, allow_cartesian=True)
+    """
     if relation is None:
         return rowset_join(right=right, how=Join.CROSS, strategy=strategy, allow_cartesian=allow_cartesian)
     return rowset_join(
@@ -465,7 +574,9 @@ def temporal_one(
     how: Join | str = Join.LEFT,
     overlaps: OverlapPolicy | str = OverlapPolicy.ERROR,
     hint: JoinHint | str | None = None,
-) -> Relation: ...
+) -> Relation:
+    """Join the valid temporal version from an explicitly passed relation."""
+    ...
 
 
 @overload
@@ -478,7 +589,9 @@ def temporal_one(
     how: Join | str = Join.LEFT,
     overlaps: OverlapPolicy | str = OverlapPolicy.ERROR,
     hint: JoinHint | str | None = None,
-) -> InputScope: ...
+) -> InputScope:
+    """Join the valid temporal version from an inferred relation."""
+    ...
 
 
 def temporal_one(
@@ -492,6 +605,30 @@ def temporal_one(
     overlaps: OverlapPolicy | str = OverlapPolicy.ERROR,
     hint: JoinHint | str | None = None,
 ) -> Relation | InputScope:
+    """Join the single temporal version valid at an event time.
+
+    Args:
+        relation: Temporal relation to join.
+        on: Boolean key predicate.
+        at: Event-time expression from the current row.
+        valid_from: Start timestamp on the temporal relation.
+        valid_to: End timestamp on the temporal relation.
+        how: Spark join type, typically left.
+        overlaps: Policy for overlapping validity ranges.
+        hint: Optional Spark join hint.
+
+    Returns:
+        The temporal relation scope.
+
+    Example:
+        price = temporal_one(
+            prices,
+            on=order.sku == prices.sku,
+            at=order.created_at,
+            valid_from=prices.valid_from,
+            valid_to=prices.valid_to,
+        )
+    """
     context = _join_context("temporal_one")
     predicate = _join_predicate("temporal_one", on)
     if relation is None:
@@ -536,7 +673,9 @@ def as_of_one(
     how: Join | str = Join.LEFT,
     ties: TiePolicy | str = TiePolicy.ERROR,
     hint: JoinHint | str | None = None,
-) -> Relation: ...
+) -> Relation:
+    """Join the nearest as-of row from an explicitly passed relation."""
+    ...
 
 
 @overload
@@ -550,7 +689,9 @@ def as_of_one(
     how: Join | str = Join.LEFT,
     ties: TiePolicy | str = TiePolicy.ERROR,
     hint: JoinHint | str | None = None,
-) -> InputScope: ...
+) -> InputScope:
+    """Join the nearest as-of row from an inferred relation."""
+    ...
 
 
 def as_of_one(
@@ -565,6 +706,30 @@ def as_of_one(
     ties: TiePolicy | str = TiePolicy.ERROR,
     hint: JoinHint | str | None = None,
 ) -> Relation | InputScope:
+    """Join the single nearest row according to as-of time semantics.
+
+    Args:
+        relation: Relation containing timestamped facts.
+        on: Boolean key predicate.
+        left_time: Event-time expression from the current row.
+        right_time: Time expression on the joined relation.
+        direction: Search direction, such as ``AsOf.BACKWARD``.
+        tolerance: Optional maximum time distance.
+        how: Spark join type, typically left.
+        ties: Policy for multiple equally near rows.
+        hint: Optional Spark join hint.
+
+    Returns:
+        The as-of relation scope.
+
+    Example:
+        quote = as_of_one(
+            quotes,
+            on=trade.symbol == quotes.symbol,
+            left_time=trade.executed_at,
+            right_time=quotes.quoted_at,
+        )
+    """
     context = _join_context("as_of_one")
     predicate = _join_predicate("as_of_one", on)
     if relation is None:

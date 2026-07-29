@@ -110,6 +110,26 @@ def test_evaluation_params_matches_global_band_with_null_safe_equality() -> None
     assert _body(Select).filters[0].kind == "null_safe_eq"
 
 
+def test_evaluation_params_matches_nullable_queryset_slice() -> None:
+    """A null requested queryset selects every query set."""
+
+    from examples.search.schemas.evaluation.params import EvaluationParams
+    from examples.search.schemas.search import SearchQuery
+
+    @transform
+    class Select(Transform):
+        queries = input(SearchQuery)
+        params = input(EvaluationParams)
+        selected = output(SearchQuery)
+
+        def select(self, query: SearchQuery, params: EvaluationParams) -> SearchQuery:
+            cross_join(params, allow_cartesian=True)
+            where(params.matches_queryset(query))
+            return SearchQuery.project(query)
+
+    assert _body(Select).filters[0].kind == "or"
+
+
 def test_schema_project_merges_unrelated_rows() -> None:
     """I can project distinct fields from multiple unrelated source rows."""
 

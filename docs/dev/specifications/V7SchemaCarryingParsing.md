@@ -12,9 +12,11 @@ small normalized option record. It does not admit schema inference or arbitrary 
     from_csv(value, as_=Record, options=CsvOptions())
     to_csv(value, options=CsvOptions())
 
-`from_json` and `from_csv` accept String and return the exact `Struct[Record]` shape. `to_json` and `to_csv` accept a
-typed Struct and return nullable String. `JsonOptions` and `CsvOptions` are immutable literal-only records. Their first
-release supports delimiter, quote, escape, null value, date format, timestamp format, and permissive parsing mode.
+`from_json` and `from_csv` accept String and return the exact `Struct[Record]` type. Because Spark 3.5 and 4.0
+materialize permissively parsed struct fields as nullable, the declared parser Schema must mark every parsed field
+nullable. `to_json` and `to_csv` accept a typed Struct and return nullable String. `JsonOptions` and `CsvOptions` are
+immutable literal-only records. Their first release supports delimiter, quote, escape, null value, date format,
+timestamp format, and permissive parsing mode.
 
 ## Semantics
 
@@ -29,6 +31,7 @@ remain outside this release.
 ## Compiler Contract and Evidence
 
 The compiler maps a Structure Schema into the target schema argument and serializes normalized options into immutable
-recipes. Online and generated rendering use the same options and public PySpark functions. Tests cover option rejection,
-result shape, nullability, malformed input, nested records, generated source, parity, diagnostics, and live PySpark
-3.5/4.0 evidence.
+recipes. JSON parsing uses a `StructType` schema argument. CSV parsing uses a DDL schema string because PySpark 3.5/4.0
+`from_csv` accepts schema strings or schema columns, not Python `StructType` values. Online and generated rendering use
+the same options and public PySpark functions. Tests cover option rejection, result shape, nullability, malformed input,
+nested records, generated source, parity, diagnostics, and live PySpark 3.5/4.0 evidence.

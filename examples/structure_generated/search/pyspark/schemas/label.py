@@ -4,6 +4,17 @@
 from pyspark.sql import types as T
 
 
+INTENT_SCHEMA = T.StructType([
+    T.StructField("id", T.StringType(), False),
+    T.StructField("name", T.StringType(), False),
+])
+
+INTENT_PATTERN_SCHEMA = T.StructType([
+    T.StructField("intent_id", T.StringType(), False),
+    T.StructField("language", T.StringType(), False),
+    T.StructField("pattern", T.StringType(), False),
+])
+
 LABEL_SCHEMA = T.StructType([
     T.StructField("name", T.StringType(), False),
     T.StructField("value", T.LongType(), False),
@@ -17,6 +28,15 @@ QUERY_LABEL_SCHEMA = T.StructType([
 
 LABEL_MAP_ENTRY_SCHEMA = T.StructType([
     T.StructField("key", T.StringType(), False),
+    T.StructField("value", T.LongType(), False),
+])
+
+QUERY_INTENT_LABEL_SCHEMA = T.StructType([
+    T.StructField("query_id", T.StringType(), False),
+    T.StructField("content", T.StringType(), False),
+    T.StructField("language", T.StringType(), False),
+    T.StructField("intent_id", T.StringType(), False),
+    T.StructField("name", T.StringType(), False),
     T.StructField("value", T.LongType(), False),
 ])
 

@@ -1,7 +1,8 @@
 {
   "dependencies": [
     "assignment",
-    "assignments"
+    "assignments",
+    "created_labels"
   ],
   "generated_by": "Structure",
   "inputs": [
@@ -14,6 +15,11 @@
       "name": "query_labels",
       "ordinal": 1,
       "schema": "QueryLabel"
+    },
+    {
+      "name": "created_labels",
+      "ordinal": 2,
+      "schema": "QueryLabelAssignments"
     }
   ],
   "name": "MergeQueryLabels",
@@ -115,7 +121,41 @@
           "input": "assignment"
         }
       ],
-      "name": "merge",
+      "name": "merge_caller_labels",
+      "output_lane": "caller_labeled_queries",
+      "output_schema": "SearchQuery",
+      "results": [
+        {
+          "frame": "caller_labeled_queries",
+          "lane": "caller_labeled_queries",
+          "schema": "SearchQuery"
+        }
+      ]
+    },
+    {
+      "input_lane": "caller_labeled_queries",
+      "input_schema": "SearchQuery",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "SearchQuery",
+          "source": "caller_labeled_queries"
+        },
+        {
+          "driving": false,
+          "parameter": "assignment",
+          "schema": "QueryLabelAssignments",
+          "source": "created_labels"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "assignment"
+        }
+      ],
+      "name": "merge_created_labels",
       "output_lane": "labeled_queries",
       "output_schema": "SearchQuery",
       "results": [

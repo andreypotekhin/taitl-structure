@@ -1403,6 +1403,14 @@
       "constant": "INDEXED_SIMILAR_SENTENCE_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "Intent": {
+      "constant": "INTENT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "IntentPattern": {
+      "constant": "INTENT_PATTERN_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
     "Label": {
       "constant": "LABEL_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.label"
@@ -1514,6 +1522,10 @@
     "QueryDocumentSignals": {
       "constant": "QUERY_DOCUMENT_SIGNALS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.relevance"
+    },
+    "QueryIntentLabel": {
+      "constant": "QUERY_INTENT_LABEL_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
     },
     "QueryLabel": {
       "constant": "QUERY_LABEL_SCHEMA",
@@ -1798,6 +1810,8 @@
         "detail": {},
         "operation": "filter",
         "sources": [
+          "params.queryset",
+          "query.queryset",
           "params.labels",
           "query.labels"
         ],
@@ -1871,6 +1885,7 @@
         },
         "operation": "project",
         "sources": [
+          "params.queryset",
           "params.labels",
           "params.band_id"
         ],

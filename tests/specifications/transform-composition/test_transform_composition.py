@@ -4,8 +4,12 @@ import pytest
 
 from structure import *
 from structure.core.compiler.api import Compiler
+from structure.core.compiler.compileability.streaming_compatibility.api import StreamingSupport
 from structure.core.runtime.session.model.TransformResult import TransformResult
+from structure.plugin.api.v1 import TransformMemberOrigin
 from structure.plugin.pyspark import *
+from structure.plugin.pyspark.compiler.model.PySparkHookRecipe import PySparkHookRecipe
+from structure.plugin.pyspark.execution.logic.InvokePySparkHooks import InvokePySparkHooks
 from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 
 
@@ -48,6 +52,10 @@ class Metric(Schema):
     value = integer(nullable=True)
 
 
+class TextRow(Schema):
+    value = string(nullable=False)
+
+
 @transform
 class NormalizeOrders(Transform):
     orders = input(Raw)
@@ -74,6 +82,42 @@ class PublishOrders(Transform):
 
     def publish(self, order: Enriched) -> Published:
         return Published(id=order.id, product_name=order.product_name)
+
+
+@transform
+class HookedNormalizeOrders(Transform):
+    orders = input(Raw)
+    normalized_rows = lane(Normalized)
+    normalized = output(Normalized)
+
+    @step(output=normalized_rows)
+    def normalize(self, order: Raw) -> Normalized:
+        return Normalized(id=order.id, product_id=order.product_id)
+
+    @raw(inout=normalized_rows | normalized_rows)
+    def polish(self, *, normalized_rows, spark, ctx):
+        return normalized_rows
+
+    def publish(self, row: Normalized) -> Normalized:
+        return Normalized(id=row.id, product_id=row.product_id)
+
+
+@transform
+class HookedTextStage(Transform):
+    source = input(TextRow)
+    middle = lane(TextRow)
+    result = output(TextRow)
+
+    @step(output=middle)
+    def normalize(self, row: TextRow) -> TextRow:
+        return TextRow(value=row.value)
+
+    @raw(inout=middle | middle)
+    def polish(self, *, middle, spark, ctx):
+        return middle
+
+    def publish(self, row: TextRow) -> TextRow:
+        return TextRow(value=row.value)
 
 
 @transform
@@ -334,6 +378,209 @@ def test_class_field_pipeline_compiles_and_renders_generated_transform() -> None
         "# Step method: add_product.add_product"
     )
     assert text.index("# Step method: add_product.add_product") < text.index("# Step method: publish_orders.publish")
+
+
+def test_to_pipeline_preserves_stage_owned_hook_boundaries() -> None:
+    class PublishNormalized(Transform):
+        normalized = input(Normalized)
+        published = output(Normalized)
+
+        def publish(self, row: Normalized) -> Normalized:
+            return Normalized(id=row.id, product_id=row.product_id)
+
+    plan = _analysis(HookedNormalizeOrders(orders=object()).to(PublishNormalized()))
+    hook = plan.steps[0].after_hooks[0]
+
+    assert hook.name == "polish"
+    assert hook.target == "hooked_normalize_orders.normalize"
+    assert hook.sources == ("hooked_normalize_orders__normalized_rows",)
+    assert hook.outputs[0].name == "hooked_normalize_orders__normalized_rows"
+    assert hook.origin is not None
+    assert hook.origin.class_name == "HookedNormalizeOrders"
+    assert plan.steps[1].source == "hooked_normalize_orders__normalized_rows"
+
+
+def test_stage_graph_preserves_stage_owned_hook_boundaries() -> None:
+    class PublishNormalized(Transform):
+        normalized = input(Normalized)
+        published = output(Normalized)
+
+        def publish(self, row: Normalized) -> Normalized:
+            return Normalized(id=row.id, product_id=row.product_id)
+
+    class NormalizeGraph(Transform):
+        orders = input(Raw)
+        published = output(Normalized)
+
+        normalized_stage = stage(HookedNormalizeOrders(orders=orders))
+        published_stage = stage(PublishNormalized(normalized=normalized_stage.normalized))
+
+    plan = _analysis(NormalizeGraph)
+    hook = plan.steps[0].after_hooks[0]
+
+    assert hook.target == "normalized_stage.normalize"
+    assert hook.sources == ("normalized_stage__normalized_rows",)
+    assert hook.outputs[0].name == "normalized_stage__normalized_rows"
+    assert hook.origin is not None
+    assert hook.origin.class_name == "HookedNormalizeOrders"
+
+
+def test_composed_stage_owned_hook_traceability_records_opaque_boundary() -> None:
+    class PublishNormalized(Transform):
+        normalized = input(Normalized)
+        published = output(Normalized)
+
+        def publish(self, row: Normalized) -> Normalized:
+            return Normalized(id=row.id, product_id=row.product_id)
+
+    class HookPipeline(Transform):
+        orders = input(Raw)
+
+        pipeline = Transform.to(HookedNormalizeOrders(orders=orders), PublishNormalized())
+
+    traceability = Compiler.traceability.build()(
+        PySpark.compiler.lower()(_analysis(HookPipeline)),
+        source_transform=f"{__name__}.HookPipeline",
+        transform_module="generated.hook_pipeline",
+    )
+    boundaries = {(boundary.step, boundary.hook, boundary.phase) for boundary in traceability.opaque_boundaries}
+
+    assert ("hooked_normalize_orders.normalize", "polish", "raw") in boundaries
+
+
+def test_composed_stage_owned_hook_streaming_report_uses_rewritten_step_boundary() -> None:
+    class PublishNormalized(Transform):
+        normalized = input(Normalized)
+        published = output(Normalized)
+
+        def publish(self, row: Normalized) -> Normalized:
+            return Normalized(id=row.id, product_id=row.product_id)
+
+    plan = _analysis(HookedNormalizeOrders(orders=object()).to(PublishNormalized()))
+    report = Compiler.compileability.streaming()(PySpark.compiler.lower()(plan), required=True)
+
+    assert report.support is StreamingSupport.UNKNOWN
+    assert len(report.findings) == 1
+    assert report.findings[0].step == "hooked_normalize_orders.normalize"
+    assert report.findings[0].operation == "raw hook polish"
+
+
+def test_generated_composed_pipeline_imports_and_dispatches_stage_owned_hooks() -> None:
+    class PublishNormalized(Transform):
+        normalized = input(Normalized)
+        published = output(Normalized)
+
+        def publish(self, row: Normalized) -> Normalized:
+            return Normalized(id=row.id, product_id=row.product_id)
+
+    class HookPipeline(Transform):
+        orders = input(Raw)
+
+        pipeline = Transform.to(HookedNormalizeOrders(orders=orders), PublishNormalized())
+
+    text = PySpark.render.transform()(
+        PySpark.compiler.lower()(_analysis(HookPipeline)),
+        source_transform=f"{__name__}.HookPipeline",
+        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
+        schema_modules={Raw: __name__, Normalized: __name__},
+    )
+
+    assert "from test_transform_composition import HookPipeline, HookedNormalizeOrders" in text
+    assert "self._impl_hooked_normalize_orders_HookedNormalizeOrders = HookedNormalizeOrders()" in text
+    assert (
+        "hooked_normalize_orders__normalized_rows = "
+        "self._impl_hooked_normalize_orders_HookedNormalizeOrders.polish("
+    ) in text
+
+
+def test_generated_repeated_composed_hook_class_uses_stage_local_delegates() -> None:
+    class HookPipeline(Transform):
+        source = input(TextRow)
+
+        pipeline = Transform.to(HookedTextStage(source=source), HookedTextStage())
+
+    text = PySpark.render.transform()(
+        PySpark.compiler.lower()(_analysis(HookPipeline)),
+        source_transform=f"{__name__}.HookPipeline",
+        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
+        schema_modules={TextRow: __name__},
+    )
+
+    assert "self._impl_hooked_text_stage_HookedTextStage = HookedTextStage()" in text
+    assert "self._impl_hooked_text_stage_2_HookedTextStage = HookedTextStage()" in text
+    assert "hooked_text_stage__middle = self._impl_hooked_text_stage_HookedTextStage.polish(" in text
+    assert "hooked_text_stage_2__middle = self._impl_hooked_text_stage_2_HookedTextStage.polish(" in text
+
+
+def test_embedded_generated_composed_pipeline_dispatches_stage_owned_hooks() -> None:
+    class PublishNormalized(Transform):
+        normalized = input(Normalized)
+        published = output(Normalized)
+
+        def publish(self, row: Normalized) -> Normalized:
+            return Normalized(id=row.id, product_id=row.product_id)
+
+    class HookPipeline(Transform):
+        orders = input(Raw)
+
+        pipeline = Transform.to(HookedNormalizeOrders(orders=orders), PublishNormalized())
+
+    text = PySpark.render.transform()(
+        PySpark.compiler.lower()(_analysis(HookPipeline)),
+        source_transform=f"{__name__}.HookPipeline",
+        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
+        schema_modules={Raw: __name__, Normalized: __name__},
+        generated_code_options=("embed_hooks",),
+    )
+
+    assert "class HookedNormalizeOrdersGenerated:" in text
+    assert "def polish(self, *, normalized_rows, spark, ctx):" in text
+    assert "hooked_normalize_orders__normalized_rows = HookedNormalizeOrdersGenerated.polish(" in text
+    assert "self._impl_HookedNormalizeOrders" not in text
+
+
+def test_online_hook_invoker_dispatches_to_pipeline_stage_owner_instance() -> None:
+    class StatefulHook(Transform):
+        rows = input(Raw)
+        normalized = output(Normalized)
+
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
+            self.marker = "stage-owned"
+
+        def normalize(self, row: Raw) -> Normalized:
+            return Normalized(id=row.id, product_id=row.product_id)
+
+        def polish(self, *, normalized, spark, ctx):
+            return f"{normalized}:{self.marker}"
+
+    first = StatefulHook(rows=object())
+    second = StatefulHook()
+    first.marker = "first"
+    second.marker = "second"
+    pipeline = first.to(second)
+    hook = PySparkHookRecipe(
+        name="polish",
+        phase="raw",
+        target="stateful_hook_2.normalize",
+        lanes=("normalized",),
+        outputs=("normalized",),
+        sources=("normalized",),
+        schema_mode=SchemaMode.STRICT,
+        project_output=False,
+        streaming=False,
+        origin=TransformMemberOrigin.of(StatefulHook, "polish"),
+    )
+    frames: dict[str, object] = {"normalized": "frame"}
+
+    InvokePySparkHooks().apply(
+        (hook,),
+        frames=frames,
+        invocation=cast(Any, pipeline),
+        session=type("Session", (), {"spark": object(), "ctx": object()})(),
+    )
+
+    assert frames["normalized"] == "frame:second"
 
 
 def test_stage_graph_exports_declared_outputs_from_multiple_stages() -> None:

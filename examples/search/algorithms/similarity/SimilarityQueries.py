@@ -52,6 +52,7 @@ class SimilarityQueries:
             )
             .withColumn("is_question", F.lit(False))
             .withColumn("is_time_sensitive", F.lit(False))
+            .withColumn("language", F.lit(None).cast("string"))
         )
 
     @staticmethod

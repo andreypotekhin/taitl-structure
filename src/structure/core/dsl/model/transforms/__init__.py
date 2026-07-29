@@ -1,3 +1,5 @@
+"""Transform declaration objects and decorators exported by the Core DSL."""
+
 from structure.core.dsl.model.transforms.InputDeclaration import InputDeclaration
 from structure.core.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.core.dsl.model.transforms.StageDeclaration import StageDeclaration, StageOutputReference

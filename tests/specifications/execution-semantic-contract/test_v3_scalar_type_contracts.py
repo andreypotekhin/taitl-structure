@@ -11,7 +11,7 @@ from structure.plugin.pyspark import *
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.expressions import literal
-from structure.plugin.pyspark.dsl.types import DecimalType, StructType
+from structure.plugin.pyspark.dsl.types import BinaryType, DecimalType, StringType, StructType
 
 
 def _compile(transform):
@@ -87,6 +87,81 @@ class RequiredNestedDetails(Schema):
 
 class RequiredNestedSource(Schema):
     details = struct(RequiredNestedDetails, nullable=False)
+
+
+class ParsedPayload(Schema):
+    code = string(nullable=True)
+    amount = integer(nullable=True)
+
+
+def test_v7_binary_literals_and_encoding_helpers_have_precise_types() -> None:
+    payload = literal(b"paid")
+    encoded = base64(payload)
+    decoded = unbase64(encoded)
+    text_bytes = encode("paid", charset="UTF-8")
+    text = decode(payload, charset="UTF-8")
+
+    assert isinstance(payload.type, BinaryType)
+    assert payload.data is not None
+    assert payload.data["value"] == b"paid"
+    assert isinstance(encoded.type, StringType)
+    assert encoded.nullable is False
+    assert isinstance(decoded.type, BinaryType)
+    assert decoded.nullable is True
+    assert isinstance(text_bytes.type, BinaryType)
+    assert text_bytes.nullable is False
+    assert isinstance(text.type, StringType)
+    assert text.nullable is False
+
+
+def test_v7_binary_encoding_helpers_reject_wrong_types_and_invalid_charsets() -> None:
+    with pytest.raises(TypeError, match="base64\\(\\.\\.\\.\\) requires a Binary Structure expression"):
+        base64("paid")
+    with pytest.raises(TypeError, match="unbase64\\(\\.\\.\\.\\) requires a String Structure expression"):
+        unbase64(b"cGFpZA==")
+    with pytest.raises(TypeError, match="encode\\(\\.\\.\\.\\) charset must be a non-empty string literal"):
+        encode("paid", charset="")
+    with pytest.raises(TypeError, match="decode\\(\\.\\.\\.\\) requires a Binary Structure expression"):
+        decode("paid")
+
+
+def test_v7_schema_carrying_parsing_helpers_have_precise_types_and_options() -> None:
+    parsed_json = from_json('{"code":"paid","amount":2}', as_=ParsedPayload)
+    parsed_csv = from_csv("paid|2", as_=ParsedPayload, options=CsvOptions(delimiter="|", null_value=""))
+    rendered_json = to_json(parsed_json, options=JsonOptions(date_format="yyyy-MM-dd"))
+    rendered_csv = to_csv(parsed_csv, options=CsvOptions(delimiter="|"))
+
+    assert isinstance(parsed_json.type, StructType)
+    assert parsed_json.type.schema is ParsedPayload
+    assert parsed_json.nullable is True
+    assert isinstance(parsed_csv.type, StructType)
+    assert parsed_csv.type.schema is ParsedPayload
+    assert parsed_csv.data is not None
+    assert parsed_csv.data["options"] == {"sep": "|", "nullValue": "", "mode": "PERMISSIVE"}
+    assert isinstance(rendered_json.type, StringType)
+    assert rendered_json.nullable is True
+    assert isinstance(rendered_csv.type, StringType)
+    assert rendered_csv.nullable is True
+
+
+def test_v7_schema_carrying_parsing_helpers_reject_untyped_options_and_schemas() -> None:
+    class RequiredPayload(Schema):
+        code = string(nullable=False)
+
+    with pytest.raises(TypeError, match="from_json\\(\\.\\.\\.\\) as_= must be a Schema class"):
+        from_json("{}", as_=object)
+    with pytest.raises(TypeError, match="from_json\\(\\.\\.\\.\\) as_= schema field RequiredPayload.code must be nullable"):
+        from_json("{}", as_=RequiredPayload)
+    with pytest.raises(TypeError, match="JSON conversion options must be a JsonOptions value"):
+        from_json("{}", as_=ParsedPayload, options={})  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match="CSV conversion options must be a CsvOptions value"):
+        from_csv("paid,2", as_=ParsedPayload, options={})  # type: ignore[arg-type]
+    with pytest.raises(TypeError, match='CsvOptions.mode must be "PERMISSIVE"'):
+        from_csv("paid,2", as_=ParsedPayload, options=CsvOptions(mode="FAILFAST"))
+    with pytest.raises(TypeError, match="CsvOptions.delimiter must be a non-empty string or None"):
+        from_csv("paid,2", as_=ParsedPayload, options=CsvOptions(delimiter=""))
+    with pytest.raises(TypeError, match="to_json\\(\\.\\.\\.\\) requires a Struct Structure expression"):
+        to_json("paid")
 
 
 class RequiredUdfSource(Schema):

@@ -8,6 +8,12 @@
       "type": "string"
     },
     {
+      "column": "queryset",
+      "name": "queryset",
+      "nullable": false,
+      "type": "string"
+    },
+    {
       "column": "content",
       "name": "content",
       "nullable": false,
@@ -30,6 +36,12 @@
       "name": "is_time_sensitive",
       "nullable": false,
       "type": "boolean"
+    },
+    {
+      "column": "language",
+      "name": "language",
+      "nullable": true,
+      "type": "string"
     }
   ],
   "generated_by": "Structure",

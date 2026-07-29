@@ -5,7 +5,18 @@ import pytest
 from structure import Schema, Transform, input, output
 from structure.core.cli.commands.RenderExplainReport import render_explain_report
 from structure.core.compiler.api import Compiler
-from structure.plugin.pyspark import array, explode_struct, integer, string, struct
+from structure.plugin.pyspark import (
+    array,
+    explode_outer_struct,
+    explode_struct,
+    inline_outer_struct,
+    inline_struct,
+    integer,
+    long,
+    posexplode_outer_struct,
+    string,
+    struct,
+)
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.plugin.pyspark.render.commands.RenderPySparkStep import render_pyspark_step
 
@@ -25,10 +36,34 @@ class ExplodedTerm(Schema):
     weight = integer(nullable=False)
 
 
+class OuterExplodedTerm(Schema):
+    token = string(nullable=True)
+    weight = integer(nullable=True)
+
+
+class OuterPositionedTerm(Schema):
+    ordinal = long(nullable=True)
+    token = string(nullable=True)
+    weight = integer(nullable=True)
+
+
 class DocumentTerm(Schema):
     doc_id = string(nullable=False)
     token = string(nullable=False)
     weight = integer(nullable=False)
+
+
+class OuterDocumentTerm(Schema):
+    doc_id = string(nullable=False)
+    token = string(nullable=True)
+    weight = integer(nullable=True)
+
+
+class OuterPositionedDocumentTerm(Schema):
+    doc_id = string(nullable=False)
+    ordinal = long(nullable=True)
+    token = string(nullable=True)
+    weight = integer(nullable=True)
 
 
 class ExpandTerms(Transform):
@@ -38,6 +73,59 @@ class ExpandTerms(Transform):
     def expand(self, document: Document) -> DocumentTerm:
         term = explode_struct(document.terms, as_=ExplodedTerm, scope="term")
         return DocumentTerm(
+            doc_id=document.doc_id,
+            token=term.token,
+            weight=term.weight,
+        )
+
+
+class ExpandOuterTerms(Transform):
+    documents = input(Document)
+    terms = output(OuterDocumentTerm)
+
+    def expand(self, document: Document) -> OuterDocumentTerm:
+        term = explode_outer_struct(document.terms, as_=OuterExplodedTerm, scope="term")
+        return OuterDocumentTerm(
+            doc_id=document.doc_id,
+            token=term.token,
+            weight=term.weight,
+        )
+
+
+class ExpandOuterPositionedTerms(Transform):
+    documents = input(Document)
+    terms = output(OuterPositionedDocumentTerm)
+
+    def expand(self, document: Document) -> OuterPositionedDocumentTerm:
+        term = posexplode_outer_struct(document.terms, as_=OuterPositionedTerm, scope="term")
+        return OuterPositionedDocumentTerm(
+            doc_id=document.doc_id,
+            ordinal=term.ordinal,
+            token=term.token,
+            weight=term.weight,
+        )
+
+
+class InlineTerms(Transform):
+    documents = input(Document)
+    terms = output(DocumentTerm)
+
+    def expand(self, document: Document) -> DocumentTerm:
+        term = inline_struct(document.terms, as_=ExplodedTerm, scope="term")
+        return DocumentTerm(
+            doc_id=document.doc_id,
+            token=term.token,
+            weight=term.weight,
+        )
+
+
+class InlineOuterTerms(Transform):
+    documents = input(Document)
+    terms = output(OuterDocumentTerm)
+
+    def expand(self, document: Document) -> OuterDocumentTerm:
+        term = inline_outer_struct(document.terms, as_=OuterExplodedTerm, scope="term")
+        return OuterDocumentTerm(
             doc_id=document.doc_id,
             token=term.token,
             weight=term.weight,
@@ -105,5 +193,220 @@ def test_explode_struct_requires_exact_element_schema() -> None:
         Compiler.frontend.compile()(BadTransform, materialize_schemas=False)
 
 
+def test_explode_outer_struct_records_an_outer_row_expanding_operation() -> None:
+    operation = _outer_lowered().steps[0].operations[0]
+
+    assert operation.kind == "explode_outer_struct"
+    assert operation.posexplode_struct is not None
+    assert operation.posexplode_struct.function == "explode_outer"
+    assert operation.posexplode_struct.outer is True
+    assert operation.posexplode_struct.scope == "term"
+    assert operation.posexplode_struct.schema is OuterExplodedTerm
+    assert operation.posexplode_struct.ordinal is None
+
+
+def test_explode_outer_struct_renders_public_pyspark_generator_source() -> None:
+    rendered = render_pyspark_step(_outer_lowered().steps[0], current="documents", sources={"documents": "documents"})
+
+    assert 'F.explode_outer(F.col("document.terms")).alias("__structure_term_1_item")' in rendered
+    assert 'F.col("__structure_term_1_item.token")' in rendered
+    assert 'F.col("__structure_term_1_item.weight")' in rendered
+    assert "__structure_term_1_pos" not in rendered
+    assert "posexplode" not in rendered
+
+
+def test_explode_outer_struct_explain_names_row_expansion_and_streaming_status() -> None:
+    text = render_explain_report(ExpandOuterTerms)
+
+    assert "operations: explode_outer_struct(row_multiplying scope=term schema=OuterExplodedTerm)" in text
+    assert "STREAM-E0801: batch_only in expand (explode_outer_struct term)" in text
+
+
+def test_explode_outer_struct_records_traceability_dependency() -> None:
+    traceability = Compiler.traceability.build()(
+        _outer_lowered(),
+        source_transform="tests.ExpandOuterTerms",
+        transform_module="tests.generated",
+    )
+    dependencies = {dependency.target: dependency for dependency in traceability.static_dataflow}
+
+    dependency = dependencies["expand.explode_outer_struct[0].term"]
+    assert dependency.sources == ("documents.terms",)
+    assert dependency.operation == "explode_outer_struct"
+    assert dependency.detail["schema"] == "OuterExplodedTerm"
+    assert dependency.detail["ordinal"] is None
+
+
+def test_explode_outer_struct_requires_nullable_generated_fields() -> None:
+    class BadTransform(Transform):
+        documents = input(Document)
+        terms = output(DocumentTerm)
+
+        def expand(self, document: Document) -> DocumentTerm:
+            term = explode_outer_struct(document.terms, as_=ExplodedTerm, scope="term")
+            return DocumentTerm(doc_id="", token=term.token, weight=term.weight)
+
+    with pytest.raises(TypeError, match="must be nullable"):
+        Compiler.frontend.compile()(BadTransform, materialize_schemas=False)
+
+
+def test_posexplode_outer_struct_records_an_outer_ordinal_operation() -> None:
+    operation = _outer_positioned_lowered().steps[0].operations[0]
+
+    assert operation.kind == "posexplode_outer_struct"
+    assert operation.posexplode_struct is not None
+    assert operation.posexplode_struct.function == "posexplode_outer"
+    assert operation.posexplode_struct.outer is True
+    assert operation.posexplode_struct.scope == "term"
+    assert operation.posexplode_struct.schema is OuterPositionedTerm
+    assert operation.posexplode_struct.ordinal == "ordinal"
+
+
+def test_posexplode_outer_struct_renders_public_pyspark_generator_source() -> None:
+    rendered = render_pyspark_step(
+        _outer_positioned_lowered().steps[0],
+        current="documents",
+        sources={"documents": "documents"},
+    )
+
+    assert (
+        'F.posexplode_outer(F.col("document.terms")).alias("__structure_term_1_pos", "__structure_term_1_item")'
+        in rendered
+    )
+    assert 'F.col("__structure_term_1_pos").cast(T.LongType())' in rendered
+    assert 'F.col("__structure_term_1_item.token")' in rendered
+    assert 'F.col("__structure_term_1_item.weight")' in rendered
+
+
+def test_posexplode_outer_struct_explain_names_row_expansion_and_streaming_status() -> None:
+    text = render_explain_report(ExpandOuterPositionedTerms)
+
+    assert "operations: posexplode_outer_struct(row_multiplying scope=term schema=OuterPositionedTerm)" in text
+    assert "STREAM-E0801: batch_only in expand (posexplode_outer_struct term)" in text
+
+
+def test_posexplode_outer_struct_records_traceability_dependency() -> None:
+    traceability = Compiler.traceability.build()(
+        _outer_positioned_lowered(),
+        source_transform="tests.ExpandOuterPositionedTerms",
+        transform_module="tests.generated",
+    )
+    dependencies = {dependency.target: dependency for dependency in traceability.static_dataflow}
+
+    dependency = dependencies["expand.posexplode_outer_struct[0].term"]
+    assert dependency.sources == ("documents.terms",)
+    assert dependency.operation == "posexplode_outer_struct"
+    assert dependency.detail["schema"] == "OuterPositionedTerm"
+    assert dependency.detail["ordinal"] == "ordinal"
+
+
+def test_posexplode_outer_struct_requires_nullable_ordinal() -> None:
+    class BadTerm(Schema):
+        ordinal = long(nullable=False)
+        token = string(nullable=True)
+        weight = integer(nullable=True)
+
+    class BadTransform(Transform):
+        documents = input(Document)
+        terms = output(OuterPositionedDocumentTerm)
+
+        def expand(self, document: Document) -> OuterPositionedDocumentTerm:
+            term = posexplode_outer_struct(document.terms, as_=BadTerm, scope="term")
+            return OuterPositionedDocumentTerm(
+                doc_id="",
+                ordinal=term.ordinal,
+                token=term.token,
+                weight=term.weight,
+            )
+
+    with pytest.raises(TypeError, match="field must be nullable"):
+        Compiler.frontend.compile()(BadTransform, materialize_schemas=False)
+
+
+def test_inline_struct_records_a_row_expanding_operation() -> None:
+    operation = _inline_lowered().steps[0].operations[0]
+
+    assert operation.kind == "inline_struct"
+    assert operation.posexplode_struct is not None
+    assert operation.posexplode_struct.function == "inline"
+    assert operation.posexplode_struct.outer is False
+    assert operation.posexplode_struct.scope == "term"
+    assert operation.posexplode_struct.schema is ExplodedTerm
+    assert operation.posexplode_struct.ordinal is None
+
+
+def test_inline_struct_renders_public_pyspark_generator_source() -> None:
+    rendered = render_pyspark_step(_inline_lowered().steps[0], current="documents", sources={"documents": "documents"})
+
+    assert (
+        'F.inline(F.col("document.terms")).alias("__structure_term_1_pos_token", "__structure_term_1_pos_weight")'
+        in rendered
+    )
+    assert 'F.col("__structure_term_1_pos_token")' in rendered
+    assert 'F.col("__structure_term_1_pos_weight")' in rendered
+    assert "posexplode" not in rendered
+    assert "F.explode(" not in rendered
+
+
+def test_inline_outer_struct_records_an_outer_row_expanding_operation() -> None:
+    operation = _inline_outer_lowered().steps[0].operations[0]
+
+    assert operation.kind == "inline_outer_struct"
+    assert operation.posexplode_struct is not None
+    assert operation.posexplode_struct.function == "inline_outer"
+    assert operation.posexplode_struct.outer is True
+    assert operation.posexplode_struct.scope == "term"
+    assert operation.posexplode_struct.schema is OuterExplodedTerm
+    assert operation.posexplode_struct.ordinal is None
+
+
+def test_inline_outer_struct_explain_and_traceability_name_precise_kind() -> None:
+    text = render_explain_report(InlineOuterTerms)
+    traceability = Compiler.traceability.build()(
+        _inline_outer_lowered(),
+        source_transform="tests.InlineOuterTerms",
+        transform_module="tests.generated",
+    )
+    dependencies = {dependency.target: dependency for dependency in traceability.static_dataflow}
+
+    assert "operations: inline_outer_struct(row_multiplying scope=term schema=OuterExplodedTerm)" in text
+    assert "STREAM-E0801: batch_only in expand (inline_outer_struct term)" in text
+    dependency = dependencies["expand.inline_outer_struct[0].term"]
+    assert dependency.sources == ("documents.terms",)
+    assert dependency.operation == "inline_outer_struct"
+
+
+def test_inline_outer_struct_requires_nullable_generated_fields() -> None:
+    class BadTransform(Transform):
+        documents = input(Document)
+        terms = output(DocumentTerm)
+
+        def expand(self, document: Document) -> DocumentTerm:
+            term = inline_outer_struct(document.terms, as_=ExplodedTerm, scope="term")
+            return DocumentTerm(doc_id="", token=term.token, weight=term.weight)
+
+    with pytest.raises(TypeError, match="must be nullable"):
+        Compiler.frontend.compile()(BadTransform, materialize_schemas=False)
+
+
 def _lowered() -> PySparkExecutionPlan:
     return cast(PySparkExecutionPlan, Compiler.frontend.compile()(ExpandTerms, materialize_schemas=False).lowered)
+
+
+def _outer_lowered() -> PySparkExecutionPlan:
+    return cast(PySparkExecutionPlan, Compiler.frontend.compile()(ExpandOuterTerms, materialize_schemas=False).lowered)
+
+
+def _outer_positioned_lowered() -> PySparkExecutionPlan:
+    return cast(
+        PySparkExecutionPlan,
+        Compiler.frontend.compile()(ExpandOuterPositionedTerms, materialize_schemas=False).lowered,
+    )
+
+
+def _inline_lowered() -> PySparkExecutionPlan:
+    return cast(PySparkExecutionPlan, Compiler.frontend.compile()(InlineTerms, materialize_schemas=False).lowered)
+
+
+def _inline_outer_lowered() -> PySparkExecutionPlan:
+    return cast(PySparkExecutionPlan, Compiler.frontend.compile()(InlineOuterTerms, materialize_schemas=False).lowered)

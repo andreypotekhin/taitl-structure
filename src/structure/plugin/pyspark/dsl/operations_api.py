@@ -1,3 +1,12 @@
+"""Higher-order PySpark DSL operations.
+
+This module covers operations that go beyond simple scalar expressions:
+aggregations, ranking and selected-row transforms, ordered scans, windows,
+deduplication, and array/map higher-order functions.  Public helpers return
+symbolic :class:`Expression` objects or record operation plans in the active
+compile context; Spark execution happens only after compilation.
+"""
+
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -45,18 +54,45 @@ from structure.plugin.pyspark.dsl.windows.WindowSpec import WindowSpec
 
 
 def group_by(*keys: object, **named_keys: object) -> "GroupedRows":
+    """Declare ordinary aggregate grouping keys for the current step.
+
+    Args:
+        *keys: Positional grouping expressions.
+        **named_keys: Grouping expressions with explicit output names.
+
+    Returns:
+        A grouped-row builder for aggregate projection.
+
+    Example:
+        grouped = group_by(order.customer_id)
+        return grouped.project(CustomerSpend(total=sum(order.total)))
+    """
     return _grouping("group_by", "group_by(...)", keys, named_keys)
 
 
 def rollup(*keys: object, **named_keys: object) -> "GroupedRows":
+    """Declare Spark rollup grouping for aggregate output."""
     return _grouping("rollup", "rollup(...)", keys, named_keys)
 
 
 def cube(*keys: object, **named_keys: object) -> "GroupedRows":
+    """Declare Spark cube grouping for aggregate output."""
     return _grouping("cube", "cube(...)", keys, named_keys)
 
 
 def grouping_sets(*levels: object, **named_levels: object) -> "GroupedRows":
+    """Declare explicit grouping-set levels for aggregate output.
+
+    Args:
+        *levels: Grouping levels, each expressed as one key or a key sequence.
+        **named_levels: Named grouping levels.
+
+    Returns:
+        A grouped-row builder for aggregate projection.
+
+    Example:
+        grouped = grouping_sets((order.region, order.category), (order.region,), ())
+    """
     context = _context("grouping_sets(...)")
     parsed_levels = tuple(_grouping_set_level(level) for level in (*levels, *named_levels.values()))
     if not parsed_levels:
@@ -69,14 +105,17 @@ def grouping_sets(*levels: object, **named_levels: object) -> "GroupedRows":
 
 
 def grouping_id() -> Expression:
+    """Return Spark ``grouping_id`` for grouping-set style aggregations."""
     return _aggregate("grouping_id", type=IntegerType(), nullable=False)
 
 
 def is_grouped(value: object) -> Expression:
+    """Return whether a grouping-set key is present in the current aggregate row."""
     return _aggregate("is_grouped", literal(value), type=BooleanType(), nullable=False)
 
 
 def having(predicate: object) -> None:
+    """Declare an aggregate ``having`` predicate for the current step."""
     context = _context("having(...)")
     if context.aggregate_having is not None:
         raise TypeError("having(...) can only be declared once per aggregate step")
@@ -94,24 +133,74 @@ def _grouping(kind: str, call: str, keys: tuple[object, ...], named_keys: dict[s
 
 
 def count(*, where: object | None = None) -> Expression:
+    """Return a non-null row count aggregate expression.
+
+    Args:
+        where: Optional boolean predicate applied before counting.
+
+    Returns:
+        A ``long`` aggregate expression, like PySpark ``count``.
+
+    Example:
+        total_orders = count()
+        paid_orders = count(where=order.status == "paid")
+    """
     return _aggregate("count", type=LongType(), where=where)
 
 
 def count_distinct(value: object, *, where: object | None = None) -> Expression:
+    """Return a non-null distinct-count aggregate expression."""
     return _aggregate("count_distinct", literal(value), type=LongType(), nullable=False, where=where)
 
 
 def min(value: object, *, where: object | None = None) -> Expression:
+    """Return the smallest value in each aggregate group, like Spark ``min``."""
     argument = literal(value)
     return _aggregate("min", argument, type=argument.type, nullable=argument.nullable or where is not None, where=where)
 
 
 def max(value: object, *, where: object | None = None) -> Expression:
+    """Return the largest value in each aggregate group, like Spark ``max``."""
     argument = literal(value)
     return _aggregate("max", argument, type=argument.type, nullable=argument.nullable or where is not None, where=where)
 
 
+def mode(value: object, *, deterministic: bool = False, where: object | None = None) -> Expression:
+    """Return the most frequent non-null value in each aggregate group.
+
+    This helper matches PySpark ``mode``.  By default, tied most-frequent
+    values may return any tied candidate, matching Spark's non-deterministic
+    behavior.  With ``deterministic=True``, ties return the lowest candidate
+    under Spark's ascending ordering.
+
+    Args:
+        value: Scalar expression whose most common value should be returned.
+        deterministic: Whether tied candidates should choose the lowest value.
+        where: Optional boolean predicate that filters rows before aggregation.
+
+    Returns:
+        A nullable aggregate expression with the same type as ``value``.
+
+    Example:
+        preferred_category = mode(order.category, deterministic=True)
+    """
+    if not isinstance(deterministic, bool):
+        raise TypeError("mode(...) deterministic must be a Boolean")
+    argument = literal(value)
+    if deterministic:
+        argument = _orderable_expression(argument, "mode(..., deterministic=True)")
+    return _aggregate(
+        "mode",
+        argument,
+        type=argument.type,
+        nullable=True,
+        where=where,
+        options=(("deterministic", deterministic),),
+    )
+
+
 def avg(value: object, *, where: object | None = None) -> Expression:
+    """Return an average aggregate with Spark numeric widening."""
     argument = literal(value)
     return _aggregate(
         "avg",
@@ -123,6 +212,7 @@ def avg(value: object, *, where: object | None = None) -> Expression:
 
 
 def sum(value: object, *, where: object | None = None) -> Expression:
+    """Return a sum aggregate with Spark numeric widening."""
     argument = literal(value)
     return _aggregate(
         "sum", argument, type=_sum_type(argument), nullable=argument.nullable or where is not None, where=where
@@ -130,6 +220,7 @@ def sum(value: object, *, where: object | None = None) -> Expression:
 
 
 def bool_and(value: object, *, where: object | None = None) -> Expression:
+    """Return whether every boolean value in the group is true."""
     argument = literal(value)
     return _aggregate(
         "bool_and", argument, type=BooleanType(), nullable=argument.nullable or where is not None, where=where
@@ -137,6 +228,7 @@ def bool_and(value: object, *, where: object | None = None) -> Expression:
 
 
 def bool_or(value: object, *, where: object | None = None) -> Expression:
+    """Return whether any boolean value in the group is true."""
     argument = literal(value)
     return _aggregate(
         "bool_or", argument, type=BooleanType(), nullable=argument.nullable or where is not None, where=where
@@ -144,32 +236,52 @@ def bool_or(value: object, *, where: object | None = None) -> Expression:
 
 
 def stddev(value: object, *, where: object | None = None) -> Expression:
+    """Return the sample standard deviation aggregate."""
     return _aggregate("stddev", literal(value), type=DoubleType(), nullable=True, where=where)
 
 
 def variance(value: object, *, where: object | None = None) -> Expression:
+    """Return the sample variance aggregate."""
     return _aggregate("variance", literal(value), type=DoubleType(), nullable=True, where=where)
 
 
 def skewness(value: object, *, where: object | None = None) -> Expression:
+    """Return the skewness aggregate as a double."""
     return _aggregate("skewness", literal(value), type=DoubleType(), nullable=True, where=where)
 
 
 def kurtosis(value: object, *, where: object | None = None) -> Expression:
+    """Return the kurtosis aggregate as a double."""
     return _aggregate("kurtosis", literal(value), type=DoubleType(), nullable=True, where=where)
 
 
 def corr(left: object, right: object, *, where: object | None = None) -> Expression:
+    """Return Pearson correlation for two numeric expressions."""
     return _aggregate("corr", literal(left), literal(right), type=DoubleType(), nullable=True, where=where)
 
 
 def covar(left: object, right: object, *, where: object | None = None) -> Expression:
+    """Return sample covariance for two numeric expressions."""
     return _aggregate("covar", literal(left), literal(right), type=DoubleType(), nullable=True, where=where)
 
 
 def approx_count_distinct(
     value: object, *, relative_sd: float | None = None, where: object | None = None
 ) -> Expression:
+    """Return Spark HyperLogLog-style approximate distinct count.
+
+    Args:
+        value: Expression to count.
+        relative_sd: Optional relative standard deviation from greater than
+            zero through ``0.39``, matching Spark's accepted range.
+        where: Optional boolean predicate that filters rows before aggregation.
+
+    Returns:
+        A non-null ``long`` aggregate expression.
+
+    Example:
+        customer_estimate = approx_count_distinct(order.customer_id, relative_sd=0.05)
+    """
     if relative_sd is not None and not _relative_standard_deviation(relative_sd):
         raise TypeError(
             "approx_count_distinct(...) relative_sd must be a finite number greater than 0 and at most 0.39"
@@ -191,6 +303,14 @@ def approx_percentile(
     accuracy: int | None = None,
     where: object | None = None,
 ) -> Expression:
+    """Return Spark's approximate percentile aggregate.
+
+    Args:
+        value: Numeric or orderable expression to summarize.
+        percentage: Percentile from ``0`` through ``1``.
+        accuracy: Optional positive Spark accuracy parameter.
+        where: Optional boolean predicate that filters rows before aggregation.
+    """
     if not _percentage(percentage):
         raise TypeError("approx_percentile(...) percentage must be a finite number from 0 through 1")
     if accuracy is not None and not _positive_integer(accuracy):
@@ -207,6 +327,7 @@ def approx_percentile(
 
 
 def percentile(value: object, percentage: float, *, frequency: int = 1, where: object | None = None) -> Expression:
+    """Return Spark's exact percentile aggregate."""
     if not _percentage(percentage):
         raise TypeError("percentile(...) percentage must be a finite number from 0 through 1")
     if not _positive_integer(frequency):
@@ -228,6 +349,21 @@ def collect_list(
     element_type: StructureType | None = None,
     where: object | None = None,
 ) -> Expression:
+    """Collect aggregate values into an array, optionally ordered.
+
+    Args:
+        value: Expression to collect.
+        order_by: Optional ordering expression for deterministic collection.
+        element_type: Optional explicit element type when inference is not
+            enough.
+        where: Optional boolean predicate applied before collection.
+
+    Returns:
+        A non-null array aggregate expression, like PySpark ``collect_list``.
+
+    Example:
+        skus = collect_list(line.sku, order_by=line.ordinal.asc())
+    """
     argument = literal(value)
     order = None if order_by is None else _ordered_aggregate_key(order_by, "collect_list(...)")
     return _aggregate(
@@ -241,6 +377,7 @@ def collect_list(
 
 
 def collect_set(value: object, *, element_type: StructureType | None = None, where: object | None = None) -> Expression:
+    """Collect distinct aggregate values into an array."""
     argument = literal(value)
     return _aggregate(
         "collect_set",
@@ -260,6 +397,23 @@ def first_value(
     where: object | None = None,
     ties: TiePolicy | str = TiePolicy.ERROR,
 ) -> Expression:
+    """Return the first ordered aggregate value or window value.
+
+    Args:
+        value: Expression to return.
+        order_by: Ordering expression for aggregate use.
+        over: Analytic window spec for window use.
+        ignore_nulls: Whether Spark skips nulls for window use.
+        where: Optional aggregate predicate.
+        ties: Tie policy for aggregate selection.
+
+    Returns:
+        An expression with the same Structure type as ``value``.
+
+    Examples:
+        first_sku = first_value(line.sku, order_by=line.ordinal.asc())
+        first_in_window = first_value(line.sku, over=window(partition_by=order.id, order_by=line.ordinal))
+    """
     argument = literal(value)
     _boolean_option("first_value(...)", "ignore_nulls", ignore_nulls)
     if over is not None:
@@ -292,6 +446,7 @@ def last_value(
     where: object | None = None,
     ties: TiePolicy | str = TiePolicy.ERROR,
 ) -> Expression:
+    """Return the last ordered aggregate value or window value."""
     argument = literal(value)
     _boolean_option("last_value(...)", "ignore_nulls", ignore_nulls)
     if over is not None:
@@ -316,18 +471,22 @@ def last_value(
 
 
 def latest_by(order_by: object, *, partition_by: object, ties: TiePolicy | str = TiePolicy.ERROR) -> None:
+    """Select the latest row in each partition before projection."""
     _selected_rows("latest", order_by, partition_by=partition_by, ties=ties, call="latest_by(...)")
 
 
 def earliest_by(order_by: object, *, partition_by: object, ties: TiePolicy | str = TiePolicy.ERROR) -> None:
+    """Select the earliest row in each partition before projection."""
     _selected_rows("earliest", order_by, partition_by=partition_by, ties=ties, call="earliest_by(...)")
 
 
 def dedupe_latest_by(order_by: object, *, partition_by: object, ties: TiePolicy | str = TiePolicy.ERROR) -> None:
+    """Keep the latest row in each partition and drop the rest."""
     _selected_rows("latest", order_by, partition_by=partition_by, ties=ties, call="dedupe_latest_by(...)")
 
 
 def dedupe_earliest_by(order_by: object, *, partition_by: object, ties: TiePolicy | str = TiePolicy.ERROR) -> None:
+    """Keep the earliest row in each partition and drop the rest."""
     _selected_rows("earliest", order_by, partition_by=partition_by, ties=ties, call="dedupe_earliest_by(...)")
 
 
@@ -340,6 +499,28 @@ def scan(
     step: Callable[[Any, Any], Schema],
     ties: TiePolicy | str = TiePolicy.ERROR,
 ) -> Any:
+    """Declare a bounded ordered state scan.
+
+    Args:
+        initial: Fully populated schema instance used as the initial state.
+        partition_by: Partition key expression or sequence of key expressions.
+        order_by: Ordering expression or sequence of ordering expressions.
+        max_rows: Positive bound on rows inspected for each output row.
+        step: Two-argument callback receiving previous state and current row.
+        ties: Tie policy; currently only ``"error"`` is supported.
+
+    Returns:
+        A row scope for the scan state output.
+
+    Example:
+        running = scan(
+            initial=Balance(total=0),
+            partition_by=entry.account_id,
+            order_by=entry.posted_at,
+            max_rows=1000,
+            step=lambda state, row: Balance(total=state.total + row.amount),
+        )
+    """
     context = cast(Any, _context("scan(...)"))
     if any(operation.ordered_timeline_scan is not None for operation in context.operations):
         raise TypeError("scan(...) can only be declared once per step in v6")
@@ -390,6 +571,7 @@ def scan(
 
 
 def row_number(*, partition_by: object, order_by: object, descending: bool = False) -> Expression:
+    """Return a row-number window expression."""
     return _window_expression(
         "row_number",
         type=LongType(),
@@ -401,6 +583,7 @@ def row_number(*, partition_by: object, order_by: object, descending: bool = Fal
 
 
 def rank(*, partition_by: object, order_by: object, descending: bool = False) -> Expression:
+    """Return a rank window expression with gaps after ties."""
     return _window_expression(
         "rank",
         type=LongType(),
@@ -412,6 +595,7 @@ def rank(*, partition_by: object, order_by: object, descending: bool = False) ->
 
 
 def dense_rank(*, partition_by: object, order_by: object, descending: bool = False) -> Expression:
+    """Return a dense-rank window expression without gaps after ties."""
     return _window_expression(
         "dense_rank",
         type=LongType(),
@@ -431,6 +615,7 @@ def lag(
     default: object = None,
     descending: bool = False,
 ) -> Expression:
+    """Return the previous value in a partition-ordered window."""
     argument = literal(value)
     _integer_at_least("lag(...) offset", offset, 1)
     _window_default("lag(...)", argument, default)
@@ -456,6 +641,7 @@ def lead(
     default: object = None,
     descending: bool = False,
 ) -> Expression:
+    """Return the next value in a partition-ordered window."""
     argument = literal(value)
     _integer_at_least("lead(...) offset", offset, 1)
     _window_default("lead(...)", argument, default)
@@ -480,6 +666,7 @@ def rolling_sum(
     preceding: int,
     descending: bool = False,
 ) -> Expression:
+    """Return a rolling sum over the previous ``preceding`` rows."""
     argument = _numeric_expression(value, "rolling_sum(...)")
     _integer_at_least("rolling_sum(...) preceding", preceding, 0)
     return _rolling_expression(
@@ -502,6 +689,7 @@ def rolling_avg(
     preceding: int,
     descending: bool = False,
 ) -> Expression:
+    """Return a rolling average over the previous ``preceding`` rows."""
     argument = _numeric_expression(value, "rolling_avg(...)")
     _integer_at_least("rolling_avg(...) preceding", preceding, 0)
     return _rolling_expression(
@@ -524,6 +712,7 @@ def rolling_min(
     preceding: int,
     descending: bool = False,
 ) -> Expression:
+    """Return a rolling minimum over the previous ``preceding`` rows."""
     argument = _orderable_expression(value, "rolling_min(...)")
     _integer_at_least("rolling_min(...) preceding", preceding, 0)
     return _rolling_expression(
@@ -546,6 +735,7 @@ def rolling_max(
     preceding: int,
     descending: bool = False,
 ) -> Expression:
+    """Return a rolling maximum over the previous ``preceding`` rows."""
     argument = _orderable_expression(value, "rolling_max(...)")
     _integer_at_least("rolling_max(...) preceding", preceding, 0)
     return _rolling_expression(
@@ -566,7 +756,9 @@ def window(
     partition_by: object,
     order_by: object,
     frame: "WindowFrame | None" = None,
-) -> "WindowSpec": ...
+) -> "WindowSpec":
+    """Build a reusable analytic window spec for ``over=`` helpers."""
+    ...
 
 
 @overload
@@ -576,7 +768,9 @@ def window(
     /,
     slide: str | None = None,
     start: str | None = None,
-) -> Expression: ...
+) -> Expression:
+    """Build a Spark event-time window grouping expression."""
+    ...
 
 
 def window(
@@ -587,6 +781,33 @@ def window(
     slide: str | None = None,
     start: str | None = None,
 ) -> "WindowSpec | Expression":
+    """Create either an analytic window spec or event-time grouping key.
+
+    Positional ``window(event_time, duration, ...)`` returns a time-window
+    expression for aggregations. Keyword ``window(partition_by=..., order_by=...)``
+    returns a reusable analytic window specification.
+
+    Args:
+        *arguments: ``event_time`` and ``duration`` for Spark event-time
+            windows, plus optional ``slide`` and ``start`` intervals.
+        partition_by: Partition key or keys for analytic windows.
+        order_by: Ordering expression or expressions for analytic windows.
+        frame: Optional ``rows_between`` or ``range_between`` frame.
+        slide: Optional event-time slide interval.
+        start: Optional event-time start interval.
+
+    Returns:
+        A ``WindowSpec`` for analytic helpers, or a ``TimeWindow`` expression
+        for Spark grouped windows.
+
+    Examples:
+        daily = window(event.created_at, "1 day")
+        rolling = window(
+            partition_by=order.customer_id,
+            order_by=order.created_at,
+            frame=rows_between(preceding(6), current_row()),
+        )
+    """
     if arguments:
         if partition_by is not None or order_by is not None or frame is not None:
             raise TypeError("window(...) cannot mix event-time arguments with partition_by=, order_by=, or frame=")
@@ -627,6 +848,18 @@ def window(
 
 
 def session_window(event_time: object, gap: str) -> Expression:
+    """Return a Spark session-window grouping expression.
+
+    Args:
+        event_time: Timestamp expression that defines session activity.
+        gap: Positive fixed Spark interval, such as ``"15 minutes"``.
+
+    Returns:
+        A ``TimeWindow`` struct expression compatible with grouping.
+
+    Example:
+        sessions = group_by(session_window(event.created_at, "30 minutes"))
+    """
     timestamp = literal(event_time)
     if not isinstance(timestamp.type, TimestampType):
         raise TypeError("session_window(...) requires a timestamp expression")
@@ -642,44 +875,54 @@ def session_window(event_time: object, gap: str) -> Expression:
 
 
 def rows_between(start: "WindowBound", end: "WindowBound") -> "WindowFrame":
+    """Create a row-count analytic window frame, like Spark ``rowsBetween``."""
     return _window_frame("rows", start, end)
 
 
 def range_between(start: "WindowBound", end: "WindowBound") -> "WindowFrame":
+    """Create a value-range analytic window frame, like Spark ``rangeBetween``."""
     return _window_frame("range", start, end)
 
 
 def unbounded_preceding() -> "WindowBound":
+    """Return the unbounded-preceding window frame bound."""
     return WindowBound("unbounded_preceding")
 
 
 def unbounded_following() -> "WindowBound":
+    """Return the unbounded-following window frame bound."""
     return WindowBound("unbounded_following")
 
 
 def current_row() -> "WindowBound":
+    """Return the current-row window frame bound."""
     return WindowBound("current_row")
 
 
 def preceding(value: int) -> "WindowBound":
+    """Return a finite preceding window frame bound."""
     _integer_at_least("preceding(...) value", value, 0)
     return WindowBound("preceding", value)
 
 
 def following(value: int) -> "WindowBound":
+    """Return a finite following window frame bound."""
     _integer_at_least("following(...) value", value, 0)
     return WindowBound("following", value)
 
 
 def percent_rank(*, over: "WindowSpec") -> Expression:
+    """Return Spark ``percent_rank`` over a declared window."""
     return _window_over_expression("percent_rank", over=over, type=DoubleType(), nullable=False)
 
 
 def cume_dist(*, over: "WindowSpec") -> Expression:
+    """Return Spark ``cume_dist`` over a declared window."""
     return _window_over_expression("cume_dist", over=over, type=DoubleType(), nullable=False)
 
 
 def ntile(value: int, *, over: "WindowSpec") -> Expression:
+    """Return Spark ``ntile`` bucket numbers over a declared window."""
     _integer_at_least("ntile(...) value", value, 1)
     return _window_over_expression(
         "ntile", over=over, type=IntegerType(), nullable=False, options=(("buckets", value),)
@@ -687,6 +930,7 @@ def ntile(value: int, *, over: "WindowSpec") -> Expression:
 
 
 def nth_value(value: object, n: int, *, over: "WindowSpec", ignore_nulls: bool = False) -> Expression:
+    """Return Spark ``nth_value`` over a declared window."""
     _integer_at_least("nth_value(...) n", n, 1)
     argument = literal(value)
     return _window_over_expression(
@@ -701,6 +945,7 @@ def nth_value(value: object, n: int, *, over: "WindowSpec", ignore_nulls: bool =
 
 
 def window_sum(value: object, *, over: "WindowSpec") -> Expression:
+    """Return Spark ``sum`` over a declared analytic window."""
     argument = _numeric_expression(value, "window_sum(...)")
     return _window_over_expression(
         "sum",
@@ -712,6 +957,7 @@ def window_sum(value: object, *, over: "WindowSpec") -> Expression:
 
 
 def window_avg(value: object, *, over: "WindowSpec") -> Expression:
+    """Return Spark ``avg`` over a declared analytic window."""
     argument = _numeric_expression(value, "window_avg(...)")
     return _window_over_expression(
         "avg",
@@ -723,6 +969,7 @@ def window_avg(value: object, *, over: "WindowSpec") -> Expression:
 
 
 def window_min(value: object, *, over: "WindowSpec") -> Expression:
+    """Return Spark ``min`` over a declared analytic window."""
     argument = _orderable_expression(value, "window_min(...)")
     return _window_over_expression(
         "min",
@@ -734,6 +981,7 @@ def window_min(value: object, *, over: "WindowSpec") -> Expression:
 
 
 def window_max(value: object, *, over: "WindowSpec") -> Expression:
+    """Return Spark ``max`` over a declared analytic window."""
     argument = _orderable_expression(value, "window_max(...)")
     return _window_over_expression(
         "max",
@@ -745,11 +993,13 @@ def window_max(value: object, *, over: "WindowSpec") -> Expression:
 
 
 def window_count(value: object | None = None, *, over: "WindowSpec") -> Expression:
+    """Return Spark ``count`` over a declared analytic window."""
     args = () if value is None else (literal(value),)
     return _window_over_expression("count", *args, over=over, type=LongType(), nullable=False)
 
 
 def window_count_distinct(value: object, *, over: "WindowSpec") -> Expression:
+    """Explain why Spark distinct window aggregates are unavailable."""
     raise TypeError(
         "window_count_distinct(...) is not supported because Spark does not permit distinct window aggregates; "
         "use window_count(...) or aggregate with count_distinct(...) instead"
@@ -757,6 +1007,7 @@ def window_count_distinct(value: object, *, over: "WindowSpec") -> Expression:
 
 
 def window_bool_and(value: object, *, over: "WindowSpec") -> Expression:
+    """Return boolean ``and`` aggregation over a declared analytic window."""
     argument = _window_boolean(value, "window_bool_and(...)")
     return _window_over_expression(
         "bool_and",
@@ -768,6 +1019,7 @@ def window_bool_and(value: object, *, over: "WindowSpec") -> Expression:
 
 
 def window_bool_or(value: object, *, over: "WindowSpec") -> Expression:
+    """Return boolean ``or`` aggregation over a declared analytic window."""
     argument = _window_boolean(value, "window_bool_or(...)")
     return _window_over_expression(
         "bool_or",
@@ -779,16 +1031,19 @@ def window_bool_or(value: object, *, over: "WindowSpec") -> Expression:
 
 
 def window_stddev(value: object, *, over: "WindowSpec") -> Expression:
+    """Return Spark ``stddev`` over a declared analytic window."""
     argument = _window_numeric(value, "window_stddev(...)")
     return _window_over_expression("stddev", argument, over=over, type=DoubleType(), nullable=True)
 
 
 def window_variance(value: object, *, over: "WindowSpec") -> Expression:
+    """Return Spark ``variance`` over a declared analytic window."""
     argument = _window_numeric(value, "window_variance(...)")
     return _window_over_expression("variance", argument, over=over, type=DoubleType(), nullable=True)
 
 
 def window_collect_list(value: object, *, over: "WindowSpec", element_type: StructureType | None = None) -> Expression:
+    """Return Spark ``collect_list`` over a declared analytic window."""
     argument = literal(value)
     return _window_over_expression(
         "collect_list",
@@ -800,6 +1055,7 @@ def window_collect_list(value: object, *, over: "WindowSpec", element_type: Stru
 
 
 def window_collect_set(value: object, *, over: "WindowSpec", element_type: StructureType | None = None) -> Expression:
+    """Return Spark ``collect_set`` over a declared analytic window."""
     argument = literal(value)
     return _window_over_expression(
         "collect_set",
@@ -811,11 +1067,13 @@ def window_collect_set(value: object, *, over: "WindowSpec", element_type: Struc
 
 
 def drop_duplicates(*subset: object) -> None:
+    """Remove duplicate rows from the current relation, like Spark ``dropDuplicates``."""
     duplicate_rows = _duplicate_rows(subset, call="drop_duplicates(...)")
     _context("drop_duplicates()").operations.append(OperationPlan.drop_duplicates_operation(duplicate_rows))
 
 
 def drop_duplicates_within_watermark(*subset: object) -> None:
+    """Remove streaming duplicates within the active event-time watermark."""
     duplicate_rows = _duplicate_rows(subset, call="drop_duplicates_within_watermark(...)")
     _context("drop_duplicates_within_watermark()").operations.append(
         OperationPlan.drop_duplicates_operation(
@@ -829,6 +1087,7 @@ def drop_duplicates_within_watermark(*subset: object) -> None:
 
 
 def distinct(relation: object | None = None) -> None:
+    """Keep distinct rows for the current relation or selected scope."""
     duplicate_rows = DuplicateRowsPlan() if relation is None else _duplicate_rows((relation,), call="distinct(...)")
     _context("distinct()").operations.append(OperationPlan.drop_duplicates_operation(duplicate_rows))
 
@@ -1277,6 +1536,19 @@ def _dedupe_scope(fields: tuple[Expression, ...], *, call: str) -> str | None:
 
 
 def arr_transform(value: object, function: Callable[[Expression], object]) -> Expression:
+    """Apply a typed callback to every array element, like Spark ``transform``.
+
+    Args:
+        value: Array expression.
+        function: One-argument callback that receives an element expression and
+            returns a Structure expression.
+
+    Returns:
+        An array expression whose element type comes from the callback result.
+
+    Example:
+        normalized = arr_transform(order.tags, lambda tag: lower(trim(tag)))
+    """
     argument = literal(value)
     array = _array_type(argument, "arr_transform(...)")
     element = _lambda_arg(array.element, nullable=array.contains_null, name="item")
@@ -1295,6 +1567,7 @@ def arr_transform(value: object, function: Callable[[Expression], object]) -> Ex
 
 
 def arr_filter(value: object, function: Callable[[Expression], object]) -> Expression:
+    """Keep array elements whose callback predicate is true."""
     argument = literal(value)
     array = _array_type(argument, "arr_filter(...)")
     element = _lambda_arg(array.element, nullable=array.contains_null, name="item")
@@ -1312,6 +1585,7 @@ def arr_filter(value: object, function: Callable[[Expression], object]) -> Expre
 
 
 def map_transform_values(value: object, function: Callable[[Expression, Expression], object]) -> Expression:
+    """Transform map values with a typed ``(key, value)`` callback."""
     argument = literal(value)
     map_type = _map_type(argument, "map_transform_values(...)")
     key = _lambda_arg(map_type.key, nullable=False, name="key")
@@ -1331,6 +1605,7 @@ def map_transform_values(value: object, function: Callable[[Expression, Expressi
 
 
 def map_filter(value: object, function: Callable[[Expression, Expression], object]) -> Expression:
+    """Keep map entries whose typed ``(key, value)`` predicate is true."""
     argument = literal(value)
     map_type = _map_type(argument, "map_filter(...)")
     key = _lambda_arg(map_type.key, nullable=False, name="key")
@@ -1349,6 +1624,7 @@ def map_filter(value: object, function: Callable[[Expression, Expression], objec
 
 
 def arr_exists(value: object, function: Callable[[Expression], object], *, argument_name: str = "item") -> Expression:
+    """Return whether any array element satisfies the callback predicate."""
     argument = literal(value)
     array = _array_type(argument, "arr_exists(...)")
     element = _lambda_arg(array.element, nullable=array.contains_null, name=argument_name)
@@ -1367,6 +1643,7 @@ def arr_exists(value: object, function: Callable[[Expression], object], *, argum
 
 
 def arr_forall(value: object, function: Callable[[Expression], object], *, argument_name: str = "item") -> Expression:
+    """Return whether every array element satisfies the callback predicate."""
     argument = literal(value)
     array = _array_type(argument, "arr_forall(...)")
     element = _lambda_arg(array.element, nullable=array.contains_null, name=argument_name)
@@ -1385,6 +1662,7 @@ def arr_forall(value: object, function: Callable[[Expression], object], *, argum
 
 
 def arr_zip_with(left: object, right: object, function: Callable[[Expression, Expression], object]) -> Expression:
+    """Merge two arrays element-by-element with a typed callback."""
     left_arg = literal(left)
     right_arg = literal(right)
     left_array = _array_type(left_arg, "arr_zip_with(...)")
@@ -1411,6 +1689,20 @@ def arr_aggregate(
     merge: Callable[[Expression, Expression], object],
     finish: Callable[[Expression], object] | None = None,
 ) -> Expression:
+    """Reduce an array with typed merge and optional finish callbacks.
+
+    Args:
+        value: Array expression.
+        initial: Initial accumulator value.
+        merge: Two-argument callback receiving accumulator and element.
+        finish: Optional callback that maps the final accumulator to the result.
+
+    Returns:
+        An expression with the accumulator type, or the finish callback type.
+
+    Example:
+        total = arr_aggregate(order.amounts, 0, lambda acc, amount: acc + amount)
+    """
     argument = literal(value)
     initial_value = literal(initial)
     array = _array_type(argument, "arr_aggregate(...)")
@@ -1448,6 +1740,7 @@ def arr_aggregate(
 
 
 def arr_sort_by(value: object, function: Callable[[Expression], object], *, descending: bool = False) -> Expression:
+    """Sort array elements by a typed key callback."""
     _boolean_option("arr_sort_by(...)", "descending", descending)
     argument = literal(value)
     array = _array_type(argument, "arr_sort_by(...)")
@@ -1472,6 +1765,7 @@ def arr_sort_by(value: object, function: Callable[[Expression], object], *, desc
 
 
 def arr_sort(value: object) -> Expression:
+    """Sort an array of scalar values, like Spark ``array_sort``."""
     argument = literal(value)
     array = _array_type(argument, "arr_sort(...)")
     _sortable_type("arr_sort(...) array element", _lambda_arg(array.element, nullable=array.contains_null, name="item"))
@@ -1486,6 +1780,7 @@ def arr_sort(value: object) -> Expression:
 
 
 def arr_reverse(value: object) -> Expression:
+    """Reverse array element order, like Spark ``reverse`` for arrays."""
     argument = literal(value)
     _array_type(argument, "arr_reverse(...)")
     return _reserved_expression(
@@ -1499,6 +1794,7 @@ def arr_reverse(value: object) -> Expression:
 
 
 def arr_flatten(value: object) -> Expression:
+    """Flatten one nesting level from an array of arrays."""
     argument = literal(value)
     array = _array_type(argument, "arr_flatten(...)")
     nested = array.element
@@ -1517,6 +1813,7 @@ def arr_flatten(value: object) -> Expression:
 
 
 def arr_distinct(value: object) -> Expression:
+    """Remove duplicate array elements while preserving Spark semantics."""
     argument = literal(value)
     _array_type(argument, "arr_distinct(...)")
     return _reserved_expression(
@@ -1530,6 +1827,7 @@ def arr_distinct(value: object) -> Expression:
 
 
 def arr_position(value: object, item: object) -> Expression:
+    """Return the one-based position of a literal item in an array."""
     argument = literal(value)
     array_type = _array_type(argument, "arr_position(...)")
     needle = literal(item)
@@ -1547,6 +1845,7 @@ def arr_position(value: object, item: object) -> Expression:
 
 
 def size(value: object) -> Expression:
+    """Return the number of elements in an array or map."""
     argument = literal(value)
     _collection_type(argument, "size(...)")
     return _reserved_expression(
@@ -1560,6 +1859,7 @@ def size(value: object) -> Expression:
 
 
 def array_contains(value: object, item: object) -> Expression:
+    """Return whether an array contains a compatible item."""
     argument = literal(value)
     array_type = _array_type(argument, "array_contains(...)")
     needle = literal(item)
@@ -1575,6 +1875,7 @@ def array_contains(value: object, item: object) -> Expression:
 
 
 def map_contains_key(value: object, key: object) -> Expression:
+    """Return whether a map contains a literal key."""
     argument = literal(value)
     map_type = _map_type(argument, "map_contains_key(...)")
     key_expression = literal(key)
@@ -1595,14 +1896,35 @@ def map_contains_key(value: object, key: object) -> Expression:
 def array(
     element: FieldDeclaration,
     **options: object,
-) -> FieldDeclaration: ...
+) -> FieldDeclaration:
+    """Declare a Spark array field when passed one nested field factory."""
+    ...
 
 
 @overload
-def array(*values: object) -> Expression: ...
+def array(*values: object) -> Expression:
+    """Build a Spark array expression when passed expression values."""
+    ...
 
 
 def array(*values: object, **options: object) -> FieldDeclaration | Expression:
+    """Declare an array field or build an array expression by argument shape.
+
+    Args:
+        *values: Either one nested field declaration or one or more expression
+            values.
+        **options: Field options only when declaring a schema field.
+
+    Returns:
+        A field declaration for ``array(string())`` style schema declarations,
+        or a Spark array expression for ``array(a, b)`` style expression use.
+
+    Examples:
+        class Order(Schema):
+            tags = array(string(), contains_null=False)
+
+        selected_tags = array(order.primary_tag, order.secondary_tag)
+    """
     if len(values) == 1 and isinstance(values[0], FieldDeclaration):
         from structure.plugin.pyspark.dsl.field import array as field_array
 
@@ -1625,6 +1947,7 @@ def array(*values: object, **options: object) -> FieldDeclaration | Expression:
 
 
 def array_repeat(value: object, count: object) -> Expression:
+    """Build an array by repeating a value ``count`` times."""
     item = literal(value)
     item_type = _typed_type("array_repeat(...)", item)
     repeats = literal(count)
@@ -1641,6 +1964,7 @@ def array_repeat(value: object, count: object) -> Expression:
 
 
 def sequence(start: object, stop: object, step: object | None = None) -> Expression:
+    """Build an integer sequence array from start through stop."""
     begin = literal(start)
     end = literal(stop)
     arguments = (begin, end) if step is None else (begin, end, literal(step))
@@ -1662,14 +1986,17 @@ def sequence(start: object, stop: object, step: object | None = None) -> Express
 
 
 def arr_append(value: object, item: object) -> Expression:
+    """Append one item to an array."""
     return _array_mutation("array_append", value, item)
 
 
 def arr_prepend(value: object, item: object) -> Expression:
+    """Prepend one item to an array."""
     return _array_mutation("array_prepend", value, item)
 
 
 def arr_insert(value: object, position: object, item: object) -> Expression:
+    """Insert one item at a one-based array position."""
     argument = literal(value)
     array_type = _array_type(argument, "arr_insert(...)")
     offset = literal(position)
@@ -1690,6 +2017,7 @@ def arr_insert(value: object, position: object, item: object) -> Expression:
 
 
 def arr_remove(value: object, item: object) -> Expression:
+    """Remove all occurrences of a non-null literal from an array."""
     argument = literal(value)
     array_type = _array_type(argument, "arr_remove(...)")
     element = literal(item)
@@ -1707,6 +2035,7 @@ def arr_remove(value: object, item: object) -> Expression:
 
 
 def arr_compact(value: object) -> Expression:
+    """Remove null elements from an array."""
     argument = literal(value)
     array_type = _array_type(argument, "arr_compact(...)")
     return _reserved_expression(
@@ -1720,18 +2049,22 @@ def arr_compact(value: object) -> Expression:
 
 
 def array_union(left: object, right: object) -> Expression:
+    """Return the distinct union of two arrays."""
     return _array_set_operation("array_union", left, right)
 
 
 def array_except(left: object, right: object) -> Expression:
+    """Return array elements from ``left`` that are absent from ``right``."""
     return _array_set_operation("array_except", left, right)
 
 
 def array_intersect(left: object, right: object) -> Expression:
+    """Return distinct elements present in both arrays."""
     return _array_set_operation("array_intersect", left, right)
 
 
 def slice(value: object, start: object, length: object) -> Expression:
+    """Return an array slice using Spark's one-based start index."""
     argument = literal(value)
     array = _array_type(argument, "slice(...)")
     offset = literal(start)
@@ -1751,14 +2084,29 @@ def slice(value: object, start: object, length: object) -> Expression:
 
 
 def element_at(value: object, key: object) -> Expression:
+    """Return an array element or map value by Spark ``element_at`` semantics."""
     return _element_lookup("element_at", value, key)
 
 
 def try_element_at(value: object, key: object) -> Expression:
+    """Return an array or map lookup that tolerates missing positions or keys."""
     return _element_lookup("try_element_at", value, key)
 
 
 def map_concat(*values: object, duplicates: str = "error") -> Expression:
+    """Concatenate maps with matching key and value types.
+
+    Args:
+        *values: Two or more map expressions.
+        duplicates: Duplicate-key policy. Only ``"error"`` is currently
+            supported so generated behavior remains deterministic.
+
+    Returns:
+        A map expression with the shared key and value types.
+
+    Example:
+        merged = map_concat(customer.attributes, order.attributes)
+    """
     if duplicates != "error":
         raise TypeError('map_concat(...) currently supports duplicates="error" only')
     if len(values) < 2:
@@ -1788,6 +2136,7 @@ def map_transform_keys(
     *,
     duplicates: str = "error",
 ) -> Expression:
+    """Transform map keys with a typed ``(key, value)`` callback."""
     if duplicates != "error":
         raise TypeError('map_transform_keys(...) currently supports duplicates="error" only')
     argument = literal(value)
@@ -1815,6 +2164,7 @@ def map_zip_with(
     right: object,
     function: Callable[[Expression, Expression, Expression], object],
 ) -> Expression:
+    """Merge two maps by key with a typed ``(key, left, right)`` callback."""
     left_arg = literal(left)
     right_arg = literal(right)
     left_map = _map_type(left_arg, "map_zip_with(...)")
@@ -1840,6 +2190,7 @@ def map_zip_with(
 
 
 def map_keys(value: object) -> Expression:
+    """Return map keys as an array."""
     argument = literal(value)
     map_type = _map_type(argument, "map_keys(...)")
     return _reserved_expression(
@@ -1853,6 +2204,7 @@ def map_keys(value: object) -> Expression:
 
 
 def map_values(value: object) -> Expression:
+    """Return map values as an array."""
     argument = literal(value)
     map_type = _map_type(argument, "map_values(...)")
     return _reserved_expression(
@@ -1866,6 +2218,7 @@ def map_values(value: object) -> Expression:
 
 
 def map_entries(value: object) -> Expression:
+    """Return map entries as an array of ``key``/``value`` structs."""
     argument = literal(value)
     map_type = _map_type(argument, "map_entries(...)")
     return _reserved_expression(
@@ -1879,6 +2232,7 @@ def map_entries(value: object) -> Expression:
 
 
 def map_from_entries(value: object) -> Expression:
+    """Build a map from an array of ``key``/``value`` structs."""
     argument = literal(value)
     array = _array_type(argument, "map_from_entries(...)")
     entry = _map_entry_fields(array, "map_from_entries(...)")

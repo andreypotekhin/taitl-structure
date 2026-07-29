@@ -1,11 +1,6 @@
-from helpers.fake_pyspark_schema import (  # type: ignore[import-not-found]
-    ArrayType,
-    DecimalType,
-    MapType,
-    StringType,
-    StructField,
-    StructType,
-)
+from helpers.fake_pyspark_schema import ArrayType
+from helpers.fake_pyspark_schema import BinaryType as FakeBinaryType  # type: ignore[import-not-found]
+from helpers.fake_pyspark_schema import DecimalType, MapType, StringType, StructField, StructType
 
 from structure import *
 from structure.plugin.pyspark import *
@@ -15,6 +10,7 @@ def test_generate_structure_schema_from_pyspark_struct_type() -> None:
     schema = StructType(
         (
             StructField("id", StringType(), False),
+            StructField("payload", FakeBinaryType(), False),
             StructField("total", DecimalType(12, 2), True),
             StructField("tags", ArrayType(StringType(), containsNull=False), True),
             StructField("attributes", MapType(StringType(), StringType(), valueContainsNull=True), True),
@@ -39,6 +35,7 @@ def test_generate_structure_schema_from_pyspark_struct_type() -> None:
     assert "    street = string()" in text
     assert "class OrderRaw(Schema):" in text
     assert "    id = string(nullable=False)" in text
+    assert "    payload = binary(nullable=False)" in text
     assert "    total = decimal(12, 2)" in text
     assert "    tags = array(string(), contains_null=False)" in text
     assert "    attributes = map(string(), string(), value_contains_null=True)" in text

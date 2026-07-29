@@ -25,7 +25,7 @@ class EvaluateDocumentRankingQuality(Super):
         where(params.matches_query(query))
         return EvaluationQuery(
             window=batch.window,
-            params=EvaluationParams(labels=params.labels, band_id=params.band_id),
+            params=EvaluationParams(queryset=params.queryset, labels=params.labels, band_id=params.band_id),
             experiment_id="",
             band_id=None,
             search_query_id=query.id,

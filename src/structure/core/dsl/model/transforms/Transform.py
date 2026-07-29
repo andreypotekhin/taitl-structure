@@ -1,3 +1,5 @@
+"""Base class for Structure transforms."""
+
 from __future__ import annotations
 
 import inspect
@@ -12,6 +14,24 @@ from structure.core.dsl.model.transforms.TransformPipeline import TransformPipel
 
 
 class Transform:
+    """A declarative transform made of schema-bound step methods.
+
+    Subclasses declare external inputs, intermediate lanes, outputs, and
+    ``@step`` methods.  Instances bind runtime input values; class methods
+    compile or generate target-specific code.
+
+    Example:
+        @transform
+        class PublishOrders(Transform):
+            orders = input(Order)
+            published = output(PublishedOrder)
+
+            @step(input=orders, output=published)
+            def publish(self, order):
+                return PublishedOrder.project(order)
+
+        artifact = PublishOrders.compile(target="pyspark")
+    """
 
     _structure_inputs: dict[str, InputDeclaration] = {}
     _structure_lanes: dict[str, LaneDeclaration] = {}
@@ -85,6 +105,7 @@ class Transform:
         self._structure_output_renames: dict[str, str] = {}
 
     def run(self, session):
+        """Run this transform invocation through a Structure session."""
         return session.run(self)
 
     @classmethod
@@ -101,6 +122,23 @@ class Transform:
         target: str | None = None,
         **settings: object,
     ):
+        """Compile this transform class or source tree with a target plugin.
+
+        Args:
+            options: Optional compiler options or source tree.
+            project_root: Optional project root used for configuration lookup.
+            config: Explicit Structure configuration object.
+            schema_types: Optional schema type registry override.
+            force: Rebuild even when cached artifacts may exist.
+            plugin_configuration: Advanced plugin configuration override.
+            plugin_registry: Advanced plugin registry override.
+            target: Optional target name, such as ``"pyspark"``.
+            **settings: Compiler option overrides.
+
+        Returns:
+            A compiler artifact for this transform, or a source-tree artifact
+            when called as ``Transform.compile(sources)``.
+        """
         from structure.core.compiler.api.Compiler import Compiler
         from structure.core.compiler.artifacts.model import CompilerOptions
         from structure.core.sources.model.StructureSources import StructureSources
@@ -137,6 +175,24 @@ class Transform:
         force: bool = False,
         **settings: object,
     ):
+        """Generate target code for every transform in the source module.
+
+        Args:
+            options: Optional compiler options.
+            project_root: Optional project root used for configuration lookup.
+            config: Explicit Structure configuration object.
+            storage: Optional generated-file storage implementation.
+            schema_types: Optional schema type registry override.
+            force: Rebuild even when cached artifacts may exist.
+            **settings: Compiler option overrides.
+
+        Returns:
+            A generated transform artifact containing files and write results.
+
+        Example:
+            generated = PublishOrders.generate(target="pyspark")
+            print(generated.files)
+        """
         from structure.core.cli.api import CliApp
         from structure.core.compiler.artifacts.model import CompilerOptions, GeneratedTransform
         from structure.core.compiler.artifacts.storage import DiskStorage
@@ -200,9 +256,21 @@ class Transform:
         )
 
     def to(self, *stages: "Transform") -> TransformPipeline:
+        """Compose this invocation with later transform invocations."""
         return TransformPipeline((self, *stages))
 
     def rename(self, **outputs: str) -> "Transform":
+        """Rename declared outputs on this invocation.
+
+        Args:
+            **outputs: Mapping from declared output name to public alias.
+
+        Returns:
+            This transform invocation, updated with output aliases.
+
+        Example:
+            pipeline = BuildCustomerFacts().rename(facts="customer_facts")
+        """
         unknown = set(outputs) - set(self._structure_outputs)
         if unknown:
             allowed = ", ".join(self._structure_outputs)

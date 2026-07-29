@@ -7,13 +7,14 @@ import pytest
 import structure
 from structure import Schema
 from structure.plugin.pyspark import *
-from structure.plugin.pyspark.dsl.types import Array, Decimal, Map
-from structure.plugin.pyspark.dsl.ValidatePySparkSchemas import ValidatePySparkSchemas
+from structure.plugin.pyspark.dsl.types import Array, Binary, Decimal, Map
+from structure.plugin.pyspark.dsl.validation.ValidatePySparkSchemas import ValidatePySparkSchemas
 
 
 def test_schema_module_wildcard_factories_keep_type_and_nullability_contracts() -> None:
     class Order(Schema):
         id = string(nullable=False)
+        payload = binary(nullable=False)
         promo_code = string(alias="promo-code")
         total = decimal(12, 2, nullable=False)
         tags = array(string(), contains_null=False)
@@ -23,6 +24,8 @@ def test_schema_module_wildcard_factories_keep_type_and_nullability_contracts() 
 
     assert fields["id"].type.name == "string"
     assert fields["id"].nullable is False
+    assert isinstance(fields["payload"].type, Binary)
+    assert fields["payload"].nullable is False
     assert fields["promo_code"].column == "promo-code"
     assert fields["promo_code"].nullable is True
     assert isinstance(fields["total"].type, Decimal)
@@ -95,6 +98,7 @@ def test_python_hints_infer_default_pyspark_fields() -> None:
 
     class Order(Schema):
         name: str
+        payload: bytes
         count: int
         ratio: float
         active: bool
@@ -109,6 +113,7 @@ def test_python_hints_infer_default_pyspark_fields() -> None:
     fields = cast(dict[str, Any], Order._structure_fields)
     assert [fields[name].type.name for name in fields] == [
         "string",
+        "binary",
         "integer",
         "double",
         "boolean",
@@ -127,12 +132,14 @@ def test_python_hints_infer_default_pyspark_fields() -> None:
 
 def test_hints_accept_compatible_factory_detail() -> None:
     class Price(Schema):
+        payload: bytes = binary(nullable=False)
         amount: DecimalValue = decimal(12, 2, nullable=False)
         quantity: int = long(nullable=False)
         ratio: float = float(nullable=False)
         tags: list[str] = array(string(), contains_null=False, nullable=False)
 
     fields = cast(dict[str, Any], Price._structure_fields)
+    assert fields["payload"].type.name == "binary"
     assert fields["amount"].type.name == "decimal"
     assert fields["quantity"].type.name == "long"
     assert fields["ratio"].type.name == "float"

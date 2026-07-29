@@ -25,7 +25,16 @@ class MapPySparkGenerator:
             schema=generator.schema,
             ordinal=generator.ordinal,
             function=generator.function,
+            outer=generator.outer,
         )
+        if generator.function == "explode_outer":
+            return PySparkOperationRecipe.explode_outer_struct_operation(recipe)
         if generator.function == "explode":
             return PySparkOperationRecipe.explode_struct_operation(recipe)
+        if generator.function == "posexplode_outer":
+            return PySparkOperationRecipe.posexplode_outer_struct_operation(recipe)
+        if generator.function == "inline_outer":
+            return PySparkOperationRecipe.inline_outer_struct_operation(recipe)
+        if generator.function == "inline":
+            return PySparkOperationRecipe.inline_struct_operation(recipe)
         return PySparkOperationRecipe.posexplode_struct_operation(recipe)

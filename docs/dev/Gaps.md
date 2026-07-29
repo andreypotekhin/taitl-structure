@@ -65,10 +65,10 @@ page remains the durable register of postponed and deferred work. The design is
 JSON/reference, and the catalog in the same change. Keep the reason, the user-facing boundary (`step`, explicit scalar
 UDF, `@raw`, or caller-owned PySpark), and the owning plan together so an omitted API never becomes an implicit promise.
 
-The following candidates remain deferred in the catalog until their contracts and evidence are complete: binary/encoding
-values, JSON/CSV inline-schema parsing, row generators, missing-column relation set composition, sampling, deterministic
-`mode`, and physical-plan directives. V7 commits Binary encoding, schema-carrying JSON/CSV parsing, deterministic mode,
-and generator expansion to named delivery sprints; their contracts are [V7 Deferred PySpark Family Admission](design/V7DeferredPySparkFamilies.md)
+The following candidates remain deferred in the catalog until their contracts and evidence are complete: missing-column
+relation set composition, sampling, and physical-plan directives. V7 delivered Binary encoding, schema-carrying
+JSON/CSV parsing, deterministic grouped `mode(...)`, and generator expansion through named delivery slices; their
+contracts are [V7 Deferred PySpark Family Admission](design/V7DeferredPySparkFamilies.md)
 and [V7 Typed PySpark Generator Expansion](design/V7PySparkGeneratorExpansion.md). Missing-column union, sampling,
 and physical-plan directives remain retained backlog. Scalar `@special(type="udf")` is already implemented
 for ordinary PySpark; its user contract is [Explicit Scalar Python UDFs](specifications/ExplicitScalarUdfs.md). It is
@@ -107,7 +107,7 @@ narrower typed capability from that family; no broader API is implied.
 | First-qualified priority selection | implemented | Sprint 25; `select_first_qualified(...)` is available. `RerankDocuments` now uses declared candidate keys to select the first eligible query and popularity feedback context without a raw surrogate row ID. |
 | Sampling | deferred | Seed, replacement, and reproducibility contract is incomplete |
 | Bounded ordered `scan(...)` | implemented | Sprint 26; batch-only ordinary-PySpark recurrence over caller-supplied partitioned timelines, with a positive per-partition bound and `"error"` duplicate-key failure |
-| Binary/encoding; JSON/CSV parsing; Deterministic `mode` | scheduled v7 | Typed contracts are in `V7DeferredPySparkFamilies.md`; the public grouped spelling is `mode(value, deterministic=False)`, with a native 4.0 path and deterministic 3.5 compatibility lowering |
+| Binary/encoding; JSON/CSV parsing; Deterministic `mode` | implemented | V7 delivered typed Binary fields and encoding helpers, Schema-carrying JSON/CSV conversion, and grouped `mode(value, deterministic=False)` with portable deterministic tie lowering |
 
 ## API Catalog
 

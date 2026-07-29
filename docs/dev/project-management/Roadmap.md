@@ -328,8 +328,8 @@ honest boundary for actions, driver algorithms, arbitrary Python, sources/sinks,
 - A general PySpark wrapper; raw `Column`, `DataFrame`, `WindowSpec`, SQL strings, UDTF, RDD, Pandas, and action APIs
   remain outside the typed DSL. Explicit scalar `@special(type="udf")` remains the existing opt-in exception, never a
   compiler fallback.
-- Binary/encoding helpers without a public Binary field type; JSON/CSV parsing without inline-schema/option contracts;
-  and deterministic `mode` before the PySpark 3.5 baseline can express its tie policy.
+- Binary/encoding helpers without a public Binary field type, JSON/CSV parsing without inline-schema/option contracts,
+  and deterministic grouped `mode(...)` were v6 non-goals that v7 delivered through typed contracts.
 - Relation sampling, repartition/coalesce/checkpoint, and broader physical-plan directives without their own
   performance and reproducibility contracts.
 - Input-less transforms, generated source frames, persistent recurrence state, global/unbounded scans, and all
@@ -349,8 +349,7 @@ compiler-visible transformation library: it does not become a general PySpark wr
   streaming design gate, and specify focused-delegate extraction boundaries.
 - Sprint 29: complete focused delegate extraction and typed generator expansion.
 - Sprint 30: add the Binary type and typed encoding helpers; Sprint 31: add Schema-carrying JSON/CSV conversion;
-  Sprint 32: add PySpark-named `mode(...)` after `group_by(...)`, with a native 4.0 path and deterministic 3.5
-  compatibility lowering.
+  Sprint 32: add PySpark-named `mode(...)` after grouped keys, with portable deterministic tie lowering.
 - Streaming adoption Sprints 33--35: admit stream-static inner/left-semi enrichment, then left-outer lookup, then one
   already admitted stateful operation followed only by stateless transforms. Each stage has target-matrix restart
   evidence and preserves caller lifecycle ownership.

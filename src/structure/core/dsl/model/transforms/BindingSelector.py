@@ -1,3 +1,5 @@
+"""Role selectors for declarations reused as inputs, lanes, or outputs."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -15,6 +17,13 @@ SelectedDeclaration = InputDeclaration | LaneDeclaration | OutputDeclaration
 
 @dataclass(frozen=True)
 class BindingSelector:
+    """A declaration with an explicit binding role.
+
+    ``lane(existing_declaration)`` and similar selector calls let a declaration
+    participate in a specific side of a step binding without changing the
+    declaration itself.
+    """
+
     role: BindingRole
     declaration: SelectedDeclaration
 

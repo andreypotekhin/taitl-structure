@@ -1,3 +1,5 @@
+"""Pipe bindings used by ``@step(inout=...)`` and ``@raw(inout=...)``."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -5,11 +7,20 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class InOutBinding:
+    """A paired input/output binding created with declaration pipes.
+
+    Example:
+        @step(inout=orders | enriched_orders)
+        def enrich(self, order):
+            return EnrichedOrder.project(order)
+    """
+
     inputs: tuple[object, ...]
     outputs: tuple[object, ...]
 
 
 def bind_inout(inputs: object, outputs: object) -> InOutBinding:
+    """Bind one or more input-side declarations to output-side declarations."""
     return InOutBinding(_side(inputs), _side(outputs))
 
 

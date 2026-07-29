@@ -1842,6 +1842,12 @@
       "bases": [],
       "fields": [
         {
+          "column": "queryset",
+          "name": "queryset",
+          "nullable": true,
+          "type": "string"
+        },
+        {
           "column": "labels",
           "name": "labels",
           "nullable": false,
@@ -2242,6 +2248,50 @@
       ],
       "module": "examples.search.schemas.similarity",
       "name": "IndexedSimilarSentence"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "name",
+          "name": "name",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.search.schemas.label",
+      "name": "Intent"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "intent_id",
+          "name": "intent_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "language",
+          "name": "language",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "pattern",
+          "name": "pattern",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.search.schemas.label",
+      "name": "IntentPattern"
     },
     {
       "bases": [],
@@ -2852,6 +2902,49 @@
           "type": "string"
         },
         {
+          "column": "content",
+          "name": "content",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "language",
+          "name": "language",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "intent_id",
+          "name": "intent_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "name",
+          "name": "name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "value",
+          "name": "value",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.search.schemas.label",
+      "name": "QueryIntentLabel"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "query_id",
+          "name": "query_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
           "column": "label",
           "name": "label",
           "nullable": false,
@@ -2932,6 +3025,12 @@
           "type": "string"
         },
         {
+          "column": "queryset",
+          "name": "queryset",
+          "nullable": false,
+          "type": "string"
+        },
+        {
           "column": "content",
           "name": "content",
           "nullable": false,
@@ -2954,6 +3053,12 @@
           "name": "is_time_sensitive",
           "nullable": false,
           "type": "boolean"
+        },
+        {
+          "column": "language",
+          "name": "language",
+          "nullable": true,
+          "type": "string"
         }
       ],
       "module": "examples.search.schemas.search",
@@ -5845,14 +5950,14 @@
           "schema": "BandMembership"
         },
         {
-          "name": "params",
+          "name": "queries",
           "ordinal": 5,
-          "schema": "EvaluationParams"
+          "schema": "SearchQuery"
         },
         {
-          "name": "queries",
+          "name": "params",
           "ordinal": 6,
-          "schema": "SearchQuery"
+          "schema": "EvaluationParams"
         }
       ],
       "name": "EvaluateDocumentSearchBehavior",
@@ -6677,7 +6782,9 @@
         "impression",
         "impressions",
         "measured",
-        "params"
+        "params",
+        "queries",
+        "query"
       ],
       "inputs": [
         {
@@ -6706,8 +6813,13 @@
           "schema": "BandMembership"
         },
         {
-          "name": "params",
+          "name": "queries",
           "ordinal": 5,
+          "schema": "SearchQuery"
+        },
+        {
+          "name": "params",
+          "ordinal": 6,
           "schema": "EvaluationParams"
         }
       ],
@@ -6738,6 +6850,12 @@
             },
             {
               "driving": false,
+              "parameter": "query",
+              "schema": "SearchQuery",
+              "source": "queries"
+            },
+            {
+              "driving": false,
               "parameter": "band",
               "schema": "BandMembership",
               "source": "band_memberships"
@@ -6763,6 +6881,10 @@
             {
               "how": "cross",
               "input": "params"
+            },
+            {
+              "how": "inner",
+              "input": "query"
             },
             {
               "how": "inner",
@@ -8525,14 +8647,14 @@
           "schema": "BandMembership"
         },
         {
-          "name": "params",
+          "name": "queries",
           "ordinal": 5,
-          "schema": "EvaluationParams"
+          "schema": "SearchQuery"
         },
         {
-          "name": "queries",
+          "name": "params",
           "ordinal": 6,
-          "schema": "SearchQuery"
+          "schema": "EvaluationParams"
         },
         {
           "name": "experiments",
@@ -10520,8 +10642,178 @@
     },
     {
       "dependencies": [
+        "intent",
+        "valid_intents"
+      ],
+      "inputs": [
+        {
+          "name": "queries",
+          "ordinal": 0,
+          "schema": "SearchQuery"
+        },
+        {
+          "name": "intents",
+          "ordinal": 1,
+          "schema": "Intent"
+        },
+        {
+          "name": "patterns",
+          "ordinal": 2,
+          "schema": "IntentPattern"
+        }
+      ],
+      "name": "CreateQueryLabels",
+      "outputs": [
+        {
+          "name": "labels",
+          "ordinal": 0,
+          "schema": "QueryLabelAssignments"
+        }
+      ],
+      "source": "examples.search.transforms.labeling.create_query_labels.CreateQueryLabels",
+      "step_methods": [
+        {
+          "input_lane": "intents",
+          "input_schema": "Intent",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "intent",
+              "schema": "Intent",
+              "source": "intents"
+            }
+          ],
+          "name": "validate_intents",
+          "output_lane": "valid_intents",
+          "output_schema": "Intent",
+          "results": [
+            {
+              "frame": "valid_intents",
+              "lane": "valid_intents",
+              "schema": "Intent"
+            }
+          ]
+        },
+        {
+          "input_lane": "patterns",
+          "input_schema": "IntentPattern",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "pattern",
+              "schema": "IntentPattern",
+              "source": "patterns"
+            },
+            {
+              "driving": false,
+              "parameter": "intent",
+              "schema": "Intent",
+              "source": "valid_intents"
+            }
+          ],
+          "name": "validate_patterns",
+          "output_lane": "valid_patterns",
+          "output_schema": "IntentPattern",
+          "results": [
+            {
+              "frame": "valid_patterns",
+              "lane": "valid_patterns",
+              "schema": "IntentPattern"
+            }
+          ]
+        },
+        {
+          "after_hooks": [
+            "match_patterns"
+          ],
+          "input_lane": "queries",
+          "input_schema": "SearchQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "SearchQuery",
+              "source": "queries"
+            },
+            {
+              "driving": false,
+              "parameter": "intent",
+              "schema": "Intent",
+              "source": "valid_intents"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "intent"
+            }
+          ],
+          "name": "create_query_intents",
+          "output_lane": "query_intents",
+          "output_schema": "QueryIntentLabel",
+          "results": [
+            {
+              "frame": "query_intents",
+              "lane": "query_intents",
+              "schema": "QueryIntentLabel"
+            }
+          ]
+        },
+        {
+          "input_lane": "query_intents",
+          "input_schema": "QueryIntentLabel",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "label",
+              "schema": "QueryIntentLabel",
+              "source": "query_intents"
+            }
+          ],
+          "name": "collect_labels",
+          "output_lane": "entries",
+          "output_schema": "QueryLabelAssignmentEntries",
+          "results": [
+            {
+              "frame": "entries",
+              "lane": "entries",
+              "schema": "QueryLabelAssignmentEntries"
+            }
+          ]
+        },
+        {
+          "input_lane": "entries",
+          "input_schema": "QueryLabelAssignmentEntries",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "entry",
+              "schema": "QueryLabelAssignmentEntries",
+              "source": "entries"
+            }
+          ],
+          "name": "create_labels",
+          "output_lane": "labels",
+          "output_schema": "QueryLabelAssignments",
+          "results": [
+            {
+              "frame": "labels",
+              "lane": "labels",
+              "schema": "QueryLabelAssignments"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/create_query_labels.py",
+        "traceability": "traceability/transforms/create_query_labels.CreateQueryLabels.json"
+      }
+    },
+    {
+      "dependencies": [
         "assignment",
-        "assignments"
+        "assignments",
+        "created_labels"
       ],
       "inputs": [
         {
@@ -10533,6 +10825,11 @@
           "name": "query_labels",
           "ordinal": 1,
           "schema": "QueryLabel"
+        },
+        {
+          "name": "created_labels",
+          "ordinal": 2,
+          "schema": "QueryLabelAssignments"
         }
       ],
       "name": "MergeQueryLabels",
@@ -10634,7 +10931,41 @@
               "input": "assignment"
             }
           ],
-          "name": "merge",
+          "name": "merge_caller_labels",
+          "output_lane": "caller_labeled_queries",
+          "output_schema": "SearchQuery",
+          "results": [
+            {
+              "frame": "caller_labeled_queries",
+              "lane": "caller_labeled_queries",
+              "schema": "SearchQuery"
+            }
+          ]
+        },
+        {
+          "input_lane": "caller_labeled_queries",
+          "input_schema": "SearchQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "SearchQuery",
+              "source": "caller_labeled_queries"
+            },
+            {
+              "driving": false,
+              "parameter": "assignment",
+              "schema": "QueryLabelAssignments",
+              "source": "created_labels"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "assignment"
+            }
+          ],
+          "name": "merge_created_labels",
           "output_lane": "labeled_queries",
           "output_schema": "SearchQuery",
           "results": [

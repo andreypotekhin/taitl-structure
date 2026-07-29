@@ -11,6 +11,7 @@ Source: `examples.search.transforms.evaluation.search_docs.behavior.with_users.E
 - `impressions`: `Impression`
 - `clicks`: `Click`
 - `band_memberships`: `BandMembership`
+- `queries`: `SearchQuery`
 - `params`: `EvaluationParams`
 
 ## Outputs
@@ -46,6 +47,8 @@ Source: `examples.search.transforms.evaluation.search_docs.behavior.with_users.E
 - `impressions`
 - `measured`
 - `params`
+- `queries`
+- `query`
 
 ## Target Artifacts
 

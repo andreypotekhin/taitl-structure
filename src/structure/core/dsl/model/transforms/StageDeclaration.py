@@ -1,3 +1,5 @@
+"""Stage declarations for class-based transform composition."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -11,6 +13,8 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class StageOutputReference:
+    """A reference to one output of a composed stage."""
+
     stage: "StageDeclaration"
     name: str
     schema: type[Schema]
@@ -18,6 +22,12 @@ class StageOutputReference:
 
 @dataclass(frozen=True)
 class StageDeclaration:
+    """A named transform invocation embedded in another transform.
+
+    Users create stage declarations with ``stage(OtherTransform(...))`` and then
+    map outputs with ``output(...).from_(stage_name.output_name)``.
+    """
+
     invocation: Transform
     name: str = ""
 
@@ -28,6 +38,7 @@ class StageDeclaration:
         return self
 
     def __getattr__(self, name: str) -> StageOutputReference:
+        """Return a typed reference to a declared output on the staged transform."""
         outputs = getattr(type(self.invocation), "_structure_outputs", {})
         output = outputs.get(name)
         if output is None:

@@ -1,3 +1,5 @@
+"""PySpark schema validation for Structure ``Schema`` declarations."""
+
 from __future__ import annotations
 
 import builtins
@@ -12,6 +14,8 @@ from structure.dsl import FieldDefinition, Schema
 from structure.plugin.pyspark.dsl.types import (
     Array,
     ArrayType,
+    Binary,
+    BinaryType,
     Boolean,
     BooleanType,
     Date,
@@ -38,10 +42,20 @@ from structure.plugin.pyspark.dsl.types import (
 
 
 class ValidatePySparkSchemas:
+    """Resolve and validate field declarations against Spark type semantics.
+
+    The validator keeps PySpark schema declarations strict: duplicate Spark
+    aliases fail early, Python annotations must agree with field factories, and
+    nested struct composition must remain acyclic so Spark schema materialization
+    is deterministic.
+    """
+
     def __call__(self, schema: type[Schema]) -> None:
+        """Validate all declared fields on ``schema``."""
         self.validate(schema, schema._structure_fields)
 
     def validate(self, schema: type[Schema], fields: Mapping[str, FieldDefinition]) -> None:
+        """Resolve annotations and validate a field mapping for ``schema``."""
         self._resolve(schema, fields)
         columns: dict[str, str] = {}
         for field in fields.values():
@@ -114,6 +128,8 @@ class ValidatePySparkSchemas:
     def _infer(self, schema: type, name: str, hint: object) -> StructureType:
         if hint is str:
             return String()
+        if hint is bytes:
+            return Binary()
         if hint is bool:
             return Boolean()
         if hint is int:
@@ -145,6 +161,8 @@ class ValidatePySparkSchemas:
     def _compatible(self, hint: object, type: StructureType) -> bool:
         if hint is str:
             return isinstance(type, StringType)
+        if hint is bytes:
+            return isinstance(type, BinaryType)
         if hint is bool:
             return isinstance(type, BooleanType)
         if hint is int:

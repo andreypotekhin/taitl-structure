@@ -19,6 +19,7 @@ from structure.plugin.pyspark.compiler.api.Compiler import Compiler, LowerPySpar
 from structure.plugin.pyspark.dsl.aggregation import AggregateAssignment, AggregateKey, AggregatePlan, ProjectAssignment
 from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.expressions import literal
+from structure.plugin.pyspark.dsl.model.Projection import Projection
 from structure.plugin.pyspark.dsl.operations import (
     CachePlan,
     DuplicateRowsPlan,
@@ -31,7 +32,6 @@ from structure.plugin.pyspark.dsl.operations import (
     WatermarkPlan,
 )
 from structure.plugin.pyspark.dsl.operations_api import count
-from structure.plugin.pyspark.dsl.Projection import Projection
 from structure.plugin.pyspark.dsl.types import ArrayType, DecimalType, StructType
 from structure.plugin.pyspark.files.api.Files import CompareGeneratedFiles
 from structure.plugin.pyspark.render.api.Render import Render, RenderPySparkProject
@@ -125,7 +125,7 @@ def test_pyspark_target_models_have_plugin_owned_import_paths() -> None:
         for type_ in (ArrayType, DecimalType, StructType)
     )
     assert Expression.__module__ == "structure.plugin.pyspark.dsl.Expression"
-    assert Projection.__module__ == "structure.plugin.pyspark.dsl.Projection"
+    assert Projection.__module__ == "structure.plugin.pyspark.dsl.model.Projection"
     assert literal("value").kind == "literal"
     assert count().kind == "aggregate"
 

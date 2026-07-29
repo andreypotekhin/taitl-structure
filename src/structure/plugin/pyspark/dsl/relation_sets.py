@@ -1,3 +1,11 @@
+"""Relation-level PySpark DSL helpers.
+
+These helpers describe operations that affect the current relation as a whole:
+ordering, limits, data-quality assertions, set operations, and hierarchy
+expansion.  Each helper records an operation plan in the active symbolic
+context; users get immediate validation without executing Spark.
+"""
+
 from __future__ import annotations
 
 import structure.plugin.pyspark.dsl.options as options
@@ -25,6 +33,18 @@ _ORDERABLE_TYPES = frozenset({"date", "decimal", "double", "float", "integer", "
 
 
 def relation_alias(relation: object, *, name: str) -> InputScope:
+    """Expose a relation or current row scope under a new public scope name.
+
+    Args:
+        relation: Existing relation parameter or current row scope.
+        name: Public Python identifier used for the new scope.
+
+    Returns:
+        An input scope that can be referenced by later expressions.
+
+    Example:
+        historical = relation_alias(customer, name="historical_customer")
+    """
     context = current_symbolic_context()
     if context is None:
         raise RuntimeError("relation_alias(...) can only be used inside a compiled Structure step method")
@@ -49,6 +69,18 @@ def relation_alias(relation: object, *, name: str) -> InputScope:
 
 
 def order_by(*orderings: object) -> RowScope:
+    """Order the current relation by one or more orderable expressions.
+
+    Args:
+        *orderings: Orderable expressions, optionally already decorated with
+            ``asc()`` or ``desc()``.
+
+    Returns:
+        The current row scope after ordering.
+
+    Example:
+        latest = order_by(order.created_at.desc()).limit(1)
+    """
     context = _context("order_by(...)")
     source_schema = _current_schema(context.default_project_source, function="order_by")
     order = tuple(_orderable(value, call="order_by(...)") for value in orderings)
@@ -60,14 +92,17 @@ def order_by(*orderings: object) -> RowScope:
 
 
 def limit(count: int) -> RowScope:
+    """Keep only the first ``count`` rows after ``order_by(...)``."""
     return _bound("limit", count)
 
 
 def offset(count: int) -> RowScope:
+    """Skip the first ``count`` rows after ``order_by(...)``."""
     return _bound("offset", count)
 
 
 def require_unique(*keys: object) -> RowScope:
+    """Assert that the current relation has no duplicate key tuple."""
     context = _context("require_unique(...)")
     source_schema = _current_schema(context.default_project_source, function="require_unique")
     expressions = tuple(literal(key) for key in keys)
@@ -82,6 +117,7 @@ def require_unique(*keys: object) -> RowScope:
 
 
 def require_all(predicate: object) -> RowScope:
+    """Assert that every row in the current relation satisfies ``predicate``."""
     context = _context("require_all(...)")
     source_schema = _current_schema(context.default_project_source, function="require_all")
     expression = literal(predicate)
@@ -102,6 +138,20 @@ def require_reference(
     reference_key: object,
     nulls: str = "allow",
 ) -> RowScope:
+    """Assert that a value exists in a referenced relation key.
+
+    Args:
+        value: Field expression from the current relation.
+        reference: Relation parameter that provides valid keys.
+        reference_key: Field expression on ``reference``.
+        nulls: ``"allow"`` or ``"reject"`` for null ``value`` handling.
+
+    Returns:
+        The current row scope.
+
+    Example:
+        require_reference(order.customer_id, customers, reference_key=customers.id, nulls="reject")
+    """
     context = _context("require_reference(...)")
     source_schema = _current_schema(context.default_project_source, function="require_reference")
     if not isinstance(reference, InputScope):
@@ -133,6 +183,7 @@ def require_parent_hierarchy(
     order_by: object,
     max_depth: int,
 ) -> RowScope:
+    """Assert that parent pointers form a bounded, valid hierarchy."""
     context = _context("require_parent_hierarchy(...)")
     source_schema = _current_schema(context.default_project_source, function="require_parent_hierarchy")
     if isinstance(max_depth, bool) or not isinstance(max_depth, int) or max_depth < 1:
@@ -162,6 +213,29 @@ def hierarchy_closure(
     max_depth: int,
     scope: str | None = None,
 ) -> RowScope:
+    """Build ancestor rows for a parent hierarchy into a generated scope.
+
+    Args:
+        id: Non-null field expression for the current node id.
+        parent: Field expression for the parent id.
+        as_: Output schema for generated closure rows.
+        node: Field in ``as_`` that receives the node id.
+        ancestor: Field in ``as_`` that receives the ancestor id.
+        depth: Field in ``as_`` that receives distance from node to ancestor.
+        max_depth: Positive traversal bound.
+        scope: Optional scope name for the generated rows.
+
+    Returns:
+        A row scope for the generated hierarchy closure.
+
+    Example:
+        closure = hierarchy_closure(
+            category.id,
+            parent=category.parent_id,
+            as_=CategoryClosure,
+            max_depth=20,
+        )
+    """
     context = _context("hierarchy_closure(...)")
     if not isinstance(as_, type) or not issubclass(as_, Schema):
         raise TypeError("hierarchy_closure(as_=...) requires a Structure Schema class")
@@ -214,6 +288,7 @@ def hierarchy_fallbacks(
     max_depth: int,
     scope: str | None = None,
 ) -> RowScope:
+    """Generate ordered fallback rows from hierarchy paths and parent records."""
     context = _context("hierarchy_fallbacks(...)")
     if not isinstance(parents, InputScope):
         raise TypeError("hierarchy_fallbacks(parents, ...) requires a Structure relation parameter")
@@ -275,6 +350,25 @@ def select_first_qualified(
     missing: str = "allow",
     ties: TiePolicy | str = TiePolicy.ERROR,
 ) -> RowScope:
+    """Select the first row per key that satisfies a qualifier predicate.
+
+    Args:
+        *keys: Declared field references that define each partition.
+        where: Boolean qualifier predicate.
+        order_by: Ordering expression used to choose the first qualified row.
+        missing: ``"allow"`` or ``"error"`` when no row qualifies.
+        ties: Tie policy. Only ``"error"`` is currently supported.
+
+    Returns:
+        The current row scope after priority selection.
+
+    Example:
+        selected = select_first_qualified(
+            offer.customer_id,
+            where=offer.active,
+            order_by=offer.priority.asc(),
+        )
+    """
     context = _context("select_first_qualified(...)")
     source_schema = _current_schema(context.default_project_source, function="select_first_qualified")
     expressions = tuple(_field_key(key) for key in keys)
@@ -303,26 +397,42 @@ def select_first_qualified(
 
 
 def union_all(relation: object) -> RowScope:
+    """Union the current relation with another relation by position.
+
+    Args:
+        relation: Relation parameter or transform input with an identical schema.
+
+    Returns:
+        The current row scope after Spark ``union``-style concatenation.
+
+    Example:
+        all_orders = union_all(archived_orders)
+    """
     return _set(relation, operation="union_all", by_name=False)
 
 
 def union_by_name(relation: object) -> RowScope:
+    """Union the current relation with another relation by field name."""
     return _set(relation, operation="union_by_name", by_name=True)
 
 
 def intersect(relation: object) -> RowScope:
+    """Intersect the current relation with another relation by position."""
     return _set(relation, operation="intersect", by_name=False)
 
 
 def intersect_all(relation: object) -> RowScope:
+    """Intersect all rows with duplicate-preserving Spark semantics."""
     return _set(relation, operation="intersect_all", by_name=False)
 
 
 def subtract(relation: object) -> RowScope:
+    """Subtract another relation from the current relation."""
     return _set(relation, operation="subtract", by_name=False)
 
 
 def except_all(relation: object) -> RowScope:
+    """Subtract another relation while preserving duplicate counts."""
     return _set(relation, operation="except_all", by_name=False)
 
 
@@ -417,7 +527,12 @@ def _validate_prior_operations(operations, *, function: str) -> None:
             "join",
             "aggregate",
             "selected_rows",
+            "explode_struct",
+            "explode_outer_struct",
+            "inline_struct",
+            "inline_outer_struct",
             "posexplode_struct",
+            "posexplode_outer_struct",
             "select_first_qualified",
             "hierarchy_closure",
             "hierarchy_fallbacks",
@@ -436,10 +551,15 @@ def _validate_ordered_state(operations, *, function: str) -> None:
         {
             "aggregate",
             "except_all",
+            "explode_struct",
+            "explode_outer_struct",
+            "inline_struct",
+            "inline_outer_struct",
             "intersect",
             "intersect_all",
             "join",
             "posexplode_struct",
+            "posexplode_outer_struct",
             "selected_rows",
             "select_first_qualified",
             "hierarchy_closure",

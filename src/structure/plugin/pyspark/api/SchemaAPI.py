@@ -4,7 +4,7 @@ from structure.plugin.api.v1 import SchemaAPI as SchemaAPIV1
 from structure.plugin.api.v1 import SchemaInspectionRequest, SchemaValidationRequest, TransformSchemaRequest
 from structure.plugin.api.v1.model import TransformSchemas
 from structure.plugin.pyspark.api.PySpark import PySpark
-from structure.plugin.pyspark.dsl.ValidatePySparkSchemas import ValidatePySparkSchemas
+from structure.plugin.pyspark.dsl.validation.ValidatePySparkSchemas import ValidatePySparkSchemas
 
 
 class SchemaAPI(SchemaAPIV1):

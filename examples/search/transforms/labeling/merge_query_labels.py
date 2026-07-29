@@ -1,4 +1,4 @@
-"""Materialize latest caller-provided labels on search queries."""
+"""Merge caller-provided and engineered labels on search queries."""
 
 from examples.search.schemas.label import LabelMapEntry, QueryLabel, QueryLabelAssignmentEntries, QueryLabelAssignments
 from examples.search.schemas.search import SearchQuery
@@ -26,9 +26,11 @@ class MergeQueryLabels(Transform):
 
     queries = input(SearchQuery)
     query_labels = input(QueryLabel)
+    created_labels = input(QueryLabelAssignments)
     latest_labels = lane(QueryLabel)
     entries = lane(QueryLabelAssignmentEntries)
     assignments = lane(QueryLabelAssignments)
+    caller_labeled_queries = lane(SearchQuery)
     labeled_queries = output(SearchQuery)
 
     @step(input=query_labels, output=latest_labels)
@@ -54,8 +56,8 @@ class MergeQueryLabels(Transform):
     def create_assignments(self, entry: QueryLabelAssignmentEntries) -> QueryLabelAssignments:
         return QueryLabelAssignments(query_id=entry.query_id, labels=map_from_entries(entry.entries))
 
-    @step(input=[queries, assignments], output=labeled_queries)
-    def merge(self, query: SearchQuery, assignment: QueryLabelAssignments) -> SearchQuery:
+    @step(input=[queries, assignments], output=caller_labeled_queries)
+    def merge_caller_labels(self, query: SearchQuery, assignment: QueryLabelAssignments) -> SearchQuery:
         left_join(on=assignment.query_id == query.id)
         retained = map_filter(
             query.labels,
@@ -67,8 +69,31 @@ class MergeQueryLabels(Transform):
         labels = coalesce(updated, query.labels)
         return SearchQuery(
             id=query.id,
+            queryset=query.queryset,
             content=query.content,
             labels=labels,
             is_question=coalesce(element_at(labels, "is_question"), 0) == 1,
             is_time_sensitive=coalesce(element_at(labels, "is_time_sensitive"), 0) == 1,
+            language=query.language,
+        )
+
+    @step(input=[caller_labeled_queries, created_labels], output=labeled_queries)
+    def merge_created_labels(self, query: SearchQuery, assignment: QueryLabelAssignments) -> SearchQuery:
+        left_join(on=assignment.query_id == query.id)
+        retained = map_filter(
+            query.labels,
+            lambda key, value: ~array_contains(map_keys(assignment.labels), key),
+        )
+        updated = when(assignment.query_id.is_not_null(), map_concat(retained, assignment.labels)).otherwise(
+            query.labels
+        )
+        labels = coalesce(updated, query.labels)
+        return SearchQuery(
+            id=query.id,
+            queryset=query.queryset,
+            content=query.content,
+            labels=labels,
+            is_question=coalesce(element_at(labels, "is_question"), 0) == 1,
+            is_time_sensitive=coalesce(element_at(labels, "is_time_sensitive"), 0) == 1,
+            language=query.language,
         )

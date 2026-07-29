@@ -493,8 +493,11 @@ def render_search_example() -> dict[str, str]:
             WordText,
         )
         from examples.search.schemas.label import (
+            Intent,
+            IntentPattern,
             Label,
             LabelMapEntry,
+            QueryIntentLabel,
             QueryLabel,
             QueryLabelAssignmentEntries,
             QueryLabelAssignments,
@@ -625,7 +628,7 @@ def render_search_example() -> dict[str, str]:
         from examples.search.transforms.experiment import SelectExperimentScores
         from examples.search.transforms.extract import ExtractText
         from examples.search.transforms.index import CreateIndex
-        from examples.search.transforms.labeling import MergeQueryLabels
+        from examples.search.transforms.labeling import CreateQueryLabels, MergeQueryLabels
         from examples.search.transforms.profile import ProfileDocuments
         from examples.search.transforms.relevance.BuildRelevanceSignals import BuildRelevanceSignals
         from examples.search.transforms.score import AddScores
@@ -742,9 +745,12 @@ def render_search_example() -> dict[str, str]:
             "examples.search.schemas.evaluation.batch": [EvaluationBatch],
             "examples.search.schemas.evaluation.params": [EvaluationParams],
             "examples.search.schemas.label": [
+                Intent,
+                IntentPattern,
                 Label,
                 QueryLabel,
                 LabelMapEntry,
+                QueryIntentLabel,
                 QueryLabelAssignmentEntries,
                 QueryLabelAssignments,
             ],
@@ -855,6 +861,7 @@ def render_search_example() -> dict[str, str]:
             (AddScores, "examples.search.transforms.score.AddScores"),
             (ResolveCohortBands, "examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands"),
             (MergeQueryLabels, "examples.search.transforms.labeling.merge_query_labels.MergeQueryLabels"),
+            (CreateQueryLabels, "examples.search.transforms.labeling.create_query_labels.CreateQueryLabels"),
             (
                 SelectExperimentScores,
                 "examples.search.transforms.experiments.select_experiment_scores.SelectExperimentScores",

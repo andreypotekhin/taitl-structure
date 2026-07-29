@@ -27,6 +27,10 @@ class FakeTypes:
         return FakeType("StringType")
 
     @staticmethod
+    def BinaryType():
+        return FakeType("BinaryType")
+
+    @staticmethod
     def IntegerType():
         return FakeType("IntegerType")
 
@@ -143,5 +147,19 @@ def test_v1_runtime_schema_materialization_uses_alias_column_name() -> None:
         FakeType(
             "StructField",
             ("promo-code", FakeType("StringType"), True),
+        ),
+    )
+
+
+def test_v7_runtime_schema_materializes_binary_fields() -> None:
+    class Raw(Schema):
+        payload = binary(nullable=False)
+
+    schema = PySpark.schema.materialize()(Raw, types=FakeTypes)
+
+    assert schema.args == (
+        FakeType(
+            "StructField",
+            ("payload", FakeType("BinaryType"), False),
         ),
     )

@@ -1,3 +1,5 @@
+"""Row-level field access for PySpark DSL authoring."""
+
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -8,6 +10,13 @@ from structure.plugin.pyspark.dsl.Expression import Expression
 
 
 class RowScope:
+    """A symbolic view of one row in a declared Structure schema.
+
+    Attribute access resolves declared schema fields into typed
+    :class:`Expression` objects.  Methods declared directly on the schema class
+    are also rebound to the scope so reusable row-level calculations can be
+    authored once and used from compiled PySpark steps.
+    """
 
     def __init__(
         self,
@@ -58,11 +67,13 @@ class RowScope:
         return None
 
     def where(self, *predicates: object):
+        """Continue a chained body declaration with ``where(...)``."""
         from structure.plugin.pyspark.dsl.body import where
 
         return where(*predicates)
 
     def project(self, *args: object) -> object:
+        """Continue a chained body declaration with ``project(...)``."""
         from structure.plugin.pyspark.dsl.body import project
 
         return project(*args)

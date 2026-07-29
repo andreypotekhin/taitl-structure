@@ -1,3 +1,10 @@
+"""Base class for Structure row schemas.
+
+Schemas are the shared contract between user-authored transforms and target
+plugins.  A schema class declares the logical fields a transform reads or
+writes; plugins then attach target-specific field types and validation.
+"""
+
 from __future__ import annotations
 
 from typing import ClassVar, get_origin, get_type_hints
@@ -7,6 +14,28 @@ from structure.core.dsl.model.schemas.FieldDefinition import ANNOTATION_TYPE, Fi
 
 
 class Schema:
+    """A typed row shape used by Structure transforms.
+
+    Subclasses declare fields either through plugin field factories, such as
+    ``structure.plugin.pyspark.string()``, or through annotations that a plugin
+    can later resolve.  Schema instances are lightweight value objects used for
+    expected results, projections, and transform invocation tests.
+
+    Args:
+        **values: Field values keyed by declared Structure field name.
+
+    Raises:
+        TypeError: Unknown fields are supplied, mixed plugin field declarations
+            appear in one schema, or inherited ``base(...)`` sources cannot
+            provide required base fields.
+
+    Example:
+        class Order(Schema):
+            id = pyspark.string(nullable=False)
+            total = pyspark.decimal(12, 2)
+
+        expected = Order(id="A-1", total=Decimal("10.50"))
+    """
 
     _structure_fields: dict[str, FieldDefinition] = {}
     _structure_local_fields: dict[str, FieldDefinition] = {}
@@ -53,6 +82,24 @@ class Schema:
 
     @classmethod
     def base(cls, *sources: object):
+        """Build a schema instance by copying direct base-schema fields.
+
+        Args:
+            *sources: One source row for each direct schema base.
+
+        Returns:
+            A completed schema instance when all fields are available, otherwise
+            a callable that accepts overrides for local fields.
+
+        Example:
+            class OrderCore(Schema):
+                id = pyspark.string()
+
+            class PublishedOrder(OrderCore):
+                published_at = pyspark.timestamp()
+
+            row = PublishedOrder.base(order)(published_at=event_time)
+        """
         values = cls._base_values(sources)
         if set(values) == set(cls._structure_fields):
             return cls(**values)
@@ -66,6 +113,23 @@ class Schema:
 
     @classmethod
     def project(cls, *sources: object):
+        """Project one or more row sources into this schema during step authoring.
+
+        This is the target-neutral form of plugin projection helpers.  In the
+        PySpark DSL it lowers through ``pyspark.project(source, TargetSchema)``.
+
+        Args:
+            *sources: Row scopes or schema instances that can provide fields by
+                Structure name.
+
+        Returns:
+            A plugin-owned symbolic projection for this schema.
+
+        Example:
+            @step(input=orders, output=published)
+            def publish(self, order):
+                return PublishedOrder.project(order)
+        """
         from structure.plugin.api.v1.model import current_symbolic_context
 
         context = current_symbolic_context()

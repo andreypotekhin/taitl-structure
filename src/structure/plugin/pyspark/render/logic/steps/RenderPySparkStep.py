@@ -17,7 +17,7 @@ from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkSte
 from structure.plugin.pyspark.compiler.model.PySparkValidationRecipe import PySparkValidationRecipe
 from structure.plugin.pyspark.compiler.model.PySparkWatermarkRecipe import PySparkWatermarkRecipe
 from structure.plugin.pyspark.dsl.joins import Join, JoinMethod
-from structure.plugin.pyspark.dsl.types import DecimalType, StructType, StructureType
+from structure.plugin.pyspark.dsl.types import ArrayType, DecimalType, MapType, StructType, StructureType
 from structure.plugin.pyspark.render.logic.expressions.RenderPySparkExpression import render_pyspark_expression
 from structure.plugin.pyspark.render.logic.steps.RenderPySparkAggregatePlan import RenderPySparkAggregatePlan
 from structure.plugin.pyspark.render.logic.steps.RenderPySparkFilters import RenderPySparkFilters
@@ -167,7 +167,19 @@ class RenderPySparkStep:
         origin = hook.origin
         if origin is None or source_transform is None or origin.import_name == source_transform:
             return f"self._impl.{hook.name}", ""
-        return f"{origin.class_name}.{origin.member_name}", "self._impl, "
+        return f"self.{self._hook_impl_field(hook)}.{origin.member_name}", ""
+
+    def _hook_impl_field(self, hook: PySparkHookRecipe) -> str:
+        origin = hook.origin
+        if origin is None:
+            return "_impl"
+        return f"_impl_{self._identifier(f'{self._hook_stage(hook)}_{origin.class_name}')}"
+
+    def _hook_stage(self, hook: PySparkHookRecipe) -> str:
+        origin = hook.origin
+        if "." in hook.target:
+            return hook.target.split(".", 1)[0]
+        return "" if origin is None else origin.class_name
 
     def _joins(
         self,
@@ -262,7 +274,47 @@ class RenderPySparkStep:
                         index=generator_index,
                     )
                 )
+            if operation.kind == "posexplode_outer_struct" and operation.posexplode_struct is not None:
+                generator_index += 1
+                ordered_lines.extend(
+                    self._struct_generator_renderer(
+                        operation.posexplode_struct,
+                        aliases=self._scope_aliases(step),
+                        target=target,
+                        index=generator_index,
+                    )
+                )
             if operation.kind == "explode_struct" and operation.posexplode_struct is not None:
+                generator_index += 1
+                ordered_lines.extend(
+                    self._struct_generator_renderer(
+                        operation.posexplode_struct,
+                        aliases=self._scope_aliases(step),
+                        target=target,
+                        index=generator_index,
+                    )
+                )
+            if operation.kind == "explode_outer_struct" and operation.posexplode_struct is not None:
+                generator_index += 1
+                ordered_lines.extend(
+                    self._struct_generator_renderer(
+                        operation.posexplode_struct,
+                        aliases=self._scope_aliases(step),
+                        target=target,
+                        index=generator_index,
+                    )
+                )
+            if operation.kind == "inline_struct" and operation.posexplode_struct is not None:
+                generator_index += 1
+                ordered_lines.extend(
+                    self._struct_generator_renderer(
+                        operation.posexplode_struct,
+                        aliases=self._scope_aliases(step),
+                        target=target,
+                        index=generator_index,
+                    )
+                )
+            if operation.kind == "inline_outer_struct" and operation.posexplode_struct is not None:
                 generator_index += 1
                 ordered_lines.extend(
                     self._struct_generator_renderer(
@@ -734,7 +786,7 @@ class RenderPySparkStep:
             field = scan.state_schema._structure_fields[name]
             rendered = render_pyspark_expression(expression, scope_aliases=aliases)
             fields.append(
-                f"{rendered}.cast({self._schema.render().type(field.type)}).alias({self._literal(field.column)})"
+                f"{rendered}.cast({self._scan_type(field.type)}).alias({self._literal(field.column)})"
             )
         return f"F.struct({', '.join(fields)})"
 
@@ -756,7 +808,7 @@ class RenderPySparkStep:
             rewritten = self._scan_rewrite(expression, scan, state="acc", payload="item")
             rendered = render_pyspark_expression(rewritten, scope_aliases={})
             fields.append(
-                f"{rendered}.cast({self._schema.render().type(field.type)}).alias({self._literal(field.column)})"
+                f"{rendered}.cast({self._scan_type(field.type)}).alias({self._literal(field.column)})"
             )
         return f"F.struct({', '.join(fields)})"
 
@@ -766,7 +818,9 @@ class RenderPySparkStep:
         scan: PySparkOrderedTimelineScanRecipe,
     ) -> str:
         payload_fields = ", ".join(self._inline_field(field) for field in step.input_schema._structure_fields.values())
-        state_fields = ", ".join(self._inline_field(field) for field in scan.state_schema._structure_fields.values())
+        state_fields = ", ".join(
+            self._inline_field(field, scan_internal=True) for field in scan.state_schema._structure_fields.values()
+        )
         return (
             "T.ArrayType("
             "T.StructType(["
@@ -775,9 +829,22 @@ class RenderPySparkStep:
             "]), containsNull=False)"
         )
 
-    def _inline_field(self, field) -> str:
+    def _inline_field(self, field, *, scan_internal: bool = False) -> str:
         nullable = "True" if field.nullable else "False"
-        return f"T.StructField({self._literal(field.column)}, {self._schema.render().type(field.type)}, {nullable})"
+        type_ = self._scan_type(field.type) if scan_internal else self._schema.render().type(field.type)
+        return f"T.StructField({self._literal(field.column)}, {type_}, {nullable})"
+
+    def _scan_type(self, type_: StructureType) -> str:
+        if isinstance(type_, ArrayType):
+            return f"T.ArrayType({self._scan_type(type_.element)}, containsNull=True)"
+        if isinstance(type_, MapType):
+            return f"T.MapType({self._scan_type(type_.key)}, {self._scan_type(type_.value)}, valueContainsNull=True)"
+        if isinstance(type_, StructType):
+            fields = ", ".join(
+                self._inline_field(field, scan_internal=True) for field in type_.schema._structure_fields.values()
+            )
+            return f"T.StructType([{fields}])"
+        return self._schema.render().type(type_)
 
     def _scan_rewrite(self, expression, scan, *, state: str, payload: str):
         if expression.kind == "field" and "scope" in expression.data:
@@ -1240,6 +1307,20 @@ class RenderPySparkStep:
             and assignment.expression is not None
         ):
             return self._ordered_collect_list(assignment, step=step, alias=alias)
+        if assignment.function == "mode" and assignment.expression is not None:
+            options = dict(assignment.options)
+            expression = render_pyspark_expression(assignment.expression, scope_aliases=self._scope_aliases(step))
+            if assignment.filter is not None:
+                predicate = render_pyspark_expression(assignment.filter, scope_aliases=self._scope_aliases(step))
+                expression = f"F.when({predicate}, {expression})"
+            if options.get("deterministic") is True:
+                expression = self._deterministic_mode(expression)
+            else:
+                expression = f"F.mode({expression})"
+            return (
+                f"{expression}.cast({self._schema.render().type(assignment.field.type)})"
+                f".alias({alias})"
+            )
         if assignment.function == "grouping_id":
             return f"F.grouping_id().cast({self._schema.render().type(assignment.field.type)}).alias({alias})"
         if assignment.function == "is_grouped" and assignment.expression is not None:
@@ -1302,6 +1383,20 @@ class RenderPySparkStep:
         collected = f"F.collect_list(F.when({condition}, {item}))"
         return f"F.transform(F.sort_array({collected}, asc={not descending}), lambda item: item.getField('_structure_value')).alias({alias})"
 
+    def _deterministic_mode(self, expression: str) -> str:
+        collected = f"F.collect_list({expression})"
+        counts = (
+            f"F.transform(F.array_distinct({collected}), "
+            f"lambda candidate: F.struct(candidate.alias('_structure_value'), "
+            f"F.size(F.filter({collected}, lambda item: item == candidate)).alias('_structure_count')))"
+        )
+        max_count = f"F.array_max(F.transform({counts}, lambda item: item.getField('_structure_count')))"
+        tied = (
+            f"F.transform(F.filter({counts}, lambda item: item.getField('_structure_count') == {max_count}), "
+            f"lambda item: item.getField('_structure_value'))"
+        )
+        return f"F.array_min({tied})"
+
     def _aggregate_grouping_expression(
         self,
         assignment: PySparkAggregateAssignment,
@@ -1330,6 +1425,7 @@ class RenderPySparkStep:
             "covar",
             "count_distinct",
             "max",
+            "mode",
             "min",
             "kurtosis",
             "percentile",
@@ -1352,6 +1448,7 @@ class RenderPySparkStep:
             "covar": "F.covar_samp",
             "count_distinct": "F.countDistinct",
             "max": "F.max",
+            "mode": "F.mode",
             "min": "F.min",
             "kurtosis": "F.kurtosis",
             "percentile": "F.percentile",

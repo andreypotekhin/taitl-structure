@@ -9,13 +9,14 @@ from structure.plugin.pyspark import *
 class EvaluationParams(Schema):
     """Caller-defined labels and demographic band slice."""
 
+    queryset = string(nullable=True)
     labels = array(struct(Label), contains_null=False, nullable=False)
     band_id = string(nullable=True)
 
     def matches_query(self, query: SearchQuery):
         """Query has every requested label value?"""
 
-        return arr_forall(
+        return self.matches_queryset(query) & arr_forall(
             self.labels,
             lambda requested: arr_exists(
                 self.labels,
@@ -25,6 +26,11 @@ class EvaluationParams(Schema):
             ),
             argument_name="requested",
         )
+
+    def matches_queryset(self, query: SearchQuery):
+        """Query belongs to the requested set, or all sets if queryset is null."""
+
+        return self.queryset.is_null() | (query.queryset == self.queryset)
 
     def matches_band(self, band_id):
         """User belongs to the requested band, or global context if band_id is null"""

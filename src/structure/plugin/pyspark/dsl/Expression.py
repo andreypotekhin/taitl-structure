@@ -1,3 +1,12 @@
+"""Symbolic expression nodes for PySpark transform authoring.
+
+The public DSL exposes :class:`Expression` wherever a user reads schema fields,
+calls PySpark-style helpers, or composes predicates.  Expressions are immutable
+descriptions of Spark work: they validate Structure types early, carry
+nullability through authoring, and stay small enough for the compiler and
+renderer to lower deterministically later.
+"""
+
 from __future__ import annotations
 
 import builtins
@@ -55,6 +64,23 @@ def _same_type(left: StructureType | None, right: StructureType | None) -> bool:
 
 @dataclass(frozen=True, eq=False)
 class Expression:
+    """A typed Spark expression captured without executing Spark.
+
+    Args:
+        kind: Compiler-facing operation name, such as ``field``, ``literal``,
+            ``call``, ``aggregate``, or ``transform_expression``.
+        type: Structure type produced by the expression. ``None`` represents
+            null literals or expressions whose type is intentionally deferred.
+        nullable: Whether Spark may produce null for this expression.
+        data: Operation-specific metadata used by validation, rendering, or
+            traceability.
+        args: Child expressions in evaluation order.
+
+    Raises:
+        TypeError: Public operators and helpers fail early when operands do not
+            match the Structure type contract that Spark lowering requires.
+    """
+
     kind: str
     type: StructureType | None = None
     nullable: bool = True
@@ -62,15 +88,26 @@ class Expression:
     args: tuple["Expression", ...] = ()
 
     def is_null(self) -> "Expression":
+        """Return a non-null boolean expression for Spark ``isNull``."""
         return Expression(kind="is_null", type=BooleanType(), nullable=False, args=(self,))
 
     def is_not_null(self) -> "Expression":
+        """Return a non-null boolean expression for Spark ``isNotNull``."""
         return Expression(kind="is_not_null", type=BooleanType(), nullable=False, args=(self,))
 
     def null_safe_eq(self, other: object) -> "Expression":
+        """Compare with Spark null-safe equality.
+
+        Args:
+            other: A literal, schema field, or other Structure expression.
+
+        Returns:
+            A non-null boolean expression.
+        """
         return self._comparison("null_safe_eq", other, nullable=False)
 
     def isin(self, *values: object) -> "Expression":
+        """Build a Spark ``isin`` predicate from compatible literal values."""
         from structure.plugin.pyspark.dsl.expressions import literal
 
         if not values:
@@ -86,6 +123,7 @@ class Expression:
         )
 
     def between(self, lower: object, upper: object) -> "Expression":
+        """Return ``lower <= self <= upper`` using Structure comparison rules."""
         return (self >= lower) & (self <= upper)
 
     def contains(self, value: str) -> "Expression":
@@ -107,12 +145,15 @@ class Expression:
         return self._string_predicate("rlike", pattern)
 
     def cast(self, target: StructureType) -> "Expression":
+        """Cast to a scalar Structure type with Spark ``cast`` semantics."""
         return self._cast(target)
 
     def astype(self, target: StructureType) -> "Expression":
+        """Alias for :meth:`cast`, mirroring common DataFrame naming."""
         return self._cast(target)
 
     def try_cast(self, target: StructureType) -> "Expression":
+        """Cast to a scalar Structure type while preserving failed parses as null."""
         cast_expression = self._cast(target)
         return Expression(
             kind="try_cast",
@@ -158,11 +199,19 @@ class Expression:
         return self._struct_field(name, attribute=True)
 
     def get_field(self, name: str) -> "Expression":
+        """Access a nested struct field by Structure name or Spark column alias."""
         if not isinstance(name, str) or not name:
             raise TypeError("get_field(...) requires a non-empty field name")
         return self._struct_field(name, attribute=False)
 
     def with_field(self, name: str, value: object, *, schema: Any) -> "Expression":
+        """Return a struct expression with one declared field replaced.
+
+        Args:
+            name: Structure field name or Spark column alias to replace.
+            value: Replacement expression compatible with the target field.
+            schema: Result schema declaring the post-replacement struct shape.
+        """
         from structure.plugin.pyspark.dsl.expressions import literal
 
         source, target = self._struct_mutation_schema(schema, "with_field(...)")
@@ -188,6 +237,7 @@ class Expression:
         )
 
     def drop_fields(self, *names: str, schema: Any) -> "Expression":
+        """Return a struct expression with declared fields removed."""
         source, target = self._struct_mutation_schema(schema, "drop_fields(...)")
         if not names or any(not isinstance(name, str) or not name for name in names):
             raise TypeError("drop_fields(...) requires at least one non-empty field name")

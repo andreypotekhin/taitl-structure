@@ -6,6 +6,7 @@ import re
 from structure.dsl import FieldDefinition, Schema
 from structure.plugin.pyspark.dsl.types import (
     ArrayType,
+    BinaryType,
     BooleanType,
     DateType,
     DecimalType,
@@ -50,6 +51,8 @@ class RenderPySparkSchema:
     def type(self, type: StructureType) -> str:
         if isinstance(type, StringType):
             return "T.StringType()"
+        if isinstance(type, BinaryType):
+            return "T.BinaryType()"
         if isinstance(type, IntegerType):
             return "T.IntegerType()"
         if isinstance(type, LongType):

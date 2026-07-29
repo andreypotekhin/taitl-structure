@@ -220,7 +220,47 @@ class MapPySparkStep:
                         operation,
                     )
                 )
+            if operation.kind == "posexplode_outer_struct" and operation.posexplode_struct is not None:
+                recipes.append(
+                    self._operation_modes(
+                        self._generators.posexplode_struct(
+                            operation.posexplode_struct,
+                            capabilities=capabilities,
+                        ),
+                        operation,
+                    )
+                )
             if operation.kind == "explode_struct" and operation.posexplode_struct is not None:
+                recipes.append(
+                    self._operation_modes(
+                        self._generators.posexplode_struct(
+                            operation.posexplode_struct,
+                            capabilities=capabilities,
+                        ),
+                        operation,
+                    )
+                )
+            if operation.kind == "explode_outer_struct" and operation.posexplode_struct is not None:
+                recipes.append(
+                    self._operation_modes(
+                        self._generators.posexplode_struct(
+                            operation.posexplode_struct,
+                            capabilities=capabilities,
+                        ),
+                        operation,
+                    )
+                )
+            if operation.kind == "inline_struct" and operation.posexplode_struct is not None:
+                recipes.append(
+                    self._operation_modes(
+                        self._generators.posexplode_struct(
+                            operation.posexplode_struct,
+                            capabilities=capabilities,
+                        ),
+                        operation,
+                    )
+                )
+            if operation.kind == "inline_outer_struct" and operation.posexplode_struct is not None:
                 recipes.append(
                     self._operation_modes(
                         self._generators.posexplode_struct(

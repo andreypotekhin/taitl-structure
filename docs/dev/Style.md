@@ -58,6 +58,10 @@ We discourage non-docstrings comments: the meaning should stem from code itself.
 Example: instead of creating a comment on a method call, we can
 create more context by extracting the method into a well-named method or lightweight component
 
+Scarce commenting does not apply to areas end-user sees first when diving into Structure code,
+e.g. with IDE navigation. Those areas require abundant open-source library code grade docstring 
+commenting. See 'High traffic areas' section in [Code.md](Code.md)
+
 #### Code Formatting
 Code formatting is taken care of automatic build step (with build plugin).
 Some parts of code, such as builder chained method calls, tend to be a challenge for automatic fomatter.

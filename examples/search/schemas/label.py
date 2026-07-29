@@ -19,6 +19,32 @@ class QueryLabel(Schema):
     assigned_at = timestamp(nullable=False)
 
 
+class Intent(Schema):
+    """One canonical intent and its English evaluation-label name."""
+
+    id = string(nullable=False)
+    name = string(nullable=False)
+
+
+class IntentPattern(Schema):
+    """One language-specific regular-expression pattern for an intent."""
+
+    intent_id = string(nullable=False)
+    language = string(nullable=False)
+    pattern = string(nullable=False)
+
+
+class QueryIntentLabel(Schema):
+    """One query-intent pair awaiting pattern evaluation."""
+
+    query_id = string(nullable=False)
+    content = string(nullable=False)
+    language = string(nullable=False)
+    intent_id = string(nullable=False)
+    name = string(nullable=False)
+    value = long(nullable=False)
+
+
 class LabelMapEntry(Schema):
     """Internal map entry used while materializing query labels."""
 

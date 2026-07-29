@@ -7,7 +7,9 @@ Module: `examples.search.schemas.search`
 | Field | Column | Type | Nullable |
 | --- | --- | --- | --- |
 | `id` | `id` | `string` | no |
+| `queryset` | `queryset` | `string` | no |
 | `content` | `content` | `string` | no |
 | `labels` | `labels` | `map<string,long!>` | no |
 | `is_question` | `is_question` | `boolean` | no |
 | `is_time_sensitive` | `is_time_sensitive` | `boolean` | no |
+| `language` | `language` | `string` | yes |

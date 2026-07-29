@@ -3,6 +3,7 @@ from __future__ import annotations
 from structure.dsl import FieldDefinition, Schema
 from structure.plugin.pyspark.dsl.types import (
     ArrayType,
+    BinaryType,
     BooleanType,
     DateType,
     DecimalType,
@@ -34,6 +35,8 @@ class MaterializePySparkSchema:
         spark_types = types or self._spark_types()
         if isinstance(type, StringType):
             return spark_types.StringType()
+        if isinstance(type, BinaryType):
+            return spark_types.BinaryType()
         if isinstance(type, IntegerType):
             return spark_types.IntegerType()
         if isinstance(type, LongType):

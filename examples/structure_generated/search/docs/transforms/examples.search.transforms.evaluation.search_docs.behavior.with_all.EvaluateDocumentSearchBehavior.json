@@ -42,14 +42,14 @@
       "schema": "BandMembership"
     },
     {
-      "name": "params",
+      "name": "queries",
       "ordinal": 5,
-      "schema": "EvaluationParams"
+      "schema": "SearchQuery"
     },
     {
-      "name": "queries",
+      "name": "params",
       "ordinal": 6,
-      "schema": "SearchQuery"
+      "schema": "EvaluationParams"
     }
   ],
   "name": "EvaluateDocumentSearchBehavior",

@@ -9,6 +9,8 @@ class RunOnlinePySparkStructGenerator:
         position = f"{prefix}_pos"
         item = f"{prefix}_item"
         expanded = frame.select("*", self._generator(functions, generator, value, position, item))
+        if self._inline(generator):
+            return self._inline_fields(expanded, generator, functions=functions, prefix=position)
         if generator.ordinal is not None:
             expanded = expanded.withColumn(
                 generator.schema._structure_fields[generator.ordinal].column,
@@ -21,11 +23,32 @@ class RunOnlinePySparkStructGenerator:
         return expanded.drop(*self._drop_columns(generator, position, item))
 
     def _generator(self, functions, generator, value, position, item):
+        if generator.function == "explode_outer":
+            return functions.explode_outer(value).alias(item)
         if generator.function == "explode":
             return functions.explode(value).alias(item)
+        if generator.function == "posexplode_outer":
+            return functions.posexplode_outer(value).alias(position, item)
+        if generator.function == "inline_outer":
+            return functions.inline_outer(value).alias(*self._inline_aliases(generator, prefix=position))
+        if generator.function == "inline":
+            return functions.inline(value).alias(*self._inline_aliases(generator, prefix=position))
         return functions.posexplode(value).alias(position, item)
 
     def _drop_columns(self, generator, position, item):
         if generator.ordinal is None:
             return (item,)
         return (position, item)
+
+    def _inline(self, generator):
+        return generator.function in {"inline", "inline_outer"}
+
+    def _inline_fields(self, frame, generator, *, functions, prefix):
+        temporaries = self._inline_aliases(generator, prefix=prefix)
+        expanded = frame
+        for temporary, field in zip(temporaries, generator.schema._structure_fields.values(), strict=True):
+            expanded = expanded.withColumn(field.column, functions.col(temporary))
+        return expanded.drop(*temporaries)
+
+    def _inline_aliases(self, generator, *, prefix):
+        return tuple(f"{prefix}_{field.column}" for field in generator.schema._structure_fields.values())

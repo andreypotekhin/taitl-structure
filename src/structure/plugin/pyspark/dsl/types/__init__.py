@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING
 
 from structure.plugin.pyspark.dsl.types.ArrayType import ArrayType
 from structure.plugin.pyspark.dsl.types.Array import Array
+from structure.plugin.pyspark.dsl.types.BinaryType import BinaryType
+from structure.plugin.pyspark.dsl.types.Binary import Binary
 from structure.plugin.pyspark.dsl.types.BooleanType import BooleanType
 from structure.plugin.pyspark.dsl.types.Boolean import Boolean
 from structure.plugin.pyspark.dsl.types.DateType import DateType
@@ -33,6 +35,7 @@ if TYPE_CHECKING:
     from structure.dsl import Schema
 
 def string() -> StructureType: return String()
+def binary() -> StructureType: return Binary()
 def integer() -> StructureType: return Integer()
 def long() -> StructureType: return Long()
 def float() -> StructureType: return Float()
@@ -47,8 +50,8 @@ def struct(schema: type[Schema]) -> StructureType: return Struct(schema)
 
 
 __all__ = [
-    "Array", "ArrayType", "Boolean", "BooleanType", "Date", "DateType", "Decimal", "DecimalType", "Double",
+    "Array", "ArrayType", "Binary", "BinaryType", "Boolean", "BooleanType", "Date", "DateType", "Decimal", "DecimalType", "Double",
     "DoubleType", "Float", "FloatType", "Integer", "IntegerType", "Long", "LongType", "Map", "MapType",
     "ScalarType", "String", "StringType", "Struct", "StructType", "StructureType", "Timestamp", "TimestampType",
-    "array", "boolean", "date", "decimal", "double", "float", "integer", "long", "map", "string", "struct", "timestamp",
+    "array", "binary", "boolean", "date", "decimal", "double", "float", "integer", "long", "map", "string", "struct", "timestamp",
 ]

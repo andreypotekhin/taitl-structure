@@ -73,6 +73,11 @@
       "source": "source:examples.search.transforms.evaluation.search_docs.ranking.with_users.EvaluateDocumentRankingQuality.select_queries.filter.0"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.with_users.EvaluateDocumentRankingQualityGenerated.run.step.0.select_queries.where.1",
+      "ir": "ir:EvaluateDocumentRankingQuality.step.0.select_queries.filter.1",
+      "source": "source:examples.search.transforms.evaluation.search_docs.ranking.with_users.EvaluateDocumentRankingQuality.select_queries.filter.1"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.with_users.EvaluateDocumentRankingQualityGenerated.run.step.0.select_queries.join.1.batch",
       "ir": "ir:EvaluateDocumentRankingQuality.step.0.select_queries.join.1.batch",
       "source": "source:examples.search.transforms.evaluation.search_docs.ranking.with_users.EvaluateDocumentRankingQuality.select_queries.join.1.batch"
@@ -1103,6 +1108,14 @@
       "constant": "INDEXED_SIMILAR_SENTENCE_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.similarity"
     },
+    "Intent": {
+      "constant": "INTENT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
+    "IntentPattern": {
+      "constant": "INTENT_PATTERN_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
+    },
     "Label": {
       "constant": "LABEL_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.label"
@@ -1214,6 +1227,10 @@
     "QueryDocumentSignals": {
       "constant": "QUERY_DOCUMENT_SIGNALS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.relevance"
+    },
+    "QueryIntentLabel": {
+      "constant": "QUERY_INTENT_LABEL_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.label"
     },
     "QueryLabel": {
       "constant": "QUERY_LABEL_SCHEMA",
@@ -1504,6 +1521,16 @@
         "target": "select_queries.filter[0]"
       },
       {
+        "detail": {},
+        "operation": "filter",
+        "sources": [
+          "params.queryset",
+          "query.queryset"
+        ],
+        "step": "select_queries",
+        "target": "select_queries.filter[1]"
+      },
+      {
         "detail": {
           "cardinality": "row_multiplying",
           "hint": null,
@@ -1559,6 +1586,7 @@
         },
         "operation": "project",
         "sources": [
+          "params.queryset",
           "params.labels",
           "params.band_id"
         ],

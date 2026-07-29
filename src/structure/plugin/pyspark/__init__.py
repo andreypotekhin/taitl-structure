@@ -6,6 +6,10 @@ from structure.plugin.pyspark.PySparkPlugin import PySparkPlugin
 from structure.plugin.pyspark.dsl import field as field
 from structure.plugin.pyspark.dsl import types as types
 from structure.plugin.pyspark.dsl.generators import explode_struct as _explode_struct
+from structure.plugin.pyspark.dsl.generators import explode_outer_struct as _explode_outer_struct
+from structure.plugin.pyspark.dsl.generators import inline_struct as _inline_struct
+from structure.plugin.pyspark.dsl.generators import inline_outer_struct as _inline_outer_struct
+from structure.plugin.pyspark.dsl.generators import posexplode_outer_struct as _posexplode_outer_struct
 from structure.plugin.pyspark.dsl.generators import posexplode_struct as _posexplode_struct
 from structure.plugin.pyspark.dsl.relation_sets import (
     except_all,
@@ -32,20 +36,36 @@ def explode_struct(*args: object, **kwargs: object) -> Any:
     return cast(Any, _explode_struct)(*args, **kwargs)
 
 
+def explode_outer_struct(*args: object, **kwargs: object) -> Any:
+    return cast(Any, _explode_outer_struct)(*args, **kwargs)
+
+
+def inline_struct(*args: object, **kwargs: object) -> Any:
+    return cast(Any, _inline_struct)(*args, **kwargs)
+
+
+def inline_outer_struct(*args: object, **kwargs: object) -> Any:
+    return cast(Any, _inline_outer_struct)(*args, **kwargs)
+
+
 def posexplode_struct(*args: object, **kwargs: object) -> Any:
     return cast(Any, _posexplode_struct)(*args, **kwargs)
+
+
+def posexplode_outer_struct(*args: object, **kwargs: object) -> Any:
+    return cast(Any, _posexplode_outer_struct)(*args, **kwargs)
 
 
 if TYPE_CHECKING:
     from structure.plugin.pyspark.api.PySpark import PySpark
     from structure.plugin.pyspark.dsl.Expression import Expression
     from structure.plugin.pyspark.dsl.InputScope import *  # type: ignore  # noqa: F403
-    from structure.plugin.pyspark.dsl.Projection import Projection
     from structure.plugin.pyspark.dsl.TimeWindow import TimeWindow
     from structure.plugin.pyspark.dsl.aggregation import *  # type: ignore  # noqa: F403
     from structure.plugin.pyspark.dsl.body import project, watermark, where
     from structure.plugin.pyspark.dsl.expressions import *  # type: ignore  # noqa: F403
     from structure.plugin.pyspark.dsl.field import (  # noqa: F401
+        binary,
         boolean,
         date,
         decimal,
@@ -61,31 +81,33 @@ if TYPE_CHECKING:
     from structure.plugin.pyspark.dsl.joins import *  # type: ignore  # noqa: F403
     from structure.plugin.pyspark.dsl.operations import *  # type: ignore  # noqa: F403
     from structure.plugin.pyspark.dsl.operations_api import *  # type: ignore  # noqa: F403
+    from structure.plugin.pyspark.dsl.types.BinaryType import BinaryType
     from structure.plugin.pyspark.dsl.types.DecimalType import DecimalType
 
 
 _DSL_EXPORTS = """
-AsOf DecimalType Join JoinDedupe JoinHint JoinStrategy OverlapPolicy StreamingOutputMode TiePolicy abs bround
+AsOf BinaryType CsvOptions DecimalType Join JoinDedupe JoinHint JoinStrategy JsonOptions OverlapPolicy StreamingOutputMode TiePolicy abs base64 bround
 approx_count_distinct approx_percentile arr_aggregate arr_append arr_compact arr_distinct arr_exists arr_filter
 arr_flatten arr_forall arr_position arr_prepend arr_reverse arr_insert arr_remove arr_sort arr_sort_by arr_transform
 arr_zip_with array array_contains array_except array_intersect array_repeat array_union avg as_of_one bool_and bool_or
 collect_list collect_set concat_ws coalesce ceil count count_distinct corr covar cross_join cube current_row date_add
-date_sub date_trunc dayofmonth datediff cume_dist dedupe_earliest_by dedupe_latest_by dense_rank distinct
-drop_duplicates drop_duplicates_within_watermark earliest_by element_at event_time_between exactly_one except_all exp exists floor hash hour
+date_sub date_trunc dayofmonth datediff decode cume_dist dedupe_earliest_by dedupe_latest_by dense_rank distinct
+drop_duplicates drop_duplicates_within_watermark earliest_by element_at encode event_time_between exactly_one except_all exp exists floor from_csv from_json hash hour
 initcap ifnull instr intersect intersect_all first_value following full_join group_by grouping_id grouping_sets having inner_join isnan
 isnotnull isnull is_grouped kurtosis lag left_join latest_by lead lookup_join last_value length levenshtein lower
 ltrim log limit md5 map_entries map_concat map_contains_key map_filter map_from_entries map_keys map_transform_keys
-map_transform_values map_values map_zip_with max min minute month nanvl nvl nvl2 nullif pow not_exists nth_value
-ntile offset order_by percent_rank percentile posexplode_struct explode_struct preceding project rank range_between relation_alias regexp_extract regexp_replace require_all require_parent_hierarchy require_reference require_unique hierarchy_closure hierarchy_fallbacks reverse rtrim round
+map_transform_values map_values map_zip_with max min minute mode month nanvl nvl nvl2 nullif pow not_exists nth_value
+ntile offset order_by percent_rank percentile posexplode_struct posexplode_outer_struct explode_struct explode_outer_struct inline_struct inline_outer_struct preceding project rank range_between relation_alias regexp_extract regexp_replace require_all require_parent_hierarchy require_reference require_unique hierarchy_closure hierarchy_fallbacks reverse rtrim round
 select_first_qualified signum slice sha1 sha2 second right_join rollup row_number rowset_join rows_between rolling_avg rolling_max
 rolling_min rolling_sum scan subtract sum stddev sqrt size sequence session_window skewness split translate substring temporal_one
-to_decimal to_date to_timestamp TimeWindow trim trunc try_element_at union_all union_by_name upper unbounded_following unbounded_preceding
+to_csv to_decimal to_date to_json to_timestamp TimeWindow trim trunc try_element_at unbase64 union_all union_by_name upper unbounded_following unbounded_preceding
 variance when year xxhash64 zeroifnull where watermark window window_avg window_bool_and window_bool_or
 window_collect_list window_collect_set window_count window_count_distinct window_max window_min window_sum
 window_stddev window_variance
 """.split()
 
 _FIELD_FACTORIES = {
+    "binary",
     "boolean",
     "date",
     "decimal",
@@ -105,14 +127,18 @@ __all__ = [  # noqa: F405
     "field",
     "types",
     "AsOf",
+    "BinaryType",
+    "CsvOptions",
     "Join",
     "JoinDedupe",
     "JoinHint",
     "JoinStrategy",
+    "JsonOptions",
     "OverlapPolicy",
     "StreamingOutputMode",
     "TiePolicy",
     "abs",
+    "base64",
     "bround",
     "approx_count_distinct",
     "approx_percentile",
@@ -160,6 +186,7 @@ __all__ = [  # noqa: F405
     "date_trunc",
     "dayofmonth",
     "datediff",
+    "decode",
     "cume_dist",
     "dedupe_earliest_by",
     "dedupe_latest_by",
@@ -169,16 +196,22 @@ __all__ = [  # noqa: F405
     "drop_duplicates_within_watermark",
     "earliest_by",
     "element_at",
+    "encode",
     "event_time_between",
     "exactly_one",
     "except_all",
     "explode_struct",
+    "explode_outer_struct",
     "exp",
     "exists",
     "floor",
+    "from_csv",
+    "from_json",
     "hash",
     "hour",
     "initcap",
+    "inline_struct",
+    "inline_outer_struct",
     "ifnull",
     "instr",
     "intersect",
@@ -221,6 +254,7 @@ __all__ = [  # noqa: F405
     "map_zip_with",
     "max",
     "min",
+    "mode",
     "minute",
     "month",
     "nanvl",
@@ -235,6 +269,7 @@ __all__ = [  # noqa: F405
     "order_by",
     "percent_rank",
     "percentile",
+    "posexplode_outer_struct",
     "posexplode_struct",
     "preceding",
     "project",
@@ -280,13 +315,16 @@ __all__ = [  # noqa: F405
     "translate",
     "substring",
     "temporal_one",
+    "to_csv",
     "to_decimal",
     "to_date",
+    "to_json",
     "to_timestamp",
     "TimeWindow",
     "trim",
     "trunc",
     "try_element_at",
+    "unbase64",
     "union_all",
     "union_by_name",
     "upper",
@@ -313,6 +351,7 @@ __all__ = [  # noqa: F405
     "window_stddev",
     "window_variance",
     "boolean",
+    "binary",
     "date",
     "decimal",
     "double",
@@ -335,7 +374,7 @@ def __getattr__(name: str):
         return import_module(f"structure.plugin.pyspark.dsl.{name}")
     if name in _FIELD_FACTORIES:
         return getattr(import_module("structure.plugin.pyspark.dsl.field"), name)
-    if name in {"Expression", "InputScope", "Projection", "RowScope", "TimeWindow"}:
+    if name in {"Expression", "InputScope", "RowScope", "TimeWindow"}:
         return getattr(import_module(f"structure.plugin.pyspark.dsl.{name}"), name)
     dsl = import_module("structure.plugin.pyspark.dsl")
 

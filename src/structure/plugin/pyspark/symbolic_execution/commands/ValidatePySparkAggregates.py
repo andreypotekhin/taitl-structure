@@ -47,7 +47,10 @@ class ValidatePySparkAggregates:
             }
             if function in numeric and not all(self._numeric(item.type) for item in arguments):
                 self._error(request, schema_name, assignment.field.name, function, "a numeric expression")
-            if function in {"max", "min", "first_value", "last_value"} and not self._orderable(argument.type):
+            deterministic_mode = function == "mode" and dict(assignment.options).get("deterministic") is True
+            if (
+                function in {"max", "min", "first_value", "last_value"} or deterministic_mode
+            ) and not self._orderable(argument.type):
                 self._error(request, schema_name, assignment.field.name, function, "an orderable scalar expression")
             if function in {"count_distinct", "approx_count_distinct"} and not self._scalar(argument.type):
                 self._error(request, schema_name, assignment.field.name, function, "a scalar expression")

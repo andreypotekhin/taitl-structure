@@ -1,3 +1,5 @@
+"""Output declarations for Structure transform classes."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
@@ -9,6 +11,13 @@ from structure.core.dsl.model.transforms.InOutBinding import bind_inout
 
 @dataclass(frozen=True)
 class OutputDeclaration:
+    """A named relation produced by a transform.
+
+    ``output(Schema)`` declares a public result of a transform.  Outputs can be
+    selected in ``@step(output=...)`` bindings, renamed on invocation, or mapped
+    from composed stage outputs.
+    """
+
     schema: type[Schema]
     name: str = ""
     aliases: tuple[str, ...] = ()
@@ -27,7 +36,9 @@ class OutputDeclaration:
         return bind_inout(inputs, self)
 
     def alias(self, *names: str) -> OutputDeclaration:
+        """Add alternate names accepted by transform composition and invocation."""
         return declaration_alias(self, names)
 
     def from_(self, source: object) -> OutputDeclaration:
+        """Map this output to a source declaration or stage output."""
         return replace(self, source=source)

@@ -227,6 +227,7 @@ class CreateSimilarityQueries(Transform):
         zero = (size(tokens) * 0).cast(types.long())
         return SearchQuery(
             id=query_id,
+            queryset="synthetic",
             content=concat_ws(" ", tokens),
             labels=map_from_entries(
                 array(
@@ -236,4 +237,5 @@ class CreateSimilarityQueries(Transform):
             ),
             is_question=False,
             is_time_sensitive=False,
+            language=None,
         )

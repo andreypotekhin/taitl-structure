@@ -219,7 +219,7 @@ class PrimeNumbersGenerated:
                 F.col("ticks___scan_0_items"),
                 F.struct(
                     F.struct(
-                        F.array(F.lit(2)).cast(T.ArrayType(T.IntegerType(), containsNull=False)).alias("primes"),
+                        F.array(F.lit(2)).cast(T.ArrayType(T.IntegerType(), containsNull=True)).alias("primes"),
                         F.lit(2).cast(T.IntegerType()).alias("current"),
                     ).alias('__state'),
                     F.array()
@@ -235,7 +235,7 @@ class PrimeNumbersGenerated:
                                         T.StructType(
                                             [
                                                 T.StructField(
-                                                    "primes", T.ArrayType(T.IntegerType(), containsNull=False), False
+                                                    "primes", T.ArrayType(T.IntegerType(), containsNull=True), False
                                                 ),
                                                 T.StructField("current", T.IntegerType(), False),
                                             ]
@@ -270,7 +270,7 @@ class PrimeNumbersGenerated:
                                 acc.getField('__state').getField('current'),
                             ),
                         )
-                        .cast(T.ArrayType(T.IntegerType(), containsNull=False))
+                        .cast(T.ArrayType(T.IntegerType(), containsNull=True))
                         .alias("primes"),
                         F.coalesce(
                             F.element_at(

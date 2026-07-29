@@ -10,8 +10,6 @@ _MODULES = (
     "operations_api",
     "InputScope",
     "body",
-    "Projection",
-    "SpecialFunction",
     "TimeWindow",
     "types",
     "field",

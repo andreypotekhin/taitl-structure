@@ -37,6 +37,8 @@ grain must never be reused as a score at another grain.
 `SearchQuery.id` is the request-local partition key for scores and ranks. Query text is normalized with the same token
 rules used for extraction. The normalized query text is also the feedback aggregation key, allowing separately issued
 equivalent requests to share historical evidence without confusing their request-local result ranks.
+`SearchQuery.queryset` is a required caller-defined collection name, for example `natural` or `synthetic`, so evaluation
+can slice comparable ranking runs by query source.
 
 `ScoreOverlap` exposes a bounded lexical-overlap score. `ScoreBm25` exposes BM25 with fixed example parameters
 `k1 = 1.2` and `b = 0.75`. They remain separate score lanes: a caller or focused presentation transform chooses how to
@@ -152,6 +154,17 @@ through the lowest-priority band first and then to global feedback when it lacks
 resolver is currently a narrow raw Spark boundary because the DSL has no recursive-relation operation; ordinary
 feedback, ranking, and evaluation remain typed transforms. User-band evaluation selects contexts containing its
 requested persisted band, while combined evaluation applies both that membership filter and query-label filters.
+
+### Query intents
+
+Caller-owned intent catalogs map stable intent IDs to English label names. `SearchQuery.language` holds a caller locale,
+such as `en_UK`, and falls back to `en_US` when null. One-pattern `IntentPattern` rows map an intent and locale to a
+regular expression. `CreateQueryLabels` creates binary label maps, and `MergeQueryLabels` overlays them after caller
+labels. This makes multilingual intent slices reproducible without claiming language understanding, relevance, or a
+ranking effect.
+
+`EvaluationParams.queryset` optionally narrows evaluation to one `SearchQuery.queryset`; null keeps all query sets in the
+same batch.
 
 ### Judged document quality
 
