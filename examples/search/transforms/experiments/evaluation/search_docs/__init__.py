@@ -1,6 +1,6 @@
 """Experiment-aware document-search transforms."""
 
-from examples.search.transforms.experiments.evaluation.search_docs.eval_behavior import EvaluateDocumentSearchBehavior
-from examples.search.transforms.experiments.evaluation.search_docs.eval_ranking import EvaluateDocumentRankingQuality
+from examples.search.transforms.experiments.evaluation.search_docs.eval_behavior import EvaluateDocSearchBehavior
+from examples.search.transforms.experiments.evaluation.search_docs.eval_ranking import EvaluateDocumentRanking
 
-__all__ = ["EvaluateDocumentRankingQuality", "EvaluateDocumentSearchBehavior"]
+__all__ = ["EvaluateDocumentRanking", "EvaluateDocSearchBehavior"]

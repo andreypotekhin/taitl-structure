@@ -26,18 +26,3 @@ QUERY_FEATURES_SCHEMA = T.StructType([
     T.StructField("is_question", T.BooleanType(), False),
     T.StructField("is_time_sensitive", T.BooleanType(), False),
 ])
-
-QUERY_FEATURE_TOKEN_SCHEMA = T.StructType([
-    T.StructField("query_id", T.StringType(), False),
-    T.StructField("token", T.StringType(), False),
-])
-
-EXPANDED_QUERY_FEATURE_TOKEN_SCHEMA = T.StructType(QUERY_FEATURE_TOKEN_SCHEMA.fields + [
-    T.StructField("ordinal", T.LongType(), False),
-])
-
-QUERY_TOKEN_SUMMARY_SCHEMA = T.StructType([
-    T.StructField("query_id", T.StringType(), False),
-    T.StructField("token_count", T.LongType(), False),
-    T.StructField("distinct_token_count", T.LongType(), False),
-])

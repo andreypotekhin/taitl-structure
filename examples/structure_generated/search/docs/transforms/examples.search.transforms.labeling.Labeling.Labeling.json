@@ -1,0 +1,312 @@
+{
+  "dependencies": [
+    "assignment",
+    "created__labels",
+    "created__valid_intents",
+    "intent",
+    "merged__assignments"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "queries",
+      "ordinal": 0,
+      "schema": "SearchQuery"
+    },
+    {
+      "name": "intents",
+      "ordinal": 1,
+      "schema": "Intent"
+    },
+    {
+      "name": "patterns",
+      "ordinal": 2,
+      "schema": "IntentPattern"
+    },
+    {
+      "name": "query_labels",
+      "ordinal": 3,
+      "schema": "QueryLabel"
+    }
+  ],
+  "name": "Labeling",
+  "outputs": [
+    {
+      "name": "labeled_queries",
+      "ordinal": 0,
+      "schema": "SearchQuery"
+    }
+  ],
+  "source": "examples.search.transforms.labeling.Labeling.Labeling",
+  "step_methods": [
+    {
+      "input_lane": "intents",
+      "input_schema": "Intent",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "intent",
+          "schema": "Intent",
+          "source": "intents"
+        }
+      ],
+      "name": "created.validate_intents",
+      "output_lane": "created__valid_intents",
+      "output_schema": "Intent",
+      "results": [
+        {
+          "frame": "created__valid_intents",
+          "lane": "created__valid_intents",
+          "schema": "Intent"
+        }
+      ]
+    },
+    {
+      "input_lane": "patterns",
+      "input_schema": "IntentPattern",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "pattern",
+          "schema": "IntentPattern",
+          "source": "patterns"
+        },
+        {
+          "driving": false,
+          "parameter": "intent",
+          "schema": "Intent",
+          "source": "created__valid_intents"
+        }
+      ],
+      "name": "created.validate_patterns",
+      "output_lane": "created__valid_patterns",
+      "output_schema": "IntentPattern",
+      "results": [
+        {
+          "frame": "created__valid_patterns",
+          "lane": "created__valid_patterns",
+          "schema": "IntentPattern"
+        }
+      ]
+    },
+    {
+      "after_hooks": [
+        "match_patterns"
+      ],
+      "input_lane": "queries",
+      "input_schema": "SearchQuery",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "SearchQuery",
+          "source": "queries"
+        },
+        {
+          "driving": false,
+          "parameter": "intent",
+          "schema": "Intent",
+          "source": "created__valid_intents"
+        }
+      ],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "intent"
+        }
+      ],
+      "name": "created.create_query_intents",
+      "output_lane": "created__query_intents",
+      "output_schema": "QueryIntentLabel",
+      "results": [
+        {
+          "frame": "created__query_intents",
+          "lane": "created__query_intents",
+          "schema": "QueryIntentLabel"
+        }
+      ]
+    },
+    {
+      "input_lane": "created__query_intents",
+      "input_schema": "QueryIntentLabel",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "label",
+          "schema": "QueryIntentLabel",
+          "source": "created__query_intents"
+        }
+      ],
+      "name": "created.collect_labels",
+      "output_lane": "created__entries",
+      "output_schema": "QueryLabelAssignmentEntries",
+      "results": [
+        {
+          "frame": "created__entries",
+          "lane": "created__entries",
+          "schema": "QueryLabelAssignmentEntries"
+        }
+      ]
+    },
+    {
+      "input_lane": "created__entries",
+      "input_schema": "QueryLabelAssignmentEntries",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "entry",
+          "schema": "QueryLabelAssignmentEntries",
+          "source": "created__entries"
+        }
+      ],
+      "name": "created.create_labels",
+      "output_lane": "created__labels",
+      "output_schema": "QueryLabelAssignments",
+      "results": [
+        {
+          "frame": "created__labels",
+          "lane": "created__labels",
+          "schema": "QueryLabelAssignments"
+        }
+      ]
+    },
+    {
+      "input_lane": "query_labels",
+      "input_schema": "QueryLabel",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "label",
+          "schema": "QueryLabel",
+          "source": "query_labels"
+        }
+      ],
+      "name": "merged.select_latest",
+      "output_lane": "merged__latest_labels",
+      "output_schema": "QueryLabel",
+      "results": [
+        {
+          "frame": "merged__latest_labels",
+          "lane": "merged__latest_labels",
+          "schema": "QueryLabel"
+        }
+      ]
+    },
+    {
+      "input_lane": "merged__latest_labels",
+      "input_schema": "QueryLabel",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "label",
+          "schema": "QueryLabel",
+          "source": "merged__latest_labels"
+        }
+      ],
+      "name": "merged.collect_assignments",
+      "output_lane": "merged__entries",
+      "output_schema": "QueryLabelAssignmentEntries",
+      "results": [
+        {
+          "frame": "merged__entries",
+          "lane": "merged__entries",
+          "schema": "QueryLabelAssignmentEntries"
+        }
+      ]
+    },
+    {
+      "input_lane": "merged__entries",
+      "input_schema": "QueryLabelAssignmentEntries",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "entry",
+          "schema": "QueryLabelAssignmentEntries",
+          "source": "merged__entries"
+        }
+      ],
+      "name": "merged.create_assignments",
+      "output_lane": "merged__assignments",
+      "output_schema": "QueryLabelAssignments",
+      "results": [
+        {
+          "frame": "merged__assignments",
+          "lane": "merged__assignments",
+          "schema": "QueryLabelAssignments"
+        }
+      ]
+    },
+    {
+      "input_lane": "queries",
+      "input_schema": "SearchQuery",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "SearchQuery",
+          "source": "queries"
+        },
+        {
+          "driving": false,
+          "parameter": "assignment",
+          "schema": "QueryLabelAssignments",
+          "source": "merged__assignments"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "assignment"
+        }
+      ],
+      "name": "merged.merge_caller_labels",
+      "output_lane": "merged__caller_labeled_queries",
+      "output_schema": "SearchQuery",
+      "results": [
+        {
+          "frame": "merged__caller_labeled_queries",
+          "lane": "merged__caller_labeled_queries",
+          "schema": "SearchQuery"
+        }
+      ]
+    },
+    {
+      "input_lane": "merged__caller_labeled_queries",
+      "input_schema": "SearchQuery",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "SearchQuery",
+          "source": "merged__caller_labeled_queries"
+        },
+        {
+          "driving": false,
+          "parameter": "assignment",
+          "schema": "QueryLabelAssignments",
+          "source": "created__labels"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "assignment"
+        }
+      ],
+      "name": "merged.merge_created_labels",
+      "output_lane": "merged__labeled_queries",
+      "output_schema": "SearchQuery",
+      "results": [
+        {
+          "frame": "merged__labeled_queries",
+          "lane": "merged__labeled_queries",
+          "schema": "SearchQuery"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/Labeling.py",
+    "traceability": "traceability/transforms/Labeling.Labeling.json"
+  }
+}

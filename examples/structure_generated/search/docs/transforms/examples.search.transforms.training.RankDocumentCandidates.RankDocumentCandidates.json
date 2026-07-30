@@ -1,0 +1,102 @@
+{
+  "dependencies": [
+    "artifact",
+    "artifacts",
+    "document",
+    "document_features",
+    "query",
+    "query_features"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "candidates",
+      "ordinal": 0,
+      "schema": "DocumentSearchCandidate"
+    },
+    {
+      "name": "artifacts",
+      "ordinal": 1,
+      "schema": "RankingArtifact"
+    },
+    {
+      "name": "document_features",
+      "ordinal": 2,
+      "schema": "DocumentFeatures"
+    },
+    {
+      "name": "query_features",
+      "ordinal": 3,
+      "schema": "QueryFeatures"
+    }
+  ],
+  "name": "RankDocumentCandidates",
+  "outputs": [
+    {
+      "name": "ranked_candidates",
+      "ordinal": 0,
+      "schema": "DocumentSearchCandidate"
+    }
+  ],
+  "source": "examples.search.transforms.training.RankDocumentCandidates.RankDocumentCandidates",
+  "step_methods": [
+    {
+      "input_lane": "candidates",
+      "input_schema": "DocumentSearchCandidate",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "candidate",
+          "schema": "DocumentSearchCandidate",
+          "source": "candidates"
+        },
+        {
+          "driving": false,
+          "parameter": "artifact",
+          "schema": "RankingArtifact",
+          "source": "artifacts"
+        },
+        {
+          "driving": false,
+          "parameter": "document",
+          "schema": "DocumentFeatures",
+          "source": "document_features"
+        },
+        {
+          "driving": false,
+          "parameter": "query",
+          "schema": "QueryFeatures",
+          "source": "query_features"
+        }
+      ],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "artifact"
+        },
+        {
+          "how": "inner",
+          "input": "document"
+        },
+        {
+          "how": "inner",
+          "input": "query"
+        }
+      ],
+      "name": "rank",
+      "output_lane": "ranked_candidates",
+      "output_schema": "DocumentSearchCandidate",
+      "results": [
+        {
+          "frame": "ranked_candidates",
+          "lane": "ranked_candidates",
+          "schema": "DocumentSearchCandidate"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/RankDocumentCandidates.py",
+    "traceability": "traceability/transforms/RankDocumentCandidates.RankDocumentCandidates.json"
+  }
+}

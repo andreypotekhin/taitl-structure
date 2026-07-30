@@ -10,6 +10,18 @@ from examples.search.schemas.indexing.lexical.index import (
     SentenceIndexSummary,
     SentenceIndexTerm,
 )
+from examples.search.schemas.scoring.bm25 import (
+    DocumentBm25Score,
+    ParagraphBm25Score,
+    SectionBm25Score,
+    SentenceBm25Score,
+)
+from examples.search.schemas.scoring.overlap import (
+    DocumentOverlapScore,
+    ParagraphOverlapScore,
+    SectionOverlapScore,
+    SentenceOverlapScore,
+)
 from examples.search.schemas.search import DocumentScore, ParagraphScore, SearchQuery, SectionScore, SentenceScore
 from examples.search.transforms.scoring.ScoreBm25 import ScoreBm25
 from examples.search.transforms.scoring.ScoreOverlap import ScoreOverlap
@@ -33,6 +45,14 @@ class Scoring(Transform):
     section_scores = output(SectionScore)
     paragraph_scores = output(ParagraphScore)
     sentence_scores = output(SentenceScore)
+    document_overlap_scores = output(DocumentOverlapScore)
+    section_overlap_scores = output(SectionOverlapScore)
+    paragraph_overlap_scores = output(ParagraphOverlapScore)
+    sentence_overlap_scores = output(SentenceOverlapScore)
+    document_bm25_scores = output(DocumentBm25Score)
+    section_bm25_scores = output(SectionBm25Score)
+    paragraph_bm25_scores = output(ParagraphBm25Score)
+    sentence_bm25_scores = output(SentenceBm25Score)
     experiment_id = parameter(None)
 
     overlap = stage(
@@ -70,6 +90,14 @@ class Scoring(Transform):
             experiment_id=experiment_id,
         )
     )
+    document_overlap_scores = document_overlap_scores.from_(overlap.document_overlap_scores)
+    section_overlap_scores = section_overlap_scores.from_(overlap.section_overlap_scores)
+    paragraph_overlap_scores = paragraph_overlap_scores.from_(overlap.paragraph_overlap_scores)
+    sentence_overlap_scores = sentence_overlap_scores.from_(overlap.sentence_overlap_scores)
+    document_bm25_scores = document_bm25_scores.from_(bm25.document_bm25_scores)
+    section_bm25_scores = section_bm25_scores.from_(bm25.section_bm25_scores)
+    paragraph_bm25_scores = paragraph_bm25_scores.from_(bm25.paragraph_bm25_scores)
+    sentence_bm25_scores = sentence_bm25_scores.from_(bm25.sentence_bm25_scores)
 
 
 __all__ = ["Scoring"]

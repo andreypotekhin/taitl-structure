@@ -1,0 +1,74 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "model_id",
+      "name": "model_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "ranker_id",
+      "name": "ranker_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "artifact_version",
+      "name": "artifact_version",
+      "nullable": false,
+      "type": "integer"
+    },
+    {
+      "column": "feature_contract_version",
+      "name": "feature_contract_version",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "intercept",
+      "name": "intercept",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "means",
+      "name": "means",
+      "nullable": false,
+      "type": "map<string,double!>"
+    },
+    {
+      "column": "scales",
+      "name": "scales",
+      "nullable": false,
+      "type": "map<string,double!>"
+    },
+    {
+      "column": "weights",
+      "name": "weights",
+      "nullable": false,
+      "type": "map<string,double!>"
+    },
+    {
+      "column": "snapshot_id",
+      "name": "snapshot_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "split_seed",
+      "name": "split_seed",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "metadata",
+      "name": "metadata",
+      "nullable": false,
+      "type": "map<string,string!>"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.search.schemas.training.artifact",
+  "name": "RankingArtifact"
+}

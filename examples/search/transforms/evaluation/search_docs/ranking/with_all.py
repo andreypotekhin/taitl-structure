@@ -4,12 +4,12 @@ from examples.search.schemas.evaluation.batch import EvaluationBatch
 from examples.search.schemas.evaluation.judged_quality import EvaluationQuery
 from examples.search.schemas.evaluation.params import EvaluationParams
 from examples.search.schemas.search import DocumentSearchResult, SearchQuery
-from examples.search.transforms.evaluation.search_docs.ranking.with_users import EvaluateDocumentRankingQuality as Super
+from examples.search.transforms.evaluation.search_docs.ranking.with_users import EvaluateDocumentRanking as Super
 from structure import step
 from structure.plugin.pyspark import cross_join, group_by, inner_join, where
 
 
-class EvaluateDocumentRankingQuality(Super):
+class EvaluateDocumentRanking(Super):
     """Evaluate rankings selected by both caller query labels and one user band."""
 
     @step(output=Super.evaluated_queries)

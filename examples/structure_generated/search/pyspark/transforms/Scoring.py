@@ -956,12 +956,58 @@ class ScoringGenerated(ScoreBaseGenerated, ScoreOverlapGenerated, ScoreBm25Gener
         # Step method: sentence_scores
         sentence_scores = frames["selected__sentence_scores"].alias("sentence_score")
         assert_schema(sentence_scores, SENTENCE_SCORE_SCHEMA, name="SentenceScore", mode="strict")
+
+        # Step method: document_overlap_scores
+        document_overlap_scores = frames["overlap__document_overlap_scores"].alias("document_overlap_score")
+        assert_schema(
+            document_overlap_scores, DOCUMENT_OVERLAP_SCORE_SCHEMA, name="DocumentOverlapScore", mode="strict"
+        )
+
+        # Step method: section_overlap_scores
+        section_overlap_scores = frames["overlap__section_overlap_scores"].alias("section_overlap_score")
+        assert_schema(section_overlap_scores, SECTION_OVERLAP_SCORE_SCHEMA, name="SectionOverlapScore", mode="strict")
+
+        # Step method: paragraph_overlap_scores
+        paragraph_overlap_scores = frames["overlap__paragraph_overlap_scores"].alias("paragraph_overlap_score")
+        assert_schema(
+            paragraph_overlap_scores, PARAGRAPH_OVERLAP_SCORE_SCHEMA, name="ParagraphOverlapScore", mode="strict"
+        )
+
+        # Step method: sentence_overlap_scores
+        sentence_overlap_scores = frames["overlap__sentence_overlap_scores"].alias("sentence_overlap_score")
+        assert_schema(
+            sentence_overlap_scores, SENTENCE_OVERLAP_SCORE_SCHEMA, name="SentenceOverlapScore", mode="strict"
+        )
+
+        # Step method: document_bm25_scores
+        document_bm25_scores = frames["bm25__document_bm25_scores"].alias("document_bm25_score")
+        assert_schema(document_bm25_scores, DOCUMENT_BM25_SCORE_SCHEMA, name="DocumentBm25Score", mode="strict")
+
+        # Step method: section_bm25_scores
+        section_bm25_scores = frames["bm25__section_bm25_scores"].alias("section_bm25_score")
+        assert_schema(section_bm25_scores, SECTION_BM25_SCORE_SCHEMA, name="SectionBm25Score", mode="strict")
+
+        # Step method: paragraph_bm25_scores
+        paragraph_bm25_scores = frames["bm25__paragraph_bm25_scores"].alias("paragraph_bm25_score")
+        assert_schema(paragraph_bm25_scores, PARAGRAPH_BM25_SCORE_SCHEMA, name="ParagraphBm25Score", mode="strict")
+
+        # Step method: sentence_bm25_scores
+        sentence_bm25_scores = frames["bm25__sentence_bm25_scores"].alias("sentence_bm25_score")
+        assert_schema(sentence_bm25_scores, SENTENCE_BM25_SCORE_SCHEMA, name="SentenceBm25Score", mode="strict")
         return TransformResult(
             {
                 "document_scores": document_scores,
                 "section_scores": section_scores,
                 "paragraph_scores": paragraph_scores,
                 "sentence_scores": sentence_scores,
+                "document_overlap_scores": document_overlap_scores,
+                "section_overlap_scores": section_overlap_scores,
+                "paragraph_overlap_scores": paragraph_overlap_scores,
+                "sentence_overlap_scores": sentence_overlap_scores,
+                "document_bm25_scores": document_bm25_scores,
+                "section_bm25_scores": section_bm25_scores,
+                "paragraph_bm25_scores": paragraph_bm25_scores,
+                "sentence_bm25_scores": sentence_bm25_scores,
             },
             single=False,
             schema={
@@ -969,5 +1015,13 @@ class ScoringGenerated(ScoreBaseGenerated, ScoreOverlapGenerated, ScoreBm25Gener
                 "section_scores": SECTION_SCORE_SCHEMA,
                 "paragraph_scores": PARAGRAPH_SCORE_SCHEMA,
                 "sentence_scores": SENTENCE_SCORE_SCHEMA,
+                "document_overlap_scores": DOCUMENT_OVERLAP_SCORE_SCHEMA,
+                "section_overlap_scores": SECTION_OVERLAP_SCORE_SCHEMA,
+                "paragraph_overlap_scores": PARAGRAPH_OVERLAP_SCORE_SCHEMA,
+                "sentence_overlap_scores": SENTENCE_OVERLAP_SCORE_SCHEMA,
+                "document_bm25_scores": DOCUMENT_BM25_SCORE_SCHEMA,
+                "section_bm25_scores": SECTION_BM25_SCORE_SCHEMA,
+                "paragraph_bm25_scores": PARAGRAPH_BM25_SCORE_SCHEMA,
+                "sentence_bm25_scores": SENTENCE_BM25_SCORE_SCHEMA,
             },
         )

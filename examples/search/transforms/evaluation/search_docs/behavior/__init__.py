@@ -1,19 +1,19 @@
 """Document-search behavior evaluation transforms."""
 
-from examples.search.transforms.evaluation.search_docs.behavior.eval_behavior import EvaluateDocumentSearchBehavior
+from examples.search.transforms.evaluation.search_docs.behavior.eval_behavior import EvaluateDocSearchBehavior
 from examples.search.transforms.evaluation.search_docs.behavior.with_all import (
-    EvaluateDocumentSearchBehavior as EvaluateAllDocumentSearchBehavior,
+    EvaluateDocSearchBehavior as EvaluateAllDocSearchBehavior,
 )
 from examples.search.transforms.evaluation.search_docs.behavior.with_labels import (
-    EvaluateDocumentSearchBehavior as EvaluateLabeledDocumentSearchBehavior,
+    EvaluateDocSearchBehavior as EvaluateLabeledDocSearchBehavior,
 )
 from examples.search.transforms.evaluation.search_docs.behavior.with_users import (
-    EvaluateDocumentSearchBehavior as EvaluateUserDocumentSearchBehavior,
+    EvaluateDocSearchBehavior as EvaluateUserDocSearchBehavior,
 )
 
 __all__ = [
-    "EvaluateAllDocumentSearchBehavior",
-    "EvaluateDocumentSearchBehavior",
-    "EvaluateLabeledDocumentSearchBehavior",
-    "EvaluateUserDocumentSearchBehavior",
+    "EvaluateAllDocSearchBehavior",
+    "EvaluateDocSearchBehavior",
+    "EvaluateLabeledDocSearchBehavior",
+    "EvaluateUserDocSearchBehavior",
 ]

@@ -1,0 +1,224 @@
+{
+  "dependencies": [
+    "comparison_right",
+    "right",
+    "section",
+    "sections",
+    "sentence",
+    "sentences"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "words",
+      "ordinal": 0,
+      "schema": "Word"
+    },
+    {
+      "name": "sentences",
+      "ordinal": 1,
+      "schema": "Sentence"
+    },
+    {
+      "name": "paragraphs",
+      "ordinal": 2,
+      "schema": "Paragraph"
+    },
+    {
+      "name": "sections",
+      "ordinal": 3,
+      "schema": "Section"
+    },
+    {
+      "name": "comparison_left",
+      "ordinal": 4,
+      "schema": "DocumentProfile"
+    },
+    {
+      "name": "comparison_right",
+      "ordinal": 5,
+      "schema": "DocumentProfile"
+    }
+  ],
+  "name": "AnalyzeText",
+  "outputs": [
+    {
+      "name": "sentence_statistics",
+      "ordinal": 0,
+      "schema": "SentenceStatistics"
+    },
+    {
+      "name": "paragraph_statistics",
+      "ordinal": 1,
+      "schema": "ParagraphStatistics"
+    },
+    {
+      "name": "section_statistics",
+      "ordinal": 2,
+      "schema": "SectionStatistics"
+    },
+    {
+      "name": "document_statistics",
+      "ordinal": 3,
+      "schema": "DocumentStatistics"
+    },
+    {
+      "name": "similar_documents",
+      "ordinal": 4,
+      "schema": "SimilarDocument"
+    }
+  ],
+  "source": "examples.search.transforms.stats.AnalyzeText.AnalyzeText",
+  "step_methods": [
+    {
+      "input_lane": "words",
+      "input_schema": "Word",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "word",
+          "schema": "Word",
+          "source": "words"
+        },
+        {
+          "driving": false,
+          "parameter": "sentence",
+          "schema": "Sentence",
+          "source": "sentences"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "sentence"
+        }
+      ],
+      "name": "sentence_stats",
+      "output_lane": "sentence_statistics",
+      "output_schema": "SentenceStatistics",
+      "results": [
+        {
+          "frame": "sentence_statistics",
+          "lane": "sentence_statistics",
+          "schema": "SentenceStatistics"
+        }
+      ]
+    },
+    {
+      "input_lane": "words",
+      "input_schema": "Word",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "word",
+          "schema": "Word",
+          "source": "words"
+        }
+      ],
+      "name": "paragraph_stats",
+      "output_lane": "paragraph_statistics",
+      "output_schema": "ParagraphStatistics",
+      "results": [
+        {
+          "frame": "paragraph_statistics",
+          "lane": "paragraph_statistics",
+          "schema": "ParagraphStatistics"
+        }
+      ]
+    },
+    {
+      "input_lane": "words",
+      "input_schema": "Word",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "word",
+          "schema": "Word",
+          "source": "words"
+        },
+        {
+          "driving": false,
+          "parameter": "section",
+          "schema": "Section",
+          "source": "sections"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "section"
+        }
+      ],
+      "name": "section_stats",
+      "output_lane": "section_statistics",
+      "output_schema": "SectionStatistics",
+      "results": [
+        {
+          "frame": "section_statistics",
+          "lane": "section_statistics",
+          "schema": "SectionStatistics"
+        }
+      ]
+    },
+    {
+      "input_lane": "words",
+      "input_schema": "Word",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "word",
+          "schema": "Word",
+          "source": "words"
+        }
+      ],
+      "name": "document_stats",
+      "output_lane": "document_statistics",
+      "output_schema": "DocumentStatistics",
+      "results": [
+        {
+          "frame": "document_statistics",
+          "lane": "document_statistics",
+          "schema": "DocumentStatistics"
+        }
+      ]
+    },
+    {
+      "input_lane": "comparison_left",
+      "input_schema": "DocumentProfile",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "left",
+          "schema": "DocumentProfile",
+          "source": "comparison_left"
+        },
+        {
+          "driving": false,
+          "parameter": "right",
+          "schema": "DocumentProfile",
+          "source": "comparison_right"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "right"
+        }
+      ],
+      "name": "similar",
+      "output_lane": "similar_documents",
+      "output_schema": "SimilarDocument",
+      "results": [
+        {
+          "frame": "similar_documents",
+          "lane": "similar_documents",
+          "schema": "SimilarDocument"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/AnalyzeText.py",
+    "traceability": "traceability/transforms/AnalyzeText.AnalyzeText.json"
+  }
+}

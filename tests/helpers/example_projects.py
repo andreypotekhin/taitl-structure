@@ -492,10 +492,9 @@ def render_search_example() -> dict[str, str]:
             EvaluationResultTotals,
         )
         from examples.search.schemas.experiment import Experiment
-        from examples.search.schemas.features import (
-            DocumentFeatures,
+        from examples.search.schemas.features import DocumentFeatures, QueryFeatures
+        from examples.search.schemas.features.intermediate import (
             ExpandedQueryFeatureToken,
-            QueryFeatures,
             QueryFeatureToken,
             QueryTokenSummary,
         )
@@ -580,21 +579,19 @@ def render_search_example() -> dict[str, str]:
             SentenceSearchResult,
             SentenceSearchTarget,
         )
-        from examples.search.schemas.similarities.query import (
-            DocumentSimilarityQueryText,
-            ParagraphSimilarityQueryText,
-            SectionSimilarityQueryText,
-            SentenceSimilarityQueryText,
-        )
-        from examples.search.schemas.similarities.reduce import (
+        from examples.search.schemas.similarities.intermediate import (
             DocumentSimilarityCandidate,
             DocumentSimilarityPair,
+            DocumentSimilarityQueryText,
             ParagraphSimilarityCandidate,
             ParagraphSimilarityPair,
+            ParagraphSimilarityQueryText,
             SectionSimilarityCandidate,
             SectionSimilarityPair,
+            SectionSimilarityQueryText,
             SentenceSimilarityCandidate,
             SentenceSimilarityPair,
+            SentenceSimilarityQueryText,
         )
         from examples.search.schemas.similarity import (
             DocumentSimilarity,
@@ -616,39 +613,35 @@ def render_search_example() -> dict[str, str]:
             SimilaritySentenceQuery,
         )
         from examples.search.schemas.text import Document, Paragraph, Section, Sentence, Word
-        from examples.search.schemas.training import DocumentTrainingData
+        from examples.search.schemas.training import DocumentTrainingData, RankingArtifact
         from examples.search.schemas.user import Band, BandFallback, BandMembership, User, UserBand, UserBandMembership
-        from examples.search.transforms.analyze import AnalyzeText
+        from examples.search.transforms.all import All, Training
         from examples.search.transforms.chunking import Chunking, DocumentChunking, SentenceChunking, WordChunking
         from examples.search.transforms.clicks.Clicks import Clicks
         from examples.search.transforms.clicks.Impressions import Impressions
         from examples.search.transforms.cohorts import ResolveCohortBands
-        from examples.search.transforms.corpus import CorpusText
         from examples.search.transforms.evaluate import (
-            EvaluateAllDocumentRankingQuality,
-            EvaluateAllDocumentSearchBehavior,
-            EvaluateDocumentRankingQuality,
-            EvaluateDocumentSearchBehavior,
-            EvaluateLabeledDocumentRankingQuality,
-            EvaluateLabeledDocumentSearchBehavior,
-            EvaluateUserDocumentRankingQuality,
-            EvaluateUserDocumentSearchBehavior,
+            EvaluateAllDocSearchBehavior,
+            EvaluateAllDocumentRanking,
+            EvaluateDocSearchBehavior,
+            EvaluateDocumentRanking,
+            EvaluateLabeledDocSearchBehavior,
+            EvaluateLabeledDocumentRanking,
+            EvaluateUserDocSearchBehavior,
+            EvaluateUserDocumentRanking,
         )
         from examples.search.transforms.experiment import (
-            EvaluateDocumentRankingQuality as EvaluateExperimentDocumentRankingQuality,
+            EvaluateDocSearchBehavior as EvaluateExperimentDocSearchBehavior,
         )
-        from examples.search.transforms.experiment import (
-            EvaluateDocumentSearchBehavior as EvaluateExperimentDocumentSearchBehavior,
-        )
+        from examples.search.transforms.experiment import EvaluateDocumentRanking as EvaluateExperimentDocumentRanking
         from examples.search.transforms.experiment import (
             Scoring001AdjustBm,
             Searching001AdjustRerankSearchDocuments,
             SelectExperimentScores,
         )
-        from examples.search.transforms.features import BuildDocumentFeatures, BuildQueryFeatures
-        from examples.search.transforms.index import CreateIndex
-        from examples.search.transforms.labeling import CreateQueryLabels, LabelQueries, MergeQueryLabels
-        from examples.search.transforms.profile import ProfileDocuments
+        from examples.search.transforms.features import BuildDocumentFeatures, BuildQueryFeatures, Features
+        from examples.search.transforms.indexing import Indexing
+        from examples.search.transforms.labeling import CreateQueryLabels, Labeling, MergeQueryLabels
         from examples.search.transforms.relevance.BuildRelevanceSignals import BuildRelevanceSignals
         from examples.search.transforms.score import Scoring
         from examples.search.transforms.scoring.ScoreBm25 import ScoreBm25
@@ -657,10 +650,14 @@ def render_search_example() -> dict[str, str]:
         from examples.search.transforms.searching.search_similarity import SearchSimilarity
         from examples.search.transforms.similarities.CreateSimilarityQueries import CreateSimilarityQueries
         from examples.search.transforms.similarities.ReduceSimilarityScores import ReduceSimilarityScores
+        from examples.search.transforms.similarities.Similarities import Similarities
         from examples.search.transforms.similarities.SimilarParagraphs import SimilarParagraphs
         from examples.search.transforms.similarities.SimilarSections import SimilarSections
         from examples.search.transforms.similarities.SimilarSentences import SimilarSentences
-        from examples.search.transforms.training import BuildTrainingData
+        from examples.search.transforms.stats.AnalyzeText import AnalyzeText
+        from examples.search.transforms.stats.CorpusText import CorpusText
+        from examples.search.transforms.stats.ProfileDocuments import ProfileDocuments
+        from examples.search.transforms.training import BuildTrainingData, RankDocumentCandidates
         from structure.plugin.pyspark import TimeWindow
 
         schema_modules: dict[str, Sequence[type[Schema]]] = {
@@ -803,9 +800,12 @@ def render_search_example() -> dict[str, str]:
                 BehaviorDailyCounts,
             ],
             "examples.search.schemas.training.data": [DocumentTrainingData],
+            "examples.search.schemas.training.artifact": [RankingArtifact],
             "examples.search.schemas.features": [
                 DocumentFeatures,
                 QueryFeatures,
+            ],
+            "examples.search.schemas.features.intermediate": [
                 QueryFeatureToken,
                 ExpandedQueryFeatureToken,
                 QueryTokenSummary,
@@ -854,7 +854,7 @@ def render_search_example() -> dict[str, str]:
                 ParagraphSimilarity,
                 SentenceSimilarity,
             ],
-            "examples.search.schemas.similarities.reduce": [
+            "examples.search.schemas.similarities.intermediate": [
                 DocumentSimilarityCandidate,
                 DocumentSimilarityPair,
                 SectionSimilarityCandidate,
@@ -863,8 +863,6 @@ def render_search_example() -> dict[str, str]:
                 ParagraphSimilarityPair,
                 SentenceSimilarityCandidate,
                 SentenceSimilarityPair,
-            ],
-            "examples.search.schemas.similarities.query": [
                 DocumentSimilarityQueryText,
                 SectionSimilarityQueryText,
                 ParagraphSimilarityQueryText,
@@ -872,17 +870,21 @@ def render_search_example() -> dict[str, str]:
             ],
         }
         transforms = (
+            (All, "examples.search.transforms.all.all.All"),
             (Chunking, "examples.search.transforms.chunking.Chunking.Chunking"),
             (DocumentChunking, "examples.search.transforms.chunking.DocumentChunking.DocumentChunking"),
             (SentenceChunking, "examples.search.transforms.chunking.SentenceChunking.SentenceChunking"),
             (WordChunking, "examples.search.transforms.chunking.WordChunking.WordChunking"),
-            (ProfileDocuments, "examples.search.transforms.profile.ProfileDocuments"),
-            (BuildDocumentFeatures, "examples.search.transforms.features.BuildDocumentFeatures"),
-            (BuildQueryFeatures, "examples.search.transforms.features.BuildQueryFeatures"),
+            (ProfileDocuments, "examples.search.transforms.stats.ProfileDocuments.ProfileDocuments"),
+            (BuildDocumentFeatures, "examples.search.transforms.features.BuildDocumentFeatures.BuildDocumentFeatures"),
+            (BuildQueryFeatures, "examples.search.transforms.features.BuildQueryFeatures.BuildQueryFeatures"),
+            (Features, "examples.search.transforms.features.Features.Features"),
             (BuildTrainingData, "examples.search.transforms.training.BuildTrainingData.BuildTrainingData"),
-            (AnalyzeText, "examples.search.transforms.analyze.AnalyzeText"),
-            (CorpusText, "examples.search.transforms.corpus.CorpusText"),
-            (CreateIndex, "examples.search.transforms.index.CreateIndex"),
+            (RankDocumentCandidates, "examples.search.transforms.training.RankDocumentCandidates.RankDocumentCandidates"),
+            (Training, "examples.search.transforms.training.Training.Training"),
+            (AnalyzeText, "examples.search.transforms.stats.AnalyzeText.AnalyzeText"),
+            (CorpusText, "examples.search.transforms.stats.CorpusText.CorpusText"),
+            (Indexing, "examples.search.transforms.indexing.Indexing.Indexing"),
             (
                 CreateSimilarityQueries,
                 "examples.search.transforms.similarities.CreateSimilarityQueries.CreateSimilarityQueries",
@@ -892,12 +894,13 @@ def render_search_example() -> dict[str, str]:
             (Scoring, "examples.search.transforms.scoring.Scoring.Scoring"),
             (
                 Scoring001AdjustBm,
-                "examples.search.transforms.experiments.scoring.scoring001_adjust_bm.Scoring001AdjustBm",
+                "examples.search.transforms.experiments.scoring.Scoring001AdjustBm.Scoring001AdjustBm",
             ),
             (
                 ReduceSimilarityScores,
                 "examples.search.transforms.similarities.ReduceSimilarityScores.ReduceSimilarityScores",
             ),
+            (Similarities, "examples.search.transforms.similarities.Similarities.Similarities"),
             (
                 SearchSimilarity,
                 "examples.search.transforms.searching.search_similarity.SearchSimilarity.SearchSimilarity",
@@ -906,12 +909,12 @@ def render_search_example() -> dict[str, str]:
             (SimilarParagraphs, "examples.search.transforms.similarities.SimilarParagraphs.SimilarParagraphs"),
             (SimilarSentences, "examples.search.transforms.similarities.SimilarSentences.SimilarSentences"),
             (ResolveCohortBands, "examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBands"),
-            (MergeQueryLabels, "examples.search.transforms.labeling.merge_query_labels.MergeQueryLabels"),
-            (CreateQueryLabels, "examples.search.transforms.labeling.create_query_labels.CreateQueryLabels"),
-            (LabelQueries, "examples.search.transforms.labeling.label_queries.LabelQueries"),
+            (MergeQueryLabels, "examples.search.transforms.labeling.MergeQueryLabels.MergeQueryLabels"),
+            (CreateQueryLabels, "examples.search.transforms.labeling.CreateQueryLabels.CreateQueryLabels"),
+            (Labeling, "examples.search.transforms.labeling.Labeling.Labeling"),
             (
                 SelectExperimentScores,
-                "examples.search.transforms.experiments.select_experiment_scores.SelectExperimentScores",
+                "examples.search.transforms.experiments.SelectExperimentScores.SelectExperimentScores",
             ),
             (SearchSentences, "examples.search.transforms.search.SearchSentences"),
             (Impressions, "examples.search.transforms.clicks.Impressions.Impressions"),
@@ -923,47 +926,47 @@ def render_search_example() -> dict[str, str]:
             (SearchDocuments, "examples.search.transforms.search.SearchDocuments"),
             (
                 Searching001AdjustRerankSearchDocuments,
-                "examples.search.transforms.experiments.searching.search_docs.searching001_adjust_rerank.Searching001AdjustRerankSearchDocuments",
+                "examples.search.transforms.experiments.searching.search_docs.Searching001AdjustRerankSearchDocuments.Searching001AdjustRerankSearchDocuments",
             ),
             (
-                EvaluateExperimentDocumentRankingQuality,
-                "examples.search.transforms.experiments.evaluation.search_docs.eval_ranking.EvaluateDocumentRankingQuality",
+                EvaluateExperimentDocumentRanking,
+                "examples.search.transforms.experiments.evaluation.search_docs.eval_ranking.EvaluateDocumentRanking",
             ),
             (
-                EvaluateExperimentDocumentSearchBehavior,
-                "examples.search.transforms.experiments.evaluation.search_docs.eval_behavior.EvaluateDocumentSearchBehavior",
+                EvaluateExperimentDocSearchBehavior,
+                "examples.search.transforms.experiments.evaluation.search_docs.eval_behavior.EvaluateDocSearchBehavior",
             ),
             (
-                EvaluateDocumentRankingQuality,
-                "examples.search.transforms.evaluation.search_docs.ranking.eval_ranking.EvaluateDocumentRankingQuality",
+                EvaluateDocumentRanking,
+                "examples.search.transforms.evaluation.search_docs.ranking.eval_ranking.EvaluateDocumentRanking",
             ),
             (
-                EvaluateDocumentSearchBehavior,
-                "examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocumentSearchBehavior",
+                EvaluateDocSearchBehavior,
+                "examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior",
             ),
             (
-                EvaluateLabeledDocumentRankingQuality,
-                "examples.search.transforms.evaluation.search_docs.ranking.with_labels.EvaluateDocumentRankingQuality",
+                EvaluateLabeledDocumentRanking,
+                "examples.search.transforms.evaluation.search_docs.ranking.with_labels.EvaluateDocumentRanking",
             ),
             (
-                EvaluateLabeledDocumentSearchBehavior,
-                "examples.search.transforms.evaluation.search_docs.behavior.with_labels.EvaluateDocumentSearchBehavior",
+                EvaluateLabeledDocSearchBehavior,
+                "examples.search.transforms.evaluation.search_docs.behavior.with_labels.EvaluateDocSearchBehavior",
             ),
             (
-                EvaluateUserDocumentRankingQuality,
-                "examples.search.transforms.evaluation.search_docs.ranking.with_users.EvaluateDocumentRankingQuality",
+                EvaluateUserDocumentRanking,
+                "examples.search.transforms.evaluation.search_docs.ranking.with_users.EvaluateDocumentRanking",
             ),
             (
-                EvaluateUserDocumentSearchBehavior,
-                "examples.search.transforms.evaluation.search_docs.behavior.with_users.EvaluateDocumentSearchBehavior",
+                EvaluateUserDocSearchBehavior,
+                "examples.search.transforms.evaluation.search_docs.behavior.with_users.EvaluateDocSearchBehavior",
             ),
             (
-                EvaluateAllDocumentRankingQuality,
-                "examples.search.transforms.evaluation.search_docs.ranking.with_all.EvaluateDocumentRankingQuality",
+                EvaluateAllDocumentRanking,
+                "examples.search.transforms.evaluation.search_docs.ranking.with_all.EvaluateDocumentRanking",
             ),
             (
-                EvaluateAllDocumentSearchBehavior,
-                "examples.search.transforms.evaluation.search_docs.behavior.with_all.EvaluateDocumentSearchBehavior",
+                EvaluateAllDocSearchBehavior,
+                "examples.search.transforms.evaluation.search_docs.behavior.with_all.EvaluateDocSearchBehavior",
             ),
         )
         files = {}

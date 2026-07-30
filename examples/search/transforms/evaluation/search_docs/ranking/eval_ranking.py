@@ -32,7 +32,7 @@ from structure.plugin.pyspark import (
 )
 
 
-class EvaluateDocumentRankingQuality(Transform):
+class EvaluateDocumentRanking(Transform):
     """Evaluate document ranking run against caller-supplied judgments."""
 
     batch = input(EvaluationBatch)

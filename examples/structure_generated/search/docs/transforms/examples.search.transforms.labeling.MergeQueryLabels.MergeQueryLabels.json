@@ -1,0 +1,174 @@
+{
+  "dependencies": [
+    "assignment",
+    "assignments",
+    "created_labels"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "queries",
+      "ordinal": 0,
+      "schema": "SearchQuery"
+    },
+    {
+      "name": "query_labels",
+      "ordinal": 1,
+      "schema": "QueryLabel"
+    },
+    {
+      "name": "created_labels",
+      "ordinal": 2,
+      "schema": "QueryLabelAssignments"
+    }
+  ],
+  "name": "MergeQueryLabels",
+  "outputs": [
+    {
+      "name": "labeled_queries",
+      "ordinal": 0,
+      "schema": "SearchQuery"
+    }
+  ],
+  "source": "examples.search.transforms.labeling.MergeQueryLabels.MergeQueryLabels",
+  "step_methods": [
+    {
+      "input_lane": "query_labels",
+      "input_schema": "QueryLabel",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "label",
+          "schema": "QueryLabel",
+          "source": "query_labels"
+        }
+      ],
+      "name": "select_latest",
+      "output_lane": "latest_labels",
+      "output_schema": "QueryLabel",
+      "results": [
+        {
+          "frame": "latest_labels",
+          "lane": "latest_labels",
+          "schema": "QueryLabel"
+        }
+      ]
+    },
+    {
+      "input_lane": "latest_labels",
+      "input_schema": "QueryLabel",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "label",
+          "schema": "QueryLabel",
+          "source": "latest_labels"
+        }
+      ],
+      "name": "collect_assignments",
+      "output_lane": "entries",
+      "output_schema": "QueryLabelAssignmentEntries",
+      "results": [
+        {
+          "frame": "entries",
+          "lane": "entries",
+          "schema": "QueryLabelAssignmentEntries"
+        }
+      ]
+    },
+    {
+      "input_lane": "entries",
+      "input_schema": "QueryLabelAssignmentEntries",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "entry",
+          "schema": "QueryLabelAssignmentEntries",
+          "source": "entries"
+        }
+      ],
+      "name": "create_assignments",
+      "output_lane": "assignments",
+      "output_schema": "QueryLabelAssignments",
+      "results": [
+        {
+          "frame": "assignments",
+          "lane": "assignments",
+          "schema": "QueryLabelAssignments"
+        }
+      ]
+    },
+    {
+      "input_lane": "queries",
+      "input_schema": "SearchQuery",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "SearchQuery",
+          "source": "queries"
+        },
+        {
+          "driving": false,
+          "parameter": "assignment",
+          "schema": "QueryLabelAssignments",
+          "source": "assignments"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "assignment"
+        }
+      ],
+      "name": "merge_caller_labels",
+      "output_lane": "caller_labeled_queries",
+      "output_schema": "SearchQuery",
+      "results": [
+        {
+          "frame": "caller_labeled_queries",
+          "lane": "caller_labeled_queries",
+          "schema": "SearchQuery"
+        }
+      ]
+    },
+    {
+      "input_lane": "caller_labeled_queries",
+      "input_schema": "SearchQuery",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "SearchQuery",
+          "source": "caller_labeled_queries"
+        },
+        {
+          "driving": false,
+          "parameter": "assignment",
+          "schema": "QueryLabelAssignments",
+          "source": "created_labels"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "assignment"
+        }
+      ],
+      "name": "merge_created_labels",
+      "output_lane": "labeled_queries",
+      "output_schema": "SearchQuery",
+      "results": [
+        {
+          "frame": "labeled_queries",
+          "lane": "labeled_queries",
+          "schema": "SearchQuery"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/MergeQueryLabels.py",
+    "traceability": "traceability/transforms/MergeQueryLabels.MergeQueryLabels.json"
+  }
+}

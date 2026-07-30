@@ -44,7 +44,7 @@ RETIRED_TRANSFORMS = {
     ),
     "search.index.build": (
         "examples.search.transforms.index",
-        "CreateIndex",
+        "Indexing",
     ),
     "search.create-similarity-queries.build": (
         "examples.search.transforms.similarities.CreateSimilarityQueries",
@@ -202,7 +202,7 @@ def test_search_similarity_query_construction_is_typed_and_has_no_opaque_hook_bo
 
 
 def test_search_index_build_is_typed_and_has_no_opaque_hook_boundary() -> None:
-    plan, traceability = _lowered("examples.search.transforms.index", "CreateIndex")
+    plan, traceability = _lowered("examples.search.transforms.index", "Indexing")
 
     assert traceability.opaque_boundaries == ()
     for grain in ("document", "section", "paragraph", "sentence"):

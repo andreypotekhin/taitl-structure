@@ -29,7 +29,7 @@ from structure.plugin.pyspark import (
 )
 
 
-class EvaluateDocumentSearchBehavior(Transform):
+class EvaluateDocSearchBehavior(Transform):
     """Summarize observed click satisfaction for each served result list."""
 
     batch = input(EvaluationBatch)

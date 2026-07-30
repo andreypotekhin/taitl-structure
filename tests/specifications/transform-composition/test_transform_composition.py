@@ -813,7 +813,7 @@ def test_inherited_lane_remains_available_to_override() -> None:
 
 
 def test_search_scoring_uses_stage_composition() -> None:
-    from examples.search.transforms.index import EnrichWithScores
+    from examples.search.transforms.score import EnrichWithScores
     from examples.search.transforms.scoring.pipeline import Scoring
 
     for transform in (Scoring, EnrichWithScores):
@@ -824,6 +824,14 @@ def test_search_scoring_uses_stage_composition() -> None:
             "section_scores",
             "paragraph_scores",
             "sentence_scores",
+            "document_overlap_scores",
+            "section_overlap_scores",
+            "paragraph_overlap_scores",
+            "sentence_overlap_scores",
+            "document_bm25_scores",
+            "section_bm25_scores",
+            "paragraph_bm25_scores",
+            "sentence_bm25_scores",
         ]
         assert [step.name for step in plan.steps][-4:] == [
             "selected.score_documents",

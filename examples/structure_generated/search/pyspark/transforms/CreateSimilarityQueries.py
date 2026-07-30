@@ -16,13 +16,13 @@ from examples.structure_generated.search.pyspark.schemas.index import (
     SENTENCE_INDEX_SUMMARY_SCHEMA,
     SENTENCE_INDEX_TERM_SCHEMA,
 )
-from examples.structure_generated.search.pyspark.schemas.query import (
+from examples.structure_generated.search.pyspark.schemas.search import SEARCH_QUERY_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.similarities_intermediate import (
     DOCUMENT_SIMILARITY_QUERY_TEXT_SCHEMA,
     PARAGRAPH_SIMILARITY_QUERY_TEXT_SCHEMA,
     SECTION_SIMILARITY_QUERY_TEXT_SCHEMA,
     SENTENCE_SIMILARITY_QUERY_TEXT_SCHEMA,
 )
-from examples.structure_generated.search.pyspark.schemas.search import SEARCH_QUERY_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.similarity import (
     DOCUMENT_SIMILARITY_QUERY_SCHEMA,
     PARAGRAPH_SIMILARITY_QUERY_SCHEMA,

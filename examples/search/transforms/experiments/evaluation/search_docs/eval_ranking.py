@@ -9,12 +9,12 @@ from examples.search.schemas.evaluation.judged_quality import (
 from examples.search.schemas.evaluation.params import EvaluationParams
 from examples.search.schemas.experiment import Experiment
 from examples.search.schemas.search import DocumentSearchResult, SearchQuery
-from examples.search.transforms.evaluation.search_docs.ranking.with_all import EvaluateDocumentRankingQuality as Super
+from examples.search.transforms.evaluation.search_docs.ranking.with_all import EvaluateDocumentRanking as Super
 from structure import input, step
 from structure.plugin.pyspark import cross_join, inner_join, left_join, where
 
 
-class EvaluateDocumentRankingQuality(Super):
+class EvaluateDocumentRanking(Super):
     """Evaluate an experiment."""
 
     experiments = input(Experiment)

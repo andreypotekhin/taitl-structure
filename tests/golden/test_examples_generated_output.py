@@ -60,11 +60,161 @@ def test_search_scoring_subpackage_transform_is_discovered_and_compiled() -> Non
     Compiler.frontend.compile()(scoring, config=config, materialize_schemas=False)
 
 
+def test_search_all_builds_the_complete_offline_artifact_graph() -> None:
+    """The build facade publishes pre-serving artifacts without result-presentation dependencies."""
+
+    from examples.search.schemas.analytics import (
+        CorpusStatistics,
+        CorpusVocabulary,
+        DocumentProfile,
+        DocumentStatistics,
+        ParagraphStatistics,
+        SectionStatistics,
+        SentenceStatistics,
+        SimilarDocument,
+    )
+    from examples.search.schemas.clicks import DailyClicks, DailyImpressions
+    from examples.search.schemas.indexing.lexical.index import (
+        DocumentIndexSummary,
+        DocumentIndexTerm,
+        ParagraphIndexSummary,
+        ParagraphIndexTerm,
+        SectionIndexSummary,
+        SectionIndexTerm,
+        SentenceIndexSummary,
+        SentenceIndexTerm,
+    )
+    from examples.search.schemas.label import Intent, IntentPattern, QueryLabel
+    from examples.search.schemas.relevance import DocumentPopularity, QueryDocumentSignals, RelevancePolicy
+    from examples.search.schemas.scoring.bm25 import (
+        DocumentBm25Score,
+        ParagraphBm25Score,
+        SectionBm25Score,
+        SentenceBm25Score,
+    )
+    from examples.search.schemas.scoring.overlap import (
+        DocumentOverlapScore,
+        ParagraphOverlapScore,
+        SectionOverlapScore,
+        SentenceOverlapScore,
+    )
+    from examples.search.schemas.similarity import (
+        DocumentSimilarity,
+        ParagraphSimilarity,
+        SectionSimilarity,
+        SentenceSimilarity,
+        SimilarityPolicy,
+    )
+    from examples.search.schemas.search import DocumentScore, ParagraphScore, SearchQuery, SectionScore, SentenceScore
+    from examples.search.schemas.text import Document, Paragraph, Section, Sentence, Word
+    from examples.search.schemas.user import Band, BandFallback, BandMembership, User, UserBand, UserBandMembership
+    from examples.search.transforms.all import All
+
+    plan = Compiler.frontend.compile()(All, materialize_schemas=False).analysis
+    assert isinstance(plan, TransformPlan)
+    assert [(item.name, item.schema) for item in plan.inputs] == [
+        ("documents", Document),
+        ("similarity_policy", SimilarityPolicy),
+        ("queries", SearchQuery),
+        ("intents", Intent),
+        ("patterns", IntentPattern),
+        ("query_labels", QueryLabel),
+        ("users", User),
+        ("bands", Band),
+        ("daily_impressions", DailyImpressions),
+        ("daily_clicks", DailyClicks),
+        ("policy", RelevancePolicy),
+    ]
+    assert [(item.name, item.schema) for item in plan.outputs] == [
+        ("sections", Section),
+        ("paragraphs", Paragraph),
+        ("sentences", Sentence),
+        ("words", Word),
+        ("document_profiles", DocumentProfile),
+        ("sentence_statistics", SentenceStatistics),
+        ("paragraph_statistics", ParagraphStatistics),
+        ("section_statistics", SectionStatistics),
+        ("document_statistics", DocumentStatistics),
+        ("similar_documents", SimilarDocument),
+        ("corpus_statistics", CorpusStatistics),
+        ("corpus_vocabulary", CorpusVocabulary),
+        ("document_terms", DocumentIndexTerm),
+        ("document_summary", DocumentIndexSummary),
+        ("section_terms", SectionIndexTerm),
+        ("section_summary", SectionIndexSummary),
+        ("paragraph_terms", ParagraphIndexTerm),
+        ("paragraph_summary", ParagraphIndexSummary),
+        ("sentence_terms", SentenceIndexTerm),
+        ("sentence_summary", SentenceIndexSummary),
+        ("labeled_queries", SearchQuery),
+        ("document_scores", DocumentScore),
+        ("section_scores", SectionScore),
+        ("paragraph_scores", ParagraphScore),
+        ("sentence_scores", SentenceScore),
+        ("document_overlap_scores", DocumentOverlapScore),
+        ("section_overlap_scores", SectionOverlapScore),
+        ("paragraph_overlap_scores", ParagraphOverlapScore),
+        ("sentence_overlap_scores", SentenceOverlapScore),
+        ("document_bm25_scores", DocumentBm25Score),
+        ("section_bm25_scores", SectionBm25Score),
+        ("paragraph_bm25_scores", ParagraphBm25Score),
+        ("sentence_bm25_scores", SentenceBm25Score),
+        ("document_similarities", DocumentSimilarity),
+        ("section_similarities", SectionSimilarity),
+        ("paragraph_similarities", ParagraphSimilarity),
+        ("sentence_similarities", SentenceSimilarity),
+        ("band_memberships", BandMembership),
+        ("user_bands", UserBand),
+        ("user_band_memberships", UserBandMembership),
+        ("band_fallbacks", BandFallback),
+        ("query_document_signals", QueryDocumentSignals),
+        ("document_popularity", DocumentPopularity),
+    ]
+    stages = [step.name.split(".", 1)[0] for step in plan.steps]
+    assert stages.index("chunked") < stages.index("indexed")
+    assert stages.index("chunked") < stages.index("analyzed") < stages.index("corpus")
+    assert stages.index("profiled") < stages.index("analyzed")
+    assert stages.index("labeled") < stages.index("scored")
+    assert stages.index("indexed") < stages.index("scored")
+    assert stages.index("indexed") < stages.index("similarities")
+    assert stages.index("cohorts") < stages.index("relevance")
+
+
+def test_search_all_training_endpoint_builds_features_and_training_data() -> None:
+    """The all package exposes a focused offline-training data endpoint."""
+
+    from examples.search.schemas.evaluation.judged_quality import DocumentRelevanceJudgment
+    from examples.search.schemas.features import DocumentFeatures, QueryFeatures
+    from examples.search.schemas.search import DocumentScore, SearchQuery
+    from examples.search.schemas.text import Document
+    from examples.search.schemas.training import DocumentTrainingData
+    from examples.search.transforms.all.training import Training, TrainingPipeline, training_examples
+
+    plan = Compiler.frontend.compile()(Training, materialize_schemas=False).analysis
+    assert isinstance(plan, TransformPlan)
+    assert TrainingPipeline.__name__ == "TrainingPipeline"
+    assert callable(training_examples)
+    assert [(item.name, item.schema) for item in plan.inputs] == [
+        ("documents", Document),
+        ("queries", SearchQuery),
+        ("document_scores", DocumentScore),
+        ("judgments", DocumentRelevanceJudgment),
+    ]
+    assert [(item.name, item.schema) for item in plan.outputs] == [
+        ("document_features", DocumentFeatures),
+        ("query_features", QueryFeatures),
+        ("training_data", DocumentTrainingData),
+    ]
+    stages = [step.name.split(".", 1)[0] for step in plan.steps]
+    assert set(stages) == {"features", "data"}
+    assert stages.index("features") < stages.index("data")
+
+
 def test_search_experiments_replace_production_stages() -> None:
     """Experiment transforms inherit the production graph and replace only their variant stages."""
 
-    from examples.search.transforms.experiments.scoring.scoring001_adjust_bm import Scoring001AdjustBm
-    from examples.search.transforms.experiments.searching.search_docs.searching001_adjust_rerank import (
+    from examples.search.transforms.experiments.scoring.Scoring001AdjustBm import Scoring001AdjustBm
+    from examples.search.transforms.experiments.searching.search_docs.Searching001AdjustRerankSearchDocuments import (
         Searching001AdjustRerankDocuments,
         Searching001AdjustRerankSearchDocuments,
     )
@@ -79,30 +229,30 @@ def test_search_experiments_replace_production_stages() -> None:
     assert {step.name.split(".")[0] for step in scoring.steps} == {"overlap", "bm25", "selected"}
     assert Scoring001AdjustBm.bm25.invocation.k1 == 1.35
     assert Scoring001AdjustBm.bm25.invocation.b == 0.70
-    assert Scoring001AdjustBm.experiment_id == "scoring001_adjust_bm"
+    assert Scoring001AdjustBm.experiment_id == "Scoring001AdjustBm"
     assert Scoring001AdjustBm.selected is Scoring.selected
     rerank = next(step for step in searching.steps if step.name == "reranked.score_candidates")
     assert rerank.origin is not None
     assert rerank.origin.class_name == Searching001AdjustRerankDocuments.__name__
 
 
-def test_similarity_public_transform_inherits_its_searching_implementation() -> None:
-    """The public transform stays import-stable while its implementation is grouped with search transforms."""
+def test_similarity_public_module_reexports_search_similarity() -> None:
+    """The public module is a thin import surface for the concrete searching transform."""
 
     from examples.search.transforms.searching.search_similarity import SearchSimilarity
-    from examples.search.transforms.similarity import Similarity
+    from examples.search.transforms.similarity import SearchSimilarity as PublicSearchSimilarity
 
-    assert Similarity.__bases__ == (SearchSimilarity,)
+    assert PublicSearchSimilarity is SearchSimilarity
 
 
 def test_behavior_evaluator_keeps_its_request_to_daily_pipeline_local() -> None:
     """The public evaluator owns all behavior stages for direct IDE navigation."""
 
-    from examples.search.transforms.evaluation.search_docs.behavior.eval_behavior import EvaluateDocumentSearchBehavior
+    from examples.search.transforms.evaluation.search_docs.behavior.eval_behavior import EvaluateDocSearchBehavior
 
-    assert EvaluateDocumentSearchBehavior.__bases__ == (Transform,)
+    assert EvaluateDocSearchBehavior.__bases__ == (Transform,)
 
-    plan = Compiler.frontend.compile()(EvaluateDocumentSearchBehavior, materialize_schemas=False).analysis
+    plan = Compiler.frontend.compile()(EvaluateDocSearchBehavior, materialize_schemas=False).analysis
     assert isinstance(plan, TransformPlan)
     assert [output.name for output in plan.outputs] == [
         "request_behaviors",
@@ -127,16 +277,12 @@ def test_behavior_evaluator_keeps_its_request_to_daily_pipeline_local() -> None:
 def test_experiment_evaluators_schedule_combined_selection_before_their_override() -> None:
     """Experiment evaluators reuse combined selection before adding experiment context."""
 
-    from examples.search.transforms.experiments.evaluation.search_docs.eval_behavior import (
-        EvaluateDocumentSearchBehavior,
-    )
-    from examples.search.transforms.experiments.evaluation.search_docs.eval_ranking import (
-        EvaluateDocumentRankingQuality,
-    )
+    from examples.search.transforms.experiments.evaluation.search_docs.eval_behavior import EvaluateDocSearchBehavior
+    from examples.search.transforms.experiments.evaluation.search_docs.eval_ranking import EvaluateDocumentRanking
 
     for evaluator, parent_step in (
-        (EvaluateDocumentRankingQuality, "select_queries"),
-        (EvaluateDocumentSearchBehavior, "select_requests"),
+        (EvaluateDocumentRanking, "select_queries"),
+        (EvaluateDocSearchBehavior, "select_requests"),
     ):
         plan = cast(TransformPlan, Compiler.frontend.compile()(evaluator, materialize_schemas=False).analysis)
         steps = plan.steps
@@ -144,7 +290,7 @@ def test_experiment_evaluators_schedule_combined_selection_before_their_override
         child_origin = steps[1].origin
 
         assert [step.name for step in steps[:2]] == [
-            f"EvaluateDocument{'RankingQuality' if parent_step == 'select_queries' else 'SearchBehavior'}.{parent_step}",
+            f"Evaluate{'DocumentRanking' if parent_step == 'select_queries' else 'DocSearchBehavior'}.{parent_step}",
             parent_step,
         ]
         assert parent_origin is not None

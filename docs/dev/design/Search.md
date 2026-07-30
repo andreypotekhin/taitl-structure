@@ -29,7 +29,7 @@ pass to another system.
 `Document.content` is plain text. `Chunking` turns heading lines into sections and blank-line groups into paragraphs. Its default sentence supplier is an explicitly declared punctuation-based Python UDF; it is a replaceable starting point, not a source-faithful segmenter. Callers that require exact sentence text or spans supply a `Paragraph`-to-`Sentence` transform and then reuse `WordChunking`. Words are normalized once for every later lexical path. The hierarchy preserves document,
 section, paragraph, sentence, and word identifiers plus deterministic ordinals.
 
-`CreateIndex` produces independent document, section, paragraph, and sentence index artifacts. Each grain has its own
+`Indexing` produces independent document, section, paragraph, and sentence index artifacts. Each grain has its own
 term frequency, document frequency, target length, vocabulary size, target count, and average length. A score at one
 grain must never be reused as a score at another grain.
 
@@ -160,7 +160,7 @@ requested persisted band, while combined evaluation applies both that membership
 Caller-owned intent catalogs map stable intent IDs to English label names. `SearchQuery.language` holds a caller locale,
 such as `en_UK`, and falls back to `en_US` when null. One-pattern `IntentPattern` rows map an intent and locale to a
 regular expression. `CreateQueryLabels` creates binary label maps, and `MergeQueryLabels` overlays them after caller
-labels. `LabelQueries` composes both stages as the Search app labeling pipeline. This makes multilingual intent slices
+labels. `Labeling` composes both stages as the Search app labeling pipeline. This makes multilingual intent slices
 reproducible without claiming language understanding, relevance, or a ranking effect.
 
 `EvaluationParams.queryset` optionally narrows evaluation to one `SearchQuery.queryset`; null keeps all query sets in the
@@ -168,7 +168,7 @@ same batch.
 
 ### Judged document quality
 
-`EvaluateDocumentRankingQuality` evaluates one document-ranking run against caller-supplied `DocumentRelevanceJudgment` rows. Grades
+`EvaluateDocumentRanking` evaluates one document-ranking run against caller-supplied `DocumentRelevanceJudgment` rows. Grades
 are 0 (not relevant), 1 (related), 2 (relevant), and 3 (ideal). Grades 2 and 3 are binary relevant; every grade affects
 nDCG. The evaluator publishes per-query and daily Precision, judged Recall, Success, nDCG, and reciprocal-rank metrics
 at cutoffs 5, 10, and 15 where applicable.
@@ -180,7 +180,7 @@ pool; the generic result schema does not carry a ranker identifier.
 
 ### Request-aware behavior
 
-`EvaluateDocumentSearchBehavior` measures interaction with the actual served list. It preserves no-result requests,
+`EvaluateDocSearchBehavior` measures interaction with the actual served list. It preserves no-result requests,
 attributes clicks to displayed impressions within the 24-hour interval, and publishes per-request behavior plus daily
 summaries by ranking version.
 

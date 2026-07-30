@@ -12,7 +12,7 @@ from examples.search.schemas.indexing.lexical.index import (
 )
 from examples.search.schemas.label import LabelMapEntry
 from examples.search.schemas.search import SearchQuery
-from examples.search.schemas.similarities.query import (
+from examples.search.schemas.similarities.intermediate import (
     DocumentSimilarityQueryText,
     ParagraphSimilarityQueryText,
     SectionSimilarityQueryText,

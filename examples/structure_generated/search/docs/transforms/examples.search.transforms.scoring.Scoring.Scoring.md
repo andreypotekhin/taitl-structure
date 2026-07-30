@@ -22,6 +22,14 @@ Source: `examples.search.transforms.scoring.Scoring.Scoring`
 - `section_scores`: `SectionScore`
 - `paragraph_scores`: `ParagraphScore`
 - `sentence_scores`: `SentenceScore`
+- `document_overlap_scores`: `DocumentOverlapScore`
+- `section_overlap_scores`: `SectionOverlapScore`
+- `paragraph_overlap_scores`: `ParagraphOverlapScore`
+- `sentence_overlap_scores`: `SentenceOverlapScore`
+- `document_bm25_scores`: `DocumentBm25Score`
+- `section_bm25_scores`: `SectionBm25Score`
+- `paragraph_bm25_scores`: `ParagraphBm25Score`
+- `sentence_bm25_scores`: `SentenceBm25Score`
 
 ## Step methods
 

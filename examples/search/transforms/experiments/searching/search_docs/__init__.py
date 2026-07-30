@@ -1,6 +1,6 @@
 """Document-search experiment transforms."""
 
-from examples.search.transforms.experiments.searching.search_docs.searching001_adjust_rerank import (
+from examples.search.transforms.experiments.searching.search_docs.Searching001AdjustRerankSearchDocuments import (
     Searching001AdjustRerankDocuments,
     Searching001AdjustRerankSearchDocuments,
 )

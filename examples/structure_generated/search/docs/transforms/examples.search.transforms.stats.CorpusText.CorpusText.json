@@ -1,0 +1,80 @@
+{
+  "dependencies": [],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "documents",
+      "ordinal": 0,
+      "schema": "DocumentStatistics"
+    },
+    {
+      "name": "words",
+      "ordinal": 1,
+      "schema": "Word"
+    }
+  ],
+  "name": "CorpusText",
+  "outputs": [
+    {
+      "name": "corpus_statistics",
+      "ordinal": 0,
+      "schema": "CorpusStatistics"
+    },
+    {
+      "name": "corpus_vocabulary",
+      "ordinal": 1,
+      "schema": "CorpusVocabulary"
+    }
+  ],
+  "source": "examples.search.transforms.stats.CorpusText.CorpusText",
+  "step_methods": [
+    {
+      "input_lane": "documents",
+      "input_schema": "DocumentStatistics",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "row",
+          "schema": "DocumentStatistics",
+          "source": "documents"
+        }
+      ],
+      "name": "corpus_stats",
+      "output_lane": "corpus_statistics",
+      "output_schema": "CorpusStatistics",
+      "results": [
+        {
+          "frame": "corpus_statistics",
+          "lane": "corpus_statistics",
+          "schema": "CorpusStatistics"
+        }
+      ]
+    },
+    {
+      "input_lane": "words",
+      "input_schema": "Word",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "word",
+          "schema": "Word",
+          "source": "words"
+        }
+      ],
+      "name": "corpus_vocabulary_stats",
+      "output_lane": "corpus_vocabulary",
+      "output_schema": "CorpusVocabulary",
+      "results": [
+        {
+          "frame": "corpus_vocabulary",
+          "lane": "corpus_vocabulary",
+          "schema": "CorpusVocabulary"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/CorpusText.py",
+    "traceability": "traceability/transforms/CorpusText.CorpusText.json"
+  }
+}

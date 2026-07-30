@@ -25,9 +25,7 @@ class BuildTrainingData(Transform):
         document: DocumentFeatures,
         query: QueryFeatures,
     ) -> DocumentTrainingData:
-        inner_join(
-            on=(judgment.search_query_id == score.query_id) & (judgment.document_id == score.document_id)
-        )
+        inner_join(on=(judgment.search_query_id == score.query_id) & (judgment.document_id == score.document_id))
         inner_join(document, on=document.document_id == score.document_id)
         inner_join(query, on=query.query_id == score.query_id)
         return DocumentTrainingData(

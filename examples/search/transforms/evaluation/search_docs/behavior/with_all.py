@@ -6,14 +6,12 @@ from examples.search.schemas.evaluation.behavior import BehaviorRequest
 from examples.search.schemas.evaluation.params import EvaluationParams
 from examples.search.schemas.search import SearchQuery
 from examples.search.schemas.user import BandMembership
-from examples.search.transforms.evaluation.search_docs.behavior.with_users import (
-    EvaluateDocumentSearchBehavior as Super,
-)
+from examples.search.transforms.evaluation.search_docs.behavior.with_users import EvaluateDocSearchBehavior as Super
 from structure import input, step
 from structure.plugin.pyspark import cross_join, inner_join, where
 
 
-class EvaluateDocumentSearchBehavior(Super):
+class EvaluateDocSearchBehavior(Super):
     """Measure served behavior selected by both labels and one user band."""
 
     queries = input(SearchQuery)

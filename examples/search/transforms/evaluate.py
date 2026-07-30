@@ -1,23 +1,23 @@
 """Public Search evaluation interfaces."""
 
 from examples.search.transforms.evaluation.search_docs import (
-    EvaluateAllDocumentRankingQuality,
-    EvaluateAllDocumentSearchBehavior,
-    EvaluateDocumentRankingQuality,
-    EvaluateDocumentSearchBehavior,
-    EvaluateLabeledDocumentRankingQuality,
-    EvaluateLabeledDocumentSearchBehavior,
-    EvaluateUserDocumentRankingQuality,
-    EvaluateUserDocumentSearchBehavior,
+    EvaluateAllDocSearchBehavior,
+    EvaluateAllDocumentRanking,
+    EvaluateDocSearchBehavior,
+    EvaluateDocumentRanking,
+    EvaluateLabeledDocSearchBehavior,
+    EvaluateLabeledDocumentRanking,
+    EvaluateUserDocSearchBehavior,
+    EvaluateUserDocumentRanking,
 )
 
 __all__ = [
-    "EvaluateDocumentRankingQuality",
-    "EvaluateDocumentSearchBehavior",
-    "EvaluateLabeledDocumentRankingQuality",
-    "EvaluateLabeledDocumentSearchBehavior",
-    "EvaluateUserDocumentRankingQuality",
-    "EvaluateUserDocumentSearchBehavior",
-    "EvaluateAllDocumentRankingQuality",
-    "EvaluateAllDocumentSearchBehavior",
+    "EvaluateDocumentRanking",
+    "EvaluateDocSearchBehavior",
+    "EvaluateLabeledDocumentRanking",
+    "EvaluateLabeledDocSearchBehavior",
+    "EvaluateUserDocumentRanking",
+    "EvaluateUserDocSearchBehavior",
+    "EvaluateAllDocumentRanking",
+    "EvaluateAllDocSearchBehavior",
 ]

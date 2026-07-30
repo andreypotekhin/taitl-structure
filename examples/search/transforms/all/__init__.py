@@ -1,0 +1,6 @@
+"""Complete pre-serving search-artifact build transform."""
+
+from examples.search.transforms.all.all import All
+from examples.search.transforms.training import Training
+
+__all__ = ["All", "Training"]

@@ -1,0 +1,236 @@
+{
+  "dependencies": [
+    "document",
+    "features__documents_built__document_features",
+    "features__queries_built__query_features",
+    "features__queries_built__query_token_summaries",
+    "judgment",
+    "judgments",
+    "query",
+    "summary"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "documents",
+      "ordinal": 0,
+      "schema": "Document"
+    },
+    {
+      "name": "queries",
+      "ordinal": 1,
+      "schema": "SearchQuery"
+    },
+    {
+      "name": "document_scores",
+      "ordinal": 2,
+      "schema": "DocumentScore"
+    },
+    {
+      "name": "judgments",
+      "ordinal": 3,
+      "schema": "DocumentRelevanceJudgment"
+    }
+  ],
+  "name": "Training",
+  "outputs": [
+    {
+      "name": "document_features",
+      "ordinal": 0,
+      "schema": "DocumentFeatures"
+    },
+    {
+      "name": "query_features",
+      "ordinal": 1,
+      "schema": "QueryFeatures"
+    },
+    {
+      "name": "training_data",
+      "ordinal": 2,
+      "schema": "DocumentTrainingData"
+    }
+  ],
+  "source": "examples.search.transforms.training.Training.Training",
+  "step_methods": [
+    {
+      "input_lane": "documents",
+      "input_schema": "Document",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "document",
+          "schema": "Document",
+          "source": "documents"
+        }
+      ],
+      "name": "features.documents_built.build",
+      "output_lane": "features__documents_built__document_features",
+      "output_schema": "DocumentFeatures",
+      "results": [
+        {
+          "frame": "features__documents_built__document_features",
+          "lane": "features__documents_built__document_features",
+          "schema": "DocumentFeatures"
+        }
+      ]
+    },
+    {
+      "input_lane": "queries",
+      "input_schema": "SearchQuery",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "SearchQuery",
+          "source": "queries"
+        }
+      ],
+      "name": "features.queries_built.expand_tokens",
+      "output_lane": "features__queries_built__expanded_query_tokens",
+      "output_schema": "ExpandedQueryFeatureToken",
+      "results": [
+        {
+          "frame": "features__queries_built__expanded_query_tokens",
+          "lane": "features__queries_built__expanded_query_tokens",
+          "schema": "ExpandedQueryFeatureToken"
+        }
+      ]
+    },
+    {
+      "input_lane": "features__queries_built__expanded_query_tokens",
+      "input_schema": "ExpandedQueryFeatureToken",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "token",
+          "schema": "ExpandedQueryFeatureToken",
+          "source": "features__queries_built__expanded_query_tokens"
+        }
+      ],
+      "name": "features.queries_built.select_tokens",
+      "output_lane": "features__queries_built__query_tokens",
+      "output_schema": "QueryFeatureToken",
+      "results": [
+        {
+          "frame": "features__queries_built__query_tokens",
+          "lane": "features__queries_built__query_tokens",
+          "schema": "QueryFeatureToken"
+        }
+      ]
+    },
+    {
+      "input_lane": "features__queries_built__query_tokens",
+      "input_schema": "QueryFeatureToken",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "token",
+          "schema": "QueryFeatureToken",
+          "source": "features__queries_built__query_tokens"
+        }
+      ],
+      "name": "features.queries_built.summarize",
+      "output_lane": "features__queries_built__query_token_summaries",
+      "output_schema": "QueryTokenSummary",
+      "results": [
+        {
+          "frame": "features__queries_built__query_token_summaries",
+          "lane": "features__queries_built__query_token_summaries",
+          "schema": "QueryTokenSummary"
+        }
+      ]
+    },
+    {
+      "input_lane": "queries",
+      "input_schema": "SearchQuery",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "SearchQuery",
+          "source": "queries"
+        },
+        {
+          "driving": false,
+          "parameter": "summary",
+          "schema": "QueryTokenSummary",
+          "source": "features__queries_built__query_token_summaries"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "summary"
+        }
+      ],
+      "name": "features.queries_built.build",
+      "output_lane": "features__queries_built__query_features",
+      "output_schema": "QueryFeatures",
+      "results": [
+        {
+          "frame": "features__queries_built__query_features",
+          "lane": "features__queries_built__query_features",
+          "schema": "QueryFeatures"
+        }
+      ]
+    },
+    {
+      "input_lane": "document_scores",
+      "input_schema": "DocumentScore",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "score",
+          "schema": "DocumentScore",
+          "source": "document_scores"
+        },
+        {
+          "driving": false,
+          "parameter": "judgment",
+          "schema": "DocumentRelevanceJudgment",
+          "source": "judgments"
+        },
+        {
+          "driving": false,
+          "parameter": "document",
+          "schema": "DocumentFeatures",
+          "source": "features__documents_built__document_features"
+        },
+        {
+          "driving": false,
+          "parameter": "query",
+          "schema": "QueryFeatures",
+          "source": "features__queries_built__query_features"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "judgment"
+        },
+        {
+          "how": "inner",
+          "input": "document"
+        },
+        {
+          "how": "inner",
+          "input": "query"
+        }
+      ],
+      "name": "data.build",
+      "output_lane": "data__training_data",
+      "output_schema": "DocumentTrainingData",
+      "results": [
+        {
+          "frame": "data__training_data",
+          "lane": "data__training_data",
+          "schema": "DocumentTrainingData"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/Training.py",
+    "traceability": "traceability/transforms/Training.Training.json"
+  }
+}

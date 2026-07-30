@@ -1,33 +1,33 @@
 """Document-search evaluation transforms."""
 
-from examples.search.transforms.evaluation.search_docs.behavior.eval_behavior import EvaluateDocumentSearchBehavior
+from examples.search.transforms.evaluation.search_docs.behavior.eval_behavior import EvaluateDocSearchBehavior
 from examples.search.transforms.evaluation.search_docs.behavior.with_all import (
-    EvaluateDocumentSearchBehavior as EvaluateAllDocumentSearchBehavior,
+    EvaluateDocSearchBehavior as EvaluateAllDocSearchBehavior,
 )
 from examples.search.transforms.evaluation.search_docs.behavior.with_labels import (
-    EvaluateDocumentSearchBehavior as EvaluateLabeledDocumentSearchBehavior,
+    EvaluateDocSearchBehavior as EvaluateLabeledDocSearchBehavior,
 )
 from examples.search.transforms.evaluation.search_docs.behavior.with_users import (
-    EvaluateDocumentSearchBehavior as EvaluateUserDocumentSearchBehavior,
+    EvaluateDocSearchBehavior as EvaluateUserDocSearchBehavior,
 )
-from examples.search.transforms.evaluation.search_docs.ranking.eval_ranking import EvaluateDocumentRankingQuality
+from examples.search.transforms.evaluation.search_docs.ranking.eval_ranking import EvaluateDocumentRanking
 from examples.search.transforms.evaluation.search_docs.ranking.with_all import (
-    EvaluateDocumentRankingQuality as EvaluateAllDocumentRankingQuality,
+    EvaluateDocumentRanking as EvaluateAllDocumentRanking,
 )
 from examples.search.transforms.evaluation.search_docs.ranking.with_labels import (
-    EvaluateDocumentRankingQuality as EvaluateLabeledDocumentRankingQuality,
+    EvaluateDocumentRanking as EvaluateLabeledDocumentRanking,
 )
 from examples.search.transforms.evaluation.search_docs.ranking.with_users import (
-    EvaluateDocumentRankingQuality as EvaluateUserDocumentRankingQuality,
+    EvaluateDocumentRanking as EvaluateUserDocumentRanking,
 )
 
 __all__ = [
-    "EvaluateAllDocumentRankingQuality",
-    "EvaluateAllDocumentSearchBehavior",
-    "EvaluateDocumentRankingQuality",
-    "EvaluateDocumentSearchBehavior",
-    "EvaluateLabeledDocumentRankingQuality",
-    "EvaluateLabeledDocumentSearchBehavior",
-    "EvaluateUserDocumentRankingQuality",
-    "EvaluateUserDocumentSearchBehavior",
+    "EvaluateAllDocumentRanking",
+    "EvaluateAllDocSearchBehavior",
+    "EvaluateDocumentRanking",
+    "EvaluateDocSearchBehavior",
+    "EvaluateLabeledDocumentRanking",
+    "EvaluateLabeledDocSearchBehavior",
+    "EvaluateUserDocumentRanking",
+    "EvaluateUserDocSearchBehavior",
 ]

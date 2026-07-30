@@ -13,13 +13,45 @@ For the architecture, evidence boundaries, and ownership model, see the
 | Concern | Typed boundary | Result | Details |
 | --- | --- | --- | --- |
 | Chunking | `Chunking` | sections, paragraphs, sentences, words | Plain-text hierarchy and shared token normalization. |
-| Indexing | `CreateIndex` | target-grain terms and summaries | Build once; score many query batches. |
+| Indexing | `Indexing` | target-grain terms and summaries | Build once; score many query batches. |
 | Scoring | `Scoring` | external production score relations | Keep algorithms separate from immutable corpus rows. |
 | Similarity | `CreateSimilarityQueries`, `ReduceSimilarityScores` | same-grain corpus pairs | Reuse the lexical index; BM25 stays directional. |
 | Feedback | `Impressions`, `Clicks`, `BuildRelevanceSignals` | daily facts and batch signals | Exposure-aware, attributed, propensity-corrected evidence. |
 | Presentation | `SearchSentences`, `SearchPassages`, `SearchDocuments` | deterministic ranks | Sentence and passage ranking are lexical; document ranking is staged retrieval, overlap narrowing, and reranking. |
 | Experiments | `SelectExperimentScores`, experiment evaluators | comparable named runs | Named score variants flow through serving and evaluation. |
 | Evaluation | judged-quality and behavior evaluators | daily quality and serving metrics | Slice by labels and inclusive band hierarchies. |
+
+## Build all search artifacts
+
+`All` is the one-call pre-serving build boundary. It accepts corpus documents, one similarity policy, queries and label configuration, persisted daily feedback facts, user/band catalogs, and one relevance policy. It emits the extracted hierarchy, document profiles, text and corpus statistics, blocked near-duplicate candidates, every lexical index relation, corpus similarity pairs, labeled queries, overlap/BM25/selected lexical scores, resolved cohort context, and relevance signals. Its stage graph keeps document profiling independent from chunking; after chunking, indexing feeds scoring and the existing `Similarities` pipeline independently from text analysis.
+
+```python
+from examples.search.transforms.all import All
+
+artifacts = All(
+    documents=documents,
+    similarity_policy=similarity_policy,
+    queries=queries,
+    query_labels=query_labels,
+    intents=intents,
+    patterns=patterns,
+    daily_impressions=daily_impressions,
+    daily_clicks=daily_clicks,
+    users=users,
+    bands=bands,
+    policy=policy,
+).run(session)
+
+# Persist immutable corpus artifacts for later query-time use.
+document_scores = artifacts.document_scores
+document_overlap_scores = artifacts.document_overlap_scores
+query_document_signals = artifacts.query_document_signals
+document_similarities = artifacts.document_similarities
+```
+
+`All` intentionally excludes raw event aggregation, result presentation, evaluation, experiments, training, and optional model feature engineering. Callers run streaming `Impressions` and `Clicks`, persist their daily facts, then invoke `All` for a batch relevance snapshot. Callers also own query serving: pass `All`'s documents, scores, cohort context, and relevance outputs to `SearchSentences`, `SearchPassages`, or `SearchDocuments` with request-time inputs.
+
+Use `examples.search.transforms.all.training.Training` as the focused offline-training endpoint. It builds `DocumentFeatures`, `QueryFeatures`, and `DocumentTrainingData`; pass persisted training rows through `training_examples(...)` and then run `TrainingPipeline` to produce a manually promoted ranking artifact. `DocumentFeatures` and `QueryFeatures` are not required for the lexical-plus-feedback search path, so they stay out of `All`.
 
 ## Chunking
 
@@ -75,6 +107,31 @@ document corpus; it is not a production feature-store contract.
 
 ## Offline training
 
+`BuildTrainingData` produces a candidate-scoped, judged snapshot for offline
+ranking. Persist that caller-owned snapshot, convert its rows with
+`training_examples(...)`, and run `TrainingPipeline(...).run(...,
+snapshot_id=...)`. The pipeline keeps complete query IDs in a deterministic
+train/validation split, trains the built-in `grade-regression` and
+`pairwise-linear` rankers, evaluates both against the lexical baseline, and
+recommends an artifact by nDCG@10, nDCG@5, MRR, then ranker ID. The
+recommendation is advisory: the caller persists and manually promotes exactly
+one artifact.
+
+Rankers are swappable through `RankerCatalog`. A ranker supplies a stable
+`ranker_id` and artifact version plus its trainer; artifacts resolve to a
+shared serving scorer only after their feature contract is validated. Unknown
+rankers, version mismatches, malformed coefficients, missing features, and
+duplicate catalog registrations fail before ranking.
+
+`RankDocumentCandidates` applies a manually promoted `RankingArtifact` to
+lexical candidates together with `DocumentFeatures` and `QueryFeatures`.
+The transform requires exactly one artifact, sets its model ID as the ranking
+version, and ranks with the artifact score. Calling `SearchDocuments` without
+that transform remains the exact no-model lexical-plus-feedback fallback.
+Structure inputs are required relations, so this explicit branch is the
+library's optional-model boundary; callers choose the fallback or promoted
+artifact path at composition time.
+
 `transforms/training/` is intentionally separate from Search serving.
 It supplies a deterministic linear-ranking baseline for caller-built,
 judgment-labeled feature rows. `BuildDocumentFeatures` and
@@ -84,13 +141,13 @@ caller owns snapshots, persistence, deployment, and inference.
 
 ## Indexing
 
-`CreateIndex` builds reusable document, section, paragraph, and sentence index from the extracted words. Each
+`Indexing` builds reusable document, section, paragraph, and sentence index from the extracted words. Each
 term row holds its target-local frequency and vocabulary/length facts plus the token's target-grain document frequency;
 each summary holds target count and average target length. Its term and summary relations are reusable across query
 batches; persisting them is caller-owned.
 
 ```python
-index = CreateIndex(words=segments.words).run(session)
+index = Indexing(words=segments.words).run(session)
 
 # Index artifacts for persisting.
 document_terms = index.document_terms
@@ -260,7 +317,7 @@ The shared `Scoring` output supplies the sentence candidates. `SearchSentences`
 accepts immutable sentences and `Scoring.sentence_scores`, emits one-based `SentenceSearchResult` ranks per query and experiment.
 
 ```python
-index = CreateIndex(words=segments.words).run(session)
+index = Indexing(words=segments.words).run(session)
 scores = Scoring(
     queries=queries,
     document_terms=index.document_terms,
@@ -437,12 +494,12 @@ explain movement without reconstructing the scoring path.
 
 ## Quality and behavior metrics
 
-`EvaluateDocumentRankingQuality` is the offline quality anchor. It compares one daily result batch with caller-supplied
+`EvaluateDocumentRanking` is the offline quality anchor. It compares one daily result batch with caller-supplied
 four-grade query-document judgments (`0` not relevant, `1` related, `2` relevant, `3` ideal). It reports
 nDCG, precision, judged recall, success, and reciprocal-rank metrics at 5, 10, and 15. Clicks are not used as
 judgments. Returned documents without a judgment make the affected metric unavailable rather than silently wrong.
 
-`EvaluateDocumentSearchBehavior` is the separate automated daily monitor. Emit one `SearchRequest` for every
+`EvaluateDocSearchBehavior` is the separate automated daily monitor. Emit one `SearchRequest` for every
 serving attempt, including no-result attempts, and link every displayed `Impression` through
 `search_request_id`. A request owns its immutable `ranking_version`. The transform reports request-level and
 daily version-level no-result, click, long-click, first-satisfying-rank, and propensity-adjusted exposure metrics.
@@ -462,9 +519,9 @@ Run the transform once per candidate or baseline against the same `batch`, `quer
 caller-owned run identifier beside the summary.
 
 ```python
-from examples.search.transforms.evaluate import EvaluateDocumentRankingQuality
+from examples.search.transforms.evaluate import EvaluateDocumentRanking
 
-quality = EvaluateDocumentRankingQuality(
+quality = EvaluateDocumentRanking(
     batch=evaluation_batch,          # One EvaluationBatch row.
     queries=queries,                 # Every query evaluated that day.
     results=ranked_documents,        # One ranking run.
@@ -490,9 +547,9 @@ Behavior evaluation consumes the raw events from the serving system, not the fee
 through 24 hours after the selected request day because the transform attributes only clicks in that interval.
 
 ```python
-from examples.search.transforms.evaluate import EvaluateDocumentSearchBehavior
+from examples.search.transforms.evaluate import EvaluateDocSearchBehavior
 
-behavior = EvaluateDocumentSearchBehavior(
+behavior = EvaluateDocSearchBehavior(
     batch=evaluation_batch,  # The same one-day EvaluationBatch contract.
     requests=search_requests,
     impressions=impressions,
@@ -537,8 +594,8 @@ these evidence outputs into an answer; this example neither invokes an answer mo
 
 ## Evaluation
 
-Evaluation is caller-owned and batch-only. `EvaluateDocumentRankingQuality` measures judged relevance, while
-`EvaluateDocumentSearchBehavior` monitors served requests, impressions, and clicks. Both preserve an
+Evaluation is caller-owned and batch-only. `EvaluateDocumentRanking` measures judged relevance, while
+`EvaluateDocSearchBehavior` monitors served requests, impressions, and clicks. Both preserve an
 `EvaluationParams` value in their output so persisted metrics identify their slice.
 
 ### Labels
@@ -549,7 +606,7 @@ Evaluation is caller-owned and batch-only. `EvaluateDocumentRankingQuality` meas
 `SearchQuery.labels`. `EvaluationParams.labels` requires different label names to match and treats multiple values for
 one name as alternatives. An empty label map evaluates every query.
 
-`LabelQueries` composes `CreateQueryLabels` and `MergeQueryLabels` into the app-facing labeling pipeline.
+`Labeling` composes `CreateQueryLabels` and `MergeQueryLabels` into the app-facing labeling pipeline.
 `CreateQueryLabels` creates deterministic intent-label maps for `MergeQueryLabels`. Supply an `Intent` catalog with
 stable English label names and one or more `IntentPattern` rows for each locale-specific regular-expression pattern.
 Each pattern row contains one expression; multiple patterns for an intent are alternatives. `SearchQuery.language` is a

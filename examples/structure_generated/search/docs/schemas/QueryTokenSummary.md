@@ -2,7 +2,7 @@
 
 # QueryTokenSummary
 
-Module: `examples.search.schemas.features`
+Module: `examples.search.schemas.features.intermediate`
 
 | Field | Column | Type | Nullable |
 | --- | --- | --- | --- |

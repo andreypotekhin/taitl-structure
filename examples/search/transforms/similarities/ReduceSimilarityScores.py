@@ -14,7 +14,7 @@ from examples.search.schemas.scoring.overlap import (
     SectionOverlapScore,
     SentenceOverlapScore,
 )
-from examples.search.schemas.similarities.reduce import (
+from examples.search.schemas.similarities.intermediate import (
     DocumentSimilarityCandidate,
     DocumentSimilarityPair,
     ParagraphSimilarityCandidate,

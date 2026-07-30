@@ -87,6 +87,46 @@
       "name": "sentence_scores",
       "ordinal": 3,
       "schema": "SentenceScore"
+    },
+    {
+      "name": "document_overlap_scores",
+      "ordinal": 4,
+      "schema": "DocumentOverlapScore"
+    },
+    {
+      "name": "section_overlap_scores",
+      "ordinal": 5,
+      "schema": "SectionOverlapScore"
+    },
+    {
+      "name": "paragraph_overlap_scores",
+      "ordinal": 6,
+      "schema": "ParagraphOverlapScore"
+    },
+    {
+      "name": "sentence_overlap_scores",
+      "ordinal": 7,
+      "schema": "SentenceOverlapScore"
+    },
+    {
+      "name": "document_bm25_scores",
+      "ordinal": 8,
+      "schema": "DocumentBm25Score"
+    },
+    {
+      "name": "section_bm25_scores",
+      "ordinal": 9,
+      "schema": "SectionBm25Score"
+    },
+    {
+      "name": "paragraph_bm25_scores",
+      "ordinal": 10,
+      "schema": "ParagraphBm25Score"
+    },
+    {
+      "name": "sentence_bm25_scores",
+      "ordinal": 11,
+      "schema": "SentenceBm25Score"
     }
   ],
   "source": "examples.search.transforms.scoring.Scoring.Scoring",

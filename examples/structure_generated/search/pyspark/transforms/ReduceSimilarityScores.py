@@ -19,7 +19,7 @@ from examples.structure_generated.search.pyspark.schemas.overlap import (
     SECTION_OVERLAP_SCORE_SCHEMA,
     SENTENCE_OVERLAP_SCORE_SCHEMA,
 )
-from examples.structure_generated.search.pyspark.schemas.reduce import (
+from examples.structure_generated.search.pyspark.schemas.similarities_intermediate import (
     DOCUMENT_SIMILARITY_CANDIDATE_SCHEMA,
     DOCUMENT_SIMILARITY_PAIR_SCHEMA,
     PARAGRAPH_SIMILARITY_CANDIDATE_SCHEMA,

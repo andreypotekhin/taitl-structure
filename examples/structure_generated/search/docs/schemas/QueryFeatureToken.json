@@ -15,6 +15,6 @@
     }
   ],
   "generated_by": "Structure",
-  "module": "examples.search.schemas.features",
+  "module": "examples.search.schemas.features.intermediate",
   "name": "QueryFeatureToken"
 }

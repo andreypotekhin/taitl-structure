@@ -56,10 +56,9 @@ from examples.search.schemas.evaluation import (
     EvaluationResultTotals,
 )
 from examples.search.schemas.experiment import Experiment
-from examples.search.schemas.features import (
-    DocumentFeatures,
+from examples.search.schemas.features import DocumentFeatures, QueryFeatures
+from examples.search.schemas.features.intermediate import (
     ExpandedQueryFeatureToken,
-    QueryFeatures,
     QueryFeatureToken,
     QueryTokenSummary,
 )
@@ -146,21 +145,19 @@ from examples.search.schemas.search import (
     SentenceSearchResult,
     SentenceSearchTarget,
 )
-from examples.search.schemas.similarities.query import (
-    DocumentSimilarityQueryText,
-    ParagraphSimilarityQueryText,
-    SectionSimilarityQueryText,
-    SentenceSimilarityQueryText,
-)
-from examples.search.schemas.similarities.reduce import (
+from examples.search.schemas.similarities.intermediate import (
     DocumentSimilarityCandidate,
     DocumentSimilarityPair,
+    DocumentSimilarityQueryText,
     ParagraphSimilarityCandidate,
     ParagraphSimilarityPair,
+    ParagraphSimilarityQueryText,
     SectionSimilarityCandidate,
     SectionSimilarityPair,
+    SectionSimilarityQueryText,
     SentenceSimilarityCandidate,
     SentenceSimilarityPair,
+    SentenceSimilarityQueryText,
 )
 from examples.search.schemas.similarity import (
     DocumentSimilarity,
@@ -182,39 +179,33 @@ from examples.search.schemas.similarity import (
     SimilaritySentenceQuery,
 )
 from examples.search.schemas.text import Document, Paragraph, Section, Sentence, Word
-from examples.search.schemas.training import DocumentTrainingData
+from examples.search.schemas.training import DocumentTrainingData, RankingArtifact
 from examples.search.schemas.user import Band, BandFallback, BandMembership, User, UserBand, UserBandMembership
-from examples.search.transforms.analyze import AnalyzeText
+from examples.search.transforms.all import All, Training
 from examples.search.transforms.chunking import Chunking, DocumentChunking, SentenceChunking, WordChunking
 from examples.search.transforms.clicks.Clicks import Clicks
 from examples.search.transforms.clicks.Impressions import Impressions
 from examples.search.transforms.cohorts import ResolveCohortBands
-from examples.search.transforms.corpus import CorpusText
 from examples.search.transforms.evaluate import (
-    EvaluateAllDocumentRankingQuality,
-    EvaluateAllDocumentSearchBehavior,
-    EvaluateDocumentRankingQuality,
-    EvaluateDocumentSearchBehavior,
-    EvaluateLabeledDocumentRankingQuality,
-    EvaluateLabeledDocumentSearchBehavior,
-    EvaluateUserDocumentRankingQuality,
-    EvaluateUserDocumentSearchBehavior,
+    EvaluateAllDocSearchBehavior,
+    EvaluateAllDocumentRanking,
+    EvaluateDocSearchBehavior,
+    EvaluateDocumentRanking,
+    EvaluateLabeledDocSearchBehavior,
+    EvaluateLabeledDocumentRanking,
+    EvaluateUserDocSearchBehavior,
+    EvaluateUserDocumentRanking,
 )
-from examples.search.transforms.experiment import (
-    EvaluateDocumentRankingQuality as EvaluateExperimentDocumentRankingQuality,
-)
-from examples.search.transforms.experiment import (
-    EvaluateDocumentSearchBehavior as EvaluateExperimentDocumentSearchBehavior,
-)
+from examples.search.transforms.experiment import EvaluateDocSearchBehavior as EvaluateExperimentDocSearchBehavior
+from examples.search.transforms.experiment import EvaluateDocumentRanking as EvaluateExperimentDocumentRanking
 from examples.search.transforms.experiment import (
     Scoring001AdjustBm,
     Searching001AdjustRerankSearchDocuments,
     SelectExperimentScores,
 )
-from examples.search.transforms.features import BuildDocumentFeatures, BuildQueryFeatures
-from examples.search.transforms.index import CreateIndex
-from examples.search.transforms.labeling import CreateQueryLabels, LabelQueries, MergeQueryLabels
-from examples.search.transforms.profile import ProfileDocuments
+from examples.search.transforms.features import BuildDocumentFeatures, BuildQueryFeatures, Features
+from examples.search.transforms.indexing import Indexing
+from examples.search.transforms.labeling import CreateQueryLabels, Labeling, MergeQueryLabels
 from examples.search.transforms.relevance.BuildRelevanceSignals import BuildRelevanceSignals
 from examples.search.transforms.score import Scoring
 from examples.search.transforms.scoring.ScoreBm25 import ScoreBm25
@@ -223,10 +214,14 @@ from examples.search.transforms.search import SearchDocuments, SearchPassages, S
 from examples.search.transforms.searching.search_similarity import SearchSimilarity
 from examples.search.transforms.similarities.CreateSimilarityQueries import CreateSimilarityQueries
 from examples.search.transforms.similarities.ReduceSimilarityScores import ReduceSimilarityScores
+from examples.search.transforms.similarities.Similarities import Similarities
 from examples.search.transforms.similarities.SimilarParagraphs import SimilarParagraphs
 from examples.search.transforms.similarities.SimilarSections import SimilarSections
 from examples.search.transforms.similarities.SimilarSentences import SimilarSentences
-from examples.search.transforms.training import BuildTrainingData
+from examples.search.transforms.stats.AnalyzeText import AnalyzeText
+from examples.search.transforms.stats.CorpusText import CorpusText
+from examples.search.transforms.stats.ProfileDocuments import ProfileDocuments
+from examples.search.transforms.training import BuildTrainingData, RankDocumentCandidates
 from structure import Schema
 from structure.plugin.pyspark import TimeWindow
 
@@ -354,9 +349,12 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         BehaviorDailyCounts,
     ],
     "examples.search.schemas.training.data": [DocumentTrainingData],
+    "examples.search.schemas.training.artifact": [RankingArtifact],
     "examples.search.schemas.features": [
         DocumentFeatures,
         QueryFeatures,
+    ],
+    "examples.search.schemas.features.intermediate": [
         QueryFeatureToken,
         ExpandedQueryFeatureToken,
         QueryTokenSummary,
@@ -405,7 +403,7 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         ParagraphSimilarity,
         SentenceSimilarity,
     ],
-    "examples.search.schemas.similarities.reduce": [
+    "examples.search.schemas.similarities.intermediate": [
         DocumentSimilarityCandidate,
         DocumentSimilarityPair,
         SectionSimilarityCandidate,
@@ -414,8 +412,6 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         ParagraphSimilarityPair,
         SentenceSimilarityCandidate,
         SentenceSimilarityPair,
-    ],
-    "examples.search.schemas.similarities.query": [
         DocumentSimilarityQueryText,
         SectionSimilarityQueryText,
         ParagraphSimilarityQueryText,
@@ -445,17 +441,21 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
     ],
 }
 TRANSFORMS = (
+    (All, "examples.search.transforms.all.all.All"),
     (Chunking, "examples.search.transforms.chunking.Chunking.Chunking"),
     (DocumentChunking, "examples.search.transforms.chunking.DocumentChunking.DocumentChunking"),
     (SentenceChunking, "examples.search.transforms.chunking.SentenceChunking.SentenceChunking"),
     (WordChunking, "examples.search.transforms.chunking.WordChunking.WordChunking"),
-    (ProfileDocuments, "examples.search.transforms.profile.ProfileDocuments"),
-    (BuildDocumentFeatures, "examples.search.transforms.features.BuildDocumentFeatures"),
-    (BuildQueryFeatures, "examples.search.transforms.features.BuildQueryFeatures"),
+    (ProfileDocuments, "examples.search.transforms.stats.ProfileDocuments.ProfileDocuments"),
+    (BuildDocumentFeatures, "examples.search.transforms.features.BuildDocumentFeatures.BuildDocumentFeatures"),
+    (BuildQueryFeatures, "examples.search.transforms.features.BuildQueryFeatures.BuildQueryFeatures"),
+    (Features, "examples.search.transforms.features.Features.Features"),
     (BuildTrainingData, "examples.search.transforms.training.BuildTrainingData.BuildTrainingData"),
-    (AnalyzeText, "examples.search.transforms.analyze.AnalyzeText"),
-    (CorpusText, "examples.search.transforms.corpus.CorpusText"),
-    (CreateIndex, "examples.search.transforms.index.CreateIndex"),
+    (RankDocumentCandidates, "examples.search.transforms.training.RankDocumentCandidates.RankDocumentCandidates"),
+    (Training, "examples.search.transforms.training.Training.Training"),
+    (AnalyzeText, "examples.search.transforms.stats.AnalyzeText.AnalyzeText"),
+    (CorpusText, "examples.search.transforms.stats.CorpusText.CorpusText"),
+    (Indexing, "examples.search.transforms.indexing.Indexing.Indexing"),
     (SearchSentences, "examples.search.transforms.searching.search_sentences.SearchSentences.SearchSentences"),
     (SearchPassages, "examples.search.transforms.searching.search_passages.SearchPassages.SearchPassages"),
     (Impressions, "examples.search.transforms.clicks.Impressions.Impressions"),
@@ -467,54 +467,54 @@ TRANSFORMS = (
     (SearchDocuments, "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments"),
     (
         Searching001AdjustRerankSearchDocuments,
-        "examples.search.transforms.experiments.searching.search_docs.searching001_adjust_rerank.Searching001AdjustRerankSearchDocuments",
+        "examples.search.transforms.experiments.searching.search_docs.Searching001AdjustRerankSearchDocuments.Searching001AdjustRerankSearchDocuments",
     ),
-    (MergeQueryLabels, "examples.search.transforms.labeling.merge_query_labels.MergeQueryLabels"),
-    (CreateQueryLabels, "examples.search.transforms.labeling.create_query_labels.CreateQueryLabels"),
-    (LabelQueries, "examples.search.transforms.labeling.label_queries.LabelQueries"),
+    (MergeQueryLabels, "examples.search.transforms.labeling.MergeQueryLabels.MergeQueryLabels"),
+    (CreateQueryLabels, "examples.search.transforms.labeling.CreateQueryLabels.CreateQueryLabels"),
+    (Labeling, "examples.search.transforms.labeling.Labeling.Labeling"),
     (
         SelectExperimentScores,
-        "examples.search.transforms.experiments.select_experiment_scores.SelectExperimentScores",
+        "examples.search.transforms.experiments.SelectExperimentScores.SelectExperimentScores",
     ),
     (
-        EvaluateExperimentDocumentRankingQuality,
-        "examples.search.transforms.experiments.evaluation.search_docs.eval_ranking.EvaluateDocumentRankingQuality",
+        EvaluateExperimentDocumentRanking,
+        "examples.search.transforms.experiments.evaluation.search_docs.eval_ranking.EvaluateDocumentRanking",
     ),
     (
-        EvaluateExperimentDocumentSearchBehavior,
-        "examples.search.transforms.experiments.evaluation.search_docs.eval_behavior.EvaluateDocumentSearchBehavior",
+        EvaluateExperimentDocSearchBehavior,
+        "examples.search.transforms.experiments.evaluation.search_docs.eval_behavior.EvaluateDocSearchBehavior",
     ),
     (
-        EvaluateDocumentRankingQuality,
-        "examples.search.transforms.evaluation.search_docs.ranking.eval_ranking.EvaluateDocumentRankingQuality",
+        EvaluateDocumentRanking,
+        "examples.search.transforms.evaluation.search_docs.ranking.eval_ranking.EvaluateDocumentRanking",
     ),
     (
-        EvaluateDocumentSearchBehavior,
-        "examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocumentSearchBehavior",
+        EvaluateDocSearchBehavior,
+        "examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior",
     ),
     (
-        EvaluateLabeledDocumentRankingQuality,
-        "examples.search.transforms.evaluation.search_docs.ranking.with_labels.EvaluateDocumentRankingQuality",
+        EvaluateLabeledDocumentRanking,
+        "examples.search.transforms.evaluation.search_docs.ranking.with_labels.EvaluateDocumentRanking",
     ),
     (
-        EvaluateLabeledDocumentSearchBehavior,
-        "examples.search.transforms.evaluation.search_docs.behavior.with_labels.EvaluateDocumentSearchBehavior",
+        EvaluateLabeledDocSearchBehavior,
+        "examples.search.transforms.evaluation.search_docs.behavior.with_labels.EvaluateDocSearchBehavior",
     ),
     (
-        EvaluateUserDocumentRankingQuality,
-        "examples.search.transforms.evaluation.search_docs.ranking.with_users.EvaluateDocumentRankingQuality",
+        EvaluateUserDocumentRanking,
+        "examples.search.transforms.evaluation.search_docs.ranking.with_users.EvaluateDocumentRanking",
     ),
     (
-        EvaluateUserDocumentSearchBehavior,
-        "examples.search.transforms.evaluation.search_docs.behavior.with_users.EvaluateDocumentSearchBehavior",
+        EvaluateUserDocSearchBehavior,
+        "examples.search.transforms.evaluation.search_docs.behavior.with_users.EvaluateDocSearchBehavior",
     ),
     (
-        EvaluateAllDocumentRankingQuality,
-        "examples.search.transforms.evaluation.search_docs.ranking.with_all.EvaluateDocumentRankingQuality",
+        EvaluateAllDocumentRanking,
+        "examples.search.transforms.evaluation.search_docs.ranking.with_all.EvaluateDocumentRanking",
     ),
     (
-        EvaluateAllDocumentSearchBehavior,
-        "examples.search.transforms.evaluation.search_docs.behavior.with_all.EvaluateDocumentSearchBehavior",
+        EvaluateAllDocSearchBehavior,
+        "examples.search.transforms.evaluation.search_docs.behavior.with_all.EvaluateDocSearchBehavior",
     ),
     (
         CreateSimilarityQueries,
@@ -525,12 +525,13 @@ TRANSFORMS = (
     (Scoring, "examples.search.transforms.scoring.Scoring.Scoring"),
     (
         Scoring001AdjustBm,
-        "examples.search.transforms.experiments.scoring.scoring001_adjust_bm.Scoring001AdjustBm",
+        "examples.search.transforms.experiments.scoring.Scoring001AdjustBm.Scoring001AdjustBm",
     ),
     (
         ReduceSimilarityScores,
         "examples.search.transforms.similarities.ReduceSimilarityScores.ReduceSimilarityScores",
     ),
+    (Similarities, "examples.search.transforms.similarities.Similarities.Similarities"),
     (
         SearchSimilarity,
         "examples.search.transforms.searching.search_similarity.SearchSimilarity.SearchSimilarity",
@@ -544,14 +545,14 @@ TRANSFORMS = (
 
 def test_query_labeling_pipeline_renders_with_stage_owned_raw_hook() -> None:
     files = render_generated_project(
-        LabelQueries,
-        source_transform="examples.search.transforms.labeling.label_queries.LabelQueries",
+        Labeling,
+        source_transform="examples.search.transforms.labeling.Labeling.Labeling",
         generated_package=PACKAGE,
         source_schema_modules=SCHEMA_MODULES,
     )
 
-    text = files[f"{PACKAGE}/pyspark/transforms/label_queries.py"]
-    assert "from examples.search.transforms.labeling.create_query_labels import CreateQueryLabels" in text
+    text = files[f"{PACKAGE}/pyspark/transforms/Labeling.py"]
+    assert "from examples.search.transforms.labeling.CreateQueryLabels import CreateQueryLabels" in text
     assert "match_patterns(" in text
     assert "merge_created_labels" in text
 
@@ -559,14 +560,14 @@ def test_query_labeling_pipeline_renders_with_stage_owned_raw_hook() -> None:
 def test_query_intents_create_multilingual_english_labels_online_and_generated(spark, tmp_path) -> None:
     files = render_generated_project(
         CreateQueryLabels,
-        source_transform="examples.search.transforms.labeling.create_query_labels.CreateQueryLabels",
+        source_transform="examples.search.transforms.labeling.CreateQueryLabels.CreateQueryLabels",
         generated_package=PACKAGE,
         source_schema_modules=SCHEMA_MODULES,
     )
     files.update(
         render_generated_project(
             MergeQueryLabels,
-            source_transform="examples.search.transforms.labeling.merge_query_labels.MergeQueryLabels",
+            source_transform="examples.search.transforms.labeling.MergeQueryLabels.MergeQueryLabels",
             generated_package=PACKAGE,
             source_schema_modules=SCHEMA_MODULES,
         )
@@ -795,8 +796,8 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             ],
             __import__(f"{PACKAGE}.pyspark.schemas.search", fromlist=["SEARCH_QUERY_SCHEMA"]).SEARCH_QUERY_SCHEMA,
         )
-        online_index = CreateIndex(words=generated_segments.words).run(session(spark, execution_mode="online"))
-        generated_index = CreateIndex(words=generated_segments.words).run(
+        online_index = Indexing(words=generated_segments.words).run(session(spark, execution_mode="online"))
+        generated_index = Indexing(words=generated_segments.words).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
         cache_frames(
@@ -1075,7 +1076,7 @@ def test_search_ranks_fixture_sentences_online_and_generated(spark, tmp_path) ->
         segments = Chunking(documents=documents).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
-        index = CreateIndex(words=segments.words).run(
+        index = Indexing(words=segments.words).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
         scores = Scoring(
@@ -1175,7 +1176,7 @@ def test_passage_search_ranks_paragraphs_with_same_section_context(spark, tmp_pa
         segments = Chunking(documents=documents).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
-        index = CreateIndex(words=segments.words).run(
+        index = Indexing(words=segments.words).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
         scores = Scoring(

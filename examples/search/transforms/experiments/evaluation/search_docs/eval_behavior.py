@@ -7,12 +7,12 @@ from examples.search.schemas.evaluation.params import EvaluationParams
 from examples.search.schemas.experiment import Experiment
 from examples.search.schemas.search import SearchQuery
 from examples.search.schemas.user import BandMembership
-from examples.search.transforms.evaluation.search_docs.behavior.with_all import EvaluateDocumentSearchBehavior as Super
+from examples.search.transforms.evaluation.search_docs.behavior.with_all import EvaluateDocSearchBehavior as Super
 from structure import input, step
 from structure.plugin.pyspark import inner_join, where
 
 
-class EvaluateDocumentSearchBehavior(Super):
+class EvaluateDocSearchBehavior(Super):
     """Evaluate an experiment."""
 
     experiments = input(Experiment)

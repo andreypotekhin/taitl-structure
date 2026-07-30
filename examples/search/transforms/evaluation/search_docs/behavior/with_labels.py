@@ -5,14 +5,12 @@ from examples.search.schemas.evaluation.batch import EvaluationBatch
 from examples.search.schemas.evaluation.behavior import BehaviorRequest
 from examples.search.schemas.evaluation.params import EvaluationParams
 from examples.search.schemas.search import SearchQuery
-from examples.search.transforms.evaluation.search_docs.behavior.eval_behavior import (
-    EvaluateDocumentSearchBehavior as Super,
-)
+from examples.search.transforms.evaluation.search_docs.behavior.eval_behavior import EvaluateDocSearchBehavior as Super
 from structure import input, step
 from structure.plugin.pyspark import cross_join, inner_join, where
 
 
-class EvaluateDocumentSearchBehavior(Super):
+class EvaluateDocSearchBehavior(Super):
     """Evaluate observed behavior for requests selected by a query label band."""
 
     queries = input(SearchQuery)
