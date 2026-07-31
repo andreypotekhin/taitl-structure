@@ -60,7 +60,9 @@ class AnalyzeTransform(CompileTransform):
         self._require_module_level_schemas(transform_class)
         pipeline = getattr(transform_class, "_structure_pipeline", None)
         if pipeline is not None:
-            return self._compose_pipeline(pipeline, name=transform_class.__name__, config=config, wrapper_class=transform_class)
+            return self._compose_pipeline(
+                pipeline, name=transform_class.__name__, config=config, wrapper_class=transform_class
+            )
         if transform_class._structure_stages:
             return self._compose_graph(transform_class, config=config)
         if not transform_class._structure_outputs:
@@ -102,12 +104,14 @@ class AnalyzeTransform(CompileTransform):
             name=name,
             compile_stage=lambda transform_class: self._analyze(transform_class, config=config),
             wrapper_class=wrapper_class,
+            allow_stream_to_batch=config.allow_stream_to_batch,
         )
 
     def _compose_graph(self, transform_class: type[Transform], *, config: StructureConfig) -> TransformPlan:
         return self._graph_composer(
             transform_class,
             compile_stage=lambda stage: self._analyze(type(stage), config=config),
+            allow_stream_to_batch=config.allow_stream_to_batch,
         )
 
     def _structural_steps(self, transform_class, inputs):
@@ -128,8 +132,14 @@ class AnalyzeTransform(CompileTransform):
             if result is None:
                 continue
             steps.append(result)
+            streaming = self._source_streaming(result.source, lanes, inputs)
             for item in result.results:
-                lanes[item.lane] = {"schema": item.schema, "source": item.frame, "scope": item.schema.__name__}
+                lanes[item.lane] = {
+                    "schema": item.schema,
+                    "source": item.frame,
+                    "scope": item.schema.__name__,
+                    "streaming": streaming,
+                }
             if pending_raw:
                 for raw in pending_raw:
                     steps[-1] = self._attach_raw_before(transform_class, raw, steps[-1])
@@ -151,6 +161,13 @@ class AnalyzeTransform(CompileTransform):
             )
         return steps, lanes, explicit_outputs, diagnostics
 
+    def _source_streaming(self, source: str, lanes: dict[str, dict[str, object]], inputs) -> bool:
+        lane = lanes.get(source)
+        if lane is not None:
+            return bool(lane.get("streaming", False))
+        input_name = source.removeprefix("input:")
+        return any(input.name == input_name and input.streaming for input in inputs)
+
     def _structural_step(self, transform_class, item, lanes, inputs, explicit_outputs, *, ordinal: int):
         member = item.member
         hints = get_type_hints(member)
@@ -168,9 +185,7 @@ class AnalyzeTransform(CompileTransform):
         parameters = self._row_parameters(member, hints)
         metadata = getattr(member, "_structure_output_method", None)
         try:
-            bindings = self._input_bindings(
-                transform_class, metadata, lanes, inputs, parameters, member=item.name
-            )
+            bindings = self._input_bindings(transform_class, metadata, lanes, inputs, parameters, member=item.name)
         except StructureCompileError:
             # A schema-returning method after an explicit terminal output may
             # be a direct helper call. Its legality depends on Core's

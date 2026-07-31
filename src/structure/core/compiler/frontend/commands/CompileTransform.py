@@ -205,6 +205,7 @@ class CompileTransform:
             compile_stage=lambda transform_class: self._compile(transform_class, config=config),
             rewrite_body=lambda body, frames: authoring_api.rewrite_body(body, frames=frames),
             wrapper_class=wrapper_class,
+            allow_stream_to_batch=config.allow_stream_to_batch,
         )
 
     def _compose_graph(self, transform_class: type[Transform], *, config: StructureConfig) -> TransformPlan:
@@ -215,6 +216,7 @@ class CompileTransform:
             transform_class,
             compile_stage=lambda stage: self._compile(stage, config=config),
             rewrite_body=lambda body, frames: authoring_api.rewrite_body(body, frames=frames),
+            allow_stream_to_batch=config.allow_stream_to_batch,
         )
 
     def _steps(
@@ -662,11 +664,13 @@ class CompileTransform:
                 plugin_body=authoring_body,
             )
         )
+        streaming = self._source_streaming(driver.source, lanes, inputs)
         for result in result_plans:
             lanes[result.lane] = {
                 "schema": result.schema,
                 "source": result.frame,
                 "scope": result.schema.__name__,
+                "streaming": streaming,
             }
         return tuple(result_plans)
 
@@ -930,6 +934,7 @@ class CompileTransform:
                 "schema": input_plan.schema,
                 "source": source_name,
                 "scope": input_plan.name,
+                "streaming": input_plan.streaming,
             }
             if input_plan.schema is schema and (input_plan.name, source_name) not in used:
                 candidates.append((input_plan.name, source))
@@ -1025,6 +1030,7 @@ class CompileTransform:
                 "schema": declaration.schema,
                 "source": source,
                 "scope": declaration.name,
+                "streaming": declaration.streaming,
             }
         if lane_source is not None:
             return declaration.name, lane_source
@@ -1033,6 +1039,7 @@ class CompileTransform:
             "schema": declaration.schema,
             "source": declaration.name,
             "scope": declaration.name,
+            "streaming": declaration.streaming,
         }
 
     def _selected_input_source(
@@ -1057,6 +1064,7 @@ class CompileTransform:
             "schema": declaration.schema,
             "source": f"input:{declaration.name}",
             "scope": declaration.name,
+            "streaming": declaration.streaming,
         }
 
     def _declared_lane_source(
@@ -1240,6 +1248,7 @@ class CompileTransform:
             "schema": input_plan.schema,
             "source": input_plan.name,
             "scope": input_plan.name,
+            "streaming": input_plan.streaming,
         }
 
     def _output_lane(
@@ -1355,7 +1364,20 @@ class CompileTransform:
             source_schema=actual_schema,
             ordinal=ordinal,
             aliases=aliases,
+            streaming=bool(source.get("streaming", False)),
         )
+
+    def _source_streaming(
+        self,
+        source: str,
+        lanes: dict[str, dict[str, object]],
+        inputs: list[InputPlan],
+    ) -> bool:
+        lane = lanes.get(source)
+        if lane is not None:
+            return bool(lane.get("streaming", False))
+        input_name = source.removeprefix("input:")
+        return any(input.name == input_name and input.streaming for input in inputs)
 
     def _declared_output(
         self,

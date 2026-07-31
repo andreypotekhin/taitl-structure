@@ -37,6 +37,7 @@ def test_v1_config_uses_defaults_and_tracks_sources() -> None:
         assert config.generated_code_options == ()
         assert config.generated_code_hard_wrap == 120
         assert config.warn_on_udfs is True
+        assert config.allow_stream_to_batch is False
         assert config.execution_mode == "online"
         assert dict(config.plugin_options["pyspark"])["profile"] == ">=3.5,<4.1"
         assert dict(config.plugin_options["pyspark"])["variant"] == "ordinary"
@@ -46,6 +47,14 @@ def test_v1_config_uses_defaults_and_tracks_sources() -> None:
         assert config.source_map["generated_docs"] == "default"
         assert config.source_map["generated_docs_dir"] == "default"
         assert config.source_map["warn_on_udfs"] == "default"
+        assert config.source_map["allow_stream_to_batch"] == "default"
+
+
+def test_v1_config_resolves_stream_to_batch_boundary_policy() -> None:
+    config = StructureConfig.create(allow_stream_to_batch=True)
+
+    assert config.allow_stream_to_batch is True
+    assert CompilerArtifactOptions.from_config(config).allow_stream_to_batch is True
 
 
 def test_v1_config_precedence_is_cli_pyproject_structure_defaults() -> None:

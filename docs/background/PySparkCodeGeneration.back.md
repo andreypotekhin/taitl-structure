@@ -291,6 +291,9 @@ Rules:
   unless a later design deliberately adds Spark-compatible metadata without changing schema shape semantics.
 - Generated schema text must not import source schema classes.
 - Identical schema names in different modules must remain disambiguated by module path, not by altering constant names.
+- Generated schema modules use the shortest unique suffix of each dotted source module path after flattening into the
+  single `schemas/` directory. Unrelated modules keep their filename; colliding basenames gain parent segments, such as
+  `planning_workflow.py` and `merchandising_workflow.py`.
 
 Schema modules may contain multiple constants when multiple schema classes are declared in one source module.
 

@@ -154,8 +154,13 @@ class RenderPySparkProject:
         }
 
     def _schema_module_names(self, source_modules: tuple[str, ...]) -> dict[str, str]:
-        names = {module: module.rsplit(".", 1)[1] for module in source_modules}
+        parts = {module: module.split(".") for module in source_modules}
+        widths = {module: 1 for module in source_modules}
         while True:
+            names = {
+                module: "_".join(module_parts[-widths[module] :])
+                for module, module_parts in parts.items()
+            }
             duplicates = {
                 name
                 for name in names.values()
@@ -163,12 +168,10 @@ class RenderPySparkProject:
             }
             if not duplicates:
                 return names
-            for module, name in tuple(names.items()):
+            for module, name in names.items():
                 if name not in duplicates:
                     continue
-                parts = module.split(".")
-                width = min(name.count("_") + 2, len(parts))
-                names[module] = "_".join(parts[-width:])
+                widths[module] = min(widths[module] + 1, len(parts[module]))
 
     def _transform_module(self, source_transform: str, *, generated_package: str) -> str:
         name = self._generated_module_name(source_transform.rsplit(".", 1)[0])

@@ -5,6 +5,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import replace
 
 from structure.core.compiler.diagnostics.api import StructureCompileError
+from structure.core.compiler.frontend.logic.ValidateStreamingInputBinding import validate_streaming_input_binding
 from structure.core.compiler.ir.model.HookPlan import HookPlan
 from structure.core.compiler.ir.model.OutputPlan import OutputPlan
 from structure.core.compiler.ir.model.StepInputPlan import StepInputPlan
@@ -34,6 +35,7 @@ class ComposeTransformPlans:
         compile_stage: CompileStage,
         rewrite_body: RewriteBody | None = None,
         wrapper_class: type[Transform] | None = None,
+        allow_stream_to_batch: bool = False,
     ) -> TransformPlan:
         rewrite = rewrite_body or (lambda body, _: body)
         stages = pipeline.stages
@@ -44,7 +46,13 @@ class ComposeTransformPlans:
         stage_plans = tuple(compile_stage(stage.transform_class) for stage in stages)
 
         labels = self._labels(stages)
-        inputs, external = self._inputs(name, stages, stage_plans, wrapper_class=wrapper_class)
+        inputs, external = self._inputs(
+            name,
+            stages,
+            stage_plans,
+            wrapper_class=wrapper_class,
+            allow_stream_to_batch=allow_stream_to_batch,
+        )
         steps, outputs = self._rewrite(
             name,
             stages,
@@ -73,6 +81,7 @@ class ComposeTransformPlans:
         stage_plans: tuple[TransformPlan, ...],
         *,
         wrapper_class: type[Transform] | None,
+        allow_stream_to_batch: bool,
     ) -> tuple[list[InputPlan], dict[tuple[int, str], str]]:
         external: dict[tuple[int, str], str] = {}
         inputs: dict[str, InputPlan] = {}
@@ -97,6 +106,15 @@ class ComposeTransformPlans:
                         bound[input_plan.name],
                         wrapper_class=wrapper_class,
                     )
+                    bound_value = bound[input_plan.name]
+                    streaming = (
+                        bound_value.streaming if isinstance(bound_value, InputDeclaration) else input_plan.streaming
+                    )
+                    streaming_declared = (
+                        bound_value.streaming_declared
+                        if isinstance(bound_value, InputDeclaration)
+                        else input_plan.streaming_declared
+                    )
                     existing = inputs.get(source)
                     if existing is not None and existing.schema is not input_plan.schema:
                         raise self._error(
@@ -111,12 +129,30 @@ class ComposeTransformPlans:
                         name=source,
                         schema=input_plan.schema,
                         ordinal=0,
-                        streaming=input_plan.streaming,
+                        streaming=streaming,
                         aliases=aliases,
+                        streaming_declared=streaming_declared,
                     )
                     external[(index, input_plan.name)] = source
                     continue
                 if candidates:
+                    if len(candidates) == 1:
+                        violation = validate_streaming_input_binding(
+                            producer=self._output_label(candidates[0]),
+                            output=candidates[0],
+                            consumer=stage.transform_class.__name__,
+                            input_plan=input_plan,
+                            consumer_options=plan.options,
+                            allow_stream_to_batch=allow_stream_to_batch,
+                        )
+                        if violation is not None:
+                            raise self._error(
+                                pipeline_name,
+                                violation.problem,
+                                violation.use,
+                                code="STREAM-E0802",
+                                context=violation.context,
+                            )
                     continue
                 raise self._error(
                     pipeline_name,
@@ -392,13 +428,21 @@ class ComposeTransformPlans:
     def _frame(self, label: str, name: str) -> str:
         return f"{label}__{name.replace(':', '__')}"
 
-    def _error(self, source: str, problem: str, use: str) -> StructureCompileError:
+    def _error(
+        self,
+        source: str,
+        problem: str,
+        use: str,
+        *,
+        code: str = "DSL-E0402",
+        context: dict[str, str] | None = None,
+    ) -> StructureCompileError:
         return StructureCompileError(
             Diagnostic(
-                entry=diagnostic_registry.get("DSL-E0402"),
+                entry=diagnostic_registry.get(code),
                 problem=problem,
                 use=use,
-                context={},
+                context=context or {},
                 source=source,
             )
         )

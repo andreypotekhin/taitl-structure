@@ -30,6 +30,12 @@ Streaming compatibility does not mean Structure starts a streaming query. Struct
 at compile time, reports required output modes where relevant, and leaves query lifecycle choices to the caller-owned
 shape.
 
+When transforms are composed, streaming lineage is carried by outputs produced from inputs declared with
+`streaming=True`. The default composition policy rejects a streaming output assigned to a downstream input without the
+same declaration. Set `allow_stream_to_batch = true` for an intentional undeclared boundary. An explicit
+`streaming=False` on the downstream input or transform is a hard rejection because it states that streaming is not
+supported.
+
 ## Runtime Shape
 
 The streaming-compatible runtime shape is one streaming current pipeline DataFrame plus zero or more static side

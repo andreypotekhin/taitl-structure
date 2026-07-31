@@ -26,6 +26,7 @@ class StructureConfigValidator:
         "validate_outputs",
         "strict_performance",
         "warn_on_udfs",
+        "allow_stream_to_batch",
         "fail_on_diff",
         "spark.sql.ansi.enabled",
     }

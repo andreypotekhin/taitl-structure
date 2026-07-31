@@ -33,6 +33,7 @@ class StructureConfigDefaults:
             "output_validation_mode": "schema_only",
             "strict_performance": True,
             "warn_on_udfs": True,
+            "allow_stream_to_batch": False,
             "fail_on_diff": False,
             "spark.sql.ansi.enabled": True,
             "spark.sql.storeAssignmentPolicy": "ANSI",

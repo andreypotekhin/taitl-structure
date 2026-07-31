@@ -74,6 +74,9 @@ Rules:
 - The `pyspark` segment identifies the target backend.
 - `schemas/` contains generated Spark `StructType` declarations.
 - Generated schema constants are caller-facing shape artifacts that may be imported outside generated transform classes.
+- Schema source modules are flattened into `schemas/` using the shortest unique suffix of their dotted source module path;
+  for example, `fulfillment.planning.workflow` and `merchandising.workflow` become `planning_workflow.py` and
+  `merchandising_workflow.py`.
 - `transforms/` contains generated transform classes.
 - `runtime/` contains small generated-runtime helpers, such as schema validation and schema projection.
 - `traceability/` contains compiler metadata and static dataflow traceability, not runtime telemetry.

@@ -319,5 +319,16 @@ diagnostic_registry = DiagnosticRegistry(
             problem_template="A hook contains arbitrary PySpark code Structure cannot prove streaming-compatible.",
             use_template="Mark the hook streaming=True only after verifying it satisfies the streaming contract.",
         ),
+        DiagnosticEntry(
+            code="STREAM-E0802",
+            severity="error",
+            title="Streaming output is not accepted by downstream input",
+            owner="streaming",
+            status="active",
+            docs="docs/Diagnostics.md#stream-e0802",
+            introduced="1.0.0",
+            problem_template="A streaming stage output is consumed by a downstream input that does not accept streaming data.",
+            use_template="Declare the downstream input with streaming=True, or explicitly allow the stream-to-batch boundary.",
+        ),
     ]
 )

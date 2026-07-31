@@ -143,3 +143,30 @@ def test_v1_project_renderer_qualifies_duplicate_schema_module_basenames() -> No
 
     assert "testing/model/v1/structure_generated/orders/pyspark/schemas/left_common.py" in files
     assert "testing/model/v1/structure_generated/orders/pyspark/schemas/right_common.py" in files
+
+
+def test_v1_project_renderer_qualifies_nested_workflow_schema_modules() -> None:
+    from testing.model.v1.orders.transforms.order import EnrichOrders
+
+    class FulfillmentWorkflowSchema(Schema):
+        id = string(nullable=False)
+
+    class MerchandisingWorkflowSchema(Schema):
+        id = string(nullable=False)
+
+    files = PySpark.render.project()(
+        _recipe(EnrichOrders),
+        source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
+        generated_package="testing.model.v1.structure_generated.orders",
+        source_schema_modules={
+            "testing.model.v1.orders.schemas.fulfillment.planning.workflow": [FulfillmentWorkflowSchema],
+            "testing.model.v1.orders.schemas.merchandising.workflow": [MerchandisingWorkflowSchema],
+        },
+    )
+
+    fulfillment = "testing/model/v1/structure_generated/orders/pyspark/schemas/planning_workflow.py"
+    merchandising = "testing/model/v1/structure_generated/orders/pyspark/schemas/merchandising_workflow.py"
+    assert fulfillment in files
+    assert merchandising in files
+    assert "# Source: testing.model.v1.orders.schemas.fulfillment.planning.workflow" in files[fulfillment]
+    assert "# Source: testing.model.v1.orders.schemas.merchandising.workflow" in files[merchandising]

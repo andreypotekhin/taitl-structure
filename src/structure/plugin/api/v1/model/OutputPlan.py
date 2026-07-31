@@ -13,3 +13,4 @@ class OutputPlan:
     source_schema: Any
     ordinal: int
     aliases: tuple[str, ...] = ()
+    streaming: bool = False

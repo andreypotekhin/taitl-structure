@@ -253,6 +253,8 @@ narrower use cases and roadmap features.
   `writeStream`, triggers, checkpoints, and query execution.
 - + As a developer, I can declare streaming input modes and watermarks inside transform code so that stateful streaming
   transformations can be checked without Structure owning lifecycle.
+- + As a developer, I receive an early diagnostic when a composed streaming output reaches an undeclared or explicitly
+  batch-only downstream input, with `allow_stream_to_batch` available for intentional undeclared boundaries.
 
 ## 17A. Versioning and Compatibility
 

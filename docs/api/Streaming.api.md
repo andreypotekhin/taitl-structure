@@ -15,6 +15,9 @@ Examples abbreviate `order` as `o` and a second streaming relation as `c`.
 **Details And Differences**
 
 - `streaming=True` declares a streaming input; omitting it (or setting `False`) declares a static input.
+- In a composed transform, a streaming output must connect to a downstream input declared with `streaming=True`.
+  Set `allow_stream_to_batch = true` for an intentional undeclared boundary; explicit `streaming=False` remains a
+  compilation error.
 - `StreamingOutputMode` is the typed vocabulary used when explain output reports a caller-required output mode.
 
 ## Streaming Operations

@@ -477,7 +477,13 @@ def _reference_enrich_orders(
 
 
 def _input_modes(transform: type) -> dict[str, bool]:
-    compilation = Compiler.frontend.compile()(transform, materialize_schemas=False, target_profile=None)
+    # The store model intentionally mixes live feeds with batch-oriented stages.
+    compilation = Compiler.frontend.compile()(
+        transform,
+        materialize_schemas=False,
+        target_profile=None,
+        allow_stream_to_batch=True,
+    )
     plan = cast(TransformPlan, compilation.analysis)
     return {input.name: input.streaming for input in plan.inputs}
 
@@ -569,8 +575,7 @@ def _reference_plan_fulfillment(
         )
         after_plan = available - allocated
         if after_plan < int(option["safety_stock_quantity"]) and (
-            option["earliest_inbound_at"] is None
-            or option["earliest_inbound_at"] > line["business"]["order_date"]
+            option["earliest_inbound_at"] is None or option["earliest_inbound_at"] > line["business"]["order_date"]
         ):
             suggestions.append(
                 {
@@ -590,9 +595,7 @@ def _reference_plan_fulfillment(
         "allocations": sorted(allocations, key=lambda row: row["order_id"]),
         "backorders": sorted(backorders, key=lambda row: row["order_id"]),
         "plans": sorted(plans, key=lambda row: row["order_id"]),
-        "replenishment_suggestions": sorted(
-            suggestions, key=lambda row: (row["warehouse_id"], row["product_id"])
-        ),
+        "replenishment_suggestions": sorted(suggestions, key=lambda row: (row["warehouse_id"], row["product_id"])),
     }
 
 
@@ -745,13 +748,17 @@ def _reference_merchandising_behavior(
             click
             for click in clicks
             if click["impression_id"] == impression["id"]
-            and _ts(impression["shown_at"]) <= _ts(click["occurred_at"]) <= _ts(impression["shown_at"]) + timedelta(hours=24)
+            and _ts(impression["shown_at"])
+            <= _ts(click["occurred_at"])
+            <= _ts(impression["shown_at"]) + timedelta(hours=24)
         ]
         for impression in impressions
     }
     request_rows = []
     for request in selected:
-        displayed = [item for item in impressions if item["tenant"] == request["tenant"] and item["request_id"] == request["id"]]
+        displayed = [
+            item for item in impressions if item["tenant"] == request["tenant"] and item["request_id"] == request["id"]
+        ]
         clicked = [item for item in displayed if timely_clicks[item["id"]]]
         request_rows.append(
             {
@@ -769,7 +776,9 @@ def _reference_merchandising_behavior(
     daily = []
     keys = sorted({(row["strategy_id"], row["policy_version"]) for row in request_rows})
     for strategy_id, policy_version in keys:
-        rows = [row for row in request_rows if row["strategy_id"] == strategy_id and row["policy_version"] == policy_version]
+        rows = [
+            row for row in request_rows if row["strategy_id"] == strategy_id and row["policy_version"] == policy_version
+        ]
         shown = [
             item
             for item in impressions
@@ -789,9 +798,7 @@ def _reference_merchandising_behavior(
                 "clicked_request_count": sum(1 for row in rows if row["has_click"]),
                 "zero_result_rate": round(sum(1 for row in rows if row["result_count"] == 0) / len(rows), 6),
                 "clicked_request_rate": round(sum(1 for row in rows if row["has_click"]) / len(rows), 6),
-                "mean_first_click_rank": (
-                    round(sum(clicked_ranks) / len(clicked_ranks), 6) if clicked_ranks else None
-                ),
+                "mean_first_click_rank": (round(sum(clicked_ranks) / len(clicked_ranks), 6) if clicked_ranks else None),
                 "raw_click_count": sum(row["raw_click_count"] for row in rows),
                 "exposure_adjusted_click_rate": round(click_weight / exposure, 6) if exposure else None,
             }

@@ -242,6 +242,9 @@ def render_store_example() -> dict[str, str]:
                             transform_class,
                             materialize_schemas=False,
                             target_profile=None,
+                            # The store example intentionally crosses from live feeds into
+                            # batch-oriented planning stages.
+                            allow_stream_to_batch=True,
                         ).lowered,
                     ),
                     source_transform=source_transform,
@@ -255,6 +258,7 @@ def render_store_example() -> dict[str, str]:
                 source_roots=["examples"],
                 generated_dir="examples/structure_generated/store",
                 generated_package="examples.structure_generated.store",
+                allow_stream_to_batch=True,
             ),
             DiscoveredStructureProject(
                 transforms=tuple(transform for transform, _ in transforms),
@@ -1023,7 +1027,10 @@ def render_search_example() -> dict[str, str]:
             (BuildQueryFeatures, "examples.search.transforms.features.BuildQueryFeatures.BuildQueryFeatures"),
             (Features, "examples.search.transforms.features.Features.Features"),
             (BuildTrainingData, "examples.search.transforms.training.BuildTrainingData.BuildTrainingData"),
-            (RankDocumentCandidates, "examples.search.transforms.training.RankDocumentCandidates.RankDocumentCandidates"),
+            (
+                RankDocumentCandidates,
+                "examples.search.transforms.training.RankDocumentCandidates.RankDocumentCandidates",
+            ),
             (Training, "examples.search.transforms.training.Training.Training"),
             (AnalyzeText, "examples.search.transforms.stats.AnalyzeText.AnalyzeText"),
             (CorpusText, "examples.search.transforms.stats.CorpusText.CorpusText"),
@@ -1395,9 +1402,7 @@ def _render_school_pyspark_example() -> dict[str, str]:
             source_schema_modules=schema_modules,
         )
     )
-    files["examples/structure_generated/school/traceability/__init__.py"] = (
-        "# Generated traceability package marker.\n"
-    )
+    files["examples/structure_generated/school/traceability/__init__.py"] = "# Generated traceability package marker.\n"
     files["examples/structure_generated/school/traceability/transforms/__init__.py"] = (
         "# Generated transform traceability package marker.\n"
     )

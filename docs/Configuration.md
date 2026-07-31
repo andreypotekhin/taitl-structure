@@ -324,6 +324,17 @@ allow_to_pandas = false
 Compiled step methods never silently fall back to UDFs. These settings are primarily for hook linting and
 future advanced features.
 
+## Streaming Composition
+
+```toml
+allow_stream_to_batch = false
+```
+
+When `false` (the default), composition fails if a streaming output is connected to a downstream input that does not
+declare `streaming=True`. Set it to `true` only for an intentional stream-to-batch boundary. An explicit
+`input(..., streaming=False)` or `@transform(streaming=False)` always fails at a streaming boundary, regardless of this
+setting, because it deliberately declares that the downstream transform does not support streaming.
+
 ## Compile-Time Performance
 
 ```toml

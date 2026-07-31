@@ -18,7 +18,7 @@ from structure.core.dsl.model.transforms.SpecialFunction import SpecialFunction
 from structure.core.dsl.model.transforms.StageDeclaration import StageDeclaration
 from structure.core.dsl.model.transforms.Transform import Transform
 
-_CLASS_OPTIONS = {"target", "validate_intermediate", "streaming", "warn_on_udfs"}
+_CLASS_OPTIONS = {"target", "validate_intermediate", "streaming", "warn_on_udfs", "allow_stream_to_batch"}
 _STEP_METHOD_OPTIONS = {"target", "target_platform", "target_profile"}
 _METHOD_BINDING_OPTIONS = {"input", "output", "inout"}
 _METHOD_OPTIMIZATION_OPTIONS = {"cache"}
@@ -30,6 +30,14 @@ class _Unset:
 
 
 _UNSET = _Unset()
+
+
+class _DefaultFalse:
+    def __repr__(self) -> str:
+        return "False"
+
+
+_DEFAULT_STREAMING: bool = cast(bool, _DefaultFalse())
 
 
 @overload
@@ -47,7 +55,7 @@ def input(value: InputDeclaration) -> BindingSelector:
 def input(
     value: type[Schema] | InputDeclaration,
     *,
-    streaming: bool = False,
+    streaming: bool = _DEFAULT_STREAMING,
 ) -> InputDeclaration | BindingSelector:
     """Declare or select a transform input.
 
@@ -64,6 +72,9 @@ def input(
         class PublishOrders(Transform):
             orders = input(Order, streaming=True)
     """
+    declared = streaming is not _DEFAULT_STREAMING
+    if not declared:
+        streaming = False
     if not isinstance(streaming, bool):
         raise TypeError("input(streaming=...) must be a Boolean")
     if isinstance(value, InputDeclaration):
@@ -72,7 +83,7 @@ def input(
         return BindingSelector("input", value)
     if not isinstance(value, type) or not issubclass(value, Schema):
         raise TypeError("input(...) requires a Schema class")
-    return InputDeclaration(schema=value, streaming=streaming)
+    return InputDeclaration(schema=value, streaming=streaming, streaming_declared=declared)
 
 
 @overload
@@ -207,7 +218,8 @@ def transform(target=None, **kwargs):
         target: Optional target name or class. Passing ``"pyspark"`` selects a
             default target for the class.
         **kwargs: Class-level options such as ``target``,
-            ``validate_intermediate``, ``streaming``, and ``warn_on_udfs``.
+            ``validate_intermediate``, ``streaming``, ``warn_on_udfs``, and
+            ``allow_stream_to_batch``.
             Step defaults such as ``target_platform`` may also be supplied.
 
     Returns:
@@ -255,6 +267,7 @@ def step(target=None, **kwargs):
         def publish(self, order):
             return PublishedOrder.project(order)
     """
+
     def decorate(item):
         if not inspect.isfunction(item):
             raise TypeError("@step can decorate Transform methods only")

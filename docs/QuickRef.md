@@ -1173,6 +1173,10 @@ Structure admits row-local projection/filter, stream-static joins, watermarks, e
 aggregation, bounded dedupe, and admitted bounded stream-stream joins. It does not generate `readStream` or
 `writeStream`; the caller owns sources, sinks, checkpoints, triggers, output modes, and query lifecycle.
 
+In composed transforms, streaming output lineage must be consumed by downstream inputs declared with
+`streaming=True`. Set `allow_stream_to_batch = true` only for an intentional undeclared stream-to-batch boundary;
+explicit `streaming=False` remains a compilation error.
+
 Reference: [streaming API](api/Streaming.api.md) and
 [streaming compatibility](background/StreamingCompatibility.back.md).
 

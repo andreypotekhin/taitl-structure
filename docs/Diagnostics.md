@@ -34,6 +34,7 @@ Below is an index for published diagnostic codes. For the full diagnostic contra
 | CONNECT-E2601 | error | Spark Connect boundary is unsupported | Use Spark Connect DataFrame APIs or set `plugin.pyspark.variant = "ordinary"`. |
 | CLI-X1101 | internal | Unexpected internal failure | Rerun with debug output and report the code with a reproduction. |
 | STREAM-E0801 | error | Transform is not streaming-compatible | Keep the transform batch-only or rewrite the unsupported shape. |
+| STREAM-E0802 | error | Streaming output is not accepted by downstream input | Declare the downstream input with `streaming=True`, or explicitly allow the boundary. |
 | STREAM-W0801 | warning | Hook streaming compatibility is unknown | Mark the hook `streaming=True` only after verifying it. |
 
 ## Reading Source Annotations
@@ -132,6 +133,14 @@ Structure source when the diagnostic names a missing watermark, input-mode decla
 stateful composition. Keep sources, sinks, checkpoints, triggers, output modes, query lifecycle, and side effects in
 caller-owned PySpark code. See [Streaming API](api/Streaming.api.md) and
 [V9 PySpark Streaming API Coverage](dev/specifications/V9PySparkStreamingApiCoverage.md).
+
+### STREAM-E0802
+
+See [Diagnostics.md](background/Diagnostics.back.md#stream-e0802).
+
+A composed streaming output reaches a downstream input that is not declared with `streaming=True`. Set
+`allow_stream_to_batch = true` only for an intentional boundary. An explicit `streaming=False` on the downstream
+input or transform always remains an error, because it declares that the transform does not support streaming.
 
 ### STREAM-W0801
 See [Diagnostics.md](background/Diagnostics.back.md#stream-w0801).

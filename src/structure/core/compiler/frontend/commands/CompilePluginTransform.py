@@ -95,6 +95,7 @@ class CompilePluginTransform:
         target = self._target(transform, default=options.target)
         configuration = {
             "warn_on_udfs": options.warn_on_udfs,
+            "allow_stream_to_batch": options.allow_stream_to_batch,
             "validate_intermediate": options.validate_intermediate,
             "generated_code_options": options.generated_code_options,
             "schema_types": schema_types,
@@ -107,6 +108,7 @@ class CompilePluginTransform:
             project_root=options.project_root,
             overrides={
                 "warn_on_udfs": options.warn_on_udfs,
+                "allow_stream_to_batch": options.allow_stream_to_batch,
                 "generated_code_options": options.generated_code_options,
             },
         )
@@ -159,9 +161,13 @@ class CompilePluginTransform:
         )
         if not isinstance(compilation, PluginCompilation):
             raise ValueError(f"PLUGIN-E2708: Plugin {target!r} returned an invalid compilation result.")
-        analysis = plan if not compilation.diagnostics else replace(
-            plan,
-            diagnostics=(*plan.diagnostics, *compilation.diagnostics),
+        analysis = (
+            plan
+            if not compilation.diagnostics
+            else replace(
+                plan,
+                diagnostics=(*plan.diagnostics, *compilation.diagnostics),
+            )
         )
         return replace(compilation, analysis=analysis)
 
@@ -185,9 +191,7 @@ class CompilePluginTransform:
             for declaration in declarations:
                 schemas[cast(object, getattr(declaration, "schema"))] = None
         validate(
-            SchemaValidationRequest(
-                schemas=tuple(schemas), configuration=configuration, plugin_options=plugin_options
-            )
+            SchemaValidationRequest(schemas=tuple(schemas), configuration=configuration, plugin_options=plugin_options)
         )
 
     @staticmethod

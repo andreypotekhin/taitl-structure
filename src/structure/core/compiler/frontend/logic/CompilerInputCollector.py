@@ -12,6 +12,7 @@ class CompilerInputCollector:
                 ordinal=ordinal,
                 streaming=declaration.streaming,
                 aliases=declaration.aliases,
+                streaming_declared=declaration.streaming_declared,
             )
             for ordinal, declaration in enumerate(transform_class._structure_inputs.values())
         ]

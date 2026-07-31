@@ -5,6 +5,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import replace
 
 from structure.core.compiler.diagnostics.api import StructureCompileError
+from structure.core.compiler.frontend.logic.ValidateStreamingInputBinding import validate_streaming_input_binding
 from structure.core.compiler.ir.model.HookPlan import HookPlan
 from structure.core.compiler.ir.model.OutputPlan import OutputPlan
 from structure.core.compiler.ir.model.StepInputPlan import StepInputPlan
@@ -30,11 +31,14 @@ class ComposeTransformGraph:
         *,
         compile_stage: CompileStage,
         rewrite_body: RewriteBody | None = None,
+        allow_stream_to_batch: bool = False,
     ) -> TransformPlan:
         rewrite = rewrite_body or (lambda body, _: body)
         stages = tuple(self._stage(wrapper_class, stage) for stage in wrapper_class._structure_stages.values())
         if not stages:
-            raise self._error(wrapper_class.__name__, "Transform graph has no stages.", "Declare at least one stage(...).")
+            raise self._error(
+                wrapper_class.__name__, "Transform graph has no stages.", "Declare at least one stage(...)."
+            )
         if not wrapper_class._structure_outputs:
             raise self._error(
                 wrapper_class.__name__,
@@ -44,8 +48,13 @@ class ComposeTransformGraph:
         stage_plans = tuple(compile_stage(stage.invocation) for stage in stages)
         self._validate_references(wrapper_class, stages)
 
-        inputs = self._inputs(wrapper_class, stages, stage_plans)
         stage_by_name = {stage.name: stage for stage in stages}
+        inputs = self._inputs(
+            wrapper_class,
+            stages,
+            stage_plans,
+            allow_stream_to_batch=allow_stream_to_batch,
+        )
         steps, stage_outputs, output_sources = self._rewrite(
             wrapper_class,
             stages,
@@ -89,8 +98,11 @@ class ComposeTransformGraph:
         wrapper_class: type[Transform],
         stages: tuple[StageDeclaration, ...],
         stage_plans: tuple[TransformPlan, ...],
+        *,
+        allow_stream_to_batch: bool,
     ) -> list[InputPlan]:
         inputs: dict[str, InputPlan] = {}
+        plans = {stage.name: plan for stage, plan in zip(stages, stage_plans, strict=True)}
         for stage, plan in zip(stages, stage_plans, strict=True):
             bound = stage.invocation._structure_bound_inputs
             for input_plan in plan.inputs:
@@ -108,8 +120,30 @@ class ComposeTransformGraph:
                             f"{stage.name}.{input_plan.name} expects {self._schema_name(input_plan.schema)}, but {value.stage.name}.{value.name} provides {self._schema_name(value.schema)}.",
                             "Bind stage inputs only to outputs with the same schema.",
                         )
+                    producer_plan = plans[value.stage.name]
+                    producer = next(output for output in producer_plan.outputs if output.name == value.name)
+                    violation = validate_streaming_input_binding(
+                        producer=value.stage.name,
+                        output=producer,
+                        consumer=type(stage.invocation).__name__,
+                        input_plan=input_plan,
+                        consumer_options=plan.options,
+                        allow_stream_to_batch=allow_stream_to_batch,
+                    )
+                    if violation is not None:
+                        raise self._error(
+                            wrapper_class.__name__,
+                            violation.problem,
+                            violation.use,
+                            code="STREAM-E0802",
+                            context=violation.context,
+                        )
                     continue
                 source = self._external_name(wrapper_class, stage, input_plan, value)
+                streaming = value.streaming if isinstance(value, InputDeclaration) else input_plan.streaming
+                streaming_declared = (
+                    value.streaming_declared if isinstance(value, InputDeclaration) else input_plan.streaming_declared
+                )
                 existing = inputs.get(source)
                 if existing is not None and existing.schema is not input_plan.schema:
                     raise self._error(
@@ -124,8 +158,9 @@ class ComposeTransformGraph:
                     name=source,
                     schema=input_plan.schema,
                     ordinal=0,
-                    streaming=input_plan.streaming,
+                    streaming=streaming,
                     aliases=aliases,
+                    streaming_declared=streaming_declared,
                 )
         return [replace(input, ordinal=ordinal) for ordinal, input in enumerate(inputs.values())]
 
@@ -308,6 +343,7 @@ class ComposeTransformGraph:
                     source_schema=source.source_schema,
                     ordinal=ordinal,
                     aliases=declaration.aliases,
+                    streaming=source.streaming,
                 )
             )
         return outputs
@@ -330,9 +366,7 @@ class ComposeTransformGraph:
                 "Use outputs = output(name=stage.output) with a declared stage output.",
             )
         if isinstance(source, StageOutputReference):
-            output = output_sources.get(
-                (stage_by_name.get(source.stage.name, source.stage), source.name)
-            )
+            output = output_sources.get((stage_by_name.get(source.stage.name, source.stage), source.name))
             if output is None:
                 raise self._error(
                     wrapper_class.__name__,
@@ -404,13 +438,21 @@ class ComposeTransformGraph:
     def _schema_name(self, schema: object) -> str:
         return getattr(schema, "__name__", repr(schema))
 
-    def _error(self, source: str, problem: str, use: str) -> StructureCompileError:
+    def _error(
+        self,
+        source: str,
+        problem: str,
+        use: str,
+        *,
+        code: str = "DSL-E0402",
+        context: dict[str, str] | None = None,
+    ) -> StructureCompileError:
         return StructureCompileError(
             Diagnostic(
-                entry=diagnostic_registry.get("DSL-E0402"),
+                entry=diagnostic_registry.get(code),
                 problem=problem,
                 use=use,
-                context={},
+                context=context or {},
                 source=source,
             )
         )

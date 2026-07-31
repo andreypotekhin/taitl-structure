@@ -5,6 +5,7 @@ import pytest
 from structure import *
 from structure.core.compiler.api import Compiler
 from structure.core.compiler.compileability.streaming_compatibility.api import StreamingSupport
+from structure.core.compiler.diagnostics.api import StructureCompileError
 from structure.core.runtime.session.model.TransformResult import TransformResult
 from structure.plugin.api.v1 import TransformMemberOrigin
 from structure.plugin.pyspark import *
@@ -179,6 +180,192 @@ def test_static_transform_to_starts_pipeline() -> None:
         "add_product.add_product",
         "publish_orders.publish",
     ]
+
+
+def test_streaming_output_requires_downstream_input_declaration() -> None:
+    @transform
+    class StreamingNormalize(Transform):
+        orders = input(Raw, streaming=True)
+        normalized = output(Normalized)
+
+        def normalize(self, order: Raw) -> Normalized:
+            return Normalized(id=order.id, product_id=order.product_id)
+
+    @transform
+    class BatchPublish(Transform):
+        normalized = input(Normalized)
+        published = output(Published)
+
+        def publish(self, order: Normalized) -> Published:
+            return Published(id=order.id, product_name=order.product_id)
+
+    with pytest.raises(StructureCompileError, match="not declared streaming=True"):
+        _analysis(StreamingNormalize(orders=object()).to(BatchPublish()))
+
+
+def test_streaming_boundary_can_be_allowed_by_configuration() -> None:
+    @transform
+    class StreamingNormalize(Transform):
+        orders = input(Raw, streaming=True)
+        normalized = output(Normalized)
+
+        def normalize(self, order: Raw) -> Normalized:
+            return Normalized(id=order.id, product_id=order.product_id)
+
+    @transform
+    class BatchPublish(Transform):
+        normalized = input(Normalized)
+        published = output(Published)
+
+        def publish(self, order: Normalized) -> Published:
+            return Published(id=order.id, product_name=order.product_id)
+
+    plan = Compiler.frontend.analyze()(
+        StreamingNormalize(orders=object()).to(BatchPublish()),
+        allow_stream_to_batch=True,
+    )
+
+    assert plan.outputs[0].streaming is False
+
+
+def test_streaming_output_accepts_declared_streaming_downstream_input() -> None:
+    @transform
+    class StreamingNormalize(Transform):
+        orders = input(Raw, streaming=True)
+        normalized = output(Normalized)
+
+        def normalize(self, order: Raw) -> Normalized:
+            return Normalized(id=order.id, product_id=order.product_id)
+
+    @transform
+    class StreamingPublish(Transform):
+        normalized = input(Normalized, streaming=True)
+        published = output(Published)
+
+        def publish(self, order: Normalized) -> Published:
+            return Published(id=order.id, product_name=order.product_id)
+
+    plan = _analysis(StreamingNormalize(orders=object()).to(StreamingPublish()))
+
+    assert plan.outputs[0].streaming is True
+
+
+def test_explicit_downstream_batch_declaration_overrides_allowance() -> None:
+    @transform
+    class StreamingNormalize(Transform):
+        orders = input(Raw, streaming=True)
+        normalized = output(Normalized)
+
+        def normalize(self, order: Raw) -> Normalized:
+            return Normalized(id=order.id, product_id=order.product_id)
+
+    @transform
+    class BatchPublish(Transform):
+        normalized = input(Normalized, streaming=False)
+        published = output(Published)
+
+        def publish(self, order: Normalized) -> Published:
+            return Published(id=order.id, product_name=order.product_id)
+
+    with pytest.raises(StructureCompileError, match="explicitly declares streaming=False"):
+        Compiler.frontend.analyze()(
+            StreamingNormalize(orders=object()).to(BatchPublish()),
+            allow_stream_to_batch=True,
+        )
+
+
+def test_explicit_downstream_transform_batch_marker_overrides_allowance() -> None:
+    @transform
+    class StreamingNormalize(Transform):
+        orders = input(Raw, streaming=True)
+        normalized = output(Normalized)
+
+        def normalize(self, order: Raw) -> Normalized:
+            return Normalized(id=order.id, product_id=order.product_id)
+
+    @transform(streaming=False)
+    class BatchPublish(Transform):
+        normalized = input(Normalized)
+        published = output(Published)
+
+        def publish(self, order: Normalized) -> Published:
+            return Published(id=order.id, product_name=order.product_id)
+
+    with pytest.raises(StructureCompileError, match="explicitly declares streaming=False"):
+        Compiler.frontend.analyze()(
+            StreamingNormalize(orders=object()).to(BatchPublish()),
+            allow_stream_to_batch=True,
+        )
+
+
+def test_downstream_class_streaming_marker_does_not_declare_input_mode() -> None:
+    @transform
+    class StreamingNormalize(Transform):
+        orders = input(Raw, streaming=True)
+        normalized = output(Normalized)
+
+        def normalize(self, order: Raw) -> Normalized:
+            return Normalized(id=order.id, product_id=order.product_id)
+
+    @transform(streaming=True)
+    class StreamingPublish(Transform):
+        normalized = input(Normalized)
+        published = output(Published)
+
+        def publish(self, order: Normalized) -> Published:
+            return Published(id=order.id, product_name=order.product_id)
+
+    with pytest.raises(StructureCompileError, match="not declared streaming=True"):
+        _analysis(StreamingNormalize(orders=object()).to(StreamingPublish()))
+
+
+def test_upstream_class_streaming_marker_without_streaming_input_is_batch_output() -> None:
+    @transform(streaming=True)
+    class MarkedNormalize(Transform):
+        orders = input(Raw)
+        normalized = output(Normalized)
+
+        def normalize(self, order: Raw) -> Normalized:
+            return Normalized(id=order.id, product_id=order.product_id)
+
+    @transform
+    class BatchPublish(Transform):
+        normalized = input(Normalized)
+        published = output(Published)
+
+        def publish(self, order: Normalized) -> Published:
+            return Published(id=order.id, product_name=order.product_id)
+
+    plan = _analysis(MarkedNormalize(orders=object()).to(BatchPublish()))
+
+    assert plan.outputs[0].streaming is False
+
+
+def test_stage_graph_checks_streaming_output_assignment() -> None:
+    @transform
+    class StreamingNormalize(Transform):
+        orders = input(Raw, streaming=True)
+        normalized = output(Normalized)
+
+        def normalize(self, order: Raw) -> Normalized:
+            return Normalized(id=order.id, product_id=order.product_id)
+
+    @transform
+    class BatchPublish(Transform):
+        normalized = input(Normalized)
+        published = output(Published)
+
+        def publish(self, order: Normalized) -> Published:
+            return Published(id=order.id, product_name=order.product_id)
+
+    class OrderGraph(Transform):
+        orders = input(Raw, streaming=True)
+        published = output(Published)
+        selected = stage(StreamingNormalize(orders=orders))
+        ranked = stage(BatchPublish(normalized=selected.normalized))
+
+    with pytest.raises(StructureCompileError, match="not declared streaming=True"):
+        Compiler.frontend.analyze()(OrderGraph)
 
 
 def test_downstream_constructor_input_satisfies_missing_input() -> None:
@@ -488,8 +675,7 @@ def test_generated_composed_pipeline_imports_and_dispatches_stage_owned_hooks() 
     assert "from test_transform_composition import HookPipeline, HookedNormalizeOrders" in text
     assert "self._impl_hooked_normalize_orders_HookedNormalizeOrders = HookedNormalizeOrders()" in text
     assert (
-        "hooked_normalize_orders__normalized_rows = "
-        "self._impl_hooked_normalize_orders_HookedNormalizeOrders.polish("
+        "hooked_normalize_orders__normalized_rows = " "self._impl_hooked_normalize_orders_HookedNormalizeOrders.polish("
     ) in text
 
 
@@ -618,9 +804,7 @@ def test_stage_graph_fans_out_and_merges_stage_outputs() -> None:
         normalized_stage = stage(NormalizeOrders(orders=orders))
         enriched_stage = stage(AddProduct(normalized=normalized_stage.normalized, products=products))
         audit_stage = stage(AuditNormalized(normalized=normalized_stage.normalized))
-        published_stage = stage(
-            PublishWithAudit(enriched=enriched_stage.enriched, audit=audit_stage.audited)
-        )
+        published_stage = stage(PublishWithAudit(enriched=enriched_stage.enriched, audit=audit_stage.audited))
 
     plan = _analysis(OrderGraph)
 
@@ -769,9 +953,7 @@ def test_stage_graph_subclass_replaces_several_inherited_stages() -> None:
 
     class AdjustedGraph(OrderGraph):
         normalized_stage = stage(AdjustedNormalize(orders=OrderGraph.orders))
-        enriched_stage = stage(
-            AdjustedProduct(normalized=normalized_stage.normalized, products=OrderGraph.products)
-        )
+        enriched_stage = stage(AdjustedProduct(normalized=normalized_stage.normalized, products=OrderGraph.products))
 
     plan = _analysis(AdjustedGraph)
 

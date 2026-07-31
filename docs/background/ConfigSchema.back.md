@@ -81,6 +81,7 @@ intermediate_validation_mode = "schema_only"
 output_validation_mode = "schema_only"
 strict_performance = true
 warn_on_udfs = true
+allow_stream_to_batch = false
 fail_on_diff = false
 
 spark.sql.ansi.enabled = true
@@ -361,6 +362,19 @@ Rules:
 - When true, compiled transforms that use `@special(type="udf")` emit a warning because Python UDF bodies are opaque
   to Spark optimization.
 - When false, UDFs still compile, but the optimizer-opacity warning is suppressed.
+
+### allow_stream_to_batch
+
+Type: boolean.
+
+Default: `false`.
+
+Rules:
+
+- When false, a composed streaming output must be consumed by an input declared with `streaming=True`.
+- When true, an undeclared downstream input may form an intentional stream-to-batch boundary.
+- Explicit `input(..., streaming=False)` and `@transform(streaming=False)` remain compilation errors at a streaming
+  boundary, regardless of this setting.
 
 ### fail_on_diff
 

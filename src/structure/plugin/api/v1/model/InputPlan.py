@@ -10,3 +10,4 @@ class InputPlan:
     ordinal: int
     streaming: bool = False
     aliases: tuple[str, ...] = ()
+    streaming_declared: bool = False

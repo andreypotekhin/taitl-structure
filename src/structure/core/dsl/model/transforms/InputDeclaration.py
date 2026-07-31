@@ -26,6 +26,7 @@ class InputDeclaration:
     name: str = ""
     streaming: bool = False
     aliases: tuple[str, ...] = ()
+    streaming_declared: bool = False
 
     def __set_name__(self, owner: type[Transform], name: str) -> None:
         object.__setattr__(self, "name", name)
