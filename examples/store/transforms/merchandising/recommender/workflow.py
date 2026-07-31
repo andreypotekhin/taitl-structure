@@ -1,5 +1,6 @@
 from examples.store.schemas.merchandising import (
     CatalogProduct,
+    ExpandedProductTaxonomy,
     MerchandisingBoost,
     MerchandisingPolicy,
     MerchandisingSuppression,
@@ -7,9 +8,13 @@ from examples.store.schemas.merchandising import (
     RecommendationRequest,
     RecommendationRun,
     RecommendedProduct,
+    SessionFeature,
 )
 from examples.store.transforms.merchandising.ranking import Ranker
 from examples.store.transforms.merchandising.recommender.admit import SelectRecommendationCandidates
+from examples.store.transforms.merchandising.recommender.diversify import DiversifyRecommendations
+from examples.store.transforms.merchandising.recommender.filter import FilterRecommendationCandidates
+from examples.store.transforms.merchandising.recommender.generate import GenerateRecommendationCandidates
 from examples.store.transforms.merchandising.recommender.publish import SelectRecommendedProducts
 from examples.store.transforms.merchandising.recommender.rank import RankRecommendationCandidates
 from examples.store.transforms.merchandising.recommender.summarize import SummarizeRecommendationRuns
@@ -25,6 +30,10 @@ class Recommender(Transform):
     boosts = input(MerchandisingBoost)
     suppressions = input(MerchandisingSuppression)
     signals = input(ProductRecommendationSignal)
+    taxonomy = input(ExpandedProductTaxonomy)
+    session_features = input(SessionFeature)
+    recommended_products = output(RecommendedProduct)
+    recommendation_runs = output(RecommendationRun)
 
     selected = stage(
         SelectRecommendationCandidates(
@@ -32,9 +41,25 @@ class Recommender(Transform):
             catalog=catalog,
         )
     )
+    retrieved = stage(
+        GenerateRecommendationCandidates(
+            requests=requests,
+            catalog=catalog,
+            taxonomy=taxonomy,
+            session_features=session_features,
+            signals=signals,
+        )
+    )
+    filtered = stage(
+        FilterRecommendationCandidates(
+            candidates=retrieved.candidates,
+            suppressions=suppressions,
+            session_features=session_features,
+        )
+    )
     ranked = stage(
         RankRecommendationCandidates(
-            candidates=selected.candidates,
+            candidates=filtered.filtered,
             policy=policy,
             boosts=boosts,
             suppressions=suppressions,
@@ -42,9 +67,13 @@ class Recommender(Transform):
             ranker=ranker,
         )
     )
-    published = stage(
-        SelectRecommendedProducts(ranked_candidates=ranked.ranked_candidates)
+    diversified = stage(
+        DiversifyRecommendations(
+            ranked=ranked.ranked_candidates,
+            policy=policy,
+        )
     )
+    published = stage(SelectRecommendedProducts(ranked_candidates=diversified.diversified))
     summarized = stage(
         SummarizeRecommendationRuns(
             requests=requests,
@@ -52,6 +81,7 @@ class Recommender(Transform):
             products=published.products,
         )
     )
-
-    recommended_products = output(RecommendedProduct, published.products)
-    recommendation_runs = output(RecommendationRun, summarized.runs)
+    result = output(
+        recommended_products=published.products,
+        recommendation_runs=summarized.runs,
+    )

@@ -34,6 +34,9 @@ class SummarizeRecommendationRuns(Transform):
             request_id=request.id,
             strategy_id=request.strategy_id,
             policy_version=policy.policy_version,
+            experiment_id=request.experiment_id,
+            experiment_version=request.experiment_version,
+            variant_id=request.variant_id,
         )
         return RecommendationRun(
             tenant=request.tenant,
@@ -42,4 +45,7 @@ class SummarizeRecommendationRuns(Transform):
             policy_version=policy.policy_version,
             result_count=sum(when(product.product_id.is_not_null(), 1).otherwise(0)),
             feedback_contributed=bool_or(coalesce(product.feedback_contributed, False)),
+            experiment_id=request.experiment_id,
+            experiment_version=request.experiment_version,
+            variant_id=request.variant_id,
         )

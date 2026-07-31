@@ -1,0 +1,126 @@
+{
+  "dependencies": [
+    "decision",
+    "evaluated",
+    "session",
+    "session_features",
+    "suppression",
+    "suppressions"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "candidates",
+      "ordinal": 0,
+      "schema": "RecommendationCandidate"
+    },
+    {
+      "name": "suppressions",
+      "ordinal": 1,
+      "schema": "MerchandisingSuppression"
+    },
+    {
+      "name": "session_features",
+      "ordinal": 2,
+      "schema": "SessionFeature"
+    }
+  ],
+  "name": "FilterRecommendationCandidates",
+  "outputs": [
+    {
+      "name": "decisions",
+      "ordinal": 0,
+      "schema": "RecommendationCandidateDecision"
+    },
+    {
+      "name": "filtered",
+      "ordinal": 1,
+      "schema": "RecommendationCandidate"
+    }
+  ],
+  "source": "examples.store.transforms.merchandising.recommender.filter.FilterRecommendationCandidates",
+  "step_methods": [
+    {
+      "input_lane": "candidates",
+      "input_schema": "RecommendationCandidate",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "candidate",
+          "schema": "RecommendationCandidate",
+          "source": "candidates"
+        },
+        {
+          "driving": false,
+          "parameter": "suppression",
+          "schema": "MerchandisingSuppression",
+          "source": "suppressions"
+        },
+        {
+          "driving": false,
+          "parameter": "session",
+          "schema": "SessionFeature",
+          "source": "session_features"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "suppression"
+        },
+        {
+          "how": "left",
+          "input": "session"
+        }
+      ],
+      "name": "evaluate",
+      "output_lane": "evaluated",
+      "output_schema": "RecommendationCandidateDecision",
+      "results": [
+        {
+          "frame": "evaluated",
+          "lane": "evaluated",
+          "schema": "RecommendationCandidateDecision"
+        }
+      ]
+    },
+    {
+      "input_lane": "candidates",
+      "input_schema": "RecommendationCandidate",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "candidate",
+          "schema": "RecommendationCandidate",
+          "source": "candidates"
+        },
+        {
+          "driving": false,
+          "parameter": "decision",
+          "schema": "RecommendationCandidateDecision",
+          "source": "evaluated"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "decision"
+        }
+      ],
+      "name": "publish",
+      "output_lane": "filtered",
+      "output_schema": "RecommendationCandidate",
+      "results": [
+        {
+          "frame": "filtered",
+          "lane": "filtered",
+          "schema": "RecommendationCandidate"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/filter.py",
+    "traceability": "traceability/transforms/filter.FilterRecommendationCandidates.json"
+  }
+}

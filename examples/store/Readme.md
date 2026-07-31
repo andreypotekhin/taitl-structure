@@ -12,15 +12,20 @@ persistence, stream lifecycle, and the business actions taken from the results.
 | Recommendations | `Recommender` / `Merchandising` | `RecommendedProduct`, `RecommendationRun` | Transparent policy, promotion, and feedback-aware product ranking. |
 | Merchandising feedback | `BuildRecommendationSignals` | Daily facts and product signals | Impression/click attribution and reusable product signals. |
 | Merchandising evaluation | `EvaluateRecommendations` | Request and daily behavior summaries | Zero-result, click, and exposure-aware behavior evaluation. |
+| Catalog normalization and taxonomy | `NormalizeCatalog` / `ExpandProductTaxonomy` | Normalized catalog and ancestor facts | Stable tenant-scoped category joins with bounded hierarchy expansion. |
+| Session and purchase feedback | `BuildSessionSignals` / `BuildRecommendationPurchaseSignals` | Session features and attributed purchases | Event-time bounded interests and explicit recommendation-attribution status. |
+| Candidate stages | `GenerateRecommendationCandidates` / `FilterRecommendationCandidates` | Candidates and decision evidence | Retrieve from catalog, taxonomy, session, and feedback sources, then filter with reasons. |
+| Diversification | `DiversifyRecommendations` | Diverse ranked products | Deterministic taxonomy-branch caps after ranking. |
+| Recommendation experiments | `AssignRecommendationVariants` / `EvaluateRecommendationExperiment` | Assignments, exposures, variant metrics | Stable tenant-scoped assignments and descriptive observed-variant comparisons. |
 | Fulfillment pipeline | `Fulfillment` | Demand, plans, suggestions, summaries | Main planning boundary from commercial order inputs to fulfillment outputs. |
 | Demand preparation | `PrepareOrderDemand` | `Order` | Valid commercial order lines before warehouse or shipment decisions. |
 | Fulfillment planning | `PlanFulfillment` | Allocations, backorders, plans, suggestions | Deterministic warehouse selection and conservative replenishment signals. |
 | Planning analytics | `FulfillmentAnalytics` | Daily and warehouse load summaries | Batch service-risk and load summaries. |
 | Plan versus actual | `ReconcileFulfillmentPlan` | `FulfillmentReconciliation` | Planned lines observed later in shipment facts. |
 | Dated inventory | `BuildDemandWindows` / `ProjectInventory` | `DemandWindow`, `InventoryProjection` | Observed demand windows, inbound receipts, lead-time-aware usable dates, and projected stock. |
-| Shortages and substitutions | `DetectFulfillmentShortages` / `FindFulfillmentSubstitutions` | `FulfillmentShortage`, `FulfillmentSubstitutionOption` | First projected deficit and ranked policy-approved alternatives. |
-| Operational exceptions | `PrioritizeFulfillmentExceptions` | `FulfillmentException` | Stable priority queue exposing shortage, late-inbound, service-risk, and substitution reasons. |
-| Service evaluation | `EvaluateFulfillmentService` | `FulfillmentServiceEvaluation` | Line-safe on-time, in-full, lateness, and target-attainment results from actual shipments. |
+| Shortages and substitutions | `DetectShortages` / `FindSubstitutions` | `FulfillmentShortage`, `FulfillmentSubstitutionOption` | First projected deficit and ranked policy-approved alternatives. |
+| Operational exceptions | `PrioritizeExceptions` | `FulfillmentException` | Stable priority queue exposing shortage, late-inbound, service-risk, and substitution reasons. |
+| Service evaluation | `EvaluateFulfillment` | `FulfillmentServiceEvaluation` | Line-safe on-time, in-full, lateness, and target-attainment results from actual shipments. |
 | Enrichment | `EnrichOrders` | `OrderPublished` | Streaming-compatible order enrichment. |
 | Daily analytics | `OrderAnalytics` | Customer and product daily results | Batch aggregation and windows. |
 | Advanced analytics | `AdvancedOrderAnalytics` | Rollups, cubes, and profiles | Batch analytical examples. |
@@ -56,8 +61,9 @@ runs = recommendations.recommendation_runs
 ```
 
 `Merchandising` lives in the main merchandising package and captures the full serving pipeline from products to ranked
-recommendation rows. It builds feedback signals from streaming impressions and clicks, then uses those signals for
-recommendation ranking. It also owns evaluation when supplied with an evaluation batch and evaluation inputs.
+recommendation rows. It builds feedback signals from streaming impressions, clicks, and fulfilled orders, then uses
+those signals for recommendation ranking. Evaluation is a separate workflow under `transforms/evaluation/recommender/behavior/`, so serving
+does not require evaluation inputs.
 
 ```python
 merch = Merchandising(
@@ -70,19 +76,33 @@ merch = Merchandising(
     suppressions=suppressions,
     feedback_impressions=feedback_impressions,
     feedback_clicks=feedback_clicks,
-    evaluation_batch=evaluation_batch,
-    evaluation_requests=evaluation_requests,
-    evaluation_impressions=evaluation_impressions,
-    evaluation_clicks=evaluation_clicks,
+).run(session)
+
+evaluation = EvaluateRecommendations(
+    batch=evaluation_batch,
+    requests=evaluation_requests,
+    impressions=evaluation_impressions,
+    clicks=evaluation_clicks,
 ).run(session)
 ```
 
-`BuildRecommendationSignals` turns recommendation impressions and timely clicks into daily facts and product-level
-signals inside `Merchandising`. A click counts only when it references an impression and happens within 24 hours of
-that impression.
+`BuildRecommendationSignals` and `BuildRecommendationPurchaseSignals` live under `merchandising/signals/`. They turn
+recommendation impressions, timely clicks, and fulfilled orders into daily facts and product-level signals. A click
+counts only when it references an impression and happens within 24 hours of that impression; purchase attribution uses
+the fulfilled-order stream and a 30-day impression boundary.
 `EvaluateRecommendations` keeps zero-result requests in the denominator and summarizes daily behavior by strategy and
 policy version, including zero-result rate, clicked-request rate, mean first-click rank, and exposure-adjusted click
 rate.
+
+The complete recommendation path makes the decision stages visible: catalog identifiers and categories are normalized,
+products expand through a bounded taxonomy, session events become one-day features, and fulfilled order facts cross a
+documented recommendation-exposure boundary before becoming purchase feedback. Candidates record whether they came from
+category retrieval, session interest, or popularity feedback. Filtering records hard-suppression and session-exclusion
+reasons, ranking preserves score components, and diversification applies a deterministic taxonomy-branch cap last.
+
+Recommendation experiments use a stable hash of the tenant-scoped customer, session, or request key. An exposure is
+recorded only for a served recommendation run, and variant evaluation reports observed request, impression, click,
+purchase, and declared guardrail metrics. These summaries describe observed behavior; they do not claim causal impact.
 
 ## Fulfillment planning
 
@@ -153,19 +173,19 @@ and is a planning signal, not a guaranteed shipment promise. A null planned ship
 stock and inbound inventory is late for the order date or absent. It does not imply an automated purchase order,
 transfer, or reservation.
 
-`FulfillmentAnalytics` summarizes the plan by tenant and business date, and summarizes allocation load by warehouse.
+`FulfillmentAnalytics` in `transforms/analytics/fulfillment/` summarizes the plan by tenant and business date, and summarizes allocation load by warehouse.
 `ReconcileFulfillmentPlan` compares `FulfillmentPlan` with actual `OrderFulfillment` shipment facts. Shipments do not
 currently carry warehouse identity, so reconciliation reports whether a planned line later shipped, not whether it
 shipped from the planned warehouse.
 
 The remaining fulfillment outputs make projections and observations explicit. `BuildDemandWindows` aggregates observed
 `Order` demand by product and date; it does not forecast. `ProjectInventory` applies on-hand, reservations, inbound
-receipts, and declared `LeadTime` facts across those windows. `DetectFulfillmentShortages` publishes the first window
-that falls below safety stock. `FindFulfillmentSubstitutions` ranks only tenant-scoped, active `SubstitutionRule`
+receipts, and declared `LeadTime` facts across those windows. `DetectShortages` publishes the first window
+that falls below safety stock. `FindSubstitutions` ranks only tenant-scoped, active `SubstitutionRule`
 alternatives and never rewrites the original order line.
 
-`PrioritizeFulfillmentExceptions` exposes the inputs to its priority policy—shortage size, lateness, customer tier, and
-service target—instead of hiding them in an opaque score. `EvaluateFulfillmentService` matches shipments by tenant,
+`PrioritizeExceptions` exposes the inputs to its priority policy—shortage size, lateness, customer tier, and
+service target—instead of hiding them in an opaque score. `EvaluateFulfillment` matches shipments by tenant,
 order ID, and `line_number`, so duplicate products on one order remain distinct. A missing shipment date stays
 unknown, while observed dates are classified as on time or late and full or partial. Warehouse fields in service
 summaries refer to the planned warehouse because `Shipment` does not yet carry actual warehouse identity.

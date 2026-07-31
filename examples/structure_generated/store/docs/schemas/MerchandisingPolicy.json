@@ -36,6 +36,12 @@
       "name": "feedback_weight",
       "nullable": false,
       "type": "double"
+    },
+    {
+      "column": "maximum_per_taxonomy_branch",
+      "name": "maximum_per_taxonomy_branch",
+      "nullable": true,
+      "type": "long"
     }
   ],
   "generated_by": "Structure",

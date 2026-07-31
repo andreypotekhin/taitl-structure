@@ -1,25 +1,27 @@
 from examples.store.schemas.merchandising import (
-    DailyRecommendationBehavior,
     DailyRecommendationClicks,
     DailyRecommendationImpressions,
     MerchandisingBoost,
     MerchandisingPolicy,
     MerchandisingSuppression,
     ProductRecommendationSignal,
+    ProductTaxonomy,
     RecommendationClick,
-    RecommendationEvaluationBatch,
     RecommendationImpression,
+    RecommendationPurchase,
     RecommendationRequest,
-    RecommendationRequestBehavior,
     RecommendationRun,
     RecommendedProduct,
+    SessionEvent,
+    TaxonomyNode,
 )
+from examples.store.schemas.order import OrderFulfillment
 from examples.store.schemas.product import BlockedProduct, Product
 from examples.store.schemas.promotion import Promotion
-from examples.store.transforms.evaluation import EvaluateRecommendations
-from examples.store.transforms.merchandising.catalog import PrepareCatalog
-from examples.store.transforms.merchandising.clicks import BuildRecommendationSignals
+from examples.store.transforms.merchandising.catalog import NormalizeCatalog, PrepareCatalog
 from examples.store.transforms.merchandising.recommender import Recommender
+from examples.store.transforms.merchandising.signals import Signals
+from examples.store.transforms.merchandising.taxonomy import ExpandProductTaxonomy
 from structure import Transform, input, output, stage
 
 
@@ -31,12 +33,19 @@ class Merchandising(Transform):
     policy = input(MerchandisingPolicy)
     boosts = input(MerchandisingBoost)
     suppressions = input(MerchandisingSuppression)
+    product_taxonomy = input(ProductTaxonomy)
+    taxonomy_nodes = input(TaxonomyNode)
+    session_events = input(SessionEvent, streaming=True)
+    fulfilled_orders = input(OrderFulfillment, streaming=True)
     feedback_impressions = input(RecommendationImpression, streaming=True)
     feedback_clicks = input(RecommendationClick, streaming=True)
-    evaluation_batch = input(RecommendationEvaluationBatch)
-    evaluation_requests = input(RecommendationRequest)
-    evaluation_impressions = input(RecommendationImpression)
-    evaluation_clicks = input(RecommendationClick)
+    recommended_products = output(RecommendedProduct)
+    recommendation_runs = output(RecommendationRun)
+    daily_impressions = output(DailyRecommendationImpressions)
+    daily_clicks = output(DailyRecommendationClicks)
+    signals = output(ProductRecommendationSignal)
+    recommendation_purchases = output(RecommendationPurchase)
+
     cataloged = stage(
         PrepareCatalog(
             products=products,
@@ -44,8 +53,12 @@ class Merchandising(Transform):
             promotions=promotions,
         )
     )
+    normalized = stage(NormalizeCatalog(catalog=cataloged.catalog))
+    taxonomy_expanded = stage(ExpandProductTaxonomy(product_taxonomy=product_taxonomy, taxonomy=taxonomy_nodes))
     signals_built = stage(
-        BuildRecommendationSignals(
+        Signals(
+            session_events=session_events,
+            fulfilled_orders=fulfilled_orders,
             impressions=feedback_impressions,
             clicks=feedback_clicks,
         )
@@ -53,25 +66,20 @@ class Merchandising(Transform):
     recommended = stage(
         Recommender(
             requests=requests,
-            catalog=cataloged.catalog,
+            catalog=normalized.normalized,
             policy=policy,
             boosts=boosts,
             suppressions=suppressions,
             signals=signals_built.signals,
+            taxonomy=taxonomy_expanded.expanded,
+            session_features=signals_built.session_features,
         )
     )
-    evaluated = stage(
-        EvaluateRecommendations(
-            batch=evaluation_batch,
-            requests=evaluation_requests,
-            impressions=evaluation_impressions,
-            clicks=evaluation_clicks,
-        )
+    result = output(
+        recommended_products=recommended.recommended_products,
+        recommendation_runs=recommended.recommendation_runs,
+        daily_impressions=signals_built.daily_impressions,
+        daily_clicks=signals_built.daily_clicks,
+        signals=signals_built.signals,
+        recommendation_purchases=signals_built.recommendation_purchases,
     )
-    recommended_products = output(RecommendedProduct, recommended.recommended_products)
-    recommendation_runs = output(RecommendationRun, recommended.recommendation_runs)
-    daily_impressions = output(DailyRecommendationImpressions, signals_built.daily_impressions)
-    daily_clicks = output(DailyRecommendationClicks, signals_built.daily_clicks)
-    signals = output(ProductRecommendationSignal, signals_built.signals)
-    request_behaviors = output(RecommendationRequestBehavior, evaluated.request_behaviors)
-    daily_behavior = output(DailyRecommendationBehavior, evaluated.daily_behavior)

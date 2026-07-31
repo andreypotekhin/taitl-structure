@@ -1,0 +1,50 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "tenant",
+      "name": "tenant",
+      "nullable": false,
+      "type": "TenantKey"
+    },
+    {
+      "column": "product_id",
+      "name": "product_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "taxonomy_id",
+      "name": "taxonomy_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "normalized_category",
+      "name": "normalized_category",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "ancestor_taxonomy_id",
+      "name": "ancestor_taxonomy_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "ancestor_category",
+      "name": "ancestor_category",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "ancestor_depth",
+      "name": "ancestor_depth",
+      "nullable": false,
+      "type": "long"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.store.schemas.merchandising.taxonomy",
+  "name": "ExpandedProductTaxonomy"
+}

@@ -2,6 +2,7 @@ from examples.store.schemas.merchandising.catalog import (
     CatalogAvailability,
     CatalogProduct,
     RecommendationCandidate,
+    RecommendationCandidateDecision,
 )
 from examples.store.schemas.merchandising.evaluation import (
     DailyRecommendationBehavior,
@@ -14,9 +15,19 @@ from examples.store.schemas.merchandising.feedback import (
     ProductRecommendationSignal,
     RecommendationClick,
     RecommendationImpression,
+    RecommendationPurchase,
+)
+from examples.store.schemas.merchandising.session import SessionEvent, SessionFeature
+from examples.store.schemas.merchandising.taxonomy import (
+    ExpandedProductTaxonomy,
+    ProductTaxonomy,
+    TaxonomyAncestor,
+    TaxonomyNode,
 )
 from examples.store.schemas.merchandising.intermediate import (
     DailyRecommendationCounts,
+    DiversificationDecision,
+    DiversifiedRecommendationCandidate,
     ProductRecommendationSignalTotals,
     RankedRecommendationCandidate,
     RecommendationBehaviorImpression,

@@ -16,10 +16,14 @@ from structure import Transform, input, output, stage
 
 
 class EvaluateRecommendations(Transform):
+    """Evaluate recommendation behavior independently from recommendation serving."""
+
     batch = input(RecommendationEvaluationBatch)
     requests = input(RecommendationRequest)
     impressions = input(RecommendationImpression)
     clicks = input(RecommendationClick)
+    request_behaviors = output(RecommendationRequestBehavior)
+    daily_behavior = output(DailyRecommendationBehavior)
 
     selected = stage(SelectEvaluationRequests(batch=batch, requests=requests))
     impressions_measured = stage(
@@ -41,9 +45,7 @@ class EvaluateRecommendations(Transform):
             measured_impressions=impressions_measured.measured,
         )
     )
-
-    request_behaviors = output(RecommendationRequestBehavior, requests_measured.request_behaviors)
-    daily_behavior = output(DailyRecommendationBehavior, summarized.daily_behavior)
-
-
-EvaluateMerchandising = EvaluateRecommendations
+    result = output(
+        request_behaviors=requests_measured.request_behaviors,
+        daily_behavior=summarized.daily_behavior,
+    )

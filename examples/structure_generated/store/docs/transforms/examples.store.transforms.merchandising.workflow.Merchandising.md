@@ -9,16 +9,16 @@ Source: `examples.store.transforms.merchandising.workflow.Merchandising`
 - `products`: `Product`
 - `blocked_products`: `BlockedProduct`
 - `promotions`: `Promotion`
+- `product_taxonomy`: `ProductTaxonomy`
+- `taxonomy_nodes`: `TaxonomyNode`
+- `session_events`: `SessionEvent`
+- `fulfilled_orders`: `OrderFulfillment`
 - `feedback_impressions`: `RecommendationImpression`
 - `feedback_clicks`: `RecommendationClick`
 - `requests`: `RecommendationRequest`
+- `suppressions`: `MerchandisingSuppression`
 - `policy`: `MerchandisingPolicy`
 - `boosts`: `MerchandisingBoost`
-- `suppressions`: `MerchandisingSuppression`
-- `evaluation_batch`: `RecommendationEvaluationBatch`
-- `evaluation_requests`: `RecommendationRequest`
-- `evaluation_impressions`: `RecommendationImpression`
-- `evaluation_clicks`: `RecommendationClick`
 
 ## Outputs
 
@@ -27,60 +27,64 @@ Source: `examples.store.transforms.merchandising.workflow.Merchandising`
 - `daily_impressions`: `DailyRecommendationImpressions`
 - `daily_clicks`: `DailyRecommendationClicks`
 - `signals`: `ProductRecommendationSignal`
-- `request_behaviors`: `RecommendationRequestBehavior`
-- `daily_behavior`: `DailyRecommendationBehavior`
+- `recommendation_purchases`: `RecommendationPurchase`
 
 ## Step methods
 
 - `cataloged.prepare`: `Product` -> `CatalogProduct`
-- `signals_built.summarize_impressions`: `RecommendationImpression` -> `DailyRecommendationImpressions`
-- `signals_built.summarize_clicks`: `RecommendationImpression` -> `DailyRecommendationClicks`
-- `signals_built.publish_daily_impressions`: `DailyRecommendationImpressions` -> `DailyRecommendationImpressions`
-- `signals_built.publish_daily_clicks`: `DailyRecommendationClicks` -> `DailyRecommendationClicks`
-- `signals_built.summarize_signals`: `DailyRecommendationImpressions` -> `ProductRecommendationSignalTotals`
-- `signals_built.publish_signals`: `ProductRecommendationSignalTotals` -> `ProductRecommendationSignal`
+- `normalized.normalize`: `CatalogProduct` -> `CatalogProduct`
+- `taxonomy_expanded.build_ancestors`: `TaxonomyNode` -> `TaxonomyAncestor`
+- `taxonomy_expanded.expand`: `ProductTaxonomy` -> `ExpandedProductTaxonomy`
+- `signals_built.sessionized.build`: `SessionEvent` -> `SessionFeature`
+- `signals_built.purchases.attribute`: `OrderFulfillment` -> `RecommendationPurchase`
+- `signals_built.recommendation.summarize_impressions`: `RecommendationImpression` -> `DailyRecommendationImpressions`
+- `signals_built.recommendation.summarize_clicks`: `RecommendationImpression` -> `DailyRecommendationClicks`
+- `signals_built.recommendation.publish_daily_impressions`: `DailyRecommendationImpressions` -> `DailyRecommendationImpressions`
+- `signals_built.recommendation.publish_daily_clicks`: `DailyRecommendationClicks` -> `DailyRecommendationClicks`
+- `signals_built.recommendation.summarize_signals`: `DailyRecommendationImpressions` -> `ProductRecommendationSignalTotals`
+- `signals_built.recommendation.publish_signals`: `ProductRecommendationSignalTotals` -> `ProductRecommendationSignal`
 - `recommended.selected.select`: `RecommendationRequest` -> `RecommendationCandidate`
+- `recommended.retrieved.retrieve`: `RecommendationRequest` -> `RecommendationCandidate`
+- `recommended.filtered.evaluate`: `RecommendationCandidate` -> `RecommendationCandidateDecision`
+- `recommended.filtered.publish`: `RecommendationCandidate` -> `RecommendationCandidate`
 - `recommended.ranked.rank`: `RecommendationCandidate` -> `RankedRecommendationCandidate`
-- `recommended.published.select_products`: `RankedRecommendationCandidate` -> `RecommendedProduct`
+- `recommended.diversified.decide`: `RankedRecommendationCandidate` -> `DiversificationDecision`
+- `recommended.diversified.publish`: `RankedRecommendationCandidate` -> `DiversifiedRecommendationCandidate`
+- `recommended.published.select_products`: `DiversifiedRecommendationCandidate` -> `RecommendedProduct`
 - `recommended.summarized.summarize`: `RecommendationRequest` -> `RecommendationRun`
-- `evaluated.selected.select_requests`: `RecommendationRequest` -> `RecommendationRequestBehavior`
-- `evaluated.impressions_measured.select_impressions`: `RecommendationRequestBehavior` -> `RecommendationBehaviorImpression`
-- `evaluated.impressions_measured.attribute_clicks`: `RecommendationBehaviorImpression` -> `RecommendationBehaviorImpression`
-- `evaluated.impressions_measured.measure_impressions`: `RecommendationBehaviorImpression` -> `RecommendationBehaviorImpression`
-- `evaluated.requests_measured.measure_requests`: `RecommendationRequestBehavior` -> `RecommendationRequestBehavior`
-- `evaluated.summarized.summarize_exposure`: `RecommendationBehaviorImpression` -> `RecommendationExposure`
-- `evaluated.summarized.summarize_requests`: `RecommendationRequestBehavior` -> `DailyRecommendationCounts`
-- `evaluated.summarized.publish_daily`: `DailyRecommendationCounts` -> `DailyRecommendationBehavior`
 
 ## Dependencies
 
-- `batch`
+- `ancestor`
 - `blocked_product`
 - `blocked_products`
 - `boost`
 - `boosts`
-- `cataloged__products`
 - `click`
-- `clicked`
-- `evaluated__impressions_measured__clicked`
-- `evaluated__impressions_measured__measured`
-- `evaluated__summarized__exposure`
-- `evaluation_batch`
-- `evaluation_clicks`
-- `evaluation_impressions`
-- `exposure`
+- `decision`
 - `feedback_clicks`
+- `feedback_impressions`
 - `impression`
+- `node`
+- `normalized__catalog`
 - `policy`
 - `product`
 - `promotion`
 - `promotions`
+- `recommended__diversified__decisions`
+- `recommended__filtered__evaluated`
 - `recommended__published__ranked_candidates`
+- `session`
 - `signal`
-- `signals_built__click_facts`
-- `signals_built__signals`
+- `signals_built__recommendation__click_facts`
+- `signals_built__recommendation__signals`
+- `signals_built__sessionized__events`
 - `suppression`
 - `suppressions`
+- `taxonomy`
+- `taxonomy_expanded__ancestors`
+- `taxonomy_expanded__expanded`
+- `taxonomy_nodes`
 
 ## Target Artifacts
 

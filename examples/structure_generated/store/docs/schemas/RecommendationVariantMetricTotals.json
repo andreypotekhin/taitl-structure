@@ -1,0 +1,74 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "window",
+      "name": "window",
+      "nullable": false,
+      "type": "TimeWindow"
+    },
+    {
+      "column": "tenant",
+      "name": "tenant",
+      "nullable": false,
+      "type": "TenantKey"
+    },
+    {
+      "column": "experiment_id",
+      "name": "experiment_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "experiment_version",
+      "name": "experiment_version",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "variant_id",
+      "name": "variant_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "request_count",
+      "name": "request_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "zero_result_request_count",
+      "name": "zero_result_request_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "impression_count",
+      "name": "impression_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "clicked_request_count",
+      "name": "clicked_request_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "attributed_purchase_count",
+      "name": "attributed_purchase_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "maximum_zero_result_rate",
+      "name": "maximum_zero_result_rate",
+      "nullable": true,
+      "type": "double"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.store.schemas.evaluation.recommendations",
+  "name": "RecommendationVariantMetricTotals"
+}

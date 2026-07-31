@@ -12,6 +12,7 @@ MERCHANDISING_POLICY_SCHEMA = T.StructType([
     T.StructField("maximum_results", T.LongType(), False),
     T.StructField("minimum_feedback_impressions", T.LongType(), False),
     T.StructField("feedback_weight", T.DoubleType(), False),
+    T.StructField("maximum_per_taxonomy_branch", T.LongType(), True),
 ])
 
 MERCHANDISING_BOOST_SCHEMA = T.StructType([

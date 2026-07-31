@@ -237,3 +237,8 @@ examples/
 ```
 Note: we are currently switching from CamelCase to underscored_lower in example app file naming
 (not in the main codebase). Please use it from this point on in example apps.  
+
+#### Example apps guidance
+
+- Use .project()/.base() liberally
+- Prefer result = outputs(...) output assignments

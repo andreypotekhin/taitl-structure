@@ -6,7 +6,7 @@ from structure import *
 from structure.plugin.pyspark import *
 
 
-class PrioritizeFulfillmentExceptions(Transform):
+class PrioritizeExceptions(Transform):
     """Combine shortage, service-risk, and substitution signals into a stable work queue."""
 
     shortages = input(FulfillmentShortage)

@@ -9,12 +9,12 @@ from helpers.example_projects import render_store_example
 from examples.store.transforms.evaluation.recommender.behavior.workflow import EvaluateRecommendations
 from examples.store.transforms.fulfillment.demand import PrepareOrderDemand
 from examples.store.transforms.fulfillment.workflow import Fulfillment
-from examples.store.transforms.merchandising.clicks.build_signals import BuildRecommendationSignals
 from examples.store.transforms.merchandising.ranking import Ranker
 from examples.store.transforms.merchandising.recommender.admit import SelectRecommendationCandidates
 from examples.store.transforms.merchandising.recommender.rank import RankRecommendationCandidates
 from examples.store.transforms.merchandising.recommender.summarize import SummarizeRecommendationRuns
 from examples.store.transforms.merchandising.recommender.workflow import Recommender
+from examples.store.transforms.merchandising.signals.build_signals import BuildRecommendationSignals
 from examples.store.transforms.merchandising.workflow import Merchandising
 from examples.store.transforms.order import EnrichOrders
 from examples.store.transforms.rowset_joins.rowset_join_examples import RowsetJoinExamples
@@ -100,7 +100,7 @@ def test_store_live_event_inputs_are_marked_streaming_at_source_boundaries() -> 
     merchandising_modes = _input_modes(Merchandising)
     assert merchandising_modes["feedback_impressions"]
     assert merchandising_modes["feedback_clicks"]
-    assert not merchandising_modes["evaluation_requests"]
+    assert "evaluation_requests" not in merchandising_modes
 
     assert not _input_modes(EvaluateRecommendations)["requests"]
     assert not _input_modes(RowsetJoinExamples)["orders"]
@@ -232,7 +232,7 @@ def test_fulfillment_followup_generated_code_exposes_temporal_policy_and_service
     generated = render_store_example()
     order = generated["examples/structure_generated/store/pyspark/transforms/order.py"]
     projection = generated["examples/structure_generated/store/pyspark/transforms/project_inventory.py"]
-    substitution = generated["examples/structure_generated/store/pyspark/transforms/find.py"]
+    substitution = generated["examples/structure_generated/store/pyspark/transforms/find_substitutions.py"]
     exception = generated["examples/structure_generated/store/pyspark/transforms/exceptions.py"]
     service = generated["examples/structure_generated/store/pyspark/transforms/service.py"]
 
@@ -332,6 +332,28 @@ def test_recommend_generated_code_exposes_named_score_and_ranking_contract() -> 
 
     for fragment in reference_fragments:
         assert fragment in transform
+
+
+def test_recommendation_enhancements_expose_explicit_stage_contracts() -> None:
+    generated = render_store_example()
+    taxonomy = generated["examples/structure_generated/store/pyspark/transforms/expand_taxonomy.py"]
+    assignment = generated["examples/structure_generated/store/pyspark/transforms/assign.py"]
+    diversity = generated["examples/structure_generated/store/pyspark/transforms/diversify.py"]
+    recommender = generated["examples/structure_generated/store/pyspark/transforms/recommender_workflow.py"]
+
+    assert "hierarchy_closure" in taxonomy
+    assert "F.xxhash64(" in assignment
+    assert 'alias("assignment_key")' in assignment
+    assert "taxonomy_branch_cap" in diversity
+    assert "F.coalesce(F.col(\"policy.maximum_per_taxonomy_branch\")" in diversity
+    assert recommender.index("# Step method: retrieved.retrieve") < recommender.index(
+        "# Step method: filtered.evaluate"
+    )
+    assert recommender.index("# Step method: filtered.publish") < recommender.index("# Step method: ranked.rank")
+    assert recommender.index("# Step method: ranked.rank") < recommender.index("# Step method: diversified.decide")
+    assert recommender.index("# Step method: diversified.publish") < recommender.index(
+        "# Step method: published.select_products"
+    )
 
 
 def test_recommendation_ranker_formulas_are_swappable() -> None:

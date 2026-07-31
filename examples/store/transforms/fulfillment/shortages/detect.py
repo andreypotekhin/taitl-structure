@@ -4,7 +4,7 @@ from structure import *
 from structure.plugin.pyspark import *
 
 
-class DetectFulfillmentShortages(Transform):
+class DetectShortages(Transform):
     """Publish the first below-safety projection for each warehouse and product."""
 
     projections = input(InventoryProjection)

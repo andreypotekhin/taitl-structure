@@ -1,0 +1,56 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "tenant",
+      "name": "tenant",
+      "nullable": false,
+      "type": "TenantKey"
+    },
+    {
+      "column": "request_id",
+      "name": "request_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "product_id",
+      "name": "product_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "stage",
+      "name": "stage",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "eligible",
+      "name": "eligible",
+      "nullable": false,
+      "type": "boolean"
+    },
+    {
+      "column": "exclusion_reason",
+      "name": "exclusion_reason",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "candidate_source",
+      "name": "candidate_source",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "taxonomy_branch",
+      "name": "taxonomy_branch",
+      "nullable": true,
+      "type": "string"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.store.schemas.merchandising.catalog",
+  "name": "RecommendationCandidateDecision"
+}

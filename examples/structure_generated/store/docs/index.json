@@ -974,6 +974,306 @@
           "type": "TenantKey"
         },
         {
+          "column": "request_id",
+          "name": "request_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "taxonomy_branch",
+          "name": "taxonomy_branch",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "branch_rank",
+          "name": "branch_rank",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "selected",
+          "name": "selected",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "exclusion_reason",
+          "name": "exclusion_reason",
+          "nullable": true,
+          "type": "string"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.intermediate",
+      "name": "DiversificationDecision"
+    },
+    {
+      "bases": [
+        "RankedRecommendationCandidate"
+      ],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "request_id",
+          "name": "request_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "strategy_id",
+          "name": "strategy_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "policy_version",
+          "name": "policy_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "product_name",
+          "name": "product_name",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "category",
+          "name": "category",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "rank",
+          "name": "rank",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "base_score",
+          "name": "base_score",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "promotion_score",
+          "name": "promotion_score",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "boost_score",
+          "name": "boost_score",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "suppression_penalty",
+          "name": "suppression_penalty",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "inventory_boost",
+          "name": "inventory_boost",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "feedback_score",
+          "name": "feedback_score",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "final_score",
+          "name": "final_score",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "feedback_contributed",
+          "name": "feedback_contributed",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "candidate_source",
+          "name": "candidate_source",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "taxonomy_id",
+          "name": "taxonomy_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "taxonomy_branch",
+          "name": "taxonomy_branch",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "session_match",
+          "name": "session_match",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "purchase_signal",
+          "name": "purchase_signal",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "eligibility_status",
+          "name": "eligibility_status",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "diversity_selected",
+          "name": "diversity_selected",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "diversity_exclusion_reason",
+          "name": "diversity_exclusion_reason",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "experiment_id",
+          "name": "experiment_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "experiment_version",
+          "name": "experiment_version",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "variant_id",
+          "name": "variant_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "maximum_results",
+          "name": "maximum_results",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "diversity_rank",
+          "name": "diversity_rank",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.intermediate",
+      "name": "DiversifiedRecommendationCandidate"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "window",
+          "name": "window",
+          "nullable": false,
+          "type": "TimeWindow"
+        },
+        {
+          "column": "batch_id",
+          "name": "batch_id",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.store.schemas.evaluation.batch",
+      "name": "EvaluationBatch"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "taxonomy_id",
+          "name": "taxonomy_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "normalized_category",
+          "name": "normalized_category",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "ancestor_taxonomy_id",
+          "name": "ancestor_taxonomy_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "ancestor_category",
+          "name": "ancestor_category",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "ancestor_depth",
+          "name": "ancestor_depth",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.taxonomy",
+      "name": "ExpandedProductTaxonomy"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
           "column": "business",
           "name": "business",
           "nullable": false,
@@ -2436,6 +2736,12 @@
           "name": "feedback_weight",
           "nullable": false,
           "type": "double"
+        },
+        {
+          "column": "maximum_per_taxonomy_branch",
+          "name": "maximum_per_taxonomy_branch",
+          "nullable": true,
+          "type": "long"
         }
       ],
       "module": "examples.store.schemas.merchandising.policy",
@@ -4432,6 +4738,18 @@
           "name": "exposure_adjusted_click_rate",
           "nullable": true,
           "type": "double"
+        },
+        {
+          "column": "attributed_purchase_count",
+          "name": "attributed_purchase_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "conversion_rate",
+          "name": "conversion_rate",
+          "nullable": true,
+          "type": "double"
         }
       ],
       "module": "examples.store.schemas.merchandising.feedback",
@@ -4491,6 +4809,18 @@
           "type": "double"
         },
         {
+          "column": "attributed_purchase_count",
+          "name": "attributed_purchase_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "conversion_rate",
+          "name": "conversion_rate",
+          "nullable": true,
+          "type": "double"
+        },
+        {
           "column": "exposure_weight",
           "name": "exposure_weight",
           "nullable": false,
@@ -4505,6 +4835,37 @@
       ],
       "module": "examples.store.schemas.merchandising.intermediate",
       "name": "ProductRecommendationSignalTotals"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "taxonomy_id",
+          "name": "taxonomy_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "category",
+          "name": "category",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.taxonomy",
+      "name": "ProductTaxonomy"
     },
     {
       "bases": [],
@@ -4670,6 +5031,72 @@
           "type": "boolean"
         },
         {
+          "column": "candidate_source",
+          "name": "candidate_source",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "taxonomy_id",
+          "name": "taxonomy_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "taxonomy_branch",
+          "name": "taxonomy_branch",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "session_match",
+          "name": "session_match",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "purchase_signal",
+          "name": "purchase_signal",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "eligibility_status",
+          "name": "eligibility_status",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "diversity_selected",
+          "name": "diversity_selected",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "diversity_exclusion_reason",
+          "name": "diversity_exclusion_reason",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "experiment_id",
+          "name": "experiment_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "experiment_version",
+          "name": "experiment_version",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "variant_id",
+          "name": "variant_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
           "column": "maximum_results",
           "name": "maximum_results",
           "nullable": false,
@@ -4678,6 +5105,110 @@
       ],
       "module": "examples.store.schemas.merchandising.intermediate",
       "name": "RankedRecommendationCandidate"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "experiment_id",
+          "name": "experiment_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "experiment_version",
+          "name": "experiment_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "assignment_key",
+          "name": "assignment_key",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "variant_id",
+          "name": "variant_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "assigned_at",
+          "name": "assigned_at",
+          "nullable": false,
+          "type": "timestamp"
+        }
+      ],
+      "module": "examples.store.schemas.experiment",
+      "name": "RecommendationAssignment"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "window",
+          "name": "window",
+          "nullable": false,
+          "type": "TimeWindow"
+        },
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "request_id",
+          "name": "request_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "experiment_id",
+          "name": "experiment_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "experiment_version",
+          "name": "experiment_version",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "variant_id",
+          "name": "variant_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "result_count",
+          "name": "result_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "has_click",
+          "name": "has_click",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "attributed_purchase_count",
+          "name": "attributed_purchase_count",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.store.schemas.evaluation.recommendations",
+      "name": "RecommendationBehavior"
     },
     {
       "bases": [],
@@ -4780,6 +5311,12 @@
           "type": "string"
         },
         {
+          "column": "session_id",
+          "name": "session_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
           "column": "strategy_id",
           "name": "strategy_id",
           "nullable": false,
@@ -4789,6 +5326,24 @@
           "column": "policy_version",
           "name": "policy_version",
           "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "experiment_id",
+          "name": "experiment_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "experiment_version",
+          "name": "experiment_version",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "variant_id",
+          "name": "variant_id",
+          "nullable": true,
           "type": "string"
         },
         {
@@ -4850,10 +5405,101 @@
           "name": "inventory_boost",
           "nullable": false,
           "type": "double"
+        },
+        {
+          "column": "candidate_source",
+          "name": "candidate_source",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "taxonomy_id",
+          "name": "taxonomy_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "taxonomy_branch",
+          "name": "taxonomy_branch",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "session_match",
+          "name": "session_match",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "purchase_signal",
+          "name": "purchase_signal",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "eligibility_status",
+          "name": "eligibility_status",
+          "nullable": false,
+          "type": "string"
         }
       ],
       "module": "examples.store.schemas.merchandising.catalog",
       "name": "RecommendationCandidate"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "request_id",
+          "name": "request_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "stage",
+          "name": "stage",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "eligible",
+          "name": "eligible",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "exclusion_reason",
+          "name": "exclusion_reason",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "candidate_source",
+          "name": "candidate_source",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "taxonomy_branch",
+          "name": "taxonomy_branch",
+          "nullable": true,
+          "type": "string"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.catalog",
+      "name": "RecommendationCandidateDecision"
     },
     {
       "bases": [],
@@ -4978,6 +5624,67 @@
       "bases": [],
       "fields": [
         {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "experiment_id",
+          "name": "experiment_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "experiment_version",
+          "name": "experiment_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "name",
+          "name": "name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "variant_a",
+          "name": "variant_a",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "variant_b",
+          "name": "variant_b",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "variant_a_percent",
+          "name": "variant_a_percent",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "active",
+          "name": "active",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "maximum_zero_result_rate",
+          "name": "maximum_zero_result_rate",
+          "nullable": true,
+          "type": "double"
+        }
+      ],
+      "module": "examples.store.schemas.experiment",
+      "name": "RecommendationExperiment"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
           "column": "window",
           "name": "window",
           "nullable": false,
@@ -5015,6 +5722,49 @@
         }
       ],
       "module": "examples.store.schemas.merchandising.intermediate",
+      "name": "RecommendationExposure"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "request_id",
+          "name": "request_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "experiment_id",
+          "name": "experiment_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "experiment_version",
+          "name": "experiment_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "variant_id",
+          "name": "variant_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "exposed_at",
+          "name": "exposed_at",
+          "nullable": false,
+          "type": "timestamp"
+        }
+      ],
+      "module": "examples.store.schemas.experiment",
       "name": "RecommendationExposure"
     },
     {
@@ -5069,6 +5819,36 @@
           "type": "double"
         },
         {
+          "column": "customer_id",
+          "name": "customer_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "session_id",
+          "name": "session_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "experiment_id",
+          "name": "experiment_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "experiment_version",
+          "name": "experiment_version",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "variant_id",
+          "name": "variant_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
           "column": "shown_at",
           "name": "shown_at",
           "nullable": false,
@@ -5077,6 +5857,73 @@
       ],
       "module": "examples.store.schemas.merchandising.feedback",
       "name": "RecommendationImpression"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "order_id",
+          "name": "order_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "request_id",
+          "name": "request_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "customer_id",
+          "name": "customer_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "session_id",
+          "name": "session_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "recommendation_impression_id",
+          "name": "recommendation_impression_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "occurred_at",
+          "name": "occurred_at",
+          "nullable": false,
+          "type": "timestamp"
+        },
+        {
+          "column": "attribution_status",
+          "name": "attribution_status",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "quantity",
+          "name": "quantity",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.feedback",
+      "name": "RecommendationPurchase"
     },
     {
       "bases": [],
@@ -5100,6 +5947,12 @@
           "type": "string"
         },
         {
+          "column": "session_id",
+          "name": "session_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
           "column": "strategy_id",
           "name": "strategy_id",
           "nullable": false,
@@ -5109,6 +5962,24 @@
           "column": "policy_version",
           "name": "policy_version",
           "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "experiment_id",
+          "name": "experiment_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "experiment_version",
+          "name": "experiment_version",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "variant_id",
+          "name": "variant_id",
+          "nullable": true,
           "type": "string"
         },
         {
@@ -5238,10 +6109,198 @@
           "name": "feedback_contributed",
           "nullable": false,
           "type": "boolean"
+        },
+        {
+          "column": "experiment_id",
+          "name": "experiment_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "experiment_version",
+          "name": "experiment_version",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "variant_id",
+          "name": "variant_id",
+          "nullable": true,
+          "type": "string"
         }
       ],
       "module": "examples.store.schemas.merchandising.recommendation",
       "name": "RecommendationRun"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "window",
+          "name": "window",
+          "nullable": false,
+          "type": "TimeWindow"
+        },
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "experiment_id",
+          "name": "experiment_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "experiment_version",
+          "name": "experiment_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "variant_id",
+          "name": "variant_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "request_count",
+          "name": "request_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "zero_result_request_count",
+          "name": "zero_result_request_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "zero_result_rate",
+          "name": "zero_result_rate",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "impression_count",
+          "name": "impression_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "clicked_request_count",
+          "name": "clicked_request_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "click_through_rate",
+          "name": "click_through_rate",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "attributed_purchase_count",
+          "name": "attributed_purchase_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "conversion_rate",
+          "name": "conversion_rate",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "maximum_zero_result_rate",
+          "name": "maximum_zero_result_rate",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "zero_result_guardrail_met",
+          "name": "zero_result_guardrail_met",
+          "nullable": true,
+          "type": "boolean"
+        }
+      ],
+      "module": "examples.store.schemas.evaluation.recommendations",
+      "name": "RecommendationVariantMetric"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "window",
+          "name": "window",
+          "nullable": false,
+          "type": "TimeWindow"
+        },
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "experiment_id",
+          "name": "experiment_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "experiment_version",
+          "name": "experiment_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "variant_id",
+          "name": "variant_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "request_count",
+          "name": "request_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "zero_result_request_count",
+          "name": "zero_result_request_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "impression_count",
+          "name": "impression_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "clicked_request_count",
+          "name": "clicked_request_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "attributed_purchase_count",
+          "name": "attributed_purchase_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "maximum_zero_result_rate",
+          "name": "maximum_zero_result_rate",
+          "nullable": true,
+          "type": "double"
+        }
+      ],
+      "module": "examples.store.schemas.evaluation.recommendations",
+      "name": "RecommendationVariantMetricTotals"
     },
     {
       "bases": [],
@@ -5341,6 +6400,72 @@
           "name": "feedback_contributed",
           "nullable": false,
           "type": "boolean"
+        },
+        {
+          "column": "candidate_source",
+          "name": "candidate_source",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "taxonomy_id",
+          "name": "taxonomy_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "taxonomy_branch",
+          "name": "taxonomy_branch",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "session_match",
+          "name": "session_match",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "purchase_signal",
+          "name": "purchase_signal",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "eligibility_status",
+          "name": "eligibility_status",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "diversity_selected",
+          "name": "diversity_selected",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "diversity_exclusion_reason",
+          "name": "diversity_exclusion_reason",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "experiment_id",
+          "name": "experiment_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "experiment_version",
+          "name": "experiment_version",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "variant_id",
+          "name": "variant_id",
+          "nullable": true,
+          "type": "string"
         }
       ],
       "module": "examples.store.schemas.merchandising.recommendation",
@@ -5442,6 +6567,128 @@
           "type": "TenantKey"
         },
         {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "session_id",
+          "name": "session_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "customer_id",
+          "name": "customer_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "event_type",
+          "name": "event_type",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "category",
+          "name": "category",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "occurred_at",
+          "name": "occurred_at",
+          "nullable": false,
+          "type": "timestamp"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.session",
+      "name": "SessionEvent"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "window",
+          "name": "window",
+          "nullable": false,
+          "type": "TimeWindow"
+        },
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "session_id",
+          "name": "session_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "customer_id",
+          "name": "customer_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "category",
+          "name": "category",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "event_count",
+          "name": "event_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "product_view_count",
+          "name": "product_view_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "add_to_cart_count",
+          "name": "add_to_cart_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "last_event_at",
+          "name": "last_event_at",
+          "nullable": false,
+          "type": "timestamp"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.session",
+      "name": "SessionFeature"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
           "column": "audit",
           "name": "audit",
           "nullable": false,
@@ -5529,6 +6776,68 @@
       ],
       "module": "examples.store.schemas.fulfillment.substitutions.substitution",
       "name": "SubstitutionRule"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "node_id",
+          "name": "node_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "ancestor_id",
+          "name": "ancestor_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "depth",
+          "name": "depth",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.taxonomy",
+      "name": "TaxonomyAncestor"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "taxonomy_id",
+          "name": "taxonomy_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "parent_taxonomy_id",
+          "name": "parent_taxonomy_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "category",
+          "name": "category",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "active",
+          "name": "active",
+          "nullable": false,
+          "type": "boolean"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.taxonomy",
+      "name": "TaxonomyNode"
     },
     {
       "bases": [],
@@ -5774,6 +7083,367 @@
       "target_artifacts": {
         "pyspark_transform": "pyspark/transforms/adv_analytics.py",
         "traceability": "traceability/transforms/adv_analytics.AdvancedOrderAnalytics.json"
+      }
+    },
+    {
+      "dependencies": [],
+      "inputs": [
+        {
+          "name": "plans",
+          "ordinal": 0,
+          "schema": "FulfillmentPlan"
+        },
+        {
+          "name": "allocations",
+          "ordinal": 1,
+          "schema": "FulfillmentAllocation"
+        },
+        {
+          "name": "backorders",
+          "ordinal": 2,
+          "schema": "FulfillmentBackorder"
+        }
+      ],
+      "name": "FulfillmentAnalytics",
+      "outputs": [
+        {
+          "name": "daily_summary",
+          "ordinal": 0,
+          "schema": "DailyFulfillmentSummary"
+        },
+        {
+          "name": "warehouse_load_summary",
+          "ordinal": 1,
+          "schema": "WarehouseLoadSummary"
+        }
+      ],
+      "source": "examples.store.transforms.analytics.fulfillment.analytics.FulfillmentAnalytics",
+      "step_methods": [
+        {
+          "input_lane": "plans",
+          "input_schema": "FulfillmentPlan",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "plan",
+              "schema": "FulfillmentPlan",
+              "source": "plans"
+            }
+          ],
+          "name": "summarize_daily_totals",
+          "output_lane": "daily_totals",
+          "output_schema": "DailyFulfillmentSummary",
+          "results": [
+            {
+              "frame": "daily_totals",
+              "lane": "daily_totals",
+              "schema": "DailyFulfillmentSummary"
+            }
+          ]
+        },
+        {
+          "input_lane": "daily_totals",
+          "input_schema": "DailyFulfillmentSummary",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "daily",
+              "schema": "DailyFulfillmentSummary",
+              "source": "daily_totals"
+            }
+          ],
+          "name": "publish_daily_summary",
+          "output_lane": "daily_summary",
+          "output_schema": "DailyFulfillmentSummary",
+          "results": [
+            {
+              "frame": "daily_summary",
+              "lane": "daily_summary",
+              "schema": "DailyFulfillmentSummary"
+            }
+          ]
+        },
+        {
+          "input_lane": "allocations",
+          "input_schema": "FulfillmentAllocation",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "allocation",
+              "schema": "FulfillmentAllocation",
+              "source": "allocations"
+            }
+          ],
+          "name": "summarize_warehouse_load",
+          "output_lane": "warehouse_load_summary",
+          "output_schema": "WarehouseLoadSummary",
+          "results": [
+            {
+              "frame": "warehouse_load_summary",
+              "lane": "warehouse_load_summary",
+              "schema": "WarehouseLoadSummary"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/analytics.py",
+        "traceability": "traceability/transforms/analytics.FulfillmentAnalytics.json"
+      }
+    },
+    {
+      "dependencies": [],
+      "inputs": [
+        {
+          "name": "fulfilled",
+          "ordinal": 0,
+          "schema": "OrderFulfillment"
+        }
+      ],
+      "name": "OrderAnalytics",
+      "outputs": [
+        {
+          "name": "customer_totals",
+          "ordinal": 0,
+          "schema": "CustomerDailyTotal"
+        },
+        {
+          "name": "product_summary",
+          "ordinal": 1,
+          "schema": "ProductDailySummary"
+        },
+        {
+          "name": "customer_event_rank",
+          "ordinal": 2,
+          "schema": "CustomerEventRank"
+        }
+      ],
+      "source": "examples.store.transforms.analytics.orders.workflow.OrderAnalytics",
+      "step_methods": [
+        {
+          "input_lane": "fulfilled",
+          "input_schema": "OrderFulfillment",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "order",
+              "schema": "OrderFulfillment",
+              "source": "fulfilled"
+            }
+          ],
+          "name": "customer.customer_daily_totals",
+          "output_lane": "customer__customer_totals",
+          "output_schema": "CustomerDailyTotal",
+          "results": [
+            {
+              "frame": "customer__customer_totals",
+              "lane": "customer__customer_totals",
+              "schema": "CustomerDailyTotal"
+            }
+          ]
+        },
+        {
+          "input_lane": "fulfilled",
+          "input_schema": "OrderFulfillment",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "order",
+              "schema": "OrderFulfillment",
+              "source": "fulfilled"
+            }
+          ],
+          "name": "product.product_daily_summary",
+          "output_lane": "product__product_summary",
+          "output_schema": "ProductDailySummary",
+          "results": [
+            {
+              "frame": "product__product_summary",
+              "lane": "product__product_summary",
+              "schema": "ProductDailySummary"
+            }
+          ]
+        },
+        {
+          "input_lane": "fulfilled",
+          "input_schema": "OrderFulfillment",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "order",
+              "schema": "OrderFulfillment",
+              "source": "fulfilled"
+            }
+          ],
+          "name": "ranks.customer_event_ranks",
+          "output_lane": "ranks__customer_event_rank",
+          "output_schema": "CustomerEventRank",
+          "results": [
+            {
+              "frame": "ranks__customer_event_rank",
+              "lane": "ranks__customer_event_rank",
+              "schema": "CustomerEventRank"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/orders_workflow.py",
+        "traceability": "traceability/transforms/orders_workflow.OrderAnalytics.json"
+      }
+    },
+    {
+      "dependencies": [
+        "fulfilled",
+        "service_targets",
+        "target"
+      ],
+      "inputs": [
+        {
+          "name": "plans",
+          "ordinal": 0,
+          "schema": "FulfillmentPlan"
+        },
+        {
+          "name": "fulfilled",
+          "ordinal": 1,
+          "schema": "OrderFulfillment"
+        },
+        {
+          "name": "service_targets",
+          "ordinal": 2,
+          "schema": "ServiceRiskTarget"
+        }
+      ],
+      "name": "EvaluateFulfillment",
+      "outputs": [
+        {
+          "name": "service_evaluations",
+          "ordinal": 0,
+          "schema": "FulfillmentServiceEvaluation"
+        },
+        {
+          "name": "daily_summary",
+          "ordinal": 1,
+          "schema": "DailyFulfillmentServiceSummary"
+        }
+      ],
+      "source": "examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment",
+      "step_methods": [
+        {
+          "input_lane": "plans",
+          "input_schema": "FulfillmentPlan",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "plan",
+              "schema": "FulfillmentPlan",
+              "source": "plans"
+            },
+            {
+              "driving": false,
+              "parameter": "fulfilled",
+              "schema": "OrderFulfillment",
+              "source": "fulfilled"
+            },
+            {
+              "driving": false,
+              "parameter": "target",
+              "schema": "ServiceRiskTarget",
+              "source": "service_targets"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "fulfilled"
+            },
+            {
+              "how": "left",
+              "input": "target"
+            }
+          ],
+          "name": "evaluate",
+          "output_lane": "totals",
+          "output_schema": "FulfillmentServiceTotals",
+          "results": [
+            {
+              "frame": "totals",
+              "lane": "totals",
+              "schema": "FulfillmentServiceTotals"
+            }
+          ]
+        },
+        {
+          "input_lane": "totals",
+          "input_schema": "FulfillmentServiceTotals",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "total",
+              "schema": "FulfillmentServiceTotals",
+              "source": "totals"
+            }
+          ],
+          "name": "classify",
+          "output_lane": "evaluations",
+          "output_schema": "FulfillmentServiceEvaluation",
+          "results": [
+            {
+              "frame": "evaluations",
+              "lane": "evaluations",
+              "schema": "FulfillmentServiceEvaluation"
+            }
+          ]
+        },
+        {
+          "input_lane": "evaluations",
+          "input_schema": "FulfillmentServiceEvaluation",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "evaluation",
+              "schema": "FulfillmentServiceEvaluation",
+              "source": "evaluations"
+            }
+          ],
+          "name": "summarize",
+          "output_lane": "summary_totals",
+          "output_schema": "DailyFulfillmentServiceSummary",
+          "results": [
+            {
+              "frame": "summary_totals",
+              "lane": "summary_totals",
+              "schema": "DailyFulfillmentServiceSummary"
+            }
+          ]
+        },
+        {
+          "input_lane": "summary_totals",
+          "input_schema": "DailyFulfillmentServiceSummary",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "summary",
+              "schema": "DailyFulfillmentServiceSummary",
+              "source": "summary_totals"
+            }
+          ],
+          "name": "publish_summary",
+          "output_lane": "daily_summary",
+          "output_schema": "DailyFulfillmentServiceSummary",
+          "results": [
+            {
+              "frame": "daily_summary",
+              "lane": "daily_summary",
+              "schema": "DailyFulfillmentServiceSummary"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/service.py",
+        "traceability": "traceability/transforms/service.EvaluateFulfillment.json"
       }
     },
     {
@@ -6082,6 +7752,394 @@
     },
     {
       "dependencies": [
+        "experiment",
+        "experiments"
+      ],
+      "inputs": [
+        {
+          "name": "requests",
+          "ordinal": 0,
+          "schema": "RecommendationRequest"
+        },
+        {
+          "name": "experiments",
+          "ordinal": 1,
+          "schema": "RecommendationExperiment"
+        }
+      ],
+      "name": "AssignRecommendationVariants",
+      "outputs": [
+        {
+          "name": "assignments",
+          "ordinal": 0,
+          "schema": "RecommendationAssignment"
+        }
+      ],
+      "source": "examples.store.transforms.experiments.assign.AssignRecommendationVariants",
+      "step_methods": [
+        {
+          "input_lane": "requests",
+          "input_schema": "RecommendationRequest",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "RecommendationRequest",
+              "source": "requests"
+            },
+            {
+              "driving": false,
+              "parameter": "experiment",
+              "schema": "RecommendationExperiment",
+              "source": "experiments"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "experiment"
+            }
+          ],
+          "name": "assign",
+          "output_lane": "requests",
+          "output_schema": "RecommendationAssignment",
+          "results": [
+            {
+              "frame": "requests",
+              "lane": "requests",
+              "schema": "RecommendationAssignment"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/assign.py",
+        "traceability": "traceability/transforms/assign.AssignRecommendationVariants.json"
+      }
+    },
+    {
+      "dependencies": [
+        "click",
+        "clicks",
+        "evaluation_batch",
+        "experiment",
+        "experiments",
+        "exposure",
+        "exposures",
+        "impression",
+        "impressions",
+        "purchase",
+        "purchases",
+        "run",
+        "runs"
+      ],
+      "inputs": [
+        {
+          "name": "evaluation_batch",
+          "ordinal": 0,
+          "schema": "EvaluationBatch"
+        },
+        {
+          "name": "experiments",
+          "ordinal": 1,
+          "schema": "RecommendationExperiment"
+        },
+        {
+          "name": "exposures",
+          "ordinal": 2,
+          "schema": "RecommendationExposure"
+        },
+        {
+          "name": "requests",
+          "ordinal": 3,
+          "schema": "RecommendationRequest"
+        },
+        {
+          "name": "runs",
+          "ordinal": 4,
+          "schema": "RecommendationRun"
+        },
+        {
+          "name": "impressions",
+          "ordinal": 5,
+          "schema": "RecommendationImpression"
+        },
+        {
+          "name": "clicks",
+          "ordinal": 6,
+          "schema": "RecommendationClick"
+        },
+        {
+          "name": "purchases",
+          "ordinal": 7,
+          "schema": "RecommendationPurchase"
+        }
+      ],
+      "name": "EvaluateRecommendationExperiment",
+      "outputs": [
+        {
+          "name": "metrics",
+          "ordinal": 0,
+          "schema": "RecommendationVariantMetric"
+        }
+      ],
+      "source": "examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment",
+      "step_methods": [
+        {
+          "input_lane": "requests",
+          "input_schema": "RecommendationRequest",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "RecommendationRequest",
+              "source": "requests"
+            },
+            {
+              "driving": false,
+              "parameter": "evaluation_batch",
+              "schema": "EvaluationBatch",
+              "source": "evaluation_batch"
+            },
+            {
+              "driving": false,
+              "parameter": "exposure",
+              "schema": "RecommendationExposure",
+              "source": "exposures"
+            },
+            {
+              "driving": false,
+              "parameter": "experiment",
+              "schema": "RecommendationExperiment",
+              "source": "experiments"
+            },
+            {
+              "driving": false,
+              "parameter": "run",
+              "schema": "RecommendationRun",
+              "source": "runs"
+            },
+            {
+              "driving": false,
+              "parameter": "impression",
+              "schema": "RecommendationImpression",
+              "source": "impressions"
+            },
+            {
+              "driving": false,
+              "parameter": "click",
+              "schema": "RecommendationClick",
+              "source": "clicks"
+            },
+            {
+              "driving": false,
+              "parameter": "purchase",
+              "schema": "RecommendationPurchase",
+              "source": "purchases"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "evaluation_batch"
+            },
+            {
+              "how": "left",
+              "input": "purchase"
+            },
+            {
+              "how": "inner",
+              "input": "exposure"
+            },
+            {
+              "how": "inner",
+              "input": "experiment"
+            },
+            {
+              "how": "inner",
+              "input": "run"
+            },
+            {
+              "how": "left",
+              "input": "impression"
+            },
+            {
+              "how": "left",
+              "input": "click"
+            }
+          ],
+          "name": "evaluate",
+          "output_lane": "totals",
+          "output_schema": "RecommendationVariantMetricTotals",
+          "results": [
+            {
+              "frame": "totals",
+              "lane": "totals",
+              "schema": "RecommendationVariantMetricTotals"
+            }
+          ]
+        },
+        {
+          "input_lane": "totals",
+          "input_schema": "RecommendationVariantMetricTotals",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "total",
+              "schema": "RecommendationVariantMetricTotals",
+              "source": "totals"
+            }
+          ],
+          "name": "publish",
+          "output_lane": "metrics",
+          "output_schema": "RecommendationVariantMetric",
+          "results": [
+            {
+              "frame": "metrics",
+              "lane": "metrics",
+              "schema": "RecommendationVariantMetric"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/experiment.py",
+        "traceability": "traceability/transforms/experiment.EvaluateRecommendationExperiment.json"
+      }
+    },
+    {
+      "dependencies": [
+        "assignment",
+        "assignments",
+        "run",
+        "runs"
+      ],
+      "inputs": [
+        {
+          "name": "requests",
+          "ordinal": 0,
+          "schema": "RecommendationRequest"
+        },
+        {
+          "name": "assignments",
+          "ordinal": 1,
+          "schema": "RecommendationAssignment"
+        },
+        {
+          "name": "runs",
+          "ordinal": 2,
+          "schema": "RecommendationRun"
+        }
+      ],
+      "name": "RecordRecommendationExposures",
+      "outputs": [
+        {
+          "name": "exposures",
+          "ordinal": 0,
+          "schema": "RecommendationExposure"
+        }
+      ],
+      "source": "examples.store.transforms.experiments.exposure.RecordRecommendationExposures",
+      "step_methods": [
+        {
+          "input_lane": "requests",
+          "input_schema": "RecommendationRequest",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "RecommendationRequest",
+              "source": "requests"
+            },
+            {
+              "driving": false,
+              "parameter": "assignment",
+              "schema": "RecommendationAssignment",
+              "source": "assignments"
+            },
+            {
+              "driving": false,
+              "parameter": "run",
+              "schema": "RecommendationRun",
+              "source": "runs"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "assignment"
+            },
+            {
+              "how": "inner",
+              "input": "run"
+            }
+          ],
+          "name": "record",
+          "output_lane": "requests",
+          "output_schema": "RecommendationExposure",
+          "results": [
+            {
+              "frame": "requests",
+              "lane": "requests",
+              "schema": "RecommendationExposure"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/exposure.py",
+        "traceability": "traceability/transforms/exposure.RecordRecommendationExposures.json"
+      }
+    },
+    {
+      "dependencies": [],
+      "inputs": [
+        {
+          "name": "experiments",
+          "ordinal": 0,
+          "schema": "RecommendationExperiment"
+        }
+      ],
+      "name": "SelectActiveRecommendationExperiments",
+      "outputs": [
+        {
+          "name": "active_experiments",
+          "ordinal": 0,
+          "schema": "RecommendationExperiment"
+        }
+      ],
+      "source": "examples.store.transforms.experiments.select_active.SelectActiveRecommendationExperiments",
+      "step_methods": [
+        {
+          "input_lane": "experiments",
+          "input_schema": "RecommendationExperiment",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "experiment",
+              "schema": "RecommendationExperiment",
+              "source": "experiments"
+            }
+          ],
+          "name": "select",
+          "output_lane": "experiments",
+          "output_schema": "RecommendationExperiment",
+          "results": [
+            {
+              "frame": "experiments",
+              "lane": "experiments",
+              "schema": "RecommendationExperiment"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/select_active.py",
+        "traceability": "traceability/transforms/select_active.SelectActiveRecommendationExperiments.json"
+      }
+    },
+    {
+      "dependencies": [
         "blocked_product",
         "blocked_products",
         "customer",
@@ -6314,182 +8372,6 @@
       "target_artifacts": {
         "pyspark_transform": "pyspark/transforms/demand.py",
         "traceability": "traceability/transforms/demand.PrepareOrderDemand.json"
-      }
-    },
-    {
-      "dependencies": [
-        "fulfilled",
-        "service_targets",
-        "target"
-      ],
-      "inputs": [
-        {
-          "name": "plans",
-          "ordinal": 0,
-          "schema": "FulfillmentPlan"
-        },
-        {
-          "name": "fulfilled",
-          "ordinal": 1,
-          "schema": "OrderFulfillment"
-        },
-        {
-          "name": "service_targets",
-          "ordinal": 2,
-          "schema": "ServiceRiskTarget"
-        }
-      ],
-      "name": "EvaluateFulfillmentService",
-      "outputs": [
-        {
-          "name": "service_evaluations",
-          "ordinal": 0,
-          "schema": "FulfillmentServiceEvaluation"
-        },
-        {
-          "name": "daily_summary",
-          "ordinal": 1,
-          "schema": "DailyFulfillmentServiceSummary"
-        }
-      ],
-      "source": "examples.store.transforms.fulfillment.evaluation.service.EvaluateFulfillmentService",
-      "step_methods": [
-        {
-          "input_lane": "plans",
-          "input_schema": "FulfillmentPlan",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "plan",
-              "schema": "FulfillmentPlan",
-              "source": "plans"
-            },
-            {
-              "driving": false,
-              "parameter": "fulfilled",
-              "schema": "OrderFulfillment",
-              "source": "fulfilled"
-            },
-            {
-              "driving": false,
-              "parameter": "target",
-              "schema": "ServiceRiskTarget",
-              "source": "service_targets"
-            }
-          ],
-          "joins": [
-            {
-              "how": "left",
-              "input": "fulfilled"
-            },
-            {
-              "how": "left",
-              "input": "target"
-            }
-          ],
-          "name": "evaluate",
-          "output_lane": "totals",
-          "output_schema": "FulfillmentServiceTotals",
-          "results": [
-            {
-              "frame": "totals",
-              "lane": "totals",
-              "schema": "FulfillmentServiceTotals"
-            }
-          ]
-        },
-        {
-          "input_lane": "totals",
-          "input_schema": "FulfillmentServiceTotals",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "total",
-              "schema": "FulfillmentServiceTotals",
-              "source": "totals"
-            }
-          ],
-          "name": "classify",
-          "output_lane": "evaluations",
-          "output_schema": "FulfillmentServiceEvaluation",
-          "results": [
-            {
-              "frame": "evaluations",
-              "lane": "evaluations",
-              "schema": "FulfillmentServiceEvaluation"
-            }
-          ]
-        },
-        {
-          "input_lane": "evaluations",
-          "input_schema": "FulfillmentServiceEvaluation",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "evaluation",
-              "schema": "FulfillmentServiceEvaluation",
-              "source": "evaluations"
-            }
-          ],
-          "name": "publish_evaluations",
-          "output_lane": "service_evaluations",
-          "output_schema": "FulfillmentServiceEvaluation",
-          "results": [
-            {
-              "frame": "service_evaluations",
-              "lane": "service_evaluations",
-              "schema": "FulfillmentServiceEvaluation"
-            }
-          ]
-        },
-        {
-          "input_lane": "evaluations",
-          "input_schema": "FulfillmentServiceEvaluation",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "evaluation",
-              "schema": "FulfillmentServiceEvaluation",
-              "source": "evaluations"
-            }
-          ],
-          "name": "summarize",
-          "output_lane": "summary_totals",
-          "output_schema": "DailyFulfillmentServiceSummary",
-          "results": [
-            {
-              "frame": "summary_totals",
-              "lane": "summary_totals",
-              "schema": "DailyFulfillmentServiceSummary"
-            }
-          ]
-        },
-        {
-          "input_lane": "summary_totals",
-          "input_schema": "DailyFulfillmentServiceSummary",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "summary",
-              "schema": "DailyFulfillmentServiceSummary",
-              "source": "summary_totals"
-            }
-          ],
-          "name": "publish_summary",
-          "output_lane": "daily_summary",
-          "output_schema": "DailyFulfillmentServiceSummary",
-          "results": [
-            {
-              "frame": "daily_summary",
-              "lane": "daily_summary",
-              "schema": "DailyFulfillmentServiceSummary"
-            }
-          ]
-        }
-      ],
-      "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/service.py",
-        "traceability": "traceability/transforms/service.EvaluateFulfillmentService.json"
       }
     },
     {
@@ -7007,7 +8889,7 @@
           "schema": "InventoryProjection"
         }
       ],
-      "name": "DetectFulfillmentShortages",
+      "name": "DetectShortages",
       "outputs": [
         {
           "name": "shortages",
@@ -7015,7 +8897,7 @@
           "schema": "FulfillmentShortage"
         }
       ],
-      "source": "examples.store.transforms.fulfillment.shortages.detect.DetectFulfillmentShortages",
+      "source": "examples.store.transforms.fulfillment.shortages.detect.DetectShortages",
       "step_methods": [
         {
           "input_lane": "projections",
@@ -7064,7 +8946,7 @@
       ],
       "target_artifacts": {
         "pyspark_transform": "pyspark/transforms/detect.py",
-        "traceability": "traceability/transforms/detect.DetectFulfillmentShortages.json"
+        "traceability": "traceability/transforms/detect.DetectShortages.json"
       }
     },
     {
@@ -7103,7 +8985,7 @@
           "schema": "ServiceRiskTarget"
         }
       ],
-      "name": "PrioritizeFulfillmentExceptions",
+      "name": "PrioritizeExceptions",
       "outputs": [
         {
           "name": "exceptions",
@@ -7111,7 +8993,7 @@
           "schema": "FulfillmentException"
         }
       ],
-      "source": "examples.store.transforms.fulfillment.shortages.exceptions.PrioritizeFulfillmentExceptions",
+      "source": "examples.store.transforms.fulfillment.shortages.exceptions.PrioritizeExceptions",
       "step_methods": [
         {
           "input_lane": "shortages",
@@ -7272,7 +9154,7 @@
       ],
       "target_artifacts": {
         "pyspark_transform": "pyspark/transforms/exceptions.py",
-        "traceability": "traceability/transforms/exceptions.PrioritizeFulfillmentExceptions.json"
+        "traceability": "traceability/transforms/exceptions.PrioritizeExceptions.json"
       }
     },
     {
@@ -7299,7 +9181,7 @@
           "schema": "InventoryPosition"
         }
       ],
-      "name": "FindFulfillmentSubstitutions",
+      "name": "FindSubstitutions",
       "outputs": [
         {
           "name": "options",
@@ -7307,7 +9189,7 @@
           "schema": "FulfillmentSubstitutionOption"
         }
       ],
-      "source": "examples.store.transforms.fulfillment.substitutions.find.FindFulfillmentSubstitutions",
+      "source": "examples.store.transforms.fulfillment.substitutions.find_substitutions.FindSubstitutions",
       "step_methods": [
         {
           "input_lane": "demand",
@@ -7377,114 +9259,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/find.py",
-        "traceability": "traceability/transforms/find.FindFulfillmentSubstitutions.json"
-      }
-    },
-    {
-      "dependencies": [],
-      "inputs": [
-        {
-          "name": "plans",
-          "ordinal": 0,
-          "schema": "FulfillmentPlan"
-        },
-        {
-          "name": "allocations",
-          "ordinal": 1,
-          "schema": "FulfillmentAllocation"
-        },
-        {
-          "name": "backorders",
-          "ordinal": 2,
-          "schema": "FulfillmentBackorder"
-        }
-      ],
-      "name": "FulfillmentAnalytics",
-      "outputs": [
-        {
-          "name": "daily_summary",
-          "ordinal": 0,
-          "schema": "DailyFulfillmentSummary"
-        },
-        {
-          "name": "warehouse_load_summary",
-          "ordinal": 1,
-          "schema": "WarehouseLoadSummary"
-        }
-      ],
-      "source": "examples.store.transforms.fulfillment.summarize.FulfillmentAnalytics",
-      "step_methods": [
-        {
-          "input_lane": "plans",
-          "input_schema": "FulfillmentPlan",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "plan",
-              "schema": "FulfillmentPlan",
-              "source": "plans"
-            }
-          ],
-          "name": "summarize_daily_totals",
-          "output_lane": "daily_totals",
-          "output_schema": "DailyFulfillmentSummary",
-          "results": [
-            {
-              "frame": "daily_totals",
-              "lane": "daily_totals",
-              "schema": "DailyFulfillmentSummary"
-            }
-          ]
-        },
-        {
-          "input_lane": "daily_totals",
-          "input_schema": "DailyFulfillmentSummary",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "daily",
-              "schema": "DailyFulfillmentSummary",
-              "source": "daily_totals"
-            }
-          ],
-          "name": "publish_daily_summary",
-          "output_lane": "daily_summary",
-          "output_schema": "DailyFulfillmentSummary",
-          "results": [
-            {
-              "frame": "daily_summary",
-              "lane": "daily_summary",
-              "schema": "DailyFulfillmentSummary"
-            }
-          ]
-        },
-        {
-          "input_lane": "allocations",
-          "input_schema": "FulfillmentAllocation",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "allocation",
-              "schema": "FulfillmentAllocation",
-              "source": "allocations"
-            }
-          ],
-          "name": "summarize_warehouse_load",
-          "output_lane": "warehouse_load_summary",
-          "output_schema": "WarehouseLoadSummary",
-          "results": [
-            {
-              "frame": "warehouse_load_summary",
-              "lane": "warehouse_load_summary",
-              "schema": "WarehouseLoadSummary"
-            }
-          ]
-        }
-      ],
-      "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/summarize.py",
-        "traceability": "traceability/transforms/summarize.FulfillmentAnalytics.json"
+        "pyspark_transform": "pyspark/transforms/find_substitutions.py",
+        "traceability": "traceability/transforms/find_substitutions.FindSubstitutions.json"
       }
     },
     {
@@ -8589,28 +10365,6 @@
               "source": "evaluated__evaluations"
             }
           ],
-          "name": "evaluated.publish_evaluations",
-          "output_lane": "evaluated__service_evaluations",
-          "output_schema": "FulfillmentServiceEvaluation",
-          "results": [
-            {
-              "frame": "evaluated__service_evaluations",
-              "lane": "evaluated__service_evaluations",
-              "schema": "FulfillmentServiceEvaluation"
-            }
-          ]
-        },
-        {
-          "input_lane": "evaluated__evaluations",
-          "input_schema": "FulfillmentServiceEvaluation",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "evaluation",
-              "schema": "FulfillmentServiceEvaluation",
-              "source": "evaluated__evaluations"
-            }
-          ],
           "name": "evaluated.summarize",
           "output_lane": "evaluated__summary_totals",
           "output_schema": "DailyFulfillmentServiceSummary",
@@ -8648,6 +10402,53 @@
       "target_artifacts": {
         "pyspark_transform": "pyspark/transforms/fulfillment_workflow.py",
         "traceability": "traceability/transforms/fulfillment_workflow.Fulfillment.json"
+      }
+    },
+    {
+      "dependencies": [],
+      "inputs": [
+        {
+          "name": "catalog",
+          "ordinal": 0,
+          "schema": "CatalogProduct"
+        }
+      ],
+      "name": "NormalizeCatalog",
+      "outputs": [
+        {
+          "name": "normalized",
+          "ordinal": 0,
+          "schema": "CatalogProduct"
+        }
+      ],
+      "source": "examples.store.transforms.merchandising.catalog.normalize_catalog.NormalizeCatalog",
+      "step_methods": [
+        {
+          "input_lane": "catalog",
+          "input_schema": "CatalogProduct",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "product",
+              "schema": "CatalogProduct",
+              "source": "catalog"
+            }
+          ],
+          "name": "normalize",
+          "output_lane": "catalog",
+          "output_schema": "CatalogProduct",
+          "results": [
+            {
+              "frame": "catalog",
+              "lane": "catalog",
+              "schema": "CatalogProduct"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/normalize_catalog.py",
+        "traceability": "traceability/transforms/normalize_catalog.NormalizeCatalog.json"
       }
     },
     {
@@ -8736,6 +10537,878 @@
     },
     {
       "dependencies": [
+        "catalog",
+        "product"
+      ],
+      "inputs": [
+        {
+          "name": "requests",
+          "ordinal": 0,
+          "schema": "RecommendationRequest"
+        },
+        {
+          "name": "catalog",
+          "ordinal": 1,
+          "schema": "CatalogProduct"
+        }
+      ],
+      "name": "SelectRecommendationCandidates",
+      "outputs": [
+        {
+          "name": "candidates",
+          "ordinal": 0,
+          "schema": "RecommendationCandidate"
+        }
+      ],
+      "source": "examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates",
+      "step_methods": [
+        {
+          "input_lane": "requests",
+          "input_schema": "RecommendationRequest",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "RecommendationRequest",
+              "source": "requests"
+            },
+            {
+              "driving": false,
+              "parameter": "product",
+              "schema": "CatalogProduct",
+              "source": "catalog"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "product"
+            }
+          ],
+          "name": "select",
+          "output_lane": "requests",
+          "output_schema": "RecommendationCandidate",
+          "results": [
+            {
+              "frame": "requests",
+              "lane": "requests",
+              "schema": "RecommendationCandidate"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/admit.py",
+        "traceability": "traceability/transforms/admit.SelectRecommendationCandidates.json"
+      }
+    },
+    {
+      "dependencies": [
+        "decision",
+        "decisions",
+        "policy"
+      ],
+      "inputs": [
+        {
+          "name": "ranked",
+          "ordinal": 0,
+          "schema": "RankedRecommendationCandidate"
+        },
+        {
+          "name": "policy",
+          "ordinal": 1,
+          "schema": "MerchandisingPolicy"
+        }
+      ],
+      "name": "DiversifyRecommendations",
+      "outputs": [
+        {
+          "name": "diversified",
+          "ordinal": 0,
+          "schema": "DiversifiedRecommendationCandidate"
+        },
+        {
+          "name": "decision_rows",
+          "ordinal": 1,
+          "schema": "DiversificationDecision"
+        }
+      ],
+      "source": "examples.store.transforms.merchandising.recommender.diversify.DiversifyRecommendations",
+      "step_methods": [
+        {
+          "input_lane": "ranked",
+          "input_schema": "RankedRecommendationCandidate",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "candidate",
+              "schema": "RankedRecommendationCandidate",
+              "source": "ranked"
+            },
+            {
+              "driving": false,
+              "parameter": "policy",
+              "schema": "MerchandisingPolicy",
+              "source": "policy"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "policy"
+            }
+          ],
+          "name": "decide",
+          "output_lane": "decisions",
+          "output_schema": "DiversificationDecision",
+          "results": [
+            {
+              "frame": "decisions",
+              "lane": "decisions",
+              "schema": "DiversificationDecision"
+            }
+          ]
+        },
+        {
+          "input_lane": "ranked",
+          "input_schema": "RankedRecommendationCandidate",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "candidate",
+              "schema": "RankedRecommendationCandidate",
+              "source": "ranked"
+            },
+            {
+              "driving": false,
+              "parameter": "decision",
+              "schema": "DiversificationDecision",
+              "source": "decisions"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "decision"
+            }
+          ],
+          "name": "publish",
+          "output_lane": "diversified",
+          "output_schema": "DiversifiedRecommendationCandidate",
+          "results": [
+            {
+              "frame": "diversified",
+              "lane": "diversified",
+              "schema": "DiversifiedRecommendationCandidate"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/diversify.py",
+        "traceability": "traceability/transforms/diversify.DiversifyRecommendations.json"
+      }
+    },
+    {
+      "dependencies": [
+        "decision",
+        "evaluated",
+        "session",
+        "session_features",
+        "suppression",
+        "suppressions"
+      ],
+      "inputs": [
+        {
+          "name": "candidates",
+          "ordinal": 0,
+          "schema": "RecommendationCandidate"
+        },
+        {
+          "name": "suppressions",
+          "ordinal": 1,
+          "schema": "MerchandisingSuppression"
+        },
+        {
+          "name": "session_features",
+          "ordinal": 2,
+          "schema": "SessionFeature"
+        }
+      ],
+      "name": "FilterRecommendationCandidates",
+      "outputs": [
+        {
+          "name": "decisions",
+          "ordinal": 0,
+          "schema": "RecommendationCandidateDecision"
+        },
+        {
+          "name": "filtered",
+          "ordinal": 1,
+          "schema": "RecommendationCandidate"
+        }
+      ],
+      "source": "examples.store.transforms.merchandising.recommender.filter.FilterRecommendationCandidates",
+      "step_methods": [
+        {
+          "input_lane": "candidates",
+          "input_schema": "RecommendationCandidate",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "candidate",
+              "schema": "RecommendationCandidate",
+              "source": "candidates"
+            },
+            {
+              "driving": false,
+              "parameter": "suppression",
+              "schema": "MerchandisingSuppression",
+              "source": "suppressions"
+            },
+            {
+              "driving": false,
+              "parameter": "session",
+              "schema": "SessionFeature",
+              "source": "session_features"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "suppression"
+            },
+            {
+              "how": "left",
+              "input": "session"
+            }
+          ],
+          "name": "evaluate",
+          "output_lane": "evaluated",
+          "output_schema": "RecommendationCandidateDecision",
+          "results": [
+            {
+              "frame": "evaluated",
+              "lane": "evaluated",
+              "schema": "RecommendationCandidateDecision"
+            }
+          ]
+        },
+        {
+          "input_lane": "candidates",
+          "input_schema": "RecommendationCandidate",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "candidate",
+              "schema": "RecommendationCandidate",
+              "source": "candidates"
+            },
+            {
+              "driving": false,
+              "parameter": "decision",
+              "schema": "RecommendationCandidateDecision",
+              "source": "evaluated"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "decision"
+            }
+          ],
+          "name": "publish",
+          "output_lane": "filtered",
+          "output_schema": "RecommendationCandidate",
+          "results": [
+            {
+              "frame": "filtered",
+              "lane": "filtered",
+              "schema": "RecommendationCandidate"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/filter.py",
+        "traceability": "traceability/transforms/filter.FilterRecommendationCandidates.json"
+      }
+    },
+    {
+      "dependencies": [
+        "catalog",
+        "product",
+        "session",
+        "session_features",
+        "signal",
+        "signals",
+        "taxonomy"
+      ],
+      "inputs": [
+        {
+          "name": "requests",
+          "ordinal": 0,
+          "schema": "RecommendationRequest"
+        },
+        {
+          "name": "catalog",
+          "ordinal": 1,
+          "schema": "CatalogProduct"
+        },
+        {
+          "name": "taxonomy",
+          "ordinal": 2,
+          "schema": "ExpandedProductTaxonomy"
+        },
+        {
+          "name": "session_features",
+          "ordinal": 3,
+          "schema": "SessionFeature"
+        },
+        {
+          "name": "signals",
+          "ordinal": 4,
+          "schema": "ProductRecommendationSignal"
+        }
+      ],
+      "name": "GenerateRecommendationCandidates",
+      "outputs": [
+        {
+          "name": "candidates",
+          "ordinal": 0,
+          "schema": "RecommendationCandidate"
+        }
+      ],
+      "source": "examples.store.transforms.merchandising.recommender.generate.GenerateRecommendationCandidates",
+      "step_methods": [
+        {
+          "input_lane": "requests",
+          "input_schema": "RecommendationRequest",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "RecommendationRequest",
+              "source": "requests"
+            },
+            {
+              "driving": false,
+              "parameter": "product",
+              "schema": "CatalogProduct",
+              "source": "catalog"
+            },
+            {
+              "driving": false,
+              "parameter": "taxonomy",
+              "schema": "ExpandedProductTaxonomy",
+              "source": "taxonomy"
+            },
+            {
+              "driving": false,
+              "parameter": "session",
+              "schema": "SessionFeature",
+              "source": "session_features"
+            },
+            {
+              "driving": false,
+              "parameter": "signal",
+              "schema": "ProductRecommendationSignal",
+              "source": "signals"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "product"
+            },
+            {
+              "how": "left",
+              "input": "taxonomy"
+            },
+            {
+              "how": "left",
+              "input": "session"
+            },
+            {
+              "how": "left",
+              "input": "signal"
+            }
+          ],
+          "name": "retrieve",
+          "output_lane": "requests",
+          "output_schema": "RecommendationCandidate",
+          "results": [
+            {
+              "frame": "requests",
+              "lane": "requests",
+              "schema": "RecommendationCandidate"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/generate.py",
+        "traceability": "traceability/transforms/generate.GenerateRecommendationCandidates.json"
+      }
+    },
+    {
+      "dependencies": [
+        "boost",
+        "boosts",
+        "catalog",
+        "decision",
+        "diversified__decisions",
+        "filtered__evaluated",
+        "policy",
+        "product",
+        "published__ranked_candidates",
+        "session",
+        "session_features",
+        "signal",
+        "signals",
+        "suppression",
+        "suppressions",
+        "taxonomy"
+      ],
+      "inputs": [
+        {
+          "name": "requests",
+          "ordinal": 0,
+          "schema": "RecommendationRequest"
+        },
+        {
+          "name": "catalog",
+          "ordinal": 1,
+          "schema": "CatalogProduct"
+        },
+        {
+          "name": "taxonomy",
+          "ordinal": 2,
+          "schema": "ExpandedProductTaxonomy"
+        },
+        {
+          "name": "session_features",
+          "ordinal": 3,
+          "schema": "SessionFeature"
+        },
+        {
+          "name": "signals",
+          "ordinal": 4,
+          "schema": "ProductRecommendationSignal"
+        },
+        {
+          "name": "suppressions",
+          "ordinal": 5,
+          "schema": "MerchandisingSuppression"
+        },
+        {
+          "name": "policy",
+          "ordinal": 6,
+          "schema": "MerchandisingPolicy"
+        },
+        {
+          "name": "boosts",
+          "ordinal": 7,
+          "schema": "MerchandisingBoost"
+        }
+      ],
+      "name": "Recommender",
+      "outputs": [
+        {
+          "name": "recommended_products",
+          "ordinal": 0,
+          "schema": "RecommendedProduct"
+        },
+        {
+          "name": "recommendation_runs",
+          "ordinal": 1,
+          "schema": "RecommendationRun"
+        }
+      ],
+      "source": "examples.store.transforms.merchandising.recommender.workflow.Recommender",
+      "step_methods": [
+        {
+          "input_lane": "requests",
+          "input_schema": "RecommendationRequest",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "RecommendationRequest",
+              "source": "requests"
+            },
+            {
+              "driving": false,
+              "parameter": "product",
+              "schema": "CatalogProduct",
+              "source": "catalog"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "product"
+            }
+          ],
+          "name": "selected.select",
+          "output_lane": "selected__requests",
+          "output_schema": "RecommendationCandidate",
+          "results": [
+            {
+              "frame": "selected__requests",
+              "lane": "selected__requests",
+              "schema": "RecommendationCandidate"
+            }
+          ]
+        },
+        {
+          "input_lane": "requests",
+          "input_schema": "RecommendationRequest",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "RecommendationRequest",
+              "source": "requests"
+            },
+            {
+              "driving": false,
+              "parameter": "product",
+              "schema": "CatalogProduct",
+              "source": "catalog"
+            },
+            {
+              "driving": false,
+              "parameter": "taxonomy",
+              "schema": "ExpandedProductTaxonomy",
+              "source": "taxonomy"
+            },
+            {
+              "driving": false,
+              "parameter": "session",
+              "schema": "SessionFeature",
+              "source": "session_features"
+            },
+            {
+              "driving": false,
+              "parameter": "signal",
+              "schema": "ProductRecommendationSignal",
+              "source": "signals"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "product"
+            },
+            {
+              "how": "left",
+              "input": "taxonomy"
+            },
+            {
+              "how": "left",
+              "input": "session"
+            },
+            {
+              "how": "left",
+              "input": "signal"
+            }
+          ],
+          "name": "retrieved.retrieve",
+          "output_lane": "retrieved__requests",
+          "output_schema": "RecommendationCandidate",
+          "results": [
+            {
+              "frame": "retrieved__requests",
+              "lane": "retrieved__requests",
+              "schema": "RecommendationCandidate"
+            }
+          ]
+        },
+        {
+          "input_lane": "retrieved__requests",
+          "input_schema": "RecommendationCandidate",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "candidate",
+              "schema": "RecommendationCandidate",
+              "source": "retrieved__requests"
+            },
+            {
+              "driving": false,
+              "parameter": "suppression",
+              "schema": "MerchandisingSuppression",
+              "source": "suppressions"
+            },
+            {
+              "driving": false,
+              "parameter": "session",
+              "schema": "SessionFeature",
+              "source": "session_features"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "suppression"
+            },
+            {
+              "how": "left",
+              "input": "session"
+            }
+          ],
+          "name": "filtered.evaluate",
+          "output_lane": "filtered__evaluated",
+          "output_schema": "RecommendationCandidateDecision",
+          "results": [
+            {
+              "frame": "filtered__evaluated",
+              "lane": "filtered__evaluated",
+              "schema": "RecommendationCandidateDecision"
+            }
+          ]
+        },
+        {
+          "input_lane": "retrieved__requests",
+          "input_schema": "RecommendationCandidate",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "candidate",
+              "schema": "RecommendationCandidate",
+              "source": "retrieved__requests"
+            },
+            {
+              "driving": false,
+              "parameter": "decision",
+              "schema": "RecommendationCandidateDecision",
+              "source": "filtered__evaluated"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "decision"
+            }
+          ],
+          "name": "filtered.publish",
+          "output_lane": "filtered__filtered",
+          "output_schema": "RecommendationCandidate",
+          "results": [
+            {
+              "frame": "filtered__filtered",
+              "lane": "filtered__filtered",
+              "schema": "RecommendationCandidate"
+            }
+          ]
+        },
+        {
+          "input_lane": "filtered__filtered",
+          "input_schema": "RecommendationCandidate",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "candidate",
+              "schema": "RecommendationCandidate",
+              "source": "filtered__filtered"
+            },
+            {
+              "driving": false,
+              "parameter": "policy",
+              "schema": "MerchandisingPolicy",
+              "source": "policy"
+            },
+            {
+              "driving": false,
+              "parameter": "boost",
+              "schema": "MerchandisingBoost",
+              "source": "boosts"
+            },
+            {
+              "driving": false,
+              "parameter": "suppression",
+              "schema": "MerchandisingSuppression",
+              "source": "suppressions"
+            },
+            {
+              "driving": false,
+              "parameter": "signal",
+              "schema": "ProductRecommendationSignal",
+              "source": "signals"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "policy"
+            },
+            {
+              "how": "left",
+              "input": "boost"
+            },
+            {
+              "how": "left",
+              "input": "suppression"
+            },
+            {
+              "how": "left",
+              "input": "signal"
+            }
+          ],
+          "name": "ranked.rank",
+          "output_lane": "ranked__candidates",
+          "output_schema": "RankedRecommendationCandidate",
+          "results": [
+            {
+              "frame": "ranked__candidates",
+              "lane": "ranked__candidates",
+              "schema": "RankedRecommendationCandidate"
+            }
+          ]
+        },
+        {
+          "input_lane": "ranked__candidates",
+          "input_schema": "RankedRecommendationCandidate",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "candidate",
+              "schema": "RankedRecommendationCandidate",
+              "source": "ranked__candidates"
+            },
+            {
+              "driving": false,
+              "parameter": "policy",
+              "schema": "MerchandisingPolicy",
+              "source": "policy"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "policy"
+            }
+          ],
+          "name": "diversified.decide",
+          "output_lane": "diversified__decisions",
+          "output_schema": "DiversificationDecision",
+          "results": [
+            {
+              "frame": "diversified__decisions",
+              "lane": "diversified__decisions",
+              "schema": "DiversificationDecision"
+            }
+          ]
+        },
+        {
+          "input_lane": "ranked__candidates",
+          "input_schema": "RankedRecommendationCandidate",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "candidate",
+              "schema": "RankedRecommendationCandidate",
+              "source": "ranked__candidates"
+            },
+            {
+              "driving": false,
+              "parameter": "decision",
+              "schema": "DiversificationDecision",
+              "source": "diversified__decisions"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "decision"
+            }
+          ],
+          "name": "diversified.publish",
+          "output_lane": "diversified__diversified",
+          "output_schema": "DiversifiedRecommendationCandidate",
+          "results": [
+            {
+              "frame": "diversified__diversified",
+              "lane": "diversified__diversified",
+              "schema": "DiversifiedRecommendationCandidate"
+            }
+          ]
+        },
+        {
+          "input_lane": "diversified__diversified",
+          "input_schema": "DiversifiedRecommendationCandidate",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "candidate",
+              "schema": "DiversifiedRecommendationCandidate",
+              "source": "diversified__diversified"
+            }
+          ],
+          "name": "published.select_products",
+          "output_lane": "published__ranked_candidates",
+          "output_schema": "RecommendedProduct",
+          "results": [
+            {
+              "frame": "published__ranked_candidates",
+              "lane": "published__ranked_candidates",
+              "schema": "RecommendedProduct"
+            }
+          ]
+        },
+        {
+          "input_lane": "requests",
+          "input_schema": "RecommendationRequest",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "RecommendationRequest",
+              "source": "requests"
+            },
+            {
+              "driving": false,
+              "parameter": "policy",
+              "schema": "MerchandisingPolicy",
+              "source": "policy"
+            },
+            {
+              "driving": false,
+              "parameter": "product",
+              "schema": "RecommendedProduct",
+              "source": "published__ranked_candidates"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "policy"
+            },
+            {
+              "how": "left",
+              "input": "product"
+            }
+          ],
+          "name": "summarized.summarize",
+          "output_lane": "summarized__requests",
+          "output_schema": "RecommendationRun",
+          "results": [
+            {
+              "frame": "summarized__requests",
+              "lane": "summarized__requests",
+              "schema": "RecommendationRun"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/recommender_workflow.py",
+        "traceability": "traceability/transforms/recommender_workflow.Recommender.json"
+      }
+    },
+    {
+      "dependencies": [
         "click",
         "click_facts",
         "clicks"
@@ -8770,7 +11443,7 @@
           "schema": "ProductRecommendationSignal"
         }
       ],
-      "source": "examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals",
+      "source": "examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals",
       "step_methods": [
         {
           "input_lane": "impressions",
@@ -8936,330 +11609,529 @@
     },
     {
       "dependencies": [
-        "catalog",
-        "product"
+        "impression",
+        "impressions"
       ],
       "inputs": [
         {
-          "name": "requests",
+          "name": "fulfilled_orders",
           "ordinal": 0,
-          "schema": "RecommendationRequest"
+          "schema": "OrderFulfillment"
         },
         {
-          "name": "catalog",
+          "name": "impressions",
           "ordinal": 1,
-          "schema": "CatalogProduct"
+          "schema": "RecommendationImpression"
         }
       ],
-      "name": "SelectRecommendationCandidates",
+      "name": "BuildRecommendationPurchaseSignals",
       "outputs": [
         {
-          "name": "candidates",
+          "name": "purchases",
           "ordinal": 0,
-          "schema": "RecommendationCandidate"
+          "schema": "RecommendationPurchase"
         }
       ],
-      "source": "examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates",
+      "source": "examples.store.transforms.merchandising.signals.purchases.BuildRecommendationPurchaseSignals",
       "step_methods": [
         {
-          "input_lane": "requests",
-          "input_schema": "RecommendationRequest",
+          "input_lane": "fulfilled_orders",
+          "input_schema": "OrderFulfillment",
           "inputs": [
             {
               "driving": true,
-              "parameter": "request",
-              "schema": "RecommendationRequest",
-              "source": "requests"
+              "parameter": "order",
+              "schema": "OrderFulfillment",
+              "source": "fulfilled_orders"
             },
             {
               "driving": false,
-              "parameter": "product",
-              "schema": "CatalogProduct",
-              "source": "catalog"
+              "parameter": "impression",
+              "schema": "RecommendationImpression",
+              "source": "impressions"
             }
           ],
           "joins": [
             {
-              "how": "inner",
-              "input": "product"
+              "how": "left",
+              "input": "impression"
             }
           ],
-          "name": "select",
-          "output_lane": "requests",
-          "output_schema": "RecommendationCandidate",
+          "name": "attribute",
+          "output_lane": "fulfilled_orders",
+          "output_schema": "RecommendationPurchase",
           "results": [
             {
-              "frame": "requests",
-              "lane": "requests",
-              "schema": "RecommendationCandidate"
+              "frame": "fulfilled_orders",
+              "lane": "fulfilled_orders",
+              "schema": "RecommendationPurchase"
             }
           ]
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/admit.py",
-        "traceability": "traceability/transforms/admit.SelectRecommendationCandidates.json"
+        "pyspark_transform": "pyspark/transforms/purchases.py",
+        "traceability": "traceability/transforms/purchases.BuildRecommendationPurchaseSignals.json"
+      }
+    },
+    {
+      "dependencies": [],
+      "inputs": [
+        {
+          "name": "events",
+          "ordinal": 0,
+          "schema": "SessionEvent"
+        }
+      ],
+      "name": "BuildSessionSignals",
+      "outputs": [
+        {
+          "name": "features",
+          "ordinal": 0,
+          "schema": "SessionFeature"
+        }
+      ],
+      "source": "examples.store.transforms.merchandising.signals.session.BuildSessionSignals",
+      "step_methods": [
+        {
+          "input_lane": "events",
+          "input_schema": "SessionEvent",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "event",
+              "schema": "SessionEvent",
+              "source": "events"
+            }
+          ],
+          "name": "build",
+          "output_lane": "events",
+          "output_schema": "SessionFeature",
+          "results": [
+            {
+              "frame": "events",
+              "lane": "events",
+              "schema": "SessionFeature"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/session.py",
+        "traceability": "traceability/transforms/session.BuildSessionSignals.json"
       }
     },
     {
       "dependencies": [
-        "boost",
-        "boosts",
-        "catalog",
-        "policy",
-        "product",
-        "published__ranked_candidates",
-        "signal",
-        "signals",
-        "suppression",
-        "suppressions"
+        "click",
+        "clicks",
+        "impression",
+        "impressions",
+        "recommendation__click_facts"
       ],
       "inputs": [
         {
-          "name": "requests",
+          "name": "session_events",
           "ordinal": 0,
-          "schema": "RecommendationRequest"
+          "schema": "SessionEvent"
         },
         {
-          "name": "catalog",
+          "name": "fulfilled_orders",
           "ordinal": 1,
-          "schema": "CatalogProduct"
+          "schema": "OrderFulfillment"
         },
         {
-          "name": "policy",
+          "name": "impressions",
           "ordinal": 2,
-          "schema": "MerchandisingPolicy"
+          "schema": "RecommendationImpression"
         },
         {
-          "name": "boosts",
+          "name": "clicks",
           "ordinal": 3,
-          "schema": "MerchandisingBoost"
+          "schema": "RecommendationClick"
+        }
+      ],
+      "name": "Signals",
+      "outputs": [
+        {
+          "name": "session_features",
+          "ordinal": 0,
+          "schema": "SessionFeature"
         },
         {
-          "name": "suppressions",
-          "ordinal": 4,
-          "schema": "MerchandisingSuppression"
+          "name": "recommendation_purchases",
+          "ordinal": 1,
+          "schema": "RecommendationPurchase"
+        },
+        {
+          "name": "daily_impressions",
+          "ordinal": 2,
+          "schema": "DailyRecommendationImpressions"
+        },
+        {
+          "name": "daily_clicks",
+          "ordinal": 3,
+          "schema": "DailyRecommendationClicks"
         },
         {
           "name": "signals",
-          "ordinal": 5,
+          "ordinal": 4,
           "schema": "ProductRecommendationSignal"
         }
       ],
-      "name": "Recommender",
-      "outputs": [
-        {
-          "name": "recommended_products",
-          "ordinal": 0,
-          "schema": "RecommendedProduct"
-        },
-        {
-          "name": "recommendation_runs",
-          "ordinal": 1,
-          "schema": "RecommendationRun"
-        }
-      ],
-      "source": "examples.store.transforms.merchandising.recommender.workflow.Recommender",
+      "source": "examples.store.transforms.merchandising.signals.workflow.Signals",
       "step_methods": [
         {
-          "input_lane": "requests",
-          "input_schema": "RecommendationRequest",
+          "input_lane": "session_events",
+          "input_schema": "SessionEvent",
           "inputs": [
             {
               "driving": true,
-              "parameter": "request",
-              "schema": "RecommendationRequest",
-              "source": "requests"
+              "parameter": "event",
+              "schema": "SessionEvent",
+              "source": "session_events"
+            }
+          ],
+          "name": "sessionized.build",
+          "output_lane": "sessionized__events",
+          "output_schema": "SessionFeature",
+          "results": [
+            {
+              "frame": "sessionized__events",
+              "lane": "sessionized__events",
+              "schema": "SessionFeature"
+            }
+          ]
+        },
+        {
+          "input_lane": "fulfilled_orders",
+          "input_schema": "OrderFulfillment",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "order",
+              "schema": "OrderFulfillment",
+              "source": "fulfilled_orders"
             },
             {
               "driving": false,
-              "parameter": "product",
-              "schema": "CatalogProduct",
-              "source": "catalog"
+              "parameter": "impression",
+              "schema": "RecommendationImpression",
+              "source": "impressions"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "impression"
+            }
+          ],
+          "name": "purchases.attribute",
+          "output_lane": "purchases__fulfilled_orders",
+          "output_schema": "RecommendationPurchase",
+          "results": [
+            {
+              "frame": "purchases__fulfilled_orders",
+              "lane": "purchases__fulfilled_orders",
+              "schema": "RecommendationPurchase"
+            }
+          ]
+        },
+        {
+          "input_lane": "impressions",
+          "input_schema": "RecommendationImpression",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "impression",
+              "schema": "RecommendationImpression",
+              "source": "impressions"
+            }
+          ],
+          "name": "recommendation.summarize_impressions",
+          "output_lane": "recommendation__impression_facts",
+          "output_schema": "DailyRecommendationImpressions",
+          "results": [
+            {
+              "frame": "recommendation__impression_facts",
+              "lane": "recommendation__impression_facts",
+              "schema": "DailyRecommendationImpressions"
+            }
+          ]
+        },
+        {
+          "input_lane": "impressions",
+          "input_schema": "RecommendationImpression",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "impression",
+              "schema": "RecommendationImpression",
+              "source": "impressions"
+            },
+            {
+              "driving": false,
+              "parameter": "click",
+              "schema": "RecommendationClick",
+              "source": "clicks"
             }
           ],
           "joins": [
             {
               "how": "inner",
-              "input": "product"
+              "input": "click"
             }
           ],
-          "name": "selected.select",
-          "output_lane": "selected__requests",
-          "output_schema": "RecommendationCandidate",
+          "name": "recommendation.summarize_clicks",
+          "output_lane": "recommendation__click_facts",
+          "output_schema": "DailyRecommendationClicks",
           "results": [
             {
-              "frame": "selected__requests",
-              "lane": "selected__requests",
-              "schema": "RecommendationCandidate"
+              "frame": "recommendation__click_facts",
+              "lane": "recommendation__click_facts",
+              "schema": "DailyRecommendationClicks"
             }
           ]
         },
         {
-          "input_lane": "selected__requests",
-          "input_schema": "RecommendationCandidate",
+          "input_lane": "recommendation__impression_facts",
+          "input_schema": "DailyRecommendationImpressions",
           "inputs": [
             {
               "driving": true,
-              "parameter": "candidate",
-              "schema": "RecommendationCandidate",
-              "source": "selected__requests"
+              "parameter": "impression",
+              "schema": "DailyRecommendationImpressions",
+              "source": "recommendation__impression_facts"
+            }
+          ],
+          "name": "recommendation.publish_daily_impressions",
+          "output_lane": "recommendation__daily_impressions",
+          "output_schema": "DailyRecommendationImpressions",
+          "results": [
+            {
+              "frame": "recommendation__daily_impressions",
+              "lane": "recommendation__daily_impressions",
+              "schema": "DailyRecommendationImpressions"
+            }
+          ]
+        },
+        {
+          "input_lane": "recommendation__click_facts",
+          "input_schema": "DailyRecommendationClicks",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "click",
+              "schema": "DailyRecommendationClicks",
+              "source": "recommendation__click_facts"
+            }
+          ],
+          "name": "recommendation.publish_daily_clicks",
+          "output_lane": "recommendation__daily_clicks",
+          "output_schema": "DailyRecommendationClicks",
+          "results": [
+            {
+              "frame": "recommendation__daily_clicks",
+              "lane": "recommendation__daily_clicks",
+              "schema": "DailyRecommendationClicks"
+            }
+          ]
+        },
+        {
+          "input_lane": "recommendation__impression_facts",
+          "input_schema": "DailyRecommendationImpressions",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "impression",
+              "schema": "DailyRecommendationImpressions",
+              "source": "recommendation__impression_facts"
             },
             {
               "driving": false,
-              "parameter": "policy",
-              "schema": "MerchandisingPolicy",
-              "source": "policy"
-            },
+              "parameter": "click",
+              "schema": "DailyRecommendationClicks",
+              "source": "recommendation__click_facts"
+            }
+          ],
+          "joins": [
             {
-              "driving": false,
-              "parameter": "boost",
-              "schema": "MerchandisingBoost",
-              "source": "boosts"
-            },
+              "how": "left",
+              "input": "click"
+            }
+          ],
+          "name": "recommendation.summarize_signals",
+          "output_lane": "recommendation__signal_totals",
+          "output_schema": "ProductRecommendationSignalTotals",
+          "results": [
             {
-              "driving": false,
-              "parameter": "suppression",
-              "schema": "MerchandisingSuppression",
-              "source": "suppressions"
-            },
+              "frame": "recommendation__signal_totals",
+              "lane": "recommendation__signal_totals",
+              "schema": "ProductRecommendationSignalTotals"
+            }
+          ]
+        },
+        {
+          "input_lane": "recommendation__signal_totals",
+          "input_schema": "ProductRecommendationSignalTotals",
+          "inputs": [
             {
-              "driving": false,
+              "driving": true,
               "parameter": "signal",
-              "schema": "ProductRecommendationSignal",
-              "source": "signals"
+              "schema": "ProductRecommendationSignalTotals",
+              "source": "recommendation__signal_totals"
             }
           ],
-          "joins": [
-            {
-              "how": "inner",
-              "input": "policy"
-            },
-            {
-              "how": "left",
-              "input": "boost"
-            },
-            {
-              "how": "left",
-              "input": "suppression"
-            },
-            {
-              "how": "left",
-              "input": "signal"
-            }
-          ],
-          "name": "ranked.rank",
-          "output_lane": "ranked__candidates",
-          "output_schema": "RankedRecommendationCandidate",
+          "name": "recommendation.publish_signals",
+          "output_lane": "recommendation__signals",
+          "output_schema": "ProductRecommendationSignal",
           "results": [
             {
-              "frame": "ranked__candidates",
-              "lane": "ranked__candidates",
-              "schema": "RankedRecommendationCandidate"
-            }
-          ]
-        },
-        {
-          "input_lane": "ranked__candidates",
-          "input_schema": "RankedRecommendationCandidate",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "candidate",
-              "schema": "RankedRecommendationCandidate",
-              "source": "ranked__candidates"
-            }
-          ],
-          "name": "published.select_products",
-          "output_lane": "published__ranked_candidates",
-          "output_schema": "RecommendedProduct",
-          "results": [
-            {
-              "frame": "published__ranked_candidates",
-              "lane": "published__ranked_candidates",
-              "schema": "RecommendedProduct"
-            }
-          ]
-        },
-        {
-          "input_lane": "requests",
-          "input_schema": "RecommendationRequest",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "request",
-              "schema": "RecommendationRequest",
-              "source": "requests"
-            },
-            {
-              "driving": false,
-              "parameter": "policy",
-              "schema": "MerchandisingPolicy",
-              "source": "policy"
-            },
-            {
-              "driving": false,
-              "parameter": "product",
-              "schema": "RecommendedProduct",
-              "source": "published__ranked_candidates"
-            }
-          ],
-          "joins": [
-            {
-              "how": "inner",
-              "input": "policy"
-            },
-            {
-              "how": "left",
-              "input": "product"
-            }
-          ],
-          "name": "summarized.summarize",
-          "output_lane": "summarized__requests",
-          "output_schema": "RecommendationRun",
-          "results": [
-            {
-              "frame": "summarized__requests",
-              "lane": "summarized__requests",
-              "schema": "RecommendationRun"
+              "frame": "recommendation__signals",
+              "lane": "recommendation__signals",
+              "schema": "ProductRecommendationSignal"
             }
           ]
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/recommender_workflow.py",
-        "traceability": "traceability/transforms/recommender_workflow.Recommender.json"
+        "pyspark_transform": "pyspark/transforms/signals_workflow.py",
+        "traceability": "traceability/transforms/signals_workflow.Signals.json"
       }
     },
     {
       "dependencies": [
-        "batch",
+        "ancestor",
+        "ancestors",
+        "node",
+        "taxonomy"
+      ],
+      "inputs": [
+        {
+          "name": "product_taxonomy",
+          "ordinal": 0,
+          "schema": "ProductTaxonomy"
+        },
+        {
+          "name": "taxonomy",
+          "ordinal": 1,
+          "schema": "TaxonomyNode"
+        }
+      ],
+      "name": "ExpandProductTaxonomy",
+      "outputs": [
+        {
+          "name": "expanded",
+          "ordinal": 0,
+          "schema": "ExpandedProductTaxonomy"
+        }
+      ],
+      "source": "examples.store.transforms.merchandising.taxonomy.expand_taxonomy.ExpandProductTaxonomy",
+      "step_methods": [
+        {
+          "input_lane": "taxonomy",
+          "input_schema": "TaxonomyNode",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "node",
+              "schema": "TaxonomyNode",
+              "source": "taxonomy"
+            }
+          ],
+          "name": "build_ancestors",
+          "output_lane": "ancestors",
+          "output_schema": "TaxonomyAncestor",
+          "results": [
+            {
+              "frame": "ancestors",
+              "lane": "ancestors",
+              "schema": "TaxonomyAncestor"
+            }
+          ]
+        },
+        {
+          "input_lane": "product_taxonomy",
+          "input_schema": "ProductTaxonomy",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "product",
+              "schema": "ProductTaxonomy",
+              "source": "product_taxonomy"
+            },
+            {
+              "driving": false,
+              "parameter": "ancestor",
+              "schema": "TaxonomyAncestor",
+              "source": "ancestors"
+            },
+            {
+              "driving": false,
+              "parameter": "node",
+              "schema": "TaxonomyNode",
+              "source": "taxonomy"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "ancestor"
+            },
+            {
+              "how": "inner",
+              "input": "node"
+            }
+          ],
+          "name": "expand",
+          "output_lane": "expanded",
+          "output_schema": "ExpandedProductTaxonomy",
+          "results": [
+            {
+              "frame": "expanded",
+              "lane": "expanded",
+              "schema": "ExpandedProductTaxonomy"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/expand_taxonomy.py",
+        "traceability": "traceability/transforms/expand_taxonomy.ExpandProductTaxonomy.json"
+      }
+    },
+    {
+      "dependencies": [
+        "ancestor",
         "blocked_product",
         "blocked_products",
         "boost",
         "boosts",
-        "cataloged__products",
         "click",
-        "clicked",
-        "evaluated__impressions_measured__clicked",
-        "evaluated__impressions_measured__measured",
-        "evaluated__summarized__exposure",
-        "evaluation_batch",
-        "evaluation_clicks",
-        "evaluation_impressions",
-        "exposure",
+        "decision",
         "feedback_clicks",
+        "feedback_impressions",
         "impression",
+        "node",
+        "normalized__catalog",
         "policy",
         "product",
         "promotion",
         "promotions",
+        "recommended__diversified__decisions",
+        "recommended__filtered__evaluated",
         "recommended__published__ranked_candidates",
+        "session",
         "signal",
-        "signals_built__click_facts",
-        "signals_built__signals",
+        "signals_built__recommendation__click_facts",
+        "signals_built__recommendation__signals",
+        "signals_built__sessionized__events",
         "suppression",
-        "suppressions"
+        "suppressions",
+        "taxonomy",
+        "taxonomy_expanded__ancestors",
+        "taxonomy_expanded__expanded",
+        "taxonomy_nodes"
       ],
       "inputs": [
         {
@@ -9278,54 +12150,54 @@
           "schema": "Promotion"
         },
         {
-          "name": "feedback_impressions",
+          "name": "product_taxonomy",
           "ordinal": 3,
+          "schema": "ProductTaxonomy"
+        },
+        {
+          "name": "taxonomy_nodes",
+          "ordinal": 4,
+          "schema": "TaxonomyNode"
+        },
+        {
+          "name": "session_events",
+          "ordinal": 5,
+          "schema": "SessionEvent"
+        },
+        {
+          "name": "fulfilled_orders",
+          "ordinal": 6,
+          "schema": "OrderFulfillment"
+        },
+        {
+          "name": "feedback_impressions",
+          "ordinal": 7,
           "schema": "RecommendationImpression"
         },
         {
           "name": "feedback_clicks",
-          "ordinal": 4,
+          "ordinal": 8,
           "schema": "RecommendationClick"
         },
         {
           "name": "requests",
-          "ordinal": 5,
+          "ordinal": 9,
           "schema": "RecommendationRequest"
         },
         {
+          "name": "suppressions",
+          "ordinal": 10,
+          "schema": "MerchandisingSuppression"
+        },
+        {
           "name": "policy",
-          "ordinal": 6,
+          "ordinal": 11,
           "schema": "MerchandisingPolicy"
         },
         {
           "name": "boosts",
-          "ordinal": 7,
-          "schema": "MerchandisingBoost"
-        },
-        {
-          "name": "suppressions",
-          "ordinal": 8,
-          "schema": "MerchandisingSuppression"
-        },
-        {
-          "name": "evaluation_batch",
-          "ordinal": 9,
-          "schema": "RecommendationEvaluationBatch"
-        },
-        {
-          "name": "evaluation_requests",
-          "ordinal": 10,
-          "schema": "RecommendationRequest"
-        },
-        {
-          "name": "evaluation_impressions",
-          "ordinal": 11,
-          "schema": "RecommendationImpression"
-        },
-        {
-          "name": "evaluation_clicks",
           "ordinal": 12,
-          "schema": "RecommendationClick"
+          "schema": "MerchandisingBoost"
         }
       ],
       "name": "Merchandising",
@@ -9356,14 +12228,9 @@
           "schema": "ProductRecommendationSignal"
         },
         {
-          "name": "request_behaviors",
+          "name": "recommendation_purchases",
           "ordinal": 5,
-          "schema": "RecommendationRequestBehavior"
-        },
-        {
-          "name": "daily_behavior",
-          "ordinal": 6,
-          "schema": "DailyRecommendationBehavior"
+          "schema": "RecommendationPurchase"
         }
       ],
       "source": "examples.store.transforms.merchandising.workflow.Merchandising",
@@ -9413,6 +12280,150 @@
           ]
         },
         {
+          "input_lane": "cataloged__products",
+          "input_schema": "CatalogProduct",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "product",
+              "schema": "CatalogProduct",
+              "source": "cataloged__products"
+            }
+          ],
+          "name": "normalized.normalize",
+          "output_lane": "normalized__catalog",
+          "output_schema": "CatalogProduct",
+          "results": [
+            {
+              "frame": "normalized__catalog",
+              "lane": "normalized__catalog",
+              "schema": "CatalogProduct"
+            }
+          ]
+        },
+        {
+          "input_lane": "taxonomy_nodes",
+          "input_schema": "TaxonomyNode",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "node",
+              "schema": "TaxonomyNode",
+              "source": "taxonomy_nodes"
+            }
+          ],
+          "name": "taxonomy_expanded.build_ancestors",
+          "output_lane": "taxonomy_expanded__ancestors",
+          "output_schema": "TaxonomyAncestor",
+          "results": [
+            {
+              "frame": "taxonomy_expanded__ancestors",
+              "lane": "taxonomy_expanded__ancestors",
+              "schema": "TaxonomyAncestor"
+            }
+          ]
+        },
+        {
+          "input_lane": "product_taxonomy",
+          "input_schema": "ProductTaxonomy",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "product",
+              "schema": "ProductTaxonomy",
+              "source": "product_taxonomy"
+            },
+            {
+              "driving": false,
+              "parameter": "ancestor",
+              "schema": "TaxonomyAncestor",
+              "source": "taxonomy_expanded__ancestors"
+            },
+            {
+              "driving": false,
+              "parameter": "node",
+              "schema": "TaxonomyNode",
+              "source": "taxonomy_nodes"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "ancestor"
+            },
+            {
+              "how": "inner",
+              "input": "node"
+            }
+          ],
+          "name": "taxonomy_expanded.expand",
+          "output_lane": "taxonomy_expanded__expanded",
+          "output_schema": "ExpandedProductTaxonomy",
+          "results": [
+            {
+              "frame": "taxonomy_expanded__expanded",
+              "lane": "taxonomy_expanded__expanded",
+              "schema": "ExpandedProductTaxonomy"
+            }
+          ]
+        },
+        {
+          "input_lane": "session_events",
+          "input_schema": "SessionEvent",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "event",
+              "schema": "SessionEvent",
+              "source": "session_events"
+            }
+          ],
+          "name": "signals_built.sessionized.build",
+          "output_lane": "signals_built__sessionized__events",
+          "output_schema": "SessionFeature",
+          "results": [
+            {
+              "frame": "signals_built__sessionized__events",
+              "lane": "signals_built__sessionized__events",
+              "schema": "SessionFeature"
+            }
+          ]
+        },
+        {
+          "input_lane": "fulfilled_orders",
+          "input_schema": "OrderFulfillment",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "order",
+              "schema": "OrderFulfillment",
+              "source": "fulfilled_orders"
+            },
+            {
+              "driving": false,
+              "parameter": "impression",
+              "schema": "RecommendationImpression",
+              "source": "feedback_impressions"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "impression"
+            }
+          ],
+          "name": "signals_built.purchases.attribute",
+          "output_lane": "signals_built__purchases__fulfilled_orders",
+          "output_schema": "RecommendationPurchase",
+          "results": [
+            {
+              "frame": "signals_built__purchases__fulfilled_orders",
+              "lane": "signals_built__purchases__fulfilled_orders",
+              "schema": "RecommendationPurchase"
+            }
+          ]
+        },
+        {
           "input_lane": "feedback_impressions",
           "input_schema": "RecommendationImpression",
           "inputs": [
@@ -9423,13 +12434,13 @@
               "source": "feedback_impressions"
             }
           ],
-          "name": "signals_built.summarize_impressions",
-          "output_lane": "signals_built__impression_facts",
+          "name": "signals_built.recommendation.summarize_impressions",
+          "output_lane": "signals_built__recommendation__impression_facts",
           "output_schema": "DailyRecommendationImpressions",
           "results": [
             {
-              "frame": "signals_built__impression_facts",
-              "lane": "signals_built__impression_facts",
+              "frame": "signals_built__recommendation__impression_facts",
+              "lane": "signals_built__recommendation__impression_facts",
               "schema": "DailyRecommendationImpressions"
             }
           ]
@@ -9457,76 +12468,76 @@
               "input": "click"
             }
           ],
-          "name": "signals_built.summarize_clicks",
-          "output_lane": "signals_built__click_facts",
+          "name": "signals_built.recommendation.summarize_clicks",
+          "output_lane": "signals_built__recommendation__click_facts",
           "output_schema": "DailyRecommendationClicks",
           "results": [
             {
-              "frame": "signals_built__click_facts",
-              "lane": "signals_built__click_facts",
+              "frame": "signals_built__recommendation__click_facts",
+              "lane": "signals_built__recommendation__click_facts",
               "schema": "DailyRecommendationClicks"
             }
           ]
         },
         {
-          "input_lane": "signals_built__impression_facts",
+          "input_lane": "signals_built__recommendation__impression_facts",
           "input_schema": "DailyRecommendationImpressions",
           "inputs": [
             {
               "driving": true,
               "parameter": "impression",
               "schema": "DailyRecommendationImpressions",
-              "source": "signals_built__impression_facts"
+              "source": "signals_built__recommendation__impression_facts"
             }
           ],
-          "name": "signals_built.publish_daily_impressions",
-          "output_lane": "signals_built__daily_impressions",
+          "name": "signals_built.recommendation.publish_daily_impressions",
+          "output_lane": "signals_built__recommendation__daily_impressions",
           "output_schema": "DailyRecommendationImpressions",
           "results": [
             {
-              "frame": "signals_built__daily_impressions",
-              "lane": "signals_built__daily_impressions",
+              "frame": "signals_built__recommendation__daily_impressions",
+              "lane": "signals_built__recommendation__daily_impressions",
               "schema": "DailyRecommendationImpressions"
             }
           ]
         },
         {
-          "input_lane": "signals_built__click_facts",
+          "input_lane": "signals_built__recommendation__click_facts",
           "input_schema": "DailyRecommendationClicks",
           "inputs": [
             {
               "driving": true,
               "parameter": "click",
               "schema": "DailyRecommendationClicks",
-              "source": "signals_built__click_facts"
+              "source": "signals_built__recommendation__click_facts"
             }
           ],
-          "name": "signals_built.publish_daily_clicks",
-          "output_lane": "signals_built__daily_clicks",
+          "name": "signals_built.recommendation.publish_daily_clicks",
+          "output_lane": "signals_built__recommendation__daily_clicks",
           "output_schema": "DailyRecommendationClicks",
           "results": [
             {
-              "frame": "signals_built__daily_clicks",
-              "lane": "signals_built__daily_clicks",
+              "frame": "signals_built__recommendation__daily_clicks",
+              "lane": "signals_built__recommendation__daily_clicks",
               "schema": "DailyRecommendationClicks"
             }
           ]
         },
         {
-          "input_lane": "signals_built__impression_facts",
+          "input_lane": "signals_built__recommendation__impression_facts",
           "input_schema": "DailyRecommendationImpressions",
           "inputs": [
             {
               "driving": true,
               "parameter": "impression",
               "schema": "DailyRecommendationImpressions",
-              "source": "signals_built__impression_facts"
+              "source": "signals_built__recommendation__impression_facts"
             },
             {
               "driving": false,
               "parameter": "click",
               "schema": "DailyRecommendationClicks",
-              "source": "signals_built__click_facts"
+              "source": "signals_built__recommendation__click_facts"
             }
           ],
           "joins": [
@@ -9535,35 +12546,35 @@
               "input": "click"
             }
           ],
-          "name": "signals_built.summarize_signals",
-          "output_lane": "signals_built__signal_totals",
+          "name": "signals_built.recommendation.summarize_signals",
+          "output_lane": "signals_built__recommendation__signal_totals",
           "output_schema": "ProductRecommendationSignalTotals",
           "results": [
             {
-              "frame": "signals_built__signal_totals",
-              "lane": "signals_built__signal_totals",
+              "frame": "signals_built__recommendation__signal_totals",
+              "lane": "signals_built__recommendation__signal_totals",
               "schema": "ProductRecommendationSignalTotals"
             }
           ]
         },
         {
-          "input_lane": "signals_built__signal_totals",
+          "input_lane": "signals_built__recommendation__signal_totals",
           "input_schema": "ProductRecommendationSignalTotals",
           "inputs": [
             {
               "driving": true,
               "parameter": "signal",
               "schema": "ProductRecommendationSignalTotals",
-              "source": "signals_built__signal_totals"
+              "source": "signals_built__recommendation__signal_totals"
             }
           ],
-          "name": "signals_built.publish_signals",
-          "output_lane": "signals_built__signals",
+          "name": "signals_built.recommendation.publish_signals",
+          "output_lane": "signals_built__recommendation__signals",
           "output_schema": "ProductRecommendationSignal",
           "results": [
             {
-              "frame": "signals_built__signals",
-              "lane": "signals_built__signals",
+              "frame": "signals_built__recommendation__signals",
+              "lane": "signals_built__recommendation__signals",
               "schema": "ProductRecommendationSignal"
             }
           ]
@@ -9582,7 +12593,7 @@
               "driving": false,
               "parameter": "product",
               "schema": "CatalogProduct",
-              "source": "cataloged__products"
+              "source": "normalized__catalog"
             }
           ],
           "joins": [
@@ -9603,14 +12614,156 @@
           ]
         },
         {
-          "input_lane": "recommended__selected__requests",
+          "input_lane": "requests",
+          "input_schema": "RecommendationRequest",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "RecommendationRequest",
+              "source": "requests"
+            },
+            {
+              "driving": false,
+              "parameter": "product",
+              "schema": "CatalogProduct",
+              "source": "normalized__catalog"
+            },
+            {
+              "driving": false,
+              "parameter": "taxonomy",
+              "schema": "ExpandedProductTaxonomy",
+              "source": "taxonomy_expanded__expanded"
+            },
+            {
+              "driving": false,
+              "parameter": "session",
+              "schema": "SessionFeature",
+              "source": "signals_built__sessionized__events"
+            },
+            {
+              "driving": false,
+              "parameter": "signal",
+              "schema": "ProductRecommendationSignal",
+              "source": "signals_built__recommendation__signals"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "product"
+            },
+            {
+              "how": "left",
+              "input": "taxonomy"
+            },
+            {
+              "how": "left",
+              "input": "session"
+            },
+            {
+              "how": "left",
+              "input": "signal"
+            }
+          ],
+          "name": "recommended.retrieved.retrieve",
+          "output_lane": "recommended__retrieved__requests",
+          "output_schema": "RecommendationCandidate",
+          "results": [
+            {
+              "frame": "recommended__retrieved__requests",
+              "lane": "recommended__retrieved__requests",
+              "schema": "RecommendationCandidate"
+            }
+          ]
+        },
+        {
+          "input_lane": "recommended__retrieved__requests",
           "input_schema": "RecommendationCandidate",
           "inputs": [
             {
               "driving": true,
               "parameter": "candidate",
               "schema": "RecommendationCandidate",
-              "source": "recommended__selected__requests"
+              "source": "recommended__retrieved__requests"
+            },
+            {
+              "driving": false,
+              "parameter": "suppression",
+              "schema": "MerchandisingSuppression",
+              "source": "suppressions"
+            },
+            {
+              "driving": false,
+              "parameter": "session",
+              "schema": "SessionFeature",
+              "source": "signals_built__sessionized__events"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "suppression"
+            },
+            {
+              "how": "left",
+              "input": "session"
+            }
+          ],
+          "name": "recommended.filtered.evaluate",
+          "output_lane": "recommended__filtered__evaluated",
+          "output_schema": "RecommendationCandidateDecision",
+          "results": [
+            {
+              "frame": "recommended__filtered__evaluated",
+              "lane": "recommended__filtered__evaluated",
+              "schema": "RecommendationCandidateDecision"
+            }
+          ]
+        },
+        {
+          "input_lane": "recommended__retrieved__requests",
+          "input_schema": "RecommendationCandidate",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "candidate",
+              "schema": "RecommendationCandidate",
+              "source": "recommended__retrieved__requests"
+            },
+            {
+              "driving": false,
+              "parameter": "decision",
+              "schema": "RecommendationCandidateDecision",
+              "source": "recommended__filtered__evaluated"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "decision"
+            }
+          ],
+          "name": "recommended.filtered.publish",
+          "output_lane": "recommended__filtered__filtered",
+          "output_schema": "RecommendationCandidate",
+          "results": [
+            {
+              "frame": "recommended__filtered__filtered",
+              "lane": "recommended__filtered__filtered",
+              "schema": "RecommendationCandidate"
+            }
+          ]
+        },
+        {
+          "input_lane": "recommended__filtered__filtered",
+          "input_schema": "RecommendationCandidate",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "candidate",
+              "schema": "RecommendationCandidate",
+              "source": "recommended__filtered__filtered"
             },
             {
               "driving": false,
@@ -9634,7 +12787,7 @@
               "driving": false,
               "parameter": "signal",
               "schema": "ProductRecommendationSignal",
-              "source": "signals_built__signals"
+              "source": "signals_built__recommendation__signals"
             }
           ],
           "joins": [
@@ -9675,6 +12828,74 @@
               "parameter": "candidate",
               "schema": "RankedRecommendationCandidate",
               "source": "recommended__ranked__candidates"
+            },
+            {
+              "driving": false,
+              "parameter": "policy",
+              "schema": "MerchandisingPolicy",
+              "source": "policy"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "policy"
+            }
+          ],
+          "name": "recommended.diversified.decide",
+          "output_lane": "recommended__diversified__decisions",
+          "output_schema": "DiversificationDecision",
+          "results": [
+            {
+              "frame": "recommended__diversified__decisions",
+              "lane": "recommended__diversified__decisions",
+              "schema": "DiversificationDecision"
+            }
+          ]
+        },
+        {
+          "input_lane": "recommended__ranked__candidates",
+          "input_schema": "RankedRecommendationCandidate",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "candidate",
+              "schema": "RankedRecommendationCandidate",
+              "source": "recommended__ranked__candidates"
+            },
+            {
+              "driving": false,
+              "parameter": "decision",
+              "schema": "DiversificationDecision",
+              "source": "recommended__diversified__decisions"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "decision"
+            }
+          ],
+          "name": "recommended.diversified.publish",
+          "output_lane": "recommended__diversified__diversified",
+          "output_schema": "DiversifiedRecommendationCandidate",
+          "results": [
+            {
+              "frame": "recommended__diversified__diversified",
+              "lane": "recommended__diversified__diversified",
+              "schema": "DiversifiedRecommendationCandidate"
+            }
+          ]
+        },
+        {
+          "input_lane": "recommended__diversified__diversified",
+          "input_schema": "DiversifiedRecommendationCandidate",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "candidate",
+              "schema": "DiversifiedRecommendationCandidate",
+              "source": "recommended__diversified__diversified"
             }
           ],
           "name": "recommended.published.select_products",
@@ -9729,254 +12950,6 @@
               "frame": "recommended__summarized__requests",
               "lane": "recommended__summarized__requests",
               "schema": "RecommendationRun"
-            }
-          ]
-        },
-        {
-          "input_lane": "evaluation_requests",
-          "input_schema": "RecommendationRequest",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "request",
-              "schema": "RecommendationRequest",
-              "source": "evaluation_requests"
-            },
-            {
-              "driving": false,
-              "parameter": "batch",
-              "schema": "RecommendationEvaluationBatch",
-              "source": "evaluation_batch"
-            }
-          ],
-          "joins": [
-            {
-              "how": "cross",
-              "input": "batch"
-            }
-          ],
-          "name": "evaluated.selected.select_requests",
-          "output_lane": "evaluated__selected__selected_requests",
-          "output_schema": "RecommendationRequestBehavior",
-          "results": [
-            {
-              "frame": "evaluated__selected__selected_requests",
-              "lane": "evaluated__selected__selected_requests",
-              "schema": "RecommendationRequestBehavior"
-            }
-          ]
-        },
-        {
-          "input_lane": "evaluated__selected__selected_requests",
-          "input_schema": "RecommendationRequestBehavior",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "request",
-              "schema": "RecommendationRequestBehavior",
-              "source": "evaluated__selected__selected_requests"
-            },
-            {
-              "driving": false,
-              "parameter": "impression",
-              "schema": "RecommendationImpression",
-              "source": "evaluation_impressions"
-            }
-          ],
-          "joins": [
-            {
-              "how": "inner",
-              "input": "impression"
-            }
-          ],
-          "name": "evaluated.impressions_measured.select_impressions",
-          "output_lane": "evaluated__impressions_measured__displayed",
-          "output_schema": "RecommendationBehaviorImpression",
-          "results": [
-            {
-              "frame": "evaluated__impressions_measured__displayed",
-              "lane": "evaluated__impressions_measured__displayed",
-              "schema": "RecommendationBehaviorImpression"
-            }
-          ]
-        },
-        {
-          "input_lane": "evaluated__impressions_measured__displayed",
-          "input_schema": "RecommendationBehaviorImpression",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "impression",
-              "schema": "RecommendationBehaviorImpression",
-              "source": "evaluated__impressions_measured__displayed"
-            },
-            {
-              "driving": false,
-              "parameter": "click",
-              "schema": "RecommendationClick",
-              "source": "evaluation_clicks"
-            }
-          ],
-          "joins": [
-            {
-              "how": "inner",
-              "input": "click"
-            }
-          ],
-          "name": "evaluated.impressions_measured.attribute_clicks",
-          "output_lane": "evaluated__impressions_measured__clicked",
-          "output_schema": "RecommendationBehaviorImpression",
-          "results": [
-            {
-              "frame": "evaluated__impressions_measured__clicked",
-              "lane": "evaluated__impressions_measured__clicked",
-              "schema": "RecommendationBehaviorImpression"
-            }
-          ]
-        },
-        {
-          "input_lane": "evaluated__impressions_measured__displayed",
-          "input_schema": "RecommendationBehaviorImpression",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "displayed",
-              "schema": "RecommendationBehaviorImpression",
-              "source": "evaluated__impressions_measured__displayed"
-            },
-            {
-              "driving": false,
-              "parameter": "clicked",
-              "schema": "RecommendationBehaviorImpression",
-              "source": "evaluated__impressions_measured__clicked"
-            }
-          ],
-          "joins": [
-            {
-              "how": "left",
-              "input": "clicked"
-            }
-          ],
-          "name": "evaluated.impressions_measured.measure_impressions",
-          "output_lane": "evaluated__impressions_measured__measured",
-          "output_schema": "RecommendationBehaviorImpression",
-          "results": [
-            {
-              "frame": "evaluated__impressions_measured__measured",
-              "lane": "evaluated__impressions_measured__measured",
-              "schema": "RecommendationBehaviorImpression"
-            }
-          ]
-        },
-        {
-          "input_lane": "evaluated__selected__selected_requests",
-          "input_schema": "RecommendationRequestBehavior",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "request",
-              "schema": "RecommendationRequestBehavior",
-              "source": "evaluated__selected__selected_requests"
-            },
-            {
-              "driving": false,
-              "parameter": "impression",
-              "schema": "RecommendationBehaviorImpression",
-              "source": "evaluated__impressions_measured__measured"
-            }
-          ],
-          "joins": [
-            {
-              "how": "left",
-              "input": "impression"
-            }
-          ],
-          "name": "evaluated.requests_measured.measure_requests",
-          "output_lane": "evaluated__requests_measured__request_behaviors",
-          "output_schema": "RecommendationRequestBehavior",
-          "results": [
-            {
-              "frame": "evaluated__requests_measured__request_behaviors",
-              "lane": "evaluated__requests_measured__request_behaviors",
-              "schema": "RecommendationRequestBehavior"
-            }
-          ]
-        },
-        {
-          "input_lane": "evaluated__impressions_measured__measured",
-          "input_schema": "RecommendationBehaviorImpression",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "impression",
-              "schema": "RecommendationBehaviorImpression",
-              "source": "evaluated__impressions_measured__measured"
-            }
-          ],
-          "name": "evaluated.summarized.summarize_exposure",
-          "output_lane": "evaluated__summarized__exposure",
-          "output_schema": "RecommendationExposure",
-          "results": [
-            {
-              "frame": "evaluated__summarized__exposure",
-              "lane": "evaluated__summarized__exposure",
-              "schema": "RecommendationExposure"
-            }
-          ]
-        },
-        {
-          "input_lane": "evaluated__requests_measured__request_behaviors",
-          "input_schema": "RecommendationRequestBehavior",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "request",
-              "schema": "RecommendationRequestBehavior",
-              "source": "evaluated__requests_measured__request_behaviors"
-            }
-          ],
-          "name": "evaluated.summarized.summarize_requests",
-          "output_lane": "evaluated__summarized__daily_counts",
-          "output_schema": "DailyRecommendationCounts",
-          "results": [
-            {
-              "frame": "evaluated__summarized__daily_counts",
-              "lane": "evaluated__summarized__daily_counts",
-              "schema": "DailyRecommendationCounts"
-            }
-          ]
-        },
-        {
-          "input_lane": "evaluated__summarized__daily_counts",
-          "input_schema": "DailyRecommendationCounts",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "daily",
-              "schema": "DailyRecommendationCounts",
-              "source": "evaluated__summarized__daily_counts"
-            },
-            {
-              "driving": false,
-              "parameter": "exposure",
-              "schema": "RecommendationExposure",
-              "source": "evaluated__summarized__exposure"
-            }
-          ],
-          "joins": [
-            {
-              "how": "left",
-              "input": "exposure"
-            }
-          ],
-          "name": "evaluated.summarized.publish_daily",
-          "output_lane": "evaluated__summarized__daily_behavior",
-          "output_schema": "DailyRecommendationBehavior",
-          "results": [
-            {
-              "frame": "evaluated__summarized__daily_behavior",
-              "lane": "evaluated__summarized__daily_behavior",
-              "schema": "DailyRecommendationBehavior"
             }
           ]
         }
@@ -10261,107 +13234,6 @@
       "target_artifacts": {
         "pyspark_transform": "pyspark/transforms/order.py",
         "traceability": "traceability/transforms/order.EnrichOrders.json"
-      }
-    },
-    {
-      "dependencies": [],
-      "inputs": [
-        {
-          "name": "fulfilled",
-          "ordinal": 0,
-          "schema": "OrderFulfillment"
-        }
-      ],
-      "name": "OrderAnalytics",
-      "outputs": [
-        {
-          "name": "customer_totals",
-          "ordinal": 0,
-          "schema": "CustomerDailyTotal"
-        },
-        {
-          "name": "product_summary",
-          "ordinal": 1,
-          "schema": "ProductDailySummary"
-        },
-        {
-          "name": "customer_event_rank",
-          "ordinal": 2,
-          "schema": "CustomerEventRank"
-        }
-      ],
-      "source": "examples.store.transforms.order_analytics.workflow.OrderAnalytics",
-      "step_methods": [
-        {
-          "input_lane": "fulfilled",
-          "input_schema": "OrderFulfillment",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "order",
-              "schema": "OrderFulfillment",
-              "source": "fulfilled"
-            }
-          ],
-          "name": "customer.customer_daily_totals",
-          "output_lane": "customer__customer_totals",
-          "output_schema": "CustomerDailyTotal",
-          "results": [
-            {
-              "frame": "customer__customer_totals",
-              "lane": "customer__customer_totals",
-              "schema": "CustomerDailyTotal"
-            }
-          ]
-        },
-        {
-          "input_lane": "fulfilled",
-          "input_schema": "OrderFulfillment",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "order",
-              "schema": "OrderFulfillment",
-              "source": "fulfilled"
-            }
-          ],
-          "name": "product.product_daily_summary",
-          "output_lane": "product__product_summary",
-          "output_schema": "ProductDailySummary",
-          "results": [
-            {
-              "frame": "product__product_summary",
-              "lane": "product__product_summary",
-              "schema": "ProductDailySummary"
-            }
-          ]
-        },
-        {
-          "input_lane": "fulfilled",
-          "input_schema": "OrderFulfillment",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "order",
-              "schema": "OrderFulfillment",
-              "source": "fulfilled"
-            }
-          ],
-          "name": "ranks.customer_event_ranks",
-          "output_lane": "ranks__customer_event_rank",
-          "output_schema": "CustomerEventRank",
-          "results": [
-            {
-              "frame": "ranks__customer_event_rank",
-              "lane": "ranks__customer_event_rank",
-              "schema": "CustomerEventRank"
-            }
-          ]
-        }
-      ],
-      "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/order_analytics_workflow.py",
-        "traceability": "traceability/transforms/order_analytics_workflow.OrderAnalytics.json"
       }
     },
     {

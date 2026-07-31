@@ -9,8 +9,12 @@ RECOMMENDATION_REQUEST_SCHEMA = T.StructType([
     T.StructField("tenant", TENANT_KEY_SCHEMA, False),
     T.StructField("id", T.StringType(), False),
     T.StructField("customer_id", T.StringType(), True),
+    T.StructField("session_id", T.StringType(), True),
     T.StructField("strategy_id", T.StringType(), False),
     T.StructField("policy_version", T.StringType(), False),
+    T.StructField("experiment_id", T.StringType(), True),
+    T.StructField("experiment_version", T.StringType(), True),
+    T.StructField("variant_id", T.StringType(), True),
     T.StructField("category", T.StringType(), True),
     T.StructField("collection_id", T.StringType(), True),
     T.StructField("requested_at", T.TimestampType(), False),
@@ -33,6 +37,17 @@ RECOMMENDED_PRODUCT_SCHEMA = T.StructType([
     T.StructField("feedback_score", T.DoubleType(), False),
     T.StructField("final_score", T.DoubleType(), False),
     T.StructField("feedback_contributed", T.BooleanType(), False),
+    T.StructField("candidate_source", T.StringType(), False),
+    T.StructField("taxonomy_id", T.StringType(), True),
+    T.StructField("taxonomy_branch", T.StringType(), True),
+    T.StructField("session_match", T.BooleanType(), False),
+    T.StructField("purchase_signal", T.DoubleType(), False),
+    T.StructField("eligibility_status", T.StringType(), False),
+    T.StructField("diversity_selected", T.BooleanType(), False),
+    T.StructField("diversity_exclusion_reason", T.StringType(), True),
+    T.StructField("experiment_id", T.StringType(), True),
+    T.StructField("experiment_version", T.StringType(), True),
+    T.StructField("variant_id", T.StringType(), True),
 ])
 
 RECOMMENDATION_RUN_SCHEMA = T.StructType([
@@ -42,4 +57,7 @@ RECOMMENDATION_RUN_SCHEMA = T.StructType([
     T.StructField("policy_version", T.StringType(), False),
     T.StructField("result_count", T.LongType(), False),
     T.StructField("feedback_contributed", T.BooleanType(), False),
+    T.StructField("experiment_id", T.StringType(), True),
+    T.StructField("experiment_version", T.StringType(), True),
+    T.StructField("variant_id", T.StringType(), True),
 ])

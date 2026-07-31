@@ -2,13 +2,13 @@
 
 # RecommendationExposure
 
-Module: `examples.store.schemas.merchandising.intermediate`
+Module: `examples.store.schemas.experiment`
 
 | Field | Column | Type | Nullable |
 | --- | --- | --- | --- |
-| `window` | `window` | `TimeWindow` | no |
 | `tenant` | `tenant` | `TenantKey` | no |
-| `strategy_id` | `strategy_id` | `string` | no |
-| `policy_version` | `policy_version` | `string` | no |
-| `exposure_weight` | `exposure_weight` | `double` | no |
-| `click_weight` | `click_weight` | `double` | no |
+| `request_id` | `request_id` | `string` | no |
+| `experiment_id` | `experiment_id` | `string` | no |
+| `experiment_version` | `experiment_version` | `string` | no |
+| `variant_id` | `variant_id` | `string` | no |
+| `exposed_at` | `exposed_at` | `timestamp` | no |

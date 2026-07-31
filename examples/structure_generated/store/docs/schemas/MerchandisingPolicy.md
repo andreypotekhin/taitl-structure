@@ -12,3 +12,4 @@ Module: `examples.store.schemas.merchandising.policy`
 | `maximum_results` | `maximum_results` | `long` | no |
 | `minimum_feedback_impressions` | `minimum_feedback_impressions` | `long` | no |
 | `feedback_weight` | `feedback_weight` | `double` | no |
+| `maximum_per_taxonomy_branch` | `maximum_per_taxonomy_branch` | `long` | yes |

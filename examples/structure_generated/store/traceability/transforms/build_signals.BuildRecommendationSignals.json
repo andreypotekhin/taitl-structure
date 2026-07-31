@@ -20,372 +20,392 @@
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated",
       "ir": "ir:BuildRecommendationSignals",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.input.impressions",
       "ir": "ir:BuildRecommendationSignals.input.0.impressions",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.input.impressions"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.input.impressions"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.input.clicks",
       "ir": "ir:BuildRecommendationSignals.input.1.clicks",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.input.clicks"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.input.clicks"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.0.summarize_impressions",
       "ir": "ir:BuildRecommendationSignals.step.0.summarize_impressions",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_impressions"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_impressions"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.0.summarize_impressions.aggregate.window",
       "ir": "ir:BuildRecommendationSignals.step.0.summarize_impressions.aggregate.window",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_impressions.aggregate.window"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_impressions.aggregate.window"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.0.summarize_impressions.aggregate.tenant",
       "ir": "ir:BuildRecommendationSignals.step.0.summarize_impressions.aggregate.tenant",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_impressions.aggregate.tenant"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_impressions.aggregate.tenant"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.0.summarize_impressions.aggregate.strategy_id",
       "ir": "ir:BuildRecommendationSignals.step.0.summarize_impressions.aggregate.strategy_id",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_impressions.aggregate.strategy_id"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_impressions.aggregate.strategy_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.0.summarize_impressions.aggregate.policy_version",
       "ir": "ir:BuildRecommendationSignals.step.0.summarize_impressions.aggregate.policy_version",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_impressions.aggregate.policy_version"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_impressions.aggregate.policy_version"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.0.summarize_impressions.aggregate.product_id",
       "ir": "ir:BuildRecommendationSignals.step.0.summarize_impressions.aggregate.product_id",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_impressions.aggregate.product_id"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_impressions.aggregate.product_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.0.summarize_impressions.aggregate.rank",
       "ir": "ir:BuildRecommendationSignals.step.0.summarize_impressions.aggregate.rank",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_impressions.aggregate.rank"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_impressions.aggregate.rank"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.0.summarize_impressions.aggregate.examination_propensity",
       "ir": "ir:BuildRecommendationSignals.step.0.summarize_impressions.aggregate.examination_propensity",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_impressions.aggregate.examination_propensity"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_impressions.aggregate.examination_propensity"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.0.summarize_impressions.aggregate.impression_count",
       "ir": "ir:BuildRecommendationSignals.step.0.summarize_impressions.aggregate.impression_count",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_impressions.aggregate.impression_count"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_impressions.aggregate.impression_count"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.0.summarize_impressions.drop_duplicates.1",
       "ir": "ir:BuildRecommendationSignals.step.0.summarize_impressions.drop_duplicates.1",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_impressions.drop_duplicates.1"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_impressions.drop_duplicates.1"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.0.summarize_impressions.validation.0.intermediate",
       "ir": "ir:BuildRecommendationSignals.step.0.summarize_impressions.validation.0.intermediate",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_impressions.validation.0.intermediate"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_impressions.validation.0.intermediate"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.1.summarize_clicks",
       "ir": "ir:BuildRecommendationSignals.step.1.summarize_clicks",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_clicks"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_clicks"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.1.summarize_clicks.join.1.click",
       "ir": "ir:BuildRecommendationSignals.step.1.summarize_clicks.join.1.click",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_clicks.join.1.click"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_clicks.join.1.click"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.1.summarize_clicks.aggregate.window",
       "ir": "ir:BuildRecommendationSignals.step.1.summarize_clicks.aggregate.window",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_clicks.aggregate.window"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_clicks.aggregate.window"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.1.summarize_clicks.aggregate.tenant",
       "ir": "ir:BuildRecommendationSignals.step.1.summarize_clicks.aggregate.tenant",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_clicks.aggregate.tenant"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_clicks.aggregate.tenant"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.1.summarize_clicks.aggregate.strategy_id",
       "ir": "ir:BuildRecommendationSignals.step.1.summarize_clicks.aggregate.strategy_id",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_clicks.aggregate.strategy_id"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_clicks.aggregate.strategy_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.1.summarize_clicks.aggregate.policy_version",
       "ir": "ir:BuildRecommendationSignals.step.1.summarize_clicks.aggregate.policy_version",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_clicks.aggregate.policy_version"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_clicks.aggregate.policy_version"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.1.summarize_clicks.aggregate.product_id",
       "ir": "ir:BuildRecommendationSignals.step.1.summarize_clicks.aggregate.product_id",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_clicks.aggregate.product_id"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_clicks.aggregate.product_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.1.summarize_clicks.aggregate.rank",
       "ir": "ir:BuildRecommendationSignals.step.1.summarize_clicks.aggregate.rank",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_clicks.aggregate.rank"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_clicks.aggregate.rank"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.1.summarize_clicks.aggregate.examination_propensity",
       "ir": "ir:BuildRecommendationSignals.step.1.summarize_clicks.aggregate.examination_propensity",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_clicks.aggregate.examination_propensity"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_clicks.aggregate.examination_propensity"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.1.summarize_clicks.aggregate.click_count",
       "ir": "ir:BuildRecommendationSignals.step.1.summarize_clicks.aggregate.click_count",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_clicks.aggregate.click_count"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_clicks.aggregate.click_count"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.1.summarize_clicks.aggregate.clicked_impression_count",
       "ir": "ir:BuildRecommendationSignals.step.1.summarize_clicks.aggregate.clicked_impression_count",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_clicks.aggregate.clicked_impression_count"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_clicks.aggregate.clicked_impression_count"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.1.summarize_clicks.drop_duplicates.2",
       "ir": "ir:BuildRecommendationSignals.step.1.summarize_clicks.drop_duplicates.2",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_clicks.drop_duplicates.2"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_clicks.drop_duplicates.2"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.1.summarize_clicks.drop_duplicates.3",
       "ir": "ir:BuildRecommendationSignals.step.1.summarize_clicks.drop_duplicates.3",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_clicks.drop_duplicates.3"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_clicks.drop_duplicates.3"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.1.summarize_clicks.validation.0.intermediate",
       "ir": "ir:BuildRecommendationSignals.step.1.summarize_clicks.validation.0.intermediate",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_clicks.validation.0.intermediate"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_clicks.validation.0.intermediate"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.2.publish_daily_impressions",
       "ir": "ir:BuildRecommendationSignals.step.2.publish_daily_impressions",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.publish_daily_impressions"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_daily_impressions"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.2.publish_daily_impressions.select.window",
       "ir": "ir:BuildRecommendationSignals.step.2.publish_daily_impressions.project.window",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.publish_daily_impressions.field.window"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_daily_impressions.field.window"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.2.publish_daily_impressions.select.tenant",
       "ir": "ir:BuildRecommendationSignals.step.2.publish_daily_impressions.project.tenant",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.publish_daily_impressions.field.tenant"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_daily_impressions.field.tenant"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.2.publish_daily_impressions.select.strategy_id",
       "ir": "ir:BuildRecommendationSignals.step.2.publish_daily_impressions.project.strategy_id",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.publish_daily_impressions.field.strategy_id"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_daily_impressions.field.strategy_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.2.publish_daily_impressions.select.policy_version",
       "ir": "ir:BuildRecommendationSignals.step.2.publish_daily_impressions.project.policy_version",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.publish_daily_impressions.field.policy_version"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_daily_impressions.field.policy_version"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.2.publish_daily_impressions.select.product_id",
       "ir": "ir:BuildRecommendationSignals.step.2.publish_daily_impressions.project.product_id",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.publish_daily_impressions.field.product_id"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_daily_impressions.field.product_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.2.publish_daily_impressions.select.rank",
       "ir": "ir:BuildRecommendationSignals.step.2.publish_daily_impressions.project.rank",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.publish_daily_impressions.field.rank"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_daily_impressions.field.rank"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.2.publish_daily_impressions.select.examination_propensity",
       "ir": "ir:BuildRecommendationSignals.step.2.publish_daily_impressions.project.examination_propensity",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.publish_daily_impressions.field.examination_propensity"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_daily_impressions.field.examination_propensity"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.2.publish_daily_impressions.select.impression_count",
       "ir": "ir:BuildRecommendationSignals.step.2.publish_daily_impressions.project.impression_count",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.publish_daily_impressions.field.impression_count"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_daily_impressions.field.impression_count"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.2.publish_daily_impressions.validation.0.intermediate",
       "ir": "ir:BuildRecommendationSignals.step.2.publish_daily_impressions.validation.0.intermediate",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.publish_daily_impressions.validation.0.intermediate"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_daily_impressions.validation.0.intermediate"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.3.publish_daily_clicks",
       "ir": "ir:BuildRecommendationSignals.step.3.publish_daily_clicks",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.publish_daily_clicks"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_daily_clicks"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.3.publish_daily_clicks.select.window",
       "ir": "ir:BuildRecommendationSignals.step.3.publish_daily_clicks.project.window",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.publish_daily_clicks.field.window"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_daily_clicks.field.window"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.3.publish_daily_clicks.select.tenant",
       "ir": "ir:BuildRecommendationSignals.step.3.publish_daily_clicks.project.tenant",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.publish_daily_clicks.field.tenant"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_daily_clicks.field.tenant"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.3.publish_daily_clicks.select.strategy_id",
       "ir": "ir:BuildRecommendationSignals.step.3.publish_daily_clicks.project.strategy_id",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.publish_daily_clicks.field.strategy_id"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_daily_clicks.field.strategy_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.3.publish_daily_clicks.select.policy_version",
       "ir": "ir:BuildRecommendationSignals.step.3.publish_daily_clicks.project.policy_version",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.publish_daily_clicks.field.policy_version"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_daily_clicks.field.policy_version"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.3.publish_daily_clicks.select.product_id",
       "ir": "ir:BuildRecommendationSignals.step.3.publish_daily_clicks.project.product_id",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.publish_daily_clicks.field.product_id"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_daily_clicks.field.product_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.3.publish_daily_clicks.select.rank",
       "ir": "ir:BuildRecommendationSignals.step.3.publish_daily_clicks.project.rank",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.publish_daily_clicks.field.rank"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_daily_clicks.field.rank"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.3.publish_daily_clicks.select.examination_propensity",
       "ir": "ir:BuildRecommendationSignals.step.3.publish_daily_clicks.project.examination_propensity",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.publish_daily_clicks.field.examination_propensity"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_daily_clicks.field.examination_propensity"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.3.publish_daily_clicks.select.click_count",
       "ir": "ir:BuildRecommendationSignals.step.3.publish_daily_clicks.project.click_count",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.publish_daily_clicks.field.click_count"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_daily_clicks.field.click_count"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.3.publish_daily_clicks.select.clicked_impression_count",
       "ir": "ir:BuildRecommendationSignals.step.3.publish_daily_clicks.project.clicked_impression_count",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.publish_daily_clicks.field.clicked_impression_count"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_daily_clicks.field.clicked_impression_count"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.3.publish_daily_clicks.validation.0.intermediate",
       "ir": "ir:BuildRecommendationSignals.step.3.publish_daily_clicks.validation.0.intermediate",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.publish_daily_clicks.validation.0.intermediate"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_daily_clicks.validation.0.intermediate"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.4.summarize_signals",
       "ir": "ir:BuildRecommendationSignals.step.4.summarize_signals",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_signals"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_signals"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.4.summarize_signals.join.1.click",
       "ir": "ir:BuildRecommendationSignals.step.4.summarize_signals.join.1.click",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_signals.join.1.click"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_signals.join.1.click"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.4.summarize_signals.aggregate.tenant",
       "ir": "ir:BuildRecommendationSignals.step.4.summarize_signals.aggregate.tenant",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_signals.aggregate.tenant"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_signals.aggregate.tenant"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.4.summarize_signals.aggregate.strategy_id",
       "ir": "ir:BuildRecommendationSignals.step.4.summarize_signals.aggregate.strategy_id",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_signals.aggregate.strategy_id"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_signals.aggregate.strategy_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.4.summarize_signals.aggregate.product_id",
       "ir": "ir:BuildRecommendationSignals.step.4.summarize_signals.aggregate.product_id",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_signals.aggregate.product_id"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_signals.aggregate.product_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.4.summarize_signals.aggregate.impression_count",
       "ir": "ir:BuildRecommendationSignals.step.4.summarize_signals.aggregate.impression_count",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_signals.aggregate.impression_count"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_signals.aggregate.impression_count"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.4.summarize_signals.aggregate.clicked_impression_count",
       "ir": "ir:BuildRecommendationSignals.step.4.summarize_signals.aggregate.clicked_impression_count",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_signals.aggregate.clicked_impression_count"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_signals.aggregate.clicked_impression_count"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.4.summarize_signals.aggregate.raw_click_count",
       "ir": "ir:BuildRecommendationSignals.step.4.summarize_signals.aggregate.raw_click_count",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_signals.aggregate.raw_click_count"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_signals.aggregate.raw_click_count"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.4.summarize_signals.aggregate.click_through_rate",
       "ir": "ir:BuildRecommendationSignals.step.4.summarize_signals.aggregate.click_through_rate",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_signals.aggregate.click_through_rate"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_signals.aggregate.click_through_rate"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.4.summarize_signals.aggregate.exposure_adjusted_click_rate",
       "ir": "ir:BuildRecommendationSignals.step.4.summarize_signals.aggregate.exposure_adjusted_click_rate",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_signals.aggregate.exposure_adjusted_click_rate"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_signals.aggregate.exposure_adjusted_click_rate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.4.summarize_signals.aggregate.attributed_purchase_count",
+      "ir": "ir:BuildRecommendationSignals.step.4.summarize_signals.aggregate.attributed_purchase_count",
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_signals.aggregate.attributed_purchase_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.4.summarize_signals.aggregate.conversion_rate",
+      "ir": "ir:BuildRecommendationSignals.step.4.summarize_signals.aggregate.conversion_rate",
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_signals.aggregate.conversion_rate"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.4.summarize_signals.aggregate.exposure_weight",
       "ir": "ir:BuildRecommendationSignals.step.4.summarize_signals.aggregate.exposure_weight",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_signals.aggregate.exposure_weight"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_signals.aggregate.exposure_weight"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.4.summarize_signals.aggregate.click_weight",
       "ir": "ir:BuildRecommendationSignals.step.4.summarize_signals.aggregate.click_weight",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_signals.aggregate.click_weight"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_signals.aggregate.click_weight"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.4.summarize_signals.validation.0.intermediate",
       "ir": "ir:BuildRecommendationSignals.step.4.summarize_signals.validation.0.intermediate",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.summarize_signals.validation.0.intermediate"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.summarize_signals.validation.0.intermediate"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.5.publish_signals",
       "ir": "ir:BuildRecommendationSignals.step.5.publish_signals",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.publish_signals"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_signals"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.5.publish_signals.select.tenant",
       "ir": "ir:BuildRecommendationSignals.step.5.publish_signals.project.tenant",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.publish_signals.field.tenant"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_signals.field.tenant"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.5.publish_signals.select.strategy_id",
       "ir": "ir:BuildRecommendationSignals.step.5.publish_signals.project.strategy_id",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.publish_signals.field.strategy_id"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_signals.field.strategy_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.5.publish_signals.select.product_id",
       "ir": "ir:BuildRecommendationSignals.step.5.publish_signals.project.product_id",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.publish_signals.field.product_id"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_signals.field.product_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.5.publish_signals.select.impression_count",
       "ir": "ir:BuildRecommendationSignals.step.5.publish_signals.project.impression_count",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.publish_signals.field.impression_count"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_signals.field.impression_count"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.5.publish_signals.select.clicked_impression_count",
       "ir": "ir:BuildRecommendationSignals.step.5.publish_signals.project.clicked_impression_count",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.publish_signals.field.clicked_impression_count"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_signals.field.clicked_impression_count"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.5.publish_signals.select.raw_click_count",
       "ir": "ir:BuildRecommendationSignals.step.5.publish_signals.project.raw_click_count",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.publish_signals.field.raw_click_count"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_signals.field.raw_click_count"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.5.publish_signals.select.click_through_rate",
       "ir": "ir:BuildRecommendationSignals.step.5.publish_signals.project.click_through_rate",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.publish_signals.field.click_through_rate"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_signals.field.click_through_rate"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.5.publish_signals.select.exposure_adjusted_click_rate",
       "ir": "ir:BuildRecommendationSignals.step.5.publish_signals.project.exposure_adjusted_click_rate",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.publish_signals.field.exposure_adjusted_click_rate"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_signals.field.exposure_adjusted_click_rate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.5.publish_signals.select.attributed_purchase_count",
+      "ir": "ir:BuildRecommendationSignals.step.5.publish_signals.project.attributed_purchase_count",
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_signals.field.attributed_purchase_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.step.5.publish_signals.select.conversion_rate",
+      "ir": "ir:BuildRecommendationSignals.step.5.publish_signals.project.conversion_rate",
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.publish_signals.field.conversion_rate"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.output.0.daily_impressions.validation.final",
       "ir": "ir:BuildRecommendationSignals.output.0.daily_impressions.validation.final",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.output.daily_impressions"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.output.daily_impressions"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.output.1.daily_clicks.validation.final",
       "ir": "ir:BuildRecommendationSignals.output.1.daily_clicks.validation.final",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.output.daily_clicks"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.output.daily_clicks"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.build_signals.BuildRecommendationSignalsGenerated.run.output.2.signals.validation.final",
       "ir": "ir:BuildRecommendationSignals.output.2.signals.validation.final",
-      "source": "source:examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.output.signals"
+      "source": "source:examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals.output.signals"
     }
   ],
   "schema_constants": {
@@ -456,6 +476,22 @@
     "DemandWindow": {
       "constant": "DEMAND_WINDOW_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.projection"
+    },
+    "DiversificationDecision": {
+      "constant": "DIVERSIFICATION_DECISION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "DiversifiedRecommendationCandidate": {
+      "constant": "DIVERSIFIED_RECOMMENDATION_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "EvaluationBatch": {
+      "constant": "EVALUATION_BATCH_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.batch"
+    },
+    "ExpandedProductTaxonomy": {
+      "constant": "EXPANDED_PRODUCT_TAXONOMY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
     },
     "FulfillmentAllocation": {
       "constant": "FULFILLMENT_ALLOCATION_SCHEMA",
@@ -621,6 +657,10 @@
       "constant": "PRODUCT_RECOMMENDATION_SIGNAL_TOTALS_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
     },
+    "ProductTaxonomy": {
+      "constant": "PRODUCT_TAXONOMY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
+    },
     "Promotion": {
       "constant": "PROMOTION_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.promotion"
@@ -633,12 +673,24 @@
       "constant": "RANKED_RECOMMENDATION_CANDIDATE_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
     },
+    "RecommendationAssignment": {
+      "constant": "RECOMMENDATION_ASSIGNMENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.experiment"
+    },
+    "RecommendationBehavior": {
+      "constant": "RECOMMENDATION_BEHAVIOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendations"
+    },
     "RecommendationBehaviorImpression": {
       "constant": "RECOMMENDATION_BEHAVIOR_IMPRESSION_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
     },
     "RecommendationCandidate": {
       "constant": "RECOMMENDATION_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+    },
+    "RecommendationCandidateDecision": {
+      "constant": "RECOMMENDATION_CANDIDATE_DECISION_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.catalog"
     },
     "RecommendationClick": {
@@ -653,12 +705,20 @@
       "constant": "RECOMMENDATION_EVALUATION_BATCH_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.evaluation"
     },
+    "RecommendationExperiment": {
+      "constant": "RECOMMENDATION_EXPERIMENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.experiment"
+    },
     "RecommendationExposure": {
       "constant": "RECOMMENDATION_EXPOSURE_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+      "module": "examples.structure_generated.store.pyspark.schemas.experiment"
     },
     "RecommendationImpression": {
       "constant": "RECOMMENDATION_IMPRESSION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "RecommendationPurchase": {
+      "constant": "RECOMMENDATION_PURCHASE_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.feedback"
     },
     "RecommendationRequest": {
@@ -673,6 +733,14 @@
       "constant": "RECOMMENDATION_RUN_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
     },
+    "RecommendationVariantMetric": {
+      "constant": "RECOMMENDATION_VARIANT_METRIC_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendations"
+    },
+    "RecommendationVariantMetricTotals": {
+      "constant": "RECOMMENDATION_VARIANT_METRIC_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendations"
+    },
     "RecommendedProduct": {
       "constant": "RECOMMENDED_PRODUCT_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
@@ -685,6 +753,14 @@
       "constant": "SERVICE_RISK_TARGET_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.exception"
     },
+    "SessionEvent": {
+      "constant": "SESSION_EVENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.session"
+    },
+    "SessionFeature": {
+      "constant": "SESSION_FEATURE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.session"
+    },
     "Shipment": {
       "constant": "SHIPMENT_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.shipment"
@@ -692,6 +768,14 @@
     "SubstitutionRule": {
       "constant": "SUBSTITUTION_RULE_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.substitution"
+    },
+    "TaxonomyAncestor": {
+      "constant": "TAXONOMY_ANCESTOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
+    },
+    "TaxonomyNode": {
+      "constant": "TAXONOMY_NODE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
     },
     "TenantKey": {
       "constant": "TENANT_KEY_SCHEMA",
@@ -706,7 +790,7 @@
       "module": "examples.structure_generated.store.pyspark.schemas.summary"
     }
   },
-  "source_transform": "examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals",
+  "source_transform": "examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals",
   "static_dataflow": {
     "dependencies": [
       {
@@ -1377,6 +1461,32 @@
       },
       {
         "detail": {
+          "field": "attributed_purchase_count",
+          "function": "sum",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "impression_facts"
+        ],
+        "step": "summarize_signals",
+        "target": "ProductRecommendationSignalTotals.attributed_purchase_count"
+      },
+      {
+        "detail": {
+          "field": "conversion_rate",
+          "function": "sum",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "impression_facts"
+        ],
+        "step": "summarize_signals",
+        "target": "ProductRecommendationSignalTotals.conversion_rate"
+      },
+      {
+        "detail": {
           "field": "exposure_weight",
           "function": "sum",
           "key": null
@@ -1504,6 +1614,29 @@
         ],
         "step": "publish_signals",
         "target": "ProductRecommendationSignal.exposure_adjusted_click_rate"
+      },
+      {
+        "detail": {
+          "field": "attributed_purchase_count"
+        },
+        "operation": "project",
+        "sources": [
+          "ProductRecommendationSignalTotals.attributed_purchase_count"
+        ],
+        "step": "publish_signals",
+        "target": "ProductRecommendationSignal.attributed_purchase_count"
+      },
+      {
+        "detail": {
+          "field": "conversion_rate"
+        },
+        "operation": "project",
+        "sources": [
+          "ProductRecommendationSignalTotals.impression_count",
+          "ProductRecommendationSignalTotals.attributed_purchase_count"
+        ],
+        "step": "publish_signals",
+        "target": "ProductRecommendationSignal.conversion_rate"
       },
       {
         "detail": {

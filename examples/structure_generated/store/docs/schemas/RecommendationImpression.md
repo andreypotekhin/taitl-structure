@@ -14,4 +14,9 @@ Module: `examples.store.schemas.merchandising.feedback`
 | `product_id` | `product_id` | `string` | no |
 | `rank` | `rank` | `long` | no |
 | `examination_propensity` | `examination_propensity` | `double` | no |
+| `customer_id` | `customer_id` | `string` | yes |
+| `session_id` | `session_id` | `string` | yes |
+| `experiment_id` | `experiment_id` | `string` | yes |
+| `experiment_version` | `experiment_version` | `string` | yes |
+| `variant_id` | `variant_id` | `string` | yes |
 | `shown_at` | `shown_at` | `timestamp` | no |

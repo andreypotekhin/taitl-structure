@@ -12,3 +12,6 @@ Module: `examples.store.schemas.merchandising.recommendation`
 | `policy_version` | `policy_version` | `string` | no |
 | `result_count` | `result_count` | `long` | no |
 | `feedback_contributed` | `feedback_contributed` | `boolean` | no |
+| `experiment_id` | `experiment_id` | `string` | yes |
+| `experiment_version` | `experiment_version` | `string` | yes |
+| `variant_id` | `variant_id` | `string` | yes |

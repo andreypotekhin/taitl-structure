@@ -21,4 +21,10 @@ class SelectRecommendationCandidates(Transform):
             category_filter=request.category,
             category=product.category,
             inventory_boost=0.0,
+            candidate_source="catalog",
+            taxonomy_id=None,
+            taxonomy_branch=product.category,
+            session_match=False,
+            purchase_signal=0.0,
+            eligibility_status="eligible",
         )

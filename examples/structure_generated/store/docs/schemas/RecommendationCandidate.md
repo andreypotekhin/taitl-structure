@@ -10,8 +10,12 @@ Module: `examples.store.schemas.merchandising.catalog`
 | `request_id` | `request_id` | `string` | no |
 | `requested_at` | `requested_at` | `timestamp` | no |
 | `customer_id` | `customer_id` | `string` | yes |
+| `session_id` | `session_id` | `string` | yes |
 | `strategy_id` | `strategy_id` | `string` | no |
 | `policy_version` | `policy_version` | `string` | no |
+| `experiment_id` | `experiment_id` | `string` | yes |
+| `experiment_version` | `experiment_version` | `string` | yes |
+| `variant_id` | `variant_id` | `string` | yes |
 | `category_filter` | `category_filter` | `string` | yes |
 | `collection_id` | `collection_id` | `string` | yes |
 | `product_id` | `product_id` | `string` | no |
@@ -22,3 +26,9 @@ Module: `examples.store.schemas.merchandising.catalog`
 | `base_score` | `base_score` | `double` | no |
 | `promotion_score` | `promotion_score` | `double` | no |
 | `inventory_boost` | `inventory_boost` | `double` | no |
+| `candidate_source` | `candidate_source` | `string` | no |
+| `taxonomy_id` | `taxonomy_id` | `string` | yes |
+| `taxonomy_branch` | `taxonomy_branch` | `string` | yes |
+| `session_match` | `session_match` | `boolean` | no |
+| `purchase_signal` | `purchase_signal` | `double` | no |
+| `eligibility_status` | `eligibility_status` | `string` | no |

@@ -19,8 +19,7 @@ class PrepareCatalog(Transform):
         where(product.active)
         where(
             not_exists(
-                on=(blocked_product.tenant.tenant_id == product.tenant.tenant_id)
-                & (blocked_product.id == product.id)
+                on=(blocked_product.tenant.tenant_id == product.tenant.tenant_id) & (blocked_product.id == product.id)
             )
         )
         left_join(

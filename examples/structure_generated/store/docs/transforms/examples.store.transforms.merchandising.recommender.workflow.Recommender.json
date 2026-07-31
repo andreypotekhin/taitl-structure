@@ -3,13 +3,19 @@
     "boost",
     "boosts",
     "catalog",
+    "decision",
+    "diversified__decisions",
+    "filtered__evaluated",
     "policy",
     "product",
     "published__ranked_candidates",
+    "session",
+    "session_features",
     "signal",
     "signals",
     "suppression",
-    "suppressions"
+    "suppressions",
+    "taxonomy"
   ],
   "generated_by": "Structure",
   "inputs": [
@@ -24,24 +30,34 @@
       "schema": "CatalogProduct"
     },
     {
-      "name": "policy",
+      "name": "taxonomy",
       "ordinal": 2,
+      "schema": "ExpandedProductTaxonomy"
+    },
+    {
+      "name": "session_features",
+      "ordinal": 3,
+      "schema": "SessionFeature"
+    },
+    {
+      "name": "signals",
+      "ordinal": 4,
+      "schema": "ProductRecommendationSignal"
+    },
+    {
+      "name": "suppressions",
+      "ordinal": 5,
+      "schema": "MerchandisingSuppression"
+    },
+    {
+      "name": "policy",
+      "ordinal": 6,
       "schema": "MerchandisingPolicy"
     },
     {
       "name": "boosts",
-      "ordinal": 3,
+      "ordinal": 7,
       "schema": "MerchandisingBoost"
-    },
-    {
-      "name": "suppressions",
-      "ordinal": 4,
-      "schema": "MerchandisingSuppression"
-    },
-    {
-      "name": "signals",
-      "ordinal": 5,
-      "schema": "ProductRecommendationSignal"
     }
   ],
   "name": "Recommender",
@@ -94,14 +110,156 @@
       ]
     },
     {
-      "input_lane": "selected__requests",
+      "input_lane": "requests",
+      "input_schema": "RecommendationRequest",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "request",
+          "schema": "RecommendationRequest",
+          "source": "requests"
+        },
+        {
+          "driving": false,
+          "parameter": "product",
+          "schema": "CatalogProduct",
+          "source": "catalog"
+        },
+        {
+          "driving": false,
+          "parameter": "taxonomy",
+          "schema": "ExpandedProductTaxonomy",
+          "source": "taxonomy"
+        },
+        {
+          "driving": false,
+          "parameter": "session",
+          "schema": "SessionFeature",
+          "source": "session_features"
+        },
+        {
+          "driving": false,
+          "parameter": "signal",
+          "schema": "ProductRecommendationSignal",
+          "source": "signals"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "product"
+        },
+        {
+          "how": "left",
+          "input": "taxonomy"
+        },
+        {
+          "how": "left",
+          "input": "session"
+        },
+        {
+          "how": "left",
+          "input": "signal"
+        }
+      ],
+      "name": "retrieved.retrieve",
+      "output_lane": "retrieved__requests",
+      "output_schema": "RecommendationCandidate",
+      "results": [
+        {
+          "frame": "retrieved__requests",
+          "lane": "retrieved__requests",
+          "schema": "RecommendationCandidate"
+        }
+      ]
+    },
+    {
+      "input_lane": "retrieved__requests",
       "input_schema": "RecommendationCandidate",
       "inputs": [
         {
           "driving": true,
           "parameter": "candidate",
           "schema": "RecommendationCandidate",
-          "source": "selected__requests"
+          "source": "retrieved__requests"
+        },
+        {
+          "driving": false,
+          "parameter": "suppression",
+          "schema": "MerchandisingSuppression",
+          "source": "suppressions"
+        },
+        {
+          "driving": false,
+          "parameter": "session",
+          "schema": "SessionFeature",
+          "source": "session_features"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "suppression"
+        },
+        {
+          "how": "left",
+          "input": "session"
+        }
+      ],
+      "name": "filtered.evaluate",
+      "output_lane": "filtered__evaluated",
+      "output_schema": "RecommendationCandidateDecision",
+      "results": [
+        {
+          "frame": "filtered__evaluated",
+          "lane": "filtered__evaluated",
+          "schema": "RecommendationCandidateDecision"
+        }
+      ]
+    },
+    {
+      "input_lane": "retrieved__requests",
+      "input_schema": "RecommendationCandidate",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "candidate",
+          "schema": "RecommendationCandidate",
+          "source": "retrieved__requests"
+        },
+        {
+          "driving": false,
+          "parameter": "decision",
+          "schema": "RecommendationCandidateDecision",
+          "source": "filtered__evaluated"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "decision"
+        }
+      ],
+      "name": "filtered.publish",
+      "output_lane": "filtered__filtered",
+      "output_schema": "RecommendationCandidate",
+      "results": [
+        {
+          "frame": "filtered__filtered",
+          "lane": "filtered__filtered",
+          "schema": "RecommendationCandidate"
+        }
+      ]
+    },
+    {
+      "input_lane": "filtered__filtered",
+      "input_schema": "RecommendationCandidate",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "candidate",
+          "schema": "RecommendationCandidate",
+          "source": "filtered__filtered"
         },
         {
           "driving": false,
@@ -166,6 +324,74 @@
           "parameter": "candidate",
           "schema": "RankedRecommendationCandidate",
           "source": "ranked__candidates"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "MerchandisingPolicy",
+          "source": "policy"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "policy"
+        }
+      ],
+      "name": "diversified.decide",
+      "output_lane": "diversified__decisions",
+      "output_schema": "DiversificationDecision",
+      "results": [
+        {
+          "frame": "diversified__decisions",
+          "lane": "diversified__decisions",
+          "schema": "DiversificationDecision"
+        }
+      ]
+    },
+    {
+      "input_lane": "ranked__candidates",
+      "input_schema": "RankedRecommendationCandidate",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "candidate",
+          "schema": "RankedRecommendationCandidate",
+          "source": "ranked__candidates"
+        },
+        {
+          "driving": false,
+          "parameter": "decision",
+          "schema": "DiversificationDecision",
+          "source": "diversified__decisions"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "decision"
+        }
+      ],
+      "name": "diversified.publish",
+      "output_lane": "diversified__diversified",
+      "output_schema": "DiversifiedRecommendationCandidate",
+      "results": [
+        {
+          "frame": "diversified__diversified",
+          "lane": "diversified__diversified",
+          "schema": "DiversifiedRecommendationCandidate"
+        }
+      ]
+    },
+    {
+      "input_lane": "diversified__diversified",
+      "input_schema": "DiversifiedRecommendationCandidate",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "candidate",
+          "schema": "DiversifiedRecommendationCandidate",
+          "source": "diversified__diversified"
         }
       ],
       "name": "published.select_products",

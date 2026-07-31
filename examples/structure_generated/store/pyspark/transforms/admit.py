@@ -52,8 +52,12 @@ class SelectRecommendationCandidatesGenerated:
             F.col("recommendation_request.id").alias("request_id"),
             F.col("recommendation_request.requested_at"),
             F.col("recommendation_request.customer_id"),
+            F.col("recommendation_request.session_id"),
             F.col("recommendation_request.strategy_id"),
             F.col("recommendation_request.policy_version"),
+            F.col("recommendation_request.experiment_id"),
+            F.col("recommendation_request.experiment_version"),
+            F.col("recommendation_request.variant_id"),
             F.col("recommendation_request.category").alias("category_filter"),
             F.col("recommendation_request.collection_id"),
             F.col("catalog.product_id"),
@@ -64,6 +68,12 @@ class SelectRecommendationCandidatesGenerated:
             F.col("catalog.base_score"),
             F.col("catalog.promotion_score"),
             F.lit(0.0).alias("inventory_boost"),
+            F.lit('catalog').alias("candidate_source"),
+            F.lit(None).cast(T.StringType()).alias("taxonomy_id"),
+            F.col("catalog.category").alias("taxonomy_branch"),
+            F.lit(False).alias("session_match"),
+            F.lit(0.0).alias("purchase_signal"),
+            F.lit('eligible').alias("eligibility_status"),
         )
 
         # Step method: candidates

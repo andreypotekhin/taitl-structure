@@ -48,6 +48,18 @@
       "name": "exposure_adjusted_click_rate",
       "nullable": true,
       "type": "double"
+    },
+    {
+      "column": "attributed_purchase_count",
+      "name": "attributed_purchase_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "conversion_rate",
+      "name": "conversion_rate",
+      "nullable": true,
+      "type": "double"
     }
   ],
   "generated_by": "Structure",

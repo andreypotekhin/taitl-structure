@@ -1,0 +1,32 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "tenant",
+      "name": "tenant",
+      "nullable": false,
+      "type": "TenantKey"
+    },
+    {
+      "column": "product_id",
+      "name": "product_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "taxonomy_id",
+      "name": "taxonomy_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "category",
+      "name": "category",
+      "nullable": false,
+      "type": "string"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.store.schemas.merchandising.taxonomy",
+  "name": "ProductTaxonomy"
+}

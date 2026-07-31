@@ -9,11 +9,16 @@ from pyspark.sql import types as T
 from examples.structure_generated.store.runtime.schema_assert import TransformResult, assert_schema, project_schema
 from examples.structure_generated.store.pyspark.schemas.catalog import (
     CATALOG_PRODUCT_SCHEMA,
+    RECOMMENDATION_CANDIDATE_DECISION_SCHEMA,
     RECOMMENDATION_CANDIDATE_SCHEMA,
 )
 from examples.structure_generated.store.pyspark.schemas.common import TENANT_KEY_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.feedback import PRODUCT_RECOMMENDATION_SIGNAL_SCHEMA
-from examples.structure_generated.store.pyspark.schemas.intermediate import RANKED_RECOMMENDATION_CANDIDATE_SCHEMA
+from examples.structure_generated.store.pyspark.schemas.intermediate import (
+    DIVERSIFICATION_DECISION_SCHEMA,
+    DIVERSIFIED_RECOMMENDATION_CANDIDATE_SCHEMA,
+    RANKED_RECOMMENDATION_CANDIDATE_SCHEMA,
+)
 from examples.structure_generated.store.pyspark.schemas.policy import (
     MERCHANDISING_BOOST_SCHEMA,
     MERCHANDISING_POLICY_SCHEMA,
@@ -24,6 +29,8 @@ from examples.structure_generated.store.pyspark.schemas.recommendation import (
     RECOMMENDATION_RUN_SCHEMA,
     RECOMMENDED_PRODUCT_SCHEMA,
 )
+from examples.structure_generated.store.pyspark.schemas.session import SESSION_FEATURE_SCHEMA
+from examples.structure_generated.store.pyspark.schemas.taxonomy import EXPANDED_PRODUCT_TAXONOMY_SCHEMA
 
 
 class SelectRecommendationCandidatesGenerated:
@@ -50,8 +57,12 @@ class SelectRecommendationCandidatesGenerated:
             F.col("recommendation_request.id").alias("request_id"),
             F.col("recommendation_request.requested_at"),
             F.col("recommendation_request.customer_id"),
+            F.col("recommendation_request.session_id"),
             F.col("recommendation_request.strategy_id"),
             F.col("recommendation_request.policy_version"),
+            F.col("recommendation_request.experiment_id"),
+            F.col("recommendation_request.experiment_version"),
+            F.col("recommendation_request.variant_id"),
             F.col("recommendation_request.category").alias("category_filter"),
             F.col("recommendation_request.collection_id"),
             F.col("catalog.product_id"),
@@ -62,6 +73,12 @@ class SelectRecommendationCandidatesGenerated:
             F.col("catalog.base_score"),
             F.col("catalog.promotion_score"),
             F.lit(0.0).alias("inventory_boost"),
+            F.lit('catalog').alias("candidate_source"),
+            F.lit(None).cast(T.StringType()).alias("taxonomy_id"),
+            F.col("catalog.category").alias("taxonomy_branch"),
+            F.lit(False).alias("session_match"),
+            F.lit(0.0).alias("purchase_signal"),
+            F.lit('eligible').alias("eligibility_status"),
         )
         assert_schema(
             selected__requests, RECOMMENDATION_CANDIDATE_SCHEMA, name="RecommendationCandidate", mode="strict"
@@ -71,10 +88,239 @@ class SelectRecommendationCandidatesGenerated:
         }
 
 
+class GenerateRecommendationCandidatesGenerated:
+    def _step_retrieved_retrieve_1(self, frames):
+        # Step method: retrieved.retrieve
+        retrieved__requests = frames["requests"].alias("recommendation_request")
+        catalog_joined = frames["catalog"].alias("catalog")
+        retrieved__requests = retrieved__requests.join(
+            catalog_joined,
+            (
+                (F.col("catalog.tenant.tenant_id") == F.col("recommendation_request.tenant.tenant_id"))
+                & F.col("catalog.eligible")
+            ),
+            "inner",
+        )
+        taxonomy_2_joined = frames["taxonomy"].alias("taxonomy_2")
+        retrieved__requests = retrieved__requests.join(
+            taxonomy_2_joined,
+            (
+                (
+                    (F.col("taxonomy_2.tenant.tenant_id") == F.col("recommendation_request.tenant.tenant_id"))
+                    & (F.col("taxonomy_2.product_id") == F.col("catalog.product_id"))
+                )
+                & F.col("recommendation_request.category").eqNullSafe(F.col("taxonomy_2.ancestor_category"))
+            ),
+            "left",
+        )
+        session_features_3_joined = frames["session_features"].alias("session_features_3")
+        retrieved__requests = retrieved__requests.join(
+            session_features_3_joined,
+            (
+                (
+                    (F.col("session_features_3.tenant.tenant_id") == F.col("recommendation_request.tenant.tenant_id"))
+                    & F.col("session_features_3.customer_id").eqNullSafe(F.col("recommendation_request.customer_id"))
+                )
+                & F.col("session_features_3.category").eqNullSafe(F.col("catalog.category"))
+            ),
+            "left",
+        )
+        signals_4_joined = frames["signals"].alias("signals_4")
+        retrieved__requests = retrieved__requests.join(
+            signals_4_joined,
+            (
+                (
+                    (F.col("signals_4.tenant.tenant_id") == F.col("recommendation_request.tenant.tenant_id"))
+                    & (F.col("signals_4.strategy_id") == F.col("recommendation_request.strategy_id"))
+                )
+                & (F.col("signals_4.product_id") == F.col("catalog.product_id"))
+            ),
+            "left",
+        )
+        retrieved__requests = retrieved__requests.where(
+            (
+                (
+                    F.col("catalog.product_id").isNotNull()
+                    & (
+                        F.col("recommendation_request.category").isNull()
+                        | F.col("recommendation_request.category").eqNullSafe(F.col("catalog.category"))
+                    )
+                )
+            )
+        )
+        retrieved__requests = retrieved__requests.select(
+            F.col("recommendation_request.tenant"),
+            F.col("recommendation_request.id").alias("request_id"),
+            F.col("recommendation_request.requested_at"),
+            F.col("recommendation_request.customer_id"),
+            F.col("recommendation_request.session_id"),
+            F.col("recommendation_request.strategy_id"),
+            F.col("recommendation_request.policy_version"),
+            F.col("recommendation_request.experiment_id"),
+            F.col("recommendation_request.experiment_version"),
+            F.col("recommendation_request.variant_id"),
+            F.col("recommendation_request.category").alias("category_filter"),
+            F.col("recommendation_request.collection_id"),
+            F.col("catalog.product_id"),
+            F.col("catalog.product_name"),
+            F.col("catalog.category"),
+            F.col("catalog.has_promotion"),
+            F.col("catalog.promotion_code"),
+            F.col("catalog.base_score"),
+            F.col("catalog.promotion_score"),
+            F.lit(0.0).alias("inventory_boost"),
+            F.when(F.col("recommendation_request.category").eqNullSafe(F.col("catalog.category")), F.lit('category'))
+            .otherwise(
+                F.when(F.col("session_features_3.session_id").isNotNull(), F.lit('session')).otherwise(F.lit('popular'))
+            )
+            .alias("candidate_source"),
+            F.col("taxonomy_2.taxonomy_id"),
+            F.coalesce(F.col("taxonomy_2.ancestor_category"), F.col("catalog.category")).alias("taxonomy_branch"),
+            F.col("session_features_3.session_id").isNotNull().alias("session_match"),
+            F.coalesce(F.col("signals_4.conversion_rate"), F.lit(0.0)).alias("purchase_signal"),
+            F.lit('retrieved').alias("eligibility_status"),
+        )
+        assert_schema(
+            retrieved__requests, RECOMMENDATION_CANDIDATE_SCHEMA, name="RecommendationCandidate", mode="strict"
+        )
+        return {
+            "retrieved__requests": retrieved__requests,
+        }
+
+
+class FilterRecommendationCandidatesGenerated:
+    def _step_filtered_evaluate_2(self, frames):
+        # Step method: filtered.evaluate
+        filtered__evaluated = frames["retrieved__requests"].alias("recommendation_candidate")
+        suppressions_joined = frames["suppressions"].alias("suppressions")
+        filtered__evaluated = filtered__evaluated.join(
+            suppressions_joined,
+            (
+                (
+                    (
+                        (F.col("suppressions.tenant.tenant_id") == F.col("recommendation_candidate.tenant.tenant_id"))
+                        & (F.col("suppressions.policy_version") == F.col("recommendation_candidate.policy_version"))
+                    )
+                    & F.col("suppressions.active")
+                )
+                & (
+                    F.col("suppressions.product_id").eqNullSafe(F.col("recommendation_candidate.product_id"))
+                    | F.col("suppressions.category").eqNullSafe(F.col("recommendation_candidate.category"))
+                )
+            ),
+            "left",
+        )
+        session_features_2_joined = frames["session_features"].alias("session_features_2")
+        filtered__evaluated = filtered__evaluated.join(
+            session_features_2_joined,
+            (
+                (
+                    (
+                        (
+                            F.col("session_features_2.tenant.tenant_id")
+                            == F.col("recommendation_candidate.tenant.tenant_id")
+                        )
+                        & F.col("session_features_2.customer_id").eqNullSafe(
+                            F.col("recommendation_candidate.customer_id")
+                        )
+                    )
+                    & F.col("session_features_2.product_id").eqNullSafe(F.col("recommendation_candidate.product_id"))
+                )
+                & (F.col("session_features_2.add_to_cart_count") > F.lit(0))
+            ),
+            "left",
+        )
+        filtered__evaluated = filtered__evaluated.select(
+            F.col("recommendation_candidate.tenant"),
+            F.col("recommendation_candidate.request_id"),
+            F.col("recommendation_candidate.product_id"),
+            F.lit('filter').alias("stage"),
+            (
+                ~(F.coalesce(F.col("suppressions.exclude"), F.lit(False)))
+                & ~(F.col("session_features_2.product_id").isNotNull())
+            ).alias("eligible"),
+            F.when(
+                F.coalesce(F.col("suppressions.exclude"), F.lit(False)),
+                F.coalesce(F.col("suppressions.reason"), F.lit('hard_suppression')),
+            )
+            .otherwise(
+                F.when(F.col("session_features_2.product_id").isNotNull(), F.lit('session_already_added')).otherwise(
+                    F.lit(None)
+                )
+            )
+            .alias("exclusion_reason"),
+            F.col("recommendation_candidate.candidate_source"),
+            F.col("recommendation_candidate.taxonomy_branch"),
+        )
+        assert_schema(
+            filtered__evaluated,
+            RECOMMENDATION_CANDIDATE_DECISION_SCHEMA,
+            name="RecommendationCandidateDecision",
+            mode="strict",
+        )
+        return {
+            "filtered__evaluated": filtered__evaluated,
+        }
+
+    def _step_filtered_publish_3(self, frames):
+        # Step method: filtered.publish
+        filtered__filtered = frames["retrieved__requests"].alias("recommendation_candidate")
+        filtered__evaluated_joined = frames["filtered__evaluated"].alias("filtered__evaluated")
+        filtered__filtered = filtered__filtered.join(
+            filtered__evaluated_joined,
+            (
+                (
+                    (
+                        F.col("filtered__evaluated.tenant.tenant_id")
+                        == F.col("recommendation_candidate.tenant.tenant_id")
+                    )
+                    & (F.col("filtered__evaluated.request_id") == F.col("recommendation_candidate.request_id"))
+                )
+                & (F.col("filtered__evaluated.product_id") == F.col("recommendation_candidate.product_id"))
+            ),
+            "left",
+        )
+        filtered__filtered = filtered__filtered.where((F.col("filtered__evaluated.eligible")))
+        filtered__filtered = filtered__filtered.select(
+            F.col("recommendation_candidate.tenant"),
+            F.col("recommendation_candidate.request_id"),
+            F.col("recommendation_candidate.requested_at"),
+            F.col("recommendation_candidate.customer_id"),
+            F.col("recommendation_candidate.session_id"),
+            F.col("recommendation_candidate.strategy_id"),
+            F.col("recommendation_candidate.policy_version"),
+            F.col("recommendation_candidate.experiment_id"),
+            F.col("recommendation_candidate.experiment_version"),
+            F.col("recommendation_candidate.variant_id"),
+            F.col("recommendation_candidate.category_filter"),
+            F.col("recommendation_candidate.collection_id"),
+            F.col("recommendation_candidate.product_id"),
+            F.col("recommendation_candidate.product_name"),
+            F.col("recommendation_candidate.category"),
+            F.col("recommendation_candidate.has_promotion"),
+            F.col("recommendation_candidate.promotion_code"),
+            F.col("recommendation_candidate.base_score"),
+            F.col("recommendation_candidate.promotion_score"),
+            F.col("recommendation_candidate.inventory_boost"),
+            F.col("recommendation_candidate.candidate_source"),
+            F.col("recommendation_candidate.taxonomy_id"),
+            F.col("recommendation_candidate.taxonomy_branch"),
+            F.col("recommendation_candidate.session_match"),
+            F.col("recommendation_candidate.purchase_signal"),
+            F.lit('eligible').alias("eligibility_status"),
+        )
+        assert_schema(
+            filtered__filtered, RECOMMENDATION_CANDIDATE_SCHEMA, name="RecommendationCandidate", mode="strict"
+        )
+        return {
+            "filtered__filtered": filtered__filtered,
+        }
+
+
 class RankRecommendationCandidatesGenerated:
-    def _step_ranked_rank_1(self, frames):
+    def _step_ranked_rank_4(self, frames):
         # Step method: ranked.rank
-        ranked__candidates = frames["selected__requests"].alias("recommendation_candidate")
+        ranked__candidates = frames["filtered__filtered"].alias("recommendation_candidate")
         policy_joined = frames["policy"].alias("policy")
         ranked__candidates = ranked__candidates.join(
             policy_joined,
@@ -236,6 +482,17 @@ class RankRecommendationCandidatesGenerated:
                 F.coalesce(F.col("signals_4.impression_count"), F.lit(0))
                 >= F.col("policy.minimum_feedback_impressions")
             ).alias("feedback_contributed"),
+            F.col("recommendation_candidate.candidate_source"),
+            F.col("recommendation_candidate.taxonomy_id"),
+            F.col("recommendation_candidate.taxonomy_branch"),
+            F.col("recommendation_candidate.session_match"),
+            F.col("recommendation_candidate.purchase_signal"),
+            F.col("recommendation_candidate.eligibility_status"),
+            F.lit(True).alias("diversity_selected"),
+            F.lit(None).cast(T.StringType()).alias("diversity_exclusion_reason"),
+            F.col("recommendation_candidate.experiment_id"),
+            F.col("recommendation_candidate.experiment_version"),
+            F.col("recommendation_candidate.variant_id"),
             F.col("policy.maximum_results"),
         )
         assert_schema(
@@ -249,19 +506,109 @@ class RankRecommendationCandidatesGenerated:
         }
 
 
-class SelectRecommendedProductsGenerated:
-    def _step_published_select_products_2(self, frames):
-        # Step method: published.select_products
-        published__ranked_candidates = frames["ranked__candidates"].alias("ranked_recommendation_candidate")
-        published__ranked_candidates = published__ranked_candidates.where(
+class DiversifyRecommendationsGenerated:
+    def _step_diversified_decide_5(self, frames):
+        # Step method: diversified.decide
+        diversified__decisions = frames["ranked__candidates"].alias("ranked_recommendation_candidate")
+        policy_joined = frames["policy"].alias("policy")
+        diversified__decisions = diversified__decisions.join(
+            policy_joined,
             (
                 (
-                    F.col("ranked_recommendation_candidate.rank")
-                    <= F.col("ranked_recommendation_candidate.maximum_results")
+                    (F.col("policy.tenant.tenant_id") == F.col("ranked_recommendation_candidate.tenant.tenant_id"))
+                    & (F.col("policy.strategy_id") == F.col("ranked_recommendation_candidate.strategy_id"))
                 )
-            )
+                & (F.col("policy.policy_version") == F.col("ranked_recommendation_candidate.policy_version"))
+            ),
+            "inner",
         )
-        published__ranked_candidates = published__ranked_candidates.select(
+        diversified__decisions = diversified__decisions.select(
+            F.col("ranked_recommendation_candidate.tenant"),
+            F.col("ranked_recommendation_candidate.request_id"),
+            F.col("ranked_recommendation_candidate.product_id"),
+            F.coalesce(
+                F.col("ranked_recommendation_candidate.taxonomy_branch"),
+                F.col("ranked_recommendation_candidate.category"),
+            ).alias("taxonomy_branch"),
+            F.row_number()
+            .over(
+                Window.partitionBy(
+                    F.col("ranked_recommendation_candidate.tenant.tenant_id"),
+                    F.col("ranked_recommendation_candidate.request_id"),
+                    F.coalesce(
+                        F.col("ranked_recommendation_candidate.taxonomy_branch"),
+                        F.col("ranked_recommendation_candidate.category"),
+                    ),
+                ).orderBy(F.col("ranked_recommendation_candidate.rank").asc())
+            )
+            .cast(T.LongType())
+            .alias("branch_rank"),
+            (
+                F.row_number()
+                .over(
+                    Window.partitionBy(
+                        F.col("ranked_recommendation_candidate.tenant.tenant_id"),
+                        F.col("ranked_recommendation_candidate.request_id"),
+                        F.coalesce(
+                            F.col("ranked_recommendation_candidate.taxonomy_branch"),
+                            F.col("ranked_recommendation_candidate.category"),
+                        ),
+                    ).orderBy(F.col("ranked_recommendation_candidate.rank").asc())
+                )
+                .cast(T.LongType())
+                <= F.coalesce(F.col("policy.maximum_per_taxonomy_branch"), F.col("policy.maximum_results"))
+            ).alias("selected"),
+            F.when(
+                (
+                    F.row_number()
+                    .over(
+                        Window.partitionBy(
+                            F.col("ranked_recommendation_candidate.tenant.tenant_id"),
+                            F.col("ranked_recommendation_candidate.request_id"),
+                            F.coalesce(
+                                F.col("ranked_recommendation_candidate.taxonomy_branch"),
+                                F.col("ranked_recommendation_candidate.category"),
+                            ),
+                        ).orderBy(F.col("ranked_recommendation_candidate.rank").asc())
+                    )
+                    .cast(T.LongType())
+                    <= F.coalesce(F.col("policy.maximum_per_taxonomy_branch"), F.col("policy.maximum_results"))
+                ),
+                F.lit(None),
+            )
+            .otherwise(F.lit('taxonomy_branch_cap'))
+            .alias("exclusion_reason"),
+        )
+        assert_schema(
+            diversified__decisions, DIVERSIFICATION_DECISION_SCHEMA, name="DiversificationDecision", mode="strict"
+        )
+        return {
+            "diversified__decisions": diversified__decisions,
+        }
+
+    def _step_diversified_publish_6(self, frames):
+        # Step method: diversified.publish
+        diversified__diversified = frames["ranked__candidates"].alias("ranked_recommendation_candidate")
+        diversified__decisions_joined = frames["diversified__decisions"].alias("diversified__decisions")
+        diversified__diversified = diversified__diversified.join(
+            diversified__decisions_joined,
+            (
+                (
+                    (
+                        F.col("diversified__decisions.tenant.tenant_id")
+                        == F.col("ranked_recommendation_candidate.tenant.tenant_id")
+                    )
+                    & (
+                        F.col("diversified__decisions.request_id")
+                        == F.col("ranked_recommendation_candidate.request_id")
+                    )
+                )
+                & (F.col("diversified__decisions.product_id") == F.col("ranked_recommendation_candidate.product_id"))
+            ),
+            "inner",
+        )
+        diversified__diversified = diversified__diversified.where((F.col("diversified__decisions.selected")))
+        diversified__diversified = diversified__diversified.select(
             F.col("ranked_recommendation_candidate.tenant"),
             F.col("ranked_recommendation_candidate.request_id"),
             F.col("ranked_recommendation_candidate.strategy_id"),
@@ -269,7 +616,15 @@ class SelectRecommendedProductsGenerated:
             F.col("ranked_recommendation_candidate.product_id"),
             F.col("ranked_recommendation_candidate.product_name"),
             F.col("ranked_recommendation_candidate.category"),
-            F.col("ranked_recommendation_candidate.rank"),
+            F.row_number()
+            .over(
+                Window.partitionBy(
+                    F.col("ranked_recommendation_candidate.tenant.tenant_id"),
+                    F.col("ranked_recommendation_candidate.request_id"),
+                ).orderBy(F.col("ranked_recommendation_candidate.rank").asc())
+            )
+            .cast(T.LongType())
+            .alias("rank"),
             F.col("ranked_recommendation_candidate.base_score"),
             F.col("ranked_recommendation_candidate.promotion_score"),
             F.col("ranked_recommendation_candidate.boost_score"),
@@ -278,6 +633,71 @@ class SelectRecommendedProductsGenerated:
             F.col("ranked_recommendation_candidate.feedback_score"),
             F.col("ranked_recommendation_candidate.final_score"),
             F.col("ranked_recommendation_candidate.feedback_contributed"),
+            F.col("ranked_recommendation_candidate.candidate_source"),
+            F.col("ranked_recommendation_candidate.taxonomy_id"),
+            F.col("ranked_recommendation_candidate.taxonomy_branch"),
+            F.col("ranked_recommendation_candidate.session_match"),
+            F.col("ranked_recommendation_candidate.purchase_signal"),
+            F.col("ranked_recommendation_candidate.eligibility_status"),
+            F.lit(True).alias("diversity_selected"),
+            F.lit(None).cast(T.StringType()).alias("diversity_exclusion_reason"),
+            F.col("ranked_recommendation_candidate.experiment_id"),
+            F.col("ranked_recommendation_candidate.experiment_version"),
+            F.col("ranked_recommendation_candidate.variant_id"),
+            F.col("ranked_recommendation_candidate.maximum_results"),
+            F.col("diversified__decisions.branch_rank").alias("diversity_rank"),
+        )
+        assert_schema(
+            diversified__diversified,
+            DIVERSIFIED_RECOMMENDATION_CANDIDATE_SCHEMA,
+            name="DiversifiedRecommendationCandidate",
+            mode="strict",
+        )
+        return {
+            "diversified__diversified": diversified__diversified,
+        }
+
+
+class SelectRecommendedProductsGenerated:
+    def _step_published_select_products_7(self, frames):
+        # Step method: published.select_products
+        published__ranked_candidates = frames["diversified__diversified"].alias("diversified_recommendation_candidate")
+        published__ranked_candidates = published__ranked_candidates.where(
+            (
+                (
+                    F.col("diversified_recommendation_candidate.rank")
+                    <= F.col("diversified_recommendation_candidate.maximum_results")
+                )
+            )
+        )
+        published__ranked_candidates = published__ranked_candidates.select(
+            F.col("diversified_recommendation_candidate.tenant"),
+            F.col("diversified_recommendation_candidate.request_id"),
+            F.col("diversified_recommendation_candidate.strategy_id"),
+            F.col("diversified_recommendation_candidate.policy_version"),
+            F.col("diversified_recommendation_candidate.product_id"),
+            F.col("diversified_recommendation_candidate.product_name"),
+            F.col("diversified_recommendation_candidate.category"),
+            F.col("diversified_recommendation_candidate.rank"),
+            F.col("diversified_recommendation_candidate.base_score"),
+            F.col("diversified_recommendation_candidate.promotion_score"),
+            F.col("diversified_recommendation_candidate.boost_score"),
+            F.col("diversified_recommendation_candidate.suppression_penalty"),
+            F.col("diversified_recommendation_candidate.inventory_boost"),
+            F.col("diversified_recommendation_candidate.feedback_score"),
+            F.col("diversified_recommendation_candidate.final_score"),
+            F.col("diversified_recommendation_candidate.feedback_contributed"),
+            F.col("diversified_recommendation_candidate.candidate_source"),
+            F.col("diversified_recommendation_candidate.taxonomy_id"),
+            F.col("diversified_recommendation_candidate.taxonomy_branch"),
+            F.col("diversified_recommendation_candidate.session_match"),
+            F.col("diversified_recommendation_candidate.purchase_signal"),
+            F.col("diversified_recommendation_candidate.eligibility_status"),
+            F.col("diversified_recommendation_candidate.diversity_selected"),
+            F.col("diversified_recommendation_candidate.diversity_exclusion_reason"),
+            F.col("diversified_recommendation_candidate.experiment_id"),
+            F.col("diversified_recommendation_candidate.experiment_version"),
+            F.col("diversified_recommendation_candidate.variant_id"),
         )
         assert_schema(
             published__ranked_candidates, RECOMMENDED_PRODUCT_SCHEMA, name="RecommendedProduct", mode="strict"
@@ -288,7 +708,7 @@ class SelectRecommendedProductsGenerated:
 
 
 class SummarizeRecommendationRunsGenerated:
-    def _step_summarized_summarize_3(self, frames):
+    def _step_summarized_summarize_8(self, frames):
         # Step method: summarized.summarize
         summarized__requests = frames["requests"].alias("recommendation_request")
         policy_joined = frames["policy"].alias("policy")
@@ -326,6 +746,9 @@ class SummarizeRecommendationRunsGenerated:
                 F.col("recommendation_request.id").alias("request_id"),
                 F.col("recommendation_request.strategy_id").alias("strategy_id"),
                 F.col("policy.policy_version").alias("policy_version"),
+                F.col("recommendation_request.experiment_id").alias("experiment_id"),
+                F.col("recommendation_request.experiment_version").alias("experiment_version"),
+                F.col("recommendation_request.variant_id").alias("variant_id"),
             )
             .agg(
                 F.first(F.col("recommendation_request.tenant"), ignorenulls=False).alias("tenant"),
@@ -345,6 +768,9 @@ class SummarizeRecommendationRunsGenerated:
                 F.col("policy_version"),
                 F.col("result_count"),
                 F.col("feedback_contributed"),
+                F.col("experiment_id"),
+                F.col("experiment_version"),
+                F.col("variant_id"),
             )
         )
         return {
@@ -354,7 +780,10 @@ class SummarizeRecommendationRunsGenerated:
 
 class RecommenderGenerated(
     SelectRecommendationCandidatesGenerated,
+    GenerateRecommendationCandidatesGenerated,
+    FilterRecommendationCandidatesGenerated,
     RankRecommendationCandidatesGenerated,
+    DiversifyRecommendationsGenerated,
     SelectRecommendedProductsGenerated,
     SummarizeRecommendationRunsGenerated,
 ):
@@ -368,41 +797,56 @@ class RecommenderGenerated(
         *,
         requests: DataFrame,
         catalog: DataFrame,
+        taxonomy: DataFrame,
+        session_features: DataFrame,
+        signals: DataFrame,
+        suppressions: DataFrame,
         policy: DataFrame,
         boosts: DataFrame,
-        suppressions: DataFrame,
-        signals: DataFrame,
     ) -> TransformResult:
         assert_schema(requests, RECOMMENDATION_REQUEST_SCHEMA, name="RecommendationRequest", mode="strict")
         assert_schema(catalog, CATALOG_PRODUCT_SCHEMA, name="CatalogProduct", mode="strict")
+        assert_schema(taxonomy, EXPANDED_PRODUCT_TAXONOMY_SCHEMA, name="ExpandedProductTaxonomy", mode="strict")
+        assert_schema(session_features, SESSION_FEATURE_SCHEMA, name="SessionFeature", mode="strict")
+        assert_schema(signals, PRODUCT_RECOMMENDATION_SIGNAL_SCHEMA, name="ProductRecommendationSignal", mode="strict")
+        assert_schema(suppressions, MERCHANDISING_SUPPRESSION_SCHEMA, name="MerchandisingSuppression", mode="strict")
         assert_schema(policy, MERCHANDISING_POLICY_SCHEMA, name="MerchandisingPolicy", mode="strict")
         assert_schema(boosts, MERCHANDISING_BOOST_SCHEMA, name="MerchandisingBoost", mode="strict")
-        assert_schema(suppressions, MERCHANDISING_SUPPRESSION_SCHEMA, name="MerchandisingSuppression", mode="strict")
-        assert_schema(signals, PRODUCT_RECOMMENDATION_SIGNAL_SCHEMA, name="ProductRecommendationSignal", mode="strict")
         _input_requests = requests
         _input_catalog = catalog
+        _input_taxonomy = taxonomy
+        _input_session_features = session_features
+        _input_signals = signals
+        _input_suppressions = suppressions
         _input_policy = policy
         _input_boosts = boosts
-        _input_suppressions = suppressions
-        _input_signals = signals
         frames = {
             "requests": requests,
             "catalog": catalog,
+            "taxonomy": taxonomy,
+            "session_features": session_features,
+            "signals": signals,
+            "suppressions": suppressions,
             "policy": policy,
             "boosts": boosts,
-            "suppressions": suppressions,
-            "signals": signals,
             "input:requests": _input_requests,
             "input:catalog": _input_catalog,
+            "input:taxonomy": _input_taxonomy,
+            "input:session_features": _input_session_features,
+            "input:signals": _input_signals,
+            "input:suppressions": _input_suppressions,
             "input:policy": _input_policy,
             "input:boosts": _input_boosts,
-            "input:suppressions": _input_suppressions,
-            "input:signals": _input_signals,
         }
         frames.update(self._step_selected_select_0(frames))
-        frames.update(self._step_ranked_rank_1(frames))
-        frames.update(self._step_published_select_products_2(frames))
-        frames.update(self._step_summarized_summarize_3(frames))
+        frames.update(self._step_retrieved_retrieve_1(frames))
+        frames.update(self._step_filtered_evaluate_2(frames))
+        frames.update(self._step_filtered_publish_3(frames))
+        frames.update(self._step_ranked_rank_4(frames))
+        frames.update(self._step_diversified_decide_5(frames))
+        frames.update(self._step_diversified_publish_6(frames))
+        frames.update(self._step_published_select_products_7(frames))
+        frames.update(self._step_summarized_summarize_8(frames))
 
         # Step method: recommended_products
         recommended_products = frames["published__ranked_candidates"].alias("recommended_product")

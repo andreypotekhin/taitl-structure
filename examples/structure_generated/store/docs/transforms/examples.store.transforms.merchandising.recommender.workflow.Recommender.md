@@ -8,10 +8,12 @@ Source: `examples.store.transforms.merchandising.recommender.workflow.Recommende
 
 - `requests`: `RecommendationRequest`
 - `catalog`: `CatalogProduct`
+- `taxonomy`: `ExpandedProductTaxonomy`
+- `session_features`: `SessionFeature`
+- `signals`: `ProductRecommendationSignal`
+- `suppressions`: `MerchandisingSuppression`
 - `policy`: `MerchandisingPolicy`
 - `boosts`: `MerchandisingBoost`
-- `suppressions`: `MerchandisingSuppression`
-- `signals`: `ProductRecommendationSignal`
 
 ## Outputs
 
@@ -21,8 +23,13 @@ Source: `examples.store.transforms.merchandising.recommender.workflow.Recommende
 ## Step methods
 
 - `selected.select`: `RecommendationRequest` -> `RecommendationCandidate`
+- `retrieved.retrieve`: `RecommendationRequest` -> `RecommendationCandidate`
+- `filtered.evaluate`: `RecommendationCandidate` -> `RecommendationCandidateDecision`
+- `filtered.publish`: `RecommendationCandidate` -> `RecommendationCandidate`
 - `ranked.rank`: `RecommendationCandidate` -> `RankedRecommendationCandidate`
-- `published.select_products`: `RankedRecommendationCandidate` -> `RecommendedProduct`
+- `diversified.decide`: `RankedRecommendationCandidate` -> `DiversificationDecision`
+- `diversified.publish`: `RankedRecommendationCandidate` -> `DiversifiedRecommendationCandidate`
+- `published.select_products`: `DiversifiedRecommendationCandidate` -> `RecommendedProduct`
 - `summarized.summarize`: `RecommendationRequest` -> `RecommendationRun`
 
 ## Dependencies
@@ -30,13 +37,19 @@ Source: `examples.store.transforms.merchandising.recommender.workflow.Recommende
 - `boost`
 - `boosts`
 - `catalog`
+- `decision`
+- `diversified__decisions`
+- `filtered__evaluated`
 - `policy`
 - `product`
 - `published__ranked_candidates`
+- `session`
+- `session_features`
 - `signal`
 - `signals`
 - `suppression`
 - `suppressions`
+- `taxonomy`
 
 ## Target Artifacts
 

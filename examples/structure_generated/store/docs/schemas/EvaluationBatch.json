@@ -1,0 +1,20 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "window",
+      "name": "window",
+      "nullable": false,
+      "type": "TimeWindow"
+    },
+    {
+      "column": "batch_id",
+      "name": "batch_id",
+      "nullable": false,
+      "type": "string"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.store.schemas.evaluation.batch",
+  "name": "EvaluationBatch"
+}

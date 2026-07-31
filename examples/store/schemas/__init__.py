@@ -31,6 +31,7 @@ from examples.store.schemas.fulfillment import (
 from examples.store.schemas.merchandising import (
     CatalogAvailability,
     CatalogProduct,
+    ExpandedProductTaxonomy,
     DailyRecommendationBehavior,
     DailyRecommendationClicks,
     DailyRecommendationImpressions,
@@ -38,14 +39,27 @@ from examples.store.schemas.merchandising import (
     MerchandisingPolicy,
     MerchandisingSuppression,
     ProductRecommendationSignal,
+    ProductTaxonomy,
     RecommendationCandidate,
     RecommendationClick,
     RecommendationEvaluationBatch,
     RecommendationImpression,
+    RecommendationPurchase,
     RecommendationRequest,
     RecommendationRequestBehavior,
     RecommendationRun,
     RecommendedProduct,
+    SessionEvent,
+    SessionFeature,
+    TaxonomyAncestor,
+    TaxonomyNode,
+)
+from examples.store.schemas.experiment import RecommendationAssignment, RecommendationExperiment, RecommendationExposure
+from examples.store.schemas.evaluation import (
+    EvaluationBatch,
+    RecommendationBehavior,
+    RecommendationVariantMetric,
+    RecommendationVariantMetricTotals,
 )
 from examples.store.schemas.order import (
     OrderFulfillment,

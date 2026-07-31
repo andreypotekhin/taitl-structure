@@ -1014,7 +1014,7 @@ class ProjectInventoryGenerated:
         }
 
 
-class DetectFulfillmentShortagesGenerated:
+class DetectShortagesGenerated:
     def _step_shortage_stage_identify_17(self, frames):
         # Step method: shortage_stage.identify
         shortage_stage__ranked = frames["projections__projections"].alias("inventory_projection")
@@ -1078,7 +1078,7 @@ class DetectFulfillmentShortagesGenerated:
         }
 
 
-class FindFulfillmentSubstitutionsGenerated:
+class FindSubstitutionsGenerated:
     def _step_substitution_stage_find_candidates_19(self, frames):
         # Step method: substitution_stage.find_candidates
         substitution_stage__candidates = frames["prepared__demand"].alias("order")
@@ -1200,7 +1200,7 @@ class FindFulfillmentSubstitutionsGenerated:
         }
 
 
-class PrioritizeFulfillmentExceptionsGenerated:
+class PrioritizeExceptionsGenerated:
     def _step_exception_stage_shortage_exception_21(self, frames):
         # Step method: exception_stage.shortage_exception
         exception_stage__shortage_exceptions = frames["shortage_stage__shortages"].alias("fulfillment_shortage")
@@ -1664,7 +1664,7 @@ class FulfillmentAnalyticsGenerated:
         }
 
 
-class EvaluateFulfillmentServiceGenerated:
+class EvaluateFulfillmentGenerated:
     def _step_evaluated_evaluate_30(self, frames):
         # Step method: evaluated.evaluate
         evaluated__totals = frames["planned__plans"].alias("fulfillment_plan")
@@ -1894,39 +1894,7 @@ class EvaluateFulfillmentServiceGenerated:
             "evaluated__evaluations": evaluated__evaluations,
         }
 
-    def _step_evaluated_publish_evaluations_32(self, frames):
-        # Step method: evaluated.publish_evaluations
-        evaluated__service_evaluations = frames["evaluated__evaluations"].alias("fulfillment_service_evaluation")
-        evaluated__service_evaluations = evaluated__service_evaluations.select(
-            F.col("fulfillment_service_evaluation.tenant"),
-            F.col("fulfillment_service_evaluation.business"),
-            F.col("fulfillment_service_evaluation.order_id"),
-            F.col("fulfillment_service_evaluation.line_number"),
-            F.col("fulfillment_service_evaluation.product_id"),
-            F.col("fulfillment_service_evaluation.selected_warehouse_id"),
-            F.col("fulfillment_service_evaluation.target_id"),
-            F.col("fulfillment_service_evaluation.target_on_time"),
-            F.col("fulfillment_service_evaluation.requested_quantity"),
-            F.col("fulfillment_service_evaluation.planned_quantity"),
-            F.col("fulfillment_service_evaluation.shipped_quantity"),
-            F.col("fulfillment_service_evaluation.planned_ship_date"),
-            F.col("fulfillment_service_evaluation.actual_ship_date"),
-            F.col("fulfillment_service_evaluation.on_time_status"),
-            F.col("fulfillment_service_evaluation.in_full_status"),
-            F.col("fulfillment_service_evaluation.lateness_days"),
-            F.col("fulfillment_service_evaluation.service_status"),
-        )
-        assert_schema(
-            evaluated__service_evaluations,
-            FULFILLMENT_SERVICE_EVALUATION_SCHEMA,
-            name="FulfillmentServiceEvaluation",
-            mode="strict",
-        )
-        return {
-            "evaluated__service_evaluations": evaluated__service_evaluations,
-        }
-
-    def _step_evaluated_summarize_33(self, frames):
+    def _step_evaluated_summarize_32(self, frames):
         # Step method: evaluated.summarize
         evaluated__summary_totals = frames["evaluated__evaluations"].alias("fulfillment_service_evaluation")
         evaluated__summary_totals = (
@@ -1990,7 +1958,7 @@ class EvaluateFulfillmentServiceGenerated:
             "evaluated__summary_totals": evaluated__summary_totals,
         }
 
-    def _step_evaluated_publish_summary_34(self, frames):
+    def _step_evaluated_publish_summary_33(self, frames):
         # Step method: evaluated.publish_summary
         evaluated__daily_summary = frames["evaluated__summary_totals"].alias("daily_fulfillment_service_summary")
         evaluated__daily_summary = evaluated__daily_summary.select(
@@ -2038,12 +2006,12 @@ class FulfillmentGenerated(
     PlanFulfillmentGenerated,
     BuildDemandWindowsGenerated,
     ProjectInventoryGenerated,
-    DetectFulfillmentShortagesGenerated,
-    FindFulfillmentSubstitutionsGenerated,
-    PrioritizeFulfillmentExceptionsGenerated,
+    DetectShortagesGenerated,
+    FindSubstitutionsGenerated,
+    PrioritizeExceptionsGenerated,
     ReconcileFulfillmentPlanGenerated,
     FulfillmentAnalyticsGenerated,
-    EvaluateFulfillmentServiceGenerated,
+    EvaluateFulfillmentGenerated,
 ):
 
     def __init__(self, *, spark: SparkSession, ctx=None):
@@ -2148,9 +2116,8 @@ class FulfillmentGenerated(
         frames.update(self._step_summarized_summarize_warehouse_load_29(frames))
         frames.update(self._step_evaluated_evaluate_30(frames))
         frames.update(self._step_evaluated_classify_31(frames))
-        frames.update(self._step_evaluated_publish_evaluations_32(frames))
-        frames.update(self._step_evaluated_summarize_33(frames))
-        frames.update(self._step_evaluated_publish_summary_34(frames))
+        frames.update(self._step_evaluated_summarize_32(frames))
+        frames.update(self._step_evaluated_publish_summary_33(frames))
 
         # Step method: demand
         demand = frames["prepared__demand"].alias("order")
@@ -2214,7 +2181,7 @@ class FulfillmentGenerated(
         assert_schema(exceptions, FULFILLMENT_EXCEPTION_SCHEMA, name="FulfillmentException", mode="strict")
 
         # Step method: service_evaluations
-        service_evaluations = frames["evaluated__service_evaluations"].alias("fulfillment_service_evaluation")
+        service_evaluations = frames["evaluated__evaluations"].alias("fulfillment_service_evaluation")
         assert_schema(
             service_evaluations,
             FULFILLMENT_SERVICE_EVALUATION_SCHEMA,

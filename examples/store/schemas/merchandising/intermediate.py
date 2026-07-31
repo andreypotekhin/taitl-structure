@@ -10,6 +10,20 @@ class RankedRecommendationCandidate(RecommendedProduct):
     maximum_results = long(nullable=False)
 
 
+class DiversifiedRecommendationCandidate(RankedRecommendationCandidate):
+    diversity_rank = long(nullable=False)
+
+
+class DiversificationDecision(Schema):
+    tenant = struct(TenantKey, nullable=False)
+    request_id = string(nullable=False)
+    product_id = string(nullable=False)
+    taxonomy_branch = string(nullable=True)
+    branch_rank = long(nullable=False)
+    selected = boolean(nullable=False)
+    exclusion_reason = string(nullable=True)
+
+
 class RecommendationBehaviorImpression(Schema):
     window = struct(TimeWindow, nullable=False)
     tenant = struct(TenantKey, nullable=False)

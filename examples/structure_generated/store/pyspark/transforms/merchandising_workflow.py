@@ -2,35 +2,33 @@
 # Source: examples.store.transforms.merchandising.workflow.Merchandising
 
 from __future__ import annotations
-from pyspark.sql import DataFrame, SparkSession
+import datetime
 from pyspark.sql import Window
+from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.store.runtime.schema_assert import TransformResult, assert_schema, project_schema
 from examples.structure_generated.store.pyspark.schemas.catalog import (
     CATALOG_PRODUCT_SCHEMA,
+    RECOMMENDATION_CANDIDATE_DECISION_SCHEMA,
     RECOMMENDATION_CANDIDATE_SCHEMA,
 )
 from examples.structure_generated.store.pyspark.schemas.common import TENANT_KEY_SCHEMA
-from examples.structure_generated.store.pyspark.schemas.evaluation import (
-    DAILY_RECOMMENDATION_BEHAVIOR_SCHEMA,
-    RECOMMENDATION_EVALUATION_BATCH_SCHEMA,
-    RECOMMENDATION_REQUEST_BEHAVIOR_SCHEMA,
-)
 from examples.structure_generated.store.pyspark.schemas.feedback import (
     DAILY_RECOMMENDATION_CLICKS_SCHEMA,
     DAILY_RECOMMENDATION_IMPRESSIONS_SCHEMA,
     PRODUCT_RECOMMENDATION_SIGNAL_SCHEMA,
     RECOMMENDATION_CLICK_SCHEMA,
     RECOMMENDATION_IMPRESSION_SCHEMA,
+    RECOMMENDATION_PURCHASE_SCHEMA,
 )
 from examples.structure_generated.store.pyspark.schemas.intermediate import (
-    DAILY_RECOMMENDATION_COUNTS_SCHEMA,
+    DIVERSIFICATION_DECISION_SCHEMA,
+    DIVERSIFIED_RECOMMENDATION_CANDIDATE_SCHEMA,
     PRODUCT_RECOMMENDATION_SIGNAL_TOTALS_SCHEMA,
     RANKED_RECOMMENDATION_CANDIDATE_SCHEMA,
-    RECOMMENDATION_BEHAVIOR_IMPRESSION_SCHEMA,
-    RECOMMENDATION_EXPOSURE_SCHEMA,
 )
+from examples.structure_generated.store.pyspark.schemas.order import ORDER_FULFILLMENT_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.policy import (
     MERCHANDISING_BOOST_SCHEMA,
     MERCHANDISING_POLICY_SCHEMA,
@@ -42,6 +40,13 @@ from examples.structure_generated.store.pyspark.schemas.recommendation import (
     RECOMMENDATION_REQUEST_SCHEMA,
     RECOMMENDATION_RUN_SCHEMA,
     RECOMMENDED_PRODUCT_SCHEMA,
+)
+from examples.structure_generated.store.pyspark.schemas.session import SESSION_EVENT_SCHEMA, SESSION_FEATURE_SCHEMA
+from examples.structure_generated.store.pyspark.schemas.taxonomy import (
+    EXPANDED_PRODUCT_TAXONOMY_SCHEMA,
+    PRODUCT_TAXONOMY_SCHEMA,
+    TAXONOMY_ANCESTOR_SCHEMA,
+    TAXONOMY_NODE_SCHEMA,
 )
 
 
@@ -94,17 +99,748 @@ class PrepareCatalogGenerated:
         }
 
 
-class BuildRecommendationSignalsGenerated:
-    def _step_signals_built_summarize_impressions_1(self, frames):
-        # Step method: signals_built.summarize_impressions
-        signals_built__impression_facts = frames["feedback_impressions"].alias("recommendation_impression")
-        signals_built__impression_facts = signals_built__impression_facts.withWatermark("shown_at", '7 days')
-        if signals_built__impression_facts.isStreaming:
-            signals_built__impression_facts = signals_built__impression_facts.dropDuplicatesWithinWatermark(["id"])
+class NormalizeCatalogGenerated:
+    def _step_normalized_normalize_1(self, frames):
+        # Step method: normalized.normalize
+        normalized__catalog = frames["cataloged__products"].alias("catalog_product")
+        normalized__catalog = normalized__catalog.select(
+            F.col("catalog_product.tenant"),
+            F.col("catalog_product.audit"),
+            F.lower(F.trim(F.col("catalog_product.product_id"))).alias("product_id"),
+            F.col("catalog_product.product_name"),
+            F.lower(F.trim(F.col("catalog_product.category"))).alias("category"),
+            F.col("catalog_product.active"),
+            F.col("catalog_product.list_price"),
+            F.col("catalog_product.rating"),
+            F.col("catalog_product.has_promotion"),
+            F.lower(F.trim(F.col("catalog_product.promotion_code"))).alias("promotion_code"),
+            F.col("catalog_product.promotion_name"),
+            F.col("catalog_product.promotion_discount"),
+            F.col("catalog_product.base_score"),
+            F.col("catalog_product.promotion_score"),
+            F.col("catalog_product.eligible"),
+        )
+        assert_schema(normalized__catalog, CATALOG_PRODUCT_SCHEMA, name="CatalogProduct", mode="strict")
+        return {
+            "normalized__catalog": normalized__catalog,
+        }
+
+
+class ExpandProductTaxonomyGenerated:
+    def _step_taxonomy_expanded_build_ancestors_2(self, frames):
+        # Step method: taxonomy_expanded.build_ancestors
+        taxonomy_expanded__ancestors = frames["taxonomy_nodes"].alias("taxonomy_node")
+        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.where((F.col("taxonomy_node.active")))
+        taxonomy_expanded__ancestors_hierarchy_closure_1_nodes = taxonomy_expanded__ancestors.select(
+            F.col("taxonomy_node.taxonomy_id").alias("__structure_hierarchy_node_1"),
+            F.col("taxonomy_node.parent_taxonomy_id").alias("__structure_hierarchy_parent_1"),
+        )
+        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.select(
+            F.col("__structure_hierarchy_node_1").alias("node_id"),
+            F.col("__structure_hierarchy_node_1").alias("ancestor_id"),
+            F.lit(0).cast(T.LongType()).alias("depth"),
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_nodes
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_1 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_1 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_1.select(
+                F.col("__structure_hierarchy_node_1").alias("node_id"),
+                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+                F.lit(1).cast(T.LongType()).alias("depth"),
+            )
+        )
+        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_1, allowMissingColumns=False
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+            .join(
+                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_1").alias("__structure_hierarchy_node_1"),
+                F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_2 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_2 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_2.select(
+                F.col("__structure_hierarchy_node_1").alias("node_id"),
+                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+                F.lit(2).cast(T.LongType()).alias("depth"),
+            )
+        )
+        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_2, allowMissingColumns=False
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+            .join(
+                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_1").alias("__structure_hierarchy_node_1"),
+                F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_3 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_3 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_3.select(
+                F.col("__structure_hierarchy_node_1").alias("node_id"),
+                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+                F.lit(3).cast(T.LongType()).alias("depth"),
+            )
+        )
+        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_3, allowMissingColumns=False
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+            .join(
+                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_1").alias("__structure_hierarchy_node_1"),
+                F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_4 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_4 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_4.select(
+                F.col("__structure_hierarchy_node_1").alias("node_id"),
+                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+                F.lit(4).cast(T.LongType()).alias("depth"),
+            )
+        )
+        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_4, allowMissingColumns=False
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+            .join(
+                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_1").alias("__structure_hierarchy_node_1"),
+                F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_5 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_5 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_5.select(
+                F.col("__structure_hierarchy_node_1").alias("node_id"),
+                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+                F.lit(5).cast(T.LongType()).alias("depth"),
+            )
+        )
+        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_5, allowMissingColumns=False
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+            .join(
+                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_1").alias("__structure_hierarchy_node_1"),
+                F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_6 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_6 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_6.select(
+                F.col("__structure_hierarchy_node_1").alias("node_id"),
+                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+                F.lit(6).cast(T.LongType()).alias("depth"),
+            )
+        )
+        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_6, allowMissingColumns=False
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+            .join(
+                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_1").alias("__structure_hierarchy_node_1"),
+                F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_7 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_7 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_7.select(
+                F.col("__structure_hierarchy_node_1").alias("node_id"),
+                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+                F.lit(7).cast(T.LongType()).alias("depth"),
+            )
+        )
+        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_7, allowMissingColumns=False
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+            .join(
+                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_1").alias("__structure_hierarchy_node_1"),
+                F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_8 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_8 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_8.select(
+                F.col("__structure_hierarchy_node_1").alias("node_id"),
+                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+                F.lit(8).cast(T.LongType()).alias("depth"),
+            )
+        )
+        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_8, allowMissingColumns=False
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+            .join(
+                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_1").alias("__structure_hierarchy_node_1"),
+                F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_9 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_9 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_9.select(
+                F.col("__structure_hierarchy_node_1").alias("node_id"),
+                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+                F.lit(9).cast(T.LongType()).alias("depth"),
+            )
+        )
+        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_9, allowMissingColumns=False
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+            .join(
+                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_1").alias("__structure_hierarchy_node_1"),
+                F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_10 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_10 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_10.select(
+                F.col("__structure_hierarchy_node_1").alias("node_id"),
+                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+                F.lit(10).cast(T.LongType()).alias("depth"),
+            )
+        )
+        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_10, allowMissingColumns=False
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+            .join(
+                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_1").alias("__structure_hierarchy_node_1"),
+                F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_11 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_11 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_11.select(
+                F.col("__structure_hierarchy_node_1").alias("node_id"),
+                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+                F.lit(11).cast(T.LongType()).alias("depth"),
+            )
+        )
+        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_11, allowMissingColumns=False
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+            .join(
+                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_1").alias("__structure_hierarchy_node_1"),
+                F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_12 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_12 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_12.select(
+                F.col("__structure_hierarchy_node_1").alias("node_id"),
+                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+                F.lit(12).cast(T.LongType()).alias("depth"),
+            )
+        )
+        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_12, allowMissingColumns=False
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+            .join(
+                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_1").alias("__structure_hierarchy_node_1"),
+                F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_13 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_13 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_13.select(
+                F.col("__structure_hierarchy_node_1").alias("node_id"),
+                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+                F.lit(13).cast(T.LongType()).alias("depth"),
+            )
+        )
+        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_13, allowMissingColumns=False
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+            .join(
+                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_1").alias("__structure_hierarchy_node_1"),
+                F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_14 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_14 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_14.select(
+                F.col("__structure_hierarchy_node_1").alias("node_id"),
+                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+                F.lit(14).cast(T.LongType()).alias("depth"),
+            )
+        )
+        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_14, allowMissingColumns=False
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+            .join(
+                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_1").alias("__structure_hierarchy_node_1"),
+                F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_15 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_15 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_15.select(
+                F.col("__structure_hierarchy_node_1").alias("node_id"),
+                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+                F.lit(15).cast(T.LongType()).alias("depth"),
+            )
+        )
+        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_15, allowMissingColumns=False
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+            .join(
+                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_1").alias("__structure_hierarchy_node_1"),
+                F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_16 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_16 = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_16.select(
+                F.col("__structure_hierarchy_node_1").alias("node_id"),
+                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+                F.lit(16).cast(T.LongType()).alias("depth"),
+            )
+        )
+        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
+            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_16, allowMissingColumns=False
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
+                F.col("__structure_hierarchy_parent_1").isNotNull()
+            )
+        )
+        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+            .join(
+                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
+                "left",
+            )
+            .select(
+                F.col("frontier.__structure_hierarchy_node_1").alias("__structure_hierarchy_node_1"),
+                F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
+            )
+        )
+        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.select(
+            F.col("node_id"),
+            F.col("ancestor_id"),
+            F.col("depth"),
+        )
+        assert_schema(taxonomy_expanded__ancestors, TAXONOMY_ANCESTOR_SCHEMA, name="TaxonomyAncestor", mode="strict")
+        return {
+            "taxonomy_expanded__ancestors": taxonomy_expanded__ancestors,
+        }
+
+    def _step_taxonomy_expanded_expand_3(self, frames):
+        # Step method: taxonomy_expanded.expand
+        taxonomy_expanded__expanded = frames["product_taxonomy"].alias("product_taxonomy")
+        taxonomy_expanded__ancestors_joined = frames["taxonomy_expanded__ancestors"].alias(
+            "taxonomy_expanded__ancestors"
+        )
+        taxonomy_expanded__expanded = taxonomy_expanded__expanded.join(
+            taxonomy_expanded__ancestors_joined,
+            (F.col("taxonomy_expanded__ancestors.node_id") == F.col("product_taxonomy.taxonomy_id")),
+            "inner",
+        )
+        taxonomy_nodes_2_joined = frames["taxonomy_nodes"].alias("taxonomy_nodes_2")
+        taxonomy_expanded__expanded = taxonomy_expanded__expanded.join(
+            taxonomy_nodes_2_joined,
+            (
+                (
+                    (F.col("taxonomy_nodes_2.tenant.tenant_id") == F.col("product_taxonomy.tenant.tenant_id"))
+                    & (F.col("taxonomy_nodes_2.taxonomy_id") == F.col("taxonomy_expanded__ancestors.ancestor_id"))
+                )
+                & F.col("taxonomy_nodes_2.active")
+            ),
+            "inner",
+        )
+        taxonomy_expanded__expanded = taxonomy_expanded__expanded.select(
+            F.col("product_taxonomy.tenant"),
+            F.col("product_taxonomy.product_id"),
+            F.col("product_taxonomy.taxonomy_id"),
+            F.col("product_taxonomy.category").alias("normalized_category"),
+            F.col("taxonomy_expanded__ancestors.ancestor_id").alias("ancestor_taxonomy_id"),
+            F.col("taxonomy_nodes_2.category").alias("ancestor_category"),
+            F.col("taxonomy_expanded__ancestors.depth").alias("ancestor_depth"),
+        )
+        assert_schema(
+            taxonomy_expanded__expanded, EXPANDED_PRODUCT_TAXONOMY_SCHEMA, name="ExpandedProductTaxonomy", mode="strict"
+        )
+        return {
+            "taxonomy_expanded__expanded": taxonomy_expanded__expanded,
+        }
+
+
+class BuildSessionSignalsGenerated:
+    def _step_signals_built_sessionized_build_4(self, frames):
+        # Step method: signals_built.sessionized.build
+        signals_built__sessionized__events = frames["session_events"].alias("session_event")
+        signals_built__sessionized__events = signals_built__sessionized__events.withWatermark("occurred_at", '7 days')
+        if signals_built__sessionized__events.isStreaming:
+            signals_built__sessionized__events = signals_built__sessionized__events.dropDuplicatesWithinWatermark(
+                ["id"]
+            )
         else:
-            signals_built__impression_facts = signals_built__impression_facts.dropDuplicates(["id"])
-        signals_built__impression_facts = (
-            signals_built__impression_facts.groupBy(
+            signals_built__sessionized__events = signals_built__sessionized__events.dropDuplicates(["id"])
+        signals_built__sessionized__events = (
+            signals_built__sessionized__events.groupBy(
+                F.window(F.col("session_event.occurred_at"), '1 day').alias("window"),
+                F.col("session_event.tenant.tenant_id").alias("tenant_id"),
+                F.col("session_event.session_id").alias("session_id"),
+                F.col("session_event.customer_id").alias("customer_id"),
+                F.col("session_event.product_id").alias("product_id"),
+                F.col("session_event.category").alias("category"),
+            )
+            .agg(
+                F.first(F.col("session_event.tenant"), ignorenulls=False).alias("tenant"),
+                F.count(F.lit(1)).cast(T.LongType()).alias("event_count"),
+                F.sum(
+                    F.when((F.col("session_event.event_type") == F.lit('product_view')), F.lit(1)).otherwise(F.lit(0))
+                )
+                .cast(T.LongType())
+                .alias("product_view_count"),
+                F.sum(F.when((F.col("session_event.event_type") == F.lit('add_to_cart')), F.lit(1)).otherwise(F.lit(0)))
+                .cast(T.LongType())
+                .alias("add_to_cart_count"),
+                F.max(F.col("session_event.occurred_at")).cast(T.TimestampType()).alias("last_event_at"),
+            )
+            .select(
+                F.col("window"),
+                F.col("tenant"),
+                F.col("session_id"),
+                F.col("customer_id"),
+                F.col("product_id"),
+                F.col("category"),
+                F.col("event_count"),
+                F.col("product_view_count"),
+                F.col("add_to_cart_count"),
+                F.col("last_event_at"),
+            )
+        )
+        assert_schema(signals_built__sessionized__events, SESSION_FEATURE_SCHEMA, name="SessionFeature", mode="strict")
+        return {
+            "signals_built__sessionized__events": signals_built__sessionized__events,
+        }
+
+
+class BuildRecommendationPurchaseSignalsGenerated:
+    def _step_signals_built_purchases_attribute_5(self, frames):
+        # Step method: signals_built.purchases.attribute
+        signals_built__purchases__fulfilled_orders = frames["fulfilled_orders"].alias("order_fulfillment")
+        feedback_impressions_joined = frames["feedback_impressions"].alias("feedback_impressions")
+        signals_built__purchases__fulfilled_orders = signals_built__purchases__fulfilled_orders.join(
+            feedback_impressions_joined,
+            (
+                (
+                    (
+                        (F.col("feedback_impressions.tenant.tenant_id") == F.col("order_fulfillment.tenant.tenant_id"))
+                        & (F.col("feedback_impressions.product_id") == F.col("order_fulfillment.product_id"))
+                    )
+                    & F.col("feedback_impressions.customer_id").eqNullSafe(F.col("order_fulfillment.customer_id"))
+                )
+                & (
+                    (
+                        F.coalesce(
+                            F.col("order_fulfillment.shipped_at"),
+                            F.to_timestamp(F.col("order_fulfillment.business.order_date")),
+                            F.lit(datetime.datetime(1970, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)),
+                        )
+                        >= (F.col("feedback_impressions.shown_at") - F.expr("INTERVAL 0 seconds"))
+                    )
+                    & (
+                        F.coalesce(
+                            F.col("order_fulfillment.shipped_at"),
+                            F.to_timestamp(F.col("order_fulfillment.business.order_date")),
+                            F.lit(datetime.datetime(1970, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)),
+                        )
+                        <= (F.col("feedback_impressions.shown_at") + F.expr("INTERVAL 30 days"))
+                    )
+                )
+            ),
+            "left",
+        )
+        signals_built__purchases__fulfilled_orders = signals_built__purchases__fulfilled_orders.select(
+            F.col("order_fulfillment.tenant"),
+            F.col("order_fulfillment.id").alias("order_id"),
+            F.col("feedback_impressions.request_id"),
+            F.col("order_fulfillment.customer_id"),
+            F.col("feedback_impressions.session_id"),
+            F.col("order_fulfillment.product_id"),
+            F.col("feedback_impressions.id").alias("recommendation_impression_id"),
+            F.coalesce(
+                F.col("order_fulfillment.shipped_at"),
+                F.to_timestamp(F.col("order_fulfillment.business.order_date")),
+                F.lit(datetime.datetime(1970, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)),
+            ).alias("occurred_at"),
+            F.when(F.col("feedback_impressions.id").isNotNull(), F.lit('attributed'))
+            .otherwise(F.lit('unattributed'))
+            .alias("attribution_status"),
+            F.col("order_fulfillment.quantity"),
+        )
+        assert_schema(
+            signals_built__purchases__fulfilled_orders,
+            RECOMMENDATION_PURCHASE_SCHEMA,
+            name="RecommendationPurchase",
+            mode="strict",
+        )
+        return {
+            "signals_built__purchases__fulfilled_orders": signals_built__purchases__fulfilled_orders,
+        }
+
+
+class BuildRecommendationSignalsGenerated:
+    def _step_signals_built_recommendation_summarize_impressions_6(self, frames):
+        # Step method: signals_built.recommendation.summarize_impressions
+        signals_built__recommendation__impression_facts = frames["feedback_impressions"].alias(
+            "recommendation_impression"
+        )
+        signals_built__recommendation__impression_facts = signals_built__recommendation__impression_facts.withWatermark(
+            "shown_at", '7 days'
+        )
+        if signals_built__recommendation__impression_facts.isStreaming:
+            signals_built__recommendation__impression_facts = (
+                signals_built__recommendation__impression_facts.dropDuplicatesWithinWatermark(["id"])
+            )
+        else:
+            signals_built__recommendation__impression_facts = (
+                signals_built__recommendation__impression_facts.dropDuplicates(["id"])
+            )
+        signals_built__recommendation__impression_facts = (
+            signals_built__recommendation__impression_facts.groupBy(
                 F.window(F.col("recommendation_impression.shown_at"), '1 day').alias("window"),
                 F.col("recommendation_impression.tenant.tenant_id").alias("tenant_id"),
                 F.col("recommendation_impression.strategy_id").alias("strategy_id"),
@@ -129,31 +865,41 @@ class BuildRecommendationSignalsGenerated:
             )
         )
         assert_schema(
-            signals_built__impression_facts,
+            signals_built__recommendation__impression_facts,
             DAILY_RECOMMENDATION_IMPRESSIONS_SCHEMA,
             name="DailyRecommendationImpressions",
             mode="strict",
         )
         return {
-            "signals_built__impression_facts": signals_built__impression_facts,
+            "signals_built__recommendation__impression_facts": signals_built__recommendation__impression_facts,
         }
 
-    def _step_signals_built_summarize_clicks_2(self, frames):
-        # Step method: signals_built.summarize_clicks
-        signals_built__click_facts = frames["feedback_impressions"].alias("recommendation_impression")
-        signals_built__click_facts = signals_built__click_facts.withWatermark("shown_at", '7 days')
-        if signals_built__click_facts.isStreaming:
-            signals_built__click_facts = signals_built__click_facts.dropDuplicatesWithinWatermark(["id"])
+    def _step_signals_built_recommendation_summarize_clicks_7(self, frames):
+        # Step method: signals_built.recommendation.summarize_clicks
+        signals_built__recommendation__click_facts = frames["feedback_impressions"].alias("recommendation_impression")
+        signals_built__recommendation__click_facts = signals_built__recommendation__click_facts.withWatermark(
+            "shown_at", '7 days'
+        )
+        if signals_built__recommendation__click_facts.isStreaming:
+            signals_built__recommendation__click_facts = (
+                signals_built__recommendation__click_facts.dropDuplicatesWithinWatermark(["id"])
+            )
         else:
-            signals_built__click_facts = signals_built__click_facts.dropDuplicates(["id"])
+            signals_built__recommendation__click_facts = signals_built__recommendation__click_facts.dropDuplicates(
+                ["id"]
+            )
         if frames["feedback_clicks"].isStreaming:
-            signals_built__click_facts_click_deduped_1 = frames["feedback_clicks"].dropDuplicatesWithinWatermark(["id"])
+            signals_built__recommendation__click_facts_click_deduped_1 = frames[
+                "feedback_clicks"
+            ].dropDuplicatesWithinWatermark(["id"])
         else:
-            signals_built__click_facts_click_deduped_1 = frames["feedback_clicks"].dropDuplicates(["id"])
-        feedback_clicks_joined = signals_built__click_facts_click_deduped_1.withWatermark(
+            signals_built__recommendation__click_facts_click_deduped_1 = frames["feedback_clicks"].dropDuplicates(
+                ["id"]
+            )
+        feedback_clicks_joined = signals_built__recommendation__click_facts_click_deduped_1.withWatermark(
             "occurred_at", '7 days'
         ).alias("feedback_clicks")
-        signals_built__click_facts = signals_built__click_facts.join(
+        signals_built__recommendation__click_facts = signals_built__recommendation__click_facts.join(
             feedback_clicks_joined,
             (
                 (F.col("feedback_clicks.impression_id") == F.col("recommendation_impression.id"))
@@ -170,8 +916,8 @@ class BuildRecommendationSignalsGenerated:
             ),
             "inner",
         )
-        signals_built__click_facts = (
-            signals_built__click_facts.groupBy(
+        signals_built__recommendation__click_facts = (
+            signals_built__recommendation__click_facts.groupBy(
                 F.window(F.col("recommendation_impression.shown_at"), '1 day').alias("window"),
                 F.col("recommendation_impression.tenant.tenant_id").alias("tenant_id"),
                 F.col("recommendation_impression.strategy_id").alias("strategy_id"),
@@ -200,21 +946,21 @@ class BuildRecommendationSignalsGenerated:
             )
         )
         assert_schema(
-            signals_built__click_facts,
+            signals_built__recommendation__click_facts,
             DAILY_RECOMMENDATION_CLICKS_SCHEMA,
             name="DailyRecommendationClicks",
             mode="strict",
         )
         return {
-            "signals_built__click_facts": signals_built__click_facts,
+            "signals_built__recommendation__click_facts": signals_built__recommendation__click_facts,
         }
 
-    def _step_signals_built_publish_daily_impressions_3(self, frames):
-        # Step method: signals_built.publish_daily_impressions
-        signals_built__daily_impressions = frames["signals_built__impression_facts"].alias(
-            "daily_recommendation_impressions"
-        )
-        signals_built__daily_impressions = signals_built__daily_impressions.select(
+    def _step_signals_built_recommendation_publish_daily_impressions_8(self, frames):
+        # Step method: signals_built.recommendation.publish_daily_impressions
+        signals_built__recommendation__daily_impressions = frames[
+            "signals_built__recommendation__impression_facts"
+        ].alias("daily_recommendation_impressions")
+        signals_built__recommendation__daily_impressions = signals_built__recommendation__daily_impressions.select(
             F.col("daily_recommendation_impressions.window"),
             F.col("daily_recommendation_impressions.tenant"),
             F.col("daily_recommendation_impressions.strategy_id"),
@@ -225,19 +971,21 @@ class BuildRecommendationSignalsGenerated:
             F.col("daily_recommendation_impressions.impression_count"),
         )
         assert_schema(
-            signals_built__daily_impressions,
+            signals_built__recommendation__daily_impressions,
             DAILY_RECOMMENDATION_IMPRESSIONS_SCHEMA,
             name="DailyRecommendationImpressions",
             mode="strict",
         )
         return {
-            "signals_built__daily_impressions": signals_built__daily_impressions,
+            "signals_built__recommendation__daily_impressions": signals_built__recommendation__daily_impressions,
         }
 
-    def _step_signals_built_publish_daily_clicks_4(self, frames):
-        # Step method: signals_built.publish_daily_clicks
-        signals_built__daily_clicks = frames["signals_built__click_facts"].alias("daily_recommendation_clicks")
-        signals_built__daily_clicks = signals_built__daily_clicks.select(
+    def _step_signals_built_recommendation_publish_daily_clicks_9(self, frames):
+        # Step method: signals_built.recommendation.publish_daily_clicks
+        signals_built__recommendation__daily_clicks = frames["signals_built__recommendation__click_facts"].alias(
+            "daily_recommendation_clicks"
+        )
+        signals_built__recommendation__daily_clicks = signals_built__recommendation__daily_clicks.select(
             F.col("daily_recommendation_clicks.window"),
             F.col("daily_recommendation_clicks.tenant"),
             F.col("daily_recommendation_clicks.strategy_id"),
@@ -249,23 +997,25 @@ class BuildRecommendationSignalsGenerated:
             F.col("daily_recommendation_clicks.clicked_impression_count"),
         )
         assert_schema(
-            signals_built__daily_clicks,
+            signals_built__recommendation__daily_clicks,
             DAILY_RECOMMENDATION_CLICKS_SCHEMA,
             name="DailyRecommendationClicks",
             mode="strict",
         )
         return {
-            "signals_built__daily_clicks": signals_built__daily_clicks,
+            "signals_built__recommendation__daily_clicks": signals_built__recommendation__daily_clicks,
         }
 
-    def _step_signals_built_summarize_signals_5(self, frames):
-        # Step method: signals_built.summarize_signals
-        signals_built__signal_totals = frames["signals_built__impression_facts"].alias(
+    def _step_signals_built_recommendation_summarize_signals_10(self, frames):
+        # Step method: signals_built.recommendation.summarize_signals
+        signals_built__recommendation__signal_totals = frames["signals_built__recommendation__impression_facts"].alias(
             "daily_recommendation_impressions"
         )
-        signals_built__click_facts_joined = frames["signals_built__click_facts"].alias("signals_built__click_facts")
-        signals_built__signal_totals = signals_built__signal_totals.join(
-            signals_built__click_facts_joined,
+        signals_built__recommendation__click_facts_joined = frames["signals_built__recommendation__click_facts"].alias(
+            "signals_built__recommendation__click_facts"
+        )
+        signals_built__recommendation__signal_totals = signals_built__recommendation__signal_totals.join(
+            signals_built__recommendation__click_facts_joined,
             (
                 (
                     (
@@ -273,40 +1023,43 @@ class BuildRecommendationSignalsGenerated:
                             (
                                 (
                                     (
-                                        F.col("signals_built__click_facts.window")
+                                        F.col("signals_built__recommendation__click_facts.window")
                                         == F.col("daily_recommendation_impressions.window")
                                     )
                                     & (
-                                        F.col("signals_built__click_facts.tenant.tenant_id")
+                                        F.col("signals_built__recommendation__click_facts.tenant.tenant_id")
                                         == F.col("daily_recommendation_impressions.tenant.tenant_id")
                                     )
                                 )
                                 & (
-                                    F.col("signals_built__click_facts.strategy_id")
+                                    F.col("signals_built__recommendation__click_facts.strategy_id")
                                     == F.col("daily_recommendation_impressions.strategy_id")
                                 )
                             )
                             & (
-                                F.col("signals_built__click_facts.policy_version")
+                                F.col("signals_built__recommendation__click_facts.policy_version")
                                 == F.col("daily_recommendation_impressions.policy_version")
                             )
                         )
                         & (
-                            F.col("signals_built__click_facts.product_id")
+                            F.col("signals_built__recommendation__click_facts.product_id")
                             == F.col("daily_recommendation_impressions.product_id")
                         )
                     )
-                    & (F.col("signals_built__click_facts.rank") == F.col("daily_recommendation_impressions.rank"))
+                    & (
+                        F.col("signals_built__recommendation__click_facts.rank")
+                        == F.col("daily_recommendation_impressions.rank")
+                    )
                 )
                 & (
-                    F.col("signals_built__click_facts.examination_propensity")
+                    F.col("signals_built__recommendation__click_facts.examination_propensity")
                     == F.col("daily_recommendation_impressions.examination_propensity")
                 )
             ),
             "left",
         )
-        signals_built__signal_totals = (
-            signals_built__signal_totals.groupBy(
+        signals_built__recommendation__signal_totals = (
+            signals_built__recommendation__signal_totals.groupBy(
                 F.col("daily_recommendation_impressions.tenant.tenant_id").alias("tenant_id"),
                 F.col("daily_recommendation_impressions.strategy_id").alias("strategy_id"),
                 F.col("daily_recommendation_impressions.product_id").alias("product_id"),
@@ -316,14 +1069,18 @@ class BuildRecommendationSignalsGenerated:
                 F.sum(F.col("daily_recommendation_impressions.impression_count"))
                 .cast(T.LongType())
                 .alias("impression_count"),
-                F.sum(F.coalesce(F.col("signals_built__click_facts.clicked_impression_count"), F.lit(0)))
+                F.sum(
+                    F.coalesce(F.col("signals_built__recommendation__click_facts.clicked_impression_count"), F.lit(0))
+                )
                 .cast(T.LongType())
                 .alias("clicked_impression_count"),
-                F.sum(F.coalesce(F.col("signals_built__click_facts.click_count"), F.lit(0)))
+                F.sum(F.coalesce(F.col("signals_built__recommendation__click_facts.click_count"), F.lit(0)))
                 .cast(T.LongType())
                 .alias("raw_click_count"),
                 F.sum(F.lit(0.0)).cast(T.DoubleType()).alias("click_through_rate"),
                 F.sum(F.lit(0.0)).cast(T.DoubleType()).alias("exposure_adjusted_click_rate"),
+                F.sum(F.lit(0)).cast(T.LongType()).alias("attributed_purchase_count"),
+                F.sum(F.lit(0.0)).cast(T.DoubleType()).alias("conversion_rate"),
                 F.sum(
                     (
                         F.col("daily_recommendation_impressions.impression_count")
@@ -337,7 +1094,9 @@ class BuildRecommendationSignalsGenerated:
                 .alias("exposure_weight"),
                 F.sum(
                     (
-                        F.coalesce(F.col("signals_built__click_facts.clicked_impression_count"), F.lit(0))
+                        F.coalesce(
+                            F.col("signals_built__recommendation__click_facts.clicked_impression_count"), F.lit(0)
+                        )
                         / F.when(
                             (F.col("daily_recommendation_impressions.examination_propensity") > F.lit(0.0)),
                             F.col("daily_recommendation_impressions.examination_propensity"),
@@ -356,24 +1115,28 @@ class BuildRecommendationSignalsGenerated:
                 F.col("raw_click_count"),
                 F.col("click_through_rate"),
                 F.col("exposure_adjusted_click_rate"),
+                F.col("attributed_purchase_count"),
+                F.col("conversion_rate"),
                 F.col("exposure_weight"),
                 F.col("click_weight"),
             )
         )
         assert_schema(
-            signals_built__signal_totals,
+            signals_built__recommendation__signal_totals,
             PRODUCT_RECOMMENDATION_SIGNAL_TOTALS_SCHEMA,
             name="ProductRecommendationSignalTotals",
             mode="strict",
         )
         return {
-            "signals_built__signal_totals": signals_built__signal_totals,
+            "signals_built__recommendation__signal_totals": signals_built__recommendation__signal_totals,
         }
 
-    def _step_signals_built_publish_signals_6(self, frames):
-        # Step method: signals_built.publish_signals
-        signals_built__signals = frames["signals_built__signal_totals"].alias("product_recommendation_signal_totals")
-        signals_built__signals = signals_built__signals.select(
+    def _step_signals_built_recommendation_publish_signals_11(self, frames):
+        # Step method: signals_built.recommendation.publish_signals
+        signals_built__recommendation__signals = frames["signals_built__recommendation__signal_totals"].alias(
+            "product_recommendation_signal_totals"
+        )
+        signals_built__recommendation__signals = signals_built__recommendation__signals.select(
             F.col("product_recommendation_signal_totals.tenant"),
             F.col("product_recommendation_signal_totals.strategy_id"),
             F.col("product_recommendation_signal_totals.product_id"),
@@ -398,33 +1161,43 @@ class BuildRecommendationSignalsGenerated:
             )
             .otherwise(F.lit(None))
             .alias("exposure_adjusted_click_rate"),
+            F.col("product_recommendation_signal_totals.attributed_purchase_count"),
+            F.when(
+                (F.col("product_recommendation_signal_totals.impression_count") > F.lit(0)),
+                (
+                    F.col("product_recommendation_signal_totals.attributed_purchase_count")
+                    / F.col("product_recommendation_signal_totals.impression_count")
+                ),
+            )
+            .otherwise(F.lit(None))
+            .alias("conversion_rate"),
         )
         assert_schema(
-            signals_built__signals,
+            signals_built__recommendation__signals,
             PRODUCT_RECOMMENDATION_SIGNAL_SCHEMA,
             name="ProductRecommendationSignal",
             mode="strict",
         )
         return {
-            "signals_built__signals": signals_built__signals,
+            "signals_built__recommendation__signals": signals_built__recommendation__signals,
         }
 
 
 class SelectRecommendationCandidatesGenerated:
-    def _step_recommended_selected_select_7(self, frames):
+    def _step_recommended_selected_select_12(self, frames):
         # Step method: recommended.selected.select
         recommended__selected__requests = frames["requests"].alias("recommendation_request")
-        cataloged__products_joined = frames["cataloged__products"].alias("cataloged__products")
+        normalized__catalog_joined = frames["normalized__catalog"].alias("normalized__catalog")
         recommended__selected__requests = recommended__selected__requests.join(
-            cataloged__products_joined,
+            normalized__catalog_joined,
             (
                 (
-                    (F.col("cataloged__products.tenant.tenant_id") == F.col("recommendation_request.tenant.tenant_id"))
-                    & F.col("cataloged__products.eligible")
+                    (F.col("normalized__catalog.tenant.tenant_id") == F.col("recommendation_request.tenant.tenant_id"))
+                    & F.col("normalized__catalog.eligible")
                 )
                 & (
                     F.col("recommendation_request.category").isNull()
-                    | F.col("recommendation_request.category").eqNullSafe(F.col("cataloged__products.category"))
+                    | F.col("recommendation_request.category").eqNullSafe(F.col("normalized__catalog.category"))
                 )
             ),
             "inner",
@@ -434,18 +1207,28 @@ class SelectRecommendationCandidatesGenerated:
             F.col("recommendation_request.id").alias("request_id"),
             F.col("recommendation_request.requested_at"),
             F.col("recommendation_request.customer_id"),
+            F.col("recommendation_request.session_id"),
             F.col("recommendation_request.strategy_id"),
             F.col("recommendation_request.policy_version"),
+            F.col("recommendation_request.experiment_id"),
+            F.col("recommendation_request.experiment_version"),
+            F.col("recommendation_request.variant_id"),
             F.col("recommendation_request.category").alias("category_filter"),
             F.col("recommendation_request.collection_id"),
-            F.col("cataloged__products.product_id"),
-            F.col("cataloged__products.product_name"),
-            F.col("cataloged__products.category"),
-            F.col("cataloged__products.has_promotion"),
-            F.col("cataloged__products.promotion_code"),
-            F.col("cataloged__products.base_score"),
-            F.col("cataloged__products.promotion_score"),
+            F.col("normalized__catalog.product_id"),
+            F.col("normalized__catalog.product_name"),
+            F.col("normalized__catalog.category"),
+            F.col("normalized__catalog.has_promotion"),
+            F.col("normalized__catalog.promotion_code"),
+            F.col("normalized__catalog.base_score"),
+            F.col("normalized__catalog.promotion_score"),
             F.lit(0.0).alias("inventory_boost"),
+            F.lit('catalog').alias("candidate_source"),
+            F.lit(None).cast(T.StringType()).alias("taxonomy_id"),
+            F.col("normalized__catalog.category").alias("taxonomy_branch"),
+            F.lit(False).alias("session_match"),
+            F.lit(0.0).alias("purchase_signal"),
+            F.lit('eligible').alias("eligibility_status"),
         )
         assert_schema(
             recommended__selected__requests,
@@ -458,10 +1241,292 @@ class SelectRecommendationCandidatesGenerated:
         }
 
 
+class GenerateRecommendationCandidatesGenerated:
+    def _step_recommended_retrieved_retrieve_13(self, frames):
+        # Step method: recommended.retrieved.retrieve
+        recommended__retrieved__requests = frames["requests"].alias("recommendation_request")
+        normalized__catalog_joined = frames["normalized__catalog"].alias("normalized__catalog")
+        recommended__retrieved__requests = recommended__retrieved__requests.join(
+            normalized__catalog_joined,
+            (
+                (F.col("normalized__catalog.tenant.tenant_id") == F.col("recommendation_request.tenant.tenant_id"))
+                & F.col("normalized__catalog.eligible")
+            ),
+            "inner",
+        )
+        taxonomy_expanded__expanded_2_joined = frames["taxonomy_expanded__expanded"].alias(
+            "taxonomy_expanded__expanded_2"
+        )
+        recommended__retrieved__requests = recommended__retrieved__requests.join(
+            taxonomy_expanded__expanded_2_joined,
+            (
+                (
+                    (
+                        F.col("taxonomy_expanded__expanded_2.tenant.tenant_id")
+                        == F.col("recommendation_request.tenant.tenant_id")
+                    )
+                    & (F.col("taxonomy_expanded__expanded_2.product_id") == F.col("normalized__catalog.product_id"))
+                )
+                & F.col("recommendation_request.category").eqNullSafe(
+                    F.col("taxonomy_expanded__expanded_2.ancestor_category")
+                )
+            ),
+            "left",
+        )
+        signals_built__sessionized__events_3_joined = frames["signals_built__sessionized__events"].alias(
+            "signals_built__sessionized__events_3"
+        )
+        recommended__retrieved__requests = recommended__retrieved__requests.join(
+            signals_built__sessionized__events_3_joined,
+            (
+                (
+                    (
+                        F.col("signals_built__sessionized__events_3.tenant.tenant_id")
+                        == F.col("recommendation_request.tenant.tenant_id")
+                    )
+                    & F.col("signals_built__sessionized__events_3.customer_id").eqNullSafe(
+                        F.col("recommendation_request.customer_id")
+                    )
+                )
+                & F.col("signals_built__sessionized__events_3.category").eqNullSafe(
+                    F.col("normalized__catalog.category")
+                )
+            ),
+            "left",
+        )
+        signals_built__recommendation__signals_4_joined = frames["signals_built__recommendation__signals"].alias(
+            "signals_built__recommendation__signals_4"
+        )
+        recommended__retrieved__requests = recommended__retrieved__requests.join(
+            signals_built__recommendation__signals_4_joined,
+            (
+                (
+                    (
+                        F.col("signals_built__recommendation__signals_4.tenant.tenant_id")
+                        == F.col("recommendation_request.tenant.tenant_id")
+                    )
+                    & (
+                        F.col("signals_built__recommendation__signals_4.strategy_id")
+                        == F.col("recommendation_request.strategy_id")
+                    )
+                )
+                & (
+                    F.col("signals_built__recommendation__signals_4.product_id")
+                    == F.col("normalized__catalog.product_id")
+                )
+            ),
+            "left",
+        )
+        recommended__retrieved__requests = recommended__retrieved__requests.where(
+            (
+                (
+                    F.col("normalized__catalog.product_id").isNotNull()
+                    & (
+                        F.col("recommendation_request.category").isNull()
+                        | F.col("recommendation_request.category").eqNullSafe(F.col("normalized__catalog.category"))
+                    )
+                )
+            )
+        )
+        recommended__retrieved__requests = recommended__retrieved__requests.select(
+            F.col("recommendation_request.tenant"),
+            F.col("recommendation_request.id").alias("request_id"),
+            F.col("recommendation_request.requested_at"),
+            F.col("recommendation_request.customer_id"),
+            F.col("recommendation_request.session_id"),
+            F.col("recommendation_request.strategy_id"),
+            F.col("recommendation_request.policy_version"),
+            F.col("recommendation_request.experiment_id"),
+            F.col("recommendation_request.experiment_version"),
+            F.col("recommendation_request.variant_id"),
+            F.col("recommendation_request.category").alias("category_filter"),
+            F.col("recommendation_request.collection_id"),
+            F.col("normalized__catalog.product_id"),
+            F.col("normalized__catalog.product_name"),
+            F.col("normalized__catalog.category"),
+            F.col("normalized__catalog.has_promotion"),
+            F.col("normalized__catalog.promotion_code"),
+            F.col("normalized__catalog.base_score"),
+            F.col("normalized__catalog.promotion_score"),
+            F.lit(0.0).alias("inventory_boost"),
+            F.when(
+                F.col("recommendation_request.category").eqNullSafe(F.col("normalized__catalog.category")),
+                F.lit('category'),
+            )
+            .otherwise(
+                F.when(
+                    F.col("signals_built__sessionized__events_3.session_id").isNotNull(), F.lit('session')
+                ).otherwise(F.lit('popular'))
+            )
+            .alias("candidate_source"),
+            F.col("taxonomy_expanded__expanded_2.taxonomy_id"),
+            F.coalesce(
+                F.col("taxonomy_expanded__expanded_2.ancestor_category"), F.col("normalized__catalog.category")
+            ).alias("taxonomy_branch"),
+            F.col("signals_built__sessionized__events_3.session_id").isNotNull().alias("session_match"),
+            F.coalesce(F.col("signals_built__recommendation__signals_4.conversion_rate"), F.lit(0.0)).alias(
+                "purchase_signal"
+            ),
+            F.lit('retrieved').alias("eligibility_status"),
+        )
+        assert_schema(
+            recommended__retrieved__requests,
+            RECOMMENDATION_CANDIDATE_SCHEMA,
+            name="RecommendationCandidate",
+            mode="strict",
+        )
+        return {
+            "recommended__retrieved__requests": recommended__retrieved__requests,
+        }
+
+
+class FilterRecommendationCandidatesGenerated:
+    def _step_recommended_filtered_evaluate_14(self, frames):
+        # Step method: recommended.filtered.evaluate
+        recommended__filtered__evaluated = frames["recommended__retrieved__requests"].alias("recommendation_candidate")
+        suppressions_joined = frames["suppressions"].alias("suppressions")
+        recommended__filtered__evaluated = recommended__filtered__evaluated.join(
+            suppressions_joined,
+            (
+                (
+                    (
+                        (F.col("suppressions.tenant.tenant_id") == F.col("recommendation_candidate.tenant.tenant_id"))
+                        & (F.col("suppressions.policy_version") == F.col("recommendation_candidate.policy_version"))
+                    )
+                    & F.col("suppressions.active")
+                )
+                & (
+                    F.col("suppressions.product_id").eqNullSafe(F.col("recommendation_candidate.product_id"))
+                    | F.col("suppressions.category").eqNullSafe(F.col("recommendation_candidate.category"))
+                )
+            ),
+            "left",
+        )
+        signals_built__sessionized__events_2_joined = frames["signals_built__sessionized__events"].alias(
+            "signals_built__sessionized__events_2"
+        )
+        recommended__filtered__evaluated = recommended__filtered__evaluated.join(
+            signals_built__sessionized__events_2_joined,
+            (
+                (
+                    (
+                        (
+                            F.col("signals_built__sessionized__events_2.tenant.tenant_id")
+                            == F.col("recommendation_candidate.tenant.tenant_id")
+                        )
+                        & F.col("signals_built__sessionized__events_2.customer_id").eqNullSafe(
+                            F.col("recommendation_candidate.customer_id")
+                        )
+                    )
+                    & F.col("signals_built__sessionized__events_2.product_id").eqNullSafe(
+                        F.col("recommendation_candidate.product_id")
+                    )
+                )
+                & (F.col("signals_built__sessionized__events_2.add_to_cart_count") > F.lit(0))
+            ),
+            "left",
+        )
+        recommended__filtered__evaluated = recommended__filtered__evaluated.select(
+            F.col("recommendation_candidate.tenant"),
+            F.col("recommendation_candidate.request_id"),
+            F.col("recommendation_candidate.product_id"),
+            F.lit('filter').alias("stage"),
+            (
+                ~(F.coalesce(F.col("suppressions.exclude"), F.lit(False)))
+                & ~(F.col("signals_built__sessionized__events_2.product_id").isNotNull())
+            ).alias("eligible"),
+            F.when(
+                F.coalesce(F.col("suppressions.exclude"), F.lit(False)),
+                F.coalesce(F.col("suppressions.reason"), F.lit('hard_suppression')),
+            )
+            .otherwise(
+                F.when(
+                    F.col("signals_built__sessionized__events_2.product_id").isNotNull(), F.lit('session_already_added')
+                ).otherwise(F.lit(None))
+            )
+            .alias("exclusion_reason"),
+            F.col("recommendation_candidate.candidate_source"),
+            F.col("recommendation_candidate.taxonomy_branch"),
+        )
+        assert_schema(
+            recommended__filtered__evaluated,
+            RECOMMENDATION_CANDIDATE_DECISION_SCHEMA,
+            name="RecommendationCandidateDecision",
+            mode="strict",
+        )
+        return {
+            "recommended__filtered__evaluated": recommended__filtered__evaluated,
+        }
+
+    def _step_recommended_filtered_publish_15(self, frames):
+        # Step method: recommended.filtered.publish
+        recommended__filtered__filtered = frames["recommended__retrieved__requests"].alias("recommendation_candidate")
+        recommended__filtered__evaluated_joined = frames["recommended__filtered__evaluated"].alias(
+            "recommended__filtered__evaluated"
+        )
+        recommended__filtered__filtered = recommended__filtered__filtered.join(
+            recommended__filtered__evaluated_joined,
+            (
+                (
+                    (
+                        F.col("recommended__filtered__evaluated.tenant.tenant_id")
+                        == F.col("recommendation_candidate.tenant.tenant_id")
+                    )
+                    & (
+                        F.col("recommended__filtered__evaluated.request_id")
+                        == F.col("recommendation_candidate.request_id")
+                    )
+                )
+                & (F.col("recommended__filtered__evaluated.product_id") == F.col("recommendation_candidate.product_id"))
+            ),
+            "left",
+        )
+        recommended__filtered__filtered = recommended__filtered__filtered.where(
+            (F.col("recommended__filtered__evaluated.eligible"))
+        )
+        recommended__filtered__filtered = recommended__filtered__filtered.select(
+            F.col("recommendation_candidate.tenant"),
+            F.col("recommendation_candidate.request_id"),
+            F.col("recommendation_candidate.requested_at"),
+            F.col("recommendation_candidate.customer_id"),
+            F.col("recommendation_candidate.session_id"),
+            F.col("recommendation_candidate.strategy_id"),
+            F.col("recommendation_candidate.policy_version"),
+            F.col("recommendation_candidate.experiment_id"),
+            F.col("recommendation_candidate.experiment_version"),
+            F.col("recommendation_candidate.variant_id"),
+            F.col("recommendation_candidate.category_filter"),
+            F.col("recommendation_candidate.collection_id"),
+            F.col("recommendation_candidate.product_id"),
+            F.col("recommendation_candidate.product_name"),
+            F.col("recommendation_candidate.category"),
+            F.col("recommendation_candidate.has_promotion"),
+            F.col("recommendation_candidate.promotion_code"),
+            F.col("recommendation_candidate.base_score"),
+            F.col("recommendation_candidate.promotion_score"),
+            F.col("recommendation_candidate.inventory_boost"),
+            F.col("recommendation_candidate.candidate_source"),
+            F.col("recommendation_candidate.taxonomy_id"),
+            F.col("recommendation_candidate.taxonomy_branch"),
+            F.col("recommendation_candidate.session_match"),
+            F.col("recommendation_candidate.purchase_signal"),
+            F.lit('eligible').alias("eligibility_status"),
+        )
+        assert_schema(
+            recommended__filtered__filtered,
+            RECOMMENDATION_CANDIDATE_SCHEMA,
+            name="RecommendationCandidate",
+            mode="strict",
+        )
+        return {
+            "recommended__filtered__filtered": recommended__filtered__filtered,
+        }
+
+
 class RankRecommendationCandidatesGenerated:
-    def _step_recommended_ranked_rank_8(self, frames):
+    def _step_recommended_ranked_rank_16(self, frames):
         # Step method: recommended.ranked.rank
-        recommended__ranked__candidates = frames["recommended__selected__requests"].alias("recommendation_candidate")
+        recommended__ranked__candidates = frames["recommended__filtered__filtered"].alias("recommendation_candidate")
         policy_joined = frames["policy"].alias("policy")
         recommended__ranked__candidates = recommended__ranked__candidates.join(
             policy_joined,
@@ -513,18 +1578,26 @@ class RankRecommendationCandidatesGenerated:
         recommended__ranked__candidates = recommended__ranked__candidates.where(
             ((F.coalesce(F.col("suppressions_3.exclude"), F.lit(False)) == F.lit(False)))
         )
-        signals_built__signals_4_joined = frames["signals_built__signals"].alias("signals_built__signals_4")
+        signals_built__recommendation__signals_4_joined = frames["signals_built__recommendation__signals"].alias(
+            "signals_built__recommendation__signals_4"
+        )
         recommended__ranked__candidates = recommended__ranked__candidates.join(
-            signals_built__signals_4_joined,
+            signals_built__recommendation__signals_4_joined,
             (
                 (
                     (
-                        F.col("signals_built__signals_4.tenant.tenant_id")
+                        F.col("signals_built__recommendation__signals_4.tenant.tenant_id")
                         == F.col("recommendation_candidate.tenant.tenant_id")
                     )
-                    & (F.col("signals_built__signals_4.strategy_id") == F.col("recommendation_candidate.strategy_id"))
+                    & (
+                        F.col("signals_built__recommendation__signals_4.strategy_id")
+                        == F.col("recommendation_candidate.strategy_id")
+                    )
                 )
-                & (F.col("signals_built__signals_4.product_id") == F.col("recommendation_candidate.product_id"))
+                & (
+                    F.col("signals_built__recommendation__signals_4.product_id")
+                    == F.col("recommendation_candidate.product_id")
+                )
             ),
             "left",
         )
@@ -557,13 +1630,18 @@ class RankRecommendationCandidatesGenerated:
                                 F.when(
                                     (
                                         (
-                                            F.coalesce(F.col("signals_built__signals_4.impression_count"), F.lit(0))
+                                            F.coalesce(
+                                                F.col("signals_built__recommendation__signals_4.impression_count"),
+                                                F.lit(0),
+                                            )
                                             >= F.col("policy.minimum_feedback_impressions")
                                         )
-                                        & F.col("signals_built__signals_4.click_through_rate").isNotNull()
+                                        & F.col(
+                                            "signals_built__recommendation__signals_4.click_through_rate"
+                                        ).isNotNull()
                                     ),
                                     (
-                                        F.col("signals_built__signals_4.click_through_rate")
+                                        F.col("signals_built__recommendation__signals_4.click_through_rate")
                                         * F.col("policy.feedback_weight")
                                     ),
                                 ).otherwise(F.lit(0.0)),
@@ -588,12 +1666,15 @@ class RankRecommendationCandidatesGenerated:
                 F.when(
                     (
                         (
-                            F.coalesce(F.col("signals_built__signals_4.impression_count"), F.lit(0))
+                            F.coalesce(F.col("signals_built__recommendation__signals_4.impression_count"), F.lit(0))
                             >= F.col("policy.minimum_feedback_impressions")
                         )
-                        & F.col("signals_built__signals_4.click_through_rate").isNotNull()
+                        & F.col("signals_built__recommendation__signals_4.click_through_rate").isNotNull()
                     ),
-                    (F.col("signals_built__signals_4.click_through_rate") * F.col("policy.feedback_weight")),
+                    (
+                        F.col("signals_built__recommendation__signals_4.click_through_rate")
+                        * F.col("policy.feedback_weight")
+                    ),
                 ).otherwise(F.lit(0.0)),
                 F.lit(0.0),
             ).alias("feedback_score"),
@@ -613,12 +1694,17 @@ class RankRecommendationCandidatesGenerated:
                         F.when(
                             (
                                 (
-                                    F.coalesce(F.col("signals_built__signals_4.impression_count"), F.lit(0))
+                                    F.coalesce(
+                                        F.col("signals_built__recommendation__signals_4.impression_count"), F.lit(0)
+                                    )
                                     >= F.col("policy.minimum_feedback_impressions")
                                 )
-                                & F.col("signals_built__signals_4.click_through_rate").isNotNull()
+                                & F.col("signals_built__recommendation__signals_4.click_through_rate").isNotNull()
                             ),
-                            (F.col("signals_built__signals_4.click_through_rate") * F.col("policy.feedback_weight")),
+                            (
+                                F.col("signals_built__recommendation__signals_4.click_through_rate")
+                                * F.col("policy.feedback_weight")
+                            ),
                         ).otherwise(F.lit(0.0)),
                         F.lit(0.0),
                     )
@@ -626,9 +1712,20 @@ class RankRecommendationCandidatesGenerated:
                 - F.coalesce(F.col("suppressions_3.penalty"), F.lit(0.0))
             ).alias("final_score"),
             (
-                F.coalesce(F.col("signals_built__signals_4.impression_count"), F.lit(0))
+                F.coalesce(F.col("signals_built__recommendation__signals_4.impression_count"), F.lit(0))
                 >= F.col("policy.minimum_feedback_impressions")
             ).alias("feedback_contributed"),
+            F.col("recommendation_candidate.candidate_source"),
+            F.col("recommendation_candidate.taxonomy_id"),
+            F.col("recommendation_candidate.taxonomy_branch"),
+            F.col("recommendation_candidate.session_match"),
+            F.col("recommendation_candidate.purchase_signal"),
+            F.col("recommendation_candidate.eligibility_status"),
+            F.lit(True).alias("diversity_selected"),
+            F.lit(None).cast(T.StringType()).alias("diversity_exclusion_reason"),
+            F.col("recommendation_candidate.experiment_id"),
+            F.col("recommendation_candidate.experiment_version"),
+            F.col("recommendation_candidate.variant_id"),
             F.col("policy.maximum_results"),
         )
         assert_schema(
@@ -642,21 +1739,123 @@ class RankRecommendationCandidatesGenerated:
         }
 
 
-class SelectRecommendedProductsGenerated:
-    def _step_recommended_published_select_products_9(self, frames):
-        # Step method: recommended.published.select_products
-        recommended__published__ranked_candidates = frames["recommended__ranked__candidates"].alias(
+class DiversifyRecommendationsGenerated:
+    def _step_recommended_diversified_decide_17(self, frames):
+        # Step method: recommended.diversified.decide
+        recommended__diversified__decisions = frames["recommended__ranked__candidates"].alias(
             "ranked_recommendation_candidate"
         )
-        recommended__published__ranked_candidates = recommended__published__ranked_candidates.where(
+        policy_joined = frames["policy"].alias("policy")
+        recommended__diversified__decisions = recommended__diversified__decisions.join(
+            policy_joined,
             (
                 (
-                    F.col("ranked_recommendation_candidate.rank")
-                    <= F.col("ranked_recommendation_candidate.maximum_results")
+                    (F.col("policy.tenant.tenant_id") == F.col("ranked_recommendation_candidate.tenant.tenant_id"))
+                    & (F.col("policy.strategy_id") == F.col("ranked_recommendation_candidate.strategy_id"))
                 )
-            )
+                & (F.col("policy.policy_version") == F.col("ranked_recommendation_candidate.policy_version"))
+            ),
+            "inner",
         )
-        recommended__published__ranked_candidates = recommended__published__ranked_candidates.select(
+        recommended__diversified__decisions = recommended__diversified__decisions.select(
+            F.col("ranked_recommendation_candidate.tenant"),
+            F.col("ranked_recommendation_candidate.request_id"),
+            F.col("ranked_recommendation_candidate.product_id"),
+            F.coalesce(
+                F.col("ranked_recommendation_candidate.taxonomy_branch"),
+                F.col("ranked_recommendation_candidate.category"),
+            ).alias("taxonomy_branch"),
+            F.row_number()
+            .over(
+                Window.partitionBy(
+                    F.col("ranked_recommendation_candidate.tenant.tenant_id"),
+                    F.col("ranked_recommendation_candidate.request_id"),
+                    F.coalesce(
+                        F.col("ranked_recommendation_candidate.taxonomy_branch"),
+                        F.col("ranked_recommendation_candidate.category"),
+                    ),
+                ).orderBy(F.col("ranked_recommendation_candidate.rank").asc())
+            )
+            .cast(T.LongType())
+            .alias("branch_rank"),
+            (
+                F.row_number()
+                .over(
+                    Window.partitionBy(
+                        F.col("ranked_recommendation_candidate.tenant.tenant_id"),
+                        F.col("ranked_recommendation_candidate.request_id"),
+                        F.coalesce(
+                            F.col("ranked_recommendation_candidate.taxonomy_branch"),
+                            F.col("ranked_recommendation_candidate.category"),
+                        ),
+                    ).orderBy(F.col("ranked_recommendation_candidate.rank").asc())
+                )
+                .cast(T.LongType())
+                <= F.coalesce(F.col("policy.maximum_per_taxonomy_branch"), F.col("policy.maximum_results"))
+            ).alias("selected"),
+            F.when(
+                (
+                    F.row_number()
+                    .over(
+                        Window.partitionBy(
+                            F.col("ranked_recommendation_candidate.tenant.tenant_id"),
+                            F.col("ranked_recommendation_candidate.request_id"),
+                            F.coalesce(
+                                F.col("ranked_recommendation_candidate.taxonomy_branch"),
+                                F.col("ranked_recommendation_candidate.category"),
+                            ),
+                        ).orderBy(F.col("ranked_recommendation_candidate.rank").asc())
+                    )
+                    .cast(T.LongType())
+                    <= F.coalesce(F.col("policy.maximum_per_taxonomy_branch"), F.col("policy.maximum_results"))
+                ),
+                F.lit(None),
+            )
+            .otherwise(F.lit('taxonomy_branch_cap'))
+            .alias("exclusion_reason"),
+        )
+        assert_schema(
+            recommended__diversified__decisions,
+            DIVERSIFICATION_DECISION_SCHEMA,
+            name="DiversificationDecision",
+            mode="strict",
+        )
+        return {
+            "recommended__diversified__decisions": recommended__diversified__decisions,
+        }
+
+    def _step_recommended_diversified_publish_18(self, frames):
+        # Step method: recommended.diversified.publish
+        recommended__diversified__diversified = frames["recommended__ranked__candidates"].alias(
+            "ranked_recommendation_candidate"
+        )
+        recommended__diversified__decisions_joined = frames["recommended__diversified__decisions"].alias(
+            "recommended__diversified__decisions"
+        )
+        recommended__diversified__diversified = recommended__diversified__diversified.join(
+            recommended__diversified__decisions_joined,
+            (
+                (
+                    (
+                        F.col("recommended__diversified__decisions.tenant.tenant_id")
+                        == F.col("ranked_recommendation_candidate.tenant.tenant_id")
+                    )
+                    & (
+                        F.col("recommended__diversified__decisions.request_id")
+                        == F.col("ranked_recommendation_candidate.request_id")
+                    )
+                )
+                & (
+                    F.col("recommended__diversified__decisions.product_id")
+                    == F.col("ranked_recommendation_candidate.product_id")
+                )
+            ),
+            "inner",
+        )
+        recommended__diversified__diversified = recommended__diversified__diversified.where(
+            (F.col("recommended__diversified__decisions.selected"))
+        )
+        recommended__diversified__diversified = recommended__diversified__diversified.select(
             F.col("ranked_recommendation_candidate.tenant"),
             F.col("ranked_recommendation_candidate.request_id"),
             F.col("ranked_recommendation_candidate.strategy_id"),
@@ -664,7 +1863,15 @@ class SelectRecommendedProductsGenerated:
             F.col("ranked_recommendation_candidate.product_id"),
             F.col("ranked_recommendation_candidate.product_name"),
             F.col("ranked_recommendation_candidate.category"),
-            F.col("ranked_recommendation_candidate.rank"),
+            F.row_number()
+            .over(
+                Window.partitionBy(
+                    F.col("ranked_recommendation_candidate.tenant.tenant_id"),
+                    F.col("ranked_recommendation_candidate.request_id"),
+                ).orderBy(F.col("ranked_recommendation_candidate.rank").asc())
+            )
+            .cast(T.LongType())
+            .alias("rank"),
             F.col("ranked_recommendation_candidate.base_score"),
             F.col("ranked_recommendation_candidate.promotion_score"),
             F.col("ranked_recommendation_candidate.boost_score"),
@@ -673,6 +1880,73 @@ class SelectRecommendedProductsGenerated:
             F.col("ranked_recommendation_candidate.feedback_score"),
             F.col("ranked_recommendation_candidate.final_score"),
             F.col("ranked_recommendation_candidate.feedback_contributed"),
+            F.col("ranked_recommendation_candidate.candidate_source"),
+            F.col("ranked_recommendation_candidate.taxonomy_id"),
+            F.col("ranked_recommendation_candidate.taxonomy_branch"),
+            F.col("ranked_recommendation_candidate.session_match"),
+            F.col("ranked_recommendation_candidate.purchase_signal"),
+            F.col("ranked_recommendation_candidate.eligibility_status"),
+            F.lit(True).alias("diversity_selected"),
+            F.lit(None).cast(T.StringType()).alias("diversity_exclusion_reason"),
+            F.col("ranked_recommendation_candidate.experiment_id"),
+            F.col("ranked_recommendation_candidate.experiment_version"),
+            F.col("ranked_recommendation_candidate.variant_id"),
+            F.col("ranked_recommendation_candidate.maximum_results"),
+            F.col("recommended__diversified__decisions.branch_rank").alias("diversity_rank"),
+        )
+        assert_schema(
+            recommended__diversified__diversified,
+            DIVERSIFIED_RECOMMENDATION_CANDIDATE_SCHEMA,
+            name="DiversifiedRecommendationCandidate",
+            mode="strict",
+        )
+        return {
+            "recommended__diversified__diversified": recommended__diversified__diversified,
+        }
+
+
+class SelectRecommendedProductsGenerated:
+    def _step_recommended_published_select_products_19(self, frames):
+        # Step method: recommended.published.select_products
+        recommended__published__ranked_candidates = frames["recommended__diversified__diversified"].alias(
+            "diversified_recommendation_candidate"
+        )
+        recommended__published__ranked_candidates = recommended__published__ranked_candidates.where(
+            (
+                (
+                    F.col("diversified_recommendation_candidate.rank")
+                    <= F.col("diversified_recommendation_candidate.maximum_results")
+                )
+            )
+        )
+        recommended__published__ranked_candidates = recommended__published__ranked_candidates.select(
+            F.col("diversified_recommendation_candidate.tenant"),
+            F.col("diversified_recommendation_candidate.request_id"),
+            F.col("diversified_recommendation_candidate.strategy_id"),
+            F.col("diversified_recommendation_candidate.policy_version"),
+            F.col("diversified_recommendation_candidate.product_id"),
+            F.col("diversified_recommendation_candidate.product_name"),
+            F.col("diversified_recommendation_candidate.category"),
+            F.col("diversified_recommendation_candidate.rank"),
+            F.col("diversified_recommendation_candidate.base_score"),
+            F.col("diversified_recommendation_candidate.promotion_score"),
+            F.col("diversified_recommendation_candidate.boost_score"),
+            F.col("diversified_recommendation_candidate.suppression_penalty"),
+            F.col("diversified_recommendation_candidate.inventory_boost"),
+            F.col("diversified_recommendation_candidate.feedback_score"),
+            F.col("diversified_recommendation_candidate.final_score"),
+            F.col("diversified_recommendation_candidate.feedback_contributed"),
+            F.col("diversified_recommendation_candidate.candidate_source"),
+            F.col("diversified_recommendation_candidate.taxonomy_id"),
+            F.col("diversified_recommendation_candidate.taxonomy_branch"),
+            F.col("diversified_recommendation_candidate.session_match"),
+            F.col("diversified_recommendation_candidate.purchase_signal"),
+            F.col("diversified_recommendation_candidate.eligibility_status"),
+            F.col("diversified_recommendation_candidate.diversity_selected"),
+            F.col("diversified_recommendation_candidate.diversity_exclusion_reason"),
+            F.col("diversified_recommendation_candidate.experiment_id"),
+            F.col("diversified_recommendation_candidate.experiment_version"),
+            F.col("diversified_recommendation_candidate.variant_id"),
         )
         assert_schema(
             recommended__published__ranked_candidates,
@@ -686,7 +1960,7 @@ class SelectRecommendedProductsGenerated:
 
 
 class SummarizeRecommendationRunsGenerated:
-    def _step_recommended_summarized_summarize_10(self, frames):
+    def _step_recommended_summarized_summarize_20(self, frames):
         # Step method: recommended.summarized.summarize
         recommended__summarized__requests = frames["requests"].alias("recommendation_request")
         policy_joined = frames["policy"].alias("policy")
@@ -730,6 +2004,9 @@ class SummarizeRecommendationRunsGenerated:
                 F.col("recommendation_request.id").alias("request_id"),
                 F.col("recommendation_request.strategy_id").alias("strategy_id"),
                 F.col("policy.policy_version").alias("policy_version"),
+                F.col("recommendation_request.experiment_id").alias("experiment_id"),
+                F.col("recommendation_request.experiment_version").alias("experiment_version"),
+                F.col("recommendation_request.variant_id").alias("variant_id"),
             )
             .agg(
                 F.first(F.col("recommendation_request.tenant"), ignorenulls=False).alias("tenant"),
@@ -753,493 +2030,30 @@ class SummarizeRecommendationRunsGenerated:
                 F.col("policy_version"),
                 F.col("result_count"),
                 F.col("feedback_contributed"),
+                F.col("experiment_id"),
+                F.col("experiment_version"),
+                F.col("variant_id"),
             )
-        )
-        assert_schema(
-            recommended__summarized__requests, RECOMMENDATION_RUN_SCHEMA, name="RecommendationRun", mode="strict"
         )
         return {
             "recommended__summarized__requests": recommended__summarized__requests,
         }
 
 
-class SelectEvaluationRequestsGenerated:
-    def _step_evaluated_selected_select_requests_11(self, frames):
-        # Step method: evaluated.selected.select_requests
-        evaluated__selected__selected_requests = frames["evaluation_requests"].alias("recommendation_request")
-        evaluation_batch_joined = frames["evaluation_batch"].alias("evaluation_batch")
-        evaluated__selected__selected_requests = evaluated__selected__selected_requests.crossJoin(
-            evaluation_batch_joined
-        )
-        evaluated__selected__selected_requests = evaluated__selected__selected_requests.where(
-            (
-                (
-                    (F.col("recommendation_request.requested_at") >= F.col("evaluation_batch.window.start"))
-                    & (F.col("recommendation_request.requested_at") < F.col("evaluation_batch.window.end"))
-                )
-            )
-        )
-        evaluated__selected__selected_requests = evaluated__selected__selected_requests.select(
-            F.col("evaluation_batch.window"),
-            F.col("recommendation_request.tenant"),
-            F.col("recommendation_request.id").alias("request_id"),
-            F.col("recommendation_request.strategy_id"),
-            F.col("recommendation_request.policy_version"),
-            F.lit(0).cast(T.LongType()).alias("result_count"),
-            F.lit(0).cast(T.LongType()).alias("clicked_result_count"),
-            F.lit(False).alias("has_click"),
-            F.lit(None).cast(T.LongType()).alias("first_click_rank"),
-            F.lit(0).cast(T.LongType()).alias("raw_click_count"),
-        )
-        assert_schema(
-            evaluated__selected__selected_requests,
-            RECOMMENDATION_REQUEST_BEHAVIOR_SCHEMA,
-            name="RecommendationRequestBehavior",
-            mode="strict",
-        )
-        return {
-            "evaluated__selected__selected_requests": evaluated__selected__selected_requests,
-        }
-
-
-class MeasureRecommendationImpressionsGenerated:
-    def _step_evaluated_impressions_measured_select_impressions_12(self, frames):
-        # Step method: evaluated.impressions_measured.select_impressions
-        evaluated__impressions_measured__displayed = frames["evaluated__selected__selected_requests"].alias(
-            "recommendation_request_behavior"
-        )
-        evaluation_impressions_joined = frames["evaluation_impressions"].alias("evaluation_impressions")
-        evaluated__impressions_measured__displayed = evaluated__impressions_measured__displayed.join(
-            evaluation_impressions_joined,
-            (
-                (
-                    F.col("evaluation_impressions.tenant.tenant_id")
-                    == F.col("recommendation_request_behavior.tenant.tenant_id")
-                )
-                & (F.col("evaluation_impressions.request_id") == F.col("recommendation_request_behavior.request_id"))
-            ),
-            "inner",
-        )
-        evaluated__impressions_measured__displayed = evaluated__impressions_measured__displayed.select(
-            F.col("recommendation_request_behavior.window"),
-            F.col("recommendation_request_behavior.tenant"),
-            F.col("recommendation_request_behavior.request_id"),
-            F.col("recommendation_request_behavior.strategy_id"),
-            F.col("recommendation_request_behavior.policy_version"),
-            F.col("evaluation_impressions.id").alias("impression_id"),
-            F.col("evaluation_impressions.shown_at"),
-            F.col("evaluation_impressions.product_id"),
-            F.col("evaluation_impressions.rank"),
-            F.col("evaluation_impressions.examination_propensity"),
-            F.lit(0).cast(T.LongType()).alias("click_count"),
-        )
-        assert_schema(
-            evaluated__impressions_measured__displayed,
-            RECOMMENDATION_BEHAVIOR_IMPRESSION_SCHEMA,
-            name="RecommendationBehaviorImpression",
-            mode="strict",
-        )
-        return {
-            "evaluated__impressions_measured__displayed": evaluated__impressions_measured__displayed,
-        }
-
-    def _step_evaluated_impressions_measured_attribute_clicks_13(self, frames):
-        # Step method: evaluated.impressions_measured.attribute_clicks
-        evaluated__impressions_measured__clicked = frames["evaluated__impressions_measured__displayed"].alias(
-            "recommendation_behavior_impression"
-        )
-        evaluation_clicks_joined = frames["evaluation_clicks"].alias("evaluation_clicks")
-        evaluated__impressions_measured__clicked = evaluated__impressions_measured__clicked.join(
-            evaluation_clicks_joined,
-            (
-                (F.col("evaluation_clicks.impression_id") == F.col("recommendation_behavior_impression.impression_id"))
-                & (
-                    (
-                        F.col("evaluation_clicks.occurred_at")
-                        >= (F.col("recommendation_behavior_impression.shown_at") - F.expr("INTERVAL 0 seconds"))
-                    )
-                    & (
-                        F.col("evaluation_clicks.occurred_at")
-                        <= (F.col("recommendation_behavior_impression.shown_at") + F.expr("INTERVAL 24 hours"))
-                    )
-                )
-            ),
-            "inner",
-        )
-        evaluated__impressions_measured__clicked = (
-            evaluated__impressions_measured__clicked.groupBy(
-                F.col("recommendation_behavior_impression.window").alias("window"),
-                F.col("recommendation_behavior_impression.tenant.tenant_id").alias("tenant_id"),
-                F.col("recommendation_behavior_impression.request_id").alias("request_id"),
-                F.col("recommendation_behavior_impression.strategy_id").alias("strategy_id"),
-                F.col("recommendation_behavior_impression.policy_version").alias("policy_version"),
-                F.col("recommendation_behavior_impression.impression_id").alias("impression_id"),
-                F.col("recommendation_behavior_impression.shown_at").alias("shown_at"),
-                F.col("recommendation_behavior_impression.product_id").alias("product_id"),
-                F.col("recommendation_behavior_impression.rank").alias("rank"),
-                F.col("recommendation_behavior_impression.examination_propensity").alias("examination_propensity"),
-            )
-            .agg(
-                F.first(F.col("recommendation_behavior_impression.tenant"), ignorenulls=False).alias("tenant"),
-                F.count(F.lit(1)).cast(T.LongType()).alias("click_count"),
-            )
-            .select(
-                F.col("window"),
-                F.col("tenant"),
-                F.col("request_id"),
-                F.col("strategy_id"),
-                F.col("policy_version"),
-                F.col("impression_id"),
-                F.col("shown_at"),
-                F.col("product_id"),
-                F.col("rank"),
-                F.col("examination_propensity"),
-                F.col("click_count"),
-            )
-        )
-        assert_schema(
-            evaluated__impressions_measured__clicked,
-            RECOMMENDATION_BEHAVIOR_IMPRESSION_SCHEMA,
-            name="RecommendationBehaviorImpression",
-            mode="strict",
-        )
-        return {
-            "evaluated__impressions_measured__clicked": evaluated__impressions_measured__clicked,
-        }
-
-    def _step_evaluated_impressions_measured_measure_impressions_14(self, frames):
-        # Step method: evaluated.impressions_measured.measure_impressions
-        evaluated__impressions_measured__measured = frames["evaluated__impressions_measured__displayed"].alias(
-            "recommendation_behavior_impression"
-        )
-        evaluated__impressions_measured__clicked_joined = frames["evaluated__impressions_measured__clicked"].alias(
-            "evaluated__impressions_measured__clicked"
-        )
-        evaluated__impressions_measured__measured = evaluated__impressions_measured__measured.join(
-            evaluated__impressions_measured__clicked_joined,
-            (
-                F.col("evaluated__impressions_measured__clicked.impression_id")
-                == F.col("recommendation_behavior_impression.impression_id")
-            ),
-            "left",
-        )
-        evaluated__impressions_measured__measured = evaluated__impressions_measured__measured.select(
-            F.col("recommendation_behavior_impression.window"),
-            F.col("recommendation_behavior_impression.tenant"),
-            F.col("recommendation_behavior_impression.request_id"),
-            F.col("recommendation_behavior_impression.strategy_id"),
-            F.col("recommendation_behavior_impression.policy_version"),
-            F.col("recommendation_behavior_impression.impression_id"),
-            F.col("recommendation_behavior_impression.shown_at"),
-            F.col("recommendation_behavior_impression.product_id"),
-            F.col("recommendation_behavior_impression.rank"),
-            F.col("recommendation_behavior_impression.examination_propensity"),
-            F.coalesce(F.col("evaluated__impressions_measured__clicked.click_count"), F.lit(0)).alias("click_count"),
-        )
-        assert_schema(
-            evaluated__impressions_measured__measured,
-            RECOMMENDATION_BEHAVIOR_IMPRESSION_SCHEMA,
-            name="RecommendationBehaviorImpression",
-            mode="strict",
-        )
-        return {
-            "evaluated__impressions_measured__measured": evaluated__impressions_measured__measured,
-        }
-
-
-class MeasureRecommendationRequestsGenerated:
-    def _step_evaluated_requests_measured_measure_requests_15(self, frames):
-        # Step method: evaluated.requests_measured.measure_requests
-        evaluated__requests_measured__request_behaviors = frames["evaluated__selected__selected_requests"].alias(
-            "recommendation_request_behavior"
-        )
-        evaluated__impressions_measured__measured_joined = frames["evaluated__impressions_measured__measured"].alias(
-            "evaluated__impressions_measured__measured"
-        )
-        evaluated__requests_measured__request_behaviors = evaluated__requests_measured__request_behaviors.join(
-            evaluated__impressions_measured__measured_joined,
-            (
-                (
-                    F.col("evaluated__impressions_measured__measured.tenant.tenant_id")
-                    == F.col("recommendation_request_behavior.tenant.tenant_id")
-                )
-                & (
-                    F.col("evaluated__impressions_measured__measured.request_id")
-                    == F.col("recommendation_request_behavior.request_id")
-                )
-            ),
-            "left",
-        )
-        evaluated__requests_measured__request_behaviors = (
-            evaluated__requests_measured__request_behaviors.groupBy(
-                F.col("recommendation_request_behavior.window").alias("window"),
-                F.col("recommendation_request_behavior.tenant.tenant_id").alias("tenant_id"),
-                F.col("recommendation_request_behavior.request_id").alias("request_id"),
-                F.col("recommendation_request_behavior.strategy_id").alias("strategy_id"),
-                F.col("recommendation_request_behavior.policy_version").alias("policy_version"),
-            )
-            .agg(
-                F.first(F.col("recommendation_request_behavior.tenant"), ignorenulls=False).alias("tenant"),
-                F.sum(
-                    F.when(
-                        F.col("evaluated__impressions_measured__measured.impression_id").isNotNull(), F.lit(1)
-                    ).otherwise(F.lit(0))
-                )
-                .cast(T.LongType())
-                .alias("result_count"),
-                F.sum(
-                    F.when(
-                        (F.col("evaluated__impressions_measured__measured.click_count") > F.lit(0)), F.lit(1)
-                    ).otherwise(F.lit(0))
-                )
-                .cast(T.LongType())
-                .alias("clicked_result_count"),
-                F.bool_or(
-                    (F.coalesce(F.col("evaluated__impressions_measured__measured.click_count"), F.lit(0)) > F.lit(0))
-                )
-                .cast(T.BooleanType())
-                .alias("has_click"),
-                F.min(
-                    F.when(
-                        (F.col("evaluated__impressions_measured__measured.click_count") > F.lit(0)),
-                        F.col("evaluated__impressions_measured__measured.rank"),
-                    )
-                )
-                .cast(T.LongType())
-                .alias("first_click_rank"),
-                F.sum(F.coalesce(F.col("evaluated__impressions_measured__measured.click_count"), F.lit(0)))
-                .cast(T.LongType())
-                .alias("raw_click_count"),
-            )
-            .select(
-                F.col("window"),
-                F.col("tenant"),
-                F.col("request_id"),
-                F.col("strategy_id"),
-                F.col("policy_version"),
-                F.col("result_count"),
-                F.col("clicked_result_count"),
-                F.col("has_click"),
-                F.col("first_click_rank"),
-                F.col("raw_click_count"),
-            )
-        )
-        assert_schema(
-            evaluated__requests_measured__request_behaviors,
-            RECOMMENDATION_REQUEST_BEHAVIOR_SCHEMA,
-            name="RecommendationRequestBehavior",
-            mode="strict",
-        )
-        return {
-            "evaluated__requests_measured__request_behaviors": evaluated__requests_measured__request_behaviors,
-        }
-
-
-class SummarizeRecommendationBehaviorGenerated:
-    def _step_evaluated_summarized_summarize_exposure_16(self, frames):
-        # Step method: evaluated.summarized.summarize_exposure
-        evaluated__summarized__exposure = frames["evaluated__impressions_measured__measured"].alias(
-            "recommendation_behavior_impression"
-        )
-        evaluated__summarized__exposure = (
-            evaluated__summarized__exposure.groupBy(
-                F.col("recommendation_behavior_impression.window").alias("window"),
-                F.col("recommendation_behavior_impression.tenant.tenant_id").alias("tenant_id"),
-                F.col("recommendation_behavior_impression.strategy_id").alias("strategy_id"),
-                F.col("recommendation_behavior_impression.policy_version").alias("policy_version"),
-            )
-            .agg(
-                F.first(F.col("recommendation_behavior_impression.tenant"), ignorenulls=False).alias("tenant"),
-                F.sum(
-                    (
-                        F.lit(1.0)
-                        / F.when(
-                            (F.col("recommendation_behavior_impression.examination_propensity") > F.lit(0.0)),
-                            F.col("recommendation_behavior_impression.examination_propensity"),
-                        ).otherwise(F.lit(1.0))
-                    )
-                )
-                .cast(T.DoubleType())
-                .alias("exposure_weight"),
-                F.sum(
-                    F.when(
-                        (F.col("recommendation_behavior_impression.click_count") > F.lit(0)),
-                        (
-                            F.lit(1.0)
-                            / F.when(
-                                (F.col("recommendation_behavior_impression.examination_propensity") > F.lit(0.0)),
-                                F.col("recommendation_behavior_impression.examination_propensity"),
-                            ).otherwise(F.lit(1.0))
-                        ),
-                    ).otherwise(F.lit(0.0))
-                )
-                .cast(T.DoubleType())
-                .alias("click_weight"),
-            )
-            .select(
-                F.col("window"),
-                F.col("tenant"),
-                F.col("strategy_id"),
-                F.col("policy_version"),
-                F.col("exposure_weight"),
-                F.col("click_weight"),
-            )
-        )
-        assert_schema(
-            evaluated__summarized__exposure,
-            RECOMMENDATION_EXPOSURE_SCHEMA,
-            name="RecommendationExposure",
-            mode="strict",
-        )
-        return {
-            "evaluated__summarized__exposure": evaluated__summarized__exposure,
-        }
-
-    def _step_evaluated_summarized_summarize_requests_17(self, frames):
-        # Step method: evaluated.summarized.summarize_requests
-        evaluated__summarized__daily_counts = frames["evaluated__requests_measured__request_behaviors"].alias(
-            "recommendation_request_behavior"
-        )
-        evaluated__summarized__daily_counts = (
-            evaluated__summarized__daily_counts.groupBy(
-                F.col("recommendation_request_behavior.window").alias("window"),
-                F.col("recommendation_request_behavior.tenant.tenant_id").alias("tenant_id"),
-                F.col("recommendation_request_behavior.strategy_id").alias("strategy_id"),
-                F.col("recommendation_request_behavior.policy_version").alias("policy_version"),
-            )
-            .agg(
-                F.first(F.col("recommendation_request_behavior.tenant"), ignorenulls=False).alias("tenant"),
-                F.sum(F.lit(1)).cast(T.LongType()).alias("request_count"),
-                F.sum(
-                    F.when((F.col("recommendation_request_behavior.result_count") == F.lit(0)), F.lit(1)).otherwise(
-                        F.lit(0)
-                    )
-                )
-                .cast(T.LongType())
-                .alias("zero_result_request_count"),
-                F.sum(F.when(F.col("recommendation_request_behavior.has_click"), F.lit(1)).otherwise(F.lit(0)))
-                .cast(T.LongType())
-                .alias("clicked_request_count"),
-                F.sum(F.lit(0.0)).cast(T.DoubleType()).alias("zero_result_rate"),
-                F.sum(F.lit(0.0)).cast(T.DoubleType()).alias("clicked_request_rate"),
-                F.avg(F.col("recommendation_request_behavior.first_click_rank"))
-                .cast(T.DoubleType())
-                .alias("mean_first_click_rank"),
-                F.sum(F.col("recommendation_request_behavior.raw_click_count"))
-                .cast(T.LongType())
-                .alias("raw_click_count"),
-                F.sum(F.lit(0.0)).cast(T.DoubleType()).alias("exposure_adjusted_click_rate"),
-            )
-            .select(
-                F.col("window"),
-                F.col("tenant"),
-                F.col("strategy_id"),
-                F.col("policy_version"),
-                F.col("request_count"),
-                F.col("zero_result_request_count"),
-                F.col("clicked_request_count"),
-                F.col("zero_result_rate"),
-                F.col("clicked_request_rate"),
-                F.col("mean_first_click_rank"),
-                F.col("raw_click_count"),
-                F.col("exposure_adjusted_click_rate"),
-            )
-        )
-        assert_schema(
-            evaluated__summarized__daily_counts,
-            DAILY_RECOMMENDATION_COUNTS_SCHEMA,
-            name="DailyRecommendationCounts",
-            mode="strict",
-        )
-        return {
-            "evaluated__summarized__daily_counts": evaluated__summarized__daily_counts,
-        }
-
-    def _step_evaluated_summarized_publish_daily_18(self, frames):
-        # Step method: evaluated.summarized.publish_daily
-        evaluated__summarized__daily_behavior = frames["evaluated__summarized__daily_counts"].alias(
-            "daily_recommendation_counts"
-        )
-        evaluated__summarized__exposure_joined = frames["evaluated__summarized__exposure"].alias(
-            "evaluated__summarized__exposure"
-        )
-        evaluated__summarized__daily_behavior = evaluated__summarized__daily_behavior.join(
-            evaluated__summarized__exposure_joined,
-            (
-                (
-                    (
-                        (F.col("evaluated__summarized__exposure.window") == F.col("daily_recommendation_counts.window"))
-                        & (
-                            F.col("evaluated__summarized__exposure.tenant.tenant_id")
-                            == F.col("daily_recommendation_counts.tenant.tenant_id")
-                        )
-                    )
-                    & (
-                        F.col("evaluated__summarized__exposure.strategy_id")
-                        == F.col("daily_recommendation_counts.strategy_id")
-                    )
-                )
-                & (
-                    F.col("evaluated__summarized__exposure.policy_version")
-                    == F.col("daily_recommendation_counts.policy_version")
-                )
-            ),
-            "left",
-        )
-        evaluated__summarized__daily_behavior = evaluated__summarized__daily_behavior.select(
-            F.col("daily_recommendation_counts.window"),
-            F.col("daily_recommendation_counts.tenant"),
-            F.col("daily_recommendation_counts.strategy_id"),
-            F.col("daily_recommendation_counts.policy_version"),
-            F.col("daily_recommendation_counts.request_count"),
-            F.col("daily_recommendation_counts.zero_result_request_count"),
-            F.col("daily_recommendation_counts.clicked_request_count"),
-            F.when(
-                (F.col("daily_recommendation_counts.request_count") > F.lit(0)),
-                (
-                    F.col("daily_recommendation_counts.zero_result_request_count")
-                    / F.col("daily_recommendation_counts.request_count")
-                ),
-            )
-            .otherwise(F.lit(None))
-            .alias("zero_result_rate"),
-            F.when(
-                (F.col("daily_recommendation_counts.request_count") > F.lit(0)),
-                (
-                    F.col("daily_recommendation_counts.clicked_request_count")
-                    / F.col("daily_recommendation_counts.request_count")
-                ),
-            )
-            .otherwise(F.lit(None))
-            .alias("clicked_request_rate"),
-            F.col("daily_recommendation_counts.mean_first_click_rank"),
-            F.col("daily_recommendation_counts.raw_click_count"),
-            F.when(
-                (F.col("evaluated__summarized__exposure.exposure_weight") > F.lit(0.0)),
-                (
-                    F.col("evaluated__summarized__exposure.click_weight")
-                    / F.col("evaluated__summarized__exposure.exposure_weight")
-                ),
-            )
-            .otherwise(F.lit(None))
-            .alias("exposure_adjusted_click_rate"),
-        )
-        return {
-            "evaluated__summarized__daily_behavior": evaluated__summarized__daily_behavior,
-        }
-
-
 class MerchandisingGenerated(
     PrepareCatalogGenerated,
+    NormalizeCatalogGenerated,
+    ExpandProductTaxonomyGenerated,
+    BuildSessionSignalsGenerated,
+    BuildRecommendationPurchaseSignalsGenerated,
     BuildRecommendationSignalsGenerated,
     SelectRecommendationCandidatesGenerated,
+    GenerateRecommendationCandidatesGenerated,
+    FilterRecommendationCandidatesGenerated,
     RankRecommendationCandidatesGenerated,
+    DiversifyRecommendationsGenerated,
     SelectRecommendedProductsGenerated,
     SummarizeRecommendationRunsGenerated,
-    SelectEvaluationRequestsGenerated,
-    MeasureRecommendationImpressionsGenerated,
-    MeasureRecommendationRequestsGenerated,
-    SummarizeRecommendationBehaviorGenerated,
 ):
 
     def __init__(self, *, spark: SparkSession, ctx=None):
@@ -1252,99 +2066,94 @@ class MerchandisingGenerated(
         products: DataFrame,
         blocked_products: DataFrame,
         promotions: DataFrame,
+        product_taxonomy: DataFrame,
+        taxonomy_nodes: DataFrame,
+        session_events: DataFrame,
+        fulfilled_orders: DataFrame,
         feedback_impressions: DataFrame,
         feedback_clicks: DataFrame,
         requests: DataFrame,
+        suppressions: DataFrame,
         policy: DataFrame,
         boosts: DataFrame,
-        suppressions: DataFrame,
-        evaluation_batch: DataFrame,
-        evaluation_requests: DataFrame,
-        evaluation_impressions: DataFrame,
-        evaluation_clicks: DataFrame,
     ) -> TransformResult:
         assert_schema(products, PRODUCT_SCHEMA, name="Product", mode="strict")
         assert_schema(blocked_products, BLOCKED_PRODUCT_SCHEMA, name="BlockedProduct", mode="strict")
         assert_schema(promotions, PROMOTION_SCHEMA, name="Promotion", mode="strict")
+        assert_schema(product_taxonomy, PRODUCT_TAXONOMY_SCHEMA, name="ProductTaxonomy", mode="strict")
+        assert_schema(taxonomy_nodes, TAXONOMY_NODE_SCHEMA, name="TaxonomyNode", mode="strict")
+        assert_schema(session_events, SESSION_EVENT_SCHEMA, name="SessionEvent", mode="strict")
+        assert_schema(fulfilled_orders, ORDER_FULFILLMENT_SCHEMA, name="OrderFulfillment", mode="strict")
         assert_schema(
             feedback_impressions, RECOMMENDATION_IMPRESSION_SCHEMA, name="RecommendationImpression", mode="strict"
         )
         assert_schema(feedback_clicks, RECOMMENDATION_CLICK_SCHEMA, name="RecommendationClick", mode="strict")
         assert_schema(requests, RECOMMENDATION_REQUEST_SCHEMA, name="RecommendationRequest", mode="strict")
+        assert_schema(suppressions, MERCHANDISING_SUPPRESSION_SCHEMA, name="MerchandisingSuppression", mode="strict")
         assert_schema(policy, MERCHANDISING_POLICY_SCHEMA, name="MerchandisingPolicy", mode="strict")
         assert_schema(boosts, MERCHANDISING_BOOST_SCHEMA, name="MerchandisingBoost", mode="strict")
-        assert_schema(suppressions, MERCHANDISING_SUPPRESSION_SCHEMA, name="MerchandisingSuppression", mode="strict")
-        assert_schema(
-            evaluation_batch,
-            RECOMMENDATION_EVALUATION_BATCH_SCHEMA,
-            name="RecommendationEvaluationBatch",
-            mode="strict",
-        )
-        assert_schema(evaluation_requests, RECOMMENDATION_REQUEST_SCHEMA, name="RecommendationRequest", mode="strict")
-        assert_schema(
-            evaluation_impressions, RECOMMENDATION_IMPRESSION_SCHEMA, name="RecommendationImpression", mode="strict"
-        )
-        assert_schema(evaluation_clicks, RECOMMENDATION_CLICK_SCHEMA, name="RecommendationClick", mode="strict")
         _input_products = products
         _input_blocked_products = blocked_products
         _input_promotions = promotions
+        _input_product_taxonomy = product_taxonomy
+        _input_taxonomy_nodes = taxonomy_nodes
+        _input_session_events = session_events
+        _input_fulfilled_orders = fulfilled_orders
         _input_feedback_impressions = feedback_impressions
         _input_feedback_clicks = feedback_clicks
         _input_requests = requests
+        _input_suppressions = suppressions
         _input_policy = policy
         _input_boosts = boosts
-        _input_suppressions = suppressions
-        _input_evaluation_batch = evaluation_batch
-        _input_evaluation_requests = evaluation_requests
-        _input_evaluation_impressions = evaluation_impressions
-        _input_evaluation_clicks = evaluation_clicks
         frames = {
             "products": products,
             "blocked_products": blocked_products,
             "promotions": promotions,
+            "product_taxonomy": product_taxonomy,
+            "taxonomy_nodes": taxonomy_nodes,
+            "session_events": session_events,
+            "fulfilled_orders": fulfilled_orders,
             "feedback_impressions": feedback_impressions,
             "feedback_clicks": feedback_clicks,
             "requests": requests,
+            "suppressions": suppressions,
             "policy": policy,
             "boosts": boosts,
-            "suppressions": suppressions,
-            "evaluation_batch": evaluation_batch,
-            "evaluation_requests": evaluation_requests,
-            "evaluation_impressions": evaluation_impressions,
-            "evaluation_clicks": evaluation_clicks,
             "input:products": _input_products,
             "input:blocked_products": _input_blocked_products,
             "input:promotions": _input_promotions,
+            "input:product_taxonomy": _input_product_taxonomy,
+            "input:taxonomy_nodes": _input_taxonomy_nodes,
+            "input:session_events": _input_session_events,
+            "input:fulfilled_orders": _input_fulfilled_orders,
             "input:feedback_impressions": _input_feedback_impressions,
             "input:feedback_clicks": _input_feedback_clicks,
             "input:requests": _input_requests,
+            "input:suppressions": _input_suppressions,
             "input:policy": _input_policy,
             "input:boosts": _input_boosts,
-            "input:suppressions": _input_suppressions,
-            "input:evaluation_batch": _input_evaluation_batch,
-            "input:evaluation_requests": _input_evaluation_requests,
-            "input:evaluation_impressions": _input_evaluation_impressions,
-            "input:evaluation_clicks": _input_evaluation_clicks,
         }
         frames.update(self._step_cataloged_prepare_0(frames))
-        frames.update(self._step_signals_built_summarize_impressions_1(frames))
-        frames.update(self._step_signals_built_summarize_clicks_2(frames))
-        frames.update(self._step_signals_built_publish_daily_impressions_3(frames))
-        frames.update(self._step_signals_built_publish_daily_clicks_4(frames))
-        frames.update(self._step_signals_built_summarize_signals_5(frames))
-        frames.update(self._step_signals_built_publish_signals_6(frames))
-        frames.update(self._step_recommended_selected_select_7(frames))
-        frames.update(self._step_recommended_ranked_rank_8(frames))
-        frames.update(self._step_recommended_published_select_products_9(frames))
-        frames.update(self._step_recommended_summarized_summarize_10(frames))
-        frames.update(self._step_evaluated_selected_select_requests_11(frames))
-        frames.update(self._step_evaluated_impressions_measured_select_impressions_12(frames))
-        frames.update(self._step_evaluated_impressions_measured_attribute_clicks_13(frames))
-        frames.update(self._step_evaluated_impressions_measured_measure_impressions_14(frames))
-        frames.update(self._step_evaluated_requests_measured_measure_requests_15(frames))
-        frames.update(self._step_evaluated_summarized_summarize_exposure_16(frames))
-        frames.update(self._step_evaluated_summarized_summarize_requests_17(frames))
-        frames.update(self._step_evaluated_summarized_publish_daily_18(frames))
+        frames.update(self._step_normalized_normalize_1(frames))
+        frames.update(self._step_taxonomy_expanded_build_ancestors_2(frames))
+        frames.update(self._step_taxonomy_expanded_expand_3(frames))
+        frames.update(self._step_signals_built_sessionized_build_4(frames))
+        frames.update(self._step_signals_built_purchases_attribute_5(frames))
+        frames.update(self._step_signals_built_recommendation_summarize_impressions_6(frames))
+        frames.update(self._step_signals_built_recommendation_summarize_clicks_7(frames))
+        frames.update(self._step_signals_built_recommendation_publish_daily_impressions_8(frames))
+        frames.update(self._step_signals_built_recommendation_publish_daily_clicks_9(frames))
+        frames.update(self._step_signals_built_recommendation_summarize_signals_10(frames))
+        frames.update(self._step_signals_built_recommendation_publish_signals_11(frames))
+        frames.update(self._step_recommended_selected_select_12(frames))
+        frames.update(self._step_recommended_retrieved_retrieve_13(frames))
+        frames.update(self._step_recommended_filtered_evaluate_14(frames))
+        frames.update(self._step_recommended_filtered_publish_15(frames))
+        frames.update(self._step_recommended_ranked_rank_16(frames))
+        frames.update(self._step_recommended_diversified_decide_17(frames))
+        frames.update(self._step_recommended_diversified_publish_18(frames))
+        frames.update(self._step_recommended_published_select_products_19(frames))
+        frames.update(self._step_recommended_summarized_summarize_20(frames))
 
         # Step method: recommended_products
         recommended_products = frames["recommended__published__ranked_candidates"].alias("recommended_product")
@@ -1355,7 +2164,9 @@ class MerchandisingGenerated(
         assert_schema(recommendation_runs, RECOMMENDATION_RUN_SCHEMA, name="RecommendationRun", mode="strict")
 
         # Step method: daily_impressions
-        daily_impressions = frames["signals_built__daily_impressions"].alias("daily_recommendation_impressions")
+        daily_impressions = frames["signals_built__recommendation__daily_impressions"].alias(
+            "daily_recommendation_impressions"
+        )
         assert_schema(
             daily_impressions,
             DAILY_RECOMMENDATION_IMPRESSIONS_SCHEMA,
@@ -1364,28 +2175,17 @@ class MerchandisingGenerated(
         )
 
         # Step method: daily_clicks
-        daily_clicks = frames["signals_built__daily_clicks"].alias("daily_recommendation_clicks")
+        daily_clicks = frames["signals_built__recommendation__daily_clicks"].alias("daily_recommendation_clicks")
         assert_schema(daily_clicks, DAILY_RECOMMENDATION_CLICKS_SCHEMA, name="DailyRecommendationClicks", mode="strict")
 
         # Step method: signals
-        signals = frames["signals_built__signals"].alias("product_recommendation_signal")
+        signals = frames["signals_built__recommendation__signals"].alias("product_recommendation_signal")
         assert_schema(signals, PRODUCT_RECOMMENDATION_SIGNAL_SCHEMA, name="ProductRecommendationSignal", mode="strict")
 
-        # Step method: request_behaviors
-        request_behaviors = frames["evaluated__requests_measured__request_behaviors"].alias(
-            "recommendation_request_behavior"
-        )
+        # Step method: recommendation_purchases
+        recommendation_purchases = frames["signals_built__purchases__fulfilled_orders"].alias("recommendation_purchase")
         assert_schema(
-            request_behaviors,
-            RECOMMENDATION_REQUEST_BEHAVIOR_SCHEMA,
-            name="RecommendationRequestBehavior",
-            mode="strict",
-        )
-
-        # Step method: daily_behavior
-        daily_behavior = frames["evaluated__summarized__daily_behavior"].alias("daily_recommendation_behavior")
-        assert_schema(
-            daily_behavior, DAILY_RECOMMENDATION_BEHAVIOR_SCHEMA, name="DailyRecommendationBehavior", mode="strict"
+            recommendation_purchases, RECOMMENDATION_PURCHASE_SCHEMA, name="RecommendationPurchase", mode="strict"
         )
         return TransformResult(
             {
@@ -1394,8 +2194,7 @@ class MerchandisingGenerated(
                 "daily_impressions": daily_impressions,
                 "daily_clicks": daily_clicks,
                 "signals": signals,
-                "request_behaviors": request_behaviors,
-                "daily_behavior": daily_behavior,
+                "recommendation_purchases": recommendation_purchases,
             },
             single=False,
             schema={
@@ -1404,7 +2203,6 @@ class MerchandisingGenerated(
                 "daily_impressions": DAILY_RECOMMENDATION_IMPRESSIONS_SCHEMA,
                 "daily_clicks": DAILY_RECOMMENDATION_CLICKS_SCHEMA,
                 "signals": PRODUCT_RECOMMENDATION_SIGNAL_SCHEMA,
-                "request_behaviors": RECOMMENDATION_REQUEST_BEHAVIOR_SCHEMA,
-                "daily_behavior": DAILY_RECOMMENDATION_BEHAVIOR_SCHEMA,
+                "recommendation_purchases": RECOMMENDATION_PURCHASE_SCHEMA,
             },
         )

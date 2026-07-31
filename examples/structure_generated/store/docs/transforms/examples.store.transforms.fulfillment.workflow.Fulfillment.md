@@ -71,7 +71,6 @@ Source: `examples.store.transforms.fulfillment.workflow.Fulfillment`
 - `summarized.summarize_warehouse_load`: `FulfillmentAllocation` -> `WarehouseLoadSummary`
 - `evaluated.evaluate`: `FulfillmentPlan` -> `FulfillmentServiceTotals`
 - `evaluated.classify`: `FulfillmentServiceTotals` -> `FulfillmentServiceEvaluation`
-- `evaluated.publish_evaluations`: `FulfillmentServiceEvaluation` -> `FulfillmentServiceEvaluation`
 - `evaluated.summarize`: `FulfillmentServiceEvaluation` -> `DailyFulfillmentServiceSummary`
 - `evaluated.publish_summary`: `DailyFulfillmentServiceSummary` -> `DailyFulfillmentServiceSummary`
 

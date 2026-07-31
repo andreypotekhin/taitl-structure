@@ -14,5 +14,7 @@ Module: `examples.store.schemas.merchandising.intermediate`
 | `raw_click_count` | `raw_click_count` | `long` | no |
 | `click_through_rate` | `click_through_rate` | `double` | yes |
 | `exposure_adjusted_click_rate` | `exposure_adjusted_click_rate` | `double` | yes |
+| `attributed_purchase_count` | `attributed_purchase_count` | `long` | no |
+| `conversion_rate` | `conversion_rate` | `double` | yes |
 | `exposure_weight` | `exposure_weight` | `double` | no |
 | `click_weight` | `click_weight` | `double` | no |

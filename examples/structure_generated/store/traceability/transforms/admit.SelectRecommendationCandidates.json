@@ -63,6 +63,11 @@
       "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.customer_id"
     },
     {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.session_id",
+      "ir": "ir:SelectRecommendationCandidates.step.0.select.project.session_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.session_id"
+    },
+    {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.strategy_id",
       "ir": "ir:SelectRecommendationCandidates.step.0.select.project.strategy_id",
       "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.strategy_id"
@@ -71,6 +76,21 @@
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.policy_version",
       "ir": "ir:SelectRecommendationCandidates.step.0.select.project.policy_version",
       "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.policy_version"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.experiment_id",
+      "ir": "ir:SelectRecommendationCandidates.step.0.select.project.experiment_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.experiment_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.experiment_version",
+      "ir": "ir:SelectRecommendationCandidates.step.0.select.project.experiment_version",
+      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.experiment_version"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.variant_id",
+      "ir": "ir:SelectRecommendationCandidates.step.0.select.project.variant_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.variant_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.category_filter",
@@ -121,6 +141,36 @@
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.inventory_boost",
       "ir": "ir:SelectRecommendationCandidates.step.0.select.project.inventory_boost",
       "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.inventory_boost"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.candidate_source",
+      "ir": "ir:SelectRecommendationCandidates.step.0.select.project.candidate_source",
+      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.candidate_source"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.taxonomy_id",
+      "ir": "ir:SelectRecommendationCandidates.step.0.select.project.taxonomy_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.taxonomy_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.taxonomy_branch",
+      "ir": "ir:SelectRecommendationCandidates.step.0.select.project.taxonomy_branch",
+      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.taxonomy_branch"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.session_match",
+      "ir": "ir:SelectRecommendationCandidates.step.0.select.project.session_match",
+      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.session_match"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.purchase_signal",
+      "ir": "ir:SelectRecommendationCandidates.step.0.select.project.purchase_signal",
+      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.purchase_signal"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.eligibility_status",
+      "ir": "ir:SelectRecommendationCandidates.step.0.select.project.eligibility_status",
+      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.eligibility_status"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.output.0.candidates.validation.final",
@@ -196,6 +246,22 @@
     "DemandWindow": {
       "constant": "DEMAND_WINDOW_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.projection"
+    },
+    "DiversificationDecision": {
+      "constant": "DIVERSIFICATION_DECISION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "DiversifiedRecommendationCandidate": {
+      "constant": "DIVERSIFIED_RECOMMENDATION_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "EvaluationBatch": {
+      "constant": "EVALUATION_BATCH_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.batch"
+    },
+    "ExpandedProductTaxonomy": {
+      "constant": "EXPANDED_PRODUCT_TAXONOMY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
     },
     "FulfillmentAllocation": {
       "constant": "FULFILLMENT_ALLOCATION_SCHEMA",
@@ -361,6 +427,10 @@
       "constant": "PRODUCT_RECOMMENDATION_SIGNAL_TOTALS_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
     },
+    "ProductTaxonomy": {
+      "constant": "PRODUCT_TAXONOMY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
+    },
     "Promotion": {
       "constant": "PROMOTION_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.promotion"
@@ -373,12 +443,24 @@
       "constant": "RANKED_RECOMMENDATION_CANDIDATE_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
     },
+    "RecommendationAssignment": {
+      "constant": "RECOMMENDATION_ASSIGNMENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.experiment"
+    },
+    "RecommendationBehavior": {
+      "constant": "RECOMMENDATION_BEHAVIOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendations"
+    },
     "RecommendationBehaviorImpression": {
       "constant": "RECOMMENDATION_BEHAVIOR_IMPRESSION_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
     },
     "RecommendationCandidate": {
       "constant": "RECOMMENDATION_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+    },
+    "RecommendationCandidateDecision": {
+      "constant": "RECOMMENDATION_CANDIDATE_DECISION_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.catalog"
     },
     "RecommendationClick": {
@@ -393,12 +475,20 @@
       "constant": "RECOMMENDATION_EVALUATION_BATCH_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.evaluation"
     },
+    "RecommendationExperiment": {
+      "constant": "RECOMMENDATION_EXPERIMENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.experiment"
+    },
     "RecommendationExposure": {
       "constant": "RECOMMENDATION_EXPOSURE_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+      "module": "examples.structure_generated.store.pyspark.schemas.experiment"
     },
     "RecommendationImpression": {
       "constant": "RECOMMENDATION_IMPRESSION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "RecommendationPurchase": {
+      "constant": "RECOMMENDATION_PURCHASE_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.feedback"
     },
     "RecommendationRequest": {
@@ -413,6 +503,14 @@
       "constant": "RECOMMENDATION_RUN_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
     },
+    "RecommendationVariantMetric": {
+      "constant": "RECOMMENDATION_VARIANT_METRIC_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendations"
+    },
+    "RecommendationVariantMetricTotals": {
+      "constant": "RECOMMENDATION_VARIANT_METRIC_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendations"
+    },
     "RecommendedProduct": {
       "constant": "RECOMMENDED_PRODUCT_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
@@ -425,6 +523,14 @@
       "constant": "SERVICE_RISK_TARGET_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.exception"
     },
+    "SessionEvent": {
+      "constant": "SESSION_EVENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.session"
+    },
+    "SessionFeature": {
+      "constant": "SESSION_FEATURE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.session"
+    },
     "Shipment": {
       "constant": "SHIPMENT_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.shipment"
@@ -432,6 +538,14 @@
     "SubstitutionRule": {
       "constant": "SUBSTITUTION_RULE_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.substitution"
+    },
+    "TaxonomyAncestor": {
+      "constant": "TAXONOMY_ANCESTOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
+    },
+    "TaxonomyNode": {
+      "constant": "TAXONOMY_NODE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
     },
     "TenantKey": {
       "constant": "TENANT_KEY_SCHEMA",
@@ -538,6 +652,17 @@
       },
       {
         "detail": {
+          "field": "session_id"
+        },
+        "operation": "project",
+        "sources": [
+          "request.session_id"
+        ],
+        "step": "select",
+        "target": "RecommendationCandidate.session_id"
+      },
+      {
+        "detail": {
           "field": "strategy_id"
         },
         "operation": "project",
@@ -557,6 +682,39 @@
         ],
         "step": "select",
         "target": "RecommendationCandidate.policy_version"
+      },
+      {
+        "detail": {
+          "field": "experiment_id"
+        },
+        "operation": "project",
+        "sources": [
+          "request.experiment_id"
+        ],
+        "step": "select",
+        "target": "RecommendationCandidate.experiment_id"
+      },
+      {
+        "detail": {
+          "field": "experiment_version"
+        },
+        "operation": "project",
+        "sources": [
+          "request.experiment_version"
+        ],
+        "step": "select",
+        "target": "RecommendationCandidate.experiment_version"
+      },
+      {
+        "detail": {
+          "field": "variant_id"
+        },
+        "operation": "project",
+        "sources": [
+          "request.variant_id"
+        ],
+        "step": "select",
+        "target": "RecommendationCandidate.variant_id"
       },
       {
         "detail": {
@@ -667,6 +825,72 @@
         ],
         "step": "select",
         "target": "RecommendationCandidate.inventory_boost"
+      },
+      {
+        "detail": {
+          "field": "candidate_source"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "select",
+        "target": "RecommendationCandidate.candidate_source"
+      },
+      {
+        "detail": {
+          "field": "taxonomy_id"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "select",
+        "target": "RecommendationCandidate.taxonomy_id"
+      },
+      {
+        "detail": {
+          "field": "taxonomy_branch"
+        },
+        "operation": "project",
+        "sources": [
+          "product.category"
+        ],
+        "step": "select",
+        "target": "RecommendationCandidate.taxonomy_branch"
+      },
+      {
+        "detail": {
+          "field": "session_match"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "select",
+        "target": "RecommendationCandidate.session_match"
+      },
+      {
+        "detail": {
+          "field": "purchase_signal"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "select",
+        "target": "RecommendationCandidate.purchase_signal"
+      },
+      {
+        "detail": {
+          "field": "eligibility_status"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "select",
+        "target": "RecommendationCandidate.eligibility_status"
       },
       {
         "detail": {

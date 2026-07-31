@@ -36,6 +36,24 @@
       "name": "feedback_contributed",
       "nullable": false,
       "type": "boolean"
+    },
+    {
+      "column": "experiment_id",
+      "name": "experiment_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "experiment_version",
+      "name": "experiment_version",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "variant_id",
+      "name": "variant_id",
+      "nullable": true,
+      "type": "string"
     }
   ],
   "generated_by": "Structure",

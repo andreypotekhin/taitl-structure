@@ -1,0 +1,68 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "tenant",
+      "name": "tenant",
+      "nullable": false,
+      "type": "TenantKey"
+    },
+    {
+      "column": "order_id",
+      "name": "order_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "request_id",
+      "name": "request_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "customer_id",
+      "name": "customer_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "session_id",
+      "name": "session_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "product_id",
+      "name": "product_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "recommendation_impression_id",
+      "name": "recommendation_impression_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "occurred_at",
+      "name": "occurred_at",
+      "nullable": false,
+      "type": "timestamp"
+    },
+    {
+      "column": "attribution_status",
+      "name": "attribution_status",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "quantity",
+      "name": "quantity",
+      "nullable": false,
+      "type": "long"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.store.schemas.merchandising.feedback",
+  "name": "RecommendationPurchase"
+}

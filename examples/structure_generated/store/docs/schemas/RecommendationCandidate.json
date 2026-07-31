@@ -26,6 +26,12 @@
       "type": "string"
     },
     {
+      "column": "session_id",
+      "name": "session_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
       "column": "strategy_id",
       "name": "strategy_id",
       "nullable": false,
@@ -35,6 +41,24 @@
       "column": "policy_version",
       "name": "policy_version",
       "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "experiment_id",
+      "name": "experiment_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "experiment_version",
+      "name": "experiment_version",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "variant_id",
+      "name": "variant_id",
+      "nullable": true,
       "type": "string"
     },
     {
@@ -96,6 +120,42 @@
       "name": "inventory_boost",
       "nullable": false,
       "type": "double"
+    },
+    {
+      "column": "candidate_source",
+      "name": "candidate_source",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "taxonomy_id",
+      "name": "taxonomy_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "taxonomy_branch",
+      "name": "taxonomy_branch",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "session_match",
+      "name": "session_match",
+      "nullable": false,
+      "type": "boolean"
+    },
+    {
+      "column": "purchase_signal",
+      "name": "purchase_signal",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "eligibility_status",
+      "name": "eligibility_status",
+      "nullable": false,
+      "type": "string"
     }
   ],
   "generated_by": "Structure",

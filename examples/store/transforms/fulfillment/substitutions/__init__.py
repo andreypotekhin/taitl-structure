@@ -1,3 +1,3 @@
-from examples.store.transforms.fulfillment.substitutions.find import FindFulfillmentSubstitutions
+from examples.store.transforms.fulfillment.substitutions.find_substitutions import FindSubstitutions
 
-__all__ = ["FindFulfillmentSubstitutions"]
+__all__ = ["FindSubstitutions"]

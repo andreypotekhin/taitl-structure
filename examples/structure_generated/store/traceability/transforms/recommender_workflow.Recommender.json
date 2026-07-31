@@ -16,24 +16,34 @@
       "schema": "CatalogProduct"
     },
     {
-      "name": "policy",
+      "name": "taxonomy",
       "ordinal": 2,
+      "schema": "ExpandedProductTaxonomy"
+    },
+    {
+      "name": "session_features",
+      "ordinal": 3,
+      "schema": "SessionFeature"
+    },
+    {
+      "name": "signals",
+      "ordinal": 4,
+      "schema": "ProductRecommendationSignal"
+    },
+    {
+      "name": "suppressions",
+      "ordinal": 5,
+      "schema": "MerchandisingSuppression"
+    },
+    {
+      "name": "policy",
+      "ordinal": 6,
       "schema": "MerchandisingPolicy"
     },
     {
       "name": "boosts",
-      "ordinal": 3,
+      "ordinal": 7,
       "schema": "MerchandisingBoost"
-    },
-    {
-      "name": "suppressions",
-      "ordinal": 4,
-      "schema": "MerchandisingSuppression"
-    },
-    {
-      "name": "signals",
-      "ordinal": 5,
-      "schema": "ProductRecommendationSignal"
     }
   ],
   "provenance": [
@@ -53,24 +63,34 @@
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.input.catalog"
     },
     {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.input.taxonomy",
+      "ir": "ir:Recommender.input.2.taxonomy",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.input.taxonomy"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.input.session_features",
+      "ir": "ir:Recommender.input.3.session_features",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.input.session_features"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.input.signals",
+      "ir": "ir:Recommender.input.4.signals",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.input.signals"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.input.suppressions",
+      "ir": "ir:Recommender.input.5.suppressions",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.input.suppressions"
+    },
+    {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.input.policy",
-      "ir": "ir:Recommender.input.2.policy",
+      "ir": "ir:Recommender.input.6.policy",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.input.policy"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.input.boosts",
-      "ir": "ir:Recommender.input.3.boosts",
+      "ir": "ir:Recommender.input.7.boosts",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.input.boosts"
-    },
-    {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.input.suppressions",
-      "ir": "ir:Recommender.input.4.suppressions",
-      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.input.suppressions"
-    },
-    {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.input.signals",
-      "ir": "ir:Recommender.input.5.signals",
-      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.input.signals"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.0.selected.select",
@@ -103,6 +123,11 @@
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.selected.select.field.customer_id"
     },
     {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.0.selected.select.select.session_id",
+      "ir": "ir:Recommender.step.0.selected.select.project.session_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.selected.select.field.session_id"
+    },
+    {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.0.selected.select.select.strategy_id",
       "ir": "ir:Recommender.step.0.selected.select.project.strategy_id",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.selected.select.field.strategy_id"
@@ -111,6 +136,21 @@
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.0.selected.select.select.policy_version",
       "ir": "ir:Recommender.step.0.selected.select.project.policy_version",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.selected.select.field.policy_version"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.0.selected.select.select.experiment_id",
+      "ir": "ir:Recommender.step.0.selected.select.project.experiment_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.selected.select.field.experiment_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.0.selected.select.select.experiment_version",
+      "ir": "ir:Recommender.step.0.selected.select.project.experiment_version",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.selected.select.field.experiment_version"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.0.selected.select.select.variant_id",
+      "ir": "ir:Recommender.step.0.selected.select.project.variant_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.selected.select.field.variant_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.0.selected.select.select.category_filter",
@@ -163,269 +203,1014 @@
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.selected.select.field.inventory_boost"
     },
     {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.0.selected.select.select.candidate_source",
+      "ir": "ir:Recommender.step.0.selected.select.project.candidate_source",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.selected.select.field.candidate_source"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.0.selected.select.select.taxonomy_id",
+      "ir": "ir:Recommender.step.0.selected.select.project.taxonomy_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.selected.select.field.taxonomy_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.0.selected.select.select.taxonomy_branch",
+      "ir": "ir:Recommender.step.0.selected.select.project.taxonomy_branch",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.selected.select.field.taxonomy_branch"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.0.selected.select.select.session_match",
+      "ir": "ir:Recommender.step.0.selected.select.project.session_match",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.selected.select.field.session_match"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.0.selected.select.select.purchase_signal",
+      "ir": "ir:Recommender.step.0.selected.select.project.purchase_signal",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.selected.select.field.purchase_signal"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.0.selected.select.select.eligibility_status",
+      "ir": "ir:Recommender.step.0.selected.select.project.eligibility_status",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.selected.select.field.eligibility_status"
+    },
+    {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.0.selected.select.validation.0.intermediate",
       "ir": "ir:Recommender.step.0.selected.select.validation.0.intermediate",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.selected.select.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.ranked.rank",
-      "ir": "ir:Recommender.step.1.ranked.rank",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.where.0",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.filter.0",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.filter.0"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.join.1.product",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.join.1.product",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.join.1.product"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.join.2.taxonomy",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.join.2.taxonomy",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.join.2.taxonomy"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.join.3.session",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.join.3.session",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.join.3.session"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.join.4.signal",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.join.4.signal",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.join.4.signal"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.select.tenant",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.project.tenant",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.field.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.select.request_id",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.project.request_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.field.request_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.select.requested_at",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.project.requested_at",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.field.requested_at"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.select.customer_id",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.project.customer_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.field.customer_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.select.session_id",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.project.session_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.field.session_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.select.strategy_id",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.project.strategy_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.field.strategy_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.select.policy_version",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.project.policy_version",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.field.policy_version"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.select.experiment_id",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.project.experiment_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.field.experiment_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.select.experiment_version",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.project.experiment_version",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.field.experiment_version"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.select.variant_id",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.project.variant_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.field.variant_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.select.category_filter",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.project.category_filter",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.field.category_filter"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.select.collection_id",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.project.collection_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.field.collection_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.select.product_id",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.project.product_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.field.product_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.select.product_name",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.project.product_name",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.field.product_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.select.category",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.project.category",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.field.category"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.select.has_promotion",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.project.has_promotion",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.field.has_promotion"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.select.promotion_code",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.project.promotion_code",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.field.promotion_code"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.select.base_score",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.project.base_score",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.field.base_score"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.select.promotion_score",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.project.promotion_score",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.field.promotion_score"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.select.inventory_boost",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.project.inventory_boost",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.field.inventory_boost"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.select.candidate_source",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.project.candidate_source",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.field.candidate_source"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.select.taxonomy_id",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.project.taxonomy_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.field.taxonomy_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.select.taxonomy_branch",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.project.taxonomy_branch",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.field.taxonomy_branch"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.select.session_match",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.project.session_match",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.field.session_match"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.select.purchase_signal",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.project.purchase_signal",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.field.purchase_signal"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.select.eligibility_status",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.project.eligibility_status",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.field.eligibility_status"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.retrieved.retrieve.validation.0.intermediate",
+      "ir": "ir:Recommender.step.1.retrieved.retrieve.validation.0.intermediate",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.retrieved.retrieve.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.2.filtered.evaluate",
+      "ir": "ir:Recommender.step.2.filtered.evaluate",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.evaluate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.2.filtered.evaluate.join.1.suppression",
+      "ir": "ir:Recommender.step.2.filtered.evaluate.join.1.suppression",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.evaluate.join.1.suppression"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.2.filtered.evaluate.join.2.session",
+      "ir": "ir:Recommender.step.2.filtered.evaluate.join.2.session",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.evaluate.join.2.session"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.2.filtered.evaluate.select.tenant",
+      "ir": "ir:Recommender.step.2.filtered.evaluate.project.tenant",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.evaluate.field.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.2.filtered.evaluate.select.request_id",
+      "ir": "ir:Recommender.step.2.filtered.evaluate.project.request_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.evaluate.field.request_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.2.filtered.evaluate.select.product_id",
+      "ir": "ir:Recommender.step.2.filtered.evaluate.project.product_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.evaluate.field.product_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.2.filtered.evaluate.select.stage",
+      "ir": "ir:Recommender.step.2.filtered.evaluate.project.stage",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.evaluate.field.stage"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.2.filtered.evaluate.select.eligible",
+      "ir": "ir:Recommender.step.2.filtered.evaluate.project.eligible",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.evaluate.field.eligible"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.2.filtered.evaluate.select.exclusion_reason",
+      "ir": "ir:Recommender.step.2.filtered.evaluate.project.exclusion_reason",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.evaluate.field.exclusion_reason"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.2.filtered.evaluate.select.candidate_source",
+      "ir": "ir:Recommender.step.2.filtered.evaluate.project.candidate_source",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.evaluate.field.candidate_source"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.2.filtered.evaluate.select.taxonomy_branch",
+      "ir": "ir:Recommender.step.2.filtered.evaluate.project.taxonomy_branch",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.evaluate.field.taxonomy_branch"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.2.filtered.evaluate.validation.0.intermediate",
+      "ir": "ir:Recommender.step.2.filtered.evaluate.validation.0.intermediate",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.evaluate.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.filtered.publish",
+      "ir": "ir:Recommender.step.3.filtered.publish",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.publish"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.filtered.publish.where.0",
+      "ir": "ir:Recommender.step.3.filtered.publish.filter.0",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.publish.filter.0"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.filtered.publish.join.1.decision",
+      "ir": "ir:Recommender.step.3.filtered.publish.join.1.decision",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.publish.join.1.decision"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.filtered.publish.select.tenant",
+      "ir": "ir:Recommender.step.3.filtered.publish.project.tenant",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.publish.field.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.filtered.publish.select.request_id",
+      "ir": "ir:Recommender.step.3.filtered.publish.project.request_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.publish.field.request_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.filtered.publish.select.requested_at",
+      "ir": "ir:Recommender.step.3.filtered.publish.project.requested_at",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.publish.field.requested_at"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.filtered.publish.select.customer_id",
+      "ir": "ir:Recommender.step.3.filtered.publish.project.customer_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.publish.field.customer_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.filtered.publish.select.session_id",
+      "ir": "ir:Recommender.step.3.filtered.publish.project.session_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.publish.field.session_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.filtered.publish.select.strategy_id",
+      "ir": "ir:Recommender.step.3.filtered.publish.project.strategy_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.publish.field.strategy_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.filtered.publish.select.policy_version",
+      "ir": "ir:Recommender.step.3.filtered.publish.project.policy_version",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.publish.field.policy_version"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.filtered.publish.select.experiment_id",
+      "ir": "ir:Recommender.step.3.filtered.publish.project.experiment_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.publish.field.experiment_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.filtered.publish.select.experiment_version",
+      "ir": "ir:Recommender.step.3.filtered.publish.project.experiment_version",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.publish.field.experiment_version"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.filtered.publish.select.variant_id",
+      "ir": "ir:Recommender.step.3.filtered.publish.project.variant_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.publish.field.variant_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.filtered.publish.select.category_filter",
+      "ir": "ir:Recommender.step.3.filtered.publish.project.category_filter",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.publish.field.category_filter"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.filtered.publish.select.collection_id",
+      "ir": "ir:Recommender.step.3.filtered.publish.project.collection_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.publish.field.collection_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.filtered.publish.select.product_id",
+      "ir": "ir:Recommender.step.3.filtered.publish.project.product_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.publish.field.product_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.filtered.publish.select.product_name",
+      "ir": "ir:Recommender.step.3.filtered.publish.project.product_name",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.publish.field.product_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.filtered.publish.select.category",
+      "ir": "ir:Recommender.step.3.filtered.publish.project.category",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.publish.field.category"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.filtered.publish.select.has_promotion",
+      "ir": "ir:Recommender.step.3.filtered.publish.project.has_promotion",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.publish.field.has_promotion"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.filtered.publish.select.promotion_code",
+      "ir": "ir:Recommender.step.3.filtered.publish.project.promotion_code",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.publish.field.promotion_code"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.filtered.publish.select.base_score",
+      "ir": "ir:Recommender.step.3.filtered.publish.project.base_score",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.publish.field.base_score"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.filtered.publish.select.promotion_score",
+      "ir": "ir:Recommender.step.3.filtered.publish.project.promotion_score",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.publish.field.promotion_score"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.filtered.publish.select.inventory_boost",
+      "ir": "ir:Recommender.step.3.filtered.publish.project.inventory_boost",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.publish.field.inventory_boost"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.filtered.publish.select.candidate_source",
+      "ir": "ir:Recommender.step.3.filtered.publish.project.candidate_source",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.publish.field.candidate_source"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.filtered.publish.select.taxonomy_id",
+      "ir": "ir:Recommender.step.3.filtered.publish.project.taxonomy_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.publish.field.taxonomy_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.filtered.publish.select.taxonomy_branch",
+      "ir": "ir:Recommender.step.3.filtered.publish.project.taxonomy_branch",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.publish.field.taxonomy_branch"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.filtered.publish.select.session_match",
+      "ir": "ir:Recommender.step.3.filtered.publish.project.session_match",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.publish.field.session_match"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.filtered.publish.select.purchase_signal",
+      "ir": "ir:Recommender.step.3.filtered.publish.project.purchase_signal",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.publish.field.purchase_signal"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.filtered.publish.select.eligibility_status",
+      "ir": "ir:Recommender.step.3.filtered.publish.project.eligibility_status",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.publish.field.eligibility_status"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.filtered.publish.validation.0.intermediate",
+      "ir": "ir:Recommender.step.3.filtered.publish.validation.0.intermediate",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.filtered.publish.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank",
+      "ir": "ir:Recommender.step.4.ranked.rank",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.ranked.rank.where.0",
-      "ir": "ir:Recommender.step.1.ranked.rank.filter.0",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.where.0",
+      "ir": "ir:Recommender.step.4.ranked.rank.filter.0",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.filter.0"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.ranked.rank.join.1.policy",
-      "ir": "ir:Recommender.step.1.ranked.rank.join.1.policy",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.join.1.policy",
+      "ir": "ir:Recommender.step.4.ranked.rank.join.1.policy",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.join.1.policy"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.ranked.rank.join.2.boost",
-      "ir": "ir:Recommender.step.1.ranked.rank.join.2.boost",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.join.2.boost",
+      "ir": "ir:Recommender.step.4.ranked.rank.join.2.boost",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.join.2.boost"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.ranked.rank.join.3.suppression",
-      "ir": "ir:Recommender.step.1.ranked.rank.join.3.suppression",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.join.3.suppression",
+      "ir": "ir:Recommender.step.4.ranked.rank.join.3.suppression",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.join.3.suppression"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.ranked.rank.join.4.signal",
-      "ir": "ir:Recommender.step.1.ranked.rank.join.4.signal",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.join.4.signal",
+      "ir": "ir:Recommender.step.4.ranked.rank.join.4.signal",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.join.4.signal"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.ranked.rank.select.tenant",
-      "ir": "ir:Recommender.step.1.ranked.rank.project.tenant",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.select.tenant",
+      "ir": "ir:Recommender.step.4.ranked.rank.project.tenant",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.field.tenant"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.ranked.rank.select.request_id",
-      "ir": "ir:Recommender.step.1.ranked.rank.project.request_id",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.select.request_id",
+      "ir": "ir:Recommender.step.4.ranked.rank.project.request_id",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.field.request_id"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.ranked.rank.select.strategy_id",
-      "ir": "ir:Recommender.step.1.ranked.rank.project.strategy_id",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.select.strategy_id",
+      "ir": "ir:Recommender.step.4.ranked.rank.project.strategy_id",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.field.strategy_id"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.ranked.rank.select.policy_version",
-      "ir": "ir:Recommender.step.1.ranked.rank.project.policy_version",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.select.policy_version",
+      "ir": "ir:Recommender.step.4.ranked.rank.project.policy_version",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.field.policy_version"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.ranked.rank.select.product_id",
-      "ir": "ir:Recommender.step.1.ranked.rank.project.product_id",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.select.product_id",
+      "ir": "ir:Recommender.step.4.ranked.rank.project.product_id",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.field.product_id"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.ranked.rank.select.product_name",
-      "ir": "ir:Recommender.step.1.ranked.rank.project.product_name",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.select.product_name",
+      "ir": "ir:Recommender.step.4.ranked.rank.project.product_name",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.field.product_name"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.ranked.rank.select.category",
-      "ir": "ir:Recommender.step.1.ranked.rank.project.category",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.select.category",
+      "ir": "ir:Recommender.step.4.ranked.rank.project.category",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.field.category"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.ranked.rank.select.rank",
-      "ir": "ir:Recommender.step.1.ranked.rank.project.rank",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.select.rank",
+      "ir": "ir:Recommender.step.4.ranked.rank.project.rank",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.field.rank"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.ranked.rank.select.base_score",
-      "ir": "ir:Recommender.step.1.ranked.rank.project.base_score",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.select.base_score",
+      "ir": "ir:Recommender.step.4.ranked.rank.project.base_score",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.field.base_score"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.ranked.rank.select.promotion_score",
-      "ir": "ir:Recommender.step.1.ranked.rank.project.promotion_score",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.select.promotion_score",
+      "ir": "ir:Recommender.step.4.ranked.rank.project.promotion_score",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.field.promotion_score"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.ranked.rank.select.boost_score",
-      "ir": "ir:Recommender.step.1.ranked.rank.project.boost_score",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.select.boost_score",
+      "ir": "ir:Recommender.step.4.ranked.rank.project.boost_score",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.field.boost_score"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.ranked.rank.select.suppression_penalty",
-      "ir": "ir:Recommender.step.1.ranked.rank.project.suppression_penalty",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.select.suppression_penalty",
+      "ir": "ir:Recommender.step.4.ranked.rank.project.suppression_penalty",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.field.suppression_penalty"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.ranked.rank.select.inventory_boost",
-      "ir": "ir:Recommender.step.1.ranked.rank.project.inventory_boost",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.select.inventory_boost",
+      "ir": "ir:Recommender.step.4.ranked.rank.project.inventory_boost",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.field.inventory_boost"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.ranked.rank.select.feedback_score",
-      "ir": "ir:Recommender.step.1.ranked.rank.project.feedback_score",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.select.feedback_score",
+      "ir": "ir:Recommender.step.4.ranked.rank.project.feedback_score",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.field.feedback_score"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.ranked.rank.select.final_score",
-      "ir": "ir:Recommender.step.1.ranked.rank.project.final_score",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.select.final_score",
+      "ir": "ir:Recommender.step.4.ranked.rank.project.final_score",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.field.final_score"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.ranked.rank.select.feedback_contributed",
-      "ir": "ir:Recommender.step.1.ranked.rank.project.feedback_contributed",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.select.feedback_contributed",
+      "ir": "ir:Recommender.step.4.ranked.rank.project.feedback_contributed",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.field.feedback_contributed"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.ranked.rank.select.maximum_results",
-      "ir": "ir:Recommender.step.1.ranked.rank.project.maximum_results",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.select.candidate_source",
+      "ir": "ir:Recommender.step.4.ranked.rank.project.candidate_source",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.field.candidate_source"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.select.taxonomy_id",
+      "ir": "ir:Recommender.step.4.ranked.rank.project.taxonomy_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.field.taxonomy_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.select.taxonomy_branch",
+      "ir": "ir:Recommender.step.4.ranked.rank.project.taxonomy_branch",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.field.taxonomy_branch"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.select.session_match",
+      "ir": "ir:Recommender.step.4.ranked.rank.project.session_match",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.field.session_match"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.select.purchase_signal",
+      "ir": "ir:Recommender.step.4.ranked.rank.project.purchase_signal",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.field.purchase_signal"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.select.eligibility_status",
+      "ir": "ir:Recommender.step.4.ranked.rank.project.eligibility_status",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.field.eligibility_status"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.select.diversity_selected",
+      "ir": "ir:Recommender.step.4.ranked.rank.project.diversity_selected",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.field.diversity_selected"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.select.diversity_exclusion_reason",
+      "ir": "ir:Recommender.step.4.ranked.rank.project.diversity_exclusion_reason",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.field.diversity_exclusion_reason"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.select.experiment_id",
+      "ir": "ir:Recommender.step.4.ranked.rank.project.experiment_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.field.experiment_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.select.experiment_version",
+      "ir": "ir:Recommender.step.4.ranked.rank.project.experiment_version",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.field.experiment_version"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.select.variant_id",
+      "ir": "ir:Recommender.step.4.ranked.rank.project.variant_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.field.variant_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.select.maximum_results",
+      "ir": "ir:Recommender.step.4.ranked.rank.project.maximum_results",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.field.maximum_results"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.1.ranked.rank.validation.0.intermediate",
-      "ir": "ir:Recommender.step.1.ranked.rank.validation.0.intermediate",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.4.ranked.rank.validation.0.intermediate",
+      "ir": "ir:Recommender.step.4.ranked.rank.validation.0.intermediate",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.ranked.rank.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.2.published.select_products",
-      "ir": "ir:Recommender.step.2.published.select_products",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.5.diversified.decide",
+      "ir": "ir:Recommender.step.5.diversified.decide",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.decide"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.5.diversified.decide.join.1.policy",
+      "ir": "ir:Recommender.step.5.diversified.decide.join.1.policy",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.decide.join.1.policy"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.5.diversified.decide.select.tenant",
+      "ir": "ir:Recommender.step.5.diversified.decide.project.tenant",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.decide.field.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.5.diversified.decide.select.request_id",
+      "ir": "ir:Recommender.step.5.diversified.decide.project.request_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.decide.field.request_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.5.diversified.decide.select.product_id",
+      "ir": "ir:Recommender.step.5.diversified.decide.project.product_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.decide.field.product_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.5.diversified.decide.select.taxonomy_branch",
+      "ir": "ir:Recommender.step.5.diversified.decide.project.taxonomy_branch",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.decide.field.taxonomy_branch"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.5.diversified.decide.select.branch_rank",
+      "ir": "ir:Recommender.step.5.diversified.decide.project.branch_rank",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.decide.field.branch_rank"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.5.diversified.decide.select.selected",
+      "ir": "ir:Recommender.step.5.diversified.decide.project.selected",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.decide.field.selected"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.5.diversified.decide.select.exclusion_reason",
+      "ir": "ir:Recommender.step.5.diversified.decide.project.exclusion_reason",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.decide.field.exclusion_reason"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.5.diversified.decide.validation.0.intermediate",
+      "ir": "ir:Recommender.step.5.diversified.decide.validation.0.intermediate",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.decide.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish",
+      "ir": "ir:Recommender.step.6.diversified.publish",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.where.0",
+      "ir": "ir:Recommender.step.6.diversified.publish.filter.0",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.filter.0"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.join.1.decision",
+      "ir": "ir:Recommender.step.6.diversified.publish.join.1.decision",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.join.1.decision"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.select.tenant",
+      "ir": "ir:Recommender.step.6.diversified.publish.project.tenant",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.field.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.select.request_id",
+      "ir": "ir:Recommender.step.6.diversified.publish.project.request_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.field.request_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.select.strategy_id",
+      "ir": "ir:Recommender.step.6.diversified.publish.project.strategy_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.field.strategy_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.select.policy_version",
+      "ir": "ir:Recommender.step.6.diversified.publish.project.policy_version",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.field.policy_version"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.select.product_id",
+      "ir": "ir:Recommender.step.6.diversified.publish.project.product_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.field.product_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.select.product_name",
+      "ir": "ir:Recommender.step.6.diversified.publish.project.product_name",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.field.product_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.select.category",
+      "ir": "ir:Recommender.step.6.diversified.publish.project.category",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.field.category"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.select.rank",
+      "ir": "ir:Recommender.step.6.diversified.publish.project.rank",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.field.rank"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.select.base_score",
+      "ir": "ir:Recommender.step.6.diversified.publish.project.base_score",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.field.base_score"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.select.promotion_score",
+      "ir": "ir:Recommender.step.6.diversified.publish.project.promotion_score",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.field.promotion_score"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.select.boost_score",
+      "ir": "ir:Recommender.step.6.diversified.publish.project.boost_score",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.field.boost_score"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.select.suppression_penalty",
+      "ir": "ir:Recommender.step.6.diversified.publish.project.suppression_penalty",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.field.suppression_penalty"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.select.inventory_boost",
+      "ir": "ir:Recommender.step.6.diversified.publish.project.inventory_boost",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.field.inventory_boost"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.select.feedback_score",
+      "ir": "ir:Recommender.step.6.diversified.publish.project.feedback_score",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.field.feedback_score"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.select.final_score",
+      "ir": "ir:Recommender.step.6.diversified.publish.project.final_score",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.field.final_score"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.select.feedback_contributed",
+      "ir": "ir:Recommender.step.6.diversified.publish.project.feedback_contributed",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.field.feedback_contributed"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.select.candidate_source",
+      "ir": "ir:Recommender.step.6.diversified.publish.project.candidate_source",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.field.candidate_source"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.select.taxonomy_id",
+      "ir": "ir:Recommender.step.6.diversified.publish.project.taxonomy_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.field.taxonomy_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.select.taxonomy_branch",
+      "ir": "ir:Recommender.step.6.diversified.publish.project.taxonomy_branch",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.field.taxonomy_branch"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.select.session_match",
+      "ir": "ir:Recommender.step.6.diversified.publish.project.session_match",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.field.session_match"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.select.purchase_signal",
+      "ir": "ir:Recommender.step.6.diversified.publish.project.purchase_signal",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.field.purchase_signal"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.select.eligibility_status",
+      "ir": "ir:Recommender.step.6.diversified.publish.project.eligibility_status",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.field.eligibility_status"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.select.diversity_selected",
+      "ir": "ir:Recommender.step.6.diversified.publish.project.diversity_selected",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.field.diversity_selected"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.select.diversity_exclusion_reason",
+      "ir": "ir:Recommender.step.6.diversified.publish.project.diversity_exclusion_reason",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.field.diversity_exclusion_reason"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.select.experiment_id",
+      "ir": "ir:Recommender.step.6.diversified.publish.project.experiment_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.field.experiment_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.select.experiment_version",
+      "ir": "ir:Recommender.step.6.diversified.publish.project.experiment_version",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.field.experiment_version"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.select.variant_id",
+      "ir": "ir:Recommender.step.6.diversified.publish.project.variant_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.field.variant_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.select.maximum_results",
+      "ir": "ir:Recommender.step.6.diversified.publish.project.maximum_results",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.field.maximum_results"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.select.diversity_rank",
+      "ir": "ir:Recommender.step.6.diversified.publish.project.diversity_rank",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.field.diversity_rank"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.6.diversified.publish.validation.0.intermediate",
+      "ir": "ir:Recommender.step.6.diversified.publish.validation.0.intermediate",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.diversified.publish.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.7.published.select_products",
+      "ir": "ir:Recommender.step.7.published.select_products",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.published.select_products"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.2.published.select_products.where.0",
-      "ir": "ir:Recommender.step.2.published.select_products.filter.0",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.7.published.select_products.where.0",
+      "ir": "ir:Recommender.step.7.published.select_products.filter.0",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.published.select_products.filter.0"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.2.published.select_products.select.tenant",
-      "ir": "ir:Recommender.step.2.published.select_products.project.tenant",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.7.published.select_products.select.tenant",
+      "ir": "ir:Recommender.step.7.published.select_products.project.tenant",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.published.select_products.field.tenant"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.2.published.select_products.select.request_id",
-      "ir": "ir:Recommender.step.2.published.select_products.project.request_id",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.7.published.select_products.select.request_id",
+      "ir": "ir:Recommender.step.7.published.select_products.project.request_id",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.published.select_products.field.request_id"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.2.published.select_products.select.strategy_id",
-      "ir": "ir:Recommender.step.2.published.select_products.project.strategy_id",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.7.published.select_products.select.strategy_id",
+      "ir": "ir:Recommender.step.7.published.select_products.project.strategy_id",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.published.select_products.field.strategy_id"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.2.published.select_products.select.policy_version",
-      "ir": "ir:Recommender.step.2.published.select_products.project.policy_version",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.7.published.select_products.select.policy_version",
+      "ir": "ir:Recommender.step.7.published.select_products.project.policy_version",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.published.select_products.field.policy_version"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.2.published.select_products.select.product_id",
-      "ir": "ir:Recommender.step.2.published.select_products.project.product_id",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.7.published.select_products.select.product_id",
+      "ir": "ir:Recommender.step.7.published.select_products.project.product_id",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.published.select_products.field.product_id"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.2.published.select_products.select.product_name",
-      "ir": "ir:Recommender.step.2.published.select_products.project.product_name",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.7.published.select_products.select.product_name",
+      "ir": "ir:Recommender.step.7.published.select_products.project.product_name",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.published.select_products.field.product_name"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.2.published.select_products.select.category",
-      "ir": "ir:Recommender.step.2.published.select_products.project.category",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.7.published.select_products.select.category",
+      "ir": "ir:Recommender.step.7.published.select_products.project.category",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.published.select_products.field.category"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.2.published.select_products.select.rank",
-      "ir": "ir:Recommender.step.2.published.select_products.project.rank",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.7.published.select_products.select.rank",
+      "ir": "ir:Recommender.step.7.published.select_products.project.rank",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.published.select_products.field.rank"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.2.published.select_products.select.base_score",
-      "ir": "ir:Recommender.step.2.published.select_products.project.base_score",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.7.published.select_products.select.base_score",
+      "ir": "ir:Recommender.step.7.published.select_products.project.base_score",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.published.select_products.field.base_score"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.2.published.select_products.select.promotion_score",
-      "ir": "ir:Recommender.step.2.published.select_products.project.promotion_score",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.7.published.select_products.select.promotion_score",
+      "ir": "ir:Recommender.step.7.published.select_products.project.promotion_score",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.published.select_products.field.promotion_score"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.2.published.select_products.select.boost_score",
-      "ir": "ir:Recommender.step.2.published.select_products.project.boost_score",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.7.published.select_products.select.boost_score",
+      "ir": "ir:Recommender.step.7.published.select_products.project.boost_score",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.published.select_products.field.boost_score"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.2.published.select_products.select.suppression_penalty",
-      "ir": "ir:Recommender.step.2.published.select_products.project.suppression_penalty",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.7.published.select_products.select.suppression_penalty",
+      "ir": "ir:Recommender.step.7.published.select_products.project.suppression_penalty",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.published.select_products.field.suppression_penalty"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.2.published.select_products.select.inventory_boost",
-      "ir": "ir:Recommender.step.2.published.select_products.project.inventory_boost",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.7.published.select_products.select.inventory_boost",
+      "ir": "ir:Recommender.step.7.published.select_products.project.inventory_boost",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.published.select_products.field.inventory_boost"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.2.published.select_products.select.feedback_score",
-      "ir": "ir:Recommender.step.2.published.select_products.project.feedback_score",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.7.published.select_products.select.feedback_score",
+      "ir": "ir:Recommender.step.7.published.select_products.project.feedback_score",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.published.select_products.field.feedback_score"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.2.published.select_products.select.final_score",
-      "ir": "ir:Recommender.step.2.published.select_products.project.final_score",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.7.published.select_products.select.final_score",
+      "ir": "ir:Recommender.step.7.published.select_products.project.final_score",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.published.select_products.field.final_score"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.2.published.select_products.select.feedback_contributed",
-      "ir": "ir:Recommender.step.2.published.select_products.project.feedback_contributed",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.7.published.select_products.select.feedback_contributed",
+      "ir": "ir:Recommender.step.7.published.select_products.project.feedback_contributed",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.published.select_products.field.feedback_contributed"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.2.published.select_products.validation.0.intermediate",
-      "ir": "ir:Recommender.step.2.published.select_products.validation.0.intermediate",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.7.published.select_products.select.candidate_source",
+      "ir": "ir:Recommender.step.7.published.select_products.project.candidate_source",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.published.select_products.field.candidate_source"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.7.published.select_products.select.taxonomy_id",
+      "ir": "ir:Recommender.step.7.published.select_products.project.taxonomy_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.published.select_products.field.taxonomy_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.7.published.select_products.select.taxonomy_branch",
+      "ir": "ir:Recommender.step.7.published.select_products.project.taxonomy_branch",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.published.select_products.field.taxonomy_branch"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.7.published.select_products.select.session_match",
+      "ir": "ir:Recommender.step.7.published.select_products.project.session_match",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.published.select_products.field.session_match"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.7.published.select_products.select.purchase_signal",
+      "ir": "ir:Recommender.step.7.published.select_products.project.purchase_signal",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.published.select_products.field.purchase_signal"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.7.published.select_products.select.eligibility_status",
+      "ir": "ir:Recommender.step.7.published.select_products.project.eligibility_status",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.published.select_products.field.eligibility_status"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.7.published.select_products.select.diversity_selected",
+      "ir": "ir:Recommender.step.7.published.select_products.project.diversity_selected",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.published.select_products.field.diversity_selected"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.7.published.select_products.select.diversity_exclusion_reason",
+      "ir": "ir:Recommender.step.7.published.select_products.project.diversity_exclusion_reason",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.published.select_products.field.diversity_exclusion_reason"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.7.published.select_products.select.experiment_id",
+      "ir": "ir:Recommender.step.7.published.select_products.project.experiment_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.published.select_products.field.experiment_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.7.published.select_products.select.experiment_version",
+      "ir": "ir:Recommender.step.7.published.select_products.project.experiment_version",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.published.select_products.field.experiment_version"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.7.published.select_products.select.variant_id",
+      "ir": "ir:Recommender.step.7.published.select_products.project.variant_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.published.select_products.field.variant_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.7.published.select_products.validation.0.intermediate",
+      "ir": "ir:Recommender.step.7.published.select_products.validation.0.intermediate",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.published.select_products.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.summarized.summarize",
-      "ir": "ir:Recommender.step.3.summarized.summarize",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.8.summarized.summarize",
+      "ir": "ir:Recommender.step.8.summarized.summarize",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.summarized.summarize"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.summarized.summarize.join.1.policy",
-      "ir": "ir:Recommender.step.3.summarized.summarize.join.1.policy",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.8.summarized.summarize.join.1.policy",
+      "ir": "ir:Recommender.step.8.summarized.summarize.join.1.policy",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.summarized.summarize.join.1.policy"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.summarized.summarize.join.2.product",
-      "ir": "ir:Recommender.step.3.summarized.summarize.join.2.product",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.8.summarized.summarize.join.2.product",
+      "ir": "ir:Recommender.step.8.summarized.summarize.join.2.product",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.summarized.summarize.join.2.product"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.summarized.summarize.aggregate.tenant",
-      "ir": "ir:Recommender.step.3.summarized.summarize.aggregate.tenant",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.8.summarized.summarize.aggregate.tenant",
+      "ir": "ir:Recommender.step.8.summarized.summarize.aggregate.tenant",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.summarized.summarize.aggregate.tenant"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.summarized.summarize.aggregate.request_id",
-      "ir": "ir:Recommender.step.3.summarized.summarize.aggregate.request_id",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.8.summarized.summarize.aggregate.request_id",
+      "ir": "ir:Recommender.step.8.summarized.summarize.aggregate.request_id",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.summarized.summarize.aggregate.request_id"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.summarized.summarize.aggregate.strategy_id",
-      "ir": "ir:Recommender.step.3.summarized.summarize.aggregate.strategy_id",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.8.summarized.summarize.aggregate.strategy_id",
+      "ir": "ir:Recommender.step.8.summarized.summarize.aggregate.strategy_id",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.summarized.summarize.aggregate.strategy_id"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.summarized.summarize.aggregate.policy_version",
-      "ir": "ir:Recommender.step.3.summarized.summarize.aggregate.policy_version",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.8.summarized.summarize.aggregate.policy_version",
+      "ir": "ir:Recommender.step.8.summarized.summarize.aggregate.policy_version",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.summarized.summarize.aggregate.policy_version"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.summarized.summarize.aggregate.result_count",
-      "ir": "ir:Recommender.step.3.summarized.summarize.aggregate.result_count",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.8.summarized.summarize.aggregate.result_count",
+      "ir": "ir:Recommender.step.8.summarized.summarize.aggregate.result_count",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.summarized.summarize.aggregate.result_count"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.3.summarized.summarize.aggregate.feedback_contributed",
-      "ir": "ir:Recommender.step.3.summarized.summarize.aggregate.feedback_contributed",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.8.summarized.summarize.aggregate.feedback_contributed",
+      "ir": "ir:Recommender.step.8.summarized.summarize.aggregate.feedback_contributed",
       "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.summarized.summarize.aggregate.feedback_contributed"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.8.summarized.summarize.aggregate.experiment_id",
+      "ir": "ir:Recommender.step.8.summarized.summarize.aggregate.experiment_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.summarized.summarize.aggregate.experiment_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.8.summarized.summarize.aggregate.experiment_version",
+      "ir": "ir:Recommender.step.8.summarized.summarize.aggregate.experiment_version",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.summarized.summarize.aggregate.experiment_version"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.step.8.summarized.summarize.aggregate.variant_id",
+      "ir": "ir:Recommender.step.8.summarized.summarize.aggregate.variant_id",
+      "source": "source:examples.store.transforms.merchandising.recommender.workflow.Recommender.summarized.summarize.aggregate.variant_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.recommender_workflow.RecommenderGenerated.run.output.0.recommended_products.validation.final",
@@ -506,6 +1291,22 @@
     "DemandWindow": {
       "constant": "DEMAND_WINDOW_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.projection"
+    },
+    "DiversificationDecision": {
+      "constant": "DIVERSIFICATION_DECISION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "DiversifiedRecommendationCandidate": {
+      "constant": "DIVERSIFIED_RECOMMENDATION_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "EvaluationBatch": {
+      "constant": "EVALUATION_BATCH_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.batch"
+    },
+    "ExpandedProductTaxonomy": {
+      "constant": "EXPANDED_PRODUCT_TAXONOMY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
     },
     "FulfillmentAllocation": {
       "constant": "FULFILLMENT_ALLOCATION_SCHEMA",
@@ -671,6 +1472,10 @@
       "constant": "PRODUCT_RECOMMENDATION_SIGNAL_TOTALS_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
     },
+    "ProductTaxonomy": {
+      "constant": "PRODUCT_TAXONOMY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
+    },
     "Promotion": {
       "constant": "PROMOTION_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.promotion"
@@ -683,12 +1488,24 @@
       "constant": "RANKED_RECOMMENDATION_CANDIDATE_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
     },
+    "RecommendationAssignment": {
+      "constant": "RECOMMENDATION_ASSIGNMENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.experiment"
+    },
+    "RecommendationBehavior": {
+      "constant": "RECOMMENDATION_BEHAVIOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendations"
+    },
     "RecommendationBehaviorImpression": {
       "constant": "RECOMMENDATION_BEHAVIOR_IMPRESSION_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
     },
     "RecommendationCandidate": {
       "constant": "RECOMMENDATION_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+    },
+    "RecommendationCandidateDecision": {
+      "constant": "RECOMMENDATION_CANDIDATE_DECISION_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.catalog"
     },
     "RecommendationClick": {
@@ -703,12 +1520,20 @@
       "constant": "RECOMMENDATION_EVALUATION_BATCH_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.evaluation"
     },
+    "RecommendationExperiment": {
+      "constant": "RECOMMENDATION_EXPERIMENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.experiment"
+    },
     "RecommendationExposure": {
       "constant": "RECOMMENDATION_EXPOSURE_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+      "module": "examples.structure_generated.store.pyspark.schemas.experiment"
     },
     "RecommendationImpression": {
       "constant": "RECOMMENDATION_IMPRESSION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "RecommendationPurchase": {
+      "constant": "RECOMMENDATION_PURCHASE_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.feedback"
     },
     "RecommendationRequest": {
@@ -723,6 +1548,14 @@
       "constant": "RECOMMENDATION_RUN_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
     },
+    "RecommendationVariantMetric": {
+      "constant": "RECOMMENDATION_VARIANT_METRIC_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendations"
+    },
+    "RecommendationVariantMetricTotals": {
+      "constant": "RECOMMENDATION_VARIANT_METRIC_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendations"
+    },
     "RecommendedProduct": {
       "constant": "RECOMMENDED_PRODUCT_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
@@ -735,6 +1568,14 @@
       "constant": "SERVICE_RISK_TARGET_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.exception"
     },
+    "SessionEvent": {
+      "constant": "SESSION_EVENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.session"
+    },
+    "SessionFeature": {
+      "constant": "SESSION_FEATURE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.session"
+    },
     "Shipment": {
       "constant": "SHIPMENT_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.shipment"
@@ -742,6 +1583,14 @@
     "SubstitutionRule": {
       "constant": "SUBSTITUTION_RULE_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.substitution"
+    },
+    "TaxonomyAncestor": {
+      "constant": "TAXONOMY_ANCESTOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
+    },
+    "TaxonomyNode": {
+      "constant": "TAXONOMY_NODE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
     },
     "TenantKey": {
       "constant": "TENANT_KEY_SCHEMA",
@@ -767,10 +1616,12 @@
         "sources": [
           "requests",
           "catalog",
-          "policy",
-          "boosts",
+          "taxonomy",
+          "session_features",
+          "signals",
           "suppressions",
-          "signals"
+          "policy",
+          "boosts"
         ],
         "step": null,
         "target": "Recommender"
@@ -852,6 +1703,17 @@
       },
       {
         "detail": {
+          "field": "session_id"
+        },
+        "operation": "project",
+        "sources": [
+          "request.session_id"
+        ],
+        "step": "selected.select",
+        "target": "RecommendationCandidate.session_id"
+      },
+      {
+        "detail": {
           "field": "strategy_id"
         },
         "operation": "project",
@@ -871,6 +1733,39 @@
         ],
         "step": "selected.select",
         "target": "RecommendationCandidate.policy_version"
+      },
+      {
+        "detail": {
+          "field": "experiment_id"
+        },
+        "operation": "project",
+        "sources": [
+          "request.experiment_id"
+        ],
+        "step": "selected.select",
+        "target": "RecommendationCandidate.experiment_id"
+      },
+      {
+        "detail": {
+          "field": "experiment_version"
+        },
+        "operation": "project",
+        "sources": [
+          "request.experiment_version"
+        ],
+        "step": "selected.select",
+        "target": "RecommendationCandidate.experiment_version"
+      },
+      {
+        "detail": {
+          "field": "variant_id"
+        },
+        "operation": "project",
+        "sources": [
+          "request.variant_id"
+        ],
+        "step": "selected.select",
+        "target": "RecommendationCandidate.variant_id"
       },
       {
         "detail": {
@@ -981,6 +1876,935 @@
         ],
         "step": "selected.select",
         "target": "RecommendationCandidate.inventory_boost"
+      },
+      {
+        "detail": {
+          "field": "candidate_source"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "selected.select",
+        "target": "RecommendationCandidate.candidate_source"
+      },
+      {
+        "detail": {
+          "field": "taxonomy_id"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "selected.select",
+        "target": "RecommendationCandidate.taxonomy_id"
+      },
+      {
+        "detail": {
+          "field": "taxonomy_branch"
+        },
+        "operation": "project",
+        "sources": [
+          "product.category"
+        ],
+        "step": "selected.select",
+        "target": "RecommendationCandidate.taxonomy_branch"
+      },
+      {
+        "detail": {
+          "field": "session_match"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "selected.select",
+        "target": "RecommendationCandidate.session_match"
+      },
+      {
+        "detail": {
+          "field": "purchase_signal"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "selected.select",
+        "target": "RecommendationCandidate.purchase_signal"
+      },
+      {
+        "detail": {
+          "field": "eligibility_status"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "selected.select",
+        "target": "RecommendationCandidate.eligibility_status"
+      },
+      {
+        "detail": {
+          "input_schema": "RecommendationRequest",
+          "output_schema": "RecommendationCandidate"
+        },
+        "operation": "step",
+        "sources": [
+          "RecommendationCandidate",
+          "product",
+          "taxonomy",
+          "session",
+          "signal"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "retrieved.retrieve"
+      },
+      {
+        "detail": {},
+        "operation": "filter",
+        "sources": [
+          "product.product_id",
+          "request.category",
+          "product.category"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "retrieved.retrieve.filter[0]"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "catalog"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "product.tenant.tenant_id",
+          "request.tenant.tenant_id",
+          "product.eligible"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "retrieved.retrieve.join[1].product"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "left",
+          "right_alias": "taxonomy_2"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "taxonomy.tenant.tenant_id",
+          "request.tenant.tenant_id",
+          "taxonomy.product_id",
+          "product.product_id",
+          "request.category",
+          "taxonomy.ancestor_category"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "retrieved.retrieve.join[2].taxonomy"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "left",
+          "right_alias": "session_features_3"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "session.tenant.tenant_id",
+          "request.tenant.tenant_id",
+          "session.customer_id",
+          "request.customer_id",
+          "session.category",
+          "product.category"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "retrieved.retrieve.join[3].session"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "left",
+          "right_alias": "signals_4"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "signal.tenant.tenant_id",
+          "request.tenant.tenant_id",
+          "signal.strategy_id",
+          "request.strategy_id",
+          "signal.product_id",
+          "product.product_id"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "retrieved.retrieve.join[4].signal"
+      },
+      {
+        "detail": {
+          "field": "tenant"
+        },
+        "operation": "project",
+        "sources": [
+          "request.tenant"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "RecommendationCandidate.tenant"
+      },
+      {
+        "detail": {
+          "field": "request_id"
+        },
+        "operation": "project",
+        "sources": [
+          "request.id"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "RecommendationCandidate.request_id"
+      },
+      {
+        "detail": {
+          "field": "requested_at"
+        },
+        "operation": "project",
+        "sources": [
+          "request.requested_at"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "RecommendationCandidate.requested_at"
+      },
+      {
+        "detail": {
+          "field": "customer_id"
+        },
+        "operation": "project",
+        "sources": [
+          "request.customer_id"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "RecommendationCandidate.customer_id"
+      },
+      {
+        "detail": {
+          "field": "session_id"
+        },
+        "operation": "project",
+        "sources": [
+          "request.session_id"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "RecommendationCandidate.session_id"
+      },
+      {
+        "detail": {
+          "field": "strategy_id"
+        },
+        "operation": "project",
+        "sources": [
+          "request.strategy_id"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "RecommendationCandidate.strategy_id"
+      },
+      {
+        "detail": {
+          "field": "policy_version"
+        },
+        "operation": "project",
+        "sources": [
+          "request.policy_version"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "RecommendationCandidate.policy_version"
+      },
+      {
+        "detail": {
+          "field": "experiment_id"
+        },
+        "operation": "project",
+        "sources": [
+          "request.experiment_id"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "RecommendationCandidate.experiment_id"
+      },
+      {
+        "detail": {
+          "field": "experiment_version"
+        },
+        "operation": "project",
+        "sources": [
+          "request.experiment_version"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "RecommendationCandidate.experiment_version"
+      },
+      {
+        "detail": {
+          "field": "variant_id"
+        },
+        "operation": "project",
+        "sources": [
+          "request.variant_id"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "RecommendationCandidate.variant_id"
+      },
+      {
+        "detail": {
+          "field": "category_filter"
+        },
+        "operation": "project",
+        "sources": [
+          "request.category"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "RecommendationCandidate.category_filter"
+      },
+      {
+        "detail": {
+          "field": "collection_id"
+        },
+        "operation": "project",
+        "sources": [
+          "request.collection_id"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "RecommendationCandidate.collection_id"
+      },
+      {
+        "detail": {
+          "field": "product_id"
+        },
+        "operation": "project",
+        "sources": [
+          "product.product_id"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "RecommendationCandidate.product_id"
+      },
+      {
+        "detail": {
+          "field": "product_name"
+        },
+        "operation": "project",
+        "sources": [
+          "product.product_name"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "RecommendationCandidate.product_name"
+      },
+      {
+        "detail": {
+          "field": "category"
+        },
+        "operation": "project",
+        "sources": [
+          "product.category"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "RecommendationCandidate.category"
+      },
+      {
+        "detail": {
+          "field": "has_promotion"
+        },
+        "operation": "project",
+        "sources": [
+          "product.has_promotion"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "RecommendationCandidate.has_promotion"
+      },
+      {
+        "detail": {
+          "field": "promotion_code"
+        },
+        "operation": "project",
+        "sources": [
+          "product.promotion_code"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "RecommendationCandidate.promotion_code"
+      },
+      {
+        "detail": {
+          "field": "base_score"
+        },
+        "operation": "project",
+        "sources": [
+          "product.base_score"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "RecommendationCandidate.base_score"
+      },
+      {
+        "detail": {
+          "field": "promotion_score"
+        },
+        "operation": "project",
+        "sources": [
+          "product.promotion_score"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "RecommendationCandidate.promotion_score"
+      },
+      {
+        "detail": {
+          "field": "inventory_boost"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "RecommendationCandidate.inventory_boost"
+      },
+      {
+        "detail": {
+          "field": "candidate_source"
+        },
+        "operation": "project",
+        "sources": [
+          "request.category",
+          "product.category",
+          "session.session_id"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "RecommendationCandidate.candidate_source"
+      },
+      {
+        "detail": {
+          "field": "taxonomy_id"
+        },
+        "operation": "project",
+        "sources": [
+          "taxonomy.taxonomy_id"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "RecommendationCandidate.taxonomy_id"
+      },
+      {
+        "detail": {
+          "field": "taxonomy_branch"
+        },
+        "operation": "project",
+        "sources": [
+          "taxonomy.ancestor_category",
+          "product.category"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "RecommendationCandidate.taxonomy_branch"
+      },
+      {
+        "detail": {
+          "field": "session_match"
+        },
+        "operation": "project",
+        "sources": [
+          "session.session_id"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "RecommendationCandidate.session_match"
+      },
+      {
+        "detail": {
+          "field": "purchase_signal"
+        },
+        "operation": "project",
+        "sources": [
+          "signal.conversion_rate"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "RecommendationCandidate.purchase_signal"
+      },
+      {
+        "detail": {
+          "field": "eligibility_status"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "retrieved.retrieve",
+        "target": "RecommendationCandidate.eligibility_status"
+      },
+      {
+        "detail": {
+          "input_schema": "RecommendationCandidate",
+          "output_schema": "RecommendationCandidateDecision"
+        },
+        "operation": "step",
+        "sources": [
+          "RecommendationCandidate",
+          "suppression",
+          "session"
+        ],
+        "step": "filtered.evaluate",
+        "target": "filtered.evaluate"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "left",
+          "right_alias": "suppressions"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "suppression.tenant.tenant_id",
+          "candidate.tenant.tenant_id",
+          "suppression.policy_version",
+          "candidate.policy_version",
+          "suppression.active",
+          "suppression.product_id",
+          "candidate.product_id",
+          "suppression.category",
+          "candidate.category"
+        ],
+        "step": "filtered.evaluate",
+        "target": "filtered.evaluate.join[1].suppression"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "left",
+          "right_alias": "session_features_2"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "session.tenant.tenant_id",
+          "candidate.tenant.tenant_id",
+          "session.customer_id",
+          "candidate.customer_id",
+          "session.product_id",
+          "candidate.product_id",
+          "session.add_to_cart_count"
+        ],
+        "step": "filtered.evaluate",
+        "target": "filtered.evaluate.join[2].session"
+      },
+      {
+        "detail": {
+          "field": "tenant"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.tenant"
+        ],
+        "step": "filtered.evaluate",
+        "target": "RecommendationCandidateDecision.tenant"
+      },
+      {
+        "detail": {
+          "field": "request_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.request_id"
+        ],
+        "step": "filtered.evaluate",
+        "target": "RecommendationCandidateDecision.request_id"
+      },
+      {
+        "detail": {
+          "field": "product_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.product_id"
+        ],
+        "step": "filtered.evaluate",
+        "target": "RecommendationCandidateDecision.product_id"
+      },
+      {
+        "detail": {
+          "field": "stage"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "filtered.evaluate",
+        "target": "RecommendationCandidateDecision.stage"
+      },
+      {
+        "detail": {
+          "field": "eligible"
+        },
+        "operation": "project",
+        "sources": [
+          "suppression.exclude",
+          "session.product_id"
+        ],
+        "step": "filtered.evaluate",
+        "target": "RecommendationCandidateDecision.eligible"
+      },
+      {
+        "detail": {
+          "field": "exclusion_reason"
+        },
+        "operation": "project",
+        "sources": [
+          "suppression.exclude",
+          "suppression.reason",
+          "session.product_id"
+        ],
+        "step": "filtered.evaluate",
+        "target": "RecommendationCandidateDecision.exclusion_reason"
+      },
+      {
+        "detail": {
+          "field": "candidate_source"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.candidate_source"
+        ],
+        "step": "filtered.evaluate",
+        "target": "RecommendationCandidateDecision.candidate_source"
+      },
+      {
+        "detail": {
+          "field": "taxonomy_branch"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.taxonomy_branch"
+        ],
+        "step": "filtered.evaluate",
+        "target": "RecommendationCandidateDecision.taxonomy_branch"
+      },
+      {
+        "detail": {
+          "input_schema": "RecommendationCandidate",
+          "output_schema": "RecommendationCandidate"
+        },
+        "operation": "step",
+        "sources": [
+          "RecommendationCandidateDecision",
+          "decision"
+        ],
+        "step": "filtered.publish",
+        "target": "filtered.publish"
+      },
+      {
+        "detail": {},
+        "operation": "filter",
+        "sources": [
+          "decision.eligible"
+        ],
+        "step": "filtered.publish",
+        "target": "filtered.publish.filter[0]"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "left",
+          "right_alias": "filtered__evaluated"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "decision.tenant.tenant_id",
+          "candidate.tenant.tenant_id",
+          "decision.request_id",
+          "candidate.request_id",
+          "decision.product_id",
+          "candidate.product_id"
+        ],
+        "step": "filtered.publish",
+        "target": "filtered.publish.join[1].decision"
+      },
+      {
+        "detail": {
+          "field": "tenant"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.tenant"
+        ],
+        "step": "filtered.publish",
+        "target": "RecommendationCandidate.tenant"
+      },
+      {
+        "detail": {
+          "field": "request_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.request_id"
+        ],
+        "step": "filtered.publish",
+        "target": "RecommendationCandidate.request_id"
+      },
+      {
+        "detail": {
+          "field": "requested_at"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.requested_at"
+        ],
+        "step": "filtered.publish",
+        "target": "RecommendationCandidate.requested_at"
+      },
+      {
+        "detail": {
+          "field": "customer_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.customer_id"
+        ],
+        "step": "filtered.publish",
+        "target": "RecommendationCandidate.customer_id"
+      },
+      {
+        "detail": {
+          "field": "session_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.session_id"
+        ],
+        "step": "filtered.publish",
+        "target": "RecommendationCandidate.session_id"
+      },
+      {
+        "detail": {
+          "field": "strategy_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.strategy_id"
+        ],
+        "step": "filtered.publish",
+        "target": "RecommendationCandidate.strategy_id"
+      },
+      {
+        "detail": {
+          "field": "policy_version"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.policy_version"
+        ],
+        "step": "filtered.publish",
+        "target": "RecommendationCandidate.policy_version"
+      },
+      {
+        "detail": {
+          "field": "experiment_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.experiment_id"
+        ],
+        "step": "filtered.publish",
+        "target": "RecommendationCandidate.experiment_id"
+      },
+      {
+        "detail": {
+          "field": "experiment_version"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.experiment_version"
+        ],
+        "step": "filtered.publish",
+        "target": "RecommendationCandidate.experiment_version"
+      },
+      {
+        "detail": {
+          "field": "variant_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.variant_id"
+        ],
+        "step": "filtered.publish",
+        "target": "RecommendationCandidate.variant_id"
+      },
+      {
+        "detail": {
+          "field": "category_filter"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.category_filter"
+        ],
+        "step": "filtered.publish",
+        "target": "RecommendationCandidate.category_filter"
+      },
+      {
+        "detail": {
+          "field": "collection_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.collection_id"
+        ],
+        "step": "filtered.publish",
+        "target": "RecommendationCandidate.collection_id"
+      },
+      {
+        "detail": {
+          "field": "product_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.product_id"
+        ],
+        "step": "filtered.publish",
+        "target": "RecommendationCandidate.product_id"
+      },
+      {
+        "detail": {
+          "field": "product_name"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.product_name"
+        ],
+        "step": "filtered.publish",
+        "target": "RecommendationCandidate.product_name"
+      },
+      {
+        "detail": {
+          "field": "category"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.category"
+        ],
+        "step": "filtered.publish",
+        "target": "RecommendationCandidate.category"
+      },
+      {
+        "detail": {
+          "field": "has_promotion"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.has_promotion"
+        ],
+        "step": "filtered.publish",
+        "target": "RecommendationCandidate.has_promotion"
+      },
+      {
+        "detail": {
+          "field": "promotion_code"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.promotion_code"
+        ],
+        "step": "filtered.publish",
+        "target": "RecommendationCandidate.promotion_code"
+      },
+      {
+        "detail": {
+          "field": "base_score"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.base_score"
+        ],
+        "step": "filtered.publish",
+        "target": "RecommendationCandidate.base_score"
+      },
+      {
+        "detail": {
+          "field": "promotion_score"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.promotion_score"
+        ],
+        "step": "filtered.publish",
+        "target": "RecommendationCandidate.promotion_score"
+      },
+      {
+        "detail": {
+          "field": "inventory_boost"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.inventory_boost"
+        ],
+        "step": "filtered.publish",
+        "target": "RecommendationCandidate.inventory_boost"
+      },
+      {
+        "detail": {
+          "field": "candidate_source"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.candidate_source"
+        ],
+        "step": "filtered.publish",
+        "target": "RecommendationCandidate.candidate_source"
+      },
+      {
+        "detail": {
+          "field": "taxonomy_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.taxonomy_id"
+        ],
+        "step": "filtered.publish",
+        "target": "RecommendationCandidate.taxonomy_id"
+      },
+      {
+        "detail": {
+          "field": "taxonomy_branch"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.taxonomy_branch"
+        ],
+        "step": "filtered.publish",
+        "target": "RecommendationCandidate.taxonomy_branch"
+      },
+      {
+        "detail": {
+          "field": "session_match"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.session_match"
+        ],
+        "step": "filtered.publish",
+        "target": "RecommendationCandidate.session_match"
+      },
+      {
+        "detail": {
+          "field": "purchase_signal"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.purchase_signal"
+        ],
+        "step": "filtered.publish",
+        "target": "RecommendationCandidate.purchase_signal"
+      },
+      {
+        "detail": {
+          "field": "eligibility_status"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "filtered.publish",
+        "target": "RecommendationCandidate.eligibility_status"
       },
       {
         "detail": {
@@ -1290,6 +3114,127 @@
       },
       {
         "detail": {
+          "field": "candidate_source"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.candidate_source"
+        ],
+        "step": "ranked.rank",
+        "target": "RankedRecommendationCandidate.candidate_source"
+      },
+      {
+        "detail": {
+          "field": "taxonomy_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.taxonomy_id"
+        ],
+        "step": "ranked.rank",
+        "target": "RankedRecommendationCandidate.taxonomy_id"
+      },
+      {
+        "detail": {
+          "field": "taxonomy_branch"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.taxonomy_branch"
+        ],
+        "step": "ranked.rank",
+        "target": "RankedRecommendationCandidate.taxonomy_branch"
+      },
+      {
+        "detail": {
+          "field": "session_match"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.session_match"
+        ],
+        "step": "ranked.rank",
+        "target": "RankedRecommendationCandidate.session_match"
+      },
+      {
+        "detail": {
+          "field": "purchase_signal"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.purchase_signal"
+        ],
+        "step": "ranked.rank",
+        "target": "RankedRecommendationCandidate.purchase_signal"
+      },
+      {
+        "detail": {
+          "field": "eligibility_status"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.eligibility_status"
+        ],
+        "step": "ranked.rank",
+        "target": "RankedRecommendationCandidate.eligibility_status"
+      },
+      {
+        "detail": {
+          "field": "diversity_selected"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "ranked.rank",
+        "target": "RankedRecommendationCandidate.diversity_selected"
+      },
+      {
+        "detail": {
+          "field": "diversity_exclusion_reason"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "ranked.rank",
+        "target": "RankedRecommendationCandidate.diversity_exclusion_reason"
+      },
+      {
+        "detail": {
+          "field": "experiment_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.experiment_id"
+        ],
+        "step": "ranked.rank",
+        "target": "RankedRecommendationCandidate.experiment_id"
+      },
+      {
+        "detail": {
+          "field": "experiment_version"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.experiment_version"
+        ],
+        "step": "ranked.rank",
+        "target": "RankedRecommendationCandidate.experiment_version"
+      },
+      {
+        "detail": {
+          "field": "variant_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.variant_id"
+        ],
+        "step": "ranked.rank",
+        "target": "RankedRecommendationCandidate.variant_id"
+      },
+      {
+        "detail": {
           "field": "maximum_results"
         },
         "operation": "project",
@@ -1302,11 +3247,499 @@
       {
         "detail": {
           "input_schema": "RankedRecommendationCandidate",
+          "output_schema": "DiversificationDecision"
+        },
+        "operation": "step",
+        "sources": [
+          "RankedRecommendationCandidate",
+          "policy"
+        ],
+        "step": "diversified.decide",
+        "target": "diversified.decide"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "policy"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "policy.tenant.tenant_id",
+          "candidate.tenant.tenant_id",
+          "policy.strategy_id",
+          "candidate.strategy_id",
+          "policy.policy_version",
+          "candidate.policy_version"
+        ],
+        "step": "diversified.decide",
+        "target": "diversified.decide.join[1].policy"
+      },
+      {
+        "detail": {
+          "field": "tenant"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.tenant"
+        ],
+        "step": "diversified.decide",
+        "target": "DiversificationDecision.tenant"
+      },
+      {
+        "detail": {
+          "field": "request_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.request_id"
+        ],
+        "step": "diversified.decide",
+        "target": "DiversificationDecision.request_id"
+      },
+      {
+        "detail": {
+          "field": "product_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.product_id"
+        ],
+        "step": "diversified.decide",
+        "target": "DiversificationDecision.product_id"
+      },
+      {
+        "detail": {
+          "field": "taxonomy_branch"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.taxonomy_branch",
+          "candidate.category"
+        ],
+        "step": "diversified.decide",
+        "target": "DiversificationDecision.taxonomy_branch"
+      },
+      {
+        "detail": {
+          "field": "branch_rank"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.rank",
+          "candidate.tenant.tenant_id",
+          "candidate.request_id",
+          "candidate.taxonomy_branch",
+          "candidate.category"
+        ],
+        "step": "diversified.decide",
+        "target": "DiversificationDecision.branch_rank"
+      },
+      {
+        "detail": {
+          "field": "selected"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.rank",
+          "candidate.tenant.tenant_id",
+          "candidate.request_id",
+          "candidate.taxonomy_branch",
+          "candidate.category",
+          "policy.maximum_per_taxonomy_branch",
+          "policy.maximum_results"
+        ],
+        "step": "diversified.decide",
+        "target": "DiversificationDecision.selected"
+      },
+      {
+        "detail": {
+          "field": "exclusion_reason"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.rank",
+          "candidate.tenant.tenant_id",
+          "candidate.request_id",
+          "candidate.taxonomy_branch",
+          "candidate.category",
+          "policy.maximum_per_taxonomy_branch",
+          "policy.maximum_results"
+        ],
+        "step": "diversified.decide",
+        "target": "DiversificationDecision.exclusion_reason"
+      },
+      {
+        "detail": {
+          "input_schema": "RankedRecommendationCandidate",
+          "output_schema": "DiversifiedRecommendationCandidate"
+        },
+        "operation": "step",
+        "sources": [
+          "DiversificationDecision",
+          "decision"
+        ],
+        "step": "diversified.publish",
+        "target": "diversified.publish"
+      },
+      {
+        "detail": {},
+        "operation": "filter",
+        "sources": [
+          "decision.selected"
+        ],
+        "step": "diversified.publish",
+        "target": "diversified.publish.filter[0]"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "diversified__decisions"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "decision.tenant.tenant_id",
+          "candidate.tenant.tenant_id",
+          "decision.request_id",
+          "candidate.request_id",
+          "decision.product_id",
+          "candidate.product_id"
+        ],
+        "step": "diversified.publish",
+        "target": "diversified.publish.join[1].decision"
+      },
+      {
+        "detail": {
+          "field": "tenant"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.tenant"
+        ],
+        "step": "diversified.publish",
+        "target": "DiversifiedRecommendationCandidate.tenant"
+      },
+      {
+        "detail": {
+          "field": "request_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.request_id"
+        ],
+        "step": "diversified.publish",
+        "target": "DiversifiedRecommendationCandidate.request_id"
+      },
+      {
+        "detail": {
+          "field": "strategy_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.strategy_id"
+        ],
+        "step": "diversified.publish",
+        "target": "DiversifiedRecommendationCandidate.strategy_id"
+      },
+      {
+        "detail": {
+          "field": "policy_version"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.policy_version"
+        ],
+        "step": "diversified.publish",
+        "target": "DiversifiedRecommendationCandidate.policy_version"
+      },
+      {
+        "detail": {
+          "field": "product_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.product_id"
+        ],
+        "step": "diversified.publish",
+        "target": "DiversifiedRecommendationCandidate.product_id"
+      },
+      {
+        "detail": {
+          "field": "product_name"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.product_name"
+        ],
+        "step": "diversified.publish",
+        "target": "DiversifiedRecommendationCandidate.product_name"
+      },
+      {
+        "detail": {
+          "field": "category"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.category"
+        ],
+        "step": "diversified.publish",
+        "target": "DiversifiedRecommendationCandidate.category"
+      },
+      {
+        "detail": {
+          "field": "rank"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.rank",
+          "candidate.tenant.tenant_id",
+          "candidate.request_id"
+        ],
+        "step": "diversified.publish",
+        "target": "DiversifiedRecommendationCandidate.rank"
+      },
+      {
+        "detail": {
+          "field": "base_score"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.base_score"
+        ],
+        "step": "diversified.publish",
+        "target": "DiversifiedRecommendationCandidate.base_score"
+      },
+      {
+        "detail": {
+          "field": "promotion_score"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.promotion_score"
+        ],
+        "step": "diversified.publish",
+        "target": "DiversifiedRecommendationCandidate.promotion_score"
+      },
+      {
+        "detail": {
+          "field": "boost_score"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.boost_score"
+        ],
+        "step": "diversified.publish",
+        "target": "DiversifiedRecommendationCandidate.boost_score"
+      },
+      {
+        "detail": {
+          "field": "suppression_penalty"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.suppression_penalty"
+        ],
+        "step": "diversified.publish",
+        "target": "DiversifiedRecommendationCandidate.suppression_penalty"
+      },
+      {
+        "detail": {
+          "field": "inventory_boost"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.inventory_boost"
+        ],
+        "step": "diversified.publish",
+        "target": "DiversifiedRecommendationCandidate.inventory_boost"
+      },
+      {
+        "detail": {
+          "field": "feedback_score"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.feedback_score"
+        ],
+        "step": "diversified.publish",
+        "target": "DiversifiedRecommendationCandidate.feedback_score"
+      },
+      {
+        "detail": {
+          "field": "final_score"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.final_score"
+        ],
+        "step": "diversified.publish",
+        "target": "DiversifiedRecommendationCandidate.final_score"
+      },
+      {
+        "detail": {
+          "field": "feedback_contributed"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.feedback_contributed"
+        ],
+        "step": "diversified.publish",
+        "target": "DiversifiedRecommendationCandidate.feedback_contributed"
+      },
+      {
+        "detail": {
+          "field": "candidate_source"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.candidate_source"
+        ],
+        "step": "diversified.publish",
+        "target": "DiversifiedRecommendationCandidate.candidate_source"
+      },
+      {
+        "detail": {
+          "field": "taxonomy_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.taxonomy_id"
+        ],
+        "step": "diversified.publish",
+        "target": "DiversifiedRecommendationCandidate.taxonomy_id"
+      },
+      {
+        "detail": {
+          "field": "taxonomy_branch"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.taxonomy_branch"
+        ],
+        "step": "diversified.publish",
+        "target": "DiversifiedRecommendationCandidate.taxonomy_branch"
+      },
+      {
+        "detail": {
+          "field": "session_match"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.session_match"
+        ],
+        "step": "diversified.publish",
+        "target": "DiversifiedRecommendationCandidate.session_match"
+      },
+      {
+        "detail": {
+          "field": "purchase_signal"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.purchase_signal"
+        ],
+        "step": "diversified.publish",
+        "target": "DiversifiedRecommendationCandidate.purchase_signal"
+      },
+      {
+        "detail": {
+          "field": "eligibility_status"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.eligibility_status"
+        ],
+        "step": "diversified.publish",
+        "target": "DiversifiedRecommendationCandidate.eligibility_status"
+      },
+      {
+        "detail": {
+          "field": "diversity_selected"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "diversified.publish",
+        "target": "DiversifiedRecommendationCandidate.diversity_selected"
+      },
+      {
+        "detail": {
+          "field": "diversity_exclusion_reason"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "diversified.publish",
+        "target": "DiversifiedRecommendationCandidate.diversity_exclusion_reason"
+      },
+      {
+        "detail": {
+          "field": "experiment_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.experiment_id"
+        ],
+        "step": "diversified.publish",
+        "target": "DiversifiedRecommendationCandidate.experiment_id"
+      },
+      {
+        "detail": {
+          "field": "experiment_version"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.experiment_version"
+        ],
+        "step": "diversified.publish",
+        "target": "DiversifiedRecommendationCandidate.experiment_version"
+      },
+      {
+        "detail": {
+          "field": "variant_id"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.variant_id"
+        ],
+        "step": "diversified.publish",
+        "target": "DiversifiedRecommendationCandidate.variant_id"
+      },
+      {
+        "detail": {
+          "field": "maximum_results"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.maximum_results"
+        ],
+        "step": "diversified.publish",
+        "target": "DiversifiedRecommendationCandidate.maximum_results"
+      },
+      {
+        "detail": {
+          "field": "diversity_rank"
+        },
+        "operation": "project",
+        "sources": [
+          "decision.branch_rank"
+        ],
+        "step": "diversified.publish",
+        "target": "DiversifiedRecommendationCandidate.diversity_rank"
+      },
+      {
+        "detail": {
+          "input_schema": "DiversifiedRecommendationCandidate",
           "output_schema": "RecommendedProduct"
         },
         "operation": "step",
         "sources": [
-          "RankedRecommendationCandidate"
+          "DiversifiedRecommendationCandidate"
         ],
         "step": "published.select_products",
         "target": "published.select_products"
@@ -1499,6 +3932,127 @@
       },
       {
         "detail": {
+          "field": "candidate_source"
+        },
+        "operation": "project",
+        "sources": [
+          "ranked_candidates.candidate_source"
+        ],
+        "step": "published.select_products",
+        "target": "RecommendedProduct.candidate_source"
+      },
+      {
+        "detail": {
+          "field": "taxonomy_id"
+        },
+        "operation": "project",
+        "sources": [
+          "ranked_candidates.taxonomy_id"
+        ],
+        "step": "published.select_products",
+        "target": "RecommendedProduct.taxonomy_id"
+      },
+      {
+        "detail": {
+          "field": "taxonomy_branch"
+        },
+        "operation": "project",
+        "sources": [
+          "ranked_candidates.taxonomy_branch"
+        ],
+        "step": "published.select_products",
+        "target": "RecommendedProduct.taxonomy_branch"
+      },
+      {
+        "detail": {
+          "field": "session_match"
+        },
+        "operation": "project",
+        "sources": [
+          "ranked_candidates.session_match"
+        ],
+        "step": "published.select_products",
+        "target": "RecommendedProduct.session_match"
+      },
+      {
+        "detail": {
+          "field": "purchase_signal"
+        },
+        "operation": "project",
+        "sources": [
+          "ranked_candidates.purchase_signal"
+        ],
+        "step": "published.select_products",
+        "target": "RecommendedProduct.purchase_signal"
+      },
+      {
+        "detail": {
+          "field": "eligibility_status"
+        },
+        "operation": "project",
+        "sources": [
+          "ranked_candidates.eligibility_status"
+        ],
+        "step": "published.select_products",
+        "target": "RecommendedProduct.eligibility_status"
+      },
+      {
+        "detail": {
+          "field": "diversity_selected"
+        },
+        "operation": "project",
+        "sources": [
+          "ranked_candidates.diversity_selected"
+        ],
+        "step": "published.select_products",
+        "target": "RecommendedProduct.diversity_selected"
+      },
+      {
+        "detail": {
+          "field": "diversity_exclusion_reason"
+        },
+        "operation": "project",
+        "sources": [
+          "ranked_candidates.diversity_exclusion_reason"
+        ],
+        "step": "published.select_products",
+        "target": "RecommendedProduct.diversity_exclusion_reason"
+      },
+      {
+        "detail": {
+          "field": "experiment_id"
+        },
+        "operation": "project",
+        "sources": [
+          "ranked_candidates.experiment_id"
+        ],
+        "step": "published.select_products",
+        "target": "RecommendedProduct.experiment_id"
+      },
+      {
+        "detail": {
+          "field": "experiment_version"
+        },
+        "operation": "project",
+        "sources": [
+          "ranked_candidates.experiment_version"
+        ],
+        "step": "published.select_products",
+        "target": "RecommendedProduct.experiment_version"
+      },
+      {
+        "detail": {
+          "field": "variant_id"
+        },
+        "operation": "project",
+        "sources": [
+          "ranked_candidates.variant_id"
+        ],
+        "step": "published.select_products",
+        "target": "RecommendedProduct.variant_id"
+      },
+      {
+        "detail": {
           "input_schema": "RecommendationRequest",
           "output_schema": "RecommendationRun"
         },
@@ -1629,6 +4183,45 @@
       },
       {
         "detail": {
+          "field": "experiment_id",
+          "function": "key",
+          "key": "experiment_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "request.experiment_id"
+        ],
+        "step": "summarized.summarize",
+        "target": "RecommendationRun.experiment_id"
+      },
+      {
+        "detail": {
+          "field": "experiment_version",
+          "function": "key",
+          "key": "experiment_version"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "request.experiment_version"
+        ],
+        "step": "summarized.summarize",
+        "target": "RecommendationRun.experiment_version"
+      },
+      {
+        "detail": {
+          "field": "variant_id",
+          "function": "key",
+          "key": "variant_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "request.variant_id"
+        ],
+        "step": "summarized.summarize",
+        "target": "RecommendationRun.variant_id"
+      },
+      {
+        "detail": {
           "mode": "strict"
         },
         "operation": "validate_schema",
@@ -1672,6 +4265,119 @@
           "after_hooks": [],
           "frame": "selected__requests",
           "lane": "selected__requests",
+          "schema": "RecommendationCandidate"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "RecommendationCandidate"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "recommendation_request",
+      "joins": [
+        {
+          "how": "inner",
+          "input": "product",
+          "right_alias": "catalog"
+        },
+        {
+          "how": "left",
+          "input": "taxonomy",
+          "right_alias": "taxonomy_2"
+        },
+        {
+          "how": "left",
+          "input": "session",
+          "right_alias": "session_features_3"
+        },
+        {
+          "how": "left",
+          "input": "signal",
+          "right_alias": "signals_4"
+        }
+      ],
+      "name": "retrieved.retrieve",
+      "output_alias": "recommendation_candidate",
+      "output_schema": "RecommendationCandidate",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "retrieved__requests",
+          "lane": "retrieved__requests",
+          "schema": "RecommendationCandidate"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "RecommendationCandidate"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "recommendation_candidate",
+      "joins": [
+        {
+          "how": "left",
+          "input": "suppression",
+          "right_alias": "suppressions"
+        },
+        {
+          "how": "left",
+          "input": "session",
+          "right_alias": "session_features_2"
+        }
+      ],
+      "name": "filtered.evaluate",
+      "output_alias": "recommendation_candidate_decision",
+      "output_schema": "RecommendationCandidateDecision",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "filtered__evaluated",
+          "lane": "filtered__evaluated",
+          "schema": "RecommendationCandidateDecision"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "RecommendationCandidateDecision"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "recommendation_candidate",
+      "joins": [
+        {
+          "how": "left",
+          "input": "decision",
+          "right_alias": "filtered__evaluated"
+        }
+      ],
+      "name": "filtered.publish",
+      "output_alias": "recommendation_candidate",
+      "output_schema": "RecommendationCandidate",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "filtered__filtered",
+          "lane": "filtered__filtered",
           "schema": "RecommendationCandidate"
         }
       ],
@@ -1734,6 +4440,68 @@
       "after_hooks": [],
       "before_hooks": [],
       "input_alias": "ranked_recommendation_candidate",
+      "joins": [
+        {
+          "how": "inner",
+          "input": "policy",
+          "right_alias": "policy"
+        }
+      ],
+      "name": "diversified.decide",
+      "output_alias": "diversification_decision",
+      "output_schema": "DiversificationDecision",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "diversified__decisions",
+          "lane": "diversified__decisions",
+          "schema": "DiversificationDecision"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "DiversificationDecision"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "ranked_recommendation_candidate",
+      "joins": [
+        {
+          "how": "inner",
+          "input": "decision",
+          "right_alias": "diversified__decisions"
+        }
+      ],
+      "name": "diversified.publish",
+      "output_alias": "diversified_recommendation_candidate",
+      "output_schema": "DiversifiedRecommendationCandidate",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "diversified__diversified",
+          "lane": "diversified__diversified",
+          "schema": "DiversifiedRecommendationCandidate"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "DiversifiedRecommendationCandidate"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "diversified_recommendation_candidate",
       "joins": [],
       "name": "published.select_products",
       "output_alias": "recommended_product",

@@ -2,43 +2,43 @@
   "bases": [],
   "fields": [
     {
-      "column": "window",
-      "name": "window",
-      "nullable": false,
-      "type": "TimeWindow"
-    },
-    {
       "column": "tenant",
       "name": "tenant",
       "nullable": false,
       "type": "TenantKey"
     },
     {
-      "column": "strategy_id",
-      "name": "strategy_id",
+      "column": "request_id",
+      "name": "request_id",
       "nullable": false,
       "type": "string"
     },
     {
-      "column": "policy_version",
-      "name": "policy_version",
+      "column": "experiment_id",
+      "name": "experiment_id",
       "nullable": false,
       "type": "string"
     },
     {
-      "column": "exposure_weight",
-      "name": "exposure_weight",
+      "column": "experiment_version",
+      "name": "experiment_version",
       "nullable": false,
-      "type": "double"
+      "type": "string"
     },
     {
-      "column": "click_weight",
-      "name": "click_weight",
+      "column": "variant_id",
+      "name": "variant_id",
       "nullable": false,
-      "type": "double"
+      "type": "string"
+    },
+    {
+      "column": "exposed_at",
+      "name": "exposed_at",
+      "nullable": false,
+      "type": "timestamp"
     }
   ],
   "generated_by": "Structure",
-  "module": "examples.store.schemas.merchandising.intermediate",
+  "module": "examples.store.schemas.experiment",
   "name": "RecommendationExposure"
 }

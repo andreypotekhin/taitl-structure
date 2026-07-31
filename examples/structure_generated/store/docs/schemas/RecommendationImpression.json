@@ -50,6 +50,36 @@
       "type": "double"
     },
     {
+      "column": "customer_id",
+      "name": "customer_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "session_id",
+      "name": "session_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "experiment_id",
+      "name": "experiment_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "experiment_version",
+      "name": "experiment_version",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "variant_id",
+      "name": "variant_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
       "column": "shown_at",
       "name": "shown_at",
       "nullable": false,

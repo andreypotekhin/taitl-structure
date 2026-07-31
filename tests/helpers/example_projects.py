@@ -32,6 +32,14 @@ def render_store_example() -> dict[str, str]:
         from examples.store.schemas.analytics import CustomerDailyTotal, CustomerEventRank, ProductDailySummary
         from examples.store.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
         from examples.store.schemas.customer import Customer
+        from examples.store.schemas.evaluation import (
+            EvaluationBatch,
+            RecommendationBehavior,
+            RecommendationVariantMetric,
+            RecommendationVariantMetricTotals,
+        )
+        from examples.store.schemas.experiment import RecommendationAssignment, RecommendationExperiment
+        from examples.store.schemas.experiment import RecommendationExposure as RecommendationExperimentExposure
         from examples.store.schemas.fulfillment.analytics.summary import DailyFulfillmentSummary, WarehouseLoadSummary
         from examples.store.schemas.fulfillment.demand import Order
         from examples.store.schemas.fulfillment.evaluation.service import (
@@ -67,23 +75,33 @@ def render_store_example() -> dict[str, str]:
             DailyRecommendationClicks,
             DailyRecommendationCounts,
             DailyRecommendationImpressions,
+            DiversificationDecision,
+            DiversifiedRecommendationCandidate,
+            ExpandedProductTaxonomy,
             MerchandisingBoost,
             MerchandisingPolicy,
             MerchandisingSuppression,
             ProductRecommendationSignal,
             ProductRecommendationSignalTotals,
+            ProductTaxonomy,
             RankedRecommendationCandidate,
             RecommendationBehaviorImpression,
             RecommendationCandidate,
+            RecommendationCandidateDecision,
             RecommendationClick,
             RecommendationClickSummary,
             RecommendationEvaluationBatch,
             RecommendationExposure,
             RecommendationImpression,
+            RecommendationPurchase,
             RecommendationRequest,
             RecommendationRequestBehavior,
             RecommendationRun,
             RecommendedProduct,
+            SessionEvent,
+            SessionFeature,
+            TaxonomyAncestor,
+            TaxonomyNode,
         )
         from examples.store.schemas.order import (
             CustomerOrderBackfill,
@@ -103,23 +121,36 @@ def render_store_example() -> dict[str, str]:
         from examples.store.schemas.promotion import Promotion
         from examples.store.schemas.shipment import Shipment
         from examples.store.transforms.adv_analytics import AdvancedOrderAnalytics
-        from examples.store.transforms.analytics import OrderAnalytics
+        from examples.store.transforms.analytics import FulfillmentAnalytics, OrderAnalytics
+        from examples.store.transforms.evaluation.fulfillment.service import EvaluateFulfillment
         from examples.store.transforms.evaluation.recommender.behavior.workflow import EvaluateRecommendations
+        from examples.store.transforms.experiments.assign import AssignRecommendationVariants
+        from examples.store.transforms.experiments.evaluation.recommendations.experiment import (
+            EvaluateRecommendationExperiment,
+        )
+        from examples.store.transforms.experiments.exposure import RecordRecommendationExposures
+        from examples.store.transforms.experiments.select_active import SelectActiveRecommendationExperiments
         from examples.store.transforms.fulfillment.demand import PrepareOrderDemand
-        from examples.store.transforms.fulfillment.evaluation.service import EvaluateFulfillmentService
         from examples.store.transforms.fulfillment.plan import PlanFulfillment
         from examples.store.transforms.fulfillment.projections.build_demand_windows import BuildDemandWindows
         from examples.store.transforms.fulfillment.projections.project_inventory import ProjectInventory
         from examples.store.transforms.fulfillment.reconcile import ReconcileFulfillmentPlan
-        from examples.store.transforms.fulfillment.shortages.detect import DetectFulfillmentShortages
-        from examples.store.transforms.fulfillment.shortages.exceptions import PrioritizeFulfillmentExceptions
-        from examples.store.transforms.fulfillment.substitutions.find import FindFulfillmentSubstitutions
-        from examples.store.transforms.fulfillment.summarize import FulfillmentAnalytics
+        from examples.store.transforms.fulfillment.shortages.detect import DetectShortages
+        from examples.store.transforms.fulfillment.shortages.exceptions import PrioritizeExceptions
+        from examples.store.transforms.fulfillment.substitutions.find_substitutions import FindSubstitutions
         from examples.store.transforms.fulfillment.workflow import Fulfillment
+        from examples.store.transforms.merchandising.catalog.normalize_catalog import NormalizeCatalog
         from examples.store.transforms.merchandising.catalog.prepare_catalog import PrepareCatalog
-        from examples.store.transforms.merchandising.clicks.build_signals import BuildRecommendationSignals
         from examples.store.transforms.merchandising.recommender.admit import SelectRecommendationCandidates
+        from examples.store.transforms.merchandising.recommender.diversify import DiversifyRecommendations
+        from examples.store.transforms.merchandising.recommender.filter import FilterRecommendationCandidates
+        from examples.store.transforms.merchandising.recommender.generate import GenerateRecommendationCandidates
         from examples.store.transforms.merchandising.recommender.workflow import Recommender
+        from examples.store.transforms.merchandising.signals.build_signals import BuildRecommendationSignals
+        from examples.store.transforms.merchandising.signals.purchases import BuildRecommendationPurchaseSignals
+        from examples.store.transforms.merchandising.signals.session import BuildSessionSignals
+        from examples.store.transforms.merchandising.signals.workflow import Signals
+        from examples.store.transforms.merchandising.taxonomy.expand_taxonomy import ExpandProductTaxonomy
         from examples.store.transforms.merchandising.workflow import Merchandising
         from examples.store.transforms.order import EnrichOrders
         from examples.store.transforms.rowset_joins.rowset_join_examples import RowsetJoinExamples
@@ -174,6 +205,13 @@ def render_store_example() -> dict[str, str]:
                 CatalogProduct,
                 CatalogAvailability,
                 RecommendationCandidate,
+                RecommendationCandidateDecision,
+            ],
+            "examples.store.schemas.merchandising.taxonomy": [
+                TaxonomyNode,
+                ProductTaxonomy,
+                TaxonomyAncestor,
+                ExpandedProductTaxonomy,
             ],
             "examples.store.schemas.merchandising.policy": [
                 MerchandisingPolicy,
@@ -191,7 +229,9 @@ def render_store_example() -> dict[str, str]:
                 DailyRecommendationImpressions,
                 DailyRecommendationClicks,
                 ProductRecommendationSignal,
+                RecommendationPurchase,
             ],
+            "examples.store.schemas.merchandising.session": [SessionEvent, SessionFeature],
             "examples.store.schemas.merchandising.evaluation": [
                 RecommendationEvaluationBatch,
                 RecommendationRequestBehavior,
@@ -199,6 +239,8 @@ def render_store_example() -> dict[str, str]:
             ],
             "examples.store.schemas.merchandising.intermediate": [
                 RankedRecommendationCandidate,
+                DiversifiedRecommendationCandidate,
+                DiversificationDecision,
                 RecommendationBehaviorImpression,
                 RecommendationClickSummary,
                 RecommendationExposure,
@@ -222,6 +264,17 @@ def render_store_example() -> dict[str, str]:
             "examples.store.schemas.product": [ProductBase, Product, BlockedProduct],
             "examples.store.schemas.promotion": [Promotion],
             "examples.store.schemas.shipment": [Shipment],
+            "examples.store.schemas.experiment": [
+                RecommendationExperiment,
+                RecommendationAssignment,
+                RecommendationExperimentExposure,
+            ],
+            "examples.store.schemas.evaluation.batch": [EvaluationBatch],
+            "examples.store.schemas.evaluation.recommendations": [
+                RecommendationBehavior,
+                RecommendationVariantMetric,
+                RecommendationVariantMetricTotals,
+            ],
         }
         files = {}
         transforms = (
@@ -243,31 +296,39 @@ def render_store_example() -> dict[str, str]:
                 "examples.store.transforms.fulfillment.plan.PlanFulfillment",
             ),
             (
-                DetectFulfillmentShortages,
-                "examples.store.transforms.fulfillment.shortages.detect.DetectFulfillmentShortages",
+                DetectShortages,
+                "examples.store.transforms.fulfillment.shortages.detect.DetectShortages",
             ),
             (
-                FindFulfillmentSubstitutions,
-                "examples.store.transforms.fulfillment.substitutions.find.FindFulfillmentSubstitutions",
+                FindSubstitutions,
+                "examples.store.transforms.fulfillment.substitutions.find_substitutions.FindSubstitutions",
             ),
             (
-                PrioritizeFulfillmentExceptions,
-                "examples.store.transforms.fulfillment.shortages.exceptions.PrioritizeFulfillmentExceptions",
+                PrioritizeExceptions,
+                "examples.store.transforms.fulfillment.shortages.exceptions.PrioritizeExceptions",
             ),
             (
                 ReconcileFulfillmentPlan,
                 "examples.store.transforms.fulfillment.reconcile.ReconcileFulfillmentPlan",
             ),
             (
-                EvaluateFulfillmentService,
-                "examples.store.transforms.fulfillment.evaluation.service.EvaluateFulfillmentService",
+                EvaluateFulfillment,
+                "examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment",
             ),
             (
                 FulfillmentAnalytics,
-                "examples.store.transforms.fulfillment.summarize.FulfillmentAnalytics",
+                "examples.store.transforms.analytics.fulfillment.analytics.FulfillmentAnalytics",
             ),
             (Fulfillment, "examples.store.transforms.fulfillment.workflow.Fulfillment"),
             (PrepareCatalog, "examples.store.transforms.merchandising.catalog.prepare_catalog.PrepareCatalog"),
+            (
+                NormalizeCatalog,
+                "examples.store.transforms.merchandising.catalog.normalize_catalog.NormalizeCatalog",
+            ),
+            (
+                ExpandProductTaxonomy,
+                "examples.store.transforms.merchandising.taxonomy.expand_taxonomy.ExpandProductTaxonomy",
+            ),
             (
                 SelectRecommendationCandidates,
                 "examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates",
@@ -276,17 +337,57 @@ def render_store_example() -> dict[str, str]:
                 Recommender,
                 "examples.store.transforms.merchandising.recommender.workflow.Recommender",
             ),
+            (
+                GenerateRecommendationCandidates,
+                "examples.store.transforms.merchandising.recommender.generate.GenerateRecommendationCandidates",
+            ),
+            (
+                FilterRecommendationCandidates,
+                "examples.store.transforms.merchandising.recommender.filter.FilterRecommendationCandidates",
+            ),
+            (
+                DiversifyRecommendations,
+                "examples.store.transforms.merchandising.recommender.diversify.DiversifyRecommendations",
+            ),
             (Merchandising, "examples.store.transforms.merchandising.workflow.Merchandising"),
             (
                 BuildRecommendationSignals,
-                "examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals",
+                "examples.store.transforms.merchandising.signals.build_signals.BuildRecommendationSignals",
+            ),
+            (
+                BuildSessionSignals,
+                "examples.store.transforms.merchandising.signals.session.BuildSessionSignals",
+            ),
+            (
+                BuildRecommendationPurchaseSignals,
+                "examples.store.transforms.merchandising.signals.purchases.BuildRecommendationPurchaseSignals",
+            ),
+            (
+                Signals,
+                "examples.store.transforms.merchandising.signals.workflow.Signals",
             ),
             (
                 EvaluateRecommendations,
                 "examples.store.transforms.evaluation.recommender.behavior.workflow.EvaluateRecommendations",
             ),
             (RowsetJoinExamples, "examples.store.transforms.rowset_joins.rowset_join_examples.RowsetJoinExamples"),
-            (OrderAnalytics, "examples.store.transforms.order_analytics.workflow.OrderAnalytics"),
+            (
+                SelectActiveRecommendationExperiments,
+                "examples.store.transforms.experiments.select_active.SelectActiveRecommendationExperiments",
+            ),
+            (
+                AssignRecommendationVariants,
+                "examples.store.transforms.experiments.assign.AssignRecommendationVariants",
+            ),
+            (
+                RecordRecommendationExposures,
+                "examples.store.transforms.experiments.exposure.RecordRecommendationExposures",
+            ),
+            (
+                EvaluateRecommendationExperiment,
+                "examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment",
+            ),
+            (OrderAnalytics, "examples.store.transforms.analytics.orders.workflow.OrderAnalytics"),
             (AdvancedOrderAnalytics, "examples.store.transforms.adv_analytics.AdvancedOrderAnalytics"),
         )
         for transform_class, source_transform in transforms:

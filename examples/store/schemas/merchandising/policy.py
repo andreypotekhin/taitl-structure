@@ -10,6 +10,7 @@ class MerchandisingPolicy(Schema):
     maximum_results = long(nullable=False)
     minimum_feedback_impressions = long(nullable=False)
     feedback_weight = double(nullable=False)
+    maximum_per_taxonomy_branch = long(nullable=True)
 
 
 class MerchandisingBoost(Schema):

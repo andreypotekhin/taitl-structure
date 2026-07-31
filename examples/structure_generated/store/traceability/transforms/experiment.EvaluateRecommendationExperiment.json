@@ -1,0 +1,1251 @@
+{
+  "backend": {
+    "name": "pyspark",
+    "target": ">=3.5,<4.1"
+  },
+  "generated_transform_class": "EvaluateRecommendationExperimentGenerated",
+  "inputs": [
+    {
+      "name": "evaluation_batch",
+      "ordinal": 0,
+      "schema": "EvaluationBatch"
+    },
+    {
+      "name": "experiments",
+      "ordinal": 1,
+      "schema": "RecommendationExperiment"
+    },
+    {
+      "name": "exposures",
+      "ordinal": 2,
+      "schema": "RecommendationExposure"
+    },
+    {
+      "name": "requests",
+      "ordinal": 3,
+      "schema": "RecommendationRequest"
+    },
+    {
+      "name": "runs",
+      "ordinal": 4,
+      "schema": "RecommendationRun"
+    },
+    {
+      "name": "impressions",
+      "ordinal": 5,
+      "schema": "RecommendationImpression"
+    },
+    {
+      "name": "clicks",
+      "ordinal": 6,
+      "schema": "RecommendationClick"
+    },
+    {
+      "name": "purchases",
+      "ordinal": 7,
+      "schema": "RecommendationPurchase"
+    }
+  ],
+  "provenance": [
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated",
+      "ir": "ir:EvaluateRecommendationExperiment",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.input.evaluation_batch",
+      "ir": "ir:EvaluateRecommendationExperiment.input.0.evaluation_batch",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.input.evaluation_batch"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.input.experiments",
+      "ir": "ir:EvaluateRecommendationExperiment.input.1.experiments",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.input.experiments"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.input.exposures",
+      "ir": "ir:EvaluateRecommendationExperiment.input.2.exposures",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.input.exposures"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.input.requests",
+      "ir": "ir:EvaluateRecommendationExperiment.input.3.requests",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.input.requests"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.input.runs",
+      "ir": "ir:EvaluateRecommendationExperiment.input.4.runs",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.input.runs"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.input.impressions",
+      "ir": "ir:EvaluateRecommendationExperiment.input.5.impressions",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.input.impressions"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.input.clicks",
+      "ir": "ir:EvaluateRecommendationExperiment.input.6.clicks",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.input.clicks"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.input.purchases",
+      "ir": "ir:EvaluateRecommendationExperiment.input.7.purchases",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.input.purchases"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.0.evaluate",
+      "ir": "ir:EvaluateRecommendationExperiment.step.0.evaluate",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.evaluate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.0.evaluate.join.1.evaluation_batch",
+      "ir": "ir:EvaluateRecommendationExperiment.step.0.evaluate.join.1.evaluation_batch",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.evaluate.join.1.evaluation_batch"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.0.evaluate.join.2.purchase",
+      "ir": "ir:EvaluateRecommendationExperiment.step.0.evaluate.join.2.purchase",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.evaluate.join.2.purchase"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.0.evaluate.join.3.exposure",
+      "ir": "ir:EvaluateRecommendationExperiment.step.0.evaluate.join.3.exposure",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.evaluate.join.3.exposure"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.0.evaluate.join.4.experiment",
+      "ir": "ir:EvaluateRecommendationExperiment.step.0.evaluate.join.4.experiment",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.evaluate.join.4.experiment"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.0.evaluate.join.5.run",
+      "ir": "ir:EvaluateRecommendationExperiment.step.0.evaluate.join.5.run",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.evaluate.join.5.run"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.0.evaluate.join.6.impression",
+      "ir": "ir:EvaluateRecommendationExperiment.step.0.evaluate.join.6.impression",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.evaluate.join.6.impression"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.0.evaluate.join.7.click",
+      "ir": "ir:EvaluateRecommendationExperiment.step.0.evaluate.join.7.click",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.evaluate.join.7.click"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.0.evaluate.aggregate.window",
+      "ir": "ir:EvaluateRecommendationExperiment.step.0.evaluate.aggregate.window",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.evaluate.aggregate.window"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.0.evaluate.aggregate.tenant",
+      "ir": "ir:EvaluateRecommendationExperiment.step.0.evaluate.aggregate.tenant",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.evaluate.aggregate.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.0.evaluate.aggregate.experiment_id",
+      "ir": "ir:EvaluateRecommendationExperiment.step.0.evaluate.aggregate.experiment_id",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.evaluate.aggregate.experiment_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.0.evaluate.aggregate.experiment_version",
+      "ir": "ir:EvaluateRecommendationExperiment.step.0.evaluate.aggregate.experiment_version",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.evaluate.aggregate.experiment_version"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.0.evaluate.aggregate.variant_id",
+      "ir": "ir:EvaluateRecommendationExperiment.step.0.evaluate.aggregate.variant_id",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.evaluate.aggregate.variant_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.0.evaluate.aggregate.request_count",
+      "ir": "ir:EvaluateRecommendationExperiment.step.0.evaluate.aggregate.request_count",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.evaluate.aggregate.request_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.0.evaluate.aggregate.zero_result_request_count",
+      "ir": "ir:EvaluateRecommendationExperiment.step.0.evaluate.aggregate.zero_result_request_count",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.evaluate.aggregate.zero_result_request_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.0.evaluate.aggregate.impression_count",
+      "ir": "ir:EvaluateRecommendationExperiment.step.0.evaluate.aggregate.impression_count",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.evaluate.aggregate.impression_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.0.evaluate.aggregate.clicked_request_count",
+      "ir": "ir:EvaluateRecommendationExperiment.step.0.evaluate.aggregate.clicked_request_count",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.evaluate.aggregate.clicked_request_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.0.evaluate.aggregate.attributed_purchase_count",
+      "ir": "ir:EvaluateRecommendationExperiment.step.0.evaluate.aggregate.attributed_purchase_count",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.evaluate.aggregate.attributed_purchase_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.0.evaluate.aggregate.maximum_zero_result_rate",
+      "ir": "ir:EvaluateRecommendationExperiment.step.0.evaluate.aggregate.maximum_zero_result_rate",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.evaluate.aggregate.maximum_zero_result_rate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.0.evaluate.validation.0.intermediate",
+      "ir": "ir:EvaluateRecommendationExperiment.step.0.evaluate.validation.0.intermediate",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.evaluate.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.1.publish",
+      "ir": "ir:EvaluateRecommendationExperiment.step.1.publish",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.publish"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.1.publish.select.window",
+      "ir": "ir:EvaluateRecommendationExperiment.step.1.publish.project.window",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.publish.field.window"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.1.publish.select.tenant",
+      "ir": "ir:EvaluateRecommendationExperiment.step.1.publish.project.tenant",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.publish.field.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.1.publish.select.experiment_id",
+      "ir": "ir:EvaluateRecommendationExperiment.step.1.publish.project.experiment_id",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.publish.field.experiment_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.1.publish.select.experiment_version",
+      "ir": "ir:EvaluateRecommendationExperiment.step.1.publish.project.experiment_version",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.publish.field.experiment_version"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.1.publish.select.variant_id",
+      "ir": "ir:EvaluateRecommendationExperiment.step.1.publish.project.variant_id",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.publish.field.variant_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.1.publish.select.request_count",
+      "ir": "ir:EvaluateRecommendationExperiment.step.1.publish.project.request_count",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.publish.field.request_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.1.publish.select.zero_result_request_count",
+      "ir": "ir:EvaluateRecommendationExperiment.step.1.publish.project.zero_result_request_count",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.publish.field.zero_result_request_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.1.publish.select.zero_result_rate",
+      "ir": "ir:EvaluateRecommendationExperiment.step.1.publish.project.zero_result_rate",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.publish.field.zero_result_rate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.1.publish.select.impression_count",
+      "ir": "ir:EvaluateRecommendationExperiment.step.1.publish.project.impression_count",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.publish.field.impression_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.1.publish.select.clicked_request_count",
+      "ir": "ir:EvaluateRecommendationExperiment.step.1.publish.project.clicked_request_count",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.publish.field.clicked_request_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.1.publish.select.click_through_rate",
+      "ir": "ir:EvaluateRecommendationExperiment.step.1.publish.project.click_through_rate",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.publish.field.click_through_rate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.1.publish.select.attributed_purchase_count",
+      "ir": "ir:EvaluateRecommendationExperiment.step.1.publish.project.attributed_purchase_count",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.publish.field.attributed_purchase_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.1.publish.select.conversion_rate",
+      "ir": "ir:EvaluateRecommendationExperiment.step.1.publish.project.conversion_rate",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.publish.field.conversion_rate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.1.publish.select.maximum_zero_result_rate",
+      "ir": "ir:EvaluateRecommendationExperiment.step.1.publish.project.maximum_zero_result_rate",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.publish.field.maximum_zero_result_rate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.step.1.publish.select.zero_result_guardrail_met",
+      "ir": "ir:EvaluateRecommendationExperiment.step.1.publish.project.zero_result_guardrail_met",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.publish.field.zero_result_guardrail_met"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.experiment.EvaluateRecommendationExperimentGenerated.run.output.0.metrics.validation.final",
+      "ir": "ir:EvaluateRecommendationExperiment.output.0.metrics.validation.final",
+      "source": "source:examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment.output.metrics"
+    }
+  ],
+  "schema_constants": {
+    "Address": {
+      "constant": "ADDRESS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "AuditStamp": {
+      "constant": "AUDIT_STAMP_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "BlockedProduct": {
+      "constant": "BLOCKED_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.product"
+    },
+    "BusinessDate": {
+      "constant": "BUSINESS_DATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "CatalogAvailability": {
+      "constant": "CATALOG_AVAILABILITY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+    },
+    "CatalogProduct": {
+      "constant": "CATALOG_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+    },
+    "Customer": {
+      "constant": "CUSTOMER_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.customer"
+    },
+    "CustomerDailyTotal": {
+      "constant": "CUSTOMER_DAILY_TOTAL_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.analytics"
+    },
+    "CustomerEventRank": {
+      "constant": "CUSTOMER_EVENT_RANK_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.analytics"
+    },
+    "CustomerOrderBackfill": {
+      "constant": "CUSTOMER_ORDER_BACKFILL_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "DailyFulfillmentServiceSummary": {
+      "constant": "DAILY_FULFILLMENT_SERVICE_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.service"
+    },
+    "DailyFulfillmentSummary": {
+      "constant": "DAILY_FULFILLMENT_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.summary"
+    },
+    "DailyRecommendationBehavior": {
+      "constant": "DAILY_RECOMMENDATION_BEHAVIOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.evaluation"
+    },
+    "DailyRecommendationClicks": {
+      "constant": "DAILY_RECOMMENDATION_CLICKS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "DailyRecommendationCounts": {
+      "constant": "DAILY_RECOMMENDATION_COUNTS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "DailyRecommendationImpressions": {
+      "constant": "DAILY_RECOMMENDATION_IMPRESSIONS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "DemandWindow": {
+      "constant": "DEMAND_WINDOW_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.projection"
+    },
+    "DiversificationDecision": {
+      "constant": "DIVERSIFICATION_DECISION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "DiversifiedRecommendationCandidate": {
+      "constant": "DIVERSIFIED_RECOMMENDATION_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "EvaluationBatch": {
+      "constant": "EVALUATION_BATCH_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.batch"
+    },
+    "ExpandedProductTaxonomy": {
+      "constant": "EXPANDED_PRODUCT_TAXONOMY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
+    },
+    "FulfillmentAllocation": {
+      "constant": "FULFILLMENT_ALLOCATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "FulfillmentBackorder": {
+      "constant": "FULFILLMENT_BACKORDER_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "FulfillmentException": {
+      "constant": "FULFILLMENT_EXCEPTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.exception"
+    },
+    "FulfillmentOption": {
+      "constant": "FULFILLMENT_OPTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.workflow"
+    },
+    "FulfillmentPlan": {
+      "constant": "FULFILLMENT_PLAN_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "FulfillmentPreferredOption": {
+      "constant": "FULFILLMENT_PREFERRED_OPTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.workflow"
+    },
+    "FulfillmentReconciliation": {
+      "constant": "FULFILLMENT_RECONCILIATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.reconciliation"
+    },
+    "FulfillmentServiceEvaluation": {
+      "constant": "FULFILLMENT_SERVICE_EVALUATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.service"
+    },
+    "FulfillmentServiceTotals": {
+      "constant": "FULFILLMENT_SERVICE_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.service"
+    },
+    "FulfillmentShortage": {
+      "constant": "FULFILLMENT_SHORTAGE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.shortage"
+    },
+    "FulfillmentShortageRanked": {
+      "constant": "FULFILLMENT_SHORTAGE_RANKED_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.shortage"
+    },
+    "FulfillmentSubstitutionOption": {
+      "constant": "FULFILLMENT_SUBSTITUTION_OPTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.substitution"
+    },
+    "InboundInventory": {
+      "constant": "INBOUND_INVENTORY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
+    },
+    "InboundInventoryAvailability": {
+      "constant": "INBOUND_INVENTORY_AVAILABILITY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.workflow"
+    },
+    "InventoryPosition": {
+      "constant": "INVENTORY_POSITION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
+    },
+    "InventoryProjection": {
+      "constant": "INVENTORY_PROJECTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.projection"
+    },
+    "LeadTime": {
+      "constant": "LEAD_TIME_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory_inventory"
+    },
+    "MerchandisingBoost": {
+      "constant": "MERCHANDISING_BOOST_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.policy"
+    },
+    "MerchandisingPolicy": {
+      "constant": "MERCHANDISING_POLICY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.policy"
+    },
+    "MerchandisingSuppression": {
+      "constant": "MERCHANDISING_SUPPRESSION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.policy"
+    },
+    "Order": {
+      "constant": "ORDER_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.demand"
+    },
+    "OrderCollectionProfile": {
+      "constant": "ORDER_COLLECTION_PROFILE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderCollectionSource": {
+      "constant": "ORDER_COLLECTION_SOURCE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderCustomerReconciliation": {
+      "constant": "ORDER_CUSTOMER_RECONCILIATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderCustomerWindow": {
+      "constant": "ORDER_CUSTOMER_WINDOW_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderFulfillment": {
+      "constant": "ORDER_FULFILLMENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderNormalized": {
+      "constant": "ORDER_NORMALIZED_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderProductCandidate": {
+      "constant": "ORDER_PRODUCT_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderProductCube": {
+      "constant": "ORDER_PRODUCT_CUBE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderPublication": {
+      "constant": "ORDER_PUBLICATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderPublished": {
+      "constant": "ORDER_PUBLISHED_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderRaw": {
+      "constant": "ORDER_RAW_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderRevenueRollup": {
+      "constant": "ORDER_REVENUE_ROLLUP_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderWithCustomer": {
+      "constant": "ORDER_WITH_CUSTOMER_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderWithProduct": {
+      "constant": "ORDER_WITH_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderWithPromotion": {
+      "constant": "ORDER_WITH_PROMOTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "Product": {
+      "constant": "PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.product"
+    },
+    "ProductBase": {
+      "constant": "PRODUCT_BASE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.product"
+    },
+    "ProductDailySummary": {
+      "constant": "PRODUCT_DAILY_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.analytics"
+    },
+    "ProductRecommendationSignal": {
+      "constant": "PRODUCT_RECOMMENDATION_SIGNAL_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "ProductRecommendationSignalTotals": {
+      "constant": "PRODUCT_RECOMMENDATION_SIGNAL_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "ProductTaxonomy": {
+      "constant": "PRODUCT_TAXONOMY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
+    },
+    "Promotion": {
+      "constant": "PROMOTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.promotion"
+    },
+    "PublicationFlags": {
+      "constant": "PUBLICATION_FLAGS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "RankedRecommendationCandidate": {
+      "constant": "RANKED_RECOMMENDATION_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "RecommendationAssignment": {
+      "constant": "RECOMMENDATION_ASSIGNMENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.experiment"
+    },
+    "RecommendationBehavior": {
+      "constant": "RECOMMENDATION_BEHAVIOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendations"
+    },
+    "RecommendationBehaviorImpression": {
+      "constant": "RECOMMENDATION_BEHAVIOR_IMPRESSION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "RecommendationCandidate": {
+      "constant": "RECOMMENDATION_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+    },
+    "RecommendationCandidateDecision": {
+      "constant": "RECOMMENDATION_CANDIDATE_DECISION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+    },
+    "RecommendationClick": {
+      "constant": "RECOMMENDATION_CLICK_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "RecommendationClickSummary": {
+      "constant": "RECOMMENDATION_CLICK_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "RecommendationEvaluationBatch": {
+      "constant": "RECOMMENDATION_EVALUATION_BATCH_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.evaluation"
+    },
+    "RecommendationExperiment": {
+      "constant": "RECOMMENDATION_EXPERIMENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.experiment"
+    },
+    "RecommendationExposure": {
+      "constant": "RECOMMENDATION_EXPOSURE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.experiment"
+    },
+    "RecommendationImpression": {
+      "constant": "RECOMMENDATION_IMPRESSION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "RecommendationPurchase": {
+      "constant": "RECOMMENDATION_PURCHASE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "RecommendationRequest": {
+      "constant": "RECOMMENDATION_REQUEST_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
+    },
+    "RecommendationRequestBehavior": {
+      "constant": "RECOMMENDATION_REQUEST_BEHAVIOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.evaluation"
+    },
+    "RecommendationRun": {
+      "constant": "RECOMMENDATION_RUN_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
+    },
+    "RecommendationVariantMetric": {
+      "constant": "RECOMMENDATION_VARIANT_METRIC_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendations"
+    },
+    "RecommendationVariantMetricTotals": {
+      "constant": "RECOMMENDATION_VARIANT_METRIC_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendations"
+    },
+    "RecommendedProduct": {
+      "constant": "RECOMMENDED_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
+    },
+    "ReplenishmentSuggestion": {
+      "constant": "REPLENISHMENT_SUGGESTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "ServiceRiskTarget": {
+      "constant": "SERVICE_RISK_TARGET_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.exception"
+    },
+    "SessionEvent": {
+      "constant": "SESSION_EVENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.session"
+    },
+    "SessionFeature": {
+      "constant": "SESSION_FEATURE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.session"
+    },
+    "Shipment": {
+      "constant": "SHIPMENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.shipment"
+    },
+    "SubstitutionRule": {
+      "constant": "SUBSTITUTION_RULE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.substitution"
+    },
+    "TaxonomyAncestor": {
+      "constant": "TAXONOMY_ANCESTOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
+    },
+    "TaxonomyNode": {
+      "constant": "TAXONOMY_NODE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
+    },
+    "TenantKey": {
+      "constant": "TENANT_KEY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "Warehouse": {
+      "constant": "WAREHOUSE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
+    },
+    "WarehouseLoadSummary": {
+      "constant": "WAREHOUSE_LOAD_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.summary"
+    }
+  },
+  "source_transform": "examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment",
+  "static_dataflow": {
+    "dependencies": [
+      {
+        "detail": {
+          "backend": "pyspark"
+        },
+        "operation": "transform",
+        "sources": [
+          "evaluation_batch",
+          "experiments",
+          "exposures",
+          "requests",
+          "runs",
+          "impressions",
+          "clicks",
+          "purchases"
+        ],
+        "step": null,
+        "target": "EvaluateRecommendationExperiment"
+      },
+      {
+        "detail": {
+          "input_schema": "RecommendationRequest",
+          "output_schema": "RecommendationVariantMetricTotals"
+        },
+        "operation": "step",
+        "sources": [
+          "evaluation_batch",
+          "evaluation_batch",
+          "purchase",
+          "exposure",
+          "experiment",
+          "run",
+          "impression",
+          "click"
+        ],
+        "step": "evaluate",
+        "target": "evaluate"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "evaluation_batch"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "request.requested_at",
+          "evaluation_batch.window.start",
+          "evaluation_batch.window.end"
+        ],
+        "step": "evaluate",
+        "target": "evaluate.join[1].evaluation_batch"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "left",
+          "right_alias": "purchases_2"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "purchase.tenant.tenant_id",
+          "request.tenant.tenant_id",
+          "purchase.request_id",
+          "request.id"
+        ],
+        "step": "evaluate",
+        "target": "evaluate.join[2].purchase"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "exposures_3"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "exposure.tenant.tenant_id",
+          "request.tenant.tenant_id",
+          "exposure.request_id",
+          "request.id"
+        ],
+        "step": "evaluate",
+        "target": "evaluate.join[3].exposure"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "experiments_4"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "experiment.tenant.tenant_id",
+          "exposure.tenant.tenant_id",
+          "experiment.experiment_id",
+          "exposure.experiment_id",
+          "experiment.experiment_version",
+          "exposure.experiment_version"
+        ],
+        "step": "evaluate",
+        "target": "evaluate.join[4].experiment"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "runs_5"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "run.tenant.tenant_id",
+          "request.tenant.tenant_id",
+          "run.request_id",
+          "request.id"
+        ],
+        "step": "evaluate",
+        "target": "evaluate.join[5].run"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "left",
+          "right_alias": "impressions_6"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "impression.request_id",
+          "request.id"
+        ],
+        "step": "evaluate",
+        "target": "evaluate.join[6].impression"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "left",
+          "right_alias": "clicks_7"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "click.impression_id",
+          "impression.id"
+        ],
+        "step": "evaluate",
+        "target": "evaluate.join[7].click"
+      },
+      {
+        "detail": {
+          "field": "window",
+          "function": "key",
+          "key": "window"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "evaluation_batch.window"
+        ],
+        "step": "evaluate",
+        "target": "RecommendationVariantMetricTotals.window"
+      },
+      {
+        "detail": {
+          "field": "tenant",
+          "function": "first",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "request.tenant"
+        ],
+        "step": "evaluate",
+        "target": "RecommendationVariantMetricTotals.tenant"
+      },
+      {
+        "detail": {
+          "field": "experiment_id",
+          "function": "key",
+          "key": "experiment_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "exposure.experiment_id"
+        ],
+        "step": "evaluate",
+        "target": "RecommendationVariantMetricTotals.experiment_id"
+      },
+      {
+        "detail": {
+          "field": "experiment_version",
+          "function": "key",
+          "key": "experiment_version"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "exposure.experiment_version"
+        ],
+        "step": "evaluate",
+        "target": "RecommendationVariantMetricTotals.experiment_version"
+      },
+      {
+        "detail": {
+          "field": "variant_id",
+          "function": "key",
+          "key": "variant_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "exposure.variant_id"
+        ],
+        "step": "evaluate",
+        "target": "RecommendationVariantMetricTotals.variant_id"
+      },
+      {
+        "detail": {
+          "field": "request_count",
+          "function": "count_distinct",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "request.id"
+        ],
+        "step": "evaluate",
+        "target": "RecommendationVariantMetricTotals.request_count"
+      },
+      {
+        "detail": {
+          "field": "zero_result_request_count",
+          "function": "count_distinct",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "run.result_count",
+          "request.id"
+        ],
+        "step": "evaluate",
+        "target": "RecommendationVariantMetricTotals.zero_result_request_count"
+      },
+      {
+        "detail": {
+          "field": "impression_count",
+          "function": "count_distinct",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "impression.id"
+        ],
+        "step": "evaluate",
+        "target": "RecommendationVariantMetricTotals.impression_count"
+      },
+      {
+        "detail": {
+          "field": "clicked_request_count",
+          "function": "count_distinct",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "click.id"
+        ],
+        "step": "evaluate",
+        "target": "RecommendationVariantMetricTotals.clicked_request_count"
+      },
+      {
+        "detail": {
+          "field": "attributed_purchase_count",
+          "function": "count_distinct",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "purchase.attribution_status",
+          "purchase.order_id"
+        ],
+        "step": "evaluate",
+        "target": "RecommendationVariantMetricTotals.attributed_purchase_count"
+      },
+      {
+        "detail": {
+          "field": "maximum_zero_result_rate",
+          "function": "key",
+          "key": "maximum_zero_result_rate"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "experiment.maximum_zero_result_rate"
+        ],
+        "step": "evaluate",
+        "target": "RecommendationVariantMetricTotals.maximum_zero_result_rate"
+      },
+      {
+        "detail": {
+          "input_schema": "RecommendationVariantMetricTotals",
+          "output_schema": "RecommendationVariantMetric"
+        },
+        "operation": "step",
+        "sources": [
+          "RecommendationVariantMetricTotals"
+        ],
+        "step": "publish",
+        "target": "publish"
+      },
+      {
+        "detail": {
+          "field": "window"
+        },
+        "operation": "project",
+        "sources": [
+          "RecommendationVariantMetricTotals.window"
+        ],
+        "step": "publish",
+        "target": "RecommendationVariantMetric.window"
+      },
+      {
+        "detail": {
+          "field": "tenant"
+        },
+        "operation": "project",
+        "sources": [
+          "RecommendationVariantMetricTotals.tenant"
+        ],
+        "step": "publish",
+        "target": "RecommendationVariantMetric.tenant"
+      },
+      {
+        "detail": {
+          "field": "experiment_id"
+        },
+        "operation": "project",
+        "sources": [
+          "RecommendationVariantMetricTotals.experiment_id"
+        ],
+        "step": "publish",
+        "target": "RecommendationVariantMetric.experiment_id"
+      },
+      {
+        "detail": {
+          "field": "experiment_version"
+        },
+        "operation": "project",
+        "sources": [
+          "RecommendationVariantMetricTotals.experiment_version"
+        ],
+        "step": "publish",
+        "target": "RecommendationVariantMetric.experiment_version"
+      },
+      {
+        "detail": {
+          "field": "variant_id"
+        },
+        "operation": "project",
+        "sources": [
+          "RecommendationVariantMetricTotals.variant_id"
+        ],
+        "step": "publish",
+        "target": "RecommendationVariantMetric.variant_id"
+      },
+      {
+        "detail": {
+          "field": "request_count"
+        },
+        "operation": "project",
+        "sources": [
+          "RecommendationVariantMetricTotals.request_count"
+        ],
+        "step": "publish",
+        "target": "RecommendationVariantMetric.request_count"
+      },
+      {
+        "detail": {
+          "field": "zero_result_request_count"
+        },
+        "operation": "project",
+        "sources": [
+          "RecommendationVariantMetricTotals.zero_result_request_count"
+        ],
+        "step": "publish",
+        "target": "RecommendationVariantMetric.zero_result_request_count"
+      },
+      {
+        "detail": {
+          "field": "zero_result_rate"
+        },
+        "operation": "project",
+        "sources": [
+          "RecommendationVariantMetricTotals.request_count",
+          "RecommendationVariantMetricTotals.zero_result_request_count"
+        ],
+        "step": "publish",
+        "target": "RecommendationVariantMetric.zero_result_rate"
+      },
+      {
+        "detail": {
+          "field": "impression_count"
+        },
+        "operation": "project",
+        "sources": [
+          "RecommendationVariantMetricTotals.impression_count"
+        ],
+        "step": "publish",
+        "target": "RecommendationVariantMetric.impression_count"
+      },
+      {
+        "detail": {
+          "field": "clicked_request_count"
+        },
+        "operation": "project",
+        "sources": [
+          "RecommendationVariantMetricTotals.clicked_request_count"
+        ],
+        "step": "publish",
+        "target": "RecommendationVariantMetric.clicked_request_count"
+      },
+      {
+        "detail": {
+          "field": "click_through_rate"
+        },
+        "operation": "project",
+        "sources": [
+          "RecommendationVariantMetricTotals.impression_count",
+          "RecommendationVariantMetricTotals.clicked_request_count"
+        ],
+        "step": "publish",
+        "target": "RecommendationVariantMetric.click_through_rate"
+      },
+      {
+        "detail": {
+          "field": "attributed_purchase_count"
+        },
+        "operation": "project",
+        "sources": [
+          "RecommendationVariantMetricTotals.attributed_purchase_count"
+        ],
+        "step": "publish",
+        "target": "RecommendationVariantMetric.attributed_purchase_count"
+      },
+      {
+        "detail": {
+          "field": "conversion_rate"
+        },
+        "operation": "project",
+        "sources": [
+          "RecommendationVariantMetricTotals.request_count",
+          "RecommendationVariantMetricTotals.attributed_purchase_count"
+        ],
+        "step": "publish",
+        "target": "RecommendationVariantMetric.conversion_rate"
+      },
+      {
+        "detail": {
+          "field": "maximum_zero_result_rate"
+        },
+        "operation": "project",
+        "sources": [
+          "RecommendationVariantMetricTotals.maximum_zero_result_rate"
+        ],
+        "step": "publish",
+        "target": "RecommendationVariantMetric.maximum_zero_result_rate"
+      },
+      {
+        "detail": {
+          "field": "zero_result_guardrail_met"
+        },
+        "operation": "project",
+        "sources": [
+          "RecommendationVariantMetricTotals.maximum_zero_result_rate",
+          "RecommendationVariantMetricTotals.request_count",
+          "RecommendationVariantMetricTotals.zero_result_request_count"
+        ],
+        "step": "publish",
+        "target": "RecommendationVariantMetric.zero_result_guardrail_met"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "RecommendationVariantMetric"
+        ],
+        "step": null,
+        "target": "RecommendationVariantMetric.validation.final"
+      }
+    ],
+    "opaque_boundaries": []
+  },
+  "steps": [
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "recommendation_request",
+      "joins": [
+        {
+          "how": "inner",
+          "input": "evaluation_batch",
+          "right_alias": "evaluation_batch"
+        },
+        {
+          "how": "left",
+          "input": "purchase",
+          "right_alias": "purchases_2"
+        },
+        {
+          "how": "inner",
+          "input": "exposure",
+          "right_alias": "exposures_3"
+        },
+        {
+          "how": "inner",
+          "input": "experiment",
+          "right_alias": "experiments_4"
+        },
+        {
+          "how": "inner",
+          "input": "run",
+          "right_alias": "runs_5"
+        },
+        {
+          "how": "left",
+          "input": "impression",
+          "right_alias": "impressions_6"
+        },
+        {
+          "how": "left",
+          "input": "click",
+          "right_alias": "clicks_7"
+        }
+      ],
+      "name": "evaluate",
+      "output_alias": "recommendation_variant_metric_totals",
+      "output_schema": "RecommendationVariantMetricTotals",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "totals",
+          "lane": "totals",
+          "schema": "RecommendationVariantMetricTotals"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "RecommendationVariantMetricTotals"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "recommendation_variant_metric_totals",
+      "joins": [],
+      "name": "publish",
+      "output_alias": "recommendation_variant_metric",
+      "output_schema": "RecommendationVariantMetric",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "metrics",
+          "lane": "metrics",
+          "schema": "RecommendationVariantMetric"
+        }
+      ],
+      "validation": []
+    }
+  ],
+  "target_module": "examples.structure_generated.store.pyspark.transforms.experiment",
+  "validation": {
+    "outputs": [
+      {
+        "mode": "strict",
+        "name": "metrics",
+        "schema": "RecommendationVariantMetric"
+      }
+    ]
+  }
+}

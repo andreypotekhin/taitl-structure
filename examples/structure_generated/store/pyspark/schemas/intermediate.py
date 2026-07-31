@@ -12,6 +12,20 @@ RANKED_RECOMMENDATION_CANDIDATE_SCHEMA = T.StructType(RECOMMENDED_PRODUCT_SCHEMA
     T.StructField("maximum_results", T.LongType(), False),
 ])
 
+DIVERSIFIED_RECOMMENDATION_CANDIDATE_SCHEMA = T.StructType(RANKED_RECOMMENDATION_CANDIDATE_SCHEMA.fields + [
+    T.StructField("diversity_rank", T.LongType(), False),
+])
+
+DIVERSIFICATION_DECISION_SCHEMA = T.StructType([
+    T.StructField("tenant", TENANT_KEY_SCHEMA, False),
+    T.StructField("request_id", T.StringType(), False),
+    T.StructField("product_id", T.StringType(), False),
+    T.StructField("taxonomy_branch", T.StringType(), True),
+    T.StructField("branch_rank", T.LongType(), False),
+    T.StructField("selected", T.BooleanType(), False),
+    T.StructField("exclusion_reason", T.StringType(), True),
+])
+
 RECOMMENDATION_BEHAVIOR_IMPRESSION_SCHEMA = T.StructType([
     T.StructField("window", TIME_WINDOW_SCHEMA, False),
     T.StructField("tenant", TENANT_KEY_SCHEMA, False),

@@ -14,6 +14,11 @@ RECOMMENDATION_IMPRESSION_SCHEMA = T.StructType([
     T.StructField("product_id", T.StringType(), False),
     T.StructField("rank", T.LongType(), False),
     T.StructField("examination_propensity", T.DoubleType(), False),
+    T.StructField("customer_id", T.StringType(), True),
+    T.StructField("session_id", T.StringType(), True),
+    T.StructField("experiment_id", T.StringType(), True),
+    T.StructField("experiment_version", T.StringType(), True),
+    T.StructField("variant_id", T.StringType(), True),
     T.StructField("shown_at", T.TimestampType(), False),
 ])
 
@@ -56,4 +61,19 @@ PRODUCT_RECOMMENDATION_SIGNAL_SCHEMA = T.StructType([
     T.StructField("raw_click_count", T.LongType(), False),
     T.StructField("click_through_rate", T.DoubleType(), True),
     T.StructField("exposure_adjusted_click_rate", T.DoubleType(), True),
+    T.StructField("attributed_purchase_count", T.LongType(), False),
+    T.StructField("conversion_rate", T.DoubleType(), True),
+])
+
+RECOMMENDATION_PURCHASE_SCHEMA = T.StructType([
+    T.StructField("tenant", TENANT_KEY_SCHEMA, False),
+    T.StructField("order_id", T.StringType(), False),
+    T.StructField("request_id", T.StringType(), True),
+    T.StructField("customer_id", T.StringType(), True),
+    T.StructField("session_id", T.StringType(), True),
+    T.StructField("product_id", T.StringType(), False),
+    T.StructField("recommendation_impression_id", T.StringType(), True),
+    T.StructField("occurred_at", T.TimestampType(), False),
+    T.StructField("attribution_status", T.StringType(), False),
+    T.StructField("quantity", T.LongType(), False),
 ])

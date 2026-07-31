@@ -1,0 +1,85 @@
+{
+  "dependencies": [
+    "assignment",
+    "assignments",
+    "run",
+    "runs"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "requests",
+      "ordinal": 0,
+      "schema": "RecommendationRequest"
+    },
+    {
+      "name": "assignments",
+      "ordinal": 1,
+      "schema": "RecommendationAssignment"
+    },
+    {
+      "name": "runs",
+      "ordinal": 2,
+      "schema": "RecommendationRun"
+    }
+  ],
+  "name": "RecordRecommendationExposures",
+  "outputs": [
+    {
+      "name": "exposures",
+      "ordinal": 0,
+      "schema": "RecommendationExposure"
+    }
+  ],
+  "source": "examples.store.transforms.experiments.exposure.RecordRecommendationExposures",
+  "step_methods": [
+    {
+      "input_lane": "requests",
+      "input_schema": "RecommendationRequest",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "request",
+          "schema": "RecommendationRequest",
+          "source": "requests"
+        },
+        {
+          "driving": false,
+          "parameter": "assignment",
+          "schema": "RecommendationAssignment",
+          "source": "assignments"
+        },
+        {
+          "driving": false,
+          "parameter": "run",
+          "schema": "RecommendationRun",
+          "source": "runs"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "assignment"
+        },
+        {
+          "how": "inner",
+          "input": "run"
+        }
+      ],
+      "name": "record",
+      "output_lane": "requests",
+      "output_schema": "RecommendationExposure",
+      "results": [
+        {
+          "frame": "requests",
+          "lane": "requests",
+          "schema": "RecommendationExposure"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/exposure.py",
+    "traceability": "traceability/transforms/exposure.RecordRecommendationExposures.json"
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "window",
+      "name": "window",
+      "nullable": false,
+      "type": "TimeWindow"
+    },
+    {
+      "column": "tenant",
+      "name": "tenant",
+      "nullable": false,
+      "type": "TenantKey"
+    },
+    {
+      "column": "session_id",
+      "name": "session_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "customer_id",
+      "name": "customer_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "product_id",
+      "name": "product_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "category",
+      "name": "category",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "event_count",
+      "name": "event_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "product_view_count",
+      "name": "product_view_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "add_to_cart_count",
+      "name": "add_to_cart_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "last_event_at",
+      "name": "last_event_at",
+      "nullable": false,
+      "type": "timestamp"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.store.schemas.merchandising.session",
+  "name": "SessionFeature"
+}

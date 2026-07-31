@@ -40,10 +40,7 @@ class RankRecommendationCandidates(Transform):
             on=(boost.tenant.tenant_id == candidate.tenant.tenant_id)
             & (boost.policy_version == policy.policy_version)
             & boost.active
-            & (
-                boost.product_id.null_safe_eq(candidate.product_id)
-                | boost.category.null_safe_eq(candidate.category)
-            ),
+            & (boost.product_id.null_safe_eq(candidate.product_id) | boost.category.null_safe_eq(candidate.category)),
         )
         left_join(
             suppression,
@@ -79,4 +76,6 @@ class RankRecommendationCandidates(Transform):
             final_score=final_score,
             feedback_contributed=supported,
             maximum_results=policy.maximum_results,
+            diversity_selected=True,
+            diversity_exclusion_reason=None,
         )

@@ -1,0 +1,279 @@
+{
+  "dependencies": [
+    "click",
+    "clicks",
+    "impression",
+    "impressions",
+    "recommendation__click_facts"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "session_events",
+      "ordinal": 0,
+      "schema": "SessionEvent"
+    },
+    {
+      "name": "fulfilled_orders",
+      "ordinal": 1,
+      "schema": "OrderFulfillment"
+    },
+    {
+      "name": "impressions",
+      "ordinal": 2,
+      "schema": "RecommendationImpression"
+    },
+    {
+      "name": "clicks",
+      "ordinal": 3,
+      "schema": "RecommendationClick"
+    }
+  ],
+  "name": "Signals",
+  "outputs": [
+    {
+      "name": "session_features",
+      "ordinal": 0,
+      "schema": "SessionFeature"
+    },
+    {
+      "name": "recommendation_purchases",
+      "ordinal": 1,
+      "schema": "RecommendationPurchase"
+    },
+    {
+      "name": "daily_impressions",
+      "ordinal": 2,
+      "schema": "DailyRecommendationImpressions"
+    },
+    {
+      "name": "daily_clicks",
+      "ordinal": 3,
+      "schema": "DailyRecommendationClicks"
+    },
+    {
+      "name": "signals",
+      "ordinal": 4,
+      "schema": "ProductRecommendationSignal"
+    }
+  ],
+  "source": "examples.store.transforms.merchandising.signals.workflow.Signals",
+  "step_methods": [
+    {
+      "input_lane": "session_events",
+      "input_schema": "SessionEvent",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "event",
+          "schema": "SessionEvent",
+          "source": "session_events"
+        }
+      ],
+      "name": "sessionized.build",
+      "output_lane": "sessionized__events",
+      "output_schema": "SessionFeature",
+      "results": [
+        {
+          "frame": "sessionized__events",
+          "lane": "sessionized__events",
+          "schema": "SessionFeature"
+        }
+      ]
+    },
+    {
+      "input_lane": "fulfilled_orders",
+      "input_schema": "OrderFulfillment",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "order",
+          "schema": "OrderFulfillment",
+          "source": "fulfilled_orders"
+        },
+        {
+          "driving": false,
+          "parameter": "impression",
+          "schema": "RecommendationImpression",
+          "source": "impressions"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "impression"
+        }
+      ],
+      "name": "purchases.attribute",
+      "output_lane": "purchases__fulfilled_orders",
+      "output_schema": "RecommendationPurchase",
+      "results": [
+        {
+          "frame": "purchases__fulfilled_orders",
+          "lane": "purchases__fulfilled_orders",
+          "schema": "RecommendationPurchase"
+        }
+      ]
+    },
+    {
+      "input_lane": "impressions",
+      "input_schema": "RecommendationImpression",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "impression",
+          "schema": "RecommendationImpression",
+          "source": "impressions"
+        }
+      ],
+      "name": "recommendation.summarize_impressions",
+      "output_lane": "recommendation__impression_facts",
+      "output_schema": "DailyRecommendationImpressions",
+      "results": [
+        {
+          "frame": "recommendation__impression_facts",
+          "lane": "recommendation__impression_facts",
+          "schema": "DailyRecommendationImpressions"
+        }
+      ]
+    },
+    {
+      "input_lane": "impressions",
+      "input_schema": "RecommendationImpression",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "impression",
+          "schema": "RecommendationImpression",
+          "source": "impressions"
+        },
+        {
+          "driving": false,
+          "parameter": "click",
+          "schema": "RecommendationClick",
+          "source": "clicks"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "click"
+        }
+      ],
+      "name": "recommendation.summarize_clicks",
+      "output_lane": "recommendation__click_facts",
+      "output_schema": "DailyRecommendationClicks",
+      "results": [
+        {
+          "frame": "recommendation__click_facts",
+          "lane": "recommendation__click_facts",
+          "schema": "DailyRecommendationClicks"
+        }
+      ]
+    },
+    {
+      "input_lane": "recommendation__impression_facts",
+      "input_schema": "DailyRecommendationImpressions",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "impression",
+          "schema": "DailyRecommendationImpressions",
+          "source": "recommendation__impression_facts"
+        }
+      ],
+      "name": "recommendation.publish_daily_impressions",
+      "output_lane": "recommendation__daily_impressions",
+      "output_schema": "DailyRecommendationImpressions",
+      "results": [
+        {
+          "frame": "recommendation__daily_impressions",
+          "lane": "recommendation__daily_impressions",
+          "schema": "DailyRecommendationImpressions"
+        }
+      ]
+    },
+    {
+      "input_lane": "recommendation__click_facts",
+      "input_schema": "DailyRecommendationClicks",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "click",
+          "schema": "DailyRecommendationClicks",
+          "source": "recommendation__click_facts"
+        }
+      ],
+      "name": "recommendation.publish_daily_clicks",
+      "output_lane": "recommendation__daily_clicks",
+      "output_schema": "DailyRecommendationClicks",
+      "results": [
+        {
+          "frame": "recommendation__daily_clicks",
+          "lane": "recommendation__daily_clicks",
+          "schema": "DailyRecommendationClicks"
+        }
+      ]
+    },
+    {
+      "input_lane": "recommendation__impression_facts",
+      "input_schema": "DailyRecommendationImpressions",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "impression",
+          "schema": "DailyRecommendationImpressions",
+          "source": "recommendation__impression_facts"
+        },
+        {
+          "driving": false,
+          "parameter": "click",
+          "schema": "DailyRecommendationClicks",
+          "source": "recommendation__click_facts"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "click"
+        }
+      ],
+      "name": "recommendation.summarize_signals",
+      "output_lane": "recommendation__signal_totals",
+      "output_schema": "ProductRecommendationSignalTotals",
+      "results": [
+        {
+          "frame": "recommendation__signal_totals",
+          "lane": "recommendation__signal_totals",
+          "schema": "ProductRecommendationSignalTotals"
+        }
+      ]
+    },
+    {
+      "input_lane": "recommendation__signal_totals",
+      "input_schema": "ProductRecommendationSignalTotals",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "signal",
+          "schema": "ProductRecommendationSignalTotals",
+          "source": "recommendation__signal_totals"
+        }
+      ],
+      "name": "recommendation.publish_signals",
+      "output_lane": "recommendation__signals",
+      "output_schema": "ProductRecommendationSignal",
+      "results": [
+        {
+          "frame": "recommendation__signals",
+          "lane": "recommendation__signals",
+          "schema": "ProductRecommendationSignal"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/signals_workflow.py",
+    "traceability": "traceability/transforms/signals_workflow.Signals.json"
+  }
+}

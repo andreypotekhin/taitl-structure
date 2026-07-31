@@ -12,6 +12,11 @@ class RecommendationImpression(Schema):
     product_id = string(nullable=False)
     rank = long(nullable=False)
     examination_propensity = double(nullable=False)
+    customer_id = string(nullable=True)
+    session_id = string(nullable=True)
+    experiment_id = string(nullable=True)
+    experiment_version = string(nullable=True)
+    variant_id = string(nullable=True)
     shown_at = timestamp(nullable=False)
 
 
@@ -54,3 +59,18 @@ class ProductRecommendationSignal(Schema):
     raw_click_count = long(nullable=False)
     click_through_rate = double(nullable=True)
     exposure_adjusted_click_rate = double(nullable=True)
+    attributed_purchase_count = long(nullable=False)
+    conversion_rate = double(nullable=True)
+
+
+class RecommendationPurchase(Schema):
+    tenant = struct(TenantKey, nullable=False)
+    order_id = string(nullable=False)
+    request_id = string(nullable=True)
+    customer_id = string(nullable=True)
+    session_id = string(nullable=True)
+    product_id = string(nullable=False)
+    recommendation_impression_id = string(nullable=True)
+    occurred_at = timestamp(nullable=False)
+    attribution_status = string(nullable=False)
+    quantity = long(nullable=False)

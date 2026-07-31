@@ -1,0 +1,26 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "node_id",
+      "name": "node_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "ancestor_id",
+      "name": "ancestor_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "depth",
+      "name": "depth",
+      "nullable": false,
+      "type": "long"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.store.schemas.merchandising.taxonomy",
+  "name": "TaxonomyAncestor"
+}

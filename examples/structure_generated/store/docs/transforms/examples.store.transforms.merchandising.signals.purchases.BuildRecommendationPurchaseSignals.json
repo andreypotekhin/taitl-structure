@@ -1,0 +1,68 @@
+{
+  "dependencies": [
+    "impression",
+    "impressions"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "fulfilled_orders",
+      "ordinal": 0,
+      "schema": "OrderFulfillment"
+    },
+    {
+      "name": "impressions",
+      "ordinal": 1,
+      "schema": "RecommendationImpression"
+    }
+  ],
+  "name": "BuildRecommendationPurchaseSignals",
+  "outputs": [
+    {
+      "name": "purchases",
+      "ordinal": 0,
+      "schema": "RecommendationPurchase"
+    }
+  ],
+  "source": "examples.store.transforms.merchandising.signals.purchases.BuildRecommendationPurchaseSignals",
+  "step_methods": [
+    {
+      "input_lane": "fulfilled_orders",
+      "input_schema": "OrderFulfillment",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "order",
+          "schema": "OrderFulfillment",
+          "source": "fulfilled_orders"
+        },
+        {
+          "driving": false,
+          "parameter": "impression",
+          "schema": "RecommendationImpression",
+          "source": "impressions"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "impression"
+        }
+      ],
+      "name": "attribute",
+      "output_lane": "fulfilled_orders",
+      "output_schema": "RecommendationPurchase",
+      "results": [
+        {
+          "frame": "fulfilled_orders",
+          "lane": "fulfilled_orders",
+          "schema": "RecommendationPurchase"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/purchases.py",
+    "traceability": "traceability/transforms/purchases.BuildRecommendationPurchaseSignals.json"
+  }
+}

@@ -20,6 +20,12 @@
       "type": "string"
     },
     {
+      "column": "session_id",
+      "name": "session_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
       "column": "strategy_id",
       "name": "strategy_id",
       "nullable": false,
@@ -29,6 +35,24 @@
       "column": "policy_version",
       "name": "policy_version",
       "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "experiment_id",
+      "name": "experiment_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "experiment_version",
+      "name": "experiment_version",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "variant_id",
+      "name": "variant_id",
+      "nullable": true,
       "type": "string"
     },
     {

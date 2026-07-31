@@ -1,0 +1,38 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "tenant",
+      "name": "tenant",
+      "nullable": false,
+      "type": "TenantKey"
+    },
+    {
+      "column": "taxonomy_id",
+      "name": "taxonomy_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "parent_taxonomy_id",
+      "name": "parent_taxonomy_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "category",
+      "name": "category",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "active",
+      "name": "active",
+      "nullable": false,
+      "type": "boolean"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.store.schemas.merchandising.taxonomy",
+  "name": "TaxonomyNode"
+}

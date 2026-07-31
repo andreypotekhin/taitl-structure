@@ -22,4 +22,15 @@ Module: `examples.store.schemas.merchandising.intermediate`
 | `feedback_score` | `feedback_score` | `double` | no |
 | `final_score` | `final_score` | `double` | no |
 | `feedback_contributed` | `feedback_contributed` | `boolean` | no |
+| `candidate_source` | `candidate_source` | `string` | no |
+| `taxonomy_id` | `taxonomy_id` | `string` | yes |
+| `taxonomy_branch` | `taxonomy_branch` | `string` | yes |
+| `session_match` | `session_match` | `boolean` | no |
+| `purchase_signal` | `purchase_signal` | `double` | no |
+| `eligibility_status` | `eligibility_status` | `string` | no |
+| `diversity_selected` | `diversity_selected` | `boolean` | no |
+| `diversity_exclusion_reason` | `diversity_exclusion_reason` | `string` | yes |
+| `experiment_id` | `experiment_id` | `string` | yes |
+| `experiment_version` | `experiment_version` | `string` | yes |
+| `variant_id` | `variant_id` | `string` | yes |
 | `maximum_results` | `maximum_results` | `long` | no |

@@ -1101,28 +1101,6 @@
           "source": "evaluated__evaluations"
         }
       ],
-      "name": "evaluated.publish_evaluations",
-      "output_lane": "evaluated__service_evaluations",
-      "output_schema": "FulfillmentServiceEvaluation",
-      "results": [
-        {
-          "frame": "evaluated__service_evaluations",
-          "lane": "evaluated__service_evaluations",
-          "schema": "FulfillmentServiceEvaluation"
-        }
-      ]
-    },
-    {
-      "input_lane": "evaluated__evaluations",
-      "input_schema": "FulfillmentServiceEvaluation",
-      "inputs": [
-        {
-          "driving": true,
-          "parameter": "evaluation",
-          "schema": "FulfillmentServiceEvaluation",
-          "source": "evaluated__evaluations"
-        }
-      ],
       "name": "evaluated.summarize",
       "output_lane": "evaluated__summary_totals",
       "output_schema": "DailyFulfillmentServiceSummary",

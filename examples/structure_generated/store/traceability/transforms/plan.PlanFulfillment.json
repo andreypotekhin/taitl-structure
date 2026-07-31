@@ -882,6 +882,22 @@
       "constant": "DEMAND_WINDOW_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.projection"
     },
+    "DiversificationDecision": {
+      "constant": "DIVERSIFICATION_DECISION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "DiversifiedRecommendationCandidate": {
+      "constant": "DIVERSIFIED_RECOMMENDATION_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "EvaluationBatch": {
+      "constant": "EVALUATION_BATCH_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.batch"
+    },
+    "ExpandedProductTaxonomy": {
+      "constant": "EXPANDED_PRODUCT_TAXONOMY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
+    },
     "FulfillmentAllocation": {
       "constant": "FULFILLMENT_ALLOCATION_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.plan"
@@ -1046,6 +1062,10 @@
       "constant": "PRODUCT_RECOMMENDATION_SIGNAL_TOTALS_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
     },
+    "ProductTaxonomy": {
+      "constant": "PRODUCT_TAXONOMY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
+    },
     "Promotion": {
       "constant": "PROMOTION_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.promotion"
@@ -1058,12 +1078,24 @@
       "constant": "RANKED_RECOMMENDATION_CANDIDATE_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
     },
+    "RecommendationAssignment": {
+      "constant": "RECOMMENDATION_ASSIGNMENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.experiment"
+    },
+    "RecommendationBehavior": {
+      "constant": "RECOMMENDATION_BEHAVIOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendations"
+    },
     "RecommendationBehaviorImpression": {
       "constant": "RECOMMENDATION_BEHAVIOR_IMPRESSION_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
     },
     "RecommendationCandidate": {
       "constant": "RECOMMENDATION_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+    },
+    "RecommendationCandidateDecision": {
+      "constant": "RECOMMENDATION_CANDIDATE_DECISION_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.catalog"
     },
     "RecommendationClick": {
@@ -1078,12 +1110,20 @@
       "constant": "RECOMMENDATION_EVALUATION_BATCH_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.evaluation"
     },
+    "RecommendationExperiment": {
+      "constant": "RECOMMENDATION_EXPERIMENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.experiment"
+    },
     "RecommendationExposure": {
       "constant": "RECOMMENDATION_EXPOSURE_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+      "module": "examples.structure_generated.store.pyspark.schemas.experiment"
     },
     "RecommendationImpression": {
       "constant": "RECOMMENDATION_IMPRESSION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "RecommendationPurchase": {
+      "constant": "RECOMMENDATION_PURCHASE_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.feedback"
     },
     "RecommendationRequest": {
@@ -1098,6 +1138,14 @@
       "constant": "RECOMMENDATION_RUN_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
     },
+    "RecommendationVariantMetric": {
+      "constant": "RECOMMENDATION_VARIANT_METRIC_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendations"
+    },
+    "RecommendationVariantMetricTotals": {
+      "constant": "RECOMMENDATION_VARIANT_METRIC_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendations"
+    },
     "RecommendedProduct": {
       "constant": "RECOMMENDED_PRODUCT_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
@@ -1110,6 +1158,14 @@
       "constant": "SERVICE_RISK_TARGET_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.exception"
     },
+    "SessionEvent": {
+      "constant": "SESSION_EVENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.session"
+    },
+    "SessionFeature": {
+      "constant": "SESSION_FEATURE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.session"
+    },
     "Shipment": {
       "constant": "SHIPMENT_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.shipment"
@@ -1117,6 +1173,14 @@
     "SubstitutionRule": {
       "constant": "SUBSTITUTION_RULE_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.substitution"
+    },
+    "TaxonomyAncestor": {
+      "constant": "TAXONOMY_ANCESTOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
+    },
+    "TaxonomyNode": {
+      "constant": "TAXONOMY_NODE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
     },
     "TenantKey": {
       "constant": "TENANT_KEY_SCHEMA",

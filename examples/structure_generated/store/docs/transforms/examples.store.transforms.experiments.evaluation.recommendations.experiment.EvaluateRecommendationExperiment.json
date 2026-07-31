@@ -1,0 +1,191 @@
+{
+  "dependencies": [
+    "click",
+    "clicks",
+    "evaluation_batch",
+    "experiment",
+    "experiments",
+    "exposure",
+    "exposures",
+    "impression",
+    "impressions",
+    "purchase",
+    "purchases",
+    "run",
+    "runs"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "evaluation_batch",
+      "ordinal": 0,
+      "schema": "EvaluationBatch"
+    },
+    {
+      "name": "experiments",
+      "ordinal": 1,
+      "schema": "RecommendationExperiment"
+    },
+    {
+      "name": "exposures",
+      "ordinal": 2,
+      "schema": "RecommendationExposure"
+    },
+    {
+      "name": "requests",
+      "ordinal": 3,
+      "schema": "RecommendationRequest"
+    },
+    {
+      "name": "runs",
+      "ordinal": 4,
+      "schema": "RecommendationRun"
+    },
+    {
+      "name": "impressions",
+      "ordinal": 5,
+      "schema": "RecommendationImpression"
+    },
+    {
+      "name": "clicks",
+      "ordinal": 6,
+      "schema": "RecommendationClick"
+    },
+    {
+      "name": "purchases",
+      "ordinal": 7,
+      "schema": "RecommendationPurchase"
+    }
+  ],
+  "name": "EvaluateRecommendationExperiment",
+  "outputs": [
+    {
+      "name": "metrics",
+      "ordinal": 0,
+      "schema": "RecommendationVariantMetric"
+    }
+  ],
+  "source": "examples.store.transforms.experiments.evaluation.recommendations.experiment.EvaluateRecommendationExperiment",
+  "step_methods": [
+    {
+      "input_lane": "requests",
+      "input_schema": "RecommendationRequest",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "request",
+          "schema": "RecommendationRequest",
+          "source": "requests"
+        },
+        {
+          "driving": false,
+          "parameter": "evaluation_batch",
+          "schema": "EvaluationBatch",
+          "source": "evaluation_batch"
+        },
+        {
+          "driving": false,
+          "parameter": "exposure",
+          "schema": "RecommendationExposure",
+          "source": "exposures"
+        },
+        {
+          "driving": false,
+          "parameter": "experiment",
+          "schema": "RecommendationExperiment",
+          "source": "experiments"
+        },
+        {
+          "driving": false,
+          "parameter": "run",
+          "schema": "RecommendationRun",
+          "source": "runs"
+        },
+        {
+          "driving": false,
+          "parameter": "impression",
+          "schema": "RecommendationImpression",
+          "source": "impressions"
+        },
+        {
+          "driving": false,
+          "parameter": "click",
+          "schema": "RecommendationClick",
+          "source": "clicks"
+        },
+        {
+          "driving": false,
+          "parameter": "purchase",
+          "schema": "RecommendationPurchase",
+          "source": "purchases"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "evaluation_batch"
+        },
+        {
+          "how": "left",
+          "input": "purchase"
+        },
+        {
+          "how": "inner",
+          "input": "exposure"
+        },
+        {
+          "how": "inner",
+          "input": "experiment"
+        },
+        {
+          "how": "inner",
+          "input": "run"
+        },
+        {
+          "how": "left",
+          "input": "impression"
+        },
+        {
+          "how": "left",
+          "input": "click"
+        }
+      ],
+      "name": "evaluate",
+      "output_lane": "totals",
+      "output_schema": "RecommendationVariantMetricTotals",
+      "results": [
+        {
+          "frame": "totals",
+          "lane": "totals",
+          "schema": "RecommendationVariantMetricTotals"
+        }
+      ]
+    },
+    {
+      "input_lane": "totals",
+      "input_schema": "RecommendationVariantMetricTotals",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "total",
+          "schema": "RecommendationVariantMetricTotals",
+          "source": "totals"
+        }
+      ],
+      "name": "publish",
+      "output_lane": "metrics",
+      "output_schema": "RecommendationVariantMetric",
+      "results": [
+        {
+          "frame": "metrics",
+          "lane": "metrics",
+          "schema": "RecommendationVariantMetric"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/experiment.py",
+    "traceability": "traceability/transforms/experiment.EvaluateRecommendationExperiment.json"
+  }
+}

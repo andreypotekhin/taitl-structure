@@ -1,0 +1,728 @@
+{
+  "backend": {
+    "name": "pyspark",
+    "target": ">=3.5,<4.1"
+  },
+  "generated_transform_class": "NormalizeCatalogGenerated",
+  "inputs": [
+    {
+      "name": "catalog",
+      "ordinal": 0,
+      "schema": "CatalogProduct"
+    }
+  ],
+  "provenance": [
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.normalize_catalog.NormalizeCatalogGenerated",
+      "ir": "ir:NormalizeCatalog",
+      "source": "source:examples.store.transforms.merchandising.catalog.normalize_catalog.NormalizeCatalog"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.normalize_catalog.NormalizeCatalogGenerated.run.input.catalog",
+      "ir": "ir:NormalizeCatalog.input.0.catalog",
+      "source": "source:examples.store.transforms.merchandising.catalog.normalize_catalog.NormalizeCatalog.input.catalog"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.normalize_catalog.NormalizeCatalogGenerated.run.step.0.normalize",
+      "ir": "ir:NormalizeCatalog.step.0.normalize",
+      "source": "source:examples.store.transforms.merchandising.catalog.normalize_catalog.NormalizeCatalog.normalize"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.normalize_catalog.NormalizeCatalogGenerated.run.step.0.normalize.select.tenant",
+      "ir": "ir:NormalizeCatalog.step.0.normalize.project.tenant",
+      "source": "source:examples.store.transforms.merchandising.catalog.normalize_catalog.NormalizeCatalog.normalize.field.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.normalize_catalog.NormalizeCatalogGenerated.run.step.0.normalize.select.audit",
+      "ir": "ir:NormalizeCatalog.step.0.normalize.project.audit",
+      "source": "source:examples.store.transforms.merchandising.catalog.normalize_catalog.NormalizeCatalog.normalize.field.audit"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.normalize_catalog.NormalizeCatalogGenerated.run.step.0.normalize.select.product_id",
+      "ir": "ir:NormalizeCatalog.step.0.normalize.project.product_id",
+      "source": "source:examples.store.transforms.merchandising.catalog.normalize_catalog.NormalizeCatalog.normalize.field.product_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.normalize_catalog.NormalizeCatalogGenerated.run.step.0.normalize.select.product_name",
+      "ir": "ir:NormalizeCatalog.step.0.normalize.project.product_name",
+      "source": "source:examples.store.transforms.merchandising.catalog.normalize_catalog.NormalizeCatalog.normalize.field.product_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.normalize_catalog.NormalizeCatalogGenerated.run.step.0.normalize.select.category",
+      "ir": "ir:NormalizeCatalog.step.0.normalize.project.category",
+      "source": "source:examples.store.transforms.merchandising.catalog.normalize_catalog.NormalizeCatalog.normalize.field.category"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.normalize_catalog.NormalizeCatalogGenerated.run.step.0.normalize.select.active",
+      "ir": "ir:NormalizeCatalog.step.0.normalize.project.active",
+      "source": "source:examples.store.transforms.merchandising.catalog.normalize_catalog.NormalizeCatalog.normalize.field.active"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.normalize_catalog.NormalizeCatalogGenerated.run.step.0.normalize.select.list_price",
+      "ir": "ir:NormalizeCatalog.step.0.normalize.project.list_price",
+      "source": "source:examples.store.transforms.merchandising.catalog.normalize_catalog.NormalizeCatalog.normalize.field.list_price"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.normalize_catalog.NormalizeCatalogGenerated.run.step.0.normalize.select.rating",
+      "ir": "ir:NormalizeCatalog.step.0.normalize.project.rating",
+      "source": "source:examples.store.transforms.merchandising.catalog.normalize_catalog.NormalizeCatalog.normalize.field.rating"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.normalize_catalog.NormalizeCatalogGenerated.run.step.0.normalize.select.has_promotion",
+      "ir": "ir:NormalizeCatalog.step.0.normalize.project.has_promotion",
+      "source": "source:examples.store.transforms.merchandising.catalog.normalize_catalog.NormalizeCatalog.normalize.field.has_promotion"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.normalize_catalog.NormalizeCatalogGenerated.run.step.0.normalize.select.promotion_code",
+      "ir": "ir:NormalizeCatalog.step.0.normalize.project.promotion_code",
+      "source": "source:examples.store.transforms.merchandising.catalog.normalize_catalog.NormalizeCatalog.normalize.field.promotion_code"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.normalize_catalog.NormalizeCatalogGenerated.run.step.0.normalize.select.promotion_name",
+      "ir": "ir:NormalizeCatalog.step.0.normalize.project.promotion_name",
+      "source": "source:examples.store.transforms.merchandising.catalog.normalize_catalog.NormalizeCatalog.normalize.field.promotion_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.normalize_catalog.NormalizeCatalogGenerated.run.step.0.normalize.select.promotion_discount",
+      "ir": "ir:NormalizeCatalog.step.0.normalize.project.promotion_discount",
+      "source": "source:examples.store.transforms.merchandising.catalog.normalize_catalog.NormalizeCatalog.normalize.field.promotion_discount"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.normalize_catalog.NormalizeCatalogGenerated.run.step.0.normalize.select.base_score",
+      "ir": "ir:NormalizeCatalog.step.0.normalize.project.base_score",
+      "source": "source:examples.store.transforms.merchandising.catalog.normalize_catalog.NormalizeCatalog.normalize.field.base_score"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.normalize_catalog.NormalizeCatalogGenerated.run.step.0.normalize.select.promotion_score",
+      "ir": "ir:NormalizeCatalog.step.0.normalize.project.promotion_score",
+      "source": "source:examples.store.transforms.merchandising.catalog.normalize_catalog.NormalizeCatalog.normalize.field.promotion_score"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.normalize_catalog.NormalizeCatalogGenerated.run.step.0.normalize.select.eligible",
+      "ir": "ir:NormalizeCatalog.step.0.normalize.project.eligible",
+      "source": "source:examples.store.transforms.merchandising.catalog.normalize_catalog.NormalizeCatalog.normalize.field.eligible"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.normalize_catalog.NormalizeCatalogGenerated.run.output.0.normalized.validation.final",
+      "ir": "ir:NormalizeCatalog.output.0.normalized.validation.final",
+      "source": "source:examples.store.transforms.merchandising.catalog.normalize_catalog.NormalizeCatalog.output.normalized"
+    }
+  ],
+  "schema_constants": {
+    "Address": {
+      "constant": "ADDRESS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "AuditStamp": {
+      "constant": "AUDIT_STAMP_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "BlockedProduct": {
+      "constant": "BLOCKED_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.product"
+    },
+    "BusinessDate": {
+      "constant": "BUSINESS_DATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "CatalogAvailability": {
+      "constant": "CATALOG_AVAILABILITY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+    },
+    "CatalogProduct": {
+      "constant": "CATALOG_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+    },
+    "Customer": {
+      "constant": "CUSTOMER_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.customer"
+    },
+    "CustomerDailyTotal": {
+      "constant": "CUSTOMER_DAILY_TOTAL_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.analytics"
+    },
+    "CustomerEventRank": {
+      "constant": "CUSTOMER_EVENT_RANK_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.analytics"
+    },
+    "CustomerOrderBackfill": {
+      "constant": "CUSTOMER_ORDER_BACKFILL_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "DailyFulfillmentServiceSummary": {
+      "constant": "DAILY_FULFILLMENT_SERVICE_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.service"
+    },
+    "DailyFulfillmentSummary": {
+      "constant": "DAILY_FULFILLMENT_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.summary"
+    },
+    "DailyRecommendationBehavior": {
+      "constant": "DAILY_RECOMMENDATION_BEHAVIOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.evaluation"
+    },
+    "DailyRecommendationClicks": {
+      "constant": "DAILY_RECOMMENDATION_CLICKS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "DailyRecommendationCounts": {
+      "constant": "DAILY_RECOMMENDATION_COUNTS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "DailyRecommendationImpressions": {
+      "constant": "DAILY_RECOMMENDATION_IMPRESSIONS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "DemandWindow": {
+      "constant": "DEMAND_WINDOW_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.projection"
+    },
+    "DiversificationDecision": {
+      "constant": "DIVERSIFICATION_DECISION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "DiversifiedRecommendationCandidate": {
+      "constant": "DIVERSIFIED_RECOMMENDATION_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "EvaluationBatch": {
+      "constant": "EVALUATION_BATCH_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.batch"
+    },
+    "ExpandedProductTaxonomy": {
+      "constant": "EXPANDED_PRODUCT_TAXONOMY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
+    },
+    "FulfillmentAllocation": {
+      "constant": "FULFILLMENT_ALLOCATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "FulfillmentBackorder": {
+      "constant": "FULFILLMENT_BACKORDER_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "FulfillmentException": {
+      "constant": "FULFILLMENT_EXCEPTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.exception"
+    },
+    "FulfillmentOption": {
+      "constant": "FULFILLMENT_OPTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.workflow"
+    },
+    "FulfillmentPlan": {
+      "constant": "FULFILLMENT_PLAN_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "FulfillmentPreferredOption": {
+      "constant": "FULFILLMENT_PREFERRED_OPTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.workflow"
+    },
+    "FulfillmentReconciliation": {
+      "constant": "FULFILLMENT_RECONCILIATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.reconciliation"
+    },
+    "FulfillmentServiceEvaluation": {
+      "constant": "FULFILLMENT_SERVICE_EVALUATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.service"
+    },
+    "FulfillmentServiceTotals": {
+      "constant": "FULFILLMENT_SERVICE_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.service"
+    },
+    "FulfillmentShortage": {
+      "constant": "FULFILLMENT_SHORTAGE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.shortage"
+    },
+    "FulfillmentShortageRanked": {
+      "constant": "FULFILLMENT_SHORTAGE_RANKED_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.shortage"
+    },
+    "FulfillmentSubstitutionOption": {
+      "constant": "FULFILLMENT_SUBSTITUTION_OPTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.substitution"
+    },
+    "InboundInventory": {
+      "constant": "INBOUND_INVENTORY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
+    },
+    "InboundInventoryAvailability": {
+      "constant": "INBOUND_INVENTORY_AVAILABILITY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.workflow"
+    },
+    "InventoryPosition": {
+      "constant": "INVENTORY_POSITION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
+    },
+    "InventoryProjection": {
+      "constant": "INVENTORY_PROJECTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.projection"
+    },
+    "LeadTime": {
+      "constant": "LEAD_TIME_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory_inventory"
+    },
+    "MerchandisingBoost": {
+      "constant": "MERCHANDISING_BOOST_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.policy"
+    },
+    "MerchandisingPolicy": {
+      "constant": "MERCHANDISING_POLICY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.policy"
+    },
+    "MerchandisingSuppression": {
+      "constant": "MERCHANDISING_SUPPRESSION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.policy"
+    },
+    "Order": {
+      "constant": "ORDER_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.demand"
+    },
+    "OrderCollectionProfile": {
+      "constant": "ORDER_COLLECTION_PROFILE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderCollectionSource": {
+      "constant": "ORDER_COLLECTION_SOURCE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderCustomerReconciliation": {
+      "constant": "ORDER_CUSTOMER_RECONCILIATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderCustomerWindow": {
+      "constant": "ORDER_CUSTOMER_WINDOW_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderFulfillment": {
+      "constant": "ORDER_FULFILLMENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderNormalized": {
+      "constant": "ORDER_NORMALIZED_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderProductCandidate": {
+      "constant": "ORDER_PRODUCT_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderProductCube": {
+      "constant": "ORDER_PRODUCT_CUBE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderPublication": {
+      "constant": "ORDER_PUBLICATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderPublished": {
+      "constant": "ORDER_PUBLISHED_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderRaw": {
+      "constant": "ORDER_RAW_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderRevenueRollup": {
+      "constant": "ORDER_REVENUE_ROLLUP_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderWithCustomer": {
+      "constant": "ORDER_WITH_CUSTOMER_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderWithProduct": {
+      "constant": "ORDER_WITH_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderWithPromotion": {
+      "constant": "ORDER_WITH_PROMOTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "Product": {
+      "constant": "PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.product"
+    },
+    "ProductBase": {
+      "constant": "PRODUCT_BASE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.product"
+    },
+    "ProductDailySummary": {
+      "constant": "PRODUCT_DAILY_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.analytics"
+    },
+    "ProductRecommendationSignal": {
+      "constant": "PRODUCT_RECOMMENDATION_SIGNAL_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "ProductRecommendationSignalTotals": {
+      "constant": "PRODUCT_RECOMMENDATION_SIGNAL_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "ProductTaxonomy": {
+      "constant": "PRODUCT_TAXONOMY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
+    },
+    "Promotion": {
+      "constant": "PROMOTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.promotion"
+    },
+    "PublicationFlags": {
+      "constant": "PUBLICATION_FLAGS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "RankedRecommendationCandidate": {
+      "constant": "RANKED_RECOMMENDATION_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "RecommendationAssignment": {
+      "constant": "RECOMMENDATION_ASSIGNMENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.experiment"
+    },
+    "RecommendationBehavior": {
+      "constant": "RECOMMENDATION_BEHAVIOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendations"
+    },
+    "RecommendationBehaviorImpression": {
+      "constant": "RECOMMENDATION_BEHAVIOR_IMPRESSION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "RecommendationCandidate": {
+      "constant": "RECOMMENDATION_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+    },
+    "RecommendationCandidateDecision": {
+      "constant": "RECOMMENDATION_CANDIDATE_DECISION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+    },
+    "RecommendationClick": {
+      "constant": "RECOMMENDATION_CLICK_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "RecommendationClickSummary": {
+      "constant": "RECOMMENDATION_CLICK_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "RecommendationEvaluationBatch": {
+      "constant": "RECOMMENDATION_EVALUATION_BATCH_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.evaluation"
+    },
+    "RecommendationExperiment": {
+      "constant": "RECOMMENDATION_EXPERIMENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.experiment"
+    },
+    "RecommendationExposure": {
+      "constant": "RECOMMENDATION_EXPOSURE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.experiment"
+    },
+    "RecommendationImpression": {
+      "constant": "RECOMMENDATION_IMPRESSION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "RecommendationPurchase": {
+      "constant": "RECOMMENDATION_PURCHASE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "RecommendationRequest": {
+      "constant": "RECOMMENDATION_REQUEST_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
+    },
+    "RecommendationRequestBehavior": {
+      "constant": "RECOMMENDATION_REQUEST_BEHAVIOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.evaluation"
+    },
+    "RecommendationRun": {
+      "constant": "RECOMMENDATION_RUN_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
+    },
+    "RecommendationVariantMetric": {
+      "constant": "RECOMMENDATION_VARIANT_METRIC_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendations"
+    },
+    "RecommendationVariantMetricTotals": {
+      "constant": "RECOMMENDATION_VARIANT_METRIC_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendations"
+    },
+    "RecommendedProduct": {
+      "constant": "RECOMMENDED_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
+    },
+    "ReplenishmentSuggestion": {
+      "constant": "REPLENISHMENT_SUGGESTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "ServiceRiskTarget": {
+      "constant": "SERVICE_RISK_TARGET_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.exception"
+    },
+    "SessionEvent": {
+      "constant": "SESSION_EVENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.session"
+    },
+    "SessionFeature": {
+      "constant": "SESSION_FEATURE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.session"
+    },
+    "Shipment": {
+      "constant": "SHIPMENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.shipment"
+    },
+    "SubstitutionRule": {
+      "constant": "SUBSTITUTION_RULE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.substitution"
+    },
+    "TaxonomyAncestor": {
+      "constant": "TAXONOMY_ANCESTOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
+    },
+    "TaxonomyNode": {
+      "constant": "TAXONOMY_NODE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
+    },
+    "TenantKey": {
+      "constant": "TENANT_KEY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "Warehouse": {
+      "constant": "WAREHOUSE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
+    },
+    "WarehouseLoadSummary": {
+      "constant": "WAREHOUSE_LOAD_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.summary"
+    }
+  },
+  "source_transform": "examples.store.transforms.merchandising.catalog.normalize_catalog.NormalizeCatalog",
+  "static_dataflow": {
+    "dependencies": [
+      {
+        "detail": {
+          "backend": "pyspark"
+        },
+        "operation": "transform",
+        "sources": [
+          "catalog"
+        ],
+        "step": null,
+        "target": "NormalizeCatalog"
+      },
+      {
+        "detail": {
+          "input_schema": "CatalogProduct",
+          "output_schema": "CatalogProduct"
+        },
+        "operation": "step",
+        "sources": [
+          "catalog"
+        ],
+        "step": "normalize",
+        "target": "normalize"
+      },
+      {
+        "detail": {
+          "field": "tenant"
+        },
+        "operation": "project",
+        "sources": [
+          "catalog.tenant"
+        ],
+        "step": "normalize",
+        "target": "CatalogProduct.tenant"
+      },
+      {
+        "detail": {
+          "field": "audit"
+        },
+        "operation": "project",
+        "sources": [
+          "catalog.audit"
+        ],
+        "step": "normalize",
+        "target": "CatalogProduct.audit"
+      },
+      {
+        "detail": {
+          "field": "product_id"
+        },
+        "operation": "project",
+        "sources": [
+          "catalog.product_id"
+        ],
+        "step": "normalize",
+        "target": "CatalogProduct.product_id"
+      },
+      {
+        "detail": {
+          "field": "product_name"
+        },
+        "operation": "project",
+        "sources": [
+          "catalog.product_name"
+        ],
+        "step": "normalize",
+        "target": "CatalogProduct.product_name"
+      },
+      {
+        "detail": {
+          "field": "category"
+        },
+        "operation": "project",
+        "sources": [
+          "catalog.category"
+        ],
+        "step": "normalize",
+        "target": "CatalogProduct.category"
+      },
+      {
+        "detail": {
+          "field": "active"
+        },
+        "operation": "project",
+        "sources": [
+          "catalog.active"
+        ],
+        "step": "normalize",
+        "target": "CatalogProduct.active"
+      },
+      {
+        "detail": {
+          "field": "list_price"
+        },
+        "operation": "project",
+        "sources": [
+          "catalog.list_price"
+        ],
+        "step": "normalize",
+        "target": "CatalogProduct.list_price"
+      },
+      {
+        "detail": {
+          "field": "rating"
+        },
+        "operation": "project",
+        "sources": [
+          "catalog.rating"
+        ],
+        "step": "normalize",
+        "target": "CatalogProduct.rating"
+      },
+      {
+        "detail": {
+          "field": "has_promotion"
+        },
+        "operation": "project",
+        "sources": [
+          "catalog.has_promotion"
+        ],
+        "step": "normalize",
+        "target": "CatalogProduct.has_promotion"
+      },
+      {
+        "detail": {
+          "field": "promotion_code"
+        },
+        "operation": "project",
+        "sources": [
+          "catalog.promotion_code"
+        ],
+        "step": "normalize",
+        "target": "CatalogProduct.promotion_code"
+      },
+      {
+        "detail": {
+          "field": "promotion_name"
+        },
+        "operation": "project",
+        "sources": [
+          "catalog.promotion_name"
+        ],
+        "step": "normalize",
+        "target": "CatalogProduct.promotion_name"
+      },
+      {
+        "detail": {
+          "field": "promotion_discount"
+        },
+        "operation": "project",
+        "sources": [
+          "catalog.promotion_discount"
+        ],
+        "step": "normalize",
+        "target": "CatalogProduct.promotion_discount"
+      },
+      {
+        "detail": {
+          "field": "base_score"
+        },
+        "operation": "project",
+        "sources": [
+          "catalog.base_score"
+        ],
+        "step": "normalize",
+        "target": "CatalogProduct.base_score"
+      },
+      {
+        "detail": {
+          "field": "promotion_score"
+        },
+        "operation": "project",
+        "sources": [
+          "catalog.promotion_score"
+        ],
+        "step": "normalize",
+        "target": "CatalogProduct.promotion_score"
+      },
+      {
+        "detail": {
+          "field": "eligible"
+        },
+        "operation": "project",
+        "sources": [
+          "catalog.eligible"
+        ],
+        "step": "normalize",
+        "target": "CatalogProduct.eligible"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "CatalogProduct"
+        ],
+        "step": null,
+        "target": "CatalogProduct.validation.final"
+      }
+    ],
+    "opaque_boundaries": []
+  },
+  "steps": [
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "catalog_product",
+      "joins": [],
+      "name": "normalize",
+      "output_alias": "catalog_product",
+      "output_schema": "CatalogProduct",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "catalog",
+          "lane": "catalog",
+          "schema": "CatalogProduct"
+        }
+      ],
+      "validation": []
+    }
+  ],
+  "target_module": "examples.structure_generated.store.pyspark.transforms.normalize_catalog",
+  "validation": {
+    "outputs": [
+      {
+        "mode": "strict",
+        "name": "normalized",
+        "schema": "CatalogProduct"
+      }
+    ]
+  }
+}

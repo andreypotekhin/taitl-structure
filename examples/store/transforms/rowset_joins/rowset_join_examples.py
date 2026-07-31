@@ -16,4 +16,5 @@ class RowsetJoinExamples(Transform):
     backfilled = stage(BackfillCustomers(reconciliation=reconciled.reconciliation, customers=customers))
     expanded = stage(ExpandCustomerProducts(backfills=backfilled.backfills, products=products))
 
-    candidates = output(OrderProductCandidate, expanded.candidates)
+    candidates = output(OrderProductCandidate)
+    result = output(candidates=expanded.candidates)
