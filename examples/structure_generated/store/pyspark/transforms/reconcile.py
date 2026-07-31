@@ -39,7 +39,7 @@ class ReconcileFulfillmentPlanGenerated:
                     (F.col("fulfilled.tenant.tenant_id") == F.col("fulfillment_plan.tenant.tenant_id"))
                     & (F.col("fulfilled.id") == F.col("fulfillment_plan.order_id"))
                 )
-                & (F.col("fulfilled.product_id") == F.col("fulfillment_plan.product_id"))
+                & (F.col("fulfilled.line_number") == F.col("fulfillment_plan.line_number"))
             ),
             "left",
         )
@@ -47,6 +47,7 @@ class ReconcileFulfillmentPlanGenerated:
             reconciliation.groupBy(
                 F.col("fulfillment_plan.tenant.tenant_id").alias("tenant_id"),
                 F.col("fulfillment_plan.order_id").alias("order_id"),
+                F.col("fulfillment_plan.line_number").alias("line_number"),
                 F.col("fulfillment_plan.product_id").alias("product_id"),
                 F.col("fulfillment_plan.business").alias("business"),
                 F.col("fulfillment_plan.plan_status").alias("planned_status"),
@@ -69,6 +70,7 @@ class ReconcileFulfillmentPlanGenerated:
                 F.col("tenant"),
                 F.col("business"),
                 F.col("order_id"),
+                F.col("line_number"),
                 F.col("product_id"),
                 F.col("planned_status"),
                 F.col("allocated_quantity").alias("planned_allocated_quantity"),

@@ -1,0 +1,44 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "tenant",
+      "name": "tenant",
+      "nullable": false,
+      "type": "TenantKey"
+    },
+    {
+      "column": "audit",
+      "name": "audit",
+      "nullable": false,
+      "type": "AuditStamp"
+    },
+    {
+      "column": "warehouse_id",
+      "name": "warehouse_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "product_id",
+      "name": "product_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "days",
+      "name": "days",
+      "nullable": false,
+      "type": "integer"
+    },
+    {
+      "column": "active",
+      "name": "active",
+      "nullable": false,
+      "type": "boolean"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.store.schemas.fulfillment.inventory.inventory",
+  "name": "LeadTime"
+}

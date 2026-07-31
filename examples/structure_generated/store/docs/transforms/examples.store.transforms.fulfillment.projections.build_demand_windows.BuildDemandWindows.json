@@ -1,0 +1,48 @@
+{
+  "dependencies": [],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "demand",
+      "ordinal": 0,
+      "schema": "Order"
+    }
+  ],
+  "name": "BuildDemandWindows",
+  "outputs": [
+    {
+      "name": "windows",
+      "ordinal": 0,
+      "schema": "DemandWindow"
+    }
+  ],
+  "source": "examples.store.transforms.fulfillment.projections.build_demand_windows.BuildDemandWindows",
+  "step_methods": [
+    {
+      "input_lane": "demand",
+      "input_schema": "Order",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "order",
+          "schema": "Order",
+          "source": "demand"
+        }
+      ],
+      "name": "build",
+      "output_lane": "windows",
+      "output_schema": "DemandWindow",
+      "results": [
+        {
+          "frame": "windows",
+          "lane": "windows",
+          "schema": "DemandWindow"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/build_demand_windows.py",
+    "traceability": "traceability/transforms/build_demand_windows.BuildDemandWindows.json"
+  }
+}

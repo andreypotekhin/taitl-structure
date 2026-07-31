@@ -9,6 +9,7 @@ Module: `examples.store.schemas.fulfillment.planning.plan`
 | `tenant` | `tenant` | `TenantKey` | no |
 | `business` | `business` | `BusinessDate` | no |
 | `order_id` | `order_id` | `string` | no |
+| `line_number` | `line_number` | `integer` | no |
 | `customer_id` | `customer_id` | `string` | no |
 | `product_id` | `product_id` | `string` | no |
 | `requested_quantity` | `requested_quantity` | `long` | no |

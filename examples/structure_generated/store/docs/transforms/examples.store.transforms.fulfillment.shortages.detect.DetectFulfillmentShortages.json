@@ -1,0 +1,70 @@
+{
+  "dependencies": [],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "projections",
+      "ordinal": 0,
+      "schema": "InventoryProjection"
+    }
+  ],
+  "name": "DetectFulfillmentShortages",
+  "outputs": [
+    {
+      "name": "shortages",
+      "ordinal": 0,
+      "schema": "FulfillmentShortage"
+    }
+  ],
+  "source": "examples.store.transforms.fulfillment.shortages.detect.DetectFulfillmentShortages",
+  "step_methods": [
+    {
+      "input_lane": "projections",
+      "input_schema": "InventoryProjection",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "projection",
+          "schema": "InventoryProjection",
+          "source": "projections"
+        }
+      ],
+      "name": "identify",
+      "output_lane": "ranked",
+      "output_schema": "FulfillmentShortageRanked",
+      "results": [
+        {
+          "frame": "ranked",
+          "lane": "ranked",
+          "schema": "FulfillmentShortageRanked"
+        }
+      ]
+    },
+    {
+      "input_lane": "ranked",
+      "input_schema": "FulfillmentShortageRanked",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "shortage",
+          "schema": "FulfillmentShortageRanked",
+          "source": "ranked"
+        }
+      ],
+      "name": "select_first",
+      "output_lane": "shortages",
+      "output_schema": "FulfillmentShortage",
+      "results": [
+        {
+          "frame": "shortages",
+          "lane": "shortages",
+          "schema": "FulfillmentShortage"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/detect.py",
+    "traceability": "traceability/transforms/detect.DetectFulfillmentShortages.json"
+  }
+}

@@ -9,6 +9,7 @@ Module: `examples.store.schemas.fulfillment.demand.demand`
 | `tenant` | `tenant` | `TenantKey` | no |
 | `business` | `business` | `BusinessDate` | no |
 | `order_id` | `order_id` | `string` | no |
+| `line_number` | `line_number` | `integer` | no |
 | `customer_id` | `customer_id` | `string` | no |
 | `customer_name` | `customer_name` | `string` | yes |
 | `customer_tier` | `customer_tier` | `string` | yes |

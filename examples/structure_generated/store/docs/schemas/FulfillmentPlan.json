@@ -20,6 +20,12 @@
       "type": "string"
     },
     {
+      "column": "line_number",
+      "name": "line_number",
+      "nullable": false,
+      "type": "integer"
+    },
+    {
       "column": "customer_id",
       "name": "customer_id",
       "nullable": false,

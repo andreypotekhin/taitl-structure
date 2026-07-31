@@ -58,6 +58,11 @@
       "source": "source:examples.store.transforms.fulfillment.reconcile.ReconcileFulfillmentPlan.reconcile.aggregate.order_id"
     },
     {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.reconcile.ReconcileFulfillmentPlanGenerated.run.step.0.reconcile.aggregate.line_number",
+      "ir": "ir:ReconcileFulfillmentPlan.step.0.reconcile.aggregate.line_number",
+      "source": "source:examples.store.transforms.fulfillment.reconcile.ReconcileFulfillmentPlan.reconcile.aggregate.line_number"
+    },
+    {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.reconcile.ReconcileFulfillmentPlanGenerated.run.step.0.reconcile.aggregate.product_id",
       "ir": "ir:ReconcileFulfillmentPlan.step.0.reconcile.aggregate.product_id",
       "source": "source:examples.store.transforms.fulfillment.reconcile.ReconcileFulfillmentPlan.reconcile.aggregate.product_id"
@@ -139,6 +144,10 @@
       "constant": "CUSTOMER_ORDER_BACKFILL_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.order"
     },
+    "DailyFulfillmentServiceSummary": {
+      "constant": "DAILY_FULFILLMENT_SERVICE_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.service"
+    },
     "DailyFulfillmentSummary": {
       "constant": "DAILY_FULFILLMENT_SUMMARY_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.summary"
@@ -159,6 +168,10 @@
       "constant": "DAILY_RECOMMENDATION_IMPRESSIONS_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.feedback"
     },
+    "DemandWindow": {
+      "constant": "DEMAND_WINDOW_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.projection"
+    },
     "FulfillmentAllocation": {
       "constant": "FULFILLMENT_ALLOCATION_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.plan"
@@ -166,6 +179,10 @@
     "FulfillmentBackorder": {
       "constant": "FULFILLMENT_BACKORDER_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "FulfillmentException": {
+      "constant": "FULFILLMENT_EXCEPTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.exception"
     },
     "FulfillmentOption": {
       "constant": "FULFILLMENT_OPTION_SCHEMA",
@@ -183,9 +200,29 @@
       "constant": "FULFILLMENT_RECONCILIATION_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.reconciliation"
     },
+    "FulfillmentServiceEvaluation": {
+      "constant": "FULFILLMENT_SERVICE_EVALUATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.service"
+    },
+    "FulfillmentServiceTotals": {
+      "constant": "FULFILLMENT_SERVICE_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.service"
+    },
+    "FulfillmentShortage": {
+      "constant": "FULFILLMENT_SHORTAGE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.shortage"
+    },
+    "FulfillmentShortageRanked": {
+      "constant": "FULFILLMENT_SHORTAGE_RANKED_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.shortage"
+    },
+    "FulfillmentSubstitutionOption": {
+      "constant": "FULFILLMENT_SUBSTITUTION_OPTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.substitution"
+    },
     "InboundInventory": {
       "constant": "INBOUND_INVENTORY_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
     },
     "InboundInventoryAvailability": {
       "constant": "INBOUND_INVENTORY_AVAILABILITY_SCHEMA",
@@ -193,7 +230,15 @@
     },
     "InventoryPosition": {
       "constant": "INVENTORY_POSITION_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
+    },
+    "InventoryProjection": {
+      "constant": "INVENTORY_PROJECTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.projection"
+    },
+    "LeadTime": {
+      "constant": "LEAD_TIME_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory_inventory"
     },
     "MerchandisingBoost": {
       "constant": "MERCHANDISING_BOOST_SCHEMA",
@@ -351,9 +396,17 @@
       "constant": "REPLENISHMENT_SUGGESTION_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.plan"
     },
+    "ServiceRiskTarget": {
+      "constant": "SERVICE_RISK_TARGET_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.exception"
+    },
     "Shipment": {
       "constant": "SHIPMENT_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.shipment"
+    },
+    "SubstitutionRule": {
+      "constant": "SUBSTITUTION_RULE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.substitution"
     },
     "TenantKey": {
       "constant": "TENANT_KEY_SCHEMA",
@@ -361,7 +414,7 @@
     },
     "Warehouse": {
       "constant": "WAREHOUSE_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
     },
     "WarehouseLoadSummary": {
       "constant": "WAREHOUSE_LOAD_SUMMARY_SCHEMA",
@@ -409,8 +462,8 @@
           "plan.tenant.tenant_id",
           "fulfilled.id",
           "plan.order_id",
-          "fulfilled.product_id",
-          "plan.product_id"
+          "fulfilled.line_number",
+          "plan.line_number"
         ],
         "step": "reconcile",
         "target": "reconcile.join[1].fulfilled"
@@ -453,6 +506,19 @@
         ],
         "step": "reconcile",
         "target": "FulfillmentReconciliation.order_id"
+      },
+      {
+        "detail": {
+          "field": "line_number",
+          "function": "key",
+          "key": "line_number"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "plan.line_number"
+        ],
+        "step": "reconcile",
+        "target": "FulfillmentReconciliation.line_number"
       },
       {
         "detail": {

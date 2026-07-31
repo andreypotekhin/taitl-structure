@@ -1,0 +1,74 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "tenant",
+      "name": "tenant",
+      "nullable": false,
+      "type": "TenantKey"
+    },
+    {
+      "column": "order_id",
+      "name": "order_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "line_number",
+      "name": "line_number",
+      "nullable": false,
+      "type": "integer"
+    },
+    {
+      "column": "customer_id",
+      "name": "customer_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "original_product_id",
+      "name": "original_product_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "substitute_product_id",
+      "name": "substitute_product_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "equivalence_group",
+      "name": "equivalence_group",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "policy_rank",
+      "name": "policy_rank",
+      "nullable": false,
+      "type": "integer"
+    },
+    {
+      "column": "available_to_promise",
+      "name": "available_to_promise",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "option_rank",
+      "name": "option_rank",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "reason",
+      "name": "reason",
+      "nullable": false,
+      "type": "string"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.store.schemas.fulfillment.substitutions.substitution",
+  "name": "FulfillmentSubstitutionOption"
+}

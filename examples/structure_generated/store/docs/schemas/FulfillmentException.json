@@ -1,0 +1,104 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "tenant",
+      "name": "tenant",
+      "nullable": false,
+      "type": "TenantKey"
+    },
+    {
+      "column": "business",
+      "name": "business",
+      "nullable": true,
+      "type": "BusinessDate"
+    },
+    {
+      "column": "order_id",
+      "name": "order_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "line_number",
+      "name": "line_number",
+      "nullable": true,
+      "type": "integer"
+    },
+    {
+      "column": "product_id",
+      "name": "product_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "warehouse_id",
+      "name": "warehouse_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "target_id",
+      "name": "target_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "reason",
+      "name": "reason",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "severity",
+      "name": "severity",
+      "nullable": false,
+      "type": "integer"
+    },
+    {
+      "column": "priority_score",
+      "name": "priority_score",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "priority_rank",
+      "name": "priority_rank",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "due_date",
+      "name": "due_date",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "column": "days_until_due",
+      "name": "days_until_due",
+      "nullable": true,
+      "type": "integer"
+    },
+    {
+      "column": "shortage_quantity",
+      "name": "shortage_quantity",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "customer_tier",
+      "name": "customer_tier",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "recommended_action",
+      "name": "recommended_action",
+      "nullable": false,
+      "type": "string"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.store.schemas.fulfillment.shortages.exception",
+  "name": "FulfillmentException"
+}

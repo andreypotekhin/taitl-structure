@@ -63,6 +63,7 @@ class EnrichOrdersGenerated:
             F.col("order_raw.audit"),
             F.col("order_raw.business"),
             F.lower(F.trim(F.col("order_raw.id"))).alias("id"),
+            F.col("order_raw.line_number"),
             F.lower(F.trim(F.col("order_raw.customer_id"))).alias("customer_id"),
             F.lower(F.trim(F.col("order_raw.product_id"))).alias("product_id"),
             F.lower(F.trim(F.col("order_raw.promo-code"))).alias("promotion_code"),
@@ -95,6 +96,7 @@ class EnrichOrdersGenerated:
             F.col("order_normalized.audit"),
             F.col("order_normalized.business"),
             F.col("order_normalized.id"),
+            F.col("order_normalized.line_number"),
             F.col("order_normalized.customer_id"),
             F.col("order_normalized.product_id"),
             F.col("order_normalized.promotion_code"),
@@ -125,6 +127,7 @@ class EnrichOrdersGenerated:
             F.col("order_normalized.audit"),
             F.col("order_normalized.business"),
             F.col("order_normalized.id"),
+            F.col("order_normalized.line_number"),
             F.col("order_normalized.customer_id"),
             F.col("order_normalized.product_id"),
             F.col("order_normalized.promotion_code"),
@@ -190,6 +193,7 @@ class EnrichOrdersGenerated:
             F.col("order_with_customer.audit"),
             F.col("order_with_customer.business"),
             F.col("order_with_customer.id"),
+            F.col("order_with_customer.line_number"),
             F.col("order_with_customer.customer_id"),
             F.col("order_with_customer.product_id"),
             F.col("order_with_customer.promotion_code"),
@@ -236,6 +240,7 @@ class EnrichOrdersGenerated:
             F.col("order_with_product.audit"),
             F.col("order_with_product.business"),
             F.col("order_with_product.id"),
+            F.col("order_with_product.line_number"),
             F.col("order_with_product.customer_id"),
             F.col("order_with_product.product_id"),
             F.col("order_with_product.promotion_code"),
@@ -265,8 +270,11 @@ class EnrichOrdersGenerated:
         orders = orders.join(
             shipments_joined,
             (
-                (F.col("shipments.tenant.tenant_id") == F.col("order_with_promotion.tenant.tenant_id"))
-                & (F.col("shipments.order_id") == F.col("order_with_promotion.id"))
+                (
+                    (F.col("shipments.tenant.tenant_id") == F.col("order_with_promotion.tenant.tenant_id"))
+                    & (F.col("shipments.order_id") == F.col("order_with_promotion.id"))
+                )
+                & (F.col("shipments.line_number") == F.col("order_with_promotion.line_number"))
             ),
             "inner",
         )
@@ -275,6 +283,7 @@ class EnrichOrdersGenerated:
             F.col("order_with_promotion.audit"),
             F.col("order_with_promotion.business"),
             F.col("order_with_promotion.id"),
+            F.col("order_with_promotion.line_number"),
             F.col("order_with_promotion.customer_id"),
             F.col("order_with_promotion.product_id"),
             F.col("order_with_promotion.promotion_code"),
@@ -308,6 +317,7 @@ class EnrichOrdersGenerated:
             F.col("order_fulfillment.tenant"),
             F.col("order_fulfillment.business"),
             F.col("order_fulfillment.id"),
+            F.col("order_fulfillment.line_number"),
             F.col("order_fulfillment.customer_id"),
             F.col("order_fulfillment.customer_name"),
             F.col("order_fulfillment.customer_tier"),

@@ -9,6 +9,7 @@ Module: `examples.store.schemas.order`
 | `tenant` | `tenant` | `TenantKey` | no |
 | `business` | `business` | `BusinessDate` | no |
 | `id` | `id` | `string` | no |
+| `line_number` | `line_number` | `integer` | no |
 | `customer_id` | `customer_id` | `string` | no |
 | `customer_name` | `customer_name` | `string` | yes |
 | `customer_tier` | `customer_tier` | `string` | yes |

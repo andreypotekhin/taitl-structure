@@ -9,6 +9,7 @@ FULFILLMENT_RECONCILIATION_SCHEMA = T.StructType([
     T.StructField("tenant", TENANT_KEY_SCHEMA, False),
     T.StructField("business", BUSINESS_DATE_SCHEMA, False),
     T.StructField("order_id", T.StringType(), False),
+    T.StructField("line_number", T.IntegerType(), False),
     T.StructField("product_id", T.StringType(), False),
     T.StructField("planned_status", T.StringType(), False),
     T.StructField("planned_allocated_quantity", T.LongType(), False),

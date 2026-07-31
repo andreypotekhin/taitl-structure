@@ -14,6 +14,9 @@ Source: `examples.store.transforms.fulfillment.workflow.Fulfillment`
 - `warehouses`: `Warehouse`
 - `inventory_positions`: `InventoryPosition`
 - `inbound_inventory`: `InboundInventory`
+- `lead_times`: `LeadTime`
+- `substitution_rules`: `SubstitutionRule`
+- `service_targets`: `ServiceRiskTarget`
 - `fulfilled`: `OrderFulfillment`
 
 ## Outputs
@@ -26,6 +29,13 @@ Source: `examples.store.transforms.fulfillment.workflow.Fulfillment`
 - `replenishment_suggestions`: `ReplenishmentSuggestion`
 - `daily_summary`: `DailyFulfillmentSummary`
 - `warehouse_load_summary`: `WarehouseLoadSummary`
+- `demand_windows`: `DemandWindow`
+- `inventory_projections`: `InventoryProjection`
+- `shortages`: `FulfillmentShortage`
+- `substitution_options`: `FulfillmentSubstitutionOption`
+- `exceptions`: `FulfillmentException`
+- `service_evaluations`: `FulfillmentServiceEvaluation`
+- `daily_service_summary`: `DailyFulfillmentServiceSummary`
 
 ## Step methods
 
@@ -43,10 +53,27 @@ Source: `examples.store.transforms.fulfillment.workflow.Fulfillment`
 - `planned.backorder`: `FulfillmentPreferredOption` -> `FulfillmentBackorder`
 - `planned.plan`: `FulfillmentPreferredOption` -> `FulfillmentPlan`
 - `planned.suggest_replenishment`: `FulfillmentPreferredOption` -> `ReplenishmentSuggestion`
+- `windows.build`: `Order` -> `DemandWindow`
+- `projections.summarize_inbound`: `InboundInventory` -> `InboundInventory`
+- `projections.project_inventory`: `DemandWindow` -> `InventoryProjection`
+- `shortage_stage.identify`: `InventoryProjection` -> `FulfillmentShortageRanked`
+- `shortage_stage.select_first`: `FulfillmentShortageRanked` -> `FulfillmentShortage`
+- `substitution_stage.find_candidates`: `Order` -> `FulfillmentSubstitutionOption`
+- `substitution_stage.rank_candidates`: `FulfillmentSubstitutionOption` -> `FulfillmentSubstitutionOption`
+- `exception_stage.shortage_exception`: `FulfillmentShortage` -> `FulfillmentException`
+- `exception_stage.plan_exception`: `FulfillmentPlan` -> `FulfillmentException`
+- `exception_stage.substitution_exception`: `FulfillmentSubstitutionOption` -> `FulfillmentException`
+- `exception_stage.merge_exceptions`: `FulfillmentException` -> `FulfillmentException`
+- `exception_stage.rank_exceptions`: `FulfillmentException` -> `FulfillmentException`
 - `reconciled.reconcile`: `FulfillmentPlan` -> `FulfillmentReconciliation`
 - `summarized.summarize_daily_totals`: `FulfillmentPlan` -> `DailyFulfillmentSummary`
 - `summarized.publish_daily_summary`: `DailyFulfillmentSummary` -> `DailyFulfillmentSummary`
 - `summarized.summarize_warehouse_load`: `FulfillmentAllocation` -> `WarehouseLoadSummary`
+- `evaluated.evaluate`: `FulfillmentPlan` -> `FulfillmentServiceTotals`
+- `evaluated.classify`: `FulfillmentServiceTotals` -> `FulfillmentServiceEvaluation`
+- `evaluated.publish_evaluations`: `FulfillmentServiceEvaluation` -> `FulfillmentServiceEvaluation`
+- `evaluated.summarize`: `FulfillmentServiceEvaluation` -> `DailyFulfillmentServiceSummary`
+- `evaluated.publish_summary`: `DailyFulfillmentServiceSummary` -> `DailyFulfillmentServiceSummary`
 
 ## Dependencies
 
@@ -54,15 +81,26 @@ Source: `examples.store.transforms.fulfillment.workflow.Fulfillment`
 - `blocked_products`
 - `customer`
 - `customers`
+- `exception_stage__plan_exceptions`
+- `exception_stage__substitution_exceptions`
 - `fulfilled`
 - `inbound`
 - `inventory`
 - `inventory_positions`
+- `lead_time`
+- `lead_times`
+- `order`
 - `planned__inbound_availability`
+- `prepared__demand`
 - `product`
 - `products`
+- `projections__inbound_facts`
 - `promotion`
 - `promotions`
+- `rule`
+- `service_targets`
+- `substitution_rules`
+- `target`
 - `warehouse`
 - `warehouses`
 

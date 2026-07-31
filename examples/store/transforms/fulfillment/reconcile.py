@@ -15,11 +15,12 @@ class ReconcileFulfillmentPlan(Transform):
         left_join(
             on=(fulfilled.tenant.tenant_id == plan.tenant.tenant_id)
             & (fulfilled.id == plan.order_id)
-            & (fulfilled.product_id == plan.product_id)
+            & (fulfilled.line_number == plan.line_number)
         )
         group_by(
             tenant_id=plan.tenant.tenant_id,
             order_id=plan.order_id,
+            line_number=plan.line_number,
             product_id=plan.product_id,
             business=plan.business,
             planned_status=plan.plan_status,

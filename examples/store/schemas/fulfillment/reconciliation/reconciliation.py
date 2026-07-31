@@ -7,6 +7,7 @@ class FulfillmentReconciliation(Schema):
     tenant = struct(TenantKey, nullable=False)
     business = struct(BusinessDate, nullable=False)
     order_id = string(nullable=False)
+    line_number = integer(nullable=False)
     product_id = string(nullable=False)
     planned_status = string(nullable=False)
     planned_allocated_quantity = long(nullable=False)

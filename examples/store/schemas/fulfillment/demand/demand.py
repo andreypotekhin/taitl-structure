@@ -7,6 +7,7 @@ class Order(Schema):
     tenant = struct(TenantKey, nullable=False)
     business = struct(BusinessDate, nullable=False)
     order_id = string(nullable=False)
+    line_number = integer(nullable=False)
     customer_id = string(nullable=False)
     customer_name = string(nullable=True)
     customer_tier = string(nullable=True)

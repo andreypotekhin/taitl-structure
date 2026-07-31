@@ -228,6 +228,26 @@ def test_fulfillment_pipeline_generated_code_exposes_overall_flow() -> None:
         assert fragment in transform
 
 
+def test_fulfillment_followup_generated_code_exposes_temporal_policy_and_service_contracts() -> None:
+    generated = render_store_example()
+    order = generated["examples/structure_generated/store/pyspark/transforms/order.py"]
+    projection = generated["examples/structure_generated/store/pyspark/transforms/project_inventory.py"]
+    substitution = generated["examples/structure_generated/store/pyspark/transforms/find.py"]
+    exception = generated["examples/structure_generated/store/pyspark/transforms/exceptions.py"]
+    service = generated["examples/structure_generated/store/pyspark/transforms/service.py"]
+
+    assert '(F.col("shipments.line_number") == F.col("order_with_promotion.line_number"))' in order
+    assert "F.date_add(F.col(\"demand_window.window_start\")" in projection
+    assert "Window.partitionBy" in projection
+    assert "F.row_number()" in substitution
+    assert 'F.lit(\'substitution_available\')' in exception
+    assert 'F.lit(\'service_target_at_risk\')' in exception
+    assert 'F.lit(\'on_time_in_full\')' in service
+    assert 'F.lit(\'late_in_full\')' in service
+    assert 'F.lit(\'on_time_partial\')' in service
+    assert 'F.lit(\'not_shipped\')' in service
+
+
 def test_merchandising_recommendations_match_independent_reference_rows() -> None:
     rows = _reference_merchandise(
         requests=[
@@ -840,11 +860,13 @@ def _order(
     total: str,
     discount: str,
     quantity: int | None,
+    line_number: int = 1,
 ) -> Row:
     return {
         "tenant": {"tenant_id": "t1"},
         "business": {"order_date": "2026-01-02"},
         "id": id,
+        "line_number": line_number,
         "customer_id": customer_id,
         "product_id": product_id,
         "promotion_code": promotion_code,

@@ -7,14 +7,18 @@ from pyspark.sql import Window
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.store.runtime.schema_assert import TransformResult, assert_schema, project_schema
-from examples.structure_generated.store.pyspark.schemas.common import BUSINESS_DATE_SCHEMA, TENANT_KEY_SCHEMA
+from examples.structure_generated.store.pyspark.schemas.common import (
+    AUDIT_STAMP_SCHEMA,
+    BUSINESS_DATE_SCHEMA,
+    TENANT_KEY_SCHEMA,
+)
 from examples.structure_generated.store.pyspark.schemas.customer import CUSTOMER_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.demand import ORDER_SCHEMA
-from examples.structure_generated.store.pyspark.schemas.inventory import (
-    INBOUND_INVENTORY_SCHEMA,
-    INVENTORY_POSITION_SCHEMA,
-    WAREHOUSE_SCHEMA,
+from examples.structure_generated.store.pyspark.schemas.exception import (
+    FULFILLMENT_EXCEPTION_SCHEMA,
+    SERVICE_RISK_TARGET_SCHEMA,
 )
+from examples.structure_generated.store.pyspark.schemas.inventory_inventory import LEAD_TIME_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.order import (
     ORDER_FULFILLMENT_SCHEMA,
     ORDER_NORMALIZED_SCHEMA,
@@ -29,9 +33,31 @@ from examples.structure_generated.store.pyspark.schemas.plan import (
     FULFILLMENT_PLAN_SCHEMA,
     REPLENISHMENT_SUGGESTION_SCHEMA,
 )
+from examples.structure_generated.store.pyspark.schemas.planning_inventory import (
+    INBOUND_INVENTORY_SCHEMA,
+    INVENTORY_POSITION_SCHEMA,
+    WAREHOUSE_SCHEMA,
+)
 from examples.structure_generated.store.pyspark.schemas.product import BLOCKED_PRODUCT_SCHEMA, PRODUCT_SCHEMA
+from examples.structure_generated.store.pyspark.schemas.projection import (
+    DEMAND_WINDOW_SCHEMA,
+    INVENTORY_PROJECTION_SCHEMA,
+)
 from examples.structure_generated.store.pyspark.schemas.promotion import PROMOTION_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.reconciliation import FULFILLMENT_RECONCILIATION_SCHEMA
+from examples.structure_generated.store.pyspark.schemas.service import (
+    DAILY_FULFILLMENT_SERVICE_SUMMARY_SCHEMA,
+    FULFILLMENT_SERVICE_EVALUATION_SCHEMA,
+    FULFILLMENT_SERVICE_TOTALS_SCHEMA,
+)
+from examples.structure_generated.store.pyspark.schemas.shortage import (
+    FULFILLMENT_SHORTAGE_RANKED_SCHEMA,
+    FULFILLMENT_SHORTAGE_SCHEMA,
+)
+from examples.structure_generated.store.pyspark.schemas.substitution import (
+    FULFILLMENT_SUBSTITUTION_OPTION_SCHEMA,
+    SUBSTITUTION_RULE_SCHEMA,
+)
 from examples.structure_generated.store.pyspark.schemas.summary import (
     DAILY_FULFILLMENT_SUMMARY_SCHEMA,
     WAREHOUSE_LOAD_SUMMARY_SCHEMA,
@@ -57,6 +83,7 @@ class PrepareOrderDemandGenerated:
             F.col("order_raw.audit"),
             F.col("order_raw.business"),
             F.lower(F.trim(F.col("order_raw.id"))).alias("id"),
+            F.col("order_raw.line_number"),
             F.lower(F.trim(F.col("order_raw.customer_id"))).alias("customer_id"),
             F.lower(F.trim(F.col("order_raw.product_id"))).alias("product_id"),
             F.lower(F.trim(F.col("order_raw.promo-code"))).alias("promotion_code"),
@@ -93,6 +120,7 @@ class PrepareOrderDemandGenerated:
             F.col("order_normalized.audit"),
             F.col("order_normalized.business"),
             F.col("order_normalized.id"),
+            F.col("order_normalized.line_number"),
             F.col("order_normalized.customer_id"),
             F.col("order_normalized.product_id"),
             F.col("order_normalized.promotion_code"),
@@ -127,6 +155,7 @@ class PrepareOrderDemandGenerated:
             F.col("order_normalized.audit"),
             F.col("order_normalized.business"),
             F.col("order_normalized.id"),
+            F.col("order_normalized.line_number"),
             F.col("order_normalized.customer_id"),
             F.col("order_normalized.product_id"),
             F.col("order_normalized.promotion_code"),
@@ -197,6 +226,7 @@ class PrepareOrderDemandGenerated:
             F.col("order_with_customer.audit"),
             F.col("order_with_customer.business"),
             F.col("order_with_customer.id"),
+            F.col("order_with_customer.line_number"),
             F.col("order_with_customer.customer_id"),
             F.col("order_with_customer.product_id"),
             F.col("order_with_customer.promotion_code"),
@@ -247,6 +277,7 @@ class PrepareOrderDemandGenerated:
             F.col("order_with_product.audit"),
             F.col("order_with_product.business"),
             F.col("order_with_product.id"),
+            F.col("order_with_product.line_number"),
             F.col("order_with_product.customer_id"),
             F.col("order_with_product.product_id"),
             F.col("order_with_product.promotion_code"),
@@ -280,6 +311,7 @@ class PrepareOrderDemandGenerated:
             F.col("order_with_promotion.tenant"),
             F.col("order_with_promotion.business"),
             F.col("order_with_promotion.id").alias("order_id"),
+            F.col("order_with_promotion.line_number"),
             F.col("order_with_promotion.customer_id"),
             F.col("order_with_promotion.customer_name"),
             F.col("order_with_promotion.customer_tier"),
@@ -374,6 +406,7 @@ class PlanFulfillmentGenerated:
             F.col("order.tenant"),
             F.col("order.business"),
             F.col("order.order_id"),
+            F.col("order.line_number"),
             F.col("order.customer_id"),
             F.col("order.customer_name"),
             F.col("order.customer_tier"),
@@ -419,6 +452,7 @@ class PlanFulfillmentGenerated:
             F.col("fulfillment_option.tenant"),
             F.col("fulfillment_option.business"),
             F.col("fulfillment_option.order_id"),
+            F.col("fulfillment_option.line_number"),
             F.col("fulfillment_option.customer_id"),
             F.col("fulfillment_option.customer_name"),
             F.col("fulfillment_option.customer_tier"),
@@ -446,7 +480,7 @@ class PlanFulfillmentGenerated:
                 Window.partitionBy(
                     F.col("fulfillment_option.tenant.tenant_id"),
                     F.col("fulfillment_option.order_id"),
-                    F.col("fulfillment_option.product_id"),
+                    F.col("fulfillment_option.line_number"),
                 ).orderBy(
                     F.when(
                         (F.col("fulfillment_option.warehouse_region") == F.col("fulfillment_option.customer_region")),
@@ -482,6 +516,7 @@ class PlanFulfillmentGenerated:
             F.col("fulfillment_preferred_option.tenant"),
             F.col("fulfillment_preferred_option.business"),
             F.col("fulfillment_preferred_option.order_id"),
+            F.col("fulfillment_preferred_option.line_number"),
             F.col("fulfillment_preferred_option.customer_id"),
             F.col("fulfillment_preferred_option.customer_name"),
             F.col("fulfillment_preferred_option.customer_tier"),
@@ -526,6 +561,7 @@ class PlanFulfillmentGenerated:
             F.col("fulfillment_preferred_option.tenant"),
             F.col("fulfillment_preferred_option.business"),
             F.col("fulfillment_preferred_option.order_id"),
+            F.col("fulfillment_preferred_option.line_number"),
             F.col("fulfillment_preferred_option.customer_id"),
             F.col("fulfillment_preferred_option.product_id"),
             F.col("fulfillment_preferred_option.warehouse_id"),
@@ -561,6 +597,7 @@ class PlanFulfillmentGenerated:
             F.col("fulfillment_preferred_option.tenant"),
             F.col("fulfillment_preferred_option.business"),
             F.col("fulfillment_preferred_option.order_id"),
+            F.col("fulfillment_preferred_option.line_number"),
             F.col("fulfillment_preferred_option.customer_id"),
             F.col("fulfillment_preferred_option.product_id"),
             F.when(
@@ -608,6 +645,7 @@ class PlanFulfillmentGenerated:
             F.col("fulfillment_preferred_option.tenant"),
             F.col("fulfillment_preferred_option.business"),
             F.col("fulfillment_preferred_option.order_id"),
+            F.col("fulfillment_preferred_option.line_number"),
             F.col("fulfillment_preferred_option.customer_id"),
             F.col("fulfillment_preferred_option.product_id"),
             F.col("fulfillment_preferred_option.requested_quantity"),
@@ -821,8 +859,613 @@ class PlanFulfillmentGenerated:
         }
 
 
+class BuildDemandWindowsGenerated:
+    def _step_windows_build_14(self, frames):
+        # Step method: windows.build
+        windows__windows = frames["prepared__demand"].alias("order")
+        windows__windows = windows__windows.where((F.col("order.business.order_date").isNotNull()))
+        windows__windows = (
+            windows__windows.groupBy(
+                F.col("order.tenant.tenant_id").alias("tenant_id"),
+                F.col("order.product_id").alias("product_id"),
+                F.col("order.business.order_date").alias("window_start"),
+                F.col("order.business.order_date").alias("window_end"),
+            )
+            .agg(
+                F.first(F.col("order.tenant"), ignorenulls=False).alias("tenant"),
+                F.sum(F.col("order.requested_quantity")).cast(T.LongType()).alias("requested_quantity"),
+                F.count(F.lit(1)).cast(T.LongType()).alias("demand_line_count"),
+            )
+            .select(
+                F.col("tenant"),
+                F.col("product_id"),
+                F.col("window_start"),
+                F.col("window_start").alias("window_end"),
+                F.col("requested_quantity"),
+                F.col("demand_line_count"),
+            )
+        )
+        assert_schema(windows__windows, DEMAND_WINDOW_SCHEMA, name="DemandWindow", mode="strict")
+        return {
+            "windows__windows": windows__windows,
+        }
+
+
+class ProjectInventoryGenerated:
+    def _step_projections_summarize_inbound_15(self, frames):
+        # Step method: projections.summarize_inbound
+        projections__inbound_facts = frames["inbound_inventory"].alias("inbound_inventory")
+        projections__inbound_facts = (
+            projections__inbound_facts.groupBy(
+                F.col("inbound_inventory.tenant.tenant_id").alias("tenant_id"),
+                F.col("inbound_inventory.audit").alias("audit"),
+                F.col("inbound_inventory.warehouse_id").alias("warehouse_id"),
+                F.col("inbound_inventory.product_id").alias("product_id"),
+                F.col("inbound_inventory.expected_at").alias("expected_at"),
+                F.col("inbound_inventory.source_type").alias("source_type"),
+            )
+            .agg(
+                F.first(F.col("inbound_inventory.tenant"), ignorenulls=False).alias("tenant"),
+                F.sum(F.col("inbound_inventory.expected_quantity")).cast(T.LongType()).alias("expected_quantity"),
+            )
+            .select(
+                F.col("tenant"),
+                F.col("audit"),
+                F.col("warehouse_id"),
+                F.col("product_id"),
+                F.col("expected_quantity"),
+                F.col("expected_at"),
+                F.col("source_type"),
+            )
+        )
+        assert_schema(projections__inbound_facts, INBOUND_INVENTORY_SCHEMA, name="InboundInventory", mode="strict")
+        return {
+            "projections__inbound_facts": projections__inbound_facts,
+        }
+
+    def _step_projections_project_inventory_16(self, frames):
+        # Step method: projections.project_inventory
+        projections__projections = frames["windows__windows"].alias("demand_window")
+        inventory_positions_joined = frames["inventory_positions"].alias("inventory_positions")
+        projections__projections = projections__projections.join(
+            inventory_positions_joined,
+            (
+                (
+                    (F.col("inventory_positions.tenant.tenant_id") == F.col("demand_window.tenant.tenant_id"))
+                    & (F.col("inventory_positions.product_id") == F.col("demand_window.product_id"))
+                )
+                & (F.col("demand_window.window_start") >= F.col("inventory_positions.as_of"))
+            ),
+            "inner",
+        )
+        projections__inbound_facts_2_joined = frames["projections__inbound_facts"].alias("projections__inbound_facts_2")
+        projections__projections = projections__projections.join(
+            projections__inbound_facts_2_joined,
+            (
+                (
+                    (
+                        (
+                            F.col("projections__inbound_facts_2.tenant.tenant_id")
+                            == F.col("inventory_positions.tenant.tenant_id")
+                        )
+                        & (
+                            F.col("projections__inbound_facts_2.warehouse_id")
+                            == F.col("inventory_positions.warehouse_id")
+                        )
+                    )
+                    & (F.col("projections__inbound_facts_2.product_id") == F.col("inventory_positions.product_id"))
+                )
+                & (F.col("projections__inbound_facts_2.expected_at") == F.col("demand_window.window_start"))
+            ),
+            "left",
+        )
+        lead_times_3_joined = frames["lead_times"].alias("lead_times_3")
+        projections__projections = projections__projections.join(
+            lead_times_3_joined,
+            (
+                (
+                    (
+                        (F.col("lead_times_3.tenant.tenant_id") == F.col("inventory_positions.tenant.tenant_id"))
+                        & (F.col("lead_times_3.warehouse_id") == F.col("inventory_positions.warehouse_id"))
+                    )
+                    & (F.col("lead_times_3.product_id") == F.col("inventory_positions.product_id"))
+                )
+                & F.col("lead_times_3.active")
+            ),
+            "left",
+        )
+        projections__projections = projections__projections.select(
+            F.col("inventory_positions.tenant"),
+            F.col("inventory_positions.warehouse_id"),
+            F.col("inventory_positions.product_id"),
+            F.col("demand_window.window_start"),
+            F.col("demand_window.window_end"),
+            F.date_add(F.col("demand_window.window_start"), F.coalesce(F.col("lead_times_3.days"), F.lit(0))).alias(
+                "usable_at"
+            ),
+            (F.col("inventory_positions.on_hand_quantity") - F.col("inventory_positions.reserved_quantity")).alias(
+                "opening_quantity"
+            ),
+            F.coalesce(F.col("projections__inbound_facts_2.expected_quantity"), F.lit(0)).alias("inbound_quantity"),
+            F.col("demand_window.requested_quantity").alias("demand_quantity"),
+            F.col("inventory_positions.reserved_quantity"),
+            (
+                (F.col("inventory_positions.on_hand_quantity") - F.col("inventory_positions.reserved_quantity"))
+                + F.sum(
+                    (
+                        F.coalesce(F.col("projections__inbound_facts_2.expected_quantity"), F.lit(0))
+                        - F.col("demand_window.requested_quantity")
+                    )
+                ).over(
+                    Window.partitionBy(
+                        F.col("inventory_positions.tenant.tenant_id"),
+                        F.col("inventory_positions.warehouse_id"),
+                        F.col("inventory_positions.product_id"),
+                    )
+                    .orderBy(F.col("demand_window.window_start").asc(), F.col("demand_window.window_end").asc())
+                    .rowsBetween(Window.unboundedPreceding, Window.currentRow)
+                )
+            ).alias("projected_available_quantity"),
+            F.col("inventory_positions.safety_stock_quantity"),
+        )
+        assert_schema(projections__projections, INVENTORY_PROJECTION_SCHEMA, name="InventoryProjection", mode="strict")
+        return {
+            "projections__projections": projections__projections,
+        }
+
+
+class DetectFulfillmentShortagesGenerated:
+    def _step_shortage_stage_identify_17(self, frames):
+        # Step method: shortage_stage.identify
+        shortage_stage__ranked = frames["projections__projections"].alias("inventory_projection")
+        shortage_stage__ranked = shortage_stage__ranked.where(
+            (
+                (
+                    F.col("inventory_projection.projected_available_quantity")
+                    < F.col("inventory_projection.safety_stock_quantity")
+                )
+            )
+        )
+        shortage_stage__ranked = shortage_stage__ranked.select(
+            F.col("inventory_projection.tenant"),
+            F.col("inventory_projection.warehouse_id"),
+            F.col("inventory_projection.product_id"),
+            F.col("inventory_projection.window_start").alias("first_shortage_at"),
+            (
+                F.col("inventory_projection.safety_stock_quantity")
+                - F.col("inventory_projection.projected_available_quantity")
+            ).alias("shortage_quantity"),
+            F.col("inventory_projection.projected_available_quantity"),
+            F.col("inventory_projection.safety_stock_quantity"),
+            F.lit('below_safety_stock').alias("reason"),
+            F.row_number()
+            .over(
+                Window.partitionBy(
+                    F.col("inventory_projection.tenant.tenant_id"),
+                    F.col("inventory_projection.warehouse_id"),
+                    F.col("inventory_projection.product_id"),
+                ).orderBy(F.col("inventory_projection.window_start").asc())
+            )
+            .cast(T.LongType())
+            .alias("shortage_ordinal"),
+        )
+        assert_schema(
+            shortage_stage__ranked, FULFILLMENT_SHORTAGE_RANKED_SCHEMA, name="FulfillmentShortageRanked", mode="strict"
+        )
+        return {
+            "shortage_stage__ranked": shortage_stage__ranked,
+        }
+
+    def _step_shortage_stage_select_first_18(self, frames):
+        # Step method: shortage_stage.select_first
+        shortage_stage__shortages = frames["shortage_stage__ranked"].alias("fulfillment_shortage_ranked")
+        shortage_stage__shortages = shortage_stage__shortages.where(
+            ((F.col("fulfillment_shortage_ranked.shortage_ordinal") == F.lit(1)))
+        )
+        shortage_stage__shortages = shortage_stage__shortages.select(
+            F.col("fulfillment_shortage_ranked.tenant"),
+            F.col("fulfillment_shortage_ranked.warehouse_id"),
+            F.col("fulfillment_shortage_ranked.product_id"),
+            F.col("fulfillment_shortage_ranked.first_shortage_at"),
+            F.col("fulfillment_shortage_ranked.shortage_quantity"),
+            F.col("fulfillment_shortage_ranked.projected_available_quantity"),
+            F.col("fulfillment_shortage_ranked.safety_stock_quantity"),
+            F.col("fulfillment_shortage_ranked.reason"),
+        )
+        assert_schema(shortage_stage__shortages, FULFILLMENT_SHORTAGE_SCHEMA, name="FulfillmentShortage", mode="strict")
+        return {
+            "shortage_stage__shortages": shortage_stage__shortages,
+        }
+
+
+class FindFulfillmentSubstitutionsGenerated:
+    def _step_substitution_stage_find_candidates_19(self, frames):
+        # Step method: substitution_stage.find_candidates
+        substitution_stage__candidates = frames["prepared__demand"].alias("order")
+        substitution_rules_joined = frames["substitution_rules"].alias("substitution_rules")
+        substitution_stage__candidates = substitution_stage__candidates.join(
+            substitution_rules_joined,
+            (
+                (
+                    (F.col("substitution_rules.tenant.tenant_id") == F.col("order.tenant.tenant_id"))
+                    & (F.col("substitution_rules.product_id") == F.col("order.product_id"))
+                )
+                & F.col("substitution_rules.active")
+            ),
+            "inner",
+        )
+        inventory_positions_2_joined = frames["inventory_positions"].alias("inventory_positions_2")
+        substitution_stage__candidates = substitution_stage__candidates.join(
+            inventory_positions_2_joined,
+            (
+                (F.col("inventory_positions_2.tenant.tenant_id") == F.col("order.tenant.tenant_id"))
+                & (F.col("inventory_positions_2.product_id") == F.col("substitution_rules.substitute_product_id"))
+            ),
+            "left",
+        )
+        substitution_stage__candidates = (
+            substitution_stage__candidates.groupBy(
+                F.col("order.tenant.tenant_id").alias("tenant_id"),
+                F.col("order.order_id").alias("order_id"),
+                F.col("order.line_number").alias("line_number"),
+                F.col("order.customer_id").alias("customer_id"),
+                F.col("order.product_id").alias("original_product_id"),
+                F.col("substitution_rules.substitute_product_id").alias("substitute_product_id"),
+                F.col("substitution_rules.equivalence_group").alias("equivalence_group"),
+                F.col("substitution_rules.policy_rank").alias("policy_rank"),
+            )
+            .agg(
+                F.first(F.col("order.tenant"), ignorenulls=False).alias("tenant"),
+                F.sum(
+                    F.coalesce(
+                        F.when(
+                            (
+                                F.col("inventory_positions_2.on_hand_quantity")
+                                > F.col("inventory_positions_2.reserved_quantity")
+                            ),
+                            (
+                                F.col("inventory_positions_2.on_hand_quantity")
+                                - F.col("inventory_positions_2.reserved_quantity")
+                            ),
+                        ).otherwise(F.lit(0)),
+                        F.lit(0),
+                    )
+                )
+                .cast(T.LongType())
+                .alias("available_to_promise"),
+                F.sum(F.lit(0)).cast(T.LongType()).alias("option_rank"),
+                F.min(F.lit('policy_approved_substitute')).cast(T.StringType()).alias("reason"),
+            )
+            .select(
+                F.col("tenant"),
+                F.col("order_id"),
+                F.col("line_number"),
+                F.col("customer_id"),
+                F.col("original_product_id"),
+                F.col("substitute_product_id"),
+                F.col("equivalence_group"),
+                F.col("policy_rank"),
+                F.col("available_to_promise"),
+                F.col("option_rank"),
+                F.col("reason"),
+            )
+        )
+        assert_schema(
+            substitution_stage__candidates,
+            FULFILLMENT_SUBSTITUTION_OPTION_SCHEMA,
+            name="FulfillmentSubstitutionOption",
+            mode="strict",
+        )
+        return {
+            "substitution_stage__candidates": substitution_stage__candidates,
+        }
+
+    def _step_substitution_stage_rank_candidates_20(self, frames):
+        # Step method: substitution_stage.rank_candidates
+        substitution_stage__options = frames["substitution_stage__candidates"].alias("fulfillment_substitution_option")
+        substitution_stage__options = substitution_stage__options.select(
+            F.col("fulfillment_substitution_option.tenant"),
+            F.col("fulfillment_substitution_option.order_id"),
+            F.col("fulfillment_substitution_option.line_number"),
+            F.col("fulfillment_substitution_option.customer_id"),
+            F.col("fulfillment_substitution_option.original_product_id"),
+            F.col("fulfillment_substitution_option.substitute_product_id"),
+            F.col("fulfillment_substitution_option.equivalence_group"),
+            F.col("fulfillment_substitution_option.policy_rank"),
+            F.col("fulfillment_substitution_option.available_to_promise"),
+            F.row_number()
+            .over(
+                Window.partitionBy(
+                    F.col("fulfillment_substitution_option.tenant.tenant_id"),
+                    F.col("fulfillment_substitution_option.order_id"),
+                    F.col("fulfillment_substitution_option.line_number"),
+                ).orderBy(
+                    F.col("fulfillment_substitution_option.policy_rank").asc(),
+                    F.col("fulfillment_substitution_option.substitute_product_id").asc(),
+                    F.col("fulfillment_substitution_option.available_to_promise").desc(),
+                )
+            )
+            .cast(T.LongType())
+            .alias("option_rank"),
+            F.col("fulfillment_substitution_option.reason"),
+        )
+        assert_schema(
+            substitution_stage__options,
+            FULFILLMENT_SUBSTITUTION_OPTION_SCHEMA,
+            name="FulfillmentSubstitutionOption",
+            mode="strict",
+        )
+        return {
+            "substitution_stage__options": substitution_stage__options,
+        }
+
+
+class PrioritizeFulfillmentExceptionsGenerated:
+    def _step_exception_stage_shortage_exception_21(self, frames):
+        # Step method: exception_stage.shortage_exception
+        exception_stage__shortage_exceptions = frames["shortage_stage__shortages"].alias("fulfillment_shortage")
+        exception_stage__shortage_exceptions = exception_stage__shortage_exceptions.select(
+            F.col("fulfillment_shortage.tenant"),
+            F.lit(None).alias("business"),
+            F.lit(None).cast(T.StringType()).alias("order_id"),
+            F.lit(None).cast(T.IntegerType()).alias("line_number"),
+            F.col("fulfillment_shortage.product_id"),
+            F.col("fulfillment_shortage.warehouse_id"),
+            F.lit(None).cast(T.StringType()).alias("target_id"),
+            F.lit('shortage').alias("reason"),
+            F.lit(3).alias("severity"),
+            (F.col("fulfillment_shortage.shortage_quantity") * F.lit(1000)).alias("priority_score"),
+            F.lit(0).cast(T.LongType()).alias("priority_rank"),
+            F.col("fulfillment_shortage.first_shortage_at").alias("due_date"),
+            F.lit(None).cast(T.IntegerType()).alias("days_until_due"),
+            F.col("fulfillment_shortage.shortage_quantity"),
+            F.lit(None).cast(T.StringType()).alias("customer_tier"),
+            F.lit('review replenishment or an approved substitution').alias("recommended_action"),
+        )
+        assert_schema(
+            exception_stage__shortage_exceptions,
+            FULFILLMENT_EXCEPTION_SCHEMA,
+            name="FulfillmentException",
+            mode="strict",
+        )
+        return {
+            "exception_stage__shortage_exceptions": exception_stage__shortage_exceptions,
+        }
+
+    def _step_exception_stage_plan_exception_22(self, frames):
+        # Step method: exception_stage.plan_exception
+        exception_stage__plan_exceptions = frames["planned__plans"].alias("fulfillment_plan")
+        prepared__demand_joined = frames["prepared__demand"].alias("prepared__demand")
+        exception_stage__plan_exceptions = exception_stage__plan_exceptions.join(
+            prepared__demand_joined,
+            (
+                (
+                    (F.col("prepared__demand.tenant.tenant_id") == F.col("fulfillment_plan.tenant.tenant_id"))
+                    & (F.col("prepared__demand.order_id") == F.col("fulfillment_plan.order_id"))
+                )
+                & (F.col("prepared__demand.line_number") == F.col("fulfillment_plan.line_number"))
+            ),
+            "left",
+        )
+        service_targets_2_joined = frames["service_targets"].alias("service_targets_2")
+        exception_stage__plan_exceptions = exception_stage__plan_exceptions.join(
+            service_targets_2_joined,
+            (
+                (F.col("service_targets_2.tenant.tenant_id") == F.col("fulfillment_plan.tenant.tenant_id"))
+                & F.col("service_targets_2.active")
+            ),
+            "left",
+        )
+        exception_stage__plan_exceptions = exception_stage__plan_exceptions.where(
+            ((F.col("fulfillment_plan.plan_status") != F.lit('allocated')))
+        )
+        exception_stage__plan_exceptions = exception_stage__plan_exceptions.select(
+            F.col("fulfillment_plan.tenant"),
+            F.col("fulfillment_plan.business"),
+            F.col("fulfillment_plan.order_id"),
+            F.col("fulfillment_plan.line_number"),
+            F.col("fulfillment_plan.product_id"),
+            F.col("fulfillment_plan.selected_warehouse_id").alias("warehouse_id"),
+            F.col("service_targets_2.target_id"),
+            F.when(
+                (
+                    F.when(
+                        (F.coalesce(F.col("service_targets_2.on_time_target"), F.lit(0.0)) > F.lit(0.0)), F.lit(1)
+                    ).otherwise(F.lit(0))
+                    > F.lit(0)
+                ),
+                F.lit('service_target_at_risk'),
+            )
+            .otherwise(
+                F.when(
+                    (
+                        F.col("fulfillment_plan.planned_ship_date").isNotNull()
+                        & (F.col("fulfillment_plan.planned_ship_date") > F.col("fulfillment_plan.business.order_date"))
+                    ),
+                    F.lit('late_inbound'),
+                ).otherwise(F.lit('shortage'))
+            )
+            .alias("reason"),
+            F.when((F.col("fulfillment_plan.backordered_quantity") > F.lit(0)), F.lit(3))
+            .otherwise(F.lit(2))
+            .alias("severity"),
+            F.coalesce(
+                (
+                    (
+                        (
+                            (F.col("fulfillment_plan.backordered_quantity") * F.lit(1000))
+                            + (
+                                F.when(
+                                    (F.col("prepared__demand.customer_tier") == F.lit('platinum')), F.lit(4)
+                                ).otherwise(
+                                    F.when(
+                                        (F.col("prepared__demand.customer_tier") == F.lit('gold')), F.lit(3)
+                                    ).otherwise(
+                                        F.when(
+                                            (F.col("prepared__demand.customer_tier") == F.lit('silver')), F.lit(2)
+                                        ).otherwise(F.lit(1))
+                                    )
+                                )
+                                * F.lit(100)
+                            )
+                        )
+                        + (
+                            F.when(
+                                F.datediff(
+                                    F.col("fulfillment_plan.business.order_date"),
+                                    F.col("fulfillment_plan.planned_ship_date"),
+                                ).isNotNull(),
+                                (
+                                    -F.datediff(
+                                        F.col("fulfillment_plan.business.order_date"),
+                                        F.col("fulfillment_plan.planned_ship_date"),
+                                    )
+                                ),
+                            ).otherwise(F.lit(0))
+                            * F.lit(10)
+                        )
+                    )
+                    + F.when(
+                        (F.coalesce(F.col("service_targets_2.on_time_target"), F.lit(0.0)) > F.lit(0.0)), F.lit(1)
+                    ).otherwise(F.lit(0))
+                ),
+                F.lit(0),
+            ).alias("priority_score"),
+            F.lit(0).cast(T.LongType()).alias("priority_rank"),
+            F.col("fulfillment_plan.business.order_date").alias("due_date"),
+            F.datediff(
+                F.col("fulfillment_plan.business.order_date"), F.col("fulfillment_plan.planned_ship_date")
+            ).alias("days_until_due"),
+            F.col("fulfillment_plan.backordered_quantity").alias("shortage_quantity"),
+            F.col("prepared__demand.customer_tier"),
+            F.lit('review the plan against the service target').alias("recommended_action"),
+        )
+        assert_schema(
+            exception_stage__plan_exceptions, FULFILLMENT_EXCEPTION_SCHEMA, name="FulfillmentException", mode="strict"
+        )
+        return {
+            "exception_stage__plan_exceptions": exception_stage__plan_exceptions,
+        }
+
+    def _step_exception_stage_substitution_exception_23(self, frames):
+        # Step method: exception_stage.substitution_exception
+        exception_stage__substitution_exceptions = frames["substitution_stage__options"].alias(
+            "fulfillment_substitution_option"
+        )
+        prepared__demand_joined = frames["prepared__demand"].alias("prepared__demand")
+        exception_stage__substitution_exceptions = exception_stage__substitution_exceptions.join(
+            prepared__demand_joined,
+            (
+                (
+                    (
+                        F.col("prepared__demand.tenant.tenant_id")
+                        == F.col("fulfillment_substitution_option.tenant.tenant_id")
+                    )
+                    & (F.col("prepared__demand.order_id") == F.col("fulfillment_substitution_option.order_id"))
+                )
+                & (F.col("prepared__demand.line_number") == F.col("fulfillment_substitution_option.line_number"))
+            ),
+            "left",
+        )
+        exception_stage__substitution_exceptions = exception_stage__substitution_exceptions.select(
+            F.col("fulfillment_substitution_option.tenant"),
+            F.col("prepared__demand.business"),
+            F.col("fulfillment_substitution_option.order_id"),
+            F.col("fulfillment_substitution_option.line_number"),
+            F.col("fulfillment_substitution_option.original_product_id").alias("product_id"),
+            F.lit(None).cast(T.StringType()).alias("warehouse_id"),
+            F.lit(None).cast(T.StringType()).alias("target_id"),
+            F.lit('substitution_available').alias("reason"),
+            F.lit(1).alias("severity"),
+            ((F.lit(100) - F.col("fulfillment_substitution_option.policy_rank")) * F.lit(100))
+            .cast(T.LongType())
+            .alias("priority_score"),
+            F.lit(0).cast(T.LongType()).alias("priority_rank"),
+            F.col("prepared__demand.business.order_date").alias("due_date"),
+            F.lit(0).alias("days_until_due"),
+            F.lit(0).cast(T.LongType()).alias("shortage_quantity"),
+            F.col("prepared__demand.customer_tier"),
+            F.lit('offer the ranked policy-approved substitute').alias("recommended_action"),
+        )
+        assert_schema(
+            exception_stage__substitution_exceptions,
+            FULFILLMENT_EXCEPTION_SCHEMA,
+            name="FulfillmentException",
+            mode="strict",
+        )
+        return {
+            "exception_stage__substitution_exceptions": exception_stage__substitution_exceptions,
+        }
+
+    def _step_exception_stage_merge_exceptions_24(self, frames):
+        # Step method: exception_stage.merge_exceptions
+        exception_stage__merged = frames["exception_stage__shortage_exceptions"].alias("fulfillment_exception")
+        exception_stage__merged = exception_stage__merged.union(frames["exception_stage__plan_exceptions"])
+        exception_stage__merged = exception_stage__merged.union(frames["exception_stage__substitution_exceptions"])
+        exception_stage__merged = exception_stage__merged.select(
+            F.col("tenant"),
+            F.col("business"),
+            F.col("order_id"),
+            F.col("line_number"),
+            F.col("product_id"),
+            F.col("warehouse_id"),
+            F.col("target_id"),
+            F.col("reason"),
+            F.col("severity"),
+            F.col("priority_score"),
+            F.col("priority_rank"),
+            F.col("due_date"),
+            F.col("days_until_due"),
+            F.col("shortage_quantity"),
+            F.col("customer_tier"),
+            F.col("recommended_action"),
+        )
+        assert_schema(exception_stage__merged, FULFILLMENT_EXCEPTION_SCHEMA, name="FulfillmentException", mode="strict")
+        return {
+            "exception_stage__merged": exception_stage__merged,
+        }
+
+    def _step_exception_stage_rank_exceptions_25(self, frames):
+        # Step method: exception_stage.rank_exceptions
+        exception_stage__exceptions = frames["exception_stage__merged"].alias("fulfillment_exception")
+        exception_stage__exceptions = exception_stage__exceptions.select(
+            F.col("fulfillment_exception.tenant"),
+            F.col("fulfillment_exception.business"),
+            F.col("fulfillment_exception.order_id"),
+            F.col("fulfillment_exception.line_number"),
+            F.col("fulfillment_exception.product_id"),
+            F.col("fulfillment_exception.warehouse_id"),
+            F.col("fulfillment_exception.target_id"),
+            F.col("fulfillment_exception.reason"),
+            F.col("fulfillment_exception.severity"),
+            F.col("fulfillment_exception.priority_score"),
+            F.row_number()
+            .over(
+                Window.partitionBy(F.col("fulfillment_exception.tenant.tenant_id")).orderBy(
+                    F.col("fulfillment_exception.priority_score").desc(),
+                    F.col("fulfillment_exception.due_date").asc_nulls_last(),
+                    F.col("fulfillment_exception.product_id").asc_nulls_last(),
+                    F.col("fulfillment_exception.order_id").asc_nulls_last(),
+                )
+            )
+            .cast(T.LongType())
+            .alias("priority_rank"),
+            F.col("fulfillment_exception.due_date"),
+            F.col("fulfillment_exception.days_until_due"),
+            F.col("fulfillment_exception.shortage_quantity"),
+            F.col("fulfillment_exception.customer_tier"),
+            F.col("fulfillment_exception.recommended_action"),
+        )
+        assert_schema(
+            exception_stage__exceptions, FULFILLMENT_EXCEPTION_SCHEMA, name="FulfillmentException", mode="strict"
+        )
+        return {
+            "exception_stage__exceptions": exception_stage__exceptions,
+        }
+
+
 class ReconcileFulfillmentPlanGenerated:
-    def _step_reconciled_reconcile_14(self, frames):
+    def _step_reconciled_reconcile_26(self, frames):
         # Step method: reconciled.reconcile
         reconciled__reconciliation = frames["planned__plans"].alias("fulfillment_plan")
         fulfilled_joined = frames["fulfilled"].alias("fulfilled")
@@ -833,7 +1476,7 @@ class ReconcileFulfillmentPlanGenerated:
                     (F.col("fulfilled.tenant.tenant_id") == F.col("fulfillment_plan.tenant.tenant_id"))
                     & (F.col("fulfilled.id") == F.col("fulfillment_plan.order_id"))
                 )
-                & (F.col("fulfilled.product_id") == F.col("fulfillment_plan.product_id"))
+                & (F.col("fulfilled.line_number") == F.col("fulfillment_plan.line_number"))
             ),
             "left",
         )
@@ -841,6 +1484,7 @@ class ReconcileFulfillmentPlanGenerated:
             reconciled__reconciliation.groupBy(
                 F.col("fulfillment_plan.tenant.tenant_id").alias("tenant_id"),
                 F.col("fulfillment_plan.order_id").alias("order_id"),
+                F.col("fulfillment_plan.line_number").alias("line_number"),
                 F.col("fulfillment_plan.product_id").alias("product_id"),
                 F.col("fulfillment_plan.business").alias("business"),
                 F.col("fulfillment_plan.plan_status").alias("planned_status"),
@@ -863,6 +1507,7 @@ class ReconcileFulfillmentPlanGenerated:
                 F.col("tenant"),
                 F.col("business"),
                 F.col("order_id"),
+                F.col("line_number"),
                 F.col("product_id"),
                 F.col("planned_status"),
                 F.col("allocated_quantity").alias("planned_allocated_quantity"),
@@ -884,7 +1529,7 @@ class ReconcileFulfillmentPlanGenerated:
 
 
 class FulfillmentAnalyticsGenerated:
-    def _step_summarized_summarize_daily_totals_15(self, frames):
+    def _step_summarized_summarize_daily_totals_27(self, frames):
         # Step method: summarized.summarize_daily_totals
         summarized__daily_totals = frames["planned__plans"].alias("fulfillment_plan")
         summarized__daily_totals = (
@@ -941,7 +1586,7 @@ class FulfillmentAnalyticsGenerated:
             "summarized__daily_totals": summarized__daily_totals,
         }
 
-    def _step_summarized_publish_daily_summary_16(self, frames):
+    def _step_summarized_publish_daily_summary_28(self, frames):
         # Step method: summarized.publish_daily_summary
         summarized__daily_summary = frames["summarized__daily_totals"].alias("daily_fulfillment_summary")
         summarized__daily_summary = summarized__daily_summary.select(
@@ -980,7 +1625,7 @@ class FulfillmentAnalyticsGenerated:
             "summarized__daily_summary": summarized__daily_summary,
         }
 
-    def _step_summarized_summarize_warehouse_load_17(self, frames):
+    def _step_summarized_summarize_warehouse_load_29(self, frames):
         # Step method: summarized.summarize_warehouse_load
         summarized__warehouse_load_summary = frames["planned__allocations"].alias("fulfillment_allocation")
         summarized__warehouse_load_summary = (
@@ -1008,16 +1653,397 @@ class FulfillmentAnalyticsGenerated:
                 F.col("customer_count"),
             )
         )
+        assert_schema(
+            summarized__warehouse_load_summary,
+            WAREHOUSE_LOAD_SUMMARY_SCHEMA,
+            name="WarehouseLoadSummary",
+            mode="strict",
+        )
         return {
             "summarized__warehouse_load_summary": summarized__warehouse_load_summary,
+        }
+
+
+class EvaluateFulfillmentServiceGenerated:
+    def _step_evaluated_evaluate_30(self, frames):
+        # Step method: evaluated.evaluate
+        evaluated__totals = frames["planned__plans"].alias("fulfillment_plan")
+        fulfilled_joined = frames["fulfilled"].alias("fulfilled")
+        evaluated__totals = evaluated__totals.join(
+            fulfilled_joined,
+            (
+                (
+                    (F.col("fulfilled.tenant.tenant_id") == F.col("fulfillment_plan.tenant.tenant_id"))
+                    & (F.col("fulfilled.id") == F.col("fulfillment_plan.order_id"))
+                )
+                & (F.col("fulfilled.line_number") == F.col("fulfillment_plan.line_number"))
+            ),
+            "left",
+        )
+        service_targets_2_joined = frames["service_targets"].alias("service_targets_2")
+        evaluated__totals = evaluated__totals.join(
+            service_targets_2_joined,
+            (
+                (F.col("service_targets_2.tenant.tenant_id") == F.col("fulfillment_plan.tenant.tenant_id"))
+                & F.col("service_targets_2.active")
+            ),
+            "left",
+        )
+        evaluated__totals = (
+            evaluated__totals.groupBy(
+                F.col("fulfillment_plan.tenant.tenant_id").alias("tenant_id"),
+                F.col("fulfillment_plan.business").alias("business"),
+                F.col("fulfillment_plan.order_id").alias("order_id"),
+                F.col("fulfillment_plan.line_number").alias("line_number"),
+                F.col("fulfillment_plan.product_id").alias("product_id"),
+                F.col("fulfillment_plan.selected_warehouse_id").alias("selected_warehouse_id"),
+                F.col("service_targets_2.target_id").alias("target_id"),
+                F.col("service_targets_2.on_time_target").alias("target_on_time"),
+                F.col("fulfillment_plan.requested_quantity").alias("requested_quantity"),
+                F.col("fulfillment_plan.allocated_quantity").alias("planned_quantity"),
+                F.col("fulfillment_plan.planned_ship_date").alias("planned_ship_date"),
+            )
+            .agg(
+                F.first(F.col("fulfillment_plan.tenant"), ignorenulls=False).alias("tenant"),
+                F.sum(F.coalesce(F.col("fulfilled.quantity"), F.lit(0))).cast(T.LongType()).alias("shipped_quantity"),
+                F.max(F.to_date(F.col("fulfilled.shipped_at"))).cast(T.DateType()).alias("actual_ship_date"),
+                F.bool_or(F.col("fulfilled.line_number").isNotNull()).cast(T.BooleanType()).alias("shipped"),
+            )
+            .select(
+                F.col("tenant"),
+                F.col("business"),
+                F.col("order_id"),
+                F.col("line_number"),
+                F.col("product_id"),
+                F.col("selected_warehouse_id"),
+                F.col("target_id"),
+                F.col("target_on_time"),
+                F.col("requested_quantity"),
+                F.col("planned_quantity"),
+                F.col("shipped_quantity"),
+                F.col("planned_ship_date"),
+                F.col("actual_ship_date"),
+                F.col("shipped"),
+            )
+        )
+        assert_schema(
+            evaluated__totals, FULFILLMENT_SERVICE_TOTALS_SCHEMA, name="FulfillmentServiceTotals", mode="strict"
+        )
+        return {
+            "evaluated__totals": evaluated__totals,
+        }
+
+    def _step_evaluated_classify_31(self, frames):
+        # Step method: evaluated.classify
+        evaluated__evaluations = frames["evaluated__totals"].alias("fulfillment_service_totals")
+        evaluated__evaluations = evaluated__evaluations.select(
+            F.col("fulfillment_service_totals.tenant"),
+            F.col("fulfillment_service_totals.business"),
+            F.col("fulfillment_service_totals.order_id"),
+            F.col("fulfillment_service_totals.line_number"),
+            F.col("fulfillment_service_totals.product_id"),
+            F.col("fulfillment_service_totals.selected_warehouse_id"),
+            F.col("fulfillment_service_totals.target_id"),
+            F.col("fulfillment_service_totals.target_on_time"),
+            F.col("fulfillment_service_totals.requested_quantity"),
+            F.col("fulfillment_service_totals.planned_quantity"),
+            F.col("fulfillment_service_totals.shipped_quantity"),
+            F.col("fulfillment_service_totals.planned_ship_date"),
+            F.col("fulfillment_service_totals.actual_ship_date"),
+            F.when(F.col("fulfillment_service_totals.actual_ship_date").isNull(), F.lit('unknown'))
+            .otherwise(
+                F.when(F.col("fulfillment_service_totals.planned_ship_date").isNull(), F.lit('unknown')).otherwise(
+                    F.when(
+                        (
+                            F.col("fulfillment_service_totals.actual_ship_date")
+                            <= F.col("fulfillment_service_totals.planned_ship_date")
+                        ),
+                        F.lit('on_time'),
+                    ).otherwise(F.lit('late'))
+                )
+            )
+            .alias("on_time_status"),
+            F.when(~(F.col("fulfillment_service_totals.shipped")), F.lit('unknown'))
+            .otherwise(
+                F.when(
+                    (
+                        F.col("fulfillment_service_totals.shipped_quantity")
+                        >= F.col("fulfillment_service_totals.planned_quantity")
+                    ),
+                    F.lit('in_full'),
+                ).otherwise(F.lit('partial'))
+            )
+            .alias("in_full_status"),
+            F.when(
+                (
+                    F.col("fulfillment_service_totals.actual_ship_date").isNotNull()
+                    & F.col("fulfillment_service_totals.planned_ship_date").isNotNull()
+                ),
+                F.datediff(
+                    F.col("fulfillment_service_totals.actual_ship_date"),
+                    F.col("fulfillment_service_totals.planned_ship_date"),
+                ),
+            )
+            .otherwise(F.lit(None))
+            .alias("lateness_days"),
+            F.when(~(F.col("fulfillment_service_totals.shipped")), F.lit('not_shipped'))
+            .otherwise(
+                F.when(
+                    (
+                        (
+                            F.when(
+                                F.col("fulfillment_service_totals.actual_ship_date").isNull(), F.lit('unknown')
+                            ).otherwise(
+                                F.when(
+                                    F.col("fulfillment_service_totals.planned_ship_date").isNull(), F.lit('unknown')
+                                ).otherwise(
+                                    F.when(
+                                        (
+                                            F.col("fulfillment_service_totals.actual_ship_date")
+                                            <= F.col("fulfillment_service_totals.planned_ship_date")
+                                        ),
+                                        F.lit('on_time'),
+                                    ).otherwise(F.lit('late'))
+                                )
+                            )
+                            == F.lit('on_time')
+                        )
+                        & (
+                            F.when(~(F.col("fulfillment_service_totals.shipped")), F.lit('unknown')).otherwise(
+                                F.when(
+                                    (
+                                        F.col("fulfillment_service_totals.shipped_quantity")
+                                        >= F.col("fulfillment_service_totals.planned_quantity")
+                                    ),
+                                    F.lit('in_full'),
+                                ).otherwise(F.lit('partial'))
+                            )
+                            == F.lit('in_full')
+                        )
+                    ),
+                    F.lit('on_time_in_full'),
+                ).otherwise(
+                    F.when(
+                        (
+                            (
+                                F.when(
+                                    F.col("fulfillment_service_totals.actual_ship_date").isNull(), F.lit('unknown')
+                                ).otherwise(
+                                    F.when(
+                                        F.col("fulfillment_service_totals.planned_ship_date").isNull(), F.lit('unknown')
+                                    ).otherwise(
+                                        F.when(
+                                            (
+                                                F.col("fulfillment_service_totals.actual_ship_date")
+                                                <= F.col("fulfillment_service_totals.planned_ship_date")
+                                            ),
+                                            F.lit('on_time'),
+                                        ).otherwise(F.lit('late'))
+                                    )
+                                )
+                                == F.lit('late')
+                            )
+                            & (
+                                F.when(~(F.col("fulfillment_service_totals.shipped")), F.lit('unknown')).otherwise(
+                                    F.when(
+                                        (
+                                            F.col("fulfillment_service_totals.shipped_quantity")
+                                            >= F.col("fulfillment_service_totals.planned_quantity")
+                                        ),
+                                        F.lit('in_full'),
+                                    ).otherwise(F.lit('partial'))
+                                )
+                                == F.lit('in_full')
+                            )
+                        ),
+                        F.lit('late_in_full'),
+                    ).otherwise(
+                        F.when(
+                            (
+                                F.when(
+                                    F.col("fulfillment_service_totals.actual_ship_date").isNull(), F.lit('unknown')
+                                ).otherwise(
+                                    F.when(
+                                        F.col("fulfillment_service_totals.planned_ship_date").isNull(), F.lit('unknown')
+                                    ).otherwise(
+                                        F.when(
+                                            (
+                                                F.col("fulfillment_service_totals.actual_ship_date")
+                                                <= F.col("fulfillment_service_totals.planned_ship_date")
+                                            ),
+                                            F.lit('on_time'),
+                                        ).otherwise(F.lit('late'))
+                                    )
+                                )
+                                == F.lit('on_time')
+                            ),
+                            F.lit('on_time_partial'),
+                        ).otherwise(F.lit('late_partial'))
+                    )
+                )
+            )
+            .alias("service_status"),
+        )
+        assert_schema(
+            evaluated__evaluations,
+            FULFILLMENT_SERVICE_EVALUATION_SCHEMA,
+            name="FulfillmentServiceEvaluation",
+            mode="strict",
+        )
+        return {
+            "evaluated__evaluations": evaluated__evaluations,
+        }
+
+    def _step_evaluated_publish_evaluations_32(self, frames):
+        # Step method: evaluated.publish_evaluations
+        evaluated__service_evaluations = frames["evaluated__evaluations"].alias("fulfillment_service_evaluation")
+        evaluated__service_evaluations = evaluated__service_evaluations.select(
+            F.col("fulfillment_service_evaluation.tenant"),
+            F.col("fulfillment_service_evaluation.business"),
+            F.col("fulfillment_service_evaluation.order_id"),
+            F.col("fulfillment_service_evaluation.line_number"),
+            F.col("fulfillment_service_evaluation.product_id"),
+            F.col("fulfillment_service_evaluation.selected_warehouse_id"),
+            F.col("fulfillment_service_evaluation.target_id"),
+            F.col("fulfillment_service_evaluation.target_on_time"),
+            F.col("fulfillment_service_evaluation.requested_quantity"),
+            F.col("fulfillment_service_evaluation.planned_quantity"),
+            F.col("fulfillment_service_evaluation.shipped_quantity"),
+            F.col("fulfillment_service_evaluation.planned_ship_date"),
+            F.col("fulfillment_service_evaluation.actual_ship_date"),
+            F.col("fulfillment_service_evaluation.on_time_status"),
+            F.col("fulfillment_service_evaluation.in_full_status"),
+            F.col("fulfillment_service_evaluation.lateness_days"),
+            F.col("fulfillment_service_evaluation.service_status"),
+        )
+        assert_schema(
+            evaluated__service_evaluations,
+            FULFILLMENT_SERVICE_EVALUATION_SCHEMA,
+            name="FulfillmentServiceEvaluation",
+            mode="strict",
+        )
+        return {
+            "evaluated__service_evaluations": evaluated__service_evaluations,
+        }
+
+    def _step_evaluated_summarize_33(self, frames):
+        # Step method: evaluated.summarize
+        evaluated__summary_totals = frames["evaluated__evaluations"].alias("fulfillment_service_evaluation")
+        evaluated__summary_totals = (
+            evaluated__summary_totals.groupBy(
+                F.col("fulfillment_service_evaluation.tenant.tenant_id").alias("tenant_id"),
+                F.col("fulfillment_service_evaluation.business.order_date").alias("business_date"),
+                F.col("fulfillment_service_evaluation.selected_warehouse_id").alias("warehouse_id"),
+                F.col("fulfillment_service_evaluation.target_id").alias("target_id"),
+                F.col("fulfillment_service_evaluation.target_on_time").alias("target_on_time"),
+            )
+            .agg(
+                F.first(F.col("fulfillment_service_evaluation.tenant"), ignorenulls=False).alias("tenant"),
+                F.count(F.lit(1)).cast(T.LongType()).alias("evaluated_line_count"),
+                F.sum(
+                    F.when(
+                        (F.col("fulfillment_service_evaluation.service_status") == F.lit('on_time_in_full')), F.lit(1)
+                    ).otherwise(F.lit(0))
+                )
+                .cast(T.LongType())
+                .alias("on_time_in_full_count"),
+                F.sum(
+                    F.when(
+                        (F.col("fulfillment_service_evaluation.on_time_status") == F.lit('on_time')), F.lit(1)
+                    ).otherwise(F.lit(0))
+                )
+                .cast(T.LongType())
+                .alias("on_time_line_count"),
+                F.sum(
+                    F.when(
+                        (F.col("fulfillment_service_evaluation.in_full_status") == F.lit('in_full')), F.lit(1)
+                    ).otherwise(F.lit(0))
+                )
+                .cast(T.LongType())
+                .alias("in_full_line_count"),
+                F.sum(F.lit(0.0)).cast(T.DoubleType()).alias("service_level"),
+                F.bool_or((F.col("fulfillment_service_evaluation.service_status") == F.lit('on_time_in_full')))
+                .cast(T.BooleanType())
+                .alias("target_attained"),
+            )
+            .select(
+                F.col("tenant"),
+                F.col("business_date"),
+                F.col("warehouse_id"),
+                F.col("target_id"),
+                F.col("evaluated_line_count"),
+                F.col("on_time_in_full_count"),
+                F.col("on_time_line_count"),
+                F.col("in_full_line_count"),
+                F.col("service_level"),
+                F.col("target_on_time"),
+                F.col("target_attained"),
+            )
+        )
+        assert_schema(
+            evaluated__summary_totals,
+            DAILY_FULFILLMENT_SERVICE_SUMMARY_SCHEMA,
+            name="DailyFulfillmentServiceSummary",
+            mode="strict",
+        )
+        return {
+            "evaluated__summary_totals": evaluated__summary_totals,
+        }
+
+    def _step_evaluated_publish_summary_34(self, frames):
+        # Step method: evaluated.publish_summary
+        evaluated__daily_summary = frames["evaluated__summary_totals"].alias("daily_fulfillment_service_summary")
+        evaluated__daily_summary = evaluated__daily_summary.select(
+            F.col("daily_fulfillment_service_summary.tenant"),
+            F.col("daily_fulfillment_service_summary.business_date"),
+            F.col("daily_fulfillment_service_summary.warehouse_id"),
+            F.col("daily_fulfillment_service_summary.target_id"),
+            F.col("daily_fulfillment_service_summary.evaluated_line_count"),
+            F.col("daily_fulfillment_service_summary.on_time_in_full_count"),
+            F.col("daily_fulfillment_service_summary.on_time_line_count"),
+            F.col("daily_fulfillment_service_summary.in_full_line_count"),
+            F.when(
+                (F.col("daily_fulfillment_service_summary.evaluated_line_count") > F.lit(0)),
+                (
+                    F.col("daily_fulfillment_service_summary.on_time_in_full_count")
+                    / F.col("daily_fulfillment_service_summary.evaluated_line_count")
+                ),
+            )
+            .otherwise(F.lit(None))
+            .alias("service_level"),
+            F.col("daily_fulfillment_service_summary.target_on_time"),
+            F.when(
+                F.col("daily_fulfillment_service_summary.target_on_time").isNotNull(),
+                (
+                    F.when(
+                        (F.col("daily_fulfillment_service_summary.evaluated_line_count") > F.lit(0)),
+                        (
+                            F.col("daily_fulfillment_service_summary.on_time_in_full_count")
+                            / F.col("daily_fulfillment_service_summary.evaluated_line_count")
+                        ),
+                    ).otherwise(F.lit(None))
+                    >= F.col("daily_fulfillment_service_summary.target_on_time")
+                ),
+            )
+            .otherwise(F.lit(None))
+            .alias("target_attained"),
+        )
+        return {
+            "evaluated__daily_summary": evaluated__daily_summary,
         }
 
 
 class FulfillmentGenerated(
     PrepareOrderDemandGenerated,
     PlanFulfillmentGenerated,
+    BuildDemandWindowsGenerated,
+    ProjectInventoryGenerated,
+    DetectFulfillmentShortagesGenerated,
+    FindFulfillmentSubstitutionsGenerated,
+    PrioritizeFulfillmentExceptionsGenerated,
     ReconcileFulfillmentPlanGenerated,
     FulfillmentAnalyticsGenerated,
+    EvaluateFulfillmentServiceGenerated,
 ):
 
     def __init__(self, *, spark: SparkSession, ctx=None):
@@ -1035,6 +2061,9 @@ class FulfillmentGenerated(
         warehouses: DataFrame,
         inventory_positions: DataFrame,
         inbound_inventory: DataFrame,
+        lead_times: DataFrame,
+        substitution_rules: DataFrame,
+        service_targets: DataFrame,
         fulfilled: DataFrame,
     ) -> TransformResult:
         assert_schema(orders, ORDER_RAW_SCHEMA, name="OrderRaw", mode="strict")
@@ -1045,6 +2074,9 @@ class FulfillmentGenerated(
         assert_schema(warehouses, WAREHOUSE_SCHEMA, name="Warehouse", mode="strict")
         assert_schema(inventory_positions, INVENTORY_POSITION_SCHEMA, name="InventoryPosition", mode="strict")
         assert_schema(inbound_inventory, INBOUND_INVENTORY_SCHEMA, name="InboundInventory", mode="strict")
+        assert_schema(lead_times, LEAD_TIME_SCHEMA, name="LeadTime", mode="strict")
+        assert_schema(substitution_rules, SUBSTITUTION_RULE_SCHEMA, name="SubstitutionRule", mode="strict")
+        assert_schema(service_targets, SERVICE_RISK_TARGET_SCHEMA, name="ServiceRiskTarget", mode="strict")
         assert_schema(fulfilled, ORDER_FULFILLMENT_SCHEMA, name="OrderFulfillment", mode="strict")
         _input_orders = orders
         _input_customers = customers
@@ -1054,6 +2086,9 @@ class FulfillmentGenerated(
         _input_warehouses = warehouses
         _input_inventory_positions = inventory_positions
         _input_inbound_inventory = inbound_inventory
+        _input_lead_times = lead_times
+        _input_substitution_rules = substitution_rules
+        _input_service_targets = service_targets
         _input_fulfilled = fulfilled
         frames = {
             "orders": orders,
@@ -1064,6 +2099,9 @@ class FulfillmentGenerated(
             "warehouses": warehouses,
             "inventory_positions": inventory_positions,
             "inbound_inventory": inbound_inventory,
+            "lead_times": lead_times,
+            "substitution_rules": substitution_rules,
+            "service_targets": service_targets,
             "fulfilled": fulfilled,
             "input:orders": _input_orders,
             "input:customers": _input_customers,
@@ -1073,6 +2111,9 @@ class FulfillmentGenerated(
             "input:warehouses": _input_warehouses,
             "input:inventory_positions": _input_inventory_positions,
             "input:inbound_inventory": _input_inbound_inventory,
+            "input:lead_times": _input_lead_times,
+            "input:substitution_rules": _input_substitution_rules,
+            "input:service_targets": _input_service_targets,
             "input:fulfilled": _input_fulfilled,
         }
         frames.update(self._step_prepared_normalize_0(frames))
@@ -1089,10 +2130,27 @@ class FulfillmentGenerated(
         frames.update(self._step_planned_backorder_11(frames))
         frames.update(self._step_planned_plan_12(frames))
         frames.update(self._step_planned_suggest_replenishment_13(frames))
-        frames.update(self._step_reconciled_reconcile_14(frames))
-        frames.update(self._step_summarized_summarize_daily_totals_15(frames))
-        frames.update(self._step_summarized_publish_daily_summary_16(frames))
-        frames.update(self._step_summarized_summarize_warehouse_load_17(frames))
+        frames.update(self._step_windows_build_14(frames))
+        frames.update(self._step_projections_summarize_inbound_15(frames))
+        frames.update(self._step_projections_project_inventory_16(frames))
+        frames.update(self._step_shortage_stage_identify_17(frames))
+        frames.update(self._step_shortage_stage_select_first_18(frames))
+        frames.update(self._step_substitution_stage_find_candidates_19(frames))
+        frames.update(self._step_substitution_stage_rank_candidates_20(frames))
+        frames.update(self._step_exception_stage_shortage_exception_21(frames))
+        frames.update(self._step_exception_stage_plan_exception_22(frames))
+        frames.update(self._step_exception_stage_substitution_exception_23(frames))
+        frames.update(self._step_exception_stage_merge_exceptions_24(frames))
+        frames.update(self._step_exception_stage_rank_exceptions_25(frames))
+        frames.update(self._step_reconciled_reconcile_26(frames))
+        frames.update(self._step_summarized_summarize_daily_totals_27(frames))
+        frames.update(self._step_summarized_publish_daily_summary_28(frames))
+        frames.update(self._step_summarized_summarize_warehouse_load_29(frames))
+        frames.update(self._step_evaluated_evaluate_30(frames))
+        frames.update(self._step_evaluated_classify_31(frames))
+        frames.update(self._step_evaluated_publish_evaluations_32(frames))
+        frames.update(self._step_evaluated_summarize_33(frames))
+        frames.update(self._step_evaluated_publish_summary_34(frames))
 
         # Step method: demand
         demand = frames["prepared__demand"].alias("order")
@@ -1129,6 +2187,49 @@ class FulfillmentGenerated(
         # Step method: warehouse_load_summary
         warehouse_load_summary = frames["summarized__warehouse_load_summary"].alias("warehouse_load_summary")
         assert_schema(warehouse_load_summary, WAREHOUSE_LOAD_SUMMARY_SCHEMA, name="WarehouseLoadSummary", mode="strict")
+
+        # Step method: demand_windows
+        demand_windows = frames["windows__windows"].alias("demand_window")
+        assert_schema(demand_windows, DEMAND_WINDOW_SCHEMA, name="DemandWindow", mode="strict")
+
+        # Step method: inventory_projections
+        inventory_projections = frames["projections__projections"].alias("inventory_projection")
+        assert_schema(inventory_projections, INVENTORY_PROJECTION_SCHEMA, name="InventoryProjection", mode="strict")
+
+        # Step method: shortages
+        shortages = frames["shortage_stage__shortages"].alias("fulfillment_shortage")
+        assert_schema(shortages, FULFILLMENT_SHORTAGE_SCHEMA, name="FulfillmentShortage", mode="strict")
+
+        # Step method: substitution_options
+        substitution_options = frames["substitution_stage__options"].alias("fulfillment_substitution_option")
+        assert_schema(
+            substitution_options,
+            FULFILLMENT_SUBSTITUTION_OPTION_SCHEMA,
+            name="FulfillmentSubstitutionOption",
+            mode="strict",
+        )
+
+        # Step method: exceptions
+        exceptions = frames["exception_stage__exceptions"].alias("fulfillment_exception")
+        assert_schema(exceptions, FULFILLMENT_EXCEPTION_SCHEMA, name="FulfillmentException", mode="strict")
+
+        # Step method: service_evaluations
+        service_evaluations = frames["evaluated__service_evaluations"].alias("fulfillment_service_evaluation")
+        assert_schema(
+            service_evaluations,
+            FULFILLMENT_SERVICE_EVALUATION_SCHEMA,
+            name="FulfillmentServiceEvaluation",
+            mode="strict",
+        )
+
+        # Step method: daily_service_summary
+        daily_service_summary = frames["evaluated__daily_summary"].alias("daily_fulfillment_service_summary")
+        assert_schema(
+            daily_service_summary,
+            DAILY_FULFILLMENT_SERVICE_SUMMARY_SCHEMA,
+            name="DailyFulfillmentServiceSummary",
+            mode="strict",
+        )
         return TransformResult(
             {
                 "demand": demand,
@@ -1139,6 +2240,13 @@ class FulfillmentGenerated(
                 "replenishment_suggestions": replenishment_suggestions,
                 "daily_summary": daily_summary,
                 "warehouse_load_summary": warehouse_load_summary,
+                "demand_windows": demand_windows,
+                "inventory_projections": inventory_projections,
+                "shortages": shortages,
+                "substitution_options": substitution_options,
+                "exceptions": exceptions,
+                "service_evaluations": service_evaluations,
+                "daily_service_summary": daily_service_summary,
             },
             single=False,
             schema={
@@ -1150,5 +2258,12 @@ class FulfillmentGenerated(
                 "replenishment_suggestions": REPLENISHMENT_SUGGESTION_SCHEMA,
                 "daily_summary": DAILY_FULFILLMENT_SUMMARY_SCHEMA,
                 "warehouse_load_summary": WAREHOUSE_LOAD_SUMMARY_SCHEMA,
+                "demand_windows": DEMAND_WINDOW_SCHEMA,
+                "inventory_projections": INVENTORY_PROJECTION_SCHEMA,
+                "shortages": FULFILLMENT_SHORTAGE_SCHEMA,
+                "substitution_options": FULFILLMENT_SUBSTITUTION_OPTION_SCHEMA,
+                "exceptions": FULFILLMENT_EXCEPTION_SCHEMA,
+                "service_evaluations": FULFILLMENT_SERVICE_EVALUATION_SCHEMA,
+                "daily_service_summary": DAILY_FULFILLMENT_SERVICE_SUMMARY_SCHEMA,
             },
         )

@@ -1,0 +1,56 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "tenant",
+      "name": "tenant",
+      "nullable": false,
+      "type": "TenantKey"
+    },
+    {
+      "column": "warehouse_id",
+      "name": "warehouse_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "product_id",
+      "name": "product_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "first_shortage_at",
+      "name": "first_shortage_at",
+      "nullable": false,
+      "type": "date"
+    },
+    {
+      "column": "shortage_quantity",
+      "name": "shortage_quantity",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "projected_available_quantity",
+      "name": "projected_available_quantity",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "safety_stock_quantity",
+      "name": "safety_stock_quantity",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "reason",
+      "name": "reason",
+      "nullable": false,
+      "type": "string"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.store.schemas.fulfillment.shortages.shortage",
+  "name": "FulfillmentShortage"
+}

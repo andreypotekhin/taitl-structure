@@ -9,16 +9,16 @@ from pyspark.sql import types as T
 from examples.structure_generated.store.runtime.schema_assert import TransformResult, assert_schema, project_schema
 from examples.structure_generated.store.pyspark.schemas.common import TENANT_KEY_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.demand import ORDER_SCHEMA
-from examples.structure_generated.store.pyspark.schemas.inventory import (
-    INBOUND_INVENTORY_SCHEMA,
-    INVENTORY_POSITION_SCHEMA,
-    WAREHOUSE_SCHEMA,
-)
 from examples.structure_generated.store.pyspark.schemas.plan import (
     FULFILLMENT_ALLOCATION_SCHEMA,
     FULFILLMENT_BACKORDER_SCHEMA,
     FULFILLMENT_PLAN_SCHEMA,
     REPLENISHMENT_SUGGESTION_SCHEMA,
+)
+from examples.structure_generated.store.pyspark.schemas.planning_inventory import (
+    INBOUND_INVENTORY_SCHEMA,
+    INVENTORY_POSITION_SCHEMA,
+    WAREHOUSE_SCHEMA,
 )
 from examples.structure_generated.store.pyspark.schemas.workflow import (
     FULFILLMENT_OPTION_SCHEMA,
@@ -114,6 +114,7 @@ class PlanFulfillmentGenerated:
             F.col("order.tenant"),
             F.col("order.business"),
             F.col("order.order_id"),
+            F.col("order.line_number"),
             F.col("order.customer_id"),
             F.col("order.customer_name"),
             F.col("order.customer_tier"),
@@ -153,6 +154,7 @@ class PlanFulfillmentGenerated:
             F.col("fulfillment_option.tenant"),
             F.col("fulfillment_option.business"),
             F.col("fulfillment_option.order_id"),
+            F.col("fulfillment_option.line_number"),
             F.col("fulfillment_option.customer_id"),
             F.col("fulfillment_option.customer_name"),
             F.col("fulfillment_option.customer_tier"),
@@ -180,7 +182,7 @@ class PlanFulfillmentGenerated:
                 Window.partitionBy(
                     F.col("fulfillment_option.tenant.tenant_id"),
                     F.col("fulfillment_option.order_id"),
-                    F.col("fulfillment_option.product_id"),
+                    F.col("fulfillment_option.line_number"),
                 ).orderBy(
                     F.when(
                         (F.col("fulfillment_option.warehouse_region") == F.col("fulfillment_option.customer_region")),
@@ -209,6 +211,7 @@ class PlanFulfillmentGenerated:
             F.col("fulfillment_preferred_option.tenant"),
             F.col("fulfillment_preferred_option.business"),
             F.col("fulfillment_preferred_option.order_id"),
+            F.col("fulfillment_preferred_option.line_number"),
             F.col("fulfillment_preferred_option.customer_id"),
             F.col("fulfillment_preferred_option.customer_name"),
             F.col("fulfillment_preferred_option.customer_tier"),
@@ -244,6 +247,7 @@ class PlanFulfillmentGenerated:
             F.col("fulfillment_preferred_option.tenant"),
             F.col("fulfillment_preferred_option.business"),
             F.col("fulfillment_preferred_option.order_id"),
+            F.col("fulfillment_preferred_option.line_number"),
             F.col("fulfillment_preferred_option.customer_id"),
             F.col("fulfillment_preferred_option.product_id"),
             F.col("fulfillment_preferred_option.warehouse_id"),
@@ -275,6 +279,7 @@ class PlanFulfillmentGenerated:
             F.col("fulfillment_preferred_option.tenant"),
             F.col("fulfillment_preferred_option.business"),
             F.col("fulfillment_preferred_option.order_id"),
+            F.col("fulfillment_preferred_option.line_number"),
             F.col("fulfillment_preferred_option.customer_id"),
             F.col("fulfillment_preferred_option.product_id"),
             F.when(
@@ -318,6 +323,7 @@ class PlanFulfillmentGenerated:
             F.col("fulfillment_preferred_option.tenant"),
             F.col("fulfillment_preferred_option.business"),
             F.col("fulfillment_preferred_option.order_id"),
+            F.col("fulfillment_preferred_option.line_number"),
             F.col("fulfillment_preferred_option.customer_id"),
             F.col("fulfillment_preferred_option.product_id"),
             F.col("fulfillment_preferred_option.requested_quantity"),

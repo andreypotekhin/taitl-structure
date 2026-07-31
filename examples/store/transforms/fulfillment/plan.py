@@ -80,7 +80,7 @@ class PlanFulfillment(Transform):
     def prioritize_options(self, option: FulfillmentOption) -> FulfillmentPreferredOption:
         return FulfillmentPreferredOption.project(option)(
             option_ordinal=row_number(
-                partition_by=(option.tenant.tenant_id, option.order_id, option.product_id),
+                partition_by=(option.tenant.tenant_id, option.order_id, option.line_number),
                 order_by=(
                     when(option.warehouse_region == option.customer_region, 0).otherwise(1).asc(),
                     option.warehouse_priority.asc(),

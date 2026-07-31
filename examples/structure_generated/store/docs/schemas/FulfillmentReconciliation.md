@@ -9,6 +9,7 @@ Module: `examples.store.schemas.fulfillment.reconciliation.reconciliation`
 | `tenant` | `tenant` | `TenantKey` | no |
 | `business` | `business` | `BusinessDate` | no |
 | `order_id` | `order_id` | `string` | no |
+| `line_number` | `line_number` | `integer` | no |
 | `product_id` | `product_id` | `string` | no |
 | `planned_status` | `planned_status` | `string` | no |
 | `planned_allocated_quantity` | `planned_allocated_quantity` | `long` | no |

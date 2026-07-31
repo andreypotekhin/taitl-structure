@@ -17,6 +17,10 @@ persistence, stream lifecycle, and the business actions taken from the results.
 | Fulfillment planning | `PlanFulfillment` | Allocations, backorders, plans, suggestions | Deterministic warehouse selection and conservative replenishment signals. |
 | Planning analytics | `FulfillmentAnalytics` | Daily and warehouse load summaries | Batch service-risk and load summaries. |
 | Plan versus actual | `ReconcileFulfillmentPlan` | `FulfillmentReconciliation` | Planned lines observed later in shipment facts. |
+| Dated inventory | `BuildDemandWindows` / `ProjectInventory` | `DemandWindow`, `InventoryProjection` | Observed demand windows, inbound receipts, lead-time-aware usable dates, and projected stock. |
+| Shortages and substitutions | `DetectFulfillmentShortages` / `FindFulfillmentSubstitutions` | `FulfillmentShortage`, `FulfillmentSubstitutionOption` | First projected deficit and ranked policy-approved alternatives. |
+| Operational exceptions | `PrioritizeFulfillmentExceptions` | `FulfillmentException` | Stable priority queue exposing shortage, late-inbound, service-risk, and substitution reasons. |
+| Service evaluation | `EvaluateFulfillmentService` | `FulfillmentServiceEvaluation` | Line-safe on-time, in-full, lateness, and target-attainment results from actual shipments. |
 | Enrichment | `EnrichOrders` | `OrderPublished` | Streaming-compatible order enrichment. |
 | Daily analytics | `OrderAnalytics` | Customer and product daily results | Batch aggregation and windows. |
 | Advanced analytics | `AdvancedOrderAnalytics` | Rollups, cubes, and profiles | Batch analytical examples. |
@@ -101,6 +105,9 @@ fulfillment = Fulfillment(
     warehouses=warehouses,
     inventory_positions=inventory_positions,
     inbound_inventory=inbound_inventory,
+    lead_times=lead_times,
+    substitution_rules=substitution_rules,
+    service_targets=service_targets,
     fulfilled=fulfilled,
 ).run(session)
 ```
@@ -150,6 +157,22 @@ transfer, or reservation.
 `ReconcileFulfillmentPlan` compares `FulfillmentPlan` with actual `OrderFulfillment` shipment facts. Shipments do not
 currently carry warehouse identity, so reconciliation reports whether a planned line later shipped, not whether it
 shipped from the planned warehouse.
+
+The remaining fulfillment outputs make projections and observations explicit. `BuildDemandWindows` aggregates observed
+`Order` demand by product and date; it does not forecast. `ProjectInventory` applies on-hand, reservations, inbound
+receipts, and declared `LeadTime` facts across those windows. `DetectFulfillmentShortages` publishes the first window
+that falls below safety stock. `FindFulfillmentSubstitutions` ranks only tenant-scoped, active `SubstitutionRule`
+alternatives and never rewrites the original order line.
+
+`PrioritizeFulfillmentExceptions` exposes the inputs to its priority policy—shortage size, lateness, customer tier, and
+service target—instead of hiding them in an opaque score. `EvaluateFulfillmentService` matches shipments by tenant,
+order ID, and `line_number`, so duplicate products on one order remain distinct. A missing shipment date stays
+unknown, while observed dates are classified as on time or late and full or partial. Warehouse fields in service
+summaries refer to the planned warehouse because `Shipment` does not yet carry actual warehouse identity.
+
+The composed `Fulfillment` result also exposes `demand_windows`, `inventory_projections`, `shortages`,
+`substitution_options`, `exceptions`, `service_evaluations`, and `daily_service_summary` alongside the original plan,
+allocation, backorder, reconciliation, and replenishment outputs.
 
 ## Enrichment
 

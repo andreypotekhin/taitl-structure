@@ -123,6 +123,11 @@
       "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.field.order_id"
     },
     {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options.select.line_number",
+      "ir": "ir:PlanFulfillment.step.1.build_options.project.line_number",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.field.line_number"
+    },
+    {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options.select.customer_id",
       "ir": "ir:PlanFulfillment.step.1.build_options.project.customer_id",
       "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.field.customer_id"
@@ -256,6 +261,11 @@
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.2.prioritize_options.select.order_id",
       "ir": "ir:PlanFulfillment.step.2.prioritize_options.project.order_id",
       "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.prioritize_options.field.order_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.2.prioritize_options.select.line_number",
+      "ir": "ir:PlanFulfillment.step.2.prioritize_options.project.line_number",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.prioritize_options.field.line_number"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.2.prioritize_options.select.customer_id",
@@ -403,6 +413,11 @@
       "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option.field.order_id"
     },
     {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.3.select_preferred_option.select.line_number",
+      "ir": "ir:PlanFulfillment.step.3.select_preferred_option.project.line_number",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option.field.line_number"
+    },
+    {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.3.select_preferred_option.select.customer_id",
       "ir": "ir:PlanFulfillment.step.3.select_preferred_option.project.customer_id",
       "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option.field.customer_id"
@@ -548,6 +563,11 @@
       "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.allocate.field.order_id"
     },
     {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.4.allocate.select.line_number",
+      "ir": "ir:PlanFulfillment.step.4.allocate.project.line_number",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.allocate.field.line_number"
+    },
+    {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.4.allocate.select.customer_id",
       "ir": "ir:PlanFulfillment.step.4.allocate.project.customer_id",
       "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.allocate.field.customer_id"
@@ -608,6 +628,11 @@
       "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.backorder.field.order_id"
     },
     {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.5.backorder.select.line_number",
+      "ir": "ir:PlanFulfillment.step.5.backorder.project.line_number",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.backorder.field.line_number"
+    },
+    {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.5.backorder.select.customer_id",
       "ir": "ir:PlanFulfillment.step.5.backorder.project.customer_id",
       "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.backorder.field.customer_id"
@@ -666,6 +691,11 @@
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.6.plan.select.order_id",
       "ir": "ir:PlanFulfillment.step.6.plan.project.order_id",
       "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.plan.field.order_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.6.plan.select.line_number",
+      "ir": "ir:PlanFulfillment.step.6.plan.project.line_number",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.plan.field.line_number"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.6.plan.select.customer_id",
@@ -824,6 +854,10 @@
       "constant": "CUSTOMER_ORDER_BACKFILL_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.order"
     },
+    "DailyFulfillmentServiceSummary": {
+      "constant": "DAILY_FULFILLMENT_SERVICE_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.service"
+    },
     "DailyFulfillmentSummary": {
       "constant": "DAILY_FULFILLMENT_SUMMARY_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.summary"
@@ -844,6 +878,10 @@
       "constant": "DAILY_RECOMMENDATION_IMPRESSIONS_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.feedback"
     },
+    "DemandWindow": {
+      "constant": "DEMAND_WINDOW_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.projection"
+    },
     "FulfillmentAllocation": {
       "constant": "FULFILLMENT_ALLOCATION_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.plan"
@@ -851,6 +889,10 @@
     "FulfillmentBackorder": {
       "constant": "FULFILLMENT_BACKORDER_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "FulfillmentException": {
+      "constant": "FULFILLMENT_EXCEPTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.exception"
     },
     "FulfillmentOption": {
       "constant": "FULFILLMENT_OPTION_SCHEMA",
@@ -868,9 +910,29 @@
       "constant": "FULFILLMENT_RECONCILIATION_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.reconciliation"
     },
+    "FulfillmentServiceEvaluation": {
+      "constant": "FULFILLMENT_SERVICE_EVALUATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.service"
+    },
+    "FulfillmentServiceTotals": {
+      "constant": "FULFILLMENT_SERVICE_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.service"
+    },
+    "FulfillmentShortage": {
+      "constant": "FULFILLMENT_SHORTAGE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.shortage"
+    },
+    "FulfillmentShortageRanked": {
+      "constant": "FULFILLMENT_SHORTAGE_RANKED_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.shortage"
+    },
+    "FulfillmentSubstitutionOption": {
+      "constant": "FULFILLMENT_SUBSTITUTION_OPTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.substitution"
+    },
     "InboundInventory": {
       "constant": "INBOUND_INVENTORY_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
     },
     "InboundInventoryAvailability": {
       "constant": "INBOUND_INVENTORY_AVAILABILITY_SCHEMA",
@@ -878,7 +940,15 @@
     },
     "InventoryPosition": {
       "constant": "INVENTORY_POSITION_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
+    },
+    "InventoryProjection": {
+      "constant": "INVENTORY_PROJECTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.projection"
+    },
+    "LeadTime": {
+      "constant": "LEAD_TIME_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory_inventory"
     },
     "MerchandisingBoost": {
       "constant": "MERCHANDISING_BOOST_SCHEMA",
@@ -1036,9 +1106,17 @@
       "constant": "REPLENISHMENT_SUGGESTION_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.plan"
     },
+    "ServiceRiskTarget": {
+      "constant": "SERVICE_RISK_TARGET_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.exception"
+    },
     "Shipment": {
       "constant": "SHIPMENT_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.shipment"
+    },
+    "SubstitutionRule": {
+      "constant": "SUBSTITUTION_RULE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.substitution"
     },
     "TenantKey": {
       "constant": "TENANT_KEY_SCHEMA",
@@ -1046,7 +1124,7 @@
     },
     "Warehouse": {
       "constant": "WAREHOUSE_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
     },
     "WarehouseLoadSummary": {
       "constant": "WAREHOUSE_LOAD_SUMMARY_SCHEMA",
@@ -1248,6 +1326,17 @@
         ],
         "step": "build_options",
         "target": "FulfillmentOption.order_id"
+      },
+      {
+        "detail": {
+          "field": "line_number"
+        },
+        "operation": "project",
+        "sources": [
+          "demand.line_number"
+        ],
+        "step": "build_options",
+        "target": "FulfillmentOption.line_number"
       },
       {
         "detail": {
@@ -1539,6 +1628,17 @@
       },
       {
         "detail": {
+          "field": "line_number"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentOption.line_number"
+        ],
+        "step": "prioritize_options",
+        "target": "FulfillmentPreferredOption.line_number"
+      },
+      {
+        "detail": {
           "field": "customer_id"
         },
         "operation": "project",
@@ -1792,7 +1892,7 @@
           "FulfillmentOption.warehouse_id",
           "FulfillmentOption.tenant.tenant_id",
           "FulfillmentOption.order_id",
-          "FulfillmentOption.product_id"
+          "FulfillmentOption.line_number"
         ],
         "step": "prioritize_options",
         "target": "FulfillmentPreferredOption.option_ordinal"
@@ -1850,6 +1950,17 @@
         ],
         "step": "select_preferred_option",
         "target": "FulfillmentPreferredOption.order_id"
+      },
+      {
+        "detail": {
+          "field": "line_number"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.line_number"
+        ],
+        "step": "select_preferred_option",
+        "target": "FulfillmentPreferredOption.line_number"
       },
       {
         "detail": {
@@ -2160,6 +2271,17 @@
       },
       {
         "detail": {
+          "field": "line_number"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.line_number"
+        ],
+        "step": "allocate",
+        "target": "FulfillmentAllocation.line_number"
+      },
+      {
+        "detail": {
           "field": "customer_id"
         },
         "operation": "project",
@@ -2279,6 +2401,17 @@
         ],
         "step": "backorder",
         "target": "FulfillmentBackorder.order_id"
+      },
+      {
+        "detail": {
+          "field": "line_number"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.line_number"
+        ],
+        "step": "backorder",
+        "target": "FulfillmentBackorder.line_number"
       },
       {
         "detail": {
@@ -2406,6 +2539,17 @@
         ],
         "step": "plan",
         "target": "FulfillmentPlan.order_id"
+      },
+      {
+        "detail": {
+          "field": "line_number"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.line_number"
+        ],
+        "step": "plan",
+        "target": "FulfillmentPlan.line_number"
       },
       {
         "detail": {

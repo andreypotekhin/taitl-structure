@@ -116,7 +116,9 @@ class EnrichOrders(Transform):
 
     def add_shipments(self, order: OrderWithPromotion, shipment: Shipment) -> OrderFulfillment:
         inner_join(
-            on=(shipment.tenant.tenant_id == order.tenant.tenant_id) & (shipment.order_id == order.id),
+            on=(shipment.tenant.tenant_id == order.tenant.tenant_id)
+            & (shipment.order_id == order.id)
+            & (shipment.line_number == order.line_number),
             strategy="shuffle_hash",
         )
         return OrderFulfillment.base(order)(

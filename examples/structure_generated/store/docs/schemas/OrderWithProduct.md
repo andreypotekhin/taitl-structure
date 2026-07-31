@@ -10,6 +10,7 @@ Module: `examples.store.schemas.order`
 | `audit` | `audit` | `AuditStamp` | no |
 | `business` | `business` | `BusinessDate` | no |
 | `id` | `id` | `string` | no |
+| `line_number` | `line_number` | `integer` | no |
 | `customer_id` | `customer_id` | `string` | no |
 | `product_id` | `product_id` | `string` | no |
 | `promotion_code` | `promotion_code` | `string` | yes |

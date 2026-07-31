@@ -34,6 +34,12 @@ def render_store_example() -> dict[str, str]:
         from examples.store.schemas.customer import Customer
         from examples.store.schemas.fulfillment.analytics.summary import DailyFulfillmentSummary, WarehouseLoadSummary
         from examples.store.schemas.fulfillment.demand import Order
+        from examples.store.schemas.fulfillment.evaluation.service import (
+            DailyFulfillmentServiceSummary,
+            FulfillmentServiceEvaluation,
+            FulfillmentServiceTotals,
+        )
+        from examples.store.schemas.fulfillment.inventory.inventory import LeadTime
         from examples.store.schemas.fulfillment.planning.inventory import InboundInventory, InventoryPosition, Warehouse
         from examples.store.schemas.fulfillment.planning.plan import (
             FulfillmentAllocation,
@@ -46,7 +52,14 @@ def render_store_example() -> dict[str, str]:
             FulfillmentPreferredOption,
             InboundInventoryAvailability,
         )
+        from examples.store.schemas.fulfillment.projections.projection import DemandWindow, InventoryProjection
         from examples.store.schemas.fulfillment.reconciliation.reconciliation import FulfillmentReconciliation
+        from examples.store.schemas.fulfillment.shortages.exception import FulfillmentException, ServiceRiskTarget
+        from examples.store.schemas.fulfillment.shortages.shortage import FulfillmentShortage, FulfillmentShortageRanked
+        from examples.store.schemas.fulfillment.substitutions.substitution import (
+            FulfillmentSubstitutionOption,
+            SubstitutionRule,
+        )
         from examples.store.schemas.merchandising import (
             CatalogAvailability,
             CatalogProduct,
@@ -93,8 +106,14 @@ def render_store_example() -> dict[str, str]:
         from examples.store.transforms.analytics import OrderAnalytics
         from examples.store.transforms.evaluation.recommender.behavior.workflow import EvaluateRecommendations
         from examples.store.transforms.fulfillment.demand import PrepareOrderDemand
+        from examples.store.transforms.fulfillment.evaluation.service import EvaluateFulfillmentService
         from examples.store.transforms.fulfillment.plan import PlanFulfillment
+        from examples.store.transforms.fulfillment.projections.build_demand_windows import BuildDemandWindows
+        from examples.store.transforms.fulfillment.projections.project_inventory import ProjectInventory
         from examples.store.transforms.fulfillment.reconcile import ReconcileFulfillmentPlan
+        from examples.store.transforms.fulfillment.shortages.detect import DetectFulfillmentShortages
+        from examples.store.transforms.fulfillment.shortages.exceptions import PrioritizeFulfillmentExceptions
+        from examples.store.transforms.fulfillment.substitutions.find import FindFulfillmentSubstitutions
         from examples.store.transforms.fulfillment.summarize import FulfillmentAnalytics
         from examples.store.transforms.fulfillment.workflow import Fulfillment
         from examples.store.transforms.merchandising.catalog.prepare_catalog import PrepareCatalog
@@ -121,6 +140,12 @@ def render_store_example() -> dict[str, str]:
                 WarehouseLoadSummary,
             ],
             "examples.store.schemas.fulfillment.demand.demand": [Order],
+            "examples.store.schemas.fulfillment.evaluation.service": [
+                FulfillmentServiceTotals,
+                FulfillmentServiceEvaluation,
+                DailyFulfillmentServiceSummary,
+            ],
+            "examples.store.schemas.fulfillment.inventory.inventory": [LeadTime],
             "examples.store.schemas.fulfillment.planning.workflow": [
                 InboundInventoryAvailability,
                 FulfillmentOption,
@@ -138,6 +163,13 @@ def render_store_example() -> dict[str, str]:
                 ReplenishmentSuggestion,
             ],
             "examples.store.schemas.fulfillment.reconciliation.reconciliation": [FulfillmentReconciliation],
+            "examples.store.schemas.fulfillment.projections.projection": [DemandWindow, InventoryProjection],
+            "examples.store.schemas.fulfillment.shortages.shortage": [FulfillmentShortageRanked, FulfillmentShortage],
+            "examples.store.schemas.fulfillment.shortages.exception": [ServiceRiskTarget, FulfillmentException],
+            "examples.store.schemas.fulfillment.substitutions.substitution": [
+                SubstitutionRule,
+                FulfillmentSubstitutionOption,
+            ],
             "examples.store.schemas.merchandising.catalog": [
                 CatalogProduct,
                 CatalogAvailability,
@@ -199,12 +231,36 @@ def render_store_example() -> dict[str, str]:
                 "examples.store.transforms.fulfillment.demand.PrepareOrderDemand",
             ),
             (
+                BuildDemandWindows,
+                "examples.store.transforms.fulfillment.projections.build_demand_windows.BuildDemandWindows",
+            ),
+            (
+                ProjectInventory,
+                "examples.store.transforms.fulfillment.projections.project_inventory.ProjectInventory",
+            ),
+            (
                 PlanFulfillment,
                 "examples.store.transforms.fulfillment.plan.PlanFulfillment",
             ),
             (
+                DetectFulfillmentShortages,
+                "examples.store.transforms.fulfillment.shortages.detect.DetectFulfillmentShortages",
+            ),
+            (
+                FindFulfillmentSubstitutions,
+                "examples.store.transforms.fulfillment.substitutions.find.FindFulfillmentSubstitutions",
+            ),
+            (
+                PrioritizeFulfillmentExceptions,
+                "examples.store.transforms.fulfillment.shortages.exceptions.PrioritizeFulfillmentExceptions",
+            ),
+            (
                 ReconcileFulfillmentPlan,
                 "examples.store.transforms.fulfillment.reconcile.ReconcileFulfillmentPlan",
+            ),
+            (
+                EvaluateFulfillmentService,
+                "examples.store.transforms.fulfillment.evaluation.service.EvaluateFulfillmentService",
             ),
             (
                 FulfillmentAnalytics,

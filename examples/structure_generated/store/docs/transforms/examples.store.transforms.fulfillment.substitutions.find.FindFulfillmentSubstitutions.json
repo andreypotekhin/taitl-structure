@@ -1,0 +1,107 @@
+{
+  "dependencies": [
+    "inventory",
+    "inventory_positions",
+    "rule",
+    "rules"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "demand",
+      "ordinal": 0,
+      "schema": "Order"
+    },
+    {
+      "name": "rules",
+      "ordinal": 1,
+      "schema": "SubstitutionRule"
+    },
+    {
+      "name": "inventory_positions",
+      "ordinal": 2,
+      "schema": "InventoryPosition"
+    }
+  ],
+  "name": "FindFulfillmentSubstitutions",
+  "outputs": [
+    {
+      "name": "options",
+      "ordinal": 0,
+      "schema": "FulfillmentSubstitutionOption"
+    }
+  ],
+  "source": "examples.store.transforms.fulfillment.substitutions.find.FindFulfillmentSubstitutions",
+  "step_methods": [
+    {
+      "input_lane": "demand",
+      "input_schema": "Order",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "order",
+          "schema": "Order",
+          "source": "demand"
+        },
+        {
+          "driving": false,
+          "parameter": "rule",
+          "schema": "SubstitutionRule",
+          "source": "rules"
+        },
+        {
+          "driving": false,
+          "parameter": "inventory",
+          "schema": "InventoryPosition",
+          "source": "inventory_positions"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "rule"
+        },
+        {
+          "how": "left",
+          "input": "inventory"
+        }
+      ],
+      "name": "find_candidates",
+      "output_lane": "candidates",
+      "output_schema": "FulfillmentSubstitutionOption",
+      "results": [
+        {
+          "frame": "candidates",
+          "lane": "candidates",
+          "schema": "FulfillmentSubstitutionOption"
+        }
+      ]
+    },
+    {
+      "input_lane": "candidates",
+      "input_schema": "FulfillmentSubstitutionOption",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "option",
+          "schema": "FulfillmentSubstitutionOption",
+          "source": "candidates"
+        }
+      ],
+      "name": "rank_candidates",
+      "output_lane": "options",
+      "output_schema": "FulfillmentSubstitutionOption",
+      "results": [
+        {
+          "frame": "options",
+          "lane": "options",
+          "schema": "FulfillmentSubstitutionOption"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/find.py",
+    "traceability": "traceability/transforms/find.FindFulfillmentSubstitutions.json"
+  }
+}

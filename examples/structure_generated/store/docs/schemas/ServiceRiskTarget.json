@@ -1,0 +1,38 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "tenant",
+      "name": "tenant",
+      "nullable": false,
+      "type": "TenantKey"
+    },
+    {
+      "column": "target_id",
+      "name": "target_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "fill_rate_target",
+      "name": "fill_rate_target",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "on_time_target",
+      "name": "on_time_target",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "active",
+      "name": "active",
+      "nullable": false,
+      "type": "boolean"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.store.schemas.fulfillment.shortages.exception",
+  "name": "ServiceRiskTarget"
+}
