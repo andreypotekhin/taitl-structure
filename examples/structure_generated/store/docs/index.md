@@ -75,6 +75,7 @@
 ## Transforms
 
 - [AdvancedOrderAnalytics](transforms/examples.store.transforms.adv_analytics.AdvancedOrderAnalytics.md)
+- [EvaluateRecommendations](transforms/examples.store.transforms.evaluation.recommender.behavior.workflow.EvaluateRecommendations.md)
 - [PrepareOrderDemand](transforms/examples.store.transforms.fulfillment.demand.PrepareOrderDemand.md)
 - [PlanFulfillment](transforms/examples.store.transforms.fulfillment.plan.PlanFulfillment.md)
 - [ReconcileFulfillmentPlan](transforms/examples.store.transforms.fulfillment.reconcile.ReconcileFulfillmentPlan.md)
@@ -82,7 +83,6 @@
 - [Fulfillment](transforms/examples.store.transforms.fulfillment.workflow.Fulfillment.md)
 - [PrepareCatalog](transforms/examples.store.transforms.merchandising.catalog.prepare_catalog.PrepareCatalog.md)
 - [BuildRecommendationSignals](transforms/examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals.md)
-- [EvaluateMerchandising](transforms/examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.md)
 - [SelectRecommendationCandidates](transforms/examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.md)
 - [Recommender](transforms/examples.store.transforms.merchandising.recommender.workflow.Recommender.md)
 - [Merchandising](transforms/examples.store.transforms.merchandising.workflow.Merchandising.md)

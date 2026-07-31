@@ -8,14 +8,17 @@ from examples.store.schemas.merchandising import (
     RecommendationRun,
     RecommendedProduct,
 )
+from examples.store.transforms.merchandising.ranking import Ranker
 from examples.store.transforms.merchandising.recommender.admit import SelectRecommendationCandidates
 from examples.store.transforms.merchandising.recommender.publish import SelectRecommendedProducts
 from examples.store.transforms.merchandising.recommender.rank import RankRecommendationCandidates
 from examples.store.transforms.merchandising.recommender.summarize import SummarizeRecommendationRuns
-from structure import Transform, input, output, stage
+from structure import Transform, input, output, parameter, stage
 
 
 class Recommender(Transform):
+    ranker = parameter(Ranker())
+
     requests = input(RecommendationRequest, streaming=True)
     catalog = input(CatalogProduct)
     policy = input(MerchandisingPolicy)
@@ -36,6 +39,7 @@ class Recommender(Transform):
             boosts=boosts,
             suppressions=suppressions,
             signals=signals,
+            ranker=ranker,
         )
     )
     published = stage(

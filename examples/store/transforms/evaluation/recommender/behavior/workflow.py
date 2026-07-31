@@ -6,14 +6,16 @@ from examples.store.schemas.merchandising import (
     RecommendationRequest,
     RecommendationRequestBehavior,
 )
-from examples.store.transforms.merchandising.clicks.admit import SelectEvaluationRequests
-from examples.store.transforms.merchandising.clicks.measure_impressions import MeasureRecommendationImpressions
-from examples.store.transforms.merchandising.clicks.measure_requests import MeasureRecommendationRequests
-from examples.store.transforms.merchandising.clicks.summarize import SummarizeRecommendationBehavior
+from examples.store.transforms.evaluation.recommender.behavior.admit import SelectEvaluationRequests
+from examples.store.transforms.evaluation.recommender.behavior.measure_impressions import (
+    MeasureRecommendationImpressions,
+)
+from examples.store.transforms.evaluation.recommender.behavior.measure_requests import MeasureRecommendationRequests
+from examples.store.transforms.evaluation.recommender.behavior.summarize import SummarizeRecommendationBehavior
 from structure import Transform, input, output, stage
 
 
-class EvaluateMerchandising(Transform):
+class EvaluateRecommendations(Transform):
     batch = input(RecommendationEvaluationBatch)
     requests = input(RecommendationRequest)
     impressions = input(RecommendationImpression)
@@ -42,3 +44,6 @@ class EvaluateMerchandising(Transform):
 
     request_behaviors = output(RecommendationRequestBehavior, requests_measured.request_behaviors)
     daily_behavior = output(DailyRecommendationBehavior, summarized.daily_behavior)
+
+
+EvaluateMerchandising = EvaluateRecommendations

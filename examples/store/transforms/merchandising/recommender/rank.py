@@ -6,51 +6,13 @@ from examples.store.schemas.merchandising import (
     RankedRecommendationCandidate,
     RecommendationCandidate,
 )
+from examples.store.transforms.merchandising.ranking import Ranker
 from structure import *
 from structure.plugin.pyspark import *
 
 
-@special(type="expr")
-class Ranker:
-    def boost_score(self, boost):
-        return coalesce(boost.boost_score, 0.0)
-
-    def suppression_penalty(self, suppression):
-        return coalesce(suppression.penalty, 0.0)
-
-    def feedback_supported(self, signal, policy):
-        return coalesce(signal.impression_count, 0) >= policy.minimum_feedback_impressions
-
-    def feedback_score(self, signal, policy, supported):
-        return coalesce(
-            when(
-                supported & signal.click_through_rate.is_not_null(),
-                signal.click_through_rate * policy.feedback_weight,
-            ).otherwise(0.0),
-            0.0,
-        )
-
-    def final_score(self, candidate, boost_score, suppression_penalty, feedback_score):
-        return (
-            candidate.base_score
-            + candidate.promotion_score
-            + boost_score
-            + candidate.inventory_boost
-            + feedback_score
-            - suppression_penalty
-        )
-
-    def order_by(self, candidate, final_score, suppression_penalty):
-        return (
-            final_score.desc(),
-            suppression_penalty.asc(),
-            candidate.inventory_boost.desc(),
-            candidate.product_id.asc(),
-        )
-
-
 class RankRecommendationCandidates(Transform):
-    ranker = Ranker()
+    ranker = parameter(Ranker())
 
     candidates = input(RecommendationCandidate)
     policy = input(MerchandisingPolicy)
@@ -58,10 +20,6 @@ class RankRecommendationCandidates(Transform):
     suppressions = input(MerchandisingSuppression)
     signals = input(ProductRecommendationSignal)
     ranked_candidates = output(RankedRecommendationCandidate)
-
-    def __init__(self, *, ranker: Ranker | None = None, **inputs: object) -> None:
-        super().__init__(**inputs)
-        self.ranker = ranker or type(self).ranker
 
     def rank(
         self,
@@ -104,17 +62,16 @@ class RankRecommendationCandidates(Transform):
             & (signal.strategy_id == candidate.strategy_id)
             & (signal.product_id == candidate.product_id),
         )
-        ranker = self.ranker
-        boost_score = ranker.boost_score(boost)
-        suppression_penalty = ranker.suppression_penalty(suppression)
-        supported = ranker.feedback_supported(signal, policy)
-        feedback_score = ranker.feedback_score(signal, policy, supported)
-        final_score = ranker.final_score(candidate, boost_score, suppression_penalty, feedback_score)
+        boost_score = self.ranker.boost_score(boost)
+        suppression_penalty = self.ranker.suppression_penalty(suppression)
+        supported = self.ranker.feedback_supported(signal, policy)
+        feedback_score = self.ranker.feedback_score(signal, policy, supported)
+        final_score = self.ranker.final_score(candidate, boost_score, suppression_penalty, feedback_score)
         return RankedRecommendationCandidate.project(candidate)(
             policy_version=policy.policy_version,
             rank=row_number(
                 partition_by=(candidate.tenant.tenant_id, candidate.request_id),
-                order_by=ranker.order_by(candidate, final_score, suppression_penalty),
+                order_by=self.ranker.order_by(candidate, final_score, suppression_penalty),
             ),
             boost_score=boost_score,
             suppression_penalty=suppression_penalty,

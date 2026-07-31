@@ -6,12 +6,13 @@ from typing import Any, cast
 
 from helpers.example_projects import render_store_example
 
+from examples.store.transforms.evaluation.recommender.behavior.workflow import EvaluateRecommendations
 from examples.store.transforms.fulfillment.demand import PrepareOrderDemand
 from examples.store.transforms.fulfillment.workflow import Fulfillment
 from examples.store.transforms.merchandising.clicks.build_signals import BuildRecommendationSignals
-from examples.store.transforms.merchandising.clicks.workflow import EvaluateMerchandising
+from examples.store.transforms.merchandising.ranking import Ranker
 from examples.store.transforms.merchandising.recommender.admit import SelectRecommendationCandidates
-from examples.store.transforms.merchandising.recommender.rank import Ranker, RankRecommendationCandidates
+from examples.store.transforms.merchandising.recommender.rank import RankRecommendationCandidates
 from examples.store.transforms.merchandising.recommender.summarize import SummarizeRecommendationRuns
 from examples.store.transforms.merchandising.recommender.workflow import Recommender
 from examples.store.transforms.merchandising.workflow import Merchandising
@@ -101,7 +102,7 @@ def test_store_live_event_inputs_are_marked_streaming_at_source_boundaries() -> 
     assert merchandising_modes["feedback_clicks"]
     assert not merchandising_modes["evaluation_requests"]
 
-    assert not _input_modes(EvaluateMerchandising)["requests"]
+    assert not _input_modes(EvaluateRecommendations)["requests"]
     assert not _input_modes(RowsetJoinExamples)["orders"]
 
 
@@ -335,6 +336,28 @@ def test_recommendation_ranker_formulas_are_swappable() -> None:
 
     assert boost_score.kind == "literal"
     assert boost_score.data["value"] == 9.0
+
+    class ConstantBoostRecommender(Recommender):
+        ranker = ConstantBoostRanker()
+
+    recommender_plan = cast(
+        PySparkExecutionPlan,
+        Compiler.frontend.compile()(
+            ConstantBoostRecommender,
+            materialize_schemas=False,
+            target_profile=None,
+            allow_stream_to_batch=True,
+        ).lowered,
+    )
+    recommender_boost_score = next(
+        projection.expression
+        for step in recommender_plan.steps
+        for projection in step.projection
+        if projection.field.name == "boost_score"
+    )
+
+    assert recommender_boost_score.kind == "literal"
+    assert recommender_boost_score.data["value"] == 9.0
 
 
 def test_merchandising_evaluation_keeps_zero_result_requests_by_strategy() -> None:

@@ -91,6 +91,7 @@ def render_store_example() -> dict[str, str]:
         from examples.store.schemas.shipment import Shipment
         from examples.store.transforms.adv_analytics import AdvancedOrderAnalytics
         from examples.store.transforms.analytics import OrderAnalytics
+        from examples.store.transforms.evaluation.recommender.behavior.workflow import EvaluateRecommendations
         from examples.store.transforms.fulfillment.demand import PrepareOrderDemand
         from examples.store.transforms.fulfillment.plan import PlanFulfillment
         from examples.store.transforms.fulfillment.reconcile import ReconcileFulfillmentPlan
@@ -98,7 +99,6 @@ def render_store_example() -> dict[str, str]:
         from examples.store.transforms.fulfillment.workflow import Fulfillment
         from examples.store.transforms.merchandising.catalog.prepare_catalog import PrepareCatalog
         from examples.store.transforms.merchandising.clicks.build_signals import BuildRecommendationSignals
-        from examples.store.transforms.merchandising.clicks.workflow import EvaluateMerchandising
         from examples.store.transforms.merchandising.recommender.admit import SelectRecommendationCandidates
         from examples.store.transforms.merchandising.recommender.workflow import Recommender
         from examples.store.transforms.merchandising.workflow import Merchandising
@@ -226,8 +226,8 @@ def render_store_example() -> dict[str, str]:
                 "examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals",
             ),
             (
-                EvaluateMerchandising,
-                "examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising",
+                EvaluateRecommendations,
+                "examples.store.transforms.evaluation.recommender.behavior.workflow.EvaluateRecommendations",
             ),
             (RowsetJoinExamples, "examples.store.transforms.rowset_joins.rowset_join_examples.RowsetJoinExamples"),
             (OrderAnalytics, "examples.store.transforms.order_analytics.workflow.OrderAnalytics"),

@@ -1,5 +1,5 @@
 from examples.store.transforms.merchandising.recommender.workflow import Recommender
 from examples.store.transforms.merchandising.recommender.admit import SelectRecommendationCandidates
 from examples.store.transforms.merchandising.recommender.publish import SelectRecommendedProducts
-from examples.store.transforms.merchandising.recommender.rank import RankRecommendationCandidates, Ranker
+from examples.store.transforms.merchandising.recommender.rank import RankRecommendationCandidates
 from examples.store.transforms.merchandising.recommender.summarize import SummarizeRecommendationRuns

@@ -11,7 +11,7 @@ persistence, stream lifecycle, and the business actions taken from the results.
 | Catalog preparation | `PrepareCatalog` | `CatalogProduct` | Tenant-visible product facts for recommendation eligibility. |
 | Recommendations | `Recommender` / `Merchandising` | `RecommendedProduct`, `RecommendationRun` | Transparent policy, promotion, and feedback-aware product ranking. |
 | Merchandising feedback | `BuildRecommendationSignals` | Daily facts and product signals | Impression/click attribution and reusable product signals. |
-| Merchandising evaluation | `EvaluateMerchandising` | Request and daily behavior summaries | Zero-result, click, and exposure-aware behavior evaluation. |
+| Merchandising evaluation | `EvaluateRecommendations` | Request and daily behavior summaries | Zero-result, click, and exposure-aware behavior evaluation. |
 | Fulfillment pipeline | `Fulfillment` | Demand, plans, suggestions, summaries | Main planning boundary from commercial order inputs to fulfillment outputs. |
 | Demand preparation | `PrepareOrderDemand` | `Order` | Valid commercial order lines before warehouse or shipment decisions. |
 | Fulfillment planning | `PlanFulfillment` | Allocations, backorders, plans, suggestions | Deterministic warehouse selection and conservative replenishment signals. |
@@ -76,7 +76,7 @@ merch = Merchandising(
 `BuildRecommendationSignals` turns recommendation impressions and timely clicks into daily facts and product-level
 signals inside `Merchandising`. A click counts only when it references an impression and happens within 24 hours of
 that impression.
-`EvaluateMerchandising` keeps zero-result requests in the denominator and summarizes daily behavior by strategy and
+`EvaluateRecommendations` keeps zero-result requests in the denominator and summarizes daily behavior by strategy and
 policy version, including zero-result rate, clicked-request rate, mean first-click rank, and exposure-adjusted click
 rate.
 

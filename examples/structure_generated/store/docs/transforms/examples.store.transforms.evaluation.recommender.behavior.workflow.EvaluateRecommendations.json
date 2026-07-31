@@ -34,7 +34,7 @@
       "schema": "RecommendationClick"
     }
   ],
-  "name": "EvaluateMerchandising",
+  "name": "EvaluateRecommendations",
   "outputs": [
     {
       "name": "request_behaviors",
@@ -47,7 +47,7 @@
       "schema": "DailyRecommendationBehavior"
     }
   ],
-  "source": "examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising",
+  "source": "examples.store.transforms.evaluation.recommender.behavior.workflow.EvaluateRecommendations",
   "step_methods": [
     {
       "input_lane": "requests",
@@ -299,7 +299,7 @@
     }
   ],
   "target_artifacts": {
-    "pyspark_transform": "pyspark/transforms/clicks_workflow.py",
-    "traceability": "traceability/transforms/clicks_workflow.EvaluateMerchandising.json"
+    "pyspark_transform": "pyspark/transforms/behavior_workflow.py",
+    "traceability": "traceability/transforms/behavior_workflow.EvaluateRecommendations.json"
   }
 }

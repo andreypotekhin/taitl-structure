@@ -16,8 +16,9 @@ from examples.store.schemas.merchandising import (
 )
 from examples.store.schemas.product import BlockedProduct, Product
 from examples.store.schemas.promotion import Promotion
+from examples.store.transforms.evaluation import EvaluateRecommendations
 from examples.store.transforms.merchandising.catalog import PrepareCatalog
-from examples.store.transforms.merchandising.clicks import BuildRecommendationSignals, EvaluateMerchandising
+from examples.store.transforms.merchandising.clicks import BuildRecommendationSignals
 from examples.store.transforms.merchandising.recommender import Recommender
 from structure import Transform, input, output, stage
 
@@ -60,7 +61,7 @@ class Merchandising(Transform):
         )
     )
     evaluated = stage(
-        EvaluateMerchandising(
+        EvaluateRecommendations(
             batch=evaluation_batch,
             requests=evaluation_requests,
             impressions=evaluation_impressions,
