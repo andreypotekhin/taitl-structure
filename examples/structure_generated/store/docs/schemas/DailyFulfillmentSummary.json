@@ -1,0 +1,74 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "tenant",
+      "name": "tenant",
+      "nullable": false,
+      "type": "TenantKey"
+    },
+    {
+      "column": "business_date",
+      "name": "business_date",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "column": "demand_line_count",
+      "name": "demand_line_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "allocated_line_count",
+      "name": "allocated_line_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "partially_allocated_line_count",
+      "name": "partially_allocated_line_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "backordered_line_count",
+      "name": "backordered_line_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "requested_units",
+      "name": "requested_units",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "allocated_units",
+      "name": "allocated_units",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "backordered_units",
+      "name": "backordered_units",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "fill_rate",
+      "name": "fill_rate",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "backorder_rate",
+      "name": "backorder_rate",
+      "nullable": true,
+      "type": "double"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.store.schemas.fulfillment.analytics.summary",
+  "name": "DailyFulfillmentSummary"
+}

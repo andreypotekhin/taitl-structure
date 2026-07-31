@@ -21,6 +21,7 @@ from structure.plugin.pyspark.dsl.types import (
     Decimal,
     Double,
     Float,
+    Geometry,
     Integer,
     Long,
     Map,
@@ -28,6 +29,7 @@ from structure.plugin.pyspark.dsl.types import (
     Struct,
     StructureType,
     Timestamp,
+    Variant,
 )
 from structure.plugin.pyspark.dsl.validation.ValidatePySparkSchemas import ValidatePySparkSchemas
 
@@ -90,6 +92,20 @@ def boolean(**options: object) -> Any:
 def timestamp(**options: object) -> Any:
     """Declare a Spark ``timestamp`` field."""
     return _declare(Timestamp(), options)
+
+
+def variant(**options: object) -> Any:
+    """Declare an opaque Spark ``VARIANT`` field.
+
+    ``VARIANT`` is available only when the resolved PySpark target profile is a
+    PySpark 4 profile. Structure preserves its schema and nullability.
+    """
+    return _declare(Variant(), options)
+
+
+def geometry(srid: int, **options: object) -> Any:
+    """Declare a provider-neutral planar Spark ``GEOMETRY`` field."""
+    return _declare(Geometry(srid), options)
 
 
 def decimal(precision: int, scale: int, **options: object) -> Any:
@@ -220,10 +236,12 @@ __all__ = [
     "decimal",
     "double",
     "float",
+    "geometry",
     "integer",
     "long",
     "map",
     "string",
     "struct",
     "timestamp",
+    "variant",
 ]

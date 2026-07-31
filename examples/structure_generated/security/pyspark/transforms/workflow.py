@@ -283,9 +283,9 @@ class VulnerabilityRemediationPrepareGenerated:
 class VulnerabilityRemediationAccessGenerated:
     def _step_accessed_enrich_exposure_4(self, frames):
         # Step method: accessed.enrich_exposure
-        accessed__workflow_exposures = frames["exposures"].alias("vulnerability_exposure")
+        accessed__exposures = frames["exposures"].alias("vulnerability_exposure")
         prepared__case_checks_joined = frames["prepared__case_checks"].alias("prepared__case_checks")
-        accessed__workflow_exposures = accessed__workflow_exposures.join(
+        accessed__exposures = accessed__exposures.join(
             prepared__case_checks_joined,
             (
                 (F.col("prepared__case_checks.vuln_id") == F.col("vulnerability_exposure.vuln_id"))
@@ -294,8 +294,8 @@ class VulnerabilityRemediationAccessGenerated:
             "left",
         )
         evaluation_2_joined = frames["evaluation"].alias("evaluation_2")
-        accessed__workflow_exposures = accessed__workflow_exposures.crossJoin(evaluation_2_joined)
-        accessed__workflow_exposures = accessed__workflow_exposures.select(
+        accessed__exposures = accessed__exposures.crossJoin(evaluation_2_joined)
+        accessed__exposures = accessed__exposures.select(
             F.col("vulnerability_exposure.vuln_id"),
             F.col("vulnerability_exposure.vuln_type"),
             F.col("vulnerability_exposure.description"),
@@ -338,20 +338,20 @@ class VulnerabilityRemediationAccessGenerated:
             ).alias("is_deadline_paused"),
         )
         assert_schema(
-            accessed__workflow_exposures,
+            accessed__exposures,
             VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA,
             name="VulnerabilityWorkflowExposure",
             mode="strict",
         )
         return {
-            "accessed__workflow_exposures": accessed__workflow_exposures,
+            "accessed__exposures": accessed__exposures,
         }
 
 
 class VulnerabilityRemediationPublishGenerated:
     def _step_published_publish_unacknowledged_5(self, frames):
         # Step method: published.publish_unacknowledged
-        published__unacknowledged = frames["accessed__workflow_exposures"].alias("vulnerability_workflow_exposure")
+        published__unacknowledged = frames["accessed__exposures"].alias("vulnerability_workflow_exposure")
         published__unacknowledged = published__unacknowledged.where(
             (
                 (
@@ -405,7 +405,7 @@ class VulnerabilityRemediationPublishGenerated:
 
     def _step_published_publish_pending_6(self, frames):
         # Step method: published.publish_pending
-        published__pending_exceptions = frames["accessed__workflow_exposures"].alias("vulnerability_workflow_exposure")
+        published__pending_exceptions = frames["accessed__exposures"].alias("vulnerability_workflow_exposure")
         published__pending_exceptions = published__pending_exceptions.where(
             (
                 (
@@ -462,7 +462,7 @@ class VulnerabilityRemediationPublishGenerated:
 
     def _step_published_publish_expiring_7(self, frames):
         # Step method: published.publish_expiring
-        published__expiring_exceptions = frames["accessed__workflow_exposures"].alias("vulnerability_workflow_exposure")
+        published__expiring_exceptions = frames["accessed__exposures"].alias("vulnerability_workflow_exposure")
         evaluation_joined = frames["evaluation"].alias("evaluation")
         published__expiring_exceptions = published__expiring_exceptions.crossJoin(evaluation_joined)
         published__expiring_exceptions = published__expiring_exceptions.where(
@@ -533,7 +533,7 @@ class VulnerabilityRemediationPublishGenerated:
 
     def _step_published_publish_expired_8(self, frames):
         # Step method: published.publish_expired
-        published__expired_exceptions = frames["accessed__workflow_exposures"].alias("vulnerability_workflow_exposure")
+        published__expired_exceptions = frames["accessed__exposures"].alias("vulnerability_workflow_exposure")
         evaluation_joined = frames["evaluation"].alias("evaluation")
         published__expired_exceptions = published__expired_exceptions.crossJoin(evaluation_joined)
         published__expired_exceptions = published__expired_exceptions.where(
@@ -597,7 +597,7 @@ class VulnerabilityRemediationPublishGenerated:
 class VulnerabilityRemediationSummariesGenerated:
     def _step_summarized_assess_9(self, frames):
         # Step method: summarized.assess
-        summarized__activities = frames["accessed__workflow_exposures"].alias("vulnerability_workflow_exposure")
+        summarized__activities = frames["accessed__exposures"].alias("vulnerability_workflow_exposure")
         evaluation_joined = frames["evaluation"].alias("evaluation")
         summarized__activities = summarized__activities.crossJoin(evaluation_joined)
         summarized__activities = summarized__activities.select(
@@ -969,7 +969,7 @@ class VulnerabilityRemediationWorkflowGenerated(
         assert_schema(case_issues, REMEDIATION_CASE_ISSUE_SCHEMA, name="RemediationCaseIssue", mode="strict")
 
         # Step method: workflow_exposures
-        workflow_exposures = frames["accessed__workflow_exposures"].alias("vulnerability_workflow_exposure")
+        workflow_exposures = frames["accessed__exposures"].alias("vulnerability_workflow_exposure")
         assert_schema(
             workflow_exposures,
             VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA,

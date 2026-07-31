@@ -1,0 +1,38 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "tenant",
+      "name": "tenant",
+      "nullable": false,
+      "type": "TenantKey"
+    },
+    {
+      "column": "product_id",
+      "name": "product_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "available_to_promise",
+      "name": "available_to_promise",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "inventory_boost",
+      "name": "inventory_boost",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "availability_status",
+      "name": "availability_status",
+      "nullable": true,
+      "type": "string"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.store.schemas.merchandising.catalog",
+  "name": "CatalogAvailability"
+}

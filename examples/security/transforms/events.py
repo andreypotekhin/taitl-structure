@@ -7,7 +7,6 @@ from structure import Transform, input, output, transform
 from structure.plugin.pyspark import *
 
 
-@transform(streaming=True)
 class EnrichAppEvents(Transform):
     events = input(AppEvent, streaming=True)
     devices = input(Device)

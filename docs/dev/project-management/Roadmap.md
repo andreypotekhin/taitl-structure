@@ -433,7 +433,10 @@ separate Structure-owned typed transformations from caller-owned PySpark lifecyc
 - Sprint 42 complete: re-evaluated stateful and order-sensitive streaming API gaps, admitting only shapes with explicit state,
   watermark, output-mode, diagnostics, and live restart evidence.
 - Sprint 43 complete: hardened lifecycle diagnostics, explain output, troubleshooting, and owner-boundary documentation.
-- Sprint 44: close v9 release evidence without adding new API scope.
+- Sprint 44 complete: closed v9 release evidence without adding new API scope.
+- Sprint 45 planned: address v9 API Catalog design-gated rows, including streaming gates and non-streaming planned
+  items such as sampling, aggregate aliases, nearest as-of joins, join reordering, missing-column set composition, and
+  Variant/geospatial type-model decisions. XML remains low-priority design-gated work.
 
 ### v9 must include
 
@@ -447,6 +450,8 @@ separate Structure-owned typed transformations from caller-owned PySpark lifecyc
   lifecycle code, or a batch materialization boundary.
 - Live PySpark 3.5 and 4.0 evidence for every admitted Structure-owned streaming claim, plus `make build` in the final
   hardening sprint.
+- A follow-up execution plan for design-gated catalog rows:
+  `docs/dev/planning/P07302601.V9-api-catalog-design-gates.plan.md`.
 
 ### v9 non-goals
 

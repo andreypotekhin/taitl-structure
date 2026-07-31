@@ -7,7 +7,7 @@ These example applications demonstrate Structure in various domains.
 | [School](school/Readme.md) | Algebra, vectors and matrices | Streaming scalars, batch matrices. |
 | [Search](search/Readme.md) | Scoring, ranking, searching, evaluation | Batch corpus, streaming feedback. |
 | [Security](security/Readme.md) | Vulnerabilities per device, user, team, org | Streaming audit, batch reports. |
-| [Store](store/Readme.md) | Retail order enrichment and analytics | Streaming fulfillment, batch analytics. |
+| [Store](store/Readme.md) | Retail merchandising, fulfillment planning, and analytics | Recommendations, demand, allocation, shipment, batch analytics. |
 | [Stocks](stocks/Readme.md) | Daily-bar technical-analysis | Trend, momentum, volatility, daily return indicators. |
 | [Streams](streams/Readme.md) | White-water kayaking | Streaming timing, progress and penalties. |
 

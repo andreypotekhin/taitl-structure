@@ -155,6 +155,140 @@
           "type": "TenantKey"
         },
         {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "available_to_promise",
+          "name": "available_to_promise",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "inventory_boost",
+          "name": "inventory_boost",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "availability_status",
+          "name": "availability_status",
+          "nullable": true,
+          "type": "string"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.catalog",
+      "name": "CatalogAvailability"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "audit",
+          "name": "audit",
+          "nullable": false,
+          "type": "AuditStamp"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "product_name",
+          "name": "product_name",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "category",
+          "name": "category",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "active",
+          "name": "active",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "list_price",
+          "name": "list_price",
+          "nullable": true,
+          "type": "decimal(12,2)"
+        },
+        {
+          "column": "rating",
+          "name": "rating",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "has_promotion",
+          "name": "has_promotion",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "promotion_code",
+          "name": "promotion_code",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "promotion_name",
+          "name": "promotion_name",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "promotion_discount",
+          "name": "promotion_discount",
+          "nullable": true,
+          "type": "decimal(12,2)"
+        },
+        {
+          "column": "base_score",
+          "name": "base_score",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "promotion_score",
+          "name": "promotion_score",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "eligible",
+          "name": "eligible",
+          "nullable": false,
+          "type": "boolean"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.catalog",
+      "name": "CatalogProduct"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
           "column": "audit",
           "name": "audit",
           "nullable": false,
@@ -364,6 +498,1168 @@
       ],
       "module": "examples.store.schemas.order",
       "name": "CustomerOrderBackfill"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "business_date",
+          "name": "business_date",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "demand_line_count",
+          "name": "demand_line_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "allocated_line_count",
+          "name": "allocated_line_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "partially_allocated_line_count",
+          "name": "partially_allocated_line_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "backordered_line_count",
+          "name": "backordered_line_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "requested_units",
+          "name": "requested_units",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "allocated_units",
+          "name": "allocated_units",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "backordered_units",
+          "name": "backordered_units",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "fill_rate",
+          "name": "fill_rate",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "backorder_rate",
+          "name": "backorder_rate",
+          "nullable": true,
+          "type": "double"
+        }
+      ],
+      "module": "examples.store.schemas.fulfillment.analytics.summary",
+      "name": "DailyFulfillmentSummary"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "window",
+          "name": "window",
+          "nullable": false,
+          "type": "TimeWindow"
+        },
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "strategy_id",
+          "name": "strategy_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "policy_version",
+          "name": "policy_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "request_count",
+          "name": "request_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "zero_result_request_count",
+          "name": "zero_result_request_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "clicked_request_count",
+          "name": "clicked_request_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "zero_result_rate",
+          "name": "zero_result_rate",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "clicked_request_rate",
+          "name": "clicked_request_rate",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "mean_first_click_rank",
+          "name": "mean_first_click_rank",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "raw_click_count",
+          "name": "raw_click_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "exposure_adjusted_click_rate",
+          "name": "exposure_adjusted_click_rate",
+          "nullable": true,
+          "type": "double"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.evaluation",
+      "name": "DailyRecommendationBehavior"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "window",
+          "name": "window",
+          "nullable": false,
+          "type": "TimeWindow"
+        },
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "strategy_id",
+          "name": "strategy_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "policy_version",
+          "name": "policy_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "rank",
+          "name": "rank",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "examination_propensity",
+          "name": "examination_propensity",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "click_count",
+          "name": "click_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "clicked_impression_count",
+          "name": "clicked_impression_count",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.feedback",
+      "name": "DailyRecommendationClicks"
+    },
+    {
+      "bases": [
+        "DailyRecommendationBehavior"
+      ],
+      "fields": [
+        {
+          "column": "window",
+          "name": "window",
+          "nullable": false,
+          "type": "TimeWindow"
+        },
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "strategy_id",
+          "name": "strategy_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "policy_version",
+          "name": "policy_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "request_count",
+          "name": "request_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "zero_result_request_count",
+          "name": "zero_result_request_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "clicked_request_count",
+          "name": "clicked_request_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "zero_result_rate",
+          "name": "zero_result_rate",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "clicked_request_rate",
+          "name": "clicked_request_rate",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "mean_first_click_rank",
+          "name": "mean_first_click_rank",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "raw_click_count",
+          "name": "raw_click_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "exposure_adjusted_click_rate",
+          "name": "exposure_adjusted_click_rate",
+          "nullable": true,
+          "type": "double"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.intermediate",
+      "name": "DailyRecommendationCounts"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "window",
+          "name": "window",
+          "nullable": false,
+          "type": "TimeWindow"
+        },
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "strategy_id",
+          "name": "strategy_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "policy_version",
+          "name": "policy_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "rank",
+          "name": "rank",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "examination_propensity",
+          "name": "examination_propensity",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "impression_count",
+          "name": "impression_count",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.feedback",
+      "name": "DailyRecommendationImpressions"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "business",
+          "name": "business",
+          "nullable": false,
+          "type": "BusinessDate"
+        },
+        {
+          "column": "order_id",
+          "name": "order_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "customer_id",
+          "name": "customer_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "warehouse_id",
+          "name": "warehouse_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "allocated_quantity",
+          "name": "allocated_quantity",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "requested_quantity",
+          "name": "requested_quantity",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "planned_ship_date",
+          "name": "planned_ship_date",
+          "nullable": true,
+          "type": "date"
+        }
+      ],
+      "module": "examples.store.schemas.fulfillment.planning.plan",
+      "name": "FulfillmentAllocation"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "business",
+          "name": "business",
+          "nullable": false,
+          "type": "BusinessDate"
+        },
+        {
+          "column": "order_id",
+          "name": "order_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "customer_id",
+          "name": "customer_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "warehouse_id",
+          "name": "warehouse_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "backordered_quantity",
+          "name": "backordered_quantity",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "requested_quantity",
+          "name": "requested_quantity",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "planned_ship_date",
+          "name": "planned_ship_date",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "reason",
+          "name": "reason",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.store.schemas.fulfillment.planning.plan",
+      "name": "FulfillmentBackorder"
+    },
+    {
+      "bases": [
+        "OrderDemand"
+      ],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "business",
+          "name": "business",
+          "nullable": false,
+          "type": "BusinessDate"
+        },
+        {
+          "column": "order_id",
+          "name": "order_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "customer_id",
+          "name": "customer_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "customer_name",
+          "name": "customer_name",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "customer_tier",
+          "name": "customer_tier",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "customer_region",
+          "name": "customer_region",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "product_name",
+          "name": "product_name",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "product_category",
+          "name": "product_category",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "promotion_code",
+          "name": "promotion_code",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "promotion_name",
+          "name": "promotion_name",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "promotion_discount",
+          "name": "promotion_discount",
+          "nullable": true,
+          "type": "decimal(12,2)"
+        },
+        {
+          "column": "total",
+          "name": "total",
+          "nullable": false,
+          "type": "decimal(12,2)"
+        },
+        {
+          "column": "discount",
+          "name": "discount",
+          "nullable": false,
+          "type": "decimal(12,2)"
+        },
+        {
+          "column": "net_total",
+          "name": "net_total",
+          "nullable": false,
+          "type": "decimal(12,2)"
+        },
+        {
+          "column": "requested_quantity",
+          "name": "requested_quantity",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "is_large",
+          "name": "is_large",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "warehouse_id",
+          "name": "warehouse_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "warehouse_region",
+          "name": "warehouse_region",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "warehouse_priority",
+          "name": "warehouse_priority",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "column": "available_to_promise",
+          "name": "available_to_promise",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "safety_stock_quantity",
+          "name": "safety_stock_quantity",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "earliest_inbound_at",
+          "name": "earliest_inbound_at",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "expected_inbound_quantity",
+          "name": "expected_inbound_quantity",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.store.schemas.fulfillment.planning.intermediate",
+      "name": "FulfillmentOption"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "business",
+          "name": "business",
+          "nullable": false,
+          "type": "BusinessDate"
+        },
+        {
+          "column": "order_id",
+          "name": "order_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "customer_id",
+          "name": "customer_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "requested_quantity",
+          "name": "requested_quantity",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "allocated_quantity",
+          "name": "allocated_quantity",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "backordered_quantity",
+          "name": "backordered_quantity",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "selected_warehouse_id",
+          "name": "selected_warehouse_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "planned_ship_date",
+          "name": "planned_ship_date",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "is_fully_allocated",
+          "name": "is_fully_allocated",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "plan_status",
+          "name": "plan_status",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.store.schemas.fulfillment.planning.plan",
+      "name": "FulfillmentPlan"
+    },
+    {
+      "bases": [
+        "FulfillmentOption"
+      ],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "business",
+          "name": "business",
+          "nullable": false,
+          "type": "BusinessDate"
+        },
+        {
+          "column": "order_id",
+          "name": "order_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "customer_id",
+          "name": "customer_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "customer_name",
+          "name": "customer_name",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "customer_tier",
+          "name": "customer_tier",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "customer_region",
+          "name": "customer_region",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "product_name",
+          "name": "product_name",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "product_category",
+          "name": "product_category",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "promotion_code",
+          "name": "promotion_code",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "promotion_name",
+          "name": "promotion_name",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "promotion_discount",
+          "name": "promotion_discount",
+          "nullable": true,
+          "type": "decimal(12,2)"
+        },
+        {
+          "column": "total",
+          "name": "total",
+          "nullable": false,
+          "type": "decimal(12,2)"
+        },
+        {
+          "column": "discount",
+          "name": "discount",
+          "nullable": false,
+          "type": "decimal(12,2)"
+        },
+        {
+          "column": "net_total",
+          "name": "net_total",
+          "nullable": false,
+          "type": "decimal(12,2)"
+        },
+        {
+          "column": "requested_quantity",
+          "name": "requested_quantity",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "is_large",
+          "name": "is_large",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "warehouse_id",
+          "name": "warehouse_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "warehouse_region",
+          "name": "warehouse_region",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "warehouse_priority",
+          "name": "warehouse_priority",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "column": "available_to_promise",
+          "name": "available_to_promise",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "safety_stock_quantity",
+          "name": "safety_stock_quantity",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "earliest_inbound_at",
+          "name": "earliest_inbound_at",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "expected_inbound_quantity",
+          "name": "expected_inbound_quantity",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "option_ordinal",
+          "name": "option_ordinal",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.store.schemas.fulfillment.planning.intermediate",
+      "name": "FulfillmentPreferredOption"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "audit",
+          "name": "audit",
+          "nullable": false,
+          "type": "AuditStamp"
+        },
+        {
+          "column": "warehouse_id",
+          "name": "warehouse_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "expected_quantity",
+          "name": "expected_quantity",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "expected_at",
+          "name": "expected_at",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "source_type",
+          "name": "source_type",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.store.schemas.fulfillment.planning.inventory",
+      "name": "InboundInventory"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "warehouse_id",
+          "name": "warehouse_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "earliest_expected_at",
+          "name": "earliest_expected_at",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "expected_quantity",
+          "name": "expected_quantity",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.store.schemas.fulfillment.planning.intermediate",
+      "name": "InboundInventoryAvailability"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "audit",
+          "name": "audit",
+          "nullable": false,
+          "type": "AuditStamp"
+        },
+        {
+          "column": "warehouse_id",
+          "name": "warehouse_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "on_hand_quantity",
+          "name": "on_hand_quantity",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "reserved_quantity",
+          "name": "reserved_quantity",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "safety_stock_quantity",
+          "name": "safety_stock_quantity",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "as_of",
+          "name": "as_of",
+          "nullable": false,
+          "type": "date"
+        }
+      ],
+      "module": "examples.store.schemas.fulfillment.planning.inventory",
+      "name": "InventoryPosition"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "policy_version",
+          "name": "policy_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "category",
+          "name": "category",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "boost_score",
+          "name": "boost_score",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "active",
+          "name": "active",
+          "nullable": false,
+          "type": "boolean"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.policy",
+      "name": "MerchandisingBoost"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "strategy_id",
+          "name": "strategy_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "policy_version",
+          "name": "policy_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "maximum_results",
+          "name": "maximum_results",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "minimum_feedback_impressions",
+          "name": "minimum_feedback_impressions",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "feedback_weight",
+          "name": "feedback_weight",
+          "nullable": false,
+          "type": "double"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.policy",
+      "name": "MerchandisingPolicy"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "policy_version",
+          "name": "policy_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "category",
+          "name": "category",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "penalty",
+          "name": "penalty",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "exclude",
+          "name": "exclude",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "active",
+          "name": "active",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "reason",
+          "name": "reason",
+          "nullable": true,
+          "type": "string"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.policy",
+      "name": "MerchandisingSuppression"
     },
     {
       "bases": [],
@@ -710,6 +2006,121 @@
       ],
       "module": "examples.store.schemas.adv_analytics",
       "name": "OrderCustomerWindow"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "business",
+          "name": "business",
+          "nullable": false,
+          "type": "BusinessDate"
+        },
+        {
+          "column": "order_id",
+          "name": "order_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "customer_id",
+          "name": "customer_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "customer_name",
+          "name": "customer_name",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "customer_tier",
+          "name": "customer_tier",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "customer_region",
+          "name": "customer_region",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "product_name",
+          "name": "product_name",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "product_category",
+          "name": "product_category",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "promotion_code",
+          "name": "promotion_code",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "promotion_name",
+          "name": "promotion_name",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "promotion_discount",
+          "name": "promotion_discount",
+          "nullable": true,
+          "type": "decimal(12,2)"
+        },
+        {
+          "column": "total",
+          "name": "total",
+          "nullable": false,
+          "type": "decimal(12,2)"
+        },
+        {
+          "column": "discount",
+          "name": "discount",
+          "nullable": false,
+          "type": "decimal(12,2)"
+        },
+        {
+          "column": "net_total",
+          "name": "net_total",
+          "nullable": false,
+          "type": "decimal(12,2)"
+        },
+        {
+          "column": "requested_quantity",
+          "name": "requested_quantity",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "is_large",
+          "name": "is_large",
+          "nullable": false,
+          "type": "boolean"
+        }
+      ],
+      "module": "examples.store.schemas.fulfillment.demand.demand",
+      "name": "OrderDemand"
     },
     {
       "bases": [
@@ -1934,6 +3345,73 @@
       "name": "OrderWithPromotion"
     },
     {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "business",
+          "name": "business",
+          "nullable": false,
+          "type": "BusinessDate"
+        },
+        {
+          "column": "order_id",
+          "name": "order_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "planned_status",
+          "name": "planned_status",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "planned_allocated_quantity",
+          "name": "planned_allocated_quantity",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "planned_backordered_quantity",
+          "name": "planned_backordered_quantity",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "shipped_quantity",
+          "name": "shipped_quantity",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "shipped",
+          "name": "shipped",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "reconciliation_status",
+          "name": "reconciliation_status",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.store.schemas.fulfillment.reconciliation.reconciliation",
+      "name": "PlannedActualReconciliation"
+    },
+    {
       "bases": [
         "ProductBase"
       ],
@@ -2092,6 +3570,130 @@
           "type": "TenantKey"
         },
         {
+          "column": "strategy_id",
+          "name": "strategy_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "impression_count",
+          "name": "impression_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "clicked_impression_count",
+          "name": "clicked_impression_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "raw_click_count",
+          "name": "raw_click_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "click_through_rate",
+          "name": "click_through_rate",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "exposure_adjusted_click_rate",
+          "name": "exposure_adjusted_click_rate",
+          "nullable": true,
+          "type": "double"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.feedback",
+      "name": "ProductRecommendationSignal"
+    },
+    {
+      "bases": [
+        "ProductRecommendationSignal"
+      ],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "strategy_id",
+          "name": "strategy_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "impression_count",
+          "name": "impression_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "clicked_impression_count",
+          "name": "clicked_impression_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "raw_click_count",
+          "name": "raw_click_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "click_through_rate",
+          "name": "click_through_rate",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "exposure_adjusted_click_rate",
+          "name": "exposure_adjusted_click_rate",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "exposure_weight",
+          "name": "exposure_weight",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "click_weight",
+          "name": "click_weight",
+          "nullable": false,
+          "type": "double"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.intermediate",
+      "name": "ProductRecommendationSignalTotals"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
           "column": "audit",
           "name": "audit",
           "nullable": false,
@@ -2143,6 +3745,833 @@
       ],
       "module": "examples.store.schemas.order",
       "name": "PublicationFlags"
+    },
+    {
+      "bases": [
+        "RecommendedProduct"
+      ],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "request_id",
+          "name": "request_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "strategy_id",
+          "name": "strategy_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "policy_version",
+          "name": "policy_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "product_name",
+          "name": "product_name",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "category",
+          "name": "category",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "rank",
+          "name": "rank",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "base_score",
+          "name": "base_score",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "promotion_score",
+          "name": "promotion_score",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "boost_score",
+          "name": "boost_score",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "suppression_penalty",
+          "name": "suppression_penalty",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "inventory_boost",
+          "name": "inventory_boost",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "feedback_score",
+          "name": "feedback_score",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "final_score",
+          "name": "final_score",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "feedback_contributed",
+          "name": "feedback_contributed",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "maximum_results",
+          "name": "maximum_results",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.intermediate",
+      "name": "RankedRecommendationCandidate"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "window",
+          "name": "window",
+          "nullable": false,
+          "type": "TimeWindow"
+        },
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "request_id",
+          "name": "request_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "strategy_id",
+          "name": "strategy_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "policy_version",
+          "name": "policy_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "impression_id",
+          "name": "impression_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "shown_at",
+          "name": "shown_at",
+          "nullable": false,
+          "type": "timestamp"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "rank",
+          "name": "rank",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "examination_propensity",
+          "name": "examination_propensity",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "click_count",
+          "name": "click_count",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.intermediate",
+      "name": "RecommendationBehaviorImpression"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "request_id",
+          "name": "request_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "requested_at",
+          "name": "requested_at",
+          "nullable": false,
+          "type": "timestamp"
+        },
+        {
+          "column": "customer_id",
+          "name": "customer_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "strategy_id",
+          "name": "strategy_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "policy_version",
+          "name": "policy_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "category_filter",
+          "name": "category_filter",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "collection_id",
+          "name": "collection_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "product_name",
+          "name": "product_name",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "category",
+          "name": "category",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "has_promotion",
+          "name": "has_promotion",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "promotion_code",
+          "name": "promotion_code",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "base_score",
+          "name": "base_score",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "promotion_score",
+          "name": "promotion_score",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "inventory_boost",
+          "name": "inventory_boost",
+          "nullable": false,
+          "type": "double"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.catalog",
+      "name": "RecommendationCandidate"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "impression_id",
+          "name": "impression_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "customer_id",
+          "name": "customer_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "occurred_at",
+          "name": "occurred_at",
+          "nullable": false,
+          "type": "timestamp"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.feedback",
+      "name": "RecommendationClick"
+    },
+    {
+      "bases": [
+        "RecommendationRequestBehavior"
+      ],
+      "fields": [
+        {
+          "column": "window",
+          "name": "window",
+          "nullable": false,
+          "type": "TimeWindow"
+        },
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "request_id",
+          "name": "request_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "strategy_id",
+          "name": "strategy_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "policy_version",
+          "name": "policy_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "result_count",
+          "name": "result_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "clicked_result_count",
+          "name": "clicked_result_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "has_click",
+          "name": "has_click",
+          "nullable": true,
+          "type": "boolean"
+        },
+        {
+          "column": "first_click_rank",
+          "name": "first_click_rank",
+          "nullable": true,
+          "type": "long"
+        },
+        {
+          "column": "raw_click_count",
+          "name": "raw_click_count",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.intermediate",
+      "name": "RecommendationClickSummary"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "window",
+          "name": "window",
+          "nullable": false,
+          "type": "TimeWindow"
+        },
+        {
+          "column": "batch_id",
+          "name": "batch_id",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.evaluation",
+      "name": "RecommendationEvaluationBatch"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "window",
+          "name": "window",
+          "nullable": false,
+          "type": "TimeWindow"
+        },
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "strategy_id",
+          "name": "strategy_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "policy_version",
+          "name": "policy_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "exposure_weight",
+          "name": "exposure_weight",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "click_weight",
+          "name": "click_weight",
+          "nullable": false,
+          "type": "double"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.intermediate",
+      "name": "RecommendationExposure"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "request_id",
+          "name": "request_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "strategy_id",
+          "name": "strategy_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "policy_version",
+          "name": "policy_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "rank",
+          "name": "rank",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "examination_propensity",
+          "name": "examination_propensity",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "shown_at",
+          "name": "shown_at",
+          "nullable": false,
+          "type": "timestamp"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.feedback",
+      "name": "RecommendationImpression"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "customer_id",
+          "name": "customer_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "strategy_id",
+          "name": "strategy_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "policy_version",
+          "name": "policy_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "category",
+          "name": "category",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "collection_id",
+          "name": "collection_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "requested_at",
+          "name": "requested_at",
+          "nullable": false,
+          "type": "timestamp"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.recommendation",
+      "name": "RecommendationRequest"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "window",
+          "name": "window",
+          "nullable": false,
+          "type": "TimeWindow"
+        },
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "request_id",
+          "name": "request_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "strategy_id",
+          "name": "strategy_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "policy_version",
+          "name": "policy_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "result_count",
+          "name": "result_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "clicked_result_count",
+          "name": "clicked_result_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "has_click",
+          "name": "has_click",
+          "nullable": true,
+          "type": "boolean"
+        },
+        {
+          "column": "first_click_rank",
+          "name": "first_click_rank",
+          "nullable": true,
+          "type": "long"
+        },
+        {
+          "column": "raw_click_count",
+          "name": "raw_click_count",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.evaluation",
+      "name": "RecommendationRequestBehavior"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "request_id",
+          "name": "request_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "strategy_id",
+          "name": "strategy_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "policy_version",
+          "name": "policy_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "result_count",
+          "name": "result_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "feedback_contributed",
+          "name": "feedback_contributed",
+          "nullable": false,
+          "type": "boolean"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.recommendation",
+      "name": "RecommendationRun"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "request_id",
+          "name": "request_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "strategy_id",
+          "name": "strategy_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "policy_version",
+          "name": "policy_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "product_name",
+          "name": "product_name",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "category",
+          "name": "category",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "rank",
+          "name": "rank",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "base_score",
+          "name": "base_score",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "promotion_score",
+          "name": "promotion_score",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "boost_score",
+          "name": "boost_score",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "suppression_penalty",
+          "name": "suppression_penalty",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "inventory_boost",
+          "name": "inventory_boost",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "feedback_score",
+          "name": "feedback_score",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "final_score",
+          "name": "final_score",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "feedback_contributed",
+          "name": "feedback_contributed",
+          "nullable": false,
+          "type": "boolean"
+        }
+      ],
+      "module": "examples.store.schemas.merchandising.recommendation",
+      "name": "RecommendedProduct"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "warehouse_id",
+          "name": "warehouse_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "available_to_promise_after_plan",
+          "name": "available_to_promise_after_plan",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "safety_stock_quantity",
+          "name": "safety_stock_quantity",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "earliest_inbound_at",
+          "name": "earliest_inbound_at",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "reason",
+          "name": "reason",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.store.schemas.fulfillment.planning.plan",
+      "name": "ReplenishmentSuggestion"
     },
     {
       "bases": [],
@@ -2205,6 +4634,104 @@
       ],
       "module": "examples.store.schemas.common",
       "name": "TenantKey"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "audit",
+          "name": "audit",
+          "nullable": false,
+          "type": "AuditStamp"
+        },
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "name",
+          "name": "name",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "region",
+          "name": "region",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "priority",
+          "name": "priority",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "column": "active",
+          "name": "active",
+          "nullable": false,
+          "type": "boolean"
+        }
+      ],
+      "module": "examples.store.schemas.fulfillment.planning.inventory",
+      "name": "Warehouse"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "warehouse_id",
+          "name": "warehouse_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "business_date",
+          "name": "business_date",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "planned_line_count",
+          "name": "planned_line_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "allocated_units",
+          "name": "allocated_units",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "distinct_products",
+          "name": "distinct_products",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "customer_count",
+          "name": "customer_count",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.store.schemas.fulfillment.analytics.summary",
+      "name": "WarehouseLoadSummary"
     }
   ],
   "transforms": [
@@ -2342,104 +4869,2415 @@
       }
     },
     {
-      "dependencies": [],
+      "dependencies": [
+        "blocked_product",
+        "blocked_products",
+        "customer",
+        "customers",
+        "inbound",
+        "inventory",
+        "inventory_positions",
+        "planned__inbound_availability",
+        "product",
+        "products",
+        "promotion",
+        "promotions",
+        "warehouse",
+        "warehouses"
+      ],
       "inputs": [
         {
-          "name": "fulfilled",
+          "name": "orders",
           "ordinal": 0,
-          "schema": "OrderFulfillment"
+          "schema": "OrderRaw"
+        },
+        {
+          "name": "customers",
+          "ordinal": 1,
+          "schema": "Customer"
+        },
+        {
+          "name": "products",
+          "ordinal": 2,
+          "schema": "Product"
+        },
+        {
+          "name": "blocked_products",
+          "ordinal": 3,
+          "schema": "BlockedProduct"
+        },
+        {
+          "name": "promotions",
+          "ordinal": 4,
+          "schema": "Promotion"
+        },
+        {
+          "name": "warehouses",
+          "ordinal": 5,
+          "schema": "Warehouse"
+        },
+        {
+          "name": "inventory_positions",
+          "ordinal": 6,
+          "schema": "InventoryPosition"
+        },
+        {
+          "name": "inbound_inventory",
+          "ordinal": 7,
+          "schema": "InboundInventory"
         }
       ],
-      "name": "OrderAnalytics",
+      "name": "Fulfillment",
       "outputs": [
         {
-          "name": "customer_totals",
+          "name": "demand",
           "ordinal": 0,
-          "schema": "CustomerDailyTotal"
+          "schema": "OrderDemand"
         },
         {
-          "name": "product_summary",
+          "name": "allocations",
           "ordinal": 1,
-          "schema": "ProductDailySummary"
+          "schema": "FulfillmentAllocation"
         },
         {
-          "name": "customer_event_rank",
+          "name": "backorders",
           "ordinal": 2,
-          "schema": "CustomerEventRank"
+          "schema": "FulfillmentBackorder"
+        },
+        {
+          "name": "plans",
+          "ordinal": 3,
+          "schema": "FulfillmentPlan"
+        },
+        {
+          "name": "replenishment_suggestions",
+          "ordinal": 4,
+          "schema": "ReplenishmentSuggestion"
+        },
+        {
+          "name": "daily_summary",
+          "ordinal": 5,
+          "schema": "DailyFulfillmentSummary"
+        },
+        {
+          "name": "warehouse_load_summary",
+          "ordinal": 6,
+          "schema": "WarehouseLoadSummary"
         }
       ],
-      "source": "examples.store.transforms.analytics.OrderAnalytics",
+      "source": "examples.store.transforms.fulfillment.Fulfillment.Fulfillment",
       "step_methods": [
         {
-          "input_lane": "fulfilled",
-          "input_schema": "OrderFulfillment",
+          "input_lane": "orders",
+          "input_schema": "OrderRaw",
           "inputs": [
             {
               "driving": true,
               "parameter": "order",
-              "schema": "OrderFulfillment",
-              "source": "fulfilled"
+              "schema": "OrderRaw",
+              "source": "orders"
             }
           ],
-          "name": "customer_daily_totals",
-          "output_lane": "customer_totals",
-          "output_schema": "CustomerDailyTotal",
+          "name": "prepared.normalize",
+          "output_lane": "prepared__orders",
+          "output_schema": "OrderNormalized",
           "results": [
             {
-              "frame": "customer_totals",
-              "lane": "customer_totals",
-              "schema": "CustomerDailyTotal"
+              "frame": "prepared__orders",
+              "lane": "prepared__orders",
+              "schema": "OrderNormalized"
             }
           ]
         },
         {
-          "input_lane": "fulfilled",
-          "input_schema": "OrderFulfillment",
+          "input_lane": "prepared__orders",
+          "input_schema": "OrderNormalized",
           "inputs": [
             {
               "driving": true,
               "parameter": "order",
-              "schema": "OrderFulfillment",
-              "source": "fulfilled"
+              "schema": "OrderNormalized",
+              "source": "prepared__orders"
             }
           ],
-          "name": "product_daily_summary",
-          "output_lane": "product_summary",
-          "output_schema": "ProductDailySummary",
+          "name": "prepared.discard_negative_totals",
+          "output_lane": "prepared__orders",
+          "output_schema": "OrderNormalized",
           "results": [
             {
-              "frame": "product_summary",
-              "lane": "product_summary",
-              "schema": "ProductDailySummary"
+              "frame": "prepared__orders",
+              "lane": "prepared__orders",
+              "schema": "OrderNormalized"
             }
           ]
         },
         {
-          "input_lane": "fulfilled",
-          "input_schema": "OrderFulfillment",
+          "input_lane": "prepared__orders",
+          "input_schema": "OrderNormalized",
           "inputs": [
             {
               "driving": true,
               "parameter": "order",
-              "schema": "OrderFulfillment",
-              "source": "fulfilled"
+              "schema": "OrderNormalized",
+              "source": "prepared__orders"
+            },
+            {
+              "driving": false,
+              "parameter": "customer",
+              "schema": "Customer",
+              "source": "customers"
             }
           ],
-          "name": "customer_event_ranks",
-          "output_lane": "customer_event_rank",
-          "output_schema": "CustomerEventRank",
+          "joins": [
+            {
+              "how": "left",
+              "input": "customer"
+            }
+          ],
+          "name": "prepared.add_customer",
+          "output_lane": "prepared__orders",
+          "output_schema": "OrderWithCustomer",
           "results": [
             {
-              "frame": "customer_event_rank",
-              "lane": "customer_event_rank",
-              "schema": "CustomerEventRank"
+              "frame": "prepared__orders",
+              "lane": "prepared__orders",
+              "schema": "OrderWithCustomer"
+            }
+          ]
+        },
+        {
+          "input_lane": "prepared__orders",
+          "input_schema": "OrderWithCustomer",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "order",
+              "schema": "OrderWithCustomer",
+              "source": "prepared__orders"
+            },
+            {
+              "driving": false,
+              "parameter": "product",
+              "schema": "Product",
+              "source": "products"
+            },
+            {
+              "driving": false,
+              "parameter": "blocked_product",
+              "schema": "BlockedProduct",
+              "source": "blocked_products"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "product"
+            },
+            {
+              "how": "inner",
+              "input": "blocked_product"
+            },
+            {
+              "how": "left",
+              "input": "product"
+            }
+          ],
+          "name": "prepared.add_product",
+          "output_lane": "prepared__orders",
+          "output_schema": "OrderWithProduct",
+          "results": [
+            {
+              "frame": "prepared__orders",
+              "lane": "prepared__orders",
+              "schema": "OrderWithProduct"
+            }
+          ]
+        },
+        {
+          "input_lane": "prepared__orders",
+          "input_schema": "OrderWithProduct",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "order",
+              "schema": "OrderWithProduct",
+              "source": "prepared__orders"
+            },
+            {
+              "driving": false,
+              "parameter": "promotion",
+              "schema": "Promotion",
+              "source": "promotions"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "promotion"
+            }
+          ],
+          "name": "prepared.add_promotion",
+          "output_lane": "prepared__orders",
+          "output_schema": "OrderWithPromotion",
+          "results": [
+            {
+              "frame": "prepared__orders",
+              "lane": "prepared__orders",
+              "schema": "OrderWithPromotion"
+            }
+          ]
+        },
+        {
+          "input_lane": "prepared__orders",
+          "input_schema": "OrderWithPromotion",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "order",
+              "schema": "OrderWithPromotion",
+              "source": "prepared__orders"
+            }
+          ],
+          "name": "prepared.publish_demand",
+          "output_lane": "prepared__demand",
+          "output_schema": "OrderDemand",
+          "results": [
+            {
+              "frame": "prepared__demand",
+              "lane": "prepared__demand",
+              "schema": "OrderDemand"
+            }
+          ]
+        },
+        {
+          "input_lane": "inbound_inventory",
+          "input_schema": "InboundInventory",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "inbound",
+              "schema": "InboundInventory",
+              "source": "inbound_inventory"
+            }
+          ],
+          "name": "planned.summarize_inbound",
+          "output_lane": "planned__inbound_availability",
+          "output_schema": "InboundInventoryAvailability",
+          "results": [
+            {
+              "frame": "planned__inbound_availability",
+              "lane": "planned__inbound_availability",
+              "schema": "InboundInventoryAvailability"
+            }
+          ]
+        },
+        {
+          "input_lane": "prepared__demand",
+          "input_schema": "OrderDemand",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "demand",
+              "schema": "OrderDemand",
+              "source": "prepared__demand"
+            },
+            {
+              "driving": false,
+              "parameter": "warehouse",
+              "schema": "Warehouse",
+              "source": "warehouses"
+            },
+            {
+              "driving": false,
+              "parameter": "inventory",
+              "schema": "InventoryPosition",
+              "source": "inventory_positions"
+            },
+            {
+              "driving": false,
+              "parameter": "inbound",
+              "schema": "InboundInventoryAvailability",
+              "source": "planned__inbound_availability"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "warehouse"
+            },
+            {
+              "how": "inner",
+              "input": "inventory"
+            },
+            {
+              "how": "left",
+              "input": "inbound"
+            }
+          ],
+          "name": "planned.build_options",
+          "output_lane": "planned__options",
+          "output_schema": "FulfillmentOption",
+          "results": [
+            {
+              "frame": "planned__options",
+              "lane": "planned__options",
+              "schema": "FulfillmentOption"
+            }
+          ]
+        },
+        {
+          "input_lane": "planned__options",
+          "input_schema": "FulfillmentOption",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "option",
+              "schema": "FulfillmentOption",
+              "source": "planned__options"
+            }
+          ],
+          "name": "planned.prioritize_options",
+          "output_lane": "planned__prioritized_options",
+          "output_schema": "FulfillmentPreferredOption",
+          "results": [
+            {
+              "frame": "planned__prioritized_options",
+              "lane": "planned__prioritized_options",
+              "schema": "FulfillmentPreferredOption"
+            }
+          ]
+        },
+        {
+          "input_lane": "planned__prioritized_options",
+          "input_schema": "FulfillmentPreferredOption",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "option",
+              "schema": "FulfillmentPreferredOption",
+              "source": "planned__prioritized_options"
+            }
+          ],
+          "name": "planned.select_preferred_option",
+          "output_lane": "planned__preferred_options",
+          "output_schema": "FulfillmentPreferredOption",
+          "results": [
+            {
+              "frame": "planned__preferred_options",
+              "lane": "planned__preferred_options",
+              "schema": "FulfillmentPreferredOption"
+            }
+          ]
+        },
+        {
+          "input_lane": "planned__preferred_options",
+          "input_schema": "FulfillmentPreferredOption",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "option",
+              "schema": "FulfillmentPreferredOption",
+              "source": "planned__preferred_options"
+            }
+          ],
+          "name": "planned.allocate",
+          "output_lane": "planned__allocations",
+          "output_schema": "FulfillmentAllocation",
+          "results": [
+            {
+              "frame": "planned__allocations",
+              "lane": "planned__allocations",
+              "schema": "FulfillmentAllocation"
+            }
+          ]
+        },
+        {
+          "input_lane": "planned__preferred_options",
+          "input_schema": "FulfillmentPreferredOption",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "option",
+              "schema": "FulfillmentPreferredOption",
+              "source": "planned__preferred_options"
+            }
+          ],
+          "name": "planned.backorder",
+          "output_lane": "planned__backorders",
+          "output_schema": "FulfillmentBackorder",
+          "results": [
+            {
+              "frame": "planned__backorders",
+              "lane": "planned__backorders",
+              "schema": "FulfillmentBackorder"
+            }
+          ]
+        },
+        {
+          "input_lane": "planned__preferred_options",
+          "input_schema": "FulfillmentPreferredOption",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "option",
+              "schema": "FulfillmentPreferredOption",
+              "source": "planned__preferred_options"
+            }
+          ],
+          "name": "planned.plan",
+          "output_lane": "planned__plans",
+          "output_schema": "FulfillmentPlan",
+          "results": [
+            {
+              "frame": "planned__plans",
+              "lane": "planned__plans",
+              "schema": "FulfillmentPlan"
+            }
+          ]
+        },
+        {
+          "input_lane": "planned__preferred_options",
+          "input_schema": "FulfillmentPreferredOption",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "option",
+              "schema": "FulfillmentPreferredOption",
+              "source": "planned__preferred_options"
+            }
+          ],
+          "name": "planned.suggest_replenishment",
+          "output_lane": "planned__replenishment_suggestions",
+          "output_schema": "ReplenishmentSuggestion",
+          "results": [
+            {
+              "frame": "planned__replenishment_suggestions",
+              "lane": "planned__replenishment_suggestions",
+              "schema": "ReplenishmentSuggestion"
+            }
+          ]
+        },
+        {
+          "input_lane": "planned__plans",
+          "input_schema": "FulfillmentPlan",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "plan",
+              "schema": "FulfillmentPlan",
+              "source": "planned__plans"
+            }
+          ],
+          "name": "summarized.summarize_daily_totals",
+          "output_lane": "summarized__daily_totals",
+          "output_schema": "DailyFulfillmentSummary",
+          "results": [
+            {
+              "frame": "summarized__daily_totals",
+              "lane": "summarized__daily_totals",
+              "schema": "DailyFulfillmentSummary"
+            }
+          ]
+        },
+        {
+          "input_lane": "summarized__daily_totals",
+          "input_schema": "DailyFulfillmentSummary",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "daily",
+              "schema": "DailyFulfillmentSummary",
+              "source": "summarized__daily_totals"
+            }
+          ],
+          "name": "summarized.publish_daily_summary",
+          "output_lane": "summarized__daily_summary",
+          "output_schema": "DailyFulfillmentSummary",
+          "results": [
+            {
+              "frame": "summarized__daily_summary",
+              "lane": "summarized__daily_summary",
+              "schema": "DailyFulfillmentSummary"
+            }
+          ]
+        },
+        {
+          "input_lane": "planned__allocations",
+          "input_schema": "FulfillmentAllocation",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "allocation",
+              "schema": "FulfillmentAllocation",
+              "source": "planned__allocations"
+            }
+          ],
+          "name": "summarized.summarize_warehouse_load",
+          "output_lane": "summarized__warehouse_load_summary",
+          "output_schema": "WarehouseLoadSummary",
+          "results": [
+            {
+              "frame": "summarized__warehouse_load_summary",
+              "lane": "summarized__warehouse_load_summary",
+              "schema": "WarehouseLoadSummary"
             }
           ]
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/analytics.py",
-        "traceability": "traceability/transforms/analytics.OrderAnalytics.json"
+        "pyspark_transform": "pyspark/transforms/Fulfillment.py",
+        "traceability": "traceability/transforms/Fulfillment.Fulfillment.json"
+      }
+    },
+    {
+      "dependencies": [],
+      "inputs": [
+        {
+          "name": "plans",
+          "ordinal": 0,
+          "schema": "FulfillmentPlan"
+        },
+        {
+          "name": "allocations",
+          "ordinal": 1,
+          "schema": "FulfillmentAllocation"
+        },
+        {
+          "name": "backorders",
+          "ordinal": 2,
+          "schema": "FulfillmentBackorder"
+        }
+      ],
+      "name": "FulfillmentAnalytics",
+      "outputs": [
+        {
+          "name": "daily_summary",
+          "ordinal": 0,
+          "schema": "DailyFulfillmentSummary"
+        },
+        {
+          "name": "warehouse_load_summary",
+          "ordinal": 1,
+          "schema": "WarehouseLoadSummary"
+        }
+      ],
+      "source": "examples.store.transforms.fulfillment.analytics.FulfillmentAnalytics.FulfillmentAnalytics",
+      "step_methods": [
+        {
+          "input_lane": "plans",
+          "input_schema": "FulfillmentPlan",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "plan",
+              "schema": "FulfillmentPlan",
+              "source": "plans"
+            }
+          ],
+          "name": "summarize_daily_totals",
+          "output_lane": "daily_totals",
+          "output_schema": "DailyFulfillmentSummary",
+          "results": [
+            {
+              "frame": "daily_totals",
+              "lane": "daily_totals",
+              "schema": "DailyFulfillmentSummary"
+            }
+          ]
+        },
+        {
+          "input_lane": "daily_totals",
+          "input_schema": "DailyFulfillmentSummary",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "daily",
+              "schema": "DailyFulfillmentSummary",
+              "source": "daily_totals"
+            }
+          ],
+          "name": "publish_daily_summary",
+          "output_lane": "daily_summary",
+          "output_schema": "DailyFulfillmentSummary",
+          "results": [
+            {
+              "frame": "daily_summary",
+              "lane": "daily_summary",
+              "schema": "DailyFulfillmentSummary"
+            }
+          ]
+        },
+        {
+          "input_lane": "allocations",
+          "input_schema": "FulfillmentAllocation",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "allocation",
+              "schema": "FulfillmentAllocation",
+              "source": "allocations"
+            }
+          ],
+          "name": "summarize_warehouse_load",
+          "output_lane": "warehouse_load_summary",
+          "output_schema": "WarehouseLoadSummary",
+          "results": [
+            {
+              "frame": "warehouse_load_summary",
+              "lane": "warehouse_load_summary",
+              "schema": "WarehouseLoadSummary"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/FulfillmentAnalytics.py",
+        "traceability": "traceability/transforms/FulfillmentAnalytics.FulfillmentAnalytics.json"
+      }
+    },
+    {
+      "dependencies": [
+        "blocked_product",
+        "blocked_products",
+        "customer",
+        "customers",
+        "product",
+        "products",
+        "promotion",
+        "promotions"
+      ],
+      "inputs": [
+        {
+          "name": "orders",
+          "ordinal": 0,
+          "schema": "OrderRaw"
+        },
+        {
+          "name": "customers",
+          "ordinal": 1,
+          "schema": "Customer"
+        },
+        {
+          "name": "products",
+          "ordinal": 2,
+          "schema": "Product"
+        },
+        {
+          "name": "blocked_products",
+          "ordinal": 3,
+          "schema": "BlockedProduct"
+        },
+        {
+          "name": "promotions",
+          "ordinal": 4,
+          "schema": "Promotion"
+        }
+      ],
+      "name": "PrepareOrderDemand",
+      "outputs": [
+        {
+          "name": "demand",
+          "ordinal": 0,
+          "schema": "OrderDemand"
+        }
+      ],
+      "source": "examples.store.transforms.fulfillment.demand.PrepareOrderDemand.PrepareOrderDemand",
+      "step_methods": [
+        {
+          "input_lane": "orders",
+          "input_schema": "OrderRaw",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "order",
+              "schema": "OrderRaw",
+              "source": "orders"
+            }
+          ],
+          "name": "normalize",
+          "output_lane": "orders",
+          "output_schema": "OrderNormalized",
+          "results": [
+            {
+              "frame": "orders",
+              "lane": "orders",
+              "schema": "OrderNormalized"
+            }
+          ]
+        },
+        {
+          "input_lane": "orders",
+          "input_schema": "OrderNormalized",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "order",
+              "schema": "OrderNormalized",
+              "source": "orders"
+            }
+          ],
+          "name": "discard_negative_totals",
+          "output_lane": "orders",
+          "output_schema": "OrderNormalized",
+          "results": [
+            {
+              "frame": "orders",
+              "lane": "orders",
+              "schema": "OrderNormalized"
+            }
+          ]
+        },
+        {
+          "input_lane": "orders",
+          "input_schema": "OrderNormalized",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "order",
+              "schema": "OrderNormalized",
+              "source": "orders"
+            },
+            {
+              "driving": false,
+              "parameter": "customer",
+              "schema": "Customer",
+              "source": "customers"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "customer"
+            }
+          ],
+          "name": "add_customer",
+          "output_lane": "orders",
+          "output_schema": "OrderWithCustomer",
+          "results": [
+            {
+              "frame": "orders",
+              "lane": "orders",
+              "schema": "OrderWithCustomer"
+            }
+          ]
+        },
+        {
+          "input_lane": "orders",
+          "input_schema": "OrderWithCustomer",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "order",
+              "schema": "OrderWithCustomer",
+              "source": "orders"
+            },
+            {
+              "driving": false,
+              "parameter": "product",
+              "schema": "Product",
+              "source": "products"
+            },
+            {
+              "driving": false,
+              "parameter": "blocked_product",
+              "schema": "BlockedProduct",
+              "source": "blocked_products"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "product"
+            },
+            {
+              "how": "inner",
+              "input": "blocked_product"
+            },
+            {
+              "how": "left",
+              "input": "product"
+            }
+          ],
+          "name": "add_product",
+          "output_lane": "orders",
+          "output_schema": "OrderWithProduct",
+          "results": [
+            {
+              "frame": "orders",
+              "lane": "orders",
+              "schema": "OrderWithProduct"
+            }
+          ]
+        },
+        {
+          "input_lane": "orders",
+          "input_schema": "OrderWithProduct",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "order",
+              "schema": "OrderWithProduct",
+              "source": "orders"
+            },
+            {
+              "driving": false,
+              "parameter": "promotion",
+              "schema": "Promotion",
+              "source": "promotions"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "promotion"
+            }
+          ],
+          "name": "add_promotion",
+          "output_lane": "orders",
+          "output_schema": "OrderWithPromotion",
+          "results": [
+            {
+              "frame": "orders",
+              "lane": "orders",
+              "schema": "OrderWithPromotion"
+            }
+          ]
+        },
+        {
+          "input_lane": "orders",
+          "input_schema": "OrderWithPromotion",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "order",
+              "schema": "OrderWithPromotion",
+              "source": "orders"
+            }
+          ],
+          "name": "publish_demand",
+          "output_lane": "demand",
+          "output_schema": "OrderDemand",
+          "results": [
+            {
+              "frame": "demand",
+              "lane": "demand",
+              "schema": "OrderDemand"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/PrepareOrderDemand.py",
+        "traceability": "traceability/transforms/PrepareOrderDemand.PrepareOrderDemand.json"
+      }
+    },
+    {
+      "dependencies": [
+        "inbound",
+        "inbound_availability",
+        "inventory",
+        "inventory_positions",
+        "warehouse",
+        "warehouses"
+      ],
+      "inputs": [
+        {
+          "name": "demand",
+          "ordinal": 0,
+          "schema": "OrderDemand"
+        },
+        {
+          "name": "warehouses",
+          "ordinal": 1,
+          "schema": "Warehouse"
+        },
+        {
+          "name": "inventory_positions",
+          "ordinal": 2,
+          "schema": "InventoryPosition"
+        },
+        {
+          "name": "inbound_inventory",
+          "ordinal": 3,
+          "schema": "InboundInventory"
+        }
+      ],
+      "name": "PlanFulfillment",
+      "outputs": [
+        {
+          "name": "allocations",
+          "ordinal": 0,
+          "schema": "FulfillmentAllocation"
+        },
+        {
+          "name": "backorders",
+          "ordinal": 1,
+          "schema": "FulfillmentBackorder"
+        },
+        {
+          "name": "plans",
+          "ordinal": 2,
+          "schema": "FulfillmentPlan"
+        },
+        {
+          "name": "replenishment_suggestions",
+          "ordinal": 3,
+          "schema": "ReplenishmentSuggestion"
+        }
+      ],
+      "source": "examples.store.transforms.fulfillment.planning.PlanFulfillment.PlanFulfillment",
+      "step_methods": [
+        {
+          "input_lane": "inbound_inventory",
+          "input_schema": "InboundInventory",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "inbound",
+              "schema": "InboundInventory",
+              "source": "inbound_inventory"
+            }
+          ],
+          "name": "summarize_inbound",
+          "output_lane": "inbound_availability",
+          "output_schema": "InboundInventoryAvailability",
+          "results": [
+            {
+              "frame": "inbound_availability",
+              "lane": "inbound_availability",
+              "schema": "InboundInventoryAvailability"
+            }
+          ]
+        },
+        {
+          "input_lane": "demand",
+          "input_schema": "OrderDemand",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "demand",
+              "schema": "OrderDemand",
+              "source": "demand"
+            },
+            {
+              "driving": false,
+              "parameter": "warehouse",
+              "schema": "Warehouse",
+              "source": "warehouses"
+            },
+            {
+              "driving": false,
+              "parameter": "inventory",
+              "schema": "InventoryPosition",
+              "source": "inventory_positions"
+            },
+            {
+              "driving": false,
+              "parameter": "inbound",
+              "schema": "InboundInventoryAvailability",
+              "source": "inbound_availability"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "warehouse"
+            },
+            {
+              "how": "inner",
+              "input": "inventory"
+            },
+            {
+              "how": "left",
+              "input": "inbound"
+            }
+          ],
+          "name": "build_options",
+          "output_lane": "options",
+          "output_schema": "FulfillmentOption",
+          "results": [
+            {
+              "frame": "options",
+              "lane": "options",
+              "schema": "FulfillmentOption"
+            }
+          ]
+        },
+        {
+          "input_lane": "options",
+          "input_schema": "FulfillmentOption",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "option",
+              "schema": "FulfillmentOption",
+              "source": "options"
+            }
+          ],
+          "name": "prioritize_options",
+          "output_lane": "prioritized_options",
+          "output_schema": "FulfillmentPreferredOption",
+          "results": [
+            {
+              "frame": "prioritized_options",
+              "lane": "prioritized_options",
+              "schema": "FulfillmentPreferredOption"
+            }
+          ]
+        },
+        {
+          "input_lane": "prioritized_options",
+          "input_schema": "FulfillmentPreferredOption",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "option",
+              "schema": "FulfillmentPreferredOption",
+              "source": "prioritized_options"
+            }
+          ],
+          "name": "select_preferred_option",
+          "output_lane": "preferred_options",
+          "output_schema": "FulfillmentPreferredOption",
+          "results": [
+            {
+              "frame": "preferred_options",
+              "lane": "preferred_options",
+              "schema": "FulfillmentPreferredOption"
+            }
+          ]
+        },
+        {
+          "input_lane": "preferred_options",
+          "input_schema": "FulfillmentPreferredOption",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "option",
+              "schema": "FulfillmentPreferredOption",
+              "source": "preferred_options"
+            }
+          ],
+          "name": "allocate",
+          "output_lane": "allocations",
+          "output_schema": "FulfillmentAllocation",
+          "results": [
+            {
+              "frame": "allocations",
+              "lane": "allocations",
+              "schema": "FulfillmentAllocation"
+            }
+          ]
+        },
+        {
+          "input_lane": "preferred_options",
+          "input_schema": "FulfillmentPreferredOption",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "option",
+              "schema": "FulfillmentPreferredOption",
+              "source": "preferred_options"
+            }
+          ],
+          "name": "backorder",
+          "output_lane": "backorders",
+          "output_schema": "FulfillmentBackorder",
+          "results": [
+            {
+              "frame": "backorders",
+              "lane": "backorders",
+              "schema": "FulfillmentBackorder"
+            }
+          ]
+        },
+        {
+          "input_lane": "preferred_options",
+          "input_schema": "FulfillmentPreferredOption",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "option",
+              "schema": "FulfillmentPreferredOption",
+              "source": "preferred_options"
+            }
+          ],
+          "name": "plan",
+          "output_lane": "plans",
+          "output_schema": "FulfillmentPlan",
+          "results": [
+            {
+              "frame": "plans",
+              "lane": "plans",
+              "schema": "FulfillmentPlan"
+            }
+          ]
+        },
+        {
+          "input_lane": "preferred_options",
+          "input_schema": "FulfillmentPreferredOption",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "option",
+              "schema": "FulfillmentPreferredOption",
+              "source": "preferred_options"
+            }
+          ],
+          "name": "suggest_replenishment",
+          "output_lane": "replenishment_suggestions",
+          "output_schema": "ReplenishmentSuggestion",
+          "results": [
+            {
+              "frame": "replenishment_suggestions",
+              "lane": "replenishment_suggestions",
+              "schema": "ReplenishmentSuggestion"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/PlanFulfillment.py",
+        "traceability": "traceability/transforms/PlanFulfillment.PlanFulfillment.json"
+      }
+    },
+    {
+      "dependencies": [
+        "fulfilled"
+      ],
+      "inputs": [
+        {
+          "name": "plans",
+          "ordinal": 0,
+          "schema": "FulfillmentPlan"
+        },
+        {
+          "name": "fulfilled",
+          "ordinal": 1,
+          "schema": "OrderFulfillment"
+        }
+      ],
+      "name": "ReconcileFulfillmentPlan",
+      "outputs": [
+        {
+          "name": "reconciliation",
+          "ordinal": 0,
+          "schema": "PlannedActualReconciliation"
+        }
+      ],
+      "source": "examples.store.transforms.fulfillment.reconciliation.ReconcileFulfillmentPlan.ReconcileFulfillmentPlan",
+      "step_methods": [
+        {
+          "input_lane": "plans",
+          "input_schema": "FulfillmentPlan",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "plan",
+              "schema": "FulfillmentPlan",
+              "source": "plans"
+            },
+            {
+              "driving": false,
+              "parameter": "fulfilled",
+              "schema": "OrderFulfillment",
+              "source": "fulfilled"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "fulfilled"
+            }
+          ],
+          "name": "reconcile",
+          "output_lane": "reconciliation",
+          "output_schema": "PlannedActualReconciliation",
+          "results": [
+            {
+              "frame": "reconciliation",
+              "lane": "reconciliation",
+              "schema": "PlannedActualReconciliation"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/ReconcileFulfillmentPlan.py",
+        "traceability": "traceability/transforms/ReconcileFulfillmentPlan.ReconcileFulfillmentPlan.json"
+      }
+    },
+    {
+      "dependencies": [
+        "blocked_product",
+        "blocked_products",
+        "boost",
+        "boosts",
+        "cataloged__products",
+        "policy",
+        "product",
+        "promotion",
+        "promotions",
+        "recommended__admitted__ranked_candidates",
+        "signal",
+        "signals",
+        "suppression",
+        "suppressions"
+      ],
+      "inputs": [
+        {
+          "name": "products",
+          "ordinal": 0,
+          "schema": "Product"
+        },
+        {
+          "name": "blocked_products",
+          "ordinal": 1,
+          "schema": "BlockedProduct"
+        },
+        {
+          "name": "promotions",
+          "ordinal": 2,
+          "schema": "Promotion"
+        },
+        {
+          "name": "requests",
+          "ordinal": 3,
+          "schema": "RecommendationRequest"
+        },
+        {
+          "name": "policy",
+          "ordinal": 4,
+          "schema": "MerchandisingPolicy"
+        },
+        {
+          "name": "boosts",
+          "ordinal": 5,
+          "schema": "MerchandisingBoost"
+        },
+        {
+          "name": "suppressions",
+          "ordinal": 6,
+          "schema": "MerchandisingSuppression"
+        },
+        {
+          "name": "signals",
+          "ordinal": 7,
+          "schema": "ProductRecommendationSignal"
+        }
+      ],
+      "name": "Merchandising",
+      "outputs": [
+        {
+          "name": "recommended_products",
+          "ordinal": 0,
+          "schema": "RecommendedProduct"
+        },
+        {
+          "name": "recommendation_runs",
+          "ordinal": 1,
+          "schema": "RecommendationRun"
+        }
+      ],
+      "source": "examples.store.transforms.merchandising.Merchandising.Merchandising",
+      "step_methods": [
+        {
+          "input_lane": "products",
+          "input_schema": "Product",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "product",
+              "schema": "Product",
+              "source": "products"
+            },
+            {
+              "driving": false,
+              "parameter": "blocked_product",
+              "schema": "BlockedProduct",
+              "source": "blocked_products"
+            },
+            {
+              "driving": false,
+              "parameter": "promotion",
+              "schema": "Promotion",
+              "source": "promotions"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "blocked_product"
+            },
+            {
+              "how": "left",
+              "input": "promotion"
+            }
+          ],
+          "name": "cataloged.prepare",
+          "output_lane": "cataloged__products",
+          "output_schema": "CatalogProduct",
+          "results": [
+            {
+              "frame": "cataloged__products",
+              "lane": "cataloged__products",
+              "schema": "CatalogProduct"
+            }
+          ]
+        },
+        {
+          "input_lane": "requests",
+          "input_schema": "RecommendationRequest",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "RecommendationRequest",
+              "source": "requests"
+            },
+            {
+              "driving": false,
+              "parameter": "product",
+              "schema": "CatalogProduct",
+              "source": "cataloged__products"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "product"
+            }
+          ],
+          "name": "recommended.selected.select",
+          "output_lane": "recommended__selected__requests",
+          "output_schema": "RecommendationCandidate",
+          "results": [
+            {
+              "frame": "recommended__selected__requests",
+              "lane": "recommended__selected__requests",
+              "schema": "RecommendationCandidate"
+            }
+          ]
+        },
+        {
+          "input_lane": "recommended__selected__requests",
+          "input_schema": "RecommendationCandidate",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "candidate",
+              "schema": "RecommendationCandidate",
+              "source": "recommended__selected__requests"
+            },
+            {
+              "driving": false,
+              "parameter": "policy",
+              "schema": "MerchandisingPolicy",
+              "source": "policy"
+            },
+            {
+              "driving": false,
+              "parameter": "boost",
+              "schema": "MerchandisingBoost",
+              "source": "boosts"
+            },
+            {
+              "driving": false,
+              "parameter": "suppression",
+              "schema": "MerchandisingSuppression",
+              "source": "suppressions"
+            },
+            {
+              "driving": false,
+              "parameter": "signal",
+              "schema": "ProductRecommendationSignal",
+              "source": "signals"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "policy"
+            },
+            {
+              "how": "left",
+              "input": "boost"
+            },
+            {
+              "how": "left",
+              "input": "suppression"
+            },
+            {
+              "how": "left",
+              "input": "signal"
+            }
+          ],
+          "name": "recommended.ranked.rank",
+          "output_lane": "recommended__ranked__candidates",
+          "output_schema": "RankedRecommendationCandidate",
+          "results": [
+            {
+              "frame": "recommended__ranked__candidates",
+              "lane": "recommended__ranked__candidates",
+              "schema": "RankedRecommendationCandidate"
+            }
+          ]
+        },
+        {
+          "input_lane": "recommended__ranked__candidates",
+          "input_schema": "RankedRecommendationCandidate",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "candidate",
+              "schema": "RankedRecommendationCandidate",
+              "source": "recommended__ranked__candidates"
+            }
+          ],
+          "name": "recommended.admitted.select_products",
+          "output_lane": "recommended__admitted__ranked_candidates",
+          "output_schema": "RecommendedProduct",
+          "results": [
+            {
+              "frame": "recommended__admitted__ranked_candidates",
+              "lane": "recommended__admitted__ranked_candidates",
+              "schema": "RecommendedProduct"
+            }
+          ]
+        },
+        {
+          "input_lane": "requests",
+          "input_schema": "RecommendationRequest",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "RecommendationRequest",
+              "source": "requests"
+            },
+            {
+              "driving": false,
+              "parameter": "policy",
+              "schema": "MerchandisingPolicy",
+              "source": "policy"
+            },
+            {
+              "driving": false,
+              "parameter": "product",
+              "schema": "RecommendedProduct",
+              "source": "recommended__admitted__ranked_candidates"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "policy"
+            },
+            {
+              "how": "left",
+              "input": "product"
+            }
+          ],
+          "name": "recommended.summarized.summarize",
+          "output_lane": "recommended__summarized__requests",
+          "output_schema": "RecommendationRun",
+          "results": [
+            {
+              "frame": "recommended__summarized__requests",
+              "lane": "recommended__summarized__requests",
+              "schema": "RecommendationRun"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/Merchandising.py",
+        "traceability": "traceability/transforms/Merchandising.Merchandising.json"
+      }
+    },
+    {
+      "dependencies": [
+        "blocked_product",
+        "blocked_products",
+        "promotion",
+        "promotions"
+      ],
+      "inputs": [
+        {
+          "name": "products",
+          "ordinal": 0,
+          "schema": "Product"
+        },
+        {
+          "name": "blocked_products",
+          "ordinal": 1,
+          "schema": "BlockedProduct"
+        },
+        {
+          "name": "promotions",
+          "ordinal": 2,
+          "schema": "Promotion"
+        }
+      ],
+      "name": "PrepareCatalog",
+      "outputs": [
+        {
+          "name": "catalog",
+          "ordinal": 0,
+          "schema": "CatalogProduct"
+        }
+      ],
+      "source": "examples.store.transforms.merchandising.catalog.PrepareCatalog.PrepareCatalog",
+      "step_methods": [
+        {
+          "input_lane": "products",
+          "input_schema": "Product",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "product",
+              "schema": "Product",
+              "source": "products"
+            },
+            {
+              "driving": false,
+              "parameter": "blocked_product",
+              "schema": "BlockedProduct",
+              "source": "blocked_products"
+            },
+            {
+              "driving": false,
+              "parameter": "promotion",
+              "schema": "Promotion",
+              "source": "promotions"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "blocked_product"
+            },
+            {
+              "how": "left",
+              "input": "promotion"
+            }
+          ],
+          "name": "prepare",
+          "output_lane": "products",
+          "output_schema": "CatalogProduct",
+          "results": [
+            {
+              "frame": "products",
+              "lane": "products",
+              "schema": "CatalogProduct"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/PrepareCatalog.py",
+        "traceability": "traceability/transforms/PrepareCatalog.PrepareCatalog.json"
+      }
+    },
+    {
+      "dependencies": [
+        "click",
+        "click_facts",
+        "clicks"
+      ],
+      "inputs": [
+        {
+          "name": "impressions",
+          "ordinal": 0,
+          "schema": "RecommendationImpression"
+        },
+        {
+          "name": "clicks",
+          "ordinal": 1,
+          "schema": "RecommendationClick"
+        }
+      ],
+      "name": "BuildRecommendationSignals",
+      "outputs": [
+        {
+          "name": "daily_impressions",
+          "ordinal": 0,
+          "schema": "DailyRecommendationImpressions"
+        },
+        {
+          "name": "daily_clicks",
+          "ordinal": 1,
+          "schema": "DailyRecommendationClicks"
+        },
+        {
+          "name": "signals",
+          "ordinal": 2,
+          "schema": "ProductRecommendationSignal"
+        }
+      ],
+      "source": "examples.store.transforms.merchandising.clicks.BuildRecommendationSignals.BuildRecommendationSignals",
+      "step_methods": [
+        {
+          "input_lane": "impressions",
+          "input_schema": "RecommendationImpression",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "impression",
+              "schema": "RecommendationImpression",
+              "source": "impressions"
+            }
+          ],
+          "name": "summarize_impressions",
+          "output_lane": "impression_facts",
+          "output_schema": "DailyRecommendationImpressions",
+          "results": [
+            {
+              "frame": "impression_facts",
+              "lane": "impression_facts",
+              "schema": "DailyRecommendationImpressions"
+            }
+          ]
+        },
+        {
+          "input_lane": "impressions",
+          "input_schema": "RecommendationImpression",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "impression",
+              "schema": "RecommendationImpression",
+              "source": "impressions"
+            },
+            {
+              "driving": false,
+              "parameter": "click",
+              "schema": "RecommendationClick",
+              "source": "clicks"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "click"
+            }
+          ],
+          "name": "summarize_clicks",
+          "output_lane": "click_facts",
+          "output_schema": "DailyRecommendationClicks",
+          "results": [
+            {
+              "frame": "click_facts",
+              "lane": "click_facts",
+              "schema": "DailyRecommendationClicks"
+            }
+          ]
+        },
+        {
+          "input_lane": "impression_facts",
+          "input_schema": "DailyRecommendationImpressions",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "impression",
+              "schema": "DailyRecommendationImpressions",
+              "source": "impression_facts"
+            }
+          ],
+          "name": "publish_daily_impressions",
+          "output_lane": "daily_impressions",
+          "output_schema": "DailyRecommendationImpressions",
+          "results": [
+            {
+              "frame": "daily_impressions",
+              "lane": "daily_impressions",
+              "schema": "DailyRecommendationImpressions"
+            }
+          ]
+        },
+        {
+          "input_lane": "click_facts",
+          "input_schema": "DailyRecommendationClicks",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "click",
+              "schema": "DailyRecommendationClicks",
+              "source": "click_facts"
+            }
+          ],
+          "name": "publish_daily_clicks",
+          "output_lane": "daily_clicks",
+          "output_schema": "DailyRecommendationClicks",
+          "results": [
+            {
+              "frame": "daily_clicks",
+              "lane": "daily_clicks",
+              "schema": "DailyRecommendationClicks"
+            }
+          ]
+        },
+        {
+          "input_lane": "impression_facts",
+          "input_schema": "DailyRecommendationImpressions",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "impression",
+              "schema": "DailyRecommendationImpressions",
+              "source": "impression_facts"
+            },
+            {
+              "driving": false,
+              "parameter": "click",
+              "schema": "DailyRecommendationClicks",
+              "source": "click_facts"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "click"
+            }
+          ],
+          "name": "summarize_signals",
+          "output_lane": "signal_totals",
+          "output_schema": "ProductRecommendationSignalTotals",
+          "results": [
+            {
+              "frame": "signal_totals",
+              "lane": "signal_totals",
+              "schema": "ProductRecommendationSignalTotals"
+            }
+          ]
+        },
+        {
+          "input_lane": "signal_totals",
+          "input_schema": "ProductRecommendationSignalTotals",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "signal",
+              "schema": "ProductRecommendationSignalTotals",
+              "source": "signal_totals"
+            }
+          ],
+          "name": "publish_signals",
+          "output_lane": "signals",
+          "output_schema": "ProductRecommendationSignal",
+          "results": [
+            {
+              "frame": "signals",
+              "lane": "signals",
+              "schema": "ProductRecommendationSignal"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/BuildRecommendationSignals.py",
+        "traceability": "traceability/transforms/BuildRecommendationSignals.BuildRecommendationSignals.json"
+      }
+    },
+    {
+      "dependencies": [
+        "batch",
+        "click",
+        "clicked",
+        "clicks",
+        "exposure",
+        "impression",
+        "impressions",
+        "impressions_measured__clicked",
+        "impressions_measured__measured",
+        "summarized__exposure"
+      ],
+      "inputs": [
+        {
+          "name": "batch",
+          "ordinal": 0,
+          "schema": "RecommendationEvaluationBatch"
+        },
+        {
+          "name": "requests",
+          "ordinal": 1,
+          "schema": "RecommendationRequest"
+        },
+        {
+          "name": "impressions",
+          "ordinal": 2,
+          "schema": "RecommendationImpression"
+        },
+        {
+          "name": "clicks",
+          "ordinal": 3,
+          "schema": "RecommendationClick"
+        }
+      ],
+      "name": "EvaluateMerchandising",
+      "outputs": [
+        {
+          "name": "request_behaviors",
+          "ordinal": 0,
+          "schema": "RecommendationRequestBehavior"
+        },
+        {
+          "name": "daily_behavior",
+          "ordinal": 1,
+          "schema": "DailyRecommendationBehavior"
+        }
+      ],
+      "source": "examples.store.transforms.merchandising.clicks.EvaluateMerchandising.EvaluateMerchandising",
+      "step_methods": [
+        {
+          "input_lane": "requests",
+          "input_schema": "RecommendationRequest",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "RecommendationRequest",
+              "source": "requests"
+            },
+            {
+              "driving": false,
+              "parameter": "batch",
+              "schema": "RecommendationEvaluationBatch",
+              "source": "batch"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "batch"
+            }
+          ],
+          "name": "selected.select_requests",
+          "output_lane": "selected__selected_requests",
+          "output_schema": "RecommendationRequestBehavior",
+          "results": [
+            {
+              "frame": "selected__selected_requests",
+              "lane": "selected__selected_requests",
+              "schema": "RecommendationRequestBehavior"
+            }
+          ]
+        },
+        {
+          "input_lane": "selected__selected_requests",
+          "input_schema": "RecommendationRequestBehavior",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "RecommendationRequestBehavior",
+              "source": "selected__selected_requests"
+            },
+            {
+              "driving": false,
+              "parameter": "impression",
+              "schema": "RecommendationImpression",
+              "source": "impressions"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "impression"
+            }
+          ],
+          "name": "impressions_measured.select_impressions",
+          "output_lane": "impressions_measured__displayed",
+          "output_schema": "RecommendationBehaviorImpression",
+          "results": [
+            {
+              "frame": "impressions_measured__displayed",
+              "lane": "impressions_measured__displayed",
+              "schema": "RecommendationBehaviorImpression"
+            }
+          ]
+        },
+        {
+          "input_lane": "impressions_measured__displayed",
+          "input_schema": "RecommendationBehaviorImpression",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "impression",
+              "schema": "RecommendationBehaviorImpression",
+              "source": "impressions_measured__displayed"
+            },
+            {
+              "driving": false,
+              "parameter": "click",
+              "schema": "RecommendationClick",
+              "source": "clicks"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "click"
+            }
+          ],
+          "name": "impressions_measured.attribute_clicks",
+          "output_lane": "impressions_measured__clicked",
+          "output_schema": "RecommendationBehaviorImpression",
+          "results": [
+            {
+              "frame": "impressions_measured__clicked",
+              "lane": "impressions_measured__clicked",
+              "schema": "RecommendationBehaviorImpression"
+            }
+          ]
+        },
+        {
+          "input_lane": "impressions_measured__displayed",
+          "input_schema": "RecommendationBehaviorImpression",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "displayed",
+              "schema": "RecommendationBehaviorImpression",
+              "source": "impressions_measured__displayed"
+            },
+            {
+              "driving": false,
+              "parameter": "clicked",
+              "schema": "RecommendationBehaviorImpression",
+              "source": "impressions_measured__clicked"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "clicked"
+            }
+          ],
+          "name": "impressions_measured.measure_impressions",
+          "output_lane": "impressions_measured__measured",
+          "output_schema": "RecommendationBehaviorImpression",
+          "results": [
+            {
+              "frame": "impressions_measured__measured",
+              "lane": "impressions_measured__measured",
+              "schema": "RecommendationBehaviorImpression"
+            }
+          ]
+        },
+        {
+          "input_lane": "selected__selected_requests",
+          "input_schema": "RecommendationRequestBehavior",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "RecommendationRequestBehavior",
+              "source": "selected__selected_requests"
+            },
+            {
+              "driving": false,
+              "parameter": "impression",
+              "schema": "RecommendationBehaviorImpression",
+              "source": "impressions_measured__measured"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "impression"
+            }
+          ],
+          "name": "requests_measured.measure_requests",
+          "output_lane": "requests_measured__request_behaviors",
+          "output_schema": "RecommendationRequestBehavior",
+          "results": [
+            {
+              "frame": "requests_measured__request_behaviors",
+              "lane": "requests_measured__request_behaviors",
+              "schema": "RecommendationRequestBehavior"
+            }
+          ]
+        },
+        {
+          "input_lane": "impressions_measured__measured",
+          "input_schema": "RecommendationBehaviorImpression",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "impression",
+              "schema": "RecommendationBehaviorImpression",
+              "source": "impressions_measured__measured"
+            }
+          ],
+          "name": "summarized.summarize_exposure",
+          "output_lane": "summarized__exposure",
+          "output_schema": "RecommendationExposure",
+          "results": [
+            {
+              "frame": "summarized__exposure",
+              "lane": "summarized__exposure",
+              "schema": "RecommendationExposure"
+            }
+          ]
+        },
+        {
+          "input_lane": "requests_measured__request_behaviors",
+          "input_schema": "RecommendationRequestBehavior",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "RecommendationRequestBehavior",
+              "source": "requests_measured__request_behaviors"
+            }
+          ],
+          "name": "summarized.summarize_requests",
+          "output_lane": "summarized__daily_counts",
+          "output_schema": "DailyRecommendationCounts",
+          "results": [
+            {
+              "frame": "summarized__daily_counts",
+              "lane": "summarized__daily_counts",
+              "schema": "DailyRecommendationCounts"
+            }
+          ]
+        },
+        {
+          "input_lane": "summarized__daily_counts",
+          "input_schema": "DailyRecommendationCounts",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "daily",
+              "schema": "DailyRecommendationCounts",
+              "source": "summarized__daily_counts"
+            },
+            {
+              "driving": false,
+              "parameter": "exposure",
+              "schema": "RecommendationExposure",
+              "source": "summarized__exposure"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "exposure"
+            }
+          ],
+          "name": "summarized.publish_daily",
+          "output_lane": "summarized__daily_behavior",
+          "output_schema": "DailyRecommendationBehavior",
+          "results": [
+            {
+              "frame": "summarized__daily_behavior",
+              "lane": "summarized__daily_behavior",
+              "schema": "DailyRecommendationBehavior"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/EvaluateMerchandising.py",
+        "traceability": "traceability/transforms/EvaluateMerchandising.EvaluateMerchandising.json"
+      }
+    },
+    {
+      "dependencies": [
+        "admitted__ranked_candidates",
+        "boost",
+        "boosts",
+        "catalog",
+        "policy",
+        "product",
+        "signal",
+        "signals",
+        "suppression",
+        "suppressions"
+      ],
+      "inputs": [
+        {
+          "name": "requests",
+          "ordinal": 0,
+          "schema": "RecommendationRequest"
+        },
+        {
+          "name": "catalog",
+          "ordinal": 1,
+          "schema": "CatalogProduct"
+        },
+        {
+          "name": "policy",
+          "ordinal": 2,
+          "schema": "MerchandisingPolicy"
+        },
+        {
+          "name": "boosts",
+          "ordinal": 3,
+          "schema": "MerchandisingBoost"
+        },
+        {
+          "name": "suppressions",
+          "ordinal": 4,
+          "schema": "MerchandisingSuppression"
+        },
+        {
+          "name": "signals",
+          "ordinal": 5,
+          "schema": "ProductRecommendationSignal"
+        }
+      ],
+      "name": "Recommender",
+      "outputs": [
+        {
+          "name": "recommended_products",
+          "ordinal": 0,
+          "schema": "RecommendedProduct"
+        },
+        {
+          "name": "recommendation_runs",
+          "ordinal": 1,
+          "schema": "RecommendationRun"
+        }
+      ],
+      "source": "examples.store.transforms.merchandising.recommender.Recommender.Recommender",
+      "step_methods": [
+        {
+          "input_lane": "requests",
+          "input_schema": "RecommendationRequest",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "RecommendationRequest",
+              "source": "requests"
+            },
+            {
+              "driving": false,
+              "parameter": "product",
+              "schema": "CatalogProduct",
+              "source": "catalog"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "product"
+            }
+          ],
+          "name": "selected.select",
+          "output_lane": "selected__requests",
+          "output_schema": "RecommendationCandidate",
+          "results": [
+            {
+              "frame": "selected__requests",
+              "lane": "selected__requests",
+              "schema": "RecommendationCandidate"
+            }
+          ]
+        },
+        {
+          "input_lane": "selected__requests",
+          "input_schema": "RecommendationCandidate",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "candidate",
+              "schema": "RecommendationCandidate",
+              "source": "selected__requests"
+            },
+            {
+              "driving": false,
+              "parameter": "policy",
+              "schema": "MerchandisingPolicy",
+              "source": "policy"
+            },
+            {
+              "driving": false,
+              "parameter": "boost",
+              "schema": "MerchandisingBoost",
+              "source": "boosts"
+            },
+            {
+              "driving": false,
+              "parameter": "suppression",
+              "schema": "MerchandisingSuppression",
+              "source": "suppressions"
+            },
+            {
+              "driving": false,
+              "parameter": "signal",
+              "schema": "ProductRecommendationSignal",
+              "source": "signals"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "policy"
+            },
+            {
+              "how": "left",
+              "input": "boost"
+            },
+            {
+              "how": "left",
+              "input": "suppression"
+            },
+            {
+              "how": "left",
+              "input": "signal"
+            }
+          ],
+          "name": "ranked.rank",
+          "output_lane": "ranked__candidates",
+          "output_schema": "RankedRecommendationCandidate",
+          "results": [
+            {
+              "frame": "ranked__candidates",
+              "lane": "ranked__candidates",
+              "schema": "RankedRecommendationCandidate"
+            }
+          ]
+        },
+        {
+          "input_lane": "ranked__candidates",
+          "input_schema": "RankedRecommendationCandidate",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "candidate",
+              "schema": "RankedRecommendationCandidate",
+              "source": "ranked__candidates"
+            }
+          ],
+          "name": "admitted.select_products",
+          "output_lane": "admitted__ranked_candidates",
+          "output_schema": "RecommendedProduct",
+          "results": [
+            {
+              "frame": "admitted__ranked_candidates",
+              "lane": "admitted__ranked_candidates",
+              "schema": "RecommendedProduct"
+            }
+          ]
+        },
+        {
+          "input_lane": "requests",
+          "input_schema": "RecommendationRequest",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "RecommendationRequest",
+              "source": "requests"
+            },
+            {
+              "driving": false,
+              "parameter": "policy",
+              "schema": "MerchandisingPolicy",
+              "source": "policy"
+            },
+            {
+              "driving": false,
+              "parameter": "product",
+              "schema": "RecommendedProduct",
+              "source": "admitted__ranked_candidates"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "policy"
+            },
+            {
+              "how": "left",
+              "input": "product"
+            }
+          ],
+          "name": "summarized.summarize",
+          "output_lane": "summarized__requests",
+          "output_schema": "RecommendationRun",
+          "results": [
+            {
+              "frame": "summarized__requests",
+              "lane": "summarized__requests",
+              "schema": "RecommendationRun"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/Recommender.py",
+        "traceability": "traceability/transforms/Recommender.Recommender.json"
+      }
+    },
+    {
+      "dependencies": [
+        "catalog",
+        "product"
+      ],
+      "inputs": [
+        {
+          "name": "requests",
+          "ordinal": 0,
+          "schema": "RecommendationRequest"
+        },
+        {
+          "name": "catalog",
+          "ordinal": 1,
+          "schema": "CatalogProduct"
+        }
+      ],
+      "name": "SelectRecommendationCandidates",
+      "outputs": [
+        {
+          "name": "candidates",
+          "ordinal": 0,
+          "schema": "RecommendationCandidate"
+        }
+      ],
+      "source": "examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.SelectRecommendationCandidates",
+      "step_methods": [
+        {
+          "input_lane": "requests",
+          "input_schema": "RecommendationRequest",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "RecommendationRequest",
+              "source": "requests"
+            },
+            {
+              "driving": false,
+              "parameter": "product",
+              "schema": "CatalogProduct",
+              "source": "catalog"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "product"
+            }
+          ],
+          "name": "select",
+          "output_lane": "requests",
+          "output_schema": "RecommendationCandidate",
+          "results": [
+            {
+              "frame": "requests",
+              "lane": "requests",
+              "schema": "RecommendationCandidate"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/SelectRecommendationCandidates.py",
+        "traceability": "traceability/transforms/SelectRecommendationCandidates.SelectRecommendationCandidates.json"
       }
     },
     {
@@ -2720,6 +7558,107 @@
       }
     },
     {
+      "dependencies": [],
+      "inputs": [
+        {
+          "name": "fulfilled",
+          "ordinal": 0,
+          "schema": "OrderFulfillment"
+        }
+      ],
+      "name": "OrderAnalytics",
+      "outputs": [
+        {
+          "name": "customer_totals",
+          "ordinal": 0,
+          "schema": "CustomerDailyTotal"
+        },
+        {
+          "name": "product_summary",
+          "ordinal": 1,
+          "schema": "ProductDailySummary"
+        },
+        {
+          "name": "customer_event_rank",
+          "ordinal": 2,
+          "schema": "CustomerEventRank"
+        }
+      ],
+      "source": "examples.store.transforms.order_analytics.OrderAnalytics.OrderAnalytics",
+      "step_methods": [
+        {
+          "input_lane": "fulfilled",
+          "input_schema": "OrderFulfillment",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "order",
+              "schema": "OrderFulfillment",
+              "source": "fulfilled"
+            }
+          ],
+          "name": "customer.customer_daily_totals",
+          "output_lane": "customer__customer_totals",
+          "output_schema": "CustomerDailyTotal",
+          "results": [
+            {
+              "frame": "customer__customer_totals",
+              "lane": "customer__customer_totals",
+              "schema": "CustomerDailyTotal"
+            }
+          ]
+        },
+        {
+          "input_lane": "fulfilled",
+          "input_schema": "OrderFulfillment",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "order",
+              "schema": "OrderFulfillment",
+              "source": "fulfilled"
+            }
+          ],
+          "name": "product.product_daily_summary",
+          "output_lane": "product__product_summary",
+          "output_schema": "ProductDailySummary",
+          "results": [
+            {
+              "frame": "product__product_summary",
+              "lane": "product__product_summary",
+              "schema": "ProductDailySummary"
+            }
+          ]
+        },
+        {
+          "input_lane": "fulfilled",
+          "input_schema": "OrderFulfillment",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "order",
+              "schema": "OrderFulfillment",
+              "source": "fulfilled"
+            }
+          ],
+          "name": "ranks.customer_event_ranks",
+          "output_lane": "ranks__customer_event_rank",
+          "output_schema": "CustomerEventRank",
+          "results": [
+            {
+              "frame": "ranks__customer_event_rank",
+              "lane": "ranks__customer_event_rank",
+              "schema": "CustomerEventRank"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/OrderAnalytics.py",
+        "traceability": "traceability/transforms/OrderAnalytics.OrderAnalytics.json"
+      }
+    },
+    {
       "dependencies": [
         "customer",
         "customers",
@@ -2751,7 +7690,7 @@
           "schema": "OrderProductCandidate"
         }
       ],
-      "source": "examples.store.transforms.rowset_join.RowsetJoinExamples",
+      "source": "examples.store.transforms.rowset_joins.RowsetJoinExamples.RowsetJoinExamples",
       "step_methods": [
         {
           "input_lane": "orders",
@@ -2776,26 +7715,26 @@
               "input": "customer"
             }
           ],
-          "name": "reconcile_orders",
-          "output_lane": "orders",
+          "name": "reconciled.reconcile_orders",
+          "output_lane": "reconciled__reconciliation",
           "output_schema": "OrderCustomerReconciliation",
           "results": [
             {
-              "frame": "orders",
-              "lane": "orders",
+              "frame": "reconciled__reconciliation",
+              "lane": "reconciled__reconciliation",
               "schema": "OrderCustomerReconciliation"
             }
           ]
         },
         {
-          "input_lane": "orders",
+          "input_lane": "reconciled__reconciliation",
           "input_schema": "OrderCustomerReconciliation",
           "inputs": [
             {
               "driving": true,
               "parameter": "row",
               "schema": "OrderCustomerReconciliation",
-              "source": "orders"
+              "source": "reconciled__reconciliation"
             },
             {
               "driving": false,
@@ -2810,26 +7749,26 @@
               "input": "customer"
             }
           ],
-          "name": "keep_customers",
-          "output_lane": "orders",
+          "name": "backfilled.keep_customers",
+          "output_lane": "backfilled__backfills",
           "output_schema": "CustomerOrderBackfill",
           "results": [
             {
-              "frame": "orders",
-              "lane": "orders",
+              "frame": "backfilled__backfills",
+              "lane": "backfilled__backfills",
               "schema": "CustomerOrderBackfill"
             }
           ]
         },
         {
-          "input_lane": "orders",
+          "input_lane": "backfilled__backfills",
           "input_schema": "CustomerOrderBackfill",
           "inputs": [
             {
               "driving": true,
               "parameter": "row",
               "schema": "CustomerOrderBackfill",
-              "source": "orders"
+              "source": "backfilled__backfills"
             },
             {
               "driving": false,
@@ -2844,21 +7783,21 @@
               "input": "product"
             }
           ],
-          "name": "expand_product_candidates",
-          "output_lane": "candidates",
+          "name": "expanded.expand_product_candidates",
+          "output_lane": "expanded__candidates",
           "output_schema": "OrderProductCandidate",
           "results": [
             {
-              "frame": "candidates",
-              "lane": "candidates",
+              "frame": "expanded__candidates",
+              "lane": "expanded__candidates",
               "schema": "OrderProductCandidate"
             }
           ]
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/rowset_join.py",
-        "traceability": "traceability/transforms/rowset_join.RowsetJoinExamples.json"
+        "pyspark_transform": "pyspark/transforms/RowsetJoinExamples.py",
+        "traceability": "traceability/transforms/RowsetJoinExamples.RowsetJoinExamples.json"
       }
     }
   ]

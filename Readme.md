@@ -336,7 +336,7 @@ class OrderAnalytics(Transform):
         )
 ```
 
-More examples: [here](examples/search/transforms/evaluation/search_docs/eval_doc_ranking_quality.py), [here](examples/school/transforms/vectors.py), [here](examples/security/transforms/reports.py), [here](examples/store/transforms/analytics.py).
+More examples: [here](examples/search/transforms/evaluation/search_docs/ranking/eval_ranking.py), [here](examples/school/transforms/vectors.py), [here](examples/security/transforms/reports.py), [here](examples/store/transforms/analytics.py).
 
 ## Streaming
 

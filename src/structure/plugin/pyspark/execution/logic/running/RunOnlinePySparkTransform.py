@@ -317,6 +317,12 @@ class RunOnlinePySparkTransform:
                 df = self._relation_order(step, df, operation.relation_order, functions=functions)
             if operation.relation_bound is not None:
                 df = getattr(df, operation.kind)(operation.relation_bound.count)
+            if operation.relation_sample is not None:
+                df = df.sample(
+                    withReplacement=operation.relation_sample.with_replacement,
+                    fraction=operation.relation_sample.fraction,
+                    seed=operation.relation_sample.seed,
+                )
             if operation.relation_priority_selection is not None:
                 df = self._relation_priority_selection(
                     step,
@@ -768,7 +774,7 @@ class RunOnlinePySparkTransform:
 
     def _relation_set(self, left, right, relation_set):
         if relation_set.by_name:
-            return left.unionByName(right, allowMissingColumns=False)
+            return left.unionByName(right, allowMissingColumns=relation_set.allow_missing_columns)
         function = {
             "union_all": "union",
             "intersect": "intersect",
@@ -1351,6 +1357,7 @@ class RunOnlinePySparkTransform:
             "min",
             "kurtosis",
             "percentile",
+            "schema_of_variant_agg",
             "skewness",
             "stddev",
             "sum",
@@ -1374,6 +1381,7 @@ class RunOnlinePySparkTransform:
             "min": "min",
             "kurtosis": "kurtosis",
             "percentile": "percentile",
+            "schema_of_variant_agg": "schema_of_variant_agg",
             "skewness": "skewness",
             "stddev": "stddev",
             "sum": "sum",
@@ -1433,7 +1441,7 @@ class RunOnlinePySparkTransform:
             predicate = self._predicate(step, join, functions=functions)
             joined = df.join(right, predicate, self._join_mode(join))
         if join.as_of is not None:
-            return self._as_of(join, joined, row_id=row_id, functions=functions, window=window)
+            return self._as_of(join, joined, step=step, row_id=row_id, functions=functions, window=window)
         return joined
 
     def _predicate(self, step, join, *, functions):
@@ -1447,17 +1455,25 @@ class RunOnlinePySparkTransform:
         if join.as_of is not None:
             left_time = self._expressions.evaluate(join.as_of.left_time, functions=functions, aliases=aliases)
             right_time = self._expressions.evaluate(join.as_of.right_time, functions=functions, aliases=aliases)
-            as_of = right_time <= left_time if join.as_of.direction.value == "backward" else right_time >= left_time
-            if join.as_of.tolerance is not None:
-                tolerance = self._expressions.evaluate(join.as_of.tolerance, functions=functions, aliases=aliases)
-                bound = right_time >= left_time - tolerance
-                if join.as_of.direction.value == "forward":
-                    bound = right_time <= left_time + tolerance
-                as_of = as_of & bound
+            if join.as_of.direction.value == "nearest":
+                as_of = left_time.isNotNull() & right_time.isNotNull()
+                if join.as_of.tolerance is not None:
+                    tolerance = self._expressions.evaluate(join.as_of.tolerance, functions=functions, aliases=aliases)
+                    as_of = as_of & (functions.abs(right_time - left_time) <= tolerance)
+            else:
+                as_of = right_time <= left_time if join.as_of.direction.value == "backward" else right_time >= left_time
+                if join.as_of.tolerance is not None:
+                    tolerance = self._expressions.evaluate(join.as_of.tolerance, functions=functions, aliases=aliases)
+                    bound = right_time >= left_time - tolerance
+                    if join.as_of.direction.value == "forward":
+                        bound = right_time <= left_time + tolerance
+                    as_of = as_of & bound
             predicate = predicate & as_of
         return predicate
 
-    def _as_of(self, join, df, *, row_id, functions, window):
+    def _as_of(self, join, df, *, step, row_id, functions, window):
+        if join.as_of.direction.value == "nearest":
+            return self._nearest_as_of(join, df, step=step, row_id=row_id, functions=functions, window=window)
         rank = f"__structure_{join.right_alias}_as_of_rank"
         right_time = self._expressions.evaluate(
             join.as_of.right_time,
@@ -1473,6 +1489,40 @@ class RunOnlinePySparkTransform:
             ),
         )
         return ranked.where(functions.col(rank) == functions.lit(1)).drop(rank).drop(row_id)
+
+    def _nearest_as_of(self, join, df, *, step, row_id, functions, window):
+        aliases = self._scope_aliases(step, join)
+        left_time = self._expressions.evaluate(join.as_of.left_time, functions=functions, aliases=aliases)
+        right_time = self._expressions.evaluate(join.as_of.right_time, functions=functions, aliases=aliases)
+        distance = f"__structure_{join.right_alias}_as_of_distance"
+        minimum = f"__structure_{join.right_alias}_as_of_min_distance"
+        ties = f"__structure_{join.right_alias}_as_of_tie_count"
+        rank = f"__structure_{join.right_alias}_as_of_rank"
+        partition = window.partitionBy(functions.col(row_id))
+        message = (
+            "JOIN-E0601: as_of_one(direction='nearest', ties='error') found equidistant matches; "
+            "add a tolerance or make the right-side time unique"
+        )
+        ranked = df.withColumn(distance, functions.abs(right_time - left_time))
+        ranked = ranked.withColumn(minimum, functions.min(functions.col(distance)).over(partition))
+        ranked = ranked.withColumn(
+            ties,
+            functions.sum(
+                functions.when(functions.col(distance) == functions.col(minimum), functions.lit(1)).otherwise(
+                    functions.lit(0)
+                )
+            ).over(partition),
+        )
+        ranked = ranked.where(
+            functions.assert_true(
+                (functions.col(ties) <= functions.lit(1)) | functions.col(minimum).isNull(), message
+            ).isNull()
+        )
+        ranked = ranked.withColumn(
+            rank,
+            functions.row_number().over(partition.orderBy(functions.col(distance).asc(), right_time.asc())),
+        )
+        return ranked.where(functions.col(rank) == functions.lit(1)).drop(rank, distance, minimum, ties).drop(row_id)
 
     def _dedupe(self, join, right, *, functions, window):
         rank = f"__structure_{join.right_alias}_rank"

@@ -5,7 +5,7 @@ from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkSte
 
 
 class MapRelationOrderingTraceability:
-    """Map relation ordering and bounded-selection operations to traceability records."""
+    """Map relation ordering, bounds, and sampling to traceability records."""
 
     def __init__(self, dataflow: CompilerDataflowReads) -> None:
         self._dataflow = dataflow
@@ -27,14 +27,18 @@ class MapRelationOrderingTraceability:
                 ),
             )
             for index, operation in enumerate(step.operations)
-            if operation.relation_order is not None or operation.relation_bound is not None
+            if operation.relation_order is not None
+            or operation.relation_bound is not None
+            or operation.relation_sample is not None
         )
 
     def dependencies(self, step: PySparkStepRecipe) -> tuple[DataflowDependency, ...]:
         return tuple(
             self._dependency(step, operation, index)
             for index, operation in enumerate(step.operations)
-            if operation.relation_order is not None or operation.relation_bound is not None
+            if operation.relation_order is not None
+            or operation.relation_bound is not None
+            or operation.relation_sample is not None
         )
 
     def _dependency(self, step: PySparkStepRecipe, operation, index: int) -> DataflowDependency:
@@ -45,6 +49,11 @@ class MapRelationOrderingTraceability:
             detail["order_by"] = len(operation.relation_order.order_by)
         if operation.relation_bound is not None:
             detail["count"] = operation.relation_bound.count
+        if operation.relation_sample is not None:
+            detail["fraction"] = operation.relation_sample.fraction
+            detail["with_replacement"] = operation.relation_sample.with_replacement
+            detail["seed"] = operation.relation_sample.seed
+            detail["reproducible"] = operation.relation_sample.reproducible
         return DataflowDependency(
             target=f"{step.name}.{operation.kind}[{index}]",
             sources=sources,

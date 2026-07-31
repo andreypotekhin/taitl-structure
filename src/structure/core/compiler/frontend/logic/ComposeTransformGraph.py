@@ -59,7 +59,11 @@ class ComposeTransformGraph:
             inputs=tuple(inputs),
             steps=tuple(steps),
             outputs=tuple(outputs),
-            options={},
+            options=Transform.resolve_transform_options(
+                wrapper_class.__dict__.get("_structure_transform_options", {}),
+                inputs=inputs,
+                transform_name=wrapper_class.__name__,
+            ),
             diagnostics=tuple(diagnostic for plan in stage_plans for diagnostic in plan.diagnostics),
         )
 
@@ -346,7 +350,7 @@ class ComposeTransformGraph:
             raise self._error(
                 wrapper_class.__name__,
                 f"Cannot infer output {declaration.name}; matched stage outputs: {names}.",
-                "Use output(...).from_(stage.output) to select the intended stage output.",
+                "Use output(..., stage.output) to select the intended stage output.",
             )
         matches = [output for output in stage_outputs if output.schema is declaration.schema]
         if len(matches) == 1:
@@ -355,7 +359,7 @@ class ComposeTransformGraph:
         raise self._error(
             wrapper_class.__name__,
             f"Cannot infer output {declaration.name} for schema {declaration.schema.__name__}; matched stage outputs: {names}.",
-            "Use a unique output name/schema pair or output(...).from_(stage.output).",
+            "Use a unique output name/schema pair or output(..., stage.output).",
         )
 
     def _validate_references(self, wrapper_class: type[Transform], stages: tuple[StageDeclaration, ...]) -> None:

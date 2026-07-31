@@ -33,6 +33,7 @@ from structure.plugin.pyspark.compiler.model.PySparkRelationOrderRecipe import P
 from structure.plugin.pyspark.compiler.model.PySparkRelationPrioritySelectionRecipe import (
     PySparkRelationPrioritySelectionRecipe,
 )
+from structure.plugin.pyspark.compiler.model.PySparkRelationSampleRecipe import PySparkRelationSampleRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationSetRecipe import PySparkRelationSetRecipe
 from structure.plugin.pyspark.compiler.model.PySparkSelectedRowsRecipe import PySparkSelectedRowsRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkStepRecipe
@@ -431,6 +432,21 @@ class MapPySparkStep:
                         operation,
                     )
                 )
+            if operation.relation_sample is not None:
+                sample = operation.relation_sample
+                recipes.append(
+                    self._operation_modes(
+                        PySparkOperationRecipe.relation_sample_operation(
+                            PySparkRelationSampleRecipe(
+                                fraction=sample.fraction,
+                                with_replacement=sample.with_replacement,
+                                seed=sample.seed,
+                                reproducible=sample.reproducible,
+                            )
+                        ),
+                        operation,
+                    )
+                )
             if operation.relation_priority_selection is not None:
                 selection = operation.relation_priority_selection
                 recipes.append(
@@ -460,6 +476,7 @@ class MapPySparkStep:
                                 source=operation.relation_set.source,
                                 schema=operation.relation_set.schema,
                                 by_name=operation.relation_set.by_name,
+                                allow_missing_columns=operation.relation_set.allow_missing_columns,
                             )
                         ),
                         operation,

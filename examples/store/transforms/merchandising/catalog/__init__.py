@@ -1,0 +1,1 @@
+from examples.store.transforms.merchandising.catalog.PrepareCatalog import PrepareCatalog

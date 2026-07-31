@@ -13,9 +13,7 @@ class EvaluateAlgebra(Transform):
         inner_join(y, on=x.params_id == y.params_id)
         compound_base = 1.0 + y.r / y.n
         compound_valid = (y.n > 0) & (compound_base >= 0)
-        return FormulaResult(
-            id=x.id,
-            params_id=x.params_id,
+        return FormulaResult.project(x)(
             sum=x.x + x.y,
             difference=x.x - x.y,
             product=x.x * x.y,

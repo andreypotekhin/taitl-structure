@@ -1,0 +1,44 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "tenant",
+      "name": "tenant",
+      "nullable": false,
+      "type": "TenantKey"
+    },
+    {
+      "column": "request_id",
+      "name": "request_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "strategy_id",
+      "name": "strategy_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "policy_version",
+      "name": "policy_version",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "result_count",
+      "name": "result_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "feedback_contributed",
+      "name": "feedback_contributed",
+      "nullable": false,
+      "type": "boolean"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.store.schemas.merchandising.recommendation",
+  "name": "RecommendationRun"
+}

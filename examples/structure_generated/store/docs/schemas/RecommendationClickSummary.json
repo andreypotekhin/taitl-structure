@@ -1,0 +1,70 @@
+{
+  "bases": [
+    "RecommendationRequestBehavior"
+  ],
+  "fields": [
+    {
+      "column": "window",
+      "name": "window",
+      "nullable": false,
+      "type": "TimeWindow"
+    },
+    {
+      "column": "tenant",
+      "name": "tenant",
+      "nullable": false,
+      "type": "TenantKey"
+    },
+    {
+      "column": "request_id",
+      "name": "request_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "strategy_id",
+      "name": "strategy_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "policy_version",
+      "name": "policy_version",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "result_count",
+      "name": "result_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "clicked_result_count",
+      "name": "clicked_result_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "has_click",
+      "name": "has_click",
+      "nullable": true,
+      "type": "boolean"
+    },
+    {
+      "column": "first_click_rank",
+      "name": "first_click_rank",
+      "nullable": true,
+      "type": "long"
+    },
+    {
+      "column": "raw_click_count",
+      "name": "raw_click_count",
+      "nullable": false,
+      "type": "long"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.store.schemas.merchandising.intermediate",
+  "name": "RecommendationClickSummary"
+}

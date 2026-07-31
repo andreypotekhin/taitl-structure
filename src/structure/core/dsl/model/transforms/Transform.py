@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import inspect
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 
 from structure.core.dsl.model.transforms.aliases import require_alias
 from structure.core.dsl.model.transforms.InputDeclaration import InputDeclaration
@@ -126,6 +126,35 @@ class Transform:
     def run(self, session):
         """Run this transform invocation through a Structure session."""
         return session.run(self)
+
+    @classmethod
+    def effective_transform_options(cls) -> dict[str, object]:
+        """Resolve class options with input-derived streaming inference."""
+        return cls.resolve_transform_options(
+            cls.__dict__.get("_structure_transform_options", {}),
+            inputs=cls._structure_inputs.values(),
+            transform_name=cls.__name__,
+        )
+
+    @staticmethod
+    def resolve_transform_options(
+        options: Mapping[str, object] | None = None,
+        *,
+        inputs: Iterable[object] = (),
+        transform_name: str,
+    ) -> dict[str, object]:
+        """Resolve effective transform options from declared options and inputs."""
+        resolved = dict(options or {})
+        has_streaming_inputs = any(bool(getattr(input, "streaming", False)) for input in inputs)
+        streaming = resolved.get("streaming")
+        if streaming is False and has_streaming_inputs:
+            raise TypeError(
+                f"{transform_name} declares streaming input(s) but @transform(streaming=False). "
+                "Remove the class option or declare all inputs batch-only."
+            )
+        if streaming is None and has_streaming_inputs:
+            resolved["streaming"] = True
+        return resolved
 
     @classmethod
     def compile(

@@ -19,7 +19,7 @@ class VulnerabilityRemediationPrepare(Transform):
     case_checks = output(RemediationCaseCheck)
     case_issues = output(RemediationCaseIssue)
 
-    @step(input=[cases, vulnerabilities], output=case_aggregates)
+    @step(output=case_aggregates)
     def aggregate_cases(self, case: RemediationCase, vuln: Vuln) -> RemediationCaseAggregate:
         left_join(vuln, on=vuln.id == case.vuln_id)
         group_by(vuln_id=case.vuln_id)
@@ -35,7 +35,7 @@ class VulnerabilityRemediationPrepare(Transform):
             vulnerability_exists=bool_or(vuln.id.is_not_null()),
         )
 
-    @step(input=case_aggregates, output=case_lane)
+    @step(output=case_lane)
     def check_cases(self, case: RemediationCaseAggregate) -> RemediationCaseCheck:
         issues = arr_compact(
             array(
@@ -73,7 +73,7 @@ class VulnerabilityRemediationPrepare(Transform):
         )
         return RemediationCaseCheck.base(case)(issues=issues, is_valid=size(issues) == 0)
 
-    @step(input=case_lane, output=case_checks)
+    @step(output=case_checks)
     def publish_case_checks(self, check: RemediationCaseCheck) -> RemediationCaseCheck:
         return RemediationCaseCheck.project(check)
 

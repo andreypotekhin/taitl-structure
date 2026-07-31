@@ -37,11 +37,11 @@ class VulnerabilityAlarmsGenerated:
         _input_receipts = receipts
 
         # Step method: alarm_team
-        overdue_alarms = exposures.alias("vulnerability_workflow_exposure")
+        exposures = exposures.alias("vulnerability_workflow_exposure")
         evaluation_joined = evaluation.alias("evaluation")
-        overdue_alarms = overdue_alarms.crossJoin(evaluation_joined)
+        exposures = exposures.crossJoin(evaluation_joined)
         receipts_2_joined = receipts.alias("receipts_2")
-        overdue_alarms = overdue_alarms.join(
+        exposures = exposures.join(
             receipts_2_joined,
             (
                 F.col("receipts_2.delivery_key")
@@ -55,7 +55,7 @@ class VulnerabilityAlarmsGenerated:
             ),
             "left",
         )
-        overdue_alarms = overdue_alarms.where(
+        exposures = exposures.where(
             (
                 (
                     (
@@ -69,7 +69,7 @@ class VulnerabilityAlarmsGenerated:
                 )
             )
         )
-        overdue_alarms = overdue_alarms.select(
+        exposures = exposures.select(
             F.concat_ws(
                 ':',
                 F.col("vulnerability_workflow_exposure.vuln_id"),
@@ -86,7 +86,7 @@ class VulnerabilityAlarmsGenerated:
         )
 
         # Step method: overdue_alarms
-        overdue_alarms = overdue_alarms.alias("team_vulnerability_alarm")
+        overdue_alarms = exposures.alias("team_vulnerability_alarm")
         assert_schema(overdue_alarms, TEAM_VULNERABILITY_ALARM_SCHEMA, name="TeamVulnerabilityAlarm", mode="strict")
         return TransformResult(
             {"overdue_alarms": overdue_alarms}, single=True, schema={"overdue_alarms": TEAM_VULNERABILITY_ALARM_SCHEMA}

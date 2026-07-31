@@ -100,16 +100,8 @@ class Schema:
 
             row = PublishedOrder.base(order)(published_at=event_time)
         """
-        values = cls._base_values(sources)
-        if set(values) == set(cls._structure_fields):
-            return cls(**values)
-
-        def build(**overrides: object) -> "Schema":
-            base = cls._base_values(sources)
-            base.update(overrides)
-            return cls(**base)
-
-        return build
+        builder = _SchemaBaseBuilder(cls, sources)
+        return builder.materialize() if builder.complete else builder
 
     @classmethod
     def project(cls, *sources: object):
@@ -167,9 +159,12 @@ class Schema:
         return values
 
     @classmethod
-    def _project_values(cls, sources: tuple[object, ...]) -> dict[str, object]:
+    def _project_values(cls, sources: tuple[object, ...], *, skip: set[str] | None = None) -> dict[str, object]:
+        skip = set() if skip is None else skip
         values: dict[str, object] = {}
         for field in cls._structure_fields:
+            if field in skip:
+                continue
             providers = [source for source in sources if cls._source_has_field(source, field)]
             if len(providers) == 1:
                 value = cls._field_value(providers[0], field)
@@ -224,3 +219,38 @@ class Schema:
 
 
 _MISSING = object()
+
+
+class _SchemaBaseBuilder:
+
+    def __init__(
+        self,
+        target: type[Schema],
+        base_sources: tuple[object, ...],
+        project_sources: tuple[object, ...] = (),
+    ) -> None:
+        self._target = target
+        self._base_sources = base_sources
+        self._project_sources = project_sources
+
+    @property
+    def complete(self) -> bool:
+        return set(self._values()) == set(self._target._structure_fields)
+
+    def project(self, *sources: object) -> "_SchemaBaseBuilder":
+        if not sources:
+            raise TypeError(f"{self._target.__name__}.base(...).project(...) requires at least one source row")
+        return _SchemaBaseBuilder(self._target, self._base_sources, self._project_sources + sources)
+
+    def __call__(self, **overrides: object) -> Schema:
+        values = self._values()
+        values.update(overrides)
+        return self._target(**values)
+
+    def materialize(self) -> Schema:
+        return self()
+
+    def _values(self) -> dict[str, object]:
+        values = self._target._base_values(self._base_sources)
+        values.update(self._target._project_values(self._project_sources, skip=set(values)))
+        return values

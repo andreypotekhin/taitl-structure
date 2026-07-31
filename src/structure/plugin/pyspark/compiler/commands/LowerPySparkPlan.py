@@ -3,6 +3,9 @@ from typing import cast
 from structure.dsl import Schema
 from structure.plugin.api.v1.model import BackendCapabilities, TransformPlan
 from structure.plugin.pyspark.compiler.commands.ValidatePySparkHooks import ValidatePySparkHooks
+from structure.plugin.pyspark.compiler.commands.ValidatePySparkSchemaCapabilities import (
+    ValidatePySparkSchemaCapabilities,
+)
 from structure.plugin.pyspark.compiler.logic.maps.MapPySparkInput import MapPySparkInput
 from structure.plugin.pyspark.compiler.logic.maps.MapPySparkOutput import MapPySparkOutput
 from structure.plugin.pyspark.compiler.logic.maps.MapPySparkStep import MapPySparkStep
@@ -17,6 +20,7 @@ class LowerPySparkPlan:
         self._steps = MapPySparkStep()
         self._outputs = MapPySparkOutput()
         self._hooks = ValidatePySparkHooks()
+        self._schema_capabilities = ValidatePySparkSchemaCapabilities()
 
     def __call__(
         self,
@@ -29,6 +33,7 @@ class LowerPySparkPlan:
         if target is None:
             raise ValueError("PySpark plan lowering requires explicit capabilities.")
         self._hooks(plan)
+        self._schema_capabilities(plan, capabilities=target)
         inputs = tuple(
             self._inputs.map(
                 input.name,

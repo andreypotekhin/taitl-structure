@@ -8,6 +8,7 @@ import pytest
 from structure import *
 from structure.core.compiler.api import Compiler
 from structure.core.compiler.compileability.streaming_compatibility.api import StreamingSupport
+from structure.plugin.api.v1.model import BackendCapabilityError
 from structure.plugin.pyspark import *
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.plugin.pyspark.dsl.types import StructType
@@ -19,6 +20,14 @@ V9_LEDGER = ROOT / "src/structure/plugin/pyspark/resources/pyspark-streaming-api
 
 def _compile(transform):
     return Compiler.frontend.compile()(transform, materialize_schemas=False)
+
+
+def _compile_with_plugin(transform, profile: str):
+    return Compiler.frontend.compile()(
+        transform,
+        materialize_schemas=False,
+        plugin={"pyspark": {"profile": profile, "variant": "ordinary"}},
+    )
 
 
 def _analysis(transform):
@@ -41,6 +50,12 @@ def _v9_ledger_entry(api_id: str) -> dict[str, Any]:
 class StreamRaw(Schema):
     id = string(nullable=False)
     event_time = timestamp(nullable=False)
+
+
+class StreamRawWithNote(Schema):
+    id = string(nullable=False)
+    event_time = timestamp(nullable=False)
+    note = string()
 
 
 class StreamClean(Schema):
@@ -111,6 +126,78 @@ class StreamRanked(Schema):
     rank = long(nullable=False)
 
 
+class StreamingVariantInput(Schema):
+    id = string(nullable=False)
+    event_time = timestamp(nullable=False)
+    payload = variant(nullable=True)
+    payload_json = string(nullable=True)
+    attributes = map(string(), string(), nullable=True)
+
+
+class StreamingVariantOutput(Schema):
+    id = string(nullable=False)
+    parsed = variant(nullable=True)
+    safe_parsed = variant(nullable=True)
+    schema = string(nullable=True)
+    name = string(nullable=True)
+    safe_name = string(nullable=True)
+    object = variant(nullable=True)
+    is_json_null = boolean(nullable=True)
+
+
+class StreamingVariantValidOutput(Schema):
+    id = string(nullable=False)
+    is_valid = boolean(nullable=True)
+
+
+class StreamingVariantSchemaSummary(Schema):
+    bucket = struct(TimeWindow, nullable=False)
+    id = string(nullable=False)
+    schema = string(nullable=True)
+
+
+@transform(streaming=True)
+class StreamingVariantHelpers(Transform):
+    rows = input(StreamingVariantInput, streaming=True)
+    variants = output(StreamingVariantOutput)
+
+    def convert(self, row: StreamingVariantInput) -> StreamingVariantOutput:
+        return StreamingVariantOutput(
+            id=row.id,
+            parsed=parse_json(row.payload_json),
+            safe_parsed=try_parse_json(row.payload_json),
+            schema=schema_of_variant(row.payload),
+            name=variant_get(row.payload, "$.name", as_type=types.string()),
+            safe_name=try_variant_get(row.payload, "$.name", as_type=types.string()),
+            object=to_variant_object(row.attributes),
+            is_json_null=is_variant_null(row.payload),
+        )
+
+
+@transform(streaming=True)
+class StreamingVariantValidation(Transform):
+    rows = input(StreamingVariantInput, streaming=True)
+    variants = output(StreamingVariantValidOutput)
+
+    def validate(self, row: StreamingVariantInput) -> StreamingVariantValidOutput:
+        return StreamingVariantValidOutput(id=row.id, is_valid=is_valid_variant(row.payload))
+
+
+@transform(streaming=True)
+class StreamingVariantSchemaAggregate(Transform):
+    rows = input(StreamingVariantInput, streaming=True)
+    summary = output(StreamingVariantSchemaSummary)
+
+    def summarize(self, row: StreamingVariantInput) -> StreamingVariantSchemaSummary:
+        watermark(row.event_time, delay="10 minutes")
+        group_by(bucket=window(row.event_time, "10 minutes"), id=row.id)
+        return StreamingVariantSchemaSummary(
+            bucket=window(row.event_time, "10 minutes"),
+            id=row.id,
+            schema=schema_of_variant_agg(row.payload),
+        )
+
+
 @transform(streaming=True)
 class StreamingSessionAggregate(Transform):
     rows = input(StreamRaw, streaming=True)
@@ -162,6 +249,17 @@ class StreamingUnionByName(Transform):
 
     def merge(self, row: StreamRaw, more: StreamRaw) -> StreamClean:
         merged = union_by_name(more)
+        return StreamClean(id=merged.id)
+
+
+@transform(streaming=True)
+class StreamingUnionByNameMissingColumns(Transform):
+    rows = input(StreamRawWithNote, streaming=True)
+    more_rows = input(StreamRaw, streaming=True)
+    clean = output(StreamClean)
+
+    def merge(self, row: StreamRawWithNote, more: StreamRaw) -> StreamClean:
+        merged = union_by_name(more, allow_missing_columns=True)
         return StreamClean(id=merged.id)
 
 
@@ -686,6 +784,42 @@ def test_v8_struct_generator_is_streaming_compatible_without_spark() -> None:
     assert report.findings == ()
 
 
+def test_v9_variant_helpers_are_profile_gated_streaming_transforms_without_spark() -> None:
+    with pytest.raises(BackendCapabilityError) as raised:
+        _compile_with_plugin(StreamingVariantHelpers, ">=3.5,<4.0")
+
+    assert raised.value.diagnostic.feature_group == "schema"
+    assert raised.value.diagnostic.feature_name == "variant"
+
+    plan = cast(PySparkExecutionPlan, _compile_with_plugin(StreamingVariantHelpers, ">=4.0,<4.1").lowered)
+    report = Compiler.compileability.streaming()(plan, required=True)
+
+    assert report.support is StreamingSupport.COMPATIBLE
+    assert report.findings == ()
+
+
+def test_v9_variant_4_2_helper_is_profile_gated_for_streaming_without_spark() -> None:
+    with pytest.raises(BackendCapabilityError) as raised:
+        _compile_with_plugin(StreamingVariantValidation, ">=4.0,<4.1")
+
+    assert raised.value.diagnostic.feature_group == "expression"
+    assert raised.value.diagnostic.feature_name == "is_valid_variant"
+
+    plan = cast(PySparkExecutionPlan, _compile_with_plugin(StreamingVariantValidation, ">=4.2,<4.3").lowered)
+    report = Compiler.compileability.streaming()(plan, required=True)
+
+    assert report.support is StreamingSupport.COMPATIBLE
+    assert report.findings == ()
+
+
+def test_v9_variant_schema_aggregate_follows_watermarked_streaming_rules_without_spark() -> None:
+    plan = cast(PySparkExecutionPlan, _compile_with_plugin(StreamingVariantSchemaAggregate, ">=4.0,<4.1").lowered)
+    report = Compiler.compileability.streaming()(plan, required=True)
+
+    assert report.support is StreamingSupport.COMPATIBLE
+    assert report.findings == ()
+
+
 @pytest.mark.parametrize("transform_type", [StreamingUnionAll, StreamingUnionByName])
 def test_v8_stream_stream_union_is_compatible_without_spark(transform_type: type[Transform]) -> None:
     report = Compiler.compileability.streaming()(_recipe(transform_type), required=True)
@@ -700,6 +834,14 @@ def test_v8_union_requires_both_relations_declared_streaming() -> None:
     assert report.support is StreamingSupport.BATCH_ONLY
     assert report.findings[0].operation == "union_all more"
     assert "both exact-schema relations are declared with streaming=True" in report.findings[0].problem
+
+
+def test_v9_missing_column_union_by_name_is_batch_only_for_streaming() -> None:
+    report = Compiler.compileability.streaming()(_recipe(StreamingUnionByNameMissingColumns), required=True)
+
+    assert report.support is StreamingSupport.BATCH_ONLY
+    assert report.findings[0].operation == "union_by_name more"
+    assert "allow_missing_columns=True" in report.findings[0].problem
 
 
 def test_v8_distinct_style_relation_sets_remain_streaming_ineligible() -> None:

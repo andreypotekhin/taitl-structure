@@ -1910,8 +1910,8 @@
       "results": [
         {
           "after_hooks": [],
-          "frame": "posture_candidates",
-          "lane": "posture_candidates",
+          "frame": "vulnerabilities",
+          "lane": "vulnerabilities",
           "schema": "VulnerabilityPostureCandidate"
         }
       ],
@@ -1935,8 +1935,8 @@
       "results": [
         {
           "after_hooks": [],
-          "frame": "exposure_lane",
-          "lane": "exposure_lane",
+          "frame": "vulnerabilities",
+          "lane": "vulnerabilities",
           "schema": "VulnerabilityExposure"
         }
       ],
@@ -1960,8 +1960,8 @@
       "results": [
         {
           "after_hooks": [],
-          "frame": "exposure_lane",
-          "lane": "exposure_lane",
+          "frame": "vulnerabilities",
+          "lane": "vulnerabilities",
           "schema": "VulnerabilityExposure"
         }
       ],

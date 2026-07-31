@@ -48,8 +48,11 @@ from both relations and preserves duplicates. Its result has set-combining cardi
 ### `union_by_name`
 
 `union_by_name(relation)` appends an unjoined relation to the active rowset and aligns fields by declared physical
-name. V6 initially requires the same field set and the same declared schema; missing-column filling is deferred because
-it changes nullability and schema evolution semantics. It preserves duplicates and makes no ordering promise.
+name. By default it requires the same field set and compatible declared fields. `union_by_name(relation,
+allow_missing_columns=True)` admits the first schema-evolution slice: nullable top-level fields missing from one side
+are filled with null through Spark `unionByName(..., allowMissingColumns=True)`. Missing non-null fields require the
+future `defaults` design and are rejected. Nested partial fills, collection element fills, and streaming missing-column
+union remain design-gated. The operation preserves duplicates and makes no ordering promise.
 
 ### `intersect` and `intersect_all`
 
@@ -61,8 +64,10 @@ semantics. `intersect_all(relation)` keeps duplicate occurrences according to Sp
 `subtract(relation)` removes rows that appear in the right relation using Spark's distinct EXCEPT semantics.
 `except_all(relation)` removes rows using Spark's duplicate-preserving multiset semantics.
 
-All admitted set operations require identical declared schemas including field order, physical names, field types, and
-nullability. They are batch-only, make no ordering promise, and must run before joins, generators, aggregation, or
+Except for `union_by_name(..., allow_missing_columns=True)`, admitted set operations require identical declared schemas
+including field order, physical names, field types, and nullability. Exact-schema stream-stream append composition is
+admitted for `union_all(...)` and `union_by_name(...)`; missing-column union is batch-only until live streaming restart
+evidence exists. Set operations make no ordering promise and must run before joins, generators, aggregation, or
 selected-row operations in the same step.
 
 ## Self Alias
@@ -85,7 +90,8 @@ output boundary. A later operator may not claim to preserve that order unless it
 preceding explicit `order_by(...)`; if a row-shaping or set operation has run after the latest ordering, the bound is
 rejected as nondeterministic.
 
-`sample` remains deferred pending seed, replacement, and reproducibility semantics.
+`sample(fraction, seed=...)` records reproducible batch sampling. Callers must pass a seed unless they explicitly write
+`reproducible=False`, which opts into Spark's non-repeatable sampling behavior.
 
 ## Branchable Union
 

@@ -13,6 +13,7 @@ from structure.plugin.pyspark.dsl.operations.RelationHierarchyClosurePlan import
 from structure.plugin.pyspark.dsl.operations.RelationHierarchyFallbackPlan import RelationHierarchyFallbackPlan
 from structure.plugin.pyspark.dsl.operations.RelationOrderPlan import RelationOrderPlan
 from structure.plugin.pyspark.dsl.operations.RelationPrioritySelectionPlan import RelationPrioritySelectionPlan
+from structure.plugin.pyspark.dsl.operations.RelationSamplePlan import RelationSamplePlan
 from structure.plugin.pyspark.dsl.operations.RelationSetPlan import RelationSetPlan
 from structure.plugin.pyspark.dsl.operations.SelectedRowsPlan import SelectedRowsPlan
 from structure.plugin.pyspark.dsl.operations.StreamingOutputMode import StreamingOutputMode
@@ -35,6 +36,7 @@ __all__ = [
     "RelationHierarchyFallbackPlan",
     "RelationOrderPlan",
     "RelationPrioritySelectionPlan",
+    "RelationSamplePlan",
     "RelationSetPlan",
     "SelectedRowsPlan",
     "StreamingOutputMode",

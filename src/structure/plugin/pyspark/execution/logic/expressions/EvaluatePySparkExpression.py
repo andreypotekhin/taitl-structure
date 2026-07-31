@@ -691,6 +691,22 @@ class EvaluatePySparkExpression:
         if function == "from_csv":
             schema = self._ddl_schema(cast(type, expression.data["schema"]))
             return functions.from_csv(args[0], schema, expression.data["options"])
+        if function in {
+            "is_valid_variant",
+            "parse_json",
+            "schema_of_variant",
+            "try_parse_json",
+            "to_variant_object",
+            "is_variant_null",
+        }:
+            return getattr(functions, function)(args[0])
+        if function in {"geo_from_wkt", "geo_as_wkt", "geo_intersects", "geo_contains", "geo_within"}:
+            names = {"geo_from_wkt": "ST_GeomFromWKT", "geo_as_wkt": "ST_AsText", "geo_intersects": "ST_Intersects", "geo_contains": "ST_Contains", "geo_within": "ST_Within"}
+            if function == "geo_from_wkt":
+                args.append(functions.lit(expression.data["srid"]))
+            return functions.call_function(names[function], *args)
+        if function in {"variant_get", "try_variant_get"}:
+            return getattr(functions, function)(args[0], expression.data["path"], expression.data["target_type"])
         if function in {"to_json", "to_csv"}:
             return getattr(functions, function)(args[0], expression.data["options"])
         if function == "coalesce":

@@ -1,0 +1,107 @@
+{
+  "dependencies": [],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "plans",
+      "ordinal": 0,
+      "schema": "FulfillmentPlan"
+    },
+    {
+      "name": "allocations",
+      "ordinal": 1,
+      "schema": "FulfillmentAllocation"
+    },
+    {
+      "name": "backorders",
+      "ordinal": 2,
+      "schema": "FulfillmentBackorder"
+    }
+  ],
+  "name": "FulfillmentAnalytics",
+  "outputs": [
+    {
+      "name": "daily_summary",
+      "ordinal": 0,
+      "schema": "DailyFulfillmentSummary"
+    },
+    {
+      "name": "warehouse_load_summary",
+      "ordinal": 1,
+      "schema": "WarehouseLoadSummary"
+    }
+  ],
+  "source": "examples.store.transforms.fulfillment.analytics.FulfillmentAnalytics.FulfillmentAnalytics",
+  "step_methods": [
+    {
+      "input_lane": "plans",
+      "input_schema": "FulfillmentPlan",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "plan",
+          "schema": "FulfillmentPlan",
+          "source": "plans"
+        }
+      ],
+      "name": "summarize_daily_totals",
+      "output_lane": "daily_totals",
+      "output_schema": "DailyFulfillmentSummary",
+      "results": [
+        {
+          "frame": "daily_totals",
+          "lane": "daily_totals",
+          "schema": "DailyFulfillmentSummary"
+        }
+      ]
+    },
+    {
+      "input_lane": "daily_totals",
+      "input_schema": "DailyFulfillmentSummary",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "daily",
+          "schema": "DailyFulfillmentSummary",
+          "source": "daily_totals"
+        }
+      ],
+      "name": "publish_daily_summary",
+      "output_lane": "daily_summary",
+      "output_schema": "DailyFulfillmentSummary",
+      "results": [
+        {
+          "frame": "daily_summary",
+          "lane": "daily_summary",
+          "schema": "DailyFulfillmentSummary"
+        }
+      ]
+    },
+    {
+      "input_lane": "allocations",
+      "input_schema": "FulfillmentAllocation",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "allocation",
+          "schema": "FulfillmentAllocation",
+          "source": "allocations"
+        }
+      ],
+      "name": "summarize_warehouse_load",
+      "output_lane": "warehouse_load_summary",
+      "output_schema": "WarehouseLoadSummary",
+      "results": [
+        {
+          "frame": "warehouse_load_summary",
+          "lane": "warehouse_load_summary",
+          "schema": "WarehouseLoadSummary"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/FulfillmentAnalytics.py",
+    "traceability": "traceability/transforms/FulfillmentAnalytics.FulfillmentAnalytics.json"
+  }
+}

@@ -12,6 +12,7 @@ from structure.plugin.pyspark.dsl.types import (
     DecimalType,
     DoubleType,
     FloatType,
+    GeometryType,
     IntegerType,
     LongType,
     MapType,
@@ -19,6 +20,7 @@ from structure.plugin.pyspark.dsl.types import (
     StructType,
     StructureType,
     TimestampType,
+    VariantType,
 )
 
 
@@ -67,6 +69,10 @@ class RenderPySparkSchema:
             return "T.DateType()"
         if isinstance(type, TimestampType):
             return "T.TimestampType()"
+        if isinstance(type, VariantType):
+            return "T.VariantType()"
+        if isinstance(type, GeometryType):
+            return "geometry_type()"
         if isinstance(type, DecimalType):
             return f"T.DecimalType({type.precision}, {type.scale})"
         if isinstance(type, ArrayType):

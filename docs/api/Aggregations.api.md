@@ -76,7 +76,8 @@ the current `order` row scope as `o`.
   the selected minimum or maximum.
 - `mode(value, deterministic=False)` requires grouped keys. With `deterministic=True`, ties return the lowest
   orderable candidate across supported PySpark targets.
-- Aggregate aliases and additional statistics remain future work.
+- Raw aggregate aliases are unsupported. Name aggregate outputs through the returned Schema constructor, and use schema
+  field `alias=...` when the physical Spark column name must differ from the Structure field name.
 
 ## Selection And Dedupe
 

@@ -44,15 +44,17 @@ and `e` denote a temporal predicate, event time, valid-from, and valid-to expres
 | --- | --- | --- |
 | `temporal_one(...)` | Temporal join | `temporal_one(on=o.id == p.id, at=o.at, valid_from=p.from_, valid_to=p.to)` |
 | `as_of_one(...)` | As-of match | `as_of_one(on=o.id == r.id, left_time=o.at, right_time=r.at)` |
-| `direction=` | Direction | `as_of_one(on=o.id == r.id, left_time=o.at, right_time=r.at, direction="forward")` |
+| `direction=` | Direction | `as_of_one(on=o.id == r.id, left_time=o.at, right_time=r.at, direction="nearest")` |
 | `overlaps=` | Overlap policy | `temporal_one(on=j, at=t, valid_from=f, valid_to=e, overlaps="error")` |
 | `ties=` | Selection policy | `as_of_one(on=o.id == r.id, left_time=o.at, right_time=r.at, ties="error")` |
 
 **Details And Differences**
 
 - `temporal_one(...)` selects one right row valid at `at`; its normal interval is closed-open.
-- `as_of_one(...)` supports backward and forward directions. Nearest as-of matching remains future work.
-- Explicit overlap and tie policies keep selection rules reviewable.
+- `as_of_one(...)` supports backward, forward, and nearest directions. Nearest matching ignores null time candidates,
+  ranks by absolute distance, and fails equidistant best matches when `ties="error"`.
+- Explicit overlap and tie policies keep selection rules reviewable. Directional nearest tie preferences remain outside
+  the public API; make the right-side time unique or narrow candidates with `tolerance=`.
 
 ## Hints And Corner Cases
 

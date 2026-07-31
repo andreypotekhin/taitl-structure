@@ -1,0 +1,62 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "window",
+      "name": "window",
+      "nullable": false,
+      "type": "TimeWindow"
+    },
+    {
+      "column": "tenant",
+      "name": "tenant",
+      "nullable": false,
+      "type": "TenantKey"
+    },
+    {
+      "column": "strategy_id",
+      "name": "strategy_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "policy_version",
+      "name": "policy_version",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "product_id",
+      "name": "product_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "rank",
+      "name": "rank",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "examination_propensity",
+      "name": "examination_propensity",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "click_count",
+      "name": "click_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "clicked_impression_count",
+      "name": "clicked_impression_count",
+      "nullable": false,
+      "type": "long"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.store.schemas.merchandising.feedback",
+  "name": "DailyRecommendationClicks"
+}

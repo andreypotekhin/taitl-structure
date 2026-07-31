@@ -1,0 +1,50 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "tenant",
+      "name": "tenant",
+      "nullable": false,
+      "type": "TenantKey"
+    },
+    {
+      "column": "warehouse_id",
+      "name": "warehouse_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "business_date",
+      "name": "business_date",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "column": "planned_line_count",
+      "name": "planned_line_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "allocated_units",
+      "name": "allocated_units",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "distinct_products",
+      "name": "distinct_products",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "customer_count",
+      "name": "customer_count",
+      "nullable": false,
+      "type": "long"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.store.schemas.fulfillment.analytics.summary",
+  "name": "WarehouseLoadSummary"
+}

@@ -25,12 +25,46 @@ def test_store_example_generated_file_order_is_deterministic() -> None:
         "examples/structure_generated/store/pyspark/schemas/analytics.py",
         "examples/structure_generated/store/pyspark/schemas/common.py",
         "examples/structure_generated/store/pyspark/schemas/customer.py",
+        "examples/structure_generated/store/pyspark/schemas/summary.py",
+        "examples/structure_generated/store/pyspark/schemas/demand.py",
+        "examples/structure_generated/store/pyspark/schemas/planning_intermediate.py",
+        "examples/structure_generated/store/pyspark/schemas/inventory.py",
+        "examples/structure_generated/store/pyspark/schemas/plan.py",
+        "examples/structure_generated/store/pyspark/schemas/reconciliation.py",
+        "examples/structure_generated/store/pyspark/schemas/catalog.py",
+        "examples/structure_generated/store/pyspark/schemas/evaluation.py",
+        "examples/structure_generated/store/pyspark/schemas/feedback.py",
+        "examples/structure_generated/store/pyspark/schemas/merchandising_intermediate.py",
+        "examples/structure_generated/store/pyspark/schemas/policy.py",
+        "examples/structure_generated/store/pyspark/schemas/recommendation.py",
         "examples/structure_generated/store/pyspark/schemas/order.py",
         "examples/structure_generated/store/pyspark/schemas/product.py",
         "examples/structure_generated/store/pyspark/schemas/promotion.py",
         "examples/structure_generated/store/pyspark/schemas/shipment.py",
         "examples/structure_generated/store/pyspark/transforms/order.py",
         "examples/structure_generated/store/traceability/transforms/order.EnrichOrders.json",
+        "examples/structure_generated/store/pyspark/transforms/PrepareOrderDemand.py",
+        "examples/structure_generated/store/traceability/transforms/PrepareOrderDemand.PrepareOrderDemand.json",
+        "examples/structure_generated/store/pyspark/transforms/PlanFulfillment.py",
+        "examples/structure_generated/store/traceability/transforms/PlanFulfillment.PlanFulfillment.json",
+        "examples/structure_generated/store/pyspark/transforms/FulfillmentAnalytics.py",
+        "examples/structure_generated/store/traceability/transforms/FulfillmentAnalytics.FulfillmentAnalytics.json",
+        "examples/structure_generated/store/pyspark/transforms/ReconcileFulfillmentPlan.py",
+        "examples/structure_generated/store/traceability/transforms/ReconcileFulfillmentPlan.ReconcileFulfillmentPlan.json",
+        "examples/structure_generated/store/pyspark/transforms/Fulfillment.py",
+        "examples/structure_generated/store/traceability/transforms/Fulfillment.Fulfillment.json",
+        "examples/structure_generated/store/pyspark/transforms/PrepareCatalog.py",
+        "examples/structure_generated/store/traceability/transforms/PrepareCatalog.PrepareCatalog.json",
+        "examples/structure_generated/store/pyspark/transforms/SelectRecommendationCandidates.py",
+        "examples/structure_generated/store/traceability/transforms/SelectRecommendationCandidates.SelectRecommendationCandidates.json",
+        "examples/structure_generated/store/pyspark/transforms/Recommender.py",
+        "examples/structure_generated/store/traceability/transforms/Recommender.Recommender.json",
+        "examples/structure_generated/store/pyspark/transforms/Merchandising.py",
+        "examples/structure_generated/store/traceability/transforms/Merchandising.Merchandising.json",
+        "examples/structure_generated/store/pyspark/transforms/BuildRecommendationSignals.py",
+        "examples/structure_generated/store/traceability/transforms/BuildRecommendationSignals.BuildRecommendationSignals.json",
+        "examples/structure_generated/store/pyspark/transforms/EvaluateMerchandising.py",
+        "examples/structure_generated/store/traceability/transforms/EvaluateMerchandising.EvaluateMerchandising.json",
         "examples/structure_generated/store/pyspark/transforms/rowset_join.py",
         "examples/structure_generated/store/traceability/transforms/rowset_join.RowsetJoinExamples.json",
         "examples/structure_generated/store/pyspark/transforms/analytics.py",
@@ -60,15 +94,15 @@ def test_store_example_generation_keeps_public_behavior_fragments_stable() -> No
 
     rowset = render_store_example()["examples/structure_generated/store/pyspark/transforms/rowset_join.py"]
 
-    assert "class RowsetJoinExamplesGenerated:" in rowset
+    assert "class RowsetJoinExamplesGenerated(" in rowset
     assert '"full"' in rowset
     assert '"right"' in rowset
     assert ".crossJoin(" in rowset
 
     analytics = render_store_example()["examples/structure_generated/store/pyspark/transforms/analytics.py"]
 
-    assert "class OrderAnalyticsGenerated:" in analytics
-    assert "product_summary = (" in analytics
+    assert "class OrderAnalyticsGenerated(" in analytics
+    assert "product__product_summary = (" in analytics
     assert "product_summary.groupBy(" in analytics
     assert 'F.avg(F.col("order_fulfillment.quantity")).cast(T.DoubleType()).alias("avg_units")' in analytics
 

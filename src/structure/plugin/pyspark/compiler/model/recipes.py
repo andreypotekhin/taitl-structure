@@ -16,6 +16,7 @@ from structure.plugin.pyspark.compiler.model.PySparkRelationAliasRecipe import P
 from structure.plugin.pyspark.compiler.model.PySparkRelationAssertionRecipe import PySparkRelationAssertionRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationBoundRecipe import PySparkRelationBoundRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationOrderRecipe import PySparkRelationOrderRecipe
+from structure.plugin.pyspark.compiler.model.PySparkRelationSampleRecipe import PySparkRelationSampleRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationSetRecipe import PySparkRelationSetRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStepResultRecipe import PySparkStepResultRecipe
@@ -40,6 +41,7 @@ __all__ = [
     "PySparkRelationAssertionRecipe",
     "PySparkRelationBoundRecipe",
     "PySparkRelationOrderRecipe",
+    "PySparkRelationSampleRecipe",
     "PySparkRelationSetRecipe",
     "PySparkStepRecipe",
     "PySparkStepResultRecipe",

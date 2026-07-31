@@ -23,6 +23,7 @@ from examples.streams.transforms.passages import PreparePassages
 from examples.streams.transforms.penalties import CorrelatePenalties
 from examples.streams.transforms.progress import BuildGateProgress
 from structure import Schema, Transform, input, output, special, transform
+from structure.plugin.api.v1.model import BackendCapabilityError
 from structure.plugin.pyspark import *
 
 pytestmark = pytest.mark.integration
@@ -42,6 +43,23 @@ class StreamUdfClean(Schema):
     id = string(nullable=False)
 
 
+class StreamVariantRaw(Schema):
+    id = string(nullable=False)
+    payload_json = string(nullable=True)
+    attributes = map(string(), string(), nullable=True)
+
+
+class StreamVariantClean(Schema):
+    id = string(nullable=False)
+    parsed = variant(nullable=True)
+    safe_parsed = variant(nullable=True)
+    schema = string(nullable=True)
+    name = string(nullable=True)
+    safe_name = string(nullable=True)
+    object = variant(nullable=True)
+    is_json_null = boolean(nullable=True)
+
+
 @transform(streaming=True)
 class StreamingScalarUdf(Transform):
     rows = input(StreamUdfRaw, streaming=True)
@@ -53,6 +71,25 @@ class StreamingScalarUdf(Transform):
 
     def normalize_rows(self, row: StreamUdfRaw) -> StreamUdfClean:
         return StreamUdfClean(id=self.normalize(row.id))
+
+
+@transform(streaming=True)
+class StreamingVariantHelpers(Transform):
+    rows = input(StreamVariantRaw, streaming=True)
+    clean = output(StreamVariantClean)
+
+    def convert(self, row: StreamVariantRaw) -> StreamVariantClean:
+        parsed = parse_json(row.payload_json)
+        return StreamVariantClean(
+            id=row.id,
+            parsed=parsed,
+            safe_parsed=try_parse_json(row.payload_json),
+            schema=schema_of_variant(parsed),
+            name=variant_get(parsed, "$.name", as_type=types.string()),
+            safe_name=try_variant_get(parsed, "$.name", as_type=types.string()),
+            object=to_variant_object(row.attributes),
+            is_json_null=is_variant_null(parse_json("null")),
+        )
 
 
 def test_caller_owned_file_streams_run_online_and_generated_transforms(spark, tmp_path) -> None:
@@ -228,12 +265,117 @@ def test_scalar_udf_runs_as_a_row_local_caller_owned_file_stream_transform(spark
     assert generated_rows == online_rows
 
 
+def test_variant_helpers_run_as_profile_gated_streaming_transforms(spark, tmp_path) -> None:
+    if backend_name().startswith("spark-connect"):
+        pytest.skip("Variant streaming evidence is for the ordinary PySpark runtime")
+
+    if backend_name().endswith("35") or backend_name() == "local":
+        with pytest.raises(BackendCapabilityError) as raised:
+            render_generated_project(
+                StreamingVariantHelpers,
+                source_transform=f"{__name__}.StreamingVariantHelpers",
+                generated_package="integration_streaming_variant_generated",
+                source_schema_modules={__name__: [StreamVariantRaw, StreamVariantClean]},
+            )
+
+        assert raised.value.diagnostic.feature_group == "schema"
+        assert raised.value.diagnostic.feature_name == "variant"
+        return
+
+    if not backend_name().endswith("40"):
+        pytest.skip("Variant streaming live evidence currently runs on the PySpark 4.0 integration profile")
+
+    package = "integration_streaming_variant_generated"
+    files = render_generated_project(
+        StreamingVariantHelpers,
+        source_transform=f"{__name__}.StreamingVariantHelpers",
+        generated_package=package,
+        source_schema_modules={__name__: [StreamVariantRaw, StreamVariantClean]},
+    )
+    source = Path(__file__).resolve().parents[5] / ".pytest-workspace-tmp" / "integration" / f"variant-{uuid4().hex}"
+    try:
+        _write_json(
+            source / "events.json",
+            [
+                {
+                    "id": "event-1",
+                    "payload_json": '{"name":"Ava","score":7}',
+                    "attributes": {"source": "stream", "lane": "v9"},
+                }
+            ],
+        )
+
+        with generated_project(tmp_path, package, files):
+            from pyspark.sql.types import MapType, StringType, StructField, StructType
+
+            schema = StructType(
+                [
+                    StructField("id", StringType(), nullable=False),
+                    StructField("payload_json", StringType(), nullable=True),
+                    StructField("attributes", MapType(StringType(), StringType()), nullable=True),
+                ]
+            )
+            online_input = read_json_stream(spark, schema, source)
+            generated_input = read_json_stream(spark, schema, source)
+            online = StreamingVariantHelpers(rows=online_input).run(session(spark, execution_mode="online")).clean
+            generated = (
+                StreamingVariantHelpers(rows=generated_input)
+                .run(session(spark, execution_mode="generated", generated_package=package))
+                .clean
+            )
+
+            online_rows = _collect_stream_projection(
+                online,
+                tmp_path / "online-variant-checkpoint",
+                output_mode="append",
+                order_by="id",
+                columns=("id", "schema", "name", "safe_name", "is_json_null"),
+            )
+            generated_rows = _collect_stream_projection(
+                generated,
+                tmp_path / "generated-variant-checkpoint",
+                output_mode="append",
+                order_by="id",
+                columns=("id", "schema", "name", "safe_name", "is_json_null"),
+            )
+    finally:
+        shutil.rmtree(source, ignore_errors=True)
+
+    assert online_rows == [
+        {
+            "id": "event-1",
+            "schema": "OBJECT<name: STRING, score: BIGINT>",
+            "name": "Ava",
+            "safe_name": "Ava",
+            "is_json_null": True,
+        }
+    ]
+    assert generated_rows == online_rows
+
+
 def _collect_stream(frame, checkpoint, *, output_mode: str, order_by: str) -> list[dict[str, object]]:
     name = f"streams_{uuid4().hex}"
     query = start_memory_query(frame, query_name=name, checkpoint=checkpoint, output_mode=output_mode)
     try:
         query.processAllAvailable()
         return rows(frame.sparkSession.table(name), order_by)
+    finally:
+        stop_query(query)
+
+
+def _collect_stream_projection(
+    frame,
+    checkpoint,
+    *,
+    output_mode: str,
+    order_by: str,
+    columns: tuple[str, ...],
+) -> list[dict[str, object]]:
+    name = f"streams_{uuid4().hex}"
+    query = start_memory_query(frame, query_name=name, checkpoint=checkpoint, output_mode=output_mode)
+    try:
+        query.processAllAvailable()
+        return rows(frame.sparkSession.table(name).select(*columns), order_by)
     finally:
         stop_query(query)
 

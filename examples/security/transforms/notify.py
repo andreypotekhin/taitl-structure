@@ -22,16 +22,16 @@ class VulnerabilityNotifications(Transform):
     imminent_notifications = output(PersonVulnerabilityNotification)
     overdue_notifications = output(PersonVulnerabilityNotification)
 
-    @step(input=events, output=deduped_events)
+    @step(output=deduped_events)
     def dedupe_delivery(self, event: VulnEvent) -> VulnEvent:
         drop_duplicates(event.id)
         return VulnEvent.project(event)
 
-    @step(input=deduped_events, output=discoveries)
+    @step(output=discoveries)
     def first_detection(self, event: VulnEvent) -> VulnerabilityDiscovery:
         where(event.action == "Detected")
         group_by(vuln_id=event.vuln_id)
-        return VulnerabilityDiscovery(vuln_id=event.vuln_id, discovered_at=min(event.occurred_at))
+        return VulnerabilityDiscovery.project(event)(discovered_at=min(event.occurred_at))
 
     @step(input=[exposures, discoveries, people, receipts], output=discovery_notifications)
     def notify_discovery(
@@ -82,16 +82,12 @@ class VulnerabilityNotifications(Transform):
     def _notification(
         finding: VulnerabilityWorkflowExposure, person: Person, key, notification_type: str
     ) -> PersonVulnerabilityNotification:
-        return PersonVulnerabilityNotification(
+        return PersonVulnerabilityNotification.project(finding)(
             delivery_key=key,
             notification_type=notification_type,
-            vuln_id=finding.vuln_id,
             person_id=person.id,
             person_name=person.name,
             person_email=person.email,
-            severity=finding.severity,
-            target_date=finding.target_date,
-            instructions=finding.instructions,
         )
 
     @staticmethod

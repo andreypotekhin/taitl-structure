@@ -50,12 +50,12 @@
         }
       ],
       "name": "calculate",
-      "output_lane": "indicators",
+      "output_lane": "returns",
       "output_schema": "AdvancedIndicator",
       "results": [
         {
-          "frame": "indicators",
-          "lane": "indicators",
+          "frame": "returns",
+          "lane": "returns",
           "schema": "AdvancedIndicator"
         }
       ]

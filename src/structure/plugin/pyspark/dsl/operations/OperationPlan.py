@@ -17,6 +17,7 @@ from structure.plugin.pyspark.dsl.operations.RelationHierarchyClosurePlan import
 from structure.plugin.pyspark.dsl.operations.RelationHierarchyFallbackPlan import RelationHierarchyFallbackPlan
 from structure.plugin.pyspark.dsl.operations.RelationOrderPlan import RelationOrderPlan
 from structure.plugin.pyspark.dsl.operations.RelationPrioritySelectionPlan import RelationPrioritySelectionPlan
+from structure.plugin.pyspark.dsl.operations.RelationSamplePlan import RelationSamplePlan
 from structure.plugin.pyspark.dsl.operations.RelationSetPlan import RelationSetPlan
 from structure.plugin.pyspark.dsl.operations.SelectedRowsPlan import SelectedRowsPlan
 from structure.plugin.pyspark.dsl.operations.StreamingOutputMode import StreamingOutputMode
@@ -42,6 +43,7 @@ class OperationPlan:
     relation_order: RelationOrderPlan | None = None
     relation_priority_selection: RelationPrioritySelectionPlan | None = None
     relation_bound: RelationBoundPlan | None = None
+    relation_sample: RelationSamplePlan | None = None
     relation_set: RelationSetPlan | None = None
     watermark: WatermarkPlan | None = None
     cache: CachePlan | None = None
@@ -259,6 +261,17 @@ class OperationPlan:
         )
 
     @staticmethod
+    def relation_sample_operation(relation_sample: RelationSamplePlan) -> OperationPlan:
+        return OperationPlan(
+            "sample",
+            relation_sample=relation_sample,
+            family="relation",
+            capability=OperationCapability("relation", "sample"),
+            cardinality=OperationCardinality.ROW_FILTERING,
+            streaming=StreamingSupport.BATCH_ONLY,
+        )
+
+    @staticmethod
     def relation_priority_selection_operation(selection: RelationPrioritySelectionPlan) -> OperationPlan:
         return OperationPlan(
             "select_first_qualified",
@@ -306,7 +319,7 @@ class OperationPlan:
             cardinality=cardinality,
             streaming=(
                 StreamingSupport.COMPATIBLE
-                if relation_set.operation in {"union_all", "union_by_name"}
+                if relation_set.operation in {"union_all", "union_by_name"} and not relation_set.allow_missing_columns
                 else StreamingSupport.BATCH_ONLY
             ),
         )

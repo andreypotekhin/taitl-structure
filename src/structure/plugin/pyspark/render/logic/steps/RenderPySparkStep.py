@@ -355,6 +355,8 @@ class RenderPySparkStep:
                 ordered_lines.extend(self._relation_order(operation.relation_order, step=step, target=target))
             if operation.relation_bound is not None:
                 ordered_lines.extend(self._relation_bound(operation.kind, operation.relation_bound, target=target))
+            if operation.relation_sample is not None:
+                ordered_lines.extend(self._relation_sample(operation.relation_sample, target=target))
             if operation.relation_priority_selection is not None:
                 ordered_lines.extend(
                     self._relation_priority_selection(
@@ -887,7 +889,10 @@ class RenderPySparkStep:
 
     def _relation_set(self, source: str, relation_set, *, target: str) -> list[str]:
         if relation_set.by_name:
-            return [f"        {target} = {target}.unionByName({source}, allowMissingColumns=False)"]
+            return [
+                f"        {target} = {target}.unionByName("
+                f"{source}, allowMissingColumns={relation_set.allow_missing_columns})"
+            ]
         function = {
             "union_all": "union",
             "intersect": "intersect",
@@ -906,6 +911,15 @@ class RenderPySparkStep:
 
     def _relation_bound(self, kind: str, relation_bound, *, target: str) -> list[str]:
         return [f"        {target} = {target}.{kind}({relation_bound.count})"]
+
+    def _relation_sample(self, relation_sample, *, target: str) -> list[str]:
+        arguments = [
+            f"withReplacement={relation_sample.with_replacement}",
+            f"fraction={relation_sample.fraction!r}",
+        ]
+        if relation_sample.seed is not None:
+            arguments.append(f"seed={relation_sample.seed}")
+        return [f"        {target} = {target}.sample({', '.join(arguments)})"]
 
     def _relation_priority_selection(
         self,
@@ -1444,6 +1458,7 @@ class RenderPySparkStep:
             "min",
             "kurtosis",
             "percentile",
+            "schema_of_variant_agg",
             "skewness",
             "stddev",
             "sum",
@@ -1467,6 +1482,7 @@ class RenderPySparkStep:
             "min": "F.min",
             "kurtosis": "F.kurtosis",
             "percentile": "F.percentile",
+            "schema_of_variant_agg": "F.schema_of_variant_agg",
             "skewness": "F.skewness",
             "stddev": "F.stddev",
             "sum": "F.sum",
@@ -1555,7 +1571,7 @@ class RenderPySparkStep:
                 ]
             )
         if join.as_of is not None:
-            lines.extend(self._as_of(join, target=target, row_id=cast(str, row_id)))
+            lines.extend(self._as_of(join, step=step, target=target, row_id=cast(str, row_id)))
         return lines
 
     def _predicate(self, step: PySparkStepRecipe | PySparkOutputRecipe, join: PySparkJoinRecipe) -> str:
@@ -1572,20 +1588,35 @@ class RenderPySparkStep:
         if join.as_of is not None:
             left_time = render_pyspark_expression(join.as_of.left_time, scope_aliases=aliases)
             right_time = render_pyspark_expression(join.as_of.right_time, scope_aliases=aliases)
-            comparator = "<=" if join.as_of.direction.value == "backward" else ">="
-            as_of = f"({right_time} {comparator} {left_time})"
-            if join.as_of.tolerance is not None:
-                tolerance = render_pyspark_expression(join.as_of.tolerance, scope_aliases=aliases)
-                bound = ">=" if join.as_of.direction.value == "backward" else "<="
-                arithmetic = "-" if join.as_of.direction.value == "backward" else "+"
-                as_of = f"({as_of} & ({right_time} {bound} ({left_time} {arithmetic} {tolerance})))"
+            if join.as_of.direction.value == "nearest":
+                as_of = f"({left_time}.isNotNull() & {right_time}.isNotNull())"
+                if join.as_of.tolerance is not None:
+                    tolerance = render_pyspark_expression(join.as_of.tolerance, scope_aliases=aliases)
+                    as_of = f"({as_of} & (F.abs({right_time} - {left_time}) <= {tolerance}))"
+            else:
+                comparator = "<=" if join.as_of.direction.value == "backward" else ">="
+                as_of = f"({right_time} {comparator} {left_time})"
+                if join.as_of.tolerance is not None:
+                    tolerance = render_pyspark_expression(join.as_of.tolerance, scope_aliases=aliases)
+                    bound = ">=" if join.as_of.direction.value == "backward" else "<="
+                    arithmetic = "-" if join.as_of.direction.value == "backward" else "+"
+                    as_of = f"({as_of} & ({right_time} {bound} ({left_time} {arithmetic} {tolerance})))"
             predicate = f"({predicate} & {as_of})"
         return predicate
 
-    def _as_of(self, join: PySparkJoinRecipe, *, target: str, row_id: str) -> list[str]:
+    def _as_of(
+        self,
+        join: PySparkJoinRecipe,
+        *,
+        step: PySparkStepRecipe | PySparkOutputRecipe,
+        target: str,
+        row_id: str,
+    ) -> list[str]:
         as_of = join.as_of
         if as_of is None:
             raise TypeError("Cannot render as-of lookup without an as-of recipe")
+        if as_of.direction.value == "nearest":
+            return self._nearest_as_of(join, step=step, target=target, row_id=row_id)
         rank = f"__structure_{join.right_alias}_as_of_rank"
         right_time = render_pyspark_expression(as_of.right_time, scope_aliases={join.input_name: join.right_alias})
         order = "desc" if as_of.direction.value == "backward" else "asc"
@@ -1594,6 +1625,50 @@ class RenderPySparkStep:
             f'        {target} = {target}.withColumn("{rank}", F.row_number().over({window}))',
             f'        {target} = {target}.where(F.col("{rank}") == F.lit(1))',
             f'        {target} = {target}.drop("{rank}").drop("{row_id}")',
+        ]
+
+    def _nearest_as_of(
+        self,
+        join: PySparkJoinRecipe,
+        *,
+        step: PySparkStepRecipe | PySparkOutputRecipe,
+        target: str,
+        row_id: str,
+    ) -> list[str]:
+        as_of = join.as_of
+        if as_of is None:
+            raise TypeError("Cannot render nearest as-of lookup without an as-of recipe")
+        aliases = self._scope_aliases(step, join)
+        left_time = render_pyspark_expression(as_of.left_time, scope_aliases=aliases)
+        right_time = render_pyspark_expression(as_of.right_time, scope_aliases=aliases)
+        distance = f"__structure_{join.right_alias}_as_of_distance"
+        minimum = f"__structure_{join.right_alias}_as_of_min_distance"
+        ties = f"__structure_{join.right_alias}_as_of_tie_count"
+        rank = f"__structure_{join.right_alias}_as_of_rank"
+        partition = f'Window.partitionBy(F.col("{row_id}"))'
+        message = (
+            "JOIN-E0601: as_of_one(direction='nearest', ties='error') found equidistant matches; "
+            "add a tolerance or make the right-side time unique"
+        )
+        return [
+            f'        {target} = {target}.withColumn("{distance}", F.abs({right_time} - {left_time}))',
+            f'        {target} = {target}.withColumn("{minimum}", F.min(F.col("{distance}")).over({partition}))',
+            f'        {target} = {target}.withColumn(',
+            f'            "{ties}",',
+            f'            F.sum(',
+            f'                F.when(F.col("{distance}") == F.col("{minimum}"), F.lit(1)).otherwise(F.lit(0))',
+            f"            ).over({partition}),",
+            f"        )",
+            f"        {target} = {target}.where(",
+            f'            F.assert_true((F.col("{ties}") <= F.lit(1)) | F.col("{minimum}").isNull(), {message!r})',
+            f"            .isNull()",
+            f"        )",
+            f'        {target} = {target}.withColumn(',
+            f'            "{rank}",',
+            f'            F.row_number().over({partition}.orderBy(F.col("{distance}").asc(), {right_time}.asc())),',
+            f"        )",
+            f'        {target} = {target}.where(F.col("{rank}") == F.lit(1))',
+            f'        {target} = {target}.drop("{rank}", "{distance}", "{minimum}", "{ties}").drop("{row_id}")',
         ]
 
     def _dedupe(self, join: PySparkJoinRecipe, *, right: str) -> str:

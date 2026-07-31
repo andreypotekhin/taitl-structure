@@ -53,4 +53,4 @@ class SearchDocuments(Transform):
             policy=policy,
         )
     )
-    results = output(DocumentSearchResult).from_(reranked.results)
+    results = output(DocumentSearchResult, reranked.results)

@@ -54,6 +54,18 @@ class MapPySparkExpression:
             return "expression", "bitwise"
         if expression.kind == "call":
             function = (expression.data or {}).get("function")
+            if function == "is_valid_variant":
+                return "expression", "is_valid_variant"
+            if function in {
+                "parse_json",
+                "schema_of_variant",
+                "try_parse_json",
+                "variant_get",
+                "try_variant_get",
+                "to_variant_object",
+                "is_variant_null",
+            }:
+                return "expression", "variant"
             if function == "to_decimal":
                 return "expression", "cast"
             return "expression", "standard_helper_call"

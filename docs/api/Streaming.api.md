@@ -44,6 +44,10 @@ Examples abbreviate `order` as `o` and a second streaming relation as `c`.
   choice explicit and requires `streaming=True` plus a preceding watermark.
 - Scalar `@special(type="udf")` expressions are admitted as row-local ordinary-PySpark streaming transformations.
   They retain the existing `warn_on_udfs` warning policy and remain unavailable on Spark Connect.
+- Variant fields and row-local Variant helpers are admitted as profile-gated streaming transformations on ordinary
+  PySpark 4 profiles. PySpark 4.0 live evidence covers parsing, extraction, schema inspection, object conversion, and
+  JSON-null testing; PySpark 3.5 fails through the standard capability diagnostic before execution. PySpark 4.2-only
+  helpers such as `is_valid_variant(...)` remain capability-gated until a 4.2 live lane exists.
 - `event_time_between(...)` supplies the bounded event-time relation required by supported stream-stream joins.
 - `streaming=True` declares the hook safe for its stated streaming shape; Structure does not inspect hook code.
 
@@ -52,8 +56,11 @@ Examples abbreviate `order` as `o` and a second streaming relation as `c`.
 Supported transform shapes include row-local projection/filter (including scalar Python UDFs), stream-static left/inner
 joins and `exists(...)` filtering, event-time and session-window aggregation, bounded dedupe, bounded inner
 stream-stream joins, and bounded left/right/full outer and semi stream-stream joins. Callers own
-`readStream`, `writeStream`, checkpoints, triggers, output-mode application, and query lifecycle. `foreachBatch` and
-`foreach` remain unsupported. Use `examples/streams/adoption.py` as the tested caller-owned recipe shape. See
+`readStream`, `writeStream`, checkpoints, triggers, output-mode application, query lifecycle, and side effects.
+`foreachBatch` is caller-owned-guided through `examples.streams.adoption.start_foreach_batch_query(...)`; generated
+Structure modules must not contain `foreachBatch`. Row-level `foreach` remains design-gated until a side-effect
+contract defines sink identity, idempotence, retry, and recovery behavior. Use `examples/streams/adoption.py` as the
+tested caller-owned recipe shape. See
 [V4 Caller-Owned Streaming Migration](../dev/specifications/V4CallerOwnedStreamingMigration.md),
 [V9 PySpark Streaming API Coverage](../dev/specifications/V9PySparkStreamingApiCoverage.md), and the
 [Execution reference](../background/Execution.back.md).

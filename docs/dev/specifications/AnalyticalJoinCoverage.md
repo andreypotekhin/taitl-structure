@@ -196,7 +196,8 @@ Initial rules:
 - `"left"` keeps unmatched rows with null right fields.
 - `"inner"` removes unmatched rows.
 - Ties on `right_time` require an explicit tie policy.
-- Forward and nearest-direction as-of joins are deferred until backward joins are stable.
+- Forward as-of joins are implemented. Nearest as-of joins are implemented for `ties="error"`; directional nearest tie
+  preferences remain design-gated.
 
 ## IR Contract
 
@@ -324,4 +325,7 @@ Specific scenarios:
 - `temporal_one(...)` matches a right row whose validity window contains the event time.
 - Runtime overlap diagnostics remain follow-up work for `"error"`.
 - Backward `as_of_one(...)` selects the latest right row at or before the current-row time.
+- Forward `as_of_one(...)` selects the earliest right row at or after the current-row time.
+- Nearest `as_of_one(..., direction="nearest")` selects the closest non-null right time and fails equidistant best
+  matches with `ties="error"`.
 - As-of tolerance rejects matches outside the allowed time distance.

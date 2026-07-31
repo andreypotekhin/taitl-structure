@@ -24,6 +24,7 @@ from structure.plugin.pyspark.dsl.operations import (
     RelationHierarchyFallbackPlan,
     RelationOrderPlan,
     RelationPrioritySelectionPlan,
+    RelationSamplePlan,
     RelationSetPlan,
 )
 from structure.plugin.pyspark.dsl.RowScope import RowScope
@@ -99,6 +100,42 @@ def limit(count: int) -> RowScope:
 def offset(count: int) -> RowScope:
     """Skip the first ``count`` rows after ``order_by(...)``."""
     return _bound("offset", count)
+
+
+def sample(
+    fraction: float,
+    *,
+    with_replacement: bool = False,
+    seed: int | None = None,
+    reproducible: bool = True,
+) -> RowScope:
+    """Sample the current batch relation with explicit reproducibility policy.
+
+    Args:
+        fraction: Sampling fraction. Without replacement it must be in ``[0, 1]``;
+            with replacement it must be non-negative.
+        with_replacement: Whether rows may be sampled more than once.
+        seed: Deterministic Spark sampling seed. Required by default.
+        reproducible: Set to ``False`` to opt into non-repeatable sampling.
+
+    Returns:
+        The current row scope after sampling.
+    """
+    context = _context("sample(...)")
+    fraction = _sample_fraction(fraction, with_replacement=with_replacement)
+    seed = _sample_seed(seed, reproducible=reproducible)
+    source_schema = _current_schema(context.default_project_source, function="sample")
+    context.operations.append(
+        OperationPlan.relation_sample_operation(
+            RelationSamplePlan(
+                fraction=fraction,
+                with_replacement=with_replacement,
+                seed=seed,
+                reproducible=reproducible,
+            )
+        )
+    )
+    return RowScope(name=_current_scope(context.default_project_source), schema=source_schema)
 
 
 def require_unique(*keys: object) -> RowScope:
@@ -411,9 +448,29 @@ def union_all(relation: object) -> RowScope:
     return _set(relation, operation="union_all", by_name=False)
 
 
-def union_by_name(relation: object) -> RowScope:
-    """Union the current relation with another relation by field name."""
-    return _set(relation, operation="union_by_name", by_name=True)
+def union_by_name(
+    relation: object,
+    *,
+    allow_missing_columns: bool = False,
+    defaults: object | None = None,
+) -> RowScope:
+    """Union the current relation with another relation by field name.
+
+    Args:
+        relation: Relation parameter or transform input.
+        allow_missing_columns: Fill nullable top-level missing columns with null.
+        defaults: Reserved for a later explicit-fill design.
+    """
+    if defaults is not None:
+        raise TypeError("union_by_name(defaults=...) is design-gated; use nullable fields or exact schemas")
+    if not isinstance(allow_missing_columns, bool):
+        raise TypeError("union_by_name(allow_missing_columns=...) requires a Boolean")
+    return _set(
+        relation,
+        operation="union_by_name",
+        by_name=True,
+        allow_missing_columns=allow_missing_columns,
+    )
 
 
 def intersect(relation: object) -> RowScope:
@@ -436,7 +493,13 @@ def except_all(relation: object) -> RowScope:
     return _set(relation, operation="except_all", by_name=False)
 
 
-def _set(relation: object, *, operation: str, by_name: bool) -> RowScope:
+def _set(
+    relation: object,
+    *,
+    operation: str,
+    by_name: bool,
+    allow_missing_columns: bool = False,
+) -> RowScope:
     context = _context(f"{operation}(...)")
     if not isinstance(relation, InputScope):
         raise TypeError(f"{operation}(relation) requires a Structure relation parameter or transform input")
@@ -445,7 +508,10 @@ def _set(relation: object, *, operation: str, by_name: bool) -> RowScope:
     _validate_prior_operations(context.operations, function=operation)
 
     source_schema = _current_schema(context.default_project_source, function=operation)
-    _validate_same_schema(source_schema, relation._structure_input_schema, function=operation)
+    if allow_missing_columns:
+        _validate_missing_column_union(source_schema, relation._structure_input_schema, function=operation)
+    else:
+        _validate_same_schema(source_schema, relation._structure_input_schema, function=operation)
 
     context.operations.append(
         OperationPlan.relation_set_operation(
@@ -455,6 +521,7 @@ def _set(relation: object, *, operation: str, by_name: bool) -> RowScope:
                 source=relation._structure_source,
                 schema=relation._structure_input_schema,
                 by_name=by_name,
+                allow_missing_columns=allow_missing_columns,
             )
         )
     )
@@ -480,6 +547,34 @@ def _bound(operation: str, count: int) -> RowScope:
         OperationPlan.relation_bound_operation(operation, RelationBoundPlan(count=count))
     )
     return RowScope(name=_current_scope(context.default_project_source), schema=source_schema)
+
+
+def _sample_fraction(fraction: float, *, with_replacement: bool) -> float:
+    if not isinstance(with_replacement, bool):
+        raise TypeError("sample(with_replacement=...) requires a Boolean")
+    if isinstance(fraction, bool) or not isinstance(fraction, (int, float)):
+        raise TypeError("sample(fraction) requires a numeric literal")
+    fraction = float(fraction)
+    if fraction != fraction:
+        raise TypeError("sample(fraction) must be finite")
+    if with_replacement:
+        if fraction < 0:
+            raise TypeError("sample(fraction) must be non-negative when with_replacement=True")
+    elif fraction < 0 or fraction > 1:
+        raise TypeError("sample(fraction) must be in [0, 1] when with_replacement=False")
+    return fraction
+
+
+def _sample_seed(seed: int | None, *, reproducible: bool) -> int | None:
+    if not isinstance(reproducible, bool):
+        raise TypeError("sample(reproducible=...) requires a Boolean")
+    if seed is None:
+        if reproducible:
+            raise TypeError("sample(seed=...) is required unless reproducible=False")
+        return None
+    if isinstance(seed, bool) or not isinstance(seed, int):
+        raise TypeError("sample(seed=...) requires an integer literal")
+    return seed
 
 
 def _orderable(value: object, *, call: str) -> Expression:
@@ -560,6 +655,7 @@ def _validate_ordered_state(operations, *, function: str) -> None:
             "join",
             "posexplode_struct",
             "posexplode_outer_struct",
+            "sample",
             "selected_rows",
             "select_first_qualified",
             "hierarchy_closure",
@@ -599,6 +695,33 @@ def _validate_same_schema(left: type[Schema], right: type[Schema], *, function: 
         f"{function}(relation) requires identical declared schemas; "
         f"got {left.__name__} and {right.__name__}"
     )
+
+
+def _validate_missing_column_union(left: type[Schema], right: type[Schema], *, function: str) -> None:
+    left_fields = left._structure_fields
+    right_fields = right._structure_fields
+    common = set(left_fields).intersection(right_fields)
+    mismatched = [
+        name
+        for name in common
+        if _compatible_missing_union_field(left_fields[name]) != _compatible_missing_union_field(right_fields[name])
+    ]
+    if mismatched:
+        names = ", ".join(sorted(mismatched))
+        raise TypeError(f"{function}(allow_missing_columns=True) requires matching common field types: {names}")
+    missing_left = [field for name, field in right_fields.items() if name not in left_fields]
+    missing_right = [field for name, field in left_fields.items() if name not in right_fields]
+    required = [field.name for field in (*missing_left, *missing_right) if not field.nullable]
+    if required:
+        names = ", ".join(sorted(required))
+        raise TypeError(
+            f"{function}(allow_missing_columns=True) can only null-fill nullable missing fields; "
+            f"non-null field(s) need defaults: {names}"
+        )
+
+
+def _compatible_missing_union_field(field) -> tuple[str, object]:
+    return field.column, field.type
 
 
 def _field_signature(field) -> tuple[str, str, object, bool]:

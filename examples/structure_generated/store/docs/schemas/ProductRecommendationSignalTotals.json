@@ -1,0 +1,70 @@
+{
+  "bases": [
+    "ProductRecommendationSignal"
+  ],
+  "fields": [
+    {
+      "column": "tenant",
+      "name": "tenant",
+      "nullable": false,
+      "type": "TenantKey"
+    },
+    {
+      "column": "strategy_id",
+      "name": "strategy_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "product_id",
+      "name": "product_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "impression_count",
+      "name": "impression_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "clicked_impression_count",
+      "name": "clicked_impression_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "raw_click_count",
+      "name": "raw_click_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "click_through_rate",
+      "name": "click_through_rate",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "exposure_adjusted_click_rate",
+      "name": "exposure_adjusted_click_rate",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "exposure_weight",
+      "name": "exposure_weight",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "click_weight",
+      "name": "click_weight",
+      "nullable": false,
+      "type": "double"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.store.schemas.merchandising.intermediate",
+  "name": "ProductRecommendationSignalTotals"
+}

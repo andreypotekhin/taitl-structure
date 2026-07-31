@@ -56,6 +56,15 @@ def test_v7_schema_renderer_maps_binary_fields() -> None:
     )
 
 
+def test_v9_schema_renderer_maps_variant_fields() -> None:
+    class Raw(Schema):
+        payload = variant(nullable=False)
+
+    assert PySpark.schema.render().field(Raw._structure_fields["payload"]) == (
+        '    T.StructField("payload", T.VariantType(), False),'
+    )
+
+
 def test_v1_schema_renderer_uses_base_schema_composition_for_inheritance() -> None:
     from testing.model.v1.orders.schemas.order import OrderPublished, OrderWithCustomer
 

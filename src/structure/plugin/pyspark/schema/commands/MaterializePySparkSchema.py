@@ -9,6 +9,7 @@ from structure.plugin.pyspark.dsl.types import (
     DecimalType,
     DoubleType,
     FloatType,
+    GeometryType,
     IntegerType,
     LongType,
     MapType,
@@ -16,6 +17,7 @@ from structure.plugin.pyspark.dsl.types import (
     StructType,
     StructureType,
     TimestampType,
+    VariantType,
 )
 
 
@@ -51,6 +53,12 @@ class MaterializePySparkSchema:
             return spark_types.DateType()
         if isinstance(type, TimestampType):
             return spark_types.TimestampType()
+        if isinstance(type, VariantType):
+            return spark_types.VariantType()
+        if isinstance(type, GeometryType):
+            from structure.geo import geometry_type
+
+            return geometry_type()
         if isinstance(type, DecimalType):
             return spark_types.DecimalType(type.precision, type.scale)
         if isinstance(type, ArrayType):

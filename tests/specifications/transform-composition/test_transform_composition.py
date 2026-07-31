@@ -652,9 +652,23 @@ def test_stage_graph_uses_explicit_output_binding_for_ambiguous_schema() -> None
         normalized_stage = stage(NormalizeOrders(orders=orders))
         enriched_stage = stage(AddProduct(normalized=normalized_stage.normalized, products=products))
         duplicate_stage = stage(AddProduct(normalized=normalized_stage.normalized, products=products))
-        selected = output(Enriched).from_(enriched_stage.enriched)
+        selected = output(Enriched, enriched_stage.enriched)
 
     assert [output.name for output in _analysis(OrderGraph).outputs] == ["selected"]
+
+
+def test_output_binding_is_explicit_and_immutable() -> None:
+    source = object()
+
+    bound = output(Enriched, source).alias("selected")
+    declared = output(Enriched).alias("selected")
+
+    assert declared.source is None
+    assert declared.aliases == ("selected",)
+    assert not hasattr(declared, "from_")
+    assert not hasattr(declared, "__call__")
+    assert bound.source is source
+    assert bound.aliases == ("selected",)
 
 
 def test_stage_graph_subclass_replaces_inherited_stage_and_rewires_dependents() -> None:
@@ -761,7 +775,7 @@ def test_stage_graph_ambiguous_output_inference_fails() -> None:
         enriched_stage = stage(AddProduct(normalized=normalized_stage.normalized, products=products))
         duplicate_stage = stage(AddProduct(normalized=normalized_stage.normalized, products=products))
 
-    with pytest.raises(StructureCompileError, match="Cannot infer output selected"):
+    with pytest.raises(StructureCompileError, match=r"output\(\.\.\., stage\.output\)"):
         _analysis(OrderGraph)
 
 

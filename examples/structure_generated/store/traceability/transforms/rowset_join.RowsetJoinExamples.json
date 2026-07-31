@@ -43,134 +43,134 @@
       "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.input.products"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.0.reconcile_orders",
-      "ir": "ir:RowsetJoinExamples.step.0.reconcile_orders",
-      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.reconcile_orders"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.0.reconciled.reconcile_orders",
+      "ir": "ir:RowsetJoinExamples.step.0.reconciled.reconcile_orders",
+      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.reconciled.reconcile_orders"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.0.reconcile_orders.join.1.customer",
-      "ir": "ir:RowsetJoinExamples.step.0.reconcile_orders.join.1.customer",
-      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.reconcile_orders.join.1.customer"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.0.reconciled.reconcile_orders.join.1.customer",
+      "ir": "ir:RowsetJoinExamples.step.0.reconciled.reconcile_orders.join.1.customer",
+      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.reconciled.reconcile_orders.join.1.customer"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.0.reconcile_orders.select.tenant_id",
-      "ir": "ir:RowsetJoinExamples.step.0.reconcile_orders.project.tenant_id",
-      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.reconcile_orders.field.tenant_id"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.0.reconciled.reconcile_orders.select.tenant_id",
+      "ir": "ir:RowsetJoinExamples.step.0.reconciled.reconcile_orders.project.tenant_id",
+      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.reconciled.reconcile_orders.field.tenant_id"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.0.reconcile_orders.select.order_id",
-      "ir": "ir:RowsetJoinExamples.step.0.reconcile_orders.project.order_id",
-      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.reconcile_orders.field.order_id"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.0.reconciled.reconcile_orders.select.order_id",
+      "ir": "ir:RowsetJoinExamples.step.0.reconciled.reconcile_orders.project.order_id",
+      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.reconciled.reconcile_orders.field.order_id"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.0.reconcile_orders.select.order_customer_id",
-      "ir": "ir:RowsetJoinExamples.step.0.reconcile_orders.project.order_customer_id",
-      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.reconcile_orders.field.order_customer_id"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.0.reconciled.reconcile_orders.select.order_customer_id",
+      "ir": "ir:RowsetJoinExamples.step.0.reconciled.reconcile_orders.project.order_customer_id",
+      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.reconciled.reconcile_orders.field.order_customer_id"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.0.reconcile_orders.select.customer_id",
-      "ir": "ir:RowsetJoinExamples.step.0.reconcile_orders.project.customer_id",
-      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.reconcile_orders.field.customer_id"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.0.reconciled.reconcile_orders.select.customer_id",
+      "ir": "ir:RowsetJoinExamples.step.0.reconciled.reconcile_orders.project.customer_id",
+      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.reconciled.reconcile_orders.field.customer_id"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.0.reconcile_orders.select.customer_name",
-      "ir": "ir:RowsetJoinExamples.step.0.reconcile_orders.project.customer_name",
-      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.reconcile_orders.field.customer_name"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.0.reconciled.reconcile_orders.select.customer_name",
+      "ir": "ir:RowsetJoinExamples.step.0.reconciled.reconcile_orders.project.customer_name",
+      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.reconciled.reconcile_orders.field.customer_name"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.0.reconcile_orders.select.match_status",
-      "ir": "ir:RowsetJoinExamples.step.0.reconcile_orders.project.match_status",
-      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.reconcile_orders.field.match_status"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.0.reconciled.reconcile_orders.select.match_status",
+      "ir": "ir:RowsetJoinExamples.step.0.reconciled.reconcile_orders.project.match_status",
+      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.reconciled.reconcile_orders.field.match_status"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.0.reconcile_orders.validation.0.intermediate",
-      "ir": "ir:RowsetJoinExamples.step.0.reconcile_orders.validation.0.intermediate",
-      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.reconcile_orders.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.0.reconciled.reconcile_orders.validation.0.intermediate",
+      "ir": "ir:RowsetJoinExamples.step.0.reconciled.reconcile_orders.validation.0.intermediate",
+      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.reconciled.reconcile_orders.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.1.keep_customers",
-      "ir": "ir:RowsetJoinExamples.step.1.keep_customers",
-      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.keep_customers"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.1.backfilled.keep_customers",
+      "ir": "ir:RowsetJoinExamples.step.1.backfilled.keep_customers",
+      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.backfilled.keep_customers"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.1.keep_customers.join.1.customer",
-      "ir": "ir:RowsetJoinExamples.step.1.keep_customers.join.1.customer",
-      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.keep_customers.join.1.customer"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.1.backfilled.keep_customers.join.1.customer",
+      "ir": "ir:RowsetJoinExamples.step.1.backfilled.keep_customers.join.1.customer",
+      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.backfilled.keep_customers.join.1.customer"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.1.keep_customers.select.tenant_id",
-      "ir": "ir:RowsetJoinExamples.step.1.keep_customers.project.tenant_id",
-      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.keep_customers.field.tenant_id"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.1.backfilled.keep_customers.select.tenant_id",
+      "ir": "ir:RowsetJoinExamples.step.1.backfilled.keep_customers.project.tenant_id",
+      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.backfilled.keep_customers.field.tenant_id"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.1.keep_customers.select.order_id",
-      "ir": "ir:RowsetJoinExamples.step.1.keep_customers.project.order_id",
-      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.keep_customers.field.order_id"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.1.backfilled.keep_customers.select.order_id",
+      "ir": "ir:RowsetJoinExamples.step.1.backfilled.keep_customers.project.order_id",
+      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.backfilled.keep_customers.field.order_id"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.1.keep_customers.select.order_customer_id",
-      "ir": "ir:RowsetJoinExamples.step.1.keep_customers.project.order_customer_id",
-      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.keep_customers.field.order_customer_id"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.1.backfilled.keep_customers.select.order_customer_id",
+      "ir": "ir:RowsetJoinExamples.step.1.backfilled.keep_customers.project.order_customer_id",
+      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.backfilled.keep_customers.field.order_customer_id"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.1.keep_customers.select.customer_id",
-      "ir": "ir:RowsetJoinExamples.step.1.keep_customers.project.customer_id",
-      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.keep_customers.field.customer_id"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.1.backfilled.keep_customers.select.customer_id",
+      "ir": "ir:RowsetJoinExamples.step.1.backfilled.keep_customers.project.customer_id",
+      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.backfilled.keep_customers.field.customer_id"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.1.keep_customers.select.customer_name",
-      "ir": "ir:RowsetJoinExamples.step.1.keep_customers.project.customer_name",
-      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.keep_customers.field.customer_name"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.1.backfilled.keep_customers.select.customer_name",
+      "ir": "ir:RowsetJoinExamples.step.1.backfilled.keep_customers.project.customer_name",
+      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.backfilled.keep_customers.field.customer_name"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.1.keep_customers.select.customer_region",
-      "ir": "ir:RowsetJoinExamples.step.1.keep_customers.project.customer_region",
-      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.keep_customers.field.customer_region"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.1.backfilled.keep_customers.select.customer_region",
+      "ir": "ir:RowsetJoinExamples.step.1.backfilled.keep_customers.project.customer_region",
+      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.backfilled.keep_customers.field.customer_region"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.1.keep_customers.validation.0.intermediate",
-      "ir": "ir:RowsetJoinExamples.step.1.keep_customers.validation.0.intermediate",
-      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.keep_customers.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.1.backfilled.keep_customers.validation.0.intermediate",
+      "ir": "ir:RowsetJoinExamples.step.1.backfilled.keep_customers.validation.0.intermediate",
+      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.backfilled.keep_customers.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.2.expand_product_candidates",
-      "ir": "ir:RowsetJoinExamples.step.2.expand_product_candidates",
-      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.expand_product_candidates"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.2.expanded.expand_product_candidates",
+      "ir": "ir:RowsetJoinExamples.step.2.expanded.expand_product_candidates",
+      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.expanded.expand_product_candidates"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.2.expand_product_candidates.join.1.product",
-      "ir": "ir:RowsetJoinExamples.step.2.expand_product_candidates.join.1.product",
-      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.expand_product_candidates.join.1.product"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.2.expanded.expand_product_candidates.join.1.product",
+      "ir": "ir:RowsetJoinExamples.step.2.expanded.expand_product_candidates.join.1.product",
+      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.expanded.expand_product_candidates.join.1.product"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.2.expand_product_candidates.select.tenant_id",
-      "ir": "ir:RowsetJoinExamples.step.2.expand_product_candidates.project.tenant_id",
-      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.expand_product_candidates.field.tenant_id"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.2.expanded.expand_product_candidates.select.tenant_id",
+      "ir": "ir:RowsetJoinExamples.step.2.expanded.expand_product_candidates.project.tenant_id",
+      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.expanded.expand_product_candidates.field.tenant_id"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.2.expand_product_candidates.select.order_id",
-      "ir": "ir:RowsetJoinExamples.step.2.expand_product_candidates.project.order_id",
-      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.expand_product_candidates.field.order_id"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.2.expanded.expand_product_candidates.select.order_id",
+      "ir": "ir:RowsetJoinExamples.step.2.expanded.expand_product_candidates.project.order_id",
+      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.expanded.expand_product_candidates.field.order_id"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.2.expand_product_candidates.select.customer_id",
-      "ir": "ir:RowsetJoinExamples.step.2.expand_product_candidates.project.customer_id",
-      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.expand_product_candidates.field.customer_id"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.2.expanded.expand_product_candidates.select.customer_id",
+      "ir": "ir:RowsetJoinExamples.step.2.expanded.expand_product_candidates.project.customer_id",
+      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.expanded.expand_product_candidates.field.customer_id"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.2.expand_product_candidates.select.customer_name",
-      "ir": "ir:RowsetJoinExamples.step.2.expand_product_candidates.project.customer_name",
-      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.expand_product_candidates.field.customer_name"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.2.expanded.expand_product_candidates.select.customer_name",
+      "ir": "ir:RowsetJoinExamples.step.2.expanded.expand_product_candidates.project.customer_name",
+      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.expanded.expand_product_candidates.field.customer_name"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.2.expand_product_candidates.select.product_id",
-      "ir": "ir:RowsetJoinExamples.step.2.expand_product_candidates.project.product_id",
-      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.expand_product_candidates.field.product_id"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.2.expanded.expand_product_candidates.select.product_id",
+      "ir": "ir:RowsetJoinExamples.step.2.expanded.expand_product_candidates.project.product_id",
+      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.expanded.expand_product_candidates.field.product_id"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.2.expand_product_candidates.select.product_name",
-      "ir": "ir:RowsetJoinExamples.step.2.expand_product_candidates.project.product_name",
-      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.expand_product_candidates.field.product_name"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.2.expanded.expand_product_candidates.select.product_name",
+      "ir": "ir:RowsetJoinExamples.step.2.expanded.expand_product_candidates.project.product_name",
+      "source": "source:examples.store.transforms.rowset_join.RowsetJoinExamples.expanded.expand_product_candidates.field.product_name"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.output.0.candidates.validation.final",
@@ -195,6 +195,14 @@
       "constant": "BUSINESS_DATE_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.common"
     },
+    "CatalogAvailability": {
+      "constant": "CATALOG_AVAILABILITY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+    },
+    "CatalogProduct": {
+      "constant": "CATALOG_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+    },
     "Customer": {
       "constant": "CUSTOMER_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.customer"
@@ -211,6 +219,70 @@
       "constant": "CUSTOMER_ORDER_BACKFILL_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.order"
     },
+    "DailyFulfillmentSummary": {
+      "constant": "DAILY_FULFILLMENT_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.summary"
+    },
+    "DailyRecommendationBehavior": {
+      "constant": "DAILY_RECOMMENDATION_BEHAVIOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.evaluation"
+    },
+    "DailyRecommendationClicks": {
+      "constant": "DAILY_RECOMMENDATION_CLICKS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "DailyRecommendationCounts": {
+      "constant": "DAILY_RECOMMENDATION_COUNTS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.merchandising_intermediate"
+    },
+    "DailyRecommendationImpressions": {
+      "constant": "DAILY_RECOMMENDATION_IMPRESSIONS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "FulfillmentAllocation": {
+      "constant": "FULFILLMENT_ALLOCATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "FulfillmentBackorder": {
+      "constant": "FULFILLMENT_BACKORDER_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "FulfillmentOption": {
+      "constant": "FULFILLMENT_OPTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.planning_intermediate"
+    },
+    "FulfillmentPlan": {
+      "constant": "FULFILLMENT_PLAN_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "FulfillmentPreferredOption": {
+      "constant": "FULFILLMENT_PREFERRED_OPTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.planning_intermediate"
+    },
+    "InboundInventory": {
+      "constant": "INBOUND_INVENTORY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
+    },
+    "InboundInventoryAvailability": {
+      "constant": "INBOUND_INVENTORY_AVAILABILITY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.planning_intermediate"
+    },
+    "InventoryPosition": {
+      "constant": "INVENTORY_POSITION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
+    },
+    "MerchandisingBoost": {
+      "constant": "MERCHANDISING_BOOST_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.policy"
+    },
+    "MerchandisingPolicy": {
+      "constant": "MERCHANDISING_POLICY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.policy"
+    },
+    "MerchandisingSuppression": {
+      "constant": "MERCHANDISING_SUPPRESSION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.policy"
+    },
     "OrderCollectionProfile": {
       "constant": "ORDER_COLLECTION_PROFILE_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
@@ -226,6 +298,10 @@
     "OrderCustomerWindow": {
       "constant": "ORDER_CUSTOMER_WINDOW_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderDemand": {
+      "constant": "ORDER_DEMAND_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.demand"
     },
     "OrderFulfillment": {
       "constant": "ORDER_FULFILLMENT_SCHEMA",
@@ -271,6 +347,10 @@
       "constant": "ORDER_WITH_PROMOTION_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.order"
     },
+    "PlannedActualReconciliation": {
+      "constant": "PLANNED_ACTUAL_RECONCILIATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.reconciliation"
+    },
     "Product": {
       "constant": "PRODUCT_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.product"
@@ -283,6 +363,14 @@
       "constant": "PRODUCT_DAILY_SUMMARY_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.analytics"
     },
+    "ProductRecommendationSignal": {
+      "constant": "PRODUCT_RECOMMENDATION_SIGNAL_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "ProductRecommendationSignalTotals": {
+      "constant": "PRODUCT_RECOMMENDATION_SIGNAL_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.merchandising_intermediate"
+    },
     "Promotion": {
       "constant": "PROMOTION_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.promotion"
@@ -291,6 +379,58 @@
       "constant": "PUBLICATION_FLAGS_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.order"
     },
+    "RankedRecommendationCandidate": {
+      "constant": "RANKED_RECOMMENDATION_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.merchandising_intermediate"
+    },
+    "RecommendationBehaviorImpression": {
+      "constant": "RECOMMENDATION_BEHAVIOR_IMPRESSION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.merchandising_intermediate"
+    },
+    "RecommendationCandidate": {
+      "constant": "RECOMMENDATION_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+    },
+    "RecommendationClick": {
+      "constant": "RECOMMENDATION_CLICK_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "RecommendationClickSummary": {
+      "constant": "RECOMMENDATION_CLICK_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.merchandising_intermediate"
+    },
+    "RecommendationEvaluationBatch": {
+      "constant": "RECOMMENDATION_EVALUATION_BATCH_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.evaluation"
+    },
+    "RecommendationExposure": {
+      "constant": "RECOMMENDATION_EXPOSURE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.merchandising_intermediate"
+    },
+    "RecommendationImpression": {
+      "constant": "RECOMMENDATION_IMPRESSION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "RecommendationRequest": {
+      "constant": "RECOMMENDATION_REQUEST_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
+    },
+    "RecommendationRequestBehavior": {
+      "constant": "RECOMMENDATION_REQUEST_BEHAVIOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.evaluation"
+    },
+    "RecommendationRun": {
+      "constant": "RECOMMENDATION_RUN_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
+    },
+    "RecommendedProduct": {
+      "constant": "RECOMMENDED_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
+    },
+    "ReplenishmentSuggestion": {
+      "constant": "REPLENISHMENT_SUGGESTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
     "Shipment": {
       "constant": "SHIPMENT_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.shipment"
@@ -298,6 +438,14 @@
     "TenantKey": {
       "constant": "TENANT_KEY_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "Warehouse": {
+      "constant": "WAREHOUSE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
+    },
+    "WarehouseLoadSummary": {
+      "constant": "WAREHOUSE_LOAD_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.summary"
     }
   },
   "source_transform": "examples.store.transforms.rowset_join.RowsetJoinExamples",
@@ -326,8 +474,8 @@
           "orders",
           "customer"
         ],
-        "step": "reconcile_orders",
-        "target": "reconcile_orders"
+        "step": "reconciled.reconcile_orders",
+        "target": "reconciled.reconcile_orders"
       },
       {
         "detail": {
@@ -343,8 +491,8 @@
           "customer.id",
           "order.customer_id"
         ],
-        "step": "reconcile_orders",
-        "target": "reconcile_orders.join[1].customer"
+        "step": "reconciled.reconcile_orders",
+        "target": "reconciled.reconcile_orders.join[1].customer"
       },
       {
         "detail": {
@@ -355,7 +503,7 @@
           "order.tenant.tenant_id",
           "customer.tenant.tenant_id"
         ],
-        "step": "reconcile_orders",
+        "step": "reconciled.reconcile_orders",
         "target": "OrderCustomerReconciliation.tenant_id"
       },
       {
@@ -366,7 +514,7 @@
         "sources": [
           "order.id"
         ],
-        "step": "reconcile_orders",
+        "step": "reconciled.reconcile_orders",
         "target": "OrderCustomerReconciliation.order_id"
       },
       {
@@ -377,7 +525,7 @@
         "sources": [
           "order.customer_id"
         ],
-        "step": "reconcile_orders",
+        "step": "reconciled.reconcile_orders",
         "target": "OrderCustomerReconciliation.order_customer_id"
       },
       {
@@ -388,7 +536,7 @@
         "sources": [
           "customer.id"
         ],
-        "step": "reconcile_orders",
+        "step": "reconciled.reconcile_orders",
         "target": "OrderCustomerReconciliation.customer_id"
       },
       {
@@ -399,7 +547,7 @@
         "sources": [
           "customer.name"
         ],
-        "step": "reconcile_orders",
+        "step": "reconciled.reconcile_orders",
         "target": "OrderCustomerReconciliation.customer_name"
       },
       {
@@ -410,7 +558,7 @@
         "sources": [
           "customer.tier"
         ],
-        "step": "reconcile_orders",
+        "step": "reconciled.reconcile_orders",
         "target": "OrderCustomerReconciliation.match_status"
       },
       {
@@ -423,8 +571,8 @@
           "OrderCustomerReconciliation",
           "customer"
         ],
-        "step": "keep_customers",
-        "target": "keep_customers"
+        "step": "backfilled.keep_customers",
+        "target": "backfilled.keep_customers"
       },
       {
         "detail": {
@@ -440,8 +588,8 @@
           "customer.id",
           "row.customer_id"
         ],
-        "step": "keep_customers",
-        "target": "keep_customers.join[1].customer"
+        "step": "backfilled.keep_customers",
+        "target": "backfilled.keep_customers.join[1].customer"
       },
       {
         "detail": {
@@ -452,7 +600,7 @@
           "row.tenant_id",
           "customer.tenant.tenant_id"
         ],
-        "step": "keep_customers",
+        "step": "backfilled.keep_customers",
         "target": "CustomerOrderBackfill.tenant_id"
       },
       {
@@ -463,7 +611,7 @@
         "sources": [
           "row.order_id"
         ],
-        "step": "keep_customers",
+        "step": "backfilled.keep_customers",
         "target": "CustomerOrderBackfill.order_id"
       },
       {
@@ -474,7 +622,7 @@
         "sources": [
           "row.order_customer_id"
         ],
-        "step": "keep_customers",
+        "step": "backfilled.keep_customers",
         "target": "CustomerOrderBackfill.order_customer_id"
       },
       {
@@ -485,7 +633,7 @@
         "sources": [
           "customer.id"
         ],
-        "step": "keep_customers",
+        "step": "backfilled.keep_customers",
         "target": "CustomerOrderBackfill.customer_id"
       },
       {
@@ -496,7 +644,7 @@
         "sources": [
           "customer.name"
         ],
-        "step": "keep_customers",
+        "step": "backfilled.keep_customers",
         "target": "CustomerOrderBackfill.customer_name"
       },
       {
@@ -507,7 +655,7 @@
         "sources": [
           "customer.region"
         ],
-        "step": "keep_customers",
+        "step": "backfilled.keep_customers",
         "target": "CustomerOrderBackfill.customer_region"
       },
       {
@@ -520,8 +668,8 @@
           "CustomerOrderBackfill",
           "product"
         ],
-        "step": "expand_product_candidates",
-        "target": "expand_product_candidates"
+        "step": "expanded.expand_product_candidates",
+        "target": "expanded.expand_product_candidates"
       },
       {
         "detail": {
@@ -532,8 +680,8 @@
         },
         "operation": "rowset_join",
         "sources": [],
-        "step": "expand_product_candidates",
-        "target": "expand_product_candidates.join[1].product"
+        "step": "expanded.expand_product_candidates",
+        "target": "expanded.expand_product_candidates.join[1].product"
       },
       {
         "detail": {
@@ -543,7 +691,7 @@
         "sources": [
           "row.tenant_id"
         ],
-        "step": "expand_product_candidates",
+        "step": "expanded.expand_product_candidates",
         "target": "OrderProductCandidate.tenant_id"
       },
       {
@@ -554,7 +702,7 @@
         "sources": [
           "row.order_id"
         ],
-        "step": "expand_product_candidates",
+        "step": "expanded.expand_product_candidates",
         "target": "OrderProductCandidate.order_id"
       },
       {
@@ -565,7 +713,7 @@
         "sources": [
           "row.customer_id"
         ],
-        "step": "expand_product_candidates",
+        "step": "expanded.expand_product_candidates",
         "target": "OrderProductCandidate.customer_id"
       },
       {
@@ -576,7 +724,7 @@
         "sources": [
           "row.customer_name"
         ],
-        "step": "expand_product_candidates",
+        "step": "expanded.expand_product_candidates",
         "target": "OrderProductCandidate.customer_name"
       },
       {
@@ -587,7 +735,7 @@
         "sources": [
           "product.id"
         ],
-        "step": "expand_product_candidates",
+        "step": "expanded.expand_product_candidates",
         "target": "OrderProductCandidate.product_id"
       },
       {
@@ -598,7 +746,7 @@
         "sources": [
           "product.name"
         ],
-        "step": "expand_product_candidates",
+        "step": "expanded.expand_product_candidates",
         "target": "OrderProductCandidate.product_name"
       },
       {
@@ -627,14 +775,14 @@
           "right_alias": "customers"
         }
       ],
-      "name": "reconcile_orders",
+      "name": "reconciled.reconcile_orders",
       "output_alias": "order_customer_reconciliation",
       "output_schema": "OrderCustomerReconciliation",
       "results": [
         {
           "after_hooks": [],
-          "frame": "orders",
-          "lane": "orders",
+          "frame": "reconciled__reconciliation",
+          "lane": "reconciled__reconciliation",
           "schema": "OrderCustomerReconciliation"
         }
       ],
@@ -658,14 +806,14 @@
           "right_alias": "customers"
         }
       ],
-      "name": "keep_customers",
+      "name": "backfilled.keep_customers",
       "output_alias": "customer_order_backfill",
       "output_schema": "CustomerOrderBackfill",
       "results": [
         {
           "after_hooks": [],
-          "frame": "orders",
-          "lane": "orders",
+          "frame": "backfilled__backfills",
+          "lane": "backfilled__backfills",
           "schema": "CustomerOrderBackfill"
         }
       ],
@@ -689,14 +837,14 @@
           "right_alias": "products"
         }
       ],
-      "name": "expand_product_candidates",
+      "name": "expanded.expand_product_candidates",
       "output_alias": "order_product_candidate",
       "output_schema": "OrderProductCandidate",
       "results": [
         {
           "after_hooks": [],
-          "frame": "candidates",
-          "lane": "candidates",
+          "frame": "expanded__candidates",
+          "lane": "expanded__candidates",
           "schema": "OrderProductCandidate"
         }
       ],

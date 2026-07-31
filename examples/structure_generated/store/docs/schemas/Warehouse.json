@@ -1,0 +1,50 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "tenant",
+      "name": "tenant",
+      "nullable": false,
+      "type": "TenantKey"
+    },
+    {
+      "column": "audit",
+      "name": "audit",
+      "nullable": false,
+      "type": "AuditStamp"
+    },
+    {
+      "column": "id",
+      "name": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "name",
+      "name": "name",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "region",
+      "name": "region",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "priority",
+      "name": "priority",
+      "nullable": false,
+      "type": "integer"
+    },
+    {
+      "column": "active",
+      "name": "active",
+      "nullable": false,
+      "type": "boolean"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.store.schemas.fulfillment.planning.inventory",
+  "name": "Warehouse"
+}

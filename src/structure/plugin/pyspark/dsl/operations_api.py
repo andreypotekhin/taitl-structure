@@ -46,6 +46,7 @@ from structure.plugin.pyspark.dsl.types import (
     StructType,
     StructureType,
     TimestampType,
+    VariantType,
 )
 from structure.plugin.pyspark.dsl.windows.GroupedRows import GroupedRows
 from structure.plugin.pyspark.dsl.windows.WindowBound import WindowBound
@@ -340,6 +341,14 @@ def percentile(value: object, percentage: float, *, frequency: int = 1, where: o
         where=where,
         options=(("percentage", percentage), ("frequency", frequency)),
     )
+
+
+def schema_of_variant_agg(value: object) -> Expression:
+    """Return the merged SQL-format schema of Variant values in each group."""
+    argument = literal(value)
+    if not isinstance(argument.type, VariantType):
+        raise TypeError("schema_of_variant_agg(...) requires a Variant Structure expression")
+    return _aggregate("schema_of_variant_agg", argument, type=StringType(), nullable=True)
 
 
 def collect_list(

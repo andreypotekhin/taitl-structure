@@ -30,6 +30,21 @@ class ArchivedItem(Schema):
     score = integer(nullable=False)
 
 
+class ActiveItemWithNote(Schema):
+    item_id = string(nullable=False)
+    score = integer(nullable=False)
+    note = string()
+
+
+class ArchivedItemWithoutNote(Schema):
+    item_id = string(nullable=False)
+    score = integer(nullable=False)
+
+
+class ArchivedItemIdOnly(Schema):
+    item_id = string(nullable=False)
+
+
 class MismatchedItem(Schema):
     item_id = string(nullable=False)
     value = integer(nullable=False)
@@ -74,6 +89,16 @@ class MergeItemsByName(Transform):
     def merge(self, active: ActiveItem, archived: ArchivedItem) -> ActiveItem:
         merged = union_by_name(archived)
         return ActiveItem.project(merged)
+
+
+class MergeItemsByNameWithMissingNullable(Transform):
+    active = input(ActiveItemWithNote)
+    archived = input(ArchivedItemWithoutNote)
+    merged = output(ActiveItemWithNote)
+
+    def merge(self, active: ActiveItemWithNote, archived: ArchivedItemWithoutNote) -> ActiveItemWithNote:
+        merged = union_by_name(archived, allow_missing_columns=True)
+        return ActiveItemWithNote.project(merged)
 
 
 class IntersectItems(Transform):
@@ -198,6 +223,25 @@ def test_union_by_name_renders_exact_schema_name_aligned_union_source() -> None:
     assert "active = active.unionByName(archived, allowMissingColumns=False)" in text
 
 
+def test_union_by_name_records_nullable_missing_column_composition() -> None:
+    operation = _lowered(MergeItemsByNameWithMissingNullable).steps[0].operations[0]
+
+    assert operation.kind == "union_by_name"
+    assert operation.relation_set is not None
+    assert operation.relation_set.input_name == "archived"
+    assert operation.relation_set.allow_missing_columns is True
+
+
+def test_union_by_name_renders_missing_nullable_column_composition() -> None:
+    text = render_pyspark_step(
+        _lowered(MergeItemsByNameWithMissingNullable).steps[0],
+        current="active",
+        sources={"active": "active", "archived": "archived"},
+    )
+
+    assert "active = active.unionByName(archived, allowMissingColumns=True)" in text
+
+
 @pytest.mark.parametrize(
     ("transform", "snippet"),
     (
@@ -272,6 +316,34 @@ def test_relation_union_rejects_unaligned_schemas() -> None:
             return ActiveItem.project(merged)
 
     with pytest.raises(TypeError, match="requires identical declared schemas"):
+        Compiler.frontend.compile()(BadMerge, materialize_schemas=False)
+
+
+def test_union_by_name_rejects_missing_non_nullable_columns() -> None:
+    class BadMerge(Transform):
+        active = input(ActiveItem)
+        mismatched = input(ArchivedItemIdOnly)
+        merged = output(ActiveItem)
+
+        def merge(self, active: ActiveItem, mismatched: ArchivedItemIdOnly) -> ActiveItem:
+            merged = union_by_name(mismatched, allow_missing_columns=True)
+            return ActiveItem.project(merged)
+
+    with pytest.raises(TypeError, match="non-null field\\(s\\) need defaults: score"):
+        Compiler.frontend.compile()(BadMerge, materialize_schemas=False)
+
+
+def test_union_by_name_rejects_defaults_until_fill_design_exists() -> None:
+    class BadMerge(Transform):
+        active = input(ActiveItemWithNote)
+        archived = input(ArchivedItemWithoutNote)
+        merged = output(ActiveItemWithNote)
+
+        def merge(self, active: ActiveItemWithNote, archived: ArchivedItemWithoutNote) -> ActiveItemWithNote:
+            merged = union_by_name(archived, allow_missing_columns=True, defaults={"note": "unknown"})
+            return ActiveItemWithNote.project(merged)
+
+    with pytest.raises(TypeError, match="defaults=.*design-gated"):
         Compiler.frontend.compile()(BadMerge, materialize_schemas=False)
 
 

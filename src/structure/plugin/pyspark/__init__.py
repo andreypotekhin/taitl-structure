@@ -2,15 +2,15 @@ from importlib import import_module
 from typing import TYPE_CHECKING, Any, cast, overload
 
 from structure.dsl import FieldDeclaration
-from structure.plugin.pyspark.PySparkPlugin import PySparkPlugin
 from structure.plugin.pyspark.dsl import field as field
 from structure.plugin.pyspark.dsl import types as types
-from structure.plugin.pyspark.dsl.generators import explode_struct as _explode_struct
 from structure.plugin.pyspark.dsl.generators import explode_outer_struct as _explode_outer_struct
-from structure.plugin.pyspark.dsl.generators import inline_struct as _inline_struct
+from structure.plugin.pyspark.dsl.generators import explode_struct as _explode_struct
 from structure.plugin.pyspark.dsl.generators import inline_outer_struct as _inline_outer_struct
+from structure.plugin.pyspark.dsl.generators import inline_struct as _inline_struct
 from structure.plugin.pyspark.dsl.generators import posexplode_outer_struct as _posexplode_outer_struct
 from structure.plugin.pyspark.dsl.generators import posexplode_struct as _posexplode_struct
+from structure.plugin.pyspark.dsl.geo import contains, geometry_as_wkt, geometry_from_wkt, intersects, within
 from structure.plugin.pyspark.dsl.relation_sets import (
     except_all,
     hierarchy_closure,
@@ -25,11 +25,13 @@ from structure.plugin.pyspark.dsl.relation_sets import (
     require_parent_hierarchy,
     require_reference,
     require_unique,
+    sample,
     select_first_qualified,
     subtract,
     union_all,
     union_by_name,
 )
+from structure.plugin.pyspark.PySparkPlugin import PySparkPlugin
 
 
 def explode_struct(*args: object, **kwargs: object) -> Any:
@@ -58,11 +60,9 @@ def posexplode_outer_struct(*args: object, **kwargs: object) -> Any:
 
 if TYPE_CHECKING:
     from structure.plugin.pyspark.api.PySpark import PySpark
-    from structure.plugin.pyspark.dsl.Expression import Expression
-    from structure.plugin.pyspark.dsl.InputScope import *  # type: ignore  # noqa: F403
-    from structure.plugin.pyspark.dsl.TimeWindow import TimeWindow
     from structure.plugin.pyspark.dsl.aggregation import *  # type: ignore  # noqa: F403
     from structure.plugin.pyspark.dsl.body import project, watermark, where
+    from structure.plugin.pyspark.dsl.Expression import Expression
     from structure.plugin.pyspark.dsl.expressions import *  # type: ignore  # noqa: F403
     from structure.plugin.pyspark.dsl.field import (  # noqa: F401
         binary,
@@ -71,16 +71,20 @@ if TYPE_CHECKING:
         decimal,
         double,
         float,
+        geometry,
         integer,
         long,
         map,
         string,
         struct,
         timestamp,
+        variant,
     )
+    from structure.plugin.pyspark.dsl.InputScope import *  # type: ignore  # noqa: F403
     from structure.plugin.pyspark.dsl.joins import *  # type: ignore  # noqa: F403
     from structure.plugin.pyspark.dsl.operations import *  # type: ignore  # noqa: F403
     from structure.plugin.pyspark.dsl.operations_api import *  # type: ignore  # noqa: F403
+    from structure.plugin.pyspark.dsl.TimeWindow import TimeWindow
     from structure.plugin.pyspark.dsl.types.BinaryType import BinaryType
     from structure.plugin.pyspark.dsl.types.DecimalType import DecimalType
 
@@ -98,12 +102,13 @@ isnotnull isnull is_grouped kurtosis lag left_join latest_by lead lookup_join la
 ltrim log limit md5 map_entries map_concat map_contains_key map_filter map_from_entries map_keys map_transform_keys
 map_transform_values map_values map_zip_with max min minute mode month nanvl nvl nvl2 nullif pow not_exists nth_value
 ntile offset order_by percent_rank percentile posexplode_struct posexplode_outer_struct explode_struct explode_outer_struct inline_struct inline_outer_struct preceding project rank range_between relation_alias regexp_extract regexp_replace require_all require_parent_hierarchy require_reference require_unique hierarchy_closure hierarchy_fallbacks reverse rtrim round
-select_first_qualified signum slice sha1 sha2 second right_join rollup row_number rowset_join rows_between rolling_avg rolling_max
+sample select_first_qualified signum slice sha1 sha2 second right_join rollup row_number rowset_join rows_between rolling_avg rolling_max
 rolling_min rolling_sum scan subtract sum stddev sqrt size sequence session_window skewness split translate substring temporal_one
 to_csv to_decimal to_date to_json to_timestamp TimeWindow trim trunc try_element_at unbase64 union_all union_by_name upper unbounded_following unbounded_preceding
 variance when year xxhash64 zeroifnull where watermark window window_avg window_bool_and window_bool_or
 window_collect_list window_collect_set window_count window_count_distinct window_max window_min window_sum
-window_stddev window_variance
+window_stddev window_variance is_valid_variant is_variant_null parse_json schema_of_variant schema_of_variant_agg
+to_variant_object try_parse_json try_variant_get variant_get
 """.split()
 
 _FIELD_FACTORIES = {
@@ -119,6 +124,8 @@ _FIELD_FACTORIES = {
     "string",
     "struct",
     "timestamp",
+    "variant",
+    "geometry",
 }
 
 __all__ = [  # noqa: F405
@@ -284,6 +291,7 @@ __all__ = [  # noqa: F405
     "require_unique",
     "hierarchy_closure",
     "hierarchy_fallbacks",
+    "sample",
     "select_first_qualified",
     "reverse",
     "rtrim",
@@ -337,6 +345,15 @@ __all__ = [  # noqa: F405
     "zeroifnull",
     "where",
     "watermark",
+    "is_valid_variant",
+    "is_variant_null",
+    "parse_json",
+    "schema_of_variant",
+    "schema_of_variant_agg",
+    "to_variant_object",
+    "try_parse_json",
+    "try_variant_get",
+    "variant_get",
     "window",
     "window_avg",
     "window_bool_and",
@@ -362,6 +379,13 @@ __all__ = [  # noqa: F405
     "string",
     "struct",
     "timestamp",
+    "variant",
+    "geometry",
+    "geometry_as_wkt",
+    "geometry_from_wkt",
+    "intersects",
+    "contains",
+    "within",
 ]
 
 

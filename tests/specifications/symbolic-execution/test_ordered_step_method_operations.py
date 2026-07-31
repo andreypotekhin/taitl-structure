@@ -781,6 +781,44 @@ def test_as_of_one_records_forward_lookup_and_renders_earliest_selection() -> No
     assert '.orderBy(F.col("products.valid_from").asc())' in text
 
 
+def test_as_of_one_records_nearest_lookup_and_renders_distance_selection() -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(Order)
+        products = input(Product)
+        enriched = output(Enriched)
+
+        def add_product(self, order: Order, product: Product) -> Enriched:
+            as_of_one(
+                on=product.id == order.product_id,
+                left_time=order.status,
+                right_time=product.valid_from,
+                direction="nearest",
+                how=Join.LEFT,
+            )
+            return Enriched(id=order.id, product_name=product.name)
+
+    recipe_plan = _recipe(AddProduct)
+    recipe = recipe_plan.steps[0]
+    text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
+    traceability = Compiler.traceability.build()(
+        recipe_plan,
+        source_transform=f"{AddProduct.__module__}.AddProduct",
+        transform_module="generated.transforms.add_product",
+    )
+    dependencies = {dependency.target: dependency for dependency in traceability.static_dataflow}
+
+    assert recipe.joins[0].as_of is not None
+    assert recipe.joins[0].as_of.direction is AsOf.NEAREST
+    assert 'F.abs(F.col("products.valid_from") - F.col("order.status"))' in text
+    assert "__structure_products_as_of_min_distance" in text
+    assert "__structure_products_as_of_tie_count" in text
+    assert "as_of_one(direction='nearest', ties='error') found equidistant matches" in text
+    assert 'orderBy(F.col("__structure_products_as_of_distance").asc(), F.col("products.valid_from").asc())' in text
+    assert dependencies["add_product.join[1].product"].operation == "as_of_one"
+    assert dependencies["add_product.join[1].product"].detail["as_of"] == "nearest"
+
+
 def test_as_of_one_rejects_left_side_right_time() -> None:
     @transform
     class AddProduct(Transform):

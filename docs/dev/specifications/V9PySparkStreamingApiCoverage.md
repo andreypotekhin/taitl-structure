@@ -11,6 +11,11 @@ V9 does not make Structure a streaming job orchestrator by default. A Structure 
 DataFrame plan. Sources, sinks, checkpoints, triggers, output modes, query names, starts, stops, deployment, and
 recovery remain caller-owned unless a later explicit product decision creates a separate lifecycle-owning runtime.
 
+The extended v9 posture is support-first, as recorded in
+[D07302603 V9 streaming support-first](../design/decisions/D07302603.V9-streaming-support-first.md). Design-gated rows
+are implementation proving lanes. They stay gated or move to `streaming-ineligible` only when Spark evidence, state
+semantics, or lifecycle ownership blocks safe support.
+
 ## Coverage Ledger
 
 V9 introduces a checked PySpark streaming API ledger at
@@ -74,6 +79,11 @@ V9 re-evaluates deferred streaming-related items from v7 and v8 under current ev
 - `foreach`, `foreachBatch`, and streaming side effects;
 - Spark Connect streaming, which remains unclaimed unless a separate target contract proves support.
 
+Design-gated streaming rows are addressed by [V9 Streaming Design-Gated Features](V9StreamingDesignGatedFeatures.md)
+and [V9 Streaming Design Gates](../design/V9StreamingDesignGates.md). The broader active follow-up plan for these
+rows and non-streaming APICatalog open rows is
+`docs/dev/planning/P07302601.V9-api-catalog-design-gates.plan.md`.
+
 Non-streaming retained backlog from v7, such as Search evaluation follow-ups, plugin-owned DSL completion, incremental
 compile cache diagnostics, and data-quality constraints, remains outside v9 unless a v9 streaming adoption slice needs
 it directly.
@@ -88,7 +98,8 @@ An API can move to `structure-supported` only when all of these are true:
 - online execution and generated PySpark use the same lowered recipe;
 - generated code is deterministic and does not emit lifecycle, action, RDD, Pandas, or hidden UDF calls unless the API
   is intentionally a caller-owned example outside generated transforms;
-- PySpark 3.5 and 4.0 live evidence passes for the admitted shape.
+- PySpark 3.5 and 4.0 live evidence passes for the admitted shape, or target-gated APIs carry positive evidence for
+  supported profiles and rejection evidence for unsupported profiles.
 
 An API can move to `caller-owned-guided` only when Structure has no hidden implementation path for it and the
 documentation shows exactly where user code owns the PySpark call.
@@ -99,6 +110,10 @@ V9 is complete when the streaming API ledger is checked, every selected PySpark 
 status and evidence path, admitted transformation APIs have live PySpark 3.5/4.0 evidence, caller-owned lifecycle APIs
 have runnable adoption examples, diagnostics clearly separate Structure-owned transformations from caller-owned
 operations, and the final hardening sprint passes `make build`.
+
+The design-gated follow-up is complete when every v9 `design-gated` row has either moved to `structure-supported` with
+live evidence, moved to `caller-owned-guided` with runnable caller-owned examples, moved to `streaming-ineligible` with
+diagnostics, or retained `design-gated` with an explicit missing contract.
 
 ## Diagnostics and Troubleshooting
 

@@ -293,7 +293,7 @@
       "kind": "function",
       "module": "structure.core.dsl.model.transforms.transform_api",
       "qualname": "output",
-      "signature": "(value: 'type[Schema] | OutputDeclaration') -> 'OutputDeclaration | BindingSelector'"
+      "signature": "(value: 'type[Schema] | OutputDeclaration', source: 'object' = _UNSET) -> 'OutputDeclaration | BindingSelector'"
     },
     "parameter": {
       "dataclass_fields": [],

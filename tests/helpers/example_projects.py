@@ -32,6 +32,46 @@ def render_store_example() -> dict[str, str]:
         from examples.store.schemas.analytics import CustomerDailyTotal, CustomerEventRank, ProductDailySummary
         from examples.store.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
         from examples.store.schemas.customer import Customer
+        from examples.store.schemas.fulfillment.analytics.summary import DailyFulfillmentSummary, WarehouseLoadSummary
+        from examples.store.schemas.fulfillment.demand import OrderDemand
+        from examples.store.schemas.fulfillment.planning.intermediate import (
+            FulfillmentOption,
+            FulfillmentPreferredOption,
+            InboundInventoryAvailability,
+        )
+        from examples.store.schemas.fulfillment.planning.inventory import InboundInventory, InventoryPosition, Warehouse
+        from examples.store.schemas.fulfillment.planning.plan import (
+            FulfillmentAllocation,
+            FulfillmentBackorder,
+            FulfillmentPlan,
+            ReplenishmentSuggestion,
+        )
+        from examples.store.schemas.fulfillment.reconciliation.reconciliation import PlannedActualReconciliation
+        from examples.store.schemas.merchandising import (
+            CatalogAvailability,
+            CatalogProduct,
+            DailyRecommendationBehavior,
+            DailyRecommendationClicks,
+            DailyRecommendationCounts,
+            DailyRecommendationImpressions,
+            MerchandisingBoost,
+            MerchandisingPolicy,
+            MerchandisingSuppression,
+            ProductRecommendationSignal,
+            ProductRecommendationSignalTotals,
+            RankedRecommendationCandidate,
+            RecommendationBehaviorImpression,
+            RecommendationCandidate,
+            RecommendationClick,
+            RecommendationClickSummary,
+            RecommendationEvaluationBatch,
+            RecommendationExposure,
+            RecommendationImpression,
+            RecommendationRequest,
+            RecommendationRequestBehavior,
+            RecommendationRun,
+            RecommendedProduct,
+        )
         from examples.store.schemas.order import (
             CustomerOrderBackfill,
             OrderCustomerReconciliation,
@@ -51,6 +91,21 @@ def render_store_example() -> dict[str, str]:
         from examples.store.schemas.shipment import Shipment
         from examples.store.transforms.adv_analytics import AdvancedOrderAnalytics
         from examples.store.transforms.analytics import OrderAnalytics
+        from examples.store.transforms.fulfillment import Fulfillment
+        from examples.store.transforms.fulfillment.analytics.FulfillmentAnalytics import FulfillmentAnalytics
+        from examples.store.transforms.fulfillment.demand.PrepareOrderDemand import PrepareOrderDemand
+        from examples.store.transforms.fulfillment.planning.PlanFulfillment import PlanFulfillment
+        from examples.store.transforms.fulfillment.reconciliation.ReconcileFulfillmentPlan import (
+            ReconcileFulfillmentPlan,
+        )
+        from examples.store.transforms.merchandising.catalog.PrepareCatalog import PrepareCatalog
+        from examples.store.transforms.merchandising.clicks.BuildRecommendationSignals import BuildRecommendationSignals
+        from examples.store.transforms.merchandising.clicks.EvaluateMerchandising import EvaluateMerchandising
+        from examples.store.transforms.merchandising.Merchandising import Merchandising
+        from examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates import (
+            SelectRecommendationCandidates,
+        )
+        from examples.store.transforms.merchandising.recommender.Recommender import Recommender
         from examples.store.transforms.order import EnrichOrders
         from examples.store.transforms.rowset_join import RowsetJoinExamples
 
@@ -65,6 +120,63 @@ def render_store_example() -> dict[str, str]:
             "examples.store.schemas.analytics": [CustomerDailyTotal, ProductDailySummary, CustomerEventRank],
             "examples.store.schemas.common": [TenantKey, AuditStamp, Address, BusinessDate],
             "examples.store.schemas.customer": [Customer],
+            "examples.store.schemas.fulfillment.analytics.summary": [
+                DailyFulfillmentSummary,
+                WarehouseLoadSummary,
+            ],
+            "examples.store.schemas.fulfillment.demand.demand": [OrderDemand],
+            "examples.store.schemas.fulfillment.planning.intermediate": [
+                InboundInventoryAvailability,
+                FulfillmentOption,
+                FulfillmentPreferredOption,
+            ],
+            "examples.store.schemas.fulfillment.planning.inventory": [
+                Warehouse,
+                InventoryPosition,
+                InboundInventory,
+            ],
+            "examples.store.schemas.fulfillment.planning.plan": [
+                FulfillmentAllocation,
+                FulfillmentBackorder,
+                FulfillmentPlan,
+                ReplenishmentSuggestion,
+            ],
+            "examples.store.schemas.fulfillment.reconciliation.reconciliation": [PlannedActualReconciliation],
+            "examples.store.schemas.merchandising.catalog": [
+                CatalogProduct,
+                CatalogAvailability,
+                RecommendationCandidate,
+            ],
+            "examples.store.schemas.merchandising.policy": [
+                MerchandisingPolicy,
+                MerchandisingBoost,
+                MerchandisingSuppression,
+            ],
+            "examples.store.schemas.merchandising.recommendation": [
+                RecommendationRequest,
+                RecommendedProduct,
+                RecommendationRun,
+            ],
+            "examples.store.schemas.merchandising.feedback": [
+                RecommendationImpression,
+                RecommendationClick,
+                DailyRecommendationImpressions,
+                DailyRecommendationClicks,
+                ProductRecommendationSignal,
+            ],
+            "examples.store.schemas.merchandising.evaluation": [
+                RecommendationEvaluationBatch,
+                RecommendationRequestBehavior,
+                DailyRecommendationBehavior,
+            ],
+            "examples.store.schemas.merchandising.intermediate": [
+                RankedRecommendationCandidate,
+                RecommendationBehaviorImpression,
+                RecommendationClickSummary,
+                RecommendationExposure,
+                DailyRecommendationCounts,
+                ProductRecommendationSignalTotals,
+            ],
             "examples.store.schemas.order": [
                 OrderRaw,
                 OrderNormalized,
@@ -86,6 +198,41 @@ def render_store_example() -> dict[str, str]:
         files = {}
         transforms = (
             (EnrichOrders, "examples.store.transforms.order.EnrichOrders"),
+            (
+                PrepareOrderDemand,
+                "examples.store.transforms.fulfillment.demand.PrepareOrderDemand.PrepareOrderDemand",
+            ),
+            (
+                PlanFulfillment,
+                "examples.store.transforms.fulfillment.planning.PlanFulfillment.PlanFulfillment",
+            ),
+            (
+                FulfillmentAnalytics,
+                "examples.store.transforms.fulfillment.analytics.FulfillmentAnalytics.FulfillmentAnalytics",
+            ),
+            (
+                ReconcileFulfillmentPlan,
+                "examples.store.transforms.fulfillment.reconciliation.ReconcileFulfillmentPlan.ReconcileFulfillmentPlan",
+            ),
+            (Fulfillment, "examples.store.transforms.fulfillment.Fulfillment.Fulfillment"),
+            (PrepareCatalog, "examples.store.transforms.merchandising.catalog.PrepareCatalog.PrepareCatalog"),
+            (
+                SelectRecommendationCandidates,
+                "examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.SelectRecommendationCandidates",
+            ),
+            (
+                Recommender,
+                "examples.store.transforms.merchandising.recommender.Recommender.Recommender",
+            ),
+            (Merchandising, "examples.store.transforms.merchandising.Merchandising.Merchandising"),
+            (
+                BuildRecommendationSignals,
+                "examples.store.transforms.merchandising.clicks.BuildRecommendationSignals.BuildRecommendationSignals",
+            ),
+            (
+                EvaluateMerchandising,
+                "examples.store.transforms.merchandising.clicks.EvaluateMerchandising.EvaluateMerchandising",
+            ),
             (RowsetJoinExamples, "examples.store.transforms.rowset_join.RowsetJoinExamples"),
             (OrderAnalytics, "examples.store.transforms.analytics.OrderAnalytics"),
             (AdvancedOrderAnalytics, "examples.store.transforms.adv_analytics.AdvancedOrderAnalytics"),

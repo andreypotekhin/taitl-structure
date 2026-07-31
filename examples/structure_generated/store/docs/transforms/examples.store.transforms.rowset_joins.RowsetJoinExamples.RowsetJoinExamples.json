@@ -31,7 +31,7 @@
       "schema": "OrderProductCandidate"
     }
   ],
-  "source": "examples.store.transforms.rowset_join.RowsetJoinExamples",
+  "source": "examples.store.transforms.rowset_joins.RowsetJoinExamples.RowsetJoinExamples",
   "step_methods": [
     {
       "input_lane": "orders",
@@ -56,26 +56,26 @@
           "input": "customer"
         }
       ],
-      "name": "reconcile_orders",
-      "output_lane": "orders",
+      "name": "reconciled.reconcile_orders",
+      "output_lane": "reconciled__reconciliation",
       "output_schema": "OrderCustomerReconciliation",
       "results": [
         {
-          "frame": "orders",
-          "lane": "orders",
+          "frame": "reconciled__reconciliation",
+          "lane": "reconciled__reconciliation",
           "schema": "OrderCustomerReconciliation"
         }
       ]
     },
     {
-      "input_lane": "orders",
+      "input_lane": "reconciled__reconciliation",
       "input_schema": "OrderCustomerReconciliation",
       "inputs": [
         {
           "driving": true,
           "parameter": "row",
           "schema": "OrderCustomerReconciliation",
-          "source": "orders"
+          "source": "reconciled__reconciliation"
         },
         {
           "driving": false,
@@ -90,26 +90,26 @@
           "input": "customer"
         }
       ],
-      "name": "keep_customers",
-      "output_lane": "orders",
+      "name": "backfilled.keep_customers",
+      "output_lane": "backfilled__backfills",
       "output_schema": "CustomerOrderBackfill",
       "results": [
         {
-          "frame": "orders",
-          "lane": "orders",
+          "frame": "backfilled__backfills",
+          "lane": "backfilled__backfills",
           "schema": "CustomerOrderBackfill"
         }
       ]
     },
     {
-      "input_lane": "orders",
+      "input_lane": "backfilled__backfills",
       "input_schema": "CustomerOrderBackfill",
       "inputs": [
         {
           "driving": true,
           "parameter": "row",
           "schema": "CustomerOrderBackfill",
-          "source": "orders"
+          "source": "backfilled__backfills"
         },
         {
           "driving": false,
@@ -124,20 +124,20 @@
           "input": "product"
         }
       ],
-      "name": "expand_product_candidates",
-      "output_lane": "candidates",
+      "name": "expanded.expand_product_candidates",
+      "output_lane": "expanded__candidates",
       "output_schema": "OrderProductCandidate",
       "results": [
         {
-          "frame": "candidates",
-          "lane": "candidates",
+          "frame": "expanded__candidates",
+          "lane": "expanded__candidates",
           "schema": "OrderProductCandidate"
         }
       ]
     }
   ],
   "target_artifacts": {
-    "pyspark_transform": "pyspark/transforms/rowset_join.py",
-    "traceability": "traceability/transforms/rowset_join.RowsetJoinExamples.json"
+    "pyspark_transform": "pyspark/transforms/RowsetJoinExamples.py",
+    "traceability": "traceability/transforms/RowsetJoinExamples.RowsetJoinExamples.json"
   }
 }

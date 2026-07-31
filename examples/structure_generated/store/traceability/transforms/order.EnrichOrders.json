@@ -915,6 +915,14 @@
       "constant": "BUSINESS_DATE_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.common"
     },
+    "CatalogAvailability": {
+      "constant": "CATALOG_AVAILABILITY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+    },
+    "CatalogProduct": {
+      "constant": "CATALOG_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+    },
     "Customer": {
       "constant": "CUSTOMER_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.customer"
@@ -931,6 +939,70 @@
       "constant": "CUSTOMER_ORDER_BACKFILL_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.order"
     },
+    "DailyFulfillmentSummary": {
+      "constant": "DAILY_FULFILLMENT_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.summary"
+    },
+    "DailyRecommendationBehavior": {
+      "constant": "DAILY_RECOMMENDATION_BEHAVIOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.evaluation"
+    },
+    "DailyRecommendationClicks": {
+      "constant": "DAILY_RECOMMENDATION_CLICKS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "DailyRecommendationCounts": {
+      "constant": "DAILY_RECOMMENDATION_COUNTS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.merchandising_intermediate"
+    },
+    "DailyRecommendationImpressions": {
+      "constant": "DAILY_RECOMMENDATION_IMPRESSIONS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "FulfillmentAllocation": {
+      "constant": "FULFILLMENT_ALLOCATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "FulfillmentBackorder": {
+      "constant": "FULFILLMENT_BACKORDER_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "FulfillmentOption": {
+      "constant": "FULFILLMENT_OPTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.planning_intermediate"
+    },
+    "FulfillmentPlan": {
+      "constant": "FULFILLMENT_PLAN_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "FulfillmentPreferredOption": {
+      "constant": "FULFILLMENT_PREFERRED_OPTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.planning_intermediate"
+    },
+    "InboundInventory": {
+      "constant": "INBOUND_INVENTORY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
+    },
+    "InboundInventoryAvailability": {
+      "constant": "INBOUND_INVENTORY_AVAILABILITY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.planning_intermediate"
+    },
+    "InventoryPosition": {
+      "constant": "INVENTORY_POSITION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
+    },
+    "MerchandisingBoost": {
+      "constant": "MERCHANDISING_BOOST_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.policy"
+    },
+    "MerchandisingPolicy": {
+      "constant": "MERCHANDISING_POLICY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.policy"
+    },
+    "MerchandisingSuppression": {
+      "constant": "MERCHANDISING_SUPPRESSION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.policy"
+    },
     "OrderCollectionProfile": {
       "constant": "ORDER_COLLECTION_PROFILE_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
@@ -946,6 +1018,10 @@
     "OrderCustomerWindow": {
       "constant": "ORDER_CUSTOMER_WINDOW_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderDemand": {
+      "constant": "ORDER_DEMAND_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.demand"
     },
     "OrderFulfillment": {
       "constant": "ORDER_FULFILLMENT_SCHEMA",
@@ -991,6 +1067,10 @@
       "constant": "ORDER_WITH_PROMOTION_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.order"
     },
+    "PlannedActualReconciliation": {
+      "constant": "PLANNED_ACTUAL_RECONCILIATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.reconciliation"
+    },
     "Product": {
       "constant": "PRODUCT_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.product"
@@ -1003,6 +1083,14 @@
       "constant": "PRODUCT_DAILY_SUMMARY_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.analytics"
     },
+    "ProductRecommendationSignal": {
+      "constant": "PRODUCT_RECOMMENDATION_SIGNAL_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "ProductRecommendationSignalTotals": {
+      "constant": "PRODUCT_RECOMMENDATION_SIGNAL_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.merchandising_intermediate"
+    },
     "Promotion": {
       "constant": "PROMOTION_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.promotion"
@@ -1011,6 +1099,58 @@
       "constant": "PUBLICATION_FLAGS_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.order"
     },
+    "RankedRecommendationCandidate": {
+      "constant": "RANKED_RECOMMENDATION_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.merchandising_intermediate"
+    },
+    "RecommendationBehaviorImpression": {
+      "constant": "RECOMMENDATION_BEHAVIOR_IMPRESSION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.merchandising_intermediate"
+    },
+    "RecommendationCandidate": {
+      "constant": "RECOMMENDATION_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+    },
+    "RecommendationClick": {
+      "constant": "RECOMMENDATION_CLICK_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "RecommendationClickSummary": {
+      "constant": "RECOMMENDATION_CLICK_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.merchandising_intermediate"
+    },
+    "RecommendationEvaluationBatch": {
+      "constant": "RECOMMENDATION_EVALUATION_BATCH_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.evaluation"
+    },
+    "RecommendationExposure": {
+      "constant": "RECOMMENDATION_EXPOSURE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.merchandising_intermediate"
+    },
+    "RecommendationImpression": {
+      "constant": "RECOMMENDATION_IMPRESSION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "RecommendationRequest": {
+      "constant": "RECOMMENDATION_REQUEST_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
+    },
+    "RecommendationRequestBehavior": {
+      "constant": "RECOMMENDATION_REQUEST_BEHAVIOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.evaluation"
+    },
+    "RecommendationRun": {
+      "constant": "RECOMMENDATION_RUN_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
+    },
+    "RecommendedProduct": {
+      "constant": "RECOMMENDED_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
+    },
+    "ReplenishmentSuggestion": {
+      "constant": "REPLENISHMENT_SUGGESTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
     "Shipment": {
       "constant": "SHIPMENT_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.shipment"
@@ -1018,6 +1158,14 @@
     "TenantKey": {
       "constant": "TENANT_KEY_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "Warehouse": {
+      "constant": "WAREHOUSE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
+    },
+    "WarehouseLoadSummary": {
+      "constant": "WAREHOUSE_LOAD_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.summary"
     }
   },
   "source_transform": "examples.store.transforms.order.EnrichOrders",

@@ -1224,6 +1224,37 @@ def test_online_runner_applies_relation_union_by_name_before_projection(monkeypa
     )
 
 
+def test_online_runner_applies_missing_column_union_by_name_before_projection(monkeypatch) -> None:
+    """I can opt into Spark's nullable missing-column union behavior for batch relations."""
+
+    _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
+    invocation = FakeInvocation(
+        orders=_frame("orders", RawOrder),
+        archived=_frame("archived", RawOrder),
+    )
+
+    result = RunOnlinePySparkTransform()(
+        cast(Any, invocation),
+        _relation_set_plan("union_by_name", by_name=True, allow_missing_columns=True),
+        session=SimpleNamespace(
+            online_executor=None,
+            spark="spark",
+            ctx=None,
+            execution_mode="online",
+            target="pyspark",
+        ),
+    )
+
+    published = cast(FakeFrame, result.published)
+
+    assert published.operations == (
+        "alias:rawOrder",
+        "unionByName:archived:allowMissingColumns=True",
+        "select:id=col(id),status=col(status)",
+        "alias:published",
+    )
+
+
 @pytest.mark.parametrize(
     ("operation", "expected"),
     (
@@ -2811,7 +2842,12 @@ def _inline_outer_struct_plan() -> PySparkExecutionPlan:
     return replace(plan, steps=(updated,))
 
 
-def _relation_set_plan(operation: str, *, by_name: bool) -> PySparkExecutionPlan:
+def _relation_set_plan(
+    operation: str,
+    *,
+    by_name: bool,
+    allow_missing_columns: bool = False,
+) -> PySparkExecutionPlan:
     input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
     archived_validation = PySparkValidationRecipe("archived", RawOrder, SchemaMode.STRICT, False, "input")
     published_validation = PySparkValidationRecipe("published", PublishedOrder, SchemaMode.STRICT, False, "output")
@@ -2825,6 +2861,7 @@ def _relation_set_plan(operation: str, *, by_name: bool) -> PySparkExecutionPlan
         source="archived",
         schema=RawOrder,
         by_name=by_name,
+        allow_missing_columns=allow_missing_columns,
     )
     step = PySparkStepRecipe(
         name="publish",

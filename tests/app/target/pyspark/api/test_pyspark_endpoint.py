@@ -73,6 +73,7 @@ def test_pyspark_public_dsl_exports_are_static_for_editor_navigation() -> None:
         "require_unique",
         "hierarchy_closure",
         "hierarchy_fallbacks",
+        "sample",
         "select_first_qualified",
         "subtract",
         "union_all",

@@ -15,10 +15,7 @@ class BuildGateProgress(Transform):
             run_id=passage.run_id,
             gate_number=passage.gate_number,
         )
-        return GateProgress(
-            race_id=passage.race_id,
-            run_id=passage.run_id,
-            gate_number=passage.gate_number,
+        return GateProgress.project(passage)(
             passage_count=count(),
             fastest_millis=min(passage.elapsed_millis),
             slowest_millis=max(passage.elapsed_millis),

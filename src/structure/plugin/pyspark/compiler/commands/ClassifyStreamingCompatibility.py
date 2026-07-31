@@ -79,6 +79,8 @@ class ClassifyStreamingCompatibility:
                     findings.extend(self._relation_ordering(step.name, "order_by"))
                 if operation.relation_bound is not None:
                     findings.extend(self._relation_ordering(step.name, operation.kind))
+                if operation.relation_sample is not None:
+                    findings.extend(self._relation_ordering(step.name, "sample"))
                 if operation.relation_priority_selection is not None:
                     findings.extend(self._priority_selection(step.name))
                 if operation.relation_hierarchy_closure is not None:
@@ -92,6 +94,7 @@ class ClassifyStreamingCompatibility:
                             operation.kind,
                             operation.relation_set.input_name,
                             operation.relation_set.source,
+                            allow_missing_columns=operation.relation_set.allow_missing_columns,
                             current_streaming=streaming_source,
                             input_modes=input_modes,
                         )
@@ -319,11 +322,26 @@ class ClassifyStreamingCompatibility:
         input_name: str,
         input_source: str,
         *,
+        allow_missing_columns: bool,
         current_streaming: bool,
         input_modes: dict[str, bool],
     ) -> tuple[StreamingFinding, ...]:
         input_streaming = bool(input_modes.get(input_source))
         if operation in {"union_all", "union_by_name"}:
+            if allow_missing_columns:
+                return (
+                    StreamingFinding(
+                        code="STREAM-E0801",
+                        support=StreamingSupport.BATCH_ONLY,
+                        step=step,
+                        operation=f"{operation} {input_name}",
+                        problem=(
+                            f"{operation}(allow_missing_columns=True) is batch-only until live streaming "
+                            "restart evidence proves nullable missing-column fills are safe."
+                        ),
+                        use="Use exact-schema stream-stream union, or materialize one side before missing-column union.",
+                    ),
+                )
             if current_streaming and input_streaming:
                 return ()
             return (

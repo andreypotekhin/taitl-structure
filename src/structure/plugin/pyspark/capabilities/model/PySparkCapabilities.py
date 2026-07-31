@@ -14,11 +14,20 @@ SUPPORTED_PROFILES = frozenset(
         ">=3.5,<4.1",
         ">=3.5,<4.0",
         ">=4.0,<4.1",
+        ">=4.2,<4.3",
     }
 )
 
 SUPPORTED_VARIANTS = frozenset({"ordinary", "spark-connect"})
-PYSPARK_4_CAPABILITIES = frozenset({("expression", "try_cast")})
+PYSPARK_4_CAPABILITIES = frozenset(
+    {
+        ("aggregate", "schema_of_variant_agg"),
+        ("expression", "try_cast"),
+        ("expression", "variant"),
+        ("schema", "variant"),
+    }
+)
+PYSPARK_4_2_CAPABILITIES = frozenset({("expression", "is_valid_variant")})
 
 VARIANT_FAMILIES = {
     "ordinary": "ordinary_pyspark",
@@ -145,6 +154,7 @@ COMMON_CAPABILITIES = frozenset(
         ("relation", "require_parent_hierarchy"),
         ("relation", "require_reference"),
         ("relation", "require_unique"),
+        ("relation", "sample"),
         ("relation", "select_first_qualified"),
         ("set", "except_all"),
         ("set", "intersect"),
@@ -236,15 +246,26 @@ class PySparkCapabilities:
         base_capabilities = (
             supported if supported is not None else VARIANT_CAPABILITIES.get(target_variant, COMMON_CAPABILITIES)
         )
-        self.supported = (
-            base_capabilities | PYSPARK_4_CAPABILITIES
-            if supported is None and target_profile == ">=4.0,<4.1"
-            else base_capabilities
-        )
+        self.supported = self._supported(base_capabilities, target_profile=target_profile, explicit=supported)
         self._imports = GeneratedImports()
 
     def imports(self) -> GeneratedImports:
         return self._imports
+
+    def _supported(
+        self,
+        base_capabilities: frozenset[tuple[str, str]],
+        *,
+        target_profile: str,
+        explicit: frozenset[tuple[str, str]] | None,
+    ) -> frozenset[tuple[str, str]]:
+        if explicit is not None:
+            return base_capabilities
+        if target_profile == ">=4.0,<4.1":
+            return base_capabilities | PYSPARK_4_CAPABILITIES
+        if target_profile == ">=4.2,<4.3":
+            return base_capabilities | PYSPARK_4_CAPABILITIES | PYSPARK_4_2_CAPABILITIES
+        return base_capabilities
 
     def supports(self, requirement: CapabilityRequirement) -> CapabilityDecision:
         if self.id.target not in SUPPORTED_PROFILES:

@@ -429,9 +429,10 @@ recorded targeted live PySpark 3.5/4.0 restart evidence. Effective checked parit
 
 ## +M14: v9 PySpark Streaming API Coverage and Adoption
 
-Status: complete. Sprints 40--44 delivered the checked PySpark streaming API ledger, caller-owned adoption recipe,
-stateful/order-sensitive gap reclassification, lifecycle diagnostics, documentation, live PySpark 3.5/4.0 recipe
-evidence, and final build evidence. The governing plan is
+Status: complete for coverage and adoption, with a v9 follow-up plan active for design-gated APICatalog rows. Sprints
+40--44 delivered the checked PySpark streaming API ledger, caller-owned adoption recipe, stateful/order-sensitive gap
+reclassification, lifecycle diagnostics, documentation, live PySpark 3.5/4.0 recipe evidence, and final build evidence.
+The governing completed plan is
 `docs/dev/planning/done/P07292602.V9-pyspark-streaming-api-coverage.plan.md`, and the governing specification is
 `docs/dev/specifications/V9PySparkStreamingApiCoverage.md`.
 
@@ -446,6 +447,13 @@ evidence, and final build evidence. The governing plan is
   transforms, including restart from caller-owned checkpoints.
 - Streaming-related deferred items from v7 and v8 are implemented, explicitly rejected, design-gated, or retained with
   a current rationale.
+- Design-gated streaming rows and non-streaming APICatalog planned/deferred rows have dedicated design,
+  implementation specification, and active follow-up planning:
+  `docs/dev/design/V9StreamingDesignGates.md`,
+  `docs/dev/specifications/V9StreamingDesignGatedFeatures.md`,
+  `docs/dev/design/V9ApiCatalogDesignGates.md`,
+  `docs/dev/specifications/V9ApiCatalogDesignGatedFeatures.md`, and
+  `docs/dev/planning/P07302601.V9-api-catalog-design-gates.plan.md`.
 - Diagnostics and explain output tell users whether a streaming issue should be fixed in Structure source,
   caller-owned lifecycle code, or a batch materialization boundary.
 - Every admitted Structure-owned streaming claim has PySpark 3.5/4.0 live evidence, generated-source lifecycle scans,

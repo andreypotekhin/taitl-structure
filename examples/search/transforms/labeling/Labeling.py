@@ -19,4 +19,4 @@ class Labeling(Transform):
         CreateQueryLabels(queries=queries, intents=intents, patterns=patterns),
     )
     merged = stage(MergeQueryLabels(queries=queries, query_labels=query_labels, created_labels=created.labels))
-    labeled_queries = output(SearchQuery).from_(merged.labeled_queries)
+    labeled_queries = output(SearchQuery, merged.labeled_queries)

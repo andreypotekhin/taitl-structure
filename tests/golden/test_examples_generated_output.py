@@ -98,6 +98,7 @@ def test_search_all_builds_the_complete_offline_artifact_graph() -> None:
         SectionOverlapScore,
         SentenceOverlapScore,
     )
+    from examples.search.schemas.search import DocumentScore, ParagraphScore, SearchQuery, SectionScore, SentenceScore
     from examples.search.schemas.similarity import (
         DocumentSimilarity,
         ParagraphSimilarity,
@@ -105,7 +106,6 @@ def test_search_all_builds_the_complete_offline_artifact_graph() -> None:
         SentenceSimilarity,
         SimilarityPolicy,
     )
-    from examples.search.schemas.search import DocumentScore, ParagraphScore, SearchQuery, SectionScore, SentenceScore
     from examples.search.schemas.text import Document, Paragraph, Section, Sentence, Word
     from examples.search.schemas.user import Band, BandFallback, BandMembership, User, UserBand, UserBandMembership
     from examples.search.transforms.all import All

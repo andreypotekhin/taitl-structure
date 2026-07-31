@@ -164,3 +164,5 @@ the PySpark Structured Streaming API surface while keeping lifecycle ownership e
 4. **Sprint 43: lifecycle diagnostics and boundaries**: make owner boundaries visible in diagnostics, explain output,
    troubleshooting, and public docs.
 5. **Sprint 44: v9 hardening**: collect final evidence, refresh generated artifacts, and run `make build`.
+6. **Sprint 45: v9 API Catalog design gates**: resolve design-gated streaming rows and non-streaming APICatalog open
+   rows through `docs/dev/planning/P07302601.V9-api-catalog-design-gates.plan.md`; XML remains low priority.

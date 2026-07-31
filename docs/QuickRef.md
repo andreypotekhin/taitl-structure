@@ -919,6 +919,16 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
     )
 ```
 
+You can combine inherited-field copying with same-name projection for fields introduced by the child schema:
+
+```python
+def plan(self, demand: OrderDemand, inventory: InventoryPosition) -> FulfillmentOption:
+    inner_join(inventory, on=demand.product_id == inventory.product_id)
+    return FulfillmentOption.base(demand).project(inventory)(
+        available_to_promise=inventory.on_hand_quantity - inventory.reserved_quantity,
+    )
+```
+
 ```python
 def combine(self, order: OrderRaw, customer: Customer) -> OrderCustomer:
     return OrderCustomer.project(order, customer)(
@@ -1155,6 +1165,9 @@ Reference: [schemas API](api/Schemas.api.md), [validation semantics](reference/S
 
 Structure transforms operate on DataFrames. If the input DataFrame is streaming and every compiled operation
 is supported by Spark Structured Streaming, the transform can run in a streaming pipeline.
+
+Declare streaming sources on the inputs with `input(..., streaming=True)`. That input metadata makes the transform
+streaming automatically, so `@transform(streaming=True)` is optional and may be kept only for emphasis.
 
 Structure admits row-local projection/filter, stream-static joins, watermarks, event-time and session-window
 aggregation, bounded dedupe, and admitted bounded stream-stream joins. It does not generate `readStream` or

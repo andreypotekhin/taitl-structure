@@ -1,0 +1,62 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "tenant",
+      "name": "tenant",
+      "nullable": false,
+      "type": "TenantKey"
+    },
+    {
+      "column": "business",
+      "name": "business",
+      "nullable": false,
+      "type": "BusinessDate"
+    },
+    {
+      "column": "order_id",
+      "name": "order_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "customer_id",
+      "name": "customer_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "product_id",
+      "name": "product_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "warehouse_id",
+      "name": "warehouse_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "allocated_quantity",
+      "name": "allocated_quantity",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "requested_quantity",
+      "name": "requested_quantity",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "planned_ship_date",
+      "name": "planned_ship_date",
+      "nullable": true,
+      "type": "date"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.store.schemas.fulfillment.planning.plan",
+  "name": "FulfillmentAllocation"
+}

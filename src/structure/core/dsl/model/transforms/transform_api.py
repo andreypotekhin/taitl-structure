@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import inspect
+from dataclasses import replace
 from typing import Callable, Iterable, cast, overload
 
 from structure.core.dsl.model.schemas.Schema import Schema
@@ -21,6 +22,14 @@ _CLASS_OPTIONS = {"target", "validate_intermediate", "streaming", "warn_on_udfs"
 _STEP_METHOD_OPTIONS = {"target", "target_platform", "target_profile"}
 _METHOD_BINDING_OPTIONS = {"input", "output", "inout"}
 _METHOD_OPTIMIZATION_OPTIONS = {"cache"}
+
+
+class _Unset:
+    def __repr__(self) -> str:
+        return "_UNSET"
+
+
+_UNSET = _Unset()
 
 
 @overload
@@ -73,17 +82,24 @@ def output(value: type[Schema]) -> OutputDeclaration:
 
 
 @overload
+def output(value: type[Schema], source: object) -> OutputDeclaration:
+    """Declare a transform output bound to a composed source."""
+    ...
+
+
+@overload
 def output(value: OutputDeclaration) -> BindingSelector:
     """Select an existing declaration for output-side step binding."""
     ...
 
 
-def output(value: type[Schema] | OutputDeclaration) -> OutputDeclaration | BindingSelector:
+def output(value: type[Schema] | OutputDeclaration, source: object = _UNSET) -> OutputDeclaration | BindingSelector:
     """Declare or select a transform output.
 
     Args:
         value: Schema class for a new output declaration, or an existing output
             declaration to select for a binding.
+        source: Optional composed source for an explicit output binding.
 
     Returns:
         An ``OutputDeclaration`` for class attributes, or a ``BindingSelector``
@@ -93,10 +109,17 @@ def output(value: type[Schema] | OutputDeclaration) -> OutputDeclaration | Bindi
         published = output(PublishedOrder)
     """
     if isinstance(value, OutputDeclaration):
+        if source is not _UNSET:
+            raise TypeError(
+                "output(existing_output, source) is invalid; select existing outputs with output(existing_output)"
+            )
         return BindingSelector("output", value)
     if not isinstance(value, type) or not issubclass(value, Schema):
         raise TypeError("output(...) requires a Schema class")
-    return OutputDeclaration(schema=value)
+    declaration = OutputDeclaration(schema=value)
+    if source is _UNSET:
+        return declaration
+    return replace(declaration, source=source)
 
 
 @overload
@@ -154,7 +177,7 @@ def stage(value: Transform) -> StageDeclaration:
 
     Example:
         enrich = stage(EnrichOrders())
-        published = output(PublishedOrder).from_(enrich.published)
+        published = output(PublishedOrder, enrich.published)
     """
     if not isinstance(value, Transform):
         raise TypeError("stage(...) requires a Transform invocation")
@@ -229,7 +252,7 @@ def step(target=None, **kwargs):
 
 
 def special(function: Callable | None = None, *, type: str, **kwargs):
-    """Decorate a helper function with plugin-visible symbolic behavior.
+    """Decorate helper logic with plugin-visible symbolic behavior.
 
     Args:
         function: Helper function when used without decorator parentheses.
@@ -239,8 +262,8 @@ def special(function: Callable | None = None, *, type: str, **kwargs):
         **kwargs: ``return_type`` and ``nullable`` for UDF helpers.
 
     Returns:
-        A callable wrapper that runs normally outside compilation and delegates
-        symbolic calls to the active plugin during compilation.
+        A callable wrapper for functions, or the original class with metadata
+        when used as an expression-compatible class marker.
 
     Example:
         @special(type="expr")
@@ -263,7 +286,12 @@ def special(function: Callable | None = None, *, type: str, **kwargs):
         if "nullable" in kwargs and not isinstance(kwargs["nullable"], bool):
             raise TypeError("@special(type=\"udf\") nullable must be a Boolean")
 
-    def decorate(target: Callable) -> SpecialFunction:
+    def decorate(target: Callable) -> SpecialFunction | Callable:
+        if inspect.isclass(target):
+            if type != "expr":
+                raise TypeError("@special can decorate classes only with type=\"expr\"")
+            setattr(target, "_structure_special_type", type)
+            return target
         return SpecialFunction(
             target,
             type=type,

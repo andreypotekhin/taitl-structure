@@ -11,7 +11,7 @@ from examples.school.schemas.iterable import (
     StudentProfile,
     StudentReport,
 )
-from structure import Transform, input, output, step, transform
+from structure import Transform, input, output, transform
 
 
 @transform(target="iterable")
@@ -24,7 +24,6 @@ class ProjectIterableScores(Transform):
     reports = output(StudentReport)
     audits = output(StudentAudit)
 
-    @step(input=[students, profiles, awards], output=[reports, audits])
     def project_scores(
         self,
         student: Student,
@@ -46,8 +45,7 @@ class IterableFibonacci(Transform):
     rows = input(SequenceRow)
     result = output(IterableFibonacciRow)
 
-    @step(output=result)
-    def generate(self, row: SequenceRow) -> IterableFibonacciRow:
+    def generate(self, row: SequenceRow) -> IterableFibonacciRow:  # type: ignore[override]
         return scan(
             initial=(0, 1),
             output=IterableFibonacciRow(index=row.index, fibonacci=state[0]),

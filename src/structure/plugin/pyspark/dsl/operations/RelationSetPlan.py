@@ -12,3 +12,4 @@ class RelationSetPlan:
     source: str
     schema: type[Schema]
     by_name: bool
+    allow_missing_columns: bool = False

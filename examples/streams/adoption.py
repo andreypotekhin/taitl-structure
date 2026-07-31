@@ -21,6 +21,26 @@ def start_memory_query(frame: Any, *, query_name: str, checkpoint: Path | str, o
     )
 
 
+def start_foreach_batch_query(
+    frame: Any,
+    callback: Any,
+    *,
+    checkpoint: Path | str,
+    output_mode: str,
+    trigger: dict[str, object] | None = None,
+) -> Any:
+    """Start a caller-owned foreachBatch sink for a transformed streaming DataFrame."""
+
+    writer = (
+        frame.writeStream.foreachBatch(callback)
+        .outputMode(output_mode)
+        .option("checkpointLocation", str(checkpoint))
+    )
+    if trigger is not None:
+        writer = writer.trigger(**trigger)
+    return writer.start()
+
+
 def collect_available_memory_rows(query: Any, table: Any, *, order_by: str) -> list[dict[str, object]]:
     """Process currently available input and read deterministic rows from a memory sink."""
 

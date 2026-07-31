@@ -84,6 +84,24 @@ def test_class_level_decorator_options_do_not_leak_to_undecorated_children() -> 
     assert _analysis(Publish).options == {}
 
 
+def test_undecorated_child_infers_streaming_from_inherited_input() -> None:
+    class StreamingBase(Transform):
+        rows = input(Raw, streaming=True)
+        normalized = lane(Normalized)
+
+        @step(output=normalized)
+        def normalize(self, row: Raw) -> Normalized:
+            return Normalized(id=row.id, value=row.value)
+
+    class Publish(StreamingBase):
+        published = output(Published)
+
+        def publish(self, row: Normalized) -> Published:
+            return Published(id=row.id, value=row.value, audit="plain")
+
+    assert _analysis(Publish).options == {"streaming": True}
+
+
 def test_undecorated_direct_parent_contributes_steps() -> None:
     @transform
     class Publish(DirectNormalize):

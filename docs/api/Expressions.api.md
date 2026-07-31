@@ -135,6 +135,12 @@ typed `order` row scope as `o`.
 | `nullif(...)` | `functions.nullif` | `nullif(o.status, "unknown")` |
 | `nanvl(...)` | `functions.nanvl` | `nanvl(o.score, 0.0)` |
 | `when(...).otherwise(...)` | `when`, `otherwise` | `when(o.total > 0, "paid").otherwise("free")` |
+| `parse_json(...)`, `try_parse_json(...)` | Variant JSON parsing | `parse_json(o.payload_json)` |
+| `schema_of_variant(...)` | Variant schema inspection | `schema_of_variant(o.payload)` |
+| `variant_get(...)`, `try_variant_get(...)` | Variant extraction | `try_variant_get(o.payload, "$.name", as_type=types.string())` |
+| `to_variant_object(...)` | Variant object conversion | `to_variant_object(o.attributes)` |
+| `is_variant_null(...)` | Variant JSON-null test | `is_variant_null(o.payload)` |
+| `is_valid_variant(...)` | Variant structural validation | `is_valid_variant(o.payload)` |
 
 **Details And Differences**
 
@@ -156,3 +162,8 @@ typed `order` row scope as `o`.
   `sha2(...)` are deterministic digests of String values, not password-storage primitives.
 - Raw `expr(...)`, `call_function(...)`, and UDF/UDTF expressions are unsupported. See the
   [Schemas reference](../reference/Schema.ref.md).
+- Variant helpers require a resolved PySpark 4 profile. `is_valid_variant(...)` requires the `>=4.2,<4.3` profile.
+  Paths are non-empty literal strings beginning with `$`; extraction requires an explicit Structure `as_type` and is
+  nullable when the path is absent. The `try_` form is also nullable when casting fails. `schema_of_variant(...)`
+  returns a nullable SQL-format schema string. `to_variant_object(...)` accepts declared Array, Map, or Struct values
+  and rejects a Map with non-String keys anywhere in its nested type graph.

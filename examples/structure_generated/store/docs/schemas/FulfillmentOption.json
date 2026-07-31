@@ -1,0 +1,160 @@
+{
+  "bases": [
+    "OrderDemand"
+  ],
+  "fields": [
+    {
+      "column": "tenant",
+      "name": "tenant",
+      "nullable": false,
+      "type": "TenantKey"
+    },
+    {
+      "column": "business",
+      "name": "business",
+      "nullable": false,
+      "type": "BusinessDate"
+    },
+    {
+      "column": "order_id",
+      "name": "order_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "customer_id",
+      "name": "customer_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "customer_name",
+      "name": "customer_name",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "customer_tier",
+      "name": "customer_tier",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "customer_region",
+      "name": "customer_region",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "product_id",
+      "name": "product_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "product_name",
+      "name": "product_name",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "product_category",
+      "name": "product_category",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "promotion_code",
+      "name": "promotion_code",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "promotion_name",
+      "name": "promotion_name",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "promotion_discount",
+      "name": "promotion_discount",
+      "nullable": true,
+      "type": "decimal(12,2)"
+    },
+    {
+      "column": "total",
+      "name": "total",
+      "nullable": false,
+      "type": "decimal(12,2)"
+    },
+    {
+      "column": "discount",
+      "name": "discount",
+      "nullable": false,
+      "type": "decimal(12,2)"
+    },
+    {
+      "column": "net_total",
+      "name": "net_total",
+      "nullable": false,
+      "type": "decimal(12,2)"
+    },
+    {
+      "column": "requested_quantity",
+      "name": "requested_quantity",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "is_large",
+      "name": "is_large",
+      "nullable": false,
+      "type": "boolean"
+    },
+    {
+      "column": "warehouse_id",
+      "name": "warehouse_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "warehouse_region",
+      "name": "warehouse_region",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "warehouse_priority",
+      "name": "warehouse_priority",
+      "nullable": false,
+      "type": "integer"
+    },
+    {
+      "column": "available_to_promise",
+      "name": "available_to_promise",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "safety_stock_quantity",
+      "name": "safety_stock_quantity",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "earliest_inbound_at",
+      "name": "earliest_inbound_at",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "column": "expected_inbound_quantity",
+      "name": "expected_inbound_quantity",
+      "nullable": false,
+      "type": "long"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.store.schemas.fulfillment.planning.intermediate",
+  "name": "FulfillmentOption"
+}

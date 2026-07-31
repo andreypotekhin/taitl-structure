@@ -41,18 +41,6 @@ class Scoring(Transform):
     section_summary = input(SectionIndexSummary)
     paragraph_summary = input(ParagraphIndexSummary)
     sentence_summary = input(SentenceIndexSummary)
-    document_scores = output(DocumentScore)
-    section_scores = output(SectionScore)
-    paragraph_scores = output(ParagraphScore)
-    sentence_scores = output(SentenceScore)
-    document_overlap_scores = output(DocumentOverlapScore)
-    section_overlap_scores = output(SectionOverlapScore)
-    paragraph_overlap_scores = output(ParagraphOverlapScore)
-    sentence_overlap_scores = output(SentenceOverlapScore)
-    document_bm25_scores = output(DocumentBm25Score)
-    section_bm25_scores = output(SectionBm25Score)
-    paragraph_bm25_scores = output(ParagraphBm25Score)
-    sentence_bm25_scores = output(SentenceBm25Score)
     experiment_id = parameter(None)
 
     overlap = stage(
@@ -90,14 +78,19 @@ class Scoring(Transform):
             experiment_id=experiment_id,
         )
     )
-    document_overlap_scores = document_overlap_scores.from_(overlap.document_overlap_scores)
-    section_overlap_scores = section_overlap_scores.from_(overlap.section_overlap_scores)
-    paragraph_overlap_scores = paragraph_overlap_scores.from_(overlap.paragraph_overlap_scores)
-    sentence_overlap_scores = sentence_overlap_scores.from_(overlap.sentence_overlap_scores)
-    document_bm25_scores = document_bm25_scores.from_(bm25.document_bm25_scores)
-    section_bm25_scores = section_bm25_scores.from_(bm25.section_bm25_scores)
-    paragraph_bm25_scores = paragraph_bm25_scores.from_(bm25.paragraph_bm25_scores)
-    sentence_bm25_scores = sentence_bm25_scores.from_(bm25.sentence_bm25_scores)
+
+    document_scores = output(DocumentScore, selected.document_scores)
+    section_scores = output(SectionScore, selected.section_scores)
+    paragraph_scores = output(ParagraphScore, selected.paragraph_scores)
+    sentence_scores = output(SentenceScore, selected.sentence_scores)
+    document_overlap_scores = output(DocumentOverlapScore, overlap.document_overlap_scores)
+    section_overlap_scores = output(SectionOverlapScore, overlap.section_overlap_scores)
+    paragraph_overlap_scores = output(ParagraphOverlapScore, overlap.paragraph_overlap_scores)
+    sentence_overlap_scores = output(SentenceOverlapScore, overlap.sentence_overlap_scores)
+    document_bm25_scores = output(DocumentBm25Score, bm25.document_bm25_scores)
+    section_bm25_scores = output(SectionBm25Score, bm25.section_bm25_scores)
+    paragraph_bm25_scores = output(ParagraphBm25Score, bm25.paragraph_bm25_scores)
+    sentence_bm25_scores = output(SentenceBm25Score, bm25.sentence_bm25_scores)
 
 
 __all__ = ["Scoring"]

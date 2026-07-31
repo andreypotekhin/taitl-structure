@@ -453,6 +453,31 @@ def test_try_cast_requires_the_pyspark_4_profile() -> None:
 
     assert not PySparkCapabilities().supports(requirement).supported
     assert PySparkCapabilities(target_profile=">=4.0,<4.1").supports(requirement).supported
+    assert PySparkCapabilities(target_profile=">=4.2,<4.3").supports(requirement).supported
+
+
+def test_variant_schema_requires_the_pyspark_4_profile() -> None:
+    requirement = CapabilityRequirement(group="schema", name="variant")
+
+    assert not PySparkCapabilities().supports(requirement).supported
+    assert PySparkCapabilities(target_profile=">=4.0,<4.1").supports(requirement).supported
+    assert PySparkCapabilities(target_profile=">=4.2,<4.3").supports(requirement).supported
+
+
+def test_variant_schema_aggregate_requires_the_pyspark_4_profile() -> None:
+    requirement = CapabilityRequirement(group="aggregate", name="schema_of_variant_agg")
+
+    assert not PySparkCapabilities().supports(requirement).supported
+    assert PySparkCapabilities(target_profile=">=4.0,<4.1").supports(requirement).supported
+    assert PySparkCapabilities(target_profile=">=4.2,<4.3").supports(requirement).supported
+
+
+def test_valid_variant_requires_the_pyspark_4_2_profile() -> None:
+    requirement = CapabilityRequirement(group="expression", name="is_valid_variant")
+
+    assert not PySparkCapabilities().supports(requirement).supported
+    assert not PySparkCapabilities(target_profile=">=4.0,<4.1").supports(requirement).supported
+    assert PySparkCapabilities(target_profile=">=4.2,<4.3").supports(requirement).supported
 
 
 def test_generated_import_names_are_deterministic_for_same_target() -> None:

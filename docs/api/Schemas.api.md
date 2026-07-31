@@ -16,6 +16,7 @@ Schema declarations define Structure's typed row contract and materialize to Spa
 | `date()` | Spark date type | `date()` |
 | `timestamp()` | Spark timestamp type | `timestamp()` |
 | `decimal(...)` | `DecimalType` | `total = decimal(12, 2)` |
+| `variant(...)` | `VariantType` | `payload = variant(nullable=True)` |
 
 **Details And Differences**
 
@@ -23,6 +24,9 @@ Schema declarations define Structure's typed row contract and materialize to Spa
   outside the DSL.
 - `nullable=`, `alias=`, `metadata=`, and `description=` belong on field factories.
 - `decimal(...)` requires precision and scale in the type contract.
+- `variant(...)` declares Spark's opaque semi-structured `VariantType`. It preserves schema and field nullability only.
+  A transform using it must resolve to a PySpark 4 profile, including when that profile comes from
+  `[tool.structure.plugin.pyspark]`.
 
 ## Nested Declarations
 

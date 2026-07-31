@@ -16,24 +16,12 @@ from examples.structure_generated.store.pyspark.schemas.common import TENANT_KEY
 from examples.structure_generated.store.pyspark.schemas.order import ORDER_FULFILLMENT_SCHEMA
 
 
-class OrderAnalyticsGenerated:
-
-    def __init__(self, *, spark: SparkSession, ctx=None):
-        self.spark = spark
-        self.ctx = ctx
-
-    def run(
-        self,
-        *,
-        fulfilled: DataFrame,
-    ) -> TransformResult:
-        assert_schema(fulfilled, ORDER_FULFILLMENT_SCHEMA, name="OrderFulfillment", mode="strict")
-        _input_fulfilled = fulfilled
-
-        # Step method: customer_daily_totals
-        customer_totals = fulfilled.alias("order_fulfillment")
-        customer_totals = (
-            customer_totals.groupBy(
+class CustomerDailyTotalsGenerated:
+    def _step_customer_customer_daily_totals_0(self, frames):
+        # Step method: customer.customer_daily_totals
+        customer__customer_totals = frames["fulfilled"].alias("order_fulfillment")
+        customer__customer_totals = (
+            customer__customer_totals.groupBy(
                 F.col("order_fulfillment.tenant.tenant_id").alias("tenant_id"),
                 F.col("order_fulfillment.customer_id").alias("customer_id"),
                 F.col("order_fulfillment.business.order_date").alias("order_date"),
@@ -53,12 +41,18 @@ class OrderAnalyticsGenerated:
                 F.col("net_total"),
             )
         )
-        assert_schema(customer_totals, CUSTOMER_DAILY_TOTAL_SCHEMA, name="CustomerDailyTotal", mode="strict")
+        assert_schema(customer__customer_totals, CUSTOMER_DAILY_TOTAL_SCHEMA, name="CustomerDailyTotal", mode="strict")
+        return {
+            "customer__customer_totals": customer__customer_totals,
+        }
 
-        # Step method: product_daily_summary
-        product_summary = fulfilled.alias("order_fulfillment")
-        product_summary = (
-            product_summary.groupBy(
+
+class ProductDailySummariesGenerated:
+    def _step_product_product_daily_summary_1(self, frames):
+        # Step method: product.product_daily_summary
+        product__product_summary = frames["fulfilled"].alias("order_fulfillment")
+        product__product_summary = (
+            product__product_summary.groupBy(
                 F.col("order_fulfillment.tenant.tenant_id").alias("tenant_id"),
                 F.col("order_fulfillment.product_id").alias("product_id"),
                 F.col("order_fulfillment.business.order_date").alias("order_date"),
@@ -86,23 +80,31 @@ class OrderAnalyticsGenerated:
                 F.col("gross_total"),
             )
         )
-        assert_schema(product_summary, PRODUCT_DAILY_SUMMARY_SCHEMA, name="ProductDailySummary", mode="strict")
+        assert_schema(product__product_summary, PRODUCT_DAILY_SUMMARY_SCHEMA, name="ProductDailySummary", mode="strict")
+        return {
+            "product__product_summary": product__product_summary,
+        }
 
-        # Step method: customer_event_ranks
-        customer_event_rank = fulfilled.alias("order_fulfillment")
-        customer_event_rank = customer_event_rank.withColumn(
-            "__structure_customer_event_ranks_latest_rank",
+
+class CustomerEventRanksGenerated:
+    def _step_ranks_customer_event_ranks_2(self, frames):
+        # Step method: ranks.customer_event_ranks
+        ranks__customer_event_rank = frames["fulfilled"].alias("order_fulfillment")
+        ranks__customer_event_rank = ranks__customer_event_rank.withColumn(
+            "__structure_ranks.customer_event_ranks_latest_rank",
             F.row_number().over(
                 Window.partitionBy(F.col("order_fulfillment.customer_id")).orderBy(
                     F.col("order_fulfillment.quantity").desc()
                 )
             ),
         )
-        customer_event_rank = customer_event_rank.where(
-            F.col("__structure_customer_event_ranks_latest_rank") == F.lit(1)
+        ranks__customer_event_rank = ranks__customer_event_rank.where(
+            F.col("__structure_ranks.customer_event_ranks_latest_rank") == F.lit(1)
         )
-        customer_event_rank = customer_event_rank.drop("__structure_customer_event_ranks_latest_rank")
-        customer_event_rank = customer_event_rank.select(
+        ranks__customer_event_rank = ranks__customer_event_rank.drop(
+            "__structure_ranks.customer_event_ranks_latest_rank"
+        )
+        ranks__customer_event_rank = ranks__customer_event_rank.select(
             F.col("order_fulfillment.tenant"),
             F.col("order_fulfillment.customer_id"),
             F.col("order_fulfillment.id").alias("event_id"),
@@ -174,17 +176,44 @@ class OrderAnalyticsGenerated:
             )
             .alias("rolling_max_units"),
         )
+        return {
+            "ranks__customer_event_rank": ranks__customer_event_rank,
+        }
+
+
+class OrderAnalyticsGenerated(
+    CustomerDailyTotalsGenerated, ProductDailySummariesGenerated, CustomerEventRanksGenerated
+):
+
+    def __init__(self, *, spark: SparkSession, ctx=None):
+        self.spark = spark
+        self.ctx = ctx
+
+    def run(
+        self,
+        *,
+        fulfilled: DataFrame,
+    ) -> TransformResult:
+        assert_schema(fulfilled, ORDER_FULFILLMENT_SCHEMA, name="OrderFulfillment", mode="strict")
+        _input_fulfilled = fulfilled
+        frames = {
+            "fulfilled": fulfilled,
+            "input:fulfilled": _input_fulfilled,
+        }
+        frames.update(self._step_customer_customer_daily_totals_0(frames))
+        frames.update(self._step_product_product_daily_summary_1(frames))
+        frames.update(self._step_ranks_customer_event_ranks_2(frames))
 
         # Step method: customer_totals
-        customer_totals = customer_totals.alias("customer_daily_total")
+        customer_totals = frames["customer__customer_totals"].alias("customer_daily_total")
         assert_schema(customer_totals, CUSTOMER_DAILY_TOTAL_SCHEMA, name="CustomerDailyTotal", mode="strict")
 
         # Step method: product_summary
-        product_summary = product_summary.alias("product_daily_summary")
+        product_summary = frames["product__product_summary"].alias("product_daily_summary")
         assert_schema(product_summary, PRODUCT_DAILY_SUMMARY_SCHEMA, name="ProductDailySummary", mode="strict")
 
         # Step method: customer_event_rank
-        customer_event_rank = customer_event_rank.alias("customer_event_rank")
+        customer_event_rank = frames["ranks__customer_event_rank"].alias("customer_event_rank")
         assert_schema(customer_event_rank, CUSTOMER_EVENT_RANK_SCHEMA, name="CustomerEventRank", mode="strict")
         return TransformResult(
             {

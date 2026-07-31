@@ -31,6 +31,7 @@ from structure.plugin.pyspark.dsl.types import (
     StructType,
     StructureType,
     TimestampType,
+    VariantType,
 )
 
 __all__ = [
@@ -41,7 +42,8 @@ __all__ = [
     "minute", "month", "nanvl", "nullif", "nvl", "nvl2", "pow", "regexp_extract", "regexp_replace", "reverse",
     "round", "rtrim", "sha1", "sha2", "second", "signum", "split", "sqrt", "substring", "to_csv", "to_date",
     "to_decimal", "to_json", "to_timestamp", "translate", "trim", "trunc", "unbase64", "decode", "encode", "upper",
-    "when", "xxhash64", "year", "zeroifnull",
+    "when", "xxhash64", "year", "zeroifnull", "is_valid_variant", "is_variant_null", "parse_json",
+    "schema_of_variant", "to_variant_object", "try_parse_json", "try_variant_get", "variant_get",
 ]
 
 
@@ -412,6 +414,69 @@ def to_csv(value: object, *, options: CsvOptions = CsvOptions()) -> Expression:
         data={"function": "to_csv", "options": _csv_options(options).spark_options(writer=True)},
         args=(argument,),
     )
+
+
+def parse_json(value: object) -> Expression:
+    """Parse JSON text into a Variant value, failing for invalid JSON."""
+    argument = _string_argument(value, "parse_json(...)")
+    return _variant_call("parse_json", argument, nullable=argument.nullable)
+
+
+def try_parse_json(value: object) -> Expression:
+    """Parse JSON text into a Variant value, returning null for invalid JSON."""
+    argument = _string_argument(value, "try_parse_json(...)")
+    return _variant_call("try_parse_json", argument, nullable=True)
+
+
+def variant_get(value: object, path: str, *, as_type: StructureType) -> Expression:
+    """Extract and cast a literal Variant path, failing when Spark cannot cast it."""
+    return _variant_get("variant_get", value, path, as_type)
+
+
+def try_variant_get(value: object, path: str, *, as_type: StructureType) -> Expression:
+    """Extract and cast a literal Variant path, returning null when it is absent or incompatible."""
+    return _variant_get("try_variant_get", value, path, as_type)
+
+
+def to_variant_object(value: object) -> Expression:
+    """Convert an Array, Map, or Struct expression into a Variant value.
+
+    Spark Variant objects permit map keys only when they are Strings. Structure
+    checks that invariant across nested Array, Map, and Struct declarations.
+    """
+    argument = literal(value)
+    if not isinstance(argument.type, (ArrayType, MapType, StructType)):
+        raise TypeError("to_variant_object(...) requires an Array, Map, or Struct Structure expression")
+    _variant_compatible(argument.type, "to_variant_object(...)")
+    return _variant_call("to_variant_object", argument, nullable=argument.nullable)
+
+
+def is_variant_null(value: object) -> Expression:
+    """Return whether a Variant value is Spark's JSON ``null`` rather than SQL null."""
+    argument = _variant_argument(value, "is_variant_null(...)")
+    return _variant_call("is_variant_null", argument, type=BooleanType(), nullable=False)
+
+
+def is_valid_variant(value: object) -> Expression:
+    """Return whether a Variant value is structurally valid."""
+    argument = _variant_argument(value, "is_valid_variant(...)")
+    return Expression(
+        kind="call",
+        type=BooleanType(),
+        nullable=argument.nullable,
+        data={
+            "function": "is_valid_variant",
+            "capability_group": "expression",
+            "capability_name": "is_valid_variant",
+        },
+        args=(argument,),
+    )
+
+
+def schema_of_variant(value: object) -> Expression:
+    """Return the SQL-format schema of one Variant value."""
+    argument = _variant_argument(value, "schema_of_variant(...)")
+    return _variant_call("schema_of_variant", argument, type=StringType(), nullable=argument.nullable)
 
 
 def substring(value: object, *, start: int, length: int) -> Expression:
@@ -1057,6 +1122,80 @@ def _binary_argument(value: object, call: str) -> Expression:
     if not isinstance(argument.type, BinaryType):
         raise TypeError(f"{call} requires a Binary Structure expression")
     return argument
+
+
+def _variant_argument(value: object, call: str) -> Expression:
+    argument = literal(value)
+    if not isinstance(argument.type, VariantType):
+        raise TypeError(f"{call} requires a Variant Structure expression")
+    return argument
+
+
+def _variant_call(
+    function: str,
+    argument: Expression,
+    *,
+    type: StructureType | None = None,
+    nullable: bool,
+    data: Mapping[str, object] | None = None,
+) -> Expression:
+    return Expression(
+        kind="call",
+        type=VariantType() if type is None else type,
+        nullable=nullable,
+        data={
+            "function": function,
+            "capability_group": "expression",
+            "capability_name": "variant",
+            **(data or {}),
+        },
+        args=(argument,),
+    )
+
+
+def _variant_get(function: str, value: object, path: str, as_type: StructureType) -> Expression:
+    argument = _variant_argument(value, f"{function}(...)")
+    if not isinstance(path, str) or not path:
+        raise TypeError(f"{function}(...) path must be a non-empty string literal")
+    if not path.startswith("$"):
+        raise ValueError(f"{function}(...) path must start with '$'")
+    if not isinstance(as_type, StructureType):
+        raise TypeError(f"{function}(...) as_type must be a Structure type such as types.string()")
+    return _variant_call(
+        function,
+        argument,
+        type=as_type,
+        nullable=True,
+        data={"path": path, "target_type": _variant_ddl(as_type)},
+    )
+
+
+def _variant_compatible(type: StructureType, call: str) -> None:
+    if isinstance(type, ArrayType):
+        _variant_compatible(type.element, call)
+    elif isinstance(type, MapType):
+        if not isinstance(type.key, StringType):
+            raise TypeError(f"{call} requires String Map keys at every nesting level")
+        _variant_compatible(type.value, call)
+    elif isinstance(type, StructType):
+        for field in type.schema._structure_fields.values():
+            _variant_compatible(field.type, call)
+
+
+def _variant_ddl(type: StructureType) -> str:
+    scalar = {"integer": "int", "long": "bigint"}.get(type.name, type.name)
+    if scalar not in {"array", "map", "struct"}:
+        if isinstance(type, DecimalType):
+            return f"decimal({type.precision},{type.scale})"
+        return scalar
+    if isinstance(type, ArrayType):
+        return f"array<{_variant_ddl(type.element)}>"
+    if isinstance(type, MapType):
+        return f"map<{_variant_ddl(type.key)},{_variant_ddl(type.value)}>"
+    if isinstance(type, StructType):
+        fields = ",".join(f"{field.column}:{_variant_ddl(field.type)}" for field in type.schema._structure_fields.values())
+        return f"struct<{fields}>"
+    raise TypeError(f"Unsupported Variant extraction type: {type!r}")
 
 
 def _struct_argument(value: object, call: str) -> Expression:

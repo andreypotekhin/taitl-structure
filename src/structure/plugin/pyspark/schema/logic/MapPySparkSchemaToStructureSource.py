@@ -55,6 +55,7 @@ class MapPySparkSchemaToStructureSource:
             "BooleanType": "boolean()",
             "DateType": "date()",
             "TimestampType": "timestamp()",
+            "VariantType": "variant()",
         }.get(name)
         if scalar:
             return scalar

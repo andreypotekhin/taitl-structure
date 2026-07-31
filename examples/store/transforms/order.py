@@ -18,7 +18,7 @@ from structure.plugin.pyspark import *
 
 @transform(streaming=True)
 class EnrichOrders(Transform):
-    orders = input(OrderRaw)
+    orders = input(OrderRaw, streaming=True)
     customers = input(Customer)
     products = input(Product)
     blocked_products = input(BlockedProduct)

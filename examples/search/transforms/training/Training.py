@@ -28,6 +28,6 @@ class Training(Transform):
         )
     )
 
-    document_features = output(DocumentFeatures).from_(features.document_features)
-    query_features = output(QueryFeatures).from_(features.query_features)
-    training_data = output(DocumentTrainingData).from_(data.training_data)
+    document_features = output(DocumentFeatures, features.document_features)
+    query_features = output(QueryFeatures, features.query_features)
+    training_data = output(DocumentTrainingData, data.training_data)

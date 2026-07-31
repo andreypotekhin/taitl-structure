@@ -29,7 +29,7 @@ class ActiveVulnerabilityReports(Transform):
     department_active = output(DepartmentActiveVulnerability)
     org_active = output(OrgActiveVulnerability)
 
-    @step(input=exposures, output=device_active)
+    @step(output=device_active)
     def device_findings(self, finding: VulnerabilityExposure) -> DeviceActiveVulnerability:
         where(finding.is_active)
         return DeviceActiveVulnerability.base(finding)
@@ -73,17 +73,16 @@ class VulnerabilityStatistics(Transform):
     department_statistics = output(DepartmentVulnerabilityStatistic)
     org_statistics = output(OrgVulnerabilityStatistic)
 
-    @step(input=events, output=deduped_events)
+    @step(output=deduped_events)
     def dedupe_delivery(self, event: VulnEvent) -> VulnEvent:
         drop_duplicates(event.id)
         return VulnEvent.project(event)
 
-    @step(input=deduped_events, output=lifecycles)
+    @step(output=lifecycles)
     def lifecycle(self, event: VulnEvent) -> VulnerabilityLifecycle:
         where((event.action == "Detected") | (event.action == "Addressed"))
         group_by(vuln_id=event.vuln_id)
-        return VulnerabilityLifecycle(
-            vuln_id=event.vuln_id,
+        return VulnerabilityLifecycle.project(event)(
             detected_at=min(event.occurred_at, where=event.action == "Detected"),
             addressed_at=min(event.occurred_at, where=event.action == "Addressed"),
         )
@@ -94,11 +93,7 @@ class VulnerabilityStatistics(Transform):
     ) -> VulnerabilityPeriodActivity:
         cross_join(period, allow_cartesian=True)
         left_join(lifecycle, on=lifecycle.vuln_id == finding.vuln_id)
-        return VulnerabilityPeriodActivity(
-            person_id=finding.person_id,
-            team_id=finding.team_id,
-            department_id=finding.department_id,
-            org_id=finding.org_id,
+        return VulnerabilityPeriodActivity.project(finding)(
             period_kind=period.kind,
             period_start=period.start,
             period_end=period.end,

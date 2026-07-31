@@ -29,14 +29,14 @@ class AdvancedGenerated:
         _input_benchmarks = benchmarks
 
         # Step method: calculate
-        indicators = returns.alias("daily_return")
+        returns = returns.alias("daily_return")
         benchmarks_joined = benchmarks.alias("benchmarks")
-        indicators = indicators.join(
+        returns = returns.join(
             benchmarks_joined,
             (F.col("daily_return.trade_date") == F.col("benchmarks.trade_date")),
             "inner",
         )
-        indicators = indicators.select(
+        returns = returns.select(
             F.col("daily_return.symbol"),
             F.col("daily_return.trade_date"),
             F.col("daily_return.return_1d"),
@@ -97,7 +97,7 @@ class AdvancedGenerated:
         )
 
         # Step method: indicators
-        indicators = indicators.alias("advanced_indicator")
+        indicators = returns.alias("advanced_indicator")
         assert_schema(indicators, ADVANCED_INDICATOR_SCHEMA, name="AdvancedIndicator", mode="strict")
         return TransformResult(
             {"indicators": indicators}, single=True, schema={"indicators": ADVANCED_INDICATOR_SCHEMA}

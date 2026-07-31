@@ -2,7 +2,7 @@ from examples.security.schemas.assets import Device, DeviceType, Software
 from examples.security.schemas.organization import Department, Org, Person, Team
 from examples.security.schemas.reporting import VulnerabilityExposure, VulnerabilityPostureCandidate
 from examples.security.schemas.risk import RemediationPolicy, Vuln, VulnType
-from structure import Transform, input, lane, output, step
+from structure import Transform, input, output
 from structure.plugin.pyspark import *
 
 
@@ -19,11 +19,8 @@ class SecurityPosture(Transform):
     teams = input(Team)
     departments = input(Department)
     orgs = input(Org)
-    posture_candidates = lane(VulnerabilityPostureCandidate)
-    exposure_lane = lane(VulnerabilityExposure)
     exposures = output(VulnerabilityExposure)
 
-    @step(output=posture_candidates)
     def prepare_exposure(
         self,
         vuln: Vuln,
@@ -76,7 +73,6 @@ class SecurityPosture(Transform):
             device_apps=device.apps,
         )
 
-    @step(input=posture_candidates, output=exposure_lane)
     def expose(self, candidate: VulnerabilityPostureCandidate) -> VulnerabilityExposure:
         installed = arr_exists(candidate.device_apps, lambda app: app.id == candidate.software_id)
         where(

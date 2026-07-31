@@ -59,6 +59,10 @@ class FakeTypes:
         return FakeType("TimestampType")
 
     @staticmethod
+    def VariantType():
+        return FakeType("VariantType")
+
+    @staticmethod
     def DecimalType(precision, scale):
         return FakeType("DecimalType", (precision, scale))
 
@@ -161,5 +165,19 @@ def test_v7_runtime_schema_materializes_binary_fields() -> None:
         FakeType(
             "StructField",
             ("payload", FakeType("BinaryType"), False),
+        ),
+    )
+
+
+def test_v9_runtime_schema_materializes_variant_fields() -> None:
+    class Raw(Schema):
+        payload = variant(nullable=False)
+
+    schema = PySpark.schema.materialize()(Raw, types=FakeTypes)
+
+    assert schema.args == (
+        FakeType(
+            "StructField",
+            ("payload", FakeType("VariantType"), False),
         ),
     )

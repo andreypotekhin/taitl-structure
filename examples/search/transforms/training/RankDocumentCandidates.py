@@ -8,12 +8,7 @@ from structure.plugin.pyspark import coalesce, cross_join, element_at, exactly_o
 
 
 class RankDocumentCandidates(Transform):
-    """Score candidates through the portable standardized-linear artifact contract.
-
-    Callers use this transform only after manually promoting one artifact.  The
-    existing ``SearchDocuments`` path remains the no-model fallback because
-    Structure transform inputs are intentionally required relations.
-    """
+    """Score with the supplied ranker. """
 
     candidates = input(DocumentSearchCandidate)
     artifacts = input(RankingArtifact)

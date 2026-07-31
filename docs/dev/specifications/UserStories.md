@@ -213,6 +213,8 @@ narrower use cases and roadmap features.
   compactly.
 - + As a developer, I can use `SchemaClass.project(source)(...)` so that copied fields and explicit overrides can be
   combined.
+- + As a developer, I can use `SchemaClass.base(base).project(source)(...)` so that inherited fields and same-name local
+  projection fields can be combined.
 
 ## 15. Joins
 

@@ -19,11 +19,10 @@ class PiAsSeries(Transform):
             max_rows=10_000,
             step=lambda state, row: SeriesState(
                 term=when((row.index + 1) % 2 == 0, 4.0).otherwise(-4.0) / (2 * (row.index + 1) + 1),
-                total=state.total
-                + when((row.index + 1) % 2 == 0, 4.0).otherwise(-4.0) / (2 * (row.index + 1) + 1),
+                total=state.total + when((row.index + 1) % 2 == 0, 4.0).otherwise(-4.0) / (2 * (row.index + 1) + 1),
             ),
         )
-        return SeriesApproximation(index=tick.index, term=state.term, value=state.total)
+        return SeriesApproximation.project(tick, state)(value=state.total)
 
 
 class EAsSeries(Transform):
@@ -43,7 +42,7 @@ class EAsSeries(Transform):
                 total=state.total + state.term / (row.index + 1),
             ),
         )
-        return SeriesApproximation(index=tick.index, term=state.term, value=state.total)
+        return SeriesApproximation.project(tick, state)(value=state.total)
 
 
 class Ln2AsSeries(Transform):
@@ -63,4 +62,4 @@ class Ln2AsSeries(Transform):
                 total=state.total + when((row.index + 2) % 2 == 1, 1.0).otherwise(-1.0) / (row.index + 2),
             ),
         )
-        return SeriesApproximation(index=tick.index, term=state.term, value=state.total)
+        return SeriesApproximation.project(tick, state)(value=state.total)

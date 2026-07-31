@@ -496,6 +496,22 @@ class RenderPySparkExpression:
             schema = self._ddl_schema(cast(type, expression.data["schema"]))
             options = cast(dict[str, str], expression.data["options"])
             return f"F.from_csv({args[0]}, {schema!r}, {options!r})"
+        if function in {
+            "is_valid_variant",
+            "parse_json",
+            "schema_of_variant",
+            "try_parse_json",
+            "to_variant_object",
+            "is_variant_null",
+        }:
+            return f"F.{function}({args[0]})"
+        if function in {"geo_from_wkt", "geo_as_wkt", "geo_intersects", "geo_contains", "geo_within"}:
+            names = {"geo_from_wkt": "ST_GeomFromWKT", "geo_as_wkt": "ST_AsText", "geo_intersects": "ST_Intersects", "geo_contains": "ST_Contains", "geo_within": "ST_Within"}
+            if function == "geo_from_wkt":
+                args.append(f"F.lit({expression.data['srid']})")
+            return f"F.call_function({names[function]!r}, {', '.join(args)})"
+        if function in {"variant_get", "try_variant_get"}:
+            return f"F.{function}({args[0]}, {expression.data['path']!r}, {expression.data['target_type']!r})"
         if function in {"to_json", "to_csv"}:
             options = cast(dict[str, str], expression.data["options"])
             return f"F.{function}({args[0]}, {options!r})"

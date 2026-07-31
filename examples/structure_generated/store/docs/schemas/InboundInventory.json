@@ -1,0 +1,50 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "tenant",
+      "name": "tenant",
+      "nullable": false,
+      "type": "TenantKey"
+    },
+    {
+      "column": "audit",
+      "name": "audit",
+      "nullable": false,
+      "type": "AuditStamp"
+    },
+    {
+      "column": "warehouse_id",
+      "name": "warehouse_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "product_id",
+      "name": "product_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "expected_quantity",
+      "name": "expected_quantity",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "expected_at",
+      "name": "expected_at",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "column": "source_type",
+      "name": "source_type",
+      "nullable": false,
+      "type": "string"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.store.schemas.fulfillment.planning.inventory",
+  "name": "InboundInventory"
+}

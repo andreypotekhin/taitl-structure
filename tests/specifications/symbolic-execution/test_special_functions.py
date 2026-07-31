@@ -25,6 +25,10 @@ class Published(Schema):
     id = string(nullable=False)
 
 
+class StreamPublished(Schema):
+    id = string(nullable=False)
+
+
 def test_special_expr_helper_call_through_self_compiles_transparently() -> None:
     class Publish(Transform):
         rows = input(Raw)
@@ -153,6 +157,82 @@ def test_raw_rejects_the_replaced_streaming_option() -> None:
 def test_raw_requires_a_schema_mode() -> None:
     with pytest.raises(TypeError, match=r"@raw\(schema_mode=\.\.\.\) requires a SchemaMode value"):
         raw(schema_mode=cast(Any, "strict"))(lambda: None)
+
+
+def test_transform_infers_streaming_option_from_one_streaming_input() -> None:
+    class Publish(Transform):
+        rows = input(Raw, streaming=True)
+        published = output(StreamPublished)
+
+        def publish(self, row: Raw) -> StreamPublished:
+            return StreamPublished(id=row.id)
+
+    assert _compile(Publish).analysis.options == {"streaming": True}
+
+
+def test_transform_infers_streaming_option_from_multiple_streaming_inputs() -> None:
+    class Publish(Transform):
+        rows = input(Raw, streaming=True)
+        more_rows = input(Raw, streaming=True)
+        published = output(StreamPublished)
+
+        def publish(self, row: Raw, more: Raw) -> StreamPublished:
+            merged = union_all(more)
+            return StreamPublished(id=merged.id)
+
+    assert _compile(Publish).analysis.options == {"streaming": True}
+
+
+def test_transform_keeps_batch_only_options_when_all_inputs_are_batch() -> None:
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(id=row.id)
+
+    assert _compile(Publish).analysis.options == {}
+
+
+def test_transform_keeps_explicit_streaming_true_with_streaming_inputs() -> None:
+    @transform(streaming=True)
+    class Publish(Transform):
+        rows = input(Raw, streaming=True)
+        published = output(StreamPublished)
+
+        def publish(self, row: Raw) -> StreamPublished:
+            return StreamPublished(id=row.id)
+
+    assert _compile(Publish).analysis.options == {"streaming": True}
+
+
+def test_transform_rejects_explicit_streaming_false_with_streaming_inputs() -> None:
+    @transform(streaming=False)
+    class Publish(Transform):
+        rows = input(Raw, streaming=True)
+        published = output(StreamPublished)
+
+        def publish(self, row: Raw) -> StreamPublished:
+            return StreamPublished(id=row.id)
+
+    with pytest.raises(TypeError, match=r"declares streaming input\(s\) but @transform\(streaming=False\)"):
+        _compile(Publish)
+
+
+def test_explain_marks_inferred_streaming_transform_as_required() -> None:
+    from structure.core.cli.api import CliApp
+
+    class Publish(Transform):
+        rows = input(Raw, streaming=True)
+        published = output(StreamPublished)
+
+        def publish(self, row: Raw) -> StreamPublished:
+            return StreamPublished(id=row.id)
+
+    report = CliApp.render_explain_report()(Publish)
+
+    assert "streaming:" in report
+    assert "required: true" in report
 
 
 def test_special_udf_renders_generated_pyspark_udf_call() -> None:

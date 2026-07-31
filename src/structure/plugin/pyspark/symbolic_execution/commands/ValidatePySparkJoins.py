@@ -120,13 +120,13 @@ class ValidatePySparkJoins:
     def _as_of(self, join, occurrence: int, request: StepAuthoringRequest) -> None:
         as_of = join.as_of
         assert as_of is not None
-        if as_of.direction not in {AsOf.BACKWARD, AsOf.FORWARD}:
+        if as_of.direction not in {AsOf.BACKWARD, AsOf.FORWARD, AsOf.NEAREST}:
             self._error(
                 join,
                 occurrence,
                 request,
                 f"as_of_one(direction=...) policy {as_of.direction!r} is not supported.",
-                'Use "backward", "forward", or omit direction=.',
+                'Use "backward", "forward", "nearest", or omit direction=.',
             )
         if as_of.ties is not TiePolicy.ERROR:
             self._error(

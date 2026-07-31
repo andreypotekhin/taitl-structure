@@ -166,6 +166,42 @@ def test_schema_project_copies_fields_and_allows_overrides() -> None:
     assert cast(Any, projection["count"].data)["field"] == "count"
 
 
+def test_schema_base_can_project_remaining_fields() -> None:
+    """I can combine inherited base copying with same-name projection for local fields."""
+
+    class Demand(Schema):
+        order_id = string(nullable=False)
+        product_id = string(nullable=False)
+
+    class Inventory(Schema):
+        product_id = string(nullable=False)
+        warehouse_id = string(nullable=False)
+        safety_stock_quantity = long(nullable=False)
+
+    class Option(Demand):
+        warehouse_id = string(nullable=False)
+        safety_stock_quantity = long(nullable=False)
+        score = long(nullable=False)
+
+    @transform
+    class Plan(Transform):
+        demands = input(Demand)
+        inventory = input(Inventory)
+        options = output(Option)
+
+        def plan(self, demand: Demand, stock: Inventory) -> Option:
+            inner_join(stock, on=demand.product_id == stock.product_id)
+            return Option.base(demand).project(stock)(score=1)
+
+    projection = {assignment.field.name: assignment.expression for assignment in _body(Plan).projection}
+
+    assert cast(Any, projection["order_id"].data)["scope"] == "demand"
+    assert cast(Any, projection["product_id"].data)["scope"] == "demand"
+    assert cast(Any, projection["warehouse_id"].data)["scope"] == "stock"
+    assert cast(Any, projection["safety_stock_quantity"].data)["scope"] == "stock"
+    assert projection["score"].data == {"value": 1}
+
+
 def test_schema_project_without_overrides_copies_fields() -> None:
     """I can return schema projection directly when every copied field is unchanged."""
 

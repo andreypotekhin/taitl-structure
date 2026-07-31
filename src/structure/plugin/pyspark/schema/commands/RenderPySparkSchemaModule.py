@@ -4,7 +4,7 @@ from collections import defaultdict
 from typing import Mapping, Sequence
 
 from structure.dsl import Schema
-from structure.plugin.pyspark.dsl.types import ArrayType, MapType, StructType, StructureType
+from structure.plugin.pyspark.dsl.types import ArrayType, GeometryType, MapType, StructType, StructureType
 from structure.plugin.pyspark.schema.commands.RenderPySparkSchema import render_pyspark_schema
 
 
@@ -17,12 +17,14 @@ class RenderPySparkSchemaModule:
         dependency_modules: Mapping[type[Schema], str] | None = None,
     ) -> str:
         dependencies = self._dependencies(schemas, dependency_modules or {})
-        imports = self._imports(dependencies)
+        imports = self._imports(dependencies, any(self._uses_geometry(schema) for schema in schemas))
         constants = "\n\n".join(render_pyspark_schema(schema) for schema in schemas)
         return f"{imports}\n\n\n{constants}\n"
 
-    def _imports(self, dependencies: Mapping[str, tuple[str, ...]]) -> str:
+    def _imports(self, dependencies: Mapping[str, tuple[str, ...]], geometry: bool) -> str:
         lines = ["from pyspark.sql import types as T"]
+        if geometry:
+            lines.append("from structure.geo import geometry_type")
         for module in sorted(dependencies):
             constants = dependencies[module]
             if len(constants) == 1:
@@ -49,6 +51,18 @@ class RenderPySparkSchemaModule:
                 modules[module].add(render_pyspark_schema.constant_name(dependency))
 
         return {module: tuple(sorted(constants)) for module, constants in modules.items()}
+
+    def _uses_geometry(self, schema: type[Schema]) -> bool:
+        return any(self._type_uses_geometry(field.type) for field in schema._structure_fields.values())
+
+    def _type_uses_geometry(self, type: StructureType) -> bool:
+        if isinstance(type, GeometryType):
+            return True
+        if isinstance(type, ArrayType):
+            return self._type_uses_geometry(type.element)
+        if isinstance(type, MapType):
+            return self._type_uses_geometry(type.key) or self._type_uses_geometry(type.value)
+        return False
 
     def _schema_dependencies(self, schema: type[Schema]) -> set[type[Schema]]:
         dependencies: set[type[Schema]] = set(schema._structure_schema_bases)

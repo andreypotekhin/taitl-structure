@@ -72,20 +72,30 @@ def test_structured_streaming_ledger_entries_are_actionable() -> None:
 def test_current_structured_streaming_measurement_is_checked() -> None:
     measurement = _measure()
 
-    assert measurement.batch_supported == 34
-    assert measurement.batch_catalog_size == 36
-    assert measurement.streaming_supported == 32
-    assert measurement.streaming_supported_batch_families == 32
+    assert measurement.batch_supported == 35
+    assert measurement.batch_catalog_size == 37
+    assert measurement.streaming_supported == 33
+    assert measurement.streaming_supported_batch_families == 33
     assert measurement.deferred_batch_families == []
     assert measurement.ineligible_batch_families == [
         "dataframe.ordering",
         "dataframe.priority-selection",
     ]
-    assert measurement.batch_ratio == "94.4%"
-    assert measurement.streaming_ratio == "88.9%"
-    assert measurement.streaming_batch_family_ratio == "94.1%"
-    assert measurement.effective_streaming_denominator == 32
+    assert measurement.batch_ratio == "94.6%"
+    assert measurement.streaming_ratio == "89.2%"
+    assert measurement.streaming_batch_family_ratio == "94.3%"
+    assert measurement.effective_streaming_denominator == 33
     assert measurement.effective_streaming_ratio == "100.0%"
+
+
+def test_target_gated_variant_streaming_family_has_live_profile_evidence() -> None:
+    entry = {entry["id"]: entry for entry in _ledger_entries()}["functions.variant"]
+
+    assert entry["status"] == "streaming-supported"
+    assert "tests/specifications/streaming-compatibility/test_v1_streaming_compatibility.py" in entry["evidence"]
+    assert "tests/integration/pyspark/v3/streams/test_file_streams.py" in entry["evidence"]
+    assert "PySpark 4.0 streaming evidence" in entry["notes"]
+    assert "PySpark 3.5 evidence proves target rejection" in entry["notes"]
 
 
 def _measure() -> Measurement:

@@ -58,7 +58,11 @@ class ComposeTransformPlans:
             inputs=tuple(inputs),
             steps=tuple(steps),
             outputs=tuple(outputs),
-            options={},
+            options=Transform.resolve_transform_options(
+                wrapper_class.__dict__.get("_structure_transform_options", {}) if wrapper_class is not None else {},
+                inputs=inputs,
+                transform_name=name,
+            ),
             diagnostics=tuple(diagnostic for plan in stage_plans for diagnostic in plan.diagnostics),
         )
 

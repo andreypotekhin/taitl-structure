@@ -20,7 +20,7 @@ class VulnerabilityRemediationPublish(Transform):
     expiring_exceptions = output(ExpiringExceptionVulnerability)
     expired_exceptions = output(ExpiredExceptionVulnerability)
 
-    @step(input=workflow_exposures, output=unacknowledged)
+    @step(output=unacknowledged)
     def publish_unacknowledged(self, finding: VulnerabilityWorkflowExposure) -> UnacknowledgedVulnerability:
         where(finding.is_active & ~finding.is_acknowledged)
         return UnacknowledgedVulnerability.base(finding)

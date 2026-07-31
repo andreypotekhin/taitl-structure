@@ -1,0 +1,56 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "tenant",
+      "name": "tenant",
+      "nullable": false,
+      "type": "TenantKey"
+    },
+    {
+      "column": "audit",
+      "name": "audit",
+      "nullable": false,
+      "type": "AuditStamp"
+    },
+    {
+      "column": "warehouse_id",
+      "name": "warehouse_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "product_id",
+      "name": "product_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "on_hand_quantity",
+      "name": "on_hand_quantity",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "reserved_quantity",
+      "name": "reserved_quantity",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "safety_stock_quantity",
+      "name": "safety_stock_quantity",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "as_of",
+      "name": "as_of",
+      "nullable": false,
+      "type": "date"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.store.schemas.fulfillment.planning.inventory",
+  "name": "InventoryPosition"
+}

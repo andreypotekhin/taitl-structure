@@ -899,6 +899,21 @@ Base overlay rules:
 - Fields locally overriding inherited fields must be supplied explicitly; this keeps changed type, nullability,
   metadata, or meaning visible at the construction site.
 
+`base(...)` can be followed by `project(...)` when a child schema adds fields that already exist by name on another
+source row:
+
+```python
+return FulfillmentOption.base(demand).project(inventory)(
+    available_to_promise=inventory.on_hand_quantity - inventory.reserved_quantity,
+)
+```
+
+Combined construction applies sources in this order:
+
+- `base(...)` copies inherited target fields by base-schema origin.
+- `project(...)` fills still-unassigned target fields by same-name compatible source fields.
+- Explicit keyword overrides win over both copied and projected fields.
+
 Example with multiple schema bases:
 
 ```python

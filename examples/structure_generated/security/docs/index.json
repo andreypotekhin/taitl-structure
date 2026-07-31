@@ -4418,12 +4418,12 @@
             }
           ],
           "name": "alarm_team",
-          "output_lane": "overdue_alarms",
+          "output_lane": "exposures",
           "output_schema": "TeamVulnerabilityAlarm",
           "results": [
             {
-              "frame": "overdue_alarms",
-              "lane": "overdue_alarms",
+              "frame": "exposures",
+              "lane": "exposures",
               "schema": "TeamVulnerabilityAlarm"
             }
           ]
@@ -5404,56 +5404,56 @@
             }
           ],
           "name": "prepare_exposure",
-          "output_lane": "posture_candidates",
+          "output_lane": "vulnerabilities",
           "output_schema": "VulnerabilityPostureCandidate",
           "results": [
             {
-              "frame": "posture_candidates",
-              "lane": "posture_candidates",
+              "frame": "vulnerabilities",
+              "lane": "vulnerabilities",
               "schema": "VulnerabilityPostureCandidate"
             }
           ]
         },
         {
-          "input_lane": "posture_candidates",
+          "input_lane": "vulnerabilities",
           "input_schema": "VulnerabilityPostureCandidate",
           "inputs": [
             {
               "driving": true,
               "parameter": "candidate",
               "schema": "VulnerabilityPostureCandidate",
-              "source": "posture_candidates"
+              "source": "vulnerabilities"
             }
           ],
           "name": "expose",
-          "output_lane": "exposure_lane",
+          "output_lane": "vulnerabilities",
           "output_schema": "VulnerabilityExposure",
           "results": [
             {
-              "frame": "exposure_lane",
-              "lane": "exposure_lane",
+              "frame": "vulnerabilities",
+              "lane": "vulnerabilities",
               "schema": "VulnerabilityExposure"
             }
           ]
         },
         {
-          "input_lane": "exposure_lane",
+          "input_lane": "vulnerabilities",
           "input_schema": "VulnerabilityExposure",
           "inputs": [
             {
               "driving": true,
               "parameter": "finding",
               "schema": "VulnerabilityExposure",
-              "source": "exposure_lane"
+              "source": "vulnerabilities"
             }
           ],
           "name": "publish",
-          "output_lane": "exposure_lane",
+          "output_lane": "vulnerabilities",
           "output_schema": "VulnerabilityExposure",
           "results": [
             {
-              "frame": "exposure_lane",
-              "lane": "exposure_lane",
+              "frame": "vulnerabilities",
+              "lane": "vulnerabilities",
               "schema": "VulnerabilityExposure"
             }
           ]
@@ -6054,25 +6054,25 @@
             }
           ],
           "name": "accessed.enrich_exposure",
-          "output_lane": "accessed__workflow_exposures",
+          "output_lane": "accessed__exposures",
           "output_schema": "VulnerabilityWorkflowExposure",
           "results": [
             {
-              "frame": "accessed__workflow_exposures",
-              "lane": "accessed__workflow_exposures",
+              "frame": "accessed__exposures",
+              "lane": "accessed__exposures",
               "schema": "VulnerabilityWorkflowExposure"
             }
           ]
         },
         {
-          "input_lane": "accessed__workflow_exposures",
+          "input_lane": "accessed__exposures",
           "input_schema": "VulnerabilityWorkflowExposure",
           "inputs": [
             {
               "driving": true,
               "parameter": "finding",
               "schema": "VulnerabilityWorkflowExposure",
-              "source": "accessed__workflow_exposures"
+              "source": "accessed__exposures"
             }
           ],
           "name": "published.publish_unacknowledged",
@@ -6087,14 +6087,14 @@
           ]
         },
         {
-          "input_lane": "accessed__workflow_exposures",
+          "input_lane": "accessed__exposures",
           "input_schema": "VulnerabilityWorkflowExposure",
           "inputs": [
             {
               "driving": true,
               "parameter": "finding",
               "schema": "VulnerabilityWorkflowExposure",
-              "source": "accessed__workflow_exposures"
+              "source": "accessed__exposures"
             }
           ],
           "name": "published.publish_pending",
@@ -6109,14 +6109,14 @@
           ]
         },
         {
-          "input_lane": "accessed__workflow_exposures",
+          "input_lane": "accessed__exposures",
           "input_schema": "VulnerabilityWorkflowExposure",
           "inputs": [
             {
               "driving": true,
               "parameter": "finding",
               "schema": "VulnerabilityWorkflowExposure",
-              "source": "accessed__workflow_exposures"
+              "source": "accessed__exposures"
             },
             {
               "driving": false,
@@ -6143,14 +6143,14 @@
           ]
         },
         {
-          "input_lane": "accessed__workflow_exposures",
+          "input_lane": "accessed__exposures",
           "input_schema": "VulnerabilityWorkflowExposure",
           "inputs": [
             {
               "driving": true,
               "parameter": "finding",
               "schema": "VulnerabilityWorkflowExposure",
-              "source": "accessed__workflow_exposures"
+              "source": "accessed__exposures"
             },
             {
               "driving": false,
@@ -6177,14 +6177,14 @@
           ]
         },
         {
-          "input_lane": "accessed__workflow_exposures",
+          "input_lane": "accessed__exposures",
           "input_schema": "VulnerabilityWorkflowExposure",
           "inputs": [
             {
               "driving": true,
               "parameter": "finding",
               "schema": "VulnerabilityWorkflowExposure",
-              "source": "accessed__workflow_exposures"
+              "source": "accessed__exposures"
             },
             {
               "driving": false,

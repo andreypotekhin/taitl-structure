@@ -1,0 +1,104 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "tenant",
+      "name": "tenant",
+      "nullable": false,
+      "type": "TenantKey"
+    },
+    {
+      "column": "request_id",
+      "name": "request_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "strategy_id",
+      "name": "strategy_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "policy_version",
+      "name": "policy_version",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "product_id",
+      "name": "product_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "product_name",
+      "name": "product_name",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "category",
+      "name": "category",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "rank",
+      "name": "rank",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "base_score",
+      "name": "base_score",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "promotion_score",
+      "name": "promotion_score",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "boost_score",
+      "name": "boost_score",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "suppression_penalty",
+      "name": "suppression_penalty",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "inventory_boost",
+      "name": "inventory_boost",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "feedback_score",
+      "name": "feedback_score",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "final_score",
+      "name": "final_score",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "feedback_contributed",
+      "name": "feedback_contributed",
+      "nullable": false,
+      "type": "boolean"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.store.schemas.merchandising.recommendation",
+  "name": "RecommendedProduct"
+}

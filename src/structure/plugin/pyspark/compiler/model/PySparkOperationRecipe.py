@@ -23,6 +23,7 @@ from structure.plugin.pyspark.compiler.model.PySparkRelationOrderRecipe import P
 from structure.plugin.pyspark.compiler.model.PySparkRelationPrioritySelectionRecipe import (
     PySparkRelationPrioritySelectionRecipe,
 )
+from structure.plugin.pyspark.compiler.model.PySparkRelationSampleRecipe import PySparkRelationSampleRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationSetRecipe import PySparkRelationSetRecipe
 from structure.plugin.pyspark.compiler.model.PySparkSelectedRowsRecipe import PySparkSelectedRowsRecipe
 from structure.plugin.pyspark.compiler.model.PySparkWatermarkRecipe import PySparkWatermarkRecipe
@@ -47,6 +48,7 @@ class PySparkOperationRecipe:
     relation_order: PySparkRelationOrderRecipe | None = None
     relation_priority_selection: PySparkRelationPrioritySelectionRecipe | None = None
     relation_bound: PySparkRelationBoundRecipe | None = None
+    relation_sample: PySparkRelationSampleRecipe | None = None
     relation_set: PySparkRelationSetRecipe | None = None
     watermark: PySparkWatermarkRecipe | None = None
     cache: PySparkCacheRecipe | None = None
@@ -129,6 +131,10 @@ class PySparkOperationRecipe:
     @staticmethod
     def relation_bound_operation(kind: str, relation_bound: PySparkRelationBoundRecipe) -> "PySparkOperationRecipe":
         return PySparkOperationRecipe(kind=kind, relation_bound=relation_bound)
+
+    @staticmethod
+    def relation_sample_operation(relation_sample: PySparkRelationSampleRecipe) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="sample", relation_sample=relation_sample)
 
     @staticmethod
     def relation_priority_selection_operation(

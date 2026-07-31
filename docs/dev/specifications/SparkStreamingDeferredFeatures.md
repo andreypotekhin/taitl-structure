@@ -83,9 +83,14 @@ in the v8 coverage denominator.
 
 ## Hooks And Foreach
 
-`streaming=True` only admits ordinary DataFrame-returning hooks inside the first slice. Future `foreachBatch`,
-`foreach`, external side effects, and custom sink hooks need a separate lifecycle and idempotence contract. They must
-make retry behavior, side effects, and failure handling explicit.
+`streaming=True` only admits ordinary DataFrame-returning hooks inside the first slice. V9 provides caller-owned
+guidance for `foreachBatch` through `examples.streams.adoption.start_foreach_batch_query(...)`, which callers invoke
+after Structure returns a transformed streaming DataFrame. Generated transform modules still must not contain
+`foreachBatch`, `writeStream`, query lifecycle calls, checkpoints, or triggers.
+
+Row-level `foreach`, external side effects inside transforms, and custom sink hooks still need a separate lifecycle and
+idempotence contract. They must make retry behavior, side effects, and failure handling explicit before Structure can
+own them.
 
 ## Acceptance For Future Admission
 
@@ -107,3 +112,8 @@ claim. Lifecycle APIs may become `caller-owned-guided` through runnable examples
 outside generated transform modules. A lifecycle API can become Structure-owned only after a separate product decision
 records operational semantics, checkpoint/recovery behavior, side-effect idempotence, security review, and live
 evidence.
+
+The v9 design-gated streaming rows now have dedicated design and implementation specifications:
+[V9StreamingDesignGates.md](../design/V9StreamingDesignGates.md) and
+[V9StreamingDesignGatedFeatures.md](V9StreamingDesignGatedFeatures.md). The broader active execution plan is
+`docs/dev/planning/P07302601.V9-api-catalog-design-gates.plan.md`.

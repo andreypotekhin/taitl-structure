@@ -70,62 +70,62 @@ class SecurityPostureGenerated:
         _input_orgs = orgs
 
         # Step method: prepare_exposure
-        posture_candidates = vulnerabilities.alias("vuln")
+        vulnerabilities = vulnerabilities.alias("vuln")
         devices_joined = devices.alias("devices")
-        posture_candidates = posture_candidates.join(
+        vulnerabilities = vulnerabilities.join(
             devices_joined,
             (F.col("devices.id") == F.col("vuln.device_id")),
             "inner",
         )
         device_types_2_joined = device_types.alias("device_types_2")
-        posture_candidates = posture_candidates.join(
+        vulnerabilities = vulnerabilities.join(
             device_types_2_joined,
             (F.col("device_types_2.id") == F.col("devices.device_type_id")),
             "inner",
         )
         software_3_joined = software.alias("software_3")
-        posture_candidates = posture_candidates.join(
+        vulnerabilities = vulnerabilities.join(
             software_3_joined,
             (F.col("software_3.id") == F.col("vuln.software_id")),
             "inner",
         )
         vuln_types_4_joined = vuln_types.alias("vuln_types_4")
-        posture_candidates = posture_candidates.join(
+        vulnerabilities = vulnerabilities.join(
             vuln_types_4_joined,
             (F.col("vuln_types_4.id") == F.col("vuln.vuln_type_id")),
             "inner",
         )
         remediation_policies_5_joined = remediation_policies.alias("remediation_policies_5")
-        posture_candidates = posture_candidates.join(
+        vulnerabilities = vulnerabilities.join(
             remediation_policies_5_joined,
             (F.col("remediation_policies_5.severity") == F.col("vuln_types_4.severity")),
             "inner",
         )
         people_6_joined = people.alias("people_6")
-        posture_candidates = posture_candidates.join(
+        vulnerabilities = vulnerabilities.join(
             people_6_joined,
             (F.col("people_6.id") == F.col("vuln.owner_id")),
             "inner",
         )
         teams_7_joined = teams.alias("teams_7")
-        posture_candidates = posture_candidates.join(
+        vulnerabilities = vulnerabilities.join(
             teams_7_joined,
             (F.col("teams_7.id") == F.col("people_6.team_id")),
             "inner",
         )
         departments_8_joined = departments.alias("departments_8")
-        posture_candidates = posture_candidates.join(
+        vulnerabilities = vulnerabilities.join(
             departments_8_joined,
             (F.col("departments_8.id") == F.col("teams_7.department_id")),
             "inner",
         )
         orgs_9_joined = orgs.alias("orgs_9")
-        posture_candidates = posture_candidates.join(
+        vulnerabilities = vulnerabilities.join(
             orgs_9_joined,
             (F.col("orgs_9.id") == F.col("departments_8.org_id")),
             "inner",
         )
-        posture_candidates = posture_candidates.select(
+        vulnerabilities = vulnerabilities.select(
             F.col("vuln.id").alias("vuln_id"),
             F.col("vuln_types_4.type").alias("vuln_type"),
             F.col("vuln_types_4.description"),
@@ -155,15 +155,12 @@ class SecurityPostureGenerated:
             F.col("devices.apps").alias("device_apps"),
         )
         assert_schema(
-            posture_candidates,
-            VULNERABILITY_POSTURE_CANDIDATE_SCHEMA,
-            name="VulnerabilityPostureCandidate",
-            mode="strict",
+            vulnerabilities, VULNERABILITY_POSTURE_CANDIDATE_SCHEMA, name="VulnerabilityPostureCandidate", mode="strict"
         )
 
         # Step method: expose
-        exposure_lane = posture_candidates.alias("vulnerability_posture_candidate")
-        exposure_lane = exposure_lane.where(
+        vulnerabilities = vulnerabilities.alias("vulnerability_posture_candidate")
+        vulnerabilities = vulnerabilities.where(
             (
                 (
                     (
@@ -189,7 +186,7 @@ class SecurityPostureGenerated:
                 )
             )
         )
-        exposure_lane = exposure_lane.select(
+        vulnerabilities = vulnerabilities.select(
             F.col("vulnerability_posture_candidate.vuln_id"),
             F.col("vulnerability_posture_candidate.vuln_type"),
             F.col("vulnerability_posture_candidate.description"),
@@ -214,11 +211,11 @@ class SecurityPostureGenerated:
             F.col("vulnerability_posture_candidate.org_id"),
             F.col("vulnerability_posture_candidate.org_name"),
         )
-        assert_schema(exposure_lane, VULNERABILITY_EXPOSURE_SCHEMA, name="VulnerabilityExposure", mode="strict")
+        assert_schema(vulnerabilities, VULNERABILITY_EXPOSURE_SCHEMA, name="VulnerabilityExposure", mode="strict")
 
         # Step method: publish
-        exposure_lane = exposure_lane.alias("vulnerability_exposure")
-        exposure_lane = exposure_lane.select(
+        vulnerabilities = vulnerabilities.alias("vulnerability_exposure")
+        vulnerabilities = vulnerabilities.select(
             F.col("vulnerability_exposure.vuln_id"),
             F.col("vulnerability_exposure.vuln_type"),
             F.col("vulnerability_exposure.description"),
@@ -245,7 +242,7 @@ class SecurityPostureGenerated:
         )
 
         # Step method: exposures
-        exposures = exposure_lane.alias("vulnerability_exposure")
+        exposures = vulnerabilities.alias("vulnerability_exposure")
         assert_schema(exposures, VULNERABILITY_EXPOSURE_SCHEMA, name="VulnerabilityExposure", mode="strict")
         return TransformResult(
             {"exposures": exposures}, single=True, schema={"exposures": VULNERABILITY_EXPOSURE_SCHEMA}

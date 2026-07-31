@@ -22,7 +22,7 @@ class Fibonacci(Transform):
                 current=state.previous + state.current,
             ),
         )
-        return FibonacciNumber(index=tick.index, value=state.previous)
+        return FibonacciNumber.project(tick)(value=state.previous)
 
 
 class PrimeNumbers(Transform):
@@ -42,7 +42,7 @@ class PrimeNumbers(Transform):
                 current=_next_prime(state),
             ),
         )
-        return PrimeNumber(index=tick.index, prime=state.current)
+        return PrimeNumber.project(tick)(prime=state.current)
 
 
 def _next_prime(state):

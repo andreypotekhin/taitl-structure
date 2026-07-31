@@ -84,6 +84,28 @@ finally:
 The generated Structure module still contains only DataFrame transformations. The application owns `readStream`,
 `writeStream`, output mode, checkpoint, start, progress, stop, deployment, and recovery behavior.
 
+For side-effecting sinks, keep `foreachBatch` in the same caller-owned layer:
+
+```python
+from examples.streams.adoption import start_foreach_batch_query
+
+def write_batch(batch, batch_id):
+    # Idempotence and sink retry policy belong to the caller.
+    batch.write.format("parquet").mode("append").save(batch_path)
+
+query = start_foreach_batch_query(
+    passages,
+    write_batch,
+    checkpoint=checkpoint,
+    output_mode="append",
+    trigger={"availableNow": True},
+)
+```
+
+Structure does not call `foreachBatch` from transform methods or generated transform modules. Row-level `foreach`
+callbacks remain design-gated until a future side-effect contract defines sink identity, idempotence, retry, and
+recovery behavior.
+
 ## Correlate judge penalties
 
 `CorrelatePenalties` joins prepared passages to independently streamed `JudgeCall` rows. Both sides use a ten-minute

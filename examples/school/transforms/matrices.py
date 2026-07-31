@@ -2,7 +2,7 @@ from builtins import float as scalar_float
 from builtins import max as scalar_max
 
 from examples.school.schemas.matrices import LeftMatrixCell, MatrixCell, MatrixVectorCell, RightMatrixCell, VectorCell
-from structure import Transform, input, lane, output, raw, step
+from structure import Transform, input, lane, output, raw
 from structure.plugin.pyspark import *
 
 
@@ -17,11 +17,8 @@ class MultiplyMatrices(Transform):
             on=(x.matrix_id == y.matrix_id) & (x.columns == y.rows) & (x.j == y.i),
         )
         group_by(matrix_id=x.matrix_id, rows=x.rows, columns=y.columns, i=x.i, j=y.j)
-        return MatrixCell(
-            matrix_id=x.matrix_id,
-            rows=x.rows,
+        return MatrixCell.project(x)(
             columns=y.columns,
-            i=x.i,
             j=y.j,
             x=sum(x.x * y.x),
         )
@@ -38,10 +35,8 @@ class MultiplyMatrixVector(Transform):
             on=(x.matrix_id == y.matrix_id) & (x.columns == y.size) & (x.j == y.i),
         )
         group_by(matrix_id=x.matrix_id, size=x.rows, i=x.i)
-        return MatrixVectorCell(
-            matrix_id=x.matrix_id,
+        return MatrixVectorCell.project(x)(
             size=x.rows,
-            i=x.i,
             x=sum(x.x * y.x),
         )
 
@@ -65,14 +60,7 @@ class InvertMatrices(Transform):
         )
 
     def publish(self, x: LeftMatrixCell) -> MatrixCell:
-        return MatrixCell.project(x)(
-            matrix_id=x.matrix_id,
-            rows=x.rows,
-            columns=x.columns,
-            i=x.i,
-            j=x.j,
-            x=x.x,
-        )
+        return MatrixCell.project(x)
 
 
 def _matrix_rows(frame):

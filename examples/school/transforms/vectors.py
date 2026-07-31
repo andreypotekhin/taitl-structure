@@ -19,8 +19,7 @@ class EvaluateVectors(Transform):
         non_zero_x = magnitude_x > 0
         non_zero_y = magnitude_y > 0
         valid = same_size & non_zero_x & non_zero_y
-        return VectorResult(
-            vector_id=x.vector_id,
+        return VectorResult.project(x)(
             sum=when(same_size, arr_zip_with(x.x, x.y, lambda x, y: x + y)).otherwise(None),
             difference=when(same_size, arr_zip_with(x.x, x.y, lambda x, y: x - y)).otherwise(None),
             scaled=arr_transform(x.x, lambda item: item * x.scalar),

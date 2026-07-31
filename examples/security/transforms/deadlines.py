@@ -27,17 +27,12 @@ class VulnerabilityDeadlineReports(Transform):
     department_summaries = output(DepartmentVulnerabilityDeadlineSummary)
     org_summaries = output(OrgVulnerabilityDeadlineSummary)
 
-    @step(input=[exposures, evaluation], output=activities)
+    @step(output=activities)
     def assess(
         self, finding: VulnerabilityWorkflowExposure, evaluation: SecurityEvaluation
     ) -> VulnerabilityDeadlineActivity:
         cross_join(evaluation, allow_cartesian=True)
-        return VulnerabilityDeadlineActivity(
-            person_id=finding.person_id,
-            team_id=finding.team_id,
-            department_id=finding.department_id,
-            org_id=finding.org_id,
-            as_of_date=evaluation.as_of_date,
+        return VulnerabilityDeadlineActivity.project(finding, evaluation)(
             imminent_count=when(self._imminent(finding, evaluation), 1).otherwise(0),
             overdue_count=when(self._overdue(finding, evaluation), 1).otherwise(0),
         )

@@ -66,6 +66,12 @@ Configuration validation does not require a plugin to be installed. A configured
 transform needs it. This keeps compiler configuration inspection Spark-free and allows a project to carry settings for
 an optional plugin.
 
+## Geo Providers
+
+The PySpark Geometry API is provider-neutral and needs no provider configuration. Generated code calls the common
+Spark SQL `GEOMETRY`/`ST_*` contract without provider imports. Spark-free compilation and code generation remain
+available; only schema materialization and online execution verify that the active runtime supplies that contract.
+
 ## Target Resolution
 
 Resolve one transform target in this exact order:

@@ -35,17 +35,12 @@ class VulnerabilityRemediationSummaries(Transform):
     department_summaries = output(DepartmentRemediationWorkflowSummary)
     org_summaries = output(OrgRemediationWorkflowSummary)
 
-    @step(input=[workflow_exposures, evaluation], output=activities)
+    @step(output=activities)
     def assess(
         self, finding: VulnerabilityWorkflowExposure, evaluation: SecurityEvaluation
     ) -> RemediationWorkflowActivity:
         cross_join(evaluation, allow_cartesian=True)
-        return RemediationWorkflowActivity(
-            person_id=finding.person_id,
-            team_id=finding.team_id,
-            department_id=finding.department_id,
-            org_id=finding.org_id,
-            as_of_date=evaluation.as_of_date,
+        return RemediationWorkflowActivity.project(finding, evaluation)(
             unacknowledged_count=when(finding.is_active & ~finding.is_acknowledged, 1).otherwise(0),
             pending_exception_count=when(
                 finding.is_active

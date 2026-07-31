@@ -1,6 +1,6 @@
 # API Catalog
 
-This catalog is the reference for API compatibility decisions. Use `@raw` or caller-owned PySpark if it says the symbolic contract is deferred or unsupported.
+This catalog is the reference for API compatibility decisions. Use `@raw` or caller-owned PySpark if it says the symbolic contract is design-gated, streaming-ineligible, or unsupported.
 
 For extensions on top of PySpark, see [APIExtensions.md](APIExtensions.md). For Structure own APIs such as schemas, transforms, hooks, see Core APIs in [API.md](API.md).
 
@@ -37,9 +37,12 @@ window helpers, and selected array/map higher-order functions.
 | Predicate helpers | implemented | `isnull`, `isnotnull`, `isnan` | Function-style null checks and typed NaN predicate | [Expressions API](api/Expressions.api.md) |
 | Null-control functions | implemented | `nullif`, `nvl`, `nvl2`, `ifnull`, `zeroifnull`, `nanvl` | Typed fallback, branch, null, and NaN semantics | [Expressions API](api/Expressions.api.md) |
 | Hash helpers | implemented | `hash`, `xxhash64`, `md5`, `sha1`, `sha2` | Typed scalar hashes and string digests; not security or cross-engine identity primitives | [Expressions API](api/Expressions.api.md) |
-| Encoding/binary helpers | deferred | `base64`, `unbase64`, `encode`, `decode` | No public Binary type yet | Use `@raw` |
-| JSON/XML/CSV helpers | deferred | Spark JSON, XML, CSV functions | JSON/CSV needs inline Schema transport and normalized options; XML remains outside the public type model | Use `@raw` |
-| Variant/geospatial helpers | planned | `VARIANT`, `ST_*` functions | Outside current type model | Future type-model work |
+| Encoding/binary helpers | implemented | `base64`, `unbase64`, `encode`, `decode` | Binary helpers use the public binary field type and typed scalar lowering | [Expressions API](api/Expressions.api.md) |
+| JSON/CSV helpers | implemented | `from_json`, `to_json`, `from_csv`, `to_csv` | Schema-carrying parsing keeps data contracts compiler-visible | [Expressions API](api/Expressions.api.md) |
+| XML helpers | design-gated | Spark XML functions | Low-priority schema-carrying parser/generator design; XML remains outside the active v9 implementation path | [V9 API Catalog Design Gates](dev/specifications/V9ApiCatalogDesignGatedFeatures.md) |
+| Variant field | implemented | `VariantType` | `variant(...)` preserves an opaque Spark Variant value in schemas; it requires a resolved PySpark 4 profile | [Schemas API](api/Schemas.api.md) |
+| Variant helpers | implemented | `parse_json`, `variant_get`, `schema_of_variant`, `schema_of_variant_agg`, `to_variant_object`, `is_valid_variant` | Typed strict/safe parsing, extraction, schema inspection, conversion, and validation are profile-gated; `is_valid_variant(...)` requires the `>=4.2,<4.3` profile | [Expressions API](api/Expressions.api.md) |
+| Geospatial helpers | design-gated | Apache Sedona `ST_*` functions | V9 admits a Sedona-only geometry slice; the bundled plugin has no geospatial dependency or API until the optional plugin implements its typed contract | [V9 API Catalog Design Gates](dev/specifications/V9ApiCatalogDesignGatedFeatures.md) |
 | Scalar Python UDFs | implemented | PySpark `udf`; `@special(type="udf")` | Ordinary PySpark row-local batch and streaming support with warning policy | Spark Connect unsupported |
 | Python UDTFs and UDTs | unsupported | `udtf`, UDT | Row expansion and custom type semantics are caller-owned | Use caller-owned PySpark or hooks |
 | Raw SQL string expressions | unsupported | `expr`, `call_function` | Compiler-visible expressions stay structured | Use typed helpers or hooks |
@@ -53,9 +56,9 @@ window helpers, and selected array/map higher-order functions.
 | Right join diagnostics hardening | implemented | `how="right"` | Rowset API exists; projection rules stay explicit | [Joins API](api/Joins.api.md) |
 | Cross join safety | implemented | `crossJoin`, `how="cross"` | Requires `allow_cartesian=True` | [Joins API](api/Joins.api.md) |
 | Join strategy directives | implemented | `broadcast`, `merge`, shuffle hints | Capability-checked PySpark hints | [Joins API](api/Joins.api.md) |
-| Join reordering | planned | Cost-based join planning | Do not reorder source semantics casually | Future planning |
-| Forward as-of joins | implemented | As-of nearest/forward patterns | Selects the earliest qualifying right row | [Joins API](api/Joins.api.md) |
-| Nearest as-of joins | planned | Nearest time matching | Needs tie and tolerance rules | Future planning |
+| Join reordering | design-gated | Cost-based join planning | No public `join_order(...)` in v9; logical reordering needs dependency-safe predicate analysis and explainable selected order | [V9 API Catalog Design Gates](dev/specifications/V9ApiCatalogDesignGatedFeatures.md) |
+| Backward/forward as-of joins | implemented | Directional as-of matching | Selects the latest previous or earliest following qualifying right row | [Joins API](api/Joins.api.md) |
+| Nearest as-of joins | implemented | Nearest time matching | Selects the closest non-null right time and fails equidistant matches with `ties="error"` | [Joins API](api/Joins.api.md) |
 | Unbounded or non-contract stream-stream joins | unsupported | Streaming stream-stream joins | Only admitted bounded forms are allowed; all need input modes, watermarks, event-time bounds, and state diagnostics | [Streaming API](api/Streaming.api.md) |
 | Raw SQL join predicates | unsupported | SQL strings in `on` | Use symbolic expressions or hooks | [Joins API](api/Joins.api.md) |
 
@@ -71,9 +74,9 @@ deterministic first/last helpers.
 | Having predicates | implemented | SQL/PySpark post-aggregate filters | Uses aggregate-output predicate scope | [Aggregations API](api/Aggregations.api.md) |
 | Implicit global aggregation | implemented | Global aggregate without grouping keys | Aggregate-only steps retain global semantics and enforce empty-input nullability | [Aggregations API](api/Aggregations.api.md) |
 | Ordered `collect_list` | implemented | Ordered collection aggregate | Explicit ascending/descending aggregate keys preserve deterministic collection order | [Aggregations API](api/Aggregations.api.md) |
-| Aggregate aliases | planned | `GroupedData.agg` aliases | Schema constructors own output aliases | Future planning |
+| Aggregate aliases | unsupported | `GroupedData.agg` aliases | Output schema constructors and field `alias=...` own aggregate names; no second aggregate aliasing API | [Aggregations API](api/Aggregations.api.md) |
 | Exact percentile family | implemented | `percentile`, `percentile_approx` | `percentile(...)` uses scalar 0-1 percentage and positive literal frequency; `approx_percentile(...)` is bounded-memory | [Aggregations API](api/Aggregations.api.md) |
-| Additional stats | planned | `skewness`, `kurtosis`, `mode` | `skewness(...)` and `kurtosis(...)` are implemented. V7 admits PySpark-named grouped `mode(value, deterministic=False)`: PySpark 4 uses its native deterministic argument and PySpark 3.5 uses an equivalent typed lowering when `deterministic=True`. | [Aggregations API](api/Aggregations.api.md) |
+| Additional stats | implemented | `skewness`, `kurtosis`, `mode` | `mode(value, deterministic=False)` uses PySpark 4 native deterministic mode and an equivalent typed PySpark 3.5 lowering when `deterministic=True` | [Aggregations API](api/Aggregations.api.md) |
 | Deterministic selected-row helpers | implemented | Ordered aggregate/window selection patterns | `earliest_by`, `latest_by`, `dedupe_earliest_by`, and `dedupe_latest_by` encode deterministic row-selection policy | [Aggregations API](api/Aggregations.api.md) |
 | Dict/list aggregate syntax | unsupported | `GroupedData.agg({"x": "sum"})` | Use typed helpers | [Aggregations API](api/Aggregations.api.md) |
 
@@ -102,7 +105,7 @@ Structure supports `arr_transform`, `arr_filter`, `arr_exists`, `arr_forall`, `a
 | Array slicing and sorting variants | implemented | `slice`, `array_sort`, `reverse` | `slice(...)`, `arr_sort(...)`, and `arr_reverse(...)` preserve typed array contracts | [Collections API](api/Collections.api.md) |
 | Element lookup and map concatenation | implemented | `element_at`, `try_element_at`, `map_concat` | Lookup results are nullable; safe lookup avoids out-of-range errors; map concat rejects duplicate-key policy overrides | [Collections API](api/Collections.api.md) |
 | `posexplode` over array of structs | implemented | `posexplode` | `posexplode_struct(...)` expands `array<struct>` with a declared generated scope | [Collections API](api/Collections.api.md) |
-| Other generator forms | deferred | `explode`, outer generators, `inline` | Needs row-expansion design; each form must define schema, cardinality, null, and streaming contracts | Use `@raw` |
+| Typed struct generator forms | implemented | `explode`, outer generators, `inline` | Typed struct generator helpers define schema, cardinality, nullability, and streaming classification | [Collections API](api/Collections.api.md) |
 | Python control flow in callbacks | unsupported | Arbitrary Python lambdas | Return symbolic expressions only | [Collections API](api/Collections.api.md) |
 
 ## Relation Operations
@@ -112,17 +115,17 @@ Structure additions over public DataFrame transformation patterns, not raw DataF
 
 | Capability | Status | PySpark parity | Structure contract | Reference |
 | --- | --- | --- | --- | --- |
-| Exact-schema set operations | implemented | `union`, `unionByName`, `intersect`, `intersectAll`, `subtract`, `exceptAll` | Exact-schema relation set composition uses Spark duplicate/distinct semantics and makes no ordering claim | Missing-column composition deferred |
+| Set operations | implemented/design-gated | `union`, `unionByName`, `intersect`, `intersectAll`, `subtract`, `exceptAll` | Exact-schema relation set composition is implemented; `union_by_name(..., allow_missing_columns=True)` is implemented for nullable top-level batch fills | Defaults, nested partial fills, and streaming missing-column union remain design-gated |
 | Branchable typed union | implemented | Union of compatible DataFrames | Independently materialized exact-schema lanes can converge through `union_all(...)` | Retired relevance-context expansion hooks |
 | `relation_alias` self joins | implemented | DataFrame aliases for self joins | Named typed occurrence of the active rowset or an unjoined relation | [Joins API](api/Joins.api.md) |
-| Relation order/limit/offset | implemented | `orderBy`, `limit`, `offset` | Typed order descriptors and literal bounds; bounds require ordered current relation state | `sample` deferred |
+| Relation order/limit/offset | implemented | `orderBy`, `limit`, `offset` | Typed order descriptors and literal bounds; bounds require ordered current relation state | [APIExtensions.md](APIExtensions.md#added-relation-helpers) |
 | `exactly_one` validation | implemented | Relation cardinality assertion | Declared assertion fails zero/multiple matches with `REL-E0701` | Retired Search query construction hook |
 | `require_unique` / `require_all` / `require_reference` | implemented | Spark-plan assertions | Key, predicate, and nullable parent-reference checks fail through `REL-E0702`/`REL-E0703`/`REL-E0704` | [APIExtensions.md](APIExtensions.md) |
 | Parent hierarchy validation | implemented | Finite DataFrame self-join validation | `require_parent_hierarchy(...)` checks missing parents, cycles, depth overruns, and child ordering with `REL-E0706` | [APIExtensions.md](APIExtensions.md) |
 | First-qualified priority selection | implemented | Priority row selection pattern | `select_first_qualified(...)` selects at most one eligible row per key and reports `REL-E0705` for configured missing/tie failures | Retired document reranking hook |
 | Parent hierarchy closure | implemented | Finite iterative self-join expansion | `hierarchy_closure(...)` replaces the active rowset with typed `(node, ancestor, depth)` rows up to literal `max_depth` | Retired cohort-band resolution hook |
 | Bounded parent hierarchy fallbacks | implemented | Hierarchy expansion patterns | `hierarchy_fallbacks(...)` emits ordered parent-substitution fallback IDs plus the terminal global fallback row | Retired cohort-band resolution hook |
-| Sampling | deferred | `sample` | Seed, replacement, and reproducibility contract is incomplete | Use `@raw` |
+| Sampling | implemented | `sample` | Relation-level `sample(...)` requires a seed unless `reproducible=False`; streaming compatibility is batch-only | [APIExtensions.md](APIExtensions.md#added-relation-helpers) |
 | Bounded ordered `scan(...)` | implemented | Ordered recurrence pattern | Batch-only typed state recurrence over a caller-supplied, partitioned, ordered timeline with duplicate-key and bound checks | [Ordered Timeline Scan](dev/specifications/OrderedTimelineScan.md) |
 | Matrix inversion | intentional raw | Driver-side numerical algorithm | Not a symbolic distributed DataFrame transformation | School example hook |
 
@@ -146,23 +149,29 @@ lifecycle recipe.
 | Cross-mode dedupe | implemented | `dropDuplicates`, `dropDuplicatesWithinWatermark` | `drop_duplicates(...)` uses batch `dropDuplicates` and streaming bounded dedupe after a watermark | [Streaming API](api/Streaming.api.md) |
 | Explicit bounded dedupe | implemented | `dropDuplicatesWithinWatermark` | `drop_duplicates_within_watermark(...)` requires `streaming=True` and a preceding watermark | [Streaming API](api/Streaming.api.md) |
 | Session-window aggregation | implemented | `session_window` | Requires a preceding watermark on the event-time field, a static positive gap, at least one ordinary grouping key, and caller-owned `append` mode | [Streaming API](api/Streaming.api.md) |
-| Chained window aggregation | deferred | `window_time`, `window(window(...))` | Needs a multi-stage state contract | Use caller-owned PySpark |
+| Chained window aggregation | design-gated | `window_time`, `window(window(...))` | V9 classified the boundary; multi-stage state still needs an explicit state contract | Use caller-owned PySpark |
+| Variant row-local helpers | implemented | `parse_json`, `schema_of_variant`, `variant_get`, `to_variant_object`, `is_variant_null` | Ordinary PySpark 4 profile-gated streaming transforms; PySpark 4.0 has live streaming evidence and PySpark 3.5 fails before execution | [Streaming API](api/Streaming.api.md) |
 | Bounded stream-stream outer and semi joins | implemented | Left/right/full outer and left-semi stream-stream joins | Requires declared streaming inputs, watermarks on both bound event-time fields, a compiler-visible event-time bound, and caller-owned `append` mode | [Streaming API](api/Streaming.api.md) |
 | Stream-static left semi join | implemented | Left-semi stream-static join | Non-stateful `exists(...)` filter when the active input is streaming and the right input is static | [Streaming API](api/Streaming.api.md) |
 | Unsupported stream-static directions | unsupported | Right/full/cross/anti stream-static joins | These runtime shapes are not admitted by Spark Structured Streaming | Use supported left/inner/left-semi lookup or caller-owned redesign |
 | Global/unbounded aggregation and dedupe | unsupported | Global `groupBy`, unwatermarked `dropDuplicates` | Structure will not admit unbounded state | Group by watermarked event time/window or bound state outside Structure |
-| Sorting, limits, analytic windows, selected-row helpers | deferred | `orderBy`, `limit`, ranking, `Window`, top-N | Caller-owned streaming logic; analytical windows remain batch-only | Use caller-owned PySpark |
-| Multiple stateful operators | deferred | Chains of streaming aggregates/dedupe/joins | Needs explicit composition and state-budget policy | Use caller-owned PySpark |
+| Global ordering, limits, and offsets | streaming-ineligible | `orderBy`, `sort`, `limit`, `offset` | V9 classifies these as batch-materialization boundaries over unbounded streams | Use caller-owned PySpark after a materialization boundary |
+| Priority selection | streaming-ineligible | `select_first_qualified`, top-N | Lowers through ranking and validation aggregates; v9 keeps it batch-only | Use caller-owned PySpark after a materialization boundary |
+| Analytic windows and selected-row helpers | design-gated | ranking, `Window`, lag/lead, rolling windows, latest/earliest | Need bounded streaming state, tie, frame, and output-mode contracts before admission | Use caller-owned PySpark |
+| Stateful composition boundary | implemented | One streaming aggregate/dedupe/join followed by stateless operations | V9 checks the one-stateful-plus-stateless policy and rejects a second stateful operation with diagnostics | [Streaming API](api/Streaming.api.md) |
+| Chained stateful operators | design-gated | Chains of streaming aggregates/dedupe/joins | Needs explicit composition and state-budget policy before Structure can own the shape | Use caller-owned PySpark |
 | Pandas, RDD, and state-processor boundaries | unsupported | Pandas UDF, RDD, `mapInPandas`, state processors | Opaque execution and user-owned state semantics do not fit Structure's symbolic transform contract | Use caller-owned streaming code |
-| Generators | planned | `explode`, `posexplode`, `inline` | Row-generator gate supplies schema/cardinality contract; each admitted generator must prove streaming classification | `posexplode_struct(...)` is batch-only today |
-| Caller-owned lifecycle APIs | unsupported | Sources, sinks, triggers, checkpoints, query start/stop, `foreachBatch` | Structure only transforms supplied DataFrames | Caller-owned lifecycle |
+| Typed struct generators | implemented | `explode`, `posexplode`, `inline` | Typed array-of-struct generators are admitted as stateless row expansion with schema/cardinality contracts | [Collections API](api/Collections.api.md) |
+| Caller-owned lifecycle APIs | caller-owned-guided | Sources, sinks, triggers, checkpoints, query start/stop | Structure only transforms supplied DataFrames; executable recipes keep lifecycle outside generated modules | [Streaming API](api/Streaming.api.md) |
+| `foreachBatch` side-effect sinks | caller-owned-guided | `DataStreamWriter.foreachBatch` | Use `examples.streams.adoption.start_foreach_batch_query(...)` after Structure returns a transformed DataFrame | [Streaming API](api/Streaming.api.md) |
+| Row-level `foreach` sinks | design-gated | `DataStreamWriter.foreach` | Needs sink identity, idempotence, retry, and recovery contracts before any Structure-owned support | [V9 Streaming Design Gates](dev/specifications/V9StreamingDesignGatedFeatures.md) |
 
 ## API Coverage
 
 This section is Structure's checked catalog for its PySpark `>=3.5,<4.1` transformation baseline. It covers typed
 transformations over caller-supplied DataFrames, not readers, writers, sessions, catalog/table management, actions, or
 streaming lifecycle. The companion streaming API ledger classifies PySpark Structured Streaming adoption APIs,
-stateful operations, lifecycle boundaries, and deferred/unsupported families. The machine-checked inventory and entries
+stateful operations, lifecycle boundaries, and design-gated/unsupported families. The machine-checked inventory and entries
 remain in
 [`pyspark-transformation-inventory.json`](../src/structure/plugin/pyspark/resources/pyspark-transformation-inventory.json)
 and
@@ -179,19 +188,19 @@ streaming-specific rows remain in
 | Struct mutation | supported | `with_field`, `drop_fields` | Requires exact declared struct shape. |
 | Column alias and raw `over` | unsupported | Schema fields; typed window helpers | Names and window contracts remain compiler-visible. |
 | Conditional/null/string/numeric/temporal functions | supported | `when`, `coalesce`, `nullif`, typed scalar helpers | Exact type and nullability semantics are compiler-visible. |
-| Hash and encoding | mixed | Typed hashes; `@raw` for binary encoding | Binary helpers await a public Binary type. |
-| JSON/CSV conversion | deferred | `@raw` hook | Inline Schema transport and stable option normalization need a dedicated IR contract. |
+| Hash and encoding | supported | Typed hashes, `base64`, `unbase64`, `encode`, `decode` | Hashes and binary encoding helpers are typed scalar expressions. |
+| JSON/CSV conversion | supported | `from_json`, `to_json`, `from_csv`, `to_csv` | Schema-carrying parsing keeps parser options and output schemas compiler-visible. |
 | Array construction, lookup, transformation | supported | Typed array helpers | Exact element/nullability and callback rules are validated. |
 | Map functions | supported | Typed map helpers | Callback bodies remain symbolic. |
-| Generator variants | supported/deferred | `posexplode_struct(...)`; `@raw` for other variants | The admitted generator expands `array<struct>` values with a declared generated scope and ordinal. |
+| Generator variants | supported | `explode_struct`, `explode_outer_struct`, `posexplode_struct`, `posexplode_outer_struct`, `inline_struct`, `inline_outer_struct` | Typed struct generators expand declared struct values with schema/cardinality contracts. |
 | Projection and filtering | supported | Schema projection and `where` | Schema owns output names and replacement. |
 | Joins and hints | supported | Typed join helpers, `relation_alias` | Explicit schema/cardinality; cross needs opt-in; self joins require named aliases. |
-| Set operations | supported/deferred | `union_all`, `union_by_name`, `intersect`, `intersect_all`, `subtract`, `except_all`; `@raw` for missing-column union | Exact-schema set operations are supported for inputs and independently materialized typed lanes. |
-| Ordering/limit/sample | supported/deferred | `order_by`, `limit`, `offset`; `@raw` for `sample` | Ordered bounds are compiler-visible and batch-only; sampling waits for seed/replacement/reproducibility semantics. |
+| Set operations | supported/design-gated | `union_all`, `union_by_name`, `intersect`, `intersect_all`, `subtract`, `except_all`; nullable missing-column `union_by_name` | Exact-schema set operations are supported; `allow_missing_columns=True` null-fills nullable top-level batch fields. Defaults, nested fills, and streaming missing-column union remain design-gated. |
+| Ordering/limit/sample | supported | `order_by`, `limit`, `offset`, `sample` | Ordered bounds are compiler-visible and batch-only; sampling requires explicit reproducibility policy and is batch-only. |
 | Priority selection | supported | `select_first_qualified` | Declared business keys, eligibility, and priority order select one row per key; configured missing/tie failures report `REL-E0705`. |
 | Distinct and deduplication | supported | `distinct`, `drop_duplicates` | Watermark form is streaming classified. |
 | Grouping and standard aggregates | supported | `group_by`, `rollup`, `cube`, typed aggregates | Declared aggregate output schema. |
-| Exact percentile and statistics | mixed | `percentile`, approximate and moment helpers; planned `mode(...)` | V7 plans grouped `mode(value, deterministic=False)`, with a native 4.0 deterministic path and an equivalent typed 3.5 lowering. |
+| Exact percentile and statistics | mixed | `percentile`, approximate and moment helpers, `mode(...)` | Grouped `mode(value, deterministic=False)` uses Spark 4 native deterministic mode and an equivalent typed Spark 3.5 lowering when `deterministic=True`. |
 | Ranking, selection, aggregate windows | supported | Typed window helpers | Raw `WindowSpec` is unsupported. |
 | Watermarks | supported | `watermark` | Caller owns source, sink, trigger, output mode, and lifecycle. |
 | Session window | supported | `session_window(event_time, gap)` | Static positive gap returns a typed `TimeWindow` grouping key. |

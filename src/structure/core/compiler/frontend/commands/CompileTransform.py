@@ -154,7 +154,7 @@ class CompileTransform:
             inputs=tuple(inputs),
             steps=tuple(steps),
             outputs=tuple(outputs),
-            options=dict(transform_class.__dict__.get("_structure_transform_options", {})),
+            options=transform_class.effective_transform_options(),
             diagnostics=tuple(diagnostics),
         )
 

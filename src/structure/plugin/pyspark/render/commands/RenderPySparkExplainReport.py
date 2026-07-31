@@ -196,6 +196,13 @@ class RenderPySparkExplainReport:
             return f"order_by(row_preserving keys={len(operation.relation_order.order_by)})"
         if operation.relation_bound is not None:
             return f"{operation.kind}(row_filtering count={operation.relation_bound.count})"
+        if operation.relation_sample is not None:
+            seed = "unseeded" if operation.relation_sample.seed is None else f"seed={operation.relation_sample.seed}"
+            return (
+                "sample(row_filtering "
+                f"fraction={operation.relation_sample.fraction:g} "
+                f"with_replacement={operation.relation_sample.with_replacement} {seed})"
+            )
         if operation.relation_priority_selection is not None:
             return (
                 "select_first_qualified(select_one "

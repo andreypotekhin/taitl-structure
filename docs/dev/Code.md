@@ -135,6 +135,13 @@ The logic classes provide an entry point - __call__ method - with specific (pref
 Invocations between top-level apps should go through their api endpoints. We have a number of cases
 when apps call other apps' commands directly, but we want to eliminate that pattern.
 
+### Plugin package structure
+- `src/structure/plugin/api` - Plugin API: defines Structure Plugin API for plugin developers.
+- `src/structure/plugin/pyspark` - PySpark plugin: PySpark DSL and compiler implementation - Structure's sole bundled plugin.
+
+PySpark plugin package is divided into smaller 'applications' similarly to Core.
+Applications typically consist of api/, commands/, logic/ subpackages, with api/ endpoints used for interapp calls.
+
 #### Helper Library
 Any and all code that is general/not pertaining to immediate business use case must be placed/relocated
 to Helper Library (`structure.lib.helper`)
@@ -151,6 +158,7 @@ navigating to a public-facing class or DSL method definition in an IDE. These ar
 to end-user with comprehensive doc comments and references to PySpark parity functions/methods.  
 
 High-traffic areas:
+- `src/structure/plugin/api` - Plugin API
 - `src/structure/plugin/pyspark/dsl` - PySpark DSL
 - `src/structure/core/dsl` - Core DSL
 
@@ -171,3 +179,59 @@ Change 'Examples:' to singular 'Example:' if only showing one example.
 
 Mention PySpark DSL counterpart, if non-obvious/non-exact.
 
+### Example apps structure
+We provide several example apps - Search, Security, School - under examples/ dir, as aid to end-user 
+and as input to integration and golden tests.
+
+These applications almost entirely consist of schemas and transformers - there is no attempt to make them 
+ready to deploy - end-user needs to provide data, Spark instance etc. in order of the code to run.
+
+```text
+examples/
+  fixtures/ - Per-app data for the tests
+  plugin/ - Example minimal plugin to aid plugin developers
+  school/ - Example app
+  search/ - Example app
+  security/ - Example app
+  ...
+```
+Example app dir is divided into schemas/ and transforms/:
+```text
+examples/
+  search/
+    schemas/
+    transforms/
+  ...
+```
+
+Inside `schemas/` and `transforms/`, the app is divided into cohesive modules. Example: evaluation, 
+experiments, indexing, scoring modules in the Search app.
+
+- Schema dir structure follows module breakdown of transforms/ dir.
+- Inside a module, further submodules can be introduced as needed.
+
+#### Example apps file names
+A module/submodule often implements an ordered sequence of transforms - a pipeline 
+with stages. 
+
+To allow code reader understand the order of the stages, we name them in the way that 
+would convey the processing order from top to bottom. For instance, the pipeline inside 
+searching/search_docs/ starts with admit.py and proceeds through rerank.py; the last
+file - workflow.py - defines overall pipeline. Classes inside such stage-named files 
+can differ in name with file name, although most of them reflect file name.
+```text
+
+examples/
+  search/
+    schemas/
+    transforms/
+      searching/
+        search_docs/
+          admit.py 
+          overlap.py
+          rerank.py
+          workflow.py          
+  ...
+```
+Note: we are currently switching from CamelCase to underscored_lower in example app file naming
+(not in the main codebase). Please use it from this point on in example apps.  
