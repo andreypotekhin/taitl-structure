@@ -207,17 +207,19 @@ examples/
 Inside `schemas/` and `transforms/`, the app is divided into cohesive modules. Example: evaluation, 
 experiments, indexing, scoring modules in the Search app.
 
-- Schema dir structure follows module breakdown of transforms/ dir.
 - Inside a module, further submodules can be introduced as needed.
+- Schema dir structure follows module breakdown of transforms/ dir.
+- Schema dir keeps intermediate (e.g. lane-specific) schemas in a designated file: workflow.py
 
 #### Example apps file names
 A module/submodule often implements an ordered sequence of transforms - a pipeline 
 with stages. 
 
-To allow code reader understand the order of the stages, we name them in the way that 
-would convey the processing order from top to bottom. For instance, the pipeline inside 
+##### 'Alpha+workflow' naming 
+To allow code reader understand the order of pipeline stages, we name the files in the
+way that convey the processing order from top to bottom. For instance, the pipeline inside 
 searching/search_docs/ starts with admit.py and proceeds through rerank.py; the last
-file - workflow.py - defines overall pipeline. Classes inside such stage-named files 
+file - workflow.py - defines the overall pipeline. Classes inside such stage-named files 
 can differ in name with file name, although most of them reflect file name.
 ```text
 

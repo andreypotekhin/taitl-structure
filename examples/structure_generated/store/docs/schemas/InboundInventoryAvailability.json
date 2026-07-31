@@ -33,6 +33,6 @@
     }
   ],
   "generated_by": "Structure",
-  "module": "examples.store.schemas.fulfillment.planning.intermediate",
+  "module": "examples.store.schemas.fulfillment.planning.workflow",
   "name": "InboundInventoryAvailability"
 }

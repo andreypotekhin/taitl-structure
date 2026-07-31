@@ -6,21 +6,17 @@ from typing import Any, cast
 
 from helpers.example_projects import render_store_example
 
-from examples.store.transforms.fulfillment.demand.PrepareOrderDemand import PrepareOrderDemand
-from examples.store.transforms.fulfillment.Fulfillment import Fulfillment
-from examples.store.transforms.merchandising.clicks.BuildRecommendationSignals import BuildRecommendationSignals
-from examples.store.transforms.merchandising.clicks.EvaluateMerchandising import EvaluateMerchandising
-from examples.store.transforms.merchandising.Merchandising import Merchandising
-from examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates import (
-    SelectRecommendationCandidates,
-)
+from examples.store.transforms.fulfillment.demand import PrepareOrderDemand
+from examples.store.transforms.fulfillment.workflow import Fulfillment
+from examples.store.transforms.merchandising.clicks.build_signals import BuildRecommendationSignals
+from examples.store.transforms.merchandising.clicks.workflow import EvaluateMerchandising
+from examples.store.transforms.merchandising.recommender.admit import SelectRecommendationCandidates
 from examples.store.transforms.merchandising.recommender.rank import Ranker, RankRecommendationCandidates
-from examples.store.transforms.merchandising.recommender.Recommender import Recommender
-from examples.store.transforms.merchandising.recommender.summarize.SummarizeRecommendationRuns import (
-    SummarizeRecommendationRuns,
-)
+from examples.store.transforms.merchandising.recommender.summarize import SummarizeRecommendationRuns
+from examples.store.transforms.merchandising.recommender.workflow import Recommender
+from examples.store.transforms.merchandising.workflow import Merchandising
 from examples.store.transforms.order import EnrichOrders
-from examples.store.transforms.rowset_join import RowsetJoinExamples
+from examples.store.transforms.rowset_joins.rowset_join_examples import RowsetJoinExamples
 from structure.core.compiler.api import Compiler
 from structure.plugin.api.v1.model.TransformPlan import TransformPlan
 from structure.plugin.pyspark import literal
@@ -99,6 +95,11 @@ def test_store_live_event_inputs_are_marked_streaming_at_source_boundaries() -> 
 
         assert modes["requests"]
         assert any(not streaming for name, streaming in modes.items() if name != "requests")
+
+    merchandising_modes = _input_modes(Merchandising)
+    assert merchandising_modes["feedback_impressions"]
+    assert merchandising_modes["feedback_clicks"]
+    assert not merchandising_modes["evaluation_requests"]
 
     assert not _input_modes(EvaluateMerchandising)["requests"]
     assert not _input_modes(RowsetJoinExamples)["orders"]
@@ -189,10 +190,10 @@ def test_fulfillment_planning_matches_independent_reference_rows() -> None:
 
 
 def test_fulfillment_generated_code_exposes_planning_contract() -> None:
-    transform = render_store_example()["examples/structure_generated/store/pyspark/transforms/PlanFulfillment.py"]
+    transform = render_store_example()["examples/structure_generated/store/pyspark/transforms/plan.py"]
 
     reference_fragments = [
-        'assert_schema(demand, ORDER_DEMAND_SCHEMA, name="OrderDemand", mode="strict")',
+        'assert_schema(demand, ORDER_SCHEMA, name="Order", mode="strict")',
         'assert_schema(warehouses, WAREHOUSE_SCHEMA, name="Warehouse", mode="strict")',
         'assert_schema(inventory_positions, INVENTORY_POSITION_SCHEMA, name="InventoryPosition", mode="strict")',
         'alias("available_to_promise")',
@@ -209,10 +210,10 @@ def test_fulfillment_generated_code_exposes_planning_contract() -> None:
 
 
 def test_fulfillment_pipeline_generated_code_exposes_overall_flow() -> None:
-    transform = render_store_example()["examples/structure_generated/store/pyspark/transforms/Fulfillment.py"]
+    transform = render_store_example()["examples/structure_generated/store/pyspark/transforms/fulfillment_workflow.py"]
 
     reference_fragments = [
-        "# Source: examples.store.transforms.fulfillment.Fulfillment.Fulfillment",
+        "# Source: examples.store.transforms.fulfillment.workflow.Fulfillment",
         "class FulfillmentGenerated(",
         "# Step method: prepared.publish_demand",
         "# Step method: planned.plan",
@@ -288,7 +289,7 @@ def test_merchandising_recommendations_match_independent_reference_rows() -> Non
 
 
 def test_recommend_generated_code_exposes_named_score_and_ranking_contract() -> None:
-    transform = render_store_example()["examples/structure_generated/store/pyspark/transforms/Recommender.py"]
+    transform = render_store_example()["examples/structure_generated/store/pyspark/transforms/recommender_workflow.py"]
 
     reference_fragments = [
         "class RankRecommendationCandidatesGenerated:",

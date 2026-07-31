@@ -3,7 +3,7 @@ from structure import Schema
 from structure.plugin.pyspark import *
 
 
-class OrderDemand(Schema):
+class Order(Schema):
     tenant = struct(TenantKey, nullable=False)
     business = struct(BusinessDate, nullable=False)
     order_id = string(nullable=False)
@@ -22,3 +22,7 @@ class OrderDemand(Schema):
     net_total = decimal(12, 2, nullable=False)
     requested_quantity = long(nullable=False)
     is_large = boolean(nullable=False)
+
+
+# Compatibility name for callers using the original demand-oriented name.
+OrderDemand = Order

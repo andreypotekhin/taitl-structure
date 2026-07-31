@@ -1,0 +1,2357 @@
+{
+  "backend": {
+    "name": "pyspark",
+    "target": ">=3.5,<4.1"
+  },
+  "generated_transform_class": "EvaluateMerchandisingGenerated",
+  "inputs": [
+    {
+      "name": "batch",
+      "ordinal": 0,
+      "schema": "RecommendationEvaluationBatch"
+    },
+    {
+      "name": "requests",
+      "ordinal": 1,
+      "schema": "RecommendationRequest"
+    },
+    {
+      "name": "impressions",
+      "ordinal": 2,
+      "schema": "RecommendationImpression"
+    },
+    {
+      "name": "clicks",
+      "ordinal": 3,
+      "schema": "RecommendationClick"
+    }
+  ],
+  "provenance": [
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated",
+      "ir": "ir:EvaluateMerchandising",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.input.batch",
+      "ir": "ir:EvaluateMerchandising.input.0.batch",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.input.batch"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.input.requests",
+      "ir": "ir:EvaluateMerchandising.input.1.requests",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.input.requests"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.input.impressions",
+      "ir": "ir:EvaluateMerchandising.input.2.impressions",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.input.impressions"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.input.clicks",
+      "ir": "ir:EvaluateMerchandising.input.3.clicks",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.input.clicks"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.0.selected.select_requests",
+      "ir": "ir:EvaluateMerchandising.step.0.selected.select_requests",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.selected.select_requests"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.0.selected.select_requests.where.0",
+      "ir": "ir:EvaluateMerchandising.step.0.selected.select_requests.filter.0",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.selected.select_requests.filter.0"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.0.selected.select_requests.join.1.batch",
+      "ir": "ir:EvaluateMerchandising.step.0.selected.select_requests.join.1.batch",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.selected.select_requests.join.1.batch"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.0.selected.select_requests.select.window",
+      "ir": "ir:EvaluateMerchandising.step.0.selected.select_requests.project.window",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.selected.select_requests.field.window"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.0.selected.select_requests.select.tenant",
+      "ir": "ir:EvaluateMerchandising.step.0.selected.select_requests.project.tenant",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.selected.select_requests.field.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.0.selected.select_requests.select.request_id",
+      "ir": "ir:EvaluateMerchandising.step.0.selected.select_requests.project.request_id",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.selected.select_requests.field.request_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.0.selected.select_requests.select.strategy_id",
+      "ir": "ir:EvaluateMerchandising.step.0.selected.select_requests.project.strategy_id",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.selected.select_requests.field.strategy_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.0.selected.select_requests.select.policy_version",
+      "ir": "ir:EvaluateMerchandising.step.0.selected.select_requests.project.policy_version",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.selected.select_requests.field.policy_version"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.0.selected.select_requests.select.result_count",
+      "ir": "ir:EvaluateMerchandising.step.0.selected.select_requests.project.result_count",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.selected.select_requests.field.result_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.0.selected.select_requests.select.clicked_result_count",
+      "ir": "ir:EvaluateMerchandising.step.0.selected.select_requests.project.clicked_result_count",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.selected.select_requests.field.clicked_result_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.0.selected.select_requests.select.has_click",
+      "ir": "ir:EvaluateMerchandising.step.0.selected.select_requests.project.has_click",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.selected.select_requests.field.has_click"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.0.selected.select_requests.select.first_click_rank",
+      "ir": "ir:EvaluateMerchandising.step.0.selected.select_requests.project.first_click_rank",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.selected.select_requests.field.first_click_rank"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.0.selected.select_requests.select.raw_click_count",
+      "ir": "ir:EvaluateMerchandising.step.0.selected.select_requests.project.raw_click_count",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.selected.select_requests.field.raw_click_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.0.selected.select_requests.validation.0.intermediate",
+      "ir": "ir:EvaluateMerchandising.step.0.selected.select_requests.validation.0.intermediate",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.selected.select_requests.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.1.impressions_measured.select_impressions",
+      "ir": "ir:EvaluateMerchandising.step.1.impressions_measured.select_impressions",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.select_impressions"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.1.impressions_measured.select_impressions.join.1.impression",
+      "ir": "ir:EvaluateMerchandising.step.1.impressions_measured.select_impressions.join.1.impression",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.select_impressions.join.1.impression"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.1.impressions_measured.select_impressions.select.window",
+      "ir": "ir:EvaluateMerchandising.step.1.impressions_measured.select_impressions.project.window",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.select_impressions.field.window"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.1.impressions_measured.select_impressions.select.tenant",
+      "ir": "ir:EvaluateMerchandising.step.1.impressions_measured.select_impressions.project.tenant",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.select_impressions.field.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.1.impressions_measured.select_impressions.select.request_id",
+      "ir": "ir:EvaluateMerchandising.step.1.impressions_measured.select_impressions.project.request_id",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.select_impressions.field.request_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.1.impressions_measured.select_impressions.select.strategy_id",
+      "ir": "ir:EvaluateMerchandising.step.1.impressions_measured.select_impressions.project.strategy_id",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.select_impressions.field.strategy_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.1.impressions_measured.select_impressions.select.policy_version",
+      "ir": "ir:EvaluateMerchandising.step.1.impressions_measured.select_impressions.project.policy_version",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.select_impressions.field.policy_version"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.1.impressions_measured.select_impressions.select.impression_id",
+      "ir": "ir:EvaluateMerchandising.step.1.impressions_measured.select_impressions.project.impression_id",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.select_impressions.field.impression_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.1.impressions_measured.select_impressions.select.shown_at",
+      "ir": "ir:EvaluateMerchandising.step.1.impressions_measured.select_impressions.project.shown_at",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.select_impressions.field.shown_at"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.1.impressions_measured.select_impressions.select.product_id",
+      "ir": "ir:EvaluateMerchandising.step.1.impressions_measured.select_impressions.project.product_id",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.select_impressions.field.product_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.1.impressions_measured.select_impressions.select.rank",
+      "ir": "ir:EvaluateMerchandising.step.1.impressions_measured.select_impressions.project.rank",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.select_impressions.field.rank"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.1.impressions_measured.select_impressions.select.examination_propensity",
+      "ir": "ir:EvaluateMerchandising.step.1.impressions_measured.select_impressions.project.examination_propensity",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.select_impressions.field.examination_propensity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.1.impressions_measured.select_impressions.select.click_count",
+      "ir": "ir:EvaluateMerchandising.step.1.impressions_measured.select_impressions.project.click_count",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.select_impressions.field.click_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.1.impressions_measured.select_impressions.validation.0.intermediate",
+      "ir": "ir:EvaluateMerchandising.step.1.impressions_measured.select_impressions.validation.0.intermediate",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.select_impressions.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.2.impressions_measured.attribute_clicks",
+      "ir": "ir:EvaluateMerchandising.step.2.impressions_measured.attribute_clicks",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.attribute_clicks"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.2.impressions_measured.attribute_clicks.join.1.click",
+      "ir": "ir:EvaluateMerchandising.step.2.impressions_measured.attribute_clicks.join.1.click",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.attribute_clicks.join.1.click"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.2.impressions_measured.attribute_clicks.aggregate.window",
+      "ir": "ir:EvaluateMerchandising.step.2.impressions_measured.attribute_clicks.aggregate.window",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.attribute_clicks.aggregate.window"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.2.impressions_measured.attribute_clicks.aggregate.tenant",
+      "ir": "ir:EvaluateMerchandising.step.2.impressions_measured.attribute_clicks.aggregate.tenant",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.attribute_clicks.aggregate.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.2.impressions_measured.attribute_clicks.aggregate.request_id",
+      "ir": "ir:EvaluateMerchandising.step.2.impressions_measured.attribute_clicks.aggregate.request_id",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.attribute_clicks.aggregate.request_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.2.impressions_measured.attribute_clicks.aggregate.strategy_id",
+      "ir": "ir:EvaluateMerchandising.step.2.impressions_measured.attribute_clicks.aggregate.strategy_id",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.attribute_clicks.aggregate.strategy_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.2.impressions_measured.attribute_clicks.aggregate.policy_version",
+      "ir": "ir:EvaluateMerchandising.step.2.impressions_measured.attribute_clicks.aggregate.policy_version",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.attribute_clicks.aggregate.policy_version"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.2.impressions_measured.attribute_clicks.aggregate.impression_id",
+      "ir": "ir:EvaluateMerchandising.step.2.impressions_measured.attribute_clicks.aggregate.impression_id",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.attribute_clicks.aggregate.impression_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.2.impressions_measured.attribute_clicks.aggregate.shown_at",
+      "ir": "ir:EvaluateMerchandising.step.2.impressions_measured.attribute_clicks.aggregate.shown_at",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.attribute_clicks.aggregate.shown_at"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.2.impressions_measured.attribute_clicks.aggregate.product_id",
+      "ir": "ir:EvaluateMerchandising.step.2.impressions_measured.attribute_clicks.aggregate.product_id",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.attribute_clicks.aggregate.product_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.2.impressions_measured.attribute_clicks.aggregate.rank",
+      "ir": "ir:EvaluateMerchandising.step.2.impressions_measured.attribute_clicks.aggregate.rank",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.attribute_clicks.aggregate.rank"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.2.impressions_measured.attribute_clicks.aggregate.examination_propensity",
+      "ir": "ir:EvaluateMerchandising.step.2.impressions_measured.attribute_clicks.aggregate.examination_propensity",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.attribute_clicks.aggregate.examination_propensity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.2.impressions_measured.attribute_clicks.aggregate.click_count",
+      "ir": "ir:EvaluateMerchandising.step.2.impressions_measured.attribute_clicks.aggregate.click_count",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.attribute_clicks.aggregate.click_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.2.impressions_measured.attribute_clicks.validation.0.intermediate",
+      "ir": "ir:EvaluateMerchandising.step.2.impressions_measured.attribute_clicks.validation.0.intermediate",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.attribute_clicks.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.3.impressions_measured.measure_impressions",
+      "ir": "ir:EvaluateMerchandising.step.3.impressions_measured.measure_impressions",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.measure_impressions"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.3.impressions_measured.measure_impressions.join.1.clicked",
+      "ir": "ir:EvaluateMerchandising.step.3.impressions_measured.measure_impressions.join.1.clicked",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.measure_impressions.join.1.clicked"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.3.impressions_measured.measure_impressions.select.window",
+      "ir": "ir:EvaluateMerchandising.step.3.impressions_measured.measure_impressions.project.window",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.measure_impressions.field.window"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.3.impressions_measured.measure_impressions.select.tenant",
+      "ir": "ir:EvaluateMerchandising.step.3.impressions_measured.measure_impressions.project.tenant",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.measure_impressions.field.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.3.impressions_measured.measure_impressions.select.request_id",
+      "ir": "ir:EvaluateMerchandising.step.3.impressions_measured.measure_impressions.project.request_id",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.measure_impressions.field.request_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.3.impressions_measured.measure_impressions.select.strategy_id",
+      "ir": "ir:EvaluateMerchandising.step.3.impressions_measured.measure_impressions.project.strategy_id",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.measure_impressions.field.strategy_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.3.impressions_measured.measure_impressions.select.policy_version",
+      "ir": "ir:EvaluateMerchandising.step.3.impressions_measured.measure_impressions.project.policy_version",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.measure_impressions.field.policy_version"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.3.impressions_measured.measure_impressions.select.impression_id",
+      "ir": "ir:EvaluateMerchandising.step.3.impressions_measured.measure_impressions.project.impression_id",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.measure_impressions.field.impression_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.3.impressions_measured.measure_impressions.select.shown_at",
+      "ir": "ir:EvaluateMerchandising.step.3.impressions_measured.measure_impressions.project.shown_at",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.measure_impressions.field.shown_at"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.3.impressions_measured.measure_impressions.select.product_id",
+      "ir": "ir:EvaluateMerchandising.step.3.impressions_measured.measure_impressions.project.product_id",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.measure_impressions.field.product_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.3.impressions_measured.measure_impressions.select.rank",
+      "ir": "ir:EvaluateMerchandising.step.3.impressions_measured.measure_impressions.project.rank",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.measure_impressions.field.rank"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.3.impressions_measured.measure_impressions.select.examination_propensity",
+      "ir": "ir:EvaluateMerchandising.step.3.impressions_measured.measure_impressions.project.examination_propensity",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.measure_impressions.field.examination_propensity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.3.impressions_measured.measure_impressions.select.click_count",
+      "ir": "ir:EvaluateMerchandising.step.3.impressions_measured.measure_impressions.project.click_count",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.measure_impressions.field.click_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.3.impressions_measured.measure_impressions.validation.0.intermediate",
+      "ir": "ir:EvaluateMerchandising.step.3.impressions_measured.measure_impressions.validation.0.intermediate",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.impressions_measured.measure_impressions.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.4.requests_measured.measure_requests",
+      "ir": "ir:EvaluateMerchandising.step.4.requests_measured.measure_requests",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.requests_measured.measure_requests"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.4.requests_measured.measure_requests.join.1.impression",
+      "ir": "ir:EvaluateMerchandising.step.4.requests_measured.measure_requests.join.1.impression",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.requests_measured.measure_requests.join.1.impression"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.4.requests_measured.measure_requests.aggregate.window",
+      "ir": "ir:EvaluateMerchandising.step.4.requests_measured.measure_requests.aggregate.window",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.requests_measured.measure_requests.aggregate.window"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.4.requests_measured.measure_requests.aggregate.tenant",
+      "ir": "ir:EvaluateMerchandising.step.4.requests_measured.measure_requests.aggregate.tenant",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.requests_measured.measure_requests.aggregate.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.4.requests_measured.measure_requests.aggregate.request_id",
+      "ir": "ir:EvaluateMerchandising.step.4.requests_measured.measure_requests.aggregate.request_id",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.requests_measured.measure_requests.aggregate.request_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.4.requests_measured.measure_requests.aggregate.strategy_id",
+      "ir": "ir:EvaluateMerchandising.step.4.requests_measured.measure_requests.aggregate.strategy_id",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.requests_measured.measure_requests.aggregate.strategy_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.4.requests_measured.measure_requests.aggregate.policy_version",
+      "ir": "ir:EvaluateMerchandising.step.4.requests_measured.measure_requests.aggregate.policy_version",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.requests_measured.measure_requests.aggregate.policy_version"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.4.requests_measured.measure_requests.aggregate.result_count",
+      "ir": "ir:EvaluateMerchandising.step.4.requests_measured.measure_requests.aggregate.result_count",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.requests_measured.measure_requests.aggregate.result_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.4.requests_measured.measure_requests.aggregate.clicked_result_count",
+      "ir": "ir:EvaluateMerchandising.step.4.requests_measured.measure_requests.aggregate.clicked_result_count",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.requests_measured.measure_requests.aggregate.clicked_result_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.4.requests_measured.measure_requests.aggregate.has_click",
+      "ir": "ir:EvaluateMerchandising.step.4.requests_measured.measure_requests.aggregate.has_click",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.requests_measured.measure_requests.aggregate.has_click"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.4.requests_measured.measure_requests.aggregate.first_click_rank",
+      "ir": "ir:EvaluateMerchandising.step.4.requests_measured.measure_requests.aggregate.first_click_rank",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.requests_measured.measure_requests.aggregate.first_click_rank"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.4.requests_measured.measure_requests.aggregate.raw_click_count",
+      "ir": "ir:EvaluateMerchandising.step.4.requests_measured.measure_requests.aggregate.raw_click_count",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.requests_measured.measure_requests.aggregate.raw_click_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.4.requests_measured.measure_requests.validation.0.intermediate",
+      "ir": "ir:EvaluateMerchandising.step.4.requests_measured.measure_requests.validation.0.intermediate",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.requests_measured.measure_requests.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.5.summarized.summarize_exposure",
+      "ir": "ir:EvaluateMerchandising.step.5.summarized.summarize_exposure",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.summarize_exposure"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.5.summarized.summarize_exposure.aggregate.window",
+      "ir": "ir:EvaluateMerchandising.step.5.summarized.summarize_exposure.aggregate.window",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.summarize_exposure.aggregate.window"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.5.summarized.summarize_exposure.aggregate.tenant",
+      "ir": "ir:EvaluateMerchandising.step.5.summarized.summarize_exposure.aggregate.tenant",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.summarize_exposure.aggregate.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.5.summarized.summarize_exposure.aggregate.strategy_id",
+      "ir": "ir:EvaluateMerchandising.step.5.summarized.summarize_exposure.aggregate.strategy_id",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.summarize_exposure.aggregate.strategy_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.5.summarized.summarize_exposure.aggregate.policy_version",
+      "ir": "ir:EvaluateMerchandising.step.5.summarized.summarize_exposure.aggregate.policy_version",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.summarize_exposure.aggregate.policy_version"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.5.summarized.summarize_exposure.aggregate.exposure_weight",
+      "ir": "ir:EvaluateMerchandising.step.5.summarized.summarize_exposure.aggregate.exposure_weight",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.summarize_exposure.aggregate.exposure_weight"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.5.summarized.summarize_exposure.aggregate.click_weight",
+      "ir": "ir:EvaluateMerchandising.step.5.summarized.summarize_exposure.aggregate.click_weight",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.summarize_exposure.aggregate.click_weight"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.5.summarized.summarize_exposure.validation.0.intermediate",
+      "ir": "ir:EvaluateMerchandising.step.5.summarized.summarize_exposure.validation.0.intermediate",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.summarize_exposure.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.6.summarized.summarize_requests",
+      "ir": "ir:EvaluateMerchandising.step.6.summarized.summarize_requests",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.summarize_requests"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.6.summarized.summarize_requests.aggregate.window",
+      "ir": "ir:EvaluateMerchandising.step.6.summarized.summarize_requests.aggregate.window",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.summarize_requests.aggregate.window"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.6.summarized.summarize_requests.aggregate.tenant",
+      "ir": "ir:EvaluateMerchandising.step.6.summarized.summarize_requests.aggregate.tenant",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.summarize_requests.aggregate.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.6.summarized.summarize_requests.aggregate.strategy_id",
+      "ir": "ir:EvaluateMerchandising.step.6.summarized.summarize_requests.aggregate.strategy_id",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.summarize_requests.aggregate.strategy_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.6.summarized.summarize_requests.aggregate.policy_version",
+      "ir": "ir:EvaluateMerchandising.step.6.summarized.summarize_requests.aggregate.policy_version",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.summarize_requests.aggregate.policy_version"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.6.summarized.summarize_requests.aggregate.request_count",
+      "ir": "ir:EvaluateMerchandising.step.6.summarized.summarize_requests.aggregate.request_count",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.summarize_requests.aggregate.request_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.6.summarized.summarize_requests.aggregate.zero_result_request_count",
+      "ir": "ir:EvaluateMerchandising.step.6.summarized.summarize_requests.aggregate.zero_result_request_count",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.summarize_requests.aggregate.zero_result_request_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.6.summarized.summarize_requests.aggregate.clicked_request_count",
+      "ir": "ir:EvaluateMerchandising.step.6.summarized.summarize_requests.aggregate.clicked_request_count",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.summarize_requests.aggregate.clicked_request_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.6.summarized.summarize_requests.aggregate.zero_result_rate",
+      "ir": "ir:EvaluateMerchandising.step.6.summarized.summarize_requests.aggregate.zero_result_rate",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.summarize_requests.aggregate.zero_result_rate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.6.summarized.summarize_requests.aggregate.clicked_request_rate",
+      "ir": "ir:EvaluateMerchandising.step.6.summarized.summarize_requests.aggregate.clicked_request_rate",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.summarize_requests.aggregate.clicked_request_rate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.6.summarized.summarize_requests.aggregate.mean_first_click_rank",
+      "ir": "ir:EvaluateMerchandising.step.6.summarized.summarize_requests.aggregate.mean_first_click_rank",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.summarize_requests.aggregate.mean_first_click_rank"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.6.summarized.summarize_requests.aggregate.raw_click_count",
+      "ir": "ir:EvaluateMerchandising.step.6.summarized.summarize_requests.aggregate.raw_click_count",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.summarize_requests.aggregate.raw_click_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.6.summarized.summarize_requests.aggregate.exposure_adjusted_click_rate",
+      "ir": "ir:EvaluateMerchandising.step.6.summarized.summarize_requests.aggregate.exposure_adjusted_click_rate",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.summarize_requests.aggregate.exposure_adjusted_click_rate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.6.summarized.summarize_requests.validation.0.intermediate",
+      "ir": "ir:EvaluateMerchandising.step.6.summarized.summarize_requests.validation.0.intermediate",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.summarize_requests.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.7.summarized.publish_daily",
+      "ir": "ir:EvaluateMerchandising.step.7.summarized.publish_daily",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.publish_daily"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.7.summarized.publish_daily.join.1.exposure",
+      "ir": "ir:EvaluateMerchandising.step.7.summarized.publish_daily.join.1.exposure",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.publish_daily.join.1.exposure"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.7.summarized.publish_daily.select.window",
+      "ir": "ir:EvaluateMerchandising.step.7.summarized.publish_daily.project.window",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.publish_daily.field.window"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.7.summarized.publish_daily.select.tenant",
+      "ir": "ir:EvaluateMerchandising.step.7.summarized.publish_daily.project.tenant",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.publish_daily.field.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.7.summarized.publish_daily.select.strategy_id",
+      "ir": "ir:EvaluateMerchandising.step.7.summarized.publish_daily.project.strategy_id",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.publish_daily.field.strategy_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.7.summarized.publish_daily.select.policy_version",
+      "ir": "ir:EvaluateMerchandising.step.7.summarized.publish_daily.project.policy_version",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.publish_daily.field.policy_version"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.7.summarized.publish_daily.select.request_count",
+      "ir": "ir:EvaluateMerchandising.step.7.summarized.publish_daily.project.request_count",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.publish_daily.field.request_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.7.summarized.publish_daily.select.zero_result_request_count",
+      "ir": "ir:EvaluateMerchandising.step.7.summarized.publish_daily.project.zero_result_request_count",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.publish_daily.field.zero_result_request_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.7.summarized.publish_daily.select.clicked_request_count",
+      "ir": "ir:EvaluateMerchandising.step.7.summarized.publish_daily.project.clicked_request_count",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.publish_daily.field.clicked_request_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.7.summarized.publish_daily.select.zero_result_rate",
+      "ir": "ir:EvaluateMerchandising.step.7.summarized.publish_daily.project.zero_result_rate",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.publish_daily.field.zero_result_rate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.7.summarized.publish_daily.select.clicked_request_rate",
+      "ir": "ir:EvaluateMerchandising.step.7.summarized.publish_daily.project.clicked_request_rate",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.publish_daily.field.clicked_request_rate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.7.summarized.publish_daily.select.mean_first_click_rank",
+      "ir": "ir:EvaluateMerchandising.step.7.summarized.publish_daily.project.mean_first_click_rank",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.publish_daily.field.mean_first_click_rank"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.7.summarized.publish_daily.select.raw_click_count",
+      "ir": "ir:EvaluateMerchandising.step.7.summarized.publish_daily.project.raw_click_count",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.publish_daily.field.raw_click_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.step.7.summarized.publish_daily.select.exposure_adjusted_click_rate",
+      "ir": "ir:EvaluateMerchandising.step.7.summarized.publish_daily.project.exposure_adjusted_click_rate",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.summarized.publish_daily.field.exposure_adjusted_click_rate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.output.0.request_behaviors.validation.final",
+      "ir": "ir:EvaluateMerchandising.output.0.request_behaviors.validation.final",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.output.request_behaviors"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.clicks_workflow.EvaluateMerchandisingGenerated.run.output.1.daily_behavior.validation.final",
+      "ir": "ir:EvaluateMerchandising.output.1.daily_behavior.validation.final",
+      "source": "source:examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising.output.daily_behavior"
+    }
+  ],
+  "schema_constants": {
+    "Address": {
+      "constant": "ADDRESS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "AuditStamp": {
+      "constant": "AUDIT_STAMP_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "BlockedProduct": {
+      "constant": "BLOCKED_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.product"
+    },
+    "BusinessDate": {
+      "constant": "BUSINESS_DATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "CatalogAvailability": {
+      "constant": "CATALOG_AVAILABILITY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+    },
+    "CatalogProduct": {
+      "constant": "CATALOG_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+    },
+    "Customer": {
+      "constant": "CUSTOMER_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.customer"
+    },
+    "CustomerDailyTotal": {
+      "constant": "CUSTOMER_DAILY_TOTAL_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.analytics"
+    },
+    "CustomerEventRank": {
+      "constant": "CUSTOMER_EVENT_RANK_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.analytics"
+    },
+    "CustomerOrderBackfill": {
+      "constant": "CUSTOMER_ORDER_BACKFILL_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "DailyFulfillmentSummary": {
+      "constant": "DAILY_FULFILLMENT_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.summary"
+    },
+    "DailyRecommendationBehavior": {
+      "constant": "DAILY_RECOMMENDATION_BEHAVIOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.evaluation"
+    },
+    "DailyRecommendationClicks": {
+      "constant": "DAILY_RECOMMENDATION_CLICKS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "DailyRecommendationCounts": {
+      "constant": "DAILY_RECOMMENDATION_COUNTS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "DailyRecommendationImpressions": {
+      "constant": "DAILY_RECOMMENDATION_IMPRESSIONS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "FulfillmentAllocation": {
+      "constant": "FULFILLMENT_ALLOCATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "FulfillmentBackorder": {
+      "constant": "FULFILLMENT_BACKORDER_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "FulfillmentOption": {
+      "constant": "FULFILLMENT_OPTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.workflow"
+    },
+    "FulfillmentPlan": {
+      "constant": "FULFILLMENT_PLAN_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "FulfillmentPreferredOption": {
+      "constant": "FULFILLMENT_PREFERRED_OPTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.workflow"
+    },
+    "FulfillmentReconciliation": {
+      "constant": "FULFILLMENT_RECONCILIATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.reconciliation"
+    },
+    "InboundInventory": {
+      "constant": "INBOUND_INVENTORY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
+    },
+    "InboundInventoryAvailability": {
+      "constant": "INBOUND_INVENTORY_AVAILABILITY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.workflow"
+    },
+    "InventoryPosition": {
+      "constant": "INVENTORY_POSITION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
+    },
+    "MerchandisingBoost": {
+      "constant": "MERCHANDISING_BOOST_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.policy"
+    },
+    "MerchandisingPolicy": {
+      "constant": "MERCHANDISING_POLICY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.policy"
+    },
+    "MerchandisingSuppression": {
+      "constant": "MERCHANDISING_SUPPRESSION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.policy"
+    },
+    "Order": {
+      "constant": "ORDER_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.demand"
+    },
+    "OrderCollectionProfile": {
+      "constant": "ORDER_COLLECTION_PROFILE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderCollectionSource": {
+      "constant": "ORDER_COLLECTION_SOURCE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderCustomerReconciliation": {
+      "constant": "ORDER_CUSTOMER_RECONCILIATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderCustomerWindow": {
+      "constant": "ORDER_CUSTOMER_WINDOW_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderFulfillment": {
+      "constant": "ORDER_FULFILLMENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderNormalized": {
+      "constant": "ORDER_NORMALIZED_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderProductCandidate": {
+      "constant": "ORDER_PRODUCT_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderProductCube": {
+      "constant": "ORDER_PRODUCT_CUBE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderPublication": {
+      "constant": "ORDER_PUBLICATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderPublished": {
+      "constant": "ORDER_PUBLISHED_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderRaw": {
+      "constant": "ORDER_RAW_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderRevenueRollup": {
+      "constant": "ORDER_REVENUE_ROLLUP_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderWithCustomer": {
+      "constant": "ORDER_WITH_CUSTOMER_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderWithProduct": {
+      "constant": "ORDER_WITH_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderWithPromotion": {
+      "constant": "ORDER_WITH_PROMOTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "Product": {
+      "constant": "PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.product"
+    },
+    "ProductBase": {
+      "constant": "PRODUCT_BASE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.product"
+    },
+    "ProductDailySummary": {
+      "constant": "PRODUCT_DAILY_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.analytics"
+    },
+    "ProductRecommendationSignal": {
+      "constant": "PRODUCT_RECOMMENDATION_SIGNAL_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "ProductRecommendationSignalTotals": {
+      "constant": "PRODUCT_RECOMMENDATION_SIGNAL_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "Promotion": {
+      "constant": "PROMOTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.promotion"
+    },
+    "PublicationFlags": {
+      "constant": "PUBLICATION_FLAGS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "RankedRecommendationCandidate": {
+      "constant": "RANKED_RECOMMENDATION_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "RecommendationBehaviorImpression": {
+      "constant": "RECOMMENDATION_BEHAVIOR_IMPRESSION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "RecommendationCandidate": {
+      "constant": "RECOMMENDATION_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+    },
+    "RecommendationClick": {
+      "constant": "RECOMMENDATION_CLICK_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "RecommendationClickSummary": {
+      "constant": "RECOMMENDATION_CLICK_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "RecommendationEvaluationBatch": {
+      "constant": "RECOMMENDATION_EVALUATION_BATCH_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.evaluation"
+    },
+    "RecommendationExposure": {
+      "constant": "RECOMMENDATION_EXPOSURE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "RecommendationImpression": {
+      "constant": "RECOMMENDATION_IMPRESSION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "RecommendationRequest": {
+      "constant": "RECOMMENDATION_REQUEST_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
+    },
+    "RecommendationRequestBehavior": {
+      "constant": "RECOMMENDATION_REQUEST_BEHAVIOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.evaluation"
+    },
+    "RecommendationRun": {
+      "constant": "RECOMMENDATION_RUN_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
+    },
+    "RecommendedProduct": {
+      "constant": "RECOMMENDED_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
+    },
+    "ReplenishmentSuggestion": {
+      "constant": "REPLENISHMENT_SUGGESTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "Shipment": {
+      "constant": "SHIPMENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.shipment"
+    },
+    "TenantKey": {
+      "constant": "TENANT_KEY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "Warehouse": {
+      "constant": "WAREHOUSE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
+    },
+    "WarehouseLoadSummary": {
+      "constant": "WAREHOUSE_LOAD_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.summary"
+    }
+  },
+  "source_transform": "examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising",
+  "static_dataflow": {
+    "dependencies": [
+      {
+        "detail": {
+          "backend": "pyspark"
+        },
+        "operation": "transform",
+        "sources": [
+          "batch",
+          "requests",
+          "impressions",
+          "clicks"
+        ],
+        "step": null,
+        "target": "EvaluateMerchandising"
+      },
+      {
+        "detail": {
+          "input_schema": "RecommendationRequest",
+          "output_schema": "RecommendationRequestBehavior"
+        },
+        "operation": "step",
+        "sources": [
+          "batch",
+          "batch"
+        ],
+        "step": "selected.select_requests",
+        "target": "selected.select_requests"
+      },
+      {
+        "detail": {},
+        "operation": "filter",
+        "sources": [
+          "request.requested_at",
+          "batch.window.start",
+          "batch.window.end"
+        ],
+        "step": "selected.select_requests",
+        "target": "selected.select_requests.filter[0]"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "cross",
+          "right_alias": "batch"
+        },
+        "operation": "rowset_join",
+        "sources": [],
+        "step": "selected.select_requests",
+        "target": "selected.select_requests.join[1].batch"
+      },
+      {
+        "detail": {
+          "field": "window"
+        },
+        "operation": "project",
+        "sources": [
+          "batch.window"
+        ],
+        "step": "selected.select_requests",
+        "target": "RecommendationRequestBehavior.window"
+      },
+      {
+        "detail": {
+          "field": "tenant"
+        },
+        "operation": "project",
+        "sources": [
+          "request.tenant"
+        ],
+        "step": "selected.select_requests",
+        "target": "RecommendationRequestBehavior.tenant"
+      },
+      {
+        "detail": {
+          "field": "request_id"
+        },
+        "operation": "project",
+        "sources": [
+          "request.id"
+        ],
+        "step": "selected.select_requests",
+        "target": "RecommendationRequestBehavior.request_id"
+      },
+      {
+        "detail": {
+          "field": "strategy_id"
+        },
+        "operation": "project",
+        "sources": [
+          "request.strategy_id"
+        ],
+        "step": "selected.select_requests",
+        "target": "RecommendationRequestBehavior.strategy_id"
+      },
+      {
+        "detail": {
+          "field": "policy_version"
+        },
+        "operation": "project",
+        "sources": [
+          "request.policy_version"
+        ],
+        "step": "selected.select_requests",
+        "target": "RecommendationRequestBehavior.policy_version"
+      },
+      {
+        "detail": {
+          "field": "result_count"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "selected.select_requests",
+        "target": "RecommendationRequestBehavior.result_count"
+      },
+      {
+        "detail": {
+          "field": "clicked_result_count"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "selected.select_requests",
+        "target": "RecommendationRequestBehavior.clicked_result_count"
+      },
+      {
+        "detail": {
+          "field": "has_click"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "selected.select_requests",
+        "target": "RecommendationRequestBehavior.has_click"
+      },
+      {
+        "detail": {
+          "field": "first_click_rank"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "selected.select_requests",
+        "target": "RecommendationRequestBehavior.first_click_rank"
+      },
+      {
+        "detail": {
+          "field": "raw_click_count"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "selected.select_requests",
+        "target": "RecommendationRequestBehavior.raw_click_count"
+      },
+      {
+        "detail": {
+          "input_schema": "RecommendationRequestBehavior",
+          "output_schema": "RecommendationBehaviorImpression"
+        },
+        "operation": "step",
+        "sources": [
+          "RecommendationRequestBehavior",
+          "impression"
+        ],
+        "step": "impressions_measured.select_impressions",
+        "target": "impressions_measured.select_impressions"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "impressions"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "impression.tenant.tenant_id",
+          "request.tenant.tenant_id",
+          "impression.request_id",
+          "request.request_id"
+        ],
+        "step": "impressions_measured.select_impressions",
+        "target": "impressions_measured.select_impressions.join[1].impression"
+      },
+      {
+        "detail": {
+          "field": "window"
+        },
+        "operation": "project",
+        "sources": [
+          "request.window"
+        ],
+        "step": "impressions_measured.select_impressions",
+        "target": "RecommendationBehaviorImpression.window"
+      },
+      {
+        "detail": {
+          "field": "tenant"
+        },
+        "operation": "project",
+        "sources": [
+          "request.tenant"
+        ],
+        "step": "impressions_measured.select_impressions",
+        "target": "RecommendationBehaviorImpression.tenant"
+      },
+      {
+        "detail": {
+          "field": "request_id"
+        },
+        "operation": "project",
+        "sources": [
+          "request.request_id"
+        ],
+        "step": "impressions_measured.select_impressions",
+        "target": "RecommendationBehaviorImpression.request_id"
+      },
+      {
+        "detail": {
+          "field": "strategy_id"
+        },
+        "operation": "project",
+        "sources": [
+          "request.strategy_id"
+        ],
+        "step": "impressions_measured.select_impressions",
+        "target": "RecommendationBehaviorImpression.strategy_id"
+      },
+      {
+        "detail": {
+          "field": "policy_version"
+        },
+        "operation": "project",
+        "sources": [
+          "request.policy_version"
+        ],
+        "step": "impressions_measured.select_impressions",
+        "target": "RecommendationBehaviorImpression.policy_version"
+      },
+      {
+        "detail": {
+          "field": "impression_id"
+        },
+        "operation": "project",
+        "sources": [
+          "impression.id"
+        ],
+        "step": "impressions_measured.select_impressions",
+        "target": "RecommendationBehaviorImpression.impression_id"
+      },
+      {
+        "detail": {
+          "field": "shown_at"
+        },
+        "operation": "project",
+        "sources": [
+          "impression.shown_at"
+        ],
+        "step": "impressions_measured.select_impressions",
+        "target": "RecommendationBehaviorImpression.shown_at"
+      },
+      {
+        "detail": {
+          "field": "product_id"
+        },
+        "operation": "project",
+        "sources": [
+          "impression.product_id"
+        ],
+        "step": "impressions_measured.select_impressions",
+        "target": "RecommendationBehaviorImpression.product_id"
+      },
+      {
+        "detail": {
+          "field": "rank"
+        },
+        "operation": "project",
+        "sources": [
+          "impression.rank"
+        ],
+        "step": "impressions_measured.select_impressions",
+        "target": "RecommendationBehaviorImpression.rank"
+      },
+      {
+        "detail": {
+          "field": "examination_propensity"
+        },
+        "operation": "project",
+        "sources": [
+          "impression.examination_propensity"
+        ],
+        "step": "impressions_measured.select_impressions",
+        "target": "RecommendationBehaviorImpression.examination_propensity"
+      },
+      {
+        "detail": {
+          "field": "click_count"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "impressions_measured.select_impressions",
+        "target": "RecommendationBehaviorImpression.click_count"
+      },
+      {
+        "detail": {
+          "input_schema": "RecommendationBehaviorImpression",
+          "output_schema": "RecommendationBehaviorImpression"
+        },
+        "operation": "step",
+        "sources": [
+          "RecommendationBehaviorImpression",
+          "click"
+        ],
+        "step": "impressions_measured.attribute_clicks",
+        "target": "impressions_measured.attribute_clicks"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "clicks"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "click.impression_id",
+          "impression.impression_id",
+          "impression.shown_at",
+          "click.occurred_at"
+        ],
+        "step": "impressions_measured.attribute_clicks",
+        "target": "impressions_measured.attribute_clicks.join[1].click"
+      },
+      {
+        "detail": {
+          "field": "window",
+          "function": "key",
+          "key": "window"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "impression.window"
+        ],
+        "step": "impressions_measured.attribute_clicks",
+        "target": "RecommendationBehaviorImpression.window"
+      },
+      {
+        "detail": {
+          "field": "tenant",
+          "function": "first",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "impression.tenant"
+        ],
+        "step": "impressions_measured.attribute_clicks",
+        "target": "RecommendationBehaviorImpression.tenant"
+      },
+      {
+        "detail": {
+          "field": "request_id",
+          "function": "key",
+          "key": "request_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "impression.request_id"
+        ],
+        "step": "impressions_measured.attribute_clicks",
+        "target": "RecommendationBehaviorImpression.request_id"
+      },
+      {
+        "detail": {
+          "field": "strategy_id",
+          "function": "key",
+          "key": "strategy_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "impression.strategy_id"
+        ],
+        "step": "impressions_measured.attribute_clicks",
+        "target": "RecommendationBehaviorImpression.strategy_id"
+      },
+      {
+        "detail": {
+          "field": "policy_version",
+          "function": "key",
+          "key": "policy_version"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "impression.policy_version"
+        ],
+        "step": "impressions_measured.attribute_clicks",
+        "target": "RecommendationBehaviorImpression.policy_version"
+      },
+      {
+        "detail": {
+          "field": "impression_id",
+          "function": "key",
+          "key": "impression_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "impression.impression_id"
+        ],
+        "step": "impressions_measured.attribute_clicks",
+        "target": "RecommendationBehaviorImpression.impression_id"
+      },
+      {
+        "detail": {
+          "field": "shown_at",
+          "function": "key",
+          "key": "shown_at"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "impression.shown_at"
+        ],
+        "step": "impressions_measured.attribute_clicks",
+        "target": "RecommendationBehaviorImpression.shown_at"
+      },
+      {
+        "detail": {
+          "field": "product_id",
+          "function": "key",
+          "key": "product_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "impression.product_id"
+        ],
+        "step": "impressions_measured.attribute_clicks",
+        "target": "RecommendationBehaviorImpression.product_id"
+      },
+      {
+        "detail": {
+          "field": "rank",
+          "function": "key",
+          "key": "rank"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "impression.rank"
+        ],
+        "step": "impressions_measured.attribute_clicks",
+        "target": "RecommendationBehaviorImpression.rank"
+      },
+      {
+        "detail": {
+          "field": "examination_propensity",
+          "function": "key",
+          "key": "examination_propensity"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "impression.examination_propensity"
+        ],
+        "step": "impressions_measured.attribute_clicks",
+        "target": "RecommendationBehaviorImpression.examination_propensity"
+      },
+      {
+        "detail": {
+          "field": "click_count",
+          "function": "count",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "impressions_measured__displayed"
+        ],
+        "step": "impressions_measured.attribute_clicks",
+        "target": "RecommendationBehaviorImpression.click_count"
+      },
+      {
+        "detail": {
+          "input_schema": "RecommendationBehaviorImpression",
+          "output_schema": "RecommendationBehaviorImpression"
+        },
+        "operation": "step",
+        "sources": [
+          "RecommendationBehaviorImpression",
+          "clicked"
+        ],
+        "step": "impressions_measured.measure_impressions",
+        "target": "impressions_measured.measure_impressions"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "left",
+          "right_alias": "impressions_measured__clicked"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "clicked.impression_id",
+          "displayed.impression_id"
+        ],
+        "step": "impressions_measured.measure_impressions",
+        "target": "impressions_measured.measure_impressions.join[1].clicked"
+      },
+      {
+        "detail": {
+          "field": "window"
+        },
+        "operation": "project",
+        "sources": [
+          "displayed.window"
+        ],
+        "step": "impressions_measured.measure_impressions",
+        "target": "RecommendationBehaviorImpression.window"
+      },
+      {
+        "detail": {
+          "field": "tenant"
+        },
+        "operation": "project",
+        "sources": [
+          "displayed.tenant"
+        ],
+        "step": "impressions_measured.measure_impressions",
+        "target": "RecommendationBehaviorImpression.tenant"
+      },
+      {
+        "detail": {
+          "field": "request_id"
+        },
+        "operation": "project",
+        "sources": [
+          "displayed.request_id"
+        ],
+        "step": "impressions_measured.measure_impressions",
+        "target": "RecommendationBehaviorImpression.request_id"
+      },
+      {
+        "detail": {
+          "field": "strategy_id"
+        },
+        "operation": "project",
+        "sources": [
+          "displayed.strategy_id"
+        ],
+        "step": "impressions_measured.measure_impressions",
+        "target": "RecommendationBehaviorImpression.strategy_id"
+      },
+      {
+        "detail": {
+          "field": "policy_version"
+        },
+        "operation": "project",
+        "sources": [
+          "displayed.policy_version"
+        ],
+        "step": "impressions_measured.measure_impressions",
+        "target": "RecommendationBehaviorImpression.policy_version"
+      },
+      {
+        "detail": {
+          "field": "impression_id"
+        },
+        "operation": "project",
+        "sources": [
+          "displayed.impression_id"
+        ],
+        "step": "impressions_measured.measure_impressions",
+        "target": "RecommendationBehaviorImpression.impression_id"
+      },
+      {
+        "detail": {
+          "field": "shown_at"
+        },
+        "operation": "project",
+        "sources": [
+          "displayed.shown_at"
+        ],
+        "step": "impressions_measured.measure_impressions",
+        "target": "RecommendationBehaviorImpression.shown_at"
+      },
+      {
+        "detail": {
+          "field": "product_id"
+        },
+        "operation": "project",
+        "sources": [
+          "displayed.product_id"
+        ],
+        "step": "impressions_measured.measure_impressions",
+        "target": "RecommendationBehaviorImpression.product_id"
+      },
+      {
+        "detail": {
+          "field": "rank"
+        },
+        "operation": "project",
+        "sources": [
+          "displayed.rank"
+        ],
+        "step": "impressions_measured.measure_impressions",
+        "target": "RecommendationBehaviorImpression.rank"
+      },
+      {
+        "detail": {
+          "field": "examination_propensity"
+        },
+        "operation": "project",
+        "sources": [
+          "displayed.examination_propensity"
+        ],
+        "step": "impressions_measured.measure_impressions",
+        "target": "RecommendationBehaviorImpression.examination_propensity"
+      },
+      {
+        "detail": {
+          "field": "click_count"
+        },
+        "operation": "project",
+        "sources": [
+          "clicked.click_count"
+        ],
+        "step": "impressions_measured.measure_impressions",
+        "target": "RecommendationBehaviorImpression.click_count"
+      },
+      {
+        "detail": {
+          "input_schema": "RecommendationRequestBehavior",
+          "output_schema": "RecommendationRequestBehavior"
+        },
+        "operation": "step",
+        "sources": [
+          "RecommendationBehaviorImpression",
+          "impression"
+        ],
+        "step": "requests_measured.measure_requests",
+        "target": "requests_measured.measure_requests"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "left",
+          "right_alias": "impressions_measured__measured"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "impression.tenant.tenant_id",
+          "request.tenant.tenant_id",
+          "impression.request_id",
+          "request.request_id"
+        ],
+        "step": "requests_measured.measure_requests",
+        "target": "requests_measured.measure_requests.join[1].impression"
+      },
+      {
+        "detail": {
+          "field": "window",
+          "function": "key",
+          "key": "window"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "request.window"
+        ],
+        "step": "requests_measured.measure_requests",
+        "target": "RecommendationRequestBehavior.window"
+      },
+      {
+        "detail": {
+          "field": "tenant",
+          "function": "first",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "request.tenant"
+        ],
+        "step": "requests_measured.measure_requests",
+        "target": "RecommendationRequestBehavior.tenant"
+      },
+      {
+        "detail": {
+          "field": "request_id",
+          "function": "key",
+          "key": "request_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "request.request_id"
+        ],
+        "step": "requests_measured.measure_requests",
+        "target": "RecommendationRequestBehavior.request_id"
+      },
+      {
+        "detail": {
+          "field": "strategy_id",
+          "function": "key",
+          "key": "strategy_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "request.strategy_id"
+        ],
+        "step": "requests_measured.measure_requests",
+        "target": "RecommendationRequestBehavior.strategy_id"
+      },
+      {
+        "detail": {
+          "field": "policy_version",
+          "function": "key",
+          "key": "policy_version"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "request.policy_version"
+        ],
+        "step": "requests_measured.measure_requests",
+        "target": "RecommendationRequestBehavior.policy_version"
+      },
+      {
+        "detail": {
+          "field": "result_count",
+          "function": "sum",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "impression.impression_id"
+        ],
+        "step": "requests_measured.measure_requests",
+        "target": "RecommendationRequestBehavior.result_count"
+      },
+      {
+        "detail": {
+          "field": "clicked_result_count",
+          "function": "sum",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "impression.click_count"
+        ],
+        "step": "requests_measured.measure_requests",
+        "target": "RecommendationRequestBehavior.clicked_result_count"
+      },
+      {
+        "detail": {
+          "field": "has_click",
+          "function": "bool_or",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "impression.click_count"
+        ],
+        "step": "requests_measured.measure_requests",
+        "target": "RecommendationRequestBehavior.has_click"
+      },
+      {
+        "detail": {
+          "field": "first_click_rank",
+          "function": "min",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "impression.rank",
+          "impression.click_count"
+        ],
+        "step": "requests_measured.measure_requests",
+        "target": "RecommendationRequestBehavior.first_click_rank"
+      },
+      {
+        "detail": {
+          "field": "raw_click_count",
+          "function": "sum",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "impression.click_count"
+        ],
+        "step": "requests_measured.measure_requests",
+        "target": "RecommendationRequestBehavior.raw_click_count"
+      },
+      {
+        "detail": {
+          "input_schema": "RecommendationBehaviorImpression",
+          "output_schema": "RecommendationExposure"
+        },
+        "operation": "step",
+        "sources": [
+          "RecommendationRequestBehavior"
+        ],
+        "step": "summarized.summarize_exposure",
+        "target": "summarized.summarize_exposure"
+      },
+      {
+        "detail": {
+          "field": "window",
+          "function": "key",
+          "key": "window"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "measured_impressions.window"
+        ],
+        "step": "summarized.summarize_exposure",
+        "target": "RecommendationExposure.window"
+      },
+      {
+        "detail": {
+          "field": "tenant",
+          "function": "first",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "measured_impressions.tenant"
+        ],
+        "step": "summarized.summarize_exposure",
+        "target": "RecommendationExposure.tenant"
+      },
+      {
+        "detail": {
+          "field": "strategy_id",
+          "function": "key",
+          "key": "strategy_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "measured_impressions.strategy_id"
+        ],
+        "step": "summarized.summarize_exposure",
+        "target": "RecommendationExposure.strategy_id"
+      },
+      {
+        "detail": {
+          "field": "policy_version",
+          "function": "key",
+          "key": "policy_version"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "measured_impressions.policy_version"
+        ],
+        "step": "summarized.summarize_exposure",
+        "target": "RecommendationExposure.policy_version"
+      },
+      {
+        "detail": {
+          "field": "exposure_weight",
+          "function": "sum",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "measured_impressions.examination_propensity"
+        ],
+        "step": "summarized.summarize_exposure",
+        "target": "RecommendationExposure.exposure_weight"
+      },
+      {
+        "detail": {
+          "field": "click_weight",
+          "function": "sum",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "measured_impressions.click_count",
+          "measured_impressions.examination_propensity"
+        ],
+        "step": "summarized.summarize_exposure",
+        "target": "RecommendationExposure.click_weight"
+      },
+      {
+        "detail": {
+          "input_schema": "RecommendationRequestBehavior",
+          "output_schema": "DailyRecommendationCounts"
+        },
+        "operation": "step",
+        "sources": [
+          "RecommendationExposure"
+        ],
+        "step": "summarized.summarize_requests",
+        "target": "summarized.summarize_requests"
+      },
+      {
+        "detail": {
+          "field": "window",
+          "function": "key",
+          "key": "window"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "request_behaviors.window"
+        ],
+        "step": "summarized.summarize_requests",
+        "target": "DailyRecommendationCounts.window"
+      },
+      {
+        "detail": {
+          "field": "tenant",
+          "function": "first",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "request_behaviors.tenant"
+        ],
+        "step": "summarized.summarize_requests",
+        "target": "DailyRecommendationCounts.tenant"
+      },
+      {
+        "detail": {
+          "field": "strategy_id",
+          "function": "key",
+          "key": "strategy_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "request_behaviors.strategy_id"
+        ],
+        "step": "summarized.summarize_requests",
+        "target": "DailyRecommendationCounts.strategy_id"
+      },
+      {
+        "detail": {
+          "field": "policy_version",
+          "function": "key",
+          "key": "policy_version"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "request_behaviors.policy_version"
+        ],
+        "step": "summarized.summarize_requests",
+        "target": "DailyRecommendationCounts.policy_version"
+      },
+      {
+        "detail": {
+          "field": "request_count",
+          "function": "sum",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "requests_measured__request_behaviors"
+        ],
+        "step": "summarized.summarize_requests",
+        "target": "DailyRecommendationCounts.request_count"
+      },
+      {
+        "detail": {
+          "field": "zero_result_request_count",
+          "function": "sum",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "request_behaviors.result_count"
+        ],
+        "step": "summarized.summarize_requests",
+        "target": "DailyRecommendationCounts.zero_result_request_count"
+      },
+      {
+        "detail": {
+          "field": "clicked_request_count",
+          "function": "sum",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "request_behaviors.has_click"
+        ],
+        "step": "summarized.summarize_requests",
+        "target": "DailyRecommendationCounts.clicked_request_count"
+      },
+      {
+        "detail": {
+          "field": "zero_result_rate",
+          "function": "sum",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "requests_measured__request_behaviors"
+        ],
+        "step": "summarized.summarize_requests",
+        "target": "DailyRecommendationCounts.zero_result_rate"
+      },
+      {
+        "detail": {
+          "field": "clicked_request_rate",
+          "function": "sum",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "requests_measured__request_behaviors"
+        ],
+        "step": "summarized.summarize_requests",
+        "target": "DailyRecommendationCounts.clicked_request_rate"
+      },
+      {
+        "detail": {
+          "field": "mean_first_click_rank",
+          "function": "avg",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "request_behaviors.first_click_rank"
+        ],
+        "step": "summarized.summarize_requests",
+        "target": "DailyRecommendationCounts.mean_first_click_rank"
+      },
+      {
+        "detail": {
+          "field": "raw_click_count",
+          "function": "sum",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "request_behaviors.raw_click_count"
+        ],
+        "step": "summarized.summarize_requests",
+        "target": "DailyRecommendationCounts.raw_click_count"
+      },
+      {
+        "detail": {
+          "field": "exposure_adjusted_click_rate",
+          "function": "sum",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "requests_measured__request_behaviors"
+        ],
+        "step": "summarized.summarize_requests",
+        "target": "DailyRecommendationCounts.exposure_adjusted_click_rate"
+      },
+      {
+        "detail": {
+          "input_schema": "DailyRecommendationCounts",
+          "output_schema": "DailyRecommendationBehavior"
+        },
+        "operation": "step",
+        "sources": [
+          "DailyRecommendationCounts",
+          "exposure"
+        ],
+        "step": "summarized.publish_daily",
+        "target": "summarized.publish_daily"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "left",
+          "right_alias": "summarized__exposure"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "exposure.window",
+          "daily.window",
+          "exposure.tenant.tenant_id",
+          "daily.tenant.tenant_id",
+          "exposure.strategy_id",
+          "daily.strategy_id",
+          "exposure.policy_version",
+          "daily.policy_version"
+        ],
+        "step": "summarized.publish_daily",
+        "target": "summarized.publish_daily.join[1].exposure"
+      },
+      {
+        "detail": {
+          "field": "window"
+        },
+        "operation": "project",
+        "sources": [
+          "daily.window"
+        ],
+        "step": "summarized.publish_daily",
+        "target": "DailyRecommendationBehavior.window"
+      },
+      {
+        "detail": {
+          "field": "tenant"
+        },
+        "operation": "project",
+        "sources": [
+          "daily.tenant"
+        ],
+        "step": "summarized.publish_daily",
+        "target": "DailyRecommendationBehavior.tenant"
+      },
+      {
+        "detail": {
+          "field": "strategy_id"
+        },
+        "operation": "project",
+        "sources": [
+          "daily.strategy_id"
+        ],
+        "step": "summarized.publish_daily",
+        "target": "DailyRecommendationBehavior.strategy_id"
+      },
+      {
+        "detail": {
+          "field": "policy_version"
+        },
+        "operation": "project",
+        "sources": [
+          "daily.policy_version"
+        ],
+        "step": "summarized.publish_daily",
+        "target": "DailyRecommendationBehavior.policy_version"
+      },
+      {
+        "detail": {
+          "field": "request_count"
+        },
+        "operation": "project",
+        "sources": [
+          "daily.request_count"
+        ],
+        "step": "summarized.publish_daily",
+        "target": "DailyRecommendationBehavior.request_count"
+      },
+      {
+        "detail": {
+          "field": "zero_result_request_count"
+        },
+        "operation": "project",
+        "sources": [
+          "daily.zero_result_request_count"
+        ],
+        "step": "summarized.publish_daily",
+        "target": "DailyRecommendationBehavior.zero_result_request_count"
+      },
+      {
+        "detail": {
+          "field": "clicked_request_count"
+        },
+        "operation": "project",
+        "sources": [
+          "daily.clicked_request_count"
+        ],
+        "step": "summarized.publish_daily",
+        "target": "DailyRecommendationBehavior.clicked_request_count"
+      },
+      {
+        "detail": {
+          "field": "zero_result_rate"
+        },
+        "operation": "project",
+        "sources": [
+          "daily.request_count",
+          "daily.zero_result_request_count"
+        ],
+        "step": "summarized.publish_daily",
+        "target": "DailyRecommendationBehavior.zero_result_rate"
+      },
+      {
+        "detail": {
+          "field": "clicked_request_rate"
+        },
+        "operation": "project",
+        "sources": [
+          "daily.request_count",
+          "daily.clicked_request_count"
+        ],
+        "step": "summarized.publish_daily",
+        "target": "DailyRecommendationBehavior.clicked_request_rate"
+      },
+      {
+        "detail": {
+          "field": "mean_first_click_rank"
+        },
+        "operation": "project",
+        "sources": [
+          "daily.mean_first_click_rank"
+        ],
+        "step": "summarized.publish_daily",
+        "target": "DailyRecommendationBehavior.mean_first_click_rank"
+      },
+      {
+        "detail": {
+          "field": "raw_click_count"
+        },
+        "operation": "project",
+        "sources": [
+          "daily.raw_click_count"
+        ],
+        "step": "summarized.publish_daily",
+        "target": "DailyRecommendationBehavior.raw_click_count"
+      },
+      {
+        "detail": {
+          "field": "exposure_adjusted_click_rate"
+        },
+        "operation": "project",
+        "sources": [
+          "exposure.exposure_weight",
+          "exposure.click_weight"
+        ],
+        "step": "summarized.publish_daily",
+        "target": "DailyRecommendationBehavior.exposure_adjusted_click_rate"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "RecommendationRequestBehavior"
+        ],
+        "step": null,
+        "target": "RecommendationRequestBehavior.validation.final"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "DailyRecommendationBehavior"
+        ],
+        "step": null,
+        "target": "DailyRecommendationBehavior.validation.final"
+      }
+    ],
+    "opaque_boundaries": []
+  },
+  "steps": [
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "recommendation_request",
+      "joins": [
+        {
+          "how": "cross",
+          "input": "batch",
+          "right_alias": "batch"
+        }
+      ],
+      "name": "selected.select_requests",
+      "output_alias": "recommendation_request_behavior",
+      "output_schema": "RecommendationRequestBehavior",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "selected__selected_requests",
+          "lane": "selected__selected_requests",
+          "schema": "RecommendationRequestBehavior"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "RecommendationRequestBehavior"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "recommendation_request_behavior",
+      "joins": [
+        {
+          "how": "inner",
+          "input": "impression",
+          "right_alias": "impressions"
+        }
+      ],
+      "name": "impressions_measured.select_impressions",
+      "output_alias": "recommendation_behavior_impression",
+      "output_schema": "RecommendationBehaviorImpression",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "impressions_measured__displayed",
+          "lane": "impressions_measured__displayed",
+          "schema": "RecommendationBehaviorImpression"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "RecommendationBehaviorImpression"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "recommendation_behavior_impression",
+      "joins": [
+        {
+          "how": "inner",
+          "input": "click",
+          "right_alias": "clicks"
+        }
+      ],
+      "name": "impressions_measured.attribute_clicks",
+      "output_alias": "recommendation_behavior_impression",
+      "output_schema": "RecommendationBehaviorImpression",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "impressions_measured__clicked",
+          "lane": "impressions_measured__clicked",
+          "schema": "RecommendationBehaviorImpression"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "RecommendationBehaviorImpression"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "recommendation_behavior_impression",
+      "joins": [
+        {
+          "how": "left",
+          "input": "clicked",
+          "right_alias": "impressions_measured__clicked"
+        }
+      ],
+      "name": "impressions_measured.measure_impressions",
+      "output_alias": "recommendation_behavior_impression",
+      "output_schema": "RecommendationBehaviorImpression",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "impressions_measured__measured",
+          "lane": "impressions_measured__measured",
+          "schema": "RecommendationBehaviorImpression"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "RecommendationBehaviorImpression"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "recommendation_request_behavior",
+      "joins": [
+        {
+          "how": "left",
+          "input": "impression",
+          "right_alias": "impressions_measured__measured"
+        }
+      ],
+      "name": "requests_measured.measure_requests",
+      "output_alias": "recommendation_request_behavior",
+      "output_schema": "RecommendationRequestBehavior",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "requests_measured__request_behaviors",
+          "lane": "requests_measured__request_behaviors",
+          "schema": "RecommendationRequestBehavior"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "RecommendationRequestBehavior"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "recommendation_behavior_impression",
+      "joins": [],
+      "name": "summarized.summarize_exposure",
+      "output_alias": "recommendation_exposure",
+      "output_schema": "RecommendationExposure",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "summarized__exposure",
+          "lane": "summarized__exposure",
+          "schema": "RecommendationExposure"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "RecommendationExposure"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "recommendation_request_behavior",
+      "joins": [],
+      "name": "summarized.summarize_requests",
+      "output_alias": "daily_recommendation_counts",
+      "output_schema": "DailyRecommendationCounts",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "summarized__daily_counts",
+          "lane": "summarized__daily_counts",
+          "schema": "DailyRecommendationCounts"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "DailyRecommendationCounts"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "daily_recommendation_counts",
+      "joins": [
+        {
+          "how": "left",
+          "input": "exposure",
+          "right_alias": "summarized__exposure"
+        }
+      ],
+      "name": "summarized.publish_daily",
+      "output_alias": "daily_recommendation_behavior",
+      "output_schema": "DailyRecommendationBehavior",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "summarized__daily_behavior",
+          "lane": "summarized__daily_behavior",
+          "schema": "DailyRecommendationBehavior"
+        }
+      ],
+      "validation": []
+    }
+  ],
+  "target_module": "examples.structure_generated.store.pyspark.transforms.clicks_workflow",
+  "validation": {
+    "outputs": [
+      {
+        "mode": "strict",
+        "name": "request_behaviors",
+        "schema": "RecommendationRequestBehavior"
+      },
+      {
+        "mode": "strict",
+        "name": "daily_behavior",
+        "schema": "DailyRecommendationBehavior"
+      }
+    ]
+  }
+}

@@ -124,9 +124,17 @@ class StructureDocsData:
         return steps.get(name, {}) if isinstance(steps, Mapping) else {}
 
     def _target_transform(self, source: str) -> str:
-        module = source.rsplit(".", 2)[1]
+        module = self._generated_module_name(source.rsplit(".", 1)[0])
         return f"pyspark/transforms/{module}.py"
 
     def _traceability(self, source: str, plan: TransformPlan) -> str:
-        module = source.rsplit(".", 2)[1]
+        module = self._generated_module_name(source.rsplit(".", 1)[0])
         return f"traceability/transforms/{module}.{plan.name}.json"
+
+    @staticmethod
+    def _generated_module_name(source_module: str) -> str:
+        parts = source_module.rsplit(".", 1)
+        name = parts[-1]
+        if name != "workflow":
+            return name
+        return f"{parts[0].rsplit('.', 1)[1]}_workflow"

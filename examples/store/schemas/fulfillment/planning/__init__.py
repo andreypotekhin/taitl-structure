@@ -1,4 +1,4 @@
-from examples.store.schemas.fulfillment.planning.intermediate import (
+from examples.store.schemas.fulfillment.planning.workflow import (
     FulfillmentOption,
     FulfillmentPreferredOption,
     InboundInventoryAvailability,

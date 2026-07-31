@@ -657,6 +657,52 @@ def test_stage_graph_uses_explicit_output_binding_for_ambiguous_schema() -> None
     assert [output.name for output in _analysis(OrderGraph).outputs] == ["selected"]
 
 
+def test_stage_graph_collects_named_output_bindings_in_declaration_order() -> None:
+    class OrderGraph(Transform):
+        orders = input(Raw)
+        products = input(Product)
+
+        audit = output(Audit)
+        published = output(Published)
+
+        normalized_stage = stage(NormalizeOrders(orders=orders))
+        enriched_stage = stage(AddProduct(normalized=normalized_stage.normalized, products=products))
+        audit_stage = stage(AuditNormalized(normalized=normalized_stage.normalized))
+        published_stage = stage(PublishWithAudit(enriched=enriched_stage.enriched, audit=audit_stage.audited))
+        outputs = output(
+            published=published_stage.published,
+            audit=audit_stage.audited,
+        )
+
+    plan = _analysis(OrderGraph)
+
+    assert [(output.name, output.source) for output in plan.outputs] == [
+        ("audit", "audit_stage__normalized"),
+        ("published", "published_stage__enriched"),
+    ]
+
+
+def test_stage_graph_rejects_unknown_named_output_binding() -> None:
+    with pytest.raises(TypeError, match="output binding 'missing' is not declared"):
+
+        class BadGraph(Transform):
+            orders = input(Raw)
+            normalized = output(Normalized)
+            normalized_stage = stage(NormalizeOrders(orders=orders))
+            outputs = output(missing=normalized_stage.normalized)
+
+
+def test_stage_graph_rejects_named_output_binding_schema_mismatch() -> None:
+    class BadGraph(Transform):
+        orders = input(Raw)
+        selected = output(Audit)
+        normalized_stage = stage(NormalizeOrders(orders=orders))
+        outputs = output(selected=normalized_stage.normalized)
+
+    with pytest.raises(StructureCompileError, match="declares Audit, but bound stage output carries Normalized"):
+        _analysis(BadGraph)
+
+
 def test_output_binding_is_explicit_and_immutable() -> None:
     source = object()
 

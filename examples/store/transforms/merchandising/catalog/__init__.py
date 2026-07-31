@@ -1,1 +1,1 @@
-from examples.store.transforms.merchandising.catalog.PrepareCatalog import PrepareCatalog
+from examples.store.transforms.merchandising.catalog.prepare_catalog import PrepareCatalog

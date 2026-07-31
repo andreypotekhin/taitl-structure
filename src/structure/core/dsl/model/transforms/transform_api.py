@@ -11,7 +11,7 @@ from structure.core.dsl.model.transforms.BindingSelector import BindingSelector,
 from structure.core.dsl.model.transforms.InOutBinding import InOutBinding
 from structure.core.dsl.model.transforms.InputDeclaration import InputDeclaration
 from structure.core.dsl.model.transforms.LaneDeclaration import LaneDeclaration
-from structure.core.dsl.model.transforms.OutputDeclaration import OutputDeclaration
+from structure.core.dsl.model.transforms.OutputDeclaration import OutputBindings, OutputDeclaration
 from structure.core.dsl.model.transforms.ParameterDeclaration import ParameterDeclaration
 from structure.core.dsl.model.transforms.SchemaMode import SchemaMode
 from structure.core.dsl.model.transforms.SpecialFunction import SpecialFunction
@@ -76,6 +76,12 @@ def input(
 
 
 @overload
+def output(**bindings: object) -> OutputBindings:
+    """Collect named graph output source bindings."""
+    ...
+
+
+@overload
 def output(value: type[Schema]) -> OutputDeclaration:
     """Declare a transform output from a schema class."""
     ...
@@ -93,13 +99,18 @@ def output(value: OutputDeclaration) -> BindingSelector:
     ...
 
 
-def output(value: type[Schema] | OutputDeclaration, source: object = _UNSET) -> OutputDeclaration | BindingSelector:
+def output(
+    value: type[Schema] | OutputDeclaration | object = _UNSET,
+    source: object = _UNSET,
+    **bindings: object,
+) -> OutputDeclaration | OutputBindings | BindingSelector:
     """Declare or select a transform output.
 
     Args:
         value: Schema class for a new output declaration, or an existing output
             declaration to select for a binding.
         source: Optional composed source for an explicit output binding.
+        **bindings: Named output-to-stage mappings collected in one block.
 
     Returns:
         An ``OutputDeclaration`` for class attributes, or a ``BindingSelector``
@@ -107,7 +118,12 @@ def output(value: type[Schema] | OutputDeclaration, source: object = _UNSET) -> 
 
     Example:
         published = output(PublishedOrder)
+        outputs = output(published=published_stage.published)
     """
+    if bindings:
+        if value is not _UNSET or source is not _UNSET:
+            raise TypeError("output(named_bindings=...) cannot be combined with a schema or source")
+        return OutputBindings(tuple(bindings.items()))
     if isinstance(value, OutputDeclaration):
         if source is not _UNSET:
             raise TypeError(

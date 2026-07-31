@@ -6388,8 +6388,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/workflow.py",
-        "traceability": "traceability/transforms/workflow.VulnerabilityRemediationWorkflow.json"
+        "pyspark_transform": "pyspark/transforms/remediate_workflow.py",
+        "traceability": "traceability/transforms/remediate_workflow.VulnerabilityRemediationWorkflow.json"
       }
     },
     {

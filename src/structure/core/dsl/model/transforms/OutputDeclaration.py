@@ -10,6 +10,18 @@ from structure.core.dsl.model.transforms.InOutBinding import bind_inout
 
 
 @dataclass(frozen=True)
+class OutputBindings:
+    """A named source mapping for output declarations on a transform graph.
+
+    ``outputs = output(name=stage.output)`` keeps output schemas declared next
+    to the transform contract while collecting graph source assignments in one
+    constructor-style block.
+    """
+
+    bindings: tuple[tuple[str, object], ...]
+
+
+@dataclass(frozen=True)
 class OutputDeclaration:
     """A named relation produced by a transform.
 

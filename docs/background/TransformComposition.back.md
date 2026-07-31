@@ -124,6 +124,23 @@ class NormalizeOrders(Transform):
 Here `normalized` remains the declaration name, while `orders` is also accepted for composition and result lookup.
 Input declarations may also use `.alias(...)` so constructor calls can use either the canonical input name or the alias.
 
+For a stage graph with several public outputs, schemas can remain grouped with the transform contract while source
+assignments are collected in one constructor-style block:
+
+```python
+class Merchandising(Transform):
+    recommended_products = output(RecommendedProduct)
+    recommendation_runs = output(RecommendationRun)
+
+    outputs = output(
+        recommended_products=recommended.recommended_products,
+        recommendation_runs=recommended.recommendation_runs,
+    )
+```
+
+The output declaration order remains the public result order; keyword order only supplies the source mapping. Existing
+`output(Schema, stage.output)` declarations remain supported.
+
 When the transform class cannot be changed, use invocation-level `.rename(...)` to expose an output alias for that
 stage:
 

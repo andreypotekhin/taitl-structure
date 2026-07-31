@@ -321,14 +321,22 @@ class ComposeTransformGraph:
         *,
         stage_by_name: Mapping[str, StageDeclaration],
     ) -> OutputPlan:
-        if isinstance(declaration.source, StageOutputReference):
+        has_block_binding = declaration.name in wrapper_class._structure_output_bindings
+        source = wrapper_class._structure_output_bindings.get(declaration.name, declaration.source)
+        if has_block_binding and not isinstance(source, StageOutputReference):
+            raise self._error(
+                wrapper_class.__name__,
+                f"Output {declaration.name} is bound to an unsupported source.",
+                "Use outputs = output(name=stage.output) with a declared stage output.",
+            )
+        if isinstance(source, StageOutputReference):
             output = output_sources.get(
-                (stage_by_name.get(declaration.source.stage.name, declaration.source.stage), declaration.source.name)
+                (stage_by_name.get(source.stage.name, source.stage), source.name)
             )
             if output is None:
                 raise self._error(
                     wrapper_class.__name__,
-                    f"Output {declaration.name} references unavailable stage output {declaration.source.stage.name}.{declaration.source.name}.",
+                    f"Output {declaration.name} references unavailable stage output {source.stage.name}.{source.name}.",
                     "Bind wrapper outputs to existing stage outputs.",
                 )
             if output.schema is not declaration.schema:

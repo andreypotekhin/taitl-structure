@@ -8,7 +8,7 @@ from collections.abc import Iterable, Mapping
 from structure.core.dsl.model.transforms.aliases import require_alias
 from structure.core.dsl.model.transforms.InputDeclaration import InputDeclaration
 from structure.core.dsl.model.transforms.LaneDeclaration import LaneDeclaration
-from structure.core.dsl.model.transforms.OutputDeclaration import OutputDeclaration
+from structure.core.dsl.model.transforms.OutputDeclaration import OutputBindings, OutputDeclaration
 from structure.core.dsl.model.transforms.ParameterDeclaration import ParameterDeclaration
 from structure.core.dsl.model.transforms.StageDeclaration import StageDeclaration
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline
@@ -41,6 +41,7 @@ class Transform:
     _structure_input_aliases: dict[str, str] = {}
     _structure_lane_aliases: dict[str, str] = {}
     _structure_output_aliases: dict[str, str] = {}
+    _structure_output_bindings: dict[str, object] = {}
     _structure_pipeline: TransformPipeline | None = None
     _structure_stages: dict[str, StageDeclaration] = {}
     _structure_transform = False
@@ -53,11 +54,13 @@ class Transform:
         inputs: dict[str, InputDeclaration] = {}
         lanes: dict[str, LaneDeclaration] = {}
         outputs: dict[str, OutputDeclaration] = {}
+        output_bindings: dict[str, object] = {}
         parameters: dict[str, ParameterDeclaration] = {}
         for base in cls.__bases__:
             inputs.update(getattr(base, "_structure_inputs", {}))
             lanes.update(getattr(base, "_structure_lanes", {}))
             outputs.update(getattr(base, "_structure_outputs", {}))
+            output_bindings.update(getattr(base, "_structure_output_bindings", {}))
             parameters.update(getattr(base, "_structure_parameters", {}))
 
         for name, value in cls.__dict__.items():
@@ -67,6 +70,7 @@ class Transform:
                 lanes[value.name] = value
             if isinstance(value, OutputDeclaration):
                 outputs[value.name] = value
+                output_bindings.pop(value.name, None)
             if isinstance(value, ParameterDeclaration):
                 parameters[value.name] = value
             elif name in parameters:
@@ -75,6 +79,23 @@ class Transform:
         cls._structure_inputs = inputs
         cls._structure_lanes = lanes
         cls._structure_outputs = outputs
+        binding_blocks = [value for value in cls.__dict__.values() if isinstance(value, OutputBindings)]
+        if len(binding_blocks) > 1:
+            raise TypeError(f"{cls.__name__} declares more than one output binding block")
+        if binding_blocks:
+            for name, source in binding_blocks[0].bindings:
+                declaration = outputs.get(name)
+                if declaration is None:
+                    allowed = ", ".join(outputs) or "none"
+                    raise TypeError(
+                        f"{cls.__name__} output binding {name!r} is not declared. Available outputs: {allowed}"
+                    )
+                if declaration.source is not None:
+                    raise TypeError(
+                        f"{cls.__name__} output {name!r} has both an inline source and an output binding"
+                    )
+                output_bindings[name] = source
+        cls._structure_output_bindings = output_bindings
         cls._structure_parameters = parameters
         cls._structure_input_aliases = cls._alias_index("input", inputs)
         cls._structure_lane_aliases = cls._alias_index("lane", lanes)

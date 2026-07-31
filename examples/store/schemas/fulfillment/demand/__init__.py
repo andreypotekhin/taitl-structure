@@ -1,1 +1,1 @@
-from examples.store.schemas.fulfillment.demand.demand import OrderDemand
+from examples.store.schemas.fulfillment.demand.demand import Order, OrderDemand

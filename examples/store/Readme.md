@@ -13,10 +13,10 @@ persistence, stream lifecycle, and the business actions taken from the results.
 | Merchandising feedback | `BuildRecommendationSignals` | Daily facts and product signals | Impression/click attribution and reusable product signals. |
 | Merchandising evaluation | `EvaluateMerchandising` | Request and daily behavior summaries | Zero-result, click, and exposure-aware behavior evaluation. |
 | Fulfillment pipeline | `Fulfillment` | Demand, plans, suggestions, summaries | Main planning boundary from commercial order inputs to fulfillment outputs. |
-| Demand preparation | `PrepareOrderDemand` | `OrderDemand` | Valid commercial order lines before warehouse or shipment decisions. |
+| Demand preparation | `PrepareOrderDemand` | `Order` | Valid commercial order lines before warehouse or shipment decisions. |
 | Fulfillment planning | `PlanFulfillment` | Allocations, backorders, plans, suggestions | Deterministic warehouse selection and conservative replenishment signals. |
 | Planning analytics | `FulfillmentAnalytics` | Daily and warehouse load summaries | Batch service-risk and load summaries. |
-| Plan versus actual | `ReconcileFulfillmentPlan` | `PlannedActualReconciliation` | Planned lines observed later in shipment facts. |
+| Plan versus actual | `ReconcileFulfillmentPlan` | `FulfillmentReconciliation` | Planned lines observed later in shipment facts. |
 | Enrichment | `EnrichOrders` | `OrderPublished` | Streaming-compatible order enrichment. |
 | Daily analytics | `OrderAnalytics` | Customer and product daily results | Batch aggregation and windows. |
 | Advanced analytics | `AdvancedOrderAnalytics` | Rollups, cubes, and profiles | Batch analytical examples. |
@@ -52,7 +52,8 @@ runs = recommendations.recommendation_runs
 ```
 
 `Merchandising` lives in the main merchandising package and captures the full serving pipeline from products to ranked
-recommendation rows.
+recommendation rows. It builds feedback signals from streaming impressions and clicks, then uses those signals for
+recommendation ranking. It also owns evaluation when supplied with an evaluation batch and evaluation inputs.
 
 ```python
 merch = Merchandising(
@@ -63,12 +64,18 @@ merch = Merchandising(
     policy=policy,
     boosts=boosts,
     suppressions=suppressions,
-    signals=signals,
+    feedback_impressions=feedback_impressions,
+    feedback_clicks=feedback_clicks,
+    evaluation_batch=evaluation_batch,
+    evaluation_requests=evaluation_requests,
+    evaluation_impressions=evaluation_impressions,
+    evaluation_clicks=evaluation_clicks,
 ).run(session)
 ```
 
 `BuildRecommendationSignals` turns recommendation impressions and timely clicks into daily facts and product-level
-signals. A click counts only when it references an impression and happens within 24 hours of that impression.
+signals inside `Merchandising`. A click counts only when it references an impression and happens within 24 hours of
+that impression.
 `EvaluateMerchandising` keeps zero-result requests in the denominator and summarizes daily behavior by strategy and
 policy version, including zero-result rate, clicked-request rate, mean first-click rank, and exposure-adjusted click
 rate.
@@ -77,11 +84,12 @@ rate.
 
 The planning path is separate from shipment-backed publication. `PrepareOrderDemand` uses the same commercial checks as
 `EnrichOrders` through customer, product, blocked-product, and promotion enrichment, but it stops before shipment
-matching. Its `OrderDemand` output means “this order line is commercially valid and ready to plan.”
+matching. Its `Order` output means “this order line is commercially valid and ready to fulfill.”
 
 `Fulfillment` lives in the fulfillment transform package and captures the overall planning pipeline. It composes
-`PrepareOrderDemand`, `PlanFulfillment`, and `FulfillmentAnalytics`, exposing demand, allocation, backorder, plan,
-replenishment, daily-summary, and warehouse-load outputs from one app-facing transform.
+`PrepareOrderDemand`, `PlanFulfillment`, `ReconcileFulfillmentPlan`, and `FulfillmentAnalytics`, exposing demand,
+allocation, backorder, plan, reconciliation, replenishment, daily-summary, and warehouse-load outputs from one
+app-facing transform.
 
 ```python
 fulfillment = Fulfillment(
@@ -93,10 +101,11 @@ fulfillment = Fulfillment(
     warehouses=warehouses,
     inventory_positions=inventory_positions,
     inbound_inventory=inbound_inventory,
+    fulfilled=fulfilled,
 ).run(session)
 ```
 
-`PlanFulfillment` consumes `OrderDemand`, active warehouses, inventory positions, and inbound inventory. It computes
+`PlanFulfillment` consumes `Order`, active warehouses, inventory positions, and inbound inventory. It computes
 available-to-promise as on-hand quantity minus reserved quantity, never below zero. Inbound inventory does not increase
 immediate allocation; it only supplies a possible planned ship date for partial or full backorders and informs
 replenishment suggestions.

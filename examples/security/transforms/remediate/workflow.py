@@ -15,8 +15,8 @@ from examples.security.schemas.remediation import (
 )
 from examples.security.schemas.reporting import SecurityEvaluation, VulnerabilityExposure
 from examples.security.schemas.risk import Vuln
-from examples.security.transforms.remediate.access import VulnerabilityRemediationAccess
-from examples.security.transforms.remediate.prepare import VulnerabilityRemediationPrepare
+from examples.security.transforms.remediate.check import VulnerabilityRemediationPrepare
+from examples.security.transforms.remediate.enrich import VulnerabilityRemediationAccess
 from examples.security.transforms.remediate.publish import VulnerabilityRemediationPublish
 from examples.security.transforms.remediate.summarize import VulnerabilityRemediationSummaries
 from structure import Transform, input, output, stage
@@ -46,7 +46,9 @@ class VulnerabilityRemediationWorkflow(Transform):
     department_summaries = output(DepartmentRemediationWorkflowSummary)
     org_summaries = output(OrgRemediationWorkflowSummary)
 
-    prepared = stage(VulnerabilityRemediationPrepare(cases=cases, vulnerabilities=vulnerabilities))
+    prepared = stage(
+        VulnerabilityRemediationPrepare(cases=cases, vulnerabilities=vulnerabilities)
+    )
     accessed = stage(
         VulnerabilityRemediationAccess(
             exposures=exposures,

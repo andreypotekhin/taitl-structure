@@ -1,5 +1,5 @@
 from examples.store.schemas.fulfillment.analytics import DailyFulfillmentSummary, WarehouseLoadSummary
-from examples.store.schemas.fulfillment.demand import OrderDemand
+from examples.store.schemas.fulfillment.demand import Order, OrderDemand
 from examples.store.schemas.fulfillment.planning import (
     FulfillmentAllocation,
     FulfillmentBackorder,
@@ -12,4 +12,4 @@ from examples.store.schemas.fulfillment.planning import (
     ReplenishmentSuggestion,
     Warehouse,
 )
-from examples.store.schemas.fulfillment.reconciliation import PlannedActualReconciliation
+from examples.store.schemas.fulfillment.reconciliation import FulfillmentReconciliation

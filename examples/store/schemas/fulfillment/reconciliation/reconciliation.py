@@ -3,7 +3,7 @@ from structure import Schema
 from structure.plugin.pyspark import *
 
 
-class PlannedActualReconciliation(Schema):
+class FulfillmentReconciliation(Schema):
     tenant = struct(TenantKey, nullable=False)
     business = struct(BusinessDate, nullable=False)
     order_id = string(nullable=False)
@@ -14,3 +14,7 @@ class PlannedActualReconciliation(Schema):
     shipped_quantity = long(nullable=False)
     shipped = boolean(nullable=False)
     reconciliation_status = string(nullable=False)
+
+
+# Compatibility name for callers using the original plan-versus-actual name.
+PlannedActualReconciliation = FulfillmentReconciliation

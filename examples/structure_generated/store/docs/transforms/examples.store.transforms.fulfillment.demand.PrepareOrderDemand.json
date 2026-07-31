@@ -1,0 +1,237 @@
+{
+  "dependencies": [
+    "blocked_product",
+    "blocked_products",
+    "customer",
+    "customers",
+    "product",
+    "products",
+    "promotion",
+    "promotions"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "orders",
+      "ordinal": 0,
+      "schema": "OrderRaw"
+    },
+    {
+      "name": "customers",
+      "ordinal": 1,
+      "schema": "Customer"
+    },
+    {
+      "name": "products",
+      "ordinal": 2,
+      "schema": "Product"
+    },
+    {
+      "name": "blocked_products",
+      "ordinal": 3,
+      "schema": "BlockedProduct"
+    },
+    {
+      "name": "promotions",
+      "ordinal": 4,
+      "schema": "Promotion"
+    }
+  ],
+  "name": "PrepareOrderDemand",
+  "outputs": [
+    {
+      "name": "demand",
+      "ordinal": 0,
+      "schema": "Order"
+    }
+  ],
+  "source": "examples.store.transforms.fulfillment.demand.PrepareOrderDemand",
+  "step_methods": [
+    {
+      "input_lane": "orders",
+      "input_schema": "OrderRaw",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "order",
+          "schema": "OrderRaw",
+          "source": "orders"
+        }
+      ],
+      "name": "normalize",
+      "output_lane": "orders",
+      "output_schema": "OrderNormalized",
+      "results": [
+        {
+          "frame": "orders",
+          "lane": "orders",
+          "schema": "OrderNormalized"
+        }
+      ]
+    },
+    {
+      "input_lane": "orders",
+      "input_schema": "OrderNormalized",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "order",
+          "schema": "OrderNormalized",
+          "source": "orders"
+        }
+      ],
+      "name": "discard_negative_totals",
+      "output_lane": "orders",
+      "output_schema": "OrderNormalized",
+      "results": [
+        {
+          "frame": "orders",
+          "lane": "orders",
+          "schema": "OrderNormalized"
+        }
+      ]
+    },
+    {
+      "input_lane": "orders",
+      "input_schema": "OrderNormalized",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "order",
+          "schema": "OrderNormalized",
+          "source": "orders"
+        },
+        {
+          "driving": false,
+          "parameter": "customer",
+          "schema": "Customer",
+          "source": "customers"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "customer"
+        }
+      ],
+      "name": "add_customer",
+      "output_lane": "orders",
+      "output_schema": "OrderWithCustomer",
+      "results": [
+        {
+          "frame": "orders",
+          "lane": "orders",
+          "schema": "OrderWithCustomer"
+        }
+      ]
+    },
+    {
+      "input_lane": "orders",
+      "input_schema": "OrderWithCustomer",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "order",
+          "schema": "OrderWithCustomer",
+          "source": "orders"
+        },
+        {
+          "driving": false,
+          "parameter": "product",
+          "schema": "Product",
+          "source": "products"
+        },
+        {
+          "driving": false,
+          "parameter": "blocked_product",
+          "schema": "BlockedProduct",
+          "source": "blocked_products"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "product"
+        },
+        {
+          "how": "inner",
+          "input": "blocked_product"
+        },
+        {
+          "how": "left",
+          "input": "product"
+        }
+      ],
+      "name": "add_product",
+      "output_lane": "orders",
+      "output_schema": "OrderWithProduct",
+      "results": [
+        {
+          "frame": "orders",
+          "lane": "orders",
+          "schema": "OrderWithProduct"
+        }
+      ]
+    },
+    {
+      "input_lane": "orders",
+      "input_schema": "OrderWithProduct",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "order",
+          "schema": "OrderWithProduct",
+          "source": "orders"
+        },
+        {
+          "driving": false,
+          "parameter": "promotion",
+          "schema": "Promotion",
+          "source": "promotions"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "promotion"
+        }
+      ],
+      "name": "add_promotion",
+      "output_lane": "orders",
+      "output_schema": "OrderWithPromotion",
+      "results": [
+        {
+          "frame": "orders",
+          "lane": "orders",
+          "schema": "OrderWithPromotion"
+        }
+      ]
+    },
+    {
+      "input_lane": "orders",
+      "input_schema": "OrderWithPromotion",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "order",
+          "schema": "OrderWithPromotion",
+          "source": "orders"
+        }
+      ],
+      "name": "publish_demand",
+      "output_lane": "demand",
+      "output_schema": "Order",
+      "results": [
+        {
+          "frame": "demand",
+          "lane": "demand",
+          "schema": "Order"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/demand.py",
+    "traceability": "traceability/transforms/demand.PrepareOrderDemand.json"
+  }
+}

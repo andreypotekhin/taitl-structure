@@ -16,7 +16,8 @@ These declarations and operations define compiler-visible transform methods. Exa
 
 **Details And Differences**
 
-- `input(...)`, `output(...)`, and `lane(...)` declare named transform boundaries.
+- `input(...)`, `output(...)`, and `lane(...)` declare named transform boundaries. A graph may collect explicit output
+  sources with `outputs = output(name=stage.output, ...)` while keeping schemas declared separately.
 - Undecorated public methods with schema input/return annotations are also steps; `@step(...)` disambiguates bindings.
 - `@transform(...)` accepts transform-level target and streaming options.
 

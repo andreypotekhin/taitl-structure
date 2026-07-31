@@ -8,8 +8,8 @@ from examples.security.transforms.events import EnrichAppEvents, EnrichVulnerabi
 from examples.security.transforms.notify import VulnerabilityNotifications
 from examples.security.transforms.posture import SecurityPosture
 from examples.security.transforms.quality import SecurityInventoryQuality
-from examples.security.transforms.remediate.access import VulnerabilityRemediationAccess
-from examples.security.transforms.remediate.prepare import VulnerabilityRemediationPrepare
+from examples.security.transforms.remediate.check import VulnerabilityRemediationPrepare
+from examples.security.transforms.remediate.enrich import VulnerabilityRemediationAccess
 from examples.security.transforms.remediate.publish import VulnerabilityRemediationPublish
 from examples.security.transforms.remediate.summarize import VulnerabilityRemediationSummaries
 from examples.security.transforms.remediate.workflow import VulnerabilityRemediationWorkflow

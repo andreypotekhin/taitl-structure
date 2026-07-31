@@ -978,7 +978,7 @@
     },
     {
       "bases": [
-        "OrderDemand"
+        "Order"
       ],
       "fields": [
         {
@@ -1132,7 +1132,7 @@
           "type": "long"
         }
       ],
-      "module": "examples.store.schemas.fulfillment.planning.intermediate",
+      "module": "examples.store.schemas.fulfillment.planning.workflow",
       "name": "FulfillmentOption"
     },
     {
@@ -1376,8 +1376,75 @@
           "type": "long"
         }
       ],
-      "module": "examples.store.schemas.fulfillment.planning.intermediate",
+      "module": "examples.store.schemas.fulfillment.planning.workflow",
       "name": "FulfillmentPreferredOption"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "business",
+          "name": "business",
+          "nullable": false,
+          "type": "BusinessDate"
+        },
+        {
+          "column": "order_id",
+          "name": "order_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "planned_status",
+          "name": "planned_status",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "planned_allocated_quantity",
+          "name": "planned_allocated_quantity",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "planned_backordered_quantity",
+          "name": "planned_backordered_quantity",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "shipped_quantity",
+          "name": "shipped_quantity",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "shipped",
+          "name": "shipped",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "reconciliation_status",
+          "name": "reconciliation_status",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.store.schemas.fulfillment.reconciliation.reconciliation",
+      "name": "FulfillmentReconciliation"
     },
     {
       "bases": [],
@@ -1462,7 +1529,7 @@
           "type": "long"
         }
       ],
-      "module": "examples.store.schemas.fulfillment.planning.intermediate",
+      "module": "examples.store.schemas.fulfillment.planning.workflow",
       "name": "InboundInventoryAvailability"
     },
     {
@@ -1660,6 +1727,121 @@
       ],
       "module": "examples.store.schemas.merchandising.policy",
       "name": "MerchandisingSuppression"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "tenant",
+          "name": "tenant",
+          "nullable": false,
+          "type": "TenantKey"
+        },
+        {
+          "column": "business",
+          "name": "business",
+          "nullable": false,
+          "type": "BusinessDate"
+        },
+        {
+          "column": "order_id",
+          "name": "order_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "customer_id",
+          "name": "customer_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "customer_name",
+          "name": "customer_name",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "customer_tier",
+          "name": "customer_tier",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "customer_region",
+          "name": "customer_region",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "product_id",
+          "name": "product_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "product_name",
+          "name": "product_name",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "product_category",
+          "name": "product_category",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "promotion_code",
+          "name": "promotion_code",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "promotion_name",
+          "name": "promotion_name",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "promotion_discount",
+          "name": "promotion_discount",
+          "nullable": true,
+          "type": "decimal(12,2)"
+        },
+        {
+          "column": "total",
+          "name": "total",
+          "nullable": false,
+          "type": "decimal(12,2)"
+        },
+        {
+          "column": "discount",
+          "name": "discount",
+          "nullable": false,
+          "type": "decimal(12,2)"
+        },
+        {
+          "column": "net_total",
+          "name": "net_total",
+          "nullable": false,
+          "type": "decimal(12,2)"
+        },
+        {
+          "column": "requested_quantity",
+          "name": "requested_quantity",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "is_large",
+          "name": "is_large",
+          "nullable": false,
+          "type": "boolean"
+        }
+      ],
+      "module": "examples.store.schemas.fulfillment.demand.demand",
+      "name": "Order"
     },
     {
       "bases": [],
@@ -2006,121 +2188,6 @@
       ],
       "module": "examples.store.schemas.adv_analytics",
       "name": "OrderCustomerWindow"
-    },
-    {
-      "bases": [],
-      "fields": [
-        {
-          "column": "tenant",
-          "name": "tenant",
-          "nullable": false,
-          "type": "TenantKey"
-        },
-        {
-          "column": "business",
-          "name": "business",
-          "nullable": false,
-          "type": "BusinessDate"
-        },
-        {
-          "column": "order_id",
-          "name": "order_id",
-          "nullable": false,
-          "type": "string"
-        },
-        {
-          "column": "customer_id",
-          "name": "customer_id",
-          "nullable": false,
-          "type": "string"
-        },
-        {
-          "column": "customer_name",
-          "name": "customer_name",
-          "nullable": true,
-          "type": "string"
-        },
-        {
-          "column": "customer_tier",
-          "name": "customer_tier",
-          "nullable": true,
-          "type": "string"
-        },
-        {
-          "column": "customer_region",
-          "name": "customer_region",
-          "nullable": true,
-          "type": "string"
-        },
-        {
-          "column": "product_id",
-          "name": "product_id",
-          "nullable": false,
-          "type": "string"
-        },
-        {
-          "column": "product_name",
-          "name": "product_name",
-          "nullable": true,
-          "type": "string"
-        },
-        {
-          "column": "product_category",
-          "name": "product_category",
-          "nullable": true,
-          "type": "string"
-        },
-        {
-          "column": "promotion_code",
-          "name": "promotion_code",
-          "nullable": true,
-          "type": "string"
-        },
-        {
-          "column": "promotion_name",
-          "name": "promotion_name",
-          "nullable": true,
-          "type": "string"
-        },
-        {
-          "column": "promotion_discount",
-          "name": "promotion_discount",
-          "nullable": true,
-          "type": "decimal(12,2)"
-        },
-        {
-          "column": "total",
-          "name": "total",
-          "nullable": false,
-          "type": "decimal(12,2)"
-        },
-        {
-          "column": "discount",
-          "name": "discount",
-          "nullable": false,
-          "type": "decimal(12,2)"
-        },
-        {
-          "column": "net_total",
-          "name": "net_total",
-          "nullable": false,
-          "type": "decimal(12,2)"
-        },
-        {
-          "column": "requested_quantity",
-          "name": "requested_quantity",
-          "nullable": false,
-          "type": "long"
-        },
-        {
-          "column": "is_large",
-          "name": "is_large",
-          "nullable": false,
-          "type": "boolean"
-        }
-      ],
-      "module": "examples.store.schemas.fulfillment.demand.demand",
-      "name": "OrderDemand"
     },
     {
       "bases": [
@@ -3343,73 +3410,6 @@
       ],
       "module": "examples.store.schemas.order",
       "name": "OrderWithPromotion"
-    },
-    {
-      "bases": [],
-      "fields": [
-        {
-          "column": "tenant",
-          "name": "tenant",
-          "nullable": false,
-          "type": "TenantKey"
-        },
-        {
-          "column": "business",
-          "name": "business",
-          "nullable": false,
-          "type": "BusinessDate"
-        },
-        {
-          "column": "order_id",
-          "name": "order_id",
-          "nullable": false,
-          "type": "string"
-        },
-        {
-          "column": "product_id",
-          "name": "product_id",
-          "nullable": false,
-          "type": "string"
-        },
-        {
-          "column": "planned_status",
-          "name": "planned_status",
-          "nullable": false,
-          "type": "string"
-        },
-        {
-          "column": "planned_allocated_quantity",
-          "name": "planned_allocated_quantity",
-          "nullable": false,
-          "type": "long"
-        },
-        {
-          "column": "planned_backordered_quantity",
-          "name": "planned_backordered_quantity",
-          "nullable": false,
-          "type": "long"
-        },
-        {
-          "column": "shipped_quantity",
-          "name": "shipped_quantity",
-          "nullable": false,
-          "type": "long"
-        },
-        {
-          "column": "shipped",
-          "name": "shipped",
-          "nullable": false,
-          "type": "boolean"
-        },
-        {
-          "column": "reconciliation_status",
-          "name": "reconciliation_status",
-          "nullable": false,
-          "type": "string"
-        }
-      ],
-      "module": "examples.store.schemas.fulfillment.reconciliation.reconciliation",
-      "name": "PlannedActualReconciliation"
     },
     {
       "bases": [
@@ -4874,6 +4874,685 @@
         "blocked_products",
         "customer",
         "customers",
+        "product",
+        "products",
+        "promotion",
+        "promotions"
+      ],
+      "inputs": [
+        {
+          "name": "orders",
+          "ordinal": 0,
+          "schema": "OrderRaw"
+        },
+        {
+          "name": "customers",
+          "ordinal": 1,
+          "schema": "Customer"
+        },
+        {
+          "name": "products",
+          "ordinal": 2,
+          "schema": "Product"
+        },
+        {
+          "name": "blocked_products",
+          "ordinal": 3,
+          "schema": "BlockedProduct"
+        },
+        {
+          "name": "promotions",
+          "ordinal": 4,
+          "schema": "Promotion"
+        }
+      ],
+      "name": "PrepareOrderDemand",
+      "outputs": [
+        {
+          "name": "demand",
+          "ordinal": 0,
+          "schema": "Order"
+        }
+      ],
+      "source": "examples.store.transforms.fulfillment.demand.PrepareOrderDemand",
+      "step_methods": [
+        {
+          "input_lane": "orders",
+          "input_schema": "OrderRaw",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "order",
+              "schema": "OrderRaw",
+              "source": "orders"
+            }
+          ],
+          "name": "normalize",
+          "output_lane": "orders",
+          "output_schema": "OrderNormalized",
+          "results": [
+            {
+              "frame": "orders",
+              "lane": "orders",
+              "schema": "OrderNormalized"
+            }
+          ]
+        },
+        {
+          "input_lane": "orders",
+          "input_schema": "OrderNormalized",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "order",
+              "schema": "OrderNormalized",
+              "source": "orders"
+            }
+          ],
+          "name": "discard_negative_totals",
+          "output_lane": "orders",
+          "output_schema": "OrderNormalized",
+          "results": [
+            {
+              "frame": "orders",
+              "lane": "orders",
+              "schema": "OrderNormalized"
+            }
+          ]
+        },
+        {
+          "input_lane": "orders",
+          "input_schema": "OrderNormalized",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "order",
+              "schema": "OrderNormalized",
+              "source": "orders"
+            },
+            {
+              "driving": false,
+              "parameter": "customer",
+              "schema": "Customer",
+              "source": "customers"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "customer"
+            }
+          ],
+          "name": "add_customer",
+          "output_lane": "orders",
+          "output_schema": "OrderWithCustomer",
+          "results": [
+            {
+              "frame": "orders",
+              "lane": "orders",
+              "schema": "OrderWithCustomer"
+            }
+          ]
+        },
+        {
+          "input_lane": "orders",
+          "input_schema": "OrderWithCustomer",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "order",
+              "schema": "OrderWithCustomer",
+              "source": "orders"
+            },
+            {
+              "driving": false,
+              "parameter": "product",
+              "schema": "Product",
+              "source": "products"
+            },
+            {
+              "driving": false,
+              "parameter": "blocked_product",
+              "schema": "BlockedProduct",
+              "source": "blocked_products"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "product"
+            },
+            {
+              "how": "inner",
+              "input": "blocked_product"
+            },
+            {
+              "how": "left",
+              "input": "product"
+            }
+          ],
+          "name": "add_product",
+          "output_lane": "orders",
+          "output_schema": "OrderWithProduct",
+          "results": [
+            {
+              "frame": "orders",
+              "lane": "orders",
+              "schema": "OrderWithProduct"
+            }
+          ]
+        },
+        {
+          "input_lane": "orders",
+          "input_schema": "OrderWithProduct",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "order",
+              "schema": "OrderWithProduct",
+              "source": "orders"
+            },
+            {
+              "driving": false,
+              "parameter": "promotion",
+              "schema": "Promotion",
+              "source": "promotions"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "promotion"
+            }
+          ],
+          "name": "add_promotion",
+          "output_lane": "orders",
+          "output_schema": "OrderWithPromotion",
+          "results": [
+            {
+              "frame": "orders",
+              "lane": "orders",
+              "schema": "OrderWithPromotion"
+            }
+          ]
+        },
+        {
+          "input_lane": "orders",
+          "input_schema": "OrderWithPromotion",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "order",
+              "schema": "OrderWithPromotion",
+              "source": "orders"
+            }
+          ],
+          "name": "publish_demand",
+          "output_lane": "demand",
+          "output_schema": "Order",
+          "results": [
+            {
+              "frame": "demand",
+              "lane": "demand",
+              "schema": "Order"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/demand.py",
+        "traceability": "traceability/transforms/demand.PrepareOrderDemand.json"
+      }
+    },
+    {
+      "dependencies": [
+        "inbound",
+        "inbound_availability",
+        "inventory",
+        "inventory_positions",
+        "warehouse",
+        "warehouses"
+      ],
+      "inputs": [
+        {
+          "name": "demand",
+          "ordinal": 0,
+          "schema": "Order"
+        },
+        {
+          "name": "warehouses",
+          "ordinal": 1,
+          "schema": "Warehouse"
+        },
+        {
+          "name": "inventory_positions",
+          "ordinal": 2,
+          "schema": "InventoryPosition"
+        },
+        {
+          "name": "inbound_inventory",
+          "ordinal": 3,
+          "schema": "InboundInventory"
+        }
+      ],
+      "name": "PlanFulfillment",
+      "outputs": [
+        {
+          "name": "allocations",
+          "ordinal": 0,
+          "schema": "FulfillmentAllocation"
+        },
+        {
+          "name": "backorders",
+          "ordinal": 1,
+          "schema": "FulfillmentBackorder"
+        },
+        {
+          "name": "plans",
+          "ordinal": 2,
+          "schema": "FulfillmentPlan"
+        },
+        {
+          "name": "replenishment_suggestions",
+          "ordinal": 3,
+          "schema": "ReplenishmentSuggestion"
+        }
+      ],
+      "source": "examples.store.transforms.fulfillment.plan.PlanFulfillment",
+      "step_methods": [
+        {
+          "input_lane": "inbound_inventory",
+          "input_schema": "InboundInventory",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "inbound",
+              "schema": "InboundInventory",
+              "source": "inbound_inventory"
+            }
+          ],
+          "name": "summarize_inbound",
+          "output_lane": "inbound_availability",
+          "output_schema": "InboundInventoryAvailability",
+          "results": [
+            {
+              "frame": "inbound_availability",
+              "lane": "inbound_availability",
+              "schema": "InboundInventoryAvailability"
+            }
+          ]
+        },
+        {
+          "input_lane": "demand",
+          "input_schema": "Order",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "demand",
+              "schema": "Order",
+              "source": "demand"
+            },
+            {
+              "driving": false,
+              "parameter": "warehouse",
+              "schema": "Warehouse",
+              "source": "warehouses"
+            },
+            {
+              "driving": false,
+              "parameter": "inventory",
+              "schema": "InventoryPosition",
+              "source": "inventory_positions"
+            },
+            {
+              "driving": false,
+              "parameter": "inbound",
+              "schema": "InboundInventoryAvailability",
+              "source": "inbound_availability"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "warehouse"
+            },
+            {
+              "how": "inner",
+              "input": "inventory"
+            },
+            {
+              "how": "left",
+              "input": "inbound"
+            }
+          ],
+          "name": "build_options",
+          "output_lane": "options",
+          "output_schema": "FulfillmentOption",
+          "results": [
+            {
+              "frame": "options",
+              "lane": "options",
+              "schema": "FulfillmentOption"
+            }
+          ]
+        },
+        {
+          "input_lane": "options",
+          "input_schema": "FulfillmentOption",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "option",
+              "schema": "FulfillmentOption",
+              "source": "options"
+            }
+          ],
+          "name": "prioritize_options",
+          "output_lane": "prioritized_options",
+          "output_schema": "FulfillmentPreferredOption",
+          "results": [
+            {
+              "frame": "prioritized_options",
+              "lane": "prioritized_options",
+              "schema": "FulfillmentPreferredOption"
+            }
+          ]
+        },
+        {
+          "input_lane": "prioritized_options",
+          "input_schema": "FulfillmentPreferredOption",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "option",
+              "schema": "FulfillmentPreferredOption",
+              "source": "prioritized_options"
+            }
+          ],
+          "name": "select_preferred_option",
+          "output_lane": "preferred_options",
+          "output_schema": "FulfillmentPreferredOption",
+          "results": [
+            {
+              "frame": "preferred_options",
+              "lane": "preferred_options",
+              "schema": "FulfillmentPreferredOption"
+            }
+          ]
+        },
+        {
+          "input_lane": "preferred_options",
+          "input_schema": "FulfillmentPreferredOption",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "option",
+              "schema": "FulfillmentPreferredOption",
+              "source": "preferred_options"
+            }
+          ],
+          "name": "allocate",
+          "output_lane": "allocations",
+          "output_schema": "FulfillmentAllocation",
+          "results": [
+            {
+              "frame": "allocations",
+              "lane": "allocations",
+              "schema": "FulfillmentAllocation"
+            }
+          ]
+        },
+        {
+          "input_lane": "preferred_options",
+          "input_schema": "FulfillmentPreferredOption",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "option",
+              "schema": "FulfillmentPreferredOption",
+              "source": "preferred_options"
+            }
+          ],
+          "name": "backorder",
+          "output_lane": "backorders",
+          "output_schema": "FulfillmentBackorder",
+          "results": [
+            {
+              "frame": "backorders",
+              "lane": "backorders",
+              "schema": "FulfillmentBackorder"
+            }
+          ]
+        },
+        {
+          "input_lane": "preferred_options",
+          "input_schema": "FulfillmentPreferredOption",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "option",
+              "schema": "FulfillmentPreferredOption",
+              "source": "preferred_options"
+            }
+          ],
+          "name": "plan",
+          "output_lane": "plans",
+          "output_schema": "FulfillmentPlan",
+          "results": [
+            {
+              "frame": "plans",
+              "lane": "plans",
+              "schema": "FulfillmentPlan"
+            }
+          ]
+        },
+        {
+          "input_lane": "preferred_options",
+          "input_schema": "FulfillmentPreferredOption",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "option",
+              "schema": "FulfillmentPreferredOption",
+              "source": "preferred_options"
+            }
+          ],
+          "name": "suggest_replenishment",
+          "output_lane": "replenishment_suggestions",
+          "output_schema": "ReplenishmentSuggestion",
+          "results": [
+            {
+              "frame": "replenishment_suggestions",
+              "lane": "replenishment_suggestions",
+              "schema": "ReplenishmentSuggestion"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/plan.py",
+        "traceability": "traceability/transforms/plan.PlanFulfillment.json"
+      }
+    },
+    {
+      "dependencies": [
+        "fulfilled"
+      ],
+      "inputs": [
+        {
+          "name": "plans",
+          "ordinal": 0,
+          "schema": "FulfillmentPlan"
+        },
+        {
+          "name": "fulfilled",
+          "ordinal": 1,
+          "schema": "OrderFulfillment"
+        }
+      ],
+      "name": "ReconcileFulfillmentPlan",
+      "outputs": [
+        {
+          "name": "reconciliation",
+          "ordinal": 0,
+          "schema": "FulfillmentReconciliation"
+        }
+      ],
+      "source": "examples.store.transforms.fulfillment.reconcile.ReconcileFulfillmentPlan",
+      "step_methods": [
+        {
+          "input_lane": "plans",
+          "input_schema": "FulfillmentPlan",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "plan",
+              "schema": "FulfillmentPlan",
+              "source": "plans"
+            },
+            {
+              "driving": false,
+              "parameter": "fulfilled",
+              "schema": "OrderFulfillment",
+              "source": "fulfilled"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "fulfilled"
+            }
+          ],
+          "name": "reconcile",
+          "output_lane": "reconciliation",
+          "output_schema": "FulfillmentReconciliation",
+          "results": [
+            {
+              "frame": "reconciliation",
+              "lane": "reconciliation",
+              "schema": "FulfillmentReconciliation"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/reconcile.py",
+        "traceability": "traceability/transforms/reconcile.ReconcileFulfillmentPlan.json"
+      }
+    },
+    {
+      "dependencies": [],
+      "inputs": [
+        {
+          "name": "plans",
+          "ordinal": 0,
+          "schema": "FulfillmentPlan"
+        },
+        {
+          "name": "allocations",
+          "ordinal": 1,
+          "schema": "FulfillmentAllocation"
+        },
+        {
+          "name": "backorders",
+          "ordinal": 2,
+          "schema": "FulfillmentBackorder"
+        }
+      ],
+      "name": "FulfillmentAnalytics",
+      "outputs": [
+        {
+          "name": "daily_summary",
+          "ordinal": 0,
+          "schema": "DailyFulfillmentSummary"
+        },
+        {
+          "name": "warehouse_load_summary",
+          "ordinal": 1,
+          "schema": "WarehouseLoadSummary"
+        }
+      ],
+      "source": "examples.store.transforms.fulfillment.summarize.FulfillmentAnalytics",
+      "step_methods": [
+        {
+          "input_lane": "plans",
+          "input_schema": "FulfillmentPlan",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "plan",
+              "schema": "FulfillmentPlan",
+              "source": "plans"
+            }
+          ],
+          "name": "summarize_daily_totals",
+          "output_lane": "daily_totals",
+          "output_schema": "DailyFulfillmentSummary",
+          "results": [
+            {
+              "frame": "daily_totals",
+              "lane": "daily_totals",
+              "schema": "DailyFulfillmentSummary"
+            }
+          ]
+        },
+        {
+          "input_lane": "daily_totals",
+          "input_schema": "DailyFulfillmentSummary",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "daily",
+              "schema": "DailyFulfillmentSummary",
+              "source": "daily_totals"
+            }
+          ],
+          "name": "publish_daily_summary",
+          "output_lane": "daily_summary",
+          "output_schema": "DailyFulfillmentSummary",
+          "results": [
+            {
+              "frame": "daily_summary",
+              "lane": "daily_summary",
+              "schema": "DailyFulfillmentSummary"
+            }
+          ]
+        },
+        {
+          "input_lane": "allocations",
+          "input_schema": "FulfillmentAllocation",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "allocation",
+              "schema": "FulfillmentAllocation",
+              "source": "allocations"
+            }
+          ],
+          "name": "summarize_warehouse_load",
+          "output_lane": "warehouse_load_summary",
+          "output_schema": "WarehouseLoadSummary",
+          "results": [
+            {
+              "frame": "warehouse_load_summary",
+              "lane": "warehouse_load_summary",
+              "schema": "WarehouseLoadSummary"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/summarize.py",
+        "traceability": "traceability/transforms/summarize.FulfillmentAnalytics.json"
+      }
+    },
+    {
+      "dependencies": [
+        "blocked_product",
+        "blocked_products",
+        "customer",
+        "customers",
+        "fulfilled",
         "inbound",
         "inventory",
         "inventory_positions",
@@ -4925,6 +5604,11 @@
           "name": "inbound_inventory",
           "ordinal": 7,
           "schema": "InboundInventory"
+        },
+        {
+          "name": "fulfilled",
+          "ordinal": 8,
+          "schema": "OrderFulfillment"
         }
       ],
       "name": "Fulfillment",
@@ -4932,7 +5616,7 @@
         {
           "name": "demand",
           "ordinal": 0,
-          "schema": "OrderDemand"
+          "schema": "Order"
         },
         {
           "name": "allocations",
@@ -4950,22 +5634,27 @@
           "schema": "FulfillmentPlan"
         },
         {
-          "name": "replenishment_suggestions",
+          "name": "reconciliation",
           "ordinal": 4,
+          "schema": "FulfillmentReconciliation"
+        },
+        {
+          "name": "replenishment_suggestions",
+          "ordinal": 5,
           "schema": "ReplenishmentSuggestion"
         },
         {
           "name": "daily_summary",
-          "ordinal": 5,
+          "ordinal": 6,
           "schema": "DailyFulfillmentSummary"
         },
         {
           "name": "warehouse_load_summary",
-          "ordinal": 6,
+          "ordinal": 7,
           "schema": "WarehouseLoadSummary"
         }
       ],
-      "source": "examples.store.transforms.fulfillment.Fulfillment.Fulfillment",
+      "source": "examples.store.transforms.fulfillment.workflow.Fulfillment",
       "step_methods": [
         {
           "input_lane": "orders",
@@ -5140,12 +5829,12 @@
           ],
           "name": "prepared.publish_demand",
           "output_lane": "prepared__demand",
-          "output_schema": "OrderDemand",
+          "output_schema": "Order",
           "results": [
             {
               "frame": "prepared__demand",
               "lane": "prepared__demand",
-              "schema": "OrderDemand"
+              "schema": "Order"
             }
           ]
         },
@@ -5173,12 +5862,12 @@
         },
         {
           "input_lane": "prepared__demand",
-          "input_schema": "OrderDemand",
+          "input_schema": "Order",
           "inputs": [
             {
               "driving": true,
               "parameter": "demand",
-              "schema": "OrderDemand",
+              "schema": "Order",
               "source": "prepared__demand"
             },
             {
@@ -5366,6 +6055,40 @@
               "parameter": "plan",
               "schema": "FulfillmentPlan",
               "source": "planned__plans"
+            },
+            {
+              "driving": false,
+              "parameter": "fulfilled",
+              "schema": "OrderFulfillment",
+              "source": "fulfilled"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "fulfilled"
+            }
+          ],
+          "name": "reconciled.reconcile",
+          "output_lane": "reconciled__reconciliation",
+          "output_schema": "FulfillmentReconciliation",
+          "results": [
+            {
+              "frame": "reconciled__reconciliation",
+              "lane": "reconciled__reconciliation",
+              "schema": "FulfillmentReconciliation"
+            }
+          ]
+        },
+        {
+          "input_lane": "planned__plans",
+          "input_schema": "FulfillmentPlan",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "plan",
+              "schema": "FulfillmentPlan",
+              "source": "planned__plans"
             }
           ],
           "name": "summarized.summarize_daily_totals",
@@ -5425,974 +6148,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/Fulfillment.py",
-        "traceability": "traceability/transforms/Fulfillment.Fulfillment.json"
-      }
-    },
-    {
-      "dependencies": [],
-      "inputs": [
-        {
-          "name": "plans",
-          "ordinal": 0,
-          "schema": "FulfillmentPlan"
-        },
-        {
-          "name": "allocations",
-          "ordinal": 1,
-          "schema": "FulfillmentAllocation"
-        },
-        {
-          "name": "backorders",
-          "ordinal": 2,
-          "schema": "FulfillmentBackorder"
-        }
-      ],
-      "name": "FulfillmentAnalytics",
-      "outputs": [
-        {
-          "name": "daily_summary",
-          "ordinal": 0,
-          "schema": "DailyFulfillmentSummary"
-        },
-        {
-          "name": "warehouse_load_summary",
-          "ordinal": 1,
-          "schema": "WarehouseLoadSummary"
-        }
-      ],
-      "source": "examples.store.transforms.fulfillment.analytics.FulfillmentAnalytics.FulfillmentAnalytics",
-      "step_methods": [
-        {
-          "input_lane": "plans",
-          "input_schema": "FulfillmentPlan",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "plan",
-              "schema": "FulfillmentPlan",
-              "source": "plans"
-            }
-          ],
-          "name": "summarize_daily_totals",
-          "output_lane": "daily_totals",
-          "output_schema": "DailyFulfillmentSummary",
-          "results": [
-            {
-              "frame": "daily_totals",
-              "lane": "daily_totals",
-              "schema": "DailyFulfillmentSummary"
-            }
-          ]
-        },
-        {
-          "input_lane": "daily_totals",
-          "input_schema": "DailyFulfillmentSummary",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "daily",
-              "schema": "DailyFulfillmentSummary",
-              "source": "daily_totals"
-            }
-          ],
-          "name": "publish_daily_summary",
-          "output_lane": "daily_summary",
-          "output_schema": "DailyFulfillmentSummary",
-          "results": [
-            {
-              "frame": "daily_summary",
-              "lane": "daily_summary",
-              "schema": "DailyFulfillmentSummary"
-            }
-          ]
-        },
-        {
-          "input_lane": "allocations",
-          "input_schema": "FulfillmentAllocation",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "allocation",
-              "schema": "FulfillmentAllocation",
-              "source": "allocations"
-            }
-          ],
-          "name": "summarize_warehouse_load",
-          "output_lane": "warehouse_load_summary",
-          "output_schema": "WarehouseLoadSummary",
-          "results": [
-            {
-              "frame": "warehouse_load_summary",
-              "lane": "warehouse_load_summary",
-              "schema": "WarehouseLoadSummary"
-            }
-          ]
-        }
-      ],
-      "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/FulfillmentAnalytics.py",
-        "traceability": "traceability/transforms/FulfillmentAnalytics.FulfillmentAnalytics.json"
-      }
-    },
-    {
-      "dependencies": [
-        "blocked_product",
-        "blocked_products",
-        "customer",
-        "customers",
-        "product",
-        "products",
-        "promotion",
-        "promotions"
-      ],
-      "inputs": [
-        {
-          "name": "orders",
-          "ordinal": 0,
-          "schema": "OrderRaw"
-        },
-        {
-          "name": "customers",
-          "ordinal": 1,
-          "schema": "Customer"
-        },
-        {
-          "name": "products",
-          "ordinal": 2,
-          "schema": "Product"
-        },
-        {
-          "name": "blocked_products",
-          "ordinal": 3,
-          "schema": "BlockedProduct"
-        },
-        {
-          "name": "promotions",
-          "ordinal": 4,
-          "schema": "Promotion"
-        }
-      ],
-      "name": "PrepareOrderDemand",
-      "outputs": [
-        {
-          "name": "demand",
-          "ordinal": 0,
-          "schema": "OrderDemand"
-        }
-      ],
-      "source": "examples.store.transforms.fulfillment.demand.PrepareOrderDemand.PrepareOrderDemand",
-      "step_methods": [
-        {
-          "input_lane": "orders",
-          "input_schema": "OrderRaw",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "order",
-              "schema": "OrderRaw",
-              "source": "orders"
-            }
-          ],
-          "name": "normalize",
-          "output_lane": "orders",
-          "output_schema": "OrderNormalized",
-          "results": [
-            {
-              "frame": "orders",
-              "lane": "orders",
-              "schema": "OrderNormalized"
-            }
-          ]
-        },
-        {
-          "input_lane": "orders",
-          "input_schema": "OrderNormalized",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "order",
-              "schema": "OrderNormalized",
-              "source": "orders"
-            }
-          ],
-          "name": "discard_negative_totals",
-          "output_lane": "orders",
-          "output_schema": "OrderNormalized",
-          "results": [
-            {
-              "frame": "orders",
-              "lane": "orders",
-              "schema": "OrderNormalized"
-            }
-          ]
-        },
-        {
-          "input_lane": "orders",
-          "input_schema": "OrderNormalized",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "order",
-              "schema": "OrderNormalized",
-              "source": "orders"
-            },
-            {
-              "driving": false,
-              "parameter": "customer",
-              "schema": "Customer",
-              "source": "customers"
-            }
-          ],
-          "joins": [
-            {
-              "how": "left",
-              "input": "customer"
-            }
-          ],
-          "name": "add_customer",
-          "output_lane": "orders",
-          "output_schema": "OrderWithCustomer",
-          "results": [
-            {
-              "frame": "orders",
-              "lane": "orders",
-              "schema": "OrderWithCustomer"
-            }
-          ]
-        },
-        {
-          "input_lane": "orders",
-          "input_schema": "OrderWithCustomer",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "order",
-              "schema": "OrderWithCustomer",
-              "source": "orders"
-            },
-            {
-              "driving": false,
-              "parameter": "product",
-              "schema": "Product",
-              "source": "products"
-            },
-            {
-              "driving": false,
-              "parameter": "blocked_product",
-              "schema": "BlockedProduct",
-              "source": "blocked_products"
-            }
-          ],
-          "joins": [
-            {
-              "how": "inner",
-              "input": "product"
-            },
-            {
-              "how": "inner",
-              "input": "blocked_product"
-            },
-            {
-              "how": "left",
-              "input": "product"
-            }
-          ],
-          "name": "add_product",
-          "output_lane": "orders",
-          "output_schema": "OrderWithProduct",
-          "results": [
-            {
-              "frame": "orders",
-              "lane": "orders",
-              "schema": "OrderWithProduct"
-            }
-          ]
-        },
-        {
-          "input_lane": "orders",
-          "input_schema": "OrderWithProduct",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "order",
-              "schema": "OrderWithProduct",
-              "source": "orders"
-            },
-            {
-              "driving": false,
-              "parameter": "promotion",
-              "schema": "Promotion",
-              "source": "promotions"
-            }
-          ],
-          "joins": [
-            {
-              "how": "left",
-              "input": "promotion"
-            }
-          ],
-          "name": "add_promotion",
-          "output_lane": "orders",
-          "output_schema": "OrderWithPromotion",
-          "results": [
-            {
-              "frame": "orders",
-              "lane": "orders",
-              "schema": "OrderWithPromotion"
-            }
-          ]
-        },
-        {
-          "input_lane": "orders",
-          "input_schema": "OrderWithPromotion",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "order",
-              "schema": "OrderWithPromotion",
-              "source": "orders"
-            }
-          ],
-          "name": "publish_demand",
-          "output_lane": "demand",
-          "output_schema": "OrderDemand",
-          "results": [
-            {
-              "frame": "demand",
-              "lane": "demand",
-              "schema": "OrderDemand"
-            }
-          ]
-        }
-      ],
-      "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/PrepareOrderDemand.py",
-        "traceability": "traceability/transforms/PrepareOrderDemand.PrepareOrderDemand.json"
-      }
-    },
-    {
-      "dependencies": [
-        "inbound",
-        "inbound_availability",
-        "inventory",
-        "inventory_positions",
-        "warehouse",
-        "warehouses"
-      ],
-      "inputs": [
-        {
-          "name": "demand",
-          "ordinal": 0,
-          "schema": "OrderDemand"
-        },
-        {
-          "name": "warehouses",
-          "ordinal": 1,
-          "schema": "Warehouse"
-        },
-        {
-          "name": "inventory_positions",
-          "ordinal": 2,
-          "schema": "InventoryPosition"
-        },
-        {
-          "name": "inbound_inventory",
-          "ordinal": 3,
-          "schema": "InboundInventory"
-        }
-      ],
-      "name": "PlanFulfillment",
-      "outputs": [
-        {
-          "name": "allocations",
-          "ordinal": 0,
-          "schema": "FulfillmentAllocation"
-        },
-        {
-          "name": "backorders",
-          "ordinal": 1,
-          "schema": "FulfillmentBackorder"
-        },
-        {
-          "name": "plans",
-          "ordinal": 2,
-          "schema": "FulfillmentPlan"
-        },
-        {
-          "name": "replenishment_suggestions",
-          "ordinal": 3,
-          "schema": "ReplenishmentSuggestion"
-        }
-      ],
-      "source": "examples.store.transforms.fulfillment.planning.PlanFulfillment.PlanFulfillment",
-      "step_methods": [
-        {
-          "input_lane": "inbound_inventory",
-          "input_schema": "InboundInventory",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "inbound",
-              "schema": "InboundInventory",
-              "source": "inbound_inventory"
-            }
-          ],
-          "name": "summarize_inbound",
-          "output_lane": "inbound_availability",
-          "output_schema": "InboundInventoryAvailability",
-          "results": [
-            {
-              "frame": "inbound_availability",
-              "lane": "inbound_availability",
-              "schema": "InboundInventoryAvailability"
-            }
-          ]
-        },
-        {
-          "input_lane": "demand",
-          "input_schema": "OrderDemand",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "demand",
-              "schema": "OrderDemand",
-              "source": "demand"
-            },
-            {
-              "driving": false,
-              "parameter": "warehouse",
-              "schema": "Warehouse",
-              "source": "warehouses"
-            },
-            {
-              "driving": false,
-              "parameter": "inventory",
-              "schema": "InventoryPosition",
-              "source": "inventory_positions"
-            },
-            {
-              "driving": false,
-              "parameter": "inbound",
-              "schema": "InboundInventoryAvailability",
-              "source": "inbound_availability"
-            }
-          ],
-          "joins": [
-            {
-              "how": "inner",
-              "input": "warehouse"
-            },
-            {
-              "how": "inner",
-              "input": "inventory"
-            },
-            {
-              "how": "left",
-              "input": "inbound"
-            }
-          ],
-          "name": "build_options",
-          "output_lane": "options",
-          "output_schema": "FulfillmentOption",
-          "results": [
-            {
-              "frame": "options",
-              "lane": "options",
-              "schema": "FulfillmentOption"
-            }
-          ]
-        },
-        {
-          "input_lane": "options",
-          "input_schema": "FulfillmentOption",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "option",
-              "schema": "FulfillmentOption",
-              "source": "options"
-            }
-          ],
-          "name": "prioritize_options",
-          "output_lane": "prioritized_options",
-          "output_schema": "FulfillmentPreferredOption",
-          "results": [
-            {
-              "frame": "prioritized_options",
-              "lane": "prioritized_options",
-              "schema": "FulfillmentPreferredOption"
-            }
-          ]
-        },
-        {
-          "input_lane": "prioritized_options",
-          "input_schema": "FulfillmentPreferredOption",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "option",
-              "schema": "FulfillmentPreferredOption",
-              "source": "prioritized_options"
-            }
-          ],
-          "name": "select_preferred_option",
-          "output_lane": "preferred_options",
-          "output_schema": "FulfillmentPreferredOption",
-          "results": [
-            {
-              "frame": "preferred_options",
-              "lane": "preferred_options",
-              "schema": "FulfillmentPreferredOption"
-            }
-          ]
-        },
-        {
-          "input_lane": "preferred_options",
-          "input_schema": "FulfillmentPreferredOption",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "option",
-              "schema": "FulfillmentPreferredOption",
-              "source": "preferred_options"
-            }
-          ],
-          "name": "allocate",
-          "output_lane": "allocations",
-          "output_schema": "FulfillmentAllocation",
-          "results": [
-            {
-              "frame": "allocations",
-              "lane": "allocations",
-              "schema": "FulfillmentAllocation"
-            }
-          ]
-        },
-        {
-          "input_lane": "preferred_options",
-          "input_schema": "FulfillmentPreferredOption",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "option",
-              "schema": "FulfillmentPreferredOption",
-              "source": "preferred_options"
-            }
-          ],
-          "name": "backorder",
-          "output_lane": "backorders",
-          "output_schema": "FulfillmentBackorder",
-          "results": [
-            {
-              "frame": "backorders",
-              "lane": "backorders",
-              "schema": "FulfillmentBackorder"
-            }
-          ]
-        },
-        {
-          "input_lane": "preferred_options",
-          "input_schema": "FulfillmentPreferredOption",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "option",
-              "schema": "FulfillmentPreferredOption",
-              "source": "preferred_options"
-            }
-          ],
-          "name": "plan",
-          "output_lane": "plans",
-          "output_schema": "FulfillmentPlan",
-          "results": [
-            {
-              "frame": "plans",
-              "lane": "plans",
-              "schema": "FulfillmentPlan"
-            }
-          ]
-        },
-        {
-          "input_lane": "preferred_options",
-          "input_schema": "FulfillmentPreferredOption",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "option",
-              "schema": "FulfillmentPreferredOption",
-              "source": "preferred_options"
-            }
-          ],
-          "name": "suggest_replenishment",
-          "output_lane": "replenishment_suggestions",
-          "output_schema": "ReplenishmentSuggestion",
-          "results": [
-            {
-              "frame": "replenishment_suggestions",
-              "lane": "replenishment_suggestions",
-              "schema": "ReplenishmentSuggestion"
-            }
-          ]
-        }
-      ],
-      "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/PlanFulfillment.py",
-        "traceability": "traceability/transforms/PlanFulfillment.PlanFulfillment.json"
-      }
-    },
-    {
-      "dependencies": [
-        "fulfilled"
-      ],
-      "inputs": [
-        {
-          "name": "plans",
-          "ordinal": 0,
-          "schema": "FulfillmentPlan"
-        },
-        {
-          "name": "fulfilled",
-          "ordinal": 1,
-          "schema": "OrderFulfillment"
-        }
-      ],
-      "name": "ReconcileFulfillmentPlan",
-      "outputs": [
-        {
-          "name": "reconciliation",
-          "ordinal": 0,
-          "schema": "PlannedActualReconciliation"
-        }
-      ],
-      "source": "examples.store.transforms.fulfillment.reconciliation.ReconcileFulfillmentPlan.ReconcileFulfillmentPlan",
-      "step_methods": [
-        {
-          "input_lane": "plans",
-          "input_schema": "FulfillmentPlan",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "plan",
-              "schema": "FulfillmentPlan",
-              "source": "plans"
-            },
-            {
-              "driving": false,
-              "parameter": "fulfilled",
-              "schema": "OrderFulfillment",
-              "source": "fulfilled"
-            }
-          ],
-          "joins": [
-            {
-              "how": "left",
-              "input": "fulfilled"
-            }
-          ],
-          "name": "reconcile",
-          "output_lane": "reconciliation",
-          "output_schema": "PlannedActualReconciliation",
-          "results": [
-            {
-              "frame": "reconciliation",
-              "lane": "reconciliation",
-              "schema": "PlannedActualReconciliation"
-            }
-          ]
-        }
-      ],
-      "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/ReconcileFulfillmentPlan.py",
-        "traceability": "traceability/transforms/ReconcileFulfillmentPlan.ReconcileFulfillmentPlan.json"
-      }
-    },
-    {
-      "dependencies": [
-        "blocked_product",
-        "blocked_products",
-        "boost",
-        "boosts",
-        "cataloged__products",
-        "policy",
-        "product",
-        "promotion",
-        "promotions",
-        "recommended__admitted__ranked_candidates",
-        "signal",
-        "signals",
-        "suppression",
-        "suppressions"
-      ],
-      "inputs": [
-        {
-          "name": "products",
-          "ordinal": 0,
-          "schema": "Product"
-        },
-        {
-          "name": "blocked_products",
-          "ordinal": 1,
-          "schema": "BlockedProduct"
-        },
-        {
-          "name": "promotions",
-          "ordinal": 2,
-          "schema": "Promotion"
-        },
-        {
-          "name": "requests",
-          "ordinal": 3,
-          "schema": "RecommendationRequest"
-        },
-        {
-          "name": "policy",
-          "ordinal": 4,
-          "schema": "MerchandisingPolicy"
-        },
-        {
-          "name": "boosts",
-          "ordinal": 5,
-          "schema": "MerchandisingBoost"
-        },
-        {
-          "name": "suppressions",
-          "ordinal": 6,
-          "schema": "MerchandisingSuppression"
-        },
-        {
-          "name": "signals",
-          "ordinal": 7,
-          "schema": "ProductRecommendationSignal"
-        }
-      ],
-      "name": "Merchandising",
-      "outputs": [
-        {
-          "name": "recommended_products",
-          "ordinal": 0,
-          "schema": "RecommendedProduct"
-        },
-        {
-          "name": "recommendation_runs",
-          "ordinal": 1,
-          "schema": "RecommendationRun"
-        }
-      ],
-      "source": "examples.store.transforms.merchandising.Merchandising.Merchandising",
-      "step_methods": [
-        {
-          "input_lane": "products",
-          "input_schema": "Product",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "product",
-              "schema": "Product",
-              "source": "products"
-            },
-            {
-              "driving": false,
-              "parameter": "blocked_product",
-              "schema": "BlockedProduct",
-              "source": "blocked_products"
-            },
-            {
-              "driving": false,
-              "parameter": "promotion",
-              "schema": "Promotion",
-              "source": "promotions"
-            }
-          ],
-          "joins": [
-            {
-              "how": "inner",
-              "input": "blocked_product"
-            },
-            {
-              "how": "left",
-              "input": "promotion"
-            }
-          ],
-          "name": "cataloged.prepare",
-          "output_lane": "cataloged__products",
-          "output_schema": "CatalogProduct",
-          "results": [
-            {
-              "frame": "cataloged__products",
-              "lane": "cataloged__products",
-              "schema": "CatalogProduct"
-            }
-          ]
-        },
-        {
-          "input_lane": "requests",
-          "input_schema": "RecommendationRequest",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "request",
-              "schema": "RecommendationRequest",
-              "source": "requests"
-            },
-            {
-              "driving": false,
-              "parameter": "product",
-              "schema": "CatalogProduct",
-              "source": "cataloged__products"
-            }
-          ],
-          "joins": [
-            {
-              "how": "inner",
-              "input": "product"
-            }
-          ],
-          "name": "recommended.selected.select",
-          "output_lane": "recommended__selected__requests",
-          "output_schema": "RecommendationCandidate",
-          "results": [
-            {
-              "frame": "recommended__selected__requests",
-              "lane": "recommended__selected__requests",
-              "schema": "RecommendationCandidate"
-            }
-          ]
-        },
-        {
-          "input_lane": "recommended__selected__requests",
-          "input_schema": "RecommendationCandidate",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "candidate",
-              "schema": "RecommendationCandidate",
-              "source": "recommended__selected__requests"
-            },
-            {
-              "driving": false,
-              "parameter": "policy",
-              "schema": "MerchandisingPolicy",
-              "source": "policy"
-            },
-            {
-              "driving": false,
-              "parameter": "boost",
-              "schema": "MerchandisingBoost",
-              "source": "boosts"
-            },
-            {
-              "driving": false,
-              "parameter": "suppression",
-              "schema": "MerchandisingSuppression",
-              "source": "suppressions"
-            },
-            {
-              "driving": false,
-              "parameter": "signal",
-              "schema": "ProductRecommendationSignal",
-              "source": "signals"
-            }
-          ],
-          "joins": [
-            {
-              "how": "inner",
-              "input": "policy"
-            },
-            {
-              "how": "left",
-              "input": "boost"
-            },
-            {
-              "how": "left",
-              "input": "suppression"
-            },
-            {
-              "how": "left",
-              "input": "signal"
-            }
-          ],
-          "name": "recommended.ranked.rank",
-          "output_lane": "recommended__ranked__candidates",
-          "output_schema": "RankedRecommendationCandidate",
-          "results": [
-            {
-              "frame": "recommended__ranked__candidates",
-              "lane": "recommended__ranked__candidates",
-              "schema": "RankedRecommendationCandidate"
-            }
-          ]
-        },
-        {
-          "input_lane": "recommended__ranked__candidates",
-          "input_schema": "RankedRecommendationCandidate",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "candidate",
-              "schema": "RankedRecommendationCandidate",
-              "source": "recommended__ranked__candidates"
-            }
-          ],
-          "name": "recommended.admitted.select_products",
-          "output_lane": "recommended__admitted__ranked_candidates",
-          "output_schema": "RecommendedProduct",
-          "results": [
-            {
-              "frame": "recommended__admitted__ranked_candidates",
-              "lane": "recommended__admitted__ranked_candidates",
-              "schema": "RecommendedProduct"
-            }
-          ]
-        },
-        {
-          "input_lane": "requests",
-          "input_schema": "RecommendationRequest",
-          "inputs": [
-            {
-              "driving": true,
-              "parameter": "request",
-              "schema": "RecommendationRequest",
-              "source": "requests"
-            },
-            {
-              "driving": false,
-              "parameter": "policy",
-              "schema": "MerchandisingPolicy",
-              "source": "policy"
-            },
-            {
-              "driving": false,
-              "parameter": "product",
-              "schema": "RecommendedProduct",
-              "source": "recommended__admitted__ranked_candidates"
-            }
-          ],
-          "joins": [
-            {
-              "how": "inner",
-              "input": "policy"
-            },
-            {
-              "how": "left",
-              "input": "product"
-            }
-          ],
-          "name": "recommended.summarized.summarize",
-          "output_lane": "recommended__summarized__requests",
-          "output_schema": "RecommendationRun",
-          "results": [
-            {
-              "frame": "recommended__summarized__requests",
-              "lane": "recommended__summarized__requests",
-              "schema": "RecommendationRun"
-            }
-          ]
-        }
-      ],
-      "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/Merchandising.py",
-        "traceability": "traceability/transforms/Merchandising.Merchandising.json"
+        "pyspark_transform": "pyspark/transforms/fulfillment_workflow.py",
+        "traceability": "traceability/transforms/fulfillment_workflow.Fulfillment.json"
       }
     },
     {
@@ -6427,7 +6184,7 @@
           "schema": "CatalogProduct"
         }
       ],
-      "source": "examples.store.transforms.merchandising.catalog.PrepareCatalog.PrepareCatalog",
+      "source": "examples.store.transforms.merchandising.catalog.prepare_catalog.PrepareCatalog",
       "step_methods": [
         {
           "input_lane": "products",
@@ -6475,8 +6232,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/PrepareCatalog.py",
-        "traceability": "traceability/transforms/PrepareCatalog.PrepareCatalog.json"
+        "pyspark_transform": "pyspark/transforms/prepare_catalog.py",
+        "traceability": "traceability/transforms/prepare_catalog.PrepareCatalog.json"
       }
     },
     {
@@ -6515,7 +6272,7 @@
           "schema": "ProductRecommendationSignal"
         }
       ],
-      "source": "examples.store.transforms.merchandising.clicks.BuildRecommendationSignals.BuildRecommendationSignals",
+      "source": "examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals",
       "step_methods": [
         {
           "input_lane": "impressions",
@@ -6675,8 +6432,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/BuildRecommendationSignals.py",
-        "traceability": "traceability/transforms/BuildRecommendationSignals.BuildRecommendationSignals.json"
+        "pyspark_transform": "pyspark/transforms/build_signals.py",
+        "traceability": "traceability/transforms/build_signals.BuildRecommendationSignals.json"
       }
     },
     {
@@ -6727,7 +6484,7 @@
           "schema": "DailyRecommendationBehavior"
         }
       ],
-      "source": "examples.store.transforms.merchandising.clicks.EvaluateMerchandising.EvaluateMerchandising",
+      "source": "examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising",
       "step_methods": [
         {
           "input_lane": "requests",
@@ -6979,18 +6736,85 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/EvaluateMerchandising.py",
-        "traceability": "traceability/transforms/EvaluateMerchandising.EvaluateMerchandising.json"
+        "pyspark_transform": "pyspark/transforms/clicks_workflow.py",
+        "traceability": "traceability/transforms/clicks_workflow.EvaluateMerchandising.json"
       }
     },
     {
       "dependencies": [
-        "admitted__ranked_candidates",
+        "catalog",
+        "product"
+      ],
+      "inputs": [
+        {
+          "name": "requests",
+          "ordinal": 0,
+          "schema": "RecommendationRequest"
+        },
+        {
+          "name": "catalog",
+          "ordinal": 1,
+          "schema": "CatalogProduct"
+        }
+      ],
+      "name": "SelectRecommendationCandidates",
+      "outputs": [
+        {
+          "name": "candidates",
+          "ordinal": 0,
+          "schema": "RecommendationCandidate"
+        }
+      ],
+      "source": "examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates",
+      "step_methods": [
+        {
+          "input_lane": "requests",
+          "input_schema": "RecommendationRequest",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "RecommendationRequest",
+              "source": "requests"
+            },
+            {
+              "driving": false,
+              "parameter": "product",
+              "schema": "CatalogProduct",
+              "source": "catalog"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "product"
+            }
+          ],
+          "name": "select",
+          "output_lane": "requests",
+          "output_schema": "RecommendationCandidate",
+          "results": [
+            {
+              "frame": "requests",
+              "lane": "requests",
+              "schema": "RecommendationCandidate"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/admit.py",
+        "traceability": "traceability/transforms/admit.SelectRecommendationCandidates.json"
+      }
+    },
+    {
+      "dependencies": [
         "boost",
         "boosts",
         "catalog",
         "policy",
         "product",
+        "published__ranked_candidates",
         "signal",
         "signals",
         "suppression",
@@ -7041,7 +6865,7 @@
           "schema": "RecommendationRun"
         }
       ],
-      "source": "examples.store.transforms.merchandising.recommender.Recommender.Recommender",
+      "source": "examples.store.transforms.merchandising.recommender.workflow.Recommender",
       "step_methods": [
         {
           "input_lane": "requests",
@@ -7152,13 +6976,13 @@
               "source": "ranked__candidates"
             }
           ],
-          "name": "admitted.select_products",
-          "output_lane": "admitted__ranked_candidates",
+          "name": "published.select_products",
+          "output_lane": "published__ranked_candidates",
           "output_schema": "RecommendedProduct",
           "results": [
             {
-              "frame": "admitted__ranked_candidates",
-              "lane": "admitted__ranked_candidates",
+              "frame": "published__ranked_candidates",
+              "lane": "published__ranked_candidates",
               "schema": "RecommendedProduct"
             }
           ]
@@ -7183,7 +7007,7 @@
               "driving": false,
               "parameter": "product",
               "schema": "RecommendedProduct",
-              "source": "admitted__ranked_candidates"
+              "source": "published__ranked_candidates"
             }
           ],
           "joins": [
@@ -7209,37 +7033,347 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/Recommender.py",
-        "traceability": "traceability/transforms/Recommender.Recommender.json"
+        "pyspark_transform": "pyspark/transforms/recommender_workflow.py",
+        "traceability": "traceability/transforms/recommender_workflow.Recommender.json"
       }
     },
     {
       "dependencies": [
-        "catalog",
-        "product"
+        "batch",
+        "blocked_product",
+        "blocked_products",
+        "boost",
+        "boosts",
+        "cataloged__products",
+        "click",
+        "clicked",
+        "evaluated__impressions_measured__clicked",
+        "evaluated__impressions_measured__measured",
+        "evaluated__summarized__exposure",
+        "evaluation_batch",
+        "evaluation_clicks",
+        "evaluation_impressions",
+        "exposure",
+        "feedback_clicks",
+        "impression",
+        "policy",
+        "product",
+        "promotion",
+        "promotions",
+        "recommended__published__ranked_candidates",
+        "signal",
+        "signals_built__click_facts",
+        "signals_built__signals",
+        "suppression",
+        "suppressions"
       ],
       "inputs": [
         {
-          "name": "requests",
+          "name": "products",
           "ordinal": 0,
+          "schema": "Product"
+        },
+        {
+          "name": "blocked_products",
+          "ordinal": 1,
+          "schema": "BlockedProduct"
+        },
+        {
+          "name": "promotions",
+          "ordinal": 2,
+          "schema": "Promotion"
+        },
+        {
+          "name": "feedback_impressions",
+          "ordinal": 3,
+          "schema": "RecommendationImpression"
+        },
+        {
+          "name": "feedback_clicks",
+          "ordinal": 4,
+          "schema": "RecommendationClick"
+        },
+        {
+          "name": "requests",
+          "ordinal": 5,
           "schema": "RecommendationRequest"
         },
         {
-          "name": "catalog",
-          "ordinal": 1,
-          "schema": "CatalogProduct"
+          "name": "policy",
+          "ordinal": 6,
+          "schema": "MerchandisingPolicy"
+        },
+        {
+          "name": "boosts",
+          "ordinal": 7,
+          "schema": "MerchandisingBoost"
+        },
+        {
+          "name": "suppressions",
+          "ordinal": 8,
+          "schema": "MerchandisingSuppression"
+        },
+        {
+          "name": "evaluation_batch",
+          "ordinal": 9,
+          "schema": "RecommendationEvaluationBatch"
+        },
+        {
+          "name": "evaluation_requests",
+          "ordinal": 10,
+          "schema": "RecommendationRequest"
+        },
+        {
+          "name": "evaluation_impressions",
+          "ordinal": 11,
+          "schema": "RecommendationImpression"
+        },
+        {
+          "name": "evaluation_clicks",
+          "ordinal": 12,
+          "schema": "RecommendationClick"
         }
       ],
-      "name": "SelectRecommendationCandidates",
+      "name": "Merchandising",
       "outputs": [
         {
-          "name": "candidates",
+          "name": "recommended_products",
           "ordinal": 0,
-          "schema": "RecommendationCandidate"
+          "schema": "RecommendedProduct"
+        },
+        {
+          "name": "recommendation_runs",
+          "ordinal": 1,
+          "schema": "RecommendationRun"
+        },
+        {
+          "name": "daily_impressions",
+          "ordinal": 2,
+          "schema": "DailyRecommendationImpressions"
+        },
+        {
+          "name": "daily_clicks",
+          "ordinal": 3,
+          "schema": "DailyRecommendationClicks"
+        },
+        {
+          "name": "signals",
+          "ordinal": 4,
+          "schema": "ProductRecommendationSignal"
+        },
+        {
+          "name": "request_behaviors",
+          "ordinal": 5,
+          "schema": "RecommendationRequestBehavior"
+        },
+        {
+          "name": "daily_behavior",
+          "ordinal": 6,
+          "schema": "DailyRecommendationBehavior"
         }
       ],
-      "source": "examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.SelectRecommendationCandidates",
+      "source": "examples.store.transforms.merchandising.workflow.Merchandising",
       "step_methods": [
+        {
+          "input_lane": "products",
+          "input_schema": "Product",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "product",
+              "schema": "Product",
+              "source": "products"
+            },
+            {
+              "driving": false,
+              "parameter": "blocked_product",
+              "schema": "BlockedProduct",
+              "source": "blocked_products"
+            },
+            {
+              "driving": false,
+              "parameter": "promotion",
+              "schema": "Promotion",
+              "source": "promotions"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "blocked_product"
+            },
+            {
+              "how": "left",
+              "input": "promotion"
+            }
+          ],
+          "name": "cataloged.prepare",
+          "output_lane": "cataloged__products",
+          "output_schema": "CatalogProduct",
+          "results": [
+            {
+              "frame": "cataloged__products",
+              "lane": "cataloged__products",
+              "schema": "CatalogProduct"
+            }
+          ]
+        },
+        {
+          "input_lane": "feedback_impressions",
+          "input_schema": "RecommendationImpression",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "impression",
+              "schema": "RecommendationImpression",
+              "source": "feedback_impressions"
+            }
+          ],
+          "name": "signals_built.summarize_impressions",
+          "output_lane": "signals_built__impression_facts",
+          "output_schema": "DailyRecommendationImpressions",
+          "results": [
+            {
+              "frame": "signals_built__impression_facts",
+              "lane": "signals_built__impression_facts",
+              "schema": "DailyRecommendationImpressions"
+            }
+          ]
+        },
+        {
+          "input_lane": "feedback_impressions",
+          "input_schema": "RecommendationImpression",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "impression",
+              "schema": "RecommendationImpression",
+              "source": "feedback_impressions"
+            },
+            {
+              "driving": false,
+              "parameter": "click",
+              "schema": "RecommendationClick",
+              "source": "feedback_clicks"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "click"
+            }
+          ],
+          "name": "signals_built.summarize_clicks",
+          "output_lane": "signals_built__click_facts",
+          "output_schema": "DailyRecommendationClicks",
+          "results": [
+            {
+              "frame": "signals_built__click_facts",
+              "lane": "signals_built__click_facts",
+              "schema": "DailyRecommendationClicks"
+            }
+          ]
+        },
+        {
+          "input_lane": "signals_built__impression_facts",
+          "input_schema": "DailyRecommendationImpressions",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "impression",
+              "schema": "DailyRecommendationImpressions",
+              "source": "signals_built__impression_facts"
+            }
+          ],
+          "name": "signals_built.publish_daily_impressions",
+          "output_lane": "signals_built__daily_impressions",
+          "output_schema": "DailyRecommendationImpressions",
+          "results": [
+            {
+              "frame": "signals_built__daily_impressions",
+              "lane": "signals_built__daily_impressions",
+              "schema": "DailyRecommendationImpressions"
+            }
+          ]
+        },
+        {
+          "input_lane": "signals_built__click_facts",
+          "input_schema": "DailyRecommendationClicks",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "click",
+              "schema": "DailyRecommendationClicks",
+              "source": "signals_built__click_facts"
+            }
+          ],
+          "name": "signals_built.publish_daily_clicks",
+          "output_lane": "signals_built__daily_clicks",
+          "output_schema": "DailyRecommendationClicks",
+          "results": [
+            {
+              "frame": "signals_built__daily_clicks",
+              "lane": "signals_built__daily_clicks",
+              "schema": "DailyRecommendationClicks"
+            }
+          ]
+        },
+        {
+          "input_lane": "signals_built__impression_facts",
+          "input_schema": "DailyRecommendationImpressions",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "impression",
+              "schema": "DailyRecommendationImpressions",
+              "source": "signals_built__impression_facts"
+            },
+            {
+              "driving": false,
+              "parameter": "click",
+              "schema": "DailyRecommendationClicks",
+              "source": "signals_built__click_facts"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "click"
+            }
+          ],
+          "name": "signals_built.summarize_signals",
+          "output_lane": "signals_built__signal_totals",
+          "output_schema": "ProductRecommendationSignalTotals",
+          "results": [
+            {
+              "frame": "signals_built__signal_totals",
+              "lane": "signals_built__signal_totals",
+              "schema": "ProductRecommendationSignalTotals"
+            }
+          ]
+        },
+        {
+          "input_lane": "signals_built__signal_totals",
+          "input_schema": "ProductRecommendationSignalTotals",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "signal",
+              "schema": "ProductRecommendationSignalTotals",
+              "source": "signals_built__signal_totals"
+            }
+          ],
+          "name": "signals_built.publish_signals",
+          "output_lane": "signals_built__signals",
+          "output_schema": "ProductRecommendationSignal",
+          "results": [
+            {
+              "frame": "signals_built__signals",
+              "lane": "signals_built__signals",
+              "schema": "ProductRecommendationSignal"
+            }
+          ]
+        },
         {
           "input_lane": "requests",
           "input_schema": "RecommendationRequest",
@@ -7254,7 +7388,7 @@
               "driving": false,
               "parameter": "product",
               "schema": "CatalogProduct",
-              "source": "catalog"
+              "source": "cataloged__products"
             }
           ],
           "joins": [
@@ -7263,21 +7397,399 @@
               "input": "product"
             }
           ],
-          "name": "select",
-          "output_lane": "requests",
+          "name": "recommended.selected.select",
+          "output_lane": "recommended__selected__requests",
           "output_schema": "RecommendationCandidate",
           "results": [
             {
-              "frame": "requests",
-              "lane": "requests",
+              "frame": "recommended__selected__requests",
+              "lane": "recommended__selected__requests",
               "schema": "RecommendationCandidate"
+            }
+          ]
+        },
+        {
+          "input_lane": "recommended__selected__requests",
+          "input_schema": "RecommendationCandidate",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "candidate",
+              "schema": "RecommendationCandidate",
+              "source": "recommended__selected__requests"
+            },
+            {
+              "driving": false,
+              "parameter": "policy",
+              "schema": "MerchandisingPolicy",
+              "source": "policy"
+            },
+            {
+              "driving": false,
+              "parameter": "boost",
+              "schema": "MerchandisingBoost",
+              "source": "boosts"
+            },
+            {
+              "driving": false,
+              "parameter": "suppression",
+              "schema": "MerchandisingSuppression",
+              "source": "suppressions"
+            },
+            {
+              "driving": false,
+              "parameter": "signal",
+              "schema": "ProductRecommendationSignal",
+              "source": "signals_built__signals"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "policy"
+            },
+            {
+              "how": "left",
+              "input": "boost"
+            },
+            {
+              "how": "left",
+              "input": "suppression"
+            },
+            {
+              "how": "left",
+              "input": "signal"
+            }
+          ],
+          "name": "recommended.ranked.rank",
+          "output_lane": "recommended__ranked__candidates",
+          "output_schema": "RankedRecommendationCandidate",
+          "results": [
+            {
+              "frame": "recommended__ranked__candidates",
+              "lane": "recommended__ranked__candidates",
+              "schema": "RankedRecommendationCandidate"
+            }
+          ]
+        },
+        {
+          "input_lane": "recommended__ranked__candidates",
+          "input_schema": "RankedRecommendationCandidate",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "candidate",
+              "schema": "RankedRecommendationCandidate",
+              "source": "recommended__ranked__candidates"
+            }
+          ],
+          "name": "recommended.published.select_products",
+          "output_lane": "recommended__published__ranked_candidates",
+          "output_schema": "RecommendedProduct",
+          "results": [
+            {
+              "frame": "recommended__published__ranked_candidates",
+              "lane": "recommended__published__ranked_candidates",
+              "schema": "RecommendedProduct"
+            }
+          ]
+        },
+        {
+          "input_lane": "requests",
+          "input_schema": "RecommendationRequest",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "RecommendationRequest",
+              "source": "requests"
+            },
+            {
+              "driving": false,
+              "parameter": "policy",
+              "schema": "MerchandisingPolicy",
+              "source": "policy"
+            },
+            {
+              "driving": false,
+              "parameter": "product",
+              "schema": "RecommendedProduct",
+              "source": "recommended__published__ranked_candidates"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "policy"
+            },
+            {
+              "how": "left",
+              "input": "product"
+            }
+          ],
+          "name": "recommended.summarized.summarize",
+          "output_lane": "recommended__summarized__requests",
+          "output_schema": "RecommendationRun",
+          "results": [
+            {
+              "frame": "recommended__summarized__requests",
+              "lane": "recommended__summarized__requests",
+              "schema": "RecommendationRun"
+            }
+          ]
+        },
+        {
+          "input_lane": "evaluation_requests",
+          "input_schema": "RecommendationRequest",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "RecommendationRequest",
+              "source": "evaluation_requests"
+            },
+            {
+              "driving": false,
+              "parameter": "batch",
+              "schema": "RecommendationEvaluationBatch",
+              "source": "evaluation_batch"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "batch"
+            }
+          ],
+          "name": "evaluated.selected.select_requests",
+          "output_lane": "evaluated__selected__selected_requests",
+          "output_schema": "RecommendationRequestBehavior",
+          "results": [
+            {
+              "frame": "evaluated__selected__selected_requests",
+              "lane": "evaluated__selected__selected_requests",
+              "schema": "RecommendationRequestBehavior"
+            }
+          ]
+        },
+        {
+          "input_lane": "evaluated__selected__selected_requests",
+          "input_schema": "RecommendationRequestBehavior",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "RecommendationRequestBehavior",
+              "source": "evaluated__selected__selected_requests"
+            },
+            {
+              "driving": false,
+              "parameter": "impression",
+              "schema": "RecommendationImpression",
+              "source": "evaluation_impressions"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "impression"
+            }
+          ],
+          "name": "evaluated.impressions_measured.select_impressions",
+          "output_lane": "evaluated__impressions_measured__displayed",
+          "output_schema": "RecommendationBehaviorImpression",
+          "results": [
+            {
+              "frame": "evaluated__impressions_measured__displayed",
+              "lane": "evaluated__impressions_measured__displayed",
+              "schema": "RecommendationBehaviorImpression"
+            }
+          ]
+        },
+        {
+          "input_lane": "evaluated__impressions_measured__displayed",
+          "input_schema": "RecommendationBehaviorImpression",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "impression",
+              "schema": "RecommendationBehaviorImpression",
+              "source": "evaluated__impressions_measured__displayed"
+            },
+            {
+              "driving": false,
+              "parameter": "click",
+              "schema": "RecommendationClick",
+              "source": "evaluation_clicks"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "click"
+            }
+          ],
+          "name": "evaluated.impressions_measured.attribute_clicks",
+          "output_lane": "evaluated__impressions_measured__clicked",
+          "output_schema": "RecommendationBehaviorImpression",
+          "results": [
+            {
+              "frame": "evaluated__impressions_measured__clicked",
+              "lane": "evaluated__impressions_measured__clicked",
+              "schema": "RecommendationBehaviorImpression"
+            }
+          ]
+        },
+        {
+          "input_lane": "evaluated__impressions_measured__displayed",
+          "input_schema": "RecommendationBehaviorImpression",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "displayed",
+              "schema": "RecommendationBehaviorImpression",
+              "source": "evaluated__impressions_measured__displayed"
+            },
+            {
+              "driving": false,
+              "parameter": "clicked",
+              "schema": "RecommendationBehaviorImpression",
+              "source": "evaluated__impressions_measured__clicked"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "clicked"
+            }
+          ],
+          "name": "evaluated.impressions_measured.measure_impressions",
+          "output_lane": "evaluated__impressions_measured__measured",
+          "output_schema": "RecommendationBehaviorImpression",
+          "results": [
+            {
+              "frame": "evaluated__impressions_measured__measured",
+              "lane": "evaluated__impressions_measured__measured",
+              "schema": "RecommendationBehaviorImpression"
+            }
+          ]
+        },
+        {
+          "input_lane": "evaluated__selected__selected_requests",
+          "input_schema": "RecommendationRequestBehavior",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "RecommendationRequestBehavior",
+              "source": "evaluated__selected__selected_requests"
+            },
+            {
+              "driving": false,
+              "parameter": "impression",
+              "schema": "RecommendationBehaviorImpression",
+              "source": "evaluated__impressions_measured__measured"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "impression"
+            }
+          ],
+          "name": "evaluated.requests_measured.measure_requests",
+          "output_lane": "evaluated__requests_measured__request_behaviors",
+          "output_schema": "RecommendationRequestBehavior",
+          "results": [
+            {
+              "frame": "evaluated__requests_measured__request_behaviors",
+              "lane": "evaluated__requests_measured__request_behaviors",
+              "schema": "RecommendationRequestBehavior"
+            }
+          ]
+        },
+        {
+          "input_lane": "evaluated__impressions_measured__measured",
+          "input_schema": "RecommendationBehaviorImpression",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "impression",
+              "schema": "RecommendationBehaviorImpression",
+              "source": "evaluated__impressions_measured__measured"
+            }
+          ],
+          "name": "evaluated.summarized.summarize_exposure",
+          "output_lane": "evaluated__summarized__exposure",
+          "output_schema": "RecommendationExposure",
+          "results": [
+            {
+              "frame": "evaluated__summarized__exposure",
+              "lane": "evaluated__summarized__exposure",
+              "schema": "RecommendationExposure"
+            }
+          ]
+        },
+        {
+          "input_lane": "evaluated__requests_measured__request_behaviors",
+          "input_schema": "RecommendationRequestBehavior",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "RecommendationRequestBehavior",
+              "source": "evaluated__requests_measured__request_behaviors"
+            }
+          ],
+          "name": "evaluated.summarized.summarize_requests",
+          "output_lane": "evaluated__summarized__daily_counts",
+          "output_schema": "DailyRecommendationCounts",
+          "results": [
+            {
+              "frame": "evaluated__summarized__daily_counts",
+              "lane": "evaluated__summarized__daily_counts",
+              "schema": "DailyRecommendationCounts"
+            }
+          ]
+        },
+        {
+          "input_lane": "evaluated__summarized__daily_counts",
+          "input_schema": "DailyRecommendationCounts",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "daily",
+              "schema": "DailyRecommendationCounts",
+              "source": "evaluated__summarized__daily_counts"
+            },
+            {
+              "driving": false,
+              "parameter": "exposure",
+              "schema": "RecommendationExposure",
+              "source": "evaluated__summarized__exposure"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "exposure"
+            }
+          ],
+          "name": "evaluated.summarized.publish_daily",
+          "output_lane": "evaluated__summarized__daily_behavior",
+          "output_schema": "DailyRecommendationBehavior",
+          "results": [
+            {
+              "frame": "evaluated__summarized__daily_behavior",
+              "lane": "evaluated__summarized__daily_behavior",
+              "schema": "DailyRecommendationBehavior"
             }
           ]
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/SelectRecommendationCandidates.py",
-        "traceability": "traceability/transforms/SelectRecommendationCandidates.SelectRecommendationCandidates.json"
+        "pyspark_transform": "pyspark/transforms/merchandising_workflow.py",
+        "traceability": "traceability/transforms/merchandising_workflow.Merchandising.json"
       }
     },
     {
@@ -7584,7 +8096,7 @@
           "schema": "CustomerEventRank"
         }
       ],
-      "source": "examples.store.transforms.order_analytics.OrderAnalytics.OrderAnalytics",
+      "source": "examples.store.transforms.order_analytics.workflow.OrderAnalytics",
       "step_methods": [
         {
           "input_lane": "fulfilled",
@@ -7654,8 +8166,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/OrderAnalytics.py",
-        "traceability": "traceability/transforms/OrderAnalytics.OrderAnalytics.json"
+        "pyspark_transform": "pyspark/transforms/order_analytics_workflow.py",
+        "traceability": "traceability/transforms/order_analytics_workflow.OrderAnalytics.json"
       }
     },
     {
@@ -7690,7 +8202,7 @@
           "schema": "OrderProductCandidate"
         }
       ],
-      "source": "examples.store.transforms.rowset_joins.RowsetJoinExamples.RowsetJoinExamples",
+      "source": "examples.store.transforms.rowset_joins.rowset_join_examples.RowsetJoinExamples",
       "step_methods": [
         {
           "input_lane": "orders",
@@ -7796,8 +8308,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/RowsetJoinExamples.py",
-        "traceability": "traceability/transforms/RowsetJoinExamples.RowsetJoinExamples.json"
+        "pyspark_transform": "pyspark/transforms/rowset_join_examples.py",
+        "traceability": "traceability/transforms/rowset_join_examples.RowsetJoinExamples.json"
       }
     }
   ]

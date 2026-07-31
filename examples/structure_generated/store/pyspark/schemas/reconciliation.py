@@ -5,7 +5,7 @@ from pyspark.sql import types as T
 from examples.structure_generated.store.pyspark.schemas.common import BUSINESS_DATE_SCHEMA, TENANT_KEY_SCHEMA
 
 
-PLANNED_ACTUAL_RECONCILIATION_SCHEMA = T.StructType([
+FULFILLMENT_RECONCILIATION_SCHEMA = T.StructType([
     T.StructField("tenant", TENANT_KEY_SCHEMA, False),
     T.StructField("business", BUSINESS_DATE_SCHEMA, False),
     T.StructField("order_id", T.StringType(), False),

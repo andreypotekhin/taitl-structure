@@ -2,7 +2,7 @@
 
 # FulfillmentOption
 
-Module: `examples.store.schemas.fulfillment.planning.intermediate`
+Module: `examples.store.schemas.fulfillment.planning.workflow`
 
 | Field | Column | Type | Nullable |
 | --- | --- | --- | --- |

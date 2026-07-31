@@ -33,12 +33,7 @@ def render_store_example() -> dict[str, str]:
         from examples.store.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
         from examples.store.schemas.customer import Customer
         from examples.store.schemas.fulfillment.analytics.summary import DailyFulfillmentSummary, WarehouseLoadSummary
-        from examples.store.schemas.fulfillment.demand import OrderDemand
-        from examples.store.schemas.fulfillment.planning.intermediate import (
-            FulfillmentOption,
-            FulfillmentPreferredOption,
-            InboundInventoryAvailability,
-        )
+        from examples.store.schemas.fulfillment.demand import Order
         from examples.store.schemas.fulfillment.planning.inventory import InboundInventory, InventoryPosition, Warehouse
         from examples.store.schemas.fulfillment.planning.plan import (
             FulfillmentAllocation,
@@ -46,7 +41,12 @@ def render_store_example() -> dict[str, str]:
             FulfillmentPlan,
             ReplenishmentSuggestion,
         )
-        from examples.store.schemas.fulfillment.reconciliation.reconciliation import PlannedActualReconciliation
+        from examples.store.schemas.fulfillment.planning.workflow import (
+            FulfillmentOption,
+            FulfillmentPreferredOption,
+            InboundInventoryAvailability,
+        )
+        from examples.store.schemas.fulfillment.reconciliation.reconciliation import FulfillmentReconciliation
         from examples.store.schemas.merchandising import (
             CatalogAvailability,
             CatalogProduct,
@@ -91,23 +91,19 @@ def render_store_example() -> dict[str, str]:
         from examples.store.schemas.shipment import Shipment
         from examples.store.transforms.adv_analytics import AdvancedOrderAnalytics
         from examples.store.transforms.analytics import OrderAnalytics
-        from examples.store.transforms.fulfillment import Fulfillment
-        from examples.store.transforms.fulfillment.analytics.FulfillmentAnalytics import FulfillmentAnalytics
-        from examples.store.transforms.fulfillment.demand.PrepareOrderDemand import PrepareOrderDemand
-        from examples.store.transforms.fulfillment.planning.PlanFulfillment import PlanFulfillment
-        from examples.store.transforms.fulfillment.reconciliation.ReconcileFulfillmentPlan import (
-            ReconcileFulfillmentPlan,
-        )
-        from examples.store.transforms.merchandising.catalog.PrepareCatalog import PrepareCatalog
-        from examples.store.transforms.merchandising.clicks.BuildRecommendationSignals import BuildRecommendationSignals
-        from examples.store.transforms.merchandising.clicks.EvaluateMerchandising import EvaluateMerchandising
-        from examples.store.transforms.merchandising.Merchandising import Merchandising
-        from examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates import (
-            SelectRecommendationCandidates,
-        )
-        from examples.store.transforms.merchandising.recommender.Recommender import Recommender
+        from examples.store.transforms.fulfillment.demand import PrepareOrderDemand
+        from examples.store.transforms.fulfillment.plan import PlanFulfillment
+        from examples.store.transforms.fulfillment.reconcile import ReconcileFulfillmentPlan
+        from examples.store.transforms.fulfillment.summarize import FulfillmentAnalytics
+        from examples.store.transforms.fulfillment.workflow import Fulfillment
+        from examples.store.transforms.merchandising.catalog.prepare_catalog import PrepareCatalog
+        from examples.store.transforms.merchandising.clicks.build_signals import BuildRecommendationSignals
+        from examples.store.transforms.merchandising.clicks.workflow import EvaluateMerchandising
+        from examples.store.transforms.merchandising.recommender.admit import SelectRecommendationCandidates
+        from examples.store.transforms.merchandising.recommender.workflow import Recommender
+        from examples.store.transforms.merchandising.workflow import Merchandising
         from examples.store.transforms.order import EnrichOrders
-        from examples.store.transforms.rowset_join import RowsetJoinExamples
+        from examples.store.transforms.rowset_joins.rowset_join_examples import RowsetJoinExamples
 
         schema_modules: dict[str, Sequence[type[Schema]]] = {
             "examples.store.schemas.adv_analytics": [
@@ -124,8 +120,8 @@ def render_store_example() -> dict[str, str]:
                 DailyFulfillmentSummary,
                 WarehouseLoadSummary,
             ],
-            "examples.store.schemas.fulfillment.demand.demand": [OrderDemand],
-            "examples.store.schemas.fulfillment.planning.intermediate": [
+            "examples.store.schemas.fulfillment.demand.demand": [Order],
+            "examples.store.schemas.fulfillment.planning.workflow": [
                 InboundInventoryAvailability,
                 FulfillmentOption,
                 FulfillmentPreferredOption,
@@ -141,7 +137,7 @@ def render_store_example() -> dict[str, str]:
                 FulfillmentPlan,
                 ReplenishmentSuggestion,
             ],
-            "examples.store.schemas.fulfillment.reconciliation.reconciliation": [PlannedActualReconciliation],
+            "examples.store.schemas.fulfillment.reconciliation.reconciliation": [FulfillmentReconciliation],
             "examples.store.schemas.merchandising.catalog": [
                 CatalogProduct,
                 CatalogAvailability,
@@ -200,41 +196,41 @@ def render_store_example() -> dict[str, str]:
             (EnrichOrders, "examples.store.transforms.order.EnrichOrders"),
             (
                 PrepareOrderDemand,
-                "examples.store.transforms.fulfillment.demand.PrepareOrderDemand.PrepareOrderDemand",
+                "examples.store.transforms.fulfillment.demand.PrepareOrderDemand",
             ),
             (
                 PlanFulfillment,
-                "examples.store.transforms.fulfillment.planning.PlanFulfillment.PlanFulfillment",
-            ),
-            (
-                FulfillmentAnalytics,
-                "examples.store.transforms.fulfillment.analytics.FulfillmentAnalytics.FulfillmentAnalytics",
+                "examples.store.transforms.fulfillment.plan.PlanFulfillment",
             ),
             (
                 ReconcileFulfillmentPlan,
-                "examples.store.transforms.fulfillment.reconciliation.ReconcileFulfillmentPlan.ReconcileFulfillmentPlan",
+                "examples.store.transforms.fulfillment.reconcile.ReconcileFulfillmentPlan",
             ),
-            (Fulfillment, "examples.store.transforms.fulfillment.Fulfillment.Fulfillment"),
-            (PrepareCatalog, "examples.store.transforms.merchandising.catalog.PrepareCatalog.PrepareCatalog"),
+            (
+                FulfillmentAnalytics,
+                "examples.store.transforms.fulfillment.summarize.FulfillmentAnalytics",
+            ),
+            (Fulfillment, "examples.store.transforms.fulfillment.workflow.Fulfillment"),
+            (PrepareCatalog, "examples.store.transforms.merchandising.catalog.prepare_catalog.PrepareCatalog"),
             (
                 SelectRecommendationCandidates,
-                "examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.SelectRecommendationCandidates",
+                "examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates",
             ),
             (
                 Recommender,
-                "examples.store.transforms.merchandising.recommender.Recommender.Recommender",
+                "examples.store.transforms.merchandising.recommender.workflow.Recommender",
             ),
-            (Merchandising, "examples.store.transforms.merchandising.Merchandising.Merchandising"),
+            (Merchandising, "examples.store.transforms.merchandising.workflow.Merchandising"),
             (
                 BuildRecommendationSignals,
-                "examples.store.transforms.merchandising.clicks.BuildRecommendationSignals.BuildRecommendationSignals",
+                "examples.store.transforms.merchandising.clicks.build_signals.BuildRecommendationSignals",
             ),
             (
                 EvaluateMerchandising,
-                "examples.store.transforms.merchandising.clicks.EvaluateMerchandising.EvaluateMerchandising",
+                "examples.store.transforms.merchandising.clicks.workflow.EvaluateMerchandising",
             ),
-            (RowsetJoinExamples, "examples.store.transforms.rowset_join.RowsetJoinExamples"),
-            (OrderAnalytics, "examples.store.transforms.analytics.OrderAnalytics"),
+            (RowsetJoinExamples, "examples.store.transforms.rowset_joins.rowset_join_examples.RowsetJoinExamples"),
+            (OrderAnalytics, "examples.store.transforms.order_analytics.workflow.OrderAnalytics"),
             (AdvancedOrderAnalytics, "examples.store.transforms.adv_analytics.AdvancedOrderAnalytics"),
         )
         for transform_class, source_transform in transforms:

@@ -1,0 +1,2904 @@
+{
+  "backend": {
+    "name": "pyspark",
+    "target": ">=3.5,<4.1"
+  },
+  "generated_transform_class": "PlanFulfillmentGenerated",
+  "inputs": [
+    {
+      "name": "demand",
+      "ordinal": 0,
+      "schema": "Order"
+    },
+    {
+      "name": "warehouses",
+      "ordinal": 1,
+      "schema": "Warehouse"
+    },
+    {
+      "name": "inventory_positions",
+      "ordinal": 2,
+      "schema": "InventoryPosition"
+    },
+    {
+      "name": "inbound_inventory",
+      "ordinal": 3,
+      "schema": "InboundInventory"
+    }
+  ],
+  "provenance": [
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated",
+      "ir": "ir:PlanFulfillment",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.input.demand",
+      "ir": "ir:PlanFulfillment.input.0.demand",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.input.demand"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.input.warehouses",
+      "ir": "ir:PlanFulfillment.input.1.warehouses",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.input.warehouses"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.input.inventory_positions",
+      "ir": "ir:PlanFulfillment.input.2.inventory_positions",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.input.inventory_positions"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.input.inbound_inventory",
+      "ir": "ir:PlanFulfillment.input.3.inbound_inventory",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.input.inbound_inventory"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.0.summarize_inbound",
+      "ir": "ir:PlanFulfillment.step.0.summarize_inbound",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.summarize_inbound"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.0.summarize_inbound.aggregate.tenant",
+      "ir": "ir:PlanFulfillment.step.0.summarize_inbound.aggregate.tenant",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.summarize_inbound.aggregate.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.0.summarize_inbound.aggregate.warehouse_id",
+      "ir": "ir:PlanFulfillment.step.0.summarize_inbound.aggregate.warehouse_id",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.summarize_inbound.aggregate.warehouse_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.0.summarize_inbound.aggregate.product_id",
+      "ir": "ir:PlanFulfillment.step.0.summarize_inbound.aggregate.product_id",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.summarize_inbound.aggregate.product_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.0.summarize_inbound.aggregate.earliest_expected_at",
+      "ir": "ir:PlanFulfillment.step.0.summarize_inbound.aggregate.earliest_expected_at",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.summarize_inbound.aggregate.earliest_expected_at"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.0.summarize_inbound.aggregate.expected_quantity",
+      "ir": "ir:PlanFulfillment.step.0.summarize_inbound.aggregate.expected_quantity",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.summarize_inbound.aggregate.expected_quantity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.0.summarize_inbound.validation.0.intermediate",
+      "ir": "ir:PlanFulfillment.step.0.summarize_inbound.validation.0.intermediate",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.summarize_inbound.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options",
+      "ir": "ir:PlanFulfillment.step.1.build_options",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options.join.1.warehouse",
+      "ir": "ir:PlanFulfillment.step.1.build_options.join.1.warehouse",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.join.1.warehouse"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options.join.2.inventory",
+      "ir": "ir:PlanFulfillment.step.1.build_options.join.2.inventory",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.join.2.inventory"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options.join.3.inbound",
+      "ir": "ir:PlanFulfillment.step.1.build_options.join.3.inbound",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.join.3.inbound"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options.select.tenant",
+      "ir": "ir:PlanFulfillment.step.1.build_options.project.tenant",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.field.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options.select.business",
+      "ir": "ir:PlanFulfillment.step.1.build_options.project.business",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.field.business"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options.select.order_id",
+      "ir": "ir:PlanFulfillment.step.1.build_options.project.order_id",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.field.order_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options.select.customer_id",
+      "ir": "ir:PlanFulfillment.step.1.build_options.project.customer_id",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.field.customer_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options.select.customer_name",
+      "ir": "ir:PlanFulfillment.step.1.build_options.project.customer_name",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.field.customer_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options.select.customer_tier",
+      "ir": "ir:PlanFulfillment.step.1.build_options.project.customer_tier",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.field.customer_tier"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options.select.customer_region",
+      "ir": "ir:PlanFulfillment.step.1.build_options.project.customer_region",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.field.customer_region"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options.select.product_id",
+      "ir": "ir:PlanFulfillment.step.1.build_options.project.product_id",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.field.product_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options.select.product_name",
+      "ir": "ir:PlanFulfillment.step.1.build_options.project.product_name",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.field.product_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options.select.product_category",
+      "ir": "ir:PlanFulfillment.step.1.build_options.project.product_category",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.field.product_category"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options.select.promotion_code",
+      "ir": "ir:PlanFulfillment.step.1.build_options.project.promotion_code",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.field.promotion_code"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options.select.promotion_name",
+      "ir": "ir:PlanFulfillment.step.1.build_options.project.promotion_name",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.field.promotion_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options.select.promotion_discount",
+      "ir": "ir:PlanFulfillment.step.1.build_options.project.promotion_discount",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.field.promotion_discount"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options.select.total",
+      "ir": "ir:PlanFulfillment.step.1.build_options.project.total",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.field.total"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options.select.discount",
+      "ir": "ir:PlanFulfillment.step.1.build_options.project.discount",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.field.discount"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options.select.net_total",
+      "ir": "ir:PlanFulfillment.step.1.build_options.project.net_total",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.field.net_total"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options.select.requested_quantity",
+      "ir": "ir:PlanFulfillment.step.1.build_options.project.requested_quantity",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.field.requested_quantity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options.select.is_large",
+      "ir": "ir:PlanFulfillment.step.1.build_options.project.is_large",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.field.is_large"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options.select.warehouse_id",
+      "ir": "ir:PlanFulfillment.step.1.build_options.project.warehouse_id",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.field.warehouse_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options.select.warehouse_region",
+      "ir": "ir:PlanFulfillment.step.1.build_options.project.warehouse_region",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.field.warehouse_region"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options.select.warehouse_priority",
+      "ir": "ir:PlanFulfillment.step.1.build_options.project.warehouse_priority",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.field.warehouse_priority"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options.select.available_to_promise",
+      "ir": "ir:PlanFulfillment.step.1.build_options.project.available_to_promise",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.field.available_to_promise"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options.select.safety_stock_quantity",
+      "ir": "ir:PlanFulfillment.step.1.build_options.project.safety_stock_quantity",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.field.safety_stock_quantity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options.select.earliest_inbound_at",
+      "ir": "ir:PlanFulfillment.step.1.build_options.project.earliest_inbound_at",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.field.earliest_inbound_at"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options.select.expected_inbound_quantity",
+      "ir": "ir:PlanFulfillment.step.1.build_options.project.expected_inbound_quantity",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.field.expected_inbound_quantity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.1.build_options.validation.0.intermediate",
+      "ir": "ir:PlanFulfillment.step.1.build_options.validation.0.intermediate",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.build_options.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.2.prioritize_options",
+      "ir": "ir:PlanFulfillment.step.2.prioritize_options",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.prioritize_options"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.2.prioritize_options.select.tenant",
+      "ir": "ir:PlanFulfillment.step.2.prioritize_options.project.tenant",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.prioritize_options.field.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.2.prioritize_options.select.business",
+      "ir": "ir:PlanFulfillment.step.2.prioritize_options.project.business",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.prioritize_options.field.business"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.2.prioritize_options.select.order_id",
+      "ir": "ir:PlanFulfillment.step.2.prioritize_options.project.order_id",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.prioritize_options.field.order_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.2.prioritize_options.select.customer_id",
+      "ir": "ir:PlanFulfillment.step.2.prioritize_options.project.customer_id",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.prioritize_options.field.customer_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.2.prioritize_options.select.customer_name",
+      "ir": "ir:PlanFulfillment.step.2.prioritize_options.project.customer_name",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.prioritize_options.field.customer_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.2.prioritize_options.select.customer_tier",
+      "ir": "ir:PlanFulfillment.step.2.prioritize_options.project.customer_tier",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.prioritize_options.field.customer_tier"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.2.prioritize_options.select.customer_region",
+      "ir": "ir:PlanFulfillment.step.2.prioritize_options.project.customer_region",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.prioritize_options.field.customer_region"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.2.prioritize_options.select.product_id",
+      "ir": "ir:PlanFulfillment.step.2.prioritize_options.project.product_id",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.prioritize_options.field.product_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.2.prioritize_options.select.product_name",
+      "ir": "ir:PlanFulfillment.step.2.prioritize_options.project.product_name",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.prioritize_options.field.product_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.2.prioritize_options.select.product_category",
+      "ir": "ir:PlanFulfillment.step.2.prioritize_options.project.product_category",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.prioritize_options.field.product_category"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.2.prioritize_options.select.promotion_code",
+      "ir": "ir:PlanFulfillment.step.2.prioritize_options.project.promotion_code",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.prioritize_options.field.promotion_code"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.2.prioritize_options.select.promotion_name",
+      "ir": "ir:PlanFulfillment.step.2.prioritize_options.project.promotion_name",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.prioritize_options.field.promotion_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.2.prioritize_options.select.promotion_discount",
+      "ir": "ir:PlanFulfillment.step.2.prioritize_options.project.promotion_discount",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.prioritize_options.field.promotion_discount"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.2.prioritize_options.select.total",
+      "ir": "ir:PlanFulfillment.step.2.prioritize_options.project.total",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.prioritize_options.field.total"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.2.prioritize_options.select.discount",
+      "ir": "ir:PlanFulfillment.step.2.prioritize_options.project.discount",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.prioritize_options.field.discount"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.2.prioritize_options.select.net_total",
+      "ir": "ir:PlanFulfillment.step.2.prioritize_options.project.net_total",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.prioritize_options.field.net_total"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.2.prioritize_options.select.requested_quantity",
+      "ir": "ir:PlanFulfillment.step.2.prioritize_options.project.requested_quantity",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.prioritize_options.field.requested_quantity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.2.prioritize_options.select.is_large",
+      "ir": "ir:PlanFulfillment.step.2.prioritize_options.project.is_large",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.prioritize_options.field.is_large"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.2.prioritize_options.select.warehouse_id",
+      "ir": "ir:PlanFulfillment.step.2.prioritize_options.project.warehouse_id",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.prioritize_options.field.warehouse_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.2.prioritize_options.select.warehouse_region",
+      "ir": "ir:PlanFulfillment.step.2.prioritize_options.project.warehouse_region",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.prioritize_options.field.warehouse_region"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.2.prioritize_options.select.warehouse_priority",
+      "ir": "ir:PlanFulfillment.step.2.prioritize_options.project.warehouse_priority",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.prioritize_options.field.warehouse_priority"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.2.prioritize_options.select.available_to_promise",
+      "ir": "ir:PlanFulfillment.step.2.prioritize_options.project.available_to_promise",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.prioritize_options.field.available_to_promise"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.2.prioritize_options.select.safety_stock_quantity",
+      "ir": "ir:PlanFulfillment.step.2.prioritize_options.project.safety_stock_quantity",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.prioritize_options.field.safety_stock_quantity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.2.prioritize_options.select.earliest_inbound_at",
+      "ir": "ir:PlanFulfillment.step.2.prioritize_options.project.earliest_inbound_at",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.prioritize_options.field.earliest_inbound_at"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.2.prioritize_options.select.expected_inbound_quantity",
+      "ir": "ir:PlanFulfillment.step.2.prioritize_options.project.expected_inbound_quantity",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.prioritize_options.field.expected_inbound_quantity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.2.prioritize_options.select.option_ordinal",
+      "ir": "ir:PlanFulfillment.step.2.prioritize_options.project.option_ordinal",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.prioritize_options.field.option_ordinal"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.2.prioritize_options.validation.0.intermediate",
+      "ir": "ir:PlanFulfillment.step.2.prioritize_options.validation.0.intermediate",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.prioritize_options.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.3.select_preferred_option",
+      "ir": "ir:PlanFulfillment.step.3.select_preferred_option",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.3.select_preferred_option.where.0",
+      "ir": "ir:PlanFulfillment.step.3.select_preferred_option.filter.0",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option.filter.0"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.3.select_preferred_option.select.tenant",
+      "ir": "ir:PlanFulfillment.step.3.select_preferred_option.project.tenant",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option.field.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.3.select_preferred_option.select.business",
+      "ir": "ir:PlanFulfillment.step.3.select_preferred_option.project.business",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option.field.business"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.3.select_preferred_option.select.order_id",
+      "ir": "ir:PlanFulfillment.step.3.select_preferred_option.project.order_id",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option.field.order_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.3.select_preferred_option.select.customer_id",
+      "ir": "ir:PlanFulfillment.step.3.select_preferred_option.project.customer_id",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option.field.customer_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.3.select_preferred_option.select.customer_name",
+      "ir": "ir:PlanFulfillment.step.3.select_preferred_option.project.customer_name",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option.field.customer_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.3.select_preferred_option.select.customer_tier",
+      "ir": "ir:PlanFulfillment.step.3.select_preferred_option.project.customer_tier",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option.field.customer_tier"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.3.select_preferred_option.select.customer_region",
+      "ir": "ir:PlanFulfillment.step.3.select_preferred_option.project.customer_region",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option.field.customer_region"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.3.select_preferred_option.select.product_id",
+      "ir": "ir:PlanFulfillment.step.3.select_preferred_option.project.product_id",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option.field.product_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.3.select_preferred_option.select.product_name",
+      "ir": "ir:PlanFulfillment.step.3.select_preferred_option.project.product_name",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option.field.product_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.3.select_preferred_option.select.product_category",
+      "ir": "ir:PlanFulfillment.step.3.select_preferred_option.project.product_category",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option.field.product_category"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.3.select_preferred_option.select.promotion_code",
+      "ir": "ir:PlanFulfillment.step.3.select_preferred_option.project.promotion_code",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option.field.promotion_code"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.3.select_preferred_option.select.promotion_name",
+      "ir": "ir:PlanFulfillment.step.3.select_preferred_option.project.promotion_name",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option.field.promotion_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.3.select_preferred_option.select.promotion_discount",
+      "ir": "ir:PlanFulfillment.step.3.select_preferred_option.project.promotion_discount",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option.field.promotion_discount"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.3.select_preferred_option.select.total",
+      "ir": "ir:PlanFulfillment.step.3.select_preferred_option.project.total",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option.field.total"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.3.select_preferred_option.select.discount",
+      "ir": "ir:PlanFulfillment.step.3.select_preferred_option.project.discount",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option.field.discount"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.3.select_preferred_option.select.net_total",
+      "ir": "ir:PlanFulfillment.step.3.select_preferred_option.project.net_total",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option.field.net_total"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.3.select_preferred_option.select.requested_quantity",
+      "ir": "ir:PlanFulfillment.step.3.select_preferred_option.project.requested_quantity",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option.field.requested_quantity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.3.select_preferred_option.select.is_large",
+      "ir": "ir:PlanFulfillment.step.3.select_preferred_option.project.is_large",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option.field.is_large"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.3.select_preferred_option.select.warehouse_id",
+      "ir": "ir:PlanFulfillment.step.3.select_preferred_option.project.warehouse_id",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option.field.warehouse_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.3.select_preferred_option.select.warehouse_region",
+      "ir": "ir:PlanFulfillment.step.3.select_preferred_option.project.warehouse_region",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option.field.warehouse_region"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.3.select_preferred_option.select.warehouse_priority",
+      "ir": "ir:PlanFulfillment.step.3.select_preferred_option.project.warehouse_priority",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option.field.warehouse_priority"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.3.select_preferred_option.select.available_to_promise",
+      "ir": "ir:PlanFulfillment.step.3.select_preferred_option.project.available_to_promise",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option.field.available_to_promise"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.3.select_preferred_option.select.safety_stock_quantity",
+      "ir": "ir:PlanFulfillment.step.3.select_preferred_option.project.safety_stock_quantity",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option.field.safety_stock_quantity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.3.select_preferred_option.select.earliest_inbound_at",
+      "ir": "ir:PlanFulfillment.step.3.select_preferred_option.project.earliest_inbound_at",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option.field.earliest_inbound_at"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.3.select_preferred_option.select.expected_inbound_quantity",
+      "ir": "ir:PlanFulfillment.step.3.select_preferred_option.project.expected_inbound_quantity",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option.field.expected_inbound_quantity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.3.select_preferred_option.select.option_ordinal",
+      "ir": "ir:PlanFulfillment.step.3.select_preferred_option.project.option_ordinal",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option.field.option_ordinal"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.3.select_preferred_option.validation.0.intermediate",
+      "ir": "ir:PlanFulfillment.step.3.select_preferred_option.validation.0.intermediate",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.select_preferred_option.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.4.allocate",
+      "ir": "ir:PlanFulfillment.step.4.allocate",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.allocate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.4.allocate.where.0",
+      "ir": "ir:PlanFulfillment.step.4.allocate.filter.0",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.allocate.filter.0"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.4.allocate.select.tenant",
+      "ir": "ir:PlanFulfillment.step.4.allocate.project.tenant",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.allocate.field.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.4.allocate.select.business",
+      "ir": "ir:PlanFulfillment.step.4.allocate.project.business",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.allocate.field.business"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.4.allocate.select.order_id",
+      "ir": "ir:PlanFulfillment.step.4.allocate.project.order_id",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.allocate.field.order_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.4.allocate.select.customer_id",
+      "ir": "ir:PlanFulfillment.step.4.allocate.project.customer_id",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.allocate.field.customer_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.4.allocate.select.product_id",
+      "ir": "ir:PlanFulfillment.step.4.allocate.project.product_id",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.allocate.field.product_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.4.allocate.select.warehouse_id",
+      "ir": "ir:PlanFulfillment.step.4.allocate.project.warehouse_id",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.allocate.field.warehouse_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.4.allocate.select.allocated_quantity",
+      "ir": "ir:PlanFulfillment.step.4.allocate.project.allocated_quantity",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.allocate.field.allocated_quantity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.4.allocate.select.requested_quantity",
+      "ir": "ir:PlanFulfillment.step.4.allocate.project.requested_quantity",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.allocate.field.requested_quantity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.4.allocate.select.planned_ship_date",
+      "ir": "ir:PlanFulfillment.step.4.allocate.project.planned_ship_date",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.allocate.field.planned_ship_date"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.4.allocate.validation.0.intermediate",
+      "ir": "ir:PlanFulfillment.step.4.allocate.validation.0.intermediate",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.allocate.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.5.backorder",
+      "ir": "ir:PlanFulfillment.step.5.backorder",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.backorder"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.5.backorder.where.0",
+      "ir": "ir:PlanFulfillment.step.5.backorder.filter.0",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.backorder.filter.0"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.5.backorder.select.tenant",
+      "ir": "ir:PlanFulfillment.step.5.backorder.project.tenant",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.backorder.field.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.5.backorder.select.business",
+      "ir": "ir:PlanFulfillment.step.5.backorder.project.business",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.backorder.field.business"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.5.backorder.select.order_id",
+      "ir": "ir:PlanFulfillment.step.5.backorder.project.order_id",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.backorder.field.order_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.5.backorder.select.customer_id",
+      "ir": "ir:PlanFulfillment.step.5.backorder.project.customer_id",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.backorder.field.customer_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.5.backorder.select.product_id",
+      "ir": "ir:PlanFulfillment.step.5.backorder.project.product_id",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.backorder.field.product_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.5.backorder.select.warehouse_id",
+      "ir": "ir:PlanFulfillment.step.5.backorder.project.warehouse_id",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.backorder.field.warehouse_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.5.backorder.select.backordered_quantity",
+      "ir": "ir:PlanFulfillment.step.5.backorder.project.backordered_quantity",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.backorder.field.backordered_quantity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.5.backorder.select.requested_quantity",
+      "ir": "ir:PlanFulfillment.step.5.backorder.project.requested_quantity",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.backorder.field.requested_quantity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.5.backorder.select.planned_ship_date",
+      "ir": "ir:PlanFulfillment.step.5.backorder.project.planned_ship_date",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.backorder.field.planned_ship_date"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.5.backorder.select.reason",
+      "ir": "ir:PlanFulfillment.step.5.backorder.project.reason",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.backorder.field.reason"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.5.backorder.validation.0.intermediate",
+      "ir": "ir:PlanFulfillment.step.5.backorder.validation.0.intermediate",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.backorder.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.6.plan",
+      "ir": "ir:PlanFulfillment.step.6.plan",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.plan"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.6.plan.select.tenant",
+      "ir": "ir:PlanFulfillment.step.6.plan.project.tenant",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.plan.field.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.6.plan.select.business",
+      "ir": "ir:PlanFulfillment.step.6.plan.project.business",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.plan.field.business"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.6.plan.select.order_id",
+      "ir": "ir:PlanFulfillment.step.6.plan.project.order_id",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.plan.field.order_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.6.plan.select.customer_id",
+      "ir": "ir:PlanFulfillment.step.6.plan.project.customer_id",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.plan.field.customer_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.6.plan.select.product_id",
+      "ir": "ir:PlanFulfillment.step.6.plan.project.product_id",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.plan.field.product_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.6.plan.select.requested_quantity",
+      "ir": "ir:PlanFulfillment.step.6.plan.project.requested_quantity",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.plan.field.requested_quantity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.6.plan.select.allocated_quantity",
+      "ir": "ir:PlanFulfillment.step.6.plan.project.allocated_quantity",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.plan.field.allocated_quantity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.6.plan.select.backordered_quantity",
+      "ir": "ir:PlanFulfillment.step.6.plan.project.backordered_quantity",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.plan.field.backordered_quantity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.6.plan.select.selected_warehouse_id",
+      "ir": "ir:PlanFulfillment.step.6.plan.project.selected_warehouse_id",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.plan.field.selected_warehouse_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.6.plan.select.planned_ship_date",
+      "ir": "ir:PlanFulfillment.step.6.plan.project.planned_ship_date",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.plan.field.planned_ship_date"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.6.plan.select.is_fully_allocated",
+      "ir": "ir:PlanFulfillment.step.6.plan.project.is_fully_allocated",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.plan.field.is_fully_allocated"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.6.plan.select.plan_status",
+      "ir": "ir:PlanFulfillment.step.6.plan.project.plan_status",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.plan.field.plan_status"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.6.plan.validation.0.intermediate",
+      "ir": "ir:PlanFulfillment.step.6.plan.validation.0.intermediate",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.plan.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.7.suggest_replenishment",
+      "ir": "ir:PlanFulfillment.step.7.suggest_replenishment",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.suggest_replenishment"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.7.suggest_replenishment.where.0",
+      "ir": "ir:PlanFulfillment.step.7.suggest_replenishment.filter.0",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.suggest_replenishment.filter.0"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.7.suggest_replenishment.select.tenant",
+      "ir": "ir:PlanFulfillment.step.7.suggest_replenishment.project.tenant",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.suggest_replenishment.field.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.7.suggest_replenishment.select.warehouse_id",
+      "ir": "ir:PlanFulfillment.step.7.suggest_replenishment.project.warehouse_id",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.suggest_replenishment.field.warehouse_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.7.suggest_replenishment.select.product_id",
+      "ir": "ir:PlanFulfillment.step.7.suggest_replenishment.project.product_id",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.suggest_replenishment.field.product_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.7.suggest_replenishment.select.available_to_promise_after_plan",
+      "ir": "ir:PlanFulfillment.step.7.suggest_replenishment.project.available_to_promise_after_plan",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.suggest_replenishment.field.available_to_promise_after_plan"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.7.suggest_replenishment.select.safety_stock_quantity",
+      "ir": "ir:PlanFulfillment.step.7.suggest_replenishment.project.safety_stock_quantity",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.suggest_replenishment.field.safety_stock_quantity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.7.suggest_replenishment.select.earliest_inbound_at",
+      "ir": "ir:PlanFulfillment.step.7.suggest_replenishment.project.earliest_inbound_at",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.suggest_replenishment.field.earliest_inbound_at"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.step.7.suggest_replenishment.select.reason",
+      "ir": "ir:PlanFulfillment.step.7.suggest_replenishment.project.reason",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.suggest_replenishment.field.reason"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.output.0.allocations.validation.final",
+      "ir": "ir:PlanFulfillment.output.0.allocations.validation.final",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.output.allocations"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.output.1.backorders.validation.final",
+      "ir": "ir:PlanFulfillment.output.1.backorders.validation.final",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.output.backorders"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.output.2.plans.validation.final",
+      "ir": "ir:PlanFulfillment.output.2.plans.validation.final",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.output.plans"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.plan.PlanFulfillmentGenerated.run.output.3.replenishment_suggestions.validation.final",
+      "ir": "ir:PlanFulfillment.output.3.replenishment_suggestions.validation.final",
+      "source": "source:examples.store.transforms.fulfillment.plan.PlanFulfillment.output.replenishment_suggestions"
+    }
+  ],
+  "schema_constants": {
+    "Address": {
+      "constant": "ADDRESS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "AuditStamp": {
+      "constant": "AUDIT_STAMP_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "BlockedProduct": {
+      "constant": "BLOCKED_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.product"
+    },
+    "BusinessDate": {
+      "constant": "BUSINESS_DATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "CatalogAvailability": {
+      "constant": "CATALOG_AVAILABILITY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+    },
+    "CatalogProduct": {
+      "constant": "CATALOG_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+    },
+    "Customer": {
+      "constant": "CUSTOMER_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.customer"
+    },
+    "CustomerDailyTotal": {
+      "constant": "CUSTOMER_DAILY_TOTAL_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.analytics"
+    },
+    "CustomerEventRank": {
+      "constant": "CUSTOMER_EVENT_RANK_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.analytics"
+    },
+    "CustomerOrderBackfill": {
+      "constant": "CUSTOMER_ORDER_BACKFILL_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "DailyFulfillmentSummary": {
+      "constant": "DAILY_FULFILLMENT_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.summary"
+    },
+    "DailyRecommendationBehavior": {
+      "constant": "DAILY_RECOMMENDATION_BEHAVIOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.evaluation"
+    },
+    "DailyRecommendationClicks": {
+      "constant": "DAILY_RECOMMENDATION_CLICKS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "DailyRecommendationCounts": {
+      "constant": "DAILY_RECOMMENDATION_COUNTS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "DailyRecommendationImpressions": {
+      "constant": "DAILY_RECOMMENDATION_IMPRESSIONS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "FulfillmentAllocation": {
+      "constant": "FULFILLMENT_ALLOCATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "FulfillmentBackorder": {
+      "constant": "FULFILLMENT_BACKORDER_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "FulfillmentOption": {
+      "constant": "FULFILLMENT_OPTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.workflow"
+    },
+    "FulfillmentPlan": {
+      "constant": "FULFILLMENT_PLAN_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "FulfillmentPreferredOption": {
+      "constant": "FULFILLMENT_PREFERRED_OPTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.workflow"
+    },
+    "FulfillmentReconciliation": {
+      "constant": "FULFILLMENT_RECONCILIATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.reconciliation"
+    },
+    "InboundInventory": {
+      "constant": "INBOUND_INVENTORY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
+    },
+    "InboundInventoryAvailability": {
+      "constant": "INBOUND_INVENTORY_AVAILABILITY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.workflow"
+    },
+    "InventoryPosition": {
+      "constant": "INVENTORY_POSITION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
+    },
+    "MerchandisingBoost": {
+      "constant": "MERCHANDISING_BOOST_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.policy"
+    },
+    "MerchandisingPolicy": {
+      "constant": "MERCHANDISING_POLICY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.policy"
+    },
+    "MerchandisingSuppression": {
+      "constant": "MERCHANDISING_SUPPRESSION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.policy"
+    },
+    "Order": {
+      "constant": "ORDER_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.demand"
+    },
+    "OrderCollectionProfile": {
+      "constant": "ORDER_COLLECTION_PROFILE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderCollectionSource": {
+      "constant": "ORDER_COLLECTION_SOURCE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderCustomerReconciliation": {
+      "constant": "ORDER_CUSTOMER_RECONCILIATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderCustomerWindow": {
+      "constant": "ORDER_CUSTOMER_WINDOW_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderFulfillment": {
+      "constant": "ORDER_FULFILLMENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderNormalized": {
+      "constant": "ORDER_NORMALIZED_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderProductCandidate": {
+      "constant": "ORDER_PRODUCT_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderProductCube": {
+      "constant": "ORDER_PRODUCT_CUBE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderPublication": {
+      "constant": "ORDER_PUBLICATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderPublished": {
+      "constant": "ORDER_PUBLISHED_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderRaw": {
+      "constant": "ORDER_RAW_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderRevenueRollup": {
+      "constant": "ORDER_REVENUE_ROLLUP_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderWithCustomer": {
+      "constant": "ORDER_WITH_CUSTOMER_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderWithProduct": {
+      "constant": "ORDER_WITH_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderWithPromotion": {
+      "constant": "ORDER_WITH_PROMOTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "Product": {
+      "constant": "PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.product"
+    },
+    "ProductBase": {
+      "constant": "PRODUCT_BASE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.product"
+    },
+    "ProductDailySummary": {
+      "constant": "PRODUCT_DAILY_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.analytics"
+    },
+    "ProductRecommendationSignal": {
+      "constant": "PRODUCT_RECOMMENDATION_SIGNAL_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "ProductRecommendationSignalTotals": {
+      "constant": "PRODUCT_RECOMMENDATION_SIGNAL_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "Promotion": {
+      "constant": "PROMOTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.promotion"
+    },
+    "PublicationFlags": {
+      "constant": "PUBLICATION_FLAGS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "RankedRecommendationCandidate": {
+      "constant": "RANKED_RECOMMENDATION_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "RecommendationBehaviorImpression": {
+      "constant": "RECOMMENDATION_BEHAVIOR_IMPRESSION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "RecommendationCandidate": {
+      "constant": "RECOMMENDATION_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+    },
+    "RecommendationClick": {
+      "constant": "RECOMMENDATION_CLICK_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "RecommendationClickSummary": {
+      "constant": "RECOMMENDATION_CLICK_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "RecommendationEvaluationBatch": {
+      "constant": "RECOMMENDATION_EVALUATION_BATCH_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.evaluation"
+    },
+    "RecommendationExposure": {
+      "constant": "RECOMMENDATION_EXPOSURE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "RecommendationImpression": {
+      "constant": "RECOMMENDATION_IMPRESSION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "RecommendationRequest": {
+      "constant": "RECOMMENDATION_REQUEST_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
+    },
+    "RecommendationRequestBehavior": {
+      "constant": "RECOMMENDATION_REQUEST_BEHAVIOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.evaluation"
+    },
+    "RecommendationRun": {
+      "constant": "RECOMMENDATION_RUN_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
+    },
+    "RecommendedProduct": {
+      "constant": "RECOMMENDED_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
+    },
+    "ReplenishmentSuggestion": {
+      "constant": "REPLENISHMENT_SUGGESTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "Shipment": {
+      "constant": "SHIPMENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.shipment"
+    },
+    "TenantKey": {
+      "constant": "TENANT_KEY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "Warehouse": {
+      "constant": "WAREHOUSE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
+    },
+    "WarehouseLoadSummary": {
+      "constant": "WAREHOUSE_LOAD_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.summary"
+    }
+  },
+  "source_transform": "examples.store.transforms.fulfillment.plan.PlanFulfillment",
+  "static_dataflow": {
+    "dependencies": [
+      {
+        "detail": {
+          "backend": "pyspark"
+        },
+        "operation": "transform",
+        "sources": [
+          "demand",
+          "warehouses",
+          "inventory_positions",
+          "inbound_inventory"
+        ],
+        "step": null,
+        "target": "PlanFulfillment"
+      },
+      {
+        "detail": {
+          "input_schema": "InboundInventory",
+          "output_schema": "InboundInventoryAvailability"
+        },
+        "operation": "step",
+        "sources": [
+          "demand"
+        ],
+        "step": "summarize_inbound",
+        "target": "summarize_inbound"
+      },
+      {
+        "detail": {
+          "field": "tenant",
+          "function": "first",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "inbound_inventory.tenant"
+        ],
+        "step": "summarize_inbound",
+        "target": "InboundInventoryAvailability.tenant"
+      },
+      {
+        "detail": {
+          "field": "warehouse_id",
+          "function": "key",
+          "key": "warehouse_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "inbound_inventory.warehouse_id"
+        ],
+        "step": "summarize_inbound",
+        "target": "InboundInventoryAvailability.warehouse_id"
+      },
+      {
+        "detail": {
+          "field": "product_id",
+          "function": "key",
+          "key": "product_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "inbound_inventory.product_id"
+        ],
+        "step": "summarize_inbound",
+        "target": "InboundInventoryAvailability.product_id"
+      },
+      {
+        "detail": {
+          "field": "earliest_expected_at",
+          "function": "min",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "inbound_inventory.expected_at"
+        ],
+        "step": "summarize_inbound",
+        "target": "InboundInventoryAvailability.earliest_expected_at"
+      },
+      {
+        "detail": {
+          "field": "expected_quantity",
+          "function": "sum",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "inbound_inventory.expected_quantity"
+        ],
+        "step": "summarize_inbound",
+        "target": "InboundInventoryAvailability.expected_quantity"
+      },
+      {
+        "detail": {
+          "input_schema": "Order",
+          "output_schema": "FulfillmentOption"
+        },
+        "operation": "step",
+        "sources": [
+          "InboundInventoryAvailability",
+          "warehouse",
+          "inventory",
+          "inbound"
+        ],
+        "step": "build_options",
+        "target": "build_options"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "warehouses"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "warehouse.tenant.tenant_id",
+          "demand.tenant.tenant_id",
+          "warehouse.active"
+        ],
+        "step": "build_options",
+        "target": "build_options.join[1].warehouse"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "inventory_positions_2"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "inventory.tenant.tenant_id",
+          "demand.tenant.tenant_id",
+          "inventory.warehouse_id",
+          "warehouse.id",
+          "inventory.product_id",
+          "demand.product_id"
+        ],
+        "step": "build_options",
+        "target": "build_options.join[2].inventory"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "left",
+          "right_alias": "inbound_availability_3"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "inbound.tenant.tenant_id",
+          "demand.tenant.tenant_id",
+          "inbound.warehouse_id",
+          "warehouse.id",
+          "inbound.product_id",
+          "demand.product_id"
+        ],
+        "step": "build_options",
+        "target": "build_options.join[3].inbound"
+      },
+      {
+        "detail": {
+          "field": "tenant"
+        },
+        "operation": "project",
+        "sources": [
+          "demand.tenant"
+        ],
+        "step": "build_options",
+        "target": "FulfillmentOption.tenant"
+      },
+      {
+        "detail": {
+          "field": "business"
+        },
+        "operation": "project",
+        "sources": [
+          "demand.business"
+        ],
+        "step": "build_options",
+        "target": "FulfillmentOption.business"
+      },
+      {
+        "detail": {
+          "field": "order_id"
+        },
+        "operation": "project",
+        "sources": [
+          "demand.order_id"
+        ],
+        "step": "build_options",
+        "target": "FulfillmentOption.order_id"
+      },
+      {
+        "detail": {
+          "field": "customer_id"
+        },
+        "operation": "project",
+        "sources": [
+          "demand.customer_id"
+        ],
+        "step": "build_options",
+        "target": "FulfillmentOption.customer_id"
+      },
+      {
+        "detail": {
+          "field": "customer_name"
+        },
+        "operation": "project",
+        "sources": [
+          "demand.customer_name"
+        ],
+        "step": "build_options",
+        "target": "FulfillmentOption.customer_name"
+      },
+      {
+        "detail": {
+          "field": "customer_tier"
+        },
+        "operation": "project",
+        "sources": [
+          "demand.customer_tier"
+        ],
+        "step": "build_options",
+        "target": "FulfillmentOption.customer_tier"
+      },
+      {
+        "detail": {
+          "field": "customer_region"
+        },
+        "operation": "project",
+        "sources": [
+          "demand.customer_region"
+        ],
+        "step": "build_options",
+        "target": "FulfillmentOption.customer_region"
+      },
+      {
+        "detail": {
+          "field": "product_id"
+        },
+        "operation": "project",
+        "sources": [
+          "demand.product_id"
+        ],
+        "step": "build_options",
+        "target": "FulfillmentOption.product_id"
+      },
+      {
+        "detail": {
+          "field": "product_name"
+        },
+        "operation": "project",
+        "sources": [
+          "demand.product_name"
+        ],
+        "step": "build_options",
+        "target": "FulfillmentOption.product_name"
+      },
+      {
+        "detail": {
+          "field": "product_category"
+        },
+        "operation": "project",
+        "sources": [
+          "demand.product_category"
+        ],
+        "step": "build_options",
+        "target": "FulfillmentOption.product_category"
+      },
+      {
+        "detail": {
+          "field": "promotion_code"
+        },
+        "operation": "project",
+        "sources": [
+          "demand.promotion_code"
+        ],
+        "step": "build_options",
+        "target": "FulfillmentOption.promotion_code"
+      },
+      {
+        "detail": {
+          "field": "promotion_name"
+        },
+        "operation": "project",
+        "sources": [
+          "demand.promotion_name"
+        ],
+        "step": "build_options",
+        "target": "FulfillmentOption.promotion_name"
+      },
+      {
+        "detail": {
+          "field": "promotion_discount"
+        },
+        "operation": "project",
+        "sources": [
+          "demand.promotion_discount"
+        ],
+        "step": "build_options",
+        "target": "FulfillmentOption.promotion_discount"
+      },
+      {
+        "detail": {
+          "field": "total"
+        },
+        "operation": "project",
+        "sources": [
+          "demand.total"
+        ],
+        "step": "build_options",
+        "target": "FulfillmentOption.total"
+      },
+      {
+        "detail": {
+          "field": "discount"
+        },
+        "operation": "project",
+        "sources": [
+          "demand.discount"
+        ],
+        "step": "build_options",
+        "target": "FulfillmentOption.discount"
+      },
+      {
+        "detail": {
+          "field": "net_total"
+        },
+        "operation": "project",
+        "sources": [
+          "demand.net_total"
+        ],
+        "step": "build_options",
+        "target": "FulfillmentOption.net_total"
+      },
+      {
+        "detail": {
+          "field": "requested_quantity"
+        },
+        "operation": "project",
+        "sources": [
+          "demand.requested_quantity"
+        ],
+        "step": "build_options",
+        "target": "FulfillmentOption.requested_quantity"
+      },
+      {
+        "detail": {
+          "field": "is_large"
+        },
+        "operation": "project",
+        "sources": [
+          "demand.is_large"
+        ],
+        "step": "build_options",
+        "target": "FulfillmentOption.is_large"
+      },
+      {
+        "detail": {
+          "field": "warehouse_id"
+        },
+        "operation": "project",
+        "sources": [
+          "warehouse.id"
+        ],
+        "step": "build_options",
+        "target": "FulfillmentOption.warehouse_id"
+      },
+      {
+        "detail": {
+          "field": "warehouse_region"
+        },
+        "operation": "project",
+        "sources": [
+          "warehouse.region"
+        ],
+        "step": "build_options",
+        "target": "FulfillmentOption.warehouse_region"
+      },
+      {
+        "detail": {
+          "field": "warehouse_priority"
+        },
+        "operation": "project",
+        "sources": [
+          "warehouse.priority"
+        ],
+        "step": "build_options",
+        "target": "FulfillmentOption.warehouse_priority"
+      },
+      {
+        "detail": {
+          "field": "available_to_promise"
+        },
+        "operation": "project",
+        "sources": [
+          "inventory.on_hand_quantity",
+          "inventory.reserved_quantity"
+        ],
+        "step": "build_options",
+        "target": "FulfillmentOption.available_to_promise"
+      },
+      {
+        "detail": {
+          "field": "safety_stock_quantity"
+        },
+        "operation": "project",
+        "sources": [
+          "inventory.safety_stock_quantity"
+        ],
+        "step": "build_options",
+        "target": "FulfillmentOption.safety_stock_quantity"
+      },
+      {
+        "detail": {
+          "field": "earliest_inbound_at"
+        },
+        "operation": "project",
+        "sources": [
+          "inbound.earliest_expected_at"
+        ],
+        "step": "build_options",
+        "target": "FulfillmentOption.earliest_inbound_at"
+      },
+      {
+        "detail": {
+          "field": "expected_inbound_quantity"
+        },
+        "operation": "project",
+        "sources": [
+          "inbound.expected_quantity"
+        ],
+        "step": "build_options",
+        "target": "FulfillmentOption.expected_inbound_quantity"
+      },
+      {
+        "detail": {
+          "input_schema": "FulfillmentOption",
+          "output_schema": "FulfillmentPreferredOption"
+        },
+        "operation": "step",
+        "sources": [
+          "FulfillmentOption"
+        ],
+        "step": "prioritize_options",
+        "target": "prioritize_options"
+      },
+      {
+        "detail": {
+          "field": "tenant"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentOption.tenant"
+        ],
+        "step": "prioritize_options",
+        "target": "FulfillmentPreferredOption.tenant"
+      },
+      {
+        "detail": {
+          "field": "business"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentOption.business"
+        ],
+        "step": "prioritize_options",
+        "target": "FulfillmentPreferredOption.business"
+      },
+      {
+        "detail": {
+          "field": "order_id"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentOption.order_id"
+        ],
+        "step": "prioritize_options",
+        "target": "FulfillmentPreferredOption.order_id"
+      },
+      {
+        "detail": {
+          "field": "customer_id"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentOption.customer_id"
+        ],
+        "step": "prioritize_options",
+        "target": "FulfillmentPreferredOption.customer_id"
+      },
+      {
+        "detail": {
+          "field": "customer_name"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentOption.customer_name"
+        ],
+        "step": "prioritize_options",
+        "target": "FulfillmentPreferredOption.customer_name"
+      },
+      {
+        "detail": {
+          "field": "customer_tier"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentOption.customer_tier"
+        ],
+        "step": "prioritize_options",
+        "target": "FulfillmentPreferredOption.customer_tier"
+      },
+      {
+        "detail": {
+          "field": "customer_region"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentOption.customer_region"
+        ],
+        "step": "prioritize_options",
+        "target": "FulfillmentPreferredOption.customer_region"
+      },
+      {
+        "detail": {
+          "field": "product_id"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentOption.product_id"
+        ],
+        "step": "prioritize_options",
+        "target": "FulfillmentPreferredOption.product_id"
+      },
+      {
+        "detail": {
+          "field": "product_name"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentOption.product_name"
+        ],
+        "step": "prioritize_options",
+        "target": "FulfillmentPreferredOption.product_name"
+      },
+      {
+        "detail": {
+          "field": "product_category"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentOption.product_category"
+        ],
+        "step": "prioritize_options",
+        "target": "FulfillmentPreferredOption.product_category"
+      },
+      {
+        "detail": {
+          "field": "promotion_code"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentOption.promotion_code"
+        ],
+        "step": "prioritize_options",
+        "target": "FulfillmentPreferredOption.promotion_code"
+      },
+      {
+        "detail": {
+          "field": "promotion_name"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentOption.promotion_name"
+        ],
+        "step": "prioritize_options",
+        "target": "FulfillmentPreferredOption.promotion_name"
+      },
+      {
+        "detail": {
+          "field": "promotion_discount"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentOption.promotion_discount"
+        ],
+        "step": "prioritize_options",
+        "target": "FulfillmentPreferredOption.promotion_discount"
+      },
+      {
+        "detail": {
+          "field": "total"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentOption.total"
+        ],
+        "step": "prioritize_options",
+        "target": "FulfillmentPreferredOption.total"
+      },
+      {
+        "detail": {
+          "field": "discount"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentOption.discount"
+        ],
+        "step": "prioritize_options",
+        "target": "FulfillmentPreferredOption.discount"
+      },
+      {
+        "detail": {
+          "field": "net_total"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentOption.net_total"
+        ],
+        "step": "prioritize_options",
+        "target": "FulfillmentPreferredOption.net_total"
+      },
+      {
+        "detail": {
+          "field": "requested_quantity"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentOption.requested_quantity"
+        ],
+        "step": "prioritize_options",
+        "target": "FulfillmentPreferredOption.requested_quantity"
+      },
+      {
+        "detail": {
+          "field": "is_large"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentOption.is_large"
+        ],
+        "step": "prioritize_options",
+        "target": "FulfillmentPreferredOption.is_large"
+      },
+      {
+        "detail": {
+          "field": "warehouse_id"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentOption.warehouse_id"
+        ],
+        "step": "prioritize_options",
+        "target": "FulfillmentPreferredOption.warehouse_id"
+      },
+      {
+        "detail": {
+          "field": "warehouse_region"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentOption.warehouse_region"
+        ],
+        "step": "prioritize_options",
+        "target": "FulfillmentPreferredOption.warehouse_region"
+      },
+      {
+        "detail": {
+          "field": "warehouse_priority"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentOption.warehouse_priority"
+        ],
+        "step": "prioritize_options",
+        "target": "FulfillmentPreferredOption.warehouse_priority"
+      },
+      {
+        "detail": {
+          "field": "available_to_promise"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentOption.available_to_promise"
+        ],
+        "step": "prioritize_options",
+        "target": "FulfillmentPreferredOption.available_to_promise"
+      },
+      {
+        "detail": {
+          "field": "safety_stock_quantity"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentOption.safety_stock_quantity"
+        ],
+        "step": "prioritize_options",
+        "target": "FulfillmentPreferredOption.safety_stock_quantity"
+      },
+      {
+        "detail": {
+          "field": "earliest_inbound_at"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentOption.earliest_inbound_at"
+        ],
+        "step": "prioritize_options",
+        "target": "FulfillmentPreferredOption.earliest_inbound_at"
+      },
+      {
+        "detail": {
+          "field": "expected_inbound_quantity"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentOption.expected_inbound_quantity"
+        ],
+        "step": "prioritize_options",
+        "target": "FulfillmentPreferredOption.expected_inbound_quantity"
+      },
+      {
+        "detail": {
+          "field": "option_ordinal"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentOption.warehouse_region",
+          "FulfillmentOption.customer_region",
+          "FulfillmentOption.warehouse_priority",
+          "FulfillmentOption.available_to_promise",
+          "FulfillmentOption.warehouse_id",
+          "FulfillmentOption.tenant.tenant_id",
+          "FulfillmentOption.order_id",
+          "FulfillmentOption.product_id"
+        ],
+        "step": "prioritize_options",
+        "target": "FulfillmentPreferredOption.option_ordinal"
+      },
+      {
+        "detail": {
+          "input_schema": "FulfillmentPreferredOption",
+          "output_schema": "FulfillmentPreferredOption"
+        },
+        "operation": "step",
+        "sources": [
+          "FulfillmentPreferredOption"
+        ],
+        "step": "select_preferred_option",
+        "target": "select_preferred_option"
+      },
+      {
+        "detail": {},
+        "operation": "filter",
+        "sources": [
+          "FulfillmentPreferredOption.option_ordinal"
+        ],
+        "step": "select_preferred_option",
+        "target": "select_preferred_option.filter[0]"
+      },
+      {
+        "detail": {
+          "field": "tenant"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.tenant"
+        ],
+        "step": "select_preferred_option",
+        "target": "FulfillmentPreferredOption.tenant"
+      },
+      {
+        "detail": {
+          "field": "business"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.business"
+        ],
+        "step": "select_preferred_option",
+        "target": "FulfillmentPreferredOption.business"
+      },
+      {
+        "detail": {
+          "field": "order_id"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.order_id"
+        ],
+        "step": "select_preferred_option",
+        "target": "FulfillmentPreferredOption.order_id"
+      },
+      {
+        "detail": {
+          "field": "customer_id"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.customer_id"
+        ],
+        "step": "select_preferred_option",
+        "target": "FulfillmentPreferredOption.customer_id"
+      },
+      {
+        "detail": {
+          "field": "customer_name"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.customer_name"
+        ],
+        "step": "select_preferred_option",
+        "target": "FulfillmentPreferredOption.customer_name"
+      },
+      {
+        "detail": {
+          "field": "customer_tier"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.customer_tier"
+        ],
+        "step": "select_preferred_option",
+        "target": "FulfillmentPreferredOption.customer_tier"
+      },
+      {
+        "detail": {
+          "field": "customer_region"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.customer_region"
+        ],
+        "step": "select_preferred_option",
+        "target": "FulfillmentPreferredOption.customer_region"
+      },
+      {
+        "detail": {
+          "field": "product_id"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.product_id"
+        ],
+        "step": "select_preferred_option",
+        "target": "FulfillmentPreferredOption.product_id"
+      },
+      {
+        "detail": {
+          "field": "product_name"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.product_name"
+        ],
+        "step": "select_preferred_option",
+        "target": "FulfillmentPreferredOption.product_name"
+      },
+      {
+        "detail": {
+          "field": "product_category"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.product_category"
+        ],
+        "step": "select_preferred_option",
+        "target": "FulfillmentPreferredOption.product_category"
+      },
+      {
+        "detail": {
+          "field": "promotion_code"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.promotion_code"
+        ],
+        "step": "select_preferred_option",
+        "target": "FulfillmentPreferredOption.promotion_code"
+      },
+      {
+        "detail": {
+          "field": "promotion_name"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.promotion_name"
+        ],
+        "step": "select_preferred_option",
+        "target": "FulfillmentPreferredOption.promotion_name"
+      },
+      {
+        "detail": {
+          "field": "promotion_discount"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.promotion_discount"
+        ],
+        "step": "select_preferred_option",
+        "target": "FulfillmentPreferredOption.promotion_discount"
+      },
+      {
+        "detail": {
+          "field": "total"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.total"
+        ],
+        "step": "select_preferred_option",
+        "target": "FulfillmentPreferredOption.total"
+      },
+      {
+        "detail": {
+          "field": "discount"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.discount"
+        ],
+        "step": "select_preferred_option",
+        "target": "FulfillmentPreferredOption.discount"
+      },
+      {
+        "detail": {
+          "field": "net_total"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.net_total"
+        ],
+        "step": "select_preferred_option",
+        "target": "FulfillmentPreferredOption.net_total"
+      },
+      {
+        "detail": {
+          "field": "requested_quantity"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.requested_quantity"
+        ],
+        "step": "select_preferred_option",
+        "target": "FulfillmentPreferredOption.requested_quantity"
+      },
+      {
+        "detail": {
+          "field": "is_large"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.is_large"
+        ],
+        "step": "select_preferred_option",
+        "target": "FulfillmentPreferredOption.is_large"
+      },
+      {
+        "detail": {
+          "field": "warehouse_id"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.warehouse_id"
+        ],
+        "step": "select_preferred_option",
+        "target": "FulfillmentPreferredOption.warehouse_id"
+      },
+      {
+        "detail": {
+          "field": "warehouse_region"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.warehouse_region"
+        ],
+        "step": "select_preferred_option",
+        "target": "FulfillmentPreferredOption.warehouse_region"
+      },
+      {
+        "detail": {
+          "field": "warehouse_priority"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.warehouse_priority"
+        ],
+        "step": "select_preferred_option",
+        "target": "FulfillmentPreferredOption.warehouse_priority"
+      },
+      {
+        "detail": {
+          "field": "available_to_promise"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.available_to_promise"
+        ],
+        "step": "select_preferred_option",
+        "target": "FulfillmentPreferredOption.available_to_promise"
+      },
+      {
+        "detail": {
+          "field": "safety_stock_quantity"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.safety_stock_quantity"
+        ],
+        "step": "select_preferred_option",
+        "target": "FulfillmentPreferredOption.safety_stock_quantity"
+      },
+      {
+        "detail": {
+          "field": "earliest_inbound_at"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.earliest_inbound_at"
+        ],
+        "step": "select_preferred_option",
+        "target": "FulfillmentPreferredOption.earliest_inbound_at"
+      },
+      {
+        "detail": {
+          "field": "expected_inbound_quantity"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.expected_inbound_quantity"
+        ],
+        "step": "select_preferred_option",
+        "target": "FulfillmentPreferredOption.expected_inbound_quantity"
+      },
+      {
+        "detail": {
+          "field": "option_ordinal"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.option_ordinal"
+        ],
+        "step": "select_preferred_option",
+        "target": "FulfillmentPreferredOption.option_ordinal"
+      },
+      {
+        "detail": {
+          "input_schema": "FulfillmentPreferredOption",
+          "output_schema": "FulfillmentAllocation"
+        },
+        "operation": "step",
+        "sources": [
+          "FulfillmentPreferredOption"
+        ],
+        "step": "allocate",
+        "target": "allocate"
+      },
+      {
+        "detail": {},
+        "operation": "filter",
+        "sources": [
+          "FulfillmentPreferredOption.available_to_promise"
+        ],
+        "step": "allocate",
+        "target": "allocate.filter[0]"
+      },
+      {
+        "detail": {
+          "field": "tenant"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.tenant"
+        ],
+        "step": "allocate",
+        "target": "FulfillmentAllocation.tenant"
+      },
+      {
+        "detail": {
+          "field": "business"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.business"
+        ],
+        "step": "allocate",
+        "target": "FulfillmentAllocation.business"
+      },
+      {
+        "detail": {
+          "field": "order_id"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.order_id"
+        ],
+        "step": "allocate",
+        "target": "FulfillmentAllocation.order_id"
+      },
+      {
+        "detail": {
+          "field": "customer_id"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.customer_id"
+        ],
+        "step": "allocate",
+        "target": "FulfillmentAllocation.customer_id"
+      },
+      {
+        "detail": {
+          "field": "product_id"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.product_id"
+        ],
+        "step": "allocate",
+        "target": "FulfillmentAllocation.product_id"
+      },
+      {
+        "detail": {
+          "field": "warehouse_id"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.warehouse_id"
+        ],
+        "step": "allocate",
+        "target": "FulfillmentAllocation.warehouse_id"
+      },
+      {
+        "detail": {
+          "field": "allocated_quantity"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.available_to_promise",
+          "FulfillmentPreferredOption.requested_quantity"
+        ],
+        "step": "allocate",
+        "target": "FulfillmentAllocation.allocated_quantity"
+      },
+      {
+        "detail": {
+          "field": "requested_quantity"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.requested_quantity"
+        ],
+        "step": "allocate",
+        "target": "FulfillmentAllocation.requested_quantity"
+      },
+      {
+        "detail": {
+          "field": "planned_ship_date"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.business.order_date"
+        ],
+        "step": "allocate",
+        "target": "FulfillmentAllocation.planned_ship_date"
+      },
+      {
+        "detail": {
+          "input_schema": "FulfillmentPreferredOption",
+          "output_schema": "FulfillmentBackorder"
+        },
+        "operation": "step",
+        "sources": [
+          "FulfillmentAllocation"
+        ],
+        "step": "backorder",
+        "target": "backorder"
+      },
+      {
+        "detail": {},
+        "operation": "filter",
+        "sources": [
+          "FulfillmentPreferredOption.available_to_promise",
+          "FulfillmentPreferredOption.requested_quantity"
+        ],
+        "step": "backorder",
+        "target": "backorder.filter[0]"
+      },
+      {
+        "detail": {
+          "field": "tenant"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.tenant"
+        ],
+        "step": "backorder",
+        "target": "FulfillmentBackorder.tenant"
+      },
+      {
+        "detail": {
+          "field": "business"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.business"
+        ],
+        "step": "backorder",
+        "target": "FulfillmentBackorder.business"
+      },
+      {
+        "detail": {
+          "field": "order_id"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.order_id"
+        ],
+        "step": "backorder",
+        "target": "FulfillmentBackorder.order_id"
+      },
+      {
+        "detail": {
+          "field": "customer_id"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.customer_id"
+        ],
+        "step": "backorder",
+        "target": "FulfillmentBackorder.customer_id"
+      },
+      {
+        "detail": {
+          "field": "product_id"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.product_id"
+        ],
+        "step": "backorder",
+        "target": "FulfillmentBackorder.product_id"
+      },
+      {
+        "detail": {
+          "field": "warehouse_id"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.available_to_promise",
+          "FulfillmentPreferredOption.warehouse_id"
+        ],
+        "step": "backorder",
+        "target": "FulfillmentBackorder.warehouse_id"
+      },
+      {
+        "detail": {
+          "field": "backordered_quantity"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.requested_quantity",
+          "FulfillmentPreferredOption.available_to_promise"
+        ],
+        "step": "backorder",
+        "target": "FulfillmentBackorder.backordered_quantity"
+      },
+      {
+        "detail": {
+          "field": "requested_quantity"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.requested_quantity"
+        ],
+        "step": "backorder",
+        "target": "FulfillmentBackorder.requested_quantity"
+      },
+      {
+        "detail": {
+          "field": "planned_ship_date"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.available_to_promise",
+          "FulfillmentPreferredOption.requested_quantity",
+          "FulfillmentPreferredOption.business.order_date",
+          "FulfillmentPreferredOption.earliest_inbound_at"
+        ],
+        "step": "backorder",
+        "target": "FulfillmentBackorder.planned_ship_date"
+      },
+      {
+        "detail": {
+          "field": "reason"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.earliest_inbound_at"
+        ],
+        "step": "backorder",
+        "target": "FulfillmentBackorder.reason"
+      },
+      {
+        "detail": {
+          "input_schema": "FulfillmentPreferredOption",
+          "output_schema": "FulfillmentPlan"
+        },
+        "operation": "step",
+        "sources": [
+          "FulfillmentBackorder"
+        ],
+        "step": "plan",
+        "target": "plan"
+      },
+      {
+        "detail": {
+          "field": "tenant"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.tenant"
+        ],
+        "step": "plan",
+        "target": "FulfillmentPlan.tenant"
+      },
+      {
+        "detail": {
+          "field": "business"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.business"
+        ],
+        "step": "plan",
+        "target": "FulfillmentPlan.business"
+      },
+      {
+        "detail": {
+          "field": "order_id"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.order_id"
+        ],
+        "step": "plan",
+        "target": "FulfillmentPlan.order_id"
+      },
+      {
+        "detail": {
+          "field": "customer_id"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.customer_id"
+        ],
+        "step": "plan",
+        "target": "FulfillmentPlan.customer_id"
+      },
+      {
+        "detail": {
+          "field": "product_id"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.product_id"
+        ],
+        "step": "plan",
+        "target": "FulfillmentPlan.product_id"
+      },
+      {
+        "detail": {
+          "field": "requested_quantity"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.requested_quantity"
+        ],
+        "step": "plan",
+        "target": "FulfillmentPlan.requested_quantity"
+      },
+      {
+        "detail": {
+          "field": "allocated_quantity"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.available_to_promise",
+          "FulfillmentPreferredOption.requested_quantity"
+        ],
+        "step": "plan",
+        "target": "FulfillmentPlan.allocated_quantity"
+      },
+      {
+        "detail": {
+          "field": "backordered_quantity"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.requested_quantity",
+          "FulfillmentPreferredOption.available_to_promise"
+        ],
+        "step": "plan",
+        "target": "FulfillmentPlan.backordered_quantity"
+      },
+      {
+        "detail": {
+          "field": "selected_warehouse_id"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.available_to_promise",
+          "FulfillmentPreferredOption.requested_quantity",
+          "FulfillmentPreferredOption.warehouse_id"
+        ],
+        "step": "plan",
+        "target": "FulfillmentPlan.selected_warehouse_id"
+      },
+      {
+        "detail": {
+          "field": "planned_ship_date"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.requested_quantity",
+          "FulfillmentPreferredOption.available_to_promise",
+          "FulfillmentPreferredOption.business.order_date",
+          "FulfillmentPreferredOption.earliest_inbound_at"
+        ],
+        "step": "plan",
+        "target": "FulfillmentPlan.planned_ship_date"
+      },
+      {
+        "detail": {
+          "field": "is_fully_allocated"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.requested_quantity",
+          "FulfillmentPreferredOption.available_to_promise"
+        ],
+        "step": "plan",
+        "target": "FulfillmentPlan.is_fully_allocated"
+      },
+      {
+        "detail": {
+          "field": "plan_status"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.requested_quantity",
+          "FulfillmentPreferredOption.available_to_promise"
+        ],
+        "step": "plan",
+        "target": "FulfillmentPlan.plan_status"
+      },
+      {
+        "detail": {
+          "input_schema": "FulfillmentPreferredOption",
+          "output_schema": "ReplenishmentSuggestion"
+        },
+        "operation": "step",
+        "sources": [
+          "FulfillmentPlan"
+        ],
+        "step": "suggest_replenishment",
+        "target": "suggest_replenishment"
+      },
+      {
+        "detail": {},
+        "operation": "filter",
+        "sources": [
+          "FulfillmentPreferredOption.available_to_promise",
+          "FulfillmentPreferredOption.requested_quantity",
+          "FulfillmentPreferredOption.safety_stock_quantity",
+          "FulfillmentPreferredOption.earliest_inbound_at",
+          "FulfillmentPreferredOption.business.order_date"
+        ],
+        "step": "suggest_replenishment",
+        "target": "suggest_replenishment.filter[0]"
+      },
+      {
+        "detail": {
+          "field": "tenant"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.tenant"
+        ],
+        "step": "suggest_replenishment",
+        "target": "ReplenishmentSuggestion.tenant"
+      },
+      {
+        "detail": {
+          "field": "warehouse_id"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.warehouse_id"
+        ],
+        "step": "suggest_replenishment",
+        "target": "ReplenishmentSuggestion.warehouse_id"
+      },
+      {
+        "detail": {
+          "field": "product_id"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.product_id"
+        ],
+        "step": "suggest_replenishment",
+        "target": "ReplenishmentSuggestion.product_id"
+      },
+      {
+        "detail": {
+          "field": "available_to_promise_after_plan"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.available_to_promise",
+          "FulfillmentPreferredOption.requested_quantity"
+        ],
+        "step": "suggest_replenishment",
+        "target": "ReplenishmentSuggestion.available_to_promise_after_plan"
+      },
+      {
+        "detail": {
+          "field": "safety_stock_quantity"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.safety_stock_quantity"
+        ],
+        "step": "suggest_replenishment",
+        "target": "ReplenishmentSuggestion.safety_stock_quantity"
+      },
+      {
+        "detail": {
+          "field": "earliest_inbound_at"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.earliest_inbound_at"
+        ],
+        "step": "suggest_replenishment",
+        "target": "ReplenishmentSuggestion.earliest_inbound_at"
+      },
+      {
+        "detail": {
+          "field": "reason"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentPreferredOption.earliest_inbound_at"
+        ],
+        "step": "suggest_replenishment",
+        "target": "ReplenishmentSuggestion.reason"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "FulfillmentAllocation"
+        ],
+        "step": null,
+        "target": "FulfillmentAllocation.validation.final"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "FulfillmentBackorder"
+        ],
+        "step": null,
+        "target": "FulfillmentBackorder.validation.final"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "FulfillmentPlan"
+        ],
+        "step": null,
+        "target": "FulfillmentPlan.validation.final"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "ReplenishmentSuggestion"
+        ],
+        "step": null,
+        "target": "ReplenishmentSuggestion.validation.final"
+      }
+    ],
+    "opaque_boundaries": []
+  },
+  "steps": [
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "inbound_inventory",
+      "joins": [],
+      "name": "summarize_inbound",
+      "output_alias": "inbound_inventory_availability",
+      "output_schema": "InboundInventoryAvailability",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "inbound_availability",
+          "lane": "inbound_availability",
+          "schema": "InboundInventoryAvailability"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "InboundInventoryAvailability"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "order",
+      "joins": [
+        {
+          "how": "inner",
+          "input": "warehouse",
+          "right_alias": "warehouses"
+        },
+        {
+          "how": "inner",
+          "input": "inventory",
+          "right_alias": "inventory_positions_2"
+        },
+        {
+          "how": "left",
+          "input": "inbound",
+          "right_alias": "inbound_availability_3"
+        }
+      ],
+      "name": "build_options",
+      "output_alias": "fulfillment_option",
+      "output_schema": "FulfillmentOption",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "options",
+          "lane": "options",
+          "schema": "FulfillmentOption"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "FulfillmentOption"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "fulfillment_option",
+      "joins": [],
+      "name": "prioritize_options",
+      "output_alias": "fulfillment_preferred_option",
+      "output_schema": "FulfillmentPreferredOption",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "prioritized_options",
+          "lane": "prioritized_options",
+          "schema": "FulfillmentPreferredOption"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "FulfillmentPreferredOption"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "fulfillment_preferred_option",
+      "joins": [],
+      "name": "select_preferred_option",
+      "output_alias": "fulfillment_preferred_option",
+      "output_schema": "FulfillmentPreferredOption",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "preferred_options",
+          "lane": "preferred_options",
+          "schema": "FulfillmentPreferredOption"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "FulfillmentPreferredOption"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "fulfillment_preferred_option",
+      "joins": [],
+      "name": "allocate",
+      "output_alias": "fulfillment_allocation",
+      "output_schema": "FulfillmentAllocation",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "allocations",
+          "lane": "allocations",
+          "schema": "FulfillmentAllocation"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "FulfillmentAllocation"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "fulfillment_preferred_option",
+      "joins": [],
+      "name": "backorder",
+      "output_alias": "fulfillment_backorder",
+      "output_schema": "FulfillmentBackorder",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "backorders",
+          "lane": "backorders",
+          "schema": "FulfillmentBackorder"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "FulfillmentBackorder"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "fulfillment_preferred_option",
+      "joins": [],
+      "name": "plan",
+      "output_alias": "fulfillment_plan",
+      "output_schema": "FulfillmentPlan",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "plans",
+          "lane": "plans",
+          "schema": "FulfillmentPlan"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "FulfillmentPlan"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "fulfillment_preferred_option",
+      "joins": [],
+      "name": "suggest_replenishment",
+      "output_alias": "replenishment_suggestion",
+      "output_schema": "ReplenishmentSuggestion",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "replenishment_suggestions",
+          "lane": "replenishment_suggestions",
+          "schema": "ReplenishmentSuggestion"
+        }
+      ],
+      "validation": []
+    }
+  ],
+  "target_module": "examples.structure_generated.store.pyspark.transforms.plan",
+  "validation": {
+    "outputs": [
+      {
+        "mode": "strict",
+        "name": "allocations",
+        "schema": "FulfillmentAllocation"
+      },
+      {
+        "mode": "strict",
+        "name": "backorders",
+        "schema": "FulfillmentBackorder"
+      },
+      {
+        "mode": "strict",
+        "name": "plans",
+        "schema": "FulfillmentPlan"
+      },
+      {
+        "mode": "strict",
+        "name": "replenishment_suggestions",
+        "schema": "ReplenishmentSuggestion"
+      }
+    ]
+  }
+}
