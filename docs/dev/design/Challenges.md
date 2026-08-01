@@ -8,7 +8,7 @@ settled; implementation work may still remain in the owning plan or sprint.
 ## +C1. Package and Import Layout Is Not Fully Resolved
 
 Resolved by [SourceModuleRules.md](../specifications/SourceModuleRules.md) and decision
-[D06172601.Source-root-resolution.md](decisions/D06172601.Source-root-resolution.md).
+[D06172601.Source-root-resolution.md](../../../close/archive/decisions/D06172601.Source-root-resolution.md).
 
 The default project paths need to avoid confusion with the open-source package name `structure`.
 
@@ -55,7 +55,7 @@ projects and smaller root-package projects.
 ## +C2. Schema Syntax Needs to Be Finalized
 
 Resolved by [SchemaDeclarationSyntax.md](../specifications/SchemaDeclarationSyntax.md) and decision
-[D06172602.Schema-declaration-syntax.md](decisions/D06172602.Schema-declaration-syntax.md).
+[D06172602.Schema-declaration-syntax.md](../../../close/archive/decisions/D06172602.Schema-declaration-syntax.md).
 
 Deprecated examples used:
 
@@ -103,7 +103,7 @@ This scales better for nested schemas, Spark `StructType` generation, IDE behavi
 ## +C3. Nullability and Type Coercion Rules Are Missing
 
 Resolved by [NullabilityAndTypeCoercion.md](../specifications/NullabilityAndTypeCoercion.md) and planned by
-[P06172601.Nullability-and-type-coercion-rules.plan.md](../planning/done/P06172601.Nullability-and-type-coercion-rules.plan.md).
+[P06172601.Nullability-and-type-coercion-rules.plan.md](../../../close/archive/planning/P06172601.Nullability-and-type-coercion-rules.plan.md).
 
 Structure uses Spark SQL assumptions configured under `[tool.structure]` with Spark-native dotted key names:
 
@@ -195,7 +195,7 @@ The compiler may later use AST/LibCST for lower-risk discovery, but v1 can use i
 
 ## +C7. Generated Code Ownership Rules Need to Be Explicit
 
-Resolved by decision [D06182601.Generated-code-ownership.md](decisions/D06182601.Generated-code-ownership.md).
+Resolved by decision [D06182601.Generated-code-ownership.md](../../../close/archive/decisions/D06182601.Generated-code-ownership.md).
 
 Structure treats generated PySpark as committed, reviewable build output owned by the compiler. Developers review it,
 import it, test it, and regenerate it, but do not hand-edit it.
@@ -213,7 +213,7 @@ These rules are part of the Definition of Done.
 ## +C8. Hook Access to Original Inputs May Need an Escape Hatch
 
 Resolved by [HookSemantics.md](../specifications/HookSemantics.md) and decision
-[D06182602.Hook-input-escape-hatch.md](decisions/D06182602.Hook-input-escape-hatch.md).
+[D06182602.Hook-input-escape-hatch.md](../../../close/archive/decisions/D06182602.Hook-input-escape-hatch.md).
 
 The simplified hook signature is:
 
@@ -238,7 +238,7 @@ Default hooks should remain minimal, but advanced hooks should have an opt-in pa
 ## +C9. Join Semantics Need Sharper Definitions
 
 Resolved by [JoinSemantics.md](../specifications/JoinSemantics.md) and decision
-[D06172607.Join-semantics.md](decisions/D06172607.Join-semantics.md).
+[D06172607.Join-semantics.md](../../../close/archive/decisions/D06172607.Join-semantics.md).
 
 `lookup_join(...)` needs precise semantics before implementation.
 
@@ -275,7 +275,7 @@ customer.id.null_safe_eq(order.customer_id)
 
 Resolved by [ValidationSemantics.md](../specifications/ValidationSemantics.md),
 [DataQualityConstraints.md](../specifications/DataQualityConstraints.md), and decision
-[D06182603.Intermediate-validation-policy.md](decisions/D06182603.Intermediate-validation-policy.md).
+[D06182603.Intermediate-validation-policy.md](../../../close/archive/decisions/D06182603.Intermediate-validation-policy.md).
 
 Intermediate schema validation is enabled by default, but the implementation must avoid unnecessary data scans.
 
@@ -313,7 +313,7 @@ This resolves the performance concern without weakening compile-time field and t
 ## +C11. Streaming Compatibility Needs a Precise v1 Definition
 
 Resolved by [StreamingCompatibility.md](../specifications/StreamingCompatibility.md) and decision
-[D06182604.Streaming-compatibility-v1.md](decisions/D06182604.Streaming-compatibility-v1.md).
+[D06182604.Streaming-compatibility-v1.md](../../../close/archive/decisions/D06182604.Streaming-compatibility-v1.md).
 
 Structure v1 streaming compatibility means generated DataFrame transforms can run inside a caller-owned Spark
 Structured Streaming query when the current pipeline DataFrame is streaming, side lookup inputs are static, and every
@@ -342,7 +342,7 @@ Deferred or rejected in v1:
 
 Resolved by [IntermediateRepresentation.md](../specifications/IntermediateRepresentation.md),
 [PySparkCodeGeneration.md](../specifications/PySparkCodeGeneration.md), [CompatibilityPolicy.md](../specifications/CompatibilityPolicy.md), and
-[P06182601.Compiler-provenance-static-dataflow-traceability.plan.md](../planning/done/P06182601.Compiler-provenance-static-dataflow-traceability.plan.md).
+[P06182601.Compiler-provenance-static-dataflow-traceability.plan.md](../../../close/archive/planning/P06182601.Compiler-provenance-static-dataflow-traceability.plan.md).
 
 Traceability is split into three topics:
 
@@ -405,7 +405,7 @@ At minimum, design the compiler so future production incremental compilation can
 
 ## +C15. Need a “No Spark Dependency During Compile” Rule
 
-Resolved by decision [D06182606.No-spark-compile-dependency.md](decisions/D06182606.No-spark-compile-dependency.md).
+Resolved by decision [D06182606.No-spark-compile-dependency.md](../../../close/archive/decisions/D06182606.No-spark-compile-dependency.md).
 
 `structure check` and `structure compile` must not require a SparkSession, Spark cluster, Java runtime, or PySpark
 import. The compiler operates on Structure DSL objects, source metadata, backend-neutral IR, and emitter capability
@@ -504,7 +504,7 @@ Config resolution order should also be explicit:
 
 Resolved by public policy [Compatibility.md](../../Compatibility.md), specification
 [CompatibilityPolicy.md](../specifications/CompatibilityPolicy.md), and decision
-[D06182605.Versioning-and-compatibility-policy.md](decisions/D06182605.Versioning-and-compatibility-policy.md).
+[D06182605.Versioning-and-compatibility-policy.md](../../../close/archive/decisions/D06182605.Versioning-and-compatibility-policy.md).
 
 v1 baseline:
 
@@ -544,7 +544,7 @@ Recommended direction:
 
 ## +C22. The v1 Scope Is Large Enough to Hide the First Useful Release
 
-Resolved by [P06202601.v1-first-executable-slice.plan.md](../planning/done/P06202601.v1-first-executable-slice.plan.md), the first executable slice model fixture under
+Resolved by [P06202601.v.1-first-executable-slice.plan.md](../../../close/archive/planning/P06202601.v.1-first-executable-slice.plan.md), the first executable slice model fixture under
 `res/testing/model/orders`, and the revised Sprint 01 plan.
 
 The roadmap's v1 remains the broad north star: execution, optional generated PySpark, schemas, validation, joins,
@@ -567,7 +567,7 @@ Deferred from Sprint 01 into later v1 work:
 ## +C23. Backend Adaptability Needs a Capability Interface Before More Features
 
 Resolved by [BackendCapabilities.md](../specifications/BackendCapabilities.md), design [BackendCapabilities.md](BackendCapabilities.md), decision
-[D06202604.Backend-capability-interface.md](decisions/D06202604.Backend-capability-interface.md), and plan
+[D06202604.Backend-capability-interface.md](../../../close/archive/decisions/D06202604.Backend-capability-interface.md), and plan
 [P06202604.Backend-capability-interface.plan.md](../planning/P06202604.Backend-capability-interface.plan.md).
 
 Backend adaptability is now an explicit internal capability contract. Compiler checks, execution, generated
@@ -582,8 +582,8 @@ New DSL operations must declare capability behavior before they are considered s
 
 Resolved by [ExecutionSemanticContract.md](../specifications/ExecutionSemanticContract.md), design
 [ExecutionSemanticContract.md](ExecutionSemanticContract.md), decision
-[D06202601.Online-generated-semantic-contract.md](decisions/D06202601.Online-generated-semantic-contract.md), and plan
-[P06202601.Online-generated-semantic-contract.plan.md](../planning/done/P06202601.Online-generated-semantic-contract.plan.md).
+[D06202601.Online-generated-semantic-contract.md](../../../close/archive/decisions/D06202601.Online-generated-semantic-contract.md), and plan
+[P06202601.Online-generated-semantic-contract.plan.md](../../../close/archive/planning/P06202601.Online-generated-semantic-contract.plan.md).
 
 Execution and generated code intentionally share semantics while differing in output form. The shared contract
 requires checked `TransformPlan` IR plus `PySparkCapabilities` to lower into deterministic PySpark execution recipes.
@@ -616,7 +616,7 @@ should prefer direct DSL or `@special(type="expr")` fixes when logic can stay co
 
 Resolved by [DataQualityConstraints.md](../specifications/DataQualityConstraints.md), design
 [DataQualityConstraints.md](DataQualityConstraints.md), decision
-[D06202602.Data-quality-constraints-boundary.md](decisions/D06202602.Data-quality-constraints-boundary.md), and plan
+[D06202602.Data-quality-constraints-boundary.md](../../../close/archive/decisions/D06202602.Data-quality-constraints-boundary.md), and plan
 [P06202602.Data-quality-constraints.plan.md](../planning/P06202602.Data-quality-constraints.plan.md).
 
 Structure v1 validation is schema-first. Default intermediate validation remains `schema_only`, which checks shape
@@ -637,8 +637,8 @@ boundaries and only when that phase allows `schema_and_constraints`.
 
 Resolved by [AnalyticalJoinCoverage.md](../specifications/AnalyticalJoinCoverage.md), design
 [AnalyticalJoinCoverage.md](AnalyticalJoinCoverage.md), decision
-[D06212601.Analytical-join-coverage.md](decisions/D06212601.Analytical-join-coverage.md), and plan
-[P06212601.Analytical-join-coverage.plan.md](../planning/done/P06212601.Analytical-join-coverage.plan.md).
+[D06212601.Analytical-join-coverage.md](../../../close/archive/decisions/D06212601.Analytical-join-coverage.md), and plan
+[P06212601.Analytical-join-coverage.plan.md](../../../close/archive/planning/P06212601.Analytical-join-coverage.plan.md).
 
 The implemented join family now covers existence joins, row-multiplying joins, deterministic lookup dedupe, temporal
 lookups, as-of lookups, full/right/cross rowset joins, and named self aliases. Remaining work is no longer this
@@ -686,8 +686,8 @@ Recommended direction:
 ## +C29. Diagnostics Need a Registry and Documentation Contract
 
 Resolved by public documentation [Diagnostics.md](../../Diagnostics.md), specification [Diagnostics.md](../specifications/Diagnostics.md), design
-[DiagnosticsContract.md](DiagnosticsContract.md), decision [D06202603.Diagnostics-registry-contract.md](decisions/D06202603.Diagnostics-registry-contract.md),
-and plan [P06202603.Diagnostics-registry-contract.plan.md](../planning/done/P06202603.Diagnostics-registry-contract.plan.md).
+[DiagnosticsContract.md](DiagnosticsContract.md), decision [D06202603.Diagnostics-registry-contract.md](../../../close/archive/decisions/D06202603.Diagnostics-registry-contract.md),
+and plan [P06202603.Diagnostics-registry-contract.plan.md](../../../close/archive/planning/P06202603.Diagnostics-registry-contract.plan.md).
 
 Structure diagnostics are now specified as a registry-backed contract. Codes use `{component}-{severity}{number}`,
 where the prefix identifies the issuing component, such as `CONF`, `DSL`, `GEN`, `STREAM`, `ONLINE`, or `CLI`.
@@ -725,7 +725,7 @@ Recommended direction:
 ## C31. Licensing, Governance, and Packaging Signals Conflict
 
 Escalated to project-owner decision by
-[D07282601.Release-governance-publication-gate.md](decisions/D07282601.Release-governance-publication-gate.md).
+[D07282601.Release-governance-publication-gate.md](../../../close/archive/decisions/D07282601.Release-governance-publication-gate.md).
 Implementation and internal release evidence may continue, but external publication and open-source claims remain
 blocked until the owner chooses a license model, distribution name, contribution policy, security contact, release
 process, support window, and package metadata language.

@@ -179,7 +179,7 @@ Progress:
 - Sprint 08 completed the first analytical slice: grouped aggregates, selected-row helpers, exact/subset dedupe,
   projection windows, rolling row metrics, and basic array/map higher-order helpers.
 - Sprint 09 carried advanced analytical support from
-  [P07052601.Advanced-analytical-operations.plan.md](../planning/done/P07052601.Advanced-analytical-operations.plan.md).
+  [P07052601.Advanced-analytical-operations.plan.md](../../../close/archive/planning/P07052601.Advanced-analytical-operations.plan.md).
 
 Exit Criteria:
 
@@ -408,7 +408,7 @@ coverage-percentage parity is the separate v8 milestone.
 Status: complete. Sprints 36--39 published the checked coverage ledger, admitted typed struct generators and
 exact-schema stream-stream unions, closed ordering and priority selection as explicit streaming-ineligible rows, and
 recorded targeted live PySpark 3.5/4.0 restart evidence. Effective checked parity is 32 / 32. The governing plan is
-`docs/dev/planning/done/P07292601.V8-pyspark-structured-streaming-coverage-parity.plan.md`.
+`close/archive/planning/P07292601.V8-pyspark-structured-streaming-coverage-parity.plan.md`.
 
 ### Exit Criteria
 
@@ -433,7 +433,7 @@ Status: complete for coverage and adoption, with a v9 follow-up plan active for 
 40--44 delivered the checked PySpark streaming API ledger, caller-owned adoption recipe, stateful/order-sensitive gap
 reclassification, lifecycle diagnostics, documentation, live PySpark 3.5/4.0 recipe evidence, and final build evidence.
 The governing completed plan is
-`docs/dev/planning/done/P07292602.V9-pyspark-streaming-api-coverage.plan.md`, and the governing specification is
+`close/archive/planning/P07292602.V9-pyspark-streaming-api-coverage.plan.md`, and the governing specification is
 `docs/dev/specifications/V9PySparkStreamingApiCoverage.md`.
 
 ### Exit Criteria

@@ -319,7 +319,7 @@ honest boundary for actions, driver algorithms, arbitrary Python, sources/sinks,
   branch/union composition, self aliases, ordering, limit, offset, relation assertions including parent references,
   bounded hierarchy closure/fallback expansion, and declared-key priority selection.
 - The bounded batch-only `scan(...)` recurrence feature from
-  `docs/dev/planning/done/P07182601.V6-timeline-scan-recurrence.plan.md`, including partitioned Fibonacci evidence.
+  `close/archive/planning/P07182601.V6-timeline-scan-recurrence.plan.md`, including partitioned Fibonacci evidence.
 - A maintained disposition for Challenges C27--C34, executable specification coverage for each new feature, and
   runnable operational/adoption recipes where the challenge calls for documentation.
 

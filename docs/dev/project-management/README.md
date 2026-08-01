@@ -137,7 +137,7 @@ Every version ends with a dedicated hardening sprint after its feature-delivery 
 feature scope; it resolves release blockers and collects release evidence for regression, parity, compatibility,
 generated artifacts, documentation, diagnostics, and performance baselines.
 
-v4 closed with the [Final v4 Hardening Sprint](sprints/done/SprintV4_Hardening.md), after all of its feature sprints
+v4 closed with the [Final v4 Hardening Sprint](../../../close/archive/sprints/SprintV4_Hardening.md), after all of its feature sprints
 and before v5 implementation resumed.
 
 v6 follows the v5 plugin hardening work with a deliberately bounded typed-PySpark closure program:

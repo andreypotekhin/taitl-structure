@@ -7,16 +7,14 @@ from examples.store.schemas.merchandising import (
     RecommendationRequestBehavior,
 )
 from examples.store.transforms.evaluation.recommender.behavior.admit import SelectEvaluationRequests
-from examples.store.transforms.evaluation.recommender.behavior.measure_impressions import (
-    MeasureRecommendationImpressions,
-)
-from examples.store.transforms.evaluation.recommender.behavior.measure_requests import MeasureRecommendationRequests
+from examples.store.transforms.evaluation.recommender.behavior.impressions import MeasureRecommendationImpressions
+from examples.store.transforms.evaluation.recommender.behavior.requests import MeasureRecommendationRequests
 from examples.store.transforms.evaluation.recommender.behavior.summarize import SummarizeRecommendationBehavior
 from structure import Transform, input, output, stage
 
 
 class EvaluateRecommendations(Transform):
-    """Evaluate recommendation behavior independently from recommendation serving."""
+    """Evaluate user behavior on recommended products."""
 
     batch = input(RecommendationEvaluationBatch)
     requests = input(RecommendationRequest)

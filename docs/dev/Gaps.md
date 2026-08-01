@@ -52,7 +52,7 @@ scheduled, deferred, or unsupported and links each supported entry to capability
 The delivery design and first ExecPlan are [API Catalog Design Gates](design/ApiCatalogDesignGates.md) and
 [P07132601.V4-transformation-api-coverage.plan.md](planning/P07132601.V4-transformation-api-coverage.plan.md).
 [Spark Streaming](design/SparkStreaming.md) and
-[P07152602.V4-caller-owned-streaming-migration.plan.md](planning/done/P07152602.V4-caller-owned-streaming-migration.plan.md)
+[P07152602.V4-caller-owned-streaming-migration.plan.md](../../close/archive/planning/P07152602.V4-caller-owned-streaming-migration.plan.md)
 define the dedicated bounded-streaming transformation slice. Loading, storage, catalog/table management, actions, and
 streaming lifecycle ownership are excluded from this program.
 

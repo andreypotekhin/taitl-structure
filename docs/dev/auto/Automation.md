@@ -75,11 +75,11 @@ Automation instructions
 - Switch to Plan Mode (as in /plan-mode)
 - Discuss and refine the plan with human user
 - Upon approval from human user, implement the plan
-- Move implemented plan to /docs/dev/planning/done/
+- Move implemented plan to /close/archive/planning/
 
 Notes
 
-- Example plan: docs/dev/planning/done/LibraryConfiguration.plan.md
+- Example plan: close/archive/planning/LibraryConfiguration.plan.md
 
 ### End-user advocate role
 
@@ -314,5 +314,4 @@ Automation instructions
 Limits
 
 - Only consider stable parts of the codebase that are not under active development.
-
 

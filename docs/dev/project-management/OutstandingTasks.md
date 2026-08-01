@@ -6,7 +6,7 @@ CI workflow evidence
 Tracked in [Milestones.md (line 5)](C:/Taitl/Code/taitl/taitl-structure/docs/dev/project-management/Milestones.md:5) and [Sprint00_Groundwork.md (line 135)](C:/Taitl/Code/taitl/taitl-structure/docs/dev/project-management/sprints/Sprint00_Groundwork.md:135). This is mainly proof that lint/type/test/build run in CI before marking M0/Sprint 00 done.
 
 Live PySpark integration matrix
-Tracked in [Milestones.md](Milestones.md), [Sprint05_JoinsTraceabilityBuildIntegration.md](sprints/done/Sprint05_JoinsTraceabilityBuildIntegration.md), and [P06212604.Local-infrastructure-integration-testing.plan.md](../planning/done/P06212604.Local-infrastructure-integration-testing.plan.md). The code path exists; final pass needs at least one real Spark/PySpark lane, ideally PySpark 3.5 and 4.0.
+Tracked in [Milestones.md](Milestones.md), [Sprint05_JoinsTraceabilityBuildIntegration.md](../../../close/archive/sprints/Sprint05_JoinsTraceabilityBuildIntegration.md), and [P06212604.Local-infrastructure-integration-testing.plan.md](../../../close/archive/planning/P06212604.Local-infrastructure-integration-testing.plan.md). The code path exists; final pass needs at least one real Spark/PySpark lane, ideally PySpark 3.5 and 4.0.
 
 Broader negative schema-validation coverage against Spark DataFrames
 Tracked in [Milestones.md (line 58)](C:/Taitl/Code/taitl/taitl-structure/docs/dev/project-management/Milestones.md:58) and [Sprint02_SchemasAndValidation.md (line 102)](C:/Taitl/Code/taitl/taitl-structure/docs/dev/project-management/sprints/Sprint02_SchemasAndValidation.md:102). This means live invalid DataFrame cases: missing columns, extra columns, type mismatch, nested mismatch, nullable/strict mode behavior.

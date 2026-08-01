@@ -63,6 +63,6 @@ online execution, diagnostics, and streaming compatibility.
 ## Governing Documents
 
 `docs/dev/planning/P07302601.V9-api-catalog-design-gates.plan.md`,
-`docs/dev/design/decisions/D07302603.V9-streaming-support-first.md`,
+`close/archive/decisions/D07302603.V9-streaming-support-first.md`,
 `docs/dev/specifications/V9ApiCatalogDesignGatedFeatures.md`, and
 `docs/dev/specifications/V9StreamingDesignGatedFeatures.md`.

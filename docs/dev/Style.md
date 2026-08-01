@@ -213,7 +213,7 @@ Separate end-user troubleshooting items ([Troubleshooting.md](../../Troubleshoot
 troubleshooting items ([Troubleshooting.md](Troubleshooting.md)).
 
 ### Documenting the design decisions
-Add decision items as [action id].[action-title].md file to docs/dev/design/decisions/.
+Add decision items as [action id].[action-title].md file to close/archive/decisions/.
 See below sections (Action id, Action format) for namign adn formatting.
 
 ### Documenting the suggestions
@@ -221,7 +221,7 @@ As you assume team roles as described in 'Team roles' section below, come up wit
 Add suggestion items as [action id].[action-title].md file to docs/dev/suggestions/.
 Suggestions are reviewed by the manager and mastermind role.
 The approved suggestions get moved to docs/dev/suggestions/approved.
-Implemented suggestions get moved to docs/dev/suggestions/done.
+Implemented suggestions get moved to close/archive/suggestions.
 
 ### Documenting issues
 Record reproducible code issues in [issues/](issues/Readme.md). Issue records are concise, structured inputs for
@@ -242,7 +242,7 @@ code (I for issues, D for decisions, S for suggestions, T for TODO items, M for 
 documents), YY is year, MM is month (01-12), DD is day (01-31), NN is a sequence number. For instance,
 S07142501 is the first suggestion on July 14, 2025.
 The action file (md file that conains the action) is named [action id].[action-title].md
-and placed into appropriate directory (docs/dev/design/decisions/, docs/dev/suggestions/, docs/dev/todo/ and the like).
+and placed into appropriate directory (close/archive/decisions/, close/archive/suggestions/, docs/dev/todo/ and the like).
 
 ### Action format
 Inside md file, place each action item (issue, suggestion, TODO item, etc.) under a separate section (H3 heading)

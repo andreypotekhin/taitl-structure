@@ -35,7 +35,7 @@ Design docs: /docs/dev/design/
 - Background.md: project background
 - Challenges.md: current design challenges/not yet addressed
 - Components: /docs/dev/design/
-- Decisions: /docs/dev/design/decisions
+- Decisions: /close/archive/decisions
 
 Specifications: /docs/specifications/
 - Specification documents are ready to implement descriptions of the intended behavior
@@ -133,8 +133,8 @@ See 'Documenting the design decisions' section in /docs/dev/Style.md
 
 #### Documenting progress
 Keep project-management documents - e.g. milestones, sprints, etc. - up to date as we progress with design/development.
-Move completed plans to docs/dev/planning/done/.
-Move completed sprints to docs/dev/project-management/sprints/done/.
+Move completed plans to close/archive/planning/.
+Move completed sprints to close/archive/sprints/.
 Mark completed milestones (docs/dev/project-management/Milestones.md) with + (e.g. M0: Groundwork Ready).
 
 #### Making suggestions
@@ -142,14 +142,14 @@ As you assume team roles as described in 'Team roles' section below, come up wit
 Output suggestions into the [action id].[action title].md documents in suggestions dir (/docs/dev/suggestions/).
 Focus each suggestion on a specific topic, so it may be implemented in parallel with other tasks.
 
-Upon completion, move suggestions to /docs/dev/suggestions/done.
+Upon completion, move suggestions to /close/archive/suggestions.
 
 ## Task completion
 Ensure the project fully builds with tests ('make build') at the end of each task.
 Resolve any build or test issues revealed before completing the task.
 
 Suggestion items
-- Upon completion, move suggestion items to docs/dev/suggestions/done.
+- Upon completion, move suggestion items to close/archive/suggestions.
 
 User stories (UserStories.md)
 - Back completed user stories with test cases in tests/user_stories/[]/[]
