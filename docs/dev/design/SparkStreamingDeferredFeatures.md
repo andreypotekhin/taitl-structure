@@ -91,7 +91,7 @@ conversion, or a hook-only path.
 Sprint 09 owns the first slice and this deferred-feature reference. V3 closed with streaming transformation hardening
 while callers retain lifecycle ownership. Sprint 18 is V4's deliberately narrow migration slice: session-window
 aggregation, bounded stream-stream outer and semi joins, and stream-static left-semi joins. Its complete design is
-[V4CallerOwnedStreamingMigration.md](V4CallerOwnedStreamingMigration.md). This is transformation coverage, not
+[SparkStreaming.md](SparkStreaming.md). This is transformation coverage, not
 streaming orchestration: sources, sinks, checkpoints, triggers, output-mode application, and query lifecycle remain
 caller-owned. Chained stateful operations, unbounded state, and opaque state processors remain outside v4.
 

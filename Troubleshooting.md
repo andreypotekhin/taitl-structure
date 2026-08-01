@@ -46,4 +46,4 @@ If streaming diagnostics mention `STREAM-E0801` or `STREAM-W0801` around lifecyc
 Structure transforms should return DataFrame plans. Put lifecycle calls in caller-owned PySpark code such as
 `examples/streams/adoption.py`, then pass the streaming DataFrame into online or generated Structure execution. See
 [Streaming API](docs/api/Streaming.api.md) and
-[V9 PySpark Streaming API Coverage](docs/dev/specifications/V9PySparkStreamingApiCoverage.md).
+[Spark Streaming](docs/dev/specifications/SparkStreaming.md).

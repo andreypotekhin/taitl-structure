@@ -39,10 +39,10 @@ window helpers, and selected array/map higher-order functions.
 | Hash helpers | implemented | `hash`, `xxhash64`, `md5`, `sha1`, `sha2` | Typed scalar hashes and string digests; not security or cross-engine identity primitives | [Expressions API](api/Expressions.api.md) |
 | Encoding/binary helpers | implemented | `base64`, `unbase64`, `encode`, `decode` | Binary helpers use the public binary field type and typed scalar lowering | [Expressions API](api/Expressions.api.md) |
 | JSON/CSV helpers | implemented | `from_json`, `to_json`, `from_csv`, `to_csv` | Schema-carrying parsing keeps data contracts compiler-visible | [Expressions API](api/Expressions.api.md) |
-| XML helpers | design-gated | Spark XML functions | Low-priority schema-carrying parser/generator design; XML remains outside the active v9 implementation path | [V9 API Catalog Design Gates](dev/specifications/V9ApiCatalogDesignGatedFeatures.md) |
+| XML helpers | design-gated | Spark XML functions | Low-priority schema-carrying parser/generator design; XML remains outside the active v9 implementation path | [API Catalog Design Gates](dev/design/ApiCatalogDesignGates.md) |
 | Variant field | implemented | `VariantType` | `variant(...)` preserves an opaque Spark Variant value in schemas; it requires a resolved PySpark 4 profile | [Schemas API](api/Schemas.api.md) |
 | Variant helpers | implemented | `parse_json`, `variant_get`, `schema_of_variant`, `schema_of_variant_agg`, `to_variant_object`, `is_valid_variant` | Typed strict/safe parsing, extraction, schema inspection, conversion, and validation are profile-gated; `is_valid_variant(...)` requires the `>=4.2,<4.3` profile | [Expressions API](api/Expressions.api.md) |
-| Geospatial helpers | design-gated | Apache Sedona `ST_*` functions | V9 admits a Sedona-only geometry slice; the bundled plugin has no geospatial dependency or API until the optional plugin implements its typed contract | [V9 API Catalog Design Gates](dev/specifications/V9ApiCatalogDesignGatedFeatures.md) |
+| Geospatial helpers | design-gated | Apache Sedona `ST_*` functions | V9 admits a Sedona-only geometry slice; the bundled plugin has no geospatial dependency or API until the optional plugin implements its typed contract | [API Catalog Design Gates](dev/design/ApiCatalogDesignGates.md) |
 | Scalar Python UDFs | implemented | PySpark `udf`; `@special(type="udf")` | Ordinary PySpark row-local batch and streaming support with warning policy | Spark Connect unsupported |
 | Python UDTFs and UDTs | unsupported | `udtf`, UDT | Row expansion and custom type semantics are caller-owned | Use caller-owned PySpark or hooks |
 | Raw SQL string expressions | unsupported | `expr`, `call_function` | Compiler-visible expressions stay structured | Use typed helpers or hooks |
@@ -56,7 +56,7 @@ window helpers, and selected array/map higher-order functions.
 | Right join diagnostics hardening | implemented | `how="right"` | Rowset API exists; projection rules stay explicit | [Joins API](api/Joins.api.md) |
 | Cross join safety | implemented | `crossJoin`, `how="cross"` | Requires `allow_cartesian=True` | [Joins API](api/Joins.api.md) |
 | Join strategy directives | implemented | `broadcast`, `merge`, shuffle hints | Capability-checked PySpark hints | [Joins API](api/Joins.api.md) |
-| Join reordering | design-gated | Cost-based join planning | No public `join_order(...)` in v9; logical reordering needs dependency-safe predicate analysis and explainable selected order | [V9 API Catalog Design Gates](dev/specifications/V9ApiCatalogDesignGatedFeatures.md) |
+| Join reordering | design-gated | Cost-based join planning | No public `join_order(...)` in v9; logical reordering needs dependency-safe predicate analysis and explainable selected order | [API Catalog Design Gates](dev/design/ApiCatalogDesignGates.md) |
 | Backward/forward as-of joins | implemented | Directional as-of matching | Selects the latest previous or earliest following qualifying right row | [Joins API](api/Joins.api.md) |
 | Nearest as-of joins | implemented | Nearest time matching | Selects the closest non-null right time and fails equidistant matches with `ties="error"` | [Joins API](api/Joins.api.md) |
 | Unbounded or non-contract stream-stream joins | unsupported | Streaming stream-stream joins | Only admitted bounded forms are allowed; all need input modes, watermarks, event-time bounds, and state diagnostics | [Streaming API](api/Streaming.api.md) |
@@ -164,7 +164,7 @@ lifecycle recipe.
 | Typed struct generators | implemented | `explode`, `posexplode`, `inline` | Typed array-of-struct generators are admitted as stateless row expansion with schema/cardinality contracts | [Collections API](api/Collections.api.md) |
 | Caller-owned lifecycle APIs | caller-owned-guided | Sources, sinks, triggers, checkpoints, query start/stop | Structure only transforms supplied DataFrames; executable recipes keep lifecycle outside generated modules | [Streaming API](api/Streaming.api.md) |
 | `foreachBatch` side-effect sinks | caller-owned-guided | `DataStreamWriter.foreachBatch` | Use `examples.streams.adoption.start_foreach_batch_query(...)` after Structure returns a transformed DataFrame | [Streaming API](api/Streaming.api.md) |
-| Row-level `foreach` sinks | design-gated | `DataStreamWriter.foreach` | Needs sink identity, idempotence, retry, and recovery contracts before any Structure-owned support | [V9 Streaming Design Gates](dev/specifications/V9StreamingDesignGatedFeatures.md) |
+| Row-level `foreach` sinks | design-gated | `DataStreamWriter.foreach` | Needs sink identity, idempotence, retry, and recovery contracts before any Structure-owned support | [Spark Streaming](dev/specifications/SparkStreaming.md) |
 
 ## API Coverage
 

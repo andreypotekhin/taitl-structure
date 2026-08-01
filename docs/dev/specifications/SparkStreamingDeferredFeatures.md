@@ -3,7 +3,7 @@
 This specification records lifecycle and transformation features left outside the caller-owned streaming compatibility
 slice. Source, sink, and lifecycle policy remain caller-owned; transformation features remain unsupported until they
 receive compiler-visible state semantics, diagnostics, tests, and public documentation. The Sprint 18 exceptions are
-specified in [V4CallerOwnedStreamingMigration.md](V4CallerOwnedStreamingMigration.md).
+specified in [SparkStreaming.md](SparkStreaming.md).
 
 ## Caller-Owned Lifecycle Features
 
@@ -114,6 +114,6 @@ records operational semantics, checkpoint/recovery behavior, side-effect idempot
 evidence.
 
 The v9 design-gated streaming rows now have dedicated design and implementation specifications:
-[V9StreamingDesignGates.md](../design/V9StreamingDesignGates.md) and
-[V9StreamingDesignGatedFeatures.md](V9StreamingDesignGatedFeatures.md). The broader active execution plan is
+[SparkStreaming.md](../design/SparkStreaming.md) and
+[SparkStreaming.md](SparkStreaming.md). The broader active execution plan is
 `docs/dev/planning/P07302601.V9-api-catalog-design-gates.plan.md`.

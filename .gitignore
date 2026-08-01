@@ -51,7 +51,7 @@ logs/
 chat/
 discussions/
 node_modules/
-priv/
+close/
 /.pmd
 /.ruleset
 .black_cache/

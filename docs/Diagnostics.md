@@ -132,7 +132,7 @@ The transform contains an operation that is batch-only or design-gated for calle
 Structure source when the diagnostic names a missing watermark, input-mode declaration, event-time bound, or unsupported
 stateful composition. Keep sources, sinks, checkpoints, triggers, output modes, query lifecycle, and side effects in
 caller-owned PySpark code. See [Streaming API](api/Streaming.api.md) and
-[V9 PySpark Streaming API Coverage](dev/specifications/V9PySparkStreamingApiCoverage.md).
+[Spark Streaming](dev/specifications/SparkStreaming.md).
 
 ### STREAM-E0802
 

@@ -701,7 +701,7 @@ codes, missing documentation links, and invalid lifecycle transitions.
 ## +C30. Fixtures Exist, but Executable Specification Tests Are Missing
 
 Resolved for the v6 release scope by
-[V6ExecutableSpecificationMatrix.md](../specifications/V6ExecutableSpecificationMatrix.md) and its matrix guard test.
+[PySparkApiCatalog.md](../specifications/PySparkApiCatalog.md) and its matrix guard test.
 The matrix links each admitted v6 capability to executable specification, generated, online, traceability,
 compatibility, or live-test evidence as applicable. Broader historical specification coverage remains ordinary backlog
 work and is not a v6 release blocker.
@@ -788,7 +788,7 @@ aggregation, ordered collection, exact-one validation, typed struct generators, 
 named self aliases, relation assertions, bounded hierarchy closure/fallbacks, branchable typed union, and
 first-qualified priority selection.
 
-`docs/dev/specifications/V6ExampleRawHookInventory.json` now records each retired Security/Search hook and keeps only
+`docs/dev/specifications/ExampleRawHookInventory.json` now records each retired Security/Search hook and keeps only
 School matrix inversion as an intentional example raw boundary. Remaining DSL gaps such as broader generator forms,
 sampling, physical-plan directives, deterministic `mode`, binary/encoding, and inline JSON/CSV parsing stay in
 `Gaps.md` with explicit deferred boundaries instead of hiding behind this generic challenge.

@@ -61,7 +61,9 @@ real owner, capability or boundary, and rationale.
 ## Executable Evidence Matrix
 
 Each capability is complete only when this matrix names its behavior, specification owner, and checked tests for source
-capture, generated rendering, online execution, traceability, compatibility, or live behavior as applicable. Live Spark
+capture, generated rendering, online execution, traceability, compatibility, or live behavior as applicable. These are
+the required evidence topics: source capture, generated rendering, online execution, traceability, compatibility, and
+live behavior. Live Spark
 tests may be skipped without a live target, but a skipped lane is not evidence that the target passed.
 
 | Capability | Specification owner | Executable evidence |
@@ -70,9 +72,24 @@ tests may be skipped without a live target, but a skipped lane is not evidence t
 | Security/Search migration prerequisites | this document | `tests/specifications/v6-api-ledger/test_v6_example_migration_prerequisites.py` |
 | Partitioned `window_max` | `AdvancedAnalyticalOperations.md` | `tests/specifications/v6-api-ledger/test_v6_window_max_partitioning.py` |
 | Ordered `collect_list` | `AdvancedAnalyticalOperations.md` | `tests/specifications/v6-api-ledger/test_v6_ordered_collect_list.py` |
-| Typed relation operations | `TypedRelationOperations.md` | `tests/specifications/v6-api-ledger/test_v6_posexplode_struct.py`, `tests/specifications/v6-api-ledger/test_v6_relation_union.py`, `tests/specifications/v6-api-ledger/test_v6_relation_assertions.py` |
-| Bounded ordered `scan(...)` | `OrderedTimelineScan.md` | `tests/specifications/symbolic-execution/test_ordered_timeline_scan.py`, `tests/integration/pyspark/v6/test_ordered_timeline_scan.py` |
-| PySpark catalog consistency | this document | `tests/specifications/compatibility/test_pyspark_transformation_coverage.py`, `tests/specifications/backend-capabilities/test_backend_capabilities.py` |
+| Typed relation operations | `TypedRelationOperations.md` | V6 relation-operation tests |
+| Bounded ordered `scan(...)` | `OrderedTimelineScan.md` | Symbolic and V6 integration tests |
+| PySpark catalog consistency | this document | Compatibility and backend-capability tests |
+
+The matrix's checked test paths are:
+
+- `tests/specifications/v6-api-ledger/test_v6_posexplode_struct.py`
+- `tests/specifications/v6-api-ledger/test_v6_relation_union.py`
+- `tests/specifications/v6-api-ledger/test_v6_relation_assertions.py`
+- `tests/specifications/v6-api-ledger/test_v6_relation_alias.py`
+- `tests/specifications/v6-api-ledger/test_v6_relation_ordering.py`
+- `tests/specifications/v6-api-ledger/test_v6_priority_selection.py`
+- `tests/specifications/v6-api-ledger/test_v6_relation_hierarchy.py`
+- `tests/specifications/symbolic-execution/test_ordered_timeline_scan.py`
+- `tests/integration/pyspark/v6/test_ordered_timeline_scan.py`
+- `tests/integration/pyspark/v6/test_school_sequence_series.py`
+- `tests/specifications/compatibility/test_pyspark_transformation_coverage.py`
+- `tests/specifications/backend-capabilities/test_backend_capabilities.py`
 
 Before a capability is marked implemented in the public catalog or `docs/dev/Gaps.md`, add its evidence row and update
 the catalog, gap register, and checked coverage source in the same change.

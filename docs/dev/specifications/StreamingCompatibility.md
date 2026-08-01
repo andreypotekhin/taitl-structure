@@ -188,8 +188,8 @@ policies. Structure admits only the shapes whose transformation policy is compil
 
 V4 Sprint 18 schedules static-gap session-window aggregation, bounded stream-stream outer and left-semi joins, and
 stream-static semi filtering. Their complete planned contract is
-[V4CallerOwnedStreamingMigration.md](V4CallerOwnedStreamingMigration.md); they remain batch-only until that plan's
-cross-target live evidence is complete.
+[SparkStreaming.md](SparkStreaming.md); they remain batch-only until the consolidated cross-target live evidence is
+complete.
 
 ## Joins
 

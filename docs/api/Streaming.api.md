@@ -64,6 +64,5 @@ stream-stream joins, and bounded left/right/full outer and semi stream-stream jo
 Structure modules must not contain `foreachBatch`. Row-level `foreach` remains design-gated until a side-effect
 contract defines sink identity, idempotence, retry, and recovery behavior. Use `examples/streams/adoption.py` as the
 tested caller-owned recipe shape. See
-[V4 Caller-Owned Streaming Migration](../dev/specifications/V4CallerOwnedStreamingMigration.md),
-[V9 PySpark Streaming API Coverage](../dev/specifications/V9PySparkStreamingApiCoverage.md), and the
+[Spark Streaming](../dev/specifications/SparkStreaming.md), and the
 [Execution reference](../background/Execution.back.md).
