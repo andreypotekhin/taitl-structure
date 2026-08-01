@@ -23,7 +23,7 @@ Source: `examples.search.transforms.evaluation.search_docs.behavior.with_users.E
 
 - `select_requests`: `SearchRequest` -> `BehaviorRequest`
 - `select_impressions`: `BehaviorRequest` -> `BehaviorImpression`
-- `attribute_clicks`: `BehaviorImpression` -> `BehaviorImpression`
+- `count_clicks`: `BehaviorImpression` -> `BehaviorImpression`
 - `measure_impressions`: `BehaviorImpression` -> `BehaviorImpression`
 - `measure_requests`: `BehaviorRequest` -> `BehaviorRequestTotals`
 - `calculate_reciprocal_rank`: `BehaviorRequestTotals` -> `BehaviorRequestMetrics`

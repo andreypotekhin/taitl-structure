@@ -45,14 +45,8 @@ def test_field_access_produces_symbolic_projection_expressions(orders_plan) -> N
         "path": ("tenant",),
         "name_path": ("tenant",),
     }
-    assert projection["tags"].kind == "field"
-    assert projection["tags"].data == {
-        "scope": "orders",
-        "field": "tags",
-        "name": "tags",
-        "path": ("tags",),
-        "name_path": ("tags",),
-    }
+    assert projection["tags"].kind == "transform_expression"
+    assert projection["tags"].data["function"] == "array_filter"
 
 
 def test_schema_instance_method_can_combine_symbolic_fields() -> None:

@@ -22,17 +22,9 @@ class MeasureRecommendationImpressions(Transform):
             on=(impression.tenant.tenant_id == request.tenant.tenant_id)
             & (impression.request_id == request.request_id),
         )
-        return RecommendationBehaviorImpression(
+        return RecommendationBehaviorImpression.project(impression)(
             window=request.window,
-            tenant=request.tenant,
-            request_id=request.request_id,
-            strategy_id=request.strategy_id,
-            policy_version=request.policy_version,
             impression_id=impression.id,
-            shown_at=impression.shown_at,
-            product_id=impression.product_id,
-            rank=impression.rank,
-            examination_propensity=impression.examination_propensity,
             click_count=0,
         )
 

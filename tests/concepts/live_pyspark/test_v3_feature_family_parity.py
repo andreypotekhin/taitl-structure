@@ -29,7 +29,7 @@ def test_scalar_expression_concept_has_live_online_generated_parity(spark, tmp_p
     package = "concept_v3_scalar_generated"
     files = render_generated_project(
         V3OrderFeatures,
-        source_transform="testing.model.v3.orders.transforms.v3.V3OrderFeatures",
+        source_transform="testing.model.orders.transforms.v3.V3OrderFeatures",
         generated_package=package,
         source_schema_modules=source_schema_modules,
     )
@@ -69,7 +69,7 @@ def test_join_concept_has_live_online_generated_parity(spark, tmp_path) -> None:
     package = "concept_v3_joins_generated"
     files = render_generated_project(
         RowsetJoinExamples,
-        source_transform="testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples",
+        source_transform="testing.model.orders.transforms.rowset_join.RowsetJoinExamples",
         generated_package=package,
         source_schema_modules=rowset_joins.source_schema_modules(),
     )
@@ -134,7 +134,7 @@ def test_analytical_concept_has_live_online_generated_parity(
     package = f"concept_v3_{concept}_generated"
     files = render_generated_project(
         AdvancedOrderAnalytics,
-        source_transform="testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics",
+        source_transform="testing.model.orders.transforms.adv_analytics.AdvancedOrderAnalytics",
         generated_package=package,
         source_schema_modules=source_schema_modules,
     )
@@ -163,7 +163,7 @@ def test_source_ordered_step_and_filter_concept_has_live_online_generated_parity
     package = "concept_v3_step_filter_generated"
     files = render_generated_project(
         V3OrderFeatures,
-        source_transform="testing.model.v3.orders.transforms.v3.V3OrderFeatures",
+        source_transform="testing.model.orders.transforms.v3.V3OrderFeatures",
         generated_package=package,
         source_schema_modules=source_schema_modules,
     )
@@ -194,42 +194,42 @@ def test_source_ordered_step_and_filter_concept_has_live_online_generated_parity
 
 
 def _scalar_source():
-    from testing.model.v3.orders.schemas.v3 import V3OrderDetails, V3OrderProjection, V3OrderSource
-    from testing.model.v3.orders.transforms.v3 import V3OrderFeatures
+    from testing.model.orders.schemas.v3 import V3OrderDetails, V3OrderProjection, V3OrderSource
+    from testing.model.orders.transforms.v3 import V3OrderFeatures
 
     return V3OrderFeatures, {
-        "testing.model.v3.orders.schemas.v3": [V3OrderDetails, V3OrderProjection, V3OrderSource],
+        "testing.model.orders.schemas.v3": [V3OrderDetails, V3OrderProjection, V3OrderSource],
     }
 
 
 def _analytics_source():
-    from testing.model.v3.orders.schemas.adv_analytics import (
+    from testing.model.orders.schemas.adv_analytics import (
         OrderCollectionProfile,
         OrderCollectionSource,
         OrderCustomerWindow,
         OrderProductCube,
         OrderRevenueRollup,
     )
-    from testing.model.v3.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
-    from testing.model.v3.orders.schemas.order import (
+    from testing.model.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
+    from testing.model.orders.schemas.order import (
         OrderFulfillment,
         OrderNormalized,
         OrderWithCustomer,
         OrderWithProduct,
         OrderWithPromotion,
     )
-    from testing.model.v3.orders.transforms.adv_analytics import AdvancedOrderAnalytics
+    from testing.model.orders.transforms.adv_analytics import AdvancedOrderAnalytics
 
     return AdvancedOrderAnalytics, {
-        "testing.model.v3.orders.schemas.adv_analytics": [
+        "testing.model.orders.schemas.adv_analytics": [
             OrderRevenueRollup,
             OrderProductCube,
             OrderCustomerWindow,
             OrderCollectionSource,
             OrderCollectionProfile,
         ],
-        "testing.model.v3.orders.schemas.common": [TenantKey, AuditStamp, Address, BusinessDate],
-        "testing.model.v3.orders.schemas.order": [
+        "testing.model.orders.schemas.common": [TenantKey, AuditStamp, Address, BusinessDate],
+        "testing.model.orders.schemas.order": [
             OrderNormalized,
             OrderWithCustomer,
             OrderWithProduct,

@@ -456,7 +456,7 @@ def test_generated_pyspark_renders_inherited_and_override_steps_in_order() -> No
     text = PySpark.render.transform()(
         _recipe(Publish),
         source_transform=f"{__name__}.Publish",
-        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
+        runtime_module="testing.model.structure_generated.runtime.schema_assert",
         schema_modules={Raw: __name__, Normalized: __name__, Published: __name__},
     )
 
@@ -532,7 +532,7 @@ def test_embed_hooks_dispatches_an_inherited_hook_to_its_declaring_generated_cla
     text = PySpark.render.transform()(
         _recipe(Publish),
         source_transform=f"{__name__}.Publish",
-        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
+        runtime_module="testing.model.structure_generated.runtime.schema_assert",
         schema_modules={Raw: __name__, Normalized: __name__, Published: __name__},
         generated_code_options=("embed_hooks",),
     )

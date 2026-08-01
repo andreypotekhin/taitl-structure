@@ -9,30 +9,30 @@ from integration.pyspark.v2.support._common import transform_type
 
 
 def transform():
-    return transform_type("testing.model.v2.orders.transforms.rowset_join", "RowsetJoinExamples")
+    return transform_type("testing.model.orders.transforms.rowset_join", "RowsetJoinExamples")
 
 
 def source_schema_modules():
-    from testing.model.v2.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
-    from testing.model.v2.orders.schemas.customer import Customer
-    from testing.model.v2.orders.schemas.order import (
+    from testing.model.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
+    from testing.model.orders.schemas.customer import Customer
+    from testing.model.orders.schemas.order import (
         CustomerOrderBackfill,
         OrderCustomerReconciliation,
         OrderProductCandidate,
         OrderRaw,
     )
-    from testing.model.v2.orders.schemas.product import Product, ProductBase
+    from testing.model.orders.schemas.product import Product, ProductBase
 
     return {
-        "testing.model.v2.orders.schemas.common": [TenantKey, AuditStamp, Address, BusinessDate],
-        "testing.model.v2.orders.schemas.customer": [Customer],
-        "testing.model.v2.orders.schemas.order": [
+        "testing.model.orders.schemas.common": [TenantKey, AuditStamp, Address, BusinessDate],
+        "testing.model.orders.schemas.customer": [Customer],
+        "testing.model.orders.schemas.order": [
             OrderRaw,
             OrderCustomerReconciliation,
             CustomerOrderBackfill,
             OrderProductCandidate,
         ],
-        "testing.model.v2.orders.schemas.product": [ProductBase, Product],
+        "testing.model.orders.schemas.product": [ProductBase, Product],
     }
 
 

@@ -83,3 +83,41 @@ plugin has been selected, and is gated by an exact private engine-suite revision
 The sole opt-in is `plugin.plugin_options = "allow_injection"`; users should enable it only for trusted plugins. A
 failed gate makes the selected target unavailable rather than silently falling back to a stock engine. The manifest,
 engine classes, and context are private and intentionally absent from public plugin-authoring guidance.
+
+## Transformation API Coverage
+
+The PySpark plugin maintains a versioned transformation coverage catalog for the PySpark 3.5.x/4.0.x intersection.
+The catalog is not a mechanical wrapper list: an operation is admitted only when its source syntax is typed, symbolic
+execution determines type/nullability/cardinality, the IR is backend-neutral, shared recipes drive online and generated
+execution, capability checks fail early, diagnostics name a remedy, and the appropriate parity and target evidence
+exists. Loading, storage, catalog management, writes, actions, query lifecycle, raw SQL, arbitrary callbacks, and
+dynamic schemas remain outside the transformation catalog.
+
+The catalog records API family, Structure spelling, status (`supported`, `scheduled`, `deferred`, `unsupported`, or
+`design-gated`), target profiles, input/output contracts, semantic differences, exclusion reasons, and evidence. A
+public helper cannot be documented as supported without capability, rendering, and execution/generated-code parity
+evidence. The catalog and its machine-readable inventory are maintained locally; the build does not download Spark
+documentation.
+
+## PySpark API Closure
+
+The PySpark plugin owns target meaning end to end: symbolic capture, validation, recipes, capabilities, online
+evaluation, generated source, traceability, explain, and diagnostics. Core owns declarations, method order, lanes,
+outputs, lifecycle, and routing to exactly one selected plugin. Every API follows this path:
+
+```text
+authoring helper -> symbolic body -> immutable target record -> recipe -> capability/diagnostic ->
+online evaluator and generated renderer -> explain/traceability
+```
+
+The v6 closure work formalized implicit global aggregation, explicit scalar UDFs, typed relation operations, and the
+bounded ordered `scan(...)` recurrence while retiring example hooks only when output-equivalence evidence proved the
+migration. Relation operations include typed generators, exact-schema set composition, named self aliases, typed order
+and literal bounds, plan-visible assertions, bounded hierarchy closure/fallbacks, and declared-key first-qualified
+selection. Sampling, physical-plan directives, dynamic schemas, source/sink ownership, arbitrary UDTFs/Pandas/RDD
+operations, and unbounded recurrence remain explicit boundaries.
+
+Plugin decomposition extracts focused delegates for operation construction, expression/type construction, symbolic result
+construction, evaluation, step execution, rendering, module generation, and traceability. Public imports and generated
+behavior remain stable; extraction is not a module-count goal. No component may claim support by calling raw DataFrame
+code, Spark actions, or hidden Python fallbacks on only one execution path.

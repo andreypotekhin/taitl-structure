@@ -15,9 +15,7 @@ class CustomerDailyTotals(Transform):
             customer_id=order.customer_id,
             order_date=order.business.order_date,
         )
-        return CustomerDailyTotal(
-            tenant=order.tenant,
-            customer_id=order.customer_id,
+        return CustomerDailyTotal.project(order)(
             order_date=order.business.order_date,
             order_count=count(),
             gross_total=sum(order.total),

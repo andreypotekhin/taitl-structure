@@ -19,9 +19,9 @@ def test_traceability_maps_source_ir_and_generated_nodes(orders_traceability) ->
     records = {(record.source, record.ir, record.generated) for record in orders_traceability.provenance}
 
     assert (
-        "source:testing.model.v1.orders.transforms.order.EnrichOrders.add_customer",
+        "source:testing.model.orders.transforms.order.EnrichOrders.add_customer",
         "ir:EnrichOrders.step.1.add_customer",
-        "generated:testing.model.v1.structure_generated.orders.pyspark.transforms.order."
+        "generated:testing.model.structure_generated.orders.pyspark.transforms.order."
         "EnrichOrdersGenerated.run.step.1.add_customer",
     ) in records
     assert any(
@@ -38,8 +38,10 @@ def test_traceability_reports_static_dataflow_and_opaque_hook_boundaries(orders_
         for boundary in orders_traceability.opaque_boundaries
     }
 
-    assert dependencies["EnrichOrders"].sources == ("orders", "customers", "products", "promotions")
+    assert dependencies["EnrichOrders"].sources == (
+        "orders", "customers", "products", "blocked_products", "promotions", "shipments"
+    )
     assert dependencies["add_customer.join[1].customer"].operation == "rowset_join"
     assert dependencies["OrderWithCustomer.customer_name"].sources
-    assert ("add_promotion", "note_lookup_inputs", "raw", "arbitrary PySpark hook body") in boundaries
+    assert ("add_shipments", "note_lookup_inputs", "raw", "arbitrary PySpark hook body") in boundaries
     assert ("publish", "add_quality_columns", "raw", "arbitrary PySpark hook body") in boundaries

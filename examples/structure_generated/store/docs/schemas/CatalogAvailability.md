@@ -2,7 +2,7 @@
 
 # CatalogAvailability
 
-Module: `examples.store.schemas.merchandising.catalog`
+Module: `examples.store.schemas.catalog`
 
 | Field | Column | Type | Nullable |
 | --- | --- | --- | --- |

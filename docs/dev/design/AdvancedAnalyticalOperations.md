@@ -212,3 +212,47 @@ The following stay out until later designs:
 - arbitrary Python callbacks or UDF fallback;
 - ordered collection aggregation guarantees beyond explicitly ordered helper forms;
 - target-specific helpers that have no backend-neutral meaning.
+
+## Explicit Optimization Controls
+
+The optimization slice adds compiler-visible controls without creating a second PySpark API. Each control exposes the
+smallest Structure-level concept needed by users, represents it in IR, and lowers through the shared target recipes.
+Operations that are rare or backend-specific remain explicit hooks. Unsupported operations fail before rendering or
+execution instead of silently becoming UDFs, RDD work, or row-wise Python callbacks.
+
+### Higher-Order Functions
+
+Array and map callbacks are symbolic callbacks over Structure expressions. They lower to Spark SQL higher-order
+functions or equivalent PySpark expressions and must not accept arbitrary Python callbacks that require row-wise Python
+execution or hidden UDF generation.
+
+### Caching and Persistence
+
+Caching is explicit at step-method boundaries. A cache annotation may lower to a corresponding `persist(...)` call with
+the selected storage level; Structure must never cache implicitly.
+
+### Join Strategies
+
+Join hints may name a strategy such as `auto`, `broadcast`, `shuffle_hash`, `sort_merge`, or
+`shuffle_replicate_nl`. The hint is part of the checked join recipe and remains visible in generated code and explain
+output.
+
+### Aggregation and Performance Guardrails
+
+Grouping sets, rollups, cubes, approximate aggregates, and filtered aggregates are modeled as Structure semantics first.
+The target may lower them through `groupBy(...).agg(...)`, window expressions, or compatible target syntax, but the
+public DSL remains smaller than the full target API. Every optimization feature must remain explicit and Spark-plan
+visible; it must never hide Python UDFs or row-wise execution.
+
+## Typed Binary, Parsing, and Grouped Mode Families
+
+The deferred PySpark families are admitted only through typed contracts. Binary values use a public immutable Binary
+field type, and base64/charset encoding helpers retain explicit input and output types. Schema-carrying JSON and CSV
+conversion requires a declared output Schema and normalized literal options; it does not infer schemas or accept a free-
+form options dictionary. Grouped `mode(value, deterministic=False)` follows the ordinary aggregate placement rules,
+with deterministic ties lowered through a portable typed Spark expression for the shared PySpark target range.
+
+These families share the same design constraints as the analytical helpers: capability checks, online/generated parity,
+traceability, explain output, and target evidence are required before a catalog row is supported. Malformed parsing,
+invalid binary data, non-orderable deterministic mode values, streaming mode, and other target disagreements remain
+explicitly capability-gated or rejected.

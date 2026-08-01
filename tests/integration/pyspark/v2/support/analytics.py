@@ -9,13 +9,13 @@ from integration.pyspark.v2.support._common import transform_type
 
 
 def transform():
-    return transform_type("testing.model.v2.orders.transforms.analytics", "OrderAnalytics")
+    return transform_type("testing.model.orders.transforms.analytics", "OrderAnalytics")
 
 
 def source_schema_modules():
-    from testing.model.v2.orders.schemas.analytics import CustomerDailyTotal, CustomerEventRank, ProductDailySummary
-    from testing.model.v2.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
-    from testing.model.v2.orders.schemas.order import (
+    from testing.model.orders.schemas.analytics import CustomerDailyTotal, CustomerEventRank, ProductDailySummary
+    from testing.model.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
+    from testing.model.orders.schemas.order import (
         OrderFulfillment,
         OrderNormalized,
         OrderWithCustomer,
@@ -24,13 +24,13 @@ def source_schema_modules():
     )
 
     return {
-        "testing.model.v2.orders.schemas.analytics": [
+        "testing.model.orders.schemas.analytics": [
             CustomerDailyTotal,
             CustomerEventRank,
             ProductDailySummary,
         ],
-        "testing.model.v2.orders.schemas.common": [TenantKey, AuditStamp, Address, BusinessDate],
-        "testing.model.v2.orders.schemas.order": [
+        "testing.model.orders.schemas.common": [TenantKey, AuditStamp, Address, BusinessDate],
+        "testing.model.orders.schemas.order": [
             OrderNormalized,
             OrderWithCustomer,
             OrderWithProduct,

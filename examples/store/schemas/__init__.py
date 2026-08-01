@@ -1,4 +1,5 @@
 from examples.store.schemas.analytics import CustomerDailyTotal, ProductDailySummary
+from examples.store.schemas.catalog import CatalogAvailability, CatalogProduct
 from examples.store.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
 from examples.store.schemas.customer import Customer
 from examples.store.schemas.fulfillment import (
@@ -29,9 +30,6 @@ from examples.store.schemas.fulfillment import (
     WarehouseLoadSummary,
 )
 from examples.store.schemas.merchandising import (
-    CatalogAvailability,
-    CatalogProduct,
-    ExpandedProductTaxonomy,
     DailyRecommendationBehavior,
     DailyRecommendationClicks,
     DailyRecommendationImpressions,
@@ -39,7 +37,6 @@ from examples.store.schemas.merchandising import (
     MerchandisingPolicy,
     MerchandisingSuppression,
     ProductRecommendationSignal,
-    ProductTaxonomy,
     RecommendationCandidate,
     RecommendationClick,
     RecommendationEvaluationBatch,
@@ -51,9 +48,8 @@ from examples.store.schemas.merchandising import (
     RecommendedProduct,
     SessionEvent,
     SessionFeature,
-    TaxonomyAncestor,
-    TaxonomyNode,
 )
+from examples.store.schemas.taxonomy import ExpandedProductTaxonomy, ProductTaxonomy, TaxonomyAncestor, TaxonomyNode
 from examples.store.schemas.experiment import RecommendationAssignment, RecommendationExperiment, RecommendationExposure
 from examples.store.schemas.evaluation import (
     EvaluationBatch,

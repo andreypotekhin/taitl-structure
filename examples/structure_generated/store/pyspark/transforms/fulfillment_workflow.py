@@ -18,7 +18,11 @@ from examples.structure_generated.store.pyspark.schemas.exception import (
     FULFILLMENT_EXCEPTION_SCHEMA,
     SERVICE_RISK_TARGET_SCHEMA,
 )
-from examples.structure_generated.store.pyspark.schemas.inventory_inventory import LEAD_TIME_SCHEMA
+from examples.structure_generated.store.pyspark.schemas.inventory import (
+    INBOUND_INVENTORY_SCHEMA,
+    INVENTORY_POSITION_SCHEMA,
+    LEAD_TIME_SCHEMA,
+)
 from examples.structure_generated.store.pyspark.schemas.order import (
     ORDER_FULFILLMENT_SCHEMA,
     ORDER_NORMALIZED_SCHEMA,
@@ -33,16 +37,8 @@ from examples.structure_generated.store.pyspark.schemas.plan import (
     FULFILLMENT_PLAN_SCHEMA,
     REPLENISHMENT_SUGGESTION_SCHEMA,
 )
-from examples.structure_generated.store.pyspark.schemas.planning_inventory import (
-    INBOUND_INVENTORY_SCHEMA,
-    INVENTORY_POSITION_SCHEMA,
-    WAREHOUSE_SCHEMA,
-)
 from examples.structure_generated.store.pyspark.schemas.product import BLOCKED_PRODUCT_SCHEMA, PRODUCT_SCHEMA
-from examples.structure_generated.store.pyspark.schemas.projection import (
-    DEMAND_WINDOW_SCHEMA,
-    INVENTORY_PROJECTION_SCHEMA,
-)
+from examples.structure_generated.store.pyspark.schemas.projection import INVENTORY_PROJECTION_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.promotion import PROMOTION_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.reconciliation import FULFILLMENT_RECONCILIATION_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.service import (
@@ -62,6 +58,8 @@ from examples.structure_generated.store.pyspark.schemas.summary import (
     DAILY_FULFILLMENT_SUMMARY_SCHEMA,
     WAREHOUSE_LOAD_SUMMARY_SCHEMA,
 )
+from examples.structure_generated.store.pyspark.schemas.warehouse import WAREHOUSE_SCHEMA
+from examples.structure_generated.store.pyspark.schemas.windows import DEMAND_WINDOW_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.workflow import (
     FULFILLMENT_OPTION_SCHEMA,
     FULFILLMENT_PREFERRED_OPTION_SCHEMA,
@@ -892,11 +890,11 @@ class BuildDemandWindowsGenerated:
 
 
 class ProjectInventoryGenerated:
-    def _step_projections_summarize_inbound_15(self, frames):
-        # Step method: projections.summarize_inbound
-        projections__inbound_facts = frames["inbound_inventory"].alias("inbound_inventory")
-        projections__inbound_facts = (
-            projections__inbound_facts.groupBy(
+    def _step_inventory_projection_summarize_inbound_15(self, frames):
+        # Step method: inventory_projection.summarize_inbound
+        inventory_projection__inbound_facts = frames["inbound_inventory"].alias("inbound_inventory")
+        inventory_projection__inbound_facts = (
+            inventory_projection__inbound_facts.groupBy(
                 F.col("inbound_inventory.tenant.tenant_id").alias("tenant_id"),
                 F.col("inbound_inventory.audit").alias("audit"),
                 F.col("inbound_inventory.warehouse_id").alias("warehouse_id"),
@@ -918,16 +916,18 @@ class ProjectInventoryGenerated:
                 F.col("source_type"),
             )
         )
-        assert_schema(projections__inbound_facts, INBOUND_INVENTORY_SCHEMA, name="InboundInventory", mode="strict")
+        assert_schema(
+            inventory_projection__inbound_facts, INBOUND_INVENTORY_SCHEMA, name="InboundInventory", mode="strict"
+        )
         return {
-            "projections__inbound_facts": projections__inbound_facts,
+            "inventory_projection__inbound_facts": inventory_projection__inbound_facts,
         }
 
-    def _step_projections_project_inventory_16(self, frames):
-        # Step method: projections.project_inventory
-        projections__projections = frames["windows__windows"].alias("demand_window")
+    def _step_inventory_projection_project_inventory_16(self, frames):
+        # Step method: inventory_projection.project_inventory
+        inventory_projection__projections = frames["windows__windows"].alias("demand_window")
         inventory_positions_joined = frames["inventory_positions"].alias("inventory_positions")
-        projections__projections = projections__projections.join(
+        inventory_projection__projections = inventory_projection__projections.join(
             inventory_positions_joined,
             (
                 (
@@ -938,29 +938,34 @@ class ProjectInventoryGenerated:
             ),
             "inner",
         )
-        projections__inbound_facts_2_joined = frames["projections__inbound_facts"].alias("projections__inbound_facts_2")
-        projections__projections = projections__projections.join(
-            projections__inbound_facts_2_joined,
+        inventory_projection__inbound_facts_2_joined = frames["inventory_projection__inbound_facts"].alias(
+            "inventory_projection__inbound_facts_2"
+        )
+        inventory_projection__projections = inventory_projection__projections.join(
+            inventory_projection__inbound_facts_2_joined,
             (
                 (
                     (
                         (
-                            F.col("projections__inbound_facts_2.tenant.tenant_id")
+                            F.col("inventory_projection__inbound_facts_2.tenant.tenant_id")
                             == F.col("inventory_positions.tenant.tenant_id")
                         )
                         & (
-                            F.col("projections__inbound_facts_2.warehouse_id")
+                            F.col("inventory_projection__inbound_facts_2.warehouse_id")
                             == F.col("inventory_positions.warehouse_id")
                         )
                     )
-                    & (F.col("projections__inbound_facts_2.product_id") == F.col("inventory_positions.product_id"))
+                    & (
+                        F.col("inventory_projection__inbound_facts_2.product_id")
+                        == F.col("inventory_positions.product_id")
+                    )
                 )
-                & (F.col("projections__inbound_facts_2.expected_at") == F.col("demand_window.window_start"))
+                & (F.col("inventory_projection__inbound_facts_2.expected_at") == F.col("demand_window.window_start"))
             ),
             "left",
         )
         lead_times_3_joined = frames["lead_times"].alias("lead_times_3")
-        projections__projections = projections__projections.join(
+        inventory_projection__projections = inventory_projection__projections.join(
             lead_times_3_joined,
             (
                 (
@@ -974,7 +979,7 @@ class ProjectInventoryGenerated:
             ),
             "left",
         )
-        projections__projections = projections__projections.select(
+        inventory_projection__projections = inventory_projection__projections.select(
             F.col("inventory_positions.tenant"),
             F.col("inventory_positions.warehouse_id"),
             F.col("inventory_positions.product_id"),
@@ -986,14 +991,16 @@ class ProjectInventoryGenerated:
             (F.col("inventory_positions.on_hand_quantity") - F.col("inventory_positions.reserved_quantity")).alias(
                 "opening_quantity"
             ),
-            F.coalesce(F.col("projections__inbound_facts_2.expected_quantity"), F.lit(0)).alias("inbound_quantity"),
+            F.coalesce(F.col("inventory_projection__inbound_facts_2.expected_quantity"), F.lit(0)).alias(
+                "inbound_quantity"
+            ),
             F.col("demand_window.requested_quantity").alias("demand_quantity"),
             F.col("inventory_positions.reserved_quantity"),
             (
                 (F.col("inventory_positions.on_hand_quantity") - F.col("inventory_positions.reserved_quantity"))
                 + F.sum(
                     (
-                        F.coalesce(F.col("projections__inbound_facts_2.expected_quantity"), F.lit(0))
+                        F.coalesce(F.col("inventory_projection__inbound_facts_2.expected_quantity"), F.lit(0))
                         - F.col("demand_window.requested_quantity")
                     )
                 ).over(
@@ -1008,16 +1015,18 @@ class ProjectInventoryGenerated:
             ).alias("projected_available_quantity"),
             F.col("inventory_positions.safety_stock_quantity"),
         )
-        assert_schema(projections__projections, INVENTORY_PROJECTION_SCHEMA, name="InventoryProjection", mode="strict")
+        assert_schema(
+            inventory_projection__projections, INVENTORY_PROJECTION_SCHEMA, name="InventoryProjection", mode="strict"
+        )
         return {
-            "projections__projections": projections__projections,
+            "inventory_projection__projections": inventory_projection__projections,
         }
 
 
 class DetectShortagesGenerated:
     def _step_shortage_stage_identify_17(self, frames):
         # Step method: shortage_stage.identify
-        shortage_stage__ranked = frames["projections__projections"].alias("inventory_projection")
+        shortage_stage__ranked = frames["inventory_projection__projections"].alias("inventory_projection")
         shortage_stage__ranked = shortage_stage__ranked.where(
             (
                 (
@@ -2099,8 +2108,8 @@ class FulfillmentGenerated(
         frames.update(self._step_planned_plan_12(frames))
         frames.update(self._step_planned_suggest_replenishment_13(frames))
         frames.update(self._step_windows_build_14(frames))
-        frames.update(self._step_projections_summarize_inbound_15(frames))
-        frames.update(self._step_projections_project_inventory_16(frames))
+        frames.update(self._step_inventory_projection_summarize_inbound_15(frames))
+        frames.update(self._step_inventory_projection_project_inventory_16(frames))
         frames.update(self._step_shortage_stage_identify_17(frames))
         frames.update(self._step_shortage_stage_select_first_18(frames))
         frames.update(self._step_substitution_stage_find_candidates_19(frames))
@@ -2160,7 +2169,7 @@ class FulfillmentGenerated(
         assert_schema(demand_windows, DEMAND_WINDOW_SCHEMA, name="DemandWindow", mode="strict")
 
         # Step method: inventory_projections
-        inventory_projections = frames["projections__projections"].alias("inventory_projection")
+        inventory_projections = frames["inventory_projection__projections"].alias("inventory_projection")
         assert_schema(inventory_projections, INVENTORY_PROJECTION_SCHEMA, name="InventoryProjection", mode="strict")
 
         # Step method: shortages

@@ -19,7 +19,7 @@ def test_online_and_generated_execution_match_order_enrichment_on_live_backend(s
     generated_package = "integration_v2_orders_generated"
     files = render_generated_project(
         orders.transform(),
-        source_transform="testing.model.v2.orders.transforms.order.EnrichOrders",
+        source_transform="testing.model.orders.transforms.order.EnrichOrders",
         generated_package=generated_package,
         source_schema_modules=orders.source_schema_modules(),
     )

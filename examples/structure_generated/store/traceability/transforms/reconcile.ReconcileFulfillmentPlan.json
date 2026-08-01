@@ -20,87 +20,87 @@
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.reconcile.ReconcileFulfillmentPlanGenerated",
       "ir": "ir:ReconcileFulfillmentPlan",
-      "source": "source:examples.store.transforms.fulfillment.reconcile.ReconcileFulfillmentPlan"
+      "source": "source:examples.store.transforms.fulfillment.reconciliation.reconcile.ReconcileFulfillmentPlan"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.reconcile.ReconcileFulfillmentPlanGenerated.run.input.plans",
       "ir": "ir:ReconcileFulfillmentPlan.input.0.plans",
-      "source": "source:examples.store.transforms.fulfillment.reconcile.ReconcileFulfillmentPlan.input.plans"
+      "source": "source:examples.store.transforms.fulfillment.reconciliation.reconcile.ReconcileFulfillmentPlan.input.plans"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.reconcile.ReconcileFulfillmentPlanGenerated.run.input.fulfilled",
       "ir": "ir:ReconcileFulfillmentPlan.input.1.fulfilled",
-      "source": "source:examples.store.transforms.fulfillment.reconcile.ReconcileFulfillmentPlan.input.fulfilled"
+      "source": "source:examples.store.transforms.fulfillment.reconciliation.reconcile.ReconcileFulfillmentPlan.input.fulfilled"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.reconcile.ReconcileFulfillmentPlanGenerated.run.step.0.reconcile",
       "ir": "ir:ReconcileFulfillmentPlan.step.0.reconcile",
-      "source": "source:examples.store.transforms.fulfillment.reconcile.ReconcileFulfillmentPlan.reconcile"
+      "source": "source:examples.store.transforms.fulfillment.reconciliation.reconcile.ReconcileFulfillmentPlan.reconcile"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.reconcile.ReconcileFulfillmentPlanGenerated.run.step.0.reconcile.join.1.fulfilled",
       "ir": "ir:ReconcileFulfillmentPlan.step.0.reconcile.join.1.fulfilled",
-      "source": "source:examples.store.transforms.fulfillment.reconcile.ReconcileFulfillmentPlan.reconcile.join.1.fulfilled"
+      "source": "source:examples.store.transforms.fulfillment.reconciliation.reconcile.ReconcileFulfillmentPlan.reconcile.join.1.fulfilled"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.reconcile.ReconcileFulfillmentPlanGenerated.run.step.0.reconcile.aggregate.tenant",
       "ir": "ir:ReconcileFulfillmentPlan.step.0.reconcile.aggregate.tenant",
-      "source": "source:examples.store.transforms.fulfillment.reconcile.ReconcileFulfillmentPlan.reconcile.aggregate.tenant"
+      "source": "source:examples.store.transforms.fulfillment.reconciliation.reconcile.ReconcileFulfillmentPlan.reconcile.aggregate.tenant"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.reconcile.ReconcileFulfillmentPlanGenerated.run.step.0.reconcile.aggregate.business",
       "ir": "ir:ReconcileFulfillmentPlan.step.0.reconcile.aggregate.business",
-      "source": "source:examples.store.transforms.fulfillment.reconcile.ReconcileFulfillmentPlan.reconcile.aggregate.business"
+      "source": "source:examples.store.transforms.fulfillment.reconciliation.reconcile.ReconcileFulfillmentPlan.reconcile.aggregate.business"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.reconcile.ReconcileFulfillmentPlanGenerated.run.step.0.reconcile.aggregate.order_id",
       "ir": "ir:ReconcileFulfillmentPlan.step.0.reconcile.aggregate.order_id",
-      "source": "source:examples.store.transforms.fulfillment.reconcile.ReconcileFulfillmentPlan.reconcile.aggregate.order_id"
+      "source": "source:examples.store.transforms.fulfillment.reconciliation.reconcile.ReconcileFulfillmentPlan.reconcile.aggregate.order_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.reconcile.ReconcileFulfillmentPlanGenerated.run.step.0.reconcile.aggregate.line_number",
       "ir": "ir:ReconcileFulfillmentPlan.step.0.reconcile.aggregate.line_number",
-      "source": "source:examples.store.transforms.fulfillment.reconcile.ReconcileFulfillmentPlan.reconcile.aggregate.line_number"
+      "source": "source:examples.store.transforms.fulfillment.reconciliation.reconcile.ReconcileFulfillmentPlan.reconcile.aggregate.line_number"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.reconcile.ReconcileFulfillmentPlanGenerated.run.step.0.reconcile.aggregate.product_id",
       "ir": "ir:ReconcileFulfillmentPlan.step.0.reconcile.aggregate.product_id",
-      "source": "source:examples.store.transforms.fulfillment.reconcile.ReconcileFulfillmentPlan.reconcile.aggregate.product_id"
+      "source": "source:examples.store.transforms.fulfillment.reconciliation.reconcile.ReconcileFulfillmentPlan.reconcile.aggregate.product_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.reconcile.ReconcileFulfillmentPlanGenerated.run.step.0.reconcile.aggregate.planned_status",
       "ir": "ir:ReconcileFulfillmentPlan.step.0.reconcile.aggregate.planned_status",
-      "source": "source:examples.store.transforms.fulfillment.reconcile.ReconcileFulfillmentPlan.reconcile.aggregate.planned_status"
+      "source": "source:examples.store.transforms.fulfillment.reconciliation.reconcile.ReconcileFulfillmentPlan.reconcile.aggregate.planned_status"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.reconcile.ReconcileFulfillmentPlanGenerated.run.step.0.reconcile.aggregate.planned_allocated_quantity",
       "ir": "ir:ReconcileFulfillmentPlan.step.0.reconcile.aggregate.planned_allocated_quantity",
-      "source": "source:examples.store.transforms.fulfillment.reconcile.ReconcileFulfillmentPlan.reconcile.aggregate.planned_allocated_quantity"
+      "source": "source:examples.store.transforms.fulfillment.reconciliation.reconcile.ReconcileFulfillmentPlan.reconcile.aggregate.planned_allocated_quantity"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.reconcile.ReconcileFulfillmentPlanGenerated.run.step.0.reconcile.aggregate.planned_backordered_quantity",
       "ir": "ir:ReconcileFulfillmentPlan.step.0.reconcile.aggregate.planned_backordered_quantity",
-      "source": "source:examples.store.transforms.fulfillment.reconcile.ReconcileFulfillmentPlan.reconcile.aggregate.planned_backordered_quantity"
+      "source": "source:examples.store.transforms.fulfillment.reconciliation.reconcile.ReconcileFulfillmentPlan.reconcile.aggregate.planned_backordered_quantity"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.reconcile.ReconcileFulfillmentPlanGenerated.run.step.0.reconcile.aggregate.shipped_quantity",
       "ir": "ir:ReconcileFulfillmentPlan.step.0.reconcile.aggregate.shipped_quantity",
-      "source": "source:examples.store.transforms.fulfillment.reconcile.ReconcileFulfillmentPlan.reconcile.aggregate.shipped_quantity"
+      "source": "source:examples.store.transforms.fulfillment.reconciliation.reconcile.ReconcileFulfillmentPlan.reconcile.aggregate.shipped_quantity"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.reconcile.ReconcileFulfillmentPlanGenerated.run.step.0.reconcile.aggregate.shipped",
       "ir": "ir:ReconcileFulfillmentPlan.step.0.reconcile.aggregate.shipped",
-      "source": "source:examples.store.transforms.fulfillment.reconcile.ReconcileFulfillmentPlan.reconcile.aggregate.shipped"
+      "source": "source:examples.store.transforms.fulfillment.reconciliation.reconcile.ReconcileFulfillmentPlan.reconcile.aggregate.shipped"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.reconcile.ReconcileFulfillmentPlanGenerated.run.step.0.reconcile.aggregate.reconciliation_status",
       "ir": "ir:ReconcileFulfillmentPlan.step.0.reconcile.aggregate.reconciliation_status",
-      "source": "source:examples.store.transforms.fulfillment.reconcile.ReconcileFulfillmentPlan.reconcile.aggregate.reconciliation_status"
+      "source": "source:examples.store.transforms.fulfillment.reconciliation.reconcile.ReconcileFulfillmentPlan.reconcile.aggregate.reconciliation_status"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.reconcile.ReconcileFulfillmentPlanGenerated.run.output.0.reconciliation.validation.final",
       "ir": "ir:ReconcileFulfillmentPlan.output.0.reconciliation.validation.final",
-      "source": "source:examples.store.transforms.fulfillment.reconcile.ReconcileFulfillmentPlan.output.reconciliation"
+      "source": "source:examples.store.transforms.fulfillment.reconciliation.reconcile.ReconcileFulfillmentPlan.output.reconciliation"
     }
   ],
   "schema_constants": {
@@ -170,7 +170,7 @@
     },
     "DemandWindow": {
       "constant": "DEMAND_WINDOW_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.projection"
+      "module": "examples.structure_generated.store.pyspark.schemas.windows"
     },
     "DiversificationDecision": {
       "constant": "DIVERSIFICATION_DECISION_SCHEMA",
@@ -238,7 +238,7 @@
     },
     "InboundInventory": {
       "constant": "INBOUND_INVENTORY_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
     },
     "InboundInventoryAvailability": {
       "constant": "INBOUND_INVENTORY_AVAILABILITY_SCHEMA",
@@ -246,7 +246,7 @@
     },
     "InventoryPosition": {
       "constant": "INVENTORY_POSITION_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
     },
     "InventoryProjection": {
       "constant": "INVENTORY_PROJECTION_SCHEMA",
@@ -254,7 +254,7 @@
     },
     "LeadTime": {
       "constant": "LEAD_TIME_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.inventory_inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
     },
     "MerchandisingBoost": {
       "constant": "MERCHANDISING_BOOST_SCHEMA",
@@ -382,11 +382,11 @@
     },
     "RecommendationCandidate": {
       "constant": "RECOMMENDATION_CANDIDATE_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
     },
     "RecommendationCandidateDecision": {
       "constant": "RECOMMENDATION_CANDIDATE_DECISION_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
     },
     "RecommendationClick": {
       "constant": "RECOMMENDATION_CLICK_SCHEMA",
@@ -478,14 +478,14 @@
     },
     "Warehouse": {
       "constant": "WAREHOUSE_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.warehouse"
     },
     "WarehouseLoadSummary": {
       "constant": "WAREHOUSE_LOAD_SUMMARY_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.summary"
     }
   },
-  "source_transform": "examples.store.transforms.fulfillment.reconcile.ReconcileFulfillmentPlan",
+  "source_transform": "examples.store.transforms.fulfillment.reconciliation.reconcile.ReconcileFulfillmentPlan",
   "static_dataflow": {
     "dependencies": [
       {

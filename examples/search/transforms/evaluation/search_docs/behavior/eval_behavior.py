@@ -76,7 +76,7 @@ class EvaluateDocSearchBehavior(Transform):
         )
 
     @step(output=clicked)
-    def attribute_clicks(self, impression: BehaviorImpression, click: Click) -> BehaviorImpression:
+    def count_clicks(self, impression: BehaviorImpression, click: Click) -> BehaviorImpression:
         inner_join(
             on=(click.impression_id == impression.impression_id)
             & event_time_between(impression.shown_at, click.occurred_at, upper="24 hours")

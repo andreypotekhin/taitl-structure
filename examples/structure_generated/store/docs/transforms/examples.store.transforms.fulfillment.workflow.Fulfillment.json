@@ -10,6 +10,7 @@
     "inbound",
     "inventory",
     "inventory_positions",
+    "inventory_projection__inbound_facts",
     "lead_time",
     "lead_times",
     "order",
@@ -17,7 +18,6 @@
     "prepared__demand",
     "product",
     "products",
-    "projections__inbound_facts",
     "promotion",
     "promotions",
     "rule",
@@ -593,13 +593,13 @@
           "source": "inbound_inventory"
         }
       ],
-      "name": "projections.summarize_inbound",
-      "output_lane": "projections__inbound_facts",
+      "name": "inventory_projection.summarize_inbound",
+      "output_lane": "inventory_projection__inbound_facts",
       "output_schema": "InboundInventory",
       "results": [
         {
-          "frame": "projections__inbound_facts",
-          "lane": "projections__inbound_facts",
+          "frame": "inventory_projection__inbound_facts",
+          "lane": "inventory_projection__inbound_facts",
           "schema": "InboundInventory"
         }
       ]
@@ -624,7 +624,7 @@
           "driving": false,
           "parameter": "inbound",
           "schema": "InboundInventory",
-          "source": "projections__inbound_facts"
+          "source": "inventory_projection__inbound_facts"
         },
         {
           "driving": false,
@@ -647,26 +647,26 @@
           "input": "lead_time"
         }
       ],
-      "name": "projections.project_inventory",
-      "output_lane": "projections__projections",
+      "name": "inventory_projection.project_inventory",
+      "output_lane": "inventory_projection__projections",
       "output_schema": "InventoryProjection",
       "results": [
         {
-          "frame": "projections__projections",
-          "lane": "projections__projections",
+          "frame": "inventory_projection__projections",
+          "lane": "inventory_projection__projections",
           "schema": "InventoryProjection"
         }
       ]
     },
     {
-      "input_lane": "projections__projections",
+      "input_lane": "inventory_projection__projections",
       "input_schema": "InventoryProjection",
       "inputs": [
         {
           "driving": true,
           "parameter": "projection",
           "schema": "InventoryProjection",
-          "source": "projections__projections"
+          "source": "inventory_projection__projections"
         }
       ],
       "name": "shortage_stage.identify",

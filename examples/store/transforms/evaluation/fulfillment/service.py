@@ -50,19 +50,11 @@ class EvaluateFulfillment(Transform):
         shipped_quantity = sum(coalesce(fulfilled.quantity, 0))
         shipped = bool_or(fulfilled.line_number.is_not_null())
         actual_ship_date = max(to_date(fulfilled.shipped_at))
-        return FulfillmentServiceTotals(
-            tenant=plan.tenant,
-            business=plan.business,
-            order_id=plan.order_id,
-            line_number=plan.line_number,
-            product_id=plan.product_id,
-            selected_warehouse_id=plan.selected_warehouse_id,
+        return FulfillmentServiceTotals.project(plan)(
             target_id=target.target_id,
             target_on_time=target.on_time_target,
-            requested_quantity=plan.requested_quantity,
             planned_quantity=plan.allocated_quantity,
             shipped_quantity=shipped_quantity,
-            planned_ship_date=plan.planned_ship_date,
             actual_ship_date=actual_ship_date,
             shipped=shipped,
         )
@@ -102,17 +94,14 @@ class EvaluateFulfillment(Transform):
             target_id=evaluation.target_id,
             target_on_time=evaluation.target_on_time,
         )
-        return DailyFulfillmentServiceSummary(
-            tenant=evaluation.tenant,
+        return DailyFulfillmentServiceSummary.project(evaluation)(
             business_date=evaluation.business.order_date,
             warehouse_id=evaluation.selected_warehouse_id,
-            target_id=evaluation.target_id,
             evaluated_line_count=count(),
             on_time_in_full_count=sum(when(evaluation.service_status == "on_time_in_full", 1).otherwise(0)),
             on_time_line_count=sum(when(evaluation.on_time_status == "on_time", 1).otherwise(0)),
             in_full_line_count=sum(when(evaluation.in_full_status == "in_full", 1).otherwise(0)),
             service_level=sum(0.0),
-            target_on_time=evaluation.target_on_time,
             target_attained=bool_or(evaluation.service_status == "on_time_in_full"),
         )
 

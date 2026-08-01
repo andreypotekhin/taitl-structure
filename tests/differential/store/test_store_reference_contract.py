@@ -7,16 +7,15 @@ from typing import Any, cast
 from helpers.example_projects import render_store_example
 
 from examples.store.transforms.evaluation.recommender.behavior.workflow import EvaluateRecommendations
-from examples.store.transforms.fulfillment.demand import PrepareOrderDemand
+from examples.store.transforms.fulfillment.demand.prepare import PrepareOrderDemand
 from examples.store.transforms.fulfillment.workflow import Fulfillment
-from examples.store.transforms.merchandising.ranking import Ranker
-from examples.store.transforms.merchandising.recommender.admit import SelectRecommendationCandidates
-from examples.store.transforms.merchandising.recommender.rank import RankRecommendationCandidates
-from examples.store.transforms.merchandising.recommender.summarize import SummarizeRecommendationRuns
-from examples.store.transforms.merchandising.recommender.workflow import Recommender
-from examples.store.transforms.merchandising.signals.build_signals import BuildRecommendationSignals
 from examples.store.transforms.merchandising.workflow import Merchandising
-from examples.store.transforms.order import EnrichOrders
+from examples.store.transforms.orders.enrich import EnrichOrders
+from examples.store.transforms.recommender.candidates.admit import SelectRecommendationCandidates
+from examples.store.transforms.recommender.ranking import Ranker, RankRecommendationCandidates
+from examples.store.transforms.recommender.signals.products import BuildProductSignals
+from examples.store.transforms.recommender.summarize import SummarizeRecommendationRuns
+from examples.store.transforms.recommender.workflow import Recommender
 from examples.store.transforms.rowset_joins.rowset_join_examples import RowsetJoinExamples
 from structure.core.compiler.api import Compiler
 from structure.plugin.api.v1.model.TransformPlan import TransformPlan
@@ -59,7 +58,7 @@ def test_store_example_matches_independent_reference_rows() -> None:
 
 
 def test_orders_generated_code_matches_independent_reference_operations() -> None:
-    transform = render_store_example()["examples/structure_generated/store/pyspark/transforms/order.py"]
+    transform = render_store_example()["examples/structure_generated/store/pyspark/transforms/enrich.py"]
 
     reference_fragments = [
         'assert_schema(orders, ORDER_RAW_SCHEMA, name="OrderRaw", mode="strict")',
@@ -83,8 +82,8 @@ def test_store_live_event_inputs_are_marked_streaming_at_source_boundaries() -> 
     assert _input_modes(EnrichOrders)["orders"]
     assert _input_modes(PrepareOrderDemand)["orders"]
     assert _input_modes(Fulfillment)["orders"]
-    assert _input_modes(BuildRecommendationSignals)["impressions"]
-    assert _input_modes(BuildRecommendationSignals)["clicks"]
+    assert _input_modes(BuildProductSignals)["impressions"]
+    assert _input_modes(BuildProductSignals)["clicks"]
 
     for transform in (
         SelectRecommendationCandidates,
@@ -230,8 +229,8 @@ def test_fulfillment_pipeline_generated_code_exposes_overall_flow() -> None:
 
 def test_fulfillment_followup_generated_code_exposes_temporal_policy_and_service_contracts() -> None:
     generated = render_store_example()
-    order = generated["examples/structure_generated/store/pyspark/transforms/order.py"]
-    projection = generated["examples/structure_generated/store/pyspark/transforms/project_inventory.py"]
+    order = generated["examples/structure_generated/store/pyspark/transforms/enrich.py"]
+    projection = generated["examples/structure_generated/store/pyspark/transforms/project.py"]
     substitution = generated["examples/structure_generated/store/pyspark/transforms/find_substitutions.py"]
     exception = generated["examples/structure_generated/store/pyspark/transforms/exceptions.py"]
     service = generated["examples/structure_generated/store/pyspark/transforms/service.py"]
@@ -316,7 +315,8 @@ def test_recommend_generated_code_exposes_named_score_and_ranking_contract() -> 
         "class RankRecommendationCandidatesGenerated:",
         "class SelectRecommendedProductsGenerated:",
         "class SummarizeRecommendationRunsGenerated:",
-        "selected__requests, RECOMMENDATION_CANDIDATE_SCHEMA",
+        "candidates__admitted__requests",
+        "RECOMMENDATION_CANDIDATE_SCHEMA",
         "RANKED_RECOMMENDATION_CANDIDATE_SCHEMA",
         'assert_schema(policy, MERCHANDISING_POLICY_SCHEMA, name="MerchandisingPolicy", mode="strict")',
         'alias("boost_score")',
@@ -346,10 +346,12 @@ def test_recommendation_enhancements_expose_explicit_stage_contracts() -> None:
     assert 'alias("assignment_key")' in assignment
     assert "taxonomy_branch_cap" in diversity
     assert "F.coalesce(F.col(\"policy.maximum_per_taxonomy_branch\")" in diversity
-    assert recommender.index("# Step method: retrieved.retrieve") < recommender.index(
-        "# Step method: filtered.evaluate"
+    assert recommender.index("# Step method: candidates.retrieved.retrieve") < recommender.index(
+        "# Step method: candidates.filtered.evaluate"
     )
-    assert recommender.index("# Step method: filtered.publish") < recommender.index("# Step method: ranked.rank")
+    assert recommender.index("# Step method: candidates.filtered.publish") < recommender.index(
+        "# Step method: ranked.rank"
+    )
     assert recommender.index("# Step method: ranked.rank") < recommender.index("# Step method: diversified.decide")
     assert recommender.index("# Step method: diversified.publish") < recommender.index(
         "# Step method: published.select_products"

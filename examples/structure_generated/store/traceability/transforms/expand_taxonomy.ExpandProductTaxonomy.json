@@ -20,107 +20,107 @@
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.expand_taxonomy.ExpandProductTaxonomyGenerated",
       "ir": "ir:ExpandProductTaxonomy",
-      "source": "source:examples.store.transforms.merchandising.taxonomy.expand_taxonomy.ExpandProductTaxonomy"
+      "source": "source:examples.store.transforms.taxonomy.expand_taxonomy.ExpandProductTaxonomy"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.expand_taxonomy.ExpandProductTaxonomyGenerated.run.input.product_taxonomy",
       "ir": "ir:ExpandProductTaxonomy.input.0.product_taxonomy",
-      "source": "source:examples.store.transforms.merchandising.taxonomy.expand_taxonomy.ExpandProductTaxonomy.input.product_taxonomy"
+      "source": "source:examples.store.transforms.taxonomy.expand_taxonomy.ExpandProductTaxonomy.input.product_taxonomy"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.expand_taxonomy.ExpandProductTaxonomyGenerated.run.input.taxonomy",
       "ir": "ir:ExpandProductTaxonomy.input.1.taxonomy",
-      "source": "source:examples.store.transforms.merchandising.taxonomy.expand_taxonomy.ExpandProductTaxonomy.input.taxonomy"
+      "source": "source:examples.store.transforms.taxonomy.expand_taxonomy.ExpandProductTaxonomy.input.taxonomy"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.expand_taxonomy.ExpandProductTaxonomyGenerated.run.step.0.build_ancestors",
       "ir": "ir:ExpandProductTaxonomy.step.0.build_ancestors",
-      "source": "source:examples.store.transforms.merchandising.taxonomy.expand_taxonomy.ExpandProductTaxonomy.build_ancestors"
+      "source": "source:examples.store.transforms.taxonomy.expand_taxonomy.ExpandProductTaxonomy.build_ancestors"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.expand_taxonomy.ExpandProductTaxonomyGenerated.run.step.0.build_ancestors.where.0",
       "ir": "ir:ExpandProductTaxonomy.step.0.build_ancestors.filter.0",
-      "source": "source:examples.store.transforms.merchandising.taxonomy.expand_taxonomy.ExpandProductTaxonomy.build_ancestors.filter.0"
+      "source": "source:examples.store.transforms.taxonomy.expand_taxonomy.ExpandProductTaxonomy.build_ancestors.filter.0"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.expand_taxonomy.ExpandProductTaxonomyGenerated.run.step.0.build_ancestors.hierarchy_closure.1",
       "ir": "ir:ExpandProductTaxonomy.step.0.build_ancestors.hierarchy_closure.1",
-      "source": "source:examples.store.transforms.merchandising.taxonomy.expand_taxonomy.ExpandProductTaxonomy.build_ancestors.hierarchy_closure.1"
+      "source": "source:examples.store.transforms.taxonomy.expand_taxonomy.ExpandProductTaxonomy.build_ancestors.hierarchy_closure.1"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.expand_taxonomy.ExpandProductTaxonomyGenerated.run.step.0.build_ancestors.select.node_id",
       "ir": "ir:ExpandProductTaxonomy.step.0.build_ancestors.project.node_id",
-      "source": "source:examples.store.transforms.merchandising.taxonomy.expand_taxonomy.ExpandProductTaxonomy.build_ancestors.field.node_id"
+      "source": "source:examples.store.transforms.taxonomy.expand_taxonomy.ExpandProductTaxonomy.build_ancestors.field.node_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.expand_taxonomy.ExpandProductTaxonomyGenerated.run.step.0.build_ancestors.select.ancestor_id",
       "ir": "ir:ExpandProductTaxonomy.step.0.build_ancestors.project.ancestor_id",
-      "source": "source:examples.store.transforms.merchandising.taxonomy.expand_taxonomy.ExpandProductTaxonomy.build_ancestors.field.ancestor_id"
+      "source": "source:examples.store.transforms.taxonomy.expand_taxonomy.ExpandProductTaxonomy.build_ancestors.field.ancestor_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.expand_taxonomy.ExpandProductTaxonomyGenerated.run.step.0.build_ancestors.select.depth",
       "ir": "ir:ExpandProductTaxonomy.step.0.build_ancestors.project.depth",
-      "source": "source:examples.store.transforms.merchandising.taxonomy.expand_taxonomy.ExpandProductTaxonomy.build_ancestors.field.depth"
+      "source": "source:examples.store.transforms.taxonomy.expand_taxonomy.ExpandProductTaxonomy.build_ancestors.field.depth"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.expand_taxonomy.ExpandProductTaxonomyGenerated.run.step.0.build_ancestors.validation.0.intermediate",
       "ir": "ir:ExpandProductTaxonomy.step.0.build_ancestors.validation.0.intermediate",
-      "source": "source:examples.store.transforms.merchandising.taxonomy.expand_taxonomy.ExpandProductTaxonomy.build_ancestors.validation.0.intermediate"
+      "source": "source:examples.store.transforms.taxonomy.expand_taxonomy.ExpandProductTaxonomy.build_ancestors.validation.0.intermediate"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.expand_taxonomy.ExpandProductTaxonomyGenerated.run.step.1.expand",
       "ir": "ir:ExpandProductTaxonomy.step.1.expand",
-      "source": "source:examples.store.transforms.merchandising.taxonomy.expand_taxonomy.ExpandProductTaxonomy.expand"
+      "source": "source:examples.store.transforms.taxonomy.expand_taxonomy.ExpandProductTaxonomy.expand"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.expand_taxonomy.ExpandProductTaxonomyGenerated.run.step.1.expand.join.1.ancestor",
       "ir": "ir:ExpandProductTaxonomy.step.1.expand.join.1.ancestor",
-      "source": "source:examples.store.transforms.merchandising.taxonomy.expand_taxonomy.ExpandProductTaxonomy.expand.join.1.ancestor"
+      "source": "source:examples.store.transforms.taxonomy.expand_taxonomy.ExpandProductTaxonomy.expand.join.1.ancestor"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.expand_taxonomy.ExpandProductTaxonomyGenerated.run.step.1.expand.join.2.node",
       "ir": "ir:ExpandProductTaxonomy.step.1.expand.join.2.node",
-      "source": "source:examples.store.transforms.merchandising.taxonomy.expand_taxonomy.ExpandProductTaxonomy.expand.join.2.node"
+      "source": "source:examples.store.transforms.taxonomy.expand_taxonomy.ExpandProductTaxonomy.expand.join.2.node"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.expand_taxonomy.ExpandProductTaxonomyGenerated.run.step.1.expand.select.tenant",
       "ir": "ir:ExpandProductTaxonomy.step.1.expand.project.tenant",
-      "source": "source:examples.store.transforms.merchandising.taxonomy.expand_taxonomy.ExpandProductTaxonomy.expand.field.tenant"
+      "source": "source:examples.store.transforms.taxonomy.expand_taxonomy.ExpandProductTaxonomy.expand.field.tenant"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.expand_taxonomy.ExpandProductTaxonomyGenerated.run.step.1.expand.select.product_id",
       "ir": "ir:ExpandProductTaxonomy.step.1.expand.project.product_id",
-      "source": "source:examples.store.transforms.merchandising.taxonomy.expand_taxonomy.ExpandProductTaxonomy.expand.field.product_id"
+      "source": "source:examples.store.transforms.taxonomy.expand_taxonomy.ExpandProductTaxonomy.expand.field.product_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.expand_taxonomy.ExpandProductTaxonomyGenerated.run.step.1.expand.select.taxonomy_id",
       "ir": "ir:ExpandProductTaxonomy.step.1.expand.project.taxonomy_id",
-      "source": "source:examples.store.transforms.merchandising.taxonomy.expand_taxonomy.ExpandProductTaxonomy.expand.field.taxonomy_id"
+      "source": "source:examples.store.transforms.taxonomy.expand_taxonomy.ExpandProductTaxonomy.expand.field.taxonomy_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.expand_taxonomy.ExpandProductTaxonomyGenerated.run.step.1.expand.select.normalized_category",
       "ir": "ir:ExpandProductTaxonomy.step.1.expand.project.normalized_category",
-      "source": "source:examples.store.transforms.merchandising.taxonomy.expand_taxonomy.ExpandProductTaxonomy.expand.field.normalized_category"
+      "source": "source:examples.store.transforms.taxonomy.expand_taxonomy.ExpandProductTaxonomy.expand.field.normalized_category"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.expand_taxonomy.ExpandProductTaxonomyGenerated.run.step.1.expand.select.ancestor_taxonomy_id",
       "ir": "ir:ExpandProductTaxonomy.step.1.expand.project.ancestor_taxonomy_id",
-      "source": "source:examples.store.transforms.merchandising.taxonomy.expand_taxonomy.ExpandProductTaxonomy.expand.field.ancestor_taxonomy_id"
+      "source": "source:examples.store.transforms.taxonomy.expand_taxonomy.ExpandProductTaxonomy.expand.field.ancestor_taxonomy_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.expand_taxonomy.ExpandProductTaxonomyGenerated.run.step.1.expand.select.ancestor_category",
       "ir": "ir:ExpandProductTaxonomy.step.1.expand.project.ancestor_category",
-      "source": "source:examples.store.transforms.merchandising.taxonomy.expand_taxonomy.ExpandProductTaxonomy.expand.field.ancestor_category"
+      "source": "source:examples.store.transforms.taxonomy.expand_taxonomy.ExpandProductTaxonomy.expand.field.ancestor_category"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.expand_taxonomy.ExpandProductTaxonomyGenerated.run.step.1.expand.select.ancestor_depth",
       "ir": "ir:ExpandProductTaxonomy.step.1.expand.project.ancestor_depth",
-      "source": "source:examples.store.transforms.merchandising.taxonomy.expand_taxonomy.ExpandProductTaxonomy.expand.field.ancestor_depth"
+      "source": "source:examples.store.transforms.taxonomy.expand_taxonomy.ExpandProductTaxonomy.expand.field.ancestor_depth"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.expand_taxonomy.ExpandProductTaxonomyGenerated.run.output.0.expanded.validation.final",
       "ir": "ir:ExpandProductTaxonomy.output.0.expanded.validation.final",
-      "source": "source:examples.store.transforms.merchandising.taxonomy.expand_taxonomy.ExpandProductTaxonomy.output.expanded"
+      "source": "source:examples.store.transforms.taxonomy.expand_taxonomy.ExpandProductTaxonomy.output.expanded"
     }
   ],
   "schema_constants": {
@@ -190,7 +190,7 @@
     },
     "DemandWindow": {
       "constant": "DEMAND_WINDOW_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.projection"
+      "module": "examples.structure_generated.store.pyspark.schemas.windows"
     },
     "DiversificationDecision": {
       "constant": "DIVERSIFICATION_DECISION_SCHEMA",
@@ -258,7 +258,7 @@
     },
     "InboundInventory": {
       "constant": "INBOUND_INVENTORY_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
     },
     "InboundInventoryAvailability": {
       "constant": "INBOUND_INVENTORY_AVAILABILITY_SCHEMA",
@@ -266,7 +266,7 @@
     },
     "InventoryPosition": {
       "constant": "INVENTORY_POSITION_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
     },
     "InventoryProjection": {
       "constant": "INVENTORY_PROJECTION_SCHEMA",
@@ -274,7 +274,7 @@
     },
     "LeadTime": {
       "constant": "LEAD_TIME_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.inventory_inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
     },
     "MerchandisingBoost": {
       "constant": "MERCHANDISING_BOOST_SCHEMA",
@@ -402,11 +402,11 @@
     },
     "RecommendationCandidate": {
       "constant": "RECOMMENDATION_CANDIDATE_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
     },
     "RecommendationCandidateDecision": {
       "constant": "RECOMMENDATION_CANDIDATE_DECISION_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
     },
     "RecommendationClick": {
       "constant": "RECOMMENDATION_CLICK_SCHEMA",
@@ -498,14 +498,14 @@
     },
     "Warehouse": {
       "constant": "WAREHOUSE_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.warehouse"
     },
     "WarehouseLoadSummary": {
       "constant": "WAREHOUSE_LOAD_SUMMARY_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.summary"
     }
   },
-  "source_transform": "examples.store.transforms.merchandising.taxonomy.expand_taxonomy.ExpandProductTaxonomy",
+  "source_transform": "examples.store.transforms.taxonomy.expand_taxonomy.ExpandProductTaxonomy",
   "static_dataflow": {
     "dependencies": [
       {

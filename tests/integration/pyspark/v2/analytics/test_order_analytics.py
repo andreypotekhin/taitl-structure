@@ -21,7 +21,7 @@ def test_online_and_generated_execution_match_analytics_on_live_backend(spark, t
     generated_package = "integration_v2_analytics_generated"
     files = render_generated_project(
         OrderAnalytics,
-        source_transform="testing.model.v2.orders.transforms.analytics.OrderAnalytics",
+        source_transform="testing.model.orders.transforms.analytics.OrderAnalytics",
         generated_package=generated_package,
         source_schema_modules=analytics.source_schema_modules(),
     )

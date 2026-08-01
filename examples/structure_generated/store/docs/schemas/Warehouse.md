@@ -2,7 +2,7 @@
 
 # Warehouse
 
-Module: `examples.store.schemas.fulfillment.planning.inventory`
+Module: `examples.store.schemas.fulfillment.warehouses.warehouse`
 
 | Field | Column | Type | Nullable |
 | --- | --- | --- | --- |

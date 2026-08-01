@@ -1,0 +1,271 @@
+{
+  "dependencies": [
+    "inbound",
+    "inbound_availability",
+    "inventory",
+    "inventory_positions",
+    "warehouse",
+    "warehouses"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "demand",
+      "ordinal": 0,
+      "schema": "Order"
+    },
+    {
+      "name": "warehouses",
+      "ordinal": 1,
+      "schema": "Warehouse"
+    },
+    {
+      "name": "inventory_positions",
+      "ordinal": 2,
+      "schema": "InventoryPosition"
+    },
+    {
+      "name": "inbound_inventory",
+      "ordinal": 3,
+      "schema": "InboundInventory"
+    }
+  ],
+  "name": "PlanFulfillment",
+  "outputs": [
+    {
+      "name": "allocations",
+      "ordinal": 0,
+      "schema": "FulfillmentAllocation"
+    },
+    {
+      "name": "backorders",
+      "ordinal": 1,
+      "schema": "FulfillmentBackorder"
+    },
+    {
+      "name": "plans",
+      "ordinal": 2,
+      "schema": "FulfillmentPlan"
+    },
+    {
+      "name": "replenishment_suggestions",
+      "ordinal": 3,
+      "schema": "ReplenishmentSuggestion"
+    }
+  ],
+  "source": "examples.store.transforms.fulfillment.planning.plan.PlanFulfillment",
+  "step_methods": [
+    {
+      "input_lane": "inbound_inventory",
+      "input_schema": "InboundInventory",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "inbound",
+          "schema": "InboundInventory",
+          "source": "inbound_inventory"
+        }
+      ],
+      "name": "summarize_inbound",
+      "output_lane": "inbound_availability",
+      "output_schema": "InboundInventoryAvailability",
+      "results": [
+        {
+          "frame": "inbound_availability",
+          "lane": "inbound_availability",
+          "schema": "InboundInventoryAvailability"
+        }
+      ]
+    },
+    {
+      "input_lane": "demand",
+      "input_schema": "Order",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "demand",
+          "schema": "Order",
+          "source": "demand"
+        },
+        {
+          "driving": false,
+          "parameter": "warehouse",
+          "schema": "Warehouse",
+          "source": "warehouses"
+        },
+        {
+          "driving": false,
+          "parameter": "inventory",
+          "schema": "InventoryPosition",
+          "source": "inventory_positions"
+        },
+        {
+          "driving": false,
+          "parameter": "inbound",
+          "schema": "InboundInventoryAvailability",
+          "source": "inbound_availability"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "warehouse"
+        },
+        {
+          "how": "inner",
+          "input": "inventory"
+        },
+        {
+          "how": "left",
+          "input": "inbound"
+        }
+      ],
+      "name": "build_options",
+      "output_lane": "options",
+      "output_schema": "FulfillmentOption",
+      "results": [
+        {
+          "frame": "options",
+          "lane": "options",
+          "schema": "FulfillmentOption"
+        }
+      ]
+    },
+    {
+      "input_lane": "options",
+      "input_schema": "FulfillmentOption",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "option",
+          "schema": "FulfillmentOption",
+          "source": "options"
+        }
+      ],
+      "name": "prioritize_options",
+      "output_lane": "prioritized_options",
+      "output_schema": "FulfillmentPreferredOption",
+      "results": [
+        {
+          "frame": "prioritized_options",
+          "lane": "prioritized_options",
+          "schema": "FulfillmentPreferredOption"
+        }
+      ]
+    },
+    {
+      "input_lane": "prioritized_options",
+      "input_schema": "FulfillmentPreferredOption",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "option",
+          "schema": "FulfillmentPreferredOption",
+          "source": "prioritized_options"
+        }
+      ],
+      "name": "select_preferred_option",
+      "output_lane": "preferred_options",
+      "output_schema": "FulfillmentPreferredOption",
+      "results": [
+        {
+          "frame": "preferred_options",
+          "lane": "preferred_options",
+          "schema": "FulfillmentPreferredOption"
+        }
+      ]
+    },
+    {
+      "input_lane": "preferred_options",
+      "input_schema": "FulfillmentPreferredOption",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "option",
+          "schema": "FulfillmentPreferredOption",
+          "source": "preferred_options"
+        }
+      ],
+      "name": "allocate",
+      "output_lane": "allocations",
+      "output_schema": "FulfillmentAllocation",
+      "results": [
+        {
+          "frame": "allocations",
+          "lane": "allocations",
+          "schema": "FulfillmentAllocation"
+        }
+      ]
+    },
+    {
+      "input_lane": "preferred_options",
+      "input_schema": "FulfillmentPreferredOption",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "option",
+          "schema": "FulfillmentPreferredOption",
+          "source": "preferred_options"
+        }
+      ],
+      "name": "backorder",
+      "output_lane": "backorders",
+      "output_schema": "FulfillmentBackorder",
+      "results": [
+        {
+          "frame": "backorders",
+          "lane": "backorders",
+          "schema": "FulfillmentBackorder"
+        }
+      ]
+    },
+    {
+      "input_lane": "preferred_options",
+      "input_schema": "FulfillmentPreferredOption",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "option",
+          "schema": "FulfillmentPreferredOption",
+          "source": "preferred_options"
+        }
+      ],
+      "name": "plan",
+      "output_lane": "plans",
+      "output_schema": "FulfillmentPlan",
+      "results": [
+        {
+          "frame": "plans",
+          "lane": "plans",
+          "schema": "FulfillmentPlan"
+        }
+      ]
+    },
+    {
+      "input_lane": "preferred_options",
+      "input_schema": "FulfillmentPreferredOption",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "option",
+          "schema": "FulfillmentPreferredOption",
+          "source": "preferred_options"
+        }
+      ],
+      "name": "suggest_replenishment",
+      "output_lane": "replenishment_suggestions",
+      "output_schema": "ReplenishmentSuggestion",
+      "results": [
+        {
+          "frame": "replenishment_suggestions",
+          "lane": "replenishment_suggestions",
+          "schema": "ReplenishmentSuggestion"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/plan.py",
+    "traceability": "traceability/transforms/plan.PlanFulfillment.json"
+  }
+}

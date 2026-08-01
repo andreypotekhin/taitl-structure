@@ -1,4 +1,4 @@
-from testing.model.v1.orders.schemas.order import (
+from testing.model.orders.schemas.order import (
     OrderNormalized,
     OrderPublished,
     OrderWithCustomer,

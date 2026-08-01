@@ -8,11 +8,7 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.store.runtime.schema_assert import TransformResult, assert_schema, project_schema
-from examples.structure_generated.store.pyspark.schemas.catalog import (
-    CATALOG_PRODUCT_SCHEMA,
-    RECOMMENDATION_CANDIDATE_DECISION_SCHEMA,
-    RECOMMENDATION_CANDIDATE_SCHEMA,
-)
+from examples.structure_generated.store.pyspark.schemas.catalog import CATALOG_PRODUCT_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.common import TENANT_KEY_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.feedback import (
     DAILY_RECOMMENDATION_CLICKS_SCHEMA,
@@ -37,6 +33,8 @@ from examples.structure_generated.store.pyspark.schemas.policy import (
 from examples.structure_generated.store.pyspark.schemas.product import BLOCKED_PRODUCT_SCHEMA, PRODUCT_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.promotion import PROMOTION_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.recommendation import (
+    RECOMMENDATION_CANDIDATE_DECISION_SCHEMA,
+    RECOMMENDATION_CANDIDATE_SCHEMA,
     RECOMMENDATION_REQUEST_SCHEMA,
     RECOMMENDATION_RUN_SCHEMA,
     RECOMMENDED_PRODUCT_SCHEMA,
@@ -127,46 +125,38 @@ class NormalizeCatalogGenerated:
 
 
 class ExpandProductTaxonomyGenerated:
-    def _step_taxonomy_expanded_build_ancestors_2(self, frames):
-        # Step method: taxonomy_expanded.build_ancestors
-        taxonomy_expanded__ancestors = frames["taxonomy_nodes"].alias("taxonomy_node")
-        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.where((F.col("taxonomy_node.active")))
-        taxonomy_expanded__ancestors_hierarchy_closure_1_nodes = taxonomy_expanded__ancestors.select(
+    def _step_taxonomy_build_ancestors_2(self, frames):
+        # Step method: taxonomy.build_ancestors
+        taxonomy__ancestors = frames["taxonomy_nodes"].alias("taxonomy_node")
+        taxonomy__ancestors = taxonomy__ancestors.where((F.col("taxonomy_node.active")))
+        taxonomy__ancestors_hierarchy_closure_1_nodes = taxonomy__ancestors.select(
             F.col("taxonomy_node.taxonomy_id").alias("__structure_hierarchy_node_1"),
             F.col("taxonomy_node.parent_taxonomy_id").alias("__structure_hierarchy_parent_1"),
         )
-        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.select(
+        taxonomy__ancestors = taxonomy__ancestors_hierarchy_closure_1_nodes.select(
             F.col("__structure_hierarchy_node_1").alias("node_id"),
             F.col("__structure_hierarchy_node_1").alias("ancestor_id"),
             F.lit(0).cast(T.LongType()).alias("depth"),
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_nodes
+        taxonomy__ancestors_hierarchy_closure_1_frontier = taxonomy__ancestors_hierarchy_closure_1_nodes
+        taxonomy__ancestors_hierarchy_closure_1_depth_1 = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_1 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
+        taxonomy__ancestors_hierarchy_closure_1_depth_1 = taxonomy__ancestors_hierarchy_closure_1_depth_1.select(
+            F.col("__structure_hierarchy_node_1").alias("node_id"),
+            F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+            F.lit(1).cast(T.LongType()).alias("depth"),
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_1 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_1.select(
-                F.col("__structure_hierarchy_node_1").alias("node_id"),
-                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
-                F.lit(1).cast(T.LongType()).alias("depth"),
-            )
+        taxonomy__ancestors = taxonomy__ancestors.unionByName(
+            taxonomy__ancestors_hierarchy_closure_1_depth_1, allowMissingColumns=False
         )
-        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_1, allowMissingColumns=False
+        taxonomy__ancestors_hierarchy_closure_1_frontier = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
-        )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+        taxonomy__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy__ancestors_hierarchy_closure_1_frontier.alias("frontier")
             .join(
-                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                taxonomy__ancestors_hierarchy_closure_1_nodes.alias("parent"),
                 F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
                 "left",
             )
@@ -175,30 +165,24 @@ class ExpandProductTaxonomyGenerated:
                 F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
             )
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_2 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
+        taxonomy__ancestors_hierarchy_closure_1_depth_2 = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_2 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_2.select(
-                F.col("__structure_hierarchy_node_1").alias("node_id"),
-                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
-                F.lit(2).cast(T.LongType()).alias("depth"),
-            )
+        taxonomy__ancestors_hierarchy_closure_1_depth_2 = taxonomy__ancestors_hierarchy_closure_1_depth_2.select(
+            F.col("__structure_hierarchy_node_1").alias("node_id"),
+            F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+            F.lit(2).cast(T.LongType()).alias("depth"),
         )
-        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_2, allowMissingColumns=False
+        taxonomy__ancestors = taxonomy__ancestors.unionByName(
+            taxonomy__ancestors_hierarchy_closure_1_depth_2, allowMissingColumns=False
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
+        taxonomy__ancestors_hierarchy_closure_1_frontier = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+        taxonomy__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy__ancestors_hierarchy_closure_1_frontier.alias("frontier")
             .join(
-                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                taxonomy__ancestors_hierarchy_closure_1_nodes.alias("parent"),
                 F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
                 "left",
             )
@@ -207,30 +191,24 @@ class ExpandProductTaxonomyGenerated:
                 F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
             )
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_3 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
+        taxonomy__ancestors_hierarchy_closure_1_depth_3 = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_3 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_3.select(
-                F.col("__structure_hierarchy_node_1").alias("node_id"),
-                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
-                F.lit(3).cast(T.LongType()).alias("depth"),
-            )
+        taxonomy__ancestors_hierarchy_closure_1_depth_3 = taxonomy__ancestors_hierarchy_closure_1_depth_3.select(
+            F.col("__structure_hierarchy_node_1").alias("node_id"),
+            F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+            F.lit(3).cast(T.LongType()).alias("depth"),
         )
-        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_3, allowMissingColumns=False
+        taxonomy__ancestors = taxonomy__ancestors.unionByName(
+            taxonomy__ancestors_hierarchy_closure_1_depth_3, allowMissingColumns=False
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
+        taxonomy__ancestors_hierarchy_closure_1_frontier = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+        taxonomy__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy__ancestors_hierarchy_closure_1_frontier.alias("frontier")
             .join(
-                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                taxonomy__ancestors_hierarchy_closure_1_nodes.alias("parent"),
                 F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
                 "left",
             )
@@ -239,30 +217,24 @@ class ExpandProductTaxonomyGenerated:
                 F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
             )
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_4 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
+        taxonomy__ancestors_hierarchy_closure_1_depth_4 = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_4 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_4.select(
-                F.col("__structure_hierarchy_node_1").alias("node_id"),
-                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
-                F.lit(4).cast(T.LongType()).alias("depth"),
-            )
+        taxonomy__ancestors_hierarchy_closure_1_depth_4 = taxonomy__ancestors_hierarchy_closure_1_depth_4.select(
+            F.col("__structure_hierarchy_node_1").alias("node_id"),
+            F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+            F.lit(4).cast(T.LongType()).alias("depth"),
         )
-        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_4, allowMissingColumns=False
+        taxonomy__ancestors = taxonomy__ancestors.unionByName(
+            taxonomy__ancestors_hierarchy_closure_1_depth_4, allowMissingColumns=False
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
+        taxonomy__ancestors_hierarchy_closure_1_frontier = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+        taxonomy__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy__ancestors_hierarchy_closure_1_frontier.alias("frontier")
             .join(
-                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                taxonomy__ancestors_hierarchy_closure_1_nodes.alias("parent"),
                 F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
                 "left",
             )
@@ -271,30 +243,24 @@ class ExpandProductTaxonomyGenerated:
                 F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
             )
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_5 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
+        taxonomy__ancestors_hierarchy_closure_1_depth_5 = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_5 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_5.select(
-                F.col("__structure_hierarchy_node_1").alias("node_id"),
-                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
-                F.lit(5).cast(T.LongType()).alias("depth"),
-            )
+        taxonomy__ancestors_hierarchy_closure_1_depth_5 = taxonomy__ancestors_hierarchy_closure_1_depth_5.select(
+            F.col("__structure_hierarchy_node_1").alias("node_id"),
+            F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+            F.lit(5).cast(T.LongType()).alias("depth"),
         )
-        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_5, allowMissingColumns=False
+        taxonomy__ancestors = taxonomy__ancestors.unionByName(
+            taxonomy__ancestors_hierarchy_closure_1_depth_5, allowMissingColumns=False
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
+        taxonomy__ancestors_hierarchy_closure_1_frontier = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+        taxonomy__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy__ancestors_hierarchy_closure_1_frontier.alias("frontier")
             .join(
-                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                taxonomy__ancestors_hierarchy_closure_1_nodes.alias("parent"),
                 F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
                 "left",
             )
@@ -303,30 +269,24 @@ class ExpandProductTaxonomyGenerated:
                 F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
             )
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_6 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
+        taxonomy__ancestors_hierarchy_closure_1_depth_6 = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_6 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_6.select(
-                F.col("__structure_hierarchy_node_1").alias("node_id"),
-                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
-                F.lit(6).cast(T.LongType()).alias("depth"),
-            )
+        taxonomy__ancestors_hierarchy_closure_1_depth_6 = taxonomy__ancestors_hierarchy_closure_1_depth_6.select(
+            F.col("__structure_hierarchy_node_1").alias("node_id"),
+            F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+            F.lit(6).cast(T.LongType()).alias("depth"),
         )
-        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_6, allowMissingColumns=False
+        taxonomy__ancestors = taxonomy__ancestors.unionByName(
+            taxonomy__ancestors_hierarchy_closure_1_depth_6, allowMissingColumns=False
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
+        taxonomy__ancestors_hierarchy_closure_1_frontier = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+        taxonomy__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy__ancestors_hierarchy_closure_1_frontier.alias("frontier")
             .join(
-                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                taxonomy__ancestors_hierarchy_closure_1_nodes.alias("parent"),
                 F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
                 "left",
             )
@@ -335,30 +295,24 @@ class ExpandProductTaxonomyGenerated:
                 F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
             )
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_7 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
+        taxonomy__ancestors_hierarchy_closure_1_depth_7 = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_7 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_7.select(
-                F.col("__structure_hierarchy_node_1").alias("node_id"),
-                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
-                F.lit(7).cast(T.LongType()).alias("depth"),
-            )
+        taxonomy__ancestors_hierarchy_closure_1_depth_7 = taxonomy__ancestors_hierarchy_closure_1_depth_7.select(
+            F.col("__structure_hierarchy_node_1").alias("node_id"),
+            F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+            F.lit(7).cast(T.LongType()).alias("depth"),
         )
-        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_7, allowMissingColumns=False
+        taxonomy__ancestors = taxonomy__ancestors.unionByName(
+            taxonomy__ancestors_hierarchy_closure_1_depth_7, allowMissingColumns=False
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
+        taxonomy__ancestors_hierarchy_closure_1_frontier = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+        taxonomy__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy__ancestors_hierarchy_closure_1_frontier.alias("frontier")
             .join(
-                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                taxonomy__ancestors_hierarchy_closure_1_nodes.alias("parent"),
                 F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
                 "left",
             )
@@ -367,30 +321,24 @@ class ExpandProductTaxonomyGenerated:
                 F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
             )
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_8 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
+        taxonomy__ancestors_hierarchy_closure_1_depth_8 = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_8 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_8.select(
-                F.col("__structure_hierarchy_node_1").alias("node_id"),
-                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
-                F.lit(8).cast(T.LongType()).alias("depth"),
-            )
+        taxonomy__ancestors_hierarchy_closure_1_depth_8 = taxonomy__ancestors_hierarchy_closure_1_depth_8.select(
+            F.col("__structure_hierarchy_node_1").alias("node_id"),
+            F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+            F.lit(8).cast(T.LongType()).alias("depth"),
         )
-        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_8, allowMissingColumns=False
+        taxonomy__ancestors = taxonomy__ancestors.unionByName(
+            taxonomy__ancestors_hierarchy_closure_1_depth_8, allowMissingColumns=False
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
+        taxonomy__ancestors_hierarchy_closure_1_frontier = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+        taxonomy__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy__ancestors_hierarchy_closure_1_frontier.alias("frontier")
             .join(
-                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                taxonomy__ancestors_hierarchy_closure_1_nodes.alias("parent"),
                 F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
                 "left",
             )
@@ -399,30 +347,24 @@ class ExpandProductTaxonomyGenerated:
                 F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
             )
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_9 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
+        taxonomy__ancestors_hierarchy_closure_1_depth_9 = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_9 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_9.select(
-                F.col("__structure_hierarchy_node_1").alias("node_id"),
-                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
-                F.lit(9).cast(T.LongType()).alias("depth"),
-            )
+        taxonomy__ancestors_hierarchy_closure_1_depth_9 = taxonomy__ancestors_hierarchy_closure_1_depth_9.select(
+            F.col("__structure_hierarchy_node_1").alias("node_id"),
+            F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+            F.lit(9).cast(T.LongType()).alias("depth"),
         )
-        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_9, allowMissingColumns=False
+        taxonomy__ancestors = taxonomy__ancestors.unionByName(
+            taxonomy__ancestors_hierarchy_closure_1_depth_9, allowMissingColumns=False
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
+        taxonomy__ancestors_hierarchy_closure_1_frontier = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+        taxonomy__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy__ancestors_hierarchy_closure_1_frontier.alias("frontier")
             .join(
-                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                taxonomy__ancestors_hierarchy_closure_1_nodes.alias("parent"),
                 F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
                 "left",
             )
@@ -431,30 +373,24 @@ class ExpandProductTaxonomyGenerated:
                 F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
             )
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_10 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
+        taxonomy__ancestors_hierarchy_closure_1_depth_10 = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_10 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_10.select(
-                F.col("__structure_hierarchy_node_1").alias("node_id"),
-                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
-                F.lit(10).cast(T.LongType()).alias("depth"),
-            )
+        taxonomy__ancestors_hierarchy_closure_1_depth_10 = taxonomy__ancestors_hierarchy_closure_1_depth_10.select(
+            F.col("__structure_hierarchy_node_1").alias("node_id"),
+            F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+            F.lit(10).cast(T.LongType()).alias("depth"),
         )
-        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_10, allowMissingColumns=False
+        taxonomy__ancestors = taxonomy__ancestors.unionByName(
+            taxonomy__ancestors_hierarchy_closure_1_depth_10, allowMissingColumns=False
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
+        taxonomy__ancestors_hierarchy_closure_1_frontier = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+        taxonomy__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy__ancestors_hierarchy_closure_1_frontier.alias("frontier")
             .join(
-                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                taxonomy__ancestors_hierarchy_closure_1_nodes.alias("parent"),
                 F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
                 "left",
             )
@@ -463,30 +399,24 @@ class ExpandProductTaxonomyGenerated:
                 F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
             )
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_11 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
+        taxonomy__ancestors_hierarchy_closure_1_depth_11 = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_11 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_11.select(
-                F.col("__structure_hierarchy_node_1").alias("node_id"),
-                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
-                F.lit(11).cast(T.LongType()).alias("depth"),
-            )
+        taxonomy__ancestors_hierarchy_closure_1_depth_11 = taxonomy__ancestors_hierarchy_closure_1_depth_11.select(
+            F.col("__structure_hierarchy_node_1").alias("node_id"),
+            F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+            F.lit(11).cast(T.LongType()).alias("depth"),
         )
-        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_11, allowMissingColumns=False
+        taxonomy__ancestors = taxonomy__ancestors.unionByName(
+            taxonomy__ancestors_hierarchy_closure_1_depth_11, allowMissingColumns=False
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
+        taxonomy__ancestors_hierarchy_closure_1_frontier = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+        taxonomy__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy__ancestors_hierarchy_closure_1_frontier.alias("frontier")
             .join(
-                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                taxonomy__ancestors_hierarchy_closure_1_nodes.alias("parent"),
                 F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
                 "left",
             )
@@ -495,30 +425,24 @@ class ExpandProductTaxonomyGenerated:
                 F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
             )
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_12 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
+        taxonomy__ancestors_hierarchy_closure_1_depth_12 = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_12 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_12.select(
-                F.col("__structure_hierarchy_node_1").alias("node_id"),
-                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
-                F.lit(12).cast(T.LongType()).alias("depth"),
-            )
+        taxonomy__ancestors_hierarchy_closure_1_depth_12 = taxonomy__ancestors_hierarchy_closure_1_depth_12.select(
+            F.col("__structure_hierarchy_node_1").alias("node_id"),
+            F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+            F.lit(12).cast(T.LongType()).alias("depth"),
         )
-        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_12, allowMissingColumns=False
+        taxonomy__ancestors = taxonomy__ancestors.unionByName(
+            taxonomy__ancestors_hierarchy_closure_1_depth_12, allowMissingColumns=False
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
+        taxonomy__ancestors_hierarchy_closure_1_frontier = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+        taxonomy__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy__ancestors_hierarchy_closure_1_frontier.alias("frontier")
             .join(
-                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                taxonomy__ancestors_hierarchy_closure_1_nodes.alias("parent"),
                 F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
                 "left",
             )
@@ -527,30 +451,24 @@ class ExpandProductTaxonomyGenerated:
                 F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
             )
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_13 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
+        taxonomy__ancestors_hierarchy_closure_1_depth_13 = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_13 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_13.select(
-                F.col("__structure_hierarchy_node_1").alias("node_id"),
-                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
-                F.lit(13).cast(T.LongType()).alias("depth"),
-            )
+        taxonomy__ancestors_hierarchy_closure_1_depth_13 = taxonomy__ancestors_hierarchy_closure_1_depth_13.select(
+            F.col("__structure_hierarchy_node_1").alias("node_id"),
+            F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+            F.lit(13).cast(T.LongType()).alias("depth"),
         )
-        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_13, allowMissingColumns=False
+        taxonomy__ancestors = taxonomy__ancestors.unionByName(
+            taxonomy__ancestors_hierarchy_closure_1_depth_13, allowMissingColumns=False
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
+        taxonomy__ancestors_hierarchy_closure_1_frontier = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+        taxonomy__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy__ancestors_hierarchy_closure_1_frontier.alias("frontier")
             .join(
-                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                taxonomy__ancestors_hierarchy_closure_1_nodes.alias("parent"),
                 F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
                 "left",
             )
@@ -559,30 +477,24 @@ class ExpandProductTaxonomyGenerated:
                 F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
             )
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_14 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
+        taxonomy__ancestors_hierarchy_closure_1_depth_14 = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_14 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_14.select(
-                F.col("__structure_hierarchy_node_1").alias("node_id"),
-                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
-                F.lit(14).cast(T.LongType()).alias("depth"),
-            )
+        taxonomy__ancestors_hierarchy_closure_1_depth_14 = taxonomy__ancestors_hierarchy_closure_1_depth_14.select(
+            F.col("__structure_hierarchy_node_1").alias("node_id"),
+            F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+            F.lit(14).cast(T.LongType()).alias("depth"),
         )
-        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_14, allowMissingColumns=False
+        taxonomy__ancestors = taxonomy__ancestors.unionByName(
+            taxonomy__ancestors_hierarchy_closure_1_depth_14, allowMissingColumns=False
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
+        taxonomy__ancestors_hierarchy_closure_1_frontier = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+        taxonomy__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy__ancestors_hierarchy_closure_1_frontier.alias("frontier")
             .join(
-                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                taxonomy__ancestors_hierarchy_closure_1_nodes.alias("parent"),
                 F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
                 "left",
             )
@@ -591,30 +503,24 @@ class ExpandProductTaxonomyGenerated:
                 F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
             )
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_15 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
+        taxonomy__ancestors_hierarchy_closure_1_depth_15 = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_15 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_15.select(
-                F.col("__structure_hierarchy_node_1").alias("node_id"),
-                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
-                F.lit(15).cast(T.LongType()).alias("depth"),
-            )
+        taxonomy__ancestors_hierarchy_closure_1_depth_15 = taxonomy__ancestors_hierarchy_closure_1_depth_15.select(
+            F.col("__structure_hierarchy_node_1").alias("node_id"),
+            F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+            F.lit(15).cast(T.LongType()).alias("depth"),
         )
-        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_15, allowMissingColumns=False
+        taxonomy__ancestors = taxonomy__ancestors.unionByName(
+            taxonomy__ancestors_hierarchy_closure_1_depth_15, allowMissingColumns=False
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
+        taxonomy__ancestors_hierarchy_closure_1_frontier = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+        taxonomy__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy__ancestors_hierarchy_closure_1_frontier.alias("frontier")
             .join(
-                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                taxonomy__ancestors_hierarchy_closure_1_nodes.alias("parent"),
                 F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
                 "left",
             )
@@ -623,30 +529,24 @@ class ExpandProductTaxonomyGenerated:
                 F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
             )
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_16 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
+        taxonomy__ancestors_hierarchy_closure_1_depth_16 = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_depth_16 = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_16.select(
-                F.col("__structure_hierarchy_node_1").alias("node_id"),
-                F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
-                F.lit(16).cast(T.LongType()).alias("depth"),
-            )
+        taxonomy__ancestors_hierarchy_closure_1_depth_16 = taxonomy__ancestors_hierarchy_closure_1_depth_16.select(
+            F.col("__structure_hierarchy_node_1").alias("node_id"),
+            F.col("__structure_hierarchy_parent_1").alias("ancestor_id"),
+            F.lit(16).cast(T.LongType()).alias("depth"),
         )
-        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.unionByName(
-            taxonomy_expanded__ancestors_hierarchy_closure_1_depth_16, allowMissingColumns=False
+        taxonomy__ancestors = taxonomy__ancestors.unionByName(
+            taxonomy__ancestors_hierarchy_closure_1_depth_16, allowMissingColumns=False
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.where(
-                F.col("__structure_hierarchy_parent_1").isNotNull()
-            )
+        taxonomy__ancestors_hierarchy_closure_1_frontier = taxonomy__ancestors_hierarchy_closure_1_frontier.where(
+            F.col("__structure_hierarchy_parent_1").isNotNull()
         )
-        taxonomy_expanded__ancestors_hierarchy_closure_1_frontier = (
-            taxonomy_expanded__ancestors_hierarchy_closure_1_frontier.alias("frontier")
+        taxonomy__ancestors_hierarchy_closure_1_frontier = (
+            taxonomy__ancestors_hierarchy_closure_1_frontier.alias("frontier")
             .join(
-                taxonomy_expanded__ancestors_hierarchy_closure_1_nodes.alias("parent"),
+                taxonomy__ancestors_hierarchy_closure_1_nodes.alias("parent"),
                 F.col("frontier.__structure_hierarchy_parent_1") == F.col("parent.__structure_hierarchy_node_1"),
                 "left",
             )
@@ -655,69 +555,69 @@ class ExpandProductTaxonomyGenerated:
                 F.col("parent.__structure_hierarchy_parent_1").alias("__structure_hierarchy_parent_1"),
             )
         )
-        taxonomy_expanded__ancestors = taxonomy_expanded__ancestors.select(
+        taxonomy__ancestors = taxonomy__ancestors.select(
             F.col("node_id"),
             F.col("ancestor_id"),
             F.col("depth"),
         )
-        assert_schema(taxonomy_expanded__ancestors, TAXONOMY_ANCESTOR_SCHEMA, name="TaxonomyAncestor", mode="strict")
+        assert_schema(taxonomy__ancestors, TAXONOMY_ANCESTOR_SCHEMA, name="TaxonomyAncestor", mode="strict")
         return {
-            "taxonomy_expanded__ancestors": taxonomy_expanded__ancestors,
+            "taxonomy__ancestors": taxonomy__ancestors,
         }
 
-    def _step_taxonomy_expanded_expand_3(self, frames):
-        # Step method: taxonomy_expanded.expand
-        taxonomy_expanded__expanded = frames["product_taxonomy"].alias("product_taxonomy")
-        taxonomy_expanded__ancestors_joined = frames["taxonomy_expanded__ancestors"].alias(
-            "taxonomy_expanded__ancestors"
-        )
-        taxonomy_expanded__expanded = taxonomy_expanded__expanded.join(
-            taxonomy_expanded__ancestors_joined,
-            (F.col("taxonomy_expanded__ancestors.node_id") == F.col("product_taxonomy.taxonomy_id")),
+    def _step_taxonomy_expand_3(self, frames):
+        # Step method: taxonomy.expand
+        taxonomy__expanded = frames["product_taxonomy"].alias("product_taxonomy")
+        taxonomy__ancestors_joined = frames["taxonomy__ancestors"].alias("taxonomy__ancestors")
+        taxonomy__expanded = taxonomy__expanded.join(
+            taxonomy__ancestors_joined,
+            (F.col("taxonomy__ancestors.node_id") == F.col("product_taxonomy.taxonomy_id")),
             "inner",
         )
         taxonomy_nodes_2_joined = frames["taxonomy_nodes"].alias("taxonomy_nodes_2")
-        taxonomy_expanded__expanded = taxonomy_expanded__expanded.join(
+        taxonomy__expanded = taxonomy__expanded.join(
             taxonomy_nodes_2_joined,
             (
                 (
                     (F.col("taxonomy_nodes_2.tenant.tenant_id") == F.col("product_taxonomy.tenant.tenant_id"))
-                    & (F.col("taxonomy_nodes_2.taxonomy_id") == F.col("taxonomy_expanded__ancestors.ancestor_id"))
+                    & (F.col("taxonomy_nodes_2.taxonomy_id") == F.col("taxonomy__ancestors.ancestor_id"))
                 )
                 & F.col("taxonomy_nodes_2.active")
             ),
             "inner",
         )
-        taxonomy_expanded__expanded = taxonomy_expanded__expanded.select(
+        taxonomy__expanded = taxonomy__expanded.select(
             F.col("product_taxonomy.tenant"),
             F.col("product_taxonomy.product_id"),
             F.col("product_taxonomy.taxonomy_id"),
             F.col("product_taxonomy.category").alias("normalized_category"),
-            F.col("taxonomy_expanded__ancestors.ancestor_id").alias("ancestor_taxonomy_id"),
+            F.col("taxonomy__ancestors.ancestor_id").alias("ancestor_taxonomy_id"),
             F.col("taxonomy_nodes_2.category").alias("ancestor_category"),
-            F.col("taxonomy_expanded__ancestors.depth").alias("ancestor_depth"),
+            F.col("taxonomy__ancestors.depth").alias("ancestor_depth"),
         )
         assert_schema(
-            taxonomy_expanded__expanded, EXPANDED_PRODUCT_TAXONOMY_SCHEMA, name="ExpandedProductTaxonomy", mode="strict"
+            taxonomy__expanded, EXPANDED_PRODUCT_TAXONOMY_SCHEMA, name="ExpandedProductTaxonomy", mode="strict"
         )
         return {
-            "taxonomy_expanded__expanded": taxonomy_expanded__expanded,
+            "taxonomy__expanded": taxonomy__expanded,
         }
 
 
 class BuildSessionSignalsGenerated:
-    def _step_signals_built_sessionized_build_4(self, frames):
-        # Step method: signals_built.sessionized.build
-        signals_built__sessionized__events = frames["session_events"].alias("session_event")
-        signals_built__sessionized__events = signals_built__sessionized__events.withWatermark("occurred_at", '7 days')
-        if signals_built__sessionized__events.isStreaming:
-            signals_built__sessionized__events = signals_built__sessionized__events.dropDuplicatesWithinWatermark(
+    def _step_recommended_signals_session_build_4(self, frames):
+        # Step method: recommended.signals.session.build
+        recommended__signals__session__events = frames["session_events"].alias("session_event")
+        recommended__signals__session__events = recommended__signals__session__events.withWatermark(
+            "occurred_at", '7 days'
+        )
+        if recommended__signals__session__events.isStreaming:
+            recommended__signals__session__events = recommended__signals__session__events.dropDuplicatesWithinWatermark(
                 ["id"]
             )
         else:
-            signals_built__sessionized__events = signals_built__sessionized__events.dropDuplicates(["id"])
-        signals_built__sessionized__events = (
-            signals_built__sessionized__events.groupBy(
+            recommended__signals__session__events = recommended__signals__session__events.dropDuplicates(["id"])
+        recommended__signals__session__events = (
+            recommended__signals__session__events.groupBy(
                 F.window(F.col("session_event.occurred_at"), '1 day').alias("window"),
                 F.col("session_event.tenant.tenant_id").alias("tenant_id"),
                 F.col("session_event.session_id").alias("session_id"),
@@ -751,18 +651,20 @@ class BuildSessionSignalsGenerated:
                 F.col("last_event_at"),
             )
         )
-        assert_schema(signals_built__sessionized__events, SESSION_FEATURE_SCHEMA, name="SessionFeature", mode="strict")
+        assert_schema(
+            recommended__signals__session__events, SESSION_FEATURE_SCHEMA, name="SessionFeature", mode="strict"
+        )
         return {
-            "signals_built__sessionized__events": signals_built__sessionized__events,
+            "recommended__signals__session__events": recommended__signals__session__events,
         }
 
 
-class BuildRecommendationPurchaseSignalsGenerated:
-    def _step_signals_built_purchases_attribute_5(self, frames):
-        # Step method: signals_built.purchases.attribute
-        signals_built__purchases__fulfilled_orders = frames["fulfilled_orders"].alias("order_fulfillment")
+class BuildPurchaseSignalsGenerated:
+    def _step_recommended_signals_purchases_attribute_5(self, frames):
+        # Step method: recommended.signals.purchases.attribute
+        recommended__signals__purchases__fulfilled_orders = frames["fulfilled_orders"].alias("order_fulfillment")
         feedback_impressions_joined = frames["feedback_impressions"].alias("feedback_impressions")
-        signals_built__purchases__fulfilled_orders = signals_built__purchases__fulfilled_orders.join(
+        recommended__signals__purchases__fulfilled_orders = recommended__signals__purchases__fulfilled_orders.join(
             feedback_impressions_joined,
             (
                 (
@@ -793,7 +695,7 @@ class BuildRecommendationPurchaseSignalsGenerated:
             ),
             "left",
         )
-        signals_built__purchases__fulfilled_orders = signals_built__purchases__fulfilled_orders.select(
+        recommended__signals__purchases__fulfilled_orders = recommended__signals__purchases__fulfilled_orders.select(
             F.col("order_fulfillment.tenant"),
             F.col("order_fulfillment.id").alias("order_id"),
             F.col("feedback_impressions.request_id"),
@@ -812,35 +714,35 @@ class BuildRecommendationPurchaseSignalsGenerated:
             F.col("order_fulfillment.quantity"),
         )
         assert_schema(
-            signals_built__purchases__fulfilled_orders,
+            recommended__signals__purchases__fulfilled_orders,
             RECOMMENDATION_PURCHASE_SCHEMA,
             name="RecommendationPurchase",
             mode="strict",
         )
         return {
-            "signals_built__purchases__fulfilled_orders": signals_built__purchases__fulfilled_orders,
+            "recommended__signals__purchases__fulfilled_orders": recommended__signals__purchases__fulfilled_orders,
         }
 
 
-class BuildRecommendationSignalsGenerated:
-    def _step_signals_built_recommendation_summarize_impressions_6(self, frames):
-        # Step method: signals_built.recommendation.summarize_impressions
-        signals_built__recommendation__impression_facts = frames["feedback_impressions"].alias(
+class BuildProductSignalsGenerated:
+    def _step_recommended_signals_recommendation_summarize_impressions_6(self, frames):
+        # Step method: recommended.signals.recommendation.summarize_impressions
+        recommended__signals__recommendation__impression_facts = frames["feedback_impressions"].alias(
             "recommendation_impression"
         )
-        signals_built__recommendation__impression_facts = signals_built__recommendation__impression_facts.withWatermark(
-            "shown_at", '7 days'
+        recommended__signals__recommendation__impression_facts = (
+            recommended__signals__recommendation__impression_facts.withWatermark("shown_at", '7 days')
         )
-        if signals_built__recommendation__impression_facts.isStreaming:
-            signals_built__recommendation__impression_facts = (
-                signals_built__recommendation__impression_facts.dropDuplicatesWithinWatermark(["id"])
+        if recommended__signals__recommendation__impression_facts.isStreaming:
+            recommended__signals__recommendation__impression_facts = (
+                recommended__signals__recommendation__impression_facts.dropDuplicatesWithinWatermark(["id"])
             )
         else:
-            signals_built__recommendation__impression_facts = (
-                signals_built__recommendation__impression_facts.dropDuplicates(["id"])
+            recommended__signals__recommendation__impression_facts = (
+                recommended__signals__recommendation__impression_facts.dropDuplicates(["id"])
             )
-        signals_built__recommendation__impression_facts = (
-            signals_built__recommendation__impression_facts.groupBy(
+        recommended__signals__recommendation__impression_facts = (
+            recommended__signals__recommendation__impression_facts.groupBy(
                 F.window(F.col("recommendation_impression.shown_at"), '1 day').alias("window"),
                 F.col("recommendation_impression.tenant.tenant_id").alias("tenant_id"),
                 F.col("recommendation_impression.strategy_id").alias("strategy_id"),
@@ -865,41 +767,43 @@ class BuildRecommendationSignalsGenerated:
             )
         )
         assert_schema(
-            signals_built__recommendation__impression_facts,
+            recommended__signals__recommendation__impression_facts,
             DAILY_RECOMMENDATION_IMPRESSIONS_SCHEMA,
             name="DailyRecommendationImpressions",
             mode="strict",
         )
         return {
-            "signals_built__recommendation__impression_facts": signals_built__recommendation__impression_facts,
+            "recommended__signals__recommendation__impression_facts": recommended__signals__recommendation__impression_facts,
         }
 
-    def _step_signals_built_recommendation_summarize_clicks_7(self, frames):
-        # Step method: signals_built.recommendation.summarize_clicks
-        signals_built__recommendation__click_facts = frames["feedback_impressions"].alias("recommendation_impression")
-        signals_built__recommendation__click_facts = signals_built__recommendation__click_facts.withWatermark(
-            "shown_at", '7 days'
+    def _step_recommended_signals_recommendation_summarize_clicks_7(self, frames):
+        # Step method: recommended.signals.recommendation.summarize_clicks
+        recommended__signals__recommendation__click_facts = frames["feedback_impressions"].alias(
+            "recommendation_impression"
         )
-        if signals_built__recommendation__click_facts.isStreaming:
-            signals_built__recommendation__click_facts = (
-                signals_built__recommendation__click_facts.dropDuplicatesWithinWatermark(["id"])
+        recommended__signals__recommendation__click_facts = (
+            recommended__signals__recommendation__click_facts.withWatermark("shown_at", '7 days')
+        )
+        if recommended__signals__recommendation__click_facts.isStreaming:
+            recommended__signals__recommendation__click_facts = (
+                recommended__signals__recommendation__click_facts.dropDuplicatesWithinWatermark(["id"])
             )
         else:
-            signals_built__recommendation__click_facts = signals_built__recommendation__click_facts.dropDuplicates(
-                ["id"]
+            recommended__signals__recommendation__click_facts = (
+                recommended__signals__recommendation__click_facts.dropDuplicates(["id"])
             )
         if frames["feedback_clicks"].isStreaming:
-            signals_built__recommendation__click_facts_click_deduped_1 = frames[
+            recommended__signals__recommendation__click_facts_click_deduped_1 = frames[
                 "feedback_clicks"
             ].dropDuplicatesWithinWatermark(["id"])
         else:
-            signals_built__recommendation__click_facts_click_deduped_1 = frames["feedback_clicks"].dropDuplicates(
-                ["id"]
-            )
-        feedback_clicks_joined = signals_built__recommendation__click_facts_click_deduped_1.withWatermark(
+            recommended__signals__recommendation__click_facts_click_deduped_1 = frames[
+                "feedback_clicks"
+            ].dropDuplicates(["id"])
+        feedback_clicks_joined = recommended__signals__recommendation__click_facts_click_deduped_1.withWatermark(
             "occurred_at", '7 days'
         ).alias("feedback_clicks")
-        signals_built__recommendation__click_facts = signals_built__recommendation__click_facts.join(
+        recommended__signals__recommendation__click_facts = recommended__signals__recommendation__click_facts.join(
             feedback_clicks_joined,
             (
                 (F.col("feedback_clicks.impression_id") == F.col("recommendation_impression.id"))
@@ -916,8 +820,8 @@ class BuildRecommendationSignalsGenerated:
             ),
             "inner",
         )
-        signals_built__recommendation__click_facts = (
-            signals_built__recommendation__click_facts.groupBy(
+        recommended__signals__recommendation__click_facts = (
+            recommended__signals__recommendation__click_facts.groupBy(
                 F.window(F.col("recommendation_impression.shown_at"), '1 day').alias("window"),
                 F.col("recommendation_impression.tenant.tenant_id").alias("tenant_id"),
                 F.col("recommendation_impression.strategy_id").alias("strategy_id"),
@@ -946,46 +850,48 @@ class BuildRecommendationSignalsGenerated:
             )
         )
         assert_schema(
-            signals_built__recommendation__click_facts,
+            recommended__signals__recommendation__click_facts,
             DAILY_RECOMMENDATION_CLICKS_SCHEMA,
             name="DailyRecommendationClicks",
             mode="strict",
         )
         return {
-            "signals_built__recommendation__click_facts": signals_built__recommendation__click_facts,
+            "recommended__signals__recommendation__click_facts": recommended__signals__recommendation__click_facts,
         }
 
-    def _step_signals_built_recommendation_publish_daily_impressions_8(self, frames):
-        # Step method: signals_built.recommendation.publish_daily_impressions
-        signals_built__recommendation__daily_impressions = frames[
-            "signals_built__recommendation__impression_facts"
+    def _step_recommended_signals_recommendation_publish_daily_impressions_8(self, frames):
+        # Step method: recommended.signals.recommendation.publish_daily_impressions
+        recommended__signals__recommendation__daily_impressions = frames[
+            "recommended__signals__recommendation__impression_facts"
         ].alias("daily_recommendation_impressions")
-        signals_built__recommendation__daily_impressions = signals_built__recommendation__daily_impressions.select(
-            F.col("daily_recommendation_impressions.window"),
-            F.col("daily_recommendation_impressions.tenant"),
-            F.col("daily_recommendation_impressions.strategy_id"),
-            F.col("daily_recommendation_impressions.policy_version"),
-            F.col("daily_recommendation_impressions.product_id"),
-            F.col("daily_recommendation_impressions.rank"),
-            F.col("daily_recommendation_impressions.examination_propensity"),
-            F.col("daily_recommendation_impressions.impression_count"),
+        recommended__signals__recommendation__daily_impressions = (
+            recommended__signals__recommendation__daily_impressions.select(
+                F.col("daily_recommendation_impressions.window"),
+                F.col("daily_recommendation_impressions.tenant"),
+                F.col("daily_recommendation_impressions.strategy_id"),
+                F.col("daily_recommendation_impressions.policy_version"),
+                F.col("daily_recommendation_impressions.product_id"),
+                F.col("daily_recommendation_impressions.rank"),
+                F.col("daily_recommendation_impressions.examination_propensity"),
+                F.col("daily_recommendation_impressions.impression_count"),
+            )
         )
         assert_schema(
-            signals_built__recommendation__daily_impressions,
+            recommended__signals__recommendation__daily_impressions,
             DAILY_RECOMMENDATION_IMPRESSIONS_SCHEMA,
             name="DailyRecommendationImpressions",
             mode="strict",
         )
         return {
-            "signals_built__recommendation__daily_impressions": signals_built__recommendation__daily_impressions,
+            "recommended__signals__recommendation__daily_impressions": recommended__signals__recommendation__daily_impressions,
         }
 
-    def _step_signals_built_recommendation_publish_daily_clicks_9(self, frames):
-        # Step method: signals_built.recommendation.publish_daily_clicks
-        signals_built__recommendation__daily_clicks = frames["signals_built__recommendation__click_facts"].alias(
-            "daily_recommendation_clicks"
-        )
-        signals_built__recommendation__daily_clicks = signals_built__recommendation__daily_clicks.select(
+    def _step_recommended_signals_recommendation_publish_daily_clicks_9(self, frames):
+        # Step method: recommended.signals.recommendation.publish_daily_clicks
+        recommended__signals__recommendation__daily_clicks = frames[
+            "recommended__signals__recommendation__click_facts"
+        ].alias("daily_recommendation_clicks")
+        recommended__signals__recommendation__daily_clicks = recommended__signals__recommendation__daily_clicks.select(
             F.col("daily_recommendation_clicks.window"),
             F.col("daily_recommendation_clicks.tenant"),
             F.col("daily_recommendation_clicks.strategy_id"),
@@ -997,25 +903,25 @@ class BuildRecommendationSignalsGenerated:
             F.col("daily_recommendation_clicks.clicked_impression_count"),
         )
         assert_schema(
-            signals_built__recommendation__daily_clicks,
+            recommended__signals__recommendation__daily_clicks,
             DAILY_RECOMMENDATION_CLICKS_SCHEMA,
             name="DailyRecommendationClicks",
             mode="strict",
         )
         return {
-            "signals_built__recommendation__daily_clicks": signals_built__recommendation__daily_clicks,
+            "recommended__signals__recommendation__daily_clicks": recommended__signals__recommendation__daily_clicks,
         }
 
-    def _step_signals_built_recommendation_summarize_signals_10(self, frames):
-        # Step method: signals_built.recommendation.summarize_signals
-        signals_built__recommendation__signal_totals = frames["signals_built__recommendation__impression_facts"].alias(
-            "daily_recommendation_impressions"
-        )
-        signals_built__recommendation__click_facts_joined = frames["signals_built__recommendation__click_facts"].alias(
-            "signals_built__recommendation__click_facts"
-        )
-        signals_built__recommendation__signal_totals = signals_built__recommendation__signal_totals.join(
-            signals_built__recommendation__click_facts_joined,
+    def _step_recommended_signals_recommendation_summarize_signals_10(self, frames):
+        # Step method: recommended.signals.recommendation.summarize_signals
+        recommended__signals__recommendation__signal_totals = frames[
+            "recommended__signals__recommendation__impression_facts"
+        ].alias("daily_recommendation_impressions")
+        recommended__signals__recommendation__click_facts_joined = frames[
+            "recommended__signals__recommendation__click_facts"
+        ].alias("recommended__signals__recommendation__click_facts")
+        recommended__signals__recommendation__signal_totals = recommended__signals__recommendation__signal_totals.join(
+            recommended__signals__recommendation__click_facts_joined,
             (
                 (
                     (
@@ -1023,43 +929,43 @@ class BuildRecommendationSignalsGenerated:
                             (
                                 (
                                     (
-                                        F.col("signals_built__recommendation__click_facts.window")
+                                        F.col("recommended__signals__recommendation__click_facts.window")
                                         == F.col("daily_recommendation_impressions.window")
                                     )
                                     & (
-                                        F.col("signals_built__recommendation__click_facts.tenant.tenant_id")
+                                        F.col("recommended__signals__recommendation__click_facts.tenant.tenant_id")
                                         == F.col("daily_recommendation_impressions.tenant.tenant_id")
                                     )
                                 )
                                 & (
-                                    F.col("signals_built__recommendation__click_facts.strategy_id")
+                                    F.col("recommended__signals__recommendation__click_facts.strategy_id")
                                     == F.col("daily_recommendation_impressions.strategy_id")
                                 )
                             )
                             & (
-                                F.col("signals_built__recommendation__click_facts.policy_version")
+                                F.col("recommended__signals__recommendation__click_facts.policy_version")
                                 == F.col("daily_recommendation_impressions.policy_version")
                             )
                         )
                         & (
-                            F.col("signals_built__recommendation__click_facts.product_id")
+                            F.col("recommended__signals__recommendation__click_facts.product_id")
                             == F.col("daily_recommendation_impressions.product_id")
                         )
                     )
                     & (
-                        F.col("signals_built__recommendation__click_facts.rank")
+                        F.col("recommended__signals__recommendation__click_facts.rank")
                         == F.col("daily_recommendation_impressions.rank")
                     )
                 )
                 & (
-                    F.col("signals_built__recommendation__click_facts.examination_propensity")
+                    F.col("recommended__signals__recommendation__click_facts.examination_propensity")
                     == F.col("daily_recommendation_impressions.examination_propensity")
                 )
             ),
             "left",
         )
-        signals_built__recommendation__signal_totals = (
-            signals_built__recommendation__signal_totals.groupBy(
+        recommended__signals__recommendation__signal_totals = (
+            recommended__signals__recommendation__signal_totals.groupBy(
                 F.col("daily_recommendation_impressions.tenant.tenant_id").alias("tenant_id"),
                 F.col("daily_recommendation_impressions.strategy_id").alias("strategy_id"),
                 F.col("daily_recommendation_impressions.product_id").alias("product_id"),
@@ -1070,11 +976,13 @@ class BuildRecommendationSignalsGenerated:
                 .cast(T.LongType())
                 .alias("impression_count"),
                 F.sum(
-                    F.coalesce(F.col("signals_built__recommendation__click_facts.clicked_impression_count"), F.lit(0))
+                    F.coalesce(
+                        F.col("recommended__signals__recommendation__click_facts.clicked_impression_count"), F.lit(0)
+                    )
                 )
                 .cast(T.LongType())
                 .alias("clicked_impression_count"),
-                F.sum(F.coalesce(F.col("signals_built__recommendation__click_facts.click_count"), F.lit(0)))
+                F.sum(F.coalesce(F.col("recommended__signals__recommendation__click_facts.click_count"), F.lit(0)))
                 .cast(T.LongType())
                 .alias("raw_click_count"),
                 F.sum(F.lit(0.0)).cast(T.DoubleType()).alias("click_through_rate"),
@@ -1095,7 +1003,8 @@ class BuildRecommendationSignalsGenerated:
                 F.sum(
                     (
                         F.coalesce(
-                            F.col("signals_built__recommendation__click_facts.clicked_impression_count"), F.lit(0)
+                            F.col("recommended__signals__recommendation__click_facts.clicked_impression_count"),
+                            F.lit(0),
                         )
                         / F.when(
                             (F.col("daily_recommendation_impressions.examination_propensity") > F.lit(0.0)),
@@ -1122,21 +1031,21 @@ class BuildRecommendationSignalsGenerated:
             )
         )
         assert_schema(
-            signals_built__recommendation__signal_totals,
+            recommended__signals__recommendation__signal_totals,
             PRODUCT_RECOMMENDATION_SIGNAL_TOTALS_SCHEMA,
             name="ProductRecommendationSignalTotals",
             mode="strict",
         )
         return {
-            "signals_built__recommendation__signal_totals": signals_built__recommendation__signal_totals,
+            "recommended__signals__recommendation__signal_totals": recommended__signals__recommendation__signal_totals,
         }
 
-    def _step_signals_built_recommendation_publish_signals_11(self, frames):
-        # Step method: signals_built.recommendation.publish_signals
-        signals_built__recommendation__signals = frames["signals_built__recommendation__signal_totals"].alias(
-            "product_recommendation_signal_totals"
-        )
-        signals_built__recommendation__signals = signals_built__recommendation__signals.select(
+    def _step_recommended_signals_recommendation_publish_signals_11(self, frames):
+        # Step method: recommended.signals.recommendation.publish_signals
+        recommended__signals__recommendation__signals = frames[
+            "recommended__signals__recommendation__signal_totals"
+        ].alias("product_recommendation_signal_totals")
+        recommended__signals__recommendation__signals = recommended__signals__recommendation__signals.select(
             F.col("product_recommendation_signal_totals.tenant"),
             F.col("product_recommendation_signal_totals.strategy_id"),
             F.col("product_recommendation_signal_totals.product_id"),
@@ -1173,22 +1082,22 @@ class BuildRecommendationSignalsGenerated:
             .alias("conversion_rate"),
         )
         assert_schema(
-            signals_built__recommendation__signals,
+            recommended__signals__recommendation__signals,
             PRODUCT_RECOMMENDATION_SIGNAL_SCHEMA,
             name="ProductRecommendationSignal",
             mode="strict",
         )
         return {
-            "signals_built__recommendation__signals": signals_built__recommendation__signals,
+            "recommended__signals__recommendation__signals": recommended__signals__recommendation__signals,
         }
 
 
 class SelectRecommendationCandidatesGenerated:
-    def _step_recommended_selected_select_12(self, frames):
-        # Step method: recommended.selected.select
-        recommended__selected__requests = frames["requests"].alias("recommendation_request")
+    def _step_recommended_candidates_admitted_select_12(self, frames):
+        # Step method: recommended.candidates.admitted.select
+        recommended__candidates__admitted__requests = frames["requests"].alias("recommendation_request")
         normalized__catalog_joined = frames["normalized__catalog"].alias("normalized__catalog")
-        recommended__selected__requests = recommended__selected__requests.join(
+        recommended__candidates__admitted__requests = recommended__candidates__admitted__requests.join(
             normalized__catalog_joined,
             (
                 (
@@ -1202,7 +1111,7 @@ class SelectRecommendationCandidatesGenerated:
             ),
             "inner",
         )
-        recommended__selected__requests = recommended__selected__requests.select(
+        recommended__candidates__admitted__requests = recommended__candidates__admitted__requests.select(
             F.col("recommendation_request.tenant"),
             F.col("recommendation_request.id").alias("request_id"),
             F.col("recommendation_request.requested_at"),
@@ -1231,161 +1140,142 @@ class SelectRecommendationCandidatesGenerated:
             F.lit('eligible').alias("eligibility_status"),
         )
         assert_schema(
-            recommended__selected__requests,
+            recommended__candidates__admitted__requests,
             RECOMMENDATION_CANDIDATE_SCHEMA,
             name="RecommendationCandidate",
             mode="strict",
         )
         return {
-            "recommended__selected__requests": recommended__selected__requests,
+            "recommended__candidates__admitted__requests": recommended__candidates__admitted__requests,
         }
 
 
 class GenerateRecommendationCandidatesGenerated:
-    def _step_recommended_retrieved_retrieve_13(self, frames):
-        # Step method: recommended.retrieved.retrieve
-        recommended__retrieved__requests = frames["requests"].alias("recommendation_request")
-        normalized__catalog_joined = frames["normalized__catalog"].alias("normalized__catalog")
-        recommended__retrieved__requests = recommended__retrieved__requests.join(
-            normalized__catalog_joined,
-            (
-                (F.col("normalized__catalog.tenant.tenant_id") == F.col("recommendation_request.tenant.tenant_id"))
-                & F.col("normalized__catalog.eligible")
-            ),
-            "inner",
+    def _step_recommended_candidates_retrieved_retrieve_13(self, frames):
+        # Step method: recommended.candidates.retrieved.retrieve
+        recommended__candidates__retrieved__admitted = frames["recommended__candidates__admitted__requests"].alias(
+            "recommendation_candidate"
         )
-        taxonomy_expanded__expanded_2_joined = frames["taxonomy_expanded__expanded"].alias(
-            "taxonomy_expanded__expanded_2"
-        )
-        recommended__retrieved__requests = recommended__retrieved__requests.join(
-            taxonomy_expanded__expanded_2_joined,
+        taxonomy__expanded_joined = frames["taxonomy__expanded"].alias("taxonomy__expanded")
+        recommended__candidates__retrieved__admitted = recommended__candidates__retrieved__admitted.join(
+            taxonomy__expanded_joined,
             (
                 (
-                    (
-                        F.col("taxonomy_expanded__expanded_2.tenant.tenant_id")
-                        == F.col("recommendation_request.tenant.tenant_id")
-                    )
-                    & (F.col("taxonomy_expanded__expanded_2.product_id") == F.col("normalized__catalog.product_id"))
+                    (F.col("taxonomy__expanded.tenant.tenant_id") == F.col("recommendation_candidate.tenant.tenant_id"))
+                    & (F.col("taxonomy__expanded.product_id") == F.col("recommendation_candidate.product_id"))
                 )
-                & F.col("recommendation_request.category").eqNullSafe(
-                    F.col("taxonomy_expanded__expanded_2.ancestor_category")
+                & F.col("recommendation_candidate.category_filter").eqNullSafe(
+                    F.col("taxonomy__expanded.ancestor_category")
                 )
             ),
             "left",
         )
-        signals_built__sessionized__events_3_joined = frames["signals_built__sessionized__events"].alias(
-            "signals_built__sessionized__events_3"
+        recommended__signals__session__events_2_joined = frames["recommended__signals__session__events"].alias(
+            "recommended__signals__session__events_2"
         )
-        recommended__retrieved__requests = recommended__retrieved__requests.join(
-            signals_built__sessionized__events_3_joined,
+        recommended__candidates__retrieved__admitted = recommended__candidates__retrieved__admitted.join(
+            recommended__signals__session__events_2_joined,
             (
                 (
                     (
-                        F.col("signals_built__sessionized__events_3.tenant.tenant_id")
-                        == F.col("recommendation_request.tenant.tenant_id")
+                        F.col("recommended__signals__session__events_2.tenant.tenant_id")
+                        == F.col("recommendation_candidate.tenant.tenant_id")
                     )
-                    & F.col("signals_built__sessionized__events_3.customer_id").eqNullSafe(
-                        F.col("recommendation_request.customer_id")
+                    & F.col("recommended__signals__session__events_2.customer_id").eqNullSafe(
+                        F.col("recommendation_candidate.customer_id")
                     )
                 )
-                & F.col("signals_built__sessionized__events_3.category").eqNullSafe(
-                    F.col("normalized__catalog.category")
+                & F.col("recommended__signals__session__events_2.category").eqNullSafe(
+                    F.col("recommendation_candidate.category")
                 )
             ),
             "left",
         )
-        signals_built__recommendation__signals_4_joined = frames["signals_built__recommendation__signals"].alias(
-            "signals_built__recommendation__signals_4"
-        )
-        recommended__retrieved__requests = recommended__retrieved__requests.join(
-            signals_built__recommendation__signals_4_joined,
+        recommended__signals__recommendation__signals_3_joined = frames[
+            "recommended__signals__recommendation__signals"
+        ].alias("recommended__signals__recommendation__signals_3")
+        recommended__candidates__retrieved__admitted = recommended__candidates__retrieved__admitted.join(
+            recommended__signals__recommendation__signals_3_joined,
             (
                 (
                     (
-                        F.col("signals_built__recommendation__signals_4.tenant.tenant_id")
-                        == F.col("recommendation_request.tenant.tenant_id")
+                        F.col("recommended__signals__recommendation__signals_3.tenant.tenant_id")
+                        == F.col("recommendation_candidate.tenant.tenant_id")
                     )
                     & (
-                        F.col("signals_built__recommendation__signals_4.strategy_id")
-                        == F.col("recommendation_request.strategy_id")
+                        F.col("recommended__signals__recommendation__signals_3.strategy_id")
+                        == F.col("recommendation_candidate.strategy_id")
                     )
                 )
                 & (
-                    F.col("signals_built__recommendation__signals_4.product_id")
-                    == F.col("normalized__catalog.product_id")
+                    F.col("recommended__signals__recommendation__signals_3.product_id")
+                    == F.col("recommendation_candidate.product_id")
                 )
             ),
             "left",
         )
-        recommended__retrieved__requests = recommended__retrieved__requests.where(
-            (
-                (
-                    F.col("normalized__catalog.product_id").isNotNull()
-                    & (
-                        F.col("recommendation_request.category").isNull()
-                        | F.col("recommendation_request.category").eqNullSafe(F.col("normalized__catalog.category"))
-                    )
-                )
-            )
-        )
-        recommended__retrieved__requests = recommended__retrieved__requests.select(
-            F.col("recommendation_request.tenant"),
-            F.col("recommendation_request.id").alias("request_id"),
-            F.col("recommendation_request.requested_at"),
-            F.col("recommendation_request.customer_id"),
-            F.col("recommendation_request.session_id"),
-            F.col("recommendation_request.strategy_id"),
-            F.col("recommendation_request.policy_version"),
-            F.col("recommendation_request.experiment_id"),
-            F.col("recommendation_request.experiment_version"),
-            F.col("recommendation_request.variant_id"),
-            F.col("recommendation_request.category").alias("category_filter"),
-            F.col("recommendation_request.collection_id"),
-            F.col("normalized__catalog.product_id"),
-            F.col("normalized__catalog.product_name"),
-            F.col("normalized__catalog.category"),
-            F.col("normalized__catalog.has_promotion"),
-            F.col("normalized__catalog.promotion_code"),
-            F.col("normalized__catalog.base_score"),
-            F.col("normalized__catalog.promotion_score"),
+        recommended__candidates__retrieved__admitted = recommended__candidates__retrieved__admitted.select(
+            F.col("recommendation_candidate.tenant"),
+            F.col("recommendation_candidate.request_id"),
+            F.col("recommendation_candidate.requested_at"),
+            F.col("recommendation_candidate.customer_id"),
+            F.col("recommendation_candidate.session_id"),
+            F.col("recommendation_candidate.strategy_id"),
+            F.col("recommendation_candidate.policy_version"),
+            F.col("recommendation_candidate.experiment_id"),
+            F.col("recommendation_candidate.experiment_version"),
+            F.col("recommendation_candidate.variant_id"),
+            F.col("recommendation_candidate.category_filter"),
+            F.col("recommendation_candidate.collection_id"),
+            F.col("recommendation_candidate.product_id"),
+            F.col("recommendation_candidate.product_name"),
+            F.col("recommendation_candidate.category"),
+            F.col("recommendation_candidate.has_promotion"),
+            F.col("recommendation_candidate.promotion_code"),
+            F.col("recommendation_candidate.base_score"),
+            F.col("recommendation_candidate.promotion_score"),
             F.lit(0.0).alias("inventory_boost"),
             F.when(
-                F.col("recommendation_request.category").eqNullSafe(F.col("normalized__catalog.category")),
+                F.col("recommendation_candidate.category_filter").eqNullSafe(
+                    F.col("recommendation_candidate.category")
+                ),
                 F.lit('category'),
             )
             .otherwise(
                 F.when(
-                    F.col("signals_built__sessionized__events_3.session_id").isNotNull(), F.lit('session')
+                    F.col("recommended__signals__session__events_2.session_id").isNotNull(), F.lit('session')
                 ).otherwise(F.lit('popular'))
             )
             .alias("candidate_source"),
-            F.col("taxonomy_expanded__expanded_2.taxonomy_id"),
-            F.coalesce(
-                F.col("taxonomy_expanded__expanded_2.ancestor_category"), F.col("normalized__catalog.category")
-            ).alias("taxonomy_branch"),
-            F.col("signals_built__sessionized__events_3.session_id").isNotNull().alias("session_match"),
-            F.coalesce(F.col("signals_built__recommendation__signals_4.conversion_rate"), F.lit(0.0)).alias(
+            F.col("taxonomy__expanded.taxonomy_id"),
+            F.coalesce(F.col("taxonomy__expanded.ancestor_category"), F.col("recommendation_candidate.category")).alias(
+                "taxonomy_branch"
+            ),
+            F.col("recommended__signals__session__events_2.session_id").isNotNull().alias("session_match"),
+            F.coalesce(F.col("recommended__signals__recommendation__signals_3.conversion_rate"), F.lit(0.0)).alias(
                 "purchase_signal"
             ),
             F.lit('retrieved').alias("eligibility_status"),
         )
         assert_schema(
-            recommended__retrieved__requests,
+            recommended__candidates__retrieved__admitted,
             RECOMMENDATION_CANDIDATE_SCHEMA,
             name="RecommendationCandidate",
             mode="strict",
         )
         return {
-            "recommended__retrieved__requests": recommended__retrieved__requests,
+            "recommended__candidates__retrieved__admitted": recommended__candidates__retrieved__admitted,
         }
 
 
 class FilterRecommendationCandidatesGenerated:
-    def _step_recommended_filtered_evaluate_14(self, frames):
-        # Step method: recommended.filtered.evaluate
-        recommended__filtered__evaluated = frames["recommended__retrieved__requests"].alias("recommendation_candidate")
+    def _step_recommended_candidates_filtered_evaluate_14(self, frames):
+        # Step method: recommended.candidates.filtered.evaluate
+        recommended__candidates__filtered__evaluated = frames["recommended__candidates__retrieved__admitted"].alias(
+            "recommendation_candidate"
+        )
         suppressions_joined = frames["suppressions"].alias("suppressions")
-        recommended__filtered__evaluated = recommended__filtered__evaluated.join(
+        recommended__candidates__filtered__evaluated = recommended__candidates__filtered__evaluated.join(
             suppressions_joined,
             (
                 (
@@ -1402,38 +1292,38 @@ class FilterRecommendationCandidatesGenerated:
             ),
             "left",
         )
-        signals_built__sessionized__events_2_joined = frames["signals_built__sessionized__events"].alias(
-            "signals_built__sessionized__events_2"
+        recommended__signals__session__events_2_joined = frames["recommended__signals__session__events"].alias(
+            "recommended__signals__session__events_2"
         )
-        recommended__filtered__evaluated = recommended__filtered__evaluated.join(
-            signals_built__sessionized__events_2_joined,
+        recommended__candidates__filtered__evaluated = recommended__candidates__filtered__evaluated.join(
+            recommended__signals__session__events_2_joined,
             (
                 (
                     (
                         (
-                            F.col("signals_built__sessionized__events_2.tenant.tenant_id")
+                            F.col("recommended__signals__session__events_2.tenant.tenant_id")
                             == F.col("recommendation_candidate.tenant.tenant_id")
                         )
-                        & F.col("signals_built__sessionized__events_2.customer_id").eqNullSafe(
+                        & F.col("recommended__signals__session__events_2.customer_id").eqNullSafe(
                             F.col("recommendation_candidate.customer_id")
                         )
                     )
-                    & F.col("signals_built__sessionized__events_2.product_id").eqNullSafe(
+                    & F.col("recommended__signals__session__events_2.product_id").eqNullSafe(
                         F.col("recommendation_candidate.product_id")
                     )
                 )
-                & (F.col("signals_built__sessionized__events_2.add_to_cart_count") > F.lit(0))
+                & (F.col("recommended__signals__session__events_2.add_to_cart_count") > F.lit(0))
             ),
             "left",
         )
-        recommended__filtered__evaluated = recommended__filtered__evaluated.select(
+        recommended__candidates__filtered__evaluated = recommended__candidates__filtered__evaluated.select(
             F.col("recommendation_candidate.tenant"),
             F.col("recommendation_candidate.request_id"),
             F.col("recommendation_candidate.product_id"),
             F.lit('filter').alias("stage"),
             (
                 ~(F.coalesce(F.col("suppressions.exclude"), F.lit(False)))
-                & ~(F.col("signals_built__sessionized__events_2.product_id").isNotNull())
+                & ~(F.col("recommended__signals__session__events_2.product_id").isNotNull())
             ).alias("eligible"),
             F.when(
                 F.coalesce(F.col("suppressions.exclude"), F.lit(False)),
@@ -1441,7 +1331,8 @@ class FilterRecommendationCandidatesGenerated:
             )
             .otherwise(
                 F.when(
-                    F.col("signals_built__sessionized__events_2.product_id").isNotNull(), F.lit('session_already_added')
+                    F.col("recommended__signals__session__events_2.product_id").isNotNull(),
+                    F.lit('session_already_added'),
                 ).otherwise(F.lit(None))
             )
             .alias("exclusion_reason"),
@@ -1449,42 +1340,47 @@ class FilterRecommendationCandidatesGenerated:
             F.col("recommendation_candidate.taxonomy_branch"),
         )
         assert_schema(
-            recommended__filtered__evaluated,
+            recommended__candidates__filtered__evaluated,
             RECOMMENDATION_CANDIDATE_DECISION_SCHEMA,
             name="RecommendationCandidateDecision",
             mode="strict",
         )
         return {
-            "recommended__filtered__evaluated": recommended__filtered__evaluated,
+            "recommended__candidates__filtered__evaluated": recommended__candidates__filtered__evaluated,
         }
 
-    def _step_recommended_filtered_publish_15(self, frames):
-        # Step method: recommended.filtered.publish
-        recommended__filtered__filtered = frames["recommended__retrieved__requests"].alias("recommendation_candidate")
-        recommended__filtered__evaluated_joined = frames["recommended__filtered__evaluated"].alias(
-            "recommended__filtered__evaluated"
+    def _step_recommended_candidates_filtered_publish_15(self, frames):
+        # Step method: recommended.candidates.filtered.publish
+        recommended__candidates__filtered__filtered = frames["recommended__candidates__retrieved__admitted"].alias(
+            "recommendation_candidate"
         )
-        recommended__filtered__filtered = recommended__filtered__filtered.join(
-            recommended__filtered__evaluated_joined,
+        recommended__candidates__filtered__evaluated_joined = frames[
+            "recommended__candidates__filtered__evaluated"
+        ].alias("recommended__candidates__filtered__evaluated")
+        recommended__candidates__filtered__filtered = recommended__candidates__filtered__filtered.join(
+            recommended__candidates__filtered__evaluated_joined,
             (
                 (
                     (
-                        F.col("recommended__filtered__evaluated.tenant.tenant_id")
+                        F.col("recommended__candidates__filtered__evaluated.tenant.tenant_id")
                         == F.col("recommendation_candidate.tenant.tenant_id")
                     )
                     & (
-                        F.col("recommended__filtered__evaluated.request_id")
+                        F.col("recommended__candidates__filtered__evaluated.request_id")
                         == F.col("recommendation_candidate.request_id")
                     )
                 )
-                & (F.col("recommended__filtered__evaluated.product_id") == F.col("recommendation_candidate.product_id"))
+                & (
+                    F.col("recommended__candidates__filtered__evaluated.product_id")
+                    == F.col("recommendation_candidate.product_id")
+                )
             ),
             "left",
         )
-        recommended__filtered__filtered = recommended__filtered__filtered.where(
-            (F.col("recommended__filtered__evaluated.eligible"))
+        recommended__candidates__filtered__filtered = recommended__candidates__filtered__filtered.where(
+            (F.col("recommended__candidates__filtered__evaluated.eligible"))
         )
-        recommended__filtered__filtered = recommended__filtered__filtered.select(
+        recommended__candidates__filtered__filtered = recommended__candidates__filtered__filtered.select(
             F.col("recommendation_candidate.tenant"),
             F.col("recommendation_candidate.request_id"),
             F.col("recommendation_candidate.requested_at"),
@@ -1513,20 +1409,22 @@ class FilterRecommendationCandidatesGenerated:
             F.lit('eligible').alias("eligibility_status"),
         )
         assert_schema(
-            recommended__filtered__filtered,
+            recommended__candidates__filtered__filtered,
             RECOMMENDATION_CANDIDATE_SCHEMA,
             name="RecommendationCandidate",
             mode="strict",
         )
         return {
-            "recommended__filtered__filtered": recommended__filtered__filtered,
+            "recommended__candidates__filtered__filtered": recommended__candidates__filtered__filtered,
         }
 
 
 class RankRecommendationCandidatesGenerated:
     def _step_recommended_ranked_rank_16(self, frames):
         # Step method: recommended.ranked.rank
-        recommended__ranked__candidates = frames["recommended__filtered__filtered"].alias("recommendation_candidate")
+        recommended__ranked__candidates = frames["recommended__candidates__filtered__filtered"].alias(
+            "recommendation_candidate"
+        )
         policy_joined = frames["policy"].alias("policy")
         recommended__ranked__candidates = recommended__ranked__candidates.join(
             policy_joined,
@@ -1578,24 +1476,24 @@ class RankRecommendationCandidatesGenerated:
         recommended__ranked__candidates = recommended__ranked__candidates.where(
             ((F.coalesce(F.col("suppressions_3.exclude"), F.lit(False)) == F.lit(False)))
         )
-        signals_built__recommendation__signals_4_joined = frames["signals_built__recommendation__signals"].alias(
-            "signals_built__recommendation__signals_4"
-        )
+        recommended__signals__recommendation__signals_4_joined = frames[
+            "recommended__signals__recommendation__signals"
+        ].alias("recommended__signals__recommendation__signals_4")
         recommended__ranked__candidates = recommended__ranked__candidates.join(
-            signals_built__recommendation__signals_4_joined,
+            recommended__signals__recommendation__signals_4_joined,
             (
                 (
                     (
-                        F.col("signals_built__recommendation__signals_4.tenant.tenant_id")
+                        F.col("recommended__signals__recommendation__signals_4.tenant.tenant_id")
                         == F.col("recommendation_candidate.tenant.tenant_id")
                     )
                     & (
-                        F.col("signals_built__recommendation__signals_4.strategy_id")
+                        F.col("recommended__signals__recommendation__signals_4.strategy_id")
                         == F.col("recommendation_candidate.strategy_id")
                     )
                 )
                 & (
-                    F.col("signals_built__recommendation__signals_4.product_id")
+                    F.col("recommended__signals__recommendation__signals_4.product_id")
                     == F.col("recommendation_candidate.product_id")
                 )
             ),
@@ -1605,7 +1503,7 @@ class RankRecommendationCandidatesGenerated:
             F.col("recommendation_candidate.tenant"),
             F.col("recommendation_candidate.request_id"),
             F.col("recommendation_candidate.strategy_id"),
-            F.col("policy.policy_version"),
+            F.col("recommendation_candidate.policy_version"),
             F.col("recommendation_candidate.product_id"),
             F.col("recommendation_candidate.product_name"),
             F.col("recommendation_candidate.category"),
@@ -1631,17 +1529,19 @@ class RankRecommendationCandidatesGenerated:
                                     (
                                         (
                                             F.coalesce(
-                                                F.col("signals_built__recommendation__signals_4.impression_count"),
+                                                F.col(
+                                                    "recommended__signals__recommendation__signals_4.impression_count"
+                                                ),
                                                 F.lit(0),
                                             )
                                             >= F.col("policy.minimum_feedback_impressions")
                                         )
                                         & F.col(
-                                            "signals_built__recommendation__signals_4.click_through_rate"
+                                            "recommended__signals__recommendation__signals_4.click_through_rate"
                                         ).isNotNull()
                                     ),
                                     (
-                                        F.col("signals_built__recommendation__signals_4.click_through_rate")
+                                        F.col("recommended__signals__recommendation__signals_4.click_through_rate")
                                         * F.col("policy.feedback_weight")
                                     ),
                                 ).otherwise(F.lit(0.0)),
@@ -1666,13 +1566,15 @@ class RankRecommendationCandidatesGenerated:
                 F.when(
                     (
                         (
-                            F.coalesce(F.col("signals_built__recommendation__signals_4.impression_count"), F.lit(0))
+                            F.coalesce(
+                                F.col("recommended__signals__recommendation__signals_4.impression_count"), F.lit(0)
+                            )
                             >= F.col("policy.minimum_feedback_impressions")
                         )
-                        & F.col("signals_built__recommendation__signals_4.click_through_rate").isNotNull()
+                        & F.col("recommended__signals__recommendation__signals_4.click_through_rate").isNotNull()
                     ),
                     (
-                        F.col("signals_built__recommendation__signals_4.click_through_rate")
+                        F.col("recommended__signals__recommendation__signals_4.click_through_rate")
                         * F.col("policy.feedback_weight")
                     ),
                 ).otherwise(F.lit(0.0)),
@@ -1695,14 +1597,17 @@ class RankRecommendationCandidatesGenerated:
                             (
                                 (
                                     F.coalesce(
-                                        F.col("signals_built__recommendation__signals_4.impression_count"), F.lit(0)
+                                        F.col("recommended__signals__recommendation__signals_4.impression_count"),
+                                        F.lit(0),
                                     )
                                     >= F.col("policy.minimum_feedback_impressions")
                                 )
-                                & F.col("signals_built__recommendation__signals_4.click_through_rate").isNotNull()
+                                & F.col(
+                                    "recommended__signals__recommendation__signals_4.click_through_rate"
+                                ).isNotNull()
                             ),
                             (
-                                F.col("signals_built__recommendation__signals_4.click_through_rate")
+                                F.col("recommended__signals__recommendation__signals_4.click_through_rate")
                                 * F.col("policy.feedback_weight")
                             ),
                         ).otherwise(F.lit(0.0)),
@@ -1712,7 +1617,7 @@ class RankRecommendationCandidatesGenerated:
                 - F.coalesce(F.col("suppressions_3.penalty"), F.lit(0.0))
             ).alias("final_score"),
             (
-                F.coalesce(F.col("signals_built__recommendation__signals_4.impression_count"), F.lit(0))
+                F.coalesce(F.col("recommended__signals__recommendation__signals_4.impression_count"), F.lit(0))
                 >= F.col("policy.minimum_feedback_impressions")
             ).alias("feedback_contributed"),
             F.col("recommendation_candidate.candidate_source"),
@@ -2045,8 +1950,8 @@ class MerchandisingGenerated(
     NormalizeCatalogGenerated,
     ExpandProductTaxonomyGenerated,
     BuildSessionSignalsGenerated,
-    BuildRecommendationPurchaseSignalsGenerated,
-    BuildRecommendationSignalsGenerated,
+    BuildPurchaseSignalsGenerated,
+    BuildProductSignalsGenerated,
     SelectRecommendationCandidatesGenerated,
     GenerateRecommendationCandidatesGenerated,
     FilterRecommendationCandidatesGenerated,
@@ -2135,20 +2040,20 @@ class MerchandisingGenerated(
         }
         frames.update(self._step_cataloged_prepare_0(frames))
         frames.update(self._step_normalized_normalize_1(frames))
-        frames.update(self._step_taxonomy_expanded_build_ancestors_2(frames))
-        frames.update(self._step_taxonomy_expanded_expand_3(frames))
-        frames.update(self._step_signals_built_sessionized_build_4(frames))
-        frames.update(self._step_signals_built_purchases_attribute_5(frames))
-        frames.update(self._step_signals_built_recommendation_summarize_impressions_6(frames))
-        frames.update(self._step_signals_built_recommendation_summarize_clicks_7(frames))
-        frames.update(self._step_signals_built_recommendation_publish_daily_impressions_8(frames))
-        frames.update(self._step_signals_built_recommendation_publish_daily_clicks_9(frames))
-        frames.update(self._step_signals_built_recommendation_summarize_signals_10(frames))
-        frames.update(self._step_signals_built_recommendation_publish_signals_11(frames))
-        frames.update(self._step_recommended_selected_select_12(frames))
-        frames.update(self._step_recommended_retrieved_retrieve_13(frames))
-        frames.update(self._step_recommended_filtered_evaluate_14(frames))
-        frames.update(self._step_recommended_filtered_publish_15(frames))
+        frames.update(self._step_taxonomy_build_ancestors_2(frames))
+        frames.update(self._step_taxonomy_expand_3(frames))
+        frames.update(self._step_recommended_signals_session_build_4(frames))
+        frames.update(self._step_recommended_signals_purchases_attribute_5(frames))
+        frames.update(self._step_recommended_signals_recommendation_summarize_impressions_6(frames))
+        frames.update(self._step_recommended_signals_recommendation_summarize_clicks_7(frames))
+        frames.update(self._step_recommended_signals_recommendation_publish_daily_impressions_8(frames))
+        frames.update(self._step_recommended_signals_recommendation_publish_daily_clicks_9(frames))
+        frames.update(self._step_recommended_signals_recommendation_summarize_signals_10(frames))
+        frames.update(self._step_recommended_signals_recommendation_publish_signals_11(frames))
+        frames.update(self._step_recommended_candidates_admitted_select_12(frames))
+        frames.update(self._step_recommended_candidates_retrieved_retrieve_13(frames))
+        frames.update(self._step_recommended_candidates_filtered_evaluate_14(frames))
+        frames.update(self._step_recommended_candidates_filtered_publish_15(frames))
         frames.update(self._step_recommended_ranked_rank_16(frames))
         frames.update(self._step_recommended_diversified_decide_17(frames))
         frames.update(self._step_recommended_diversified_publish_18(frames))
@@ -2164,7 +2069,7 @@ class MerchandisingGenerated(
         assert_schema(recommendation_runs, RECOMMENDATION_RUN_SCHEMA, name="RecommendationRun", mode="strict")
 
         # Step method: daily_impressions
-        daily_impressions = frames["signals_built__recommendation__daily_impressions"].alias(
+        daily_impressions = frames["recommended__signals__recommendation__daily_impressions"].alias(
             "daily_recommendation_impressions"
         )
         assert_schema(
@@ -2175,15 +2080,24 @@ class MerchandisingGenerated(
         )
 
         # Step method: daily_clicks
-        daily_clicks = frames["signals_built__recommendation__daily_clicks"].alias("daily_recommendation_clicks")
+        daily_clicks = frames["recommended__signals__recommendation__daily_clicks"].alias("daily_recommendation_clicks")
         assert_schema(daily_clicks, DAILY_RECOMMENDATION_CLICKS_SCHEMA, name="DailyRecommendationClicks", mode="strict")
 
-        # Step method: signals
-        signals = frames["signals_built__recommendation__signals"].alias("product_recommendation_signal")
-        assert_schema(signals, PRODUCT_RECOMMENDATION_SIGNAL_SCHEMA, name="ProductRecommendationSignal", mode="strict")
+        # Step method: recommendation_signals
+        recommendation_signals = frames["recommended__signals__recommendation__signals"].alias(
+            "product_recommendation_signal"
+        )
+        assert_schema(
+            recommendation_signals,
+            PRODUCT_RECOMMENDATION_SIGNAL_SCHEMA,
+            name="ProductRecommendationSignal",
+            mode="strict",
+        )
 
         # Step method: recommendation_purchases
-        recommendation_purchases = frames["signals_built__purchases__fulfilled_orders"].alias("recommendation_purchase")
+        recommendation_purchases = frames["recommended__signals__purchases__fulfilled_orders"].alias(
+            "recommendation_purchase"
+        )
         assert_schema(
             recommendation_purchases, RECOMMENDATION_PURCHASE_SCHEMA, name="RecommendationPurchase", mode="strict"
         )
@@ -2193,7 +2107,7 @@ class MerchandisingGenerated(
                 "recommendation_runs": recommendation_runs,
                 "daily_impressions": daily_impressions,
                 "daily_clicks": daily_clicks,
-                "signals": signals,
+                "recommendation_signals": recommendation_signals,
                 "recommendation_purchases": recommendation_purchases,
             },
             single=False,
@@ -2202,7 +2116,7 @@ class MerchandisingGenerated(
                 "recommendation_runs": RECOMMENDATION_RUN_SCHEMA,
                 "daily_impressions": DAILY_RECOMMENDATION_IMPRESSIONS_SCHEMA,
                 "daily_clicks": DAILY_RECOMMENDATION_CLICKS_SCHEMA,
-                "signals": PRODUCT_RECOMMENDATION_SIGNAL_SCHEMA,
+                "recommendation_signals": PRODUCT_RECOMMENDATION_SIGNAL_SCHEMA,
                 "recommendation_purchases": RECOMMENDATION_PURCHASE_SCHEMA,
             },
         )

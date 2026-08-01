@@ -42,7 +42,7 @@ class AssignRecommendationVariantsGenerated:
             "inner",
         )
         requests = requests.select(
-            F.col("recommendation_request.tenant"),
+            F.col("experiments.tenant"),
             F.col("experiments.experiment_id"),
             F.col("experiments.experiment_version"),
             F.coalesce(

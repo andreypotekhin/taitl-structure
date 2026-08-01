@@ -113,3 +113,25 @@ Structure.
 No relation operation is supported until source validation, immutable recipes, capability checks, online execution,
 generated source, explain/traceability, diagnostics, and parity evidence agree. If a Search migration exposes a missing
 contract, the hook remains and the gap is recorded in `docs/dev/Gaps.md`.
+
+## Typed Generator Expansion
+
+The generator family expands the existing `posexplode_struct(...)` contract through explicit relation operations rather
+than raw generator Columns. Each operation consumes a declared `array<struct>` expression, creates a declared generated
+scope, and returns a relation whose cardinality and nullability are visible to the compiler.
+
+The public variants are `explode_struct(...)`, `explode_outer_struct(...)`, `posexplode_struct(...)`,
+`posexplode_outer_struct(...)`, `inline_struct(...)`, and `inline_outer_struct(...)`. Inner variants emit zero rows for
+null or empty arrays. Outer variants emit one row with nullable generated fields; outer positional expansion also has a
+nullable ordinal. `inline` variants expose declared struct members as sibling fields. Scalar-array and map generators
+remain separate future contracts because their output naming and map key/value rules differ.
+
+Every generator requires a non-nullable element shape, a declared `as_` Schema, a non-empty unique symbolic scope, and
+output names from that Schema rather than runtime data. The operation records kind, source expression, generated Schema,
+optional ordinal, scope, outer flag, cardinality, batch/streaming/Connect classification, capability, diagnostics, and
+provenance. Expansion invalidates any earlier relation-order claim. Generators are batch-only until a separate streaming
+gate proves a safe contract.
+
+Capability, symbolic, recipe, evaluator, renderer, explain, traceability, and invalid-schema tests cover null, empty,
+one-element, multiple-element, nested-field, and schema-mismatch cases. Generated code uses public PySpark generator
+functions and introduces no SQL strings, UDFs, actions, driver loops, or lifecycle calls.

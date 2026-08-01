@@ -25,11 +25,7 @@ class SummarizeRecommendationBehavior(Transform):
         )
         propensity = when(impression.examination_propensity > 0.0, impression.examination_propensity).otherwise(1.0)
         weight = 1.0 / propensity
-        return RecommendationExposure(
-            window=impression.window,
-            tenant=impression.tenant,
-            strategy_id=impression.strategy_id,
-            policy_version=impression.policy_version,
+        return RecommendationExposure.project(impression)(
             exposure_weight=sum(weight),
             click_weight=sum(when(impression.click_count > 0, weight).otherwise(0.0)),
         )
@@ -45,11 +41,7 @@ class SummarizeRecommendationBehavior(Transform):
         request_count = sum(1)
         zero_result_count = sum(when(request.result_count == 0, 1).otherwise(0))
         clicked_request_count = sum(when(request.has_click, 1).otherwise(0))
-        return DailyRecommendationCounts(
-            window=request.window,
-            tenant=request.tenant,
-            strategy_id=request.strategy_id,
-            policy_version=request.policy_version,
+        return DailyRecommendationCounts.project(request)(
             request_count=request_count,
             zero_result_request_count=zero_result_count,
             clicked_request_count=clicked_request_count,

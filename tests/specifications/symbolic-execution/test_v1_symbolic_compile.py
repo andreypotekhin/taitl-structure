@@ -17,19 +17,20 @@ def _analysis(transform):
 def test_v1_fixture_imports_without_pyspark() -> None:
     before = {name for name in sys.modules if name.startswith("pyspark")}
 
-    import testing.model.v1.orders.transforms.order
+    import testing.model.orders.transforms.order
 
     after = {name for name in sys.modules if name.startswith("pyspark")}
     assert after == before
-    assert testing.model.v1.orders.transforms.order.EnrichOrders.__name__ == "EnrichOrders"
+    assert testing.model.orders.transforms.order.EnrichOrders.__name__ == "EnrichOrders"
 
 
 def test_v1_transform_compiles_to_ordered_symbolic_plan() -> None:
-    from testing.model.v1.orders.schemas.customer import Customer
-    from testing.model.v1.orders.schemas.order import OrderPublished, OrderRaw
-    from testing.model.v1.orders.schemas.product import Product
-    from testing.model.v1.orders.schemas.promotion import Promotion
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.schemas.customer import Customer
+    from testing.model.orders.schemas.order import OrderPublished, OrderRaw
+    from testing.model.orders.schemas.product import BlockedProduct, Product
+    from testing.model.orders.schemas.promotion import Promotion
+    from testing.model.orders.schemas.shipment import Shipment
+    from testing.model.orders.transforms.order import EnrichOrders
 
     plan = _analysis(EnrichOrders)
 
@@ -40,24 +41,27 @@ def test_v1_transform_compiles_to_ordered_symbolic_plan() -> None:
         ("orders", OrderRaw, 0),
         ("customers", Customer, 1),
         ("products", Product, 2),
-        ("promotions", Promotion, 3),
+        ("blocked_products", BlockedProduct, 3),
+        ("promotions", Promotion, 4),
+        ("shipments", Shipment, 5),
     ]
     assert [step.name for step in plan.steps] == [
         "normalize",
         "add_customer",
         "add_product",
         "add_promotion",
+        "add_shipments",
         "publish",
     ]
 
 
 def test_v1_symbolic_plan_records_joins_and_hooks() -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     plan = _analysis(EnrichOrders)
 
     bodies = tuple(cast(PySparkStepBody, step.plugin_body) for step in plan.steps)
-    assert [len(body.joins) for body in bodies] == [0, 1, 1, 1, 0]
+    assert [len(body.joins) for body in bodies] == [0, 1, 3, 1, 1, 0]
     customer_join = bodies[1].joins[0]
     assert customer_join.input_name == "customer"
     assert customer_join.how is Join.LEFT
@@ -66,21 +70,21 @@ def test_v1_symbolic_plan_records_joins_and_hooks() -> None:
 
     assert [hook.name for hook in plan.steps[0].before_hooks] == ["use_current_orders"]
     assert [hook.name for hook in plan.steps[0].after_hooks] == ["remove_negative_totals"]
-    assert [hook.name for hook in plan.steps[3].after_hooks] == ["note_lookup_inputs"]
-    assert [hook.name for hook in plan.steps[4].after_hooks] == ["add_quality_columns"]
+    assert [hook.name for hook in plan.steps[4].after_hooks] == ["note_lookup_inputs"]
+    assert [hook.name for hook in plan.steps[5].after_hooks] == ["add_quality_columns"]
 
-    lookup_hook = plan.steps[3].after_hooks[0]
+    lookup_hook = plan.steps[4].after_hooks[0]
     assert lookup_hook.sources == ("orders", "input:customers", "input:products")
     assert lookup_hook.schema_mode is SchemaMode.ALLOW_EXTRA_COLUMNS
-    assert lookup_hook.project_output
+    assert not lookup_hook.project_output
     assert lookup_hook.streaming
 
-    quality_hook = plan.steps[4].after_hooks[0]
+    quality_hook = plan.steps[5].after_hooks[0]
     assert quality_hook.project_output
 
 
 def test_v1_symbolic_plan_records_expression_operators() -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     plan = _analysis(EnrichOrders)
     normalize = plan.steps[0]

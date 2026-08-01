@@ -27,12 +27,7 @@ class MeasureRecommendationRequests(Transform):
         )
         result_count = sum(when(impression.impression_id.is_not_null(), 1).otherwise(0))
         clicked_result_count = sum(when(impression.click_count > 0, 1).otherwise(0))
-        return RecommendationRequestBehavior(
-            window=request.window,
-            tenant=request.tenant,
-            request_id=request.request_id,
-            strategy_id=request.strategy_id,
-            policy_version=request.policy_version,
+        return RecommendationRequestBehavior.project(request)(
             result_count=result_count,
             clicked_result_count=clicked_result_count,
             has_click=bool_or(coalesce(impression.click_count, 0) > 0),

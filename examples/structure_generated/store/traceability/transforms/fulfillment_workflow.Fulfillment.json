@@ -1623,134 +1623,134 @@
       "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.windows.build.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.15.projections.summarize_inbound",
-      "ir": "ir:Fulfillment.step.15.projections.summarize_inbound",
-      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.projections.summarize_inbound"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.15.inventory_projection.summarize_inbound",
+      "ir": "ir:Fulfillment.step.15.inventory_projection.summarize_inbound",
+      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.inventory_projection.summarize_inbound"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.15.projections.summarize_inbound.aggregate.tenant",
-      "ir": "ir:Fulfillment.step.15.projections.summarize_inbound.aggregate.tenant",
-      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.projections.summarize_inbound.aggregate.tenant"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.15.inventory_projection.summarize_inbound.aggregate.tenant",
+      "ir": "ir:Fulfillment.step.15.inventory_projection.summarize_inbound.aggregate.tenant",
+      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.inventory_projection.summarize_inbound.aggregate.tenant"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.15.projections.summarize_inbound.aggregate.audit",
-      "ir": "ir:Fulfillment.step.15.projections.summarize_inbound.aggregate.audit",
-      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.projections.summarize_inbound.aggregate.audit"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.15.inventory_projection.summarize_inbound.aggregate.audit",
+      "ir": "ir:Fulfillment.step.15.inventory_projection.summarize_inbound.aggregate.audit",
+      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.inventory_projection.summarize_inbound.aggregate.audit"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.15.projections.summarize_inbound.aggregate.warehouse_id",
-      "ir": "ir:Fulfillment.step.15.projections.summarize_inbound.aggregate.warehouse_id",
-      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.projections.summarize_inbound.aggregate.warehouse_id"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.15.inventory_projection.summarize_inbound.aggregate.warehouse_id",
+      "ir": "ir:Fulfillment.step.15.inventory_projection.summarize_inbound.aggregate.warehouse_id",
+      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.inventory_projection.summarize_inbound.aggregate.warehouse_id"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.15.projections.summarize_inbound.aggregate.product_id",
-      "ir": "ir:Fulfillment.step.15.projections.summarize_inbound.aggregate.product_id",
-      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.projections.summarize_inbound.aggregate.product_id"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.15.inventory_projection.summarize_inbound.aggregate.product_id",
+      "ir": "ir:Fulfillment.step.15.inventory_projection.summarize_inbound.aggregate.product_id",
+      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.inventory_projection.summarize_inbound.aggregate.product_id"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.15.projections.summarize_inbound.aggregate.expected_quantity",
-      "ir": "ir:Fulfillment.step.15.projections.summarize_inbound.aggregate.expected_quantity",
-      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.projections.summarize_inbound.aggregate.expected_quantity"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.15.inventory_projection.summarize_inbound.aggregate.expected_quantity",
+      "ir": "ir:Fulfillment.step.15.inventory_projection.summarize_inbound.aggregate.expected_quantity",
+      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.inventory_projection.summarize_inbound.aggregate.expected_quantity"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.15.projections.summarize_inbound.aggregate.expected_at",
-      "ir": "ir:Fulfillment.step.15.projections.summarize_inbound.aggregate.expected_at",
-      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.projections.summarize_inbound.aggregate.expected_at"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.15.inventory_projection.summarize_inbound.aggregate.expected_at",
+      "ir": "ir:Fulfillment.step.15.inventory_projection.summarize_inbound.aggregate.expected_at",
+      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.inventory_projection.summarize_inbound.aggregate.expected_at"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.15.projections.summarize_inbound.aggregate.source_type",
-      "ir": "ir:Fulfillment.step.15.projections.summarize_inbound.aggregate.source_type",
-      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.projections.summarize_inbound.aggregate.source_type"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.15.inventory_projection.summarize_inbound.aggregate.source_type",
+      "ir": "ir:Fulfillment.step.15.inventory_projection.summarize_inbound.aggregate.source_type",
+      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.inventory_projection.summarize_inbound.aggregate.source_type"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.15.projections.summarize_inbound.validation.0.intermediate",
-      "ir": "ir:Fulfillment.step.15.projections.summarize_inbound.validation.0.intermediate",
-      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.projections.summarize_inbound.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.15.inventory_projection.summarize_inbound.validation.0.intermediate",
+      "ir": "ir:Fulfillment.step.15.inventory_projection.summarize_inbound.validation.0.intermediate",
+      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.inventory_projection.summarize_inbound.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.projections.project_inventory",
-      "ir": "ir:Fulfillment.step.16.projections.project_inventory",
-      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.projections.project_inventory"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.inventory_projection.project_inventory",
+      "ir": "ir:Fulfillment.step.16.inventory_projection.project_inventory",
+      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.inventory_projection.project_inventory"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.projections.project_inventory.join.1.inventory",
-      "ir": "ir:Fulfillment.step.16.projections.project_inventory.join.1.inventory",
-      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.projections.project_inventory.join.1.inventory"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.inventory_projection.project_inventory.join.1.inventory",
+      "ir": "ir:Fulfillment.step.16.inventory_projection.project_inventory.join.1.inventory",
+      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.inventory_projection.project_inventory.join.1.inventory"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.projections.project_inventory.join.2.inbound",
-      "ir": "ir:Fulfillment.step.16.projections.project_inventory.join.2.inbound",
-      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.projections.project_inventory.join.2.inbound"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.inventory_projection.project_inventory.join.2.inbound",
+      "ir": "ir:Fulfillment.step.16.inventory_projection.project_inventory.join.2.inbound",
+      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.inventory_projection.project_inventory.join.2.inbound"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.projections.project_inventory.join.3.lead_time",
-      "ir": "ir:Fulfillment.step.16.projections.project_inventory.join.3.lead_time",
-      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.projections.project_inventory.join.3.lead_time"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.inventory_projection.project_inventory.join.3.lead_time",
+      "ir": "ir:Fulfillment.step.16.inventory_projection.project_inventory.join.3.lead_time",
+      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.inventory_projection.project_inventory.join.3.lead_time"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.projections.project_inventory.select.tenant",
-      "ir": "ir:Fulfillment.step.16.projections.project_inventory.project.tenant",
-      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.projections.project_inventory.field.tenant"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.inventory_projection.project_inventory.select.tenant",
+      "ir": "ir:Fulfillment.step.16.inventory_projection.project_inventory.project.tenant",
+      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.inventory_projection.project_inventory.field.tenant"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.projections.project_inventory.select.warehouse_id",
-      "ir": "ir:Fulfillment.step.16.projections.project_inventory.project.warehouse_id",
-      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.projections.project_inventory.field.warehouse_id"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.inventory_projection.project_inventory.select.warehouse_id",
+      "ir": "ir:Fulfillment.step.16.inventory_projection.project_inventory.project.warehouse_id",
+      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.inventory_projection.project_inventory.field.warehouse_id"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.projections.project_inventory.select.product_id",
-      "ir": "ir:Fulfillment.step.16.projections.project_inventory.project.product_id",
-      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.projections.project_inventory.field.product_id"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.inventory_projection.project_inventory.select.product_id",
+      "ir": "ir:Fulfillment.step.16.inventory_projection.project_inventory.project.product_id",
+      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.inventory_projection.project_inventory.field.product_id"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.projections.project_inventory.select.window_start",
-      "ir": "ir:Fulfillment.step.16.projections.project_inventory.project.window_start",
-      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.projections.project_inventory.field.window_start"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.inventory_projection.project_inventory.select.window_start",
+      "ir": "ir:Fulfillment.step.16.inventory_projection.project_inventory.project.window_start",
+      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.inventory_projection.project_inventory.field.window_start"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.projections.project_inventory.select.window_end",
-      "ir": "ir:Fulfillment.step.16.projections.project_inventory.project.window_end",
-      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.projections.project_inventory.field.window_end"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.inventory_projection.project_inventory.select.window_end",
+      "ir": "ir:Fulfillment.step.16.inventory_projection.project_inventory.project.window_end",
+      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.inventory_projection.project_inventory.field.window_end"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.projections.project_inventory.select.usable_at",
-      "ir": "ir:Fulfillment.step.16.projections.project_inventory.project.usable_at",
-      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.projections.project_inventory.field.usable_at"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.inventory_projection.project_inventory.select.usable_at",
+      "ir": "ir:Fulfillment.step.16.inventory_projection.project_inventory.project.usable_at",
+      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.inventory_projection.project_inventory.field.usable_at"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.projections.project_inventory.select.opening_quantity",
-      "ir": "ir:Fulfillment.step.16.projections.project_inventory.project.opening_quantity",
-      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.projections.project_inventory.field.opening_quantity"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.inventory_projection.project_inventory.select.opening_quantity",
+      "ir": "ir:Fulfillment.step.16.inventory_projection.project_inventory.project.opening_quantity",
+      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.inventory_projection.project_inventory.field.opening_quantity"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.projections.project_inventory.select.inbound_quantity",
-      "ir": "ir:Fulfillment.step.16.projections.project_inventory.project.inbound_quantity",
-      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.projections.project_inventory.field.inbound_quantity"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.inventory_projection.project_inventory.select.inbound_quantity",
+      "ir": "ir:Fulfillment.step.16.inventory_projection.project_inventory.project.inbound_quantity",
+      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.inventory_projection.project_inventory.field.inbound_quantity"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.projections.project_inventory.select.demand_quantity",
-      "ir": "ir:Fulfillment.step.16.projections.project_inventory.project.demand_quantity",
-      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.projections.project_inventory.field.demand_quantity"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.inventory_projection.project_inventory.select.demand_quantity",
+      "ir": "ir:Fulfillment.step.16.inventory_projection.project_inventory.project.demand_quantity",
+      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.inventory_projection.project_inventory.field.demand_quantity"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.projections.project_inventory.select.reserved_quantity",
-      "ir": "ir:Fulfillment.step.16.projections.project_inventory.project.reserved_quantity",
-      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.projections.project_inventory.field.reserved_quantity"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.inventory_projection.project_inventory.select.reserved_quantity",
+      "ir": "ir:Fulfillment.step.16.inventory_projection.project_inventory.project.reserved_quantity",
+      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.inventory_projection.project_inventory.field.reserved_quantity"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.projections.project_inventory.select.projected_available_quantity",
-      "ir": "ir:Fulfillment.step.16.projections.project_inventory.project.projected_available_quantity",
-      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.projections.project_inventory.field.projected_available_quantity"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.inventory_projection.project_inventory.select.projected_available_quantity",
+      "ir": "ir:Fulfillment.step.16.inventory_projection.project_inventory.project.projected_available_quantity",
+      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.inventory_projection.project_inventory.field.projected_available_quantity"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.projections.project_inventory.select.safety_stock_quantity",
-      "ir": "ir:Fulfillment.step.16.projections.project_inventory.project.safety_stock_quantity",
-      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.projections.project_inventory.field.safety_stock_quantity"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.inventory_projection.project_inventory.select.safety_stock_quantity",
+      "ir": "ir:Fulfillment.step.16.inventory_projection.project_inventory.project.safety_stock_quantity",
+      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.inventory_projection.project_inventory.field.safety_stock_quantity"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.projections.project_inventory.validation.0.intermediate",
-      "ir": "ir:Fulfillment.step.16.projections.project_inventory.validation.0.intermediate",
-      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.projections.project_inventory.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.16.inventory_projection.project_inventory.validation.0.intermediate",
+      "ir": "ir:Fulfillment.step.16.inventory_projection.project_inventory.validation.0.intermediate",
+      "source": "source:examples.store.transforms.fulfillment.workflow.Fulfillment.inventory_projection.project_inventory.validation.0.intermediate"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.fulfillment_workflow.FulfillmentGenerated.run.step.17.shortage_stage.identify",
@@ -3185,7 +3185,7 @@
     },
     "DemandWindow": {
       "constant": "DEMAND_WINDOW_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.projection"
+      "module": "examples.structure_generated.store.pyspark.schemas.windows"
     },
     "DiversificationDecision": {
       "constant": "DIVERSIFICATION_DECISION_SCHEMA",
@@ -3253,7 +3253,7 @@
     },
     "InboundInventory": {
       "constant": "INBOUND_INVENTORY_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
     },
     "InboundInventoryAvailability": {
       "constant": "INBOUND_INVENTORY_AVAILABILITY_SCHEMA",
@@ -3261,7 +3261,7 @@
     },
     "InventoryPosition": {
       "constant": "INVENTORY_POSITION_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
     },
     "InventoryProjection": {
       "constant": "INVENTORY_PROJECTION_SCHEMA",
@@ -3269,7 +3269,7 @@
     },
     "LeadTime": {
       "constant": "LEAD_TIME_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.inventory_inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
     },
     "MerchandisingBoost": {
       "constant": "MERCHANDISING_BOOST_SCHEMA",
@@ -3397,11 +3397,11 @@
     },
     "RecommendationCandidate": {
       "constant": "RECOMMENDATION_CANDIDATE_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
     },
     "RecommendationCandidateDecision": {
       "constant": "RECOMMENDATION_CANDIDATE_DECISION_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
     },
     "RecommendationClick": {
       "constant": "RECOMMENDATION_CLICK_SCHEMA",
@@ -3493,7 +3493,7 @@
     },
     "Warehouse": {
       "constant": "WAREHOUSE_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.warehouse"
     },
     "WarehouseLoadSummary": {
       "constant": "WAREHOUSE_LOAD_SUMMARY_SCHEMA",
@@ -6757,8 +6757,8 @@
         "sources": [
           "DemandWindow"
         ],
-        "step": "projections.summarize_inbound",
-        "target": "projections.summarize_inbound"
+        "step": "inventory_projection.summarize_inbound",
+        "target": "inventory_projection.summarize_inbound"
       },
       {
         "detail": {
@@ -6770,7 +6770,7 @@
         "sources": [
           "inbound_inventory.tenant"
         ],
-        "step": "projections.summarize_inbound",
+        "step": "inventory_projection.summarize_inbound",
         "target": "InboundInventory.tenant"
       },
       {
@@ -6783,7 +6783,7 @@
         "sources": [
           "inbound_inventory.audit"
         ],
-        "step": "projections.summarize_inbound",
+        "step": "inventory_projection.summarize_inbound",
         "target": "InboundInventory.audit"
       },
       {
@@ -6796,7 +6796,7 @@
         "sources": [
           "inbound_inventory.warehouse_id"
         ],
-        "step": "projections.summarize_inbound",
+        "step": "inventory_projection.summarize_inbound",
         "target": "InboundInventory.warehouse_id"
       },
       {
@@ -6809,7 +6809,7 @@
         "sources": [
           "inbound_inventory.product_id"
         ],
-        "step": "projections.summarize_inbound",
+        "step": "inventory_projection.summarize_inbound",
         "target": "InboundInventory.product_id"
       },
       {
@@ -6822,7 +6822,7 @@
         "sources": [
           "inbound_inventory.expected_quantity"
         ],
-        "step": "projections.summarize_inbound",
+        "step": "inventory_projection.summarize_inbound",
         "target": "InboundInventory.expected_quantity"
       },
       {
@@ -6835,7 +6835,7 @@
         "sources": [
           "inbound_inventory.expected_at"
         ],
-        "step": "projections.summarize_inbound",
+        "step": "inventory_projection.summarize_inbound",
         "target": "InboundInventory.expected_at"
       },
       {
@@ -6848,7 +6848,7 @@
         "sources": [
           "inbound_inventory.source_type"
         ],
-        "step": "projections.summarize_inbound",
+        "step": "inventory_projection.summarize_inbound",
         "target": "InboundInventory.source_type"
       },
       {
@@ -6863,8 +6863,8 @@
           "inbound",
           "lead_time"
         ],
-        "step": "projections.project_inventory",
-        "target": "projections.project_inventory"
+        "step": "inventory_projection.project_inventory",
+        "target": "inventory_projection.project_inventory"
       },
       {
         "detail": {
@@ -6882,15 +6882,15 @@
           "demand.window_start",
           "inventory.as_of"
         ],
-        "step": "projections.project_inventory",
-        "target": "projections.project_inventory.join[1].inventory"
+        "step": "inventory_projection.project_inventory",
+        "target": "inventory_projection.project_inventory.join[1].inventory"
       },
       {
         "detail": {
           "cardinality": "row_multiplying",
           "hint": null,
           "how": "left",
-          "right_alias": "projections__inbound_facts_2"
+          "right_alias": "inventory_projection__inbound_facts_2"
         },
         "operation": "rowset_join",
         "sources": [
@@ -6903,8 +6903,8 @@
           "inbound.expected_at",
           "demand.window_start"
         ],
-        "step": "projections.project_inventory",
-        "target": "projections.project_inventory.join[2].inbound"
+        "step": "inventory_projection.project_inventory",
+        "target": "inventory_projection.project_inventory.join[2].inbound"
       },
       {
         "detail": {
@@ -6923,8 +6923,8 @@
           "inventory.product_id",
           "lead_time.active"
         ],
-        "step": "projections.project_inventory",
-        "target": "projections.project_inventory.join[3].lead_time"
+        "step": "inventory_projection.project_inventory",
+        "target": "inventory_projection.project_inventory.join[3].lead_time"
       },
       {
         "detail": {
@@ -6934,7 +6934,7 @@
         "sources": [
           "inventory.tenant"
         ],
-        "step": "projections.project_inventory",
+        "step": "inventory_projection.project_inventory",
         "target": "InventoryProjection.tenant"
       },
       {
@@ -6945,7 +6945,7 @@
         "sources": [
           "inventory.warehouse_id"
         ],
-        "step": "projections.project_inventory",
+        "step": "inventory_projection.project_inventory",
         "target": "InventoryProjection.warehouse_id"
       },
       {
@@ -6956,7 +6956,7 @@
         "sources": [
           "inventory.product_id"
         ],
-        "step": "projections.project_inventory",
+        "step": "inventory_projection.project_inventory",
         "target": "InventoryProjection.product_id"
       },
       {
@@ -6967,7 +6967,7 @@
         "sources": [
           "demand.window_start"
         ],
-        "step": "projections.project_inventory",
+        "step": "inventory_projection.project_inventory",
         "target": "InventoryProjection.window_start"
       },
       {
@@ -6978,7 +6978,7 @@
         "sources": [
           "demand.window_end"
         ],
-        "step": "projections.project_inventory",
+        "step": "inventory_projection.project_inventory",
         "target": "InventoryProjection.window_end"
       },
       {
@@ -6990,7 +6990,7 @@
           "demand.window_start",
           "lead_time.days"
         ],
-        "step": "projections.project_inventory",
+        "step": "inventory_projection.project_inventory",
         "target": "InventoryProjection.usable_at"
       },
       {
@@ -7002,7 +7002,7 @@
           "inventory.on_hand_quantity",
           "inventory.reserved_quantity"
         ],
-        "step": "projections.project_inventory",
+        "step": "inventory_projection.project_inventory",
         "target": "InventoryProjection.opening_quantity"
       },
       {
@@ -7013,7 +7013,7 @@
         "sources": [
           "inbound.expected_quantity"
         ],
-        "step": "projections.project_inventory",
+        "step": "inventory_projection.project_inventory",
         "target": "InventoryProjection.inbound_quantity"
       },
       {
@@ -7024,7 +7024,7 @@
         "sources": [
           "demand.requested_quantity"
         ],
-        "step": "projections.project_inventory",
+        "step": "inventory_projection.project_inventory",
         "target": "InventoryProjection.demand_quantity"
       },
       {
@@ -7035,7 +7035,7 @@
         "sources": [
           "inventory.reserved_quantity"
         ],
-        "step": "projections.project_inventory",
+        "step": "inventory_projection.project_inventory",
         "target": "InventoryProjection.reserved_quantity"
       },
       {
@@ -7054,7 +7054,7 @@
           "inventory.warehouse_id",
           "inventory.product_id"
         ],
-        "step": "projections.project_inventory",
+        "step": "inventory_projection.project_inventory",
         "target": "InventoryProjection.projected_available_quantity"
       },
       {
@@ -7065,7 +7065,7 @@
         "sources": [
           "inventory.safety_stock_quantity"
         ],
-        "step": "projections.project_inventory",
+        "step": "inventory_projection.project_inventory",
         "target": "InventoryProjection.safety_stock_quantity"
       },
       {
@@ -10570,14 +10570,14 @@
       "before_hooks": [],
       "input_alias": "inbound_inventory",
       "joins": [],
-      "name": "projections.summarize_inbound",
+      "name": "inventory_projection.summarize_inbound",
       "output_alias": "inbound_inventory",
       "output_schema": "InboundInventory",
       "results": [
         {
           "after_hooks": [],
-          "frame": "projections__inbound_facts",
-          "lane": "projections__inbound_facts",
+          "frame": "inventory_projection__inbound_facts",
+          "lane": "inventory_projection__inbound_facts",
           "schema": "InboundInventory"
         }
       ],
@@ -10603,7 +10603,7 @@
         {
           "how": "left",
           "input": "inbound",
-          "right_alias": "projections__inbound_facts_2"
+          "right_alias": "inventory_projection__inbound_facts_2"
         },
         {
           "how": "left",
@@ -10611,14 +10611,14 @@
           "right_alias": "lead_times_3"
         }
       ],
-      "name": "projections.project_inventory",
+      "name": "inventory_projection.project_inventory",
       "output_alias": "inventory_projection",
       "output_schema": "InventoryProjection",
       "results": [
         {
           "after_hooks": [],
-          "frame": "projections__projections",
-          "lane": "projections__projections",
+          "frame": "inventory_projection__projections",
+          "lane": "inventory_projection__projections",
           "schema": "InventoryProjection"
         }
       ],

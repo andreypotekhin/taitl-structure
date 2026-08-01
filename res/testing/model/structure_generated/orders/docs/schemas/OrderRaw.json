@@ -1,0 +1,86 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "tenant",
+      "name": "tenant",
+      "nullable": false,
+      "type": "TenantKey"
+    },
+    {
+      "column": "audit",
+      "name": "audit",
+      "nullable": false,
+      "type": "AuditStamp"
+    },
+    {
+      "column": "business",
+      "name": "business",
+      "nullable": false,
+      "type": "BusinessDate"
+    },
+    {
+      "column": "id",
+      "name": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "customer_id",
+      "name": "customer_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "product_id",
+      "name": "product_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "promo-code",
+      "name": "promotion_code",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "total",
+      "name": "total",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "discount",
+      "name": "discount",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "quantity",
+      "name": "quantity",
+      "nullable": true,
+      "type": "integer"
+    },
+    {
+      "column": "tags",
+      "name": "tags",
+      "nullable": true,
+      "type": "array<string!>"
+    },
+    {
+      "column": "attributes",
+      "name": "attributes",
+      "nullable": true,
+      "type": "map<string,string?>"
+    },
+    {
+      "column": "shipping",
+      "name": "shipping",
+      "nullable": true,
+      "type": "Address"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "testing.model.orders.schemas.order",
+  "name": "OrderRaw"
+}

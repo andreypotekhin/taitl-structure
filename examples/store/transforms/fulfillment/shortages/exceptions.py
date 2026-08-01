@@ -22,13 +22,10 @@ class PrioritizeExceptions(Transform):
 
     @step(input=shortages, output=shortage_exceptions)
     def shortage_exception(self, shortage: FulfillmentShortage) -> FulfillmentException:
-        return FulfillmentException(
-            tenant=shortage.tenant,
+        return FulfillmentException.project(shortage)(
             business=None,
             order_id=None,
             line_number=None,
-            product_id=shortage.product_id,
-            warehouse_id=shortage.warehouse_id,
             target_id=None,
             reason="shortage",
             severity=3,
@@ -36,7 +33,6 @@ class PrioritizeExceptions(Transform):
             priority_rank=0,
             due_date=shortage.first_shortage_at,
             days_until_due=None,
-            shortage_quantity=shortage.shortage_quantity,
             customer_tier=None,
             recommended_action="review replenishment or an approved substitution",
         )
@@ -69,12 +65,7 @@ class PrioritizeExceptions(Transform):
         reason = when(target_weight > 0, "service_target_at_risk").otherwise(
             when(plan.planned_ship_date.is_not_null() & (plan.planned_ship_date > plan.business.order_date), "late_inbound").otherwise("shortage")
         )
-        return FulfillmentException(
-            tenant=plan.tenant,
-            business=plan.business,
-            order_id=plan.order_id,
-            line_number=plan.line_number,
-            product_id=plan.product_id,
+        return FulfillmentException.project(plan)(
             warehouse_id=plan.selected_warehouse_id,
             target_id=target.target_id,
             reason=reason,
@@ -104,11 +95,8 @@ class PrioritizeExceptions(Transform):
             & (order.order_id == option.order_id)
             & (order.line_number == option.line_number),
         )
-        return FulfillmentException(
-            tenant=option.tenant,
+        return FulfillmentException.project(option)(
             business=order.business,
-            order_id=option.order_id,
-            line_number=option.line_number,
             product_id=option.original_product_id,
             warehouse_id=None,
             target_id=None,

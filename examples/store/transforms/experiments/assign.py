@@ -18,10 +18,7 @@ class AssignRecommendationVariants(Transform):
         )
         assignment_key = coalesce(request.customer_id, request.session_id, request.id)
         bucket = abs(xxhash64(experiment.experiment_id, experiment.experiment_version, assignment_key)) % 100
-        return RecommendationAssignment(
-            tenant=request.tenant,
-            experiment_id=experiment.experiment_id,
-            experiment_version=experiment.experiment_version,
+        return RecommendationAssignment.project(experiment)(
             assignment_key=assignment_key,
             variant_id=(
                 when(bucket < experiment.variant_a_percent, experiment.variant_a).otherwise(experiment.variant_b)

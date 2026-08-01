@@ -1,9 +1,3 @@
-from examples.store.schemas.merchandising.catalog import (
-    CatalogAvailability,
-    CatalogProduct,
-    RecommendationCandidate,
-    RecommendationCandidateDecision,
-)
 from examples.store.schemas.merchandising.evaluation import (
     DailyRecommendationBehavior,
     RecommendationEvaluationBatch,
@@ -18,12 +12,6 @@ from examples.store.schemas.merchandising.feedback import (
     RecommendationPurchase,
 )
 from examples.store.schemas.merchandising.session import SessionEvent, SessionFeature
-from examples.store.schemas.merchandising.taxonomy import (
-    ExpandedProductTaxonomy,
-    ProductTaxonomy,
-    TaxonomyAncestor,
-    TaxonomyNode,
-)
 from examples.store.schemas.merchandising.intermediate import (
     DailyRecommendationCounts,
     DiversificationDecision,
@@ -40,6 +28,8 @@ from examples.store.schemas.merchandising.policy import (
     MerchandisingSuppression,
 )
 from examples.store.schemas.merchandising.recommendation import (
+    RecommendationCandidate,
+    RecommendationCandidateDecision,
     RecommendationRequest,
     RecommendationRun,
     RecommendedProduct,

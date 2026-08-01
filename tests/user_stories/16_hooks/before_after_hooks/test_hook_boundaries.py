@@ -15,30 +15,29 @@ def test_hooks_attach_to_declared_step_method_boundaries(orders_recipe) -> None:
 
     assert [hook.name for hook in orders_recipe.steps[0].before_hooks] == ["use_current_orders"]
     assert [hook.name for hook in orders_recipe.steps[0].after_hooks] == ["remove_negative_totals"]
-    assert [hook.name for hook in orders_recipe.steps[3].after_hooks] == ["note_lookup_inputs"]
-    assert [hook.name for hook in orders_recipe.steps[4].after_hooks] == ["add_quality_columns"]
+    assert [hook.name for hook in orders_recipe.steps[4].after_hooks] == ["note_lookup_inputs"]
+    assert [hook.name for hook in orders_recipe.steps[5].after_hooks] == ["add_quality_columns"]
 
 
 def test_hooks_record_explicit_input_access_and_projection_validation_contracts(orders_recipe) -> None:
     """I can see each raw parameter's resolved frame source."""
 
-    lookup = orders_recipe.steps[3].after_hooks[0]
-    quality = orders_recipe.steps[4].after_hooks[0]
+    lookup = orders_recipe.steps[4].after_hooks[0]
+    quality = orders_recipe.steps[5].after_hooks[0]
 
     assert lookup.lanes == ("orders", "customers", "products")
     assert lookup.sources == ("orders", "input:customers", "input:products")
     assert lookup.schema_mode is SchemaMode.ALLOW_EXTRA_COLUMNS
-    assert lookup.project_output
+    assert not lookup.project_output
     assert quality.project_output
     assert [
-        (validation.reason, validation.mode, validation.project) for validation in orders_recipe.steps[3].validations
+        (validation.reason, validation.mode, validation.project) for validation in orders_recipe.steps[4].validations
     ] == [
-        ("hook", SchemaMode.ALLOW_EXTRA_COLUMNS, True),
-        ("hook_projected", SchemaMode.STRICT, False),
-        ("intermediate", SchemaMode.STRICT, False),
+        ("hook", SchemaMode.ALLOW_EXTRA_COLUMNS, False),
+        ("intermediate", SchemaMode.ALLOW_EXTRA_COLUMNS, False),
     ]
     assert [
-        (validation.reason, validation.mode, validation.project) for validation in orders_recipe.steps[4].validations
+        (validation.reason, validation.mode, validation.project) for validation in orders_recipe.steps[5].validations
     ] == [
         ("hook", SchemaMode.ALLOW_EXTRA_COLUMNS, True),
         ("hook_projected", SchemaMode.STRICT, False),

@@ -159,6 +159,6 @@
     }
   ],
   "generated_by": "Structure",
-  "module": "examples.store.schemas.merchandising.catalog",
+  "module": "examples.store.schemas.merchandising.recommendation",
   "name": "RecommendationCandidate"
 }

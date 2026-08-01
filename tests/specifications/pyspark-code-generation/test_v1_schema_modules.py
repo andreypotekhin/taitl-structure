@@ -4,7 +4,7 @@ from structure.plugin.pyspark import PySpark
 
 
 def test_v1_common_schema_module_renders_without_pyspark() -> None:
-    from testing.model.v1.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
+    from testing.model.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
 
     before = {name for name in sys.modules if name.startswith("pyspark")}
 
@@ -20,8 +20,8 @@ def test_v1_common_schema_module_renders_without_pyspark() -> None:
 
 
 def test_v1_order_schema_module_renders_nested_schema_imports() -> None:
-    from testing.model.v1.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
-    from testing.model.v1.orders.schemas.order import (
+    from testing.model.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
+    from testing.model.orders.schemas.order import (
         OrderNormalized,
         OrderPublication,
         OrderPublished,
@@ -32,7 +32,7 @@ def test_v1_order_schema_module_renders_nested_schema_imports() -> None:
         PublicationFlags,
     )
 
-    common_module = "testing.model.v1.structure_generated.orders.pyspark.schemas.common"
+    common_module = "testing.model.structure_generated.orders.pyspark.schemas.common"
     text = PySpark.schema.module()(
         [
             OrderRaw,
@@ -53,7 +53,7 @@ def test_v1_order_schema_module_renders_nested_schema_imports() -> None:
     )
 
     assert (
-        "from testing.model.v1.structure_generated.orders.pyspark.schemas.common import "
+        "from testing.model.structure_generated.orders.pyspark.schemas.common import "
         "ADDRESS_SCHEMA, AUDIT_STAMP_SCHEMA, BUSINESS_DATE_SCHEMA, TENANT_KEY_SCHEMA"
     ) in text
     assert '    T.StructField("promo-code", T.StringType(), True),' in text

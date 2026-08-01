@@ -1,0 +1,68 @@
+{
+  "dependencies": [
+    "catalog",
+    "product"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "requests",
+      "ordinal": 0,
+      "schema": "RecommendationRequest"
+    },
+    {
+      "name": "catalog",
+      "ordinal": 1,
+      "schema": "CatalogProduct"
+    }
+  ],
+  "name": "SelectRecommendationCandidates",
+  "outputs": [
+    {
+      "name": "candidates",
+      "ordinal": 0,
+      "schema": "RecommendationCandidate"
+    }
+  ],
+  "source": "examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates",
+  "step_methods": [
+    {
+      "input_lane": "requests",
+      "input_schema": "RecommendationRequest",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "request",
+          "schema": "RecommendationRequest",
+          "source": "requests"
+        },
+        {
+          "driving": false,
+          "parameter": "product",
+          "schema": "CatalogProduct",
+          "source": "catalog"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "product"
+        }
+      ],
+      "name": "select",
+      "output_lane": "requests",
+      "output_schema": "RecommendationCandidate",
+      "results": [
+        {
+          "frame": "requests",
+          "lane": "requests",
+          "schema": "RecommendationCandidate"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/admit.py",
+    "traceability": "traceability/transforms/admit.SelectRecommendationCandidates.json"
+  }
+}

@@ -81,9 +81,8 @@ class EvaluateRecommendationExperiment(Transform):
         purchase_count = count_distinct(
             when(purchase.attribution_status == "attributed", purchase.order_id).otherwise(None)
         )
-        return RecommendationVariantMetricTotals(
+        return RecommendationVariantMetricTotals.project(request)(
             window=evaluation_batch.window,
-            tenant=request.tenant,
             experiment_id=exposure.experiment_id,
             experiment_version=exposure.experiment_version,
             variant_id=exposure.variant_id,
@@ -98,25 +97,14 @@ class EvaluateRecommendationExperiment(Transform):
     @step(input=totals, output=metrics)
     def publish(self, total: RecommendationVariantMetricTotals) -> RecommendationVariantMetric:
         zero_rate = when(total.request_count > 0, total.zero_result_request_count / total.request_count).otherwise(0.0)
-        return RecommendationVariantMetric(
-            window=total.window,
-            tenant=total.tenant,
-            experiment_id=total.experiment_id,
-            experiment_version=total.experiment_version,
-            variant_id=total.variant_id,
-            request_count=total.request_count,
-            zero_result_request_count=total.zero_result_request_count,
+        return RecommendationVariantMetric.project(total)(
             zero_result_rate=zero_rate,
-            impression_count=total.impression_count,
-            clicked_request_count=total.clicked_request_count,
             click_through_rate=when(
                 total.impression_count > 0, total.clicked_request_count / total.impression_count
             ).otherwise(0.0),
-            attributed_purchase_count=total.attributed_purchase_count,
             conversion_rate=when(
                 total.request_count > 0, total.attributed_purchase_count / total.request_count
             ).otherwise(0.0),
-            maximum_zero_result_rate=total.maximum_zero_result_rate,
             zero_result_guardrail_met=when(total.maximum_zero_result_rate.is_null(), None).otherwise(
                 zero_rate <= total.maximum_zero_result_rate
             ),

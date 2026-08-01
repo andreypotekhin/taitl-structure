@@ -981,7 +981,7 @@ result = (
     .run(session)
 )
 
-published_df = result.published
+published_df = result.recommended
 ```
 
 Composition hooks the inputs of downstream (following) transform to outputs of upstream transform, and to constructor

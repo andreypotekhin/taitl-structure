@@ -655,7 +655,7 @@
     },
     "DemandWindow": {
       "constant": "DEMAND_WINDOW_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.projection"
+      "module": "examples.structure_generated.store.pyspark.schemas.windows"
     },
     "DiversificationDecision": {
       "constant": "DIVERSIFICATION_DECISION_SCHEMA",
@@ -723,7 +723,7 @@
     },
     "InboundInventory": {
       "constant": "INBOUND_INVENTORY_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
     },
     "InboundInventoryAvailability": {
       "constant": "INBOUND_INVENTORY_AVAILABILITY_SCHEMA",
@@ -731,7 +731,7 @@
     },
     "InventoryPosition": {
       "constant": "INVENTORY_POSITION_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
     },
     "InventoryProjection": {
       "constant": "INVENTORY_PROJECTION_SCHEMA",
@@ -739,7 +739,7 @@
     },
     "LeadTime": {
       "constant": "LEAD_TIME_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.inventory_inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
     },
     "MerchandisingBoost": {
       "constant": "MERCHANDISING_BOOST_SCHEMA",
@@ -867,11 +867,11 @@
     },
     "RecommendationCandidate": {
       "constant": "RECOMMENDATION_CANDIDATE_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
     },
     "RecommendationCandidateDecision": {
       "constant": "RECOMMENDATION_CANDIDATE_DECISION_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
     },
     "RecommendationClick": {
       "constant": "RECOMMENDATION_CLICK_SCHEMA",
@@ -963,7 +963,7 @@
     },
     "Warehouse": {
       "constant": "WAREHOUSE_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.warehouse"
     },
     "WarehouseLoadSummary": {
       "constant": "WAREHOUSE_LOAD_SUMMARY_SCHEMA",
@@ -1180,7 +1180,7 @@
         },
         "operation": "project",
         "sources": [
-          "request.tenant"
+          "impression.tenant"
         ],
         "step": "impressions_measured.select_impressions",
         "target": "RecommendationBehaviorImpression.tenant"
@@ -1191,7 +1191,7 @@
         },
         "operation": "project",
         "sources": [
-          "request.request_id"
+          "impression.request_id"
         ],
         "step": "impressions_measured.select_impressions",
         "target": "RecommendationBehaviorImpression.request_id"
@@ -1202,7 +1202,7 @@
         },
         "operation": "project",
         "sources": [
-          "request.strategy_id"
+          "impression.strategy_id"
         ],
         "step": "impressions_measured.select_impressions",
         "target": "RecommendationBehaviorImpression.strategy_id"
@@ -1213,7 +1213,7 @@
         },
         "operation": "project",
         "sources": [
-          "request.policy_version"
+          "impression.policy_version"
         ],
         "step": "impressions_measured.select_impressions",
         "target": "RecommendationBehaviorImpression.policy_version"

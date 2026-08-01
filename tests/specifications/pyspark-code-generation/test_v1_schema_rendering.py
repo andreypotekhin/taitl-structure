@@ -5,7 +5,7 @@ from structure.plugin.pyspark import *
 
 
 def test_v1_schema_rendering_is_spark_free() -> None:
-    from testing.model.v1.orders.schemas.common import TenantKey
+    from testing.model.orders.schemas.common import TenantKey
 
     before = {name for name in sys.modules if name.startswith("pyspark")}
 
@@ -19,8 +19,8 @@ def test_v1_schema_rendering_is_spark_free() -> None:
 
 
 def test_v1_schema_renderer_maps_primitives_and_nested_structs() -> None:
-    from testing.model.v1.orders.schemas.common import AuditStamp, BusinessDate
-    from testing.model.v1.orders.schemas.customer import Customer
+    from testing.model.orders.schemas.common import AuditStamp, BusinessDate
+    from testing.model.orders.schemas.customer import Customer
 
     assert PySpark.schema.render().field(AuditStamp._structure_fields["ingested_at"]) == (
         '    T.StructField("ingested_at", T.TimestampType(), False),'
@@ -34,7 +34,7 @@ def test_v1_schema_renderer_maps_primitives_and_nested_structs() -> None:
 
 
 def test_v1_schema_renderer_maps_collections_and_decimal_fields() -> None:
-    from testing.model.v1.orders.schemas.order import OrderNormalized, OrderRaw
+    from testing.model.orders.schemas.order import OrderNormalized, OrderRaw
 
     assert PySpark.schema.render().field(OrderRaw._structure_fields["tags"]) == (
         '    T.StructField("tags", T.ArrayType(T.StringType(), containsNull=False), True),'
@@ -66,7 +66,7 @@ def test_v9_schema_renderer_maps_variant_fields() -> None:
 
 
 def test_v1_schema_renderer_uses_base_schema_composition_for_inheritance() -> None:
-    from testing.model.v1.orders.schemas.order import OrderPublished, OrderWithCustomer
+    from testing.model.orders.schemas.order import OrderPublished, OrderWithCustomer
 
     customer = PySpark.schema.render().expression(OrderWithCustomer)
     published = PySpark.schema.render().expression(OrderPublished)

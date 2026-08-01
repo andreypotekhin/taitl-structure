@@ -9,7 +9,7 @@ def _recipe(transform):
 
 
 def test_v1_step_renderer_renders_before_hook_against_current_input() -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     recipe = _recipe(EnrichOrders)
     text = PySpark.render.step()(recipe.steps[0], current="orders")
@@ -20,7 +20,7 @@ def test_v1_step_renderer_renders_before_hook_against_current_input() -> None:
 
 
 def test_v1_step_renderer_renders_join_projection_and_validation() -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     recipe = _recipe(EnrichOrders)
     text = PySpark.render.step()(recipe.steps[1], current="orders")
@@ -35,10 +35,10 @@ def test_v1_step_renderer_renders_join_projection_and_validation() -> None:
 
 
 def test_v1_step_renderer_renders_hooks_and_project_output_validation() -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     recipe = _recipe(EnrichOrders)
-    text = PySpark.render.step()(recipe.steps[4], current="orders")
+    text = PySpark.render.step()(recipe.steps[5], current="orders")
 
     assert '        # Step method: publish' in text
     assert (

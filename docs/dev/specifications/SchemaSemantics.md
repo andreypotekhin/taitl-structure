@@ -220,6 +220,38 @@ Use:
 See docs/dev/specifications/SchemaSemantics.md
 ```
 
+## Binary Fields
+
+`binary(nullable=...)` declares a first-class Binary field. Binary values participate in nested Struct, Array, and Map
+declarations, generated schemas, validation, and ordinary projections. They are data values, not file or driver-side
+byte-processing abstractions.
+
+The typed scalar helpers are `base64(value)`, `unbase64(value)`, `encode(value, charset="UTF-8")`, and
+`decode(value, charset="UTF-8")`. Base64 accepts Binary and returns nullable String; unbase64 accepts String and
+returns nullable Binary; encode accepts String and returns nullable Binary; decode accepts Binary and returns nullable
+String. Charset names are non-empty literal canonical names. Invalid base64 and malformed decoding remain capability-
+gated until PySpark target behavior agrees.
+
+The type mapper, expression checks, capability model, recipes, online evaluator, renderer, explain output, and
+traceability must carry Binary explicitly. Generated code uses public PySpark functions and never logs binary contents.
+
+## Schema-Carrying JSON and CSV Conversion
+
+`from_json(value, as_=Schema, options=...)` and `from_csv(value, as_=Schema, options=...)` return the exact declared
+Struct shape. `to_json(value, options=...)` and `to_csv(value, options=...)` accept typed Struct values and return
+nullable String. Parser schemas are never inferred. Because permissive parsing materializes parsed fields as nullable
+on the supported PySpark profiles, parser Schemas must declare every parsed field nullable.
+
+`JsonOptions` and `CsvOptions` are immutable literal-only records. The initial option set is delimiter, quote, escape,
+null value, date format, timestamp format, and permissive parse mode. Dictionaries, Columns, callbacks, unknown keys,
+dynamic option values, map/variant results, schema inference, file options, and streaming claims are outside this
+contract. Malformed input follows the exact verified nullable behavior of the selected target profile; disagreement is
+a capability diagnostic rather than an unannounced execution difference.
+
+JSON and CSV conversion must lower through the shared recipes. JSON uses a generated `StructType` schema argument; CSV
+uses the target-compatible DDL schema form. Tests cover options, nested records, nullability, malformed values,
+generated source, online/generated parity, diagnostics, and live PySpark 3.5/4.0 behavior.
+
 ## Implementation Checklist
 
 1. Implement immutable type objects.

@@ -5,7 +5,6 @@ from examples.store.schemas.merchandising import (
     MerchandisingPolicy,
     MerchandisingSuppression,
     ProductRecommendationSignal,
-    ProductTaxonomy,
     RecommendationClick,
     RecommendationImpression,
     RecommendationPurchase,
@@ -13,15 +12,14 @@ from examples.store.schemas.merchandising import (
     RecommendationRun,
     RecommendedProduct,
     SessionEvent,
-    TaxonomyNode,
 )
 from examples.store.schemas.order import OrderFulfillment
 from examples.store.schemas.product import BlockedProduct, Product
 from examples.store.schemas.promotion import Promotion
-from examples.store.transforms.merchandising.catalog import NormalizeCatalog, PrepareCatalog
-from examples.store.transforms.merchandising.recommender import Recommender
-from examples.store.transforms.merchandising.signals import Signals
-from examples.store.transforms.merchandising.taxonomy import ExpandProductTaxonomy
+from examples.store.schemas.taxonomy import ProductTaxonomy, TaxonomyNode
+from examples.store.transforms.catalog import NormalizeCatalog, PrepareCatalog
+from examples.store.transforms.recommender import Recommender
+from examples.store.transforms.taxonomy import ExpandProductTaxonomy
 from structure import Transform, input, output, stage
 
 
@@ -43,7 +41,7 @@ class Merchandising(Transform):
     recommendation_runs = output(RecommendationRun)
     daily_impressions = output(DailyRecommendationImpressions)
     daily_clicks = output(DailyRecommendationClicks)
-    signals = output(ProductRecommendationSignal)
+    recommendation_signals = output(ProductRecommendationSignal)
     recommendation_purchases = output(RecommendationPurchase)
 
     cataloged = stage(
@@ -54,15 +52,7 @@ class Merchandising(Transform):
         )
     )
     normalized = stage(NormalizeCatalog(catalog=cataloged.catalog))
-    taxonomy_expanded = stage(ExpandProductTaxonomy(product_taxonomy=product_taxonomy, taxonomy=taxonomy_nodes))
-    signals_built = stage(
-        Signals(
-            session_events=session_events,
-            fulfilled_orders=fulfilled_orders,
-            impressions=feedback_impressions,
-            clicks=feedback_clicks,
-        )
-    )
+    taxonomy = stage(ExpandProductTaxonomy(product_taxonomy=product_taxonomy, taxonomy=taxonomy_nodes))
     recommended = stage(
         Recommender(
             requests=requests,
@@ -70,16 +60,18 @@ class Merchandising(Transform):
             policy=policy,
             boosts=boosts,
             suppressions=suppressions,
-            signals=signals_built.signals,
-            taxonomy=taxonomy_expanded.expanded,
-            session_features=signals_built.session_features,
+            taxonomy=taxonomy.expanded,
+            session_events=session_events,
+            fulfilled_orders=fulfilled_orders,
+            feedback_impressions=feedback_impressions,
+            feedback_clicks=feedback_clicks,
         )
     )
     result = output(
         recommended_products=recommended.recommended_products,
         recommendation_runs=recommended.recommendation_runs,
-        daily_impressions=signals_built.daily_impressions,
-        daily_clicks=signals_built.daily_clicks,
-        signals=signals_built.signals,
-        recommendation_purchases=signals_built.recommendation_purchases,
+        daily_impressions=recommended.daily_impressions,
+        daily_clicks=recommended.daily_clicks,
+        recommendation_signals=recommended.recommendation_signals,
+        recommendation_purchases=recommended.recommendation_purchases,
     )

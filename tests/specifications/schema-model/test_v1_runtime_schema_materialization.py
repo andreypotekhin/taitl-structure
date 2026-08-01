@@ -76,7 +76,7 @@ class FakeTypes:
 
 
 def test_v1_runtime_schema_materialization_is_import_safe_with_injected_types() -> None:
-    from testing.model.v1.orders.schemas.common import TenantKey
+    from testing.model.orders.schemas.common import TenantKey
 
     before = {name for name in sys.modules if name.startswith("pyspark")}
 
@@ -96,8 +96,8 @@ def test_v1_runtime_schema_materialization_is_import_safe_with_injected_types() 
 
 
 def test_v1_runtime_schema_materializes_collections_decimal_and_nested_structs() -> None:
-    from testing.model.v1.orders.schemas.customer import Customer
-    from testing.model.v1.orders.schemas.order import OrderRaw
+    from testing.model.orders.schemas.customer import Customer
+    from testing.model.orders.schemas.order import OrderRaw
 
     order = PySpark.schema.materialize()(OrderRaw, types=FakeTypes)
     fields = {field.args[0]: field for field in order.args}
@@ -129,7 +129,7 @@ def test_v1_runtime_schema_materializes_collections_decimal_and_nested_structs()
 
 
 def test_v1_runtime_schema_materializes_effective_inherited_fields() -> None:
-    from testing.model.v1.orders.schemas.order import OrderPublication, OrderPublished, PublicationFlags
+    from testing.model.orders.schemas.order import OrderPublication, OrderPublished, PublicationFlags
 
     schema = PySpark.schema.materialize()(OrderPublished, types=FakeTypes)
     names = [field.args[0] for field in schema.args]

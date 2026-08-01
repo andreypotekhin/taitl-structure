@@ -18,7 +18,7 @@ def test_v3_advanced_analytics_matches_generated_execution_on_live_backend(spark
     package = "integration_v3_advanced_analytics_generated"
     files = render_generated_project(
         AdvancedOrderAnalytics,
-        source_transform="testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics",
+        source_transform="testing.model.orders.transforms.adv_analytics.AdvancedOrderAnalytics",
         generated_package=package,
         source_schema_modules=source_schema_modules,
     )
@@ -62,33 +62,33 @@ def test_v3_advanced_analytics_matches_generated_execution_on_live_backend(spark
 
 
 def _source():
-    from testing.model.v3.orders.schemas.adv_analytics import (
+    from testing.model.orders.schemas.adv_analytics import (
         OrderCollectionProfile,
         OrderCollectionSource,
         OrderCustomerWindow,
         OrderProductCube,
         OrderRevenueRollup,
     )
-    from testing.model.v3.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
-    from testing.model.v3.orders.schemas.order import (
+    from testing.model.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
+    from testing.model.orders.schemas.order import (
         OrderFulfillment,
         OrderNormalized,
         OrderWithCustomer,
         OrderWithProduct,
         OrderWithPromotion,
     )
-    from testing.model.v3.orders.transforms.adv_analytics import AdvancedOrderAnalytics
+    from testing.model.orders.transforms.adv_analytics import AdvancedOrderAnalytics
 
     return AdvancedOrderAnalytics, {
-        "testing.model.v3.orders.schemas.adv_analytics": [
+        "testing.model.orders.schemas.adv_analytics": [
             OrderRevenueRollup,
             OrderProductCube,
             OrderCustomerWindow,
             OrderCollectionSource,
             OrderCollectionProfile,
         ],
-        "testing.model.v3.orders.schemas.common": [TenantKey, AuditStamp, Address, BusinessDate],
-        "testing.model.v3.orders.schemas.order": [
+        "testing.model.orders.schemas.common": [TenantKey, AuditStamp, Address, BusinessDate],
+        "testing.model.orders.schemas.order": [
             OrderNormalized,
             OrderWithCustomer,
             OrderWithProduct,

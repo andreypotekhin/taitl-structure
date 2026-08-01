@@ -5,6 +5,46 @@ from pyspark.sql import types as T
 from examples.structure_generated.store.pyspark.schemas.common import TENANT_KEY_SCHEMA
 
 
+RECOMMENDATION_CANDIDATE_SCHEMA = T.StructType([
+    T.StructField("tenant", TENANT_KEY_SCHEMA, False),
+    T.StructField("request_id", T.StringType(), False),
+    T.StructField("requested_at", T.TimestampType(), False),
+    T.StructField("customer_id", T.StringType(), True),
+    T.StructField("session_id", T.StringType(), True),
+    T.StructField("strategy_id", T.StringType(), False),
+    T.StructField("policy_version", T.StringType(), False),
+    T.StructField("experiment_id", T.StringType(), True),
+    T.StructField("experiment_version", T.StringType(), True),
+    T.StructField("variant_id", T.StringType(), True),
+    T.StructField("category_filter", T.StringType(), True),
+    T.StructField("collection_id", T.StringType(), True),
+    T.StructField("product_id", T.StringType(), False),
+    T.StructField("product_name", T.StringType(), True),
+    T.StructField("category", T.StringType(), True),
+    T.StructField("has_promotion", T.BooleanType(), False),
+    T.StructField("promotion_code", T.StringType(), True),
+    T.StructField("base_score", T.DoubleType(), False),
+    T.StructField("promotion_score", T.DoubleType(), False),
+    T.StructField("inventory_boost", T.DoubleType(), False),
+    T.StructField("candidate_source", T.StringType(), False),
+    T.StructField("taxonomy_id", T.StringType(), True),
+    T.StructField("taxonomy_branch", T.StringType(), True),
+    T.StructField("session_match", T.BooleanType(), False),
+    T.StructField("purchase_signal", T.DoubleType(), False),
+    T.StructField("eligibility_status", T.StringType(), False),
+])
+
+RECOMMENDATION_CANDIDATE_DECISION_SCHEMA = T.StructType([
+    T.StructField("tenant", TENANT_KEY_SCHEMA, False),
+    T.StructField("request_id", T.StringType(), False),
+    T.StructField("product_id", T.StringType(), False),
+    T.StructField("stage", T.StringType(), False),
+    T.StructField("eligible", T.BooleanType(), False),
+    T.StructField("exclusion_reason", T.StringType(), True),
+    T.StructField("candidate_source", T.StringType(), False),
+    T.StructField("taxonomy_branch", T.StringType(), True),
+])
+
 RECOMMENDATION_REQUEST_SCHEMA = T.StructType([
     T.StructField("tenant", TENANT_KEY_SCHEMA, False),
     T.StructField("id", T.StringType(), False),

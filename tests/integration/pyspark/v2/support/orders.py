@@ -10,13 +10,13 @@ from integration.pyspark.v2.support._common import transform_type
 
 
 def transform():
-    return transform_type("testing.model.v2.orders.transforms.order", "EnrichOrders")
+    return transform_type("testing.model.orders.transforms.order", "EnrichOrders")
 
 
 def source_schema_modules():
-    from testing.model.v2.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
-    from testing.model.v2.orders.schemas.customer import Customer
-    from testing.model.v2.orders.schemas.order import (
+    from testing.model.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
+    from testing.model.orders.schemas.customer import Customer
+    from testing.model.orders.schemas.order import (
         OrderFulfillment,
         OrderNormalized,
         OrderPublication,
@@ -27,14 +27,14 @@ def source_schema_modules():
         OrderWithPromotion,
         PublicationFlags,
     )
-    from testing.model.v2.orders.schemas.product import BlockedProduct, Product, ProductBase
-    from testing.model.v2.orders.schemas.promotion import Promotion
-    from testing.model.v2.orders.schemas.shipment import Shipment
+    from testing.model.orders.schemas.product import BlockedProduct, Product, ProductBase
+    from testing.model.orders.schemas.promotion import Promotion
+    from testing.model.orders.schemas.shipment import Shipment
 
     return {
-        "testing.model.v2.orders.schemas.common": [TenantKey, AuditStamp, Address, BusinessDate],
-        "testing.model.v2.orders.schemas.customer": [Customer],
-        "testing.model.v2.orders.schemas.order": [
+        "testing.model.orders.schemas.common": [TenantKey, AuditStamp, Address, BusinessDate],
+        "testing.model.orders.schemas.customer": [Customer],
+        "testing.model.orders.schemas.order": [
             OrderRaw,
             OrderNormalized,
             OrderWithCustomer,
@@ -45,9 +45,9 @@ def source_schema_modules():
             PublicationFlags,
             OrderPublished,
         ],
-        "testing.model.v2.orders.schemas.product": [ProductBase, Product, BlockedProduct],
-        "testing.model.v2.orders.schemas.promotion": [Promotion],
-        "testing.model.v2.orders.schemas.shipment": [Shipment],
+        "testing.model.orders.schemas.product": [ProductBase, Product, BlockedProduct],
+        "testing.model.orders.schemas.promotion": [Promotion],
+        "testing.model.orders.schemas.shipment": [Shipment],
     }
 
 

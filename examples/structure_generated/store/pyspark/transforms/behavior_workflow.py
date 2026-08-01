@@ -76,10 +76,10 @@ class MeasureRecommendationImpressionsGenerated:
         )
         impressions_measured__displayed = impressions_measured__displayed.select(
             F.col("recommendation_request_behavior.window"),
-            F.col("recommendation_request_behavior.tenant"),
-            F.col("recommendation_request_behavior.request_id"),
-            F.col("recommendation_request_behavior.strategy_id"),
-            F.col("recommendation_request_behavior.policy_version"),
+            F.col("impressions.tenant"),
+            F.col("impressions.request_id"),
+            F.col("impressions.strategy_id"),
+            F.col("impressions.policy_version"),
             F.col("impressions.id").alias("impression_id"),
             F.col("impressions.shown_at"),
             F.col("impressions.product_id"),

@@ -1,0 +1,101 @@
+{
+  "dependencies": [
+    "session",
+    "session_features",
+    "signal",
+    "signals",
+    "taxonomy"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "admitted",
+      "ordinal": 0,
+      "schema": "RecommendationCandidate"
+    },
+    {
+      "name": "taxonomy",
+      "ordinal": 1,
+      "schema": "ExpandedProductTaxonomy"
+    },
+    {
+      "name": "session_features",
+      "ordinal": 2,
+      "schema": "SessionFeature"
+    },
+    {
+      "name": "signals",
+      "ordinal": 3,
+      "schema": "ProductRecommendationSignal"
+    }
+  ],
+  "name": "GenerateRecommendationCandidates",
+  "outputs": [
+    {
+      "name": "candidates",
+      "ordinal": 0,
+      "schema": "RecommendationCandidate"
+    }
+  ],
+  "source": "examples.store.transforms.recommender.candidates.generate.GenerateRecommendationCandidates",
+  "step_methods": [
+    {
+      "input_lane": "admitted",
+      "input_schema": "RecommendationCandidate",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "candidate",
+          "schema": "RecommendationCandidate",
+          "source": "admitted"
+        },
+        {
+          "driving": false,
+          "parameter": "taxonomy",
+          "schema": "ExpandedProductTaxonomy",
+          "source": "taxonomy"
+        },
+        {
+          "driving": false,
+          "parameter": "session",
+          "schema": "SessionFeature",
+          "source": "session_features"
+        },
+        {
+          "driving": false,
+          "parameter": "signal",
+          "schema": "ProductRecommendationSignal",
+          "source": "signals"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "taxonomy"
+        },
+        {
+          "how": "left",
+          "input": "session"
+        },
+        {
+          "how": "left",
+          "input": "signal"
+        }
+      ],
+      "name": "retrieve",
+      "output_lane": "admitted",
+      "output_schema": "RecommendationCandidate",
+      "results": [
+        {
+          "frame": "admitted",
+          "lane": "admitted",
+          "schema": "RecommendationCandidate"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/generate.py",
+    "traceability": "traceability/transforms/generate.GenerateRecommendationCandidates.json"
+  }
+}

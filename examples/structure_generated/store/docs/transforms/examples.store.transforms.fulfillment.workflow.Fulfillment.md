@@ -54,8 +54,8 @@ Source: `examples.store.transforms.fulfillment.workflow.Fulfillment`
 - `planned.plan`: `FulfillmentPreferredOption` -> `FulfillmentPlan`
 - `planned.suggest_replenishment`: `FulfillmentPreferredOption` -> `ReplenishmentSuggestion`
 - `windows.build`: `Order` -> `DemandWindow`
-- `projections.summarize_inbound`: `InboundInventory` -> `InboundInventory`
-- `projections.project_inventory`: `DemandWindow` -> `InventoryProjection`
+- `inventory_projection.summarize_inbound`: `InboundInventory` -> `InboundInventory`
+- `inventory_projection.project_inventory`: `DemandWindow` -> `InventoryProjection`
 - `shortage_stage.identify`: `InventoryProjection` -> `FulfillmentShortageRanked`
 - `shortage_stage.select_first`: `FulfillmentShortageRanked` -> `FulfillmentShortage`
 - `substitution_stage.find_candidates`: `Order` -> `FulfillmentSubstitutionOption`
@@ -86,6 +86,7 @@ Source: `examples.store.transforms.fulfillment.workflow.Fulfillment`
 - `inbound`
 - `inventory`
 - `inventory_positions`
+- `inventory_projection__inbound_facts`
 - `lead_time`
 - `lead_times`
 - `order`
@@ -93,7 +94,6 @@ Source: `examples.store.transforms.fulfillment.workflow.Fulfillment`
 - `prepared__demand`
 - `product`
 - `products`
-- `projections__inbound_facts`
 - `promotion`
 - `promotions`
 - `rule`

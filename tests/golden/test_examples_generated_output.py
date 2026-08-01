@@ -261,7 +261,7 @@ def test_behavior_evaluator_keeps_its_request_to_daily_pipeline_local() -> None:
     assert [step.name for step in plan.steps] == [
         "select_requests",
         "select_impressions",
-        "attribute_clicks",
+        "count_clicks",
         "measure_impressions",
         "measure_requests",
         "calculate_reciprocal_rank",

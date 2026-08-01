@@ -9,7 +9,7 @@ from pyspark.sql import types as T
 from examples.structure_generated.store.runtime.schema_assert import TransformResult, assert_schema, project_schema
 from examples.structure_generated.store.pyspark.schemas.common import TENANT_KEY_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.demand import ORDER_SCHEMA
-from examples.structure_generated.store.pyspark.schemas.planning_inventory import INVENTORY_POSITION_SCHEMA
+from examples.structure_generated.store.pyspark.schemas.inventory import INVENTORY_POSITION_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.substitution import (
     FULFILLMENT_SUBSTITUTION_OPTION_SCHEMA,
     SUBSTITUTION_RULE_SCHEMA,

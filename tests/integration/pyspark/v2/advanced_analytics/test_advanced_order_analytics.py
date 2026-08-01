@@ -20,7 +20,7 @@ def test_online_and_generated_execution_match_advanced_analytics_on_live_backend
     generated_package = "integration_v2_adv_analytics_generated"
     files = render_generated_project(
         AdvancedOrderAnalytics,
-        source_transform="testing.model.v2.orders.transforms.adv_analytics.AdvancedOrderAnalytics",
+        source_transform="testing.model.orders.transforms.adv_analytics.AdvancedOrderAnalytics",
         generated_package=generated_package,
         source_schema_modules=advanced_analytics.source_schema_modules(),
     )

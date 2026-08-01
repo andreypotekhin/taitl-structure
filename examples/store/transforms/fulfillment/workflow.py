@@ -27,10 +27,10 @@ from examples.store.schemas.product import BlockedProduct, Product
 from examples.store.schemas.promotion import Promotion
 from examples.store.transforms.analytics.fulfillment import FulfillmentAnalytics
 from examples.store.transforms.evaluation.fulfillment import EvaluateFulfillment
-from examples.store.transforms.fulfillment.demand import PrepareOrderDemand
-from examples.store.transforms.fulfillment.plan import PlanFulfillment
-from examples.store.transforms.fulfillment.projections import BuildDemandWindows, ProjectInventory
-from examples.store.transforms.fulfillment.reconcile import ReconcileFulfillmentPlan
+from examples.store.transforms.fulfillment.demand import BuildDemandWindows, PrepareOrderDemand
+from examples.store.transforms.fulfillment.inventory import ProjectInventory
+from examples.store.transforms.fulfillment.planning import PlanFulfillment
+from examples.store.transforms.fulfillment.reconciliation import ReconcileFulfillmentPlan
 from examples.store.transforms.fulfillment.shortages import DetectShortages, PrioritizeExceptions
 from examples.store.transforms.fulfillment.substitutions import FindSubstitutions
 from structure import Transform, input, output, stage
@@ -83,7 +83,7 @@ class Fulfillment(Transform):
         )
     )
     windows = stage(BuildDemandWindows(demand=prepared.demand))
-    projections = stage(
+    inventory_projection = stage(
         ProjectInventory(
             windows=windows.windows,
             inventory_positions=inventory_positions,
@@ -91,7 +91,7 @@ class Fulfillment(Transform):
             lead_times=lead_times,
         )
     )
-    shortage_stage = stage(DetectShortages(projections=projections.projections))
+    shortage_stage = stage(DetectShortages(projections=inventory_projection.projections))
     substitution_stage = stage(
         FindSubstitutions(
             demand=prepared.demand,
@@ -138,7 +138,7 @@ class Fulfillment(Transform):
         daily_summary=summarized.daily_summary,
         warehouse_load_summary=summarized.warehouse_load_summary,
         demand_windows=windows.windows,
-        inventory_projections=projections.projections,
+        inventory_projections=inventory_projection.projections,
         shortages=shortage_stage.shortages,
         substitution_options=substitution_stage.options,
         exceptions=exception_stage.exceptions,

@@ -174,3 +174,84 @@ The first slice is complete when:
 - the same fixture rejects a streaming side input or stream-stream join before runtime;
 - batch-only analytical operations fail as errors when `streaming=True`;
 - public docs explain both the supported first slice and the deferred features.
+
+## Caller-Owned Migration Shapes
+
+The caller-owned streaming contract also admits the following checked shapes. `session_window(event_time, gap)` is a
+typed grouping key with a positive fixed interval. A streaming session aggregate requires an earlier watermark on the
+same event-time field, at least one ordinary business key, and caller-applied `append` mode. Dynamic or invalid gaps,
+global session groups, missing watermarks, and mismatched event-time fields are rejected before runtime.
+
+`rowset_join(..., how="left"|"right"|"full")` is the bounded stream-stream outer-join form and `exists(...)` is the
+semi-join form. Both streams must be declared `streaming=True`, both bound event-time fields must be watermarked, and
+the predicate must include `event_time_between(...)`. The caller applies `append`; unmatched outer rows may wait for
+watermark progress. Stream-static `exists(...)` keeps the streaming relation on the left, exposes no right fields, and
+does not require a watermark. Static-left/stream-right, stream-static anti, right/full/cross forms, and `not_exists(...)`
+are outside this slice.
+
+The IR and shared recipe must carry join kind, input modes, watermark fields/delays, event-time bound, cardinality,
+compatibility status, and required output mode. Online and generated paths consume identical recipes. Generated source
+must not contain sources, sinks, checkpoint/trigger/output-mode calls, query lifecycle, actions, Pandas/RDD conversion,
+or hidden UDF fallback. Chained stateful operations, dynamic session gaps, sorting/limits, analytic windows,
+selected-row helpers, and arbitrary state remain rejected.
+
+## Adoption Stages and Coverage Parity
+
+Caller-owned adoption proceeds in three stages: static stream enrichment, left-outer static lookup, and exactly one
+admitted stateful operation followed only by stateless work. Lookup projection requires a unique key or deterministic
+dedupe policy; unmatched outer lookup fields are nullable. Each stage needs a test-owned file-stream fixture that stops
+and restarts with the same checkpoint on PySpark 3.5 and 4.0.
+
+Streaming coverage is measured against the checked transformation catalog. Every batch-supported family is classified
+as `streaming-supported`, `streaming-partial`, `streaming-ineligible`, or `streaming-deferred`; partial families are
+split into operation-level rows. V8 parity requires effective streaming coverage to be no lower than batch coverage,
+with explicitly Spark-ineligible families removed from the denominator. Typed array-of-struct generators and exact
+schema `union_all(...)`/`union_by_name(...)` are stateless candidates; distinct-style sets, arbitrary ordering/limits,
+and priority selection remain ineligible unless a separate state contract proves otherwise.
+
+## Streaming API Ledger
+
+The checked streaming ledger classifies API families as `structure-supported`, `caller-owned-guided`, `design-gated`,
+`streaming-ineligible`, or `out-of-scope`. It covers input-mode declarations, `isStreaming`, watermarks, stateful
+transforms, stateless transforms, DataStreamReader sources, DataStreamWriter sinks/options, query lifecycle, side
+effects, arbitrary state, RDD/Pandas boundaries, and Spark Connect streaming. Lifecycle APIs are never counted as
+Structure transformation support.
+
+`foreachBatch` is caller-owned-guided: the caller receives Structure's transformed DataFrame and applies the writer
+chain, checkpoint, trigger, output mode, and lifecycle in caller code. `foreach` remains design-gated. Arbitrary state
+APIs such as `applyInPandasWithState` and `transformWithState` require declared input/state/output Schemas, timeout and
+clock policy, initialization and cleanup behavior, profile gating, generated-code rules, and restart evidence.
+
+## Chained Event-Time Windows
+
+The candidate `window_time(window_value)` accepts only a `TimeWindow` produced by the existing streaming `window(...)`
+helper. The admitted candidate shape is one watermarked input, a first tumbling or sliding window aggregate, only
+stateless projection/filtering between stages, and a second aggregate over `window_time(first_window)`. Generated code
+uses public `pyspark.sql.functions.window_time`. Nested `window(window(...))`, a third stateful operation, session chains,
+second-stage dedupe/join/session/selected-row operations, and missing watermarks are rejected with `STREAM-E0801` or
+the registered state-composition diagnostic.
+
+State-stage metadata records operation family, event-time source, watermark source, grouping keys, required output mode,
+and whether another stateful stage is allowed. Explain reports the ordered stage list. A second stateful operation is
+rejected unless it is the approved chained-window pair.
+
+## Selected Rows and Analytic Windows
+
+Window-scoped selected-row helpers are candidates only inside a watermarked event-time or session grouping window, with
+deterministic scalar ordering and explicit tie policy. Global latest/earliest selection over an unbounded stream remains
+a batch boundary. Broad `row_number`, `rank`, `dense_rank`, `lag`, `lead`, and rolling projections remain batch-only
+unless a distinct finite-window API proves bounded state, frame semantics, and output mode. The existing batch helpers
+must not silently change meaning for streaming callers.
+
+## Side Effects and State
+
+`foreach` and `foreachBatch` are not callable from Structure transform methods. A future Structure-owned side-effect API
+would require sink identity, idempotence key, retry behavior, checkpoint and recovery policy, callback security review,
+and live restart evidence. The generated transform module must remain free of `foreach`, `foreachBatch`, `writeStream`,
+`start`, checkpoint, trigger, and sink calls.
+
+## Final Acceptance
+
+The consolidated streaming contract is complete when the streaming ledger and coverage denominator are checked, every
+admitted operation has online/generated parity and PySpark 3.5/4.0 evidence, caller-owned lifecycle examples run, every
+rejected shape fails before query start with a corrective diagnostic, and `make build` passes.

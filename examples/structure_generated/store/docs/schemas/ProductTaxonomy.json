@@ -27,6 +27,6 @@
     }
   ],
   "generated_by": "Structure",
-  "module": "examples.store.schemas.merchandising.taxonomy",
+  "module": "examples.store.schemas.taxonomy",
   "name": "ProductTaxonomy"
 }

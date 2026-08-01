@@ -2,7 +2,7 @@
 
 # InboundInventory
 
-Module: `examples.store.schemas.fulfillment.planning.inventory`
+Module: `examples.store.schemas.fulfillment.inventory.inventory`
 
 | Field | Column | Type | Nullable |
 | --- | --- | --- | --- |

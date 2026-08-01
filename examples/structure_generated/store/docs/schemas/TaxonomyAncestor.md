@@ -2,7 +2,7 @@
 
 # TaxonomyAncestor
 
-Module: `examples.store.schemas.merchandising.taxonomy`
+Module: `examples.store.schemas.taxonomy`
 
 | Field | Column | Type | Nullable |
 | --- | --- | --- | --- |

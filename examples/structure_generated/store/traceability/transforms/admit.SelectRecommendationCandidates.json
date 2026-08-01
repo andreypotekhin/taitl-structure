@@ -20,162 +20,162 @@
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated",
       "ir": "ir:SelectRecommendationCandidates",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.input.requests",
       "ir": "ir:SelectRecommendationCandidates.input.0.requests",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.input.requests"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates.input.requests"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.input.catalog",
       "ir": "ir:SelectRecommendationCandidates.input.1.catalog",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.input.catalog"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates.input.catalog"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select",
       "ir": "ir:SelectRecommendationCandidates.step.0.select",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates.select"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.join.1.product",
       "ir": "ir:SelectRecommendationCandidates.step.0.select.join.1.product",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.join.1.product"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates.select.join.1.product"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.tenant",
       "ir": "ir:SelectRecommendationCandidates.step.0.select.project.tenant",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.tenant"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates.select.field.tenant"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.request_id",
       "ir": "ir:SelectRecommendationCandidates.step.0.select.project.request_id",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.request_id"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates.select.field.request_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.requested_at",
       "ir": "ir:SelectRecommendationCandidates.step.0.select.project.requested_at",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.requested_at"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates.select.field.requested_at"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.customer_id",
       "ir": "ir:SelectRecommendationCandidates.step.0.select.project.customer_id",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.customer_id"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates.select.field.customer_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.session_id",
       "ir": "ir:SelectRecommendationCandidates.step.0.select.project.session_id",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.session_id"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates.select.field.session_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.strategy_id",
       "ir": "ir:SelectRecommendationCandidates.step.0.select.project.strategy_id",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.strategy_id"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates.select.field.strategy_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.policy_version",
       "ir": "ir:SelectRecommendationCandidates.step.0.select.project.policy_version",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.policy_version"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates.select.field.policy_version"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.experiment_id",
       "ir": "ir:SelectRecommendationCandidates.step.0.select.project.experiment_id",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.experiment_id"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates.select.field.experiment_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.experiment_version",
       "ir": "ir:SelectRecommendationCandidates.step.0.select.project.experiment_version",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.experiment_version"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates.select.field.experiment_version"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.variant_id",
       "ir": "ir:SelectRecommendationCandidates.step.0.select.project.variant_id",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.variant_id"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates.select.field.variant_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.category_filter",
       "ir": "ir:SelectRecommendationCandidates.step.0.select.project.category_filter",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.category_filter"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates.select.field.category_filter"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.collection_id",
       "ir": "ir:SelectRecommendationCandidates.step.0.select.project.collection_id",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.collection_id"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates.select.field.collection_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.product_id",
       "ir": "ir:SelectRecommendationCandidates.step.0.select.project.product_id",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.product_id"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates.select.field.product_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.product_name",
       "ir": "ir:SelectRecommendationCandidates.step.0.select.project.product_name",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.product_name"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates.select.field.product_name"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.category",
       "ir": "ir:SelectRecommendationCandidates.step.0.select.project.category",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.category"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates.select.field.category"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.has_promotion",
       "ir": "ir:SelectRecommendationCandidates.step.0.select.project.has_promotion",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.has_promotion"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates.select.field.has_promotion"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.promotion_code",
       "ir": "ir:SelectRecommendationCandidates.step.0.select.project.promotion_code",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.promotion_code"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates.select.field.promotion_code"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.base_score",
       "ir": "ir:SelectRecommendationCandidates.step.0.select.project.base_score",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.base_score"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates.select.field.base_score"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.promotion_score",
       "ir": "ir:SelectRecommendationCandidates.step.0.select.project.promotion_score",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.promotion_score"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates.select.field.promotion_score"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.inventory_boost",
       "ir": "ir:SelectRecommendationCandidates.step.0.select.project.inventory_boost",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.inventory_boost"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates.select.field.inventory_boost"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.candidate_source",
       "ir": "ir:SelectRecommendationCandidates.step.0.select.project.candidate_source",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.candidate_source"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates.select.field.candidate_source"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.taxonomy_id",
       "ir": "ir:SelectRecommendationCandidates.step.0.select.project.taxonomy_id",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.taxonomy_id"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates.select.field.taxonomy_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.taxonomy_branch",
       "ir": "ir:SelectRecommendationCandidates.step.0.select.project.taxonomy_branch",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.taxonomy_branch"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates.select.field.taxonomy_branch"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.session_match",
       "ir": "ir:SelectRecommendationCandidates.step.0.select.project.session_match",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.session_match"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates.select.field.session_match"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.purchase_signal",
       "ir": "ir:SelectRecommendationCandidates.step.0.select.project.purchase_signal",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.purchase_signal"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates.select.field.purchase_signal"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.step.0.select.select.eligibility_status",
       "ir": "ir:SelectRecommendationCandidates.step.0.select.project.eligibility_status",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.select.field.eligibility_status"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates.select.field.eligibility_status"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.admit.SelectRecommendationCandidatesGenerated.run.output.0.candidates.validation.final",
       "ir": "ir:SelectRecommendationCandidates.output.0.candidates.validation.final",
-      "source": "source:examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates.output.candidates"
+      "source": "source:examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates.output.candidates"
     }
   ],
   "schema_constants": {
@@ -245,7 +245,7 @@
     },
     "DemandWindow": {
       "constant": "DEMAND_WINDOW_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.projection"
+      "module": "examples.structure_generated.store.pyspark.schemas.windows"
     },
     "DiversificationDecision": {
       "constant": "DIVERSIFICATION_DECISION_SCHEMA",
@@ -313,7 +313,7 @@
     },
     "InboundInventory": {
       "constant": "INBOUND_INVENTORY_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
     },
     "InboundInventoryAvailability": {
       "constant": "INBOUND_INVENTORY_AVAILABILITY_SCHEMA",
@@ -321,7 +321,7 @@
     },
     "InventoryPosition": {
       "constant": "INVENTORY_POSITION_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
     },
     "InventoryProjection": {
       "constant": "INVENTORY_PROJECTION_SCHEMA",
@@ -329,7 +329,7 @@
     },
     "LeadTime": {
       "constant": "LEAD_TIME_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.inventory_inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
     },
     "MerchandisingBoost": {
       "constant": "MERCHANDISING_BOOST_SCHEMA",
@@ -457,11 +457,11 @@
     },
     "RecommendationCandidate": {
       "constant": "RECOMMENDATION_CANDIDATE_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
     },
     "RecommendationCandidateDecision": {
       "constant": "RECOMMENDATION_CANDIDATE_DECISION_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
     },
     "RecommendationClick": {
       "constant": "RECOMMENDATION_CLICK_SCHEMA",
@@ -553,14 +553,14 @@
     },
     "Warehouse": {
       "constant": "WAREHOUSE_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.warehouse"
     },
     "WarehouseLoadSummary": {
       "constant": "WAREHOUSE_LOAD_SUMMARY_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.summary"
     }
   },
-  "source_transform": "examples.store.transforms.merchandising.recommender.admit.SelectRecommendationCandidates",
+  "source_transform": "examples.store.transforms.recommender.candidates.admit.SelectRecommendationCandidates",
   "static_dataflow": {
     "dependencies": [
       {

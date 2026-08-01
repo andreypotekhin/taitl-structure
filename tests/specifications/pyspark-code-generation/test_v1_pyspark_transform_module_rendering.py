@@ -120,14 +120,14 @@ class EmbeddedHookWithSuper(Transform):
 
 
 def test_v1_transform_module_renderer_is_spark_free() -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     before = {name for name in sys.modules if name.startswith("pyspark")}
 
     text = PySpark.render.transform()(
         _recipe(EnrichOrders),
-        source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
-        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
+        source_transform="testing.model.orders.transforms.order.EnrichOrders",
+        runtime_module="testing.model.structure_generated.runtime.schema_assert",
         schema_modules=_schema_modules(),
     )
 
@@ -137,18 +137,18 @@ def test_v1_transform_module_renderer_is_spark_free() -> None:
 
 
 def test_v1_transform_module_renderer_renders_class_runtime_shape() -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     text = PySpark.render.transform()(
         _recipe(EnrichOrders),
-        source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
-        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
+        source_transform="testing.model.orders.transforms.order.EnrichOrders",
+        runtime_module="testing.model.structure_generated.runtime.schema_assert",
         schema_modules=_schema_modules(),
     )
 
-    assert "from testing.model.v1.orders.transforms.order import EnrichOrders" in text
+    assert "from testing.model.orders.transforms.order import EnrichOrders" in text
     assert (
-        "from testing.model.v1.structure_generated.runtime.schema_assert import "
+        "from testing.model.structure_generated.runtime.schema_assert import "
         "TransformResult, assert_schema, project_schema" in text
     )
     assert "class EnrichOrdersGenerated:" in text
@@ -159,12 +159,12 @@ def test_v1_transform_module_renderer_renders_class_runtime_shape() -> None:
 
 
 def test_v1_transform_module_renderer_composes_steps_and_final_return() -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     text = PySpark.render.transform()(
         _recipe(EnrichOrders),
-        source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
-        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
+        source_transform="testing.model.orders.transforms.order.EnrichOrders",
+        runtime_module="testing.model.structure_generated.runtime.schema_assert",
         schema_modules=_schema_modules(),
     )
 
@@ -189,12 +189,12 @@ def test_v1_transform_module_renderer_composes_steps_and_final_return() -> None:
 
 
 def test_mirror_methods_render_source_named_steps_and_constructor_inputs() -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     text = PySpark.render.transform()(
         _recipe(EnrichOrders),
-        source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
-        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
+        source_transform="testing.model.orders.transforms.order.EnrichOrders",
+        runtime_module="testing.model.structure_generated.runtime.schema_assert",
         schema_modules=_schema_modules(),
         generated_code_options=("mirror_methods",),
     )
@@ -211,7 +211,7 @@ def test_mirror_methods_render_source_named_steps_and_constructor_inputs() -> No
 
 
 def test_embed_exprs_render_static_helpers() -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     text = PySpark.render.transform()(
         cast(
@@ -222,8 +222,8 @@ def test_embed_exprs_render_static_helpers() -> None:
                 generated_code_options=("embed_exprs",),
             ).lowered,
         ),
-        source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
-        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
+        source_transform="testing.model.orders.transforms.order.EnrichOrders",
+        runtime_module="testing.model.structure_generated.runtime.schema_assert",
         schema_modules=_schema_modules(),
         generated_code_options=("embed_exprs",),
     )
@@ -236,19 +236,19 @@ def test_embed_exprs_render_static_helpers() -> None:
 
 
 def test_embed_hooks_copies_raw_hook_source() -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     text = PySpark.render.transform()(
         _recipe(EnrichOrders),
-        source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
-        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
+        source_transform="testing.model.orders.transforms.order.EnrichOrders",
+        runtime_module="testing.model.structure_generated.runtime.schema_assert",
         schema_modules=_schema_modules(),
         generated_code_options=("mirror_methods", "embed_hooks"),
     )
 
     ast.parse(text)
 
-    assert "from testing.model.v1.orders.transforms.order import EnrichOrders" not in text
+    assert "from testing.model.orders.transforms.order import EnrichOrders" not in text
     assert "self._impl" not in text
     assert "orders = self.remove_negative_totals(orders=orders, spark=self.spark, ctx=self.ctx)" in text
     assert "    def remove_negative_totals(self, *, orders, spark, ctx):" in text
@@ -307,8 +307,8 @@ def test_embed_udfs_copies_udf_source() -> None:
     text = PySpark.render.transform()(
         _recipe(UdfPublished),
         source_transform="tests.UdfPublished",
-        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
-        schema_modules={UdfRaw: "testing.model.v1.structure_generated.cache.pyspark.schemas.order"},
+        runtime_module="testing.model.structure_generated.runtime.schema_assert",
+        schema_modules={UdfRaw: "testing.model.structure_generated.cache.pyspark.schemas.order"},
         generated_code_options=("mirror_methods", "embed_udfs"),
     )
 
@@ -327,10 +327,10 @@ def test_v2_cache_directive_renders_as_post_projection_persist() -> None:
     text = PySpark.render.transform()(
         _recipe(CachePublishedOrders),
         source_transform="tests.CachePublishedOrders",
-        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
+        runtime_module="testing.model.structure_generated.runtime.schema_assert",
         schema_modules={
-            CacheRaw: "testing.model.v1.structure_generated.cache.pyspark.schemas.order",
-            CachePublished: "testing.model.v1.structure_generated.cache.pyspark.schemas.order",
+            CacheRaw: "testing.model.structure_generated.cache.pyspark.schemas.order",
+            CachePublished: "testing.model.structure_generated.cache.pyspark.schemas.order",
         },
     )
 
@@ -352,10 +352,10 @@ def test_v2_cache_directive_preserves_an_explicit_storage_level() -> None:
     text = PySpark.render.transform()(
         recipe,
         source_transform="tests.ExplicitlyCachedPublishedOrders",
-        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
+        runtime_module="testing.model.structure_generated.runtime.schema_assert",
         schema_modules={
-            CacheRaw: "testing.model.v1.structure_generated.cache.pyspark.schemas.order",
-            CachePublished: "testing.model.v1.structure_generated.cache.pyspark.schemas.order",
+            CacheRaw: "testing.model.structure_generated.cache.pyspark.schemas.order",
+            CachePublished: "testing.model.structure_generated.cache.pyspark.schemas.order",
         },
     )
 
@@ -366,12 +366,12 @@ def test_v2_cache_directive_preserves_an_explicit_storage_level() -> None:
 
 
 def test_transform_module_hard_wrap_keeps_generated_python_parseable() -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     text = PySpark.render.transform()(
         _recipe(EnrichOrders),
-        source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
-        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
+        source_transform="testing.model.orders.transforms.order.EnrichOrders",
+        runtime_module="testing.model.structure_generated.runtime.schema_assert",
         schema_modules=_schema_modules(),
         generated_code_hard_wrap=88,
     )
@@ -393,8 +393,8 @@ def test_transform_module_hard_wrap_preserves_long_fingerprint_literals() -> Non
 
 
 def _schema_modules() -> dict[type, str]:
-    from testing.model.v1.orders.schemas.customer import Customer
-    from testing.model.v1.orders.schemas.order import (
+    from testing.model.orders.schemas.customer import Customer
+    from testing.model.orders.schemas.order import (
         OrderNormalized,
         OrderPublished,
         OrderRaw,
@@ -402,10 +402,10 @@ def _schema_modules() -> dict[type, str]:
         OrderWithProduct,
         OrderWithPromotion,
     )
-    from testing.model.v1.orders.schemas.product import Product
-    from testing.model.v1.orders.schemas.promotion import Promotion
+    from testing.model.orders.schemas.product import Product
+    from testing.model.orders.schemas.promotion import Promotion
 
-    order_module = "testing.model.v1.structure_generated.orders.pyspark.schemas.order"
+    order_module = "testing.model.structure_generated.orders.pyspark.schemas.order"
     return {
         OrderRaw: order_module,
         OrderNormalized: order_module,
@@ -413,9 +413,9 @@ def _schema_modules() -> dict[type, str]:
         OrderWithProduct: order_module,
         OrderWithPromotion: order_module,
         OrderPublished: order_module,
-        Customer: "testing.model.v1.structure_generated.orders.pyspark.schemas.customer",
-        Product: "testing.model.v1.structure_generated.orders.pyspark.schemas.product",
-        Promotion: "testing.model.v1.structure_generated.orders.pyspark.schemas.promotion",
+        Customer: "testing.model.structure_generated.orders.pyspark.schemas.customer",
+        Product: "testing.model.structure_generated.orders.pyspark.schemas.product",
+        Promotion: "testing.model.structure_generated.orders.pyspark.schemas.promotion",
     }
 
 
@@ -423,7 +423,7 @@ def _render(transform: type[Transform], *, generated_code_options: tuple[str, ..
     return PySpark.render.transform()(
         _recipe(transform),
         source_transform=f"{transform.__module__}.{transform.__name__}",
-        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
+        runtime_module="testing.model.structure_generated.runtime.schema_assert",
         schema_modules={CacheRaw: "testing.cache", CachePublished: "testing.cache", UdfRaw: "testing.cache"},
         generated_code_options=generated_code_options,
     )

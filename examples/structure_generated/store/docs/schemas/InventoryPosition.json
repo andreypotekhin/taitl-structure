@@ -51,6 +51,6 @@
     }
   ],
   "generated_by": "Structure",
-  "module": "examples.store.schemas.fulfillment.planning.inventory",
+  "module": "examples.store.schemas.fulfillment.inventory.inventory",
   "name": "InventoryPosition"
 }

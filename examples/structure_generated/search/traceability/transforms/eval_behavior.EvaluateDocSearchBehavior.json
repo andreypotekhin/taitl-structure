@@ -198,94 +198,94 @@
       "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.select_impressions.validation.0.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.attribute_clicks",
-      "ir": "ir:EvaluateDocSearchBehavior.step.2.attribute_clicks",
-      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.attribute_clicks"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.count_clicks",
+      "ir": "ir:EvaluateDocSearchBehavior.step.2.count_clicks",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.count_clicks"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.attribute_clicks.join.1.click",
-      "ir": "ir:EvaluateDocSearchBehavior.step.2.attribute_clicks.join.1.click",
-      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.attribute_clicks.join.1.click"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.count_clicks.join.1.click",
+      "ir": "ir:EvaluateDocSearchBehavior.step.2.count_clicks.join.1.click",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.count_clicks.join.1.click"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.attribute_clicks.aggregate.window",
-      "ir": "ir:EvaluateDocSearchBehavior.step.2.attribute_clicks.aggregate.window",
-      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.attribute_clicks.aggregate.window"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.count_clicks.aggregate.window",
+      "ir": "ir:EvaluateDocSearchBehavior.step.2.count_clicks.aggregate.window",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.count_clicks.aggregate.window"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.attribute_clicks.aggregate.params",
-      "ir": "ir:EvaluateDocSearchBehavior.step.2.attribute_clicks.aggregate.params",
-      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.attribute_clicks.aggregate.params"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.count_clicks.aggregate.params",
+      "ir": "ir:EvaluateDocSearchBehavior.step.2.count_clicks.aggregate.params",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.count_clicks.aggregate.params"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.attribute_clicks.aggregate.experiment_id",
-      "ir": "ir:EvaluateDocSearchBehavior.step.2.attribute_clicks.aggregate.experiment_id",
-      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.attribute_clicks.aggregate.experiment_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.count_clicks.aggregate.experiment_id",
+      "ir": "ir:EvaluateDocSearchBehavior.step.2.count_clicks.aggregate.experiment_id",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.count_clicks.aggregate.experiment_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.attribute_clicks.aggregate.band_id",
-      "ir": "ir:EvaluateDocSearchBehavior.step.2.attribute_clicks.aggregate.band_id",
-      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.attribute_clicks.aggregate.band_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.count_clicks.aggregate.band_id",
+      "ir": "ir:EvaluateDocSearchBehavior.step.2.count_clicks.aggregate.band_id",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.count_clicks.aggregate.band_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.attribute_clicks.aggregate.search_request_id",
-      "ir": "ir:EvaluateDocSearchBehavior.step.2.attribute_clicks.aggregate.search_request_id",
-      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.attribute_clicks.aggregate.search_request_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.count_clicks.aggregate.search_request_id",
+      "ir": "ir:EvaluateDocSearchBehavior.step.2.count_clicks.aggregate.search_request_id",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.count_clicks.aggregate.search_request_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.attribute_clicks.aggregate.ranking_version",
-      "ir": "ir:EvaluateDocSearchBehavior.step.2.attribute_clicks.aggregate.ranking_version",
-      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.attribute_clicks.aggregate.ranking_version"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.count_clicks.aggregate.ranking_version",
+      "ir": "ir:EvaluateDocSearchBehavior.step.2.count_clicks.aggregate.ranking_version",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.count_clicks.aggregate.ranking_version"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.attribute_clicks.aggregate.query",
-      "ir": "ir:EvaluateDocSearchBehavior.step.2.attribute_clicks.aggregate.query",
-      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.attribute_clicks.aggregate.query"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.count_clicks.aggregate.query",
+      "ir": "ir:EvaluateDocSearchBehavior.step.2.count_clicks.aggregate.query",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.count_clicks.aggregate.query"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.attribute_clicks.aggregate.impression_id",
-      "ir": "ir:EvaluateDocSearchBehavior.step.2.attribute_clicks.aggregate.impression_id",
-      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.attribute_clicks.aggregate.impression_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.count_clicks.aggregate.impression_id",
+      "ir": "ir:EvaluateDocSearchBehavior.step.2.count_clicks.aggregate.impression_id",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.count_clicks.aggregate.impression_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.attribute_clicks.aggregate.shown_at",
-      "ir": "ir:EvaluateDocSearchBehavior.step.2.attribute_clicks.aggregate.shown_at",
-      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.attribute_clicks.aggregate.shown_at"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.count_clicks.aggregate.shown_at",
+      "ir": "ir:EvaluateDocSearchBehavior.step.2.count_clicks.aggregate.shown_at",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.count_clicks.aggregate.shown_at"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.attribute_clicks.aggregate.document_id",
-      "ir": "ir:EvaluateDocSearchBehavior.step.2.attribute_clicks.aggregate.document_id",
-      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.attribute_clicks.aggregate.document_id"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.count_clicks.aggregate.document_id",
+      "ir": "ir:EvaluateDocSearchBehavior.step.2.count_clicks.aggregate.document_id",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.count_clicks.aggregate.document_id"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.attribute_clicks.aggregate.position",
-      "ir": "ir:EvaluateDocSearchBehavior.step.2.attribute_clicks.aggregate.position",
-      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.attribute_clicks.aggregate.position"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.count_clicks.aggregate.position",
+      "ir": "ir:EvaluateDocSearchBehavior.step.2.count_clicks.aggregate.position",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.count_clicks.aggregate.position"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.attribute_clicks.aggregate.examination_propensity",
-      "ir": "ir:EvaluateDocSearchBehavior.step.2.attribute_clicks.aggregate.examination_propensity",
-      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.attribute_clicks.aggregate.examination_propensity"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.count_clicks.aggregate.examination_propensity",
+      "ir": "ir:EvaluateDocSearchBehavior.step.2.count_clicks.aggregate.examination_propensity",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.count_clicks.aggregate.examination_propensity"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.attribute_clicks.aggregate.click_count",
-      "ir": "ir:EvaluateDocSearchBehavior.step.2.attribute_clicks.aggregate.click_count",
-      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.attribute_clicks.aggregate.click_count"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.count_clicks.aggregate.click_count",
+      "ir": "ir:EvaluateDocSearchBehavior.step.2.count_clicks.aggregate.click_count",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.count_clicks.aggregate.click_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.attribute_clicks.aggregate.long_click_count",
-      "ir": "ir:EvaluateDocSearchBehavior.step.2.attribute_clicks.aggregate.long_click_count",
-      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.attribute_clicks.aggregate.long_click_count"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.count_clicks.aggregate.long_click_count",
+      "ir": "ir:EvaluateDocSearchBehavior.step.2.count_clicks.aggregate.long_click_count",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.count_clicks.aggregate.long_click_count"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.attribute_clicks.aggregate.dwell_credit",
-      "ir": "ir:EvaluateDocSearchBehavior.step.2.attribute_clicks.aggregate.dwell_credit",
-      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.attribute_clicks.aggregate.dwell_credit"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.count_clicks.aggregate.dwell_credit",
+      "ir": "ir:EvaluateDocSearchBehavior.step.2.count_clicks.aggregate.dwell_credit",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.count_clicks.aggregate.dwell_credit"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.attribute_clicks.validation.0.intermediate",
-      "ir": "ir:EvaluateDocSearchBehavior.step.2.attribute_clicks.validation.0.intermediate",
-      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.attribute_clicks.validation.0.intermediate"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.2.count_clicks.validation.0.intermediate",
+      "ir": "ir:EvaluateDocSearchBehavior.step.2.count_clicks.validation.0.intermediate",
+      "source": "source:examples.search.transforms.evaluation.search_docs.behavior.eval_behavior.EvaluateDocSearchBehavior.count_clicks.validation.0.intermediate"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.eval_behavior.EvaluateDocSearchBehaviorGenerated.run.step.3.measure_impressions",
@@ -2098,8 +2098,8 @@
           "BehaviorImpression",
           "click"
         ],
-        "step": "attribute_clicks",
-        "target": "attribute_clicks"
+        "step": "count_clicks",
+        "target": "count_clicks"
       },
       {
         "detail": {
@@ -2115,8 +2115,8 @@
           "impression.shown_at",
           "click.occurred_at"
         ],
-        "step": "attribute_clicks",
-        "target": "attribute_clicks.join[1].click"
+        "step": "count_clicks",
+        "target": "count_clicks.join[1].click"
       },
       {
         "detail": {
@@ -2128,7 +2128,7 @@
         "sources": [
           "impression.window"
         ],
-        "step": "attribute_clicks",
+        "step": "count_clicks",
         "target": "BehaviorImpression.window"
       },
       {
@@ -2141,7 +2141,7 @@
         "sources": [
           "impression.params"
         ],
-        "step": "attribute_clicks",
+        "step": "count_clicks",
         "target": "BehaviorImpression.params"
       },
       {
@@ -2154,7 +2154,7 @@
         "sources": [
           "impression.experiment_id"
         ],
-        "step": "attribute_clicks",
+        "step": "count_clicks",
         "target": "BehaviorImpression.experiment_id"
       },
       {
@@ -2167,7 +2167,7 @@
         "sources": [
           "impression.band_id"
         ],
-        "step": "attribute_clicks",
+        "step": "count_clicks",
         "target": "BehaviorImpression.band_id"
       },
       {
@@ -2180,7 +2180,7 @@
         "sources": [
           "impression.search_request_id"
         ],
-        "step": "attribute_clicks",
+        "step": "count_clicks",
         "target": "BehaviorImpression.search_request_id"
       },
       {
@@ -2193,7 +2193,7 @@
         "sources": [
           "impression.ranking_version"
         ],
-        "step": "attribute_clicks",
+        "step": "count_clicks",
         "target": "BehaviorImpression.ranking_version"
       },
       {
@@ -2206,7 +2206,7 @@
         "sources": [
           "impression.query"
         ],
-        "step": "attribute_clicks",
+        "step": "count_clicks",
         "target": "BehaviorImpression.query"
       },
       {
@@ -2219,7 +2219,7 @@
         "sources": [
           "impression.impression_id"
         ],
-        "step": "attribute_clicks",
+        "step": "count_clicks",
         "target": "BehaviorImpression.impression_id"
       },
       {
@@ -2232,7 +2232,7 @@
         "sources": [
           "impression.shown_at"
         ],
-        "step": "attribute_clicks",
+        "step": "count_clicks",
         "target": "BehaviorImpression.shown_at"
       },
       {
@@ -2245,7 +2245,7 @@
         "sources": [
           "impression.document_id"
         ],
-        "step": "attribute_clicks",
+        "step": "count_clicks",
         "target": "BehaviorImpression.document_id"
       },
       {
@@ -2258,7 +2258,7 @@
         "sources": [
           "impression.position"
         ],
-        "step": "attribute_clicks",
+        "step": "count_clicks",
         "target": "BehaviorImpression.position"
       },
       {
@@ -2271,7 +2271,7 @@
         "sources": [
           "impression.examination_propensity"
         ],
-        "step": "attribute_clicks",
+        "step": "count_clicks",
         "target": "BehaviorImpression.examination_propensity"
       },
       {
@@ -2284,7 +2284,7 @@
         "sources": [
           "displayed"
         ],
-        "step": "attribute_clicks",
+        "step": "count_clicks",
         "target": "BehaviorImpression.click_count"
       },
       {
@@ -2297,7 +2297,7 @@
         "sources": [
           "click.dwell_seconds"
         ],
-        "step": "attribute_clicks",
+        "step": "count_clicks",
         "target": "BehaviorImpression.long_click_count"
       },
       {
@@ -2310,7 +2310,7 @@
         "sources": [
           "click.dwell_seconds"
         ],
-        "step": "attribute_clicks",
+        "step": "count_clicks",
         "target": "BehaviorImpression.dwell_credit"
       },
       {
@@ -4217,7 +4217,7 @@
           "right_alias": "clicks"
         }
       ],
-      "name": "attribute_clicks",
+      "name": "count_clicks",
       "output_alias": "behavior_impression",
       "output_schema": "BehaviorImpression",
       "results": [

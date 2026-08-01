@@ -25,122 +25,122 @@
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.prepare_catalog.PrepareCatalogGenerated",
       "ir": "ir:PrepareCatalog",
-      "source": "source:examples.store.transforms.merchandising.catalog.prepare_catalog.PrepareCatalog"
+      "source": "source:examples.store.transforms.catalog.prepare_catalog.PrepareCatalog"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.prepare_catalog.PrepareCatalogGenerated.run.input.products",
       "ir": "ir:PrepareCatalog.input.0.products",
-      "source": "source:examples.store.transforms.merchandising.catalog.prepare_catalog.PrepareCatalog.input.products"
+      "source": "source:examples.store.transforms.catalog.prepare_catalog.PrepareCatalog.input.products"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.prepare_catalog.PrepareCatalogGenerated.run.input.blocked_products",
       "ir": "ir:PrepareCatalog.input.1.blocked_products",
-      "source": "source:examples.store.transforms.merchandising.catalog.prepare_catalog.PrepareCatalog.input.blocked_products"
+      "source": "source:examples.store.transforms.catalog.prepare_catalog.PrepareCatalog.input.blocked_products"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.prepare_catalog.PrepareCatalogGenerated.run.input.promotions",
       "ir": "ir:PrepareCatalog.input.2.promotions",
-      "source": "source:examples.store.transforms.merchandising.catalog.prepare_catalog.PrepareCatalog.input.promotions"
+      "source": "source:examples.store.transforms.catalog.prepare_catalog.PrepareCatalog.input.promotions"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.prepare_catalog.PrepareCatalogGenerated.run.step.0.prepare",
       "ir": "ir:PrepareCatalog.step.0.prepare",
-      "source": "source:examples.store.transforms.merchandising.catalog.prepare_catalog.PrepareCatalog.prepare"
+      "source": "source:examples.store.transforms.catalog.prepare_catalog.PrepareCatalog.prepare"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.prepare_catalog.PrepareCatalogGenerated.run.step.0.prepare.where.0",
       "ir": "ir:PrepareCatalog.step.0.prepare.filter.0",
-      "source": "source:examples.store.transforms.merchandising.catalog.prepare_catalog.PrepareCatalog.prepare.filter.0"
+      "source": "source:examples.store.transforms.catalog.prepare_catalog.PrepareCatalog.prepare.filter.0"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.prepare_catalog.PrepareCatalogGenerated.run.step.0.prepare.join.1.blocked_product",
       "ir": "ir:PrepareCatalog.step.0.prepare.join.1.blocked_product",
-      "source": "source:examples.store.transforms.merchandising.catalog.prepare_catalog.PrepareCatalog.prepare.join.1.blocked_product"
+      "source": "source:examples.store.transforms.catalog.prepare_catalog.PrepareCatalog.prepare.join.1.blocked_product"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.prepare_catalog.PrepareCatalogGenerated.run.step.0.prepare.join.2.promotion",
       "ir": "ir:PrepareCatalog.step.0.prepare.join.2.promotion",
-      "source": "source:examples.store.transforms.merchandising.catalog.prepare_catalog.PrepareCatalog.prepare.join.2.promotion"
+      "source": "source:examples.store.transforms.catalog.prepare_catalog.PrepareCatalog.prepare.join.2.promotion"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.prepare_catalog.PrepareCatalogGenerated.run.step.0.prepare.select.tenant",
       "ir": "ir:PrepareCatalog.step.0.prepare.project.tenant",
-      "source": "source:examples.store.transforms.merchandising.catalog.prepare_catalog.PrepareCatalog.prepare.field.tenant"
+      "source": "source:examples.store.transforms.catalog.prepare_catalog.PrepareCatalog.prepare.field.tenant"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.prepare_catalog.PrepareCatalogGenerated.run.step.0.prepare.select.audit",
       "ir": "ir:PrepareCatalog.step.0.prepare.project.audit",
-      "source": "source:examples.store.transforms.merchandising.catalog.prepare_catalog.PrepareCatalog.prepare.field.audit"
+      "source": "source:examples.store.transforms.catalog.prepare_catalog.PrepareCatalog.prepare.field.audit"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.prepare_catalog.PrepareCatalogGenerated.run.step.0.prepare.select.product_id",
       "ir": "ir:PrepareCatalog.step.0.prepare.project.product_id",
-      "source": "source:examples.store.transforms.merchandising.catalog.prepare_catalog.PrepareCatalog.prepare.field.product_id"
+      "source": "source:examples.store.transforms.catalog.prepare_catalog.PrepareCatalog.prepare.field.product_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.prepare_catalog.PrepareCatalogGenerated.run.step.0.prepare.select.product_name",
       "ir": "ir:PrepareCatalog.step.0.prepare.project.product_name",
-      "source": "source:examples.store.transforms.merchandising.catalog.prepare_catalog.PrepareCatalog.prepare.field.product_name"
+      "source": "source:examples.store.transforms.catalog.prepare_catalog.PrepareCatalog.prepare.field.product_name"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.prepare_catalog.PrepareCatalogGenerated.run.step.0.prepare.select.category",
       "ir": "ir:PrepareCatalog.step.0.prepare.project.category",
-      "source": "source:examples.store.transforms.merchandising.catalog.prepare_catalog.PrepareCatalog.prepare.field.category"
+      "source": "source:examples.store.transforms.catalog.prepare_catalog.PrepareCatalog.prepare.field.category"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.prepare_catalog.PrepareCatalogGenerated.run.step.0.prepare.select.active",
       "ir": "ir:PrepareCatalog.step.0.prepare.project.active",
-      "source": "source:examples.store.transforms.merchandising.catalog.prepare_catalog.PrepareCatalog.prepare.field.active"
+      "source": "source:examples.store.transforms.catalog.prepare_catalog.PrepareCatalog.prepare.field.active"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.prepare_catalog.PrepareCatalogGenerated.run.step.0.prepare.select.list_price",
       "ir": "ir:PrepareCatalog.step.0.prepare.project.list_price",
-      "source": "source:examples.store.transforms.merchandising.catalog.prepare_catalog.PrepareCatalog.prepare.field.list_price"
+      "source": "source:examples.store.transforms.catalog.prepare_catalog.PrepareCatalog.prepare.field.list_price"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.prepare_catalog.PrepareCatalogGenerated.run.step.0.prepare.select.rating",
       "ir": "ir:PrepareCatalog.step.0.prepare.project.rating",
-      "source": "source:examples.store.transforms.merchandising.catalog.prepare_catalog.PrepareCatalog.prepare.field.rating"
+      "source": "source:examples.store.transforms.catalog.prepare_catalog.PrepareCatalog.prepare.field.rating"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.prepare_catalog.PrepareCatalogGenerated.run.step.0.prepare.select.has_promotion",
       "ir": "ir:PrepareCatalog.step.0.prepare.project.has_promotion",
-      "source": "source:examples.store.transforms.merchandising.catalog.prepare_catalog.PrepareCatalog.prepare.field.has_promotion"
+      "source": "source:examples.store.transforms.catalog.prepare_catalog.PrepareCatalog.prepare.field.has_promotion"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.prepare_catalog.PrepareCatalogGenerated.run.step.0.prepare.select.promotion_code",
       "ir": "ir:PrepareCatalog.step.0.prepare.project.promotion_code",
-      "source": "source:examples.store.transforms.merchandising.catalog.prepare_catalog.PrepareCatalog.prepare.field.promotion_code"
+      "source": "source:examples.store.transforms.catalog.prepare_catalog.PrepareCatalog.prepare.field.promotion_code"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.prepare_catalog.PrepareCatalogGenerated.run.step.0.prepare.select.promotion_name",
       "ir": "ir:PrepareCatalog.step.0.prepare.project.promotion_name",
-      "source": "source:examples.store.transforms.merchandising.catalog.prepare_catalog.PrepareCatalog.prepare.field.promotion_name"
+      "source": "source:examples.store.transforms.catalog.prepare_catalog.PrepareCatalog.prepare.field.promotion_name"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.prepare_catalog.PrepareCatalogGenerated.run.step.0.prepare.select.promotion_discount",
       "ir": "ir:PrepareCatalog.step.0.prepare.project.promotion_discount",
-      "source": "source:examples.store.transforms.merchandising.catalog.prepare_catalog.PrepareCatalog.prepare.field.promotion_discount"
+      "source": "source:examples.store.transforms.catalog.prepare_catalog.PrepareCatalog.prepare.field.promotion_discount"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.prepare_catalog.PrepareCatalogGenerated.run.step.0.prepare.select.base_score",
       "ir": "ir:PrepareCatalog.step.0.prepare.project.base_score",
-      "source": "source:examples.store.transforms.merchandising.catalog.prepare_catalog.PrepareCatalog.prepare.field.base_score"
+      "source": "source:examples.store.transforms.catalog.prepare_catalog.PrepareCatalog.prepare.field.base_score"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.prepare_catalog.PrepareCatalogGenerated.run.step.0.prepare.select.promotion_score",
       "ir": "ir:PrepareCatalog.step.0.prepare.project.promotion_score",
-      "source": "source:examples.store.transforms.merchandising.catalog.prepare_catalog.PrepareCatalog.prepare.field.promotion_score"
+      "source": "source:examples.store.transforms.catalog.prepare_catalog.PrepareCatalog.prepare.field.promotion_score"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.prepare_catalog.PrepareCatalogGenerated.run.step.0.prepare.select.eligible",
       "ir": "ir:PrepareCatalog.step.0.prepare.project.eligible",
-      "source": "source:examples.store.transforms.merchandising.catalog.prepare_catalog.PrepareCatalog.prepare.field.eligible"
+      "source": "source:examples.store.transforms.catalog.prepare_catalog.PrepareCatalog.prepare.field.eligible"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.prepare_catalog.PrepareCatalogGenerated.run.output.0.catalog.validation.final",
       "ir": "ir:PrepareCatalog.output.0.catalog.validation.final",
-      "source": "source:examples.store.transforms.merchandising.catalog.prepare_catalog.PrepareCatalog.output.catalog"
+      "source": "source:examples.store.transforms.catalog.prepare_catalog.PrepareCatalog.output.catalog"
     }
   ],
   "schema_constants": {
@@ -210,7 +210,7 @@
     },
     "DemandWindow": {
       "constant": "DEMAND_WINDOW_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.projection"
+      "module": "examples.structure_generated.store.pyspark.schemas.windows"
     },
     "DiversificationDecision": {
       "constant": "DIVERSIFICATION_DECISION_SCHEMA",
@@ -278,7 +278,7 @@
     },
     "InboundInventory": {
       "constant": "INBOUND_INVENTORY_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
     },
     "InboundInventoryAvailability": {
       "constant": "INBOUND_INVENTORY_AVAILABILITY_SCHEMA",
@@ -286,7 +286,7 @@
     },
     "InventoryPosition": {
       "constant": "INVENTORY_POSITION_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
     },
     "InventoryProjection": {
       "constant": "INVENTORY_PROJECTION_SCHEMA",
@@ -294,7 +294,7 @@
     },
     "LeadTime": {
       "constant": "LEAD_TIME_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.inventory_inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
     },
     "MerchandisingBoost": {
       "constant": "MERCHANDISING_BOOST_SCHEMA",
@@ -422,11 +422,11 @@
     },
     "RecommendationCandidate": {
       "constant": "RECOMMENDATION_CANDIDATE_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
     },
     "RecommendationCandidateDecision": {
       "constant": "RECOMMENDATION_CANDIDATE_DECISION_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
     },
     "RecommendationClick": {
       "constant": "RECOMMENDATION_CLICK_SCHEMA",
@@ -518,14 +518,14 @@
     },
     "Warehouse": {
       "constant": "WAREHOUSE_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.warehouse"
     },
     "WarehouseLoadSummary": {
       "constant": "WAREHOUSE_LOAD_SUMMARY_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.summary"
     }
   },
-  "source_transform": "examples.store.transforms.merchandising.catalog.prepare_catalog.PrepareCatalog",
+  "source_transform": "examples.store.transforms.catalog.prepare_catalog.PrepareCatalog",
   "static_dataflow": {
     "dependencies": [
       {

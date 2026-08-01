@@ -33,6 +33,6 @@
     }
   ],
   "generated_by": "Structure",
-  "module": "examples.store.schemas.merchandising.catalog",
+  "module": "examples.store.schemas.catalog",
   "name": "CatalogAvailability"
 }

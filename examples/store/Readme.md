@@ -10,11 +10,11 @@ persistence, stream lifecycle, and the business actions taken from the results.
 | --- | --- | --- | --- |
 | Catalog preparation | `PrepareCatalog` | `CatalogProduct` | Tenant-visible product facts for recommendation eligibility. |
 | Recommendations | `Recommender` / `Merchandising` | `RecommendedProduct`, `RecommendationRun` | Transparent policy, promotion, and feedback-aware product ranking. |
-| Merchandising feedback | `BuildRecommendationSignals` | Daily facts and product signals | Impression/click attribution and reusable product signals. |
+| Recommendation feedback | `BuildProductSignals` | Daily facts and product signals | Impression/click attribution and reusable product signals. |
 | Merchandising evaluation | `EvaluateRecommendations` | Request and daily behavior summaries | Zero-result, click, and exposure-aware behavior evaluation. |
 | Catalog normalization and taxonomy | `NormalizeCatalog` / `ExpandProductTaxonomy` | Normalized catalog and ancestor facts | Stable tenant-scoped category joins with bounded hierarchy expansion. |
-| Session and purchase feedback | `BuildSessionSignals` / `BuildRecommendationPurchaseSignals` | Session features and attributed purchases | Event-time bounded interests and explicit recommendation-attribution status. |
-| Candidate stages | `GenerateRecommendationCandidates` / `FilterRecommendationCandidates` | Candidates and decision evidence | Retrieve from catalog, taxonomy, session, and feedback sources, then filter with reasons. |
+| Session and purchase feedback | `BuildSessionSignals` / `BuildPurchaseSignals` | Session features and attributed purchases | Event-time bounded interests and explicit recommendation-attribution status. |
+| Candidate workflow | `BuildRecommendationCandidates` | Candidates and decision evidence | Admit catalog candidates, enrich them with taxonomy, session, and feedback facts, then filter with explicit reasons. |
 | Diversification | `DiversifyRecommendations` | Diverse ranked products | Deterministic taxonomy-branch caps after ranking. |
 | Recommendation experiments | `AssignRecommendationVariants` / `EvaluateRecommendationExperiment` | Assignments, exposures, variant metrics | Stable tenant-scoped assignments and descriptive observed-variant comparisons. |
 | Fulfillment pipeline | `Fulfillment` | Demand, plans, suggestions, summaries | Main planning boundary from commercial order inputs to fulfillment outputs. |
@@ -30,6 +30,11 @@ persistence, stream lifecycle, and the business actions taken from the results.
 | Daily analytics | `OrderAnalytics` | Customer and product daily results | Batch aggregation and windows. |
 | Advanced analytics | `AdvancedOrderAnalytics` | Rollups, cubes, and profiles | Batch analytical examples. |
 | Join shapes | `RowsetJoinExamples` | Reconciliations and candidates | Full, right, Cartesian joins. |
+
+Store keeps reusable domain boundaries at the top level: catalog preparation lives under `transforms/catalog/`,
+taxonomy expansion under `transforms/taxonomy/`, recommendation serving under `transforms/recommender/`, fulfillment
+planning under `transforms/fulfillment/`, and order enrichment under `transforms/orders/`. The `Merchandising` facade
+composes its recommendation boundaries, while reporting remains under the analytics packages.
 
 ## Recommendations and merchandising
 
@@ -53,7 +58,10 @@ recommendations = Recommender(
     policy=policy,
     boosts=boosts,
     suppressions=suppressions,
-    signals=signals,
+    session_events=session_events,
+    fulfilled_orders=fulfilled_orders,
+    feedback_impressions=feedback_impressions,
+    feedback_clicks=feedback_clicks,
 ).run(session)
 
 ranked = recommendations.recommended_products
@@ -86,7 +94,7 @@ evaluation = EvaluateRecommendations(
 ).run(session)
 ```
 
-`BuildRecommendationSignals` and `BuildRecommendationPurchaseSignals` live under `merchandising/signals/`. They turn
+`BuildProductSignals` and `BuildPurchaseSignals` live under `recommender/signals/`. They turn
 recommendation impressions, timely clicks, and fulfilled orders into daily facts and product-level signals. A click
 counts only when it references an impression and happens within 24 hours of that impression; purchase attribution uses
 the fulfilled-order stream and a 30-day impression boundary.
@@ -110,8 +118,9 @@ The planning path is separate from shipment-backed publication. `PrepareOrderDem
 `EnrichOrders` through customer, product, blocked-product, and promotion enrichment, but it stops before shipment
 matching. Its `Order` output means “this order line is commercially valid and ready to fulfill.”
 
-`Fulfillment` lives in the fulfillment transform package and captures the overall planning pipeline. It composes
-`PrepareOrderDemand`, `PlanFulfillment`, `ReconcileFulfillmentPlan`, and `FulfillmentAnalytics`, exposing demand,
+`Fulfillment` lives in the fulfillment transform package and captures the overall planning pipeline. Its `demand/`,
+`inventory/`, `planning/`, `reconciliation/`, `shortages/`, and `substitutions/` subpackages mirror the business
+phases. It composes `PrepareOrderDemand`, `PlanFulfillment`, `ReconcileFulfillmentPlan`, and `FulfillmentAnalytics`, exposing demand,
 allocation, backorder, plan, reconciliation, replenishment, daily-summary, and warehouse-load outputs from one
 app-facing transform.
 
@@ -219,7 +228,7 @@ published = EnrichOrders(
     blocked_products=blocked_products,
     promotions=promotions,
     shipments=shipments,
-).run(session).published
+).run(session).recommended
 
 query = (
     published.writeStream.outputMode("append")

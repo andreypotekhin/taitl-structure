@@ -1,6 +1,6 @@
 import pytest
-from testing.model.v1.orders.schemas.common import Address
-from testing.model.v1.orders.schemas.order import OrderNormalized, OrderRaw, OrderWithCustomer
+from testing.model.orders.schemas.common import Address
+from testing.model.orders.schemas.order import OrderNormalized, OrderRaw, OrderWithCustomer
 
 from structure import *
 from structure.plugin.pyspark import *

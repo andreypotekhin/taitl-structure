@@ -335,3 +335,16 @@ Generated traceability must expose enough structured data for Sprint 10 generate
 - Public reference docs include examples and limitations.
 - `structure explain` compact and expanded modes cover each admitted family.
 - `make build` passes after each implementation milestone.
+
+## Grouped Mode
+
+`mode(value, deterministic=False)` is an aggregate expression and follows `group_by(...)`, `rollup(...)`, `cube(...)`,
+or `grouping_sets(...)` in a normal declared aggregate result. It returns the candidate type and is nullable when a
+group has no non-null candidate. The default preserves PySpark behavior: tied most-frequent values may yield any tied
+candidate. `deterministic=True` requires an orderable scalar and returns the lowest tied candidate through a typed,
+compiler-visible compatibility aggregate that behaves consistently on PySpark 3.5 and 4.0.
+
+The aggregate plan records the helper and deterministic flag. Global mode, streaming mode, and mode inside a scalar
+lambda or analytic window are rejected. The lowering uses no raw SQL, driver collection, Python UDF, or hidden action.
+Tests cover unique values, ties, nulls, non-orderable values, placement errors, target rendering, online/generated
+parity, and live cross-version equivalence.

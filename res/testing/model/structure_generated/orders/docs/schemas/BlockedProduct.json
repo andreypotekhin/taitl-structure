@@ -1,0 +1,70 @@
+{
+  "bases": [
+    "Product"
+  ],
+  "fields": [
+    {
+      "column": "tenant",
+      "name": "tenant",
+      "nullable": false,
+      "type": "TenantKey"
+    },
+    {
+      "column": "audit",
+      "name": "audit",
+      "nullable": false,
+      "type": "AuditStamp"
+    },
+    {
+      "column": "id",
+      "name": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "name",
+      "name": "name",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "category",
+      "name": "category",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "active",
+      "name": "active",
+      "nullable": false,
+      "type": "boolean"
+    },
+    {
+      "column": "list_price",
+      "name": "list_price",
+      "nullable": true,
+      "type": "decimal(12,2)"
+    },
+    {
+      "column": "weight",
+      "name": "weight",
+      "nullable": true,
+      "type": "float"
+    },
+    {
+      "column": "rating",
+      "name": "rating",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "reason",
+      "name": "reason",
+      "nullable": true,
+      "type": "string"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "testing.model.orders.schemas.product",
+  "name": "BlockedProduct"
+}

@@ -25,9 +25,8 @@ class AdvancedOrderAnalytics(Transform):
             product_category=order.product_category,
             order_date=order.business.order_date,
         )
-        return OrderRevenueRollup(
+        return OrderRevenueRollup.project(order)(
             tenant_id=order.tenant.tenant_id,
-            product_category=order.product_category,
             order_date=order.business.order_date,
             grouping_id=grouping_id(),
             category_subtotal=is_grouped(order.product_category),
@@ -56,10 +55,8 @@ class AdvancedOrderAnalytics(Transform):
             product_category=order.product_category,
             customer_tier=order.customer_tier,
         )
-        return OrderProductCube(
+        return OrderProductCube.project(order)(
             tenant_id=order.tenant.tenant_id,
-            product_category=order.product_category,
-            customer_tier=order.customer_tier,
             grouping_id=grouping_id(),
             order_count=count(),
             distinct_customers=count_distinct(order.customer_id),

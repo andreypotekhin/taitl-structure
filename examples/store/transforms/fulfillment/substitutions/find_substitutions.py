@@ -46,11 +46,7 @@ class FindSubstitutions(Transform):
             ).otherwise(0),
             0,
         )
-        return FulfillmentSubstitutionOption(
-            tenant=order.tenant,
-            order_id=order.order_id,
-            line_number=order.line_number,
-            customer_id=order.customer_id,
+        return FulfillmentSubstitutionOption.project(order)(
             original_product_id=order.product_id,
             substitute_product_id=rule.substitute_product_id,
             equivalence_group=rule.equivalence_group,

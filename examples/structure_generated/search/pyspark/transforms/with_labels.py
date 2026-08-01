@@ -136,7 +136,7 @@ class EvaluateDocSearchBehaviorGenerated:
         )
         assert_schema(displayed, BEHAVIOR_IMPRESSION_SCHEMA, name="BehaviorImpression", mode="strict")
 
-        # Step method: attribute_clicks
+        # Step method: count_clicks
         clicked = displayed.alias("behavior_impression")
         clicks_joined = clicks.alias("clicks")
         clicked = clicked.join(

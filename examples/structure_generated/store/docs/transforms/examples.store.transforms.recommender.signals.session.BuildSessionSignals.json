@@ -1,0 +1,48 @@
+{
+  "dependencies": [],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "events",
+      "ordinal": 0,
+      "schema": "SessionEvent"
+    }
+  ],
+  "name": "BuildSessionSignals",
+  "outputs": [
+    {
+      "name": "features",
+      "ordinal": 0,
+      "schema": "SessionFeature"
+    }
+  ],
+  "source": "examples.store.transforms.recommender.signals.session.BuildSessionSignals",
+  "step_methods": [
+    {
+      "input_lane": "events",
+      "input_schema": "SessionEvent",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "event",
+          "schema": "SessionEvent",
+          "source": "events"
+        }
+      ],
+      "name": "build",
+      "output_lane": "events",
+      "output_schema": "SessionFeature",
+      "results": [
+        {
+          "frame": "events",
+          "lane": "events",
+          "schema": "SessionFeature"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/session.py",
+    "traceability": "traceability/transforms/session.BuildSessionSignals.json"
+  }
+}

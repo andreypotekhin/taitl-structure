@@ -89,7 +89,7 @@ result = (
     .run(session)
 )
 
-published = result.published
+published = result.recommended
 ```
 
 `a.to(b, c)` and `a.to(b).to(c)` are equivalent. `Transform.to(a, b, c)` is the static starter when there is no

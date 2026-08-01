@@ -110,10 +110,8 @@ exclude = ["^res/testing/model/", "^examples/(fixtures|structure_generated)/"]
 module = [
     "examples.store.*",
     "examples.structure_generated.*",
-    "testing.model.v1.orders.*",
-    "testing.model.v1.structure_generated.*",
-    "testing.model.v3.orders.*",
-    "testing.model.v3.structure_generated.*",
+    "testing.model.orders.*",
+    "testing.model.structure_generated.*",
 ]
 follow_imports = "skip"
 

@@ -24,11 +24,7 @@ class RecordRecommendationExposures(Transform):
             run,
             on=(run.tenant.tenant_id == request.tenant.tenant_id) & (run.request_id == request.id),
         )
-        return RecommendationExposure(
-            tenant=request.tenant,
+        return RecommendationExposure.project(assignment)(
             request_id=request.id,
-            experiment_id=assignment.experiment_id,
-            experiment_version=assignment.experiment_version,
-            variant_id=assignment.variant_id,
             exposed_at=request.requested_at,
         )

@@ -39,6 +39,6 @@
     }
   ],
   "generated_by": "Structure",
-  "module": "examples.store.schemas.fulfillment.projections.projection",
+  "module": "examples.store.schemas.fulfillment.demand.windows",
   "name": "DemandWindow"
 }

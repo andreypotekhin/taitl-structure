@@ -10,12 +10,12 @@ from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import Py
 def test_v4_fixture_skeleton_is_importable_without_pyspark() -> None:
     before = {name for name in sys.modules if name.startswith("pyspark")}
     for module in (
-        "testing.model.v4",
-        "testing.model.v4.orders",
-        "testing.model.v4.orders.schemas.scalar",
-        "testing.model.v4.orders.schemas",
-        "testing.model.v4.orders.transforms.scalar",
-        "testing.model.v4.orders.transforms",
+        "testing.model",
+        "testing.model.orders",
+        "testing.model.orders.schemas.scalar",
+        "testing.model.orders.schemas",
+        "testing.model.orders.transforms.scalar",
+        "testing.model.orders.transforms",
     ):
         importlib.import_module(module)
     after = {name for name in sys.modules if name.startswith("pyspark")}
@@ -23,7 +23,7 @@ def test_v4_fixture_skeleton_is_importable_without_pyspark() -> None:
 
 
 def test_v4_fixture_starts_with_typed_bitwise_projection() -> None:
-    fixture = importlib.import_module("testing.model.v4.orders.transforms.scalar")
+    fixture = importlib.import_module("testing.model.orders.transforms.scalar")
 
     plan = cast(
         TransformPlan,

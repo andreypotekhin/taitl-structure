@@ -2,7 +2,7 @@
 
 # DemandWindow
 
-Module: `examples.store.schemas.fulfillment.projections.projection`
+Module: `examples.store.schemas.fulfillment.demand.windows`
 
 | Field | Column | Type | Nullable |
 | --- | --- | --- | --- |

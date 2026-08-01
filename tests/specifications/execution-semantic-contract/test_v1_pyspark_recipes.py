@@ -10,7 +10,7 @@ def _recipe(transform):
 
 
 def test_v1_pyspark_recipe_lowering_is_spark_free() -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     before = {name for name in sys.modules if name.startswith("pyspark")}
 
@@ -24,8 +24,8 @@ def test_v1_pyspark_recipe_lowering_is_spark_free() -> None:
 
 
 def test_v1_pyspark_recipe_preserves_inputs_and_steps() -> None:
-    from testing.model.v1.orders.schemas.order import OrderPublished
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.schemas.order import OrderPublished
+    from testing.model.orders.transforms.order import EnrichOrders
 
     recipe = _recipe(EnrichOrders)
 
@@ -33,26 +33,29 @@ def test_v1_pyspark_recipe_preserves_inputs_and_steps() -> None:
         ("orders", "OrderRaw", 0, "input"),
         ("customers", "Customer", 1, "input"),
         ("products", "Product", 2, "input"),
-        ("promotions", "Promotion", 3, "input"),
+        ("blocked_products", "BlockedProduct", 3, "input"),
+        ("promotions", "Promotion", 4, "input"),
+        ("shipments", "Shipment", 5, "input"),
     ]
     assert [(step.name, step.input_alias, step.output_alias) for step in recipe.steps] == [
         ("normalize", "order_raw", "order_normalized"),
         ("add_customer", "order_normalized", "order_with_customer"),
         ("add_product", "order_with_customer", "order_with_product"),
         ("add_promotion", "order_with_product", "order_with_promotion"),
-        ("publish", "order_with_promotion", "order_published"),
+        ("add_shipments", "order_with_promotion", "order_fulfillment"),
+        ("publish", "order_fulfillment", "order_published"),
     ]
     assert recipe.final_validation.schema is OrderPublished
     assert recipe.final_validation.reason == "final"
 
 
 def test_v1_pyspark_recipe_records_joins_hooks_and_sources() -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     recipe = _recipe(EnrichOrders)
 
     assert not recipe.requires_hook_inputs
-    assert [len(step.joins) for step in recipe.steps] == [0, 1, 1, 1, 0]
+    assert [len(step.joins) for step in recipe.steps] == [0, 1, 3, 1, 1, 0]
 
     customer_join = recipe.steps[1].joins[0]
     assert customer_join.input_name == "customer"
@@ -64,12 +67,12 @@ def test_v1_pyspark_recipe_records_joins_hooks_and_sources() -> None:
 
     assert [hook.name for hook in recipe.steps[0].before_hooks] == ["use_current_orders"]
     assert [hook.name for hook in recipe.steps[0].after_hooks] == ["remove_negative_totals"]
-    assert [hook.name for hook in recipe.steps[3].after_hooks] == ["note_lookup_inputs"]
-    assert [hook.name for hook in recipe.steps[4].after_hooks] == ["add_quality_columns"]
+    assert [hook.name for hook in recipe.steps[4].after_hooks] == ["note_lookup_inputs"]
+    assert [hook.name for hook in recipe.steps[5].after_hooks] == ["add_quality_columns"]
 
 
 def test_v1_pyspark_recipe_records_expressions_and_projection_order() -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     recipe = _recipe(EnrichOrders)
     normalize = recipe.steps[0]
@@ -102,7 +105,7 @@ def test_v1_pyspark_recipe_records_expressions_and_projection_order() -> None:
 
 
 def test_v1_pyspark_recipe_places_validation_boundaries() -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     recipe = _recipe(EnrichOrders)
 
@@ -112,12 +115,11 @@ def test_v1_pyspark_recipe_places_validation_boundaries() -> None:
         ("hook", "OrderNormalized", SchemaMode.STRICT),
         ("intermediate", "OrderNormalized", SchemaMode.STRICT),
     ]
-    assert [(validation.reason, validation.mode, validation.project) for validation in recipe.steps[3].validations] == [
-        ("hook", SchemaMode.ALLOW_EXTRA_COLUMNS, True),
-        ("hook_projected", SchemaMode.STRICT, False),
-        ("intermediate", SchemaMode.STRICT, False),
-    ]
     assert [(validation.reason, validation.mode, validation.project) for validation in recipe.steps[4].validations] == [
+        ("hook", SchemaMode.ALLOW_EXTRA_COLUMNS, False),
+        ("intermediate", SchemaMode.ALLOW_EXTRA_COLUMNS, False),
+    ]
+    assert [(validation.reason, validation.mode, validation.project) for validation in recipe.steps[5].validations] == [
         ("hook", SchemaMode.ALLOW_EXTRA_COLUMNS, True),
         ("hook_projected", SchemaMode.STRICT, False),
     ]

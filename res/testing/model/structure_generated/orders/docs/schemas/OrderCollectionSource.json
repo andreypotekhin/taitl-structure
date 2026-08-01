@@ -1,0 +1,50 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "id",
+      "name": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "tags",
+      "name": "tags",
+      "nullable": true,
+      "type": "array<string!>"
+    },
+    {
+      "column": "extra_tags",
+      "name": "extra_tags",
+      "nullable": true,
+      "type": "array<string!>"
+    },
+    {
+      "column": "nested_tags",
+      "name": "nested_tags",
+      "nullable": true,
+      "type": "array<array<string!>!>"
+    },
+    {
+      "column": "scores",
+      "name": "scores",
+      "nullable": true,
+      "type": "array<integer!>"
+    },
+    {
+      "column": "attributes",
+      "name": "attributes",
+      "nullable": true,
+      "type": "map<string,string?>"
+    },
+    {
+      "column": "extra_attributes",
+      "name": "extra_attributes",
+      "nullable": true,
+      "type": "map<string,string?>"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "testing.model.orders.schemas.adv_analytics",
+  "name": "OrderCollectionSource"
+}

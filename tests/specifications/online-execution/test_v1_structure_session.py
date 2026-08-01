@@ -170,7 +170,7 @@ def test_v1_session_rejects_config_mixed_with_project_or_overrides() -> None:
 
 
 def test_v1_online_session_defers_to_runner_and_exposes_schemas_without_pyspark() -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     before = {name for name in sys.modules if name.startswith("pyspark")}
     captured = {}
@@ -183,7 +183,9 @@ def test_v1_online_session_defers_to_runner_and_exposes_schemas_without_pyspark(
         orders="orders-df",
         customers="customers-df",
         products="products-df",
+        blocked_products="blocked-products-df",
         promotions="promotions-df",
+        shipments="shipments-df",
     )
     session = StructureSession(spark="spark", ctx="ctx", schema_types=FakeTypes, online_executor=executor)
 
@@ -212,7 +214,7 @@ def test_v5_session_accepts_a_generic_runtime() -> None:
 
 
 def test_v1_online_session_reuses_session_compiled_artifact(monkeypatch) -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     from structure.core.compiler.artifacts.commands.BuildCompiledTransform import BuildCompiledTransform
 
@@ -230,7 +232,9 @@ def test_v1_online_session_reuses_session_compiled_artifact(monkeypatch) -> None
         "orders": "orders-df",
         "customers": "customers-df",
         "products": "products-df",
+        "blocked_products": "blocked-products-df",
         "promotions": "promotions-df",
+        "shipments": "shipments-df",
     }
 
     EnrichOrders(**inputs).run(session)
@@ -240,7 +244,7 @@ def test_v1_online_session_reuses_session_compiled_artifact(monkeypatch) -> None
 
 
 def test_v1_sessions_share_explicit_artifact_pool(monkeypatch) -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     from structure.core.compiler.artifacts.commands import CompiledArtifactPool
     from structure.core.compiler.artifacts.commands.BuildCompiledTransform import BuildCompiledTransform
@@ -259,7 +263,9 @@ def test_v1_sessions_share_explicit_artifact_pool(monkeypatch) -> None:
         "orders": "orders-df",
         "customers": "customers-df",
         "products": "products-df",
+        "blocked_products": "blocked-products-df",
         "promotions": "promotions-df",
+        "shipments": "shipments-df",
     }
 
     first = StructureSession(artifacts=pool, schema_types=FakeTypes, online_executor=lambda **_: None)
@@ -273,7 +279,7 @@ def test_v1_sessions_share_explicit_artifact_pool(monkeypatch) -> None:
 
 
 def test_v1_session_load_reuses_explicit_artifact(monkeypatch) -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     from structure.core.compiler.artifacts.commands.BuildCompiledTransform import BuildCompiledTransform
 
@@ -290,7 +296,9 @@ def test_v1_session_load_reuses_explicit_artifact(monkeypatch) -> None:
         orders="orders-df",
         customers="customers-df",
         products="products-df",
+        blocked_products="blocked-products-df",
         promotions="promotions-df",
+        shipments="shipments-df",
     ).run(session)
 
     assert result.published is None
@@ -298,7 +306,7 @@ def test_v1_session_load_reuses_explicit_artifact(monkeypatch) -> None:
 
 
 def test_v1_transform_compile_builds_detached_artifacts(monkeypatch) -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     from structure.core.compiler.artifacts.commands.BuildCompiledTransform import BuildCompiledTransform
 
@@ -320,7 +328,7 @@ def test_v1_transform_compile_builds_detached_artifacts(monkeypatch) -> None:
 
 
 def test_v1_compile_key_includes_version_and_source_hash() -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     from structure.core.compiler.artifacts.commands.BuildCompiledTransform import BuildCompiledTransform
 
@@ -335,14 +343,16 @@ def test_v1_compile_key_includes_version_and_source_hash() -> None:
 
 
 def test_v1_compiled_artifact_does_not_capture_bound_inputs() -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     artifact = EnrichOrders.compile(schema_types=FakeTypes)
     invocation = EnrichOrders(
         orders="orders-df-sentinel",
         customers="customers-df-sentinel",
         products="products-df-sentinel",
+        blocked_products="blocked-products-df-sentinel",
         promotions="promotions-df-sentinel",
+        shipments="shipments-df-sentinel",
     )
 
     assert "orders-df-sentinel" in repr(invocation._structure_bound_inputs)
@@ -395,7 +405,7 @@ def test_v1_pipeline_reuses_shared_compiled_artifact(monkeypatch) -> None:
 
 
 def test_v1_online_session_reports_missing_declared_inputs() -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     session = StructureSession(schema_types=FakeTypes, online_executor=lambda **kwargs: None)
 
@@ -405,31 +415,33 @@ def test_v1_online_session_reports_missing_declared_inputs() -> None:
     diagnostic = raised.value.diagnostic
     assert diagnostic.code == "ONLINE-E1201"
     assert diagnostic.execution_mode == "online"
-    assert diagnostic.context["inputs"] == "customers, products, promotions"
+    assert diagnostic.context["inputs"] == "blocked_products, customers, products, promotions, shipments"
     assert "Pass every declared input DataFrame" in diagnostic.use
     assert "docs/Diagnostics.md#online-e1201" in str(raised.value)
 
 
 def test_v1_generated_session_delegates_to_generated_class() -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
-    module_name = "testing.model.v1.structure_generated.orders.pyspark.transforms.order"
+    module_name = "testing.model.structure_generated.orders.pyspark.transforms.order"
     installed = _install_generated_module(
         module_name,
-        fingerprint=_fingerprint(EnrichOrders, generated_package="testing.model.v1.structure_generated.orders"),
+        fingerprint=_fingerprint(EnrichOrders, generated_package="testing.model.structure_generated.orders"),
     )
     try:
         invocation = EnrichOrders(
             orders="orders-df",
             customers="customers-df",
             products="products-df",
+            blocked_products="blocked-products-df",
             promotions="promotions-df",
+            shipments="shipments-df",
         )
         session = StructureSession(
             spark="spark",
             ctx="ctx",
             execution_mode="generated",
-            generated_package="testing.model.v1.structure_generated.orders",
+            generated_package="testing.model.structure_generated.orders",
             schema_types=FakeTypes,
         )
 
@@ -441,7 +453,9 @@ def test_v1_generated_session_delegates_to_generated_class() -> None:
             "orders": "orders-df",
             "customers": "customers-df",
             "products": "products-df",
+            "blocked_products": "blocked-products-df",
             "promotions": "promotions-df",
+            "shipments": "shipments-df",
         }
         assert result.schema.published.name == "StructType"
     finally:
@@ -450,7 +464,7 @@ def test_v1_generated_session_delegates_to_generated_class() -> None:
 
 
 def test_v1_generated_session_can_import_from_memory_storage() -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     storage = MemoryStorage()
     fingerprint = _fingerprint(EnrichOrders, generated_package="memory_generated")
@@ -461,7 +475,7 @@ def test_v1_generated_session_can_import_from_memory_storage() -> None:
             "memory_generated/pyspark/transforms/__init__.py": "",
             "memory_generated/pyspark/transforms/order.py": (
                 "STRUCTURE_ARTIFACT_FINGERPRINTS = {\n"
-                f'    "testing.model.v1.orders.transforms.order.EnrichOrders": "{fingerprint}",\n'
+                f'    "testing.model.orders.transforms.order.EnrichOrders": "{fingerprint}",\n'
                 "}\n\n"
                 """class EnrichOrdersGenerated:
 
@@ -469,14 +483,16 @@ def test_v1_generated_session_can_import_from_memory_storage() -> None:
         self.spark = spark
         self.ctx = ctx
 
-    def run(self, *, orders, customers, products, promotions):
+    def run(self, *, orders, customers, products, blocked_products, promotions, shipments):
         return {
             "spark": self.spark,
             "ctx": self.ctx,
             "orders": orders,
             "customers": customers,
             "products": products,
+            "blocked_products": blocked_products,
             "promotions": promotions,
+            "shipments": shipments,
         }
 """
             ),
@@ -486,7 +502,9 @@ def test_v1_generated_session_can_import_from_memory_storage() -> None:
         orders="orders-df",
         customers="customers-df",
         products="products-df",
+        blocked_products="blocked-products-df",
         promotions="promotions-df",
+        shipments="shipments-df",
     )
     session = StructureSession(
         spark="spark",
@@ -505,26 +523,30 @@ def test_v1_generated_session_can_import_from_memory_storage() -> None:
         "orders": "orders-df",
         "customers": "customers-df",
         "products": "products-df",
+        "blocked_products": "blocked-products-df",
         "promotions": "promotions-df",
+        "shipments": "shipments-df",
     }
 
 
 def test_v1_generated_session_rejects_stale_artifact() -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
-    module_name = "testing.model.v1.structure_generated.orders.pyspark.transforms.order"
+    module_name = "testing.model.structure_generated.orders.pyspark.transforms.order"
     installed = _install_generated_module(module_name, fingerprint="stale")
     try:
         session = StructureSession(
             execution_mode="generated",
-            generated_package="testing.model.v1.structure_generated.orders",
+            generated_package="testing.model.structure_generated.orders",
             schema_types=FakeTypes,
         )
         invocation = EnrichOrders(
             orders="orders-df",
             customers="customers-df",
             products="products-df",
+            blocked_products="blocked-products-df",
             promotions="promotions-df",
+            shipments="shipments-df",
         )
 
         with pytest.raises(StructureRuntimeError) as raised:
@@ -554,13 +576,15 @@ def test_v1_package_import_storage_rejects_modules_outside_package() -> None:
 
 
 def test_v1_generated_session_reports_missing_generated_code() -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     invocation = EnrichOrders(
         orders="orders-df",
         customers="customers-df",
         products="products-df",
+        blocked_products="blocked-products-df",
         promotions="promotions-df",
+        shipments="shipments-df",
     )
     session = StructureSession(
         execution_mode="generated",
@@ -579,15 +603,15 @@ def test_v1_generated_session_reports_missing_generated_code() -> None:
 
 
 def test_v1_generated_spark_connect_classic_only_failure_reports_boundary() -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
-    module_name = "testing.model.v1.structure_generated.orders.pyspark.transforms.order"
+    module_name = "testing.model.structure_generated.orders.pyspark.transforms.order"
     installed = _install_generated_module(
         module_name,
         failure=RuntimeError("Generated hook touched _jvm through Py4J"),
         fingerprint=_fingerprint(
             EnrichOrders,
-            generated_package="testing.model.v1.structure_generated.orders",
+            generated_package="testing.model.structure_generated.orders",
             plugin={"pyspark": {"variant": "spark-connect"}},
         ),
     )
@@ -596,14 +620,16 @@ def test_v1_generated_spark_connect_classic_only_failure_reports_boundary() -> N
             orders="orders-df",
             customers="customers-df",
             products="products-df",
+            blocked_products="blocked-products-df",
             promotions="promotions-df",
+            shipments="shipments-df",
         )
         session = StructureSession(
             spark="spark",
             schema_types=FakeTypes,
             config=StructureConfig.create(
                 execution_mode="generated",
-                generated_package="testing.model.v1.structure_generated.orders",
+                generated_package="testing.model.structure_generated.orders",
                 plugin={"pyspark": {"variant": "spark-connect"}},
             ),
         )
@@ -644,7 +670,7 @@ def _install_generated_module(
     setattr(
         module,
         "STRUCTURE_ARTIFACT_FINGERPRINTS",
-        {"testing.model.v1.orders.transforms.order.EnrichOrders": fingerprint},
+        {"testing.model.orders.transforms.order.EnrichOrders": fingerprint},
     )
 
     class EnrichOrdersGenerated:
@@ -653,7 +679,7 @@ def _install_generated_module(
             self.spark = spark
             self.ctx = ctx
 
-        def run(self, *, orders, customers, products, promotions):
+        def run(self, *, orders, customers, products, blocked_products, promotions, shipments):
             if failure is not None:
                 raise failure
             return {
@@ -662,7 +688,9 @@ def _install_generated_module(
                 "orders": orders,
                 "customers": customers,
                 "products": products,
+                "blocked_products": blocked_products,
                 "promotions": promotions,
+                "shipments": shipments,
             }
 
     setattr(module, "EnrichOrdersGenerated", EnrichOrdersGenerated)

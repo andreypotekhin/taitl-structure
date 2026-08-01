@@ -33,18 +33,18 @@ def test_v2_source_fixtures_import_without_live_spark(monkeypatch: pytest.Monkey
     before = {name for name in sys.modules if name.startswith("pyspark")}
 
     for module in (
-        "testing.model.v2.orders.schemas.adv_analytics",
-        "testing.model.v2.orders.schemas.analytics",
-        "testing.model.v2.orders.schemas.common",
-        "testing.model.v2.orders.schemas.customer",
-        "testing.model.v2.orders.schemas.order",
-        "testing.model.v2.orders.schemas.product",
-        "testing.model.v2.orders.schemas.promotion",
-        "testing.model.v2.orders.schemas.shipment",
-        "testing.model.v2.orders.transforms.adv_analytics",
-        "testing.model.v2.orders.transforms.analytics",
-        "testing.model.v2.orders.transforms.order",
-        "testing.model.v2.orders.transforms.rowset_join",
+        "testing.model.orders.schemas.adv_analytics",
+        "testing.model.orders.schemas.analytics",
+        "testing.model.orders.schemas.common",
+        "testing.model.orders.schemas.customer",
+        "testing.model.orders.schemas.order",
+        "testing.model.orders.schemas.product",
+        "testing.model.orders.schemas.promotion",
+        "testing.model.orders.schemas.shipment",
+        "testing.model.orders.transforms.adv_analytics",
+        "testing.model.orders.transforms.analytics",
+        "testing.model.orders.transforms.order",
+        "testing.model.orders.transforms.rowset_join",
     ):
         importlib.import_module(module)
 
@@ -54,7 +54,7 @@ def test_v2_source_fixtures_import_without_live_spark(monkeypatch: pytest.Monkey
 
 def test_v2_order_fixture_records_supported_existence_joins(monkeypatch: pytest.MonkeyPatch) -> None:
     _stub_pyspark(monkeypatch)
-    module = importlib.import_module("testing.model.v2.orders.transforms.order")
+    module = importlib.import_module("testing.model.orders.transforms.order")
     transform = cast(Any, module).EnrichOrders
 
     add_product = _body(transform, "add_product")
@@ -72,7 +72,7 @@ def test_v2_order_fixture_records_supported_existence_joins(monkeypatch: pytest.
 
 def test_v2_order_fixture_records_temporal_promotion_lookup(monkeypatch: pytest.MonkeyPatch) -> None:
     _stub_pyspark(monkeypatch)
-    module = importlib.import_module("testing.model.v2.orders.transforms.order")
+    module = importlib.import_module("testing.model.orders.transforms.order")
     transform = cast(Any, module).EnrichOrders
 
     add_promotion = _body(transform, "add_promotion")
@@ -92,7 +92,7 @@ def test_v2_order_fixture_records_temporal_promotion_lookup(monkeypatch: pytest.
 
 def test_v2_order_fixture_records_cache_as_transform_option(monkeypatch: pytest.MonkeyPatch) -> None:
     _stub_pyspark(monkeypatch)
-    module = importlib.import_module("testing.model.v2.orders.transforms.order")
+    module = importlib.import_module("testing.model.orders.transforms.order")
     transform = cast(Any, module).EnrichOrders
 
     add_customer = _body(transform, "add_customer")
@@ -106,7 +106,7 @@ def test_v2_order_fixture_records_cache_as_transform_option(monkeypatch: pytest.
 
 def test_v2_order_fixture_records_inner_join_shipments(monkeypatch: pytest.MonkeyPatch) -> None:
     _stub_pyspark(monkeypatch)
-    module = importlib.import_module("testing.model.v2.orders.transforms.order")
+    module = importlib.import_module("testing.model.orders.transforms.order")
     transform = cast(Any, module).EnrichOrders
 
     add_shipments = _body(transform, "add_shipments")
@@ -122,7 +122,7 @@ def test_v2_order_fixture_records_inner_join_shipments(monkeypatch: pytest.Monke
 
 def test_v2_order_fixture_records_deduped_product_lookup(monkeypatch: pytest.MonkeyPatch) -> None:
     _stub_pyspark(monkeypatch)
-    module = importlib.import_module("testing.model.v2.orders.transforms.order")
+    module = importlib.import_module("testing.model.orders.transforms.order")
     transform = cast(Any, module).EnrichOrders
 
     add_product = _body(transform, "add_product")
@@ -140,10 +140,10 @@ def test_v2_rowset_join_fixture_records_full_right_and_cross_joins(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     _stub_pyspark(monkeypatch)
-    module = importlib.import_module("testing.model.v2.orders.transforms.rowset_join")
-    order_schema = importlib.import_module("testing.model.v2.orders.schemas.order")
-    customer_schema = importlib.import_module("testing.model.v2.orders.schemas.customer")
-    product_schema = importlib.import_module("testing.model.v2.orders.schemas.product")
+    module = importlib.import_module("testing.model.orders.transforms.rowset_join")
+    order_schema = importlib.import_module("testing.model.orders.schemas.order")
+    customer_schema = importlib.import_module("testing.model.orders.schemas.customer")
+    product_schema = importlib.import_module("testing.model.orders.schemas.product")
 
     compilation = _compilation(module.RowsetJoinExamples)
     analysis = compilation.analysis
@@ -178,18 +178,18 @@ def test_v2_rowset_join_fixture_records_full_right_and_cross_joins(
 
     text = PySpark.render.transform()(
         recipe,
-        source_transform="testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples",
+        source_transform="testing.model.orders.transforms.rowset_join.RowsetJoinExamples",
         schema_modules={
-            order_schema.OrderRaw: "testing.model.v2.structure_generated.orders.pyspark.schemas.order",
+            order_schema.OrderRaw: "testing.model.structure_generated.orders.pyspark.schemas.order",
             order_schema.OrderCustomerReconciliation: (
-                "testing.model.v2.structure_generated.orders.pyspark.schemas.order"
+                "testing.model.structure_generated.orders.pyspark.schemas.order"
             ),
-            order_schema.CustomerOrderBackfill: ("testing.model.v2.structure_generated.orders.pyspark.schemas.order"),
-            order_schema.OrderProductCandidate: ("testing.model.v2.structure_generated.orders.pyspark.schemas.order"),
-            customer_schema.Customer: ("testing.model.v2.structure_generated.orders.pyspark.schemas.customer"),
-            product_schema.Product: ("testing.model.v2.structure_generated.orders.pyspark.schemas.product"),
+            order_schema.CustomerOrderBackfill: ("testing.model.structure_generated.orders.pyspark.schemas.order"),
+            order_schema.OrderProductCandidate: ("testing.model.structure_generated.orders.pyspark.schemas.order"),
+            customer_schema.Customer: ("testing.model.structure_generated.orders.pyspark.schemas.customer"),
+            product_schema.Product: ("testing.model.structure_generated.orders.pyspark.schemas.product"),
         },
-        runtime_module="testing.model.v2.structure_generated.orders.runtime.schema_assert",
+        runtime_module="testing.model.structure_generated.orders.runtime.schema_assert",
     )
 
     assert '"full"' in text
@@ -305,7 +305,7 @@ def test_nullable_aggregate_input_cannot_feed_non_nullable_output() -> None:
 
 def test_v2_order_analytics_fixture_lowers_grouped_aggregates(monkeypatch: pytest.MonkeyPatch) -> None:
     _stub_pyspark(monkeypatch)
-    module = importlib.import_module("testing.model.v2.orders.transforms.analytics")
+    module = importlib.import_module("testing.model.orders.transforms.analytics")
 
     plan = _recipe(module.OrderAnalytics)
 
@@ -364,7 +364,7 @@ def test_v2_order_analytics_fixture_lowers_grouped_aggregates(monkeypatch: pytes
 
 def test_v2_advanced_analytics_fixture_lowers_admitted_feature_families(monkeypatch: pytest.MonkeyPatch) -> None:
     _stub_pyspark(monkeypatch)
-    module = importlib.import_module("testing.model.v2.orders.transforms.adv_analytics")
+    module = importlib.import_module("testing.model.orders.transforms.adv_analytics")
 
     plan = _recipe(module.AdvancedOrderAnalytics)
 

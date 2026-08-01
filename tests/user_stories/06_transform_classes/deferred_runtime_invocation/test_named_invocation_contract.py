@@ -7,28 +7,32 @@ from structure.plugin.pyspark import *
 def test_transform_construction_binds_named_inputs_without_running() -> None:
     """I can construct a transform invocation with named DataFrame inputs and run it later."""
 
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     value = object()
     invocation = EnrichOrders(
         orders=value,
         customers=value,
         products=value,
+        blocked_products=value,
         promotions=value,
+        shipments=value,
     )
 
     assert invocation._structure_bound_inputs == {
         "orders": value,
         "customers": value,
         "products": value,
+        "blocked_products": value,
         "promotions": value,
+        "shipments": value,
     }
 
 
 def test_transform_invocation_rejects_unknown_input_names() -> None:
     """Unknown invocation input names fail at construction time."""
 
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     with pytest.raises(TypeError, match="unknown input"):
         EnrichOrders(order=object())
@@ -37,7 +41,7 @@ def test_transform_invocation_rejects_unknown_input_names() -> None:
 def test_run_delegates_to_structure_session_runtime() -> None:
     """I can call run(session) on a transform invocation so StructureSession chooses the runtime runner."""
 
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     captured = {}
 
@@ -50,7 +54,9 @@ def test_run_delegates_to_structure_session_runtime() -> None:
         orders=frame,
         customers=frame,
         products=frame,
+        blocked_products=frame,
         promotions=frame,
+        shipments=frame,
     )
     session = StructureSession(schema_types=FakeTypes, online_executor=executor)
 

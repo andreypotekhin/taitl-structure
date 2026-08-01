@@ -1,3 +1,3 @@
-from examples.store.schemas.fulfillment.projections.projection import DemandWindow, InventoryProjection
+from examples.store.schemas.fulfillment.projections.projection import InventoryProjection
 
-__all__ = ["DemandWindow", "InventoryProjection"]
+__all__ = ["InventoryProjection"]

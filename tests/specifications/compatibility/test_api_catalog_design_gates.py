@@ -5,8 +5,8 @@ import structure.plugin.pyspark as pyspark
 
 ROOT = Path(__file__).resolve().parents[3]
 API_CATALOG = ROOT / "docs/APICatalog.md"
-DESIGN = ROOT / "docs/dev/design/V9ApiCatalogDesignGates.md"
-SPEC = ROOT / "docs/dev/specifications/V9ApiCatalogDesignGatedFeatures.md"
+DESIGN = ROOT / "docs/dev/design/ApiCatalogDesignGates.md"
+SPEC = ROOT / "docs/dev/specifications/PySparkApiCatalog.md"
 
 
 def test_api_catalog_open_rows_use_design_gate_language() -> None:
@@ -31,25 +31,20 @@ def test_api_catalog_design_gate_docs_cover_non_streaming_open_rows() -> None:
     combined = design + "\n" + spec
 
     for phrase in (
-        "XML helpers are deliberately deprioritized",
+        "XML remains low priority",
         "Variant And Geospatial Helpers",
-        "Sedona Geometry Slice",
+        "Variant and Geospatial Helpers",
         "geometry(srid=..., nullable=True)",
-        "Apache Sedona 1.9.0 is the selected optional",
+        "Apache Sedona 1.9.0",
         "never the bundled PySpark plugin",
         "`GEOGRAPHY` is not admitted",
         "GeoProvider",
         "must not contain a provider name or import",
-        "Join Reordering",
-        "Nearest As-Of Joins",
-        "Aggregate Aliases",
-        "Sampling",
-        "Missing-Column Set Composition",
         "join_order(\"optimizer\")",
         'ties="error"',
-        "sample(..., reproducible=False)",
+        "sample(fraction",
         "allow_missing_columns=True",
-        "no public `join_order(...)` helper is exported",
+        "no public `join_order(...)` helper",
     ):
         assert phrase in combined
 

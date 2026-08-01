@@ -19,20 +19,20 @@ def test_v3_source_fixtures_import_without_live_spark(monkeypatch: pytest.Monkey
     before = {name for name in sys.modules if name.startswith("pyspark")}
 
     for module in (
-        "testing.model.v3.orders.schemas.adv_analytics",
-        "testing.model.v3.orders.schemas.analytics",
-        "testing.model.v3.orders.schemas.common",
-        "testing.model.v3.orders.schemas.customer",
-        "testing.model.v3.orders.schemas.order",
-        "testing.model.v3.orders.schemas.product",
-        "testing.model.v3.orders.schemas.promotion",
-        "testing.model.v3.orders.schemas.shipment",
-        "testing.model.v3.orders.schemas.v3",
-        "testing.model.v3.orders.transforms.adv_analytics",
-        "testing.model.v3.orders.transforms.analytics",
-        "testing.model.v3.orders.transforms.order",
-        "testing.model.v3.orders.transforms.rowset_join",
-        "testing.model.v3.orders.transforms.v3",
+        "testing.model.orders.schemas.adv_analytics",
+        "testing.model.orders.schemas.analytics",
+        "testing.model.orders.schemas.common",
+        "testing.model.orders.schemas.customer",
+        "testing.model.orders.schemas.order",
+        "testing.model.orders.schemas.product",
+        "testing.model.orders.schemas.promotion",
+        "testing.model.orders.schemas.shipment",
+        "testing.model.orders.schemas.v3",
+        "testing.model.orders.transforms.adv_analytics",
+        "testing.model.orders.transforms.analytics",
+        "testing.model.orders.transforms.order",
+        "testing.model.orders.transforms.rowset_join",
+        "testing.model.orders.transforms.v3",
     ):
         importlib.import_module(module)
 
@@ -42,8 +42,8 @@ def test_v3_source_fixtures_import_without_live_spark(monkeypatch: pytest.Monkey
 
 def test_v3_orders_fixture_highlights_the_completed_release_surface(monkeypatch: pytest.MonkeyPatch) -> None:
     _stub_pyspark(monkeypatch)
-    scalar = importlib.import_module("testing.model.v3.orders.transforms.v3")
-    analytics = importlib.import_module("testing.model.v3.orders.transforms.adv_analytics")
+    scalar = importlib.import_module("testing.model.orders.transforms.v3")
+    analytics = importlib.import_module("testing.model.orders.transforms.adv_analytics")
 
     scalar_plan = cast(
         TransformPlan,
@@ -95,7 +95,7 @@ def test_v3_orders_fixture_highlights_the_completed_release_surface(monkeypatch:
 
 
 def test_v3_model_includes_checked_in_generated_docs_and_pyspark() -> None:
-    root = Path(__file__).resolve().parents[3] / "res/testing/model/v3/structure_generated/orders"
+    root = Path(__file__).resolve().parents[3] / "res/testing/model/structure_generated/orders"
     generated = (root / "pyspark/transforms/v3.py").read_text(encoding="utf-8")
     index = (root / "docs/index.md").read_text(encoding="utf-8")
 
@@ -105,7 +105,7 @@ def test_v3_model_includes_checked_in_generated_docs_and_pyspark() -> None:
 
 
 def test_v3_orders_fixture_includes_generated_method_layout_matrix() -> None:
-    root = Path(__file__).resolve().parents[3] / "res/testing/model/v3/structure_generated/orders/pyspark"
+    root = Path(__file__).resolve().parents[3] / "res/testing/model/structure_generated/orders/pyspark"
     variants = {
         "transforms": (),
         "transforms-mirror": ("def normalize(self):", "self._impl = EnrichOrders()"),

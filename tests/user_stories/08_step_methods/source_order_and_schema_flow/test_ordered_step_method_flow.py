@@ -1,4 +1,5 @@
-from testing.model.v1.orders.schemas.order import (
+from testing.model.orders.schemas.order import (
+    OrderFulfillment,
     OrderNormalized,
     OrderPublished,
     OrderRaw,
@@ -16,7 +17,8 @@ def test_public_schema_methods_compile_in_source_order(orders_plan) -> None:
         ("add_customer", OrderNormalized, OrderWithCustomer),
         ("add_product", OrderWithCustomer, OrderWithProduct),
         ("add_promotion", OrderWithProduct, OrderWithPromotion),
-        ("publish", OrderWithPromotion, OrderPublished),
+        ("add_shipments", OrderWithPromotion, OrderFulfillment),
+        ("publish", OrderFulfillment, OrderPublished),
     ]
 
 

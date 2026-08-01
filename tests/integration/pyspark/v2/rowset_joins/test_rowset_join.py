@@ -18,7 +18,7 @@ def test_online_and_generated_execution_match_rowset_joins_on_live_backend(spark
     generated_package = "integration_v2_rowset_generated"
     files = render_generated_project(
         RowsetJoinExamples,
-        source_transform="testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples",
+        source_transform="testing.model.orders.transforms.rowset_join.RowsetJoinExamples",
         generated_package=generated_package,
         source_schema_modules=rowset_joins.source_schema_modules(),
     )

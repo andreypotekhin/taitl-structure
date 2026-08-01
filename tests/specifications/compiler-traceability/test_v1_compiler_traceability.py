@@ -7,12 +7,12 @@ from structure.plugin.pyspark import PySpark
 
 
 def _traceability():
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     return Compiler.traceability.build()(
         Compiler.frontend.compile()(EnrichOrders, materialize_schemas=False).lowered,
-        source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
-        transform_module="testing.model.v1.structure_generated.orders.pyspark.transforms.order",
+        source_transform="testing.model.orders.transforms.order.EnrichOrders",
+        transform_module="testing.model.structure_generated.orders.pyspark.transforms.order",
     )
 
 
@@ -32,14 +32,14 @@ def test_v1_compiler_traceability_maps_source_ir_and_generated_nodes() -> None:
     records = {(record.source, record.ir, record.generated) for record in traceability.provenance}
 
     assert (
-        "source:testing.model.v1.orders.transforms.order.EnrichOrders.add_customer",
+        "source:testing.model.orders.transforms.order.EnrichOrders.add_customer",
         "ir:EnrichOrders.step.1.add_customer",
-        "generated:testing.model.v1.structure_generated.orders.pyspark.transforms.order."
+        "generated:testing.model.structure_generated.orders.pyspark.transforms.order."
         "EnrichOrdersGenerated.run.step.1.add_customer",
     ) in records
     assert any(record.ir == "ir:EnrichOrders.step.1.add_customer.join.1.customer" for record in traceability.provenance)
     assert any(
-        record.generated.endswith("EnrichOrdersGenerated.run.step.4.publish.select.has_promotion")
+        record.generated.endswith("EnrichOrdersGenerated.run.step.5.publish.select.has_promotion")
         for record in traceability.provenance
     )
 
@@ -48,7 +48,9 @@ def test_v1_compiler_traceability_reports_static_dataflow_and_opaque_hooks() -> 
     traceability = _traceability()
     dependencies = {dependency.target: dependency for dependency in traceability.static_dataflow}
 
-    assert dependencies["EnrichOrders"].sources == ("orders", "customers", "products", "promotions")
+    assert dependencies["EnrichOrders"].sources == (
+        "orders", "customers", "products", "blocked_products", "promotions", "shipments"
+    )
     assert dependencies["add_customer.join[1].customer"].operation == "rowset_join"
     assert dependencies["add_customer.join[1].customer"].detail["how"] == "left"
     assert dependencies["OrderNormalized.id"].sources
@@ -57,5 +59,5 @@ def test_v1_compiler_traceability_reports_static_dataflow_and_opaque_hooks() -> 
     boundaries = {
         (boundary.step, boundary.hook, boundary.phase, boundary.reason) for boundary in traceability.opaque_boundaries
     }
-    assert ("add_promotion", "note_lookup_inputs", "raw", "arbitrary PySpark hook body") in boundaries
+    assert ("add_shipments", "note_lookup_inputs", "raw", "arbitrary PySpark hook body") in boundaries
     assert ("publish", "add_quality_columns", "raw", "arbitrary PySpark hook body") in boundaries

@@ -64,7 +64,7 @@ class RecordRecommendationExposuresGenerated:
             "inner",
         )
         requests = requests.select(
-            F.col("recommendation_request.tenant"),
+            F.col("assignments.tenant"),
             F.col("recommendation_request.id").alias("request_id"),
             F.col("assignments.experiment_id"),
             F.col("assignments.experiment_version"),

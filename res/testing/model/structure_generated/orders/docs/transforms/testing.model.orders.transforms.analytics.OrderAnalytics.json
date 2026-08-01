@@ -1,0 +1,102 @@
+{
+  "dependencies": [],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "fulfilled",
+      "ordinal": 0,
+      "schema": "OrderFulfillment"
+    }
+  ],
+  "name": "OrderAnalytics",
+  "outputs": [
+    {
+      "name": "customer_totals",
+      "ordinal": 0,
+      "schema": "CustomerDailyTotal"
+    },
+    {
+      "name": "product_summary",
+      "ordinal": 1,
+      "schema": "ProductDailySummary"
+    },
+    {
+      "name": "customer_event_rank",
+      "ordinal": 2,
+      "schema": "CustomerEventRank"
+    }
+  ],
+  "source": "testing.model.orders.transforms.analytics.OrderAnalytics",
+  "step_methods": [
+    {
+      "input_lane": "fulfilled",
+      "input_schema": "OrderFulfillment",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "order",
+          "schema": "OrderFulfillment",
+          "source": "fulfilled"
+        }
+      ],
+      "name": "customer_daily_totals",
+      "output_lane": "customer_totals",
+      "output_schema": "CustomerDailyTotal",
+      "results": [
+        {
+          "frame": "customer_totals",
+          "lane": "customer_totals",
+          "schema": "CustomerDailyTotal"
+        }
+      ]
+    },
+    {
+      "input_lane": "fulfilled",
+      "input_schema": "OrderFulfillment",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "order",
+          "schema": "OrderFulfillment",
+          "source": "fulfilled"
+        }
+      ],
+      "name": "product_daily_summary",
+      "output_lane": "product_summary",
+      "output_schema": "ProductDailySummary",
+      "results": [
+        {
+          "frame": "product_summary",
+          "lane": "product_summary",
+          "schema": "ProductDailySummary"
+        }
+      ]
+    },
+    {
+      "input_lane": "fulfilled",
+      "input_schema": "OrderFulfillment",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "order",
+          "schema": "OrderFulfillment",
+          "source": "fulfilled"
+        }
+      ],
+      "name": "customer_event_ranks",
+      "output_lane": "customer_event_rank",
+      "output_schema": "CustomerEventRank",
+      "results": [
+        {
+          "frame": "customer_event_rank",
+          "lane": "customer_event_rank",
+          "schema": "CustomerEventRank"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/analytics.py",
+    "traceability": "traceability/transforms/analytics.OrderAnalytics.json"
+  }
+}

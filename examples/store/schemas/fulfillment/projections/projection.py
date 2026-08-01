@@ -3,17 +3,6 @@ from structure import Schema
 from structure.plugin.pyspark import *
 
 
-class DemandWindow(Schema):
-    """Observed demand grouped into a bounded date interval."""
-
-    tenant = struct(TenantKey, nullable=False)
-    product_id = string(nullable=False)
-    window_start = date(nullable=False)
-    window_end = date(nullable=False)
-    requested_quantity = long(nullable=False)
-    demand_line_count = long(nullable=False)
-
-
 class InventoryProjection(Schema):
     """Dated inventory arithmetic retained with the facts that produced it."""
 
@@ -29,4 +18,3 @@ class InventoryProjection(Schema):
     reserved_quantity = long(nullable=False)
     projected_available_quantity = long(nullable=False)
     safety_stock_quantity = long(nullable=False)
-

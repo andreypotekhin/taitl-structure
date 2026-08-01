@@ -16,19 +16,19 @@
     "product",
     "promotion",
     "promotions",
+    "recommended__candidates__filtered__evaluated",
     "recommended__diversified__decisions",
-    "recommended__filtered__evaluated",
     "recommended__published__ranked_candidates",
+    "recommended__signals__recommendation__click_facts",
+    "recommended__signals__recommendation__signals",
+    "recommended__signals__session__events",
     "session",
     "signal",
-    "signals_built__recommendation__click_facts",
-    "signals_built__recommendation__signals",
-    "signals_built__sessionized__events",
     "suppression",
     "suppressions",
     "taxonomy",
-    "taxonomy_expanded__ancestors",
-    "taxonomy_expanded__expanded",
+    "taxonomy__ancestors",
+    "taxonomy__expanded",
     "taxonomy_nodes"
   ],
   "generated_by": "Structure",
@@ -122,7 +122,7 @@
       "schema": "DailyRecommendationClicks"
     },
     {
-      "name": "signals",
+      "name": "recommendation_signals",
       "ordinal": 4,
       "schema": "ProductRecommendationSignal"
     },
@@ -211,13 +211,13 @@
           "source": "taxonomy_nodes"
         }
       ],
-      "name": "taxonomy_expanded.build_ancestors",
-      "output_lane": "taxonomy_expanded__ancestors",
+      "name": "taxonomy.build_ancestors",
+      "output_lane": "taxonomy__ancestors",
       "output_schema": "TaxonomyAncestor",
       "results": [
         {
-          "frame": "taxonomy_expanded__ancestors",
-          "lane": "taxonomy_expanded__ancestors",
+          "frame": "taxonomy__ancestors",
+          "lane": "taxonomy__ancestors",
           "schema": "TaxonomyAncestor"
         }
       ]
@@ -236,7 +236,7 @@
           "driving": false,
           "parameter": "ancestor",
           "schema": "TaxonomyAncestor",
-          "source": "taxonomy_expanded__ancestors"
+          "source": "taxonomy__ancestors"
         },
         {
           "driving": false,
@@ -255,13 +255,13 @@
           "input": "node"
         }
       ],
-      "name": "taxonomy_expanded.expand",
-      "output_lane": "taxonomy_expanded__expanded",
+      "name": "taxonomy.expand",
+      "output_lane": "taxonomy__expanded",
       "output_schema": "ExpandedProductTaxonomy",
       "results": [
         {
-          "frame": "taxonomy_expanded__expanded",
-          "lane": "taxonomy_expanded__expanded",
+          "frame": "taxonomy__expanded",
+          "lane": "taxonomy__expanded",
           "schema": "ExpandedProductTaxonomy"
         }
       ]
@@ -277,13 +277,13 @@
           "source": "session_events"
         }
       ],
-      "name": "signals_built.sessionized.build",
-      "output_lane": "signals_built__sessionized__events",
+      "name": "recommended.signals.session.build",
+      "output_lane": "recommended__signals__session__events",
       "output_schema": "SessionFeature",
       "results": [
         {
-          "frame": "signals_built__sessionized__events",
-          "lane": "signals_built__sessionized__events",
+          "frame": "recommended__signals__session__events",
+          "lane": "recommended__signals__session__events",
           "schema": "SessionFeature"
         }
       ]
@@ -311,13 +311,13 @@
           "input": "impression"
         }
       ],
-      "name": "signals_built.purchases.attribute",
-      "output_lane": "signals_built__purchases__fulfilled_orders",
+      "name": "recommended.signals.purchases.attribute",
+      "output_lane": "recommended__signals__purchases__fulfilled_orders",
       "output_schema": "RecommendationPurchase",
       "results": [
         {
-          "frame": "signals_built__purchases__fulfilled_orders",
-          "lane": "signals_built__purchases__fulfilled_orders",
+          "frame": "recommended__signals__purchases__fulfilled_orders",
+          "lane": "recommended__signals__purchases__fulfilled_orders",
           "schema": "RecommendationPurchase"
         }
       ]
@@ -333,13 +333,13 @@
           "source": "feedback_impressions"
         }
       ],
-      "name": "signals_built.recommendation.summarize_impressions",
-      "output_lane": "signals_built__recommendation__impression_facts",
+      "name": "recommended.signals.recommendation.summarize_impressions",
+      "output_lane": "recommended__signals__recommendation__impression_facts",
       "output_schema": "DailyRecommendationImpressions",
       "results": [
         {
-          "frame": "signals_built__recommendation__impression_facts",
-          "lane": "signals_built__recommendation__impression_facts",
+          "frame": "recommended__signals__recommendation__impression_facts",
+          "lane": "recommended__signals__recommendation__impression_facts",
           "schema": "DailyRecommendationImpressions"
         }
       ]
@@ -367,76 +367,76 @@
           "input": "click"
         }
       ],
-      "name": "signals_built.recommendation.summarize_clicks",
-      "output_lane": "signals_built__recommendation__click_facts",
+      "name": "recommended.signals.recommendation.summarize_clicks",
+      "output_lane": "recommended__signals__recommendation__click_facts",
       "output_schema": "DailyRecommendationClicks",
       "results": [
         {
-          "frame": "signals_built__recommendation__click_facts",
-          "lane": "signals_built__recommendation__click_facts",
+          "frame": "recommended__signals__recommendation__click_facts",
+          "lane": "recommended__signals__recommendation__click_facts",
           "schema": "DailyRecommendationClicks"
         }
       ]
     },
     {
-      "input_lane": "signals_built__recommendation__impression_facts",
+      "input_lane": "recommended__signals__recommendation__impression_facts",
       "input_schema": "DailyRecommendationImpressions",
       "inputs": [
         {
           "driving": true,
           "parameter": "impression",
           "schema": "DailyRecommendationImpressions",
-          "source": "signals_built__recommendation__impression_facts"
+          "source": "recommended__signals__recommendation__impression_facts"
         }
       ],
-      "name": "signals_built.recommendation.publish_daily_impressions",
-      "output_lane": "signals_built__recommendation__daily_impressions",
+      "name": "recommended.signals.recommendation.publish_daily_impressions",
+      "output_lane": "recommended__signals__recommendation__daily_impressions",
       "output_schema": "DailyRecommendationImpressions",
       "results": [
         {
-          "frame": "signals_built__recommendation__daily_impressions",
-          "lane": "signals_built__recommendation__daily_impressions",
+          "frame": "recommended__signals__recommendation__daily_impressions",
+          "lane": "recommended__signals__recommendation__daily_impressions",
           "schema": "DailyRecommendationImpressions"
         }
       ]
     },
     {
-      "input_lane": "signals_built__recommendation__click_facts",
+      "input_lane": "recommended__signals__recommendation__click_facts",
       "input_schema": "DailyRecommendationClicks",
       "inputs": [
         {
           "driving": true,
           "parameter": "click",
           "schema": "DailyRecommendationClicks",
-          "source": "signals_built__recommendation__click_facts"
+          "source": "recommended__signals__recommendation__click_facts"
         }
       ],
-      "name": "signals_built.recommendation.publish_daily_clicks",
-      "output_lane": "signals_built__recommendation__daily_clicks",
+      "name": "recommended.signals.recommendation.publish_daily_clicks",
+      "output_lane": "recommended__signals__recommendation__daily_clicks",
       "output_schema": "DailyRecommendationClicks",
       "results": [
         {
-          "frame": "signals_built__recommendation__daily_clicks",
-          "lane": "signals_built__recommendation__daily_clicks",
+          "frame": "recommended__signals__recommendation__daily_clicks",
+          "lane": "recommended__signals__recommendation__daily_clicks",
           "schema": "DailyRecommendationClicks"
         }
       ]
     },
     {
-      "input_lane": "signals_built__recommendation__impression_facts",
+      "input_lane": "recommended__signals__recommendation__impression_facts",
       "input_schema": "DailyRecommendationImpressions",
       "inputs": [
         {
           "driving": true,
           "parameter": "impression",
           "schema": "DailyRecommendationImpressions",
-          "source": "signals_built__recommendation__impression_facts"
+          "source": "recommended__signals__recommendation__impression_facts"
         },
         {
           "driving": false,
           "parameter": "click",
           "schema": "DailyRecommendationClicks",
-          "source": "signals_built__recommendation__click_facts"
+          "source": "recommended__signals__recommendation__click_facts"
         }
       ],
       "joins": [
@@ -445,35 +445,35 @@
           "input": "click"
         }
       ],
-      "name": "signals_built.recommendation.summarize_signals",
-      "output_lane": "signals_built__recommendation__signal_totals",
+      "name": "recommended.signals.recommendation.summarize_signals",
+      "output_lane": "recommended__signals__recommendation__signal_totals",
       "output_schema": "ProductRecommendationSignalTotals",
       "results": [
         {
-          "frame": "signals_built__recommendation__signal_totals",
-          "lane": "signals_built__recommendation__signal_totals",
+          "frame": "recommended__signals__recommendation__signal_totals",
+          "lane": "recommended__signals__recommendation__signal_totals",
           "schema": "ProductRecommendationSignalTotals"
         }
       ]
     },
     {
-      "input_lane": "signals_built__recommendation__signal_totals",
+      "input_lane": "recommended__signals__recommendation__signal_totals",
       "input_schema": "ProductRecommendationSignalTotals",
       "inputs": [
         {
           "driving": true,
           "parameter": "signal",
           "schema": "ProductRecommendationSignalTotals",
-          "source": "signals_built__recommendation__signal_totals"
+          "source": "recommended__signals__recommendation__signal_totals"
         }
       ],
-      "name": "signals_built.recommendation.publish_signals",
-      "output_lane": "signals_built__recommendation__signals",
+      "name": "recommended.signals.recommendation.publish_signals",
+      "output_lane": "recommended__signals__recommendation__signals",
       "output_schema": "ProductRecommendationSignal",
       "results": [
         {
-          "frame": "signals_built__recommendation__signals",
-          "lane": "signals_built__recommendation__signals",
+          "frame": "recommended__signals__recommendation__signals",
+          "lane": "recommended__signals__recommendation__signals",
           "schema": "ProductRecommendationSignal"
         }
       ]
@@ -501,57 +501,47 @@
           "input": "product"
         }
       ],
-      "name": "recommended.selected.select",
-      "output_lane": "recommended__selected__requests",
+      "name": "recommended.candidates.admitted.select",
+      "output_lane": "recommended__candidates__admitted__requests",
       "output_schema": "RecommendationCandidate",
       "results": [
         {
-          "frame": "recommended__selected__requests",
-          "lane": "recommended__selected__requests",
+          "frame": "recommended__candidates__admitted__requests",
+          "lane": "recommended__candidates__admitted__requests",
           "schema": "RecommendationCandidate"
         }
       ]
     },
     {
-      "input_lane": "requests",
-      "input_schema": "RecommendationRequest",
+      "input_lane": "recommended__candidates__admitted__requests",
+      "input_schema": "RecommendationCandidate",
       "inputs": [
         {
           "driving": true,
-          "parameter": "request",
-          "schema": "RecommendationRequest",
-          "source": "requests"
-        },
-        {
-          "driving": false,
-          "parameter": "product",
-          "schema": "CatalogProduct",
-          "source": "normalized__catalog"
+          "parameter": "candidate",
+          "schema": "RecommendationCandidate",
+          "source": "recommended__candidates__admitted__requests"
         },
         {
           "driving": false,
           "parameter": "taxonomy",
           "schema": "ExpandedProductTaxonomy",
-          "source": "taxonomy_expanded__expanded"
+          "source": "taxonomy__expanded"
         },
         {
           "driving": false,
           "parameter": "session",
           "schema": "SessionFeature",
-          "source": "signals_built__sessionized__events"
+          "source": "recommended__signals__session__events"
         },
         {
           "driving": false,
           "parameter": "signal",
           "schema": "ProductRecommendationSignal",
-          "source": "signals_built__recommendation__signals"
+          "source": "recommended__signals__recommendation__signals"
         }
       ],
       "joins": [
-        {
-          "how": "inner",
-          "input": "product"
-        },
         {
           "how": "left",
           "input": "taxonomy"
@@ -565,26 +555,26 @@
           "input": "signal"
         }
       ],
-      "name": "recommended.retrieved.retrieve",
-      "output_lane": "recommended__retrieved__requests",
+      "name": "recommended.candidates.retrieved.retrieve",
+      "output_lane": "recommended__candidates__retrieved__admitted",
       "output_schema": "RecommendationCandidate",
       "results": [
         {
-          "frame": "recommended__retrieved__requests",
-          "lane": "recommended__retrieved__requests",
+          "frame": "recommended__candidates__retrieved__admitted",
+          "lane": "recommended__candidates__retrieved__admitted",
           "schema": "RecommendationCandidate"
         }
       ]
     },
     {
-      "input_lane": "recommended__retrieved__requests",
+      "input_lane": "recommended__candidates__retrieved__admitted",
       "input_schema": "RecommendationCandidate",
       "inputs": [
         {
           "driving": true,
           "parameter": "candidate",
           "schema": "RecommendationCandidate",
-          "source": "recommended__retrieved__requests"
+          "source": "recommended__candidates__retrieved__admitted"
         },
         {
           "driving": false,
@@ -596,7 +586,7 @@
           "driving": false,
           "parameter": "session",
           "schema": "SessionFeature",
-          "source": "signals_built__sessionized__events"
+          "source": "recommended__signals__session__events"
         }
       ],
       "joins": [
@@ -609,32 +599,32 @@
           "input": "session"
         }
       ],
-      "name": "recommended.filtered.evaluate",
-      "output_lane": "recommended__filtered__evaluated",
+      "name": "recommended.candidates.filtered.evaluate",
+      "output_lane": "recommended__candidates__filtered__evaluated",
       "output_schema": "RecommendationCandidateDecision",
       "results": [
         {
-          "frame": "recommended__filtered__evaluated",
-          "lane": "recommended__filtered__evaluated",
+          "frame": "recommended__candidates__filtered__evaluated",
+          "lane": "recommended__candidates__filtered__evaluated",
           "schema": "RecommendationCandidateDecision"
         }
       ]
     },
     {
-      "input_lane": "recommended__retrieved__requests",
+      "input_lane": "recommended__candidates__retrieved__admitted",
       "input_schema": "RecommendationCandidate",
       "inputs": [
         {
           "driving": true,
           "parameter": "candidate",
           "schema": "RecommendationCandidate",
-          "source": "recommended__retrieved__requests"
+          "source": "recommended__candidates__retrieved__admitted"
         },
         {
           "driving": false,
           "parameter": "decision",
           "schema": "RecommendationCandidateDecision",
-          "source": "recommended__filtered__evaluated"
+          "source": "recommended__candidates__filtered__evaluated"
         }
       ],
       "joins": [
@@ -643,26 +633,26 @@
           "input": "decision"
         }
       ],
-      "name": "recommended.filtered.publish",
-      "output_lane": "recommended__filtered__filtered",
+      "name": "recommended.candidates.filtered.publish",
+      "output_lane": "recommended__candidates__filtered__filtered",
       "output_schema": "RecommendationCandidate",
       "results": [
         {
-          "frame": "recommended__filtered__filtered",
-          "lane": "recommended__filtered__filtered",
+          "frame": "recommended__candidates__filtered__filtered",
+          "lane": "recommended__candidates__filtered__filtered",
           "schema": "RecommendationCandidate"
         }
       ]
     },
     {
-      "input_lane": "recommended__filtered__filtered",
+      "input_lane": "recommended__candidates__filtered__filtered",
       "input_schema": "RecommendationCandidate",
       "inputs": [
         {
           "driving": true,
           "parameter": "candidate",
           "schema": "RecommendationCandidate",
-          "source": "recommended__filtered__filtered"
+          "source": "recommended__candidates__filtered__filtered"
         },
         {
           "driving": false,
@@ -686,7 +676,7 @@
           "driving": false,
           "parameter": "signal",
           "schema": "ProductRecommendationSignal",
-          "source": "signals_built__recommendation__signals"
+          "source": "recommended__signals__recommendation__signals"
         }
       ],
       "joins": [

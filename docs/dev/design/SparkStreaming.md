@@ -143,3 +143,68 @@ deployment.
 Full streaming orchestration should build on this slice later by adding explicit source, sink, trigger, checkpoint,
 output mode, watermark, and state-policy models. Those are designed separately in
 `SparkStreamingDeferredFeatures.md`.
+
+## Caller-Owned Streaming Migration
+
+The next streaming transformation slice keeps the same ownership boundary while admitting compiler-visible state. A
+caller may retain `readStream`, `writeStream`, checkpoint, trigger, output-mode, and query lifecycle code and replace
+only the typed DataFrame transformation. The initial admitted shapes are static-gap session-window aggregation,
+bounded stream-stream outer and semi joins, and stream-static semi filtering.
+
+`session_window(event_time, gap)` is a typed grouping key. The first form requires a positive static Spark interval,
+the same event-time field to be watermarked earlier in the step, and at least one ordinary business grouping key.
+Explain reports caller-required `append` mode. Dynamic gaps, global session groups, missing or mismatched watermarks,
+and invalid gaps fail before execution.
+
+`rowset_join(...)` remains the outer-join spelling and `exists(...)` remains the semi-join spelling. Stream-stream
+outer and semi joins require declared streaming inputs, watermarks on both bound event-time fields, and an
+`event_time_between(...)` predicate. They require caller-applied `append` mode, and diagnostics explain that unmatched
+outer rows can wait for watermark progress. Stream-static `exists(...)` stays a row-preserving left-semi filter with no
+watermark or output-mode requirement; the streaming relation must remain on the left.
+
+The IR and shared PySpark recipe carry operation kind, input modes, watermarks, event-time bounds, cardinality, required
+output mode, and compatibility status. Online execution and generated rendering consume the same facts. Structure must
+not add sources, sinks, checkpoints, triggers, output-mode calls, query lifecycle calls, actions, Pandas/RDD boundaries,
+or hidden UDFs. Chained stateful operators, dynamic session gaps, sorting/limits, analytic windows, selected-row
+helpers, arbitrary state, and lifecycle ownership remain outside this migration slice until separately designed.
+
+Evidence includes symbolic, capability, compatibility, generated-source, explain, online/generated parity, and live
+restart tests on the supported PySpark target lines. Test-owned fixtures own only their temporary source, sink,
+checkpoint, and query cleanup.
+
+## Caller-Owned Streaming Adoption Gate
+
+Streaming adoption proceeds in independently verified stages. Stage one admits static stream enrichment with typed
+inner, left, and left-semi joins; the current relation remains streaming and on the left, the lookup relation is
+explicitly static, and projecting lookup fields requires a unique key or deterministic deduplication policy. Stage two
+admits left-outer static lookup after live evidence proves that unmatched streaming rows retain nullable lookup fields.
+Stage three permits exactly one already-admitted stateful operation followed only by stateless projection, filtering, or
+stream-static enrichment.
+
+Every stage rejects right/full/cross/anti directions, a streaming lookup side, nondeterministic duplicate selection,
+additional stateful operators, generators, ordering/limits, analytic windows, and selected-row helpers. Explain shows
+input modes and state facts, generated modules remain free of lifecycle calls, and file-stream restart evidence must
+pass on PySpark 3.5 and 4.0 before the stage is claimed.
+
+## Streaming Design Gates
+
+The v9 design-gate program treats each open family as a proving lane rather than a generic backlog label. Every admitted
+stateful feature records its event-time source, watermark, grouping or partition key, state family, caller-required
+output mode, allowed following state stage, generated public PySpark form, and corrective diagnostic.
+
+The first candidate chained-state shape is a two-stage event-time window rollup. A typed `window_time(...)` expression
+may consume only a `TimeWindow` produced by the existing streaming `window(...)` helper. The accepted form has one
+watermarked input, one first-stage tumbling or sliding aggregate, only stateless work between stages, and one second
+aggregate over `window_time(first_window)`. Arbitrary nested windows, session chains, a third stateful operation, and a
+second stateful family remain rejected. The caller owns `append` mode unless target evidence proves a narrower rule.
+
+Selected-row helpers are split between finite window-scoped forms and global forms. A candidate window-scoped form needs
+a watermark, a grouping window, deterministic order keys, and an explicit tie policy; global latest/earliest selection
+over an unbounded stream remains a batch boundary. Broad analytic projections such as ranking, lag/lead, and rolling
+windows remain batch-only unless a distinct finite-window API proves bounded state and output-mode semantics.
+
+`foreach` and `foreachBatch` are side-effect and lifecycle APIs, not transform operations. `foreachBatch` is
+caller-owned-guided through the streaming adoption example; generated transform modules must contain no side-effect
+sink calls. Row-level `foreach` remains gated until sink identity, idempotence, retry, security, and recovery contracts
+exist. Arbitrary state APIs such as `applyInPandasWithState` and `transformWithState` need a separate typed state model
+covering input, state, output, timeout, clock, initialization, cleanup, profile gating, and restart behavior.

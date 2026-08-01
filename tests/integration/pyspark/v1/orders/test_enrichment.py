@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 
 import pytest
@@ -19,7 +19,7 @@ def test_online_and_generated_execution_match_orders_contract_on_live_backend(sp
     generated_package = "integration_v1_generated"
     files = render_generated_project(
         orders.transform(),
-        source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
+        source_transform="testing.model.orders.transforms.order.EnrichOrders",
         generated_package=generated_package,
         source_schema_modules=orders.source_schema_modules(),
     )
@@ -49,6 +49,9 @@ def test_online_and_generated_execution_match_orders_contract_on_live_backend(sp
                 "discount": Decimal("10.00"),
                 "net_total": Decimal("1240.50"),
                 "quantity": 2,
+                "carrier": "ups",
+                "tracking_number": "1Z999",
+                "shipped_at": datetime(2026, 1, 3, 8, 30),
                 "is_large": True,
                 "has_promotion": True,
             }

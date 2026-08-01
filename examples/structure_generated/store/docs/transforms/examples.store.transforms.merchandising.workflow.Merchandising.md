@@ -26,27 +26,27 @@ Source: `examples.store.transforms.merchandising.workflow.Merchandising`
 - `recommendation_runs`: `RecommendationRun`
 - `daily_impressions`: `DailyRecommendationImpressions`
 - `daily_clicks`: `DailyRecommendationClicks`
-- `signals`: `ProductRecommendationSignal`
+- `recommendation_signals`: `ProductRecommendationSignal`
 - `recommendation_purchases`: `RecommendationPurchase`
 
 ## Step methods
 
 - `cataloged.prepare`: `Product` -> `CatalogProduct`
 - `normalized.normalize`: `CatalogProduct` -> `CatalogProduct`
-- `taxonomy_expanded.build_ancestors`: `TaxonomyNode` -> `TaxonomyAncestor`
-- `taxonomy_expanded.expand`: `ProductTaxonomy` -> `ExpandedProductTaxonomy`
-- `signals_built.sessionized.build`: `SessionEvent` -> `SessionFeature`
-- `signals_built.purchases.attribute`: `OrderFulfillment` -> `RecommendationPurchase`
-- `signals_built.recommendation.summarize_impressions`: `RecommendationImpression` -> `DailyRecommendationImpressions`
-- `signals_built.recommendation.summarize_clicks`: `RecommendationImpression` -> `DailyRecommendationClicks`
-- `signals_built.recommendation.publish_daily_impressions`: `DailyRecommendationImpressions` -> `DailyRecommendationImpressions`
-- `signals_built.recommendation.publish_daily_clicks`: `DailyRecommendationClicks` -> `DailyRecommendationClicks`
-- `signals_built.recommendation.summarize_signals`: `DailyRecommendationImpressions` -> `ProductRecommendationSignalTotals`
-- `signals_built.recommendation.publish_signals`: `ProductRecommendationSignalTotals` -> `ProductRecommendationSignal`
-- `recommended.selected.select`: `RecommendationRequest` -> `RecommendationCandidate`
-- `recommended.retrieved.retrieve`: `RecommendationRequest` -> `RecommendationCandidate`
-- `recommended.filtered.evaluate`: `RecommendationCandidate` -> `RecommendationCandidateDecision`
-- `recommended.filtered.publish`: `RecommendationCandidate` -> `RecommendationCandidate`
+- `taxonomy.build_ancestors`: `TaxonomyNode` -> `TaxonomyAncestor`
+- `taxonomy.expand`: `ProductTaxonomy` -> `ExpandedProductTaxonomy`
+- `recommended.signals.session.build`: `SessionEvent` -> `SessionFeature`
+- `recommended.signals.purchases.attribute`: `OrderFulfillment` -> `RecommendationPurchase`
+- `recommended.signals.recommendation.summarize_impressions`: `RecommendationImpression` -> `DailyRecommendationImpressions`
+- `recommended.signals.recommendation.summarize_clicks`: `RecommendationImpression` -> `DailyRecommendationClicks`
+- `recommended.signals.recommendation.publish_daily_impressions`: `DailyRecommendationImpressions` -> `DailyRecommendationImpressions`
+- `recommended.signals.recommendation.publish_daily_clicks`: `DailyRecommendationClicks` -> `DailyRecommendationClicks`
+- `recommended.signals.recommendation.summarize_signals`: `DailyRecommendationImpressions` -> `ProductRecommendationSignalTotals`
+- `recommended.signals.recommendation.publish_signals`: `ProductRecommendationSignalTotals` -> `ProductRecommendationSignal`
+- `recommended.candidates.admitted.select`: `RecommendationRequest` -> `RecommendationCandidate`
+- `recommended.candidates.retrieved.retrieve`: `RecommendationCandidate` -> `RecommendationCandidate`
+- `recommended.candidates.filtered.evaluate`: `RecommendationCandidate` -> `RecommendationCandidateDecision`
+- `recommended.candidates.filtered.publish`: `RecommendationCandidate` -> `RecommendationCandidate`
 - `recommended.ranked.rank`: `RecommendationCandidate` -> `RankedRecommendationCandidate`
 - `recommended.diversified.decide`: `RankedRecommendationCandidate` -> `DiversificationDecision`
 - `recommended.diversified.publish`: `RankedRecommendationCandidate` -> `DiversifiedRecommendationCandidate`
@@ -71,19 +71,19 @@ Source: `examples.store.transforms.merchandising.workflow.Merchandising`
 - `product`
 - `promotion`
 - `promotions`
+- `recommended__candidates__filtered__evaluated`
 - `recommended__diversified__decisions`
-- `recommended__filtered__evaluated`
 - `recommended__published__ranked_candidates`
+- `recommended__signals__recommendation__click_facts`
+- `recommended__signals__recommendation__signals`
+- `recommended__signals__session__events`
 - `session`
 - `signal`
-- `signals_built__recommendation__click_facts`
-- `signals_built__recommendation__signals`
-- `signals_built__sessionized__events`
 - `suppression`
 - `suppressions`
 - `taxonomy`
-- `taxonomy_expanded__ancestors`
-- `taxonomy_expanded__expanded`
+- `taxonomy__ancestors`
+- `taxonomy__expanded`
 - `taxonomy_nodes`
 
 ## Target Artifacts

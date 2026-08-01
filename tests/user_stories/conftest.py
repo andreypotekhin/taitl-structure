@@ -8,22 +8,23 @@ from structure.plugin.pyspark import PySpark
 
 @pytest.fixture
 def orders_plan():
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     return Compiler.frontend.compile()(EnrichOrders, materialize_schemas=False).analysis
 
 
 @pytest.fixture
 def orders_recipe():
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     return Compiler.frontend.compile()(EnrichOrders, materialize_schemas=False).lowered
 
 
 @pytest.fixture
 def orders_transform_text(orders_recipe) -> str:
-    from testing.model.v1.orders.schemas.customer import Customer
-    from testing.model.v1.orders.schemas.order import (
+    from testing.model.orders.schemas.customer import Customer
+    from testing.model.orders.schemas.order import (
+        OrderFulfillment,
         OrderNormalized,
         OrderPublished,
         OrderRaw,
@@ -31,24 +32,28 @@ def orders_transform_text(orders_recipe) -> str:
         OrderWithProduct,
         OrderWithPromotion,
     )
-    from testing.model.v1.orders.schemas.product import Product
-    from testing.model.v1.orders.schemas.promotion import Promotion
+    from testing.model.orders.schemas.product import BlockedProduct, Product
+    from testing.model.orders.schemas.promotion import Promotion
+    from testing.model.orders.schemas.shipment import Shipment
 
-    order_module = "testing.model.v1.structure_generated.orders.pyspark.schemas.order"
+    order_module = "testing.model.structure_generated.orders.pyspark.schemas.order"
     return PySpark.render.transform()(
         orders_recipe,
-        source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
-        runtime_module="testing.model.v1.structure_generated.orders.runtime.schema_assert",
+        source_transform="testing.model.orders.transforms.order.EnrichOrders",
+        runtime_module="testing.model.structure_generated.orders.runtime.schema_assert",
         schema_modules={
             OrderRaw: order_module,
             OrderNormalized: order_module,
             OrderWithCustomer: order_module,
             OrderWithProduct: order_module,
             OrderWithPromotion: order_module,
+            OrderFulfillment: order_module,
             OrderPublished: order_module,
-            Customer: "testing.model.v1.structure_generated.orders.pyspark.schemas.customer",
-            Product: "testing.model.v1.structure_generated.orders.pyspark.schemas.product",
-            Promotion: "testing.model.v1.structure_generated.orders.pyspark.schemas.promotion",
+            Customer: "testing.model.structure_generated.orders.pyspark.schemas.customer",
+            Product: "testing.model.structure_generated.orders.pyspark.schemas.product",
+            BlockedProduct: "testing.model.structure_generated.orders.pyspark.schemas.product",
+            Promotion: "testing.model.structure_generated.orders.pyspark.schemas.promotion",
+            Shipment: "testing.model.structure_generated.orders.pyspark.schemas.shipment",
         },
     )
 
@@ -57,6 +62,6 @@ def orders_transform_text(orders_recipe) -> str:
 def orders_traceability(orders_recipe):
     return Compiler.traceability.build()(
         orders_recipe,
-        source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
-        transform_module="testing.model.v1.structure_generated.orders.pyspark.transforms.order",
+        source_transform="testing.model.orders.transforms.order.EnrichOrders",
+        transform_module="testing.model.structure_generated.orders.pyspark.transforms.order",
     )

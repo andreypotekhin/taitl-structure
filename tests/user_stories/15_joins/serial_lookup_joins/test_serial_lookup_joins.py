@@ -6,13 +6,20 @@ def test_serial_lookup_joins_record_explicit_sources_types_and_hints(orders_reci
     """I can perform serial joins across an arbitrary number of inputs."""
 
     customer = orders_recipe.steps[1].joins[0]
-    product = orders_recipe.steps[2].joins[0]
+    product, blocked_product, product_lookup = orders_recipe.steps[2].joins
     promotion = orders_recipe.steps[3].joins[0]
 
-    assert [(join.input_name, join.source, join.how, join.hint) for join in [customer, product, promotion]] == [
+    assert [(join.input_name, join.source, join.how, join.hint) for join in [customer, product_lookup, promotion]] == [
         ("customer", "customers", Join.LEFT, JoinHint.BROADCAST),
         ("product", "products", Join.LEFT, None),
         ("promotion", "promotions", Join.LEFT, None),
+    ]
+    assert product.how is Join.INNER
+    assert blocked_product.how is Join.INNER
+    assert [join.method.value for join in [product, blocked_product, product_lookup]] == [
+        "exists",
+        "not_exists",
+        "lookup_join",
     ]
     assert customer.predicate.kind == "and"
     assert product.predicate.kind == "and"

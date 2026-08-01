@@ -1,0 +1,44 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "tenant",
+      "name": "tenant",
+      "nullable": false,
+      "type": "TenantKey"
+    },
+    {
+      "column": "customer_id",
+      "name": "customer_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "order_date",
+      "name": "order_date",
+      "nullable": true,
+      "type": "date"
+    },
+    {
+      "column": "order_count",
+      "name": "order_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "gross_total",
+      "name": "gross_total",
+      "nullable": false,
+      "type": "decimal(12,2)"
+    },
+    {
+      "column": "net_total",
+      "name": "net_total",
+      "nullable": false,
+      "type": "decimal(12,2)"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "testing.model.orders.schemas.analytics",
+  "name": "CustomerDailyTotal"
+}

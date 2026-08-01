@@ -15,9 +15,7 @@ class ProductDailySummaries(Transform):
             product_id=order.product_id,
             order_date=order.business.order_date,
         )
-        return ProductDailySummary(
-            tenant=order.tenant,
-            product_id=order.product_id,
+        return ProductDailySummary.project(order)(
             order_date=order.business.order_date,
             order_count=count(),
             distinct_customers=count_distinct(order.customer_id),

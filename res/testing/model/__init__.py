@@ -1,1 +1,1 @@
-# Test model fixture namespace.
+"""Consolidated test model fixtures."""

@@ -23,6 +23,7 @@ def test_store_example_generated_file_order_is_deterministic() -> None:
         "examples/structure_generated/store/runtime/schema_assert.py",
         "examples/structure_generated/store/pyspark/schemas/adv_analytics.py",
         "examples/structure_generated/store/pyspark/schemas/analytics.py",
+        "examples/structure_generated/store/pyspark/schemas/catalog.py",
         "examples/structure_generated/store/pyspark/schemas/common.py",
         "examples/structure_generated/store/pyspark/schemas/customer.py",
         "examples/structure_generated/store/pyspark/schemas/batch.py",
@@ -30,9 +31,9 @@ def test_store_example_generated_file_order_is_deterministic() -> None:
         "examples/structure_generated/store/pyspark/schemas/experiment.py",
         "examples/structure_generated/store/pyspark/schemas/summary.py",
         "examples/structure_generated/store/pyspark/schemas/demand.py",
+        "examples/structure_generated/store/pyspark/schemas/windows.py",
         "examples/structure_generated/store/pyspark/schemas/service.py",
-        "examples/structure_generated/store/pyspark/schemas/inventory_inventory.py",
-        "examples/structure_generated/store/pyspark/schemas/planning_inventory.py",
+        "examples/structure_generated/store/pyspark/schemas/inventory.py",
         "examples/structure_generated/store/pyspark/schemas/plan.py",
         "examples/structure_generated/store/pyspark/schemas/workflow.py",
         "examples/structure_generated/store/pyspark/schemas/projection.py",
@@ -40,26 +41,26 @@ def test_store_example_generated_file_order_is_deterministic() -> None:
         "examples/structure_generated/store/pyspark/schemas/exception.py",
         "examples/structure_generated/store/pyspark/schemas/shortage.py",
         "examples/structure_generated/store/pyspark/schemas/substitution.py",
-        "examples/structure_generated/store/pyspark/schemas/catalog.py",
+        "examples/structure_generated/store/pyspark/schemas/warehouse.py",
         "examples/structure_generated/store/pyspark/schemas/evaluation.py",
         "examples/structure_generated/store/pyspark/schemas/feedback.py",
         "examples/structure_generated/store/pyspark/schemas/intermediate.py",
         "examples/structure_generated/store/pyspark/schemas/policy.py",
         "examples/structure_generated/store/pyspark/schemas/recommendation.py",
         "examples/structure_generated/store/pyspark/schemas/session.py",
-        "examples/structure_generated/store/pyspark/schemas/taxonomy.py",
         "examples/structure_generated/store/pyspark/schemas/order.py",
         "examples/structure_generated/store/pyspark/schemas/product.py",
         "examples/structure_generated/store/pyspark/schemas/promotion.py",
         "examples/structure_generated/store/pyspark/schemas/shipment.py",
-        "examples/structure_generated/store/pyspark/transforms/order.py",
-        "examples/structure_generated/store/traceability/transforms/order.EnrichOrders.json",
-        "examples/structure_generated/store/pyspark/transforms/demand.py",
-        "examples/structure_generated/store/traceability/transforms/demand.PrepareOrderDemand.json",
-        "examples/structure_generated/store/pyspark/transforms/build_demand_windows.py",
-        "examples/structure_generated/store/traceability/transforms/build_demand_windows.BuildDemandWindows.json",
-        "examples/structure_generated/store/pyspark/transforms/project_inventory.py",
-        "examples/structure_generated/store/traceability/transforms/project_inventory.ProjectInventory.json",
+        "examples/structure_generated/store/pyspark/schemas/taxonomy.py",
+        "examples/structure_generated/store/pyspark/transforms/enrich.py",
+        "examples/structure_generated/store/traceability/transforms/enrich.EnrichOrders.json",
+        "examples/structure_generated/store/pyspark/transforms/prepare.py",
+        "examples/structure_generated/store/traceability/transforms/prepare.PrepareOrderDemand.json",
+        "examples/structure_generated/store/pyspark/transforms/windows.py",
+        "examples/structure_generated/store/traceability/transforms/windows.BuildDemandWindows.json",
+        "examples/structure_generated/store/pyspark/transforms/project.py",
+        "examples/structure_generated/store/traceability/transforms/project.ProjectInventory.json",
         "examples/structure_generated/store/pyspark/transforms/plan.py",
         "examples/structure_generated/store/traceability/transforms/plan.PlanFulfillment.json",
         "examples/structure_generated/store/pyspark/transforms/detect.py",
@@ -84,6 +85,11 @@ def test_store_example_generated_file_order_is_deterministic() -> None:
         "examples/structure_generated/store/traceability/transforms/expand_taxonomy.ExpandProductTaxonomy.json",
         "examples/structure_generated/store/pyspark/transforms/admit.py",
         "examples/structure_generated/store/traceability/transforms/admit.SelectRecommendationCandidates.json",
+        "examples/structure_generated/store/pyspark/transforms/candidates_workflow.py",
+        (
+            "examples/structure_generated/store/traceability/transforms/"
+            "candidates_workflow.BuildRecommendationCandidates.json"
+        ),
         "examples/structure_generated/store/pyspark/transforms/recommender_workflow.py",
         "examples/structure_generated/store/traceability/transforms/recommender_workflow.Recommender.json",
         "examples/structure_generated/store/pyspark/transforms/generate.py",
@@ -94,14 +100,14 @@ def test_store_example_generated_file_order_is_deterministic() -> None:
         "examples/structure_generated/store/traceability/transforms/diversify.DiversifyRecommendations.json",
         "examples/structure_generated/store/pyspark/transforms/merchandising_workflow.py",
         "examples/structure_generated/store/traceability/transforms/merchandising_workflow.Merchandising.json",
-        "examples/structure_generated/store/pyspark/transforms/build_signals.py",
-        "examples/structure_generated/store/traceability/transforms/build_signals.BuildRecommendationSignals.json",
+        "examples/structure_generated/store/pyspark/transforms/products.py",
+        "examples/structure_generated/store/traceability/transforms/products.BuildProductSignals.json",
         "examples/structure_generated/store/pyspark/transforms/session.py",
         "examples/structure_generated/store/traceability/transforms/session.BuildSessionSignals.json",
         "examples/structure_generated/store/pyspark/transforms/purchases.py",
-        "examples/structure_generated/store/traceability/transforms/purchases.BuildRecommendationPurchaseSignals.json",
+        "examples/structure_generated/store/traceability/transforms/purchases.BuildPurchaseSignals.json",
         "examples/structure_generated/store/pyspark/transforms/signals_workflow.py",
-        "examples/structure_generated/store/traceability/transforms/signals_workflow.Signals.json",
+        "examples/structure_generated/store/traceability/transforms/signals_workflow.BuildSignals.json",
         "examples/structure_generated/store/pyspark/transforms/behavior_workflow.py",
         "examples/structure_generated/store/traceability/transforms/behavior_workflow.EvaluateRecommendations.json",
         "examples/structure_generated/store/pyspark/transforms/rowset_join_examples.py",
@@ -125,10 +131,10 @@ def test_store_example_generated_file_order_is_deterministic() -> None:
 
 
 def test_store_example_generation_keeps_public_behavior_fragments_stable() -> None:
-    transform = render_store_example()["examples/structure_generated/store/pyspark/transforms/order.py"]
+    transform = render_store_example()["examples/structure_generated/store/pyspark/transforms/enrich.py"]
 
     assert "class EnrichOrdersGenerated:" in transform
-    assert "from examples.store.transforms.order import EnrichOrders" not in transform
+    assert "from examples.store.transforms.orders.enrich import EnrichOrders" not in transform
     assert "self._impl." not in transform
     assert 'customers_joined = F.broadcast(customers.alias("customers"))' in transform
     assert 'promotions_joined = promotions.alias("promotions")' in transform

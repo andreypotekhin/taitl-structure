@@ -22,8 +22,7 @@ class FulfillmentAnalytics(Transform):
             tenant_id=plan.tenant.tenant_id,
             business_date=plan.business.order_date,
         )
-        return DailyFulfillmentSummary(
-            tenant=plan.tenant,
+        return DailyFulfillmentSummary.project(plan)(
             business_date=plan.business.order_date,
             demand_line_count=count(),
             allocated_line_count=sum(when(plan.plan_status == "allocated", 1).otherwise(0)),

@@ -12,7 +12,6 @@ class CustomerEventRanks(Transform):
     def customer_event_ranks(self, order: OrderFulfillment) -> CustomerEventRank:
         dedupe_latest_by(order.quantity, partition_by=order.customer_id)
         return CustomerEventRank.project(order)(
-            tenant=order.tenant,
             event_id=order.id,
             sequence=order.quantity,
             row_number=row_number(partition_by=order.customer_id, order_by=order.quantity),

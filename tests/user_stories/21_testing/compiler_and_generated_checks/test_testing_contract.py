@@ -16,6 +16,7 @@ def test_user_story_tests_compile_before_deployment(orders_plan) -> None:
         "add_customer",
         "add_product",
         "add_promotion",
+        "add_shipments",
         "publish",
     ]
 

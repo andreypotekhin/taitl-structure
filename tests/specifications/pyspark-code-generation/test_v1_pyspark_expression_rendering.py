@@ -14,7 +14,7 @@ def _recipe(transform) -> PySparkExecutionPlan:
 
 
 def test_v1_expression_renderer_renders_filter_helpers_and_literals() -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     recipe = _recipe(EnrichOrders)
     normalize = recipe.steps[0]
@@ -33,7 +33,7 @@ def test_v1_expression_renderer_renders_filter_helpers_and_literals() -> None:
 
 
 def test_v1_expression_renderer_renders_arithmetic_and_comparison() -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     recipe = _recipe(EnrichOrders)
     projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
@@ -454,7 +454,7 @@ def test_v4_expression_renderer_renders_hash_helpers() -> None:
 
 
 def test_v1_expression_renderer_renders_join_predicates() -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     recipe = _recipe(EnrichOrders)
     customer_join = recipe.steps[1].joins[0]

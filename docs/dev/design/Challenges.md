@@ -545,7 +545,7 @@ Recommended direction:
 ## +C22. The v1 Scope Is Large Enough to Hide the First Useful Release
 
 Resolved by [P06202601.v1-first-executable-slice.plan.md](../planning/done/P06202601.v1-first-executable-slice.plan.md), the first executable slice model fixture under
-`res/testing/model/v1`, and the revised Sprint 01 plan.
+`res/testing/model/orders`, and the revised Sprint 01 plan.
 
 The roadmap's v1 remains the broad north star: execution, optional generated PySpark, schemas, validation, joins,
 hooks, compiler traceability, static dataflow, streaming compatibility reporting, diagnostics, doctor checks, and build

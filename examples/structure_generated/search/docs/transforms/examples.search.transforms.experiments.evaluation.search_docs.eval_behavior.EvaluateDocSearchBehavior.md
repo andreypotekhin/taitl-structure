@@ -25,7 +25,7 @@ Source: `examples.search.transforms.experiments.evaluation.search_docs.eval_beha
 - `EvaluateDocSearchBehavior.select_requests`: `SearchQuery` -> `BehaviorRequest`
 - `select_requests`: `BehaviorRequest` -> `BehaviorRequest`
 - `select_impressions`: `BehaviorRequest` -> `BehaviorImpression`
-- `attribute_clicks`: `BehaviorImpression` -> `BehaviorImpression`
+- `count_clicks`: `BehaviorImpression` -> `BehaviorImpression`
 - `measure_impressions`: `BehaviorImpression` -> `BehaviorImpression`
 - `measure_requests`: `BehaviorRequest` -> `BehaviorRequestTotals`
 - `calculate_reciprocal_rank`: `BehaviorRequestTotals` -> `BehaviorRequestMetrics`

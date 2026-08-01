@@ -115,9 +115,9 @@ Testing standards, guidelines, structure are coverage limits:
 Pay attention to test name shortening techniques described in the style guide.
 
 ### Testing inputs
-Model source code: 
-- Source: res/testing/model/v1/orders
-- Generated: res/testing/model/v1/structure_generated
+Model source code:
+- Source: res/testing/model/orders
+- Generated: res/testing/model/structure_generated
 
 Model source code serves as testing fixture to apply the tests to (source), and compare test results with (generated).
 Model source code covers the happy path; unhappy paths are expected to be created in-memory by specific tests.

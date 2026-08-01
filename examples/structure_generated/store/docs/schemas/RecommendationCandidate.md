@@ -2,7 +2,7 @@
 
 # RecommendationCandidate
 
-Module: `examples.store.schemas.merchandising.catalog`
+Module: `examples.store.schemas.merchandising.recommendation`
 
 | Field | Column | Type | Nullable |
 | --- | --- | --- | --- |

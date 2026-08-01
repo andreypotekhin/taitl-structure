@@ -10,7 +10,7 @@ from structure.plugin.pyspark import array_contains, cross_join, long, size, str
 from structure.plugin.pyspark.render.commands.RenderPySparkStep import render_pyspark_step
 
 ROOT = Path(__file__).resolve().parents[3]
-INVENTORY = ROOT / "docs/dev/specifications/V6ExampleRawHookInventory.json"
+INVENTORY = ROOT / "docs/dev/specifications/ExampleRawHookInventory.json"
 COMPOSED_TRANSFORMS = {
     "search.rerank-documents.score_candidates": (
         "examples.search.transforms.searching.search_docs.SearchDocuments",

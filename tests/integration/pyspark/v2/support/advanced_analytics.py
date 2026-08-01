@@ -14,19 +14,19 @@ DATA = ROOT / "res" / "testing" / "data" / "v2" / "orders"
 
 
 def transform():
-    return transform_type("testing.model.v2.orders.transforms.adv_analytics", "AdvancedOrderAnalytics")
+    return transform_type("testing.model.orders.transforms.adv_analytics", "AdvancedOrderAnalytics")
 
 
 def source_schema_modules():
-    from testing.model.v2.orders.schemas.adv_analytics import (
+    from testing.model.orders.schemas.adv_analytics import (
         OrderCollectionProfile,
         OrderCollectionSource,
         OrderCustomerWindow,
         OrderProductCube,
         OrderRevenueRollup,
     )
-    from testing.model.v2.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
-    from testing.model.v2.orders.schemas.order import (
+    from testing.model.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
+    from testing.model.orders.schemas.order import (
         OrderFulfillment,
         OrderNormalized,
         OrderWithCustomer,
@@ -35,15 +35,15 @@ def source_schema_modules():
     )
 
     return {
-        "testing.model.v2.orders.schemas.adv_analytics": [
+        "testing.model.orders.schemas.adv_analytics": [
             OrderRevenueRollup,
             OrderProductCube,
             OrderCustomerWindow,
             OrderCollectionSource,
             OrderCollectionProfile,
         ],
-        "testing.model.v2.orders.schemas.common": [TenantKey, AuditStamp, Address, BusinessDate],
-        "testing.model.v2.orders.schemas.order": [
+        "testing.model.orders.schemas.common": [TenantKey, AuditStamp, Address, BusinessDate],
+        "testing.model.orders.schemas.order": [
             OrderNormalized,
             OrderWithCustomer,
             OrderWithProduct,

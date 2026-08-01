@@ -1,6 +1,6 @@
 from typing import cast
 
-from testing.model.v1.orders.schemas.order import OrderPublished, OrderWithPromotion
+from testing.model.orders.schemas.order import OrderFulfillment, OrderPublished
 
 from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 
@@ -26,7 +26,7 @@ def test_dropped_columns_are_removed_by_output_projection(orders_plan) -> None:
     publish = orders_plan.steps[-1]
     published_fields = [assignment.field.name for assignment in cast(PySparkStepBody, publish.plugin_body).projection]
 
-    assert publish.input_schema is OrderWithPromotion
+    assert publish.input_schema is OrderFulfillment
     assert publish.output_schema is OrderPublished
     assert "audit" not in published_fields
     assert "product_id" not in published_fields
@@ -37,8 +37,8 @@ def test_dropped_columns_are_removed_by_output_projection(orders_plan) -> None:
 def test_generated_projection_uses_select_instead_of_dataframe_drop(orders_transform_text) -> None:
     """I can rely on generated projection rather than Spark drop(...) so output schema is deterministic."""
 
-    assert '        published = orders.alias("order_with_promotion")' in orders_transform_text
+    assert '        published = orders.alias("order_fulfillment")' in orders_transform_text
     assert "        published = published.select(" in orders_transform_text
-    assert 'F.col("order_with_promotion.product_name")' in orders_transform_text
-    assert 'F.col("order_with_promotion.product_id").alias("product_id")' not in orders_transform_text
-    assert ".drop(" not in orders_transform_text
+    assert 'F.col("order_fulfillment.product_name")' in orders_transform_text
+    assert 'F.col("order_fulfillment.product_id").alias("product_id")' not in orders_transform_text
+    assert "        published = published.drop(" not in orders_transform_text

@@ -15,21 +15,22 @@ def _analysis(transform):
 def test_v1_fixture_imports_without_pyspark() -> None:
     before = {name for name in sys.modules if name.startswith("pyspark")}
 
-    import testing.model.v1.orders.schemas.order
-    import testing.model.v1.orders.transforms.order
+    import testing.model.orders.schemas.order
+    import testing.model.orders.transforms.order
 
     after = {name for name in sys.modules if name.startswith("pyspark")}
     assert after == before
-    assert testing.model.v1.orders.schemas.order.OrderRaw.__name__ == "OrderRaw"
-    assert testing.model.v1.orders.transforms.order.EnrichOrders.__name__ == "EnrichOrders"
+    assert testing.model.orders.schemas.order.OrderRaw.__name__ == "OrderRaw"
+    assert testing.model.orders.transforms.order.EnrichOrders.__name__ == "EnrichOrders"
 
 
 def test_v1_first_slice_compiles_to_normalization_plan() -> None:
-    from testing.model.v1.orders.schemas.customer import Customer
-    from testing.model.v1.orders.schemas.order import OrderNormalized, OrderRaw
-    from testing.model.v1.orders.schemas.product import Product
-    from testing.model.v1.orders.schemas.promotion import Promotion
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.schemas.customer import Customer
+    from testing.model.orders.schemas.order import OrderNormalized, OrderRaw
+    from testing.model.orders.schemas.product import BlockedProduct, Product
+    from testing.model.orders.schemas.promotion import Promotion
+    from testing.model.orders.schemas.shipment import Shipment
+    from testing.model.orders.transforms.order import EnrichOrders
 
     plan = _analysis(EnrichOrders)
 
@@ -38,7 +39,9 @@ def test_v1_first_slice_compiles_to_normalization_plan() -> None:
         ("orders", OrderRaw, 0),
         ("customers", Customer, 1),
         ("products", Product, 2),
-        ("promotions", Promotion, 3),
+        ("blocked_products", BlockedProduct, 3),
+        ("promotions", Promotion, 4),
+        ("shipments", Shipment, 5),
     ]
 
     step = plan.steps[0]
@@ -67,7 +70,7 @@ def test_v1_first_slice_compiles_to_normalization_plan() -> None:
 
 
 def test_v1_first_slice_total_projection_captures_decimal_coalesce() -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     plan = _analysis(EnrichOrders)
     projection = {
@@ -92,21 +95,25 @@ def test_v1_first_slice_total_projection_captures_decimal_coalesce() -> None:
 
 
 def test_v1_transform_invocation_is_deferred_and_rejects_unknown_inputs() -> None:
-    from testing.model.v1.orders.transforms.order import EnrichOrders
+    from testing.model.orders.transforms.order import EnrichOrders
 
     value = object()
     invocation = EnrichOrders(
         orders=value,
         customers=value,
         products=value,
+        blocked_products=value,
         promotions=value,
+        shipments=value,
     )
 
     assert invocation._structure_bound_inputs == {
         "orders": value,
         "customers": value,
         "products": value,
+        "blocked_products": value,
         "promotions": value,
+        "shipments": value,
     }
 
     try:

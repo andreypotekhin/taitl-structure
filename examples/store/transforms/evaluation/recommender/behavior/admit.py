@@ -15,12 +15,9 @@ class SelectEvaluationRequests(Transform):
     ) -> RecommendationRequestBehavior:
         cross_join(batch, allow_cartesian=True)
         where((request.requested_at >= batch.window.start) & (request.requested_at < batch.window.end))
-        return RecommendationRequestBehavior(
+        return RecommendationRequestBehavior.project(request)(
             window=batch.window,
-            tenant=request.tenant,
             request_id=request.id,
-            strategy_id=request.strategy_id,
-            policy_version=request.policy_version,
             result_count=0,
             clicked_result_count=0,
             has_click=False,

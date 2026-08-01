@@ -549,7 +549,7 @@ def test_class_field_pipeline_compiles_and_renders_generated_transform() -> None
     text = PySpark.render.transform()(
         PySpark.compiler.lower()(plan),
         source_transform=f"{__name__}.OrderPipeline",
-        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
+        runtime_module="testing.model.structure_generated.runtime.schema_assert",
         schema_modules={
             Raw: __name__,
             Normalized: __name__,
@@ -668,7 +668,7 @@ def test_generated_composed_pipeline_imports_and_dispatches_stage_owned_hooks() 
     text = PySpark.render.transform()(
         PySpark.compiler.lower()(_analysis(HookPipeline)),
         source_transform=f"{__name__}.HookPipeline",
-        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
+        runtime_module="testing.model.structure_generated.runtime.schema_assert",
         schema_modules={Raw: __name__, Normalized: __name__},
     )
 
@@ -688,7 +688,7 @@ def test_generated_repeated_composed_hook_class_uses_stage_local_delegates() -> 
     text = PySpark.render.transform()(
         PySpark.compiler.lower()(_analysis(HookPipeline)),
         source_transform=f"{__name__}.HookPipeline",
-        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
+        runtime_module="testing.model.structure_generated.runtime.schema_assert",
         schema_modules={TextRow: __name__},
     )
 
@@ -714,7 +714,7 @@ def test_embedded_generated_composed_pipeline_dispatches_stage_owned_hooks() -> 
     text = PySpark.render.transform()(
         PySpark.compiler.lower()(_analysis(HookPipeline)),
         source_transform=f"{__name__}.HookPipeline",
-        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
+        runtime_module="testing.model.structure_generated.runtime.schema_assert",
         schema_modules={Raw: __name__, Normalized: __name__},
         generated_code_options=("embed_hooks",),
     )
@@ -1020,7 +1020,7 @@ def test_generated_transform_renders_output_alias_metadata() -> None:
     text = PySpark.render.transform()(
         PySpark.compiler.lower()(plan),
         source_transform=f"{__name__}.NormalizeWithBoundaryAlias",
-        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
+        runtime_module="testing.model.structure_generated.runtime.schema_assert",
         schema_modules={Raw: __name__, Normalized: __name__},
     )
 

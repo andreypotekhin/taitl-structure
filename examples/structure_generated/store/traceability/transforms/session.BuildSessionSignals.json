@@ -15,77 +15,77 @@
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.session.BuildSessionSignalsGenerated",
       "ir": "ir:BuildSessionSignals",
-      "source": "source:examples.store.transforms.merchandising.signals.session.BuildSessionSignals"
+      "source": "source:examples.store.transforms.recommender.signals.session.BuildSessionSignals"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.session.BuildSessionSignalsGenerated.run.input.events",
       "ir": "ir:BuildSessionSignals.input.0.events",
-      "source": "source:examples.store.transforms.merchandising.signals.session.BuildSessionSignals.input.events"
+      "source": "source:examples.store.transforms.recommender.signals.session.BuildSessionSignals.input.events"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.session.BuildSessionSignalsGenerated.run.step.0.build",
       "ir": "ir:BuildSessionSignals.step.0.build",
-      "source": "source:examples.store.transforms.merchandising.signals.session.BuildSessionSignals.build"
+      "source": "source:examples.store.transforms.recommender.signals.session.BuildSessionSignals.build"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.session.BuildSessionSignalsGenerated.run.step.0.build.aggregate.window",
       "ir": "ir:BuildSessionSignals.step.0.build.aggregate.window",
-      "source": "source:examples.store.transforms.merchandising.signals.session.BuildSessionSignals.build.aggregate.window"
+      "source": "source:examples.store.transforms.recommender.signals.session.BuildSessionSignals.build.aggregate.window"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.session.BuildSessionSignalsGenerated.run.step.0.build.aggregate.tenant",
       "ir": "ir:BuildSessionSignals.step.0.build.aggregate.tenant",
-      "source": "source:examples.store.transforms.merchandising.signals.session.BuildSessionSignals.build.aggregate.tenant"
+      "source": "source:examples.store.transforms.recommender.signals.session.BuildSessionSignals.build.aggregate.tenant"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.session.BuildSessionSignalsGenerated.run.step.0.build.aggregate.session_id",
       "ir": "ir:BuildSessionSignals.step.0.build.aggregate.session_id",
-      "source": "source:examples.store.transforms.merchandising.signals.session.BuildSessionSignals.build.aggregate.session_id"
+      "source": "source:examples.store.transforms.recommender.signals.session.BuildSessionSignals.build.aggregate.session_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.session.BuildSessionSignalsGenerated.run.step.0.build.aggregate.customer_id",
       "ir": "ir:BuildSessionSignals.step.0.build.aggregate.customer_id",
-      "source": "source:examples.store.transforms.merchandising.signals.session.BuildSessionSignals.build.aggregate.customer_id"
+      "source": "source:examples.store.transforms.recommender.signals.session.BuildSessionSignals.build.aggregate.customer_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.session.BuildSessionSignalsGenerated.run.step.0.build.aggregate.product_id",
       "ir": "ir:BuildSessionSignals.step.0.build.aggregate.product_id",
-      "source": "source:examples.store.transforms.merchandising.signals.session.BuildSessionSignals.build.aggregate.product_id"
+      "source": "source:examples.store.transforms.recommender.signals.session.BuildSessionSignals.build.aggregate.product_id"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.session.BuildSessionSignalsGenerated.run.step.0.build.aggregate.category",
       "ir": "ir:BuildSessionSignals.step.0.build.aggregate.category",
-      "source": "source:examples.store.transforms.merchandising.signals.session.BuildSessionSignals.build.aggregate.category"
+      "source": "source:examples.store.transforms.recommender.signals.session.BuildSessionSignals.build.aggregate.category"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.session.BuildSessionSignalsGenerated.run.step.0.build.aggregate.event_count",
       "ir": "ir:BuildSessionSignals.step.0.build.aggregate.event_count",
-      "source": "source:examples.store.transforms.merchandising.signals.session.BuildSessionSignals.build.aggregate.event_count"
+      "source": "source:examples.store.transforms.recommender.signals.session.BuildSessionSignals.build.aggregate.event_count"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.session.BuildSessionSignalsGenerated.run.step.0.build.aggregate.product_view_count",
       "ir": "ir:BuildSessionSignals.step.0.build.aggregate.product_view_count",
-      "source": "source:examples.store.transforms.merchandising.signals.session.BuildSessionSignals.build.aggregate.product_view_count"
+      "source": "source:examples.store.transforms.recommender.signals.session.BuildSessionSignals.build.aggregate.product_view_count"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.session.BuildSessionSignalsGenerated.run.step.0.build.aggregate.add_to_cart_count",
       "ir": "ir:BuildSessionSignals.step.0.build.aggregate.add_to_cart_count",
-      "source": "source:examples.store.transforms.merchandising.signals.session.BuildSessionSignals.build.aggregate.add_to_cart_count"
+      "source": "source:examples.store.transforms.recommender.signals.session.BuildSessionSignals.build.aggregate.add_to_cart_count"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.session.BuildSessionSignalsGenerated.run.step.0.build.aggregate.last_event_at",
       "ir": "ir:BuildSessionSignals.step.0.build.aggregate.last_event_at",
-      "source": "source:examples.store.transforms.merchandising.signals.session.BuildSessionSignals.build.aggregate.last_event_at"
+      "source": "source:examples.store.transforms.recommender.signals.session.BuildSessionSignals.build.aggregate.last_event_at"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.session.BuildSessionSignalsGenerated.run.step.0.build.drop_duplicates.1",
       "ir": "ir:BuildSessionSignals.step.0.build.drop_duplicates.1",
-      "source": "source:examples.store.transforms.merchandising.signals.session.BuildSessionSignals.build.drop_duplicates.1"
+      "source": "source:examples.store.transforms.recommender.signals.session.BuildSessionSignals.build.drop_duplicates.1"
     },
     {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.session.BuildSessionSignalsGenerated.run.output.0.features.validation.final",
       "ir": "ir:BuildSessionSignals.output.0.features.validation.final",
-      "source": "source:examples.store.transforms.merchandising.signals.session.BuildSessionSignals.output.features"
+      "source": "source:examples.store.transforms.recommender.signals.session.BuildSessionSignals.output.features"
     }
   ],
   "schema_constants": {
@@ -155,7 +155,7 @@
     },
     "DemandWindow": {
       "constant": "DEMAND_WINDOW_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.projection"
+      "module": "examples.structure_generated.store.pyspark.schemas.windows"
     },
     "DiversificationDecision": {
       "constant": "DIVERSIFICATION_DECISION_SCHEMA",
@@ -223,7 +223,7 @@
     },
     "InboundInventory": {
       "constant": "INBOUND_INVENTORY_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
     },
     "InboundInventoryAvailability": {
       "constant": "INBOUND_INVENTORY_AVAILABILITY_SCHEMA",
@@ -231,7 +231,7 @@
     },
     "InventoryPosition": {
       "constant": "INVENTORY_POSITION_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
     },
     "InventoryProjection": {
       "constant": "INVENTORY_PROJECTION_SCHEMA",
@@ -239,7 +239,7 @@
     },
     "LeadTime": {
       "constant": "LEAD_TIME_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.inventory_inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
     },
     "MerchandisingBoost": {
       "constant": "MERCHANDISING_BOOST_SCHEMA",
@@ -367,11 +367,11 @@
     },
     "RecommendationCandidate": {
       "constant": "RECOMMENDATION_CANDIDATE_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
     },
     "RecommendationCandidateDecision": {
       "constant": "RECOMMENDATION_CANDIDATE_DECISION_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
     },
     "RecommendationClick": {
       "constant": "RECOMMENDATION_CLICK_SCHEMA",
@@ -463,14 +463,14 @@
     },
     "Warehouse": {
       "constant": "WAREHOUSE_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.planning_inventory"
+      "module": "examples.structure_generated.store.pyspark.schemas.warehouse"
     },
     "WarehouseLoadSummary": {
       "constant": "WAREHOUSE_LOAD_SUMMARY_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.summary"
     }
   },
-  "source_transform": "examples.store.transforms.merchandising.signals.session.BuildSessionSignals",
+  "source_transform": "examples.store.transforms.recommender.signals.session.BuildSessionSignals",
   "static_dataflow": {
     "dependencies": [
       {

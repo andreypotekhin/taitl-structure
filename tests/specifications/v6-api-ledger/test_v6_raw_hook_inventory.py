@@ -5,7 +5,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[3]
 EXAMPLES = ROOT / "examples"
-INVENTORY = ROOT / "docs/dev/specifications/V6ExampleRawHookInventory.json"
+INVENTORY = ROOT / "docs/dev/specifications/ExampleRawHookInventory.json"
 GAPS = ROOT / "docs/dev/Gaps.md"
 VALID_STATUSES = {"scheduled", "retired", "intentional", "deferred"}
 GAPS_REGISTER = (

@@ -11137,7 +11137,7 @@
               "input": "click"
             }
           ],
-          "name": "attribute_clicks",
+          "name": "count_clicks",
           "output_lane": "clicked",
           "output_schema": "BehaviorImpression",
           "results": [
@@ -11577,7 +11577,7 @@
               "input": "click"
             }
           ],
-          "name": "attribute_clicks",
+          "name": "count_clicks",
           "output_lane": "clicked",
           "output_schema": "BehaviorImpression",
           "results": [
@@ -12000,7 +12000,7 @@
               "input": "click"
             }
           ],
-          "name": "attribute_clicks",
+          "name": "count_clicks",
           "output_lane": "clicked",
           "output_schema": "BehaviorImpression",
           "results": [
@@ -12440,7 +12440,7 @@
               "input": "click"
             }
           ],
-          "name": "attribute_clicks",
+          "name": "count_clicks",
           "output_lane": "clicked",
           "output_schema": "BehaviorImpression",
           "results": [
@@ -14536,7 +14536,7 @@
               "input": "click"
             }
           ],
-          "name": "attribute_clicks",
+          "name": "count_clicks",
           "output_lane": "clicked",
           "output_schema": "BehaviorImpression",
           "results": [
