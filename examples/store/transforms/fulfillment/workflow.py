@@ -33,9 +33,10 @@ from examples.store.transforms.fulfillment.planning import PlanFulfillment
 from examples.store.transforms.fulfillment.reconciliation import ReconcileFulfillmentPlan
 from examples.store.transforms.fulfillment.shortages import DetectShortages, PrioritizeExceptions
 from examples.store.transforms.fulfillment.substitutions import FindSubstitutions
-from structure import Transform, input, output, stage
+from structure import Transform, input, output, stage, transform
 
 
+@transform(allow_stream_to_batch=True)
 class Fulfillment(Transform):
     orders = input(OrderRaw, streaming=True)
     customers = input(Customer)

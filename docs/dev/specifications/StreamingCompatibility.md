@@ -136,11 +136,11 @@ hooks are out of scope for v1 and must not be introduced by streaming-compatible
 Watermarks are compatible when declared with `watermark(field, delay=...)` before the stateful operation they support.
 The generated code lowers this to `DataFrame.withWatermark(...)`.
 
-Grouped aggregations are compatible only when the current streaming frame has a prior compiler-visible watermark and a
-direct grouping key for that same event-time field, or `window(event_time, duration, slide=None, start=None)`. The
-event-time helper returns `Struct[TimeWindow]` with non-null `start` and `end` timestamps. Structure reports `append`
-and `update` as caller-owned output-mode choices. A watermarked business-key aggregate remains rejected because the
-watermark does not bound its state.
+Batch grouped aggregations are fully supported. Streaming grouped aggregations follow PySpark output-mode semantics:
+ordinary business-key aggregates are compatible but retain unbounded state and require caller-owned `update` or
+`complete` output mode; a watermark does not evict that state. Event-time/window aggregates require a prior
+compiler-visible watermark on the grouped event-time field and support caller-owned `append` or `update` output mode.
+The event-time helper returns `Struct[TimeWindow]` with non-null `start` and `end` timestamps.
 
 `drop_duplicates(...)` uses batch `dropDuplicates` for batch frames and `dropDuplicatesWithinWatermark` for streaming
 frames. `drop_duplicates_within_watermark(...)` is the explicit streaming-only spelling and requires a declared

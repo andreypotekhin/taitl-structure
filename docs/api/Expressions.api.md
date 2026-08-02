@@ -136,6 +136,12 @@ typed `order` row scope as `o`.
 | `nanvl(...)` | `functions.nanvl` | `nanvl(o.score, 0.0)` |
 | `when(...).otherwise(...)` | `when`, `otherwise` | `when(o.total > 0, "paid").otherwise("free")` |
 | `parse_json(...)`, `try_parse_json(...)` | Variant JSON parsing | `parse_json(o.payload_json)` |
+| `variant_literal(...)` | Compile-time JSON Variant literal | `variant_literal('{"source":"migration"}')` |
+| `variant_array_append(...)`, `try_variant_array_append(...)` | Variant array mutation | `variant_array_append(o.payload, "$.items", 1)` |
+| `variant_insert(...)`, `try_variant_insert(...)` | Variant object/array insertion | `variant_insert(o.payload, "$.name", "spark")` |
+| `variant_set(...)`, `try_variant_set(...)` | Variant upsert | `variant_set(o.payload, "$.name", "spark")` |
+| `variant_delete(...)` | Variant path deletion | `variant_delete(o.payload, "$.name")` |
+| `variant_explode(...)`, `variant_explode_outer(...)` | Variant TVF row expansion | `entry = variant_explode(o.payload, as_=VariantEntry)` |
 | `schema_of_variant(...)` | Variant schema inspection | `schema_of_variant(o.payload)` |
 | `variant_get(...)`, `try_variant_get(...)` | Variant extraction | `try_variant_get(o.payload, "$.name", as_type=types.string())` |
 | `to_variant_object(...)` | Variant object conversion | `to_variant_object(o.attributes)` |
@@ -167,6 +173,8 @@ typed `order` row scope as `o`.
   nullable when the path is absent. The `try_` form is also nullable when casting fails. `schema_of_variant(...)`
   returns a nullable SQL-format schema string. `to_variant_object(...)` accepts declared Array, Map, or Struct values
   and rejects a Map with non-String keys anywhere in its nested type graph.
-- Variant literal/equality, later-profile mutation, and table-valued row-expansion helpers are tracked in the
-  [V9 Variant ExecPlan](../dev/planning/P07302602.V9-variant-type-and-helpers.plan.md); dynamic paths, implicit
-  extraction types, and ordering are not part of the current typed contract.
+- Variant row expansion uses typed `variant_explode(...)`/`variant_explode_outer(...)` generators and the PySpark 4 TVF/lateral-join API. Dynamic paths, implicit extraction types, and ordering are not part of the current typed contract.
+- `variant_literal(...)` requires non-empty, standard JSON text and validates it during symbolic capture. It lowers to
+  `parse_json(F.lit(...))` and does not expose PySpark's Python-specific `VariantVal` object.
+- Mutation helpers use literal `$`-prefixed paths. Append, insert, and set helpers require `>=4.3,<4.4`; delete
+  requires `>=5.0,<5.1`. All return Variant values and preserve Spark's strict/try failure behavior.

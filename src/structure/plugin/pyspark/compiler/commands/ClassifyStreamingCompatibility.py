@@ -51,6 +51,7 @@ class ClassifyStreamingCompatibility:
                         operation.aggregate,
                         watermark_columns=watermarks.get(step.source_scope, set()),
                         scope=step.source_scope,
+                        streaming_source=streaming_source,
                         allow_chained_window=allow_chained_window,
                     )
                     findings.extend(operation_findings)
@@ -186,8 +187,11 @@ class ClassifyStreamingCompatibility:
         *,
         watermark_columns: set[str],
         scope: str,
+        streaming_source: bool,
         allow_chained_window: bool = False,
     ) -> tuple[StreamingFinding, ...]:
+        if not streaming_source:
+            return ()
         session_keys = tuple(key.expression for key in aggregate.keys if self._is_session_window(key.expression))
         if session_keys:
             return self._session_aggregate(
@@ -199,6 +203,7 @@ class ClassifyStreamingCompatibility:
             )
         if allow_chained_window and self._is_chained_window_aggregate(aggregate):
             return ()
+        event_time_window = any(self._is_event_time_window(key.expression) for key in aggregate.keys)
         if not watermark_columns:
             if self._is_chained_window_aggregate(aggregate):
                 return (
@@ -217,6 +222,8 @@ class ClassifyStreamingCompatibility:
                         ),
                     ),
                 )
+            if not event_time_window:
+                return ()
             return (
                 StreamingFinding(
                     code="STREAM-E0801",
@@ -232,15 +239,17 @@ class ClassifyStreamingCompatibility:
             )
         if any(self._watermarked_grouping_key(key.expression, watermark_columns, scope) for key in aggregate.keys):
             return ()
+        if not event_time_window:
+            return ()
         return (
             StreamingFinding(
                 code="STREAM-E0801",
                 support=StreamingSupport.BATCH_ONLY,
                 step=step,
-                operation="unbounded grouped aggregate",
+                operation="grouped aggregate",
                 problem=(
-                    "A watermark alone cannot bound state for a business-key aggregate. The watermark event-time "
-                    "field must be grouped directly or through window(event_time, ...)."
+                    "An event-time window aggregate must group directly by the watermarked event-time field or by "
+                    "window(the_watermarked_event_time, ...)."
                 ),
                 use="Group by window(the_watermarked_event_time, duration) or the event-time field itself, or keep this transform batch-only.",
             ),

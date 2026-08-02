@@ -514,6 +514,21 @@ class RenderPySparkExpression:
             return f"F.call_function({names[function]!r}, {', '.join(args)})"
         if function in {"variant_get", "try_variant_get"}:
             return f"F.{function}({args[0]}, {expression.data['path']!r}, {expression.data['target_type']!r})"
+        if function in {
+            "variant_array_append",
+            "try_variant_array_append",
+            "variant_insert",
+            "try_variant_insert",
+        }:
+            return f"F.{function}({args[0]}, {expression.data['path']!r}, {args[1]})"
+        if function in {"variant_set", "try_variant_set"}:
+            return (
+                f"F.{function}({args[0]}, {expression.data['path']!r}, {args[1]}, "
+                f"{expression.data['create_if_missing']!r})"
+            )
+        if function == "variant_delete":
+            paths = ", ".join(repr(path) for path in cast(tuple[str, ...], expression.data["paths"]))
+            return f"F.variant_delete({args[0]}, {paths})"
         if function in {"to_json", "to_csv"}:
             options = cast(dict[str, str], expression.data["options"])
             return f"F.{function}({args[0]}, {options!r})"

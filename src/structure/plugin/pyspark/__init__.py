@@ -10,6 +10,8 @@ from structure.plugin.pyspark.dsl.generators import inline_outer_struct as _inli
 from structure.plugin.pyspark.dsl.generators import inline_struct as _inline_struct
 from structure.plugin.pyspark.dsl.generators import posexplode_outer_struct as _posexplode_outer_struct
 from structure.plugin.pyspark.dsl.generators import posexplode_struct as _posexplode_struct
+from structure.plugin.pyspark.dsl.generators import variant_explode as _variant_explode
+from structure.plugin.pyspark.dsl.generators import variant_explode_outer as _variant_explode_outer
 from structure.plugin.pyspark.dsl.geo import contains, geometry_as_wkt, geometry_from_wkt, intersects, within
 from structure.plugin.pyspark.dsl.relation_sets import (
     except_all,
@@ -58,6 +60,14 @@ def posexplode_outer_struct(*args: object, **kwargs: object) -> Any:
     return cast(Any, _posexplode_outer_struct)(*args, **kwargs)
 
 
+def variant_explode(*args: object, **kwargs: object) -> Any:
+    return cast(Any, _variant_explode)(*args, **kwargs)
+
+
+def variant_explode_outer(*args: object, **kwargs: object) -> Any:
+    return cast(Any, _variant_explode_outer)(*args, **kwargs)
+
+
 if TYPE_CHECKING:
     from structure.plugin.pyspark.api.PySpark import PySpark
     from structure.plugin.pyspark.dsl.aggregation import *  # type: ignore  # noqa: F403
@@ -101,7 +111,7 @@ initcap ifnull instr intersect intersect_all first_value following full_join gro
 isnotnull isnull is_grouped kurtosis lag left_join latest_by lead lookup_join last_value length levenshtein lower
 ltrim log limit md5 map_entries map_concat map_contains_key map_filter map_from_entries map_keys map_transform_keys
 map_transform_values map_values map_zip_with max min minute mode month nanvl nvl nvl2 nullif pow not_exists nth_value
-ntile offset order_by percent_rank percentile posexplode_struct posexplode_outer_struct explode_struct explode_outer_struct inline_struct inline_outer_struct preceding project rank range_between relation_alias regexp_extract regexp_replace require_all require_parent_hierarchy require_reference require_unique hierarchy_closure hierarchy_fallbacks reverse rtrim round
+ntile offset order_by percent_rank percentile posexplode_struct posexplode_outer_struct explode_struct explode_outer_struct inline_struct inline_outer_struct variant_explode variant_explode_outer preceding project rank range_between relation_alias regexp_extract regexp_replace require_all require_parent_hierarchy require_reference require_unique hierarchy_closure hierarchy_fallbacks reverse rtrim round
 sample select_first_qualified signum slice sha1 sha2 second right_join rollup row_number rowset_join rows_between rolling_avg rolling_max
 rolling_min rolling_sum scan subtract sum stddev sqrt size sequence session_window skewness split translate substring temporal_one
 to_csv to_decimal to_date to_json to_timestamp TimeWindow trim trunc try_element_at unbase64 union_all union_by_name upper unbounded_following unbounded_preceding
@@ -110,6 +120,8 @@ window_time
 window_collect_list window_collect_set window_count window_count_distinct window_max window_min window_sum
 window_stddev window_variance is_valid_variant is_variant_null parse_json schema_of_variant schema_of_variant_agg
 to_variant_object try_parse_json try_variant_get variant_get
+variant_literal
+variant_array_append try_variant_array_append variant_insert try_variant_insert variant_set try_variant_set variant_delete
 """.split()
 
 _FIELD_FACTORIES = {
@@ -279,6 +291,8 @@ __all__ = [  # noqa: F405
     "percentile",
     "posexplode_outer_struct",
     "posexplode_struct",
+    "variant_explode",
+    "variant_explode_outer",
     "preceding",
     "project",
     "rank",
@@ -356,6 +370,14 @@ __all__ = [  # noqa: F405
     "try_parse_json",
     "try_variant_get",
     "variant_get",
+    "variant_literal",
+    "variant_array_append",
+    "try_variant_array_append",
+    "variant_insert",
+    "try_variant_insert",
+    "variant_set",
+    "try_variant_set",
+    "variant_delete",
     "window",
     "window_avg",
     "window_bool_and",

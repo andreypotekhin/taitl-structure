@@ -51,6 +51,10 @@ def spark():
         .config("spark.sql.session.timeZone", "UTC")
         .config("spark.sql.adaptive.enabled", "false")
     )
+    packages = os.environ.get("STRUCTURE_SPARK_JARS_PACKAGES")
+    if packages:
+        builder = builder.config("spark.jars.packages", packages)
+        builder = builder.config("spark.sql.extensions", "org.apache.sedona.sql.SedonaSqlExtensions")
     if not remote:
         builder = builder.config("spark.sql.artifact.dir", "/tmp/spark-artifacts").config("spark.ui.enabled", "false")
 

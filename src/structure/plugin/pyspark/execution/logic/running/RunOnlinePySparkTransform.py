@@ -295,6 +295,10 @@ class RunOnlinePySparkTransform:
                 df = self._posexplode_struct(step, df, operation.posexplode_struct, functions=functions, types=types)
             if operation.kind == "inline_outer_struct" and operation.posexplode_struct is not None:
                 df = self._posexplode_struct(step, df, operation.posexplode_struct, functions=functions, types=types)
+            if operation.kind == "variant_explode" and operation.posexplode_struct is not None:
+                df = self._posexplode_struct(step, df, operation.posexplode_struct, functions=functions, types=types)
+            if operation.kind == "variant_explode_outer" and operation.posexplode_struct is not None:
+                df = self._posexplode_struct(step, df, operation.posexplode_struct, functions=functions, types=types)
             if operation.kind == "ordered_timeline_scan" and operation.ordered_timeline_scan is not None:
                 df = self._ordered_timeline_scan(
                     step,

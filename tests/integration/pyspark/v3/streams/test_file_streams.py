@@ -60,6 +60,24 @@ class StreamVariantClean(Schema):
     is_json_null = boolean(nullable=True)
 
 
+class StreamVariantExplodeRaw(Schema):
+    id = string(nullable=False)
+    payload_json = string(nullable=True)
+
+
+class StreamVariantExplodeEntry(Schema):
+    pos = long(nullable=False)
+    key = string(nullable=True)
+    value = variant(nullable=False)
+
+
+class StreamVariantExplodeOutput(Schema):
+    id = string(nullable=False)
+    pos = long(nullable=False)
+    key = string(nullable=True)
+    item = string(nullable=True)
+
+
 class StreamWindowRaw(Schema):
     id = string(nullable=False)
     event_time = timestamp(nullable=False)
@@ -131,6 +149,21 @@ class StreamingVariantHelpers(Transform):
             safe_name=try_variant_get(parsed, "$.name", as_type=types.string()),
             object=to_variant_object(row.attributes),
             is_json_null=is_variant_null(parse_json("null")),
+        )
+
+
+@transform(streaming=True)
+class StreamingVariantExplode(Transform):
+    rows = input(StreamVariantExplodeRaw, streaming=True)
+    expanded = output(StreamVariantExplodeOutput)
+
+    def expand(self, row: StreamVariantExplodeRaw) -> StreamVariantExplodeOutput:
+        entry = variant_explode(parse_json(row.payload_json), as_=StreamVariantExplodeEntry)
+        return StreamVariantExplodeOutput(
+            id=row.id,
+            pos=entry.pos,
+            key=entry.key,
+            item=variant_get(entry.value, "$", as_type=types.string()),
         )
 
 
@@ -391,6 +424,83 @@ def test_variant_helpers_run_as_profile_gated_streaming_transforms(spark, tmp_pa
             "safe_name": "Ava",
             "is_json_null": True,
         }
+    ]
+    assert generated_rows == online_rows
+
+
+def test_variant_explode_runs_online_and_generated_on_pyspark_4_streams(spark, tmp_path) -> None:
+    if backend_name().startswith("spark-connect"):
+        pytest.skip("Variant TVF evidence is for the ordinary PySpark runtime")
+
+    if backend_name().endswith("35") or backend_name() == "local":
+        with pytest.raises(BackendCapabilityError) as raised:
+            render_generated_project(
+                StreamingVariantExplode,
+                source_transform=f"{__name__}.StreamingVariantExplode",
+                generated_package="integration_streaming_variant_explode_generated",
+                source_schema_modules={
+                    __name__: [StreamVariantExplodeRaw, StreamVariantExplodeEntry, StreamVariantExplodeOutput],
+                },
+            )
+        assert raised.value.diagnostic.feature_name == "variant"
+        return
+
+    if not backend_name().endswith("40"):
+        pytest.skip("Variant TVF live evidence currently runs on the PySpark 4.0 integration profile")
+
+    package = "integration_streaming_variant_explode_generated"
+    files = render_generated_project(
+        StreamingVariantExplode,
+        source_transform=f"{__name__}.StreamingVariantExplode",
+        generated_package=package,
+        source_schema_modules={
+            __name__: [StreamVariantExplodeRaw, StreamVariantExplodeEntry, StreamVariantExplodeOutput],
+        },
+    )
+    source = (
+        Path(__file__).resolve().parents[5]
+        / ".pytest-workspace-tmp"
+        / "integration"
+        / f"variant-explode-{uuid4().hex}"
+    )
+    try:
+        _write_json(source / "events.json", [{"id": "event-1", "payload_json": '["a", "b"]'}])
+
+        with generated_project(tmp_path, package, files):
+            from pyspark.sql.types import StringType, StructField, StructType
+
+            schema = StructType(
+                [
+                    StructField("id", StringType(), nullable=False),
+                    StructField("payload_json", StringType(), nullable=True),
+                ]
+            )
+            online_input = read_json_stream(spark, schema, source)
+            generated_input = read_json_stream(spark, schema, source)
+            online = StreamingVariantExplode(rows=online_input).run(session(spark, execution_mode="online")).expanded
+            generated = StreamingVariantExplode(rows=generated_input).run(
+                session(spark, execution_mode="generated", generated_package=package)
+            ).expanded
+            online_rows = _collect_stream_projection(
+                online,
+                tmp_path / "online-variant-explode-checkpoint",
+                output_mode="append",
+                order_by="pos",
+                columns=("id", "pos", "key", "item"),
+            )
+            generated_rows = _collect_stream_projection(
+                generated,
+                tmp_path / "generated-variant-explode-checkpoint",
+                output_mode="append",
+                order_by="pos",
+                columns=("id", "pos", "key", "item"),
+            )
+    finally:
+        shutil.rmtree(source, ignore_errors=True)
+
+    assert online_rows == [
+        {"id": "event-1", "pos": 0, "key": None, "item": "a"},
+        {"id": "event-1", "pos": 1, "key": None, "item": "b"},
     ]
     assert generated_rows == online_rows
 

@@ -11,6 +11,7 @@ These declarations and operations define compiler-visible transform methods. Exa
 | `input(...)` | DataFrame input | `orders = input(OrderRaw)` |
 | `output(...)` | DataFrame result | `published = output(OrderPublished)` |
 | `lane(...)` | Intermediate DataFrame | `clean = lane(OrderClean)` |
+| `stage(...)` | Composed transform stage | `normalized = stage(NormalizeOrders(orders=orders))` |
 | `@transform(...)` | Pipeline declaration | `@transform\nclass Publish(Transform): pass` |
 | `@step(...)` | Named pipeline step | `@step(inout=lane(clean) \| output(published))` |
 
@@ -18,6 +19,9 @@ These declarations and operations define compiler-visible transform methods. Exa
 
 - `input(...)`, `output(...)`, and `lane(...)` declare named transform boundaries. A graph may collect explicit output
   sources with `outputs = output(name=stage.output, ...)` while keeping schemas declared separately.
+- In a class-body stage graph, `stage(...)` is optional: assigning a transform invocation directly, such as
+  `normalized = NormalizeOrders(orders=orders)`, declares the assignment as a stage. Direct assignments can be chained
+  with `normalized.output`; ordinary Python assignments are ignored. The explicit `stage(...)` form remains supported.
 - Undecorated public methods with schema input/return annotations are also steps; `@step(...)` disambiguates bindings.
 - `@transform(...)` accepts transform-level target and streaming options.
 

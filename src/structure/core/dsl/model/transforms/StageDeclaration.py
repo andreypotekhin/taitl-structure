@@ -24,8 +24,9 @@ class StageOutputReference:
 class StageDeclaration:
     """A named transform invocation embedded in another transform.
 
-    Users create stage declarations with ``stage(OtherTransform(...))`` and then
-    map outputs with ``output(..., stage_name.output_name)``.
+    Users create stage declarations with ``stage(OtherTransform(...))`` or by
+    assigning a transform invocation directly in a transform class, then map
+    outputs with ``output(..., stage_name.output_name)``.
     """
 
     invocation: Transform
@@ -39,10 +40,15 @@ class StageDeclaration:
 
     def __getattr__(self, name: str) -> StageOutputReference:
         """Return a typed reference to a declared output on the staged transform."""
-        outputs = getattr(type(self.invocation), "_structure_outputs", {})
-        output = outputs.get(name)
-        if output is None:
-            transform = type(self.invocation).__name__
-            allowed = ", ".join(outputs) or "none"
-            raise AttributeError(f"{transform} has no output {name!r}. Available outputs: {allowed}")
-        return StageOutputReference(stage=self, name=name, schema=output.schema)
+        return _output_reference(self, name)
+
+
+def _output_reference(stage: StageDeclaration, name: str) -> StageOutputReference:
+    """Build a typed reference to one output of a stage."""
+    outputs = getattr(type(stage.invocation), "_structure_outputs", {})
+    output = outputs.get(name)
+    if output is None:
+        transform = type(stage.invocation).__name__
+        allowed = ", ".join(outputs) or "none"
+        raise AttributeError(f"{transform} has no output {name!r}. Available outputs: {allowed}")
+    return StageOutputReference(stage=stage, name=name, schema=output.schema)

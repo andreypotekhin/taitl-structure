@@ -16,7 +16,7 @@
       "schema": "CatalogProduct"
     }
   ],
-  "source": "examples.store.transforms.personalization.product_features.BuildProductFeatures",
+  "source": "examples.store.transforms.personalization.features.BuildProductFeatures",
   "step_methods": [
     {
       "input_lane": "catalog",
@@ -42,7 +42,7 @@
     }
   ],
   "target_artifacts": {
-    "pyspark_transform": "pyspark/transforms/product_features.py",
-    "traceability": "traceability/transforms/product_features.BuildProductFeatures.json"
+    "pyspark_transform": "pyspark/transforms/features.py",
+    "traceability": "traceability/transforms/features.BuildProductFeatures.json"
   }
 }

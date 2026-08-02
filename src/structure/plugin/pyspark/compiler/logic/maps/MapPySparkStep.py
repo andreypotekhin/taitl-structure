@@ -271,6 +271,16 @@ class MapPySparkStep:
                         operation,
                     )
                 )
+            if operation.kind in {"variant_explode", "variant_explode_outer"} and operation.posexplode_struct is not None:
+                recipes.append(
+                    self._operation_modes(
+                        self._generators.posexplode_struct(
+                            operation.posexplode_struct,
+                            capabilities=capabilities,
+                        ),
+                        operation,
+                    )
+                )
             if operation.kind == "ordered_timeline_scan" and operation.ordered_timeline_scan is not None:
                 scan = operation.ordered_timeline_scan
                 recipes.append(

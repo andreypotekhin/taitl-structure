@@ -242,3 +242,4 @@ Note: we are currently switching from CamelCase to underscored_lower in example 
 
 - Use .project()/.base() liberally
 - Prefer result = outputs(...) output assignments
+- Prefer star imports, for brevity

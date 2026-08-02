@@ -138,6 +138,22 @@ class Merchandising(Transform):
     )
 ```
 
+The `stage(...)` wrapper is optional for class-body graph composition. A direct transform invocation assignment is
+recognized as a stage, so equivalent graphs can omit the wrapper and keep output references readable:
+
+```python
+class Merchandising(Transform):
+    catalog = input(Catalog)
+    recommended = output(RecommendedProduct)
+
+    normalized = NormalizeCatalog(catalog=catalog)
+    selected = SelectRecommendations(normalized=normalized.products)
+```
+
+Only assignments whose value is a `Transform` invocation are interpreted as stages. Ordinary class assignments such as
+`description = "catalog workflow"` remain ordinary Python values. Existing `stage(Transform(...))` declarations keep
+their current behavior and can be mixed with implicit stages.
+
 The output declaration order remains the public result order; keyword order only supplies the source mapping. Existing
 `output(Schema, stage.output)` declarations remain supported.
 

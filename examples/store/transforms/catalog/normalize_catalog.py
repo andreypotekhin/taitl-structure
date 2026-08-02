@@ -17,6 +17,5 @@ class NormalizeCatalog(Transform):
         return CatalogProduct.project(product)(
             product_id=self.clean(product.product_id),
             category=self.clean(product.category),
-            features=product.features,
             promotion_code=self.clean(product.promotion_code),
         )

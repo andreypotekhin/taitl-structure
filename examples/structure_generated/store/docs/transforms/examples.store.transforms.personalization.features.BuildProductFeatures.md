@@ -2,7 +2,7 @@
 
 # BuildProductFeatures
 
-Source: `examples.store.transforms.personalization.product_features.BuildProductFeatures`
+Source: `examples.store.transforms.personalization.features.BuildProductFeatures`
 
 ## Inputs
 
@@ -22,5 +22,5 @@ Source: `examples.store.transforms.personalization.product_features.BuildProduct
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/product_features.py`
-- `traceability`: `traceability/transforms/product_features.BuildProductFeatures.json`
+- `pyspark_transform`: `pyspark/transforms/features.py`
+- `traceability`: `traceability/transforms/features.BuildProductFeatures.json`

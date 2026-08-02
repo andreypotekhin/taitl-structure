@@ -23,6 +23,8 @@ class RenderPySparkStructGenerator:
         prefix = f"__structure_{self._identifier(generator.scope)}_{index}"
         position = f"{prefix}_pos"
         item = f"{prefix}_item"
+        if generator.tvf:
+            return self._variant_tvf(generator, value, target=target, position=position, key=item + "_key", item=item)
         lines = [
             f"        {target} = {target}.select(",
             '            "*",',
@@ -52,6 +54,43 @@ class RenderPySparkStructGenerator:
                 ]
             )
         lines.append(f"        {target} = {target}.drop({self._drop_args(generator, position, item)})")
+        return lines
+
+    def _variant_tvf(
+        self,
+        generator: PySparkPosexplodeStructRecipe,
+        value: str,
+        *,
+        target: str,
+        position: str,
+        key: str,
+        item: str,
+    ) -> list[str]:
+        function = generator.function
+        lines = [
+            f"        {target} = {target}.lateralJoin(",
+            f"            self.spark.tvf.{function}({value}.outer()).select(",
+            f'                F.col("pos").alias({self._literal(position)}),',
+            f'                F.col("key").alias({self._literal(key)}),',
+            f'                F.col("value").alias({self._literal(item)}),',
+            "            ),",
+            f'            how={self._literal("left" if generator.outer else "cross")},',
+            "        )",
+        ]
+        for name, field in generator.schema._structure_fields.items():
+            source = {"pos": position, "key": key, "value": item}[name]
+            expression = f'F.col({self._literal(source)})'
+            if getattr(field.type, "name", None) == "long":
+                expression += ".cast(T.LongType())"
+            lines.extend(
+                [
+                    f"        {target} = {target}.withColumn(",
+                    f"            {self._literal(field.column)},",
+                    f"            {expression},",
+                    "        )",
+                ]
+            )
+        lines.append(f"        {target} = {target}.drop({', '.join(self._literal(name) for name in (position, key, item))})")
         return lines
 
     def aliases(self, step: PySparkStepRecipe | PySparkOutputRecipe) -> dict[str, str]:

@@ -8,6 +8,7 @@ code is predictable and failures point to the DSL call that caused them.
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal
@@ -43,7 +44,9 @@ __all__ = [
     "round", "rtrim", "sha1", "sha2", "second", "signum", "split", "sqrt", "substring", "to_csv", "to_date",
     "to_decimal", "to_json", "to_timestamp", "translate", "trim", "trunc", "unbase64", "decode", "encode", "upper",
     "when", "xxhash64", "year", "zeroifnull", "is_valid_variant", "is_variant_null", "parse_json",
-    "schema_of_variant", "to_variant_object", "try_parse_json", "try_variant_get", "variant_get",
+    "schema_of_variant", "to_variant_object", "try_parse_json", "try_variant_get", "variant_get", "variant_literal",
+    "variant_array_append", "try_variant_array_append", "variant_insert", "try_variant_insert", "variant_set",
+    "try_variant_set", "variant_delete",
 ]
 
 
@@ -203,6 +206,10 @@ def _decimal_literal_type(value: Decimal) -> DecimalType:
     if precision > 38:
         raise TypeError("Decimal literals must not exceed Spark precision 38")
     return DecimalType(precision=precision, scale=scale)
+
+
+def _reject_non_json_constant(value: str) -> None:
+    raise ValueError(f"non-standard JSON constant {value!r}")
 
 
 def lower(value: object) -> Expression:
@@ -422,6 +429,22 @@ def parse_json(value: object) -> Expression:
     return _variant_call("parse_json", argument, nullable=argument.nullable)
 
 
+def variant_literal(json_text: str) -> Expression:
+    """Construct a Variant from compile-time JSON text.
+
+    The text is validated while authoring the transform and lowered through
+    Spark's public ``parse_json`` function.  This keeps generated and online
+    execution independent of PySpark's Python ``VariantVal`` representation.
+    """
+    if not isinstance(json_text, str) or not json_text.strip():
+        raise TypeError("variant_literal(...) requires non-empty JSON text")
+    try:
+        json.loads(json_text, parse_constant=_reject_non_json_constant)
+    except (TypeError, ValueError) as error:
+        raise ValueError("variant_literal(...) requires valid JSON text") from error
+    return parse_json(json_text)
+
+
 def try_parse_json(value: object) -> Expression:
     """Parse JSON text into a Variant value, returning null for invalid JSON."""
     argument = _string_argument(value, "try_parse_json(...)")
@@ -436,6 +459,58 @@ def variant_get(value: object, path: str, *, as_type: StructureType) -> Expressi
 def try_variant_get(value: object, path: str, *, as_type: StructureType) -> Expression:
     """Extract and cast a literal Variant path, returning null when it is absent or incompatible."""
     return _variant_get("try_variant_get", value, path, as_type)
+
+
+def variant_array_append(value: object, path: str, element: object) -> Expression:
+    """Append a value to an array inside a Variant, failing on a type mismatch."""
+    return _variant_mutation("variant_array_append", value, path, element)
+
+
+def try_variant_array_append(value: object, path: str, element: object) -> Expression:
+    """Append a value to an array inside a Variant, returning null on failure."""
+    return _variant_mutation("try_variant_array_append", value, path, element)
+
+
+def variant_insert(value: object, path: str, element: object) -> Expression:
+    """Insert a value into an object or array inside a Variant."""
+    return _variant_mutation("variant_insert", value, path, element)
+
+
+def try_variant_insert(value: object, path: str, element: object) -> Expression:
+    """Insert a value into a Variant, returning null when insertion fails."""
+    return _variant_mutation("try_variant_insert", value, path, element)
+
+
+def variant_set(value: object, path: str, element: object, *, create_if_missing: bool = True) -> Expression:
+    """Set or upsert a value at a JSON path inside a Variant."""
+    if not isinstance(create_if_missing, bool):
+        raise TypeError("variant_set(...) create_if_missing must be a Boolean literal")
+    return _variant_mutation(
+        "variant_set", value, path, element, data={"create_if_missing": create_if_missing}
+    )
+
+
+def try_variant_set(value: object, path: str, element: object, *, create_if_missing: bool = True) -> Expression:
+    """Set or upsert a Variant value, returning null when the operation fails."""
+    if not isinstance(create_if_missing, bool):
+        raise TypeError("try_variant_set(...) create_if_missing must be a Boolean literal")
+    return _variant_mutation(
+        "try_variant_set", value, path, element, data={"create_if_missing": create_if_missing}
+    )
+
+
+def variant_delete(value: object, *paths: str) -> Expression:
+    """Delete one or more literal JSON paths from a Variant."""
+    argument = _variant_argument(value, "variant_delete(...)")
+    if not paths:
+        raise TypeError("variant_delete(...) requires at least one path")
+    normalized = tuple(_variant_path(path, "variant_delete(...)", root_allowed=False) for path in paths)
+    return _variant_call(
+        "variant_delete",
+        argument,
+        nullable=argument.nullable,
+        data={"paths": normalized},
+    )
 
 
 def to_variant_object(value: object) -> Expression:
@@ -1168,6 +1243,42 @@ def _variant_get(function: str, value: object, path: str, as_type: StructureType
         nullable=True,
         data={"path": path, "target_type": _variant_ddl(as_type)},
     )
+
+
+def _variant_mutation(
+    function: str,
+    value: object,
+    path: str,
+    element: object,
+    *,
+    data: Mapping[str, object] | None = None,
+) -> Expression:
+    argument = _variant_argument(value, f"{function}(...)")
+    normalized_path = _variant_path(path, f"{function}(...)")
+    replacement = literal(element)
+    return Expression(
+        kind="call",
+        type=VariantType(),
+        nullable=argument.nullable or replacement.nullable,
+        data={
+            "function": function,
+            "capability_group": "expression",
+            "capability_name": function,
+            "path": normalized_path,
+            **(data or {}),
+        },
+        args=(argument, replacement),
+    )
+
+
+def _variant_path(path: str, call: str, *, root_allowed: bool = True) -> str:
+    if not isinstance(path, str) or not path:
+        raise TypeError(f"{call} path must be a non-empty string literal")
+    if not path.startswith("$"):
+        raise ValueError(f"{call} path must start with '$'")
+    if not root_allowed and path == "$":
+        raise ValueError(f"{call} path must identify a field or array element")
+    return path
 
 
 def _variant_compatible(type: StructureType, call: str) -> None:

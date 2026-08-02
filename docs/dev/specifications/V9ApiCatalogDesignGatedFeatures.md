@@ -28,14 +28,13 @@ mode. XML source reading remains caller-owned storage, not a transform helper.
 ## Variant And Geospatial Helpers
 
 Variant helper support requires a public `variant(...)` field type before helper APIs. Geospatial support requires a public
-geometry type and a documented coordinate reference policy. Until those types exist, SQL functions in these families
-remain design-gated and must not be exposed through raw string wrappers.
+geometry type and a documented coordinate reference policy; the v9 geometry type and policy are now specified below.
 
 V9 outcome:
 
 - Variant field support is implemented for the bundled PySpark plugin.
-- Apache Sedona 1.9.0 is the selected optional geospatial provider. V9 admits its narrow typed `GEOMETRY` slice;
-  the bundled PySpark plugin remains free of geospatial dependencies and exports.
+- Apache Sedona 1.9.0 is the selected optional integration provider. V9 admits a narrow provider-neutral typed
+  `GEOMETRY` slice; the bundled PySpark plugin remains free of geospatial dependencies and provider-specific exports.
 - `variant(nullable=True)` declares an opaque `VariantType`, renders as `T.VariantType()`, and materializes to
   PySpark's `VariantType` only for a transform whose resolved profile is a supported PySpark 4 profile. The resolved
   plugin profile may come from the global `[tool.structure.plugin.pyspark]` configuration or a compile/session
@@ -46,14 +45,15 @@ V9 outcome:
   `>=4.2,<4.3` profile. Extraction paths are literal non-empty strings starting with `$`; extraction requires an
   explicit Structure `as_type`. `to_variant_object(...)` accepts Array, Map, and Struct values, and every Map key type
   must be String.
-- Variant mutation helpers remain in scope for migration coverage but are not admitted under the current 4.2 profile:
-  `variant_array_append(...)`, `try_variant_array_append(...)`, `variant_set(...)`, and `try_variant_set(...)` require a
-  later 4.3 profile; `variant_delete(...)` requires a later 5.0 profile.
-- No geometry type or helper is exported by the bundled PySpark plugin in v9.
+- Variant mutation helpers are in scope for migration coverage and are admitted by exact later profiles:
+  `variant_array_append(...)`, `try_variant_array_append(...)`, `variant_insert(...)`, `try_variant_insert(...)`,
+  `variant_set(...)`, and `try_variant_set(...)` require `>=4.3,<4.4`; `variant_delete(...)` requires `>=5.0,<5.1`.
+  The initial Structure surface accepts literal `$`-prefixed paths even though Spark also supports runtime path columns.
+- Geometry fields and helpers are exported through the provider-neutral PySpark DSL; the bundled plugin exports no
+  provider-specific type, import, or implementation.
 
-Remaining Variant design gates include literal construction, equality, mutation helpers that require later Spark
-profiles, and row-expansion; generated PySpark remains target-gated because Variant availability differs by Spark
-profile.
+Remaining Variant work is evidence closure for the admitted literal, equality, mutation, and row-expansion contracts;
+generated PySpark remains target-gated because Variant availability differs by Spark profile.
 
 V9 resolves these remaining gates through the linked execution plan. Literal construction uses validated JSON text and
 public `parse_json` lowering; equality uses the existing typed equality operators with Variant compatibility; mutation
@@ -61,7 +61,7 @@ helpers are admitted only on their owning Spark profiles; and row expansion is a
 table-valued/generator operation. Dynamic paths, implicit extraction result types, ordering, and private Python Variant
 objects remain explicit exclusions unless a later design changes this contract.
 
-### Sedona Geometry Slice
+### Provider-neutral Geometry Slice
 
 The v9 optional-provider slice is Apache Sedona 1.9.0 `GEOMETRY`; `GEOGRAPHY` is not admitted. It belongs to a
 Sedona-specific optional plugin, never the bundled PySpark plugin.
@@ -80,12 +80,12 @@ Coordinate-reference rules:
 
 - the declared SRID is part of a geometry type; Geometry values with unequal SRIDs cannot be combined by the admitted
   predicates;
-- construction requires a literal SRID and records it in the symbolic type; rendering constructs the Sedona geometry
-  then assigns that SRID;
+- construction requires a literal SRID and records it in the symbolic type; rendering uses the common Spark SQL
+  `ST_GeomFromWKT` contract and leaves provider-specific representation to the active runtime;
 - WKT serialization preserves geometry text only. It does not promise to encode, infer, validate, transform, or
   compare coordinate reference systems outside the declared literal SRID;
-- null geometries propagate null through construction, serialization, and predicates according to Sedona's SQL null
-  semantics.
+- null geometries propagate null through construction, serialization, and predicates according to the active
+  provider's common Spark SQL semantics.
 
 Capability and target rules:
 

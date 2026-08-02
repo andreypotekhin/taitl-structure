@@ -8,7 +8,7 @@ from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.expressions import literal
 from structure.plugin.pyspark.dsl.operations import OperationPlan, PosexplodeStructPlan
 from structure.plugin.pyspark.dsl.RowScope import RowScope
-from structure.plugin.pyspark.dsl.types import ArrayType, LongType, StructType
+from structure.plugin.pyspark.dsl.types import ArrayType, LongType, StringType, StructType, VariantType
 
 
 class CapturePySparkGenerator:
@@ -240,6 +240,65 @@ class CapturePySparkGenerator:
         context.register_current_scope(generated_scope)
         return RowScope(name=generated_scope, schema=as_)
 
+    def variant_explode(
+        self,
+        context: SymbolicContext,
+        value: object,
+        *,
+        as_: type[Schema],
+        scope: str | None = None,
+    ) -> RowScope:
+        return self._variant_explode(context, value, as_=as_, scope=scope, outer=False)
+
+    def variant_explode_outer(
+        self,
+        context: SymbolicContext,
+        value: object,
+        *,
+        as_: type[Schema],
+        scope: str | None = None,
+    ) -> RowScope:
+        return self._variant_explode(context, value, as_=as_, scope=scope, outer=True)
+
+    def _variant_explode(
+        self,
+        context: SymbolicContext,
+        value: object,
+        *,
+        as_: type[Schema],
+        scope: str | None,
+        outer: bool,
+    ) -> RowScope:
+        function = "variant_explode_outer" if outer else "variant_explode"
+        self._validate_options(as_=as_, ordinal=None, scope=scope)
+        expression = literal(value)
+        if not isinstance(expression, Expression) or not isinstance(expression.type, VariantType):
+            raise TypeError(f"{function}(...) requires a Variant expression")
+        self._validate_variant_schema(as_, outer=outer, function=function)
+        self._validate_source_collisions(context.default_project_source, generated=as_)
+
+        generated_scope = scope or self._default_scope(as_)
+        operation = (
+            OperationPlan.variant_explode_outer_operation
+            if outer
+            else OperationPlan.variant_explode_operation
+        )
+        context.operations.append(
+            operation(
+                PosexplodeStructPlan(
+                    expression=expression,
+                    scope=generated_scope,
+                    schema=as_,
+                    ordinal=None,
+                    function=function,
+                    outer=outer,
+                    tvf=True,
+                )
+            )
+        )
+        context.register_current_scope(generated_scope)
+        return RowScope(name=generated_scope, schema=as_, nullable=outer)
+
     def _validate_options(self, *, as_: type[Schema], ordinal: str | None, scope: str | None) -> None:
         if not isinstance(as_, type) or not issubclass(as_, Schema):
             raise TypeError("posexplode_struct(as_=...) requires a Structure Schema class")
@@ -305,6 +364,28 @@ class CapturePySparkGenerator:
                 "posexplode_struct(as_=...) generated columns collide with current input column(s): "
                 f"{', '.join(collisions)}. Use field aliases on the generated schema."
             )
+
+    def _validate_variant_schema(self, schema: type[Schema], *, outer: bool, function: str) -> None:
+        expected = {"pos": LongType, "key": StringType, "value": VariantType}
+        fields = schema._structure_fields
+        missing = sorted(set(expected) - set(fields))
+        extras = sorted(set(fields) - set(expected))
+        if missing or extras:
+            detail = []
+            if missing:
+                detail.append(f"missing field(s): {', '.join(missing)}")
+            if extras:
+                detail.append(f"extra field(s): {', '.join(extras)}")
+            raise TypeError(f"{function}(as_=...) requires exactly pos, key, and value fields ({'; '.join(detail)})")
+        for name, expected_type in expected.items():
+            if fields[name].type.name != expected_type().name:
+                raise TypeError(f"{function}(as_=...) field {name!r} must have type {expected_type.__name__}")
+        if outer:
+            non_nullable = sorted(name for name, field in fields.items() if not field.nullable)
+            if non_nullable:
+                raise TypeError(
+                    f"{function}(as_=...) fields must be nullable for the outer null row: {', '.join(non_nullable)}"
+                )
 
     def _default_scope(self, schema: type[Schema]) -> str:
         name = schema.__name__

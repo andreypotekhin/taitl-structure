@@ -14,3 +14,4 @@ class PySparkPosexplodeStructRecipe:
     ordinal: str | None
     function: str = "posexplode"
     outer: bool = False
+    tvf: bool = False

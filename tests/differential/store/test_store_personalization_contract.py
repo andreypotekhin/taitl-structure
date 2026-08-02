@@ -4,8 +4,7 @@ from typing import Any, cast
 
 from helpers.example_projects import render_store_example
 
-from examples.store.transforms.personalization.algorithm import PersonalizationAlgorithm
-from examples.store.transforms.personalization.score import ScorePersonalizedRecommendations
+from examples.store.transforms.personalization.score import PersonalizationAlgorithm, ScorePersonalizedRecommendations
 from structure.core.compiler.api import Compiler
 from structure.plugin.pyspark import literal
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
@@ -43,7 +42,6 @@ def test_personalization_algorithm_is_replaceable_like_ranker() -> None:
             ConstantPersonalizedRecommendations,
             materialize_schemas=False,
             target_profile=None,
-            allow_stream_to_batch=True,
         ).lowered,
     )
     assert any(

@@ -57,6 +57,16 @@ class MapPySparkExpression:
             if function == "is_valid_variant":
                 return "expression", "is_valid_variant"
             if function in {
+                "variant_array_append",
+                "try_variant_array_append",
+                "variant_insert",
+                "try_variant_insert",
+                "variant_set",
+                "try_variant_set",
+                "variant_delete",
+            }:
+                return "expression", str(function)
+            if function in {
                 "parse_json",
                 "schema_of_variant",
                 "try_parse_json",
@@ -66,6 +76,8 @@ class MapPySparkExpression:
                 "is_variant_null",
             }:
                 return "expression", "variant"
+            if function in {"geo_from_wkt", "geo_as_wkt", "geo_intersects", "geo_contains", "geo_within"}:
+                return "geo", "geometry"
             if function == "to_decimal":
                 return "expression", "cast"
             return "expression", "standard_helper_call"

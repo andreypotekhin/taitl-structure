@@ -1,8 +1,8 @@
-from examples.store.schemas.merchandising import SessionEvent
-from examples.store.schemas.order import OrderFulfillment
-from examples.store.schemas.personalization import PersonalizationHistory
-from structure import Transform, input, lane, output, step
-from structure.plugin.pyspark import group_by, sum, union_all, when, where
+from examples.store.schemas.merchandising import *
+from examples.store.schemas.order import *
+from examples.store.schemas.personalization import *
+from structure import *
+from structure.plugin.pyspark import *
 
 
 class BuildPersonalizationHistory(Transform):
@@ -25,10 +25,6 @@ class BuildPersonalizationHistory(Transform):
             category=event.category,
         )
         return PersonalizationHistory.project(event)(
-            customer_id=event.customer_id,
-            session_id=event.session_id,
-            product_id=event.product_id,
-            category=event.category,
             history_score=sum(
                 when(event.event_type == "product_view", 1.0)
                 .otherwise(when(event.event_type == "add_to_cart", 3.0).otherwise(2.0))
@@ -45,9 +41,7 @@ class BuildPersonalizationHistory(Transform):
             category=order.product_category,
         )
         return PersonalizationHistory.project(order)(
-            customer_id=order.customer_id,
             session_id=None,
-            product_id=order.product_id,
             category=order.product_category,
             history_score=sum(5.0),
         )

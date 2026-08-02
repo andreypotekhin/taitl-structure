@@ -1,6 +1,7 @@
 FROM python:3.11-slim-bookworm
 
 ARG PYSPARK_VERSION
+ARG SEDONA_VERSION=1.9.0
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
@@ -20,7 +21,8 @@ RUN pip install --no-cache-dir \
     pytest==8.4.2 \
     rich==13.9.4 \
     toml==0.10.2 \
-    "pyspark[connect]==${PYSPARK_VERSION}"
+    "pyspark[connect]==${PYSPARK_VERSION}" \
+    "apache-sedona==${SEDONA_VERSION}"
 
 COPY infra/compose/images/pyspark/log4j2-integration.properties /etc/spark/log4j2-integration.properties
 COPY infra/compose/images/pyspark/run-integration.sh /usr/local/bin/run-integration

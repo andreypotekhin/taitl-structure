@@ -711,6 +711,19 @@ class EvaluatePySparkExpression:
             return functions.call_function(names[function], *args)
         if function in {"variant_get", "try_variant_get"}:
             return getattr(functions, function)(args[0], expression.data["path"], expression.data["target_type"])
+        if function in {
+            "variant_array_append",
+            "try_variant_array_append",
+            "variant_insert",
+            "try_variant_insert",
+        }:
+            return getattr(functions, function)(args[0], expression.data["path"], args[1])
+        if function in {"variant_set", "try_variant_set"}:
+            return getattr(functions, function)(
+                args[0], expression.data["path"], args[1], expression.data["create_if_missing"]
+            )
+        if function == "variant_delete":
+            return functions.variant_delete(args[0], *cast(tuple[str, ...], expression.data["paths"]))
         if function in {"to_json", "to_csv"}:
             return getattr(functions, function)(args[0], expression.data["options"])
         if function == "coalesce":

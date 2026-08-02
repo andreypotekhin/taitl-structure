@@ -11,9 +11,10 @@ from examples.store.schemas.taxonomy import ExpandedProductTaxonomy
 from examples.store.transforms.recommender.candidates.admit import SelectRecommendationCandidates
 from examples.store.transforms.recommender.candidates.filter import FilterRecommendationCandidates
 from examples.store.transforms.recommender.candidates.generate import GenerateRecommendationCandidates
-from structure import Transform, input, output, stage
+from structure import Transform, input, output, stage, transform
 
 
+@transform(allow_stream_to_batch=True)
 class BuildRecommendationCandidates(Transform):
     """Admit, generate, and filter recommendation candidates."""
 

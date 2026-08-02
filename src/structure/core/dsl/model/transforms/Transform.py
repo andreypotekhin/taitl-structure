@@ -10,7 +10,11 @@ from structure.core.dsl.model.transforms.InputDeclaration import InputDeclaratio
 from structure.core.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.core.dsl.model.transforms.OutputDeclaration import OutputBindings, OutputDeclaration
 from structure.core.dsl.model.transforms.ParameterDeclaration import ParameterDeclaration
-from structure.core.dsl.model.transforms.StageDeclaration import StageDeclaration
+from structure.core.dsl.model.transforms.StageDeclaration import (
+    StageDeclaration,
+    StageOutputReference,
+    _output_reference,
+)
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline
 
 
@@ -91,9 +95,7 @@ class Transform:
                         f"{cls.__name__} output binding {name!r} is not declared. Available outputs: {allowed}"
                     )
                 if declaration.source is not None:
-                    raise TypeError(
-                        f"{cls.__name__} output {name!r} has both an inline source and an output binding"
-                    )
+                    raise TypeError(f"{cls.__name__} output {name!r} has both an inline source and an output binding")
                 output_bindings[name] = source
         cls._structure_output_bindings = output_bindings
         cls._structure_parameters = parameters
@@ -106,7 +108,13 @@ class Transform:
         stages: dict[str, StageDeclaration] = {}
         for base in cls.__bases__:
             stages.update(getattr(base, "_structure_stages", {}))
-        stages.update({value.name: value for value in cls.__dict__.values() if isinstance(value, StageDeclaration)})
+        for name, value in cls.__dict__.items():
+            if isinstance(value, StageDeclaration):
+                stages[value.name] = value
+            elif isinstance(value, Transform):
+                implicit_stage = value._implicit_stage_declaration()
+                implicit_stage.__set_name__(cls, name)
+                stages[name] = implicit_stage
         if pipelines and stages:
             raise TypeError(f"{cls.__name__} cannot combine Transform.to(...) pipeline and stage(...) composition")
         cls._structure_pipeline = pipelines[0] if pipelines else None
@@ -143,6 +151,35 @@ class Transform:
         self._structure_bound_inputs = normalized
         self._structure_bound_parameters = parameters
         self._structure_output_renames: dict[str, str] = {}
+        self._structure_implicit_stage: StageDeclaration | None = None
+
+    def __getattribute__(self, name: str) -> object:
+        """Expose declared outputs as references when an invocation is used as a stage."""
+        if not name.startswith("_"):
+            cls = object.__getattribute__(self, "__class__")
+            outputs = getattr(cls, "_structure_outputs", {})
+            if name in outputs:
+                stage = object.__getattribute__(self, "_implicit_stage_declaration")()
+                return _output_reference(stage, name)
+        return object.__getattribute__(self, name)
+
+    def __getattr__(self, name: str) -> StageOutputReference:
+        """Return a typed output reference for an implicitly declared stage."""
+        if name.startswith("_"):
+            raise AttributeError(name)
+        outputs = getattr(type(self), "_structure_outputs", {})
+        if name not in outputs:
+            transform = type(self).__name__
+            allowed = ", ".join(outputs) or "none"
+            raise AttributeError(f"{transform} has no output {name!r}. Available outputs: {allowed}")
+        return _output_reference(self._implicit_stage_declaration(), name)
+
+    def _implicit_stage_declaration(self) -> StageDeclaration:
+        stage = self._structure_implicit_stage
+        if stage is None:
+            stage = StageDeclaration(invocation=self)
+            self._structure_implicit_stage = stage
+        return stage
 
     def run(self, session):
         """Run this transform invocation through a Structure session."""

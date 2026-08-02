@@ -169,3 +169,29 @@ def posexplode_outer_struct(
     if context is None:
         raise RuntimeError("posexplode_outer_struct(...) can only be used inside a compiled Structure step method")
     return _generators.posexplode_outer_struct(context, value, as_=as_, ordinal=ordinal, scope=scope)
+
+
+def variant_explode(
+    value: object,
+    *,
+    as_: type[Schema],
+    scope: str | None = None,
+) -> RowScope:
+    """Expand a Variant object or array with Spark's ``variant_explode`` TVF."""
+    context = current_symbolic_context()
+    if context is None:
+        raise RuntimeError("variant_explode(...) can only be used inside a compiled Structure step method")
+    return _generators.variant_explode(context, value, as_=as_, scope=scope)
+
+
+def variant_explode_outer(
+    value: object,
+    *,
+    as_: type[Schema],
+    scope: str | None = None,
+) -> RowScope:
+    """Expand a Variant while preserving one null row for null or empty input."""
+    context = current_symbolic_context()
+    if context is None:
+        raise RuntimeError("variant_explode_outer(...) can only be used inside a compiled Structure step method")
+    return _generators.variant_explode_outer(context, value, as_=as_, scope=scope)

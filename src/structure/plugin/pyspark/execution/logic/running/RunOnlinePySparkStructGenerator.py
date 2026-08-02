@@ -5,6 +5,8 @@ class RunOnlinePySparkStructGenerator:
     """Apply typed array-of-struct generators to online PySpark DataFrames."""
 
     def __call__(self, frame, generator, *, functions, types, value):
+        if generator.tvf:
+            return self._variant_tvf(frame, generator, value=value, functions=functions)
         prefix = f"__structure_{generator.scope}"
         position = f"{prefix}_pos"
         item = f"{prefix}_item"
@@ -21,6 +23,28 @@ class RunOnlinePySparkStructGenerator:
                 continue
             expanded = expanded.withColumn(field.column, functions.col(f"{item}.{field.column}"))
         return expanded.drop(*self._drop_columns(generator, position, item))
+
+    def _variant_tvf(self, frame, generator, *, value, functions):
+        from pyspark.sql import types
+
+        function = generator.function
+        tvf = getattr(frame.sparkSession.tvf, function)(value.outer()).select(
+            functions.col("pos").alias("__structure_variant_pos"),
+            functions.col("key").alias("__structure_variant_key"),
+            functions.col("value").alias("__structure_variant_value"),
+        )
+        expanded = frame.lateralJoin(tvf, how="left" if generator.outer else "cross")
+        columns = {
+            "pos": "__structure_variant_pos",
+            "key": "__structure_variant_key",
+            "value": "__structure_variant_value",
+        }
+        for name, field in generator.schema._structure_fields.items():
+            column = functions.col(columns[name])
+            if getattr(field.type, "name", None) == "long":
+                column = column.cast(types.LongType())
+            expanded = expanded.withColumn(field.column, column)
+        return expanded.drop(*columns.values())
 
     def _generator(self, functions, generator, value, position, item):
         if generator.function == "explode_outer":

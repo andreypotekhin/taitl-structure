@@ -24,9 +24,10 @@ from examples.store.transforms.recommender.publish import SelectRecommendedProdu
 from examples.store.transforms.recommender.ranking import Ranker, RankRecommendationCandidates
 from examples.store.transforms.recommender.signals import BuildRecommendationSignals
 from examples.store.transforms.recommender.summarize import SummarizeRecommendationRuns
-from structure import Transform, input, output, parameter, stage
+from structure import *
 
 
+@transform(allow_stream_to_batch=True)
 class Recommender(Transform):
     ranker = parameter(Ranker())
 
@@ -65,7 +66,6 @@ class Recommender(Transform):
             fulfilled_orders=fulfilled_orders,
         )
     )
-
     candidates = stage(
         BuildRecommendationCandidates(
             requests=requests,

@@ -71,7 +71,17 @@ def test_v9_variant_helpers_are_public_exports() -> None:
         "to_variant_object",
         "try_parse_json",
         "try_variant_get",
+        "variant_literal",
         "variant_get",
+        "variant_array_append",
+        "try_variant_array_append",
+        "variant_insert",
+        "try_variant_insert",
+        "variant_set",
+        "try_variant_set",
+        "variant_delete",
+        "variant_explode",
+        "variant_explode_outer",
     ):
         assert hasattr(pyspark, helper)
 

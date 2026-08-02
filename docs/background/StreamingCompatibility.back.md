@@ -128,10 +128,12 @@ Compiler traceability generation is compatible when it records compile-time or g
 hooks are out of scope and must not be introduced by streaming-compatible generated code.
 
 Watermarks are compatible when declared with `watermark(field, delay=...)` before the stateful operation they support.
-Grouped aggregations and exact/subset dedupe are compatible when the current streaming frame has a prior
-compiler-visible watermark. Session-window aggregations require a static positive gap and at least one ordinary
-grouping key. Bounded stream-stream rowset joins are compatible when both inputs are declared `streaming=True`, both
-joined frames have watermarks, and the predicate includes `event_time_between(left_time, right_time, upper=...)`.
+Batch grouped aggregations are fully supported. Streaming business-key aggregations follow PySpark semantics: they are
+compatible with caller-owned `update` or `complete` output mode, but retain unbounded state because a watermark alone
+does not identify rows that can be removed. Event-time and session-window aggregations require a compiler-visible
+watermark on the grouped event-time field. Bounded stream-stream rowset joins are compatible when both inputs are
+declared `streaming=True`, both joined frames have watermarks, and the predicate includes
+`event_time_between(left_time, right_time, upper=...)`.
 
 ## Deferred or Rejected Operations
 
@@ -141,7 +143,7 @@ These operations are not streaming-compatible:
 - `limit(...)`, `offset(...)`, or global top-N operations;
 - `distinct(...)` or `dropDuplicates(...)`, including Structure `distinct(...)` and `drop_duplicates(...)` without a
   preceding watermark;
-- aggregations, including `groupBy(...).agg(...)` without a preceding watermark;
+- event-time/window aggregations whose grouped event-time field is not preceded by a matching watermark;
 - chained windowed/stateful aggregations beyond the admitted single-stage event-time and session-window shapes;
 - ranking or analytic window functions, including Structure `row_number(...)`, `rank(...)`, `dense_rank(...)`,
   `lag(...)`, `lead(...)`, `rolling_sum(...)`, `rolling_avg(...)`, `rolling_min(...)`, and `rolling_max(...)`;

@@ -17,6 +17,7 @@ from examples.store.transforms.recommender.signals.products import BuildProductS
 from examples.store.transforms.recommender.summarize import SummarizeRecommendationRuns
 from examples.store.transforms.recommender.workflow import Recommender
 from examples.store.transforms.rowset_joins.rowset_join_examples import RowsetJoinExamples
+from structure import transform as structure_transform
 from structure.core.compiler.api import Compiler
 from structure.plugin.api.v1.model.TransformPlan import TransformPlan
 from structure.plugin.pyspark import literal
@@ -381,6 +382,7 @@ def test_recommendation_ranker_formulas_are_swappable() -> None:
     assert boost_score.kind == "literal"
     assert boost_score.data["value"] == 9.0
 
+    @structure_transform(allow_stream_to_batch=True)
     class ConstantBoostRecommender(Recommender):
         ranker = ConstantBoostRanker()
 
@@ -390,7 +392,6 @@ def test_recommendation_ranker_formulas_are_swappable() -> None:
             ConstantBoostRecommender,
             materialize_schemas=False,
             target_profile=None,
-            allow_stream_to_batch=True,
         ).lowered,
     )
     recommender_boost_score = next(
@@ -544,12 +545,10 @@ def _reference_enrich_orders(
 
 
 def _input_modes(transform: type) -> dict[str, bool]:
-    # The store model intentionally mixes live feeds with batch-oriented stages.
     compilation = Compiler.frontend.compile()(
         transform,
         materialize_schemas=False,
         target_profile=None,
-        allow_stream_to_batch=True,
     )
     plan = cast(TransformPlan, compilation.analysis)
     return {input.name: input.streaming for input in plan.inputs}

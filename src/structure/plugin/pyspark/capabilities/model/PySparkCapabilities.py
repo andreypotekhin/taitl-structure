@@ -15,6 +15,8 @@ SUPPORTED_PROFILES = frozenset(
         ">=3.5,<4.0",
         ">=4.0,<4.1",
         ">=4.2,<4.3",
+        ">=4.3,<4.4",
+        ">=5.0,<5.1",
     }
 )
 
@@ -22,12 +24,25 @@ SUPPORTED_VARIANTS = frozenset({"ordinary", "spark-connect"})
 PYSPARK_4_CAPABILITIES = frozenset(
     {
         ("aggregate", "schema_of_variant_agg"),
+        ("generator", "variant_explode"),
+        ("generator", "variant_explode_outer"),
         ("expression", "try_cast"),
         ("expression", "variant"),
         ("schema", "variant"),
     }
 )
 PYSPARK_4_2_CAPABILITIES = frozenset({("expression", "is_valid_variant")})
+PYSPARK_4_3_CAPABILITIES = frozenset(
+    {
+        ("expression", "variant_array_append"),
+        ("expression", "try_variant_array_append"),
+        ("expression", "variant_insert"),
+        ("expression", "try_variant_insert"),
+        ("expression", "variant_set"),
+        ("expression", "try_variant_set"),
+    }
+)
+PYSPARK_5_CAPABILITIES = frozenset({("expression", "variant_delete")})
 
 VARIANT_FAMILIES = {
     "ordinary": "ordinary_pyspark",
@@ -46,6 +61,7 @@ COMMON_CAPABILITIES = frozenset(
         ("expression", "null_safe_equality"),
         ("expression", "cast"),
         ("expression", "standard_helper_call"),
+        ("geo", "geometry"),
         ("join", "lookup_join"),
         ("join", "exists"),
         ("join", "not_exists"),
@@ -266,6 +282,16 @@ class PySparkCapabilities:
             return base_capabilities | PYSPARK_4_CAPABILITIES
         if target_profile == ">=4.2,<4.3":
             return base_capabilities | PYSPARK_4_CAPABILITIES | PYSPARK_4_2_CAPABILITIES
+        if target_profile == ">=4.3,<4.4":
+            return base_capabilities | PYSPARK_4_CAPABILITIES | PYSPARK_4_2_CAPABILITIES | PYSPARK_4_3_CAPABILITIES
+        if target_profile == ">=5.0,<5.1":
+            return (
+                base_capabilities
+                | PYSPARK_4_CAPABILITIES
+                | PYSPARK_4_2_CAPABILITIES
+                | PYSPARK_4_3_CAPABILITIES
+                | PYSPARK_5_CAPABILITIES
+            )
         return base_capabilities
 
     def supports(self, requirement: CapabilityRequirement) -> CapabilityDecision:

@@ -199,25 +199,39 @@ class CompileTransform:
         authoring_api = cast(AuthoringAPI | None, _authoring.get()[0])
         if authoring_api is None:
             raise RuntimeError("Core authoring requires a selected platform authoring facet.")
+        composition_config = self._composition_config(wrapper_class, config)
         return self._composer(
             pipeline,
             name=name,
-            compile_stage=lambda transform_class: self._compile(transform_class, config=config),
+            compile_stage=lambda transform_class: self._compile(transform_class, config=composition_config),
             rewrite_body=lambda body, frames: authoring_api.rewrite_body(body, frames=frames),
             wrapper_class=wrapper_class,
-            allow_stream_to_batch=config.allow_stream_to_batch,
+            allow_stream_to_batch=composition_config.allow_stream_to_batch,
         )
 
     def _compose_graph(self, transform_class: type[Transform], *, config: StructureConfig) -> TransformPlan:
         authoring_api = cast(AuthoringAPI | None, _authoring.get()[0])
         if authoring_api is None:
             raise RuntimeError("Core authoring requires a selected platform authoring facet.")
+        composition_config = self._composition_config(transform_class, config)
         return self._graph_composer(
             transform_class,
-            compile_stage=lambda stage: self._compile(stage, config=config),
+            compile_stage=lambda stage: self._compile(stage, config=composition_config),
             rewrite_body=lambda body, frames: authoring_api.rewrite_body(body, frames=frames),
-            allow_stream_to_batch=config.allow_stream_to_batch,
+            allow_stream_to_batch=composition_config.allow_stream_to_batch,
         )
+
+    @staticmethod
+    def _composition_config(
+        owner: type[Transform] | None,
+        config: StructureConfig,
+    ) -> StructureConfig:
+        if owner is None:
+            return config
+        options = owner.effective_transform_options()
+        if options.get("allow_stream_to_batch") is True:
+            return replace(config, allow_stream_to_batch=True)
+        return config
 
     def _steps(
         self,

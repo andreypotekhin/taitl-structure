@@ -472,12 +472,48 @@ def test_variant_schema_aggregate_requires_the_pyspark_4_profile() -> None:
     assert PySparkCapabilities(target_profile=">=4.2,<4.3").supports(requirement).supported
 
 
+@pytest.mark.parametrize("name", ("variant_explode", "variant_explode_outer"))
+def test_variant_tvfs_require_the_pyspark_4_profile(name: str) -> None:
+    requirement = CapabilityRequirement(group="generator", name=name)
+
+    assert not PySparkCapabilities().supports(requirement).supported
+    assert not PySparkCapabilities(target_profile=">=3.5,<4.0").supports(requirement).supported
+    assert PySparkCapabilities(target_profile=">=4.0,<4.1").supports(requirement).supported
+    assert PySparkCapabilities(target_profile=">=4.2,<4.3").supports(requirement).supported
+
+
 def test_valid_variant_requires_the_pyspark_4_2_profile() -> None:
     requirement = CapabilityRequirement(group="expression", name="is_valid_variant")
 
     assert not PySparkCapabilities().supports(requirement).supported
     assert not PySparkCapabilities(target_profile=">=4.0,<4.1").supports(requirement).supported
     assert PySparkCapabilities(target_profile=">=4.2,<4.3").supports(requirement).supported
+
+
+@pytest.mark.parametrize(
+    "name",
+    (
+        "variant_array_append",
+        "try_variant_array_append",
+        "variant_insert",
+        "try_variant_insert",
+        "variant_set",
+        "try_variant_set",
+    ),
+)
+def test_variant_mutation_helpers_require_the_pyspark_4_3_profile(name: str) -> None:
+    requirement = CapabilityRequirement(group="expression", name=name)
+
+    assert not PySparkCapabilities(target_profile=">=4.2,<4.3").supports(requirement).supported
+    assert PySparkCapabilities(target_profile=">=4.3,<4.4").supports(requirement).supported
+    assert PySparkCapabilities(target_profile=">=5.0,<5.1").supports(requirement).supported
+
+
+def test_variant_delete_requires_the_pyspark_5_profile() -> None:
+    requirement = CapabilityRequirement(group="expression", name="variant_delete")
+
+    assert not PySparkCapabilities(target_profile=">=4.3,<4.4").supports(requirement).supported
+    assert PySparkCapabilities(target_profile=">=5.0,<5.1").supports(requirement).supported
 
 
 def test_generated_import_names_are_deterministic_for_same_target() -> None:

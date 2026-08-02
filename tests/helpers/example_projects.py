@@ -149,8 +149,8 @@ def render_store_example() -> dict[str, str]:
         from examples.store.transforms.fulfillment.workflow import Fulfillment
         from examples.store.transforms.merchandising.workflow import Merchandising
         from examples.store.transforms.orders.enrich import EnrichOrders
+        from examples.store.transforms.personalization.features import BuildProductFeatures
         from examples.store.transforms.personalization.history import BuildPersonalizationHistory
-        from examples.store.transforms.personalization.product_features import BuildProductFeatures
         from examples.store.transforms.personalization.score import ScorePersonalizedRecommendations
         from examples.store.transforms.personalization.workflow import BuildPersonalizedRecommendations
         from examples.store.transforms.recommender.candidates import BuildRecommendationCandidates
@@ -369,7 +369,7 @@ def render_store_example() -> dict[str, str]:
             (Merchandising, "examples.store.transforms.merchandising.workflow.Merchandising"),
             (
                 BuildProductFeatures,
-                "examples.store.transforms.personalization.product_features.BuildProductFeatures",
+                "examples.store.transforms.personalization.features.BuildProductFeatures",
             ),
             (
                 BuildPersonalizationHistory,
@@ -432,9 +432,6 @@ def render_store_example() -> dict[str, str]:
                             transform_class,
                             materialize_schemas=False,
                             target_profile=None,
-                            # The store example intentionally crosses from live feeds into
-                            # batch-oriented planning stages.
-                            allow_stream_to_batch=True,
                         ).lowered,
                     ),
                     source_transform=source_transform,
@@ -448,7 +445,6 @@ def render_store_example() -> dict[str, str]:
                 source_roots=["examples"],
                 generated_dir="examples/structure_generated/store",
                 generated_package="examples.structure_generated.store",
-                allow_stream_to_batch=True,
             ),
             DiscoveredStructureProject(
                 transforms=tuple(transform for transform, _ in transforms),

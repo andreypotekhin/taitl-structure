@@ -95,6 +95,7 @@ services:
       STRUCTURE_SPARK_MASTER: spark://spark35-master:7077
       STRUCTURE_SPARK35_MASTER: spark://spark35-master:7077
       STRUCTURE_SPARK40_MASTER: spark://spark40-master:7077
+      STRUCTURE_SPARK_JARS_PACKAGES: org.apache.sedona:sedona-spark-shaded-3.5_2.12:1.9.0,org.datasyslab:geotools-wrapper:1.9.0-33.5
     volumes:
       - type: bind
         source: ${STRUCTURE_ROOT:-../..}
@@ -122,6 +123,7 @@ services:
       STRUCTURE_SPARK_MASTER: spark://spark40-master:7077
       STRUCTURE_SPARK35_MASTER: spark://spark35-master:7077
       STRUCTURE_SPARK40_MASTER: spark://spark40-master:7077
+      STRUCTURE_SPARK_JARS_PACKAGES: org.apache.sedona:sedona-spark-shaded-4.0_2.13:1.9.0,org.datasyslab:geotools-wrapper:1.9.0-33.5
     volumes:
       - type: bind
         source: ${STRUCTURE_ROOT:-../..}
@@ -154,6 +156,7 @@ services:
       STRUCTURE_SPARK35_MASTER: spark://spark35-master:7077
       STRUCTURE_SPARK40_MASTER: spark://spark40-master:7077
       SPARK_CONNECT_SCALA_VERSION: "2.12"
+      STRUCTURE_SPARK_JARS_PACKAGES: org.apache.sedona:sedona-spark-shaded-3.5_2.12:1.9.0,org.datasyslab:geotools-wrapper:1.9.0-33.5
     volumes:
       - type: bind
         source: ${STRUCTURE_ROOT:-../..}
@@ -189,6 +192,7 @@ services:
       STRUCTURE_SPARK35_MASTER: spark://spark35-master:7077
       STRUCTURE_SPARK40_MASTER: spark://spark40-master:7077
       SPARK_CONNECT_SCALA_VERSION: "2.13"
+      STRUCTURE_SPARK_JARS_PACKAGES: org.apache.sedona:sedona-spark-shaded-4.0_2.13:1.9.0,org.datasyslab:geotools-wrapper:1.9.0-33.5
     volumes:
       - type: bind
         source: ${STRUCTURE_ROOT:-../..}

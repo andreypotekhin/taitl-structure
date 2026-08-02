@@ -13,104 +13,104 @@
   ],
   "provenance": [
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.product_features.BuildProductFeaturesGenerated",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.features.BuildProductFeaturesGenerated",
       "ir": "ir:BuildProductFeatures",
-      "source": "source:examples.store.transforms.personalization.product_features.BuildProductFeatures"
+      "source": "source:examples.store.transforms.personalization.features.BuildProductFeatures"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.product_features.BuildProductFeaturesGenerated.run.input.catalog",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.features.BuildProductFeaturesGenerated.run.input.catalog",
       "ir": "ir:BuildProductFeatures.input.0.catalog",
-      "source": "source:examples.store.transforms.personalization.product_features.BuildProductFeatures.input.catalog"
+      "source": "source:examples.store.transforms.personalization.features.BuildProductFeatures.input.catalog"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.product_features.BuildProductFeaturesGenerated.run.step.0.build",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.features.BuildProductFeaturesGenerated.run.step.0.build",
       "ir": "ir:BuildProductFeatures.step.0.build",
-      "source": "source:examples.store.transforms.personalization.product_features.BuildProductFeatures.build"
+      "source": "source:examples.store.transforms.personalization.features.BuildProductFeatures.build"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.product_features.BuildProductFeaturesGenerated.run.step.0.build.select.tenant",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.features.BuildProductFeaturesGenerated.run.step.0.build.select.tenant",
       "ir": "ir:BuildProductFeatures.step.0.build.project.tenant",
-      "source": "source:examples.store.transforms.personalization.product_features.BuildProductFeatures.build.field.tenant"
+      "source": "source:examples.store.transforms.personalization.features.BuildProductFeatures.build.field.tenant"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.product_features.BuildProductFeaturesGenerated.run.step.0.build.select.audit",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.features.BuildProductFeaturesGenerated.run.step.0.build.select.audit",
       "ir": "ir:BuildProductFeatures.step.0.build.project.audit",
-      "source": "source:examples.store.transforms.personalization.product_features.BuildProductFeatures.build.field.audit"
+      "source": "source:examples.store.transforms.personalization.features.BuildProductFeatures.build.field.audit"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.product_features.BuildProductFeaturesGenerated.run.step.0.build.select.product_id",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.features.BuildProductFeaturesGenerated.run.step.0.build.select.product_id",
       "ir": "ir:BuildProductFeatures.step.0.build.project.product_id",
-      "source": "source:examples.store.transforms.personalization.product_features.BuildProductFeatures.build.field.product_id"
+      "source": "source:examples.store.transforms.personalization.features.BuildProductFeatures.build.field.product_id"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.product_features.BuildProductFeaturesGenerated.run.step.0.build.select.product_name",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.features.BuildProductFeaturesGenerated.run.step.0.build.select.product_name",
       "ir": "ir:BuildProductFeatures.step.0.build.project.product_name",
-      "source": "source:examples.store.transforms.personalization.product_features.BuildProductFeatures.build.field.product_name"
+      "source": "source:examples.store.transforms.personalization.features.BuildProductFeatures.build.field.product_name"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.product_features.BuildProductFeaturesGenerated.run.step.0.build.select.category",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.features.BuildProductFeaturesGenerated.run.step.0.build.select.category",
       "ir": "ir:BuildProductFeatures.step.0.build.project.category",
-      "source": "source:examples.store.transforms.personalization.product_features.BuildProductFeatures.build.field.category"
+      "source": "source:examples.store.transforms.personalization.features.BuildProductFeatures.build.field.category"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.product_features.BuildProductFeaturesGenerated.run.step.0.build.select.features",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.features.BuildProductFeaturesGenerated.run.step.0.build.select.features",
       "ir": "ir:BuildProductFeatures.step.0.build.project.features",
-      "source": "source:examples.store.transforms.personalization.product_features.BuildProductFeatures.build.field.features"
+      "source": "source:examples.store.transforms.personalization.features.BuildProductFeatures.build.field.features"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.product_features.BuildProductFeaturesGenerated.run.step.0.build.select.active",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.features.BuildProductFeaturesGenerated.run.step.0.build.select.active",
       "ir": "ir:BuildProductFeatures.step.0.build.project.active",
-      "source": "source:examples.store.transforms.personalization.product_features.BuildProductFeatures.build.field.active"
+      "source": "source:examples.store.transforms.personalization.features.BuildProductFeatures.build.field.active"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.product_features.BuildProductFeaturesGenerated.run.step.0.build.select.list_price",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.features.BuildProductFeaturesGenerated.run.step.0.build.select.list_price",
       "ir": "ir:BuildProductFeatures.step.0.build.project.list_price",
-      "source": "source:examples.store.transforms.personalization.product_features.BuildProductFeatures.build.field.list_price"
+      "source": "source:examples.store.transforms.personalization.features.BuildProductFeatures.build.field.list_price"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.product_features.BuildProductFeaturesGenerated.run.step.0.build.select.rating",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.features.BuildProductFeaturesGenerated.run.step.0.build.select.rating",
       "ir": "ir:BuildProductFeatures.step.0.build.project.rating",
-      "source": "source:examples.store.transforms.personalization.product_features.BuildProductFeatures.build.field.rating"
+      "source": "source:examples.store.transforms.personalization.features.BuildProductFeatures.build.field.rating"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.product_features.BuildProductFeaturesGenerated.run.step.0.build.select.has_promotion",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.features.BuildProductFeaturesGenerated.run.step.0.build.select.has_promotion",
       "ir": "ir:BuildProductFeatures.step.0.build.project.has_promotion",
-      "source": "source:examples.store.transforms.personalization.product_features.BuildProductFeatures.build.field.has_promotion"
+      "source": "source:examples.store.transforms.personalization.features.BuildProductFeatures.build.field.has_promotion"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.product_features.BuildProductFeaturesGenerated.run.step.0.build.select.promotion_code",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.features.BuildProductFeaturesGenerated.run.step.0.build.select.promotion_code",
       "ir": "ir:BuildProductFeatures.step.0.build.project.promotion_code",
-      "source": "source:examples.store.transforms.personalization.product_features.BuildProductFeatures.build.field.promotion_code"
+      "source": "source:examples.store.transforms.personalization.features.BuildProductFeatures.build.field.promotion_code"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.product_features.BuildProductFeaturesGenerated.run.step.0.build.select.promotion_name",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.features.BuildProductFeaturesGenerated.run.step.0.build.select.promotion_name",
       "ir": "ir:BuildProductFeatures.step.0.build.project.promotion_name",
-      "source": "source:examples.store.transforms.personalization.product_features.BuildProductFeatures.build.field.promotion_name"
+      "source": "source:examples.store.transforms.personalization.features.BuildProductFeatures.build.field.promotion_name"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.product_features.BuildProductFeaturesGenerated.run.step.0.build.select.promotion_discount",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.features.BuildProductFeaturesGenerated.run.step.0.build.select.promotion_discount",
       "ir": "ir:BuildProductFeatures.step.0.build.project.promotion_discount",
-      "source": "source:examples.store.transforms.personalization.product_features.BuildProductFeatures.build.field.promotion_discount"
+      "source": "source:examples.store.transforms.personalization.features.BuildProductFeatures.build.field.promotion_discount"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.product_features.BuildProductFeaturesGenerated.run.step.0.build.select.base_score",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.features.BuildProductFeaturesGenerated.run.step.0.build.select.base_score",
       "ir": "ir:BuildProductFeatures.step.0.build.project.base_score",
-      "source": "source:examples.store.transforms.personalization.product_features.BuildProductFeatures.build.field.base_score"
+      "source": "source:examples.store.transforms.personalization.features.BuildProductFeatures.build.field.base_score"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.product_features.BuildProductFeaturesGenerated.run.step.0.build.select.promotion_score",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.features.BuildProductFeaturesGenerated.run.step.0.build.select.promotion_score",
       "ir": "ir:BuildProductFeatures.step.0.build.project.promotion_score",
-      "source": "source:examples.store.transforms.personalization.product_features.BuildProductFeatures.build.field.promotion_score"
+      "source": "source:examples.store.transforms.personalization.features.BuildProductFeatures.build.field.promotion_score"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.product_features.BuildProductFeaturesGenerated.run.step.0.build.select.eligible",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.features.BuildProductFeaturesGenerated.run.step.0.build.select.eligible",
       "ir": "ir:BuildProductFeatures.step.0.build.project.eligible",
-      "source": "source:examples.store.transforms.personalization.product_features.BuildProductFeatures.build.field.eligible"
+      "source": "source:examples.store.transforms.personalization.features.BuildProductFeatures.build.field.eligible"
     },
     {
-      "generated": "generated:examples.structure_generated.store.pyspark.transforms.product_features.BuildProductFeaturesGenerated.run.output.0.featured.validation.final",
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.features.BuildProductFeaturesGenerated.run.output.0.featured.validation.final",
       "ir": "ir:BuildProductFeatures.output.0.featured.validation.final",
-      "source": "source:examples.store.transforms.personalization.product_features.BuildProductFeatures.output.featured"
+      "source": "source:examples.store.transforms.personalization.features.BuildProductFeatures.output.featured"
     }
   ],
   "schema_constants": {
@@ -507,7 +507,7 @@
       "module": "examples.structure_generated.store.pyspark.schemas.summary"
     }
   },
-  "source_transform": "examples.store.transforms.personalization.product_features.BuildProductFeatures",
+  "source_transform": "examples.store.transforms.personalization.features.BuildProductFeatures",
   "static_dataflow": {
     "dependencies": [
       {
@@ -744,7 +744,7 @@
       "validation": []
     }
   ],
-  "target_module": "examples.structure_generated.store.pyspark.transforms.product_features",
+  "target_module": "examples.structure_generated.store.pyspark.transforms.features",
   "validation": {
     "outputs": [
       {

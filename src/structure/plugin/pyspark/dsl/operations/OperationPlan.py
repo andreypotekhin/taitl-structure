@@ -86,10 +86,18 @@ class OperationPlan:
     @staticmethod
     def aggregate_operation(aggregate: Any) -> OperationPlan:
         session_window = any((key.expression.data or {}).get("function") == "session_window" for key in aggregate.keys)
+        event_time_window = any(
+            (key.expression.kind == "time_window")
+            and not ((key.expression.args[0].data or {}).get("function") == "window_time")
+            for key in aggregate.keys
+            if key.expression.args
+        )
         modes = (
             (StreamingOutputMode.APPEND,)
             if session_window
             else (StreamingOutputMode.APPEND, StreamingOutputMode.UPDATE)
+            if event_time_window
+            else (StreamingOutputMode.UPDATE, StreamingOutputMode.COMPLETE)
         )
         return OperationPlan(
             "aggregate",
@@ -197,6 +205,28 @@ class OperationPlan:
             posexplode_struct=inline_outer_struct,
             family="generator",
             capability=OperationCapability("generator", "inline_outer_struct"),
+            cardinality=OperationCardinality.ROW_MULTIPLYING,
+            streaming=StreamingSupport.COMPATIBLE,
+        )
+
+    @staticmethod
+    def variant_explode_operation(generator: PosexplodeStructPlan) -> OperationPlan:
+        return OperationPlan(
+            "variant_explode",
+            posexplode_struct=generator,
+            family="generator",
+            capability=OperationCapability("generator", "variant_explode"),
+            cardinality=OperationCardinality.ROW_MULTIPLYING,
+            streaming=StreamingSupport.COMPATIBLE,
+        )
+
+    @staticmethod
+    def variant_explode_outer_operation(generator: PosexplodeStructPlan) -> OperationPlan:
+        return OperationPlan(
+            "variant_explode_outer",
+            posexplode_struct=generator,
+            family="generator",
+            capability=OperationCapability("generator", "variant_explode_outer"),
             cardinality=OperationCardinality.ROW_MULTIPLYING,
             streaming=StreamingSupport.COMPATIBLE,
         )

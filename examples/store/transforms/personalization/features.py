@@ -1,6 +1,6 @@
-from examples.store.schemas.catalog import CatalogProduct
-from structure import Transform, input, output
-from structure.plugin.pyspark import arr_compact, array, array_union
+from examples.store.schemas.catalog import *
+from structure import *
+from structure.plugin.pyspark import *
 
 
 class BuildProductFeatures(Transform):

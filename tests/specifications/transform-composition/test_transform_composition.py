@@ -6,6 +6,7 @@ from structure import *
 from structure.core.compiler.api import Compiler
 from structure.core.compiler.compileability.streaming_compatibility.api import StreamingSupport
 from structure.core.compiler.diagnostics.api import StructureCompileError
+from structure.core.dsl.model.transforms.StageDeclaration import StageDeclaration
 from structure.core.runtime.session.model.TransformResult import TransformResult
 from structure.plugin.api.v1 import TransformMemberOrigin
 from structure.plugin.pyspark import *
@@ -224,6 +225,37 @@ def test_streaming_boundary_can_be_allowed_by_configuration() -> None:
         StreamingNormalize(orders=object()).to(BatchPublish()),
         allow_stream_to_batch=True,
     )
+
+    assert plan.outputs[0].streaming is False
+
+
+def test_graph_owner_streaming_boundary_opt_in_applies_to_nested_stages() -> None:
+    @transform
+    class StreamingNormalize(Transform):
+        orders = input(Raw, streaming=True)
+        normalized = output(Normalized)
+
+        def normalize(self, order: Raw) -> Normalized:
+            return Normalized(id=order.id, product_id=order.product_id)
+
+    @transform
+    class BatchPublish(Transform):
+        normalized = input(Normalized)
+        published = output(Published)
+
+        def publish(self, order: Normalized) -> Published:
+            return Published(id=order.id, product_name=order.product_id)
+
+    @transform(allow_stream_to_batch=True)
+    class OwnedGraph(Transform):
+        orders = input(Raw, streaming=True)
+        published = output(Published)
+
+        normalized = stage(StreamingNormalize(orders=orders))
+        completed = stage(BatchPublish(normalized=normalized.normalized))
+        result = output(published=completed.published)
+
+    plan = _analysis(OwnedGraph)
 
     assert plan.outputs[0].streaming is False
 
@@ -791,6 +823,81 @@ def test_stage_graph_exports_declared_outputs_from_multiple_stages() -> None:
         "enriched_stage.add_product",
         "published_stage.publish",
     ]
+
+
+def test_stage_graph_accepts_transform_assignments_without_stage_wrapper() -> None:
+    class OrderGraph(Transform):
+        orders = input(Raw)
+        normalized = output(Normalized)
+
+        description = "ordinary class metadata"
+        normalized_stage = NormalizeOrders(orders=orders)
+
+    plan = _analysis(OrderGraph)
+
+    assert isinstance(OrderGraph._structure_stages["normalized_stage"], StageDeclaration)
+    assert [step.name for step in plan.steps] == ["normalized_stage.normalize"]
+
+
+def test_stage_graph_allows_implicit_stage_output_references() -> None:
+    class OrderGraph(Transform):
+        orders = input(Raw)
+        products = input(Product)
+        normalized = output(Normalized)
+        enriched = output(Enriched)
+
+        normalized_stage = NormalizeOrders(orders=orders)
+        enriched_stage = AddProduct(normalized=normalized_stage.normalized, products=products)
+
+    plan = _analysis(OrderGraph)
+
+    assert [step.name for step in plan.steps] == [
+        "normalized_stage.normalize",
+        "enriched_stage.add_product",
+    ]
+
+
+def test_stage_graph_allows_implicit_stage_output_bindings() -> None:
+    class OrderGraph(Transform):
+        orders = input(Raw)
+        products = input(Product)
+        selected = output(Enriched)
+
+        normalized_stage = NormalizeOrders(orders=orders)
+        enriched_stage = AddProduct(normalized=normalized_stage.normalized, products=products)
+        outputs = output(selected=enriched_stage.enriched)
+
+    plan = _analysis(OrderGraph)
+
+    assert [output.name for output in plan.outputs] == ["selected"]
+    assert plan.outputs[0].source == "enriched_stage__normalized"
+
+
+def test_stage_graph_mixes_explicit_and_implicit_stages() -> None:
+    class OrderGraph(Transform):
+        orders = input(Raw)
+        products = input(Product)
+        published = output(Published)
+
+        normalized_stage = NormalizeOrders(orders=orders)
+        enriched_stage = stage(AddProduct(normalized=normalized_stage.normalized, products=products))
+        published_stage = PublishOrders(enriched=enriched_stage.enriched)
+
+    assert [step.name for step in _analysis(OrderGraph).steps] == [
+        "normalized_stage.normalize",
+        "enriched_stage.add_product",
+        "published_stage.publish",
+    ]
+
+
+def test_implicit_stage_unknown_output_reports_available_outputs() -> None:
+    with pytest.raises(AttributeError, match=r"NormalizeOrders has no output 'missing'"):
+
+        class BadGraph(Transform):
+            orders = input(Raw)
+            products = input(Product)
+            normalized = output(Normalized)
+            enriched_stage = AddProduct(normalized=NormalizeOrders(orders=orders).missing, products=products)
 
 
 def test_stage_graph_fans_out_and_merges_stage_outputs() -> None:

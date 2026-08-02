@@ -48,19 +48,20 @@ Variant field support is Spark-native enough for the bundled PySpark plugin. The
 `variant(nullable=True)` schema field, rendered and materialized as `VariantType`, guarded by a resolved PySpark 4
 profile. The admitted helpers are strict/safe JSON parsing, strict/safe literal-path extraction with an explicit
 Structure target type, Array/Map/Struct conversion (with String map keys), JSON-null testing, schema inspection,
-merged-schema aggregation, and Spark 4.2 Variant validity checks. Literal Variant values, equality, mutation helpers
-that require later Spark profiles, and row-expansion helpers remain outside this slice.
+merged-schema aggregation, Spark 4.2 Variant validity checks, and typed TVF row expansion. Literal Variant values,
+equality, and mutation helpers that require later Spark profiles are admitted through the linked execution plan.
 
-The child execution plan resolves those remaining gaps in this order: freeze the exact Spark profile matrix; add
-validated JSON literals and typed equality; add the mutation family on the later Spark profiles that provide it; model
-`variant_explode` and `variant_explode_outer` as table-valued row expansion rather than scalar wrappers; then close
-dynamic paths, implicit result types, ordering, and provider-specific Python Variant objects as explicit exclusions.
-Each step requires generated/online parity, capability tests, and ledger/documentation updates.
+The linked child execution plan records the completed profile matrix, validated JSON literals and typed equality, the
+Spark 4.3 append/insert/set family, Spark 5.0 delete, and typed `variant_explode`/`variant_explode_outer` table-valued
+row expansion. Dynamic paths, implicit result types, ordering, and provider-specific Python Variant objects remain
+explicit exclusions. Each admitted helper has generated/online lowering, capability tests, and ledger/documentation
+coverage.
 
 Geospatial is different: Spark has no single universally available geospatial API across supported runtimes. Apache
 Sedona 1.9.0 is the selected future optional provider because it is open-source and supports the project's PySpark 3.5
-and 4.0 targets. V9 admits a Sedona-specific optional geometry slice; the bundled PySpark plugin remains free of every
-Sedona dependency and public geospatial export. Structure must not ship raw `ST_*` wrappers in the core PySpark surface.
+and 4.0 targets. V9 admits a narrow provider-neutral geometry slice in the bundled PySpark DSL; it remains free of
+Sedona dependencies and provider-specific exports. Structure must not ship raw `ST_*` wrappers in the core PySpark
+surface.
 
 The admitted slice is planar `GEOMETRY`, represented by `geometry(srid=..., nullable=True)`. `srid` is a required
 positive literal on the Structure type; geometry values with different declared SRIDs are incompatible. It admits

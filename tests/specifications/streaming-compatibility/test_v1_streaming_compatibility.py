@@ -185,6 +185,19 @@ class StreamingVariantSchemaSummary(Schema):
     schema = string(nullable=True)
 
 
+class StreamingVariantExplodeEntry(Schema):
+    pos = long(nullable=False)
+    key = string(nullable=True)
+    value = variant(nullable=False)
+
+
+class StreamingVariantExplodeOutput(Schema):
+    id = string(nullable=False)
+    pos = long(nullable=False)
+    key = string(nullable=True)
+    item = string(nullable=True)
+
+
 @transform(streaming=True)
 class StreamingVariantHelpers(Transform):
     rows = input(StreamingVariantInput, streaming=True)
@@ -224,6 +237,21 @@ class StreamingVariantSchemaAggregate(Transform):
             bucket=window(row.event_time, "10 minutes"),
             id=row.id,
             schema=schema_of_variant_agg(row.payload),
+        )
+
+
+@transform(streaming=True)
+class StreamingVariantExplode(Transform):
+    rows = input(StreamingVariantInput, streaming=True)
+    expanded = output(StreamingVariantExplodeOutput)
+
+    def expand(self, row: StreamingVariantInput) -> StreamingVariantExplodeOutput:
+        entry = variant_explode(row.payload, as_=StreamingVariantExplodeEntry)
+        return StreamingVariantExplodeOutput(
+            id=row.id,
+            pos=entry.pos,
+            key=entry.key,
+            item=variant_get(entry.value, "$", as_type=types.string()),
         )
 
 
@@ -849,6 +877,20 @@ def test_v9_variant_schema_aggregate_follows_watermarked_streaming_rules_without
     assert report.findings == ()
 
 
+def test_v9_variant_tvf_is_profile_gated_and_streaming_compatible_without_spark() -> None:
+    with pytest.raises(BackendCapabilityError) as raised:
+        _compile_with_plugin(StreamingVariantExplode, ">=3.5,<4.0")
+
+    assert raised.value.diagnostic.feature_group == "schema"
+    assert raised.value.diagnostic.feature_name == "variant"
+
+    plan = cast(PySparkExecutionPlan, _compile_with_plugin(StreamingVariantExplode, ">=4.0,<4.1").lowered)
+    report = Compiler.compileability.streaming()(plan, required=True)
+
+    assert report.support is StreamingSupport.COMPATIBLE
+    assert report.findings == ()
+
+
 @pytest.mark.parametrize("transform_type", [StreamingUnionAll, StreamingUnionByName])
 def test_v8_stream_stream_union_is_compatible_without_spark(transform_type: type[Transform]) -> None:
     report = Compiler.compileability.streaming()(_recipe(transform_type), required=True)
@@ -982,7 +1024,7 @@ def test_v2_windowed_lookup_joins_are_batch_only_without_spark() -> None:
         assert report.findings[0].operation == operation
 
 
-def test_v2_grouped_aggregates_are_batch_only_without_spark() -> None:
+def test_v2_business_key_grouped_aggregates_follow_pyspark_output_modes() -> None:
     plan = _analysis(StreamingAggregate)
 
     report = Compiler.compileability.streaming()(
@@ -990,19 +1032,22 @@ def test_v2_grouped_aggregates_are_batch_only_without_spark() -> None:
         required=bool((plan.options or {})["streaming"]),
     )
 
-    assert report.support is StreamingSupport.BATCH_ONLY
-    assert len(report.findings) == 1
-    assert report.findings[0].code == "STREAM-E0801"
-    assert report.findings[0].operation == "grouped aggregate"
-    assert "watermark" in report.findings[0].problem
+    assert report.support is StreamingSupport.COMPATIBLE
+    assert report.findings == ()
+    operation = next(operation for operation in _body(StreamingAggregate).operations if operation.aggregate is not None)
+    assert operation.streaming_output_modes == (StreamingOutputMode.UPDATE, StreamingOutputMode.COMPLETE)
 
 
-def test_v4_watermarked_business_key_aggregate_reports_unbounded_state() -> None:
+def test_v4_watermarked_business_key_aggregate_follows_pyspark_output_modes() -> None:
     unbounded = _analysis(StreamingWatermarkedBusinessKeyAggregate)
     report = Compiler.compileability.streaming()(PySpark.compiler.lower()(unbounded), required=True)
 
-    assert report.support is StreamingSupport.BATCH_ONLY
-    assert report.findings[0].operation == "unbounded grouped aggregate"
+    assert report.support is StreamingSupport.COMPATIBLE
+    assert report.findings == ()
+    operation = next(
+        operation for operation in _body(StreamingWatermarkedBusinessKeyAggregate).operations if operation.aggregate is not None
+    )
+    assert operation.streaming_output_modes == (StreamingOutputMode.UPDATE, StreamingOutputMode.COMPLETE)
 
 
 def test_v4_event_time_window_has_time_window_schema_and_rejects_mixed_signature() -> None:
@@ -1251,9 +1296,8 @@ def test_v2_aggregate_streaming_report_is_included_in_explain_output() -> None:
 
     report = CliApp.render_explain_report()(StreamingAggregate)
 
-    assert "status: batch_only" in report
-    assert "STREAM-E0801: batch_only in summarize (grouped aggregate)" in report
-    assert "operations: aggregate(aggregate keys=id metrics=count streaming_modes=append|update)" in report
+    assert "status: compatible" in report
+    assert "operations: aggregate(aggregate keys=id metrics=count streaming_modes=update|complete)" in report
 
 
 def test_v2_watermarked_aggregate_explain_output_names_policy() -> None:

@@ -330,6 +330,26 @@ class RenderPySparkStep:
                         index=generator_index,
                     )
                 )
+            if operation.kind == "variant_explode" and operation.posexplode_struct is not None:
+                generator_index += 1
+                ordered_lines.extend(
+                    self._struct_generator_renderer(
+                        operation.posexplode_struct,
+                        aliases=self._scope_aliases(step),
+                        target=target,
+                        index=generator_index,
+                    )
+                )
+            if operation.kind == "variant_explode_outer" and operation.posexplode_struct is not None:
+                generator_index += 1
+                ordered_lines.extend(
+                    self._struct_generator_renderer(
+                        operation.posexplode_struct,
+                        aliases=self._scope_aliases(step),
+                        target=target,
+                        index=generator_index,
+                    )
+                )
             if operation.kind == "ordered_timeline_scan" and operation.ordered_timeline_scan is not None:
                 ordered_lines.extend(
                     self._ordered_timeline_scan(

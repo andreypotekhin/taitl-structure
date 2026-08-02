@@ -99,19 +99,21 @@ class AnalyzeTransform(CompileTransform):
         config: StructureConfig,
         wrapper_class: type[Transform] | None = None,
     ) -> TransformPlan:
+        composition_config = self._composition_config(wrapper_class, config)
         return self._composer(
             pipeline,
             name=name,
-            compile_stage=lambda transform_class: self._analyze(transform_class, config=config),
+            compile_stage=lambda transform_class: self._analyze(transform_class, config=composition_config),
             wrapper_class=wrapper_class,
-            allow_stream_to_batch=config.allow_stream_to_batch,
+            allow_stream_to_batch=composition_config.allow_stream_to_batch,
         )
 
     def _compose_graph(self, transform_class: type[Transform], *, config: StructureConfig) -> TransformPlan:
+        composition_config = self._composition_config(transform_class, config)
         return self._graph_composer(
             transform_class,
-            compile_stage=lambda stage: self._analyze(type(stage), config=config),
-            allow_stream_to_batch=config.allow_stream_to_batch,
+            compile_stage=lambda stage: self._analyze(type(stage), config=composition_config),
+            allow_stream_to_batch=composition_config.allow_stream_to_batch,
         )
 
     def _structural_steps(self, transform_class, inputs):
