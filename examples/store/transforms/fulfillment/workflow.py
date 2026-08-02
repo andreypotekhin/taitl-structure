@@ -36,7 +36,7 @@ from examples.store.transforms.fulfillment.substitutions import FindSubstitution
 from structure import Transform, input, output, stage, transform
 
 
-@transform(allow_stream_to_batch=True)
+@transform
 class Fulfillment(Transform):
     orders = input(OrderRaw, streaming=True)
     customers = input(Customer)

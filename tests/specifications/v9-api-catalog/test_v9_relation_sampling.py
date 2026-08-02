@@ -70,7 +70,7 @@ def test_sample_explain_names_cardinality_reproducibility_and_streaming_status()
     text = render_explain_report(SampleItems)
 
     assert "operations: sample(row_filtering fraction=0.25 with_replacement=False seed=17)" in text
-    assert "STREAM-E0801: batch_only in pick (sample)" in text
+    assert "status: compatible" in text
 
 
 def test_sample_records_traceability_dependency() -> None:

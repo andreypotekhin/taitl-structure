@@ -635,7 +635,7 @@ the caller-recorded `SearchRequest`; there is no separate reranking experiment.
 
 Experiments inherit production compositions. `Scoring001AdjustBm` replaces the `Scoring.bm25` stage with a configured
 `ScoreBm25(k1=1.35, b=0.70)` instance. `k1`, `b`, and score-selection `experiment_id` are declared transform
-parameters, not custom constructors. The experiment replaces score selection only to attach its named identity.
+parameters. The experiment replaces score selection only to attach its named identity.
 `Searching001AdjustRerankSearchDocuments` replaces the `SearchDocuments.reranked` stage with an
 `Searching001AdjustRerankDocuments` subclass that changes the query-feedback and popularity weights. Experiment evaluators
 live under `experiments/evaluation/search_docs`, separate from experiment definitions that affect serving.

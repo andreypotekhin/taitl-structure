@@ -8,7 +8,11 @@ from structure.plugin.pyspark.api.PySpark import PySpark
 
 class AnalysisAPI(AnalysisAPIV1):
     def classify_streaming(self, request: StreamingAnalysisRequest) -> StreamingReport:
-        return PySpark.compiler.streaming()(cast(Any, request.payload), required=request.required)
+        return PySpark.compiler.streaming()(
+            cast(Any, request.payload),
+            required=request.required,
+            streaming_contract=request.streaming_contract,
+        )
 
     def build_traceability(self, request: TraceabilityRequest) -> CompilerTraceability:
         return PySpark.compiler.traceability()(

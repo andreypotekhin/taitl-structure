@@ -168,14 +168,14 @@ def test_hierarchy_closure_explain_names_cardinality_and_streaming_status() -> N
     text = render_explain_report(BuildBandClosure)
 
     assert "operations: hierarchy_closure(row_multiplying scope=closure schema=BandClosure max_depth=4)" in text
-    assert "STREAM-E0801: batch_only in close (hierarchy_closure)" in text
+    assert "status: compatible" in text
 
 
 def test_hierarchy_fallbacks_explain_names_cardinality_and_streaming_status() -> None:
     text = render_explain_report(BuildBandFallbacks)
 
     assert "operations: hierarchy_fallbacks(row_multiplying scope=fallbacks schema=BandFallback parents=parent max_depth=5)" in text
-    assert "STREAM-E0801: batch_only in build (hierarchy_fallbacks)" in text
+    assert "status: compatible" in text
 
 
 def test_hierarchy_closure_records_traceability_dependency() -> None:

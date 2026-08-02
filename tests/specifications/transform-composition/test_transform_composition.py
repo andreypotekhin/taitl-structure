@@ -15,8 +15,8 @@ from structure.plugin.pyspark.execution.logic.InvokePySparkHooks import InvokePy
 from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 
 
-def _analysis(transform):
-    return Compiler.frontend.compile()(transform, materialize_schemas=False).analysis
+def _analysis(transform, **settings):
+    return Compiler.frontend.compile()(transform, materialize_schemas=False, **settings).analysis
 
 
 class Raw(Schema):
@@ -183,7 +183,29 @@ def test_static_transform_to_starts_pipeline() -> None:
     ]
 
 
-def test_streaming_output_requires_downstream_input_declaration() -> None:
+def test_default_policy_accepts_safe_undeclared_streaming_boundary() -> None:
+    @transform
+    class StreamingNormalize(Transform):
+        orders = input(Raw, streaming=True)
+        normalized = output(Normalized)
+
+        def normalize(self, order: Raw) -> Normalized:
+            return Normalized(id=order.id, product_id=order.product_id)
+
+    @transform
+    class BatchPublish(Transform):
+        normalized = input(Normalized)
+        published = output(Published)
+
+        def publish(self, order: Normalized) -> Published:
+            return Published(id=order.id, product_name=order.product_id)
+
+    plan = _analysis(StreamingNormalize(orders=object()).to(BatchPublish()))
+
+    assert plan.outputs[0].streaming is True
+
+
+def test_strict_policy_rejects_safe_undeclared_streaming_boundary() -> None:
     @transform
     class StreamingNormalize(Transform):
         orders = input(Raw, streaming=True)
@@ -201,7 +223,119 @@ def test_streaming_output_requires_downstream_input_declaration() -> None:
             return Published(id=order.id, product_name=order.product_id)
 
     with pytest.raises(StructureCompileError, match="not declared streaming=True"):
-        _analysis(StreamingNormalize(orders=object()).to(BatchPublish()))
+        _analysis(StreamingNormalize(orders=object()).to(BatchPublish()), stream_to_batch_policy="strict")
+
+
+def test_strict_policy_accepts_global_boundary_allowance() -> None:
+    @transform
+    class StreamingNormalize(Transform):
+        orders = input(Raw, streaming=True)
+        normalized = output(Normalized)
+
+        def normalize(self, order: Raw) -> Normalized:
+            return Normalized(id=order.id, product_id=order.product_id)
+
+    @transform
+    class BatchPublish(Transform):
+        normalized = input(Normalized)
+        published = output(Published)
+
+        def publish(self, order: Normalized) -> Published:
+            return Published(id=order.id, product_name=order.product_id)
+
+    plan = Compiler.frontend.analyze()(
+        StreamingNormalize(orders=object()).to(BatchPublish()),
+        stream_to_batch_policy="strict",
+        allow_stream_to_batch=True,
+    )
+
+    assert plan.outputs[0].streaming is True
+
+
+def test_default_policy_reports_known_incompatible_boundary_operation_even_when_allowed() -> None:
+    @transform
+    class StreamingNormalize(Transform):
+        orders = input(Raw, streaming=True)
+        normalized = output(Normalized)
+
+        def normalize(self, order: Raw) -> Normalized:
+            return Normalized(id=order.id, product_id=order.product_id)
+
+    @transform(allow_stream_to_batch=True)
+    class BatchPublish(Transform):
+        normalized = input(Normalized)
+        published = output(Published)
+
+        def publish(self, order: Normalized) -> Published:
+            order_by(order.id)
+            return Published(id=order.id, product_name=order.product_id)
+
+    plan = _analysis(StreamingNormalize(orders=object()).to(BatchPublish()))
+
+    assert "STREAM-E0801" in {diagnostic.code for diagnostic in plan.diagnostics}
+
+
+def test_default_policy_reports_unknown_opaque_undeclared_boundary() -> None:
+    @transform
+    class StreamingNormalize(Transform):
+        orders = input(Raw, streaming=True)
+        normalized = output(Normalized)
+
+        def normalize(self, order: Raw) -> Normalized:
+            return Normalized(id=order.id, product_id=order.product_id)
+
+    @transform
+    class OpaquePublish(Transform):
+        normalized = input(Normalized)
+        middle = lane(Normalized)
+        published = output(Published)
+
+        @step(output=middle)
+        def copy(self, order: Normalized) -> Normalized:
+            return Normalized(id=order.id, product_id=order.product_id)
+
+        @raw(inout=middle | middle)
+        def opaque(self, *, middle, spark, ctx):
+            return middle
+
+        def publish(self, order: Normalized) -> Published:
+            return Published(id=order.id, product_name=order.product_id)
+
+    plan = _analysis(StreamingNormalize(orders=object()).to(OpaquePublish()))
+
+    assert "STREAM-W0801" in {diagnostic.code for diagnostic in plan.diagnostics}
+    assert "STREAM-E0802" in {diagnostic.code for diagnostic in plan.diagnostics}
+
+
+def test_streaming_input_triggers_analysis_without_implicit_transform_option() -> None:
+    @transform
+    class StreamingOrder(Transform):
+        rows = input(Raw, streaming=True)
+        ordered = output(Published)
+
+        def order(self, row: Raw) -> Published:
+            order_by(row.id)
+            return Published(id=row.id, product_name=row.product_id)
+
+    plan = _analysis(StreamingOrder)
+
+    assert "streaming" not in (plan.options or {})
+    assert "STREAM-E0801" in {diagnostic.code for diagnostic in plan.diagnostics}
+
+
+def test_explicit_streaming_contract_analyzes_batch_lineage() -> None:
+    @transform(streaming=True)
+    class MarkedBatchOrder(Transform):
+        rows = input(Raw)
+        ordered = output(Published)
+
+        def order(self, row: Raw) -> Published:
+            order_by(row.id)
+            return Published(id=row.id, product_name=row.product_id)
+
+    plan = _analysis(MarkedBatchOrder)
+
+    assert "STREAM-E0801" in {diagnostic.code for diagnostic in plan.diagnostics}
 
 
 def test_streaming_boundary_can_be_allowed_by_configuration() -> None:
@@ -226,7 +360,7 @@ def test_streaming_boundary_can_be_allowed_by_configuration() -> None:
         allow_stream_to_batch=True,
     )
 
-    assert plan.outputs[0].streaming is False
+    assert plan.outputs[0].streaming is True
 
 
 def test_graph_owner_streaming_boundary_opt_in_applies_to_nested_stages() -> None:
@@ -257,7 +391,7 @@ def test_graph_owner_streaming_boundary_opt_in_applies_to_nested_stages() -> Non
 
     plan = _analysis(OwnedGraph)
 
-    assert plan.outputs[0].streaming is False
+    assert plan.outputs[0].streaming is True
 
 
 def test_streaming_output_accepts_declared_streaming_downstream_input() -> None:
@@ -330,7 +464,7 @@ def test_explicit_downstream_transform_batch_marker_overrides_allowance() -> Non
         )
 
 
-def test_downstream_class_streaming_marker_does_not_declare_input_mode() -> None:
+def test_downstream_class_streaming_marker_contract_accepts_undeclared_input() -> None:
     @transform
     class StreamingNormalize(Transform):
         orders = input(Raw, streaming=True)
@@ -347,8 +481,9 @@ def test_downstream_class_streaming_marker_does_not_declare_input_mode() -> None
         def publish(self, order: Normalized) -> Published:
             return Published(id=order.id, product_name=order.product_id)
 
-    with pytest.raises(StructureCompileError, match="not declared streaming=True"):
-        _analysis(StreamingNormalize(orders=object()).to(StreamingPublish()))
+    plan = _analysis(StreamingNormalize(orders=object()).to(StreamingPublish()))
+
+    assert plan.outputs[0].streaming is True
 
 
 def test_upstream_class_streaming_marker_without_streaming_input_is_batch_output() -> None:
@@ -396,8 +531,9 @@ def test_stage_graph_checks_streaming_output_assignment() -> None:
         selected = stage(StreamingNormalize(orders=orders))
         ranked = stage(BatchPublish(normalized=selected.normalized))
 
-    with pytest.raises(StructureCompileError, match="not declared streaming=True"):
-        Compiler.frontend.analyze()(OrderGraph)
+    plan = Compiler.frontend.analyze()(OrderGraph)
+
+    assert plan.outputs[0].streaming is True
 
 
 def test_downstream_constructor_input_satisfies_missing_input() -> None:
@@ -668,19 +804,23 @@ def test_composed_stage_owned_hook_traceability_records_opaque_boundary() -> Non
 
 
 def test_composed_stage_owned_hook_streaming_report_uses_rewritten_step_boundary() -> None:
+    @transform
+    class StreamingHookedNormalizeOrders(HookedNormalizeOrders):
+        orders = input(Raw, streaming=True)
+
     class PublishNormalized(Transform):
-        normalized = input(Normalized)
+        normalized = input(Normalized, streaming=True)
         published = output(Normalized)
 
         def publish(self, row: Normalized) -> Normalized:
             return Normalized(id=row.id, product_id=row.product_id)
 
-    plan = _analysis(HookedNormalizeOrders(orders=object()).to(PublishNormalized()))
+    plan = _analysis(StreamingHookedNormalizeOrders(orders=object()).to(PublishNormalized()))
     report = Compiler.compileability.streaming()(PySpark.compiler.lower()(plan), required=True)
 
     assert report.support is StreamingSupport.UNKNOWN
     assert len(report.findings) == 1
-    assert report.findings[0].step == "hooked_normalize_orders.normalize"
+    assert report.findings[0].step == "streaming_hooked_normalize_orders.normalize"
     assert report.findings[0].operation == "raw hook polish"
 
 

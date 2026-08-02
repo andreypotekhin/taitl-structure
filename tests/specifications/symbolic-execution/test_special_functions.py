@@ -159,7 +159,7 @@ def test_raw_requires_a_schema_mode() -> None:
         raw(schema_mode=cast(Any, "strict"))(lambda: None)
 
 
-def test_transform_infers_streaming_option_from_one_streaming_input() -> None:
+def test_streaming_input_triggers_analysis_without_transform_option() -> None:
     class Publish(Transform):
         rows = input(Raw, streaming=True)
         published = output(StreamPublished)
@@ -167,10 +167,10 @@ def test_transform_infers_streaming_option_from_one_streaming_input() -> None:
         def publish(self, row: Raw) -> StreamPublished:
             return StreamPublished(id=row.id)
 
-    assert _compile(Publish).analysis.options == {"streaming": True}
+    assert _compile(Publish).analysis.options == {}
 
 
-def test_transform_infers_streaming_option_from_multiple_streaming_inputs() -> None:
+def test_multiple_streaming_inputs_do_not_change_transform_options() -> None:
     class Publish(Transform):
         rows = input(Raw, streaming=True)
         more_rows = input(Raw, streaming=True)
@@ -180,7 +180,7 @@ def test_transform_infers_streaming_option_from_multiple_streaming_inputs() -> N
             merged = union_all(more)
             return StreamPublished(id=merged.id)
 
-    assert _compile(Publish).analysis.options == {"streaming": True}
+    assert _compile(Publish).analysis.options == {}
 
 
 def test_transform_keeps_batch_only_options_when_all_inputs_are_batch() -> None:
@@ -219,7 +219,7 @@ def test_transform_rejects_explicit_streaming_false_with_streaming_inputs() -> N
         _compile(Publish)
 
 
-def test_explain_marks_inferred_streaming_transform_as_required() -> None:
+def test_explain_marks_streaming_input_analysis_without_contract() -> None:
     from structure.core.cli.api import CliApp
 
     class Publish(Transform):
@@ -232,7 +232,7 @@ def test_explain_marks_inferred_streaming_transform_as_required() -> None:
     report = CliApp.render_explain_report()(Publish)
 
     assert "streaming:" in report
-    assert "required: true" in report
+    assert "required: false" in report
 
 
 def test_special_udf_renders_generated_pyspark_udf_call() -> None:

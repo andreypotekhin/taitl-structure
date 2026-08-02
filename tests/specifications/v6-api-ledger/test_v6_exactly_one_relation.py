@@ -74,7 +74,7 @@ def test_exactly_one_explain_names_scope_and_streaming_status() -> None:
     text = render_explain_report(AssertedPolicyTransform)
 
     assert "operations: exactly_one(row_preserving scope=policy), rowset_join(row_multiplying)" in text
-    assert "STREAM-E0801: batch_only in score (exactly_one policy)" in text
+    assert "status: compatible" in text
 
 
 def test_exactly_one_records_traceability_dependency() -> None:

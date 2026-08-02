@@ -67,7 +67,7 @@ def test_select_first_qualified_explain_names_cardinality_and_streaming_status()
     text = render_explain_report(PickCandidate)
 
     assert "operations: select_first_qualified(select_one keys=1 missing=error ties=error)" in text
-    assert "STREAM-E0801: batch_only in pick (select_first_qualified)" in text
+    assert "status: compatible" in text
 
 
 def test_select_first_qualified_records_traceability_dependencies() -> None:

@@ -34,6 +34,7 @@ class StructureConfigDefaults:
             "strict_performance": True,
             "warn_on_udfs": True,
             "allow_stream_to_batch": False,
+            "stream_to_batch_policy": "default",
             "fail_on_diff": False,
             "spark.sql.ansi.enabled": True,
             "spark.sql.storeAssignmentPolicy": "ANSI",

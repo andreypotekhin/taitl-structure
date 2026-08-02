@@ -45,14 +45,16 @@ V9 outcome:
   `>=4.2,<4.3` profile. Extraction paths are literal non-empty strings starting with `$`; extraction requires an
   explicit Structure `as_type`. `to_variant_object(...)` accepts Array, Map, and Struct values, and every Map key type
   must be String.
-- Variant mutation helpers are in scope for migration coverage and are admitted by exact later profiles:
+- Variant mutation helpers are recorded as a future-profile design gate:
   `variant_array_append(...)`, `try_variant_array_append(...)`, `variant_insert(...)`, `try_variant_insert(...)`,
-  `variant_set(...)`, and `try_variant_set(...)` require `>=4.3,<4.4`; `variant_delete(...)` requires `>=5.0,<5.1`.
-  The initial Structure surface accepts literal `$`-prefixed paths even though Spark also supports runtime path columns.
+  `variant_set(...)`, `try_variant_set(...)`, and `variant_delete(...)` are not admitted until a released PySpark 4.3+
+  profile is added to Structure's compatibility matrix. The eventual Structure surface should accept literal
+  `$`-prefixed paths even though Spark also supports runtime path columns.
 - Geometry fields and helpers are exported through the provider-neutral PySpark DSL; the bundled plugin exports no
   provider-specific type, import, or implementation.
 
-Remaining Variant work is evidence closure for the admitted literal, equality, mutation, and row-expansion contracts;
+Remaining current-scope Variant work is PySpark 4.2 evidence closure for the admitted literal, equality, and
+row-expansion contracts. Mutation helpers remain explicitly design-gated until their Spark profiles are released;
 generated PySpark remains target-gated because Variant availability differs by Spark profile.
 
 V9 resolves these remaining gates through the linked execution plan. Literal construction uses validated JSON text and

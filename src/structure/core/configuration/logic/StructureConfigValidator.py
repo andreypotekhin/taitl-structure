@@ -17,6 +17,7 @@ class StructureConfigValidator:
         "input_validation_mode": ("off", "schema_only", "schema_and_constraints"),
         "intermediate_validation_mode": ("off", "schema_only", "schema_and_constraints"),
         "output_validation_mode": ("off", "schema_only", "schema_and_constraints"),
+        "stream_to_batch_policy": ("default", "strict"),
         "spark.sql.storeAssignmentPolicy": ("ANSI", "LEGACY", "STRICT"),
     }
     _bools = {

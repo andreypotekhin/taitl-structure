@@ -48,14 +48,15 @@ Variant field support is Spark-native enough for the bundled PySpark plugin. The
 `variant(nullable=True)` schema field, rendered and materialized as `VariantType`, guarded by a resolved PySpark 4
 profile. The admitted helpers are strict/safe JSON parsing, strict/safe literal-path extraction with an explicit
 Structure target type, Array/Map/Struct conversion (with String map keys), JSON-null testing, schema inspection,
-merged-schema aggregation, Spark 4.2 Variant validity checks, and typed TVF row expansion. Literal Variant values,
-equality, and mutation helpers that require later Spark profiles are admitted through the linked execution plan.
+merged-schema aggregation, Spark 4.2 Variant validity checks, and typed TVF row expansion. Literal Variant values and
+equality are admitted through the linked execution plan; mutation helpers that require later Spark profiles remain
+design-gated until those profiles are released.
 
-The linked child execution plan records the completed profile matrix, validated JSON literals and typed equality, the
-Spark 4.3 append/insert/set family, Spark 5.0 delete, and typed `variant_explode`/`variant_explode_outer` table-valued
-row expansion. Dynamic paths, implicit result types, ordering, and provider-specific Python Variant objects remain
-explicit exclusions. Each admitted helper has generated/online lowering, capability tests, and ledger/documentation
-coverage.
+The linked child execution plan records the current PySpark 4.2 profile, validated JSON literals and typed equality,
+and typed `variant_explode`/`variant_explode_outer` table-valued row expansion. The Spark 4.3+ append/insert/set/delete
+mutation family is design-gated until those profiles are released and added to the compatibility matrix. Dynamic
+paths, implicit result types, ordering, and provider-specific Python Variant objects remain explicit exclusions. Each
+admitted helper has generated/online lowering, capability tests, and ledger/documentation coverage.
 
 Geospatial is different: Spark has no single universally available geospatial API across supported runtimes. Apache
 Sedona 1.9.0 is the selected future optional provider because it is open-source and supports the project's PySpark 3.5

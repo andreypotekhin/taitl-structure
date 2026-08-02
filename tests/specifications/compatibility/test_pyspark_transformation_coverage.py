@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[3]
 RESOURCES = ROOT / "src/structure/plugin/pyspark/resources"
 INVENTORY = RESOURCES / "pyspark-transformation-inventory.json"
 CATALOG = RESOURCES / "pyspark-transformation-coverage.json"
-VALID_STATUSES = {"supported", "scheduled", "deferred", "unsupported"}
+VALID_STATUSES = {"supported", "scheduled", "deferred", "design-gated", "unsupported"}
 
 
 def test_pyspark_transformation_catalog_classifies_the_entire_local_inventory() -> None:

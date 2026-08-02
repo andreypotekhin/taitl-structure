@@ -1166,16 +1166,18 @@ Reference: [schemas API](api/Schemas.api.md), [validation semantics](reference/S
 Structure transforms operate on DataFrames. If the input DataFrame is streaming and every compiled operation
 is supported by Spark Structured Streaming, the transform can run in a streaming pipeline.
 
-Declare streaming sources on the inputs with `input(..., streaming=True)`. That input metadata makes the transform
-streaming automatically, so `@transform(streaming=True)` is optional and may be kept only for emphasis.
+Declare streaming sources on the inputs with `input(..., streaming=True)`. This triggers streaming compatibility
+analysis but does not change the transform options. `@transform(streaming=True)` is an explicit all-step contract:
+every concrete step must be streaming-capable, even when current inputs are batch.
 
 Structure admits row-local projection/filter, stream-static joins, watermarks, event-time and session-window
 aggregation, bounded dedupe, and admitted bounded stream-stream joins. It does not generate `readStream` or
 `writeStream`; the caller owns sources, sinks, checkpoints, triggers, output modes, and query lifecycle.
 
-In composed transforms, streaming output lineage must be consumed by downstream inputs declared with
-`streaming=True`. Set `allow_stream_to_batch = true` only for an intentional undeclared stream-to-batch boundary;
-explicit `streaming=False` remains a compilation error.
+In composed transforms, default policy propagates streaming lineage through a safe undeclared boundary. Set
+`stream_to_batch_policy = "strict"` when every boundary must be explicit. Global or local
+`allow_stream_to_batch = true` opts into a strict boundary, but cannot suppress a known incompatible operation;
+explicit `streaming=False` remains a compilation error. Structure does not materialize batches or own query lifecycles.
 
 Reference: [streaming API](api/Streaming.api.md) and
 [streaming compatibility](background/StreamingCompatibility.back.md).

@@ -328,12 +328,15 @@ future advanced features.
 
 ```toml
 allow_stream_to_batch = false
+stream_to_batch_policy = "default"
 ```
 
-When `false` (the default), composition fails if a streaming output is connected to a downstream input that does not
-declare `streaming=True`. Set it to `true` only for an intentional stream-to-batch boundary. An explicit
-`input(..., streaming=False)` or `@transform(streaming=False)` always fails at a streaming boundary, regardless of this
-setting, because it deliberately declares that the downstream transform does not support streaming.
+`stream_to_batch_policy` is `"default"` or `"strict"`. Under `"default"`, Structure propagates effective streaming
+lineage across an undeclared boundary and accepts it when the downstream compiler-visible steps are compatible.
+Opaque boundaries remain an error. Under `"strict"`, an undeclared boundary is rejected unless global or local
+`allow_stream_to_batch = true` opts into it. `allow_stream_to_batch` only bypasses the declaration guard; it never
+suppresses a known streaming-incompatible operation. An explicit `input(..., streaming=False)` or
+`@transform(streaming=False)` always fails at a streaming boundary.
 
 ## Compile-Time Performance
 

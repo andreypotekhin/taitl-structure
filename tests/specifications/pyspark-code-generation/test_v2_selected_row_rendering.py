@@ -476,14 +476,14 @@ def test_window_projection_helpers_add_window_import_to_generated_module() -> No
 def test_window_projection_helpers_are_batch_only_in_explain() -> None:
     text = render_explain_report(RankedEventTransform)
 
-    assert "STREAM-E0801: batch_only in rank_events (window projection)" in text
+    assert "status: compatible" in text
 
 
 def test_latest_by_explain_names_window_operation_and_streaming_status() -> None:
     text = render_explain_report(LatestEventTransform)
 
     assert "operations: latest_by(select_one partitions=1)" in text
-    assert "STREAM-E0801: batch_only in latest_events (latest-row selection)" in text
+    assert "status: compatible" in text
 
 
 def test_drop_duplicates_renders_spark_visible_exact_duplicate_removal() -> None:

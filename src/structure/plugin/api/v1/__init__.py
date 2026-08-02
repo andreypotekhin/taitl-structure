@@ -6,7 +6,7 @@ from structure.plugin.api.v1.model import (
     CompilationPurpose, CompileRequest, ExecutionRequest, ExplainRequest, GenerationRequest, GenerationResult, InputPlan, PluginCompilation,
     SchemaInspectionRequest, SchemaValidationRequest, StepAuthoringCapture, StepAuthoringInput, StepAuthoringRequest, StepAuthoringResult,
     StepAuthoringSession, StepInputPlan, StreamingAnalysisRequest, SymbolicContext, TraceabilityRequest,
-    TransformMemberOrigin, TransformPlan, TransformResult, TransformSchemaRequest, current_symbolic_context,
+    StreamingBoundaryPlan, TransformMemberOrigin, TransformPlan, TransformResult, TransformSchemaRequest, current_symbolic_context,
 )
 
 __all__ = [
@@ -32,6 +32,7 @@ __all__ = [
     "StepAuthoringCapture",
     "SerializationAPI",
     "StreamingAnalysisRequest",
+    "StreamingBoundaryPlan",
     "TraceabilityRequest",
     "TransformSchemaRequest",
     "StepAuthoringInput",

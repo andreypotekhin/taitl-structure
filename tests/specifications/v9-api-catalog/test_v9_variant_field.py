@@ -263,7 +263,7 @@ def test_v9_variant_ordering_is_rejected_but_equality_is_typed() -> None:
         )
 
 
-def test_v9_variant_mutations_render_and_gate_by_spark_profile() -> None:
+def test_v9_variant_mutations_are_deferred_until_pyspark_4_3_is_released() -> None:
     with pytest.raises(BackendCapabilityError) as raised:
         Compiler.frontend.compile()(
             UseVariantMutations,
@@ -272,39 +272,15 @@ def test_v9_variant_mutations_render_and_gate_by_spark_profile() -> None:
         )
     assert raised.value.diagnostic.feature_name == "variant_array_append"
 
-    compilation = Compiler.frontend.compile()(
-        UseVariantMutations,
-        materialize_schemas=False,
-        plugin={"pyspark": {"profile": ">=4.3,<4.4", "variant": "ordinary"}},
-    )
-    lowered = cast(PySparkExecutionPlan, compilation.lowered)
-    rendered = render_pyspark_step(lowered.steps[0], current="source", sources={"source": "source"})
 
-    assert "F.variant_array_append(F.col(\"variant_input.payload\"), '$.items', F.lit(1))" in rendered
-    assert "F.try_variant_array_append(F.col(\"variant_input.payload\"), '$.items', F.lit(1))" in rendered
-    assert "F.variant_insert(F.col(\"variant_input.payload\"), '$.name', F.lit('spark'))" in rendered
-    assert "F.try_variant_insert(F.col(\"variant_input.payload\"), '$.name', F.lit('spark'))" in rendered
-    assert "F.variant_set(F.col(\"variant_input.payload\"), '$.name', F.lit('spark'), False)" in rendered
-    assert "F.try_variant_set(F.col(\"variant_input.payload\"), '$.name', F.lit('spark'), True)" in rendered
-
-
-def test_v9_variant_delete_requires_the_pyspark_5_profile() -> None:
+def test_v9_variant_delete_is_deferred_until_a_later_spark_profile_is_released() -> None:
     with pytest.raises(BackendCapabilityError) as raised:
         Compiler.frontend.compile()(
             UseVariantDelete,
             materialize_schemas=False,
-            plugin={"pyspark": {"profile": ">=4.3,<4.4", "variant": "ordinary"}},
+            plugin={"pyspark": {"profile": ">=4.2,<4.3", "variant": "ordinary"}},
         )
     assert raised.value.diagnostic.feature_name == "variant_delete"
-
-    compilation = Compiler.frontend.compile()(
-        UseVariantDelete,
-        materialize_schemas=False,
-        plugin={"pyspark": {"profile": ">=5.0,<5.1", "variant": "ordinary"}},
-    )
-    lowered = cast(PySparkExecutionPlan, compilation.lowered)
-    rendered = render_pyspark_step(lowered.steps[0], current="source", sources={"source": "source"})
-    assert "F.variant_delete(F.col(\"variant_input.payload\"), '$.name')" in rendered
 
 
 def test_v9_variant_explode_uses_the_pyspark_4_tvf_and_lateral_join() -> None:

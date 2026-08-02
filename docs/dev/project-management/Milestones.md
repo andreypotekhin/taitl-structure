@@ -456,6 +456,8 @@ The governing completed plan is
   `docs/dev/specifications/V9ApiCatalogDesignGatedFeatures.md`,
 `docs/dev/planning/P07302601.V9-api-catalog-design-gates.plan.md`, and the Variant child plan
 `docs/dev/planning/P07302602.V9-variant-type-and-helpers.plan.md`.
+The released PySpark 4.0/4.2 Variant implementation slice is complete; PySpark 4.2 live probing remains an explicit
+infrastructure follow-up, and 4.3+ mutation helpers remain design-gated until released profiles exist.
 The dated execution schedule is
 `docs/dev/planning/P07302603.V9-closeout-and-release.plan.md`.
 - Diagnostics and explain output tell users whether a streaming issue should be fixed in Structure source,

@@ -43,7 +43,7 @@ materialization boundaries, and `caller-owned-guided` for runnable caller integr
 ````
 
 To adopt from above:
-- remaining Variant profile work, including validated literals, typed equality, later-profile mutation, and typed row expansion;
+- future Variant profile work for Spark 4.3+ mutation helpers; the released 4.0/4.2 literal, equality, and typed row-expansion slice is covered by V9;
 - provider-neutral geometry contract with explicit SRID compatibility and no bundled provider dependency;
 - sampling refinements that preserve explicit reproducibility and batch-only streaming behavior; and
 - missing-column union defaults plus nested, alias-preserving, and streaming schema-evolution rules.

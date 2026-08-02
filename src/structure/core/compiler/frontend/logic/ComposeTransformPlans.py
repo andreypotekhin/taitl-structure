@@ -19,7 +19,7 @@ from structure.core.dsl.model.transforms.OutputDeclaration import OutputDeclarat
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline, TransformPipelineStage
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
-from structure.plugin.api.v1 import InputPlan
+from structure.plugin.api.v1 import InputPlan, StreamingBoundaryPlan
 
 CompileStage = Callable[[type[Transform]], TransformPlan]
 RewriteBody = Callable[[object, Mapping[str, str]], object]
@@ -36,6 +36,7 @@ class ComposeTransformPlans:
         rewrite_body: RewriteBody | None = None,
         wrapper_class: type[Transform] | None = None,
         allow_stream_to_batch: bool = False,
+        stream_to_batch_policy: str = "default",
     ) -> TransformPlan:
         rewrite = rewrite_body or (lambda body, _: body)
         stages = pipeline.stages
@@ -46,12 +47,13 @@ class ComposeTransformPlans:
         stage_plans = tuple(compile_stage(stage.transform_class) for stage in stages)
 
         labels = self._labels(stages)
-        inputs, external = self._inputs(
+        inputs, external, streaming_boundaries = self._inputs(
             name,
             stages,
             stage_plans,
             wrapper_class=wrapper_class,
             allow_stream_to_batch=allow_stream_to_batch,
+            stream_to_batch_policy=stream_to_batch_policy,
         )
         steps, outputs = self._rewrite(
             name,
@@ -72,6 +74,9 @@ class ComposeTransformPlans:
                 transform_name=name,
             ),
             diagnostics=tuple(diagnostic for plan in stage_plans for diagnostic in plan.diagnostics),
+            streaming_boundaries=tuple(
+                boundary for plan in stage_plans for boundary in plan.streaming_boundaries
+            ) + tuple(streaming_boundaries),
         )
 
     def _inputs(
@@ -82,9 +87,11 @@ class ComposeTransformPlans:
         *,
         wrapper_class: type[Transform] | None,
         allow_stream_to_batch: bool,
-    ) -> tuple[list[InputPlan], dict[tuple[int, str], str]]:
+        stream_to_batch_policy: str,
+    ) -> tuple[list[InputPlan], dict[tuple[int, str], str], list[StreamingBoundaryPlan]]:
         external: dict[tuple[int, str], str] = {}
         inputs: dict[str, InputPlan] = {}
+        streaming_boundaries: list[StreamingBoundaryPlan] = []
         current_outputs: tuple[OutputPlan, ...] = ()
 
         for index, (stage, plan) in enumerate(zip(stages, stage_plans, strict=True)):
@@ -137,14 +144,37 @@ class ComposeTransformPlans:
                     continue
                 if candidates:
                     if len(candidates) == 1:
-                        violation = validate_streaming_input_binding(
-                            producer=self._output_label(candidates[0]),
-                            output=candidates[0],
-                            consumer=stage.transform_class.__name__,
-                            input_plan=input_plan,
-                            consumer_options=plan.options,
-                            allow_stream_to_batch=allow_stream_to_batch,
+                        output = candidates[0]
+                        consumer_options = plan.options or {}
+                        local_allow = bool(consumer_options.get("allow_stream_to_batch"))
+                        explicit_batch = input_plan.streaming_declared or consumer_options.get("streaming") is False
+                        defer_boundary = (
+                            output.streaming
+                            and not input_plan.streaming
+                            and not explicit_batch
+                            and stream_to_batch_policy == "default"
+                            and not local_allow
+                            and not allow_stream_to_batch
                         )
+                        violation = None
+                        if defer_boundary:
+                            streaming_boundaries.append(
+                                StreamingBoundaryPlan(
+                                    producer=self._output_label(output),
+                                    output=output.name,
+                                    consumer=self._snake(stage.transform_class.__name__),
+                                    input=input_plan.name,
+                                )
+                            )
+                        else:
+                            violation = validate_streaming_input_binding(
+                                producer=self._output_label(output),
+                                output=output,
+                                consumer=stage.transform_class.__name__,
+                                input_plan=input_plan,
+                                consumer_options=plan.options,
+                                allow_stream_to_batch=allow_stream_to_batch,
+                            )
                         if violation is not None:
                             raise self._error(
                                 pipeline_name,
@@ -165,9 +195,24 @@ class ComposeTransformPlans:
                     f"{stage.transform_class.__name__} does not consume an upstream output.",
                     "Each .to(...) stage must consume at least one output from the incoming transform.",
                 )
-            current_outputs = self._stage_outputs(pipeline_name, stage, plan)
+            effective_inputs = {
+                input_plan.name: self._input_streaming(
+                    index,
+                    input_plan,
+                    external=external,
+                    inputs=inputs,
+                    current_outputs=current_outputs,
+                )
+                for input_plan in plan.inputs
+            }
+            current_outputs = self._stage_outputs(
+                pipeline_name,
+                stage,
+                plan,
+                outputs=self._effective_outputs(plan, effective_inputs),
+            )
 
-        return [replace(input, ordinal=ordinal) for ordinal, input in enumerate(inputs.values())], external
+        return [replace(input, ordinal=ordinal) for ordinal, input in enumerate(inputs.values())], external, streaming_boundaries
 
     def _matching_outputs(self, input_plan: InputPlan, outputs: tuple[OutputPlan, ...]) -> tuple[OutputPlan, ...]:
         matches = [output for output in outputs if output.schema is input_plan.schema]
@@ -273,12 +318,27 @@ class ComposeTransformPlans:
                     frame_map[original.frame] = result.frame
                     frame_map[original.lane] = result.frame
 
-            current_outputs = {}
-            for output in self._stage_outputs(pipeline_name, stage, plan):
+            stage_outputs = self._stage_outputs(
+                pipeline_name,
+                stage,
+                plan,
+                outputs=self._effective_outputs(
+                    plan,
+                    {
+                        input_plan.name: self._input_streaming_from_sources(
+                            input_plan, input_sources, current_outputs
+                        )
+                        for input_plan in plan.inputs
+                    },
+                ),
+            )
+            next_outputs: dict[str, OutputPlan] = {}
+            for output in stage_outputs:
                 rewritten_output = self._output(output, frame_map=frame_map, ordinal=len(final_outputs))
-                current_outputs[output.name] = rewritten_output
+                next_outputs[output.name] = rewritten_output
                 if final:
                     final_outputs.append(rewritten_output)
+            current_outputs = next_outputs
 
         if not final_outputs:
             raise self._error(
@@ -383,12 +443,15 @@ class ComposeTransformPlans:
         pipeline_name: str,
         stage: TransformPipelineStage,
         plan: TransformPlan,
+        *,
+        outputs: tuple[OutputPlan, ...] | None = None,
     ) -> tuple[OutputPlan, ...]:
+        outputs_to_rewrite = plan.outputs if outputs is None else outputs
         renames = getattr(stage.invocation, "_structure_output_renames", {})
         if not renames:
-            return plan.outputs
-        outputs = {output.name for output in plan.outputs}
-        unknown = set(renames) - outputs
+            return outputs_to_rewrite
+        output_names = {output.name for output in outputs_to_rewrite}
+        unknown = set(renames) - output_names
         if unknown:
             raise self._error(
                 pipeline_name,
@@ -401,8 +464,54 @@ class ComposeTransformPlans:
                 if output.name in renames
                 else output
             )
-            for output in plan.outputs
+            for output in outputs_to_rewrite
         )
+
+    def _input_streaming(
+        self,
+        index: int,
+        input_plan: InputPlan,
+        *,
+        external: dict[tuple[int, str], str],
+        inputs: dict[str, InputPlan],
+        current_outputs: tuple[OutputPlan, ...],
+    ) -> bool:
+        external_name = external.get((index, input_plan.name))
+        if external_name is not None:
+            return bool(inputs[external_name].streaming)
+        matches = self._matching_outputs(input_plan, current_outputs)
+        return bool(matches[0].streaming) if len(matches) == 1 else bool(input_plan.streaming)
+
+    def _input_streaming_from_sources(
+        self,
+        input_plan: InputPlan,
+        input_sources: dict[str, str],
+        current_outputs: dict[str, OutputPlan],
+    ) -> bool:
+        source = input_sources.get(input_plan.name)
+        if source is None:
+            return bool(input_plan.streaming)
+        return any(output.source == source and output.streaming for output in current_outputs.values()) or bool(
+            input_plan.streaming
+        )
+
+    def _effective_outputs(
+        self,
+        plan: TransformPlan,
+        input_modes: dict[str, bool],
+    ) -> tuple[OutputPlan, ...]:
+        modes = {name: bool(streaming) for name, streaming in input_modes.items()}
+        modes.update({f"input:{name}": bool(streaming) for name, streaming in input_modes.items()})
+        for step in plan.steps:
+            streaming = bool(modes.get(step.source)) or any(
+                bool(modes.get(input.source)) for input in step.inputs
+            )
+            modes[step.name] = streaming
+            modes[step.output_lane] = streaming
+            for result in step.results:
+                modes[result.lane] = streaming
+                modes[result.frame] = streaming
+        return tuple(replace(output, streaming=bool(modes.get(output.source, output.streaming))) for output in plan.outputs)
 
     def _aliases(self, aliases: tuple[str, ...]) -> tuple[str, ...]:
         return tuple(dict.fromkeys(aliases))

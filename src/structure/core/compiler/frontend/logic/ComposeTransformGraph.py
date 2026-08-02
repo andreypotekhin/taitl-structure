@@ -18,7 +18,7 @@ from structure.core.dsl.model.transforms.ParameterDeclaration import ParameterDe
 from structure.core.dsl.model.transforms.StageDeclaration import StageDeclaration, StageOutputReference
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
-from structure.plugin.api.v1 import InputPlan
+from structure.plugin.api.v1 import InputPlan, StreamingBoundaryPlan
 
 CompileStage = Callable[[Transform], TransformPlan]
 RewriteBody = Callable[[object, Mapping[str, str]], object]
@@ -32,6 +32,7 @@ class ComposeTransformGraph:
         compile_stage: CompileStage,
         rewrite_body: RewriteBody | None = None,
         allow_stream_to_batch: bool = False,
+        stream_to_batch_policy: str = "default",
     ) -> TransformPlan:
         rewrite = rewrite_body or (lambda body, _: body)
         stages = tuple(self._stage(wrapper_class, stage) for stage in wrapper_class._structure_stages.values())
@@ -49,11 +50,12 @@ class ComposeTransformGraph:
         self._validate_references(wrapper_class, stages)
 
         stage_by_name = {stage.name: stage for stage in stages}
-        inputs = self._inputs(
+        inputs, streaming_boundaries = self._inputs(
             wrapper_class,
             stages,
             stage_plans,
             allow_stream_to_batch=allow_stream_to_batch,
+            stream_to_batch_policy=stream_to_batch_policy,
         )
         steps, stage_outputs, output_sources = self._rewrite(
             wrapper_class,
@@ -74,6 +76,9 @@ class ComposeTransformGraph:
                 transform_name=wrapper_class.__name__,
             ),
             diagnostics=tuple(diagnostic for plan in stage_plans for diagnostic in plan.diagnostics),
+            streaming_boundaries=tuple(
+                boundary for plan in stage_plans for boundary in plan.streaming_boundaries
+            ) + tuple(streaming_boundaries),
         )
 
     def _stage(self, wrapper_class: type[Transform], stage: StageDeclaration) -> StageDeclaration:
@@ -100,11 +105,15 @@ class ComposeTransformGraph:
         stage_plans: tuple[TransformPlan, ...],
         *,
         allow_stream_to_batch: bool,
-    ) -> list[InputPlan]:
+        stream_to_batch_policy: str,
+    ) -> tuple[list[InputPlan], list[StreamingBoundaryPlan]]:
         inputs: dict[str, InputPlan] = {}
+        streaming_boundaries: list[StreamingBoundaryPlan] = []
         plans = {stage.name: plan for stage, plan in zip(stages, stage_plans, strict=True)}
+        effective_outputs: dict[str, dict[str, OutputPlan]] = {}
         for stage, plan in zip(stages, stage_plans, strict=True):
             bound = stage.invocation._structure_bound_inputs
+            input_modes: dict[str, bool] = {}
             for input_plan in plan.inputs:
                 value = bound.get(input_plan.name)
                 if value is None:
@@ -121,15 +130,40 @@ class ComposeTransformGraph:
                             "Bind stage inputs only to outputs with the same schema.",
                         )
                     producer_plan = plans[value.stage.name]
-                    producer = next(output for output in producer_plan.outputs if output.name == value.name)
-                    violation = validate_streaming_input_binding(
-                        producer=value.stage.name,
-                        output=producer,
-                        consumer=type(stage.invocation).__name__,
-                        input_plan=input_plan,
-                        consumer_options=plan.options,
-                        allow_stream_to_batch=allow_stream_to_batch,
+                    producer = effective_outputs.get(value.stage.name, {}).get(value.name)
+                    if producer is None:
+                        producer = next(output for output in producer_plan.outputs if output.name == value.name)
+                    input_modes[input_plan.name] = bool(producer.streaming)
+                    consumer_options = plan.options or {}
+                    local_allow = bool(consumer_options.get("allow_stream_to_batch"))
+                    explicit_batch = input_plan.streaming_declared or consumer_options.get("streaming") is False
+                    defer_boundary = (
+                        producer.streaming
+                        and not input_plan.streaming
+                        and not explicit_batch
+                        and stream_to_batch_policy == "default"
+                        and not local_allow
+                        and not allow_stream_to_batch
                     )
+                    violation = None
+                    if defer_boundary:
+                        streaming_boundaries.append(
+                            StreamingBoundaryPlan(
+                                producer=value.stage.name,
+                                output=value.name,
+                                consumer=stage.name,
+                                input=input_plan.name,
+                            )
+                        )
+                    else:
+                        violation = validate_streaming_input_binding(
+                            producer=value.stage.name,
+                            output=producer,
+                            consumer=type(stage.invocation).__name__,
+                            input_plan=input_plan,
+                            consumer_options=plan.options,
+                            allow_stream_to_batch=allow_stream_to_batch,
+                        )
                     if violation is not None:
                         raise self._error(
                             wrapper_class.__name__,
@@ -141,6 +175,7 @@ class ComposeTransformGraph:
                     continue
                 source = self._external_name(wrapper_class, stage, input_plan, value)
                 streaming = value.streaming if isinstance(value, InputDeclaration) else input_plan.streaming
+                input_modes[input_plan.name] = bool(streaming)
                 streaming_declared = (
                     value.streaming_declared if isinstance(value, InputDeclaration) else input_plan.streaming_declared
                 )
@@ -162,7 +197,11 @@ class ComposeTransformGraph:
                     aliases=aliases,
                     streaming_declared=streaming_declared,
                 )
-        return [replace(input, ordinal=ordinal) for ordinal, input in enumerate(inputs.values())]
+            effective_outputs[stage.name] = {
+                output.name: output
+                for output in self._effective_outputs(plan, input_modes)
+            }
+        return [replace(input, ordinal=ordinal) for ordinal, input in enumerate(inputs.values())], streaming_boundaries
 
     def _external_name(
         self,
@@ -218,7 +257,17 @@ class ComposeTransformGraph:
                     frame_map[original.frame] = result.frame
                     frame_map[original.lane] = result.frame
 
-            for output in plan.outputs:
+            input_modes = {}
+            for input_plan in plan.inputs:
+                value = stage.invocation._structure_bound_inputs[input_plan.name]
+                if isinstance(value, StageOutputReference):
+                    upstream = output_sources.get((stage_by_name.get(value.stage.name, value.stage), value.name))
+                    input_modes[input_plan.name] = bool(upstream and upstream.streaming)
+                elif isinstance(value, InputDeclaration):
+                    input_modes[input_plan.name] = bool(value.streaming)
+                else:
+                    input_modes[input_plan.name] = bool(input_plan.streaming)
+            for output in self._effective_outputs(plan, input_modes):
                 rewritten_output = replace(
                     output,
                     source=frame_map[output.source],
@@ -227,6 +276,24 @@ class ComposeTransformGraph:
                 output_sources[(stage, output.name)] = rewritten_output
                 stage_outputs.append(rewritten_output)
         return steps, stage_outputs, output_sources
+
+    def _effective_outputs(
+        self,
+        plan: TransformPlan,
+        input_modes: Mapping[str, bool],
+    ) -> tuple[OutputPlan, ...]:
+        modes = {name: bool(streaming) for name, streaming in input_modes.items()}
+        modes.update({f"input:{name}": bool(streaming) for name, streaming in input_modes.items()})
+        for step in plan.steps:
+            streaming = bool(modes.get(step.source)) or any(
+                bool(modes.get(input.source)) for input in step.inputs
+            )
+            modes[step.name] = streaming
+            modes[step.output_lane] = streaming
+            for result in step.results:
+                modes[result.lane] = streaming
+                modes[result.frame] = streaming
+        return tuple(replace(output, streaming=bool(modes.get(output.source, output.streaming))) for output in plan.outputs)
 
     def _stage_input_sources(
         self,

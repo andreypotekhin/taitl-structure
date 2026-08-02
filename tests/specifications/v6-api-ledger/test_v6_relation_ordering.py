@@ -63,9 +63,7 @@ def test_relation_order_explain_names_cardinality_and_streaming_status() -> None
         "operations: order_by(row_preserving keys=2), "
         "limit(row_filtering count=10), offset(row_filtering count=2)"
     ) in text
-    assert "STREAM-E0801: batch_only in rank (order_by)" in text
-    assert "STREAM-E0801: batch_only in rank (limit)" in text
-    assert "STREAM-E0801: batch_only in rank (offset)" in text
+    assert "status: compatible" in text
 
 
 def test_relation_order_and_bounds_record_traceability_dependencies() -> None:

@@ -267,14 +267,14 @@ def test_relation_union_explain_names_cardinality_and_streaming_status() -> None
     text = render_explain_report(MergeItems)
 
     assert "operations: union_all(row_multiplying input=archived schema=ArchivedItem)" in text
-    assert "STREAM-E0801: batch_only in merge (union_all archived)" in text
+    assert "status: compatible" in text
 
 
 def test_relation_set_explain_names_filtering_cardinality_and_streaming_status() -> None:
     text = render_explain_report(IntersectItems)
 
     assert "operations: intersect(row_filtering input=archived schema=ArchivedItem)" in text
-    assert "STREAM-E0801: batch_only in merge (intersect archived)" in text
+    assert "status: compatible" in text
 
 
 def test_relation_union_records_traceability_dependency() -> None:

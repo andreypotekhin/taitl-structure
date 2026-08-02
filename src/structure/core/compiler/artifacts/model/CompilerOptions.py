@@ -26,6 +26,7 @@ class CompilerOptions:
     strict_performance: bool
     warn_on_udfs: bool
     allow_stream_to_batch: bool
+    stream_to_batch_policy: str
     schema_types_key: str | None = None
     plugin_options: Mapping[str, Mapping[str, object]] = field(default_factory=lambda: MappingProxyType({}))
 
@@ -68,6 +69,7 @@ class CompilerOptions:
             strict_performance=config.strict_performance,
             warn_on_udfs=config.warn_on_udfs,
             allow_stream_to_batch=config.allow_stream_to_batch,
+            stream_to_batch_policy=config.stream_to_batch_policy,
             plugin_options=config.plugin_options,
             schema_types_key=cls._schema_types_key(schema_types),
         )
@@ -87,6 +89,7 @@ class CompilerOptions:
             self.strict_performance,
             self.warn_on_udfs,
             self.allow_stream_to_batch,
+            self.stream_to_batch_policy,
             self._plugin_options_key(),
             self.schema_types_key,
         )

@@ -14,7 +14,7 @@ from examples.store.transforms.recommender.candidates.generate import GenerateRe
 from structure import Transform, input, output, stage, transform
 
 
-@transform(allow_stream_to_batch=True)
+@transform
 class BuildRecommendationCandidates(Transform):
     """Admit, generate, and filter recommendation candidates."""
 

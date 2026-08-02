@@ -17,6 +17,7 @@ def test_api_catalog_open_rows_use_design_gate_language() -> None:
     assert "| XML helpers | design-gated |" in text
     assert "| Variant field | implemented |" in text
     assert "| Variant helpers | implemented |" in text
+    assert "| Variant mutation helpers | design-gated |" in text
     assert "| Geospatial helpers | design-gated |" in text
     assert "| Aggregate aliases | unsupported |" in text
     assert "| Sampling | implemented |" in text

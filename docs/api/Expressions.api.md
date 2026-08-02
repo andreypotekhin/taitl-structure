@@ -176,5 +176,6 @@ typed `order` row scope as `o`.
 - Variant row expansion uses typed `variant_explode(...)`/`variant_explode_outer(...)` generators and the PySpark 4 TVF/lateral-join API. Dynamic paths, implicit extraction types, and ordering are not part of the current typed contract.
 - `variant_literal(...)` requires non-empty, standard JSON text and validates it during symbolic capture. It lowers to
   `parse_json(F.lit(...))` and does not expose PySpark's Python-specific `VariantVal` object.
-- Mutation helpers use literal `$`-prefixed paths. Append, insert, and set helpers require `>=4.3,<4.4`; delete
-  requires `>=5.0,<5.1`. All return Variant values and preserve Spark's strict/try failure behavior.
+- Mutation helpers use literal `$`-prefixed paths, but remain design-gated until a released PySpark 4.3+ profile is
+  added to Structure's compatibility matrix. They are not admitted by the current PySpark 4.2 target and therefore
+  do not lower in V9.

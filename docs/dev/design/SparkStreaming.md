@@ -64,7 +64,7 @@ design promotes the compatible subset from "classification exists" to "support i
 checker remains conservative: unknown hook bodies and unsupported analytical operations must not become streaming by
 accident simply because ordinary batch execution works.
 
-The transform-level marker stays the user-facing commitment:
+The transform-level marker is an explicit all-step capability contract:
 
 ```python
 @transform(streaming=True)
@@ -72,9 +72,14 @@ class EnrichOrders(Transform):
     ...
 ```
 
-If the marker is present, unsupported or unknown operations fail as errors. If the marker is absent and streaming
-checks are enabled, incompatible operations can remain warnings so batch-only projects are not broken by the presence
-of the checker.
+If the marker is present, every concrete step is checked as streaming-capable. It does not turn batch inputs or outputs
+into runtime streaming data. Streaming input declarations and composed streaming outputs trigger the same analysis even
+without the marker, while actual output mode follows lineage.
+
+Composition uses `stream_to_batch_policy = "default"` by default. It accepts an undeclared boundary only when the
+downstream compiler-visible code is proven compatible; unknown code reports `STREAM-E0802` and incompatible operations
+report `STREAM-E0801`. `"strict"` requires explicit `streaming=True` or `allow_stream_to_batch=True`. The allowance
+does not suppress a known incompatibility, and explicit `streaming=False` is always rejected.
 
 ## Capability Boundary
 

@@ -3,8 +3,14 @@ from structure.plugin.api.v1.model import StreamingAnalysisRequest
 
 
 class ClassifyStreamingCompatibility:
-    def __call__(self, payload: object, *, required: bool) -> StreamingReport:
-        return self._analysis(payload).classify_streaming(StreamingAnalysisRequest(payload=payload, required=required))
+    def __call__(self, payload: object, *, required: bool, streaming_contract: bool = False) -> StreamingReport:
+        return self._analysis(payload).classify_streaming(
+            StreamingAnalysisRequest(
+                payload=payload,
+                required=required,
+                streaming_contract=streaming_contract,
+            )
+        )
 
     def _analysis(self, payload: object):
         from structure.core.plugins.api.Plugin import Plugin

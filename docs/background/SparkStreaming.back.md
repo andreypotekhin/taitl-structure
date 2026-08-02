@@ -87,7 +87,9 @@ Structure trusts this marker; it does not prove arbitrary hook internals are saf
 
 ## Diagnostics
 
-Streaming diagnostics should name the operation and explain the fix. Typical fixes are:
+`@transform(streaming=True)` is an explicit all-step streaming-capability contract. Streaming input declarations and
+composed streaming outputs trigger compatibility analysis without implicitly changing transform options. Streaming
+diagnostics should name the operation and explain the fix. Typical fixes are:
 
 - remove the batch-only operation;
 - keep the operation in a batch transform;

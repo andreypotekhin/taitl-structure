@@ -78,6 +78,31 @@ class StreamVariantExplodeOutput(Schema):
     item = string(nullable=True)
 
 
+class StreamVariantExplodeOuterEntry(Schema):
+    pos = long(nullable=True)
+    key = string(nullable=True)
+    value = variant(nullable=True)
+
+
+class StreamVariantExplodeOuterOutput(Schema):
+    id = string(nullable=False)
+    pos = long(nullable=True)
+    key = string(nullable=True)
+    item = string(nullable=True)
+
+
+class StreamVariantAggregateRaw(Schema):
+    id = string(nullable=False)
+    event_time = timestamp(nullable=False)
+    payload_json = string(nullable=True)
+
+
+class StreamVariantAggregateSummary(Schema):
+    bucket = struct(TimeWindow, nullable=False)
+    id = string(nullable=False)
+    schema = string(nullable=True)
+
+
 class StreamWindowRaw(Schema):
     id = string(nullable=False)
     event_time = timestamp(nullable=False)
@@ -164,6 +189,36 @@ class StreamingVariantExplode(Transform):
             pos=entry.pos,
             key=entry.key,
             item=variant_get(entry.value, "$", as_type=types.string()),
+        )
+
+
+@transform(streaming=True)
+class StreamingVariantExplodeOuter(Transform):
+    rows = input(StreamVariantExplodeRaw, streaming=True)
+    expanded = output(StreamVariantExplodeOuterOutput)
+
+    def expand(self, row: StreamVariantExplodeRaw) -> StreamVariantExplodeOuterOutput:
+        entry = variant_explode_outer(parse_json(row.payload_json), as_=StreamVariantExplodeOuterEntry)
+        return StreamVariantExplodeOuterOutput(
+            id=row.id,
+            pos=entry.pos,
+            key=entry.key,
+            item=variant_get(entry.value, "$", as_type=types.string()),
+        )
+
+
+@transform(streaming=True)
+class StreamingVariantSchemaAggregate(Transform):
+    rows = input(StreamVariantAggregateRaw, streaming=True)
+    summary = output(StreamVariantAggregateSummary)
+
+    def summarize(self, row: StreamVariantAggregateRaw) -> StreamVariantAggregateSummary:
+        watermark(row.event_time, delay="10 minutes")
+        group_by(bucket=window(row.event_time, "10 minutes"), id=row.id)
+        return StreamVariantAggregateSummary(
+            bucket=window(row.event_time, "10 minutes"),
+            id=row.id,
+            schema=schema_of_variant_agg(parse_json(row.payload_json)),
         )
 
 
@@ -502,6 +557,185 @@ def test_variant_explode_runs_online_and_generated_on_pyspark_4_streams(spark, t
         {"id": "event-1", "pos": 0, "key": None, "item": "a"},
         {"id": "event-1", "pos": 1, "key": None, "item": "b"},
     ]
+    assert generated_rows == online_rows
+
+
+def test_variant_explode_outer_preserves_null_rows_online_and_generated_on_pyspark_4_streams(spark, tmp_path) -> None:
+    if backend_name().startswith("spark-connect"):
+        pytest.skip("Variant TVF evidence is for the ordinary PySpark runtime")
+
+    if backend_name().endswith("35") or backend_name() == "local":
+        with pytest.raises(BackendCapabilityError) as raised:
+            render_generated_project(
+                StreamingVariantExplodeOuter,
+                source_transform=f"{__name__}.StreamingVariantExplodeOuter",
+                generated_package="integration_streaming_variant_explode_outer_generated",
+                source_schema_modules={
+                    __name__: [
+                        StreamVariantExplodeRaw,
+                        StreamVariantExplodeOuterEntry,
+                        StreamVariantExplodeOuterOutput,
+                    ],
+                },
+            )
+        assert raised.value.diagnostic.feature_name == "variant"
+        return
+
+    if not backend_name().endswith("40"):
+        pytest.skip("Variant TVF live evidence currently runs on the PySpark 4.0 integration profile")
+
+    package = "integration_streaming_variant_explode_outer_generated"
+    files = render_generated_project(
+        StreamingVariantExplodeOuter,
+        source_transform=f"{__name__}.StreamingVariantExplodeOuter",
+        generated_package=package,
+        source_schema_modules={
+            __name__: [StreamVariantExplodeRaw, StreamVariantExplodeOuterEntry, StreamVariantExplodeOuterOutput],
+        },
+    )
+    source = (
+        Path(__file__).resolve().parents[5]
+        / ".pytest-workspace-tmp"
+        / "integration"
+        / f"variant-explode-outer-{uuid4().hex}"
+    )
+    try:
+        _write_json(
+            source / "events.json",
+            [
+                {"id": "event-1", "payload_json": '["a"]'},
+                {"id": "event-2", "payload_json": None},
+                {"id": "event-3", "payload_json": '{"name":"Ava"}'},
+            ],
+        )
+
+        with generated_project(tmp_path, package, files):
+            from pyspark.sql.types import StringType, StructField, StructType
+
+            schema = StructType(
+                [
+                    StructField("id", StringType(), nullable=False),
+                    StructField("payload_json", StringType(), nullable=True),
+                ]
+            )
+            online_input = read_json_stream(spark, schema, source)
+            generated_input = read_json_stream(spark, schema, source)
+            online = StreamingVariantExplodeOuter(rows=online_input).run(
+                session(spark, execution_mode="online")
+            ).expanded
+            generated = StreamingVariantExplodeOuter(rows=generated_input).run(
+                session(spark, execution_mode="generated", generated_package=package)
+            ).expanded
+            online_rows = _collect_stream_projection(
+                online,
+                tmp_path / "online-variant-explode-outer-checkpoint",
+                output_mode="append",
+                order_by="id",
+                columns=("id", "pos", "key", "item"),
+            )
+            generated_rows = _collect_stream_projection(
+                generated,
+                tmp_path / "generated-variant-explode-outer-checkpoint",
+                output_mode="append",
+                order_by="id",
+                columns=("id", "pos", "key", "item"),
+            )
+    finally:
+        shutil.rmtree(source, ignore_errors=True)
+
+    assert online_rows == [
+        {"id": "event-1", "pos": 0, "key": None, "item": "a"},
+        {"id": "event-2", "pos": None, "key": None, "item": None},
+        {"id": "event-3", "pos": 0, "key": "name", "item": "Ava"},
+    ]
+    assert generated_rows == online_rows
+
+
+def test_variant_schema_aggregate_runs_with_a_watermarked_window_on_pyspark_4_streams(spark, tmp_path) -> None:
+    if backend_name().startswith("spark-connect"):
+        pytest.skip("Variant aggregate evidence is for the ordinary PySpark runtime")
+
+    if backend_name().endswith("35") or backend_name() == "local":
+        with pytest.raises(BackendCapabilityError) as raised:
+            render_generated_project(
+                StreamingVariantSchemaAggregate,
+                source_transform=f"{__name__}.StreamingVariantSchemaAggregate",
+                generated_package="integration_streaming_variant_aggregate_generated",
+                source_schema_modules={
+                    __name__: [StreamVariantAggregateRaw, StreamVariantAggregateSummary],
+                    "structure.plugin.pyspark.dsl.TimeWindow": [TimeWindow],
+                },
+            )
+        assert raised.value.diagnostic.feature_name == "variant"
+        return
+
+    if not backend_name().endswith("40"):
+        pytest.skip("Variant aggregate live evidence currently runs on the PySpark 4.0 integration profile")
+
+    package = "integration_streaming_variant_aggregate_generated"
+    files = render_generated_project(
+        StreamingVariantSchemaAggregate,
+        source_transform=f"{__name__}.StreamingVariantSchemaAggregate",
+        generated_package=package,
+        source_schema_modules={
+            __name__: [StreamVariantAggregateRaw, StreamVariantAggregateSummary],
+            "structure.plugin.pyspark.dsl.TimeWindow": [TimeWindow],
+        },
+    )
+    source = (
+        Path(__file__).resolve().parents[5]
+        / ".pytest-workspace-tmp"
+        / "integration"
+        / f"variant-aggregate-{uuid4().hex}"
+    )
+    try:
+        _write_json(
+            source / "events.json",
+            [
+                {
+                    "id": "event-1",
+                    "event_time": "2026-07-12T10:00:00Z",
+                    "payload_json": '{"name":"Ava","score":7}',
+                }
+            ],
+        )
+
+        with generated_project(tmp_path, package, files):
+            from pyspark.sql.types import StringType, StructField, StructType, TimestampType
+
+            schema = StructType(
+                [
+                    StructField("id", StringType(), nullable=False),
+                    StructField("event_time", TimestampType(), nullable=False),
+                    StructField("payload_json", StringType(), nullable=True),
+                ]
+            )
+            online_input = read_json_stream(spark, schema, source)
+            generated_input = read_json_stream(spark, schema, source)
+            online = StreamingVariantSchemaAggregate(rows=online_input).run(
+                session(spark, execution_mode="online")
+            ).summary
+            generated = StreamingVariantSchemaAggregate(rows=generated_input).run(
+                session(spark, execution_mode="generated", generated_package=package)
+            ).summary
+            online_rows = _collect_stream_projection(
+                online,
+                tmp_path / "online-variant-aggregate-checkpoint",
+                output_mode="complete",
+                order_by="id",
+                columns=("id", "schema"),
+            )
+            generated_rows = _collect_stream_projection(
+                generated,
+                tmp_path / "generated-variant-aggregate-checkpoint",
+                output_mode="complete",
+                order_by="id",
+                columns=("id", "schema"),
+            )
+    finally:
+        shutil.rmtree(source, ignore_errors=True)
+
+    assert online_rows == [{"id": "event-1", "schema": "OBJECT<name: STRING, score: BIGINT>"}]
     assert generated_rows == online_rows
 
 

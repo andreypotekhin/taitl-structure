@@ -34,6 +34,7 @@ class ResolveStructureConfig:
         "strict_performance",
         "warn_on_udfs",
         "allow_stream_to_batch",
+        "stream_to_batch_policy",
         "fail_on_diff",
         "spark.sql.ansi.enabled",
         "spark.sql.storeAssignmentPolicy",

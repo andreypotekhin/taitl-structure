@@ -305,8 +305,11 @@ diagnostic_registry = DiagnosticRegistry(
             status="active",
             docs="docs/Diagnostics.md#stream-e0801",
             introduced="1.0.0",
-            problem_template="The transform contains an operation that is batch-only in v1 streaming compatibility.",
-            use_template="Keep the transform batch-only or rewrite the operation using v1 streaming-compatible shapes.",
+            problem_template="A transform step contains an operation that is not compatible with streaming execution.",
+            use_template=(
+                "Keep the transform batch-only, add the required watermark or event-time bound, "
+                "or rewrite the operation using a supported streaming shape."
+            ),
         ),
         DiagnosticEntry(
             code="STREAM-W0801",
@@ -320,6 +323,17 @@ diagnostic_registry = DiagnosticRegistry(
             use_template="Mark the hook streaming=True only after verifying it satisfies the streaming contract.",
         ),
         DiagnosticEntry(
+            code="STREAM-W0802",
+            severity="warning",
+            title="Streaming aggregate state is unbounded",
+            owner="streaming",
+            status="active",
+            docs="docs/Diagnostics.md#stream-w0802",
+            introduced="1.0.0",
+            problem_template="A Spark-valid streaming aggregate does not have watermark-bounded state.",
+            use_template="Use an event-time or session window with a matching watermark, or accept the caller-owned unbounded-state policy.",
+        ),
+        DiagnosticEntry(
             code="STREAM-E0802",
             severity="error",
             title="Streaming output is not accepted by downstream input",
@@ -328,7 +342,10 @@ diagnostic_registry = DiagnosticRegistry(
             docs="docs/Diagnostics.md#stream-e0802",
             introduced="1.0.0",
             problem_template="A streaming stage output is consumed by a downstream input that does not accept streaming data.",
-            use_template="Declare the downstream input with streaming=True, or explicitly allow the stream-to-batch boundary.",
+            use_template=(
+                "Declare the downstream input with streaming=True, or explicitly allow the "
+                "stream-to-batch boundary with allow_stream_to_batch=True."
+            ),
         ),
     ]
 )

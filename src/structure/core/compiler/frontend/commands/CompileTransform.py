@@ -207,6 +207,7 @@ class CompileTransform:
             rewrite_body=lambda body, frames: authoring_api.rewrite_body(body, frames=frames),
             wrapper_class=wrapper_class,
             allow_stream_to_batch=composition_config.allow_stream_to_batch,
+            stream_to_batch_policy=composition_config.stream_to_batch_policy,
         )
 
     def _compose_graph(self, transform_class: type[Transform], *, config: StructureConfig) -> TransformPlan:
@@ -219,6 +220,7 @@ class CompileTransform:
             compile_stage=lambda stage: self._compile(stage, config=composition_config),
             rewrite_body=lambda body, frames: authoring_api.rewrite_body(body, frames=frames),
             allow_stream_to_batch=composition_config.allow_stream_to_batch,
+            stream_to_batch_policy=composition_config.stream_to_batch_policy,
         )
 
     @staticmethod

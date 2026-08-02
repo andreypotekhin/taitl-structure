@@ -27,7 +27,7 @@ from examples.store.transforms.recommender.summarize import SummarizeRecommendat
 from structure import *
 
 
-@transform(allow_stream_to_batch=True)
+@transform
 class Recommender(Transform):
     ranker = parameter(Ranker())
 

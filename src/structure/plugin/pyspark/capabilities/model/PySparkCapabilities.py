@@ -15,8 +15,6 @@ SUPPORTED_PROFILES = frozenset(
         ">=3.5,<4.0",
         ">=4.0,<4.1",
         ">=4.2,<4.3",
-        ">=4.3,<4.4",
-        ">=5.0,<5.1",
     }
 )
 
@@ -32,18 +30,6 @@ PYSPARK_4_CAPABILITIES = frozenset(
     }
 )
 PYSPARK_4_2_CAPABILITIES = frozenset({("expression", "is_valid_variant")})
-PYSPARK_4_3_CAPABILITIES = frozenset(
-    {
-        ("expression", "variant_array_append"),
-        ("expression", "try_variant_array_append"),
-        ("expression", "variant_insert"),
-        ("expression", "try_variant_insert"),
-        ("expression", "variant_set"),
-        ("expression", "try_variant_set"),
-    }
-)
-PYSPARK_5_CAPABILITIES = frozenset({("expression", "variant_delete")})
-
 VARIANT_FAMILIES = {
     "ordinary": "ordinary_pyspark",
     "spark-connect": "spark_connect_dataframe",
@@ -282,16 +268,6 @@ class PySparkCapabilities:
             return base_capabilities | PYSPARK_4_CAPABILITIES
         if target_profile == ">=4.2,<4.3":
             return base_capabilities | PYSPARK_4_CAPABILITIES | PYSPARK_4_2_CAPABILITIES
-        if target_profile == ">=4.3,<4.4":
-            return base_capabilities | PYSPARK_4_CAPABILITIES | PYSPARK_4_2_CAPABILITIES | PYSPARK_4_3_CAPABILITIES
-        if target_profile == ">=5.0,<5.1":
-            return (
-                base_capabilities
-                | PYSPARK_4_CAPABILITIES
-                | PYSPARK_4_2_CAPABILITIES
-                | PYSPARK_4_3_CAPABILITIES
-                | PYSPARK_5_CAPABILITIES
-            )
         return base_capabilities
 
     def supports(self, requirement: CapabilityRequirement) -> CapabilityDecision:

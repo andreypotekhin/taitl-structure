@@ -19,6 +19,7 @@ from structure.plugin.api.v1.model.StepInputPlan import StepInputPlan
 from structure.plugin.api.v1.model.StepPlan import StepPlan
 from structure.plugin.api.v1.model.StepResultPlan import StepResultPlan
 from structure.plugin.api.v1.model.StreamingAnalysisRequest import StreamingAnalysisRequest
+from structure.plugin.api.v1.model.StreamingBoundaryPlan import StreamingBoundaryPlan
 from structure.plugin.api.v1.model.StreamingSupport import StreamingSupport
 from structure.plugin.api.v1.model.SymbolicContext import SymbolicContext, current_symbolic_context
 from structure.plugin.api.v1.model.TraceabilityRequest import TraceabilityRequest
@@ -58,7 +59,7 @@ __all__ = [
     "CompilationPurpose", "CompileRequest", "ExecutionRequest", "ExplainRequest", "GenerationRequest", "GenerationResult", "InputPlan", "PluginCompilation",
     "SchemaInspectionRequest", "SchemaValidationRequest", "StepAuthoringCapture", "StepAuthoringInput", "StepAuthoringRequest", "HookPlan",
     "StepAuthoringResult", "StepAuthoringSession", "StepInputPlan", "StepPlan", "StepResultPlan", "StreamingAnalysisRequest", "StreamingSupport",
-    "SymbolicContext", "OutputPlan", "TraceabilityRequest", "TransformMemberOrigin", "TransformPlan", "TransformSchemaRequest", "current_symbolic_context",
+    "SymbolicContext", "OutputPlan", "TraceabilityRequest", "TransformMemberOrigin", "TransformPlan", "TransformSchemaRequest", "StreamingBoundaryPlan", "current_symbolic_context",
     *_CORE_CONTRACTS,
 ]
 

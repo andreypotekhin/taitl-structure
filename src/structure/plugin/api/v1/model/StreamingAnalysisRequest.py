@@ -5,3 +5,4 @@ from dataclasses import dataclass
 class StreamingAnalysisRequest:
     payload: object
     required: bool
+    streaming_contract: bool = False

@@ -29,6 +29,7 @@ class StructureConfig:
     strict_performance: bool
     warn_on_udfs: bool
     allow_stream_to_batch: bool
+    stream_to_batch_policy: str
     fail_on_diff: bool
     spark_sql: Mapping[str, object]
     plugin_options: Mapping[str, Mapping[str, object]]

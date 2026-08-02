@@ -198,6 +198,19 @@ class StreamingVariantExplodeOutput(Schema):
     item = string(nullable=True)
 
 
+class StreamingVariantExplodeOuterEntry(Schema):
+    pos = long(nullable=True)
+    key = string(nullable=True)
+    value = variant(nullable=True)
+
+
+class StreamingVariantExplodeOuterOutput(Schema):
+    id = string(nullable=False)
+    pos = long(nullable=True)
+    key = string(nullable=True)
+    item = string(nullable=True)
+
+
 @transform(streaming=True)
 class StreamingVariantHelpers(Transform):
     rows = input(StreamingVariantInput, streaming=True)
@@ -248,6 +261,21 @@ class StreamingVariantExplode(Transform):
     def expand(self, row: StreamingVariantInput) -> StreamingVariantExplodeOutput:
         entry = variant_explode(row.payload, as_=StreamingVariantExplodeEntry)
         return StreamingVariantExplodeOutput(
+            id=row.id,
+            pos=entry.pos,
+            key=entry.key,
+            item=variant_get(entry.value, "$", as_type=types.string()),
+        )
+
+
+@transform(streaming=True)
+class StreamingVariantExplodeOuter(Transform):
+    rows = input(StreamingVariantInput, streaming=True)
+    expanded = output(StreamingVariantExplodeOuterOutput)
+
+    def expand(self, row: StreamingVariantInput) -> StreamingVariantExplodeOuterOutput:
+        entry = variant_explode_outer(row.payload, as_=StreamingVariantExplodeOuterEntry)
+        return StreamingVariantExplodeOuterOutput(
             id=row.id,
             pos=entry.pos,
             key=entry.key,
@@ -436,7 +464,7 @@ class StreamingProjection(Transform):
 
 @transform(streaming=True)
 class StreamingUnknownHook(Transform):
-    rows = input(StreamRaw)
+    rows = input(StreamRaw, streaming=True)
     clean = output(StreamClean)
 
     def normalize(self, row: StreamRaw) -> StreamClean:
@@ -527,7 +555,7 @@ class StreamingStaticCrossJoin(Transform):
 
 @transform(streaming=True)
 class StreamingDedupedLookup(Transform):
-    rows = input(StreamRaw)
+    rows = input(StreamRaw, streaming=True)
     lookups = input(StreamLookup)
     enriched = output(StreamEnriched)
 
@@ -543,7 +571,7 @@ class StreamingDedupedLookup(Transform):
 
 @transform(streaming=True)
 class StreamingTemporalLookup(Transform):
-    rows = input(StreamRaw)
+    rows = input(StreamRaw, streaming=True)
     lookups = input(StreamLookup)
     enriched = output(StreamEnriched)
 
@@ -560,7 +588,7 @@ class StreamingTemporalLookup(Transform):
 
 @transform(streaming=True)
 class StreamingAsOfLookup(Transform):
-    rows = input(StreamRaw)
+    rows = input(StreamRaw, streaming=True)
     lookups = input(StreamLookup)
     enriched = output(StreamEnriched)
 
@@ -577,7 +605,7 @@ class StreamingAsOfLookup(Transform):
 
 @transform(streaming=True)
 class StreamingAggregate(Transform):
-    rows = input(StreamRaw)
+    rows = input(StreamRaw, streaming=True)
     summary = output(StreamSummary)
 
     def summarize(self, row: StreamRaw) -> StreamSummary:
@@ -891,6 +919,14 @@ def test_v9_variant_tvf_is_profile_gated_and_streaming_compatible_without_spark(
     assert report.findings == ()
 
 
+def test_v9_variant_outer_tvf_is_streaming_compatible_without_spark() -> None:
+    plan = cast(PySparkExecutionPlan, _compile_with_plugin(StreamingVariantExplodeOuter, ">=4.0,<4.1").lowered)
+    report = Compiler.compileability.streaming()(plan, required=True)
+
+    assert report.support is StreamingSupport.COMPATIBLE
+    assert report.findings == ()
+
+
 @pytest.mark.parametrize("transform_type", [StreamingUnionAll, StreamingUnionByName])
 def test_v8_stream_stream_union_is_compatible_without_spark(transform_type: type[Transform]) -> None:
     report = Compiler.compileability.streaming()(_recipe(transform_type), required=True)
@@ -920,12 +956,12 @@ def test_v8_distinct_style_relation_sets_remain_streaming_ineligible() -> None:
 
     assert report.support is StreamingSupport.BATCH_ONLY
     assert report.findings[0].operation == "intersect more"
-    assert "Spark-ineligible" in report.findings[0].problem
+    assert "not compatible" in report.findings[0].problem
 
 
 def test_v9_stateful_and_order_sensitive_gap_diagnostics_match_api_ledger() -> None:
     cases = [
-        (StreamingIntersect, "streaming.distinct-style-sets", "intersect more", "Spark-ineligible"),
+        (StreamingIntersect, "streaming.distinct-style-sets", "intersect more", "not compatible"),
         (StreamingOrderLimitOffset, "streaming.ordering-bounds", "order_by", "batch materialization boundary"),
         (
             StreamingPrioritySelection,
@@ -1024,6 +1060,28 @@ def test_v2_windowed_lookup_joins_are_batch_only_without_spark() -> None:
         assert report.findings[0].operation == operation
 
 
+def test_v2_streaming_marker_does_not_make_batch_lookup_join_batch_only() -> None:
+    @transform(streaming=True)
+    class BatchLookup(Transform):
+        rows = input(StreamRaw)
+        lookups = input(StreamLookup)
+        enriched = output(StreamEnriched)
+
+        def enrich(self, row: StreamRaw, lookup: StreamLookup) -> StreamEnriched:
+            lookup_join(
+                lookup,
+                on=lookup.id == row.id,
+                how=Join.LEFT,
+                dedupe=JoinDedupe.latest_by(lookup.valid_from),
+            )
+            return StreamEnriched(id=row.id, value=lookup.value)
+
+    report = Compiler.compileability.streaming()(_recipe(BatchLookup), required=True)
+
+    assert report.support is StreamingSupport.COMPATIBLE
+    assert report.findings == ()
+
+
 def test_v2_business_key_grouped_aggregates_follow_pyspark_output_modes() -> None:
     plan = _analysis(StreamingAggregate)
 
@@ -1033,9 +1091,22 @@ def test_v2_business_key_grouped_aggregates_follow_pyspark_output_modes() -> Non
     )
 
     assert report.support is StreamingSupport.COMPATIBLE
-    assert report.findings == ()
+    assert len(report.findings) == 1
+    assert report.findings[0].code == "STREAM-W0802"
     operation = next(operation for operation in _body(StreamingAggregate).operations if operation.aggregate is not None)
     assert operation.streaming_output_modes == (StreamingOutputMode.UPDATE, StreamingOutputMode.COMPLETE)
+
+
+def test_frontend_compile_attaches_streaming_warning_for_unbounded_aggregate() -> None:
+    compilation = cast(Any, Compiler.frontend.compile()(StreamingAggregate, materialize_schemas=False))
+
+    assert "STREAM-W0802" in {diagnostic.code for diagnostic in compilation.analysis.diagnostics}
+
+
+def test_frontend_compile_attaches_required_streaming_diagnostic_for_stream_input() -> None:
+    compilation = cast(Any, Compiler.frontend.compile()(StreamingOneSidedStreamJoin, materialize_schemas=False))
+
+    assert "STREAM-E0801" in {diagnostic.code for diagnostic in compilation.analysis.diagnostics}
 
 
 def test_v4_watermarked_business_key_aggregate_follows_pyspark_output_modes() -> None:
@@ -1043,7 +1114,8 @@ def test_v4_watermarked_business_key_aggregate_follows_pyspark_output_modes() ->
     report = Compiler.compileability.streaming()(PySpark.compiler.lower()(unbounded), required=True)
 
     assert report.support is StreamingSupport.COMPATIBLE
-    assert report.findings == ()
+    assert len(report.findings) == 1
+    assert report.findings[0].code == "STREAM-W0802"
     operation = next(
         operation for operation in _body(StreamingWatermarkedBusinessKeyAggregate).operations if operation.aggregate is not None
     )
@@ -1183,7 +1255,7 @@ def test_v7_second_admitted_stateful_operation_is_batch_only_without_spark() -> 
     assert report.support is StreamingSupport.BATCH_ONLY
     assert report.findings[-1].operation == "stateful streaming composition"
     assert "watermark-bounded duplicate removal" in report.findings[-1].problem
-    assert "watermark-bounded grouped aggregate" in report.findings[-1].problem
+    assert "watermark-bounded event-time aggregate" in report.findings[-1].problem
 
 
 def test_v2_inner_stream_stream_join_is_compatible_with_watermarks_and_time_bounds() -> None:

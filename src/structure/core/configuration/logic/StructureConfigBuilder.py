@@ -48,6 +48,7 @@ class StructureConfigBuilder:
             strict_performance=bool(values["strict_performance"]),
             warn_on_udfs=bool(values["warn_on_udfs"]),
             allow_stream_to_batch=bool(values["allow_stream_to_batch"]),
+            stream_to_batch_policy=str(values["stream_to_batch_policy"]),
             fail_on_diff=bool(values["fail_on_diff"]),
             spark_sql={
                 "spark.sql.ansi.enabled": values["spark.sql.ansi.enabled"],

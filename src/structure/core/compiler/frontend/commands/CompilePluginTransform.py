@@ -12,7 +12,14 @@ from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline
 from structure.core.plugins.api.Plugin import Plugin
 from structure.core.plugins.model.PluginConfiguration import PluginConfiguration
-from structure.plugin.api.v1 import CompilationPurpose, CompileRequest, PluginCompilation, SchemaValidationRequest
+from structure.lib.cross.errors import Diagnostic, diagnostic_registry
+from structure.plugin.api.v1 import (
+    CompilationPurpose,
+    CompileRequest,
+    PluginCompilation,
+    SchemaValidationRequest,
+    StreamingAnalysisRequest,
+)
 
 
 class CompilePluginTransform:
@@ -51,6 +58,7 @@ class CompilePluginTransform:
         configuration = {
             "warn_on_udfs": resolved.warn_on_udfs,
             "validate_intermediate": resolved.validate_intermediate,
+            "stream_to_batch_policy": resolved.stream_to_batch_policy,
             "generated_code_options": resolved.generated_code_options,
             "schema_types": schema_types,
             "materialize_schemas": materialize_schemas,
@@ -96,6 +104,7 @@ class CompilePluginTransform:
         configuration = {
             "warn_on_udfs": options.warn_on_udfs,
             "allow_stream_to_batch": options.allow_stream_to_batch,
+            "stream_to_batch_policy": options.stream_to_batch_policy,
             "validate_intermediate": options.validate_intermediate,
             "generated_code_options": options.generated_code_options,
             "schema_types": schema_types,
@@ -109,6 +118,7 @@ class CompilePluginTransform:
             overrides={
                 "warn_on_udfs": options.warn_on_udfs,
                 "allow_stream_to_batch": options.allow_stream_to_batch,
+                "stream_to_batch_policy": options.stream_to_batch_policy,
                 "generated_code_options": options.generated_code_options,
             },
         )
@@ -161,15 +171,63 @@ class CompilePluginTransform:
         )
         if not isinstance(compilation, PluginCompilation):
             raise ValueError(f"PLUGIN-E2708: Plugin {target!r} returned an invalid compilation result.")
+        streaming_diagnostics = self._streaming_diagnostics(plugin, compilation.lowered, plan)
+        diagnostics = (*compilation.diagnostics, *streaming_diagnostics)
         analysis = (
             plan
-            if not compilation.diagnostics
+            if not diagnostics
             else replace(
                 plan,
-                diagnostics=(*plan.diagnostics, *compilation.diagnostics),
+                diagnostics=(*plan.diagnostics, *diagnostics),
             )
         )
-        return replace(compilation, analysis=analysis)
+        return replace(compilation, analysis=analysis, diagnostics=diagnostics)
+
+    @staticmethod
+    def _streaming_diagnostics(plugin, payload, plan) -> tuple[object, ...]:
+        if payload is None:
+            return ()
+        analysis_api = getattr(plugin.api, "analysis", None)
+        classify = getattr(analysis_api, "classify_streaming", None)
+        if not callable(classify):
+            return ()
+        streaming_contract = bool((getattr(plan, "options", None) or {}).get("streaming", False))
+        required = streaming_contract or any(
+            bool(input.streaming) for input in getattr(payload, "inputs", ())
+        ) or any(bool(output.streaming) for output in getattr(plan, "outputs", ())) or bool(
+            getattr(plan, "streaming_boundaries", ())
+        )
+        report = classify(
+            StreamingAnalysisRequest(
+                payload=payload,
+                required=required,
+                streaming_contract=streaming_contract,
+            )
+        )
+        findings = tuple(finding.to_diagnostic() for finding in report.findings)
+        boundary_diagnostics = []
+        for boundary in getattr(plan, "streaming_boundaries", ()):
+            related = tuple(
+                finding
+                for finding in report.findings
+                if finding.step == boundary.consumer or finding.step.startswith(f"{boundary.consumer}.")
+            )
+            if any(finding.support.value == "batch_only" for finding in related):
+                continue
+            if not any(finding.support.value == "unknown" for finding in related):
+                continue
+            boundary_diagnostics.append(
+                Diagnostic(
+                    entry=diagnostic_registry["STREAM-E0802"],
+                    context={
+                        "producer": boundary.producer,
+                        "output": boundary.output,
+                        "consumer": boundary.consumer,
+                        "input": boundary.input,
+                    },
+                )
+            )
+        return (*findings, *boundary_diagnostics)
 
     @staticmethod
     def _validate_declared_schemas(

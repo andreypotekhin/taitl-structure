@@ -26,20 +26,30 @@ class ClassifyStreamingCompatibility:
     def __init__(self) -> None:
         self._generators = ClassifyGeneratorStreamingCompatibility()
 
-    def __call__(self, plan: PySparkExecutionPlan, *, required: bool = False) -> StreamingReport:
+    def __call__(
+        self,
+        plan: PySparkExecutionPlan,
+        *,
+        required: bool = False,
+        streaming_contract: bool = False,
+    ) -> StreamingReport:
         findings: list[StreamingFinding] = []
         input_modes = {input.name: input.streaming for input in plan.inputs}
         watermarks: dict[str, set[str]] = {}
         stateful_operations: list[_StatefulStreamingOperation] = []
         for step in plan.steps:
             streaming_source = bool(input_modes.get(step.source))
+            uses_streaming_input = self._uses_streaming_input(step, input_modes)
+            streaming_step = streaming_contract or streaming_source or uses_streaming_input
             expressions = tuple(assignment.expression for assignment in step.projection)
-            findings.extend(self._window_projection(step.name, expressions))
+            findings.extend(self._window_projection(step.name, expressions, streaming=streaming_step))
             for result in step.results:
                 result_expressions = tuple(assignment.expression for assignment in result.projection)
-                findings.extend(self._window_projection(result.lane, result_expressions))
+                findings.extend(self._window_projection(result.lane, result_expressions, streaming=streaming_step))
             for operation in step.operations:
                 if operation.watermark is not None:
+                    if not streaming_step:
+                        continue
                     watermarks.setdefault(operation.watermark.scope, set()).add(operation.watermark.column)
                     continue
                 if operation.aggregate is not None:
@@ -51,11 +61,11 @@ class ClassifyStreamingCompatibility:
                         operation.aggregate,
                         watermark_columns=watermarks.get(step.source_scope, set()),
                         scope=step.source_scope,
-                        streaming_source=streaming_source,
+                        streaming_source=streaming_step,
                         allow_chained_window=allow_chained_window,
                     )
                     findings.extend(operation_findings)
-                    if streaming_source and not operation_findings:
+                    if streaming_step and not self._has_blocking_findings(operation_findings):
                         stateful_operations.append(
                             _StatefulStreamingOperation(
                                 step.name,
@@ -63,7 +73,7 @@ class ClassifyStreamingCompatibility:
                                 aggregate=operation.aggregate,
                             )
                         )
-                if operation.selected_rows is not None:
+                if streaming_step and operation.selected_rows is not None:
                     findings.extend(self._selected_rows(step.name, operation.selected_rows.direction))
                 if operation.kind == "drop_duplicates":
                     subset = 0 if operation.duplicate_rows is None else len(operation.duplicate_rows.subset)
@@ -72,32 +82,35 @@ class ClassifyStreamingCompatibility:
                         subset=subset,
                         watermarked=bool(watermarks.get(step.source_scope)),
                         explicit=bool(operation.duplicate_rows and operation.duplicate_rows.within_watermark),
-                        streaming_input=streaming_source,
+                        streaming_input=streaming_step,
                     )
                     findings.extend(operation_findings)
-                    if streaming_source and not operation_findings:
+                    if streaming_step and not operation_findings:
                         stateful_operations.append(
                             _StatefulStreamingOperation(step.name, "watermark-bounded duplicate removal")
                         )
-                if operation.exactly_one is not None:
+                if streaming_step and operation.exactly_one is not None:
                     findings.extend(self._exactly_one(step.name, operation.exactly_one.scope))
-                if operation.relation_assertion is not None:
+                if streaming_step and operation.relation_assertion is not None:
                     findings.extend(self._relation_assertion(step.name, operation.kind))
-                if operation.posexplode_struct is not None:
+                if streaming_step and operation.posexplode_struct is not None:
                     findings.extend(self._generators.posexplode_struct(step.name, operation.posexplode_struct))
-                if operation.relation_order is not None:
+                if streaming_step and operation.relation_order is not None:
                     findings.extend(self._relation_ordering(step.name, "order_by"))
-                if operation.relation_bound is not None:
+                if streaming_step and operation.relation_bound is not None:
                     findings.extend(self._relation_ordering(step.name, operation.kind))
-                if operation.relation_sample is not None:
+                if streaming_step and operation.relation_sample is not None:
                     findings.extend(self._relation_ordering(step.name, "sample"))
-                if operation.relation_priority_selection is not None:
+                if streaming_step and operation.relation_priority_selection is not None:
                     findings.extend(self._priority_selection(step.name))
-                if operation.relation_hierarchy_closure is not None:
+                if streaming_step and operation.relation_hierarchy_closure is not None:
                     findings.extend(self._hierarchy_closure(step.name))
-                if operation.relation_hierarchy_fallback is not None:
+                if streaming_step and operation.relation_hierarchy_fallback is not None:
                     findings.extend(self._hierarchy_fallbacks(step.name))
                 if operation.relation_set is not None:
+                    input_streaming = bool(input_modes.get(operation.relation_set.source))
+                    if not streaming_step and not input_streaming:
+                        continue
                     findings.extend(
                         self._relation_set(
                             step.name,
@@ -105,7 +118,7 @@ class ClassifyStreamingCompatibility:
                             operation.relation_set.input_name,
                             operation.relation_set.source,
                             allow_missing_columns=operation.relation_set.allow_missing_columns,
-                            current_streaming=streaming_source,
+                            current_streaming=streaming_step,
                             input_modes=input_modes,
                         )
                     )
@@ -132,13 +145,18 @@ class ClassifyStreamingCompatibility:
                 *step.after_hooks,
                 *(hook for result in step.results for hook in result.after_hooks if len(step.results) > 1),
             ):
-                findings.extend(self._hook(step.name, hook))
-            input_modes.setdefault(step.name, streaming_source)
+                if uses_streaming_input:
+                    findings.extend(self._hook(step.name, hook))
+            input_modes.setdefault(step.name, streaming_step)
             for result in step.results:
-                input_modes.setdefault(result.lane, streaming_source)
+                input_modes.setdefault(result.lane, streaming_step)
         for output in plan.outputs:
             findings.extend(
-                self._window_projection(output.name, tuple(assignment.expression for assignment in output.projection))
+                self._window_projection(
+                    output.name,
+                    tuple(assignment.expression for assignment in output.projection),
+                    streaming=bool(input_modes.get(output.source)),
+                )
             )
         findings.extend(self._stateful_composition(stateful_operations))
 
@@ -152,7 +170,17 @@ class ClassifyStreamingCompatibility:
     def _aggregate_operation(self, aggregate) -> str:
         if any(self._is_session_window(key.expression) for key in aggregate.keys):
             return "session-window aggregate"
-        return "watermark-bounded grouped aggregate"
+        if any(self._is_event_time_window(key.expression) for key in aggregate.keys):
+            return "watermark-bounded event-time aggregate"
+        return "unbounded business-key aggregate"
+
+    def _uses_streaming_input(self, step, input_modes: dict[str, bool]) -> bool:
+        return bool(input_modes.get(step.source)) or any(
+            bool(input_modes.get(source)) for source in step.input_sources
+        )
+
+    def _has_blocking_findings(self, findings: tuple[StreamingFinding, ...]) -> bool:
+        return any(finding.support is not StreamingSupport.COMPATIBLE for finding in findings)
 
     def _stateful_composition(
         self,
@@ -170,7 +198,7 @@ class ClassifyStreamingCompatibility:
                 step=second.step,
                 operation="stateful streaming composition",
                 problem=(
-                    "A v7 streaming transform may contain one admitted stateful operation followed only by "
+                    "A streaming transform may contain one admitted stateful operation followed only by "
                     f"stateless work; found {first.operation} in {first.step} and {second.operation} in {second.step}."
                 ),
                 use=(
@@ -223,7 +251,7 @@ class ClassifyStreamingCompatibility:
                     ),
                 )
             if not event_time_window:
-                return ()
+                return (self._unbounded_aggregate_warning(step, aggregate),)
             return (
                 StreamingFinding(
                     code="STREAM-E0801",
@@ -240,7 +268,7 @@ class ClassifyStreamingCompatibility:
         if any(self._watermarked_grouping_key(key.expression, watermark_columns, scope) for key in aggregate.keys):
             return ()
         if not event_time_window:
-            return ()
+            return (self._unbounded_aggregate_warning(step, aggregate),)
         return (
             StreamingFinding(
                 code="STREAM-E0801",
@@ -252,6 +280,23 @@ class ClassifyStreamingCompatibility:
                     "window(the_watermarked_event_time, ...)."
                 ),
                 use="Group by window(the_watermarked_event_time, duration) or the event-time field itself, or keep this transform batch-only.",
+            ),
+        )
+
+    def _unbounded_aggregate_warning(self, step: str, aggregate) -> StreamingFinding:
+        grouping = "business-key" if aggregate.keys else "global"
+        return StreamingFinding(
+            code="STREAM-W0802",
+            support=StreamingSupport.COMPATIBLE,
+            step=step,
+            operation=f"unbounded {grouping} aggregate",
+            problem=(
+                "Spark permits this streaming aggregate with update or complete output mode, but its state is not "
+                "bounded by a watermark because it does not group by event time."
+            ),
+            use=(
+                "Use an event-time or session window with a matching watermark when state must be bounded, or "
+                "explicitly operate the caller-owned query with an accepted unbounded-state policy."
             ),
         )
 
@@ -366,7 +411,7 @@ class ClassifyStreamingCompatibility:
                 support=StreamingSupport.BATCH_ONLY,
                 step=step,
                 operation=f"exactly_one {scope}",
-                problem="exactly_one(...) computes input cardinality and is batch-only in v1 streaming compatibility.",
+                problem="exactly_one(...) computes input cardinality and is not compatible with streaming execution.",
                 use="Keep this transform batch-only or enforce relation cardinality before the streaming transform.",
             ),
         )
@@ -378,7 +423,7 @@ class ClassifyStreamingCompatibility:
                 support=StreamingSupport.BATCH_ONLY,
                 step=step,
                 operation=operation,
-                problem=f"{operation}(...) computes validation aggregates and is batch-only in v1 streaming compatibility.",
+                problem=f"{operation}(...) computes validation aggregates and is not compatible with streaming execution.",
                 use="Keep this transform batch-only or enforce relation assertions before the streaming transform.",
             ),
         )
@@ -434,7 +479,7 @@ class ClassifyStreamingCompatibility:
                 support=StreamingSupport.BATCH_ONLY,
                 step=step,
                 operation=f"{operation} {input_name}",
-                problem=f"{operation}(...) is Spark-ineligible for caller-owned streaming relation sets in v8.",
+                problem=f"{operation}(...) is not compatible with streaming relation-set execution.",
                 use="Use union_all(...) or union_by_name(...) for stream-stream append composition, or keep this transform batch-only.",
             ),
         )
@@ -448,7 +493,7 @@ class ClassifyStreamingCompatibility:
                 operation="select_first_qualified",
                 problem=(
                     "select_first_qualified(...) uses ranking and validation aggregates and is streaming-ineligible "
-                    "for caller-owned v8 Structured Streaming."
+                    "for caller-owned streaming execution."
                 ),
                 use="Keep this transform batch-only or perform priority selection before the streaming transform.",
             ),
@@ -461,7 +506,7 @@ class ClassifyStreamingCompatibility:
                 support=StreamingSupport.BATCH_ONLY,
                 step=step,
                 operation="hierarchy_closure",
-                problem="hierarchy_closure(...) expands bounded parent rows and is batch-only in v1 streaming compatibility.",
+                problem="hierarchy_closure(...) expands bounded parent rows and is not compatible with streaming execution.",
                 use="Keep this transform batch-only or materialize hierarchy closure before the streaming transform.",
             ),
         )
@@ -473,7 +518,7 @@ class ClassifyStreamingCompatibility:
                 support=StreamingSupport.BATCH_ONLY,
                 step=step,
                 operation="hierarchy_fallbacks",
-                problem="hierarchy_fallbacks(...) expands bounded parent fallback rows and is batch-only in v1 streaming compatibility.",
+                problem="hierarchy_fallbacks(...) expands bounded parent fallback rows and is not compatible with streaming execution.",
                 use="Keep this transform batch-only or materialize hierarchy fallbacks before the streaming transform.",
             ),
         )
@@ -528,9 +573,9 @@ class ClassifyStreamingCompatibility:
         )
 
     def _window_projection(
-        self, step: str, expressions: tuple[PySparkExpressionRecipe, ...]
+        self, step: str, expressions: tuple[PySparkExpressionRecipe, ...], *, streaming: bool
     ) -> tuple[StreamingFinding, ...]:
-        if not any(self._has_window(expression) for expression in expressions):
+        if not streaming or not any(self._has_window(expression) for expression in expressions):
             return ()
         return (
             StreamingFinding(
@@ -563,6 +608,8 @@ class ClassifyStreamingCompatibility:
         current_scope: str,
         watermarks: dict[str, set[str]],
     ) -> tuple[StreamingFinding, ...]:
+        if not input_modes.get(current_input) and not input_modes.get(join.source):
+            return ()
         if join.dedupe is not None:
             return (
                 StreamingFinding(
@@ -594,7 +641,7 @@ class ClassifyStreamingCompatibility:
                     step=step,
                     operation=f"stream-static anti join {join.input_name}",
                     problem=(
-                        "Stream-static anti joins are not admitted because v4 defines only the left-semi "
+                        "Stream-static anti joins are not admitted because the supported streaming shape defines only the left-semi "
                         "existence-filter contract."
                     ),
                     use="Use exists(...) for supported stream-static filtering or keep this transform batch-only.",
@@ -652,7 +699,7 @@ class ClassifyStreamingCompatibility:
                 step=step,
                 operation=f"join {join.input_name}",
                 problem=(
-                    "v1 streaming compatibility supports stream-static left and inner joins only; "
+                    "Streaming execution supports stream-static left and inner joins only; "
                     f"{join.how.value} joins are batch-only."
                 ),
                 use="Keep this transform batch-only or rewrite the lookup as a left or inner stream-static join.",

@@ -116,6 +116,7 @@ class MapPySparkStep:
             aggregate=None if body.aggregate is None else self._aggregate(body.aggregate, capabilities=capabilities),
             results=results,
             operations=operations,
+            input_sources=tuple(binding.source for binding in step.inputs),
             origin=step.origin,
         )
 

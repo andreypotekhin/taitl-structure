@@ -459,6 +459,8 @@ separate Structure-owned typed transformations from caller-owned PySpark lifecyc
 - A follow-up execution plan for design-gated catalog rows:
   `docs/dev/planning/P07302601.V9-api-catalog-design-gates.plan.md`, including the Variant child plan
   `docs/dev/planning/P07302602.V9-variant-type-and-helpers.plan.md`.
+- The released PySpark 4.0/4.2 Variant implementation slice is wrapped up; 4.3+ mutation helpers stay design-gated
+  until their profiles are released, with a live 4.2 probe tracked as infrastructure follow-up.
 
 ### v9 non-goals
 

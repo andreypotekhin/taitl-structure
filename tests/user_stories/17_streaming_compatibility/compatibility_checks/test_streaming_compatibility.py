@@ -20,7 +20,7 @@ class StreamClean(Schema):
 
 @transform(streaming=True)
 class StreamingProjection(Transform):
-    rows = input(StreamRaw)
+    rows = input(StreamRaw, streaming=True)
     clean = output(StreamClean)
 
     def normalize(self, row: StreamRaw) -> StreamClean:
@@ -30,7 +30,7 @@ class StreamingProjection(Transform):
 
 @transform(streaming=True)
 class StreamingUnknownHook(Transform):
-    rows = input(StreamRaw)
+    rows = input(StreamRaw, streaming=True)
     clean = output(StreamClean)
 
     def normalize(self, row: StreamRaw) -> StreamClean:

@@ -27,8 +27,8 @@ lowering, documentation, diagnostics, compatibility tests, and live target evide
 - Typed `window_time(...)` and the supported two-stage event-time window aggregation shape, with PySpark 3.5/4.0 live
   online/generated evidence.
 - Execute the linked [V9 Variant ExecPlan](../../planning/P07302602.V9-variant-type-and-helpers.plan.md): complete the
-  profile matrix, literals/equality, later-profile mutation helpers, Variant table-valued row expansion, explicit
-  exclusions, and evidence closure.
+  released 4.0/4.2 profile matrix, literals/equality, Variant table-valued row expansion, explicit exclusions, and
+  evidence closure; keep 4.3+ mutation helpers design-gated until those runtimes are released.
 - Public docs, coverage ledgers, diagnostics, and compatibility tests for each resolved row.
 
 ## Out of Scope

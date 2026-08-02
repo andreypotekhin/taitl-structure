@@ -382,7 +382,7 @@ def test_recommendation_ranker_formulas_are_swappable() -> None:
     assert boost_score.kind == "literal"
     assert boost_score.data["value"] == 9.0
 
-    @structure_transform(allow_stream_to_batch=True)
+    @structure_transform
     class ConstantBoostRecommender(Recommender):
         ranker = ConstantBoostRanker()
 

@@ -4,6 +4,7 @@ from typing import Any
 from structure.plugin.api.v1.model.InputPlan import InputPlan
 from structure.plugin.api.v1.model.OutputPlan import OutputPlan
 from structure.plugin.api.v1.model.StepPlan import StepPlan
+from structure.plugin.api.v1.model.StreamingBoundaryPlan import StreamingBoundaryPlan
 
 
 @dataclass(frozen=True)
@@ -16,6 +17,7 @@ class TransformPlan:
     outputs: tuple[OutputPlan, ...]
     options: dict[str, object] | None = None
     diagnostics: tuple[Any, ...] = ()
+    streaming_boundaries: tuple[StreamingBoundaryPlan, ...] = ()
 
     @property
     def output_schema(self) -> Any:

@@ -15,7 +15,6 @@ services:
       - type: bind
         source: ${STRUCTURE_ROOT:-../..}/.pytest-workspace-tmp/integration
         target: /workspace/.pytest-workspace-tmp/integration
-
   spark35-worker:
     image: structure-integration-pyspark35
     build:
@@ -37,7 +36,6 @@ services:
       - type: bind
         source: ${STRUCTURE_ROOT:-../..}/.pytest-workspace-tmp/integration
         target: /workspace/.pytest-workspace-tmp/integration
-
   spark40-master:
     image: structure-integration-pyspark40
     build:
@@ -54,7 +52,6 @@ services:
       - type: bind
         source: ${STRUCTURE_ROOT:-../..}/.pytest-workspace-tmp/integration
         target: /workspace/.pytest-workspace-tmp/integration
-
   spark40-worker:
     image: structure-integration-pyspark40
     build:
@@ -76,7 +73,6 @@ services:
       - type: bind
         source: ${STRUCTURE_ROOT:-../..}/.pytest-workspace-tmp/integration
         target: /workspace/.pytest-workspace-tmp/integration
-
   structure-integration-pyspark35:
     image: structure-integration-pyspark35
     build:

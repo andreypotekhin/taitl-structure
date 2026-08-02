@@ -15,9 +15,12 @@ Examples abbreviate `order` as `o` and a second streaming relation as `c`.
 **Details And Differences**
 
 - `streaming=True` declares a streaming input; omitting it (or setting `False`) declares a static input.
-- In a composed transform, a streaming output must connect to a downstream input declared with `streaming=True`.
-  Set `allow_stream_to_batch = true` for an intentional undeclared boundary; explicit `streaming=False` remains a
-  compilation error.
+- `@transform(streaming=True)` is an all-step streaming-capability contract. Streaming input declarations and
+  composed streaming outputs trigger compatibility analysis, but do not implicitly set transform options.
+- In a composed transform, the default boundary policy propagates streaming lineage through compiler-visible,
+  compatible undeclared downstream code. Set `stream_to_batch_policy = "strict"` to require explicit
+  `streaming=True` or `allow_stream_to_batch=True`. The allowance cannot suppress a known `STREAM-E0801`, and
+  explicit `streaming=False` always remains a compilation error.
 - `StreamingOutputMode` is the typed vocabulary used when explain output reports a caller-required output mode.
 
 ## Streaming Operations
@@ -52,10 +55,11 @@ Examples abbreviate `order` as `o` and a second streaming relation as `c`.
   choice explicit and requires `streaming=True` plus a preceding watermark.
 - Scalar `@special(type="udf")` expressions are admitted as row-local ordinary-PySpark streaming transformations.
   They retain the existing `warn_on_udfs` warning policy and remain unavailable on Spark Connect.
-- Variant fields and row-local Variant helpers are admitted as profile-gated streaming transformations on ordinary
-  PySpark 4 profiles. PySpark 4.0 live evidence covers parsing, extraction, schema inspection, object conversion, and
-  JSON-null testing; PySpark 3.5 fails through the standard capability diagnostic before execution. PySpark 4.2-only
-  helpers such as `is_valid_variant(...)` remain capability-gated until a 4.2 live lane exists.
+- Variant fields and helpers are admitted as profile-gated streaming transformations on ordinary PySpark 4 profiles.
+  PySpark 4.0 live evidence covers parsing, extraction, schema inspection, object conversion, JSON-null testing,
+  watermarked `schema_of_variant_agg`, and typed inner/outer TVF expansion; PySpark 3.5 fails through the standard
+  capability diagnostic before execution. PySpark 4.2-only helpers such as `is_valid_variant(...)` remain
+  capability-gated until a 4.2 live lane exists.
 - `event_time_between(...)` supplies the bounded event-time relation required by supported stream-stream joins.
 - `streaming=True` declares the hook safe for its stated streaming shape; Structure does not inspect hook code.
 

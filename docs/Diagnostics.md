@@ -33,9 +33,10 @@ Below is an index for published diagnostic codes. For the full diagnostic contra
 | BACKEND-E2402 | error | Unsupported backend capability | Choose a supported operation or use a hook. |
 | CONNECT-E2601 | error | Spark Connect boundary is unsupported | Use Spark Connect DataFrame APIs or set `plugin.pyspark.variant = "ordinary"`. |
 | CLI-X1101 | internal | Unexpected internal failure | Rerun with debug output and report the code with a reproduction. |
-| STREAM-E0801 | error | Transform is not streaming-compatible | Keep the transform batch-only or rewrite the unsupported shape. |
-| STREAM-E0802 | error | Streaming output is not accepted by downstream input | Declare the downstream input with `streaming=True`, or explicitly allow the boundary. |
+| STREAM-E0801 | error | Transform is not streaming-compatible | Keep the transform batch-only, add the required watermark or event-time bound, or rewrite the operation using a supported streaming shape. |
+| STREAM-E0802 | error | Streaming output is not accepted by downstream input | Declare the downstream input with `streaming=True`, or explicitly allow the stream-to-batch boundary with `allow_stream_to_batch=True`. |
 | STREAM-W0801 | warning | Hook streaming compatibility is unknown | Mark the hook `streaming=True` only after verifying it. |
+| STREAM-W0802 | warning | Streaming aggregate state is unbounded | Use an event-time or session window with a matching watermark, or accept the caller-owned unbounded-state policy. |
 
 ## Reading Source Annotations
 
@@ -128,19 +129,20 @@ See [Diagnostics.md](background/Diagnostics.back.md#cli-x1101).
 ### STREAM-E0801
 See [Diagnostics.md](background/Diagnostics.back.md#stream-e0801).
 
-The transform contains an operation that is batch-only or design-gated for caller-owned Structured Streaming. Fix the
-Structure source when the diagnostic names a missing watermark, input-mode declaration, event-time bound, or unsupported
-stateful composition. Keep sources, sinks, checkpoints, triggers, output modes, query lifecycle, and side effects in
-caller-owned PySpark code. See [Streaming API](api/Streaming.api.md) and
+The transform step contains an operation that is not compatible with streaming execution. Keep the transform
+batch-only, add the required watermark or event-time bound, or rewrite the operation using a supported streaming
+shape. Keep sources, sinks, checkpoints, triggers, output modes, query lifecycle, and side effects in caller-owned
+PySpark code. See [Streaming API](api/Streaming.api.md) and
 [Spark Streaming](dev/specifications/SparkStreaming.md).
 
 ### STREAM-E0802
 
 See [Diagnostics.md](background/Diagnostics.back.md#stream-e0802).
 
-A composed streaming output reaches a downstream input that is not declared with `streaming=True`. Set
-`allow_stream_to_batch = true` only for an intentional boundary. An explicit `streaming=False` on the downstream
-input or transform always remains an error, because it declares that the transform does not support streaming.
+A streaming stage output is consumed by a downstream input that does not accept streaming data. Declare the downstream
+input with `streaming=True`, or explicitly allow the stream-to-batch boundary with `allow_stream_to_batch=True`.
+Under default policy, compiler-visible compatible code is accepted automatically; unknown code still produces this
+diagnostic. An explicit `streaming=False` always remains an error.
 
 ### STREAM-W0801
 See [Diagnostics.md](background/Diagnostics.back.md#stream-w0801).
@@ -149,3 +151,11 @@ Structure cannot prove an arbitrary hook is streaming-compatible. Mark the hook 
 DataFrame and avoids Spark actions, RDD/Pandas conversion, `readStream`, `writeStream`, query start/stop, checkpoints,
 triggers, output-mode application, `foreach`, `foreachBatch`, and unmodeled stateful streaming operations. Keep
 lifecycle code in caller-owned PySpark recipes such as `examples/streams/adoption.py`.
+
+### STREAM-W0802
+
+See [Diagnostics.md](background/Diagnostics.back.md#stream-w0802).
+
+Spark permits ordinary business-key streaming aggregates with `update` or `complete` output mode, but a watermark
+does not evict their state because the grouping is not event-time bounded. Use an event-time or session window when
+state must be bounded, or explicitly accept the caller-owned unbounded-state policy.

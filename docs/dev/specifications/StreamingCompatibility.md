@@ -8,8 +8,9 @@ into declared streaming inputs and Spark can analyze the resulting DataFrame pla
 streaming operations, actions, stateful streaming features, or streaming lifecycle code.
 
 The contract keeps lifecycle ownership with the caller. Row-local projection,
-row-local filtering, schema-only validation, stream-static joins, transform-scoped watermarks, watermarked grouped
-aggregations, watermarked dedupe, and bounded inner stream-stream joins are in scope. Triggers, checkpoints, streaming
+row-local filtering, schema-only validation, stream-static joins, transform-scoped watermarks, Spark-valid grouped
+aggregations with caller-owned output modes, watermarked dedupe, and bounded inner stream-stream joins are in scope.
+Triggers, checkpoints, streaming
 sources, streaming sinks, query start, query stop, deployment, and recovery are outside this compatibility contract and
 remain caller-owned.
 
@@ -27,18 +28,23 @@ Streaming compatibility means all of these are true:
 - Opaque hooks are absent or explicitly marked streaming-safe.
 
 Streaming compatibility does not mean Structure starts a streaming query. Structure checks the transformation contract
-at compile time, reports required output modes where relevant, and leaves query lifecycle choices to the caller-owned
-shape.
+at compile time, using concrete step inputs and propagated lanes to decide which operations are on streaming data,
+reports required output modes where relevant, and leaves query lifecycle choices to the caller-owned shape.
 
 ## Composed Boundaries
 
-Streaming lineage is derived from actual input declarations. A class-level `@transform(streaming=True)` marker does not
-make an output streaming when its inputs are not declared with `streaming=True`.
+Streaming lineage is derived from actual input declarations and compiler-visible step bindings. A class-level
+`@transform(streaming=True)` marker is an explicit all-step streaming-capability contract: every concrete step is
+analyzed as streaming-capable even when the current inputs are batch. It does not make batch data or outputs runtime
+streaming. Streaming input declarations and composed streaming outputs trigger analysis without changing transform
+options.
 
-At a composition boundary, a streaming output must be assigned to a downstream input declared with `streaming=True`.
-The default `allow_stream_to_batch = false` rejects an undeclared boundary. Setting it to `true` permits an intentional
-undeclared boundary, but explicit `input(..., streaming=False)` and `@transform(streaming=False)` always reject the
-boundary because they deliberately state that the downstream transform does not support streaming.
+At a composition boundary, the default `stream_to_batch_policy = "default"` tentatively propagates streaming lineage
+through an undeclared downstream input. A compiler-visible compatible downstream shape is accepted; a known incompatible
+operation reports `STREAM-E0801`, and opaque code reports `STREAM-E0802`. With `"strict"`, an undeclared boundary is
+rejected unless `streaming=True` or `allow_stream_to_batch=True` is explicit. The allowance only bypasses the declaration
+guard and cannot suppress a known `STREAM-E0801`. Explicit `input(..., streaming=False)` and
+`@transform(streaming=False)` always reject the boundary.
 
 ## Runtime Shape
 
@@ -138,7 +144,8 @@ The generated code lowers this to `DataFrame.withWatermark(...)`.
 
 Batch grouped aggregations are fully supported. Streaming grouped aggregations follow PySpark output-mode semantics:
 ordinary business-key aggregates are compatible but retain unbounded state and require caller-owned `update` or
-`complete` output mode; a watermark does not evict that state. Event-time/window aggregates require a prior
+`complete` output mode; a watermark does not evict that state. Structure emits `STREAM-W0802` for this advisory risk.
+Event-time/window aggregates require a prior
 compiler-visible watermark on the grouped event-time field and support caller-owned `append` or `update` output mode.
 The event-time helper returns `Struct[TimeWindow]` with non-null `start` and `end` timestamps.
 
@@ -161,14 +168,13 @@ before query start.
 
 ## Deferred or Rejected Operations
 
-These operations are not streaming-compatible in v1:
+These operations are not streaming-compatible:
 
 - global `orderBy(...)` or `sort(...)` on the streaming current DataFrame, including Structure `order_by(...)`;
 - `limit(...)`, `offset(...)`, or global top-N operations;
 - `distinct(...)` or `dropDuplicates(...)`, including Structure `distinct(...)` and `drop_duplicates(...)` without a
   preceding watermark;
-- aggregations, including `groupBy(...).agg(...)` without a preceding watermark;
-- windowed aggregations;
+- event-time/window aggregations whose grouped event-time field is not preceded by a matching watermark;
 - ranking or analytic window functions, including Structure `row_number(...)`, `rank(...)`, `dense_rank(...)`,
   `lag(...)`, `lead(...)`, `rolling_sum(...)`, `rolling_avg(...)`, `rolling_min(...)`, and `rolling_max(...)`;
 - selected-row helpers, including Structure `latest_by(...)`, `earliest_by(...)`, `dedupe_latest_by(...)`, and
@@ -214,7 +220,7 @@ Rules:
 - Join conditions must satisfy `JoinSemantics.spec.md`.
 - `lookup_join(...)` uniqueness warnings still apply; streaming compatibility does not prove uniqueness.
 - `"broadcast"` is compatible only for the static joined side.
-- A side input that may be streaming must be rejected for v1 streaming compatibility.
+- A side input that may be streaming must be rejected for streaming compatibility.
 
 Rejected:
 
@@ -255,7 +261,7 @@ def remove_negative_totals(self, *, orders, spark, ctx):
 - The hook does not introduce stateful streaming operations outside this specification.
 - If `pass_inputs=True`, any joined or consulted input DataFrames are static unless a later spec declares otherwise.
 
-The checker does not need to parse hook bodies in v1. It should validate the hook signature and record that
+The checker does not need to parse hook bodies. It should validate the hook signature and record that
 streaming-safe hooks are trusted boundaries in traceability and diagnostics.
 
 ## Validation
@@ -310,7 +316,9 @@ The checker folds operation classifications into a transform-level result:
 - `batch_only` when at least one operation is known to be incompatible;
 - `unknown` when at least one operation is opaque and none are known incompatible.
 
-Unknown is acceptable for batch generation but must fail an explicit streaming-compatible requirement.
+Unknown is acceptable for batch generation but must fail an explicit streaming-compatible requirement. A compatible
+operation may still produce a warning when Spark permits the operation but its state or lifecycle risk is not bounded;
+warnings do not change the transform-level compatibility result.
 
 ## Compile-Time Checks
 
@@ -320,7 +328,8 @@ Required checks:
 
 1. Reject or warn on operations not listed as supported in this specification.
 2. Reject stream-stream join shapes for explicit streaming-compatible transforms.
-3. Reject global sorts, aggregations, deduplication, limits, and actions in compiled DSL operations.
+3. Reject global sorts, aggregations, deduplication, limits, and actions when their concrete step inputs or
+   propagated lanes are streaming. Emit warnings for Spark-valid streaming operations whose state is unbounded.
 4. Reject or warn on hooks without `streaming=True`.
 5. Reject `streaming=True` hooks with invalid hook signatures.
 6. Reject schema-and-constraints validation when constraints are not schema-only.
@@ -359,7 +368,7 @@ Operation:
   join customers#1
 
 Problem:
-  v1 streaming compatibility supports stream-static joins only. The joined input may be streaming, which would create
+  streaming compatibility supports stream-static joins only. The joined input may be streaming, which would create
   a stream-stream join.
 
 Use:
@@ -402,7 +411,7 @@ Generated PySpark must:
 - keep generated code reviewable and deterministic.
 
 Generated PySpark may use the same code path for batch and streaming DataFrames. Separate batch and streaming generated
-classes are not required in v1.
+classes are not required.
 
 ## Acceptance Criteria
 

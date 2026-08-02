@@ -50,8 +50,8 @@ class ValidateStreamingInputBinding:
                 "but the downstream input is not declared streaming=True."
             )
             use = (
-                "Declare the downstream input with streaming=True, or set allow_stream_to_batch = true when the "
-                "stream-to-batch boundary is intentional."
+                "Declare the downstream input with streaming=True, or explicitly allow the stream-to-batch boundary "
+                "with allow_stream_to_batch=True."
             )
         return StreamingInputBindingViolation(
             problem=problem,

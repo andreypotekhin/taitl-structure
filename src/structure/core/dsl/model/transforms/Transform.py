@@ -187,7 +187,7 @@ class Transform:
 
     @classmethod
     def effective_transform_options(cls) -> dict[str, object]:
-        """Resolve class options with input-derived streaming inference."""
+        """Resolve explicit class options without inferring transform streaming."""
         return cls.resolve_transform_options(
             cls.__dict__.get("_structure_transform_options", {}),
             inputs=cls._structure_inputs.values(),
@@ -203,15 +203,12 @@ class Transform:
     ) -> dict[str, object]:
         """Resolve effective transform options from declared options and inputs."""
         resolved = dict(options or {})
-        has_streaming_inputs = any(bool(getattr(input, "streaming", False)) for input in inputs)
         streaming = resolved.get("streaming")
-        if streaming is False and has_streaming_inputs:
+        if streaming is False and any(bool(getattr(input, "streaming", False)) for input in inputs):
             raise TypeError(
                 f"{transform_name} declares streaming input(s) but @transform(streaming=False). "
                 "Remove the class option or declare all inputs batch-only."
             )
-        if streaming is None and has_streaming_inputs:
-            resolved["streaming"] = True
         return resolved
 
     @classmethod

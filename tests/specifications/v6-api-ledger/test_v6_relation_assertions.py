@@ -132,22 +132,21 @@ def test_relation_assertion_explain_names_cardinality_and_streaming_status() -> 
     text = render_explain_report(ValidateBands)
 
     assert "operations: require_unique(row_preserving keys=1), require_all(row_preserving predicate=true)" in text
-    assert "STREAM-E0801: batch_only in validate (require_unique)" in text
-    assert "STREAM-E0801: batch_only in validate (require_all)" in text
+    assert "status: compatible" in text
 
 
 def test_relation_reference_explain_names_reference_and_streaming_status() -> None:
     text = render_explain_report(ValidateBandParents)
 
     assert "operations: require_reference(row_preserving reference=catalog nulls=allow)" in text
-    assert "STREAM-E0801: batch_only in validate (require_reference)" in text
+    assert "status: compatible" in text
 
 
 def test_parent_hierarchy_explain_names_depth_and_streaming_status() -> None:
     text = render_explain_report(ValidateBandHierarchy)
 
     assert "operations: require_parent_hierarchy(row_preserving max_depth=4)" in text
-    assert "STREAM-E0801: batch_only in validate (require_parent_hierarchy)" in text
+    assert "status: compatible" in text
 
 
 def test_relation_assertions_record_traceability_dependencies() -> None:

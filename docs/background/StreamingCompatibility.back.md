@@ -7,7 +7,8 @@ streaming operations, actions, stateful streaming features, or streaming lifecyc
 
 The streaming-compatible contract keeps lifecycle ownership with the caller. Row-local
 projection, row-local filtering, schema-only validation, stream-static joins and left-semi filtering,
-transform-scoped watermarks, event-time and session-window aggregations, watermarked dedupe, and admitted bounded
+transform-scoped watermarks, Spark-valid grouped aggregations with caller-owned output modes, event-time and
+session-window aggregations, watermarked dedupe, and admitted bounded
 stream-stream joins are in scope. Triggers, checkpoints, streaming sources, streaming sinks, query start, query stop,
 deployment, and recovery are outside this compatibility contract and remain caller-owned.
 
@@ -27,14 +28,16 @@ Streaming compatibility means all of these are true:
 - Opaque hooks are absent or explicitly marked streaming-safe.
 
 Streaming compatibility does not mean Structure starts a streaming query. Structure checks the transformation contract
-at compile time, reports required output modes where relevant, and leaves query lifecycle choices to the caller-owned
-shape.
+at compile time, using concrete step inputs and propagated lanes to decide which operations are on streaming data,
+reports required output modes where relevant, and leaves query lifecycle choices to the caller-owned shape.
 
 When transforms are composed, streaming lineage is carried by outputs produced from inputs declared with
-`streaming=True`. The default composition policy rejects a streaming output assigned to a downstream input without the
-same declaration. Set `allow_stream_to_batch = true` for an intentional undeclared boundary. An explicit
-`streaming=False` on the downstream input or transform is a hard rejection because it states that streaming is not
-supported.
+`streaming=True` and by compiler-visible step bindings. `@transform(streaming=True)` is an explicit all-step
+capability contract, not a runtime streaming switch. Streaming inputs and composed streaming outputs trigger analysis
+without implicitly changing transform options. With `stream_to_batch_policy = "default"`, a safe undeclared boundary is
+accepted after analysis; known incompatible code reports `STREAM-E0801`, while opaque code reports `STREAM-E0802`.
+With `"strict"`, the boundary requires `streaming=True` or `allow_stream_to_batch=True`. That allowance cannot suppress
+`STREAM-E0801`; explicit `streaming=False` is always rejected.
 
 ## Runtime Shape
 
@@ -130,7 +133,7 @@ hooks are out of scope and must not be introduced by streaming-compatible genera
 Watermarks are compatible when declared with `watermark(field, delay=...)` before the stateful operation they support.
 Batch grouped aggregations are fully supported. Streaming business-key aggregations follow PySpark semantics: they are
 compatible with caller-owned `update` or `complete` output mode, but retain unbounded state because a watermark alone
-does not identify rows that can be removed. Event-time and session-window aggregations require a compiler-visible
+does not identify rows that can be removed; Structure reports this advisory risk as `STREAM-W0802`. Event-time and session-window aggregations require a compiler-visible
 watermark on the grouped event-time field. Bounded stream-stream rowset joins are compatible when both inputs are
 declared `streaming=True`, both joined frames have watermarks, and the predicate includes
 `event_time_between(left_time, right_time, upper=...)`.
@@ -223,7 +226,7 @@ def remove_negative_totals(self, *, orders, spark, ctx):
 - The hook does not introduce stateful streaming operations outside this reference.
 - Any extra input selected by a hook binding must be static unless a later specification declares otherwise.
 
-The checker does not need to parse hook bodies in v1. It should validate the hook signature and record that
+The checker does not need to parse hook bodies. It should validate the hook signature and record that
 streaming-safe hooks are trusted boundaries in traceability and diagnostics.
 
 ## Validation
@@ -288,7 +291,8 @@ Required checks:
 
 1. Reject or warn on operations not listed as supported in this reference.
 2. Reject stream-stream join shapes for explicit streaming-compatible transforms.
-3. Reject global sorts, aggregations, deduplication, limits, and actions in compiled DSL operations.
+3. Reject global sorts, aggregations, deduplication, limits, and actions when their concrete step inputs or
+   propagated lanes are streaming. Emit warnings for Spark-valid streaming operations whose state is unbounded.
 4. Reject or warn on hooks without `streaming=True`.
 5. Reject `streaming=True` hooks with invalid hook signatures.
 6. Reject schema-and-constraints validation when constraints are not schema-only.
@@ -358,4 +362,4 @@ Generated PySpark must:
 - keep generated code reviewable and deterministic.
 
 Generated PySpark may use the same code path for batch and streaming DataFrames. Separate batch and streaming generated
-classes are not required in v1.
+classes are not required.

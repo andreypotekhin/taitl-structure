@@ -33,4 +33,5 @@ class PySparkStepRecipe:
     aggregate: PySparkAggregateRecipe | None = None
     results: tuple[PySparkStepResultRecipe, ...] = ()
     operations: tuple[PySparkOperationRecipe, ...] = ()
+    input_sources: tuple[str, ...] = ()
     origin: TransformMemberOrigin | None = None
