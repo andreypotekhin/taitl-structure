@@ -112,6 +112,11 @@ def render_store_example() -> dict[str, str]:
             OrderWithPromotion,
             PublicationFlags,
         )
+        from examples.store.schemas.personalization import (
+            PersonalizationHistory,
+            PersonalizedRecommendation,
+            UserFeaturePreference,
+        )
         from examples.store.schemas.product import BlockedProduct, Product, ProductBase
         from examples.store.schemas.promotion import Promotion
         from examples.store.schemas.shipment import Shipment
@@ -144,6 +149,10 @@ def render_store_example() -> dict[str, str]:
         from examples.store.transforms.fulfillment.workflow import Fulfillment
         from examples.store.transforms.merchandising.workflow import Merchandising
         from examples.store.transforms.orders.enrich import EnrichOrders
+        from examples.store.transforms.personalization.history import BuildPersonalizationHistory
+        from examples.store.transforms.personalization.product_features import BuildProductFeatures
+        from examples.store.transforms.personalization.score import ScorePersonalizedRecommendations
+        from examples.store.transforms.personalization.workflow import BuildPersonalizedRecommendations
         from examples.store.transforms.recommender.candidates import BuildRecommendationCandidates
         from examples.store.transforms.recommender.candidates.admit import SelectRecommendationCandidates
         from examples.store.transforms.recommender.candidates.filter import FilterRecommendationCandidates
@@ -152,7 +161,7 @@ def render_store_example() -> dict[str, str]:
         from examples.store.transforms.recommender.signals.products import BuildProductSignals
         from examples.store.transforms.recommender.signals.purchases import BuildPurchaseSignals
         from examples.store.transforms.recommender.signals.session import BuildSessionSignals
-        from examples.store.transforms.recommender.signals.workflow import BuildSignals
+        from examples.store.transforms.recommender.signals.workflow import BuildRecommendationSignals
         from examples.store.transforms.recommender.workflow import Recommender
         from examples.store.transforms.rowset_joins.rowset_join_examples import RowsetJoinExamples
         from examples.store.transforms.taxonomy.expand_taxonomy import ExpandProductTaxonomy
@@ -261,6 +270,11 @@ def render_store_example() -> dict[str, str]:
                 OrderProductCandidate,
             ],
             "examples.store.schemas.product": [ProductBase, Product, BlockedProduct],
+            "examples.store.schemas.personalization": [
+                UserFeaturePreference,
+                PersonalizationHistory,
+                PersonalizedRecommendation,
+            ],
             "examples.store.schemas.promotion": [Promotion],
             "examples.store.schemas.shipment": [Shipment],
             "examples.store.schemas.experiment": [
@@ -354,6 +368,22 @@ def render_store_example() -> dict[str, str]:
             ),
             (Merchandising, "examples.store.transforms.merchandising.workflow.Merchandising"),
             (
+                BuildProductFeatures,
+                "examples.store.transforms.personalization.product_features.BuildProductFeatures",
+            ),
+            (
+                BuildPersonalizationHistory,
+                "examples.store.transforms.personalization.history.BuildPersonalizationHistory",
+            ),
+            (
+                ScorePersonalizedRecommendations,
+                "examples.store.transforms.personalization.score.ScorePersonalizedRecommendations",
+            ),
+            (
+                BuildPersonalizedRecommendations,
+                "examples.store.transforms.personalization.workflow.BuildPersonalizedRecommendations",
+            ),
+            (
                 BuildProductSignals,
                 "examples.store.transforms.recommender.signals.products.BuildProductSignals",
             ),
@@ -366,8 +396,8 @@ def render_store_example() -> dict[str, str]:
                 "examples.store.transforms.recommender.signals.purchases.BuildPurchaseSignals",
             ),
             (
-                BuildSignals,
-                "examples.store.transforms.recommender.signals.workflow.BuildSignals",
+                BuildRecommendationSignals,
+                "examples.store.transforms.recommender.signals.workflow.BuildRecommendationSignals",
             ),
             (
                 EvaluateRecommendations,

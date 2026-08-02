@@ -1,6 +1,6 @@
 # Sprint 45: V9 API Catalog Design Gates
 
-Status: active.
+Status: active; target close: 2026-08-07.
 
 ## Sprint Goal
 
@@ -24,6 +24,11 @@ lowering, documentation, diagnostics, compatibility tests, and live target evide
   side-effect APIs, and arbitrary state APIs.
 - Live evidence and profile-specific coverage for PySpark 4-only streaming helpers, including Variant fields and Variant
   value helpers.
+- Typed `window_time(...)` and the supported two-stage event-time window aggregation shape, with PySpark 3.5/4.0 live
+  online/generated evidence.
+- Execute the linked [V9 Variant ExecPlan](../../planning/P07302602.V9-variant-type-and-helpers.plan.md): complete the
+  profile matrix, literals/equality, later-profile mutation helpers, Variant table-valued row expansion, explicit
+  exclusions, and evidence closure.
 - Public docs, coverage ledgers, diagnostics, and compatibility tests for each resolved row.
 
 ## Out of Scope
@@ -60,9 +65,21 @@ online execution, diagnostics, and streaming compatibility.
 - Join reordering can silently change semantics unless the first slice is deliberately narrow and explainable.
 - Missing-column union can leak ambiguous type/nullability behavior unless fills are explicit in generated source.
 
+## Schedule and Handoff
+
+Sprint 45 is the inventory and decision-closure slice. It hands implementation work to Sprint 46, target evidence and
+catalog reconciliation to Sprint 47, and release-only verification to Sprint 48. The dated sequence, dependencies,
+fallback rules, and exit criteria are maintained in the
+[V9 closeout ExecPlan](../../planning/P07302603.V9-closeout-and-release.plan.md).
+
+Sprint 45 exits when every selected V9 row has an owner, a precise status, a linked specification, and an acceptance
+command. It must not consume Sprint 48 by adding new scope after the handoff.
+
 ## Governing Documents
 
 `docs/dev/planning/P07302601.V9-api-catalog-design-gates.plan.md`,
+`docs/dev/planning/P07302602.V9-variant-type-and-helpers.plan.md`,
+`docs/dev/planning/P07302603.V9-closeout-and-release.plan.md`,
 `close/archive/decisions/D07302603.V9-streaming-support-first.md`,
 `docs/dev/specifications/V9ApiCatalogDesignGatedFeatures.md`, and
 `docs/dev/specifications/V9StreamingDesignGatedFeatures.md`.

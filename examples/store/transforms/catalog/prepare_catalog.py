@@ -34,6 +34,7 @@ class PrepareCatalog(Transform):
         return CatalogProduct.project(product)(
             product_id=product.id,
             product_name=product.name,
+            features=coalesce(product.features, arr_compact(array(product.category))),
             has_promotion=has_promotion,
             promotion_code=promotion.code,
             promotion_name=promotion.name,

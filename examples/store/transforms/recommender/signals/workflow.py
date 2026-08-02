@@ -15,7 +15,7 @@ from examples.store.transforms.recommender.signals.session import BuildSessionSi
 from structure import Transform, input, output, stage
 
 
-class BuildSignals(Transform):
+class BuildRecommendationSignals(Transform):
     """Build the streaming feedback signals consumed by recommendation serving."""
 
     session_events = input(SessionEvent, streaming=True)

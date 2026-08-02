@@ -18,6 +18,7 @@ from structure.plugin.pyspark.dsl.operations import StreamingSupport
 class _StatefulStreamingOperation:
     step: str
     operation: str
+    aggregate: object | None = None
 
 
 class ClassifyStreamingCompatibility:
@@ -42,16 +43,24 @@ class ClassifyStreamingCompatibility:
                     watermarks.setdefault(operation.watermark.scope, set()).add(operation.watermark.column)
                     continue
                 if operation.aggregate is not None:
+                    allow_chained_window = len(stateful_operations) == 1 and self._approved_chained_window(
+                        stateful_operations[0], operation.aggregate
+                    )
                     operation_findings = self._aggregate(
                         step.name,
                         operation.aggregate,
                         watermark_columns=watermarks.get(step.source_scope, set()),
                         scope=step.source_scope,
+                        allow_chained_window=allow_chained_window,
                     )
                     findings.extend(operation_findings)
                     if streaming_source and not operation_findings:
                         stateful_operations.append(
-                            _StatefulStreamingOperation(step.name, self._aggregate_operation(operation.aggregate))
+                            _StatefulStreamingOperation(
+                                step.name,
+                                self._aggregate_operation(operation.aggregate),
+                                aggregate=operation.aggregate,
+                            )
                         )
                 if operation.selected_rows is not None:
                     findings.extend(self._selected_rows(step.name, operation.selected_rows.direction))
@@ -150,6 +159,8 @@ class ClassifyStreamingCompatibility:
     ) -> tuple[StreamingFinding, ...]:
         if len(operations) <= 1:
             return ()
+        if len(operations) == 2 and self._approved_chained_window(operations[0], operations[1].aggregate):
+            return ()
         first, second = operations[0], operations[1]
         return (
             StreamingFinding(
@@ -175,6 +186,7 @@ class ClassifyStreamingCompatibility:
         *,
         watermark_columns: set[str],
         scope: str,
+        allow_chained_window: bool = False,
     ) -> tuple[StreamingFinding, ...]:
         session_keys = tuple(key.expression for key in aggregate.keys if self._is_session_window(key.expression))
         if session_keys:
@@ -185,7 +197,26 @@ class ClassifyStreamingCompatibility:
                 watermark_columns=watermark_columns,
                 scope=scope,
             )
+        if allow_chained_window and self._is_chained_window_aggregate(aggregate):
+            return ()
         if not watermark_columns:
+            if self._is_chained_window_aggregate(aggregate):
+                return (
+                    StreamingFinding(
+                        code="STREAM-E0801",
+                        support=StreamingSupport.BATCH_ONLY,
+                        step=step,
+                        operation="chained window aggregate",
+                        problem=(
+                            "A chained event-time window aggregate requires a preceding admitted window aggregate "
+                            "and window_time(...) between the two stateful stages."
+                        ),
+                        use=(
+                            "Keep the first window watermarked, project its TimeWindow value through window_time(...), "
+                            "and use that timestamp for the second window, or split the pipeline."
+                        ),
+                    ),
+                )
             return (
                 StreamingFinding(
                     code="STREAM-E0801",
@@ -243,6 +274,34 @@ class ClassifyStreamingCompatibility:
                 ),
             )
         return ()
+
+    def _approved_chained_window(
+        self,
+        first: _StatefulStreamingOperation,
+        second: object | None,
+    ) -> bool:
+        return first.aggregate is not None and second is not None and self._is_chained_window_pair(
+            first.aggregate, second
+        )
+
+    def _is_chained_window_pair(self, first, second) -> bool:
+        first_window = any(self._is_event_time_window(key.expression) for key in first.keys)
+        second_window = any(self._is_window_time_window(key.expression) for key in second.keys)
+        return first_window and second_window
+
+    def _is_chained_window_aggregate(self, aggregate) -> bool:
+        return any(self._is_window_time_window(key.expression) for key in aggregate.keys)
+
+    def _is_event_time_window(self, expression: PySparkExpressionRecipe) -> bool:
+        return expression.kind == "time_window" and bool(expression.args)
+
+    def _is_window_time_window(self, expression: PySparkExpressionRecipe) -> bool:
+        return (
+            expression.kind == "time_window"
+            and bool(expression.args)
+            and expression.args[0].kind == "window_time"
+            and bool(expression.args[0].args)
+        )
 
     def _session_finding(self, step: str, problem: str, use: str) -> StreamingFinding:
         return StreamingFinding(

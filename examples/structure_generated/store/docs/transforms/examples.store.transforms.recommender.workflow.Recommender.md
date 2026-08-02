@@ -10,8 +10,9 @@ Source: `examples.store.transforms.recommender.workflow.Recommender`
 - `fulfilled_orders`: `OrderFulfillment`
 - `feedback_impressions`: `RecommendationImpression`
 - `feedback_clicks`: `RecommendationClick`
-- `requests`: `RecommendationRequest`
 - `catalog`: `CatalogProduct`
+- `requests`: `RecommendationRequest`
+- `preferences`: `UserFeaturePreference`
 - `taxonomy`: `ExpandedProductTaxonomy`
 - `suppressions`: `MerchandisingSuppression`
 - `policy`: `MerchandisingPolicy`
@@ -36,6 +37,11 @@ Source: `examples.store.transforms.recommender.workflow.Recommender`
 - `signals.recommendation.publish_daily_clicks`: `DailyRecommendationClicks` -> `DailyRecommendationClicks`
 - `signals.recommendation.summarize_signals`: `DailyRecommendationImpressions` -> `ProductRecommendationSignalTotals`
 - `signals.recommendation.publish_signals`: `ProductRecommendationSignalTotals` -> `ProductRecommendationSignal`
+- `personalized.featured.build`: `CatalogProduct` -> `CatalogProduct`
+- `personalized.history.browse`: `SessionEvent` -> `PersonalizationHistory`
+- `personalized.history.purchase`: `OrderFulfillment` -> `PersonalizationHistory`
+- `personalized.history.merge`: `PersonalizationHistory` -> `PersonalizationHistory`
+- `personalized.scored.score`: `RecommendationRequest` -> `PersonalizedRecommendation`
 - `candidates.admitted.select`: `RecommendationRequest` -> `RecommendationCandidate`
 - `candidates.retrieved.retrieve`: `RecommendationCandidate` -> `RecommendationCandidate`
 - `candidates.filtered.evaluate`: `RecommendationCandidate` -> `RecommendationCandidateDecision`
@@ -58,7 +64,15 @@ Source: `examples.store.transforms.recommender.workflow.Recommender`
 - `feedback_clicks`
 - `feedback_impressions`
 - `impression`
+- `interaction`
+- `personal`
+- `personalized__featured__catalog`
+- `personalized__history__history`
+- `personalized__history__purchase_history`
+- `personalized__scored__requests`
 - `policy`
+- `preference`
+- `preferences`
 - `product`
 - `published__ranked_candidates`
 - `session`

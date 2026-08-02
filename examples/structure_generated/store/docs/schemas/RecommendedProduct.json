@@ -86,6 +86,48 @@
       "type": "double"
     },
     {
+      "column": "personal_score",
+      "name": "personal_score",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "personal_feature_score",
+      "name": "personal_feature_score",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "personal_history_score",
+      "name": "personal_history_score",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "personal_factorization_score",
+      "name": "personal_factorization_score",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "personal_contributed",
+      "name": "personal_contributed",
+      "nullable": false,
+      "type": "boolean"
+    },
+    {
+      "column": "personal_excluded",
+      "name": "personal_excluded",
+      "nullable": false,
+      "type": "boolean"
+    },
+    {
+      "column": "personalization_algorithm",
+      "name": "personalization_algorithm",
+      "nullable": true,
+      "type": "string"
+    },
+    {
       "column": "final_score",
       "name": "final_score",
       "nullable": false,

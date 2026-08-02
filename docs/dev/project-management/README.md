@@ -166,3 +166,6 @@ the PySpark Structured Streaming API surface while keeping lifecycle ownership e
 5. **Sprint 44: v9 hardening**: collect final evidence, refresh generated artifacts, and run `make build`.
 6. **Sprint 45: v9 API Catalog design gates**: resolve design-gated streaming rows and non-streaming APICatalog open
    rows through `docs/dev/planning/P07302601.V9-api-catalog-design-gates.plan.md`; XML remains low priority.
+7. **V9 closeout schedule**: execute Sprint 45 inventory, Sprint 46 contract and feature completion, Sprint 47 evidence
+   and catalog reconciliation, and Sprint 48 release hardening through
+   `docs/dev/planning/P07302603.V9-closeout-and-release.plan.md`.

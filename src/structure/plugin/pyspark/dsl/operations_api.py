@@ -883,6 +883,25 @@ def session_window(event_time: object, gap: str) -> Expression:
     )
 
 
+def window_time(window_value: object) -> Expression:
+    """Return the event-time timestamp represented by a ``TimeWindow`` struct.
+
+    The expression is intended for the second stage of a chained event-time
+    window aggregate. It accepts only a ``TimeWindow`` produced by
+    :func:`window`, keeping the chained-state contract visible to the compiler.
+    """
+    value = literal(window_value)
+    if not isinstance(value.type, StructType) or value.type.schema is not TimeWindow:
+        raise TypeError("window_time(...) requires a TimeWindow value produced by window(...)")
+    return Expression(
+        kind="window_time",
+        type=TimestampType(),
+        nullable=value.nullable,
+        data={"function": "window_time"},
+        args=(value,),
+    )
+
+
 def rows_between(start: "WindowBound", end: "WindowBound") -> "WindowFrame":
     """Create a row-count analytic window frame, like Spark ``rowsBetween``."""
     return _window_frame("rows", start, end)

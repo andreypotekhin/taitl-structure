@@ -8,3 +8,4 @@ from examples.store.transforms.evaluation.recommender.behavior import EvaluateRe
 from examples.store.transforms.recommender import Recommender
 from examples.store.transforms.taxonomy import ExpandProductTaxonomy
 from examples.store.transforms.orders.enrich import EnrichOrders
+from examples.store.transforms.personalization import BuildPersonalizedRecommendations

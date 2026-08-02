@@ -11,6 +11,7 @@ Module: `examples.store.schemas.catalog`
 | `product_id` | `product_id` | `string` | no |
 | `product_name` | `product_name` | `string` | yes |
 | `category` | `category` | `string` | yes |
+| `features` | `features` | `array<string!>` | no |
 | `active` | `active` | `boolean` | no |
 | `list_price` | `list_price` | `decimal(12,2)` | yes |
 | `rating` | `rating` | `double` | yes |

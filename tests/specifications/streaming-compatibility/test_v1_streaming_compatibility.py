@@ -95,6 +95,35 @@ class StreamWindowSummary(Schema):
     row_count = long(nullable=False)
 
 
+@transform(streaming=True)
+class StreamingFirstWindow(Transform):
+    rows = input(StreamRaw, streaming=True)
+    summary = output(StreamWindowSummary)
+
+    def summarize(self, row: StreamRaw) -> StreamWindowSummary:
+        watermark(row.event_time, delay="10 minutes")
+        group_by(bucket=window(row.event_time, "10 minutes"), id=row.id)
+        return StreamWindowSummary(
+            bucket=window(row.event_time, "10 minutes"),
+            id=row.id,
+            row_count=count(),
+        )
+
+
+@transform(streaming=True)
+class StreamingSecondWindow(Transform):
+    windows = input(StreamWindowSummary, streaming=True)
+    summary = output(StreamWindowSummary)
+
+    def summarize(self, row: StreamWindowSummary) -> StreamWindowSummary:
+        group_by(bucket=window(window_time(row.bucket), "1 hour"), id=row.id)
+        return StreamWindowSummary(
+            bucket=window(window_time(row.bucket), "1 hour"),
+            id=row.id,
+            row_count=count(),
+        )
+
+
 class StreamGlobalWindowSummary(Schema):
     bucket = struct(TimeWindow, nullable=False)
     row_count = long(nullable=False)
@@ -984,6 +1013,43 @@ def test_v4_event_time_window_has_time_window_schema_and_rejects_mixed_signature
     assert aggregate.keys[0].expression.type.schema is TimeWindow
     with pytest.raises(TypeError, match="cannot mix event-time arguments"):
         window("event_time", "10 minutes", partition_by="id")  # type: ignore[call-overload]
+
+
+def test_v9_window_time_requires_a_time_window_value() -> None:
+    with pytest.raises(TypeError, match="requires a TimeWindow value"):
+        window_time(StreamRaw.event_time)  # type: ignore[attr-defined]
+
+
+@pytest.mark.parametrize("profile", [">=3.5,<4.0", ">=4.0,<4.1"])
+def test_v9_chained_event_time_windows_are_streaming_compatible_without_spark(profile: str) -> None:
+    pipeline = StreamingFirstWindow(rows=object()).to(StreamingSecondWindow())
+    compiled = _compile_with_plugin(pipeline, profile)
+    plan = cast(PySparkExecutionPlan, compiled.lowered)
+
+    report = Compiler.compileability.streaming()(plan, required=True)
+
+    assert report.support is StreamingSupport.COMPATIBLE
+    assert report.findings == ()
+    second_aggregate = next(operation.aggregate for operation in plan.steps[1].operations if operation.aggregate)
+    assert second_aggregate.keys[0].expression.kind == "time_window"
+    assert second_aggregate.keys[0].expression.args[0].kind == "window_time"
+
+
+def test_v9_chained_event_time_windows_render_window_time_without_lifecycle_calls() -> None:
+    pipeline = StreamingFirstWindow(rows=object()).to(StreamingSecondWindow())
+    plan = cast(PySparkExecutionPlan, _compile_with_plugin(pipeline, ">=4.0,<4.1").lowered)
+    rendered = "\n".join(
+        PySpark.render.project()(
+            plan,
+            source_transform="tests.specifications.streaming_compatibility.StreamingWindowRollup",
+            generated_package="streaming_generated",
+            source_schema_modules={__name__: [StreamRaw, StreamWindowSummary]},
+        ).values()
+    )
+
+    assert "F.window_time(" in rendered
+    assert "readStream" not in rendered
+    assert "writeStream" not in rendered
 
 
 def test_v4_session_window_aggregate_requires_a_business_key_and_reports_append_only() -> None:

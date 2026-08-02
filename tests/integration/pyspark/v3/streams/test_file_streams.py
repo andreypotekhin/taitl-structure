@@ -22,7 +22,7 @@ from examples.streams.schemas.race import Gate, Paddler, Race
 from examples.streams.transforms.passages import PreparePassages
 from examples.streams.transforms.penalties import CorrelatePenalties
 from examples.streams.transforms.progress import BuildGateProgress
-from structure import Schema, Transform, input, output, special, transform
+from structure import Schema, Transform, input, output, special, stage, transform
 from structure.plugin.api.v1.model import BackendCapabilityError
 from structure.plugin.pyspark import *
 
@@ -58,6 +58,48 @@ class StreamVariantClean(Schema):
     safe_name = string(nullable=True)
     object = variant(nullable=True)
     is_json_null = boolean(nullable=True)
+
+
+class StreamWindowRaw(Schema):
+    id = string(nullable=False)
+    event_time = timestamp(nullable=False)
+
+
+class StreamWindowSummary(Schema):
+    bucket = struct(TimeWindow, nullable=False)
+    id = string(nullable=False)
+    row_count = long(nullable=False)
+
+
+@transform(streaming=True)
+class StreamingFirstWindow(Transform):
+    rows = input(StreamWindowRaw, streaming=True)
+    summary = output(StreamWindowSummary)
+
+    def summarize(self, row: StreamWindowRaw) -> StreamWindowSummary:
+        watermark(row.event_time, delay="10 minutes")
+        group_by(bucket=window(row.event_time, "10 minutes"), id=row.id)
+        return StreamWindowSummary(bucket=window(row.event_time, "10 minutes"), id=row.id, row_count=count())
+
+
+@transform(streaming=True)
+class StreamingSecondWindow(Transform):
+    windows = input(StreamWindowSummary, streaming=True)
+    summary = output(StreamWindowSummary)
+
+    def summarize(self, row: StreamWindowSummary) -> StreamWindowSummary:
+        group_by(bucket=window(window_time(row.bucket), "1 hour"), id=row.id)
+        return StreamWindowSummary(bucket=window(window_time(row.bucket), "1 hour"), id=row.id, row_count=count())
+
+
+@transform(streaming=True)
+class StreamingWindowRollup(Transform):
+    rows = input(StreamWindowRaw, streaming=True)
+    summary = output(StreamWindowSummary)
+
+    first = stage(StreamingFirstWindow(rows=rows))
+    second = stage(StreamingSecondWindow(windows=first.summary))
+    result = output(summary=second.summary)
 
 
 @transform(streaming=True)
@@ -350,6 +392,67 @@ def test_variant_helpers_run_as_profile_gated_streaming_transforms(spark, tmp_pa
             "is_json_null": True,
         }
     ]
+    assert generated_rows == online_rows
+
+
+def test_chained_event_time_windows_run_online_and_generated(spark, tmp_path) -> None:
+    if backend_name().startswith("spark-connect"):
+        pytest.skip("chained window evidence is for the ordinary PySpark runtime")
+
+    package = "integration_streaming_window_generated"
+    files = render_generated_project(
+        StreamingWindowRollup,
+        source_transform=f"{__name__}.StreamingWindowRollup",
+        generated_package=package,
+        source_schema_modules={
+            __name__: [StreamWindowRaw, StreamWindowSummary],
+            "structure.plugin.pyspark.dsl.TimeWindow": [TimeWindow],
+        },
+    )
+    source = Path(__file__).resolve().parents[5] / ".pytest-workspace-tmp" / "integration" / f"window-{uuid4().hex}"
+    try:
+        _write_json(
+            source / "events.json",
+            [
+                {"id": "event-1", "event_time": "2026-01-01T10:01:00Z"},
+                {"id": "event-1", "event_time": "2026-01-01T10:02:00Z"},
+                {"id": "watermark-advance", "event_time": "2026-01-01T12:00:00Z"},
+            ],
+        )
+
+        with generated_project(tmp_path, package, files):
+            from pyspark.sql.types import StringType, StructField, StructType, TimestampType
+
+            schema = StructType(
+                [
+                    StructField("id", StringType(), nullable=False),
+                    StructField("event_time", TimestampType(), nullable=False),
+                ]
+            )
+            online_input = read_json_stream(spark, schema, source)
+            generated_input = read_json_stream(spark, schema, source)
+            online_result = StreamingWindowRollup(rows=online_input).run(session(spark, execution_mode="online")).summary
+            generated_result = StreamingWindowRollup(rows=generated_input).run(
+                session(spark, execution_mode="generated", generated_package=package)
+            ).summary
+            online_rows = _collect_stream_projection(
+                online_result,
+                tmp_path / "online-window-checkpoint",
+                output_mode="append",
+                order_by="id",
+                columns=("id", "row_count"),
+            )
+            generated_rows = _collect_stream_projection(
+                generated_result,
+                tmp_path / "generated-window-checkpoint",
+                output_mode="append",
+                order_by="id",
+                columns=("id", "row_count"),
+            )
+    finally:
+        shutil.rmtree(source, ignore_errors=True)
+
+    assert online_rows == [{"id": "event-1", "row_count": 1}]
     assert generated_rows == online_rows
 
 

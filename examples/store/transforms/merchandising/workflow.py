@@ -14,6 +14,7 @@ from examples.store.schemas.merchandising import (
     SessionEvent,
 )
 from examples.store.schemas.order import OrderFulfillment
+from examples.store.schemas.personalization import UserFeaturePreference
 from examples.store.schemas.product import BlockedProduct, Product
 from examples.store.schemas.promotion import Promotion
 from examples.store.schemas.taxonomy import ProductTaxonomy, TaxonomyNode
@@ -35,6 +36,7 @@ class Merchandising(Transform):
     taxonomy_nodes = input(TaxonomyNode)
     session_events = input(SessionEvent, streaming=True)
     fulfilled_orders = input(OrderFulfillment, streaming=True)
+    preferences = input(UserFeaturePreference)
     feedback_impressions = input(RecommendationImpression, streaming=True)
     feedback_clicks = input(RecommendationClick, streaming=True)
     recommended_products = output(RecommendedProduct)
@@ -65,6 +67,7 @@ class Merchandising(Transform):
             fulfilled_orders=fulfilled_orders,
             feedback_impressions=feedback_impressions,
             feedback_clicks=feedback_clicks,
+            preferences=preferences,
         )
     )
     result = output(

@@ -14,6 +14,7 @@ PRODUCT_SCHEMA = T.StructType(PRODUCT_BASE_SCHEMA.fields + [
     T.StructField("id", T.StringType(), False),
     T.StructField("name", T.StringType(), True),
     T.StructField("category", T.StringType(), True),
+    T.StructField("features", T.ArrayType(T.StringType(), containsNull=False), True),
     T.StructField("active", T.BooleanType(), False),
     T.StructField("list_price", T.DecimalType(12, 2), True),
     T.StructField("weight", T.FloatType(), True),

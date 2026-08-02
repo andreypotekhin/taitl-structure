@@ -1,0 +1,44 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "tenant",
+      "name": "tenant",
+      "nullable": false,
+      "type": "TenantKey"
+    },
+    {
+      "column": "customer_id",
+      "name": "customer_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "session_id",
+      "name": "session_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "product_id",
+      "name": "product_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "category",
+      "name": "category",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "history_score",
+      "name": "history_score",
+      "nullable": false,
+      "type": "double"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.store.schemas.personalization",
+  "name": "PersonalizationHistory"
+}

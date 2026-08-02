@@ -37,6 +37,15 @@ def _same_data_type(actual, expected) -> bool:
             actual.valueType,
             expected.valueType,
         )
+    if actual_name == "StructType":
+        actual_fields = {field.name: field for field in actual.fields}
+        expected_fields = {field.name: field for field in expected.fields}
+        if actual_fields.keys() != expected_fields.keys():
+            return False
+        return all(
+            _same_data_type(actual_fields[name].dataType, expected_fields[name].dataType)
+            for name in expected_fields
+        )
     return False
 
 

@@ -73,6 +73,8 @@ class MapPySparkExpression:
             return "expression", "python_udf"
         if expression.kind == "time_window":
             return "streaming", "time_window"
+        if expression.kind == "window_time":
+            return "streaming", "window_time"
         if expression.kind == "transform_expression" and (expression.data or {}).get("function") == "session_window":
             return "streaming", "session_window"
         return "expression", "standard_helper_call"

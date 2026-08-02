@@ -11,6 +11,7 @@ Module: `examples.store.schemas.product`
 | `id` | `id` | `string` | no |
 | `name` | `name` | `string` | yes |
 | `category` | `category` | `string` | yes |
+| `features` | `features` | `array<string!>` | yes |
 | `active` | `active` | `boolean` | no |
 | `list_price` | `list_price` | `decimal(12,2)` | yes |
 | `weight` | `weight` | `float` | yes |

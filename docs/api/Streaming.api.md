@@ -26,6 +26,7 @@ Examples abbreviate `order` as `o` and a second streaming relation as `c`.
 | --- | --- | --- |
 | `watermark(...)` | `withWatermark` | `watermark(o.event_time, delay="10 minutes")` |
 | `window(event_time, duration, slide=None, start=None)` | `functions.window` | `window(o.event_time, "10 minutes")` |
+| `window_time(window_value)` | `functions.window_time` | `window_time(first_window.bucket)` |
 | `session_window(event_time, gap)` | `functions.session_window` | `session_window(o.event_time, "5 minutes")` |
 | `drop_duplicates(...)` | `dropDuplicates` / `dropDuplicatesWithinWatermark` | `drop_duplicates(o.id)` |
 | `drop_duplicates_within_watermark(...)` | `dropDuplicatesWithinWatermark` | `drop_duplicates_within_watermark(o.id)` |
@@ -40,6 +41,10 @@ Examples abbreviate `order` as `o` and a second streaming relation as `c`.
   one call cannot mix the two argument families, while separate calls may use either form in the same transform.
 - Event-time windows return `Struct[TimeWindow]` with non-null `start` and `end` timestamps. Tumbling and sliding
   aggregates require a preceding watermark on that same event-time field and use caller-owned `append` or `update` mode.
+- `window_time(...)` accepts only a `TimeWindow` produced by `window(...)` and is supported for one chained pair:
+  a watermarked first event-time window aggregate, stateless work, then a second `window(window_time(first_window), ...)`
+  aggregate. The generated transform uses public `functions.window_time`; broader chained stateful operations remain
+  rejected with `STREAM-E0801`.
 - `session_window(...)` requires a preceding watermark on the same event-time field, a static positive gap, one
   ordinary grouping key in addition to the session key, and caller-owned `append` mode. Dynamic gaps remain deferred.
 - `drop_duplicates(...)` remains cross-mode: batch lowers to `dropDuplicates`, while a streaming frame lowers to

@@ -34,6 +34,12 @@
       "type": "string"
     },
     {
+      "column": "features",
+      "name": "features",
+      "nullable": true,
+      "type": "array<string!>"
+    },
+    {
       "column": "active",
       "name": "active",
       "nullable": false,

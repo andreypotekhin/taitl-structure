@@ -15,12 +15,14 @@ from examples.store.schemas.merchandising import (
     SessionEvent,
 )
 from examples.store.schemas.order import OrderFulfillment
+from examples.store.schemas.personalization import UserFeaturePreference
 from examples.store.schemas.taxonomy import ExpandedProductTaxonomy
+from examples.store.transforms.personalization import BuildPersonalizedRecommendations
 from examples.store.transforms.recommender.candidates import BuildRecommendationCandidates
 from examples.store.transforms.recommender.diversify import DiversifyRecommendations
 from examples.store.transforms.recommender.publish import SelectRecommendedProducts
 from examples.store.transforms.recommender.ranking import Ranker, RankRecommendationCandidates
-from examples.store.transforms.recommender.signals import BuildSignals
+from examples.store.transforms.recommender.signals import BuildRecommendationSignals
 from examples.store.transforms.recommender.summarize import SummarizeRecommendationRuns
 from structure import Transform, input, output, parameter, stage
 
@@ -36,6 +38,7 @@ class Recommender(Transform):
     taxonomy = input(ExpandedProductTaxonomy)
     session_events = input(SessionEvent, streaming=True)
     fulfilled_orders = input(OrderFulfillment, streaming=True)
+    preferences = input(UserFeaturePreference)
     feedback_impressions = input(RecommendationImpression, streaming=True)
     feedback_clicks = input(RecommendationClick, streaming=True)
     recommended_products = output(RecommendedProduct)
@@ -46,11 +49,20 @@ class Recommender(Transform):
     recommendation_purchases = output(RecommendationPurchase)
 
     signals = stage(
-        BuildSignals(
+        BuildRecommendationSignals(
             session_events=session_events,
             fulfilled_orders=fulfilled_orders,
             impressions=feedback_impressions,
             clicks=feedback_clicks,
+        )
+    )
+    personalized = stage(
+        BuildPersonalizedRecommendations(
+            requests=requests,
+            catalog=catalog,
+            preferences=preferences,
+            session_events=session_events,
+            fulfilled_orders=fulfilled_orders,
         )
     )
 
@@ -71,6 +83,7 @@ class Recommender(Transform):
             boosts=boosts,
             suppressions=suppressions,
             signals=signals.recommendation_signals,
+            personalized=personalized.recommendations,
             ranker=ranker,
         )
     )

@@ -106,6 +106,7 @@ sample select_first_qualified signum slice sha1 sha2 second right_join rollup ro
 rolling_min rolling_sum scan subtract sum stddev sqrt size sequence session_window skewness split translate substring temporal_one
 to_csv to_decimal to_date to_json to_timestamp TimeWindow trim trunc try_element_at unbase64 union_all union_by_name upper unbounded_following unbounded_preceding
 variance when year xxhash64 zeroifnull where watermark window window_avg window_bool_and window_bool_or
+window_time
 window_collect_list window_collect_set window_count window_count_distinct window_max window_min window_sum
 window_stddev window_variance is_valid_variant is_variant_null parse_json schema_of_variant schema_of_variant_agg
 to_variant_object try_parse_json try_variant_get variant_get
@@ -345,6 +346,7 @@ __all__ = [  # noqa: F405
     "zeroifnull",
     "where",
     "watermark",
+    "window_time",
     "is_valid_variant",
     "is_variant_null",
     "parse_json",

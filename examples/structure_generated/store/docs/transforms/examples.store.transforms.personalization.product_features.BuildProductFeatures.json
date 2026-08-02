@@ -1,0 +1,48 @@
+{
+  "dependencies": [],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "catalog",
+      "ordinal": 0,
+      "schema": "CatalogProduct"
+    }
+  ],
+  "name": "BuildProductFeatures",
+  "outputs": [
+    {
+      "name": "featured",
+      "ordinal": 0,
+      "schema": "CatalogProduct"
+    }
+  ],
+  "source": "examples.store.transforms.personalization.product_features.BuildProductFeatures",
+  "step_methods": [
+    {
+      "input_lane": "catalog",
+      "input_schema": "CatalogProduct",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "product",
+          "schema": "CatalogProduct",
+          "source": "catalog"
+        }
+      ],
+      "name": "build",
+      "output_lane": "catalog",
+      "output_schema": "CatalogProduct",
+      "results": [
+        {
+          "frame": "catalog",
+          "lane": "catalog",
+          "schema": "CatalogProduct"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/product_features.py",
+    "traceability": "traceability/transforms/product_features.BuildProductFeatures.json"
+  }
+}

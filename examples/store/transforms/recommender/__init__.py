@@ -11,22 +11,24 @@ from examples.store.transforms.recommender.signals import (
     BuildProductSignals,
     BuildPurchaseSignals,
     BuildSessionSignals,
-    BuildSignals,
+    BuildRecommendationSignals,
 )
 from examples.store.transforms.recommender.summarize import SummarizeRecommendationRuns
 from examples.store.transforms.recommender.workflow import Recommender
+from examples.store.transforms.personalization import BuildPersonalizedRecommendations
 
 __all__ = [
     "BuildRecommendationCandidates",
     "BuildProductSignals",
     "BuildPurchaseSignals",
     "BuildSessionSignals",
-    "BuildSignals",
+    "BuildRecommendationSignals",
     "FilterRecommendationCandidates",
     "GenerateRecommendationCandidates",
     "DiversifyRecommendations",
     "RankRecommendationCandidates",
     "Recommender",
+    "BuildPersonalizedRecommendations",
     "SelectRecommendedProducts",
     "SelectRecommendationCandidates",
     "SummarizeRecommendationRuns",

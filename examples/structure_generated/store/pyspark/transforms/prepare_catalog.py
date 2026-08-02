@@ -61,6 +61,9 @@ class PrepareCatalogGenerated:
             F.col("product.id").alias("product_id"),
             F.col("product.name").alias("product_name"),
             F.col("product.category"),
+            F.coalesce(F.col("product.features"), F.array_compact(F.array(F.col("product.category")))).alias(
+                "features"
+            ),
             F.col("product.active"),
             F.col("product.list_price"),
             F.col("product.rating"),

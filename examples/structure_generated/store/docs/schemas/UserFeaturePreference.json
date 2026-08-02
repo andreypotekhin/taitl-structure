@@ -1,0 +1,38 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "tenant",
+      "name": "tenant",
+      "nullable": false,
+      "type": "TenantKey"
+    },
+    {
+      "column": "customer_id",
+      "name": "customer_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "included_categories",
+      "name": "included_categories",
+      "nullable": false,
+      "type": "array<string!>"
+    },
+    {
+      "column": "excluded_categories",
+      "name": "excluded_categories",
+      "nullable": false,
+      "type": "array<string!>"
+    },
+    {
+      "column": "updated_at",
+      "name": "updated_at",
+      "nullable": false,
+      "type": "timestamp"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.store.schemas.personalization",
+  "name": "UserFeaturePreference"
+}

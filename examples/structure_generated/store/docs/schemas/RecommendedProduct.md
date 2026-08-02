@@ -20,6 +20,13 @@ Module: `examples.store.schemas.merchandising.recommendation`
 | `suppression_penalty` | `suppression_penalty` | `double` | no |
 | `inventory_boost` | `inventory_boost` | `double` | no |
 | `feedback_score` | `feedback_score` | `double` | no |
+| `personal_score` | `personal_score` | `double` | no |
+| `personal_feature_score` | `personal_feature_score` | `double` | no |
+| `personal_history_score` | `personal_history_score` | `double` | no |
+| `personal_factorization_score` | `personal_factorization_score` | `double` | no |
+| `personal_contributed` | `personal_contributed` | `boolean` | no |
+| `personal_excluded` | `personal_excluded` | `boolean` | no |
+| `personalization_algorithm` | `personalization_algorithm` | `string` | yes |
 | `final_score` | `final_score` | `double` | no |
 | `feedback_contributed` | `feedback_contributed` | `boolean` | no |
 | `candidate_source` | `candidate_source` | `string` | no |

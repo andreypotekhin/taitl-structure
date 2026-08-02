@@ -592,6 +592,14 @@
       "constant": "ORDER_WITH_PROMOTION_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.order"
     },
+    "PersonalizationHistory": {
+      "constant": "PERSONALIZATION_HISTORY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.personalization"
+    },
+    "PersonalizedRecommendation": {
+      "constant": "PERSONALIZED_RECOMMENDATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.personalization"
+    },
     "Product": {
       "constant": "PRODUCT_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.product"
@@ -735,6 +743,10 @@
     "TenantKey": {
       "constant": "TENANT_KEY_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "UserFeaturePreference": {
+      "constant": "USER_FEATURE_PREFERENCE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.personalization"
     },
     "Warehouse": {
       "constant": "WAREHOUSE_SCHEMA",

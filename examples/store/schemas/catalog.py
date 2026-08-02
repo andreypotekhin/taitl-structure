@@ -9,6 +9,7 @@ class CatalogProduct(Schema):
     product_id = string(nullable=False)
     product_name = string(nullable=True)
     category = string(nullable=True)
+    features = array(string(), contains_null=False, nullable=False)
     active = boolean(nullable=False)
     list_price = decimal(12, 2, nullable=True)
     rating = double(nullable=True)

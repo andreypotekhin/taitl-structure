@@ -429,9 +429,10 @@ recorded targeted live PySpark 3.5/4.0 restart evidence. Effective checked parit
 
 ## +M14: v9 PySpark Streaming API Coverage and Adoption
 
-Status: complete for coverage and adoption, with a v9 follow-up plan active for design-gated APICatalog rows. Sprints
+Status: complete for coverage and adoption, with the V9 design-gate follow-up and release schedule active. Sprints
 40--44 delivered the checked PySpark streaming API ledger, caller-owned adoption recipe, stateful/order-sensitive gap
-reclassification, lifecycle diagnostics, documentation, live PySpark 3.5/4.0 recipe evidence, and final build evidence.
+reclassification, lifecycle diagnostics, documentation, live PySpark 3.5/4.0 recipe evidence, and initial build
+evidence. Sprints 45--48 close the remaining design gates and harden the release.
 The governing completed plan is
 `close/archive/planning/P07292602.V9-pyspark-streaming-api-coverage.plan.md`, and the governing specification is
 `docs/dev/specifications/V9PySparkStreamingApiCoverage.md`.
@@ -452,8 +453,11 @@ The governing completed plan is
   `docs/dev/design/V9StreamingDesignGates.md`,
   `docs/dev/specifications/V9StreamingDesignGatedFeatures.md`,
   `docs/dev/design/V9ApiCatalogDesignGates.md`,
-  `docs/dev/specifications/V9ApiCatalogDesignGatedFeatures.md`, and
-  `docs/dev/planning/P07302601.V9-api-catalog-design-gates.plan.md`.
+  `docs/dev/specifications/V9ApiCatalogDesignGatedFeatures.md`,
+`docs/dev/planning/P07302601.V9-api-catalog-design-gates.plan.md`, and the Variant child plan
+`docs/dev/planning/P07302602.V9-variant-type-and-helpers.plan.md`.
+The dated execution schedule is
+`docs/dev/planning/P07302603.V9-closeout-and-release.plan.md`.
 - Diagnostics and explain output tell users whether a streaming issue should be fixed in Structure source,
   caller-owned lifecycle code, or a batch materialization boundary.
 - Every admitted Structure-owned streaming claim has PySpark 3.5/4.0 live evidence, generated-source lifecycle scans,

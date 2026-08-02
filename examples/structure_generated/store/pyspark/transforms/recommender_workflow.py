@@ -25,6 +25,11 @@ from examples.structure_generated.store.pyspark.schemas.intermediate import (
     RANKED_RECOMMENDATION_CANDIDATE_SCHEMA,
 )
 from examples.structure_generated.store.pyspark.schemas.order import ORDER_FULFILLMENT_SCHEMA
+from examples.structure_generated.store.pyspark.schemas.personalization import (
+    PERSONALIZATION_HISTORY_SCHEMA,
+    PERSONALIZED_RECOMMENDATION_SCHEMA,
+    USER_FEATURE_PREFERENCE_SCHEMA,
+)
 from examples.structure_generated.store.pyspark.schemas.policy import (
     MERCHANDISING_BOOST_SCHEMA,
     MERCHANDISING_POLICY_SCHEMA,
@@ -503,8 +508,340 @@ class BuildProductSignalsGenerated:
         }
 
 
+class BuildProductFeaturesGenerated:
+    def _step_personalized_featured_build_8(self, frames):
+        # Step method: personalized.featured.build
+        personalized__featured__catalog = frames["catalog"].alias("catalog_product")
+        personalized__featured__catalog = personalized__featured__catalog.select(
+            F.col("catalog_product.tenant"),
+            F.col("catalog_product.audit"),
+            F.col("catalog_product.product_id"),
+            F.col("catalog_product.product_name"),
+            F.col("catalog_product.category"),
+            F.array_union(
+                F.col("catalog_product.features"), F.array_compact(F.array(F.col("catalog_product.category")))
+            ).alias("features"),
+            F.col("catalog_product.active"),
+            F.col("catalog_product.list_price"),
+            F.col("catalog_product.rating"),
+            F.col("catalog_product.has_promotion"),
+            F.col("catalog_product.promotion_code"),
+            F.col("catalog_product.promotion_name"),
+            F.col("catalog_product.promotion_discount"),
+            F.col("catalog_product.base_score"),
+            F.col("catalog_product.promotion_score"),
+            F.col("catalog_product.eligible"),
+        )
+        assert_schema(personalized__featured__catalog, CATALOG_PRODUCT_SCHEMA, name="CatalogProduct", mode="strict")
+        return {
+            "personalized__featured__catalog": personalized__featured__catalog,
+        }
+
+
+class BuildPersonalizationHistoryGenerated:
+    def _step_personalized_history_browse_9(self, frames):
+        # Step method: personalized.history.browse
+        personalized__history__session_history = frames["session_events"].alias("session_event")
+        personalized__history__session_history = personalized__history__session_history.where(
+            (F.col("session_event.product_id").isNotNull())
+        )
+        personalized__history__session_history = (
+            personalized__history__session_history.groupBy(
+                F.col("session_event.tenant.tenant_id").alias("tenant_id"),
+                F.col("session_event.customer_id").alias("customer_id"),
+                F.col("session_event.session_id").alias("session_id"),
+                F.col("session_event.product_id").alias("product_id"),
+                F.col("session_event.category").alias("category"),
+            )
+            .agg(
+                F.first(F.col("session_event.tenant"), ignorenulls=False).alias("tenant"),
+                F.sum(
+                    F.when((F.col("session_event.event_type") == F.lit('product_view')), F.lit(1.0)).otherwise(
+                        F.when((F.col("session_event.event_type") == F.lit('add_to_cart')), F.lit(3.0)).otherwise(
+                            F.lit(2.0)
+                        )
+                    )
+                )
+                .cast(T.DoubleType())
+                .alias("history_score"),
+            )
+            .select(
+                F.col("tenant"),
+                F.col("customer_id"),
+                F.col("session_id"),
+                F.col("product_id"),
+                F.col("category"),
+                F.col("history_score"),
+            )
+        )
+        assert_schema(
+            personalized__history__session_history,
+            PERSONALIZATION_HISTORY_SCHEMA,
+            name="PersonalizationHistory",
+            mode="strict",
+        )
+        return {
+            "personalized__history__session_history": personalized__history__session_history,
+        }
+
+    def _step_personalized_history_purchase_10(self, frames):
+        # Step method: personalized.history.purchase
+        personalized__history__purchase_history = frames["fulfilled_orders"].alias("order_fulfillment")
+        personalized__history__purchase_history = (
+            personalized__history__purchase_history.groupBy(
+                F.col("order_fulfillment.tenant.tenant_id").alias("tenant_id"),
+                F.col("order_fulfillment.customer_id").alias("customer_id"),
+                F.lit(None).alias("session_id"),
+                F.col("order_fulfillment.product_id").alias("product_id"),
+                F.col("order_fulfillment.product_category").alias("category"),
+            )
+            .agg(
+                F.first(F.col("order_fulfillment.tenant"), ignorenulls=False).alias("tenant"),
+                F.sum(F.lit(5.0)).cast(T.DoubleType()).alias("history_score"),
+            )
+            .select(
+                F.col("tenant"),
+                F.col("customer_id"),
+                F.col("session_id"),
+                F.col("product_id"),
+                F.col("category"),
+                F.col("history_score"),
+            )
+        )
+        assert_schema(
+            personalized__history__purchase_history,
+            PERSONALIZATION_HISTORY_SCHEMA,
+            name="PersonalizationHistory",
+            mode="strict",
+        )
+        return {
+            "personalized__history__purchase_history": personalized__history__purchase_history,
+        }
+
+    def _step_personalized_history_merge_11(self, frames):
+        # Step method: personalized.history.merge
+        personalized__history__history = frames["personalized__history__session_history"].alias(
+            "personalization_history"
+        )
+        personalized__history__history = personalized__history__history.union(
+            frames["personalized__history__purchase_history"]
+        )
+        personalized__history__history = (
+            personalized__history__history.groupBy(
+                F.col("tenant.tenant_id").alias("tenant_id"),
+                F.col("customer_id").alias("customer_id"),
+                F.col("session_id").alias("session_id"),
+                F.col("product_id").alias("product_id"),
+                F.col("category").alias("category"),
+            )
+            .agg(
+                F.first(F.col("tenant"), ignorenulls=False).alias("tenant"),
+                F.sum(F.col("history_score")).cast(T.DoubleType()).alias("history_score"),
+            )
+            .select(
+                F.col("tenant"),
+                F.col("customer_id"),
+                F.col("session_id"),
+                F.col("product_id"),
+                F.col("category"),
+                F.col("history_score"),
+            )
+        )
+        assert_schema(
+            personalized__history__history, PERSONALIZATION_HISTORY_SCHEMA, name="PersonalizationHistory", mode="strict"
+        )
+        return {
+            "personalized__history__history": personalized__history__history,
+        }
+
+
+class ScorePersonalizedRecommendationsGenerated:
+    def _step_personalized_scored_score_12(self, frames):
+        # Step method: personalized.scored.score
+        personalized__scored__requests = frames["requests"].alias("recommendation_request")
+        personalized__featured__catalog_joined = frames["personalized__featured__catalog"].alias(
+            "personalized__featured__catalog"
+        )
+        personalized__scored__requests = personalized__scored__requests.join(
+            personalized__featured__catalog_joined,
+            (
+                (
+                    F.col("personalized__featured__catalog.tenant.tenant_id")
+                    == F.col("recommendation_request.tenant.tenant_id")
+                )
+                & F.col("personalized__featured__catalog.eligible")
+            ),
+            "inner",
+        )
+        preferences_2_joined = frames["preferences"].alias("preferences_2")
+        personalized__scored__requests = personalized__scored__requests.join(
+            preferences_2_joined,
+            (
+                (
+                    (F.col("preferences_2.tenant.tenant_id") == F.col("recommendation_request.tenant.tenant_id"))
+                    & F.col("recommendation_request.customer_id").isNotNull()
+                )
+                & (F.col("preferences_2.customer_id") == F.col("recommendation_request.customer_id"))
+            ),
+            "left",
+        )
+        personalized__history__history_3_joined = frames["personalized__history__history"].alias(
+            "personalized__history__history_3"
+        )
+        personalized__scored__requests = personalized__scored__requests.join(
+            personalized__history__history_3_joined,
+            (
+                (
+                    (
+                        F.col("personalized__history__history_3.tenant.tenant_id")
+                        == F.col("recommendation_request.tenant.tenant_id")
+                    )
+                    & F.col("personalized__history__history_3.category").eqNullSafe(
+                        F.col("personalized__featured__catalog.category")
+                    )
+                )
+                & (
+                    (
+                        F.col("recommendation_request.customer_id").isNotNull()
+                        & F.col("personalized__history__history_3.customer_id").eqNullSafe(
+                            F.col("recommendation_request.customer_id")
+                        )
+                    )
+                    | (
+                        F.col("recommendation_request.session_id").isNotNull()
+                        & F.col("personalized__history__history_3.session_id").eqNullSafe(
+                            F.col("recommendation_request.session_id")
+                        )
+                    )
+                )
+            ),
+            "left",
+        )
+        personalized__scored__requests = personalized__scored__requests.select(
+            F.col("recommendation_request.tenant"),
+            F.col("recommendation_request.id").alias("request_id"),
+            F.col("recommendation_request.customer_id"),
+            F.col("recommendation_request.session_id"),
+            F.col("personalized__featured__catalog.product_id"),
+            F.when(
+                F.coalesce(
+                    F.array_contains(
+                        F.col("preferences_2.included_categories"), F.col("personalized__featured__catalog.category")
+                    ),
+                    F.lit(False),
+                ),
+                F.lit(1.0),
+            )
+            .otherwise(F.lit(0.0))
+            .alias("feature_score"),
+            F.coalesce(F.col("personalized__history__history_3.history_score"), F.lit(0.0)).alias("history_score"),
+            F.coalesce(
+                F.when(
+                    F.coalesce(
+                        F.col("recommendation_request.customer_id"), F.col("recommendation_request.session_id")
+                    ).isNotNull(),
+                    (
+                        (
+                            F.abs(
+                                F.xxhash64(
+                                    F.col("recommendation_request.tenant.tenant_id"),
+                                    F.coalesce(
+                                        F.col("recommendation_request.customer_id"),
+                                        F.col("recommendation_request.session_id"),
+                                    ),
+                                    F.col("personalized__featured__catalog.product_id"),
+                                )
+                            )
+                            % F.lit(100)
+                        )
+                        / F.lit(100.0)
+                    ),
+                ).otherwise(F.lit(0.0)),
+                F.lit(0.0),
+            ).alias("factorization_score"),
+            F.when(
+                F.coalesce(
+                    F.array_contains(
+                        F.col("preferences_2.excluded_categories"), F.col("personalized__featured__catalog.category")
+                    ),
+                    F.lit(False),
+                ),
+                F.lit(0.0),
+            )
+            .otherwise(
+                (
+                    (
+                        F.when(
+                            F.coalesce(
+                                F.array_contains(
+                                    F.col("preferences_2.included_categories"),
+                                    F.col("personalized__featured__catalog.category"),
+                                ),
+                                F.lit(False),
+                            ),
+                            F.lit(1.0),
+                        ).otherwise(F.lit(0.0))
+                        + (F.coalesce(F.col("personalized__history__history_3.history_score"), F.lit(0.0)) * F.lit(0.1))
+                    )
+                    + (
+                        F.coalesce(
+                            F.when(
+                                F.coalesce(
+                                    F.col("recommendation_request.customer_id"),
+                                    F.col("recommendation_request.session_id"),
+                                ).isNotNull(),
+                                (
+                                    (
+                                        F.abs(
+                                            F.xxhash64(
+                                                F.col("recommendation_request.tenant.tenant_id"),
+                                                F.coalesce(
+                                                    F.col("recommendation_request.customer_id"),
+                                                    F.col("recommendation_request.session_id"),
+                                                ),
+                                                F.col("personalized__featured__catalog.product_id"),
+                                            )
+                                        )
+                                        % F.lit(100)
+                                    )
+                                    / F.lit(100.0)
+                                ),
+                            ).otherwise(F.lit(0.0)),
+                            F.lit(0.0),
+                        )
+                        * F.lit(0.1)
+                    )
+                )
+            )
+            .alias("personal_score"),
+            F.coalesce(
+                F.array_contains(
+                    F.col("preferences_2.included_categories"), F.col("personalized__featured__catalog.category")
+                ),
+                F.lit(False),
+            ).alias("matched_category"),
+            F.coalesce(
+                F.array_contains(
+                    F.col("preferences_2.excluded_categories"), F.col("personalized__featured__catalog.category")
+                ),
+                F.lit(False),
+            ).alias("excluded_by_preference"),
+            F.lit('hashed-latent').alias("algorithm_id"),
+            F.lit('v1').alias("algorithm_version"),
+        )
+        assert_schema(
+            personalized__scored__requests,
+            PERSONALIZED_RECOMMENDATION_SCHEMA,
+            name="PersonalizedRecommendation",
+            mode="strict",
+        )
+        return {
+            "personalized__scored__requests": personalized__scored__requests,
+        }
+
+
 class SelectRecommendationCandidatesGenerated:
-    def _step_candidates_admitted_select_8(self, frames):
+    def _step_candidates_admitted_select_13(self, frames):
         # Step method: candidates.admitted.select
         candidates__admitted__requests = frames["requests"].alias("recommendation_request")
         catalog_joined = frames["catalog"].alias("catalog")
@@ -562,7 +899,7 @@ class SelectRecommendationCandidatesGenerated:
 
 
 class GenerateRecommendationCandidatesGenerated:
-    def _step_candidates_retrieved_retrieve_9(self, frames):
+    def _step_candidates_retrieved_retrieve_14(self, frames):
         # Step method: candidates.retrieved.retrieve
         candidates__retrieved__admitted = frames["candidates__admitted__requests"].alias("recommendation_candidate")
         taxonomy_joined = frames["taxonomy"].alias("taxonomy")
@@ -672,7 +1009,7 @@ class GenerateRecommendationCandidatesGenerated:
 
 
 class FilterRecommendationCandidatesGenerated:
-    def _step_candidates_filtered_evaluate_10(self, frames):
+    def _step_candidates_filtered_evaluate_15(self, frames):
         # Step method: candidates.filtered.evaluate
         candidates__filtered__evaluated = frames["candidates__retrieved__admitted"].alias("recommendation_candidate")
         suppressions_joined = frames["suppressions"].alias("suppressions")
@@ -747,7 +1084,7 @@ class FilterRecommendationCandidatesGenerated:
             "candidates__filtered__evaluated": candidates__filtered__evaluated,
         }
 
-    def _step_candidates_filtered_publish_11(self, frames):
+    def _step_candidates_filtered_publish_16(self, frames):
         # Step method: candidates.filtered.publish
         candidates__filtered__filtered = frames["candidates__retrieved__admitted"].alias("recommendation_candidate")
         candidates__filtered__evaluated_joined = frames["candidates__filtered__evaluated"].alias(
@@ -813,7 +1150,7 @@ class FilterRecommendationCandidatesGenerated:
 
 
 class RankRecommendationCandidatesGenerated:
-    def _step_ranked_rank_12(self, frames):
+    def _step_ranked_rank_17(self, frames):
         # Step method: ranked.rank
         ranked__candidates = frames["candidates__filtered__filtered"].alias("recommendation_candidate")
         policy_joined = frames["policy"].alias("policy")
@@ -890,6 +1227,29 @@ class RankRecommendationCandidatesGenerated:
             ),
             "left",
         )
+        personalized__scored__requests_5_joined = frames["personalized__scored__requests"].alias(
+            "personalized__scored__requests_5"
+        )
+        ranked__candidates = ranked__candidates.join(
+            personalized__scored__requests_5_joined,
+            (
+                (
+                    (
+                        F.col("personalized__scored__requests_5.tenant.tenant_id")
+                        == F.col("recommendation_candidate.tenant.tenant_id")
+                    )
+                    & (
+                        F.col("personalized__scored__requests_5.request_id")
+                        == F.col("recommendation_candidate.request_id")
+                    )
+                )
+                & (F.col("personalized__scored__requests_5.product_id") == F.col("recommendation_candidate.product_id"))
+            ),
+            "left",
+        )
+        ranked__candidates = ranked__candidates.where(
+            (~(F.coalesce(F.col("personalized__scored__requests_5.excluded_by_preference"), F.lit(False))))
+        )
         ranked__candidates = ranked__candidates.select(
             F.col("recommendation_candidate.tenant"),
             F.col("recommendation_candidate.request_id"),
@@ -908,33 +1268,37 @@ class RankRecommendationCandidatesGenerated:
                             (
                                 (
                                     (
-                                        F.col("recommendation_candidate.base_score")
-                                        + F.col("recommendation_candidate.promotion_score")
-                                    )
-                                    + F.coalesce(F.col("boosts_2.boost_score"), F.lit(0.0))
-                                )
-                                + F.col("recommendation_candidate.inventory_boost")
-                            )
-                            + F.coalesce(
-                                F.when(
-                                    (
                                         (
-                                            F.coalesce(
-                                                F.col("signals__recommendation__signals_4.impression_count"), F.lit(0)
-                                            )
-                                            >= F.col("policy.minimum_feedback_impressions")
+                                            F.col("recommendation_candidate.base_score")
+                                            + F.col("recommendation_candidate.promotion_score")
                                         )
-                                        & F.col("signals__recommendation__signals_4.click_through_rate").isNotNull()
-                                    ),
-                                    (
-                                        F.col("signals__recommendation__signals_4.click_through_rate")
-                                        * F.col("policy.feedback_weight")
-                                    ),
-                                ).otherwise(F.lit(0.0)),
-                                F.lit(0.0),
+                                        + F.coalesce(F.col("boosts_2.boost_score"), F.lit(0.0))
+                                    )
+                                    + F.col("recommendation_candidate.inventory_boost")
+                                )
+                                + F.coalesce(
+                                    F.when(
+                                        (
+                                            (
+                                                F.coalesce(
+                                                    F.col("signals__recommendation__signals_4.impression_count"),
+                                                    F.lit(0),
+                                                )
+                                                >= F.col("policy.minimum_feedback_impressions")
+                                            )
+                                            & F.col("signals__recommendation__signals_4.click_through_rate").isNotNull()
+                                        ),
+                                        (
+                                            F.col("signals__recommendation__signals_4.click_through_rate")
+                                            * F.col("policy.feedback_weight")
+                                        ),
+                                    ).otherwise(F.lit(0.0)),
+                                    F.lit(0.0),
+                                )
                             )
+                            - F.coalesce(F.col("suppressions_3.penalty"), F.lit(0.0))
                         )
-                        - F.coalesce(F.col("suppressions_3.penalty"), F.lit(0.0))
+                        + F.coalesce(F.col("personalized__scored__requests_5.personal_score"), F.lit(0.0))
                     ).desc(),
                     F.coalesce(F.col("suppressions_3.penalty"), F.lit(0.0)).asc(),
                     F.col("recommendation_candidate.inventory_boost").desc(),
@@ -961,36 +1325,56 @@ class RankRecommendationCandidatesGenerated:
                 ).otherwise(F.lit(0.0)),
                 F.lit(0.0),
             ).alias("feedback_score"),
+            F.coalesce(F.col("personalized__scored__requests_5.personal_score"), F.lit(0.0)).alias("personal_score"),
+            F.coalesce(F.col("personalized__scored__requests_5.feature_score"), F.lit(0.0)).alias(
+                "personal_feature_score"
+            ),
+            F.coalesce(F.col("personalized__scored__requests_5.history_score"), F.lit(0.0)).alias(
+                "personal_history_score"
+            ),
+            F.coalesce(F.col("personalized__scored__requests_5.factorization_score"), F.lit(0.0)).alias(
+                "personal_factorization_score"
+            ),
+            F.col("personalized__scored__requests_5.personal_score").isNotNull().alias("personal_contributed"),
+            F.coalesce(F.col("personalized__scored__requests_5.excluded_by_preference"), F.lit(False)).alias(
+                "personal_excluded"
+            ),
+            F.col("personalized__scored__requests_5.algorithm_id").alias("personalization_algorithm"),
             (
                 (
                     (
                         (
                             (
-                                F.col("recommendation_candidate.base_score")
-                                + F.col("recommendation_candidate.promotion_score")
-                            )
-                            + F.coalesce(F.col("boosts_2.boost_score"), F.lit(0.0))
-                        )
-                        + F.col("recommendation_candidate.inventory_boost")
-                    )
-                    + F.coalesce(
-                        F.when(
-                            (
                                 (
-                                    F.coalesce(F.col("signals__recommendation__signals_4.impression_count"), F.lit(0))
-                                    >= F.col("policy.minimum_feedback_impressions")
+                                    F.col("recommendation_candidate.base_score")
+                                    + F.col("recommendation_candidate.promotion_score")
                                 )
-                                & F.col("signals__recommendation__signals_4.click_through_rate").isNotNull()
-                            ),
-                            (
-                                F.col("signals__recommendation__signals_4.click_through_rate")
-                                * F.col("policy.feedback_weight")
-                            ),
-                        ).otherwise(F.lit(0.0)),
-                        F.lit(0.0),
+                                + F.coalesce(F.col("boosts_2.boost_score"), F.lit(0.0))
+                            )
+                            + F.col("recommendation_candidate.inventory_boost")
+                        )
+                        + F.coalesce(
+                            F.when(
+                                (
+                                    (
+                                        F.coalesce(
+                                            F.col("signals__recommendation__signals_4.impression_count"), F.lit(0)
+                                        )
+                                        >= F.col("policy.minimum_feedback_impressions")
+                                    )
+                                    & F.col("signals__recommendation__signals_4.click_through_rate").isNotNull()
+                                ),
+                                (
+                                    F.col("signals__recommendation__signals_4.click_through_rate")
+                                    * F.col("policy.feedback_weight")
+                                ),
+                            ).otherwise(F.lit(0.0)),
+                            F.lit(0.0),
+                        )
                     )
+                    - F.coalesce(F.col("suppressions_3.penalty"), F.lit(0.0))
                 )
-                - F.coalesce(F.col("suppressions_3.penalty"), F.lit(0.0))
+                + F.coalesce(F.col("personalized__scored__requests_5.personal_score"), F.lit(0.0))
             ).alias("final_score"),
             (
                 F.coalesce(F.col("signals__recommendation__signals_4.impression_count"), F.lit(0))
@@ -1021,7 +1405,7 @@ class RankRecommendationCandidatesGenerated:
 
 
 class DiversifyRecommendationsGenerated:
-    def _step_diversified_decide_13(self, frames):
+    def _step_diversified_decide_18(self, frames):
         # Step method: diversified.decide
         diversified__decisions = frames["ranked__candidates"].alias("ranked_recommendation_candidate")
         policy_joined = frames["policy"].alias("policy")
@@ -1100,7 +1484,7 @@ class DiversifyRecommendationsGenerated:
             "diversified__decisions": diversified__decisions,
         }
 
-    def _step_diversified_publish_14(self, frames):
+    def _step_diversified_publish_19(self, frames):
         # Step method: diversified.publish
         diversified__diversified = frames["ranked__candidates"].alias("ranked_recommendation_candidate")
         diversified__decisions_joined = frames["diversified__decisions"].alias("diversified__decisions")
@@ -1145,6 +1529,13 @@ class DiversifyRecommendationsGenerated:
             F.col("ranked_recommendation_candidate.suppression_penalty"),
             F.col("ranked_recommendation_candidate.inventory_boost"),
             F.col("ranked_recommendation_candidate.feedback_score"),
+            F.col("ranked_recommendation_candidate.personal_score"),
+            F.col("ranked_recommendation_candidate.personal_feature_score"),
+            F.col("ranked_recommendation_candidate.personal_history_score"),
+            F.col("ranked_recommendation_candidate.personal_factorization_score"),
+            F.col("ranked_recommendation_candidate.personal_contributed"),
+            F.col("ranked_recommendation_candidate.personal_excluded"),
+            F.col("ranked_recommendation_candidate.personalization_algorithm"),
             F.col("ranked_recommendation_candidate.final_score"),
             F.col("ranked_recommendation_candidate.feedback_contributed"),
             F.col("ranked_recommendation_candidate.candidate_source"),
@@ -1173,7 +1564,7 @@ class DiversifyRecommendationsGenerated:
 
 
 class SelectRecommendedProductsGenerated:
-    def _step_published_select_products_15(self, frames):
+    def _step_published_select_products_20(self, frames):
         # Step method: published.select_products
         published__ranked_candidates = frames["diversified__diversified"].alias("diversified_recommendation_candidate")
         published__ranked_candidates = published__ranked_candidates.where(
@@ -1199,6 +1590,13 @@ class SelectRecommendedProductsGenerated:
             F.col("diversified_recommendation_candidate.suppression_penalty"),
             F.col("diversified_recommendation_candidate.inventory_boost"),
             F.col("diversified_recommendation_candidate.feedback_score"),
+            F.col("diversified_recommendation_candidate.personal_score"),
+            F.col("diversified_recommendation_candidate.personal_feature_score"),
+            F.col("diversified_recommendation_candidate.personal_history_score"),
+            F.col("diversified_recommendation_candidate.personal_factorization_score"),
+            F.col("diversified_recommendation_candidate.personal_contributed"),
+            F.col("diversified_recommendation_candidate.personal_excluded"),
+            F.col("diversified_recommendation_candidate.personalization_algorithm"),
             F.col("diversified_recommendation_candidate.final_score"),
             F.col("diversified_recommendation_candidate.feedback_contributed"),
             F.col("diversified_recommendation_candidate.candidate_source"),
@@ -1222,7 +1620,7 @@ class SelectRecommendedProductsGenerated:
 
 
 class SummarizeRecommendationRunsGenerated:
-    def _step_summarized_summarize_16(self, frames):
+    def _step_summarized_summarize_21(self, frames):
         # Step method: summarized.summarize
         summarized__requests = frames["requests"].alias("recommendation_request")
         policy_joined = frames["policy"].alias("policy")
@@ -1296,6 +1694,9 @@ class RecommenderGenerated(
     BuildSessionSignalsGenerated,
     BuildPurchaseSignalsGenerated,
     BuildProductSignalsGenerated,
+    BuildProductFeaturesGenerated,
+    BuildPersonalizationHistoryGenerated,
+    ScorePersonalizedRecommendationsGenerated,
     SelectRecommendationCandidatesGenerated,
     GenerateRecommendationCandidatesGenerated,
     FilterRecommendationCandidatesGenerated,
@@ -1316,8 +1717,9 @@ class RecommenderGenerated(
         fulfilled_orders: DataFrame,
         feedback_impressions: DataFrame,
         feedback_clicks: DataFrame,
-        requests: DataFrame,
         catalog: DataFrame,
+        requests: DataFrame,
+        preferences: DataFrame,
         taxonomy: DataFrame,
         suppressions: DataFrame,
         policy: DataFrame,
@@ -1329,8 +1731,9 @@ class RecommenderGenerated(
             feedback_impressions, RECOMMENDATION_IMPRESSION_SCHEMA, name="RecommendationImpression", mode="strict"
         )
         assert_schema(feedback_clicks, RECOMMENDATION_CLICK_SCHEMA, name="RecommendationClick", mode="strict")
-        assert_schema(requests, RECOMMENDATION_REQUEST_SCHEMA, name="RecommendationRequest", mode="strict")
         assert_schema(catalog, CATALOG_PRODUCT_SCHEMA, name="CatalogProduct", mode="strict")
+        assert_schema(requests, RECOMMENDATION_REQUEST_SCHEMA, name="RecommendationRequest", mode="strict")
+        assert_schema(preferences, USER_FEATURE_PREFERENCE_SCHEMA, name="UserFeaturePreference", mode="strict")
         assert_schema(taxonomy, EXPANDED_PRODUCT_TAXONOMY_SCHEMA, name="ExpandedProductTaxonomy", mode="strict")
         assert_schema(suppressions, MERCHANDISING_SUPPRESSION_SCHEMA, name="MerchandisingSuppression", mode="strict")
         assert_schema(policy, MERCHANDISING_POLICY_SCHEMA, name="MerchandisingPolicy", mode="strict")
@@ -1339,8 +1742,9 @@ class RecommenderGenerated(
         _input_fulfilled_orders = fulfilled_orders
         _input_feedback_impressions = feedback_impressions
         _input_feedback_clicks = feedback_clicks
-        _input_requests = requests
         _input_catalog = catalog
+        _input_requests = requests
+        _input_preferences = preferences
         _input_taxonomy = taxonomy
         _input_suppressions = suppressions
         _input_policy = policy
@@ -1350,8 +1754,9 @@ class RecommenderGenerated(
             "fulfilled_orders": fulfilled_orders,
             "feedback_impressions": feedback_impressions,
             "feedback_clicks": feedback_clicks,
-            "requests": requests,
             "catalog": catalog,
+            "requests": requests,
+            "preferences": preferences,
             "taxonomy": taxonomy,
             "suppressions": suppressions,
             "policy": policy,
@@ -1360,8 +1765,9 @@ class RecommenderGenerated(
             "input:fulfilled_orders": _input_fulfilled_orders,
             "input:feedback_impressions": _input_feedback_impressions,
             "input:feedback_clicks": _input_feedback_clicks,
-            "input:requests": _input_requests,
             "input:catalog": _input_catalog,
+            "input:requests": _input_requests,
+            "input:preferences": _input_preferences,
             "input:taxonomy": _input_taxonomy,
             "input:suppressions": _input_suppressions,
             "input:policy": _input_policy,
@@ -1375,15 +1781,20 @@ class RecommenderGenerated(
         frames.update(self._step_signals_recommendation_publish_daily_clicks_5(frames))
         frames.update(self._step_signals_recommendation_summarize_signals_6(frames))
         frames.update(self._step_signals_recommendation_publish_signals_7(frames))
-        frames.update(self._step_candidates_admitted_select_8(frames))
-        frames.update(self._step_candidates_retrieved_retrieve_9(frames))
-        frames.update(self._step_candidates_filtered_evaluate_10(frames))
-        frames.update(self._step_candidates_filtered_publish_11(frames))
-        frames.update(self._step_ranked_rank_12(frames))
-        frames.update(self._step_diversified_decide_13(frames))
-        frames.update(self._step_diversified_publish_14(frames))
-        frames.update(self._step_published_select_products_15(frames))
-        frames.update(self._step_summarized_summarize_16(frames))
+        frames.update(self._step_personalized_featured_build_8(frames))
+        frames.update(self._step_personalized_history_browse_9(frames))
+        frames.update(self._step_personalized_history_purchase_10(frames))
+        frames.update(self._step_personalized_history_merge_11(frames))
+        frames.update(self._step_personalized_scored_score_12(frames))
+        frames.update(self._step_candidates_admitted_select_13(frames))
+        frames.update(self._step_candidates_retrieved_retrieve_14(frames))
+        frames.update(self._step_candidates_filtered_evaluate_15(frames))
+        frames.update(self._step_candidates_filtered_publish_16(frames))
+        frames.update(self._step_ranked_rank_17(frames))
+        frames.update(self._step_diversified_decide_18(frames))
+        frames.update(self._step_diversified_publish_19(frames))
+        frames.update(self._step_published_select_products_20(frames))
+        frames.update(self._step_summarized_summarize_21(frames))
 
         # Step method: recommended_products
         recommended_products = frames["published__ranked_candidates"].alias("recommended_product")

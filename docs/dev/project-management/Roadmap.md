@@ -434,9 +434,15 @@ separate Structure-owned typed transformations from caller-owned PySpark lifecyc
   watermark, output-mode, diagnostics, and live restart evidence.
 - Sprint 43 complete: hardened lifecycle diagnostics, explain output, troubleshooting, and owner-boundary documentation.
 - Sprint 44 complete: closed v9 release evidence without adding new API scope.
-- Sprint 45 planned: address v9 API Catalog design-gated rows, including streaming gates and non-streaming planned
-  items such as sampling, aggregate aliases, nearest as-of joins, join reordering, missing-column set composition, and
-  Variant/geospatial type-model decisions. XML remains low-priority design-gated work.
+- Sprint 45 active (target close: 2026-08-07): inventory and close the existing V9 design-gate decisions.
+- Sprint 46 planned (2026-08-10--2026-08-21): complete bounded selected-row and analytic-window decisions, the Variant
+  child plan, arbitrary-state contract, and the provider-neutral Geometry contract.
+- Sprint 47 planned (2026-08-24--2026-09-04): collect live target evidence and reconcile the API catalog, ledgers,
+  diagnostics, generated artifacts, and public documentation.
+- Sprint 48 planned (2026-09-07--2026-09-18): dedicated V9 hardening with no new API scope, final `make build`, and the
+  release evidence report.
+- The governing closeout schedule is
+  `docs/dev/planning/P07302603.V9-closeout-and-release.plan.md`; XML remains low-priority design-gated work.
 
 ### v9 must include
 
@@ -451,7 +457,8 @@ separate Structure-owned typed transformations from caller-owned PySpark lifecyc
 - Live PySpark 3.5 and 4.0 evidence for every admitted Structure-owned streaming claim, plus `make build` in the final
   hardening sprint.
 - A follow-up execution plan for design-gated catalog rows:
-  `docs/dev/planning/P07302601.V9-api-catalog-design-gates.plan.md`.
+  `docs/dev/planning/P07302601.V9-api-catalog-design-gates.plan.md`, including the Variant child plan
+  `docs/dev/planning/P07302602.V9-variant-type-and-helpers.plan.md`.
 
 ### v9 non-goals
 
@@ -481,4 +488,4 @@ separate Structure-owned typed transformations from caller-owned PySpark lifecyc
 | M11 | v6 typed PySpark API closure, example-hook retirement, and bounded recurrence | Sprints 23-27 |
 | M12 | v7 broad PySpark transformation coverage and caller-owned streaming adoption | Sprints 28--35 |
 | M13 | v8 PySpark Structured Streaming coverage parity | Sprints 36--39 and v8 hardening |
-| M14 | v9 PySpark streaming API coverage and adoption | Sprints 40--44 |
+| M14 | v9 PySpark streaming API coverage, design-gate follow-up, and release hardening | Sprints 40--48 |

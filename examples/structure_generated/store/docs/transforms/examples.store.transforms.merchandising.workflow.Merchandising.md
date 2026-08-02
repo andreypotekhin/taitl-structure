@@ -16,6 +16,7 @@ Source: `examples.store.transforms.merchandising.workflow.Merchandising`
 - `feedback_impressions`: `RecommendationImpression`
 - `feedback_clicks`: `RecommendationClick`
 - `requests`: `RecommendationRequest`
+- `preferences`: `UserFeaturePreference`
 - `suppressions`: `MerchandisingSuppression`
 - `policy`: `MerchandisingPolicy`
 - `boosts`: `MerchandisingBoost`
@@ -43,6 +44,11 @@ Source: `examples.store.transforms.merchandising.workflow.Merchandising`
 - `recommended.signals.recommendation.publish_daily_clicks`: `DailyRecommendationClicks` -> `DailyRecommendationClicks`
 - `recommended.signals.recommendation.summarize_signals`: `DailyRecommendationImpressions` -> `ProductRecommendationSignalTotals`
 - `recommended.signals.recommendation.publish_signals`: `ProductRecommendationSignalTotals` -> `ProductRecommendationSignal`
+- `recommended.personalized.featured.build`: `CatalogProduct` -> `CatalogProduct`
+- `recommended.personalized.history.browse`: `SessionEvent` -> `PersonalizationHistory`
+- `recommended.personalized.history.purchase`: `OrderFulfillment` -> `PersonalizationHistory`
+- `recommended.personalized.history.merge`: `PersonalizationHistory` -> `PersonalizationHistory`
+- `recommended.personalized.scored.score`: `RecommendationRequest` -> `PersonalizedRecommendation`
 - `recommended.candidates.admitted.select`: `RecommendationRequest` -> `RecommendationCandidate`
 - `recommended.candidates.retrieved.retrieve`: `RecommendationCandidate` -> `RecommendationCandidate`
 - `recommended.candidates.filtered.evaluate`: `RecommendationCandidate` -> `RecommendationCandidateDecision`
@@ -65,14 +71,22 @@ Source: `examples.store.transforms.merchandising.workflow.Merchandising`
 - `feedback_clicks`
 - `feedback_impressions`
 - `impression`
+- `interaction`
 - `node`
 - `normalized__catalog`
+- `personal`
 - `policy`
+- `preference`
+- `preferences`
 - `product`
 - `promotion`
 - `promotions`
 - `recommended__candidates__filtered__evaluated`
 - `recommended__diversified__decisions`
+- `recommended__personalized__featured__catalog`
+- `recommended__personalized__history__history`
+- `recommended__personalized__history__purchase_history`
+- `recommended__personalized__scored__requests`
 - `recommended__published__ranked_candidates`
 - `recommended__signals__recommendation__click_facts`
 - `recommended__signals__recommendation__signals`

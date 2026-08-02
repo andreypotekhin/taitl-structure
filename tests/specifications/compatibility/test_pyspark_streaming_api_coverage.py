@@ -107,6 +107,17 @@ def test_foreach_batch_is_guided_without_admitting_row_foreach() -> None:
     assert "DataStreamWriter.foreach" in foreach["pyspark_apis"]
 
 
+def test_chained_window_aggregation_has_structure_and_live_profile_evidence() -> None:
+    entry = {entry["id"]: entry for entry in _v9_entries()}["streaming.chained-window-aggregation"]
+
+    assert entry["status"] == "structure-supported"
+    assert entry["owner_boundary"] == "structure-transform"
+    assert "window_time" in entry["structure_surface"]
+    assert "tests/specifications/streaming-compatibility/test_v1_streaming_compatibility.py" in entry["evidence"]
+    assert "tests/integration/pyspark/v3/streams/test_file_streams.py" in entry["evidence"]
+    assert "PySpark 3.5 and 4.0" in entry["notes"]
+
+
 def test_target_gated_variant_streaming_claim_has_profile_evidence() -> None:
     entry = {entry["id"]: entry for entry in _v9_entries()}["functions.variant"]
 

@@ -167,3 +167,6 @@ typed `order` row scope as `o`.
   nullable when the path is absent. The `try_` form is also nullable when casting fails. `schema_of_variant(...)`
   returns a nullable SQL-format schema string. `to_variant_object(...)` accepts declared Array, Map, or Struct values
   and rejects a Map with non-String keys anywhere in its nested type graph.
+- Variant literal/equality, later-profile mutation, and table-valued row-expansion helpers are tracked in the
+  [V9 Variant ExecPlan](../dev/planning/P07302602.V9-variant-type-and-helpers.plan.md); dynamic paths, implicit
+  extraction types, and ordering are not part of the current typed contract.

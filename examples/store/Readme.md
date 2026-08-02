@@ -9,7 +9,7 @@ persistence, stream lifecycle, and the business actions taken from the results.
 | Concern | Transform | Result | Details |
 | --- | --- | --- | --- |
 | Catalog preparation | `PrepareCatalog` | `CatalogProduct` | Tenant-visible product facts for recommendation eligibility. |
-| Recommendations | `Recommender` / `Merchandising` | `RecommendedProduct`, `RecommendationRun` | Transparent policy, promotion, and feedback-aware product ranking. |
+| Recommendations | `Recommender` / `Merchandising` | `RecommendedProduct`, `RecommendationRun` | Transparent policy, promotion, behavior, and personal product ranking. |
 | Recommendation feedback | `BuildProductSignals` | Daily facts and product signals | Impression/click attribution and reusable product signals. |
 | Merchandising evaluation | `EvaluateRecommendations` | Request and daily behavior summaries | Zero-result, click, and exposure-aware behavior evaluation. |
 | Catalog normalization and taxonomy | `NormalizeCatalog` / `ExpandProductTaxonomy` | Normalized catalog and ancestor facts | Stable tenant-scoped category joins with bounded hierarchy expansion. |
@@ -50,6 +50,13 @@ and optional historical product signals. The first scoring model is deliberately
 promotion score, policy boost, suppression penalty, inventory boost, and feedback score each remain separate fields.
 Ranking uses the exact tie-breakers: higher final score, lower suppression penalty, higher inventory boost, then
 product ID.
+
+`BuildPersonalizedRecommendations` is a separate workflow under `transforms/personalization/`. It adds normalized
+catalog feature arrays, explicit customer category preferences, customer/session history, and a replaceable personal
+algorithm. The workflow is tenant-scoped: `tenant_id` identifies the organization, `customer_id` identifies a known
+shopper within that organization, `session_id` supports anonymous browsing, and `request_id` identifies one serving
+request. The main `Recommender` joins the final personal rows by tenant, request, and product, then blends the personal
+score into the existing behavior score. Empty personal inputs preserve the behavior-based fallback.
 
 ```python
 recommendations = Recommender(

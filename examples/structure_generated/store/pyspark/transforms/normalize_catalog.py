@@ -31,6 +31,7 @@ class NormalizeCatalogGenerated:
             F.lower(F.trim(F.col("catalog_product.product_id"))).alias("product_id"),
             F.col("catalog_product.product_name"),
             F.lower(F.trim(F.col("catalog_product.category"))).alias("category"),
+            F.col("catalog_product.features"),
             F.col("catalog_product.active"),
             F.col("catalog_product.list_price"),
             F.col("catalog_product.rating"),

@@ -6,6 +6,7 @@ from examples.store.schemas.merchandising import (
     RankedRecommendationCandidate,
     RecommendationCandidate,
 )
+from examples.store.schemas.personalization import PersonalizedRecommendation
 from examples.store.transforms.recommender.ranking.ranker import Ranker
 from structure import *
 from structure.plugin.pyspark import *
@@ -19,6 +20,7 @@ class RankRecommendationCandidates(Transform):
     boosts = input(MerchandisingBoost)
     suppressions = input(MerchandisingSuppression)
     signals = input(ProductRecommendationSignal)
+    personalized = input(PersonalizedRecommendation)
     ranked_candidates = output(RankedRecommendationCandidate)
 
     def rank(
@@ -28,6 +30,7 @@ class RankRecommendationCandidates(Transform):
         boost: MerchandisingBoost,
         suppression: MerchandisingSuppression,
         signal: ProductRecommendationSignal,
+        personal: PersonalizedRecommendation,
     ) -> RankedRecommendationCandidate:
         inner_join(
             policy,
@@ -59,11 +62,25 @@ class RankRecommendationCandidates(Transform):
             & (signal.strategy_id == candidate.strategy_id)
             & (signal.product_id == candidate.product_id),
         )
+        left_join(
+            personal,
+            on=(personal.tenant.tenant_id == candidate.tenant.tenant_id)
+            & (personal.request_id == candidate.request_id)
+            & (personal.product_id == candidate.product_id),
+        )
         boost_score = self.ranker.boost_score(boost)
         suppression_penalty = self.ranker.suppression_penalty(suppression)
         supported = self.ranker.feedback_supported(signal, policy)
         feedback_score = self.ranker.feedback_score(signal, policy, supported)
-        final_score = self.ranker.final_score(candidate, boost_score, suppression_penalty, feedback_score)
+        personal_score = coalesce(personal.personal_score, 0.0)
+        personal_excluded = coalesce(personal.excluded_by_preference, False)
+        where(~personal_excluded)
+        final_score = self.ranker.final_score(
+            candidate,
+            boost_score,
+            suppression_penalty,
+            feedback_score,
+        ) + personal_score
         return RankedRecommendationCandidate.project(candidate)(
             rank=row_number(
                 partition_by=(candidate.tenant.tenant_id, candidate.request_id),
@@ -72,6 +89,13 @@ class RankRecommendationCandidates(Transform):
             boost_score=boost_score,
             suppression_penalty=suppression_penalty,
             feedback_score=feedback_score,
+            personal_score=personal_score,
+            personal_feature_score=coalesce(personal.feature_score, 0.0),
+            personal_history_score=coalesce(personal.history_score, 0.0),
+            personal_factorization_score=coalesce(personal.factorization_score, 0.0),
+            personal_contributed=personal.personal_score.is_not_null(),
+            personal_excluded=personal_excluded,
+            personalization_algorithm=personal.algorithm_id,
             final_score=final_score,
             feedback_contributed=supported,
             maximum_results=policy.maximum_results,

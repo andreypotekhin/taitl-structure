@@ -29,7 +29,7 @@
       "schema": "RecommendationClick"
     }
   ],
-  "name": "BuildSignals",
+  "name": "BuildRecommendationSignals",
   "outputs": [
     {
       "name": "session_features",
@@ -57,7 +57,7 @@
       "schema": "ProductRecommendationSignal"
     }
   ],
-  "source": "examples.store.transforms.recommender.signals.workflow.BuildSignals",
+  "source": "examples.store.transforms.recommender.signals.workflow.BuildRecommendationSignals",
   "step_methods": [
     {
       "input_lane": "session_events",
@@ -274,6 +274,6 @@
   ],
   "target_artifacts": {
     "pyspark_transform": "pyspark/transforms/signals_workflow.py",
-    "traceability": "traceability/transforms/signals_workflow.BuildSignals.json"
+    "traceability": "traceability/transforms/signals_workflow.BuildRecommendationSignals.json"
   }
 }

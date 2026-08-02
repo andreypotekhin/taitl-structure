@@ -12,6 +12,7 @@ class Product(ProductBase):
     id = string(nullable=False)
     name = string(nullable=True)
     category = string(nullable=True)
+    features = array(string(), contains_null=False, nullable=True)
     active = boolean(nullable=False)
     list_price = decimal(12, 2, nullable=True)
     weight = float(nullable=True)

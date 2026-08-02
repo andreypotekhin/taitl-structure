@@ -1,0 +1,202 @@
+{
+  "dependencies": [
+    "featured__catalog",
+    "history__history",
+    "history__purchase_history",
+    "interaction",
+    "preference",
+    "preferences",
+    "product"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "catalog",
+      "ordinal": 0,
+      "schema": "CatalogProduct"
+    },
+    {
+      "name": "session_events",
+      "ordinal": 1,
+      "schema": "SessionEvent"
+    },
+    {
+      "name": "fulfilled_orders",
+      "ordinal": 2,
+      "schema": "OrderFulfillment"
+    },
+    {
+      "name": "requests",
+      "ordinal": 3,
+      "schema": "RecommendationRequest"
+    },
+    {
+      "name": "preferences",
+      "ordinal": 4,
+      "schema": "UserFeaturePreference"
+    }
+  ],
+  "name": "BuildPersonalizedRecommendations",
+  "outputs": [
+    {
+      "name": "recommendations",
+      "ordinal": 0,
+      "schema": "PersonalizedRecommendation"
+    }
+  ],
+  "source": "examples.store.transforms.personalization.workflow.BuildPersonalizedRecommendations",
+  "step_methods": [
+    {
+      "input_lane": "catalog",
+      "input_schema": "CatalogProduct",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "product",
+          "schema": "CatalogProduct",
+          "source": "catalog"
+        }
+      ],
+      "name": "featured.build",
+      "output_lane": "featured__catalog",
+      "output_schema": "CatalogProduct",
+      "results": [
+        {
+          "frame": "featured__catalog",
+          "lane": "featured__catalog",
+          "schema": "CatalogProduct"
+        }
+      ]
+    },
+    {
+      "input_lane": "session_events",
+      "input_schema": "SessionEvent",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "event",
+          "schema": "SessionEvent",
+          "source": "session_events"
+        }
+      ],
+      "name": "history.browse",
+      "output_lane": "history__session_history",
+      "output_schema": "PersonalizationHistory",
+      "results": [
+        {
+          "frame": "history__session_history",
+          "lane": "history__session_history",
+          "schema": "PersonalizationHistory"
+        }
+      ]
+    },
+    {
+      "input_lane": "fulfilled_orders",
+      "input_schema": "OrderFulfillment",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "order",
+          "schema": "OrderFulfillment",
+          "source": "fulfilled_orders"
+        }
+      ],
+      "name": "history.purchase",
+      "output_lane": "history__purchase_history",
+      "output_schema": "PersonalizationHistory",
+      "results": [
+        {
+          "frame": "history__purchase_history",
+          "lane": "history__purchase_history",
+          "schema": "PersonalizationHistory"
+        }
+      ]
+    },
+    {
+      "input_lane": "history__session_history",
+      "input_schema": "PersonalizationHistory",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "session",
+          "schema": "PersonalizationHistory",
+          "source": "history__session_history"
+        },
+        {
+          "driving": false,
+          "parameter": "purchase",
+          "schema": "PersonalizationHistory",
+          "source": "history__purchase_history"
+        }
+      ],
+      "name": "history.merge",
+      "output_lane": "history__history",
+      "output_schema": "PersonalizationHistory",
+      "results": [
+        {
+          "frame": "history__history",
+          "lane": "history__history",
+          "schema": "PersonalizationHistory"
+        }
+      ]
+    },
+    {
+      "input_lane": "requests",
+      "input_schema": "RecommendationRequest",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "request",
+          "schema": "RecommendationRequest",
+          "source": "requests"
+        },
+        {
+          "driving": false,
+          "parameter": "product",
+          "schema": "CatalogProduct",
+          "source": "featured__catalog"
+        },
+        {
+          "driving": false,
+          "parameter": "preference",
+          "schema": "UserFeaturePreference",
+          "source": "preferences"
+        },
+        {
+          "driving": false,
+          "parameter": "interaction",
+          "schema": "PersonalizationHistory",
+          "source": "history__history"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "product"
+        },
+        {
+          "how": "left",
+          "input": "preference"
+        },
+        {
+          "how": "left",
+          "input": "interaction"
+        }
+      ],
+      "name": "scored.score",
+      "output_lane": "scored__requests",
+      "output_schema": "PersonalizedRecommendation",
+      "results": [
+        {
+          "frame": "scored__requests",
+          "lane": "scored__requests",
+          "schema": "PersonalizedRecommendation"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/personalization_workflow.py",
+    "traceability": "traceability/transforms/personalization_workflow.BuildPersonalizedRecommendations.json"
+  }
+}

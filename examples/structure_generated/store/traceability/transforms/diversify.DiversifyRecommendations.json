@@ -168,6 +168,41 @@
       "source": "source:examples.store.transforms.recommender.diversify.DiversifyRecommendations.publish.field.feedback_score"
     },
     {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.diversify.DiversifyRecommendationsGenerated.run.step.1.publish.select.personal_score",
+      "ir": "ir:DiversifyRecommendations.step.1.publish.project.personal_score",
+      "source": "source:examples.store.transforms.recommender.diversify.DiversifyRecommendations.publish.field.personal_score"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.diversify.DiversifyRecommendationsGenerated.run.step.1.publish.select.personal_feature_score",
+      "ir": "ir:DiversifyRecommendations.step.1.publish.project.personal_feature_score",
+      "source": "source:examples.store.transforms.recommender.diversify.DiversifyRecommendations.publish.field.personal_feature_score"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.diversify.DiversifyRecommendationsGenerated.run.step.1.publish.select.personal_history_score",
+      "ir": "ir:DiversifyRecommendations.step.1.publish.project.personal_history_score",
+      "source": "source:examples.store.transforms.recommender.diversify.DiversifyRecommendations.publish.field.personal_history_score"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.diversify.DiversifyRecommendationsGenerated.run.step.1.publish.select.personal_factorization_score",
+      "ir": "ir:DiversifyRecommendations.step.1.publish.project.personal_factorization_score",
+      "source": "source:examples.store.transforms.recommender.diversify.DiversifyRecommendations.publish.field.personal_factorization_score"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.diversify.DiversifyRecommendationsGenerated.run.step.1.publish.select.personal_contributed",
+      "ir": "ir:DiversifyRecommendations.step.1.publish.project.personal_contributed",
+      "source": "source:examples.store.transforms.recommender.diversify.DiversifyRecommendations.publish.field.personal_contributed"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.diversify.DiversifyRecommendationsGenerated.run.step.1.publish.select.personal_excluded",
+      "ir": "ir:DiversifyRecommendations.step.1.publish.project.personal_excluded",
+      "source": "source:examples.store.transforms.recommender.diversify.DiversifyRecommendations.publish.field.personal_excluded"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.diversify.DiversifyRecommendationsGenerated.run.step.1.publish.select.personalization_algorithm",
+      "ir": "ir:DiversifyRecommendations.step.1.publish.project.personalization_algorithm",
+      "source": "source:examples.store.transforms.recommender.diversify.DiversifyRecommendations.publish.field.personalization_algorithm"
+    },
+    {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.diversify.DiversifyRecommendationsGenerated.run.step.1.publish.select.final_score",
       "ir": "ir:DiversifyRecommendations.step.1.publish.project.final_score",
       "source": "source:examples.store.transforms.recommender.diversify.DiversifyRecommendations.publish.field.final_score"
@@ -482,6 +517,14 @@
       "constant": "ORDER_WITH_PROMOTION_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.order"
     },
+    "PersonalizationHistory": {
+      "constant": "PERSONALIZATION_HISTORY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.personalization"
+    },
+    "PersonalizedRecommendation": {
+      "constant": "PERSONALIZED_RECOMMENDATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.personalization"
+    },
     "Product": {
       "constant": "PRODUCT_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.product"
@@ -625,6 +668,10 @@
     "TenantKey": {
       "constant": "TENANT_KEY_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "UserFeaturePreference": {
+      "constant": "USER_FEATURE_PREFERENCE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.personalization"
     },
     "Warehouse": {
       "constant": "WAREHOUSE_SCHEMA",
@@ -972,6 +1019,83 @@
         ],
         "step": "publish",
         "target": "DiversifiedRecommendationCandidate.feedback_score"
+      },
+      {
+        "detail": {
+          "field": "personal_score"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.personal_score"
+        ],
+        "step": "publish",
+        "target": "DiversifiedRecommendationCandidate.personal_score"
+      },
+      {
+        "detail": {
+          "field": "personal_feature_score"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.personal_feature_score"
+        ],
+        "step": "publish",
+        "target": "DiversifiedRecommendationCandidate.personal_feature_score"
+      },
+      {
+        "detail": {
+          "field": "personal_history_score"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.personal_history_score"
+        ],
+        "step": "publish",
+        "target": "DiversifiedRecommendationCandidate.personal_history_score"
+      },
+      {
+        "detail": {
+          "field": "personal_factorization_score"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.personal_factorization_score"
+        ],
+        "step": "publish",
+        "target": "DiversifiedRecommendationCandidate.personal_factorization_score"
+      },
+      {
+        "detail": {
+          "field": "personal_contributed"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.personal_contributed"
+        ],
+        "step": "publish",
+        "target": "DiversifiedRecommendationCandidate.personal_contributed"
+      },
+      {
+        "detail": {
+          "field": "personal_excluded"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.personal_excluded"
+        ],
+        "step": "publish",
+        "target": "DiversifiedRecommendationCandidate.personal_excluded"
+      },
+      {
+        "detail": {
+          "field": "personalization_algorithm"
+        },
+        "operation": "project",
+        "sources": [
+          "candidate.personalization_algorithm"
+        ],
+        "step": "publish",
+        "target": "DiversifiedRecommendationCandidate.personalization_algorithm"
       },
       {
         "detail": {

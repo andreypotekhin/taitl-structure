@@ -77,6 +77,8 @@ class RenderPySparkExpression:
             if expression.data.get("start") is not None:
                 arguments.append(repr(expression.data["start"]))
             return f"F.window({', '.join(arguments)})"
+        if expression.kind == "window_time":
+            return f"F.window_time({self._render(expression.args[0], aliases)})"
         if expression.kind == "special_expr":
             return self._special_expr(expression, aliases)
         if expression.kind == "transform_expression":

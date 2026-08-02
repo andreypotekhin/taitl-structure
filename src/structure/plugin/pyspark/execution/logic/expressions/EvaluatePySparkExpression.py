@@ -69,6 +69,10 @@ class EvaluatePySparkExpression:
             if expression.data.get("start") is not None:
                 arguments.append(expression.data["start"])
             return functions.window(*arguments)
+        if expression.kind == "window_time":
+            return functions.window_time(
+                self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window)
+            )
         if expression.kind == "transform_expression":
             return self._reserved(expression, functions=functions, aliases=aliases, window=window)
         if expression.kind == "is_not_null":

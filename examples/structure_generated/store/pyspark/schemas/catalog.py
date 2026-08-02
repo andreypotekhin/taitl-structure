@@ -11,6 +11,7 @@ CATALOG_PRODUCT_SCHEMA = T.StructType([
     T.StructField("product_id", T.StringType(), False),
     T.StructField("product_name", T.StringType(), True),
     T.StructField("category", T.StringType(), True),
+    T.StructField("features", T.ArrayType(T.StringType(), containsNull=False), False),
     T.StructField("active", T.BooleanType(), False),
     T.StructField("list_price", T.DecimalType(12, 2), True),
     T.StructField("rating", T.DoubleType(), True),

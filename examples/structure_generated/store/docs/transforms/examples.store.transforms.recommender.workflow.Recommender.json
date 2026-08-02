@@ -10,7 +10,15 @@
     "feedback_clicks",
     "feedback_impressions",
     "impression",
+    "interaction",
+    "personal",
+    "personalized__featured__catalog",
+    "personalized__history__history",
+    "personalized__history__purchase_history",
+    "personalized__scored__requests",
     "policy",
+    "preference",
+    "preferences",
     "product",
     "published__ranked_candidates",
     "session",
@@ -45,33 +53,38 @@
       "schema": "RecommendationClick"
     },
     {
-      "name": "requests",
-      "ordinal": 4,
-      "schema": "RecommendationRequest"
-    },
-    {
       "name": "catalog",
-      "ordinal": 5,
+      "ordinal": 4,
       "schema": "CatalogProduct"
     },
     {
-      "name": "taxonomy",
+      "name": "requests",
+      "ordinal": 5,
+      "schema": "RecommendationRequest"
+    },
+    {
+      "name": "preferences",
       "ordinal": 6,
+      "schema": "UserFeaturePreference"
+    },
+    {
+      "name": "taxonomy",
+      "ordinal": 7,
       "schema": "ExpandedProductTaxonomy"
     },
     {
       "name": "suppressions",
-      "ordinal": 7,
+      "ordinal": 8,
       "schema": "MerchandisingSuppression"
     },
     {
       "name": "policy",
-      "ordinal": 8,
+      "ordinal": 9,
       "schema": "MerchandisingPolicy"
     },
     {
       "name": "boosts",
-      "ordinal": 9,
+      "ordinal": 10,
       "schema": "MerchandisingBoost"
     }
   ],
@@ -323,6 +336,154 @@
       ]
     },
     {
+      "input_lane": "catalog",
+      "input_schema": "CatalogProduct",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "product",
+          "schema": "CatalogProduct",
+          "source": "catalog"
+        }
+      ],
+      "name": "personalized.featured.build",
+      "output_lane": "personalized__featured__catalog",
+      "output_schema": "CatalogProduct",
+      "results": [
+        {
+          "frame": "personalized__featured__catalog",
+          "lane": "personalized__featured__catalog",
+          "schema": "CatalogProduct"
+        }
+      ]
+    },
+    {
+      "input_lane": "session_events",
+      "input_schema": "SessionEvent",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "event",
+          "schema": "SessionEvent",
+          "source": "session_events"
+        }
+      ],
+      "name": "personalized.history.browse",
+      "output_lane": "personalized__history__session_history",
+      "output_schema": "PersonalizationHistory",
+      "results": [
+        {
+          "frame": "personalized__history__session_history",
+          "lane": "personalized__history__session_history",
+          "schema": "PersonalizationHistory"
+        }
+      ]
+    },
+    {
+      "input_lane": "fulfilled_orders",
+      "input_schema": "OrderFulfillment",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "order",
+          "schema": "OrderFulfillment",
+          "source": "fulfilled_orders"
+        }
+      ],
+      "name": "personalized.history.purchase",
+      "output_lane": "personalized__history__purchase_history",
+      "output_schema": "PersonalizationHistory",
+      "results": [
+        {
+          "frame": "personalized__history__purchase_history",
+          "lane": "personalized__history__purchase_history",
+          "schema": "PersonalizationHistory"
+        }
+      ]
+    },
+    {
+      "input_lane": "personalized__history__session_history",
+      "input_schema": "PersonalizationHistory",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "session",
+          "schema": "PersonalizationHistory",
+          "source": "personalized__history__session_history"
+        },
+        {
+          "driving": false,
+          "parameter": "purchase",
+          "schema": "PersonalizationHistory",
+          "source": "personalized__history__purchase_history"
+        }
+      ],
+      "name": "personalized.history.merge",
+      "output_lane": "personalized__history__history",
+      "output_schema": "PersonalizationHistory",
+      "results": [
+        {
+          "frame": "personalized__history__history",
+          "lane": "personalized__history__history",
+          "schema": "PersonalizationHistory"
+        }
+      ]
+    },
+    {
+      "input_lane": "requests",
+      "input_schema": "RecommendationRequest",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "request",
+          "schema": "RecommendationRequest",
+          "source": "requests"
+        },
+        {
+          "driving": false,
+          "parameter": "product",
+          "schema": "CatalogProduct",
+          "source": "personalized__featured__catalog"
+        },
+        {
+          "driving": false,
+          "parameter": "preference",
+          "schema": "UserFeaturePreference",
+          "source": "preferences"
+        },
+        {
+          "driving": false,
+          "parameter": "interaction",
+          "schema": "PersonalizationHistory",
+          "source": "personalized__history__history"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "product"
+        },
+        {
+          "how": "left",
+          "input": "preference"
+        },
+        {
+          "how": "left",
+          "input": "interaction"
+        }
+      ],
+      "name": "personalized.scored.score",
+      "output_lane": "personalized__scored__requests",
+      "output_schema": "PersonalizedRecommendation",
+      "results": [
+        {
+          "frame": "personalized__scored__requests",
+          "lane": "personalized__scored__requests",
+          "schema": "PersonalizedRecommendation"
+        }
+      ]
+    },
+    {
       "input_lane": "requests",
       "input_schema": "RecommendationRequest",
       "inputs": [
@@ -521,6 +682,12 @@
           "parameter": "signal",
           "schema": "ProductRecommendationSignal",
           "source": "signals__recommendation__signals"
+        },
+        {
+          "driving": false,
+          "parameter": "personal",
+          "schema": "PersonalizedRecommendation",
+          "source": "personalized__scored__requests"
         }
       ],
       "joins": [
@@ -539,6 +706,10 @@
         {
           "how": "left",
           "input": "signal"
+        },
+        {
+          "how": "left",
+          "input": "personal"
         }
       ],
       "name": "ranked.rank",

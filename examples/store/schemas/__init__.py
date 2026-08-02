@@ -69,5 +69,10 @@ from examples.store.schemas.order import (
     PublicationFlags,
 )
 from examples.store.schemas.product import BlockedProduct, Product, ProductBase
+from examples.store.schemas.personalization import (
+    PersonalizedRecommendation,
+    PersonalizationHistory,
+    UserFeaturePreference,
+)
 from examples.store.schemas.promotion import Promotion
 from examples.store.schemas.shipment import Shipment

@@ -88,6 +88,11 @@
       "source": "source:examples.store.transforms.catalog.prepare_catalog.PrepareCatalog.prepare.field.category"
     },
     {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.prepare_catalog.PrepareCatalogGenerated.run.step.0.prepare.select.features",
+      "ir": "ir:PrepareCatalog.step.0.prepare.project.features",
+      "source": "source:examples.store.transforms.catalog.prepare_catalog.PrepareCatalog.prepare.field.features"
+    },
+    {
       "generated": "generated:examples.structure_generated.store.pyspark.transforms.prepare_catalog.PrepareCatalogGenerated.run.step.0.prepare.select.active",
       "ir": "ir:PrepareCatalog.step.0.prepare.project.active",
       "source": "source:examples.store.transforms.catalog.prepare_catalog.PrepareCatalog.prepare.field.active"
@@ -372,6 +377,14 @@
       "constant": "ORDER_WITH_PROMOTION_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.order"
     },
+    "PersonalizationHistory": {
+      "constant": "PERSONALIZATION_HISTORY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.personalization"
+    },
+    "PersonalizedRecommendation": {
+      "constant": "PERSONALIZED_RECOMMENDATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.personalization"
+    },
     "Product": {
       "constant": "PRODUCT_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.product"
@@ -516,6 +529,10 @@
       "constant": "TENANT_KEY_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.common"
     },
+    "UserFeaturePreference": {
+      "constant": "USER_FEATURE_PREFERENCE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.personalization"
+    },
     "Warehouse": {
       "constant": "WAREHOUSE_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.warehouse"
@@ -653,6 +670,18 @@
         ],
         "step": "prepare",
         "target": "CatalogProduct.category"
+      },
+      {
+        "detail": {
+          "field": "features"
+        },
+        "operation": "project",
+        "sources": [
+          "product.features",
+          "product.category"
+        ],
+        "step": "prepare",
+        "target": "CatalogProduct.features"
       },
       {
         "detail": {
