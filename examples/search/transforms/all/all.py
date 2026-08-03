@@ -35,7 +35,14 @@ from examples.search.schemas.scoring.overlap import (
     SectionOverlapScore,
     SentenceOverlapScore,
 )
-from examples.search.schemas.search import DocumentScore, ParagraphScore, SearchQuery, SectionScore, SentenceScore
+from examples.search.schemas.search import (
+    DocumentScore,
+    ParagraphScore,
+    ScorePolicy,
+    SearchQuery,
+    SectionScore,
+    SentenceScore,
+)
 from examples.search.schemas.similarity import (
     DocumentSimilarity,
     ParagraphSimilarity,
@@ -51,9 +58,10 @@ from examples.search.transforms.indexing import Indexing
 from examples.search.transforms.labeling import Labeling
 from examples.search.transforms.relevance.BuildRelevanceSignals import BuildRelevanceSignals
 from examples.search.transforms.scoring import Scoring
+from examples.search.transforms.scoring.SelectPopularQueries import SelectPopularQueries
 from examples.search.transforms.similarities import Similarities
 from examples.search.transforms.stats import AnalyzeText, CorpusText, ProfileDocuments
-from structure import Transform, input, output, stage
+from structure import Transform, input, output, parameter, stage
 
 
 class All(Transform):
@@ -69,7 +77,9 @@ class All(Transform):
     users = input(User)
     bands = input(Band)
     policy = input(RelevancePolicy)
+    score_policy = input(ScorePolicy)
     similarity_policy = input(SimilarityPolicy)
+    maximum_offline_queries = parameter(1000)
 
     chunked = stage(Chunking(documents=documents))
     profiled = stage(ProfileDocuments(documents=documents))
@@ -85,12 +95,20 @@ class All(Transform):
             paragraph_summary=indexed.paragraph_summary,
             sentence_terms=indexed.sentence_terms,
             sentence_summary=indexed.sentence_summary,
+            score_policy=score_policy,
         )
     )
     labeled = stage(Labeling(queries=queries, query_labels=query_labels, intents=intents, patterns=patterns))
+    popular = stage(
+        SelectPopularQueries(
+            queries=labeled.labeled_queries,
+            daily_impressions=daily_impressions,
+            maximum_queries=maximum_offline_queries,
+        )
+    )
     scored = stage(
         Scoring(
-            queries=labeled.labeled_queries,
+            queries=popular.selected_queries,
             document_terms=indexed.document_terms,
             document_summary=indexed.document_summary,
             section_terms=indexed.section_terms,
@@ -99,6 +117,7 @@ class All(Transform):
             paragraph_summary=indexed.paragraph_summary,
             sentence_terms=indexed.sentence_terms,
             sentence_summary=indexed.sentence_summary,
+            score_policy=score_policy,
         )
     )
     cohorts = stage(ResolveCohortBands(users=users, bands=bands))

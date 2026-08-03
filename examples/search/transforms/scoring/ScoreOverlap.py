@@ -20,9 +20,10 @@ from examples.search.schemas.scoring.overlap import (
     SectionOverlapScore,
     SentenceOverlapScore,
 )
+from examples.search.schemas.search import ScorePolicy
 from examples.search.transforms.scoring.ScoreBase import ScoreBase
-from structure import lane, output, step
-from structure.plugin.pyspark import count_distinct, group_by, inner_join, when
+from structure import input, lane, output, step
+from structure.plugin.pyspark import count_distinct, cross_join, group_by, inner_join, when
 
 
 class ScoreOverlap(ScoreBase):
@@ -32,6 +33,7 @@ class ScoreOverlap(ScoreBase):
     section_overlap_matches = lane(SectionOverlapMatch)
     paragraph_overlap_matches = lane(ParagraphOverlapMatch)
     sentence_overlap_matches = lane(SentenceOverlapMatch)
+    score_policy = input(ScorePolicy)
     document_overlap_scores = output(DocumentOverlapScore)
     section_overlap_scores = output(SectionOverlapScore)
     paragraph_overlap_scores = output(ParagraphOverlapScore)
@@ -125,41 +127,57 @@ class ScoreOverlap(ScoreBase):
             matched_terms=count_distinct(query.token),
         )
 
-    @step(input=document_overlap_matches, output=document_overlap_scores)
-    def publish_document_overlap_scores(self, match: DocumentOverlapMatch) -> DocumentOverlapScore:
+    @step(input=[document_overlap_matches, score_policy], output=document_overlap_scores)
+    def publish_document_overlap_scores(
+        self, match: DocumentOverlapMatch, policy: ScorePolicy
+    ) -> DocumentOverlapScore:
+        cross_join(policy, allow_cartesian=True)
         return DocumentOverlapScore(
             query_id=match.query_id,
             document_id=match.document_id,
+            scored_at=policy.scored_at,
             score_overlap=self._overlap_score(match),
         )
 
-    @step(input=section_overlap_matches, output=section_overlap_scores)
-    def publish_section_overlap_scores(self, match: SectionOverlapMatch) -> SectionOverlapScore:
+    @step(input=[section_overlap_matches, score_policy], output=section_overlap_scores)
+    def publish_section_overlap_scores(
+        self, match: SectionOverlapMatch, policy: ScorePolicy
+    ) -> SectionOverlapScore:
+        cross_join(policy, allow_cartesian=True)
         return SectionOverlapScore(
             query_id=match.query_id,
             document_id=match.document_id,
             section_id=match.section_id,
+            scored_at=policy.scored_at,
             score_overlap=self._overlap_score(match),
         )
 
-    @step(input=paragraph_overlap_matches, output=paragraph_overlap_scores)
-    def publish_paragraph_overlap_scores(self, match: ParagraphOverlapMatch) -> ParagraphOverlapScore:
+    @step(input=[paragraph_overlap_matches, score_policy], output=paragraph_overlap_scores)
+    def publish_paragraph_overlap_scores(
+        self, match: ParagraphOverlapMatch, policy: ScorePolicy
+    ) -> ParagraphOverlapScore:
+        cross_join(policy, allow_cartesian=True)
         return ParagraphOverlapScore(
             query_id=match.query_id,
             document_id=match.document_id,
             section_id=match.section_id,
             paragraph_id=match.paragraph_id,
+            scored_at=policy.scored_at,
             score_overlap=self._overlap_score(match),
         )
 
-    @step(input=sentence_overlap_matches, output=sentence_overlap_scores)
-    def publish_sentence_overlap_scores(self, match: SentenceOverlapMatch) -> SentenceOverlapScore:
+    @step(input=[sentence_overlap_matches, score_policy], output=sentence_overlap_scores)
+    def publish_sentence_overlap_scores(
+        self, match: SentenceOverlapMatch, policy: ScorePolicy
+    ) -> SentenceOverlapScore:
+        cross_join(policy, allow_cartesian=True)
         return SentenceOverlapScore(
             query_id=match.query_id,
             document_id=match.document_id,
             section_id=match.section_id,
             paragraph_id=match.paragraph_id,
             sentence_id=match.sentence_id,
+            scored_at=policy.scored_at,
             score_overlap=self._overlap_score(match),
         )
 

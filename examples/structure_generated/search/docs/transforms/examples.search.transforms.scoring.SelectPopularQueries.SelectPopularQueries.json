@@ -1,0 +1,112 @@
+{
+  "dependencies": [
+    "popularities",
+    "popularity"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "queries",
+      "ordinal": 0,
+      "schema": "SearchQuery"
+    },
+    {
+      "name": "daily_impressions",
+      "ordinal": 1,
+      "schema": "DailyImpressions"
+    }
+  ],
+  "name": "SelectPopularQueries",
+  "outputs": [
+    {
+      "name": "selected_queries",
+      "ordinal": 0,
+      "schema": "SearchQuery"
+    }
+  ],
+  "source": "examples.search.transforms.scoring.SelectPopularQueries.SelectPopularQueries",
+  "step_methods": [
+    {
+      "input_lane": "daily_impressions",
+      "input_schema": "DailyImpressions",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "impression",
+          "schema": "DailyImpressions",
+          "source": "daily_impressions"
+        }
+      ],
+      "name": "summarize_popularity",
+      "output_lane": "popularities",
+      "output_schema": "QueryPopularity",
+      "results": [
+        {
+          "frame": "popularities",
+          "lane": "popularities",
+          "schema": "QueryPopularity"
+        }
+      ]
+    },
+    {
+      "input_lane": "queries",
+      "input_schema": "SearchQuery",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "SearchQuery",
+          "source": "queries"
+        },
+        {
+          "driving": false,
+          "parameter": "popularity",
+          "schema": "QueryPopularity",
+          "source": "popularities"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "popularity"
+        }
+      ],
+      "name": "rank_queries",
+      "output_lane": "ranked_queries",
+      "output_schema": "PopularQueryCandidate",
+      "results": [
+        {
+          "frame": "ranked_queries",
+          "lane": "ranked_queries",
+          "schema": "PopularQueryCandidate"
+        }
+      ]
+    },
+    {
+      "input_lane": "ranked_queries",
+      "input_schema": "PopularQueryCandidate",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "PopularQueryCandidate",
+          "source": "ranked_queries"
+        }
+      ],
+      "name": "select_queries",
+      "output_lane": "selected_queries",
+      "output_schema": "SearchQuery",
+      "results": [
+        {
+          "frame": "selected_queries",
+          "lane": "selected_queries",
+          "schema": "SearchQuery"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/SelectPopularQueries.py",
+    "traceability": "traceability/transforms/SelectPopularQueries.SelectPopularQueries.json"
+  }
+}

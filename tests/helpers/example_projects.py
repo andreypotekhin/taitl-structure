@@ -883,9 +883,11 @@ def render_search_example() -> dict[str, str]:
             DocumentOverlapMatch,
             ExpandedQueryToken,
             ParagraphOverlapMatch,
+            PopularQueryCandidate,
             QueryTerm,
             QueryTermCount,
             QueryToken,
+            ScoreQueryAvailability,
             SectionOverlapMatch,
             SentenceOverlapMatch,
         )
@@ -905,6 +907,8 @@ def render_search_example() -> dict[str, str]:
             ParagraphSearchTarget,
             PopularityFeedback,
             QueryDocumentFeedback,
+            QueryPopularity,
+            ScorePolicy,
             SearchQuery,
             SectionScore,
             SectionSearchTarget,
@@ -979,7 +983,9 @@ def render_search_example() -> dict[str, str]:
         from examples.search.transforms.score import Scoring
         from examples.search.transforms.scoring.ScoreBm25 import ScoreBm25
         from examples.search.transforms.scoring.ScoreOverlap import ScoreOverlap
+        from examples.search.transforms.scoring.SelectPopularQueries import SelectPopularQueries
         from examples.search.transforms.search import SearchDocuments, SearchSentences
+        from examples.search.transforms.searching.online.scoring import OnlineScoring
         from examples.search.transforms.searching.search_similarity import SearchSimilarity
         from examples.search.transforms.similarities.CreateSimilarityQueries import CreateSimilarityQueries
         from examples.search.transforms.similarities.ReduceSimilarityScores import ReduceSimilarityScores
@@ -1033,6 +1039,8 @@ def render_search_example() -> dict[str, str]:
                 SectionSearchTarget,
                 ParagraphSearchTarget,
                 SentenceSearchTarget,
+                ScorePolicy,
+                QueryPopularity,
                 DocumentScore,
                 SectionScore,
                 ParagraphScore,
@@ -1054,6 +1062,8 @@ def render_search_example() -> dict[str, str]:
                 ExpandedQueryToken,
                 QueryTerm,
                 QueryTermCount,
+                ScoreQueryAvailability,
+                PopularQueryCandidate,
                 DocumentOverlapMatch,
                 SectionOverlapMatch,
                 ParagraphOverlapMatch,
@@ -1228,6 +1238,8 @@ def render_search_example() -> dict[str, str]:
             (ScoreOverlap, "examples.search.transforms.scoring.ScoreOverlap.ScoreOverlap"),
             (ScoreBm25, "examples.search.transforms.scoring.ScoreBm25.ScoreBm25"),
             (Scoring, "examples.search.transforms.scoring.Scoring.Scoring"),
+            (SelectPopularQueries, "examples.search.transforms.scoring.SelectPopularQueries.SelectPopularQueries"),
+            (OnlineScoring, "examples.search.transforms.searching.online.scoring.OnlineScoring.OnlineScoring"),
             (
                 Scoring001AdjustBm,
                 "examples.search.transforms.experiments.scoring.Scoring001AdjustBm.Scoring001AdjustBm",

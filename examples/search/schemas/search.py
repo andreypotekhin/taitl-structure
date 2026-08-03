@@ -14,6 +14,20 @@ class SearchQuery(Schema):
     language = string(nullable=True)
 
 
+class ScorePolicy(Schema):
+    """Freshness and timestamp policy for online score resolution."""
+
+    maximum_age_days = long(nullable=False)
+    scored_at = timestamp(nullable=False)
+
+
+class QueryPopularity(Schema):
+    """Aggregated offline popularity for one normalized query."""
+
+    query = string(nullable=False)
+    impression_count = long(nullable=False)
+
+
 class SentenceSearchResult(Schema):
     """One ranked sentence match for a caller-supplied query."""
 
@@ -142,6 +156,7 @@ class DocumentScore(DocumentSearchTarget):
     """One experiment-scoped unified document score."""
 
     experiment_id = string(nullable=True)
+    scored_at = timestamp(nullable=False)
     score = double(nullable=False)
 
 
@@ -149,6 +164,7 @@ class SectionScore(SectionSearchTarget):
     """One experiment-scoped unified section score."""
 
     experiment_id = string(nullable=True)
+    scored_at = timestamp(nullable=False)
     score = double(nullable=False)
 
 
@@ -156,6 +172,7 @@ class ParagraphScore(ParagraphSearchTarget):
     """One experiment-scoped unified paragraph score."""
 
     experiment_id = string(nullable=True)
+    scored_at = timestamp(nullable=False)
     score = double(nullable=False)
 
 
@@ -163,4 +180,5 @@ class SentenceScore(SentenceSearchTarget):
     """One experiment-scoped unified sentence score."""
 
     experiment_id = string(nullable=True)
+    scored_at = timestamp(nullable=False)
     score = double(nullable=False)

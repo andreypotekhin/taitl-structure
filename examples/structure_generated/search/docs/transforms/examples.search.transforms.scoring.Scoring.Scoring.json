@@ -10,6 +10,8 @@
     "overlap__query_sizes",
     "paragraph_summary",
     "paragraph_terms",
+    "policy",
+    "score_policy",
     "section_summary",
     "section_terms",
     "sentence_summary",
@@ -46,23 +48,28 @@
       "schema": "SentenceIndexTerm"
     },
     {
-      "name": "document_summary",
+      "name": "score_policy",
       "ordinal": 5,
+      "schema": "ScorePolicy"
+    },
+    {
+      "name": "document_summary",
+      "ordinal": 6,
       "schema": "DocumentIndexSummary"
     },
     {
       "name": "section_summary",
-      "ordinal": 6,
+      "ordinal": 7,
       "schema": "SectionIndexSummary"
     },
     {
       "name": "paragraph_summary",
-      "ordinal": 7,
+      "ordinal": 8,
       "schema": "ParagraphIndexSummary"
     },
     {
       "name": "sentence_summary",
-      "ordinal": 8,
+      "ordinal": 9,
       "schema": "SentenceIndexSummary"
     }
   ],
@@ -382,6 +389,18 @@
           "parameter": "match",
           "schema": "DocumentOverlapMatch",
           "source": "overlap__document_overlap_matches"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "ScorePolicy",
+          "source": "score_policy"
+        }
+      ],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "policy"
         }
       ],
       "name": "overlap.publish_document_overlap_scores",
@@ -404,6 +423,18 @@
           "parameter": "match",
           "schema": "SectionOverlapMatch",
           "source": "overlap__section_overlap_matches"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "ScorePolicy",
+          "source": "score_policy"
+        }
+      ],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "policy"
         }
       ],
       "name": "overlap.publish_section_overlap_scores",
@@ -426,6 +457,18 @@
           "parameter": "match",
           "schema": "ParagraphOverlapMatch",
           "source": "overlap__paragraph_overlap_matches"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "ScorePolicy",
+          "source": "score_policy"
+        }
+      ],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "policy"
         }
       ],
       "name": "overlap.publish_paragraph_overlap_scores",
@@ -448,6 +491,18 @@
           "parameter": "match",
           "schema": "SentenceOverlapMatch",
           "source": "overlap__sentence_overlap_matches"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "ScorePolicy",
+          "source": "score_policy"
+        }
+      ],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "policy"
         }
       ],
       "name": "overlap.publish_sentence_overlap_scores",
@@ -718,12 +773,22 @@
           "parameter": "bm25",
           "schema": "DocumentBm25Score",
           "source": "bm25__document_bm25_scores"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "ScorePolicy",
+          "source": "score_policy"
         }
       ],
       "joins": [
         {
           "how": "inner",
           "input": "bm25"
+        },
+        {
+          "how": "cross",
+          "input": "policy"
         }
       ],
       "name": "selected.score_documents",
@@ -752,12 +817,22 @@
           "parameter": "bm25",
           "schema": "SectionBm25Score",
           "source": "bm25__section_bm25_scores"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "ScorePolicy",
+          "source": "score_policy"
         }
       ],
       "joins": [
         {
           "how": "inner",
           "input": "bm25"
+        },
+        {
+          "how": "cross",
+          "input": "policy"
         }
       ],
       "name": "selected.score_sections",
@@ -786,12 +861,22 @@
           "parameter": "bm25",
           "schema": "ParagraphBm25Score",
           "source": "bm25__paragraph_bm25_scores"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "ScorePolicy",
+          "source": "score_policy"
         }
       ],
       "joins": [
         {
           "how": "inner",
           "input": "bm25"
+        },
+        {
+          "how": "cross",
+          "input": "policy"
         }
       ],
       "name": "selected.score_paragraphs",
@@ -820,12 +905,22 @@
           "parameter": "bm25",
           "schema": "SentenceBm25Score",
           "source": "bm25__sentence_bm25_scores"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "ScorePolicy",
+          "source": "score_policy"
         }
       ],
       "joins": [
         {
           "how": "inner",
           "input": "bm25"
+        },
+        {
+          "how": "cross",
+          "input": "policy"
         }
       ],
       "name": "selected.score_sentences",

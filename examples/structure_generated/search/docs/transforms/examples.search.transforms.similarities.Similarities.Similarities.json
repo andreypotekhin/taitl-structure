@@ -28,6 +28,7 @@
     "reverse_paragraph",
     "reverse_section",
     "reverse_sentence",
+    "score_policy",
     "section_summary",
     "section_terms",
     "sentence_summary",
@@ -82,6 +83,11 @@
       "name": "sentence_summary",
       "ordinal": 8,
       "schema": "SentenceIndexSummary"
+    },
+    {
+      "name": "score_policy",
+      "ordinal": 9,
+      "schema": "ScorePolicy"
     }
   ],
   "name": "Similarities",
@@ -774,6 +780,18 @@
           "parameter": "match",
           "schema": "DocumentOverlapMatch",
           "source": "overlap__document_overlap_matches"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "ScorePolicy",
+          "source": "score_policy"
+        }
+      ],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "policy"
         }
       ],
       "name": "overlap.publish_document_overlap_scores",
@@ -796,6 +814,18 @@
           "parameter": "match",
           "schema": "SectionOverlapMatch",
           "source": "overlap__section_overlap_matches"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "ScorePolicy",
+          "source": "score_policy"
+        }
+      ],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "policy"
         }
       ],
       "name": "overlap.publish_section_overlap_scores",
@@ -818,6 +848,18 @@
           "parameter": "match",
           "schema": "ParagraphOverlapMatch",
           "source": "overlap__paragraph_overlap_matches"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "ScorePolicy",
+          "source": "score_policy"
+        }
+      ],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "policy"
         }
       ],
       "name": "overlap.publish_paragraph_overlap_scores",
@@ -840,6 +882,18 @@
           "parameter": "match",
           "schema": "SentenceOverlapMatch",
           "source": "overlap__sentence_overlap_matches"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "ScorePolicy",
+          "source": "score_policy"
+        }
+      ],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "policy"
         }
       ],
       "name": "overlap.publish_sentence_overlap_scores",

@@ -91,6 +91,7 @@ from examples.structure_generated.search.pyspark.schemas.resolve import (
 from examples.structure_generated.search.pyspark.schemas.scoring_intermediate import (
     DOCUMENT_OVERLAP_MATCH_SCHEMA,
     PARAGRAPH_OVERLAP_MATCH_SCHEMA,
+    POPULAR_QUERY_CANDIDATE_SCHEMA,
     QUERY_TERM_COUNT_SCHEMA,
     QUERY_TERM_SCHEMA,
     SECTION_OVERLAP_MATCH_SCHEMA,
@@ -99,6 +100,8 @@ from examples.structure_generated.search.pyspark.schemas.scoring_intermediate im
 from examples.structure_generated.search.pyspark.schemas.search import (
     DOCUMENT_SCORE_SCHEMA,
     PARAGRAPH_SCORE_SCHEMA,
+    QUERY_POPULARITY_SCHEMA,
+    SCORE_POLICY_SCHEMA,
     SEARCH_QUERY_SCHEMA,
     SECTION_SCORE_SCHEMA,
     SENTENCE_SCORE_SCHEMA,
@@ -2036,9 +2039,9 @@ class ScoreBaseGenerated:
             "similarities__bm25__query_sizes": similarities__bm25__query_sizes,
         }
 
-    def _step_scored_overlap_expand_query_terms_98(self, frames):
+    def _step_scored_overlap_expand_query_terms_101(self, frames):
         # Step method: scored.overlap.expand_query_terms
-        scored__overlap__expanded_query_terms = frames["labeled__merged__labeled_queries"].alias("search_query")
+        scored__overlap__expanded_query_terms = frames["popular__selected_queries"].alias("search_query")
         scored__overlap__expanded_query_terms = scored__overlap__expanded_query_terms.select(
             "*",
             F.posexplode(
@@ -2073,7 +2076,7 @@ class ScoreBaseGenerated:
             "scored__overlap__expanded_query_terms": scored__overlap__expanded_query_terms,
         }
 
-    def _step_scored_overlap_select_distinct_query_terms_99(self, frames):
+    def _step_scored_overlap_select_distinct_query_terms_102(self, frames):
         # Step method: scored.overlap.select_distinct_query_terms
         scored__overlap__query_terms = frames["scored__overlap__expanded_query_terms"].alias("query_term")
         if scored__overlap__query_terms.isStreaming:
@@ -2091,7 +2094,7 @@ class ScoreBaseGenerated:
             "scored__overlap__query_terms": scored__overlap__query_terms,
         }
 
-    def _step_scored_overlap_count_query_terms_100(self, frames):
+    def _step_scored_overlap_count_query_terms_103(self, frames):
         # Step method: scored.overlap.count_query_terms
         scored__overlap__query_sizes = frames["scored__overlap__query_terms"].alias("query_term")
         scored__overlap__query_sizes = (
@@ -2111,9 +2114,9 @@ class ScoreBaseGenerated:
             "scored__overlap__query_sizes": scored__overlap__query_sizes,
         }
 
-    def _step_scored_bm25_expand_query_terms_109(self, frames):
+    def _step_scored_bm25_expand_query_terms_112(self, frames):
         # Step method: scored.bm25.expand_query_terms
-        scored__bm25__expanded_query_terms = frames["labeled__merged__labeled_queries"].alias("search_query")
+        scored__bm25__expanded_query_terms = frames["popular__selected_queries"].alias("search_query")
         scored__bm25__expanded_query_terms = scored__bm25__expanded_query_terms.select(
             "*",
             F.posexplode(
@@ -2146,7 +2149,7 @@ class ScoreBaseGenerated:
             "scored__bm25__expanded_query_terms": scored__bm25__expanded_query_terms,
         }
 
-    def _step_scored_bm25_select_distinct_query_terms_110(self, frames):
+    def _step_scored_bm25_select_distinct_query_terms_113(self, frames):
         # Step method: scored.bm25.select_distinct_query_terms
         scored__bm25__query_terms = frames["scored__bm25__expanded_query_terms"].alias("query_term")
         if scored__bm25__query_terms.isStreaming:
@@ -2162,7 +2165,7 @@ class ScoreBaseGenerated:
             "scored__bm25__query_terms": scored__bm25__query_terms,
         }
 
-    def _step_scored_bm25_count_query_terms_111(self, frames):
+    def _step_scored_bm25_count_query_terms_114(self, frames):
         # Step method: scored.bm25.count_query_terms
         scored__bm25__query_sizes = frames["scored__bm25__query_terms"].alias("query_term")
         scored__bm25__query_sizes = (
@@ -2397,9 +2400,14 @@ class ScoreOverlapGenerated:
         similarities__overlap__document_overlap_scores = frames[
             "similarities__overlap__document_overlap_matches"
         ].alias("document_overlap_match")
+        score_policy_joined = frames["score_policy"].alias("score_policy")
+        similarities__overlap__document_overlap_scores = similarities__overlap__document_overlap_scores.crossJoin(
+            score_policy_joined
+        )
         similarities__overlap__document_overlap_scores = similarities__overlap__document_overlap_scores.select(
             F.col("document_overlap_match.query_id"),
             F.col("document_overlap_match.document_id"),
+            F.col("score_policy.scored_at"),
             (
                 F.col("document_overlap_match.matched_terms")
                 / F.when(
@@ -2426,10 +2434,15 @@ class ScoreOverlapGenerated:
         similarities__overlap__section_overlap_scores = frames["similarities__overlap__section_overlap_matches"].alias(
             "section_overlap_match"
         )
+        score_policy_joined = frames["score_policy"].alias("score_policy")
+        similarities__overlap__section_overlap_scores = similarities__overlap__section_overlap_scores.crossJoin(
+            score_policy_joined
+        )
         similarities__overlap__section_overlap_scores = similarities__overlap__section_overlap_scores.select(
             F.col("section_overlap_match.query_id"),
             F.col("section_overlap_match.document_id"),
             F.col("section_overlap_match.section_id"),
+            F.col("score_policy.scored_at"),
             (
                 F.col("section_overlap_match.matched_terms")
                 / F.when(
@@ -2453,11 +2466,16 @@ class ScoreOverlapGenerated:
         similarities__overlap__paragraph_overlap_scores = frames[
             "similarities__overlap__paragraph_overlap_matches"
         ].alias("paragraph_overlap_match")
+        score_policy_joined = frames["score_policy"].alias("score_policy")
+        similarities__overlap__paragraph_overlap_scores = similarities__overlap__paragraph_overlap_scores.crossJoin(
+            score_policy_joined
+        )
         similarities__overlap__paragraph_overlap_scores = similarities__overlap__paragraph_overlap_scores.select(
             F.col("paragraph_overlap_match.query_id"),
             F.col("paragraph_overlap_match.document_id"),
             F.col("paragraph_overlap_match.section_id"),
             F.col("paragraph_overlap_match.paragraph_id"),
+            F.col("score_policy.scored_at"),
             (
                 F.col("paragraph_overlap_match.matched_terms")
                 / F.when(
@@ -2484,12 +2502,17 @@ class ScoreOverlapGenerated:
         similarities__overlap__sentence_overlap_scores = frames[
             "similarities__overlap__sentence_overlap_matches"
         ].alias("sentence_overlap_match")
+        score_policy_joined = frames["score_policy"].alias("score_policy")
+        similarities__overlap__sentence_overlap_scores = similarities__overlap__sentence_overlap_scores.crossJoin(
+            score_policy_joined
+        )
         similarities__overlap__sentence_overlap_scores = similarities__overlap__sentence_overlap_scores.select(
             F.col("sentence_overlap_match.query_id"),
             F.col("sentence_overlap_match.document_id"),
             F.col("sentence_overlap_match.section_id"),
             F.col("sentence_overlap_match.paragraph_id"),
             F.col("sentence_overlap_match.sentence_id"),
+            F.col("score_policy.scored_at"),
             (
                 F.col("sentence_overlap_match.matched_terms")
                 / F.when(
@@ -2511,7 +2534,7 @@ class ScoreOverlapGenerated:
             "similarities__overlap__sentence_overlap_scores": similarities__overlap__sentence_overlap_scores,
         }
 
-    def _step_scored_overlap_match_documents_101(self, frames):
+    def _step_scored_overlap_match_documents_104(self, frames):
         # Step method: scored.overlap.match_documents
         scored__overlap__document_overlap_matches = frames["scored__overlap__query_terms"].alias("query_term")
         indexed__lexical__document_terms_joined = frames["indexed__lexical__document_terms"].alias(
@@ -2558,7 +2581,7 @@ class ScoreOverlapGenerated:
             "scored__overlap__document_overlap_matches": scored__overlap__document_overlap_matches,
         }
 
-    def _step_scored_overlap_match_sections_102(self, frames):
+    def _step_scored_overlap_match_sections_105(self, frames):
         # Step method: scored.overlap.match_sections
         scored__overlap__section_overlap_matches = frames["scored__overlap__query_terms"].alias("query_term")
         indexed__lexical__section_terms_joined = frames["indexed__lexical__section_terms"].alias(
@@ -2607,7 +2630,7 @@ class ScoreOverlapGenerated:
             "scored__overlap__section_overlap_matches": scored__overlap__section_overlap_matches,
         }
 
-    def _step_scored_overlap_match_paragraphs_103(self, frames):
+    def _step_scored_overlap_match_paragraphs_106(self, frames):
         # Step method: scored.overlap.match_paragraphs
         scored__overlap__paragraph_overlap_matches = frames["scored__overlap__query_terms"].alias("query_term")
         indexed__lexical__paragraph_terms_joined = frames["indexed__lexical__paragraph_terms"].alias(
@@ -2658,7 +2681,7 @@ class ScoreOverlapGenerated:
             "scored__overlap__paragraph_overlap_matches": scored__overlap__paragraph_overlap_matches,
         }
 
-    def _step_scored_overlap_match_sentences_104(self, frames):
+    def _step_scored_overlap_match_sentences_107(self, frames):
         # Step method: scored.overlap.match_sentences
         scored__overlap__sentence_overlap_matches = frames["scored__overlap__query_terms"].alias("query_term")
         indexed__lexical__sentence_terms_joined = frames["indexed__lexical__sentence_terms"].alias(
@@ -2711,14 +2734,19 @@ class ScoreOverlapGenerated:
             "scored__overlap__sentence_overlap_matches": scored__overlap__sentence_overlap_matches,
         }
 
-    def _step_scored_overlap_publish_document_overlap_scores_105(self, frames):
+    def _step_scored_overlap_publish_document_overlap_scores_108(self, frames):
         # Step method: scored.overlap.publish_document_overlap_scores
         scored__overlap__document_overlap_scores = frames["scored__overlap__document_overlap_matches"].alias(
             "document_overlap_match"
         )
+        score_policy_joined = frames["score_policy"].alias("score_policy")
+        scored__overlap__document_overlap_scores = scored__overlap__document_overlap_scores.crossJoin(
+            score_policy_joined
+        )
         scored__overlap__document_overlap_scores = scored__overlap__document_overlap_scores.select(
             F.col("document_overlap_match.query_id"),
             F.col("document_overlap_match.document_id"),
+            F.col("score_policy.scored_at"),
             (
                 F.col("document_overlap_match.matched_terms")
                 / F.when(
@@ -2740,15 +2768,18 @@ class ScoreOverlapGenerated:
             "scored__overlap__document_overlap_scores": scored__overlap__document_overlap_scores,
         }
 
-    def _step_scored_overlap_publish_section_overlap_scores_106(self, frames):
+    def _step_scored_overlap_publish_section_overlap_scores_109(self, frames):
         # Step method: scored.overlap.publish_section_overlap_scores
         scored__overlap__section_overlap_scores = frames["scored__overlap__section_overlap_matches"].alias(
             "section_overlap_match"
         )
+        score_policy_joined = frames["score_policy"].alias("score_policy")
+        scored__overlap__section_overlap_scores = scored__overlap__section_overlap_scores.crossJoin(score_policy_joined)
         scored__overlap__section_overlap_scores = scored__overlap__section_overlap_scores.select(
             F.col("section_overlap_match.query_id"),
             F.col("section_overlap_match.document_id"),
             F.col("section_overlap_match.section_id"),
+            F.col("score_policy.scored_at"),
             (
                 F.col("section_overlap_match.matched_terms")
                 / F.when(
@@ -2767,16 +2798,21 @@ class ScoreOverlapGenerated:
             "scored__overlap__section_overlap_scores": scored__overlap__section_overlap_scores,
         }
 
-    def _step_scored_overlap_publish_paragraph_overlap_scores_107(self, frames):
+    def _step_scored_overlap_publish_paragraph_overlap_scores_110(self, frames):
         # Step method: scored.overlap.publish_paragraph_overlap_scores
         scored__overlap__paragraph_overlap_scores = frames["scored__overlap__paragraph_overlap_matches"].alias(
             "paragraph_overlap_match"
+        )
+        score_policy_joined = frames["score_policy"].alias("score_policy")
+        scored__overlap__paragraph_overlap_scores = scored__overlap__paragraph_overlap_scores.crossJoin(
+            score_policy_joined
         )
         scored__overlap__paragraph_overlap_scores = scored__overlap__paragraph_overlap_scores.select(
             F.col("paragraph_overlap_match.query_id"),
             F.col("paragraph_overlap_match.document_id"),
             F.col("paragraph_overlap_match.section_id"),
             F.col("paragraph_overlap_match.paragraph_id"),
+            F.col("score_policy.scored_at"),
             (
                 F.col("paragraph_overlap_match.matched_terms")
                 / F.when(
@@ -2798,10 +2834,14 @@ class ScoreOverlapGenerated:
             "scored__overlap__paragraph_overlap_scores": scored__overlap__paragraph_overlap_scores,
         }
 
-    def _step_scored_overlap_publish_sentence_overlap_scores_108(self, frames):
+    def _step_scored_overlap_publish_sentence_overlap_scores_111(self, frames):
         # Step method: scored.overlap.publish_sentence_overlap_scores
         scored__overlap__sentence_overlap_scores = frames["scored__overlap__sentence_overlap_matches"].alias(
             "sentence_overlap_match"
+        )
+        score_policy_joined = frames["score_policy"].alias("score_policy")
+        scored__overlap__sentence_overlap_scores = scored__overlap__sentence_overlap_scores.crossJoin(
+            score_policy_joined
         )
         scored__overlap__sentence_overlap_scores = scored__overlap__sentence_overlap_scores.select(
             F.col("sentence_overlap_match.query_id"),
@@ -2809,6 +2849,7 @@ class ScoreOverlapGenerated:
             F.col("sentence_overlap_match.section_id"),
             F.col("sentence_overlap_match.paragraph_id"),
             F.col("sentence_overlap_match.sentence_id"),
+            F.col("score_policy.scored_at"),
             (
                 F.col("sentence_overlap_match.matched_terms")
                 / F.when(
@@ -3170,7 +3211,7 @@ class ScoreBm25Generated:
             "similarities__bm25__sentence_bm25_scores": similarities__bm25__sentence_bm25_scores,
         }
 
-    def _step_scored_bm25_score_document_bm25_112(self, frames):
+    def _step_scored_bm25_score_document_bm25_115(self, frames):
         # Step method: scored.bm25.score_document_bm25
         scored__bm25__document_bm25_scores = frames["scored__bm25__query_terms"].alias("query_term")
         indexed__lexical__document_terms_joined = frames["indexed__lexical__document_terms"].alias(
@@ -3250,7 +3291,7 @@ class ScoreBm25Generated:
             "scored__bm25__document_bm25_scores": scored__bm25__document_bm25_scores,
         }
 
-    def _step_scored_bm25_score_section_bm25_113(self, frames):
+    def _step_scored_bm25_score_section_bm25_116(self, frames):
         # Step method: scored.bm25.score_section_bm25
         scored__bm25__section_bm25_scores = frames["scored__bm25__query_terms"].alias("query_term")
         indexed__lexical__section_terms_joined = frames["indexed__lexical__section_terms"].alias(
@@ -3329,7 +3370,7 @@ class ScoreBm25Generated:
             "scored__bm25__section_bm25_scores": scored__bm25__section_bm25_scores,
         }
 
-    def _step_scored_bm25_score_paragraph_bm25_114(self, frames):
+    def _step_scored_bm25_score_paragraph_bm25_117(self, frames):
         # Step method: scored.bm25.score_paragraph_bm25
         scored__bm25__paragraph_bm25_scores = frames["scored__bm25__query_terms"].alias("query_term")
         indexed__lexical__paragraph_terms_joined = frames["indexed__lexical__paragraph_terms"].alias(
@@ -3413,7 +3454,7 @@ class ScoreBm25Generated:
             "scored__bm25__paragraph_bm25_scores": scored__bm25__paragraph_bm25_scores,
         }
 
-    def _step_scored_bm25_score_sentence_bm25_115(self, frames):
+    def _step_scored_bm25_score_sentence_bm25_118(self, frames):
         # Step method: scored.bm25.score_sentence_bm25
         scored__bm25__sentence_bm25_scores = frames["scored__bm25__query_terms"].alias("query_term")
         indexed__lexical__sentence_terms_joined = frames["indexed__lexical__sentence_terms"].alias(
@@ -5046,8 +5087,89 @@ class MergeQueryLabelsGenerated:
         }
 
 
+class SelectPopularQueriesGenerated:
+    def _step_popular_summarize_popularity_98(self, frames):
+        # Step method: popular.summarize_popularity
+        popular__popularities = frames["daily_impressions"].alias("daily_impressions")
+        popular__popularities = (
+            popular__popularities.groupBy(
+                F.lower(F.regexp_replace(F.trim(F.col("daily_impressions.query")), '\\s+', ' ')).alias("query"),
+            )
+            .agg(
+                F.sum(F.col("daily_impressions.impression_count")).cast(T.LongType()).alias("impression_count"),
+            )
+            .select(
+                F.col("query"),
+                F.col("impression_count"),
+            )
+        )
+        assert_schema(popular__popularities, QUERY_POPULARITY_SCHEMA, name="QueryPopularity", mode="strict")
+        return {
+            "popular__popularities": popular__popularities,
+        }
+
+    def _step_popular_rank_queries_99(self, frames):
+        # Step method: popular.rank_queries
+        popular__ranked_queries = frames["labeled__merged__labeled_queries"].alias("search_query")
+        popular__popularities_joined = frames["popular__popularities"].alias("popular__popularities")
+        popular__ranked_queries = popular__ranked_queries.join(
+            popular__popularities_joined,
+            (
+                F.col("popular__popularities.query")
+                == F.lower(F.regexp_replace(F.trim(F.col("search_query.content")), '\\s+', ' '))
+            ),
+            "left",
+        )
+        popular__ranked_queries = popular__ranked_queries.select(
+            F.col("search_query.id"),
+            F.col("search_query.queryset"),
+            F.col("search_query.content"),
+            F.col("search_query.labels"),
+            F.col("search_query.is_question"),
+            F.col("search_query.is_time_sensitive"),
+            F.col("search_query.language"),
+            F.coalesce(F.col("popular__popularities.impression_count"), F.lit(0)).alias("impression_count"),
+            F.row_number()
+            .over(
+                Window.partitionBy(F.lit(1)).orderBy(
+                    F.coalesce(F.col("popular__popularities.impression_count"), F.lit(0)).desc_nulls_last(),
+                    F.lower(F.regexp_replace(F.trim(F.col("search_query.content")), '\\s+', ' ')).asc_nulls_first(),
+                    F.col("search_query.id").asc_nulls_first(),
+                )
+            )
+            .cast(T.LongType())
+            .alias("popularity_rank"),
+        )
+        assert_schema(
+            popular__ranked_queries, POPULAR_QUERY_CANDIDATE_SCHEMA, name="PopularQueryCandidate", mode="strict"
+        )
+        return {
+            "popular__ranked_queries": popular__ranked_queries,
+        }
+
+    def _step_popular_select_queries_100(self, frames):
+        # Step method: popular.select_queries
+        popular__selected_queries = frames["popular__ranked_queries"].alias("popular_query_candidate")
+        popular__selected_queries = popular__selected_queries.where(
+            ((F.col("popular_query_candidate.popularity_rank") <= F.lit(1000)))
+        )
+        popular__selected_queries = popular__selected_queries.select(
+            F.col("popular_query_candidate.id"),
+            F.col("popular_query_candidate.queryset"),
+            F.col("popular_query_candidate.content"),
+            F.col("popular_query_candidate.labels"),
+            F.col("popular_query_candidate.is_question"),
+            F.col("popular_query_candidate.is_time_sensitive"),
+            F.col("popular_query_candidate.language"),
+        )
+        assert_schema(popular__selected_queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
+        return {
+            "popular__selected_queries": popular__selected_queries,
+        }
+
+
 class SelectScoresGenerated:
-    def _step_scored_selected_score_documents_116(self, frames):
+    def _step_scored_selected_score_documents_119(self, frames):
         # Step method: scored.selected.score_documents
         scored__selected__document_scores = frames["scored__overlap__document_overlap_scores"].alias(
             "document_overlap_score"
@@ -5063,10 +5185,13 @@ class SelectScoresGenerated:
             ),
             "inner",
         )
+        score_policy_2_joined = frames["score_policy"].alias("score_policy_2")
+        scored__selected__document_scores = scored__selected__document_scores.crossJoin(score_policy_2_joined)
         scored__selected__document_scores = scored__selected__document_scores.select(
             F.col("document_overlap_score.query_id"),
             F.col("document_overlap_score.document_id"),
             F.lit(None).cast(T.StringType()).alias("experiment_id"),
+            F.col("score_policy_2.scored_at"),
             F.col("scored__bm25__document_bm25_scores.score_bm25").alias("score"),
         )
         assert_schema(scored__selected__document_scores, DOCUMENT_SCORE_SCHEMA, name="DocumentScore", mode="strict")
@@ -5074,7 +5199,7 @@ class SelectScoresGenerated:
             "scored__selected__document_scores": scored__selected__document_scores,
         }
 
-    def _step_scored_selected_score_sections_117(self, frames):
+    def _step_scored_selected_score_sections_120(self, frames):
         # Step method: scored.selected.score_sections
         scored__selected__section_scores = frames["scored__overlap__section_overlap_scores"].alias(
             "section_overlap_score"
@@ -5090,11 +5215,14 @@ class SelectScoresGenerated:
             ),
             "inner",
         )
+        score_policy_2_joined = frames["score_policy"].alias("score_policy_2")
+        scored__selected__section_scores = scored__selected__section_scores.crossJoin(score_policy_2_joined)
         scored__selected__section_scores = scored__selected__section_scores.select(
             F.col("section_overlap_score.query_id"),
             F.col("section_overlap_score.document_id"),
             F.col("section_overlap_score.section_id"),
             F.lit(None).cast(T.StringType()).alias("experiment_id"),
+            F.col("score_policy_2.scored_at"),
             F.col("scored__bm25__section_bm25_scores.score_bm25").alias("score"),
         )
         assert_schema(scored__selected__section_scores, SECTION_SCORE_SCHEMA, name="SectionScore", mode="strict")
@@ -5102,7 +5230,7 @@ class SelectScoresGenerated:
             "scored__selected__section_scores": scored__selected__section_scores,
         }
 
-    def _step_scored_selected_score_paragraphs_118(self, frames):
+    def _step_scored_selected_score_paragraphs_121(self, frames):
         # Step method: scored.selected.score_paragraphs
         scored__selected__paragraph_scores = frames["scored__overlap__paragraph_overlap_scores"].alias(
             "paragraph_overlap_score"
@@ -5121,12 +5249,15 @@ class SelectScoresGenerated:
             ),
             "inner",
         )
+        score_policy_2_joined = frames["score_policy"].alias("score_policy_2")
+        scored__selected__paragraph_scores = scored__selected__paragraph_scores.crossJoin(score_policy_2_joined)
         scored__selected__paragraph_scores = scored__selected__paragraph_scores.select(
             F.col("paragraph_overlap_score.query_id"),
             F.col("paragraph_overlap_score.document_id"),
             F.col("paragraph_overlap_score.section_id"),
             F.col("paragraph_overlap_score.paragraph_id"),
             F.lit(None).cast(T.StringType()).alias("experiment_id"),
+            F.col("score_policy_2.scored_at"),
             F.col("paragraph_overlap_score.score_overlap").alias("score"),
         )
         assert_schema(scored__selected__paragraph_scores, PARAGRAPH_SCORE_SCHEMA, name="ParagraphScore", mode="strict")
@@ -5134,7 +5265,7 @@ class SelectScoresGenerated:
             "scored__selected__paragraph_scores": scored__selected__paragraph_scores,
         }
 
-    def _step_scored_selected_score_sentences_119(self, frames):
+    def _step_scored_selected_score_sentences_122(self, frames):
         # Step method: scored.selected.score_sentences
         scored__selected__sentence_scores = frames["scored__overlap__sentence_overlap_scores"].alias(
             "sentence_overlap_score"
@@ -5150,6 +5281,8 @@ class SelectScoresGenerated:
             ),
             "inner",
         )
+        score_policy_2_joined = frames["score_policy"].alias("score_policy_2")
+        scored__selected__sentence_scores = scored__selected__sentence_scores.crossJoin(score_policy_2_joined)
         scored__selected__sentence_scores = scored__selected__sentence_scores.select(
             F.col("sentence_overlap_score.query_id"),
             F.col("sentence_overlap_score.document_id"),
@@ -5157,6 +5290,7 @@ class SelectScoresGenerated:
             F.col("sentence_overlap_score.paragraph_id"),
             F.col("sentence_overlap_score.sentence_id"),
             F.lit(None).cast(T.StringType()).alias("experiment_id"),
+            F.col("score_policy_2.scored_at"),
             F.col("sentence_overlap_score.score_overlap").alias("score"),
         )
         assert_schema(scored__selected__sentence_scores, SENTENCE_SCORE_SCHEMA, name="SentenceScore", mode="strict")
@@ -5166,7 +5300,7 @@ class SelectScoresGenerated:
 
 
 class ResolveCohortBandsGenerated:
-    def _step_cohorts_validate_bands_120(self, frames):
+    def _step_cohorts_validate_bands_123(self, frames):
         # Step method: cohorts.validate_bands
         cohorts__valid_bands = frames["bands"].alias("band")
         cohorts__valid_bands_require_unique_0_duplicates = cohorts__valid_bands.groupBy(F.col("band.id")).agg(
@@ -5598,7 +5732,7 @@ class ResolveCohortBandsGenerated:
             "cohorts__valid_bands": cohorts__valid_bands,
         }
 
-    def _step_cohorts_match_bands_121(self, frames):
+    def _step_cohorts_match_bands_124(self, frames):
         # Step method: cohorts.match_bands
         cohorts__matches = frames["users"].alias("user")
         cohorts__valid_bands_joined = frames["cohorts__valid_bands"].alias("cohorts__valid_bands")
@@ -5674,7 +5808,7 @@ class ResolveCohortBandsGenerated:
             "cohorts__matches": cohorts__matches,
         }
 
-    def _step_cohorts_select_leaf_matches_122(self, frames):
+    def _step_cohorts_select_leaf_matches_125(self, frames):
         # Step method: cohorts.select_leaf_matches
         cohorts__leaf_matches = frames["cohorts__matches"].alias("band_match")
         child_match_joined = frames["cohorts__matches"].alias("child_match")
@@ -5697,7 +5831,7 @@ class ResolveCohortBandsGenerated:
             "cohorts__leaf_matches": cohorts__leaf_matches,
         }
 
-    def _step_cohorts_expand_band_ancestors_123(self, frames):
+    def _step_cohorts_expand_band_ancestors_126(self, frames):
         # Step method: cohorts.expand_band_ancestors
         cohorts__band_ancestors = frames["cohorts__valid_bands"].alias("band")
         cohorts__band_ancestors_hierarchy_closure_0_nodes = cohorts__band_ancestors.select(
@@ -5976,7 +6110,7 @@ class ResolveCohortBandsGenerated:
             "cohorts__band_ancestors": cohorts__band_ancestors,
         }
 
-    def _step_cohorts_build_user_band_paths_124(self, frames):
+    def _step_cohorts_build_user_band_paths_127(self, frames):
         # Step method: cohorts.build_user_band_paths
         cohorts__user_band_paths = frames["cohorts__leaf_matches"].alias("band_match")
         cohorts__user_band_paths = (
@@ -6010,7 +6144,7 @@ class ResolveCohortBandsGenerated:
             "cohorts__user_band_paths": cohorts__user_band_paths,
         }
 
-    def _step_cohorts_build_resolved_user_bands_125(self, frames):
+    def _step_cohorts_build_resolved_user_bands_128(self, frames):
         # Step method: cohorts.build_resolved_user_bands
         cohorts__resolved_user_bands = frames["cohorts__user_band_paths"].alias("user_band_path")
         if cohorts__resolved_user_bands.isStreaming:
@@ -6026,7 +6160,7 @@ class ResolveCohortBandsGenerated:
             "cohorts__resolved_user_bands": cohorts__resolved_user_bands,
         }
 
-    def _step_cohorts_build_singleton_user_bands_126(self, frames):
+    def _step_cohorts_build_singleton_user_bands_129(self, frames):
         # Step method: cohorts.build_singleton_user_bands
         cohorts__singleton_user_bands = frames["cohorts__valid_bands"].alias("band")
         cohorts__singleton_user_bands = cohorts__singleton_user_bands.select(
@@ -6041,7 +6175,7 @@ class ResolveCohortBandsGenerated:
             "cohorts__singleton_user_bands": cohorts__singleton_user_bands,
         }
 
-    def _step_cohorts_publish_singleton_user_bands_127(self, frames):
+    def _step_cohorts_publish_singleton_user_bands_130(self, frames):
         # Step method: cohorts.publish_singleton_user_bands
         cohorts__singleton_catalog = frames["cohorts__singleton_user_bands"].alias("singleton_user_band")
         cohorts__singleton_catalog = cohorts__singleton_catalog.select(
@@ -6053,7 +6187,7 @@ class ResolveCohortBandsGenerated:
             "cohorts__singleton_catalog": cohorts__singleton_catalog,
         }
 
-    def _step_cohorts_merge_user_band_catalog_128(self, frames):
+    def _step_cohorts_merge_user_band_catalog_131(self, frames):
         # Step method: cohorts.merge_user_band_catalog
         cohorts__all_user_bands = frames["cohorts__resolved_user_bands"].alias("user_band")
         cohorts__all_user_bands = cohorts__all_user_bands.union(frames["cohorts__singleton_catalog"])
@@ -6072,7 +6206,7 @@ class ResolveCohortBandsGenerated:
             "cohorts__all_user_bands": cohorts__all_user_bands,
         }
 
-    def _step_cohorts_publish_user_bands_129(self, frames):
+    def _step_cohorts_publish_user_bands_132(self, frames):
         # Step method: cohorts.publish_user_bands
         cohorts__user_bands = frames["cohorts__all_user_bands"].alias("user_band")
         cohorts__user_bands = cohorts__user_bands.select(
@@ -6084,7 +6218,7 @@ class ResolveCohortBandsGenerated:
             "cohorts__user_bands": cohorts__user_bands,
         }
 
-    def _step_cohorts_build_user_band_memberships_130(self, frames):
+    def _step_cohorts_build_user_band_memberships_133(self, frames):
         # Step method: cohorts.build_user_band_memberships
         cohorts__resolved_user_band_memberships = frames["users"].alias("user")
         cohorts__user_band_paths_joined = frames["cohorts__user_band_paths"].alias("cohorts__user_band_paths")
@@ -6112,7 +6246,7 @@ class ResolveCohortBandsGenerated:
             "cohorts__resolved_user_band_memberships": cohorts__resolved_user_band_memberships,
         }
 
-    def _step_cohorts_publish_user_band_memberships_131(self, frames):
+    def _step_cohorts_publish_user_band_memberships_134(self, frames):
         # Step method: cohorts.publish_user_band_memberships
         cohorts__user_band_memberships = frames["cohorts__resolved_user_band_memberships"].alias("user_band_membership")
         cohorts__user_band_memberships = cohorts__user_band_memberships.select(
@@ -6126,7 +6260,7 @@ class ResolveCohortBandsGenerated:
             "cohorts__user_band_memberships": cohorts__user_band_memberships,
         }
 
-    def _step_cohorts_build_direct_band_memberships_132(self, frames):
+    def _step_cohorts_build_direct_band_memberships_135(self, frames):
         # Step method: cohorts.build_direct_band_memberships
         cohorts__direct_band_memberships = frames["cohorts__leaf_matches"].alias("band_match")
         cohorts__band_ancestors_joined = frames["cohorts__band_ancestors"].alias("cohorts__band_ancestors")
@@ -6153,7 +6287,7 @@ class ResolveCohortBandsGenerated:
             "cohorts__direct_band_memberships": cohorts__direct_band_memberships,
         }
 
-    def _step_cohorts_build_resolved_band_memberships_133(self, frames):
+    def _step_cohorts_build_resolved_band_memberships_136(self, frames):
         # Step method: cohorts.build_resolved_band_memberships
         cohorts__resolved_band_memberships = frames["cohorts__resolved_user_band_memberships"].alias(
             "user_band_membership"
@@ -6171,7 +6305,7 @@ class ResolveCohortBandsGenerated:
             "cohorts__resolved_band_memberships": cohorts__resolved_band_memberships,
         }
 
-    def _step_cohorts_merge_band_memberships_134(self, frames):
+    def _step_cohorts_merge_band_memberships_137(self, frames):
         # Step method: cohorts.merge_band_memberships
         cohorts__band_memberships = frames["cohorts__direct_band_memberships"].alias("band_membership")
         cohorts__band_memberships = cohorts__band_memberships.union(frames["cohorts__resolved_band_memberships"])
@@ -6185,7 +6319,7 @@ class ResolveCohortBandsGenerated:
             "cohorts__band_memberships": cohorts__band_memberships,
         }
 
-    def _step_cohorts_build_band_fallbacks_135(self, frames):
+    def _step_cohorts_build_band_fallbacks_138(self, frames):
         # Step method: cohorts.build_band_fallbacks
         cohorts__band_fallbacks = frames["cohorts__all_user_bands"].alias("user_band")
         cohorts__band_fallbacks_hierarchy_fallbacks_0_parents = frames["cohorts__valid_bands"].select(
@@ -6744,7 +6878,7 @@ class ResolveCohortBandsGenerated:
 
 
 class BuildRelevanceSignalsGenerated:
-    def _step_relevance_global_impressions_136(self, frames):
+    def _step_relevance_global_impressions_139(self, frames):
         # Step method: relevance.global_impressions
         relevance__global_context_impressions = frames["daily_impressions"].alias("daily_impressions")
         relevance__global_context_impressions = relevance__global_context_impressions.select(
@@ -6767,7 +6901,7 @@ class BuildRelevanceSignalsGenerated:
             "relevance__global_context_impressions": relevance__global_context_impressions,
         }
 
-    def _step_relevance_fallback_impressions_137(self, frames):
+    def _step_relevance_fallback_impressions_140(self, frames):
         # Step method: relevance.fallback_impressions
         relevance__fallback_context_impressions = frames["daily_impressions"].alias("daily_impressions")
         cohorts__user_band_memberships_joined = frames["cohorts__user_band_memberships"].alias(
@@ -6808,7 +6942,7 @@ class BuildRelevanceSignalsGenerated:
             "relevance__fallback_context_impressions": relevance__fallback_context_impressions,
         }
 
-    def _step_relevance_band_impressions_138(self, frames):
+    def _step_relevance_band_impressions_141(self, frames):
         # Step method: relevance.band_impressions
         relevance__band_context_impressions = frames["daily_impressions"].alias("daily_impressions")
         cohorts__band_memberships_joined = frames["cohorts__band_memberships"].alias("cohorts__band_memberships")
@@ -6840,7 +6974,7 @@ class BuildRelevanceSignalsGenerated:
             "relevance__band_context_impressions": relevance__band_context_impressions,
         }
 
-    def _step_relevance_merge_context_impressions_139(self, frames):
+    def _step_relevance_merge_context_impressions_142(self, frames):
         # Step method: relevance.merge_context_impressions
         relevance__context_impressions = frames["relevance__global_context_impressions"].alias(
             "context_daily_impressions"
@@ -6871,7 +7005,7 @@ class BuildRelevanceSignalsGenerated:
             "relevance__context_impressions": relevance__context_impressions,
         }
 
-    def _step_relevance_global_clicks_140(self, frames):
+    def _step_relevance_global_clicks_143(self, frames):
         # Step method: relevance.global_clicks
         relevance__global_context_clicks = frames["daily_clicks"].alias("daily_clicks")
         relevance__global_context_clicks = relevance__global_context_clicks.select(
@@ -6895,7 +7029,7 @@ class BuildRelevanceSignalsGenerated:
             "relevance__global_context_clicks": relevance__global_context_clicks,
         }
 
-    def _step_relevance_fallback_clicks_141(self, frames):
+    def _step_relevance_fallback_clicks_144(self, frames):
         # Step method: relevance.fallback_clicks
         relevance__fallback_context_clicks = frames["daily_clicks"].alias("daily_clicks")
         cohorts__user_band_memberships_joined = frames["cohorts__user_band_memberships"].alias(
@@ -6937,7 +7071,7 @@ class BuildRelevanceSignalsGenerated:
             "relevance__fallback_context_clicks": relevance__fallback_context_clicks,
         }
 
-    def _step_relevance_band_clicks_142(self, frames):
+    def _step_relevance_band_clicks_145(self, frames):
         # Step method: relevance.band_clicks
         relevance__band_context_clicks = frames["daily_clicks"].alias("daily_clicks")
         cohorts__band_memberships_joined = frames["cohorts__band_memberships"].alias("cohorts__band_memberships")
@@ -6970,7 +7104,7 @@ class BuildRelevanceSignalsGenerated:
             "relevance__band_context_clicks": relevance__band_context_clicks,
         }
 
-    def _step_relevance_merge_context_clicks_143(self, frames):
+    def _step_relevance_merge_context_clicks_146(self, frames):
         # Step method: relevance.merge_context_clicks
         relevance__context_clicks = frames["relevance__global_context_clicks"].alias("context_daily_clicks")
         relevance__context_clicks = relevance__context_clicks.union(frames["relevance__fallback_context_clicks"])
@@ -6994,7 +7128,7 @@ class BuildRelevanceSignalsGenerated:
             "relevance__context_clicks": relevance__context_clicks,
         }
 
-    def _step_relevance_summarize_query_144(self, frames):
+    def _step_relevance_summarize_query_147(self, frames):
         # Step method: relevance.summarize_query
         relevance__query_signal_totals = frames["relevance__context_impressions"].alias("context_daily_impressions")
         relevance__context_clicks_joined = frames["relevance__context_clicks"].alias("relevance__context_clicks")
@@ -7218,7 +7352,7 @@ class BuildRelevanceSignalsGenerated:
             "relevance__query_signal_totals": relevance__query_signal_totals,
         }
 
-    def _step_relevance_summarize_popularity_145(self, frames):
+    def _step_relevance_summarize_popularity_148(self, frames):
         # Step method: relevance.summarize_popularity
         relevance__popularity_totals = frames["relevance__context_impressions"].alias("context_daily_impressions")
         relevance__context_clicks_joined = frames["relevance__context_clicks"].alias("relevance__context_clicks")
@@ -7440,7 +7574,7 @@ class BuildRelevanceSignalsGenerated:
             "relevance__popularity_totals": relevance__popularity_totals,
         }
 
-    def _step_relevance_normalize_query_146(self, frames):
+    def _step_relevance_normalize_query_149(self, frames):
         # Step method: relevance.normalize_query
         relevance__query_document_signals = frames["relevance__query_signal_totals"].alias(
             "query_document_signal_totals"
@@ -7551,7 +7685,7 @@ class BuildRelevanceSignalsGenerated:
             "relevance__query_document_signals": relevance__query_document_signals,
         }
 
-    def _step_relevance_normalize_popularity_147(self, frames):
+    def _step_relevance_normalize_popularity_150(self, frames):
         # Step method: relevance.normalize_popularity
         relevance__document_popularity = frames["relevance__popularity_totals"].alias("document_popularity_totals")
         policy_joined = frames["policy"].alias("policy")
@@ -7651,7 +7785,7 @@ class BuildRelevanceSignalsGenerated:
 
 
 class AnalyzeTextGenerated:
-    def _step_analyzed_sentence_stats_148(self, frames):
+    def _step_analyzed_sentence_stats_151(self, frames):
         # Step method: analyzed.sentence_stats
         analyzed__sentence_statistics = frames["chunked__words_chunked__words"].alias("word")
         chunked__sentences_chunked__sentences_joined = frames["chunked__sentences_chunked__sentences"].alias(
@@ -7693,7 +7827,7 @@ class AnalyzeTextGenerated:
             "analyzed__sentence_statistics": analyzed__sentence_statistics,
         }
 
-    def _step_analyzed_paragraph_stats_149(self, frames):
+    def _step_analyzed_paragraph_stats_152(self, frames):
         # Step method: analyzed.paragraph_stats
         analyzed__paragraph_statistics = frames["chunked__words_chunked__words"].alias("word")
         analyzed__paragraph_statistics = (
@@ -7725,7 +7859,7 @@ class AnalyzeTextGenerated:
             "analyzed__paragraph_statistics": analyzed__paragraph_statistics,
         }
 
-    def _step_analyzed_section_stats_150(self, frames):
+    def _step_analyzed_section_stats_153(self, frames):
         # Step method: analyzed.section_stats
         analyzed__section_statistics = frames["chunked__words_chunked__words"].alias("word")
         chunked__documents_chunked__sections_joined = frames["chunked__documents_chunked__sections"].alias(
@@ -7765,7 +7899,7 @@ class AnalyzeTextGenerated:
             "analyzed__section_statistics": analyzed__section_statistics,
         }
 
-    def _step_analyzed_document_stats_151(self, frames):
+    def _step_analyzed_document_stats_154(self, frames):
         # Step method: analyzed.document_stats
         analyzed__document_statistics = frames["chunked__words_chunked__words"].alias("word")
         analyzed__document_statistics = (
@@ -7797,7 +7931,7 @@ class AnalyzeTextGenerated:
             "analyzed__document_statistics": analyzed__document_statistics,
         }
 
-    def _step_analyzed_similar_152(self, frames):
+    def _step_analyzed_similar_155(self, frames):
         # Step method: analyzed.similar
         analyzed__similar_documents = frames["profiled__documents"].alias("document_profile")
         profiled__documents_joined = frames["profiled__documents"].alias("profiled__documents")
@@ -7833,7 +7967,7 @@ class AnalyzeTextGenerated:
 
 
 class CorpusTextGenerated:
-    def _step_corpus_corpus_stats_153(self, frames):
+    def _step_corpus_corpus_stats_156(self, frames):
         # Step method: corpus.corpus_stats
         corpus__corpus_statistics = frames["analyzed__document_statistics"].alias("document_statistics")
         corpus__corpus_statistics = (
@@ -7883,7 +8017,7 @@ class CorpusTextGenerated:
             "corpus__corpus_statistics": corpus__corpus_statistics,
         }
 
-    def _step_corpus_corpus_vocabulary_stats_154(self, frames):
+    def _step_corpus_corpus_vocabulary_stats_157(self, frames):
         # Step method: corpus.corpus_vocabulary_stats
         corpus__corpus_vocabulary = frames["chunked__words_chunked__words"].alias("word")
         corpus__corpus_vocabulary = (
@@ -7916,6 +8050,7 @@ class AllGenerated(
     ReduceSimilarityScoresGenerated,
     CreateQueryLabelsGenerated,
     MergeQueryLabelsGenerated,
+    SelectPopularQueriesGenerated,
     SelectScoresGenerated,
     ResolveCohortBandsGenerated,
     BuildRelevanceSignalsGenerated,
@@ -7945,59 +8080,64 @@ class AllGenerated(
         *,
         documents: DataFrame,
         similarity_policy: DataFrame,
+        score_policy: DataFrame,
         queries: DataFrame,
         intents: DataFrame,
         patterns: DataFrame,
         query_labels: DataFrame,
+        daily_impressions: DataFrame,
         users: DataFrame,
         bands: DataFrame,
-        daily_impressions: DataFrame,
         daily_clicks: DataFrame,
         policy: DataFrame,
     ) -> TransformResult:
         assert_schema(documents, DOCUMENT_SCHEMA, name="Document", mode="strict")
         assert_schema(similarity_policy, SIMILARITY_POLICY_SCHEMA, name="SimilarityPolicy", mode="strict")
+        assert_schema(score_policy, SCORE_POLICY_SCHEMA, name="ScorePolicy", mode="strict")
         assert_schema(queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
         assert_schema(intents, INTENT_SCHEMA, name="Intent", mode="strict")
         assert_schema(patterns, INTENT_PATTERN_SCHEMA, name="IntentPattern", mode="strict")
         assert_schema(query_labels, QUERY_LABEL_SCHEMA, name="QueryLabel", mode="strict")
+        assert_schema(daily_impressions, DAILY_IMPRESSIONS_SCHEMA, name="DailyImpressions", mode="strict")
         assert_schema(users, USER_SCHEMA, name="User", mode="strict")
         assert_schema(bands, BAND_SCHEMA, name="Band", mode="strict")
-        assert_schema(daily_impressions, DAILY_IMPRESSIONS_SCHEMA, name="DailyImpressions", mode="strict")
         assert_schema(daily_clicks, DAILY_CLICKS_SCHEMA, name="DailyClicks", mode="strict")
         assert_schema(policy, RELEVANCE_POLICY_SCHEMA, name="RelevancePolicy", mode="strict")
         _input_documents = documents
         _input_similarity_policy = similarity_policy
+        _input_score_policy = score_policy
         _input_queries = queries
         _input_intents = intents
         _input_patterns = patterns
         _input_query_labels = query_labels
+        _input_daily_impressions = daily_impressions
         _input_users = users
         _input_bands = bands
-        _input_daily_impressions = daily_impressions
         _input_daily_clicks = daily_clicks
         _input_policy = policy
         frames = {
             "documents": documents,
             "similarity_policy": similarity_policy,
+            "score_policy": score_policy,
             "queries": queries,
             "intents": intents,
             "patterns": patterns,
             "query_labels": query_labels,
+            "daily_impressions": daily_impressions,
             "users": users,
             "bands": bands,
-            "daily_impressions": daily_impressions,
             "daily_clicks": daily_clicks,
             "policy": policy,
             "input:documents": _input_documents,
             "input:similarity_policy": _input_similarity_policy,
+            "input:score_policy": _input_score_policy,
             "input:queries": _input_queries,
             "input:intents": _input_intents,
             "input:patterns": _input_patterns,
             "input:query_labels": _input_query_labels,
+            "input:daily_impressions": _input_daily_impressions,
             "input:users": _input_users,
             "input:bands": _input_bands,
-            "input:daily_impressions": _input_daily_impressions,
             "input:daily_clicks": _input_daily_clicks,
             "input:policy": _input_policy,
         }
@@ -8099,63 +8239,66 @@ class AllGenerated(
         frames.update(self._step_labeled_merged_create_assignments_95(frames))
         frames.update(self._step_labeled_merged_merge_caller_labels_96(frames))
         frames.update(self._step_labeled_merged_merge_created_labels_97(frames))
-        frames.update(self._step_scored_overlap_expand_query_terms_98(frames))
-        frames.update(self._step_scored_overlap_select_distinct_query_terms_99(frames))
-        frames.update(self._step_scored_overlap_count_query_terms_100(frames))
-        frames.update(self._step_scored_overlap_match_documents_101(frames))
-        frames.update(self._step_scored_overlap_match_sections_102(frames))
-        frames.update(self._step_scored_overlap_match_paragraphs_103(frames))
-        frames.update(self._step_scored_overlap_match_sentences_104(frames))
-        frames.update(self._step_scored_overlap_publish_document_overlap_scores_105(frames))
-        frames.update(self._step_scored_overlap_publish_section_overlap_scores_106(frames))
-        frames.update(self._step_scored_overlap_publish_paragraph_overlap_scores_107(frames))
-        frames.update(self._step_scored_overlap_publish_sentence_overlap_scores_108(frames))
-        frames.update(self._step_scored_bm25_expand_query_terms_109(frames))
-        frames.update(self._step_scored_bm25_select_distinct_query_terms_110(frames))
-        frames.update(self._step_scored_bm25_count_query_terms_111(frames))
-        frames.update(self._step_scored_bm25_score_document_bm25_112(frames))
-        frames.update(self._step_scored_bm25_score_section_bm25_113(frames))
-        frames.update(self._step_scored_bm25_score_paragraph_bm25_114(frames))
-        frames.update(self._step_scored_bm25_score_sentence_bm25_115(frames))
-        frames.update(self._step_scored_selected_score_documents_116(frames))
-        frames.update(self._step_scored_selected_score_sections_117(frames))
-        frames.update(self._step_scored_selected_score_paragraphs_118(frames))
-        frames.update(self._step_scored_selected_score_sentences_119(frames))
-        frames.update(self._step_cohorts_validate_bands_120(frames))
-        frames.update(self._step_cohorts_match_bands_121(frames))
-        frames.update(self._step_cohorts_select_leaf_matches_122(frames))
-        frames.update(self._step_cohorts_expand_band_ancestors_123(frames))
-        frames.update(self._step_cohorts_build_user_band_paths_124(frames))
-        frames.update(self._step_cohorts_build_resolved_user_bands_125(frames))
-        frames.update(self._step_cohorts_build_singleton_user_bands_126(frames))
-        frames.update(self._step_cohorts_publish_singleton_user_bands_127(frames))
-        frames.update(self._step_cohorts_merge_user_band_catalog_128(frames))
-        frames.update(self._step_cohorts_publish_user_bands_129(frames))
-        frames.update(self._step_cohorts_build_user_band_memberships_130(frames))
-        frames.update(self._step_cohorts_publish_user_band_memberships_131(frames))
-        frames.update(self._step_cohorts_build_direct_band_memberships_132(frames))
-        frames.update(self._step_cohorts_build_resolved_band_memberships_133(frames))
-        frames.update(self._step_cohorts_merge_band_memberships_134(frames))
-        frames.update(self._step_cohorts_build_band_fallbacks_135(frames))
-        frames.update(self._step_relevance_global_impressions_136(frames))
-        frames.update(self._step_relevance_fallback_impressions_137(frames))
-        frames.update(self._step_relevance_band_impressions_138(frames))
-        frames.update(self._step_relevance_merge_context_impressions_139(frames))
-        frames.update(self._step_relevance_global_clicks_140(frames))
-        frames.update(self._step_relevance_fallback_clicks_141(frames))
-        frames.update(self._step_relevance_band_clicks_142(frames))
-        frames.update(self._step_relevance_merge_context_clicks_143(frames))
-        frames.update(self._step_relevance_summarize_query_144(frames))
-        frames.update(self._step_relevance_summarize_popularity_145(frames))
-        frames.update(self._step_relevance_normalize_query_146(frames))
-        frames.update(self._step_relevance_normalize_popularity_147(frames))
-        frames.update(self._step_analyzed_sentence_stats_148(frames))
-        frames.update(self._step_analyzed_paragraph_stats_149(frames))
-        frames.update(self._step_analyzed_section_stats_150(frames))
-        frames.update(self._step_analyzed_document_stats_151(frames))
-        frames.update(self._step_analyzed_similar_152(frames))
-        frames.update(self._step_corpus_corpus_stats_153(frames))
-        frames.update(self._step_corpus_corpus_vocabulary_stats_154(frames))
+        frames.update(self._step_popular_summarize_popularity_98(frames))
+        frames.update(self._step_popular_rank_queries_99(frames))
+        frames.update(self._step_popular_select_queries_100(frames))
+        frames.update(self._step_scored_overlap_expand_query_terms_101(frames))
+        frames.update(self._step_scored_overlap_select_distinct_query_terms_102(frames))
+        frames.update(self._step_scored_overlap_count_query_terms_103(frames))
+        frames.update(self._step_scored_overlap_match_documents_104(frames))
+        frames.update(self._step_scored_overlap_match_sections_105(frames))
+        frames.update(self._step_scored_overlap_match_paragraphs_106(frames))
+        frames.update(self._step_scored_overlap_match_sentences_107(frames))
+        frames.update(self._step_scored_overlap_publish_document_overlap_scores_108(frames))
+        frames.update(self._step_scored_overlap_publish_section_overlap_scores_109(frames))
+        frames.update(self._step_scored_overlap_publish_paragraph_overlap_scores_110(frames))
+        frames.update(self._step_scored_overlap_publish_sentence_overlap_scores_111(frames))
+        frames.update(self._step_scored_bm25_expand_query_terms_112(frames))
+        frames.update(self._step_scored_bm25_select_distinct_query_terms_113(frames))
+        frames.update(self._step_scored_bm25_count_query_terms_114(frames))
+        frames.update(self._step_scored_bm25_score_document_bm25_115(frames))
+        frames.update(self._step_scored_bm25_score_section_bm25_116(frames))
+        frames.update(self._step_scored_bm25_score_paragraph_bm25_117(frames))
+        frames.update(self._step_scored_bm25_score_sentence_bm25_118(frames))
+        frames.update(self._step_scored_selected_score_documents_119(frames))
+        frames.update(self._step_scored_selected_score_sections_120(frames))
+        frames.update(self._step_scored_selected_score_paragraphs_121(frames))
+        frames.update(self._step_scored_selected_score_sentences_122(frames))
+        frames.update(self._step_cohorts_validate_bands_123(frames))
+        frames.update(self._step_cohorts_match_bands_124(frames))
+        frames.update(self._step_cohorts_select_leaf_matches_125(frames))
+        frames.update(self._step_cohorts_expand_band_ancestors_126(frames))
+        frames.update(self._step_cohorts_build_user_band_paths_127(frames))
+        frames.update(self._step_cohorts_build_resolved_user_bands_128(frames))
+        frames.update(self._step_cohorts_build_singleton_user_bands_129(frames))
+        frames.update(self._step_cohorts_publish_singleton_user_bands_130(frames))
+        frames.update(self._step_cohorts_merge_user_band_catalog_131(frames))
+        frames.update(self._step_cohorts_publish_user_bands_132(frames))
+        frames.update(self._step_cohorts_build_user_band_memberships_133(frames))
+        frames.update(self._step_cohorts_publish_user_band_memberships_134(frames))
+        frames.update(self._step_cohorts_build_direct_band_memberships_135(frames))
+        frames.update(self._step_cohorts_build_resolved_band_memberships_136(frames))
+        frames.update(self._step_cohorts_merge_band_memberships_137(frames))
+        frames.update(self._step_cohorts_build_band_fallbacks_138(frames))
+        frames.update(self._step_relevance_global_impressions_139(frames))
+        frames.update(self._step_relevance_fallback_impressions_140(frames))
+        frames.update(self._step_relevance_band_impressions_141(frames))
+        frames.update(self._step_relevance_merge_context_impressions_142(frames))
+        frames.update(self._step_relevance_global_clicks_143(frames))
+        frames.update(self._step_relevance_fallback_clicks_144(frames))
+        frames.update(self._step_relevance_band_clicks_145(frames))
+        frames.update(self._step_relevance_merge_context_clicks_146(frames))
+        frames.update(self._step_relevance_summarize_query_147(frames))
+        frames.update(self._step_relevance_summarize_popularity_148(frames))
+        frames.update(self._step_relevance_normalize_query_149(frames))
+        frames.update(self._step_relevance_normalize_popularity_150(frames))
+        frames.update(self._step_analyzed_sentence_stats_151(frames))
+        frames.update(self._step_analyzed_paragraph_stats_152(frames))
+        frames.update(self._step_analyzed_section_stats_153(frames))
+        frames.update(self._step_analyzed_document_stats_154(frames))
+        frames.update(self._step_analyzed_similar_155(frames))
+        frames.update(self._step_corpus_corpus_stats_156(frames))
+        frames.update(self._step_corpus_corpus_vocabulary_stats_157(frames))
 
         # Step method: sections
         sections = frames["chunked__documents_chunked__sections"].alias("section")

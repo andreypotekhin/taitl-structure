@@ -118,6 +118,22 @@ Error: [error message]
 Cause: [root cause]
 Fix: [steps to fix]
 
+### Problem (IDE): `Unexpected type: Expression` on a boolean join predicate
+
+When: A compiled step combines a field comparison with `event_time_between(...)`, for example
+`(click.impression_id == impression.impression_id) & event_time_between(...)`.
+
+Error: The IDE reports `Unexpected type: Expression` or flags the `&`/`|` operand even though the expression compiles.
+
+Cause: `event_time_between(...)` intentionally returns Structure's symbolic `Expression`, not Python `bool`. During
+authoring, an IDE can infer the field comparison on the left as a Python boolean because schema field declarations are
+also used as the compiler's input metadata. The symbolic expression supports reflected `&` and `|` so this mixed
+static view remains valid without changing the runtime expression contract.
+
+Fix: Use `&`, `|`, and `~` for symbolic boolean logic. Do not change `event_time_between(...)` to return `bool`, use
+Python `and`/`or`/`not`, or add a cast solely to hide this warning. Update Structure if the reflected operators are not
+available in the installed version.
+
 ### Problem (PMD): 'Double-brace initialization should be avoided' error
 When: Running PMD checks as part of the build process.
 Error: "[INFO] PMD Failure: [class] :22 Rule:DoubleBraceInitialization Priority:3

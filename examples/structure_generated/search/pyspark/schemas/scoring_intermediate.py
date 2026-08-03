@@ -2,7 +2,7 @@
 # Source: examples.search.schemas.scoring.intermediate
 
 from pyspark.sql import types as T
-from examples.structure_generated.search.pyspark.schemas.search import DOCUMENT_SEARCH_TARGET_SCHEMA, PARAGRAPH_SEARCH_TARGET_SCHEMA, SECTION_SEARCH_TARGET_SCHEMA, SENTENCE_SEARCH_TARGET_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.search import DOCUMENT_SEARCH_TARGET_SCHEMA, PARAGRAPH_SEARCH_TARGET_SCHEMA, SEARCH_QUERY_SCHEMA, SECTION_SEARCH_TARGET_SCHEMA, SENTENCE_SEARCH_TARGET_SCHEMA
 
 
 QUERY_TOKEN_SCHEMA = T.StructType([
@@ -22,6 +22,15 @@ QUERY_TERM_SCHEMA = T.StructType([
 QUERY_TERM_COUNT_SCHEMA = T.StructType([
     T.StructField("query_id", T.StringType(), False),
     T.StructField("query_terms", T.LongType(), False),
+])
+
+SCORE_QUERY_AVAILABILITY_SCHEMA = T.StructType([
+    T.StructField("query_id", T.StringType(), False),
+])
+
+POPULAR_QUERY_CANDIDATE_SCHEMA = T.StructType(SEARCH_QUERY_SCHEMA.fields + [
+    T.StructField("impression_count", T.LongType(), False),
+    T.StructField("popularity_rank", T.LongType(), False),
 ])
 
 DOCUMENT_OVERLAP_MATCH_SCHEMA = T.StructType(DOCUMENT_SEARCH_TARGET_SCHEMA.fields + [

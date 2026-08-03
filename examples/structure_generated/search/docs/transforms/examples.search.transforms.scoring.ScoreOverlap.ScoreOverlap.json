@@ -2,7 +2,9 @@
   "dependencies": [
     "document_terms",
     "paragraph_terms",
+    "policy",
     "query_sizes",
+    "score_policy",
     "section_terms",
     "sentence_terms",
     "size",
@@ -34,6 +36,11 @@
       "name": "sentence_terms",
       "ordinal": 4,
       "schema": "SentenceIndexTerm"
+    },
+    {
+      "name": "score_policy",
+      "ordinal": 5,
+      "schema": "ScorePolicy"
     }
   ],
   "name": "ScoreOverlap",
@@ -312,6 +319,18 @@
           "parameter": "match",
           "schema": "DocumentOverlapMatch",
           "source": "document_overlap_matches"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "ScorePolicy",
+          "source": "score_policy"
+        }
+      ],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "policy"
         }
       ],
       "name": "publish_document_overlap_scores",
@@ -334,6 +353,18 @@
           "parameter": "match",
           "schema": "SectionOverlapMatch",
           "source": "section_overlap_matches"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "ScorePolicy",
+          "source": "score_policy"
+        }
+      ],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "policy"
         }
       ],
       "name": "publish_section_overlap_scores",
@@ -356,6 +387,18 @@
           "parameter": "match",
           "schema": "ParagraphOverlapMatch",
           "source": "paragraph_overlap_matches"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "ScorePolicy",
+          "source": "score_policy"
+        }
+      ],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "policy"
         }
       ],
       "name": "publish_paragraph_overlap_scores",
@@ -378,6 +421,18 @@
           "parameter": "match",
           "schema": "SentenceOverlapMatch",
           "source": "sentence_overlap_matches"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "ScorePolicy",
+          "source": "score_policy"
+        }
+      ],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "policy"
         }
       ],
       "name": "publish_sentence_overlap_scores",

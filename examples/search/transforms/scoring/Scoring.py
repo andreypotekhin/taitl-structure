@@ -22,7 +22,14 @@ from examples.search.schemas.scoring.overlap import (
     SectionOverlapScore,
     SentenceOverlapScore,
 )
-from examples.search.schemas.search import DocumentScore, ParagraphScore, SearchQuery, SectionScore, SentenceScore
+from examples.search.schemas.search import (
+    DocumentScore,
+    ParagraphScore,
+    ScorePolicy,
+    SearchQuery,
+    SectionScore,
+    SentenceScore,
+)
 from examples.search.transforms.scoring.ScoreBm25 import ScoreBm25
 from examples.search.transforms.scoring.ScoreOverlap import ScoreOverlap
 from examples.search.transforms.scoring.SelectScores import SelectScores
@@ -41,6 +48,7 @@ class Scoring(Transform):
     section_summary = input(SectionIndexSummary)
     paragraph_summary = input(ParagraphIndexSummary)
     sentence_summary = input(SentenceIndexSummary)
+    score_policy = input(ScorePolicy)
     experiment_id = parameter(None)
 
     overlap = stage(
@@ -50,6 +58,7 @@ class Scoring(Transform):
             section_terms=section_terms,
             paragraph_terms=paragraph_terms,
             sentence_terms=sentence_terms,
+            score_policy=score_policy,
         )
     )
     bm25 = stage(
@@ -75,6 +84,7 @@ class Scoring(Transform):
             section_bm25_scores=bm25.section_bm25_scores,
             paragraph_bm25_scores=bm25.paragraph_bm25_scores,
             sentence_bm25_scores=bm25.sentence_bm25_scores,
+            score_policy=score_policy,
             experiment_id=experiment_id,
         )
     )

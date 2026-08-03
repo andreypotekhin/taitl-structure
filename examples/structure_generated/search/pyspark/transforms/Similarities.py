@@ -37,7 +37,7 @@ from examples.structure_generated.search.pyspark.schemas.scoring_intermediate im
     SECTION_OVERLAP_MATCH_SCHEMA,
     SENTENCE_OVERLAP_MATCH_SCHEMA,
 )
-from examples.structure_generated.search.pyspark.schemas.search import SEARCH_QUERY_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.search import SCORE_POLICY_SCHEMA, SEARCH_QUERY_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.similarities_intermediate import (
     DOCUMENT_SIMILARITY_CANDIDATE_SCHEMA,
     DOCUMENT_SIMILARITY_PAIR_SCHEMA,
@@ -944,9 +944,12 @@ class ScoreOverlapGenerated:
     def _step_overlap_publish_document_overlap_scores_21(self, frames):
         # Step method: overlap.publish_document_overlap_scores
         overlap__document_overlap_scores = frames["overlap__document_overlap_matches"].alias("document_overlap_match")
+        score_policy_joined = frames["score_policy"].alias("score_policy")
+        overlap__document_overlap_scores = overlap__document_overlap_scores.crossJoin(score_policy_joined)
         overlap__document_overlap_scores = overlap__document_overlap_scores.select(
             F.col("document_overlap_match.query_id"),
             F.col("document_overlap_match.document_id"),
+            F.col("score_policy.scored_at"),
             (
                 F.col("document_overlap_match.matched_terms")
                 / F.when(
@@ -968,10 +971,13 @@ class ScoreOverlapGenerated:
     def _step_overlap_publish_section_overlap_scores_22(self, frames):
         # Step method: overlap.publish_section_overlap_scores
         overlap__section_overlap_scores = frames["overlap__section_overlap_matches"].alias("section_overlap_match")
+        score_policy_joined = frames["score_policy"].alias("score_policy")
+        overlap__section_overlap_scores = overlap__section_overlap_scores.crossJoin(score_policy_joined)
         overlap__section_overlap_scores = overlap__section_overlap_scores.select(
             F.col("section_overlap_match.query_id"),
             F.col("section_overlap_match.document_id"),
             F.col("section_overlap_match.section_id"),
+            F.col("score_policy.scored_at"),
             (
                 F.col("section_overlap_match.matched_terms")
                 / F.when(
@@ -992,11 +998,14 @@ class ScoreOverlapGenerated:
         overlap__paragraph_overlap_scores = frames["overlap__paragraph_overlap_matches"].alias(
             "paragraph_overlap_match"
         )
+        score_policy_joined = frames["score_policy"].alias("score_policy")
+        overlap__paragraph_overlap_scores = overlap__paragraph_overlap_scores.crossJoin(score_policy_joined)
         overlap__paragraph_overlap_scores = overlap__paragraph_overlap_scores.select(
             F.col("paragraph_overlap_match.query_id"),
             F.col("paragraph_overlap_match.document_id"),
             F.col("paragraph_overlap_match.section_id"),
             F.col("paragraph_overlap_match.paragraph_id"),
+            F.col("score_policy.scored_at"),
             (
                 F.col("paragraph_overlap_match.matched_terms")
                 / F.when(
@@ -1021,12 +1030,15 @@ class ScoreOverlapGenerated:
     def _step_overlap_publish_sentence_overlap_scores_24(self, frames):
         # Step method: overlap.publish_sentence_overlap_scores
         overlap__sentence_overlap_scores = frames["overlap__sentence_overlap_matches"].alias("sentence_overlap_match")
+        score_policy_joined = frames["score_policy"].alias("score_policy")
+        overlap__sentence_overlap_scores = overlap__sentence_overlap_scores.crossJoin(score_policy_joined)
         overlap__sentence_overlap_scores = overlap__sentence_overlap_scores.select(
             F.col("sentence_overlap_match.query_id"),
             F.col("sentence_overlap_match.document_id"),
             F.col("sentence_overlap_match.section_id"),
             F.col("sentence_overlap_match.paragraph_id"),
             F.col("sentence_overlap_match.sentence_id"),
+            F.col("score_policy.scored_at"),
             (
                 F.col("sentence_overlap_match.matched_terms")
                 / F.when(
@@ -2254,6 +2266,7 @@ class SimilaritiesGenerated(
         paragraph_summary: DataFrame,
         sentence_terms: DataFrame,
         sentence_summary: DataFrame,
+        score_policy: DataFrame,
     ) -> TransformResult:
         assert_schema(policy, SIMILARITY_POLICY_SCHEMA, name="SimilarityPolicy", mode="strict")
         assert_schema(document_terms, DOCUMENT_INDEX_TERM_SCHEMA, name="DocumentIndexTerm", mode="strict")
@@ -2264,6 +2277,7 @@ class SimilaritiesGenerated(
         assert_schema(paragraph_summary, PARAGRAPH_INDEX_SUMMARY_SCHEMA, name="ParagraphIndexSummary", mode="strict")
         assert_schema(sentence_terms, SENTENCE_INDEX_TERM_SCHEMA, name="SentenceIndexTerm", mode="strict")
         assert_schema(sentence_summary, SENTENCE_INDEX_SUMMARY_SCHEMA, name="SentenceIndexSummary", mode="strict")
+        assert_schema(score_policy, SCORE_POLICY_SCHEMA, name="ScorePolicy", mode="strict")
         _input_policy = policy
         _input_document_terms = document_terms
         _input_document_summary = document_summary
@@ -2273,6 +2287,7 @@ class SimilaritiesGenerated(
         _input_paragraph_summary = paragraph_summary
         _input_sentence_terms = sentence_terms
         _input_sentence_summary = sentence_summary
+        _input_score_policy = score_policy
         frames = {
             "policy": policy,
             "document_terms": document_terms,
@@ -2283,6 +2298,7 @@ class SimilaritiesGenerated(
             "paragraph_summary": paragraph_summary,
             "sentence_terms": sentence_terms,
             "sentence_summary": sentence_summary,
+            "score_policy": score_policy,
             "input:policy": _input_policy,
             "input:document_terms": _input_document_terms,
             "input:document_summary": _input_document_summary,
@@ -2292,6 +2308,7 @@ class SimilaritiesGenerated(
             "input:paragraph_summary": _input_paragraph_summary,
             "input:sentence_terms": _input_sentence_terms,
             "input:sentence_summary": _input_sentence_summary,
+            "input:score_policy": _input_score_policy,
         }
         frames.update(self._step_queries_validate_policy_0(frames))
         frames.update(self._step_queries_build_document_queries_1(frames))

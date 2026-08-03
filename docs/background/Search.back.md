@@ -36,6 +36,10 @@ rank. Query text is also the normalized key used when feedback aggregates observ
 parameters (`k1 = 1.2`, `b = 0.75`). They are separate outputs so that a caller can select or combine evidence
 explicitly. BM25 is corpus-dependent; neither score is a relevance probability.
 
+Unified score rows carry a `scored_at` timestamp. `ScorePolicy` defines the timestamp used when producing a snapshot and
+the maximum age accepted by serving. Offline `All` aggregates daily impression volume by normalized query and caps
+`Scoring` at the configured most-popular query count; arbitrary production queries are resolved online.
+
 The presentation transforms expose deterministic ranks. Consumers should page by emitted rank rather than relying on
 physical DataFrame order:
 
@@ -64,9 +68,15 @@ the application because they depend on its model, citation policy, latency budge
 
 ## Document Retrieval and Feedback
 
-Document search has three stages. `RetrieveDocuments` admits up to 1000 persisted or streamed candidates per query by
-descending score with a document-ID tie-breaker. `OverlapDocuments` narrows those candidates to 100 by overlap score.
-`RerankDocuments` enriches only those candidates with feedback and ranks their combined score.
+Document search begins with `OnlineScoring`. It treats the caller's existing score relations as cache-compatible
+inputs, filters stale or future rows, and calculates missing query groups from the reusable lexical index. It emits only
+the bridge rows calculated for the current request. Retrieval unions those rows with the caller's pre-calculated rows,
+so the caller can persist the bridge output in the same score relation and reuse it on a repeat query. No separate
+cache schema, query-key field, or index-version field is required.
+
+The remaining three stages are `RetrieveDocuments`, `OverlapDocuments`, and `RerankDocuments`. Retrieval admits up to
+1000 persisted or streamed candidates per query by descending score with a document-ID tie-breaker. Overlap narrows
+those candidates to 100 by overlap score. Rerank enriches only those candidates with feedback and ranks their combined score.
 A document outside the lexical candidate set cannot enter only because it is popular or has historical clicks.
 
 Within a candidate set, BM25 is normalized by the query's maximum candidate score. Caller-supplied relevance-policy

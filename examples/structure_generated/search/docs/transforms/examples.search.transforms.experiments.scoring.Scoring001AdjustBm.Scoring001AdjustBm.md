@@ -11,6 +11,7 @@ Source: `examples.search.transforms.experiments.scoring.Scoring001AdjustBm.Scori
 - `section_terms`: `SectionIndexTerm`
 - `paragraph_terms`: `ParagraphIndexTerm`
 - `sentence_terms`: `SentenceIndexTerm`
+- `score_policy`: `ScorePolicy`
 - `document_summary`: `DocumentIndexSummary`
 - `section_summary`: `SectionIndexSummary`
 - `paragraph_summary`: `ParagraphIndexSummary`
@@ -68,6 +69,8 @@ Source: `examples.search.transforms.experiments.scoring.Scoring001AdjustBm.Scori
 - `overlap__query_sizes`
 - `paragraph_summary`
 - `paragraph_terms`
+- `policy`
+- `score_policy`
 - `section_summary`
 - `section_terms`
 - `sentence_summary`

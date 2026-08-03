@@ -18,8 +18,8 @@ typed `order` row scope as `o`.
 | `<=` | `Column.__le__` | `o.total <= 0` |
 | `>` | `Column.__gt__` | `o.total > 0` |
 | `>=` | `Column.__ge__` | `o.total >= 0` |
-| `&` | `Column.__and__` | `o.active & (o.total > 0)` |
-| `\|` | `Column.__or__` | `o.active \| o.is_priority` |
+| `&` and reverse `&` | `Column.__and__` | `(o.active & (o.total > 0), True & o.active)` |
+| `\|` and reverse `\|` | `Column.__or__` | `(o.active \| o.is_priority, False \| o.active)` |
 | `~` | `Column.__invert__` | `~o.active` |
 | `is_null()` | `isNull` | `o.customer_id.is_null()` |
 | `is_not_null()` | `isNotNull` | `o.customer_id.is_not_null()` |
@@ -30,7 +30,8 @@ typed `order` row scope as `o`.
 **Details And Differences**
 
 - Field access is typed and alias-aware. Python `and`, `or`, and expression truthiness are rejected; `&`, `|`, and `~`
-  require Boolean expressions.
+  require Boolean expressions. Reflected `&` and `|` are also supported for IDE and type-checker compatibility while
+  preserving the authored operand order.
 - Comparisons and Boolean operators preserve SQL three-valued null semantics. `between(...)` is inclusive;
   `null_safe_eq(...)` considers two nulls equal and is never null.
 - Comparisons and `isin(...)` require compatible typed values. Numeric values and Date/Timestamp pairs may be compared;

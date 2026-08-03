@@ -98,7 +98,14 @@ def test_search_all_builds_the_complete_offline_artifact_graph() -> None:
         SectionOverlapScore,
         SentenceOverlapScore,
     )
-    from examples.search.schemas.search import DocumentScore, ParagraphScore, SearchQuery, SectionScore, SentenceScore
+    from examples.search.schemas.search import (
+        DocumentScore,
+        ParagraphScore,
+        ScorePolicy,
+        SearchQuery,
+        SectionScore,
+        SentenceScore,
+    )
     from examples.search.schemas.similarity import (
         DocumentSimilarity,
         ParagraphSimilarity,
@@ -115,13 +122,14 @@ def test_search_all_builds_the_complete_offline_artifact_graph() -> None:
     assert [(item.name, item.schema) for item in plan.inputs] == [
         ("documents", Document),
         ("similarity_policy", SimilarityPolicy),
+        ("score_policy", ScorePolicy),
         ("queries", SearchQuery),
         ("intents", Intent),
         ("patterns", IntentPattern),
         ("query_labels", QueryLabel),
+        ("daily_impressions", DailyImpressions),
         ("users", User),
         ("bands", Band),
-        ("daily_impressions", DailyImpressions),
         ("daily_clicks", DailyClicks),
         ("policy", RelevancePolicy),
     ]
@@ -175,6 +183,7 @@ def test_search_all_builds_the_complete_offline_artifact_graph() -> None:
     assert stages.index("chunked") < stages.index("analyzed") < stages.index("corpus")
     assert stages.index("profiled") < stages.index("analyzed")
     assert stages.index("labeled") < stages.index("scored")
+    assert stages.index("labeled") < stages.index("popular") < stages.index("scored")
     assert stages.index("indexed") < stages.index("scored")
     assert stages.index("indexed") < stages.index("similarities")
     assert stages.index("cohorts") < stages.index("relevance")

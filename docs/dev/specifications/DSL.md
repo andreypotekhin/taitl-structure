@@ -410,7 +410,8 @@ The v1 expression surface includes:
 - comparisons such as `==`, `!=`, `<`, `<=`, `>`, and `>=` when supported by the expression type;
 - membership predicates such as `expr.isin(...)`;
 - inclusive range predicates such as `expr.between(lower, upper)`;
-- boolean combination with `&`, `|`, and `~`;
+- boolean combination with `&`, `|`, and `~`; `&` and `|` also support reflected
+  forms so a statically inferred Python boolean can compose with a symbolic expression;
 - null checks such as `expr.is_null()` and `expr.is_not_null()`;
 - null-safe equality when provided by expression objects;
 - helper calls such as `lower(...)`, `upper(...)`, `trim(...)`, `to_decimal(...)`, `coalesce(...)`, and `when(...)`.
@@ -418,7 +419,8 @@ The v1 expression surface includes:
 Rules:
 
 - Python `and`, `or`, and `not` are not valid for symbolic boolean expressions because Python evaluates truthiness
-  instead of building expression trees. Diagnostics should suggest `&`, `|`, and `~`.
+  instead of building expression trees. Diagnostics should suggest `&`, `|`, and `~`. Reflected `&` and `|` preserve
+  the authored operand order in the expression tree; `~` is the symbolic negation operator.
 - Symbolic expressions must not be truthy or falsey in Python. `if order.id:` must fail with a diagnostic.
 - Python string methods such as `order.customer_id.strip().lower()` are not compileable. Diagnostics should suggest
   direct DSL helpers such as `lower(trim(order.customer_id))`.

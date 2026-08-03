@@ -56,6 +56,7 @@ class SelectExperimentScoresGenerated:
             F.col("document_score.query_id"),
             F.col("document_score.document_id"),
             F.col("document_score.experiment_id"),
+            F.col("document_score.scored_at"),
             F.col("document_score.score"),
         )
         assert_schema(active_document_scores, DOCUMENT_SCORE_SCHEMA, name="DocumentScore", mode="strict")
@@ -76,6 +77,7 @@ class SelectExperimentScoresGenerated:
             F.col("section_score.document_id"),
             F.col("section_score.section_id"),
             F.col("section_score.experiment_id"),
+            F.col("section_score.scored_at"),
             F.col("section_score.score"),
         )
         assert_schema(active_section_scores, SECTION_SCORE_SCHEMA, name="SectionScore", mode="strict")
@@ -97,6 +99,7 @@ class SelectExperimentScoresGenerated:
             F.col("paragraph_score.section_id"),
             F.col("paragraph_score.paragraph_id"),
             F.col("paragraph_score.experiment_id"),
+            F.col("paragraph_score.scored_at"),
             F.col("paragraph_score.score"),
         )
         assert_schema(active_paragraph_scores, PARAGRAPH_SCORE_SCHEMA, name="ParagraphScore", mode="strict")
@@ -119,6 +122,7 @@ class SelectExperimentScoresGenerated:
             F.col("sentence_score.paragraph_id"),
             F.col("sentence_score.sentence_id"),
             F.col("sentence_score.experiment_id"),
+            F.col("sentence_score.scored_at"),
             F.col("sentence_score.score"),
         )
 

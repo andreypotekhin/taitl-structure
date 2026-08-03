@@ -28,6 +28,12 @@
       "type": "string"
     },
     {
+      "column": "scored_at",
+      "name": "scored_at",
+      "nullable": false,
+      "type": "timestamp"
+    },
+    {
       "column": "score_overlap",
       "name": "score_overlap",
       "nullable": false,

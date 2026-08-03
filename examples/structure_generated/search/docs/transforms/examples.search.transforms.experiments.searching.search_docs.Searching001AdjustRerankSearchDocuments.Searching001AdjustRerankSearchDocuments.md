@@ -7,13 +7,22 @@ Source: `examples.search.transforms.experiments.searching.search_docs.Searching0
 ## Inputs
 
 - `queries`: `SearchQuery`
-- `documents`: `Document`
+- `requests`: `SearchRequest`
 - `document_scores`: `DocumentScore`
+- `document_overlap_scores`: `DocumentOverlapScore`
+- `score_policy`: `ScorePolicy`
+- `document_terms`: `DocumentIndexTerm`
+- `section_terms`: `SectionIndexTerm`
+- `paragraph_terms`: `ParagraphIndexTerm`
+- `sentence_terms`: `SentenceIndexTerm`
+- `document_summary`: `DocumentIndexSummary`
+- `section_summary`: `SectionIndexSummary`
+- `paragraph_summary`: `ParagraphIndexSummary`
+- `sentence_summary`: `SentenceIndexSummary`
+- `documents`: `Document`
 - `streamed_documents`: `Document`
 - `streamed_document_scores`: `DocumentScore`
-- `requests`: `SearchRequest`
 - `band_memberships`: `BandMembership`
-- `document_overlap_scores`: `DocumentOverlapScore`
 - `query_document_signals`: `QueryDocumentSignals`
 - `document_popularity`: `DocumentPopularity`
 - `band_fallbacks`: `BandFallback`
@@ -22,12 +31,41 @@ Source: `examples.search.transforms.experiments.searching.search_docs.Searching0
 ## Outputs
 
 - `results`: `DocumentSearchResult`
+- `online_document_scores`: `DocumentScore`
+- `online_document_overlap_scores`: `DocumentOverlapScore`
 
 ## Step methods
 
+- `scoring.gap.find_available_documents`: `DocumentScore` -> `ScoreQueryAvailability`
+- `scoring.gap.find_available_overlaps`: `DocumentOverlapScore` -> `ScoreQueryAvailability`
+- `scoring.gap.select_gap_queries`: `SearchQuery` -> `SearchQuery`
+- `scoring.scoring.overlap.expand_query_terms`: `SearchQuery` -> `QueryTerm`
+- `scoring.scoring.overlap.select_distinct_query_terms`: `QueryTerm` -> `QueryTerm`
+- `scoring.scoring.overlap.count_query_terms`: `QueryTerm` -> `QueryTermCount`
+- `scoring.scoring.overlap.match_documents`: `QueryTerm` -> `DocumentOverlapMatch`
+- `scoring.scoring.overlap.match_sections`: `QueryTerm` -> `SectionOverlapMatch`
+- `scoring.scoring.overlap.match_paragraphs`: `QueryTerm` -> `ParagraphOverlapMatch`
+- `scoring.scoring.overlap.match_sentences`: `QueryTerm` -> `SentenceOverlapMatch`
+- `scoring.scoring.overlap.publish_document_overlap_scores`: `DocumentOverlapMatch` -> `DocumentOverlapScore`
+- `scoring.scoring.overlap.publish_section_overlap_scores`: `SectionOverlapMatch` -> `SectionOverlapScore`
+- `scoring.scoring.overlap.publish_paragraph_overlap_scores`: `ParagraphOverlapMatch` -> `ParagraphOverlapScore`
+- `scoring.scoring.overlap.publish_sentence_overlap_scores`: `SentenceOverlapMatch` -> `SentenceOverlapScore`
+- `scoring.scoring.bm25.expand_query_terms`: `SearchQuery` -> `QueryTerm`
+- `scoring.scoring.bm25.select_distinct_query_terms`: `QueryTerm` -> `QueryTerm`
+- `scoring.scoring.bm25.count_query_terms`: `QueryTerm` -> `QueryTermCount`
+- `scoring.scoring.bm25.score_document_bm25`: `QueryTerm` -> `DocumentBm25Score`
+- `scoring.scoring.bm25.score_section_bm25`: `QueryTerm` -> `SectionBm25Score`
+- `scoring.scoring.bm25.score_paragraph_bm25`: `QueryTerm` -> `ParagraphBm25Score`
+- `scoring.scoring.bm25.score_sentence_bm25`: `QueryTerm` -> `SentenceBm25Score`
+- `scoring.scoring.selected.score_documents`: `DocumentOverlapScore` -> `DocumentScore`
+- `scoring.scoring.selected.score_sections`: `SectionOverlapScore` -> `SectionScore`
+- `scoring.scoring.selected.score_paragraphs`: `ParagraphOverlapScore` -> `ParagraphScore`
+- `scoring.scoring.selected.score_sentences`: `SentenceOverlapScore` -> `SentenceScore`
+- `retrieved.merge_stored_scores`: `DocumentScore` -> `DocumentScore`
 - `retrieved.select_stored_candidates`: `Document` -> `DocumentSearchCandidate`
 - `retrieved.select_streamed_candidates`: `Document` -> `DocumentSearchCandidate`
 - `retrieved.rank_candidates`: `DocumentSearchCandidate` -> `DocumentSearchCandidate`
+- `overlapped.merge_scores`: `DocumentOverlapScore` -> `DocumentOverlapScore`
 - `overlapped.rank_candidates`: `DocumentSearchCandidate` -> `DocumentSearchCandidate`
 - `overlapped.select_candidates`: `DocumentSearchCandidate` -> `DocumentSearchCandidate`
 - `reranked.select_fallback_options`: `DocumentSearchCandidate` -> `DocumentFeedbackOption`
@@ -44,11 +82,16 @@ Source: `examples.search.transforms.experiments.searching.search_docs.Searching0
 - `band`
 - `band_fallbacks`
 - `band_memberships`
-- `document_overlap_scores`
+- `bm25`
+- `document`
 - `document_popularity`
-- `document_scores`
+- `document_summary`
+- `document_terms`
 - `fallback`
 - `overlap`
+- `overlapped__merged_scores`
+- `paragraph_summary`
+- `paragraph_terms`
 - `policy`
 - `popularity`
 - `queries`
@@ -59,10 +102,28 @@ Source: `examples.search.transforms.experiments.searching.search_docs.Searching0
 - `reranked__global_options`
 - `reranked__popularity_feedback`
 - `reranked__query_feedback`
+- `retrieved__stored_scores`
 - `retrieved__streamed_candidates`
 - `score`
+- `score_policy`
+- `scoring__gap__document_availability`
+- `scoring__gap__overlap_availability`
+- `scoring__scoring__bm25__document_bm25_scores`
+- `scoring__scoring__bm25__paragraph_bm25_scores`
+- `scoring__scoring__bm25__section_bm25_scores`
+- `scoring__scoring__bm25__sentence_bm25_scores`
+- `scoring__scoring__overlap__document_overlap_scores`
+- `scoring__scoring__overlap__query_sizes`
+- `scoring__scoring__selected__document_scores`
+- `section_summary`
+- `section_terms`
+- `sentence_summary`
+- `sentence_terms`
 - `signal`
+- `size`
 - `streamed_document_scores`
+- `summary`
+- `term`
 
 ## Target Artifacts
 

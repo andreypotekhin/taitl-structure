@@ -10,6 +10,7 @@ from examples.search.schemas.indexing.lexical.index import (
     SentenceIndexSummary,
     SentenceIndexTerm,
 )
+from examples.search.schemas.search import ScorePolicy
 from examples.search.schemas.similarity import (
     DocumentSimilarity,
     ParagraphSimilarity,
@@ -28,6 +29,7 @@ class Similarities(Transform):
     """Create same-grain corpus similarity pairs from reusable lexical indexes."""
 
     policy = input(SimilarityPolicy)
+    score_policy = input(ScorePolicy)
     document_terms = input(DocumentIndexTerm)
     document_summary = input(DocumentIndexSummary)
     section_terms = input(SectionIndexTerm)
@@ -61,6 +63,7 @@ class Similarities(Transform):
             section_terms=section_terms,
             paragraph_terms=paragraph_terms,
             sentence_terms=sentence_terms,
+            score_policy=score_policy,
         )
     )
     bm25 = stage(

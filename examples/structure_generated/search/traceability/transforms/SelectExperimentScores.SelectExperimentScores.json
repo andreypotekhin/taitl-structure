@@ -93,6 +93,11 @@
       "source": "source:examples.search.transforms.experiments.SelectExperimentScores.SelectExperimentScores.select_documents.field.experiment_id"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.SelectExperimentScores.SelectExperimentScoresGenerated.run.step.0.select_documents.select.scored_at",
+      "ir": "ir:SelectExperimentScores.step.0.select_documents.project.scored_at",
+      "source": "source:examples.search.transforms.experiments.SelectExperimentScores.SelectExperimentScores.select_documents.field.scored_at"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.SelectExperimentScores.SelectExperimentScoresGenerated.run.step.0.select_documents.select.score",
       "ir": "ir:SelectExperimentScores.step.0.select_documents.project.score",
       "source": "source:examples.search.transforms.experiments.SelectExperimentScores.SelectExperimentScores.select_documents.field.score"
@@ -136,6 +141,11 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.SelectExperimentScores.SelectExperimentScoresGenerated.run.step.1.select_sections.select.experiment_id",
       "ir": "ir:SelectExperimentScores.step.1.select_sections.project.experiment_id",
       "source": "source:examples.search.transforms.experiments.SelectExperimentScores.SelectExperimentScores.select_sections.field.experiment_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.SelectExperimentScores.SelectExperimentScoresGenerated.run.step.1.select_sections.select.scored_at",
+      "ir": "ir:SelectExperimentScores.step.1.select_sections.project.scored_at",
+      "source": "source:examples.search.transforms.experiments.SelectExperimentScores.SelectExperimentScores.select_sections.field.scored_at"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.SelectExperimentScores.SelectExperimentScoresGenerated.run.step.1.select_sections.select.score",
@@ -186,6 +196,11 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.SelectExperimentScores.SelectExperimentScoresGenerated.run.step.2.select_paragraphs.select.experiment_id",
       "ir": "ir:SelectExperimentScores.step.2.select_paragraphs.project.experiment_id",
       "source": "source:examples.search.transforms.experiments.SelectExperimentScores.SelectExperimentScores.select_paragraphs.field.experiment_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.SelectExperimentScores.SelectExperimentScoresGenerated.run.step.2.select_paragraphs.select.scored_at",
+      "ir": "ir:SelectExperimentScores.step.2.select_paragraphs.project.scored_at",
+      "source": "source:examples.search.transforms.experiments.SelectExperimentScores.SelectExperimentScores.select_paragraphs.field.scored_at"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.SelectExperimentScores.SelectExperimentScoresGenerated.run.step.2.select_paragraphs.select.score",
@@ -241,6 +256,11 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.SelectExperimentScores.SelectExperimentScoresGenerated.run.step.3.select_sentences.select.experiment_id",
       "ir": "ir:SelectExperimentScores.step.3.select_sentences.project.experiment_id",
       "source": "source:examples.search.transforms.experiments.SelectExperimentScores.SelectExperimentScores.select_sentences.field.experiment_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.SelectExperimentScores.SelectExperimentScoresGenerated.run.step.3.select_sentences.select.scored_at",
+      "ir": "ir:SelectExperimentScores.step.3.select_sentences.project.scored_at",
+      "source": "source:examples.search.transforms.experiments.SelectExperimentScores.SelectExperimentScores.select_sentences.field.scored_at"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.SelectExperimentScores.SelectExperimentScoresGenerated.run.step.3.select_sentences.select.score",
@@ -649,6 +669,10 @@
       "constant": "PARAGRAPH_STATISTICS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.analytics"
     },
+    "PopularQueryCandidate": {
+      "constant": "POPULAR_QUERY_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.scoring_intermediate"
+    },
     "PopularityFeedback": {
       "constant": "POPULARITY_FEEDBACK_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
@@ -689,6 +713,10 @@
       "constant": "QUERY_LABEL_ASSIGNMENTS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.label"
     },
+    "QueryPopularity": {
+      "constant": "QUERY_POPULARITY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
     "QueryTerm": {
       "constant": "QUERY_TERM_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.scoring_intermediate"
@@ -712,6 +740,14 @@
     "RelevancePolicy": {
       "constant": "RELEVANCE_POLICY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.relevance"
+    },
+    "ScorePolicy": {
+      "constant": "SCORE_POLICY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ScoreQueryAvailability": {
+      "constant": "SCORE_QUERY_AVAILABILITY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.scoring_intermediate"
     },
     "SearchQuery": {
       "constant": "SEARCH_QUERY_SCHEMA",
@@ -1021,6 +1057,17 @@
       },
       {
         "detail": {
+          "field": "scored_at"
+        },
+        "operation": "project",
+        "sources": [
+          "score.scored_at"
+        ],
+        "step": "select_documents",
+        "target": "DocumentScore.scored_at"
+      },
+      {
+        "detail": {
           "field": "score"
         },
         "operation": "project",
@@ -1111,6 +1158,17 @@
         ],
         "step": "select_sections",
         "target": "SectionScore.experiment_id"
+      },
+      {
+        "detail": {
+          "field": "scored_at"
+        },
+        "operation": "project",
+        "sources": [
+          "score.scored_at"
+        ],
+        "step": "select_sections",
+        "target": "SectionScore.scored_at"
       },
       {
         "detail": {
@@ -1215,6 +1273,17 @@
         ],
         "step": "select_paragraphs",
         "target": "ParagraphScore.experiment_id"
+      },
+      {
+        "detail": {
+          "field": "scored_at"
+        },
+        "operation": "project",
+        "sources": [
+          "score.scored_at"
+        ],
+        "step": "select_paragraphs",
+        "target": "ParagraphScore.scored_at"
       },
       {
         "detail": {
@@ -1330,6 +1399,17 @@
         ],
         "step": "select_sentences",
         "target": "SentenceScore.experiment_id"
+      },
+      {
+        "detail": {
+          "field": "scored_at"
+        },
+        "operation": "project",
+        "sources": [
+          "score.scored_at"
+        ],
+        "step": "select_sentences",
+        "target": "SentenceScore.scored_at"
       },
       {
         "detail": {

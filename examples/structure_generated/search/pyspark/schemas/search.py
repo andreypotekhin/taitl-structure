@@ -43,23 +43,37 @@ SENTENCE_SEARCH_TARGET_SCHEMA = T.StructType(PARAGRAPH_SEARCH_TARGET_SCHEMA.fiel
     T.StructField("sentence_id", T.StringType(), False),
 ])
 
+SCORE_POLICY_SCHEMA = T.StructType([
+    T.StructField("maximum_age_days", T.LongType(), False),
+    T.StructField("scored_at", T.TimestampType(), False),
+])
+
+QUERY_POPULARITY_SCHEMA = T.StructType([
+    T.StructField("query", T.StringType(), False),
+    T.StructField("impression_count", T.LongType(), False),
+])
+
 DOCUMENT_SCORE_SCHEMA = T.StructType(DOCUMENT_SEARCH_TARGET_SCHEMA.fields + [
     T.StructField("experiment_id", T.StringType(), True),
+    T.StructField("scored_at", T.TimestampType(), False),
     T.StructField("score", T.DoubleType(), False),
 ])
 
 SECTION_SCORE_SCHEMA = T.StructType(SECTION_SEARCH_TARGET_SCHEMA.fields + [
     T.StructField("experiment_id", T.StringType(), True),
+    T.StructField("scored_at", T.TimestampType(), False),
     T.StructField("score", T.DoubleType(), False),
 ])
 
 PARAGRAPH_SCORE_SCHEMA = T.StructType(PARAGRAPH_SEARCH_TARGET_SCHEMA.fields + [
     T.StructField("experiment_id", T.StringType(), True),
+    T.StructField("scored_at", T.TimestampType(), False),
     T.StructField("score", T.DoubleType(), False),
 ])
 
 SENTENCE_SCORE_SCHEMA = T.StructType(SENTENCE_SEARCH_TARGET_SCHEMA.fields + [
     T.StructField("experiment_id", T.StringType(), True),
+    T.StructField("scored_at", T.TimestampType(), False),
     T.StructField("score", T.DoubleType(), False),
 ])
 

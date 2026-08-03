@@ -6,17 +6,21 @@ from examples.structure_generated.search.pyspark.schemas.search import DOCUMENT_
 
 
 DOCUMENT_OVERLAP_SCORE_SCHEMA = T.StructType(DOCUMENT_SEARCH_TARGET_SCHEMA.fields + [
+    T.StructField("scored_at", T.TimestampType(), False),
     T.StructField("score_overlap", T.DoubleType(), False),
 ])
 
 SECTION_OVERLAP_SCORE_SCHEMA = T.StructType(SECTION_SEARCH_TARGET_SCHEMA.fields + [
+    T.StructField("scored_at", T.TimestampType(), False),
     T.StructField("score_overlap", T.DoubleType(), False),
 ])
 
 PARAGRAPH_OVERLAP_SCORE_SCHEMA = T.StructType(PARAGRAPH_SEARCH_TARGET_SCHEMA.fields + [
+    T.StructField("scored_at", T.TimestampType(), False),
     T.StructField("score_overlap", T.DoubleType(), False),
 ])
 
 SENTENCE_OVERLAP_SCORE_SCHEMA = T.StructType(SENTENCE_SEARCH_TARGET_SCHEMA.fields + [
+    T.StructField("scored_at", T.TimestampType(), False),
     T.StructField("score_overlap", T.DoubleType(), False),
 ])

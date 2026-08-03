@@ -8,13 +8,14 @@ Source: `examples.search.transforms.all.all.All`
 
 - `documents`: `Document`
 - `similarity_policy`: `SimilarityPolicy`
+- `score_policy`: `ScorePolicy`
 - `queries`: `SearchQuery`
 - `intents`: `Intent`
 - `patterns`: `IntentPattern`
 - `query_labels`: `QueryLabel`
+- `daily_impressions`: `DailyImpressions`
 - `users`: `User`
 - `bands`: `Band`
-- `daily_impressions`: `DailyImpressions`
 - `daily_clicks`: `DailyClicks`
 - `policy`: `RelevancePolicy`
 
@@ -164,6 +165,9 @@ Source: `examples.search.transforms.all.all.All`
 - `labeled.merged.create_assignments`: `QueryLabelAssignmentEntries` -> `QueryLabelAssignments`
 - `labeled.merged.merge_caller_labels`: `SearchQuery` -> `SearchQuery`
 - `labeled.merged.merge_created_labels`: `SearchQuery` -> `SearchQuery`
+- `popular.summarize_popularity`: `DailyImpressions` -> `QueryPopularity`
+- `popular.rank_queries`: `SearchQuery` -> `PopularQueryCandidate`
+- `popular.select_queries`: `PopularQueryCandidate` -> `SearchQuery`
 - `scored.overlap.expand_query_terms`: `SearchQuery` -> `QueryTerm`
 - `scored.overlap.select_distinct_query_terms`: `QueryTerm` -> `QueryTerm`
 - `scored.overlap.count_query_terms`: `QueryTerm` -> `QueryTermCount`
@@ -268,6 +272,8 @@ Source: `examples.search.transforms.all.all.All`
 - `membership`
 - `path`
 - `policy`
+- `popular__popularities`
+- `popularity`
 - `profiled__documents`
 - `query`
 - `relevance__band_context_clicks`
@@ -280,6 +286,7 @@ Source: `examples.search.transforms.all.all.All`
 - `reverse_section`
 - `reverse_sentence`
 - `right`
+- `score_policy`
 - `scored__bm25__document_bm25_scores`
 - `scored__bm25__paragraph_bm25_scores`
 - `scored__bm25__section_bm25_scores`

@@ -3,6 +3,7 @@
 from examples.search.schemas.search import (
     DocumentSearchTarget,
     ParagraphSearchTarget,
+    SearchQuery,
     SectionSearchTarget,
     SentenceSearchTarget,
 )
@@ -35,6 +36,19 @@ class QueryTermCount(Schema):
 
     query_id = string(nullable=False)
     query_terms = long(nullable=False)
+
+
+class ScoreQueryAvailability(Schema):
+    """One query with a fresh score relation available for serving."""
+
+    query_id = string(nullable=False)
+
+
+class PopularQueryCandidate(SearchQuery):
+    """Offline query row ranked by observed impression volume."""
+
+    impression_count = long(nullable=False)
+    popularity_rank = long(nullable=False)
 
 
 class DocumentOverlapMatch(DocumentSearchTarget):

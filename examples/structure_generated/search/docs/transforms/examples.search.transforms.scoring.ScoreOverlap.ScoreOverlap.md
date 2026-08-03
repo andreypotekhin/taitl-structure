@@ -11,6 +11,7 @@ Source: `examples.search.transforms.scoring.ScoreOverlap.ScoreOverlap`
 - `section_terms`: `SectionIndexTerm`
 - `paragraph_terms`: `ParagraphIndexTerm`
 - `sentence_terms`: `SentenceIndexTerm`
+- `score_policy`: `ScorePolicy`
 
 ## Outputs
 
@@ -37,7 +38,9 @@ Source: `examples.search.transforms.scoring.ScoreOverlap.ScoreOverlap`
 
 - `document_terms`
 - `paragraph_terms`
+- `policy`
 - `query_sizes`
+- `score_policy`
 - `section_terms`
 - `sentence_terms`
 - `size`

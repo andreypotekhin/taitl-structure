@@ -1,0 +1,64 @@
+{
+  "bases": [
+    "SearchQuery"
+  ],
+  "fields": [
+    {
+      "column": "id",
+      "name": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "queryset",
+      "name": "queryset",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "content",
+      "name": "content",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "labels",
+      "name": "labels",
+      "nullable": false,
+      "type": "map<string,long!>"
+    },
+    {
+      "column": "is_question",
+      "name": "is_question",
+      "nullable": false,
+      "type": "boolean"
+    },
+    {
+      "column": "is_time_sensitive",
+      "name": "is_time_sensitive",
+      "nullable": false,
+      "type": "boolean"
+    },
+    {
+      "column": "language",
+      "name": "language",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "impression_count",
+      "name": "impression_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "popularity_rank",
+      "name": "popularity_rank",
+      "nullable": false,
+      "type": "long"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.search.schemas.scoring.intermediate",
+  "name": "PopularQueryCandidate"
+}

@@ -39,6 +39,7 @@ from examples.structure_generated.search.pyspark.schemas.scoring_intermediate im
 from examples.structure_generated.search.pyspark.schemas.search import (
     DOCUMENT_SCORE_SCHEMA,
     PARAGRAPH_SCORE_SCHEMA,
+    SCORE_POLICY_SCHEMA,
     SEARCH_QUERY_SCHEMA,
     SECTION_SCORE_SCHEMA,
     SENTENCE_SCORE_SCHEMA,
@@ -368,9 +369,12 @@ class ScoreOverlapGenerated:
     def _step_overlap_publish_document_overlap_scores_7(self, frames):
         # Step method: overlap.publish_document_overlap_scores
         overlap__document_overlap_scores = frames["overlap__document_overlap_matches"].alias("document_overlap_match")
+        score_policy_joined = frames["score_policy"].alias("score_policy")
+        overlap__document_overlap_scores = overlap__document_overlap_scores.crossJoin(score_policy_joined)
         overlap__document_overlap_scores = overlap__document_overlap_scores.select(
             F.col("document_overlap_match.query_id"),
             F.col("document_overlap_match.document_id"),
+            F.col("score_policy.scored_at"),
             (
                 F.col("document_overlap_match.matched_terms")
                 / F.when(
@@ -392,10 +396,13 @@ class ScoreOverlapGenerated:
     def _step_overlap_publish_section_overlap_scores_8(self, frames):
         # Step method: overlap.publish_section_overlap_scores
         overlap__section_overlap_scores = frames["overlap__section_overlap_matches"].alias("section_overlap_match")
+        score_policy_joined = frames["score_policy"].alias("score_policy")
+        overlap__section_overlap_scores = overlap__section_overlap_scores.crossJoin(score_policy_joined)
         overlap__section_overlap_scores = overlap__section_overlap_scores.select(
             F.col("section_overlap_match.query_id"),
             F.col("section_overlap_match.document_id"),
             F.col("section_overlap_match.section_id"),
+            F.col("score_policy.scored_at"),
             (
                 F.col("section_overlap_match.matched_terms")
                 / F.when(
@@ -416,11 +423,14 @@ class ScoreOverlapGenerated:
         overlap__paragraph_overlap_scores = frames["overlap__paragraph_overlap_matches"].alias(
             "paragraph_overlap_match"
         )
+        score_policy_joined = frames["score_policy"].alias("score_policy")
+        overlap__paragraph_overlap_scores = overlap__paragraph_overlap_scores.crossJoin(score_policy_joined)
         overlap__paragraph_overlap_scores = overlap__paragraph_overlap_scores.select(
             F.col("paragraph_overlap_match.query_id"),
             F.col("paragraph_overlap_match.document_id"),
             F.col("paragraph_overlap_match.section_id"),
             F.col("paragraph_overlap_match.paragraph_id"),
+            F.col("score_policy.scored_at"),
             (
                 F.col("paragraph_overlap_match.matched_terms")
                 / F.when(
@@ -445,12 +455,15 @@ class ScoreOverlapGenerated:
     def _step_overlap_publish_sentence_overlap_scores_10(self, frames):
         # Step method: overlap.publish_sentence_overlap_scores
         overlap__sentence_overlap_scores = frames["overlap__sentence_overlap_matches"].alias("sentence_overlap_match")
+        score_policy_joined = frames["score_policy"].alias("score_policy")
+        overlap__sentence_overlap_scores = overlap__sentence_overlap_scores.crossJoin(score_policy_joined)
         overlap__sentence_overlap_scores = overlap__sentence_overlap_scores.select(
             F.col("sentence_overlap_match.query_id"),
             F.col("sentence_overlap_match.document_id"),
             F.col("sentence_overlap_match.section_id"),
             F.col("sentence_overlap_match.paragraph_id"),
             F.col("sentence_overlap_match.sentence_id"),
+            F.col("score_policy.scored_at"),
             (
                 F.col("sentence_overlap_match.matched_terms")
                 / F.when(
@@ -775,10 +788,13 @@ class SelectScoresGenerated:
             ),
             "inner",
         )
+        score_policy_2_joined = frames["score_policy"].alias("score_policy_2")
+        selected__document_scores = selected__document_scores.crossJoin(score_policy_2_joined)
         selected__document_scores = selected__document_scores.select(
             F.col("document_overlap_score.query_id"),
             F.col("document_overlap_score.document_id"),
             F.lit('Scoring001AdjustBm').alias("experiment_id"),
+            F.col("score_policy_2.scored_at"),
             F.col("bm25__document_bm25_scores.score_bm25").alias("score"),
         )
         assert_schema(selected__document_scores, DOCUMENT_SCORE_SCHEMA, name="DocumentScore", mode="strict")
@@ -798,11 +814,14 @@ class SelectScoresGenerated:
             ),
             "inner",
         )
+        score_policy_2_joined = frames["score_policy"].alias("score_policy_2")
+        selected__section_scores = selected__section_scores.crossJoin(score_policy_2_joined)
         selected__section_scores = selected__section_scores.select(
             F.col("section_overlap_score.query_id"),
             F.col("section_overlap_score.document_id"),
             F.col("section_overlap_score.section_id"),
             F.lit('Scoring001AdjustBm').alias("experiment_id"),
+            F.col("score_policy_2.scored_at"),
             F.col("bm25__section_bm25_scores.score_bm25").alias("score"),
         )
         assert_schema(selected__section_scores, SECTION_SCORE_SCHEMA, name="SectionScore", mode="strict")
@@ -822,12 +841,15 @@ class SelectScoresGenerated:
             ),
             "inner",
         )
+        score_policy_2_joined = frames["score_policy"].alias("score_policy_2")
+        selected__paragraph_scores = selected__paragraph_scores.crossJoin(score_policy_2_joined)
         selected__paragraph_scores = selected__paragraph_scores.select(
             F.col("paragraph_overlap_score.query_id"),
             F.col("paragraph_overlap_score.document_id"),
             F.col("paragraph_overlap_score.section_id"),
             F.col("paragraph_overlap_score.paragraph_id"),
             F.lit('Scoring001AdjustBm').alias("experiment_id"),
+            F.col("score_policy_2.scored_at"),
             F.col("paragraph_overlap_score.score_overlap").alias("score"),
         )
         assert_schema(selected__paragraph_scores, PARAGRAPH_SCORE_SCHEMA, name="ParagraphScore", mode="strict")
@@ -847,6 +869,8 @@ class SelectScoresGenerated:
             ),
             "inner",
         )
+        score_policy_2_joined = frames["score_policy"].alias("score_policy_2")
+        selected__sentence_scores = selected__sentence_scores.crossJoin(score_policy_2_joined)
         selected__sentence_scores = selected__sentence_scores.select(
             F.col("sentence_overlap_score.query_id"),
             F.col("sentence_overlap_score.document_id"),
@@ -854,6 +878,7 @@ class SelectScoresGenerated:
             F.col("sentence_overlap_score.paragraph_id"),
             F.col("sentence_overlap_score.sentence_id"),
             F.lit('Scoring001AdjustBm').alias("experiment_id"),
+            F.col("score_policy_2.scored_at"),
             F.col("sentence_overlap_score.score_overlap").alias("score"),
         )
         return {
@@ -875,6 +900,7 @@ class Scoring001AdjustBmGenerated(ScoreBaseGenerated, ScoreOverlapGenerated, Sco
         section_terms: DataFrame,
         paragraph_terms: DataFrame,
         sentence_terms: DataFrame,
+        score_policy: DataFrame,
         document_summary: DataFrame,
         section_summary: DataFrame,
         paragraph_summary: DataFrame,
@@ -885,6 +911,7 @@ class Scoring001AdjustBmGenerated(ScoreBaseGenerated, ScoreOverlapGenerated, Sco
         assert_schema(section_terms, SECTION_INDEX_TERM_SCHEMA, name="SectionIndexTerm", mode="strict")
         assert_schema(paragraph_terms, PARAGRAPH_INDEX_TERM_SCHEMA, name="ParagraphIndexTerm", mode="strict")
         assert_schema(sentence_terms, SENTENCE_INDEX_TERM_SCHEMA, name="SentenceIndexTerm", mode="strict")
+        assert_schema(score_policy, SCORE_POLICY_SCHEMA, name="ScorePolicy", mode="strict")
         assert_schema(document_summary, DOCUMENT_INDEX_SUMMARY_SCHEMA, name="DocumentIndexSummary", mode="strict")
         assert_schema(section_summary, SECTION_INDEX_SUMMARY_SCHEMA, name="SectionIndexSummary", mode="strict")
         assert_schema(paragraph_summary, PARAGRAPH_INDEX_SUMMARY_SCHEMA, name="ParagraphIndexSummary", mode="strict")
@@ -894,6 +921,7 @@ class Scoring001AdjustBmGenerated(ScoreBaseGenerated, ScoreOverlapGenerated, Sco
         _input_section_terms = section_terms
         _input_paragraph_terms = paragraph_terms
         _input_sentence_terms = sentence_terms
+        _input_score_policy = score_policy
         _input_document_summary = document_summary
         _input_section_summary = section_summary
         _input_paragraph_summary = paragraph_summary
@@ -904,6 +932,7 @@ class Scoring001AdjustBmGenerated(ScoreBaseGenerated, ScoreOverlapGenerated, Sco
             "section_terms": section_terms,
             "paragraph_terms": paragraph_terms,
             "sentence_terms": sentence_terms,
+            "score_policy": score_policy,
             "document_summary": document_summary,
             "section_summary": section_summary,
             "paragraph_summary": paragraph_summary,
@@ -913,6 +942,7 @@ class Scoring001AdjustBmGenerated(ScoreBaseGenerated, ScoreOverlapGenerated, Sco
             "input:section_terms": _input_section_terms,
             "input:paragraph_terms": _input_paragraph_terms,
             "input:sentence_terms": _input_sentence_terms,
+            "input:score_policy": _input_score_policy,
             "input:document_summary": _input_document_summary,
             "input:section_summary": _input_section_summary,
             "input:paragraph_summary": _input_paragraph_summary,

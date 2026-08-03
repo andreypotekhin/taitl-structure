@@ -44,6 +44,8 @@
     "membership",
     "path",
     "policy",
+    "popular__popularities",
+    "popularity",
     "profiled__documents",
     "query",
     "relevance__band_context_clicks",
@@ -56,6 +58,7 @@
     "reverse_section",
     "reverse_sentence",
     "right",
+    "score_policy",
     "scored__bm25__document_bm25_scores",
     "scored__bm25__paragraph_bm25_scores",
     "scored__bm25__section_bm25_scores",
@@ -99,48 +102,53 @@
       "schema": "SimilarityPolicy"
     },
     {
-      "name": "queries",
+      "name": "score_policy",
       "ordinal": 2,
+      "schema": "ScorePolicy"
+    },
+    {
+      "name": "queries",
+      "ordinal": 3,
       "schema": "SearchQuery"
     },
     {
       "name": "intents",
-      "ordinal": 3,
+      "ordinal": 4,
       "schema": "Intent"
     },
     {
       "name": "patterns",
-      "ordinal": 4,
+      "ordinal": 5,
       "schema": "IntentPattern"
     },
     {
       "name": "query_labels",
-      "ordinal": 5,
+      "ordinal": 6,
       "schema": "QueryLabel"
     },
     {
+      "name": "daily_impressions",
+      "ordinal": 7,
+      "schema": "DailyImpressions"
+    },
+    {
       "name": "users",
-      "ordinal": 6,
+      "ordinal": 8,
       "schema": "User"
     },
     {
       "name": "bands",
-      "ordinal": 7,
+      "ordinal": 9,
       "schema": "Band"
     },
     {
-      "name": "daily_impressions",
-      "ordinal": 8,
-      "schema": "DailyImpressions"
-    },
-    {
       "name": "daily_clicks",
-      "ordinal": 9,
+      "ordinal": 10,
       "schema": "DailyClicks"
     },
     {
       "name": "policy",
-      "ordinal": 10,
+      "ordinal": 11,
       "schema": "RelevancePolicy"
     }
   ],
@@ -1833,6 +1841,18 @@
           "parameter": "match",
           "schema": "DocumentOverlapMatch",
           "source": "similarities__overlap__document_overlap_matches"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "ScorePolicy",
+          "source": "score_policy"
+        }
+      ],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "policy"
         }
       ],
       "name": "similarities.overlap.publish_document_overlap_scores",
@@ -1855,6 +1875,18 @@
           "parameter": "match",
           "schema": "SectionOverlapMatch",
           "source": "similarities__overlap__section_overlap_matches"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "ScorePolicy",
+          "source": "score_policy"
+        }
+      ],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "policy"
         }
       ],
       "name": "similarities.overlap.publish_section_overlap_scores",
@@ -1877,6 +1909,18 @@
           "parameter": "match",
           "schema": "ParagraphOverlapMatch",
           "source": "similarities__overlap__paragraph_overlap_matches"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "ScorePolicy",
+          "source": "score_policy"
+        }
+      ],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "policy"
         }
       ],
       "name": "similarities.overlap.publish_paragraph_overlap_scores",
@@ -1899,6 +1943,18 @@
           "parameter": "match",
           "schema": "SentenceOverlapMatch",
           "source": "similarities__overlap__sentence_overlap_matches"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "ScorePolicy",
+          "source": "score_policy"
+        }
+      ],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "policy"
         }
       ],
       "name": "similarities.overlap.publish_sentence_overlap_scores",
@@ -3084,6 +3140,28 @@
       ]
     },
     {
+      "input_lane": "daily_impressions",
+      "input_schema": "DailyImpressions",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "impression",
+          "schema": "DailyImpressions",
+          "source": "daily_impressions"
+        }
+      ],
+      "name": "popular.summarize_popularity",
+      "output_lane": "popular__popularities",
+      "output_schema": "QueryPopularity",
+      "results": [
+        {
+          "frame": "popular__popularities",
+          "lane": "popular__popularities",
+          "schema": "QueryPopularity"
+        }
+      ]
+    },
+    {
       "input_lane": "labeled__merged__labeled_queries",
       "input_schema": "SearchQuery",
       "inputs": [
@@ -3092,6 +3170,62 @@
           "parameter": "query",
           "schema": "SearchQuery",
           "source": "labeled__merged__labeled_queries"
+        },
+        {
+          "driving": false,
+          "parameter": "popularity",
+          "schema": "QueryPopularity",
+          "source": "popular__popularities"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "popularity"
+        }
+      ],
+      "name": "popular.rank_queries",
+      "output_lane": "popular__ranked_queries",
+      "output_schema": "PopularQueryCandidate",
+      "results": [
+        {
+          "frame": "popular__ranked_queries",
+          "lane": "popular__ranked_queries",
+          "schema": "PopularQueryCandidate"
+        }
+      ]
+    },
+    {
+      "input_lane": "popular__ranked_queries",
+      "input_schema": "PopularQueryCandidate",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "PopularQueryCandidate",
+          "source": "popular__ranked_queries"
+        }
+      ],
+      "name": "popular.select_queries",
+      "output_lane": "popular__selected_queries",
+      "output_schema": "SearchQuery",
+      "results": [
+        {
+          "frame": "popular__selected_queries",
+          "lane": "popular__selected_queries",
+          "schema": "SearchQuery"
+        }
+      ]
+    },
+    {
+      "input_lane": "popular__selected_queries",
+      "input_schema": "SearchQuery",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "SearchQuery",
+          "source": "popular__selected_queries"
         }
       ],
       "name": "scored.overlap.expand_query_terms",
@@ -3334,6 +3468,18 @@
           "parameter": "match",
           "schema": "DocumentOverlapMatch",
           "source": "scored__overlap__document_overlap_matches"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "ScorePolicy",
+          "source": "score_policy"
+        }
+      ],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "policy"
         }
       ],
       "name": "scored.overlap.publish_document_overlap_scores",
@@ -3356,6 +3502,18 @@
           "parameter": "match",
           "schema": "SectionOverlapMatch",
           "source": "scored__overlap__section_overlap_matches"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "ScorePolicy",
+          "source": "score_policy"
+        }
+      ],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "policy"
         }
       ],
       "name": "scored.overlap.publish_section_overlap_scores",
@@ -3378,6 +3536,18 @@
           "parameter": "match",
           "schema": "ParagraphOverlapMatch",
           "source": "scored__overlap__paragraph_overlap_matches"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "ScorePolicy",
+          "source": "score_policy"
+        }
+      ],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "policy"
         }
       ],
       "name": "scored.overlap.publish_paragraph_overlap_scores",
@@ -3400,6 +3570,18 @@
           "parameter": "match",
           "schema": "SentenceOverlapMatch",
           "source": "scored__overlap__sentence_overlap_matches"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "ScorePolicy",
+          "source": "score_policy"
+        }
+      ],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "policy"
         }
       ],
       "name": "scored.overlap.publish_sentence_overlap_scores",
@@ -3414,14 +3596,14 @@
       ]
     },
     {
-      "input_lane": "labeled__merged__labeled_queries",
+      "input_lane": "popular__selected_queries",
       "input_schema": "SearchQuery",
       "inputs": [
         {
           "driving": true,
           "parameter": "query",
           "schema": "SearchQuery",
-          "source": "labeled__merged__labeled_queries"
+          "source": "popular__selected_queries"
         }
       ],
       "name": "scored.bm25.expand_query_terms",
@@ -3670,12 +3852,22 @@
           "parameter": "bm25",
           "schema": "DocumentBm25Score",
           "source": "scored__bm25__document_bm25_scores"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "ScorePolicy",
+          "source": "score_policy"
         }
       ],
       "joins": [
         {
           "how": "inner",
           "input": "bm25"
+        },
+        {
+          "how": "cross",
+          "input": "policy"
         }
       ],
       "name": "scored.selected.score_documents",
@@ -3704,12 +3896,22 @@
           "parameter": "bm25",
           "schema": "SectionBm25Score",
           "source": "scored__bm25__section_bm25_scores"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "ScorePolicy",
+          "source": "score_policy"
         }
       ],
       "joins": [
         {
           "how": "inner",
           "input": "bm25"
+        },
+        {
+          "how": "cross",
+          "input": "policy"
         }
       ],
       "name": "scored.selected.score_sections",
@@ -3738,12 +3940,22 @@
           "parameter": "bm25",
           "schema": "ParagraphBm25Score",
           "source": "scored__bm25__paragraph_bm25_scores"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "ScorePolicy",
+          "source": "score_policy"
         }
       ],
       "joins": [
         {
           "how": "inner",
           "input": "bm25"
+        },
+        {
+          "how": "cross",
+          "input": "policy"
         }
       ],
       "name": "scored.selected.score_paragraphs",
@@ -3772,12 +3984,22 @@
           "parameter": "bm25",
           "schema": "SentenceBm25Score",
           "source": "scored__bm25__sentence_bm25_scores"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "ScorePolicy",
+          "source": "score_policy"
         }
       ],
       "joins": [
         {
           "how": "inner",
           "input": "bm25"
+        },
+        {
+          "how": "cross",
+          "input": "policy"
         }
       ],
       "name": "scored.selected.score_sentences",

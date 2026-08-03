@@ -306,8 +306,14 @@ class Expression:
     def __and__(self, other: object) -> "Expression":
         return self._boolean_binary("and", other)
 
+    def __rand__(self, other: object) -> "Expression":
+        return self._boolean_binary("and", other, reverse=True)
+
     def __or__(self, other: object) -> "Expression":
         return self._boolean_binary("or", other)
+
+    def __ror__(self, other: object) -> "Expression":
+        return self._boolean_binary("or", other, reverse=True)
 
     def __invert__(self) -> "Expression":
         self._require_boolean("~")
@@ -405,7 +411,7 @@ class Expression:
 
         return Expression(kind=kind, type=type, nullable=nullable, args=(literal(other), self))
 
-    def _boolean_binary(self, kind: str, other: object) -> "Expression":
+    def _boolean_binary(self, kind: str, other: object, *, reverse: bool = False) -> "Expression":
         from structure.plugin.pyspark.dsl.expressions import literal
 
         other_expression = literal(other)
@@ -416,7 +422,7 @@ class Expression:
             kind=kind,
             type=BooleanType(),
             nullable=self.nullable or other_expression.nullable,
-            args=(self, other_expression),
+            args=(other_expression, self) if reverse else (self, other_expression),
         )
 
     def _comparison(self, kind: str, other: object, *, nullable: bool | None = None) -> "Expression":

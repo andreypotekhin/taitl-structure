@@ -988,12 +988,42 @@ def test_predicates_propagate_nullable_sql_three_valued_logic() -> None:
     assert event_time_between(nullable_timestamp, datetime.datetime(2026, 7, 13), upper="1 hour").nullable is True
 
 
+def test_reflected_boolean_operators_preserve_operand_order() -> None:
+    expression = _expression(types.boolean(), nullable=True)
+
+    conjunction = True & expression
+    disjunction = False | expression
+
+    assert conjunction.kind == "and"
+    assert conjunction.args[0].kind == "literal"
+    assert conjunction.args[1] is expression
+    assert conjunction.nullable is True
+    assert disjunction.kind == "or"
+    assert disjunction.args[0].kind == "literal"
+    assert disjunction.args[1] is expression
+    assert disjunction.nullable is True
+
+
+def test_event_time_between_can_be_negated_symbolically() -> None:
+    timestamp = _expression(types.timestamp(), nullable=False)
+
+    predicate = event_time_between(timestamp, timestamp, upper="1 hour")
+    negated = ~predicate
+
+    assert negated.kind == "not"
+    assert negated.type is not None and negated.type.name == "boolean"
+    assert negated.nullable is False
+    assert negated.args[0] is predicate
+
+
 @pytest.mark.parametrize(
     "expression",
     [
         lambda: _expression(types.string(), nullable=False) & True,
         lambda: _expression(types.boolean(), nullable=False) | 1,
         lambda: ~_expression(types.string(), nullable=False),
+        lambda: True & _expression(types.string(), nullable=False),
+        lambda: 1 | _expression(types.boolean(), nullable=False),
     ],
 )
 def test_logical_operators_require_boolean_operands(expression) -> None:

@@ -14,7 +14,7 @@ For the architecture, evidence boundaries, and ownership model, see the
 | --- | --- | --- | --- |
 | Chunking | `Chunking` | sections, paragraphs, sentences, words | Plain-text hierarchy and shared token normalization. |
 | Indexing | `Indexing` | target-grain terms and summaries | Build once; score many query batches. |
-| Scoring | `Scoring` | external production score relations | Keep algorithms separate from immutable corpus rows. |
+| Scoring | `Scoring`, `OnlineScoring` | timestamped score relations | Bound offline scoring to popular queries; fill ad-hoc query gaps online and persist bridge rows in the same relations. |
 | Similarity | `CreateSimilarityQueries`, `ReduceSimilarityScores` | same-grain corpus pairs | Reuse the lexical index; BM25 stays directional. |
 | Feedback | `Impressions`, `Clicks`, `BuildRelevanceSignals` | daily facts and batch signals | Exposure-aware, attributed, propensity-corrected evidence. |
 | Presentation | `SearchSentences`, `SearchPassages`, `SearchDocuments` | deterministic ranks | Sentence and passage ranking are lexical; document ranking is staged retrieval, overlap narrowing, and reranking. |
@@ -23,7 +23,7 @@ For the architecture, evidence boundaries, and ownership model, see the
 
 ## Build all search artifacts
 
-`All` is the one-call pre-serving build boundary. It accepts corpus documents, one similarity policy, queries and label configuration, persisted daily feedback facts, user/band catalogs, and one relevance policy. It emits the extracted hierarchy, document profiles, text and corpus statistics, blocked near-duplicate candidates, every lexical index relation, corpus similarity pairs, labeled queries, overlap/BM25/selected lexical scores, resolved cohort context, and relevance signals. Its stage graph keeps document profiling independent from chunking; after chunking, indexing feeds scoring and the existing `Similarities` pipeline independently from text analysis.
+`All` is the one-call pre-serving build boundary. It accepts corpus documents, one similarity policy, one `ScorePolicy`, queries and label configuration, persisted daily feedback facts, user/band catalogs, and one relevance policy. It emits the extracted hierarchy, document profiles, text and corpus statistics, blocked near-duplicate candidates, every lexical index relation, corpus similarity pairs, labeled queries, overlap/BM25/selected lexical scores, resolved cohort context, and relevance signals. Offline scoring is capped by `maximum_offline_queries` after query popularity is aggregated from daily impressions. Its stage graph keeps document profiling independent from chunking; after chunking, indexing feeds scoring and the existing `Similarities` pipeline independently from text analysis.
 
 ```python
 from examples.search.transforms.all import All
@@ -31,6 +31,7 @@ from examples.search.transforms.all import All
 artifacts = All(
     documents=documents,
     similarity_policy=similarity_policy,
+    score_policy=score_policy,
     queries=queries,
     query_labels=query_labels,
     intents=intents,
@@ -183,6 +184,7 @@ The algorithms normalize query terms exactly as
 `Chunking` normalizes document words. `score_overlap` is the standard overlap coefficient: matching distinct terms
 divided by the smaller of the query and target vocabularies. `score_bm25` uses fixed `k1=1.2` and `b=0.75` constants.
 The scores remain separate: choosing an algorithm or combining parent and child targets is deliberately caller-owned.
+Each selected score row carries `scored_at` from `ScorePolicy`; serving rejects rows outside its maximum age.
 
 `SearchQuery.id` is the request-local key used to partition scores and ranks; one invocation can contain many query
 rows. Query text is normalized with the same lowercasing, whitespace, punctuation, and token rules as extraction.
@@ -270,6 +272,7 @@ similarity_queries = CreateSimilarityQueries(
     paragraph_summary=index.paragraph_summary,
     sentence_terms=index.sentence_terms,
     sentence_summary=index.sentence_summary,
+    score_policy=score_policy,
 ).run(session)
 
 overlap = ScoreOverlap(
@@ -447,8 +450,10 @@ document_popularity = signals.document_popularity
 
 ### Retrieve and rerank documents
 
-`SearchDocuments` composes `RetrieveDocuments`, `OverlapDocuments`, and `RerankDocuments` as explicit stages.
-`RetrieveDocuments` admits up to 1000 persisted or streamed documents per query by descending score.
+`SearchDocuments` composes `OnlineScoring`, `RetrieveDocuments`, `OverlapDocuments`, and `RerankDocuments` as explicit stages.
+`OnlineScoring` filters stale caller-supplied document and overlap scores, calculates missing query groups from the
+reusable indexes, and exposes only newly calculated bridge rows. `RetrieveDocuments` unions those rows with the
+caller-supplied scores and admits up to 1000 persisted or streamed documents per query by descending score.
 `OverlapDocuments` narrows those candidates to 100 by overlap score, then `RerankDocuments` joins user click feedback
 and emits results.
 
@@ -465,9 +470,10 @@ The fixture policy uses a 30-day half-life and 70/30 lexical-feedback weights. D
 eligible with zero feedback. Final rank is descending `rank_score`, then document ID. A candidate outside the BM25 top
 100 cannot enter through feedback, and a no-history query preserves BM25 order.
 
-`SearchDocuments` uses the same free-form `SearchQuery` DataFrame, immutable documents, and `Scoring.document_scores` as
-the other search boundaries. Its additional inputs only rerank those lexical candidates; they do not change query
-parsing.
+`SearchDocuments` uses the same free-form `SearchQuery` DataFrame, immutable documents, reusable index relations,
+timestamped score relations, and `ScorePolicy`. Its `online_document_scores` and
+`online_document_overlap_scores` outputs are bridge rows that callers may append to their persisted score relations.
+The online stage does not invent a parallel cache schema or change query parsing.
 
 ```python
 ranked_documents = SearchDocuments(
@@ -477,6 +483,15 @@ ranked_documents = SearchDocuments(
     streamed_documents=streamed_documents,
     streamed_document_scores=streamed_document_scores,
     document_overlap_scores=scores.document_overlap_scores,
+    document_terms=index.document_terms,
+    section_terms=index.section_terms,
+    paragraph_terms=index.paragraph_terms,
+    sentence_terms=index.sentence_terms,
+    document_summary=index.document_summary,
+    section_summary=index.section_summary,
+    paragraph_summary=index.paragraph_summary,
+    sentence_summary=index.sentence_summary,
+    score_policy=score_policy,
     requests=requests,
     band_memberships=band_memberships,
     query_document_signals=signals.query_document_signals,

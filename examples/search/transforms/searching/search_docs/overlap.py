@@ -1,10 +1,11 @@
 """Overlap-based document candidate narrowing."""
 
+from examples.search.schemas.clicks import SearchRequest
 from examples.search.schemas.scoring.overlap import DocumentOverlapScore
-from examples.search.schemas.search import DocumentSearchCandidate
+from examples.search.schemas.search import DocumentSearchCandidate, ScorePolicy
 from examples.search.transforms.searching.search_docs.admit import RetrieveDocuments
 from structure import Transform, input, lane, output, step
-from structure.plugin.pyspark import inner_join, row_number, where
+from structure.plugin.pyspark import cross_join, datediff, drop_duplicates, inner_join, row_number, union_all, where
 
 
 class OverlapDocuments(Transform):
@@ -14,10 +15,30 @@ class OverlapDocuments(Transform):
 
     candidates = input(DocumentSearchCandidate)
     document_overlap_scores = input(DocumentOverlapScore)
+    online_document_overlap_scores = input(DocumentOverlapScore)
+    requests = input(SearchRequest)
+    score_policy = input(ScorePolicy)
+    merged_scores = lane(DocumentOverlapScore)
     ranked_candidates = lane(DocumentSearchCandidate)
     overlapped_candidates = output(DocumentSearchCandidate)
 
-    @step(input=[candidates, document_overlap_scores], output=ranked_candidates)
+    @step(input=[document_overlap_scores, online_document_overlap_scores, requests, score_policy], output=merged_scores)
+    def merge_scores(
+        self,
+        stored: DocumentOverlapScore,
+        online: DocumentOverlapScore,
+        request: SearchRequest,
+        policy: ScorePolicy,
+    ) -> DocumentOverlapScore:
+        score: DocumentOverlapScore = union_all(online)
+        inner_join(request, on=request.query_id == score.query_id)
+        cross_join(policy, allow_cartesian=True)
+        age = datediff(request.requested_at, score.scored_at)
+        where((score.scored_at <= request.requested_at) & (age >= 0) & (age <= policy.maximum_age_days))
+        drop_duplicates(score.query_id, score.document_id)
+        return DocumentOverlapScore.project(score)
+
+    @step(input=[candidates, merged_scores], output=ranked_candidates)
     def rank_candidates(
         self, candidate: DocumentSearchCandidate, overlap: DocumentOverlapScore
     ) -> DocumentSearchCandidate:

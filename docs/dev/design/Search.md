@@ -43,6 +43,11 @@ can slice comparable ranking runs by query source.
 `k1 = 1.2` and `b = 0.75`. They remain separate score lanes: a caller or focused presentation transform chooses how to
 use them. Neither is a calibrated relevance probability.
 
+Every unified score row also carries `scored_at`. `ScorePolicy` supplies the score snapshot timestamp and its maximum
+serving age. The offline `All` graph aggregates daily impression volume by normalized query and bounds `Scoring` to
+the most popular configured number of queries, keeping disk use practical while leaving arbitrary production queries
+to online resolution.
+
 ## Search Presentations
 
 ### Sentences
@@ -62,11 +67,17 @@ prompt assembly. This preserves lexical evidence and avoids imposing an answer-m
 
 ### Documents
 
-`SearchDocuments` is a three-stage document path. It first admits up to 1000 persisted or streamed candidates per query
-using descending score and document ID as the deterministic tie-breaker. It then filters to 100 candidates by overlap
-score before enriching only those candidates with feedback and ranking by the final combined score. A document outside
-the lexical candidate set cannot enter through popularity or click history. Documents without feedback remain eligible
-with zero feedback.
+`SearchDocuments` first runs `OnlineScoring`. It treats caller-supplied document and overlap score relations as
+cache-compatible snapshots, discards rows older than `ScorePolicy.maximum_age_days` (or newer than the request), and
+calculates missing query groups from the reusable indexes. The newly calculated rows are exposed as additional score
+outputs; retrieval unions them with caller-supplied rows, so a caller can persist those rows and reuse them on a later
+request. Score relations remain the cache contract—there are no parallel cache schemas, query-key, or index-version fields.
+
+The resulting three-stage document path admits up to 1000 persisted or streamed candidates per query using descending
+score and document ID as the deterministic tie-breaker. It then filters to 100 candidates by overlap score before
+enriching only those candidates with feedback and ranking by the final combined score. A document outside the lexical
+candidate set cannot enter through popularity or click history. Documents without feedback remain eligible with zero
+feedback.
 
 The feedback score combines query-document evidence and document-wide popularity. Within each candidate set, BM25 is
 normalized by that query's maximum candidate BM25. The final score blends normalized BM25 and feedback with the

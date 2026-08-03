@@ -599,6 +599,10 @@
       "constant": "PARAGRAPH_STATISTICS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.analytics"
     },
+    "PopularQueryCandidate": {
+      "constant": "POPULAR_QUERY_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.scoring_intermediate"
+    },
     "PopularityFeedback": {
       "constant": "POPULARITY_FEEDBACK_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
@@ -639,6 +643,10 @@
       "constant": "QUERY_LABEL_ASSIGNMENTS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.label"
     },
+    "QueryPopularity": {
+      "constant": "QUERY_POPULARITY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
     "QueryTerm": {
       "constant": "QUERY_TERM_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.scoring_intermediate"
@@ -662,6 +670,14 @@
     "RelevancePolicy": {
       "constant": "RELEVANCE_POLICY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.relevance"
+    },
+    "ScorePolicy": {
+      "constant": "SCORE_POLICY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ScoreQueryAvailability": {
+      "constant": "SCORE_QUERY_AVAILABILITY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.scoring_intermediate"
     },
     "SearchQuery": {
       "constant": "SEARCH_QUERY_SCHEMA",

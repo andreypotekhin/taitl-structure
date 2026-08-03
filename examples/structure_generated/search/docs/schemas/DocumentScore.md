@@ -9,4 +9,5 @@ Module: `examples.search.schemas.search`
 | `query_id` | `query_id` | `string` | no |
 | `document_id` | `document_id` | `string` | no |
 | `experiment_id` | `experiment_id` | `string` | yes |
+| `scored_at` | `scored_at` | `timestamp` | no |
 | `score` | `score` | `double` | no |

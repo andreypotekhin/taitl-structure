@@ -12,9 +12,9 @@ from examples.search.schemas.scoring.overlap import (
     SectionOverlapScore,
     SentenceOverlapScore,
 )
-from examples.search.schemas.search import DocumentScore, ParagraphScore, SectionScore, SentenceScore
+from examples.search.schemas.search import DocumentScore, ParagraphScore, ScorePolicy, SectionScore, SentenceScore
 from structure import Transform, input, output, parameter, step
-from structure.plugin.pyspark import inner_join
+from structure.plugin.pyspark import cross_join, inner_join
 
 
 class SelectScores(Transform):
@@ -32,24 +32,53 @@ class SelectScores(Transform):
     section_scores = output(SectionScore)
     paragraph_scores = output(ParagraphScore)
     sentence_scores = output(SentenceScore)
+    score_policy = input(ScorePolicy)
     experiment_id = parameter(None)
 
-    @step(input=[document_overlap_scores, document_bm25_scores], output=document_scores)
-    def score_documents(self, overlap: DocumentOverlapScore, bm25: DocumentBm25Score) -> DocumentScore:
+    @step(input=[document_overlap_scores, document_bm25_scores, score_policy], output=document_scores)
+    def score_documents(
+        self, overlap: DocumentOverlapScore, bm25: DocumentBm25Score, policy: ScorePolicy
+    ) -> DocumentScore:
         inner_join(on=(bm25.document_id == overlap.document_id) & (bm25.query_id == overlap.query_id))
-        return DocumentScore.base(overlap)(experiment_id=self.experiment_id, score=bm25.score_bm25)
+        cross_join(policy, allow_cartesian=True)
+        return DocumentScore.base(overlap)(
+            experiment_id=self.experiment_id,
+            scored_at=policy.scored_at,
+            score=bm25.score_bm25,
+        )
 
-    @step(input=[section_overlap_scores, section_bm25_scores], output=section_scores)
-    def score_sections(self, overlap: SectionOverlapScore, bm25: SectionBm25Score) -> SectionScore:
+    @step(input=[section_overlap_scores, section_bm25_scores, score_policy], output=section_scores)
+    def score_sections(
+        self, overlap: SectionOverlapScore, bm25: SectionBm25Score, policy: ScorePolicy
+    ) -> SectionScore:
         inner_join(on=(bm25.section_id == overlap.section_id) & (bm25.query_id == overlap.query_id))
-        return SectionScore.base(overlap)(experiment_id=self.experiment_id, score=bm25.score_bm25)
+        cross_join(policy, allow_cartesian=True)
+        return SectionScore.base(overlap)(
+            experiment_id=self.experiment_id,
+            scored_at=policy.scored_at,
+            score=bm25.score_bm25,
+        )
 
-    @step(input=[paragraph_overlap_scores, paragraph_bm25_scores], output=paragraph_scores)
-    def score_paragraphs(self, overlap: ParagraphOverlapScore, bm25: ParagraphBm25Score) -> ParagraphScore:
+    @step(input=[paragraph_overlap_scores, paragraph_bm25_scores, score_policy], output=paragraph_scores)
+    def score_paragraphs(
+        self, overlap: ParagraphOverlapScore, bm25: ParagraphBm25Score, policy: ScorePolicy
+    ) -> ParagraphScore:
         inner_join(on=(bm25.paragraph_id == overlap.paragraph_id) & (bm25.query_id == overlap.query_id))
-        return ParagraphScore.base(overlap)(experiment_id=self.experiment_id, score=overlap.score_overlap)
+        cross_join(policy, allow_cartesian=True)
+        return ParagraphScore.base(overlap)(
+            experiment_id=self.experiment_id,
+            scored_at=policy.scored_at,
+            score=overlap.score_overlap,
+        )
 
-    @step(input=[sentence_overlap_scores, sentence_bm25_scores], output=sentence_scores)
-    def score_sentences(self, overlap: SentenceOverlapScore, bm25: SentenceBm25Score) -> SentenceScore:
+    @step(input=[sentence_overlap_scores, sentence_bm25_scores, score_policy], output=sentence_scores)
+    def score_sentences(
+        self, overlap: SentenceOverlapScore, bm25: SentenceBm25Score, policy: ScorePolicy
+    ) -> SentenceScore:
         inner_join(on=(bm25.sentence_id == overlap.sentence_id) & (bm25.query_id == overlap.query_id))
-        return SentenceScore.base(overlap)(experiment_id=self.experiment_id, score=overlap.score_overlap)
+        cross_join(policy, allow_cartesian=True)
+        return SentenceScore.base(overlap)(
+            experiment_id=self.experiment_id,
+            scored_at=policy.scored_at,
+            score=overlap.score_overlap,
+        )

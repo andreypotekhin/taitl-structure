@@ -114,9 +114,11 @@ from examples.search.schemas.scoring.intermediate import (
     DocumentOverlapMatch,
     ExpandedQueryToken,
     ParagraphOverlapMatch,
+    PopularQueryCandidate,
     QueryTerm,
     QueryTermCount,
     QueryToken,
+    ScoreQueryAvailability,
     SectionOverlapMatch,
     SentenceOverlapMatch,
 )
@@ -138,6 +140,8 @@ from examples.search.schemas.search import (
     PassageSearchResult,
     PopularityFeedback,
     QueryDocumentFeedback,
+    QueryPopularity,
+    ScorePolicy,
     SearchQuery,
     SectionScore,
     SectionSearchTarget,
@@ -210,7 +214,9 @@ from examples.search.transforms.relevance.BuildRelevanceSignals import BuildRele
 from examples.search.transforms.score import Scoring
 from examples.search.transforms.scoring.ScoreBm25 import ScoreBm25
 from examples.search.transforms.scoring.ScoreOverlap import ScoreOverlap
+from examples.search.transforms.scoring.SelectPopularQueries import SelectPopularQueries
 from examples.search.transforms.search import SearchDocuments, SearchPassages, SearchSentences
+from examples.search.transforms.searching.online.scoring import OnlineScoring
 from examples.search.transforms.searching.search_similarity import SearchSimilarity
 from examples.search.transforms.similarities.CreateSimilarityQueries import CreateSimilarityQueries
 from examples.search.transforms.similarities.ReduceSimilarityScores import ReduceSimilarityScores
@@ -246,6 +252,8 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         SectionSearchTarget,
         ParagraphSearchTarget,
         SentenceSearchTarget,
+        ScorePolicy,
+        QueryPopularity,
         SentenceSearchResult,
         PassageSearchResult,
         ParagraphContext,
@@ -270,6 +278,8 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         ExpandedQueryToken,
         QueryTerm,
         QueryTermCount,
+        ScoreQueryAvailability,
+        PopularQueryCandidate,
         DocumentOverlapMatch,
         SectionOverlapMatch,
         ParagraphOverlapMatch,
@@ -523,6 +533,8 @@ TRANSFORMS = (
     (ScoreOverlap, "examples.search.transforms.scoring.ScoreOverlap.ScoreOverlap"),
     (ScoreBm25, "examples.search.transforms.scoring.ScoreBm25.ScoreBm25"),
     (Scoring, "examples.search.transforms.scoring.Scoring.Scoring"),
+    (SelectPopularQueries, "examples.search.transforms.scoring.SelectPopularQueries.SelectPopularQueries"),
+    (OnlineScoring, "examples.search.transforms.searching.online.scoring.OnlineScoring.OnlineScoring"),
     (
         Scoring001AdjustBm,
         "examples.search.transforms.experiments.scoring.Scoring001AdjustBm.Scoring001AdjustBm",
@@ -874,9 +886,14 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             queries=generated_similarity_queries.queries,
             **{name: value for name, value in similarity_index_inputs.items() if name != "policy"},
         )
+        score_policy = spark.createDataFrame(
+            [(30, datetime(2026, 7, 21))],
+            __import__(f"{PACKAGE}.pyspark.schemas.search", fromlist=["SCORE_POLICY_SCHEMA"]).SCORE_POLICY_SCHEMA,
+        )
         similarity_overlap_inputs = {
             name: value for name, value in similarity_score_inputs.items() if not name.endswith("_summary")
         }
+        similarity_overlap_inputs["score_policy"] = score_policy
         online_similarity_overlap_scores = ScoreOverlap(**similarity_overlap_inputs).run(
             session(spark, execution_mode="online")
         )
@@ -1029,6 +1046,7 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             paragraph_summary=generated_index.paragraph_summary,
             sentence_terms=generated_index.sentence_terms,
             sentence_summary=generated_index.sentence_summary,
+            score_policy=score_policy,
         )
         online_scores = Scoring(**search_inputs).run(session(spark, execution_mode="online"))
         generated_scores = Scoring(**search_inputs).run(
@@ -1089,6 +1107,10 @@ def test_search_ranks_fixture_sentences_online_and_generated(spark, tmp_path) ->
             paragraph_summary=index.paragraph_summary,
             sentence_terms=index.sentence_terms,
             sentence_summary=index.sentence_summary,
+            score_policy=spark.createDataFrame(
+                [(30, datetime(2026, 7, 21))],
+                search_schemas.SCORE_POLICY_SCHEMA,
+            ),
         ).run(session(spark, execution_mode="generated", generated_package=PACKAGE))
 
         inputs = dict(queries=queries, sentences=segments.sentences, sentence_scores=scores.sentence_scores)
@@ -1189,6 +1211,10 @@ def test_passage_search_ranks_paragraphs_with_same_section_context(spark, tmp_pa
             paragraph_summary=index.paragraph_summary,
             sentence_terms=index.sentence_terms,
             sentence_summary=index.sentence_summary,
+            score_policy=spark.createDataFrame(
+                [(30, datetime(2026, 7, 22))],
+                search_schemas.SCORE_POLICY_SCHEMA,
+            ),
         ).run(session(spark, execution_mode="generated", generated_package=PACKAGE))
 
         inputs = dict(
@@ -1343,15 +1369,20 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
         )
         scores = {"d-11": 10.0, "d-12": 9.0, "d-13": 8.0}
         documents = spark.createDataFrame(_search_documents(), text_schemas.DOCUMENT_SCHEMA)
+        segments = Chunking(documents=documents).run(session(spark, execution_mode="generated", generated_package=PACKAGE))
+        index = Indexing(words=segments.words).run(
+            session(spark, execution_mode="generated", generated_package=PACKAGE)
+        )
+        scored_at = datetime(2026, 7, 21)
         document_score_rows = [
-            (query_id, cast(str, row[0]), "", scores[cast(str, row[0])])
+            (query_id, cast(str, row[0]), None, scored_at, scores[cast(str, row[0])])
             for query_id in ("q-free-form", "q-navigation")
             for row in _search_documents()
         ]
         document_scores = spark.createDataFrame(document_score_rows, search_schemas.DOCUMENT_SCORE_SCHEMA)
         document_overlap_scores = spark.createDataFrame(
             [
-                (query_id, cast(str, row[0]), scores[cast(str, row[0])])
+                (query_id, cast(str, row[0]), scored_at, scores[cast(str, row[0])])
                 for query_id in ("q-free-form", "q-navigation")
                 for row in _search_documents()
             ],
@@ -1379,6 +1410,15 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
             streamed_documents=spark.createDataFrame([], text_schemas.DOCUMENT_SCHEMA),
             streamed_document_scores=spark.createDataFrame([], search_schemas.DOCUMENT_SCORE_SCHEMA),
             document_overlap_scores=document_overlap_scores,
+            document_terms=index.document_terms,
+            section_terms=index.section_terms,
+            paragraph_terms=index.paragraph_terms,
+            sentence_terms=index.sentence_terms,
+            document_summary=index.document_summary,
+            section_summary=index.section_summary,
+            paragraph_summary=index.paragraph_summary,
+            sentence_summary=index.sentence_summary,
+            score_policy=spark.createDataFrame([(30, scored_at)], search_schemas.SCORE_POLICY_SCHEMA),
             requests=spark.createDataFrame(
                 [
                     ("r-free-form", "q-free-form", "aurora, beacon!", None, "", "", datetime(2026, 7, 21)),

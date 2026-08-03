@@ -15,6 +15,7 @@ Source: `examples.search.transforms.similarities.Similarities.Similarities`
 - `paragraph_summary`: `ParagraphIndexSummary`
 - `sentence_terms`: `SentenceIndexTerm`
 - `sentence_summary`: `SentenceIndexSummary`
+- `score_policy`: `ScorePolicy`
 
 ## Outputs
 
@@ -112,6 +113,7 @@ Source: `examples.search.transforms.similarities.Similarities.Similarities`
 - `reverse_paragraph`
 - `reverse_section`
 - `reverse_sentence`
+- `score_policy`
 - `section_summary`
 - `section_terms`
 - `sentence_summary`

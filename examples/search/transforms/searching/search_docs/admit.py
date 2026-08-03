@@ -1,12 +1,15 @@
 """BM25-first document candidate retrieval."""
 
 from examples.search.schemas.clicks import SearchRequest
-from examples.search.schemas.search import DocumentScore, DocumentSearchCandidate, SearchQuery
+from examples.search.schemas.search import DocumentScore, DocumentSearchCandidate, ScorePolicy, SearchQuery
 from examples.search.schemas.text import Document
 from examples.search.schemas.user import BandMembership
 from structure import Transform, input, lane, output, step
 from structure.plugin.pyspark import (
     coalesce,
+    cross_join,
+    datediff,
+    drop_duplicates,
     inner_join,
     left_join,
     lower,
@@ -29,13 +32,37 @@ class RetrieveDocuments(Transform):
     document_scores = input(DocumentScore)
     streamed_documents = input(Document, streaming=True)
     streamed_document_scores = input(DocumentScore, streaming=True)
+    online_document_scores = input(DocumentScore)
     requests = input(SearchRequest)
     band_memberships = input(BandMembership)
+    score_policy = input(ScorePolicy)
+    stored_scores = lane(DocumentScore)
     stored_candidates = lane(DocumentSearchCandidate)
     streamed_candidates = lane(DocumentSearchCandidate)
     candidates = output(DocumentSearchCandidate)
 
-    @step(input=[documents, document_scores, queries, requests, band_memberships], output=stored_candidates)
+    @step(input=[document_scores, online_document_scores, requests, score_policy], output=stored_scores)
+    def merge_stored_scores(
+        self,
+        stored: DocumentScore,
+        online: DocumentScore,
+        request: SearchRequest,
+        policy: ScorePolicy,
+    ) -> DocumentScore:
+        candidate: DocumentScore = union_all(online)
+        inner_join(request, on=request.query_id == candidate.query_id)
+        cross_join(policy, allow_cartesian=True)
+        age = datediff(request.requested_at, candidate.scored_at)
+        where(
+            (candidate.scored_at <= request.requested_at)
+            & (age >= 0)
+            & (age <= policy.maximum_age_days)
+            & candidate.experiment_id.null_safe_eq(request.experiment_id)
+        )
+        drop_duplicates(candidate.query_id, candidate.document_id, candidate.experiment_id)
+        return DocumentScore.project(candidate)
+
+    @step(input=[documents, stored_scores, queries, requests, band_memberships], output=stored_candidates)
     def select_stored_candidates(
         self,
         document: Document,
@@ -81,7 +108,7 @@ class RetrieveDocuments(Transform):
         inner_join(on=query.id == score.query_id)
         inner_join(on=request.query_id == query.id)
         left_join(on=band.user_id == request.user_id)
-        where(score.score.is_not_null())
+        where(score.score.is_not_null() & score.experiment_id.null_safe_eq(request.experiment_id))
         return DocumentSearchCandidate.project(score, document)(
             search_query_id=query.id,
             user_band_id=coalesce(band.user_band_id, literal(None)),

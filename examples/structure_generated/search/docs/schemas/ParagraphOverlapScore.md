@@ -10,4 +10,5 @@ Module: `examples.search.schemas.scoring.overlap`
 | `document_id` | `document_id` | `string` | no |
 | `section_id` | `section_id` | `string` | no |
 | `paragraph_id` | `paragraph_id` | `string` | no |
+| `scored_at` | `scored_at` | `timestamp` | no |
 | `score_overlap` | `score_overlap` | `double` | no |

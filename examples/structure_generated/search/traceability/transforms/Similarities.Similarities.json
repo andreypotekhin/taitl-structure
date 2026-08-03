@@ -49,6 +49,11 @@
       "name": "sentence_summary",
       "ordinal": 8,
       "schema": "SentenceIndexSummary"
+    },
+    {
+      "name": "score_policy",
+      "ordinal": 9,
+      "schema": "ScorePolicy"
     }
   ],
   "provenance": [
@@ -101,6 +106,11 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.input.sentence_summary",
       "ir": "ir:Similarities.input.8.sentence_summary",
       "source": "source:examples.search.transforms.similarities.Similarities.Similarities.input.sentence_summary"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.input.score_policy",
+      "ir": "ir:Similarities.input.9.score_policy",
+      "source": "source:examples.search.transforms.similarities.Similarities.Similarities.input.score_policy"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.0.queries.validate_policy",
@@ -973,6 +983,11 @@
       "source": "source:examples.search.transforms.similarities.Similarities.Similarities.overlap.publish_document_overlap_scores"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.21.overlap.publish_document_overlap_scores.join.1.policy",
+      "ir": "ir:Similarities.step.21.overlap.publish_document_overlap_scores.join.1.policy",
+      "source": "source:examples.search.transforms.similarities.Similarities.Similarities.overlap.publish_document_overlap_scores.join.1.policy"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.21.overlap.publish_document_overlap_scores.select.query_id",
       "ir": "ir:Similarities.step.21.overlap.publish_document_overlap_scores.project.query_id",
       "source": "source:examples.search.transforms.similarities.Similarities.Similarities.overlap.publish_document_overlap_scores.field.query_id"
@@ -981,6 +996,11 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.21.overlap.publish_document_overlap_scores.select.document_id",
       "ir": "ir:Similarities.step.21.overlap.publish_document_overlap_scores.project.document_id",
       "source": "source:examples.search.transforms.similarities.Similarities.Similarities.overlap.publish_document_overlap_scores.field.document_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.21.overlap.publish_document_overlap_scores.select.scored_at",
+      "ir": "ir:Similarities.step.21.overlap.publish_document_overlap_scores.project.scored_at",
+      "source": "source:examples.search.transforms.similarities.Similarities.Similarities.overlap.publish_document_overlap_scores.field.scored_at"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.21.overlap.publish_document_overlap_scores.select.score_overlap",
@@ -998,6 +1018,11 @@
       "source": "source:examples.search.transforms.similarities.Similarities.Similarities.overlap.publish_section_overlap_scores"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.22.overlap.publish_section_overlap_scores.join.1.policy",
+      "ir": "ir:Similarities.step.22.overlap.publish_section_overlap_scores.join.1.policy",
+      "source": "source:examples.search.transforms.similarities.Similarities.Similarities.overlap.publish_section_overlap_scores.join.1.policy"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.22.overlap.publish_section_overlap_scores.select.query_id",
       "ir": "ir:Similarities.step.22.overlap.publish_section_overlap_scores.project.query_id",
       "source": "source:examples.search.transforms.similarities.Similarities.Similarities.overlap.publish_section_overlap_scores.field.query_id"
@@ -1013,6 +1038,11 @@
       "source": "source:examples.search.transforms.similarities.Similarities.Similarities.overlap.publish_section_overlap_scores.field.section_id"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.22.overlap.publish_section_overlap_scores.select.scored_at",
+      "ir": "ir:Similarities.step.22.overlap.publish_section_overlap_scores.project.scored_at",
+      "source": "source:examples.search.transforms.similarities.Similarities.Similarities.overlap.publish_section_overlap_scores.field.scored_at"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.22.overlap.publish_section_overlap_scores.select.score_overlap",
       "ir": "ir:Similarities.step.22.overlap.publish_section_overlap_scores.project.score_overlap",
       "source": "source:examples.search.transforms.similarities.Similarities.Similarities.overlap.publish_section_overlap_scores.field.score_overlap"
@@ -1026,6 +1056,11 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.23.overlap.publish_paragraph_overlap_scores",
       "ir": "ir:Similarities.step.23.overlap.publish_paragraph_overlap_scores",
       "source": "source:examples.search.transforms.similarities.Similarities.Similarities.overlap.publish_paragraph_overlap_scores"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.23.overlap.publish_paragraph_overlap_scores.join.1.policy",
+      "ir": "ir:Similarities.step.23.overlap.publish_paragraph_overlap_scores.join.1.policy",
+      "source": "source:examples.search.transforms.similarities.Similarities.Similarities.overlap.publish_paragraph_overlap_scores.join.1.policy"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.23.overlap.publish_paragraph_overlap_scores.select.query_id",
@@ -1048,6 +1083,11 @@
       "source": "source:examples.search.transforms.similarities.Similarities.Similarities.overlap.publish_paragraph_overlap_scores.field.paragraph_id"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.23.overlap.publish_paragraph_overlap_scores.select.scored_at",
+      "ir": "ir:Similarities.step.23.overlap.publish_paragraph_overlap_scores.project.scored_at",
+      "source": "source:examples.search.transforms.similarities.Similarities.Similarities.overlap.publish_paragraph_overlap_scores.field.scored_at"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.23.overlap.publish_paragraph_overlap_scores.select.score_overlap",
       "ir": "ir:Similarities.step.23.overlap.publish_paragraph_overlap_scores.project.score_overlap",
       "source": "source:examples.search.transforms.similarities.Similarities.Similarities.overlap.publish_paragraph_overlap_scores.field.score_overlap"
@@ -1061,6 +1101,11 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.24.overlap.publish_sentence_overlap_scores",
       "ir": "ir:Similarities.step.24.overlap.publish_sentence_overlap_scores",
       "source": "source:examples.search.transforms.similarities.Similarities.Similarities.overlap.publish_sentence_overlap_scores"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.24.overlap.publish_sentence_overlap_scores.join.1.policy",
+      "ir": "ir:Similarities.step.24.overlap.publish_sentence_overlap_scores.join.1.policy",
+      "source": "source:examples.search.transforms.similarities.Similarities.Similarities.overlap.publish_sentence_overlap_scores.join.1.policy"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.24.overlap.publish_sentence_overlap_scores.select.query_id",
@@ -1086,6 +1131,11 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.24.overlap.publish_sentence_overlap_scores.select.sentence_id",
       "ir": "ir:Similarities.step.24.overlap.publish_sentence_overlap_scores.project.sentence_id",
       "source": "source:examples.search.transforms.similarities.Similarities.Similarities.overlap.publish_sentence_overlap_scores.field.sentence_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.24.overlap.publish_sentence_overlap_scores.select.scored_at",
+      "ir": "ir:Similarities.step.24.overlap.publish_sentence_overlap_scores.project.scored_at",
+      "source": "source:examples.search.transforms.similarities.Similarities.Similarities.overlap.publish_sentence_overlap_scores.field.scored_at"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.24.overlap.publish_sentence_overlap_scores.select.score_overlap",
@@ -3199,6 +3249,10 @@
       "constant": "PARAGRAPH_STATISTICS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.analytics"
     },
+    "PopularQueryCandidate": {
+      "constant": "POPULAR_QUERY_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.scoring_intermediate"
+    },
     "PopularityFeedback": {
       "constant": "POPULARITY_FEEDBACK_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.search"
@@ -3239,6 +3293,10 @@
       "constant": "QUERY_LABEL_ASSIGNMENTS_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.label"
     },
+    "QueryPopularity": {
+      "constant": "QUERY_POPULARITY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
     "QueryTerm": {
       "constant": "QUERY_TERM_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.scoring_intermediate"
@@ -3262,6 +3320,14 @@
     "RelevancePolicy": {
       "constant": "RELEVANCE_POLICY_SCHEMA",
       "module": "examples.structure_generated.search.pyspark.schemas.relevance"
+    },
+    "ScorePolicy": {
+      "constant": "SCORE_POLICY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ScoreQueryAvailability": {
+      "constant": "SCORE_QUERY_AVAILABILITY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.scoring_intermediate"
     },
     "SearchQuery": {
       "constant": "SEARCH_QUERY_SCHEMA",
@@ -3497,7 +3563,8 @@
           "paragraph_terms",
           "paragraph_summary",
           "sentence_terms",
-          "sentence_summary"
+          "sentence_summary",
+          "score_policy"
         ],
         "step": null,
         "target": "Similarities"
@@ -5365,10 +5432,23 @@
         },
         "operation": "step",
         "sources": [
-          "SentenceOverlapMatch"
+          "SentenceOverlapMatch",
+          "policy"
         ],
         "step": "overlap.publish_document_overlap_scores",
         "target": "overlap.publish_document_overlap_scores"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "cross",
+          "right_alias": "score_policy"
+        },
+        "operation": "rowset_join",
+        "sources": [],
+        "step": "overlap.publish_document_overlap_scores",
+        "target": "overlap.publish_document_overlap_scores.join[1].policy"
       },
       {
         "detail": {
@@ -5376,7 +5456,7 @@
         },
         "operation": "project",
         "sources": [
-          "DocumentOverlapMatch.query_id"
+          "match.query_id"
         ],
         "step": "overlap.publish_document_overlap_scores",
         "target": "DocumentOverlapScore.query_id"
@@ -5387,10 +5467,21 @@
         },
         "operation": "project",
         "sources": [
-          "DocumentOverlapMatch.document_id"
+          "match.document_id"
         ],
         "step": "overlap.publish_document_overlap_scores",
         "target": "DocumentOverlapScore.document_id"
+      },
+      {
+        "detail": {
+          "field": "scored_at"
+        },
+        "operation": "project",
+        "sources": [
+          "policy.scored_at"
+        ],
+        "step": "overlap.publish_document_overlap_scores",
+        "target": "DocumentOverlapScore.scored_at"
       },
       {
         "detail": {
@@ -5398,9 +5489,9 @@
         },
         "operation": "project",
         "sources": [
-          "DocumentOverlapMatch.matched_terms",
-          "DocumentOverlapMatch.query_terms",
-          "DocumentOverlapMatch.target_distinct_terms"
+          "match.matched_terms",
+          "match.query_terms",
+          "match.target_distinct_terms"
         ],
         "step": "overlap.publish_document_overlap_scores",
         "target": "DocumentOverlapScore.score_overlap"
@@ -5412,10 +5503,23 @@
         },
         "operation": "step",
         "sources": [
-          "DocumentOverlapScore"
+          "DocumentOverlapScore",
+          "policy"
         ],
         "step": "overlap.publish_section_overlap_scores",
         "target": "overlap.publish_section_overlap_scores"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "cross",
+          "right_alias": "score_policy"
+        },
+        "operation": "rowset_join",
+        "sources": [],
+        "step": "overlap.publish_section_overlap_scores",
+        "target": "overlap.publish_section_overlap_scores.join[1].policy"
       },
       {
         "detail": {
@@ -5423,7 +5527,7 @@
         },
         "operation": "project",
         "sources": [
-          "SectionOverlapMatch.query_id"
+          "match.query_id"
         ],
         "step": "overlap.publish_section_overlap_scores",
         "target": "SectionOverlapScore.query_id"
@@ -5434,7 +5538,7 @@
         },
         "operation": "project",
         "sources": [
-          "SectionOverlapMatch.document_id"
+          "match.document_id"
         ],
         "step": "overlap.publish_section_overlap_scores",
         "target": "SectionOverlapScore.document_id"
@@ -5445,10 +5549,21 @@
         },
         "operation": "project",
         "sources": [
-          "SectionOverlapMatch.section_id"
+          "match.section_id"
         ],
         "step": "overlap.publish_section_overlap_scores",
         "target": "SectionOverlapScore.section_id"
+      },
+      {
+        "detail": {
+          "field": "scored_at"
+        },
+        "operation": "project",
+        "sources": [
+          "policy.scored_at"
+        ],
+        "step": "overlap.publish_section_overlap_scores",
+        "target": "SectionOverlapScore.scored_at"
       },
       {
         "detail": {
@@ -5456,9 +5571,9 @@
         },
         "operation": "project",
         "sources": [
-          "SectionOverlapMatch.matched_terms",
-          "SectionOverlapMatch.query_terms",
-          "SectionOverlapMatch.target_distinct_terms"
+          "match.matched_terms",
+          "match.query_terms",
+          "match.target_distinct_terms"
         ],
         "step": "overlap.publish_section_overlap_scores",
         "target": "SectionOverlapScore.score_overlap"
@@ -5470,10 +5585,23 @@
         },
         "operation": "step",
         "sources": [
-          "SectionOverlapScore"
+          "SectionOverlapScore",
+          "policy"
         ],
         "step": "overlap.publish_paragraph_overlap_scores",
         "target": "overlap.publish_paragraph_overlap_scores"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "cross",
+          "right_alias": "score_policy"
+        },
+        "operation": "rowset_join",
+        "sources": [],
+        "step": "overlap.publish_paragraph_overlap_scores",
+        "target": "overlap.publish_paragraph_overlap_scores.join[1].policy"
       },
       {
         "detail": {
@@ -5481,7 +5609,7 @@
         },
         "operation": "project",
         "sources": [
-          "ParagraphOverlapMatch.query_id"
+          "match.query_id"
         ],
         "step": "overlap.publish_paragraph_overlap_scores",
         "target": "ParagraphOverlapScore.query_id"
@@ -5492,7 +5620,7 @@
         },
         "operation": "project",
         "sources": [
-          "ParagraphOverlapMatch.document_id"
+          "match.document_id"
         ],
         "step": "overlap.publish_paragraph_overlap_scores",
         "target": "ParagraphOverlapScore.document_id"
@@ -5503,7 +5631,7 @@
         },
         "operation": "project",
         "sources": [
-          "ParagraphOverlapMatch.section_id"
+          "match.section_id"
         ],
         "step": "overlap.publish_paragraph_overlap_scores",
         "target": "ParagraphOverlapScore.section_id"
@@ -5514,10 +5642,21 @@
         },
         "operation": "project",
         "sources": [
-          "ParagraphOverlapMatch.paragraph_id"
+          "match.paragraph_id"
         ],
         "step": "overlap.publish_paragraph_overlap_scores",
         "target": "ParagraphOverlapScore.paragraph_id"
+      },
+      {
+        "detail": {
+          "field": "scored_at"
+        },
+        "operation": "project",
+        "sources": [
+          "policy.scored_at"
+        ],
+        "step": "overlap.publish_paragraph_overlap_scores",
+        "target": "ParagraphOverlapScore.scored_at"
       },
       {
         "detail": {
@@ -5525,9 +5664,9 @@
         },
         "operation": "project",
         "sources": [
-          "ParagraphOverlapMatch.matched_terms",
-          "ParagraphOverlapMatch.query_terms",
-          "ParagraphOverlapMatch.target_distinct_terms"
+          "match.matched_terms",
+          "match.query_terms",
+          "match.target_distinct_terms"
         ],
         "step": "overlap.publish_paragraph_overlap_scores",
         "target": "ParagraphOverlapScore.score_overlap"
@@ -5539,10 +5678,23 @@
         },
         "operation": "step",
         "sources": [
-          "ParagraphOverlapScore"
+          "ParagraphOverlapScore",
+          "policy"
         ],
         "step": "overlap.publish_sentence_overlap_scores",
         "target": "overlap.publish_sentence_overlap_scores"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "cross",
+          "right_alias": "score_policy"
+        },
+        "operation": "rowset_join",
+        "sources": [],
+        "step": "overlap.publish_sentence_overlap_scores",
+        "target": "overlap.publish_sentence_overlap_scores.join[1].policy"
       },
       {
         "detail": {
@@ -5550,7 +5702,7 @@
         },
         "operation": "project",
         "sources": [
-          "SentenceOverlapMatch.query_id"
+          "match.query_id"
         ],
         "step": "overlap.publish_sentence_overlap_scores",
         "target": "SentenceOverlapScore.query_id"
@@ -5561,7 +5713,7 @@
         },
         "operation": "project",
         "sources": [
-          "SentenceOverlapMatch.document_id"
+          "match.document_id"
         ],
         "step": "overlap.publish_sentence_overlap_scores",
         "target": "SentenceOverlapScore.document_id"
@@ -5572,7 +5724,7 @@
         },
         "operation": "project",
         "sources": [
-          "SentenceOverlapMatch.section_id"
+          "match.section_id"
         ],
         "step": "overlap.publish_sentence_overlap_scores",
         "target": "SentenceOverlapScore.section_id"
@@ -5583,7 +5735,7 @@
         },
         "operation": "project",
         "sources": [
-          "SentenceOverlapMatch.paragraph_id"
+          "match.paragraph_id"
         ],
         "step": "overlap.publish_sentence_overlap_scores",
         "target": "SentenceOverlapScore.paragraph_id"
@@ -5594,10 +5746,21 @@
         },
         "operation": "project",
         "sources": [
-          "SentenceOverlapMatch.sentence_id"
+          "match.sentence_id"
         ],
         "step": "overlap.publish_sentence_overlap_scores",
         "target": "SentenceOverlapScore.sentence_id"
+      },
+      {
+        "detail": {
+          "field": "scored_at"
+        },
+        "operation": "project",
+        "sources": [
+          "policy.scored_at"
+        ],
+        "step": "overlap.publish_sentence_overlap_scores",
+        "target": "SentenceOverlapScore.scored_at"
       },
       {
         "detail": {
@@ -5605,9 +5768,9 @@
         },
         "operation": "project",
         "sources": [
-          "SentenceOverlapMatch.matched_terms",
-          "SentenceOverlapMatch.query_terms",
-          "SentenceOverlapMatch.target_distinct_terms"
+          "match.matched_terms",
+          "match.query_terms",
+          "match.target_distinct_terms"
         ],
         "step": "overlap.publish_sentence_overlap_scores",
         "target": "SentenceOverlapScore.score_overlap"
@@ -9952,7 +10115,13 @@
       "after_hooks": [],
       "before_hooks": [],
       "input_alias": "document_overlap_match",
-      "joins": [],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "policy",
+          "right_alias": "score_policy"
+        }
+      ],
       "name": "overlap.publish_document_overlap_scores",
       "output_alias": "document_overlap_score",
       "output_schema": "DocumentOverlapScore",
@@ -9977,7 +10146,13 @@
       "after_hooks": [],
       "before_hooks": [],
       "input_alias": "section_overlap_match",
-      "joins": [],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "policy",
+          "right_alias": "score_policy"
+        }
+      ],
       "name": "overlap.publish_section_overlap_scores",
       "output_alias": "section_overlap_score",
       "output_schema": "SectionOverlapScore",
@@ -10002,7 +10177,13 @@
       "after_hooks": [],
       "before_hooks": [],
       "input_alias": "paragraph_overlap_match",
-      "joins": [],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "policy",
+          "right_alias": "score_policy"
+        }
+      ],
       "name": "overlap.publish_paragraph_overlap_scores",
       "output_alias": "paragraph_overlap_score",
       "output_schema": "ParagraphOverlapScore",
@@ -10027,7 +10208,13 @@
       "after_hooks": [],
       "before_hooks": [],
       "input_alias": "sentence_overlap_match",
-      "joins": [],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "policy",
+          "right_alias": "score_policy"
+        }
+      ],
       "name": "overlap.publish_sentence_overlap_scores",
       "output_alias": "sentence_overlap_score",
       "output_schema": "SentenceOverlapScore",
