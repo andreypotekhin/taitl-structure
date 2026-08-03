@@ -429,10 +429,10 @@ recorded targeted live PySpark 3.5/4.0 restart evidence. Effective checked parit
 
 ## +M14: v9 PySpark Streaming API Coverage and Adoption
 
-Status: complete for coverage and adoption, with the V9 design-gate follow-up and release schedule active. Sprints
-40--44 delivered the checked PySpark streaming API ledger, caller-owned adoption recipe, stateful/order-sensitive gap
-reclassification, lifecycle diagnostics, documentation, live PySpark 3.5/4.0 recipe evidence, and initial build
-evidence. Sprints 45--48 close the remaining design gates and harden the release.
+Status: complete. Sprints 40--44 delivered the checked PySpark streaming API ledger, caller-owned adoption recipe,
+stateful/order-sensitive gap reclassification, lifecycle diagnostics, documentation, live PySpark 3.5/4.0 recipe
+evidence, and initial build evidence. Sprints 45--48 closed the remaining design gates and hardened the release on
+2026-08-02.
 The governing completed plan is
 `close/archive/planning/P07292602.V9-pyspark-streaming-api-coverage.plan.md`, and the governing specification is
 `docs/dev/specifications/V9PySparkStreamingApiCoverage.md`.
@@ -456,8 +456,11 @@ The governing completed plan is
   `docs/dev/specifications/V9ApiCatalogDesignGatedFeatures.md`,
 `docs/dev/planning/P07302601.V9-api-catalog-design-gates.plan.md`, and the Variant child plan
 `docs/dev/planning/P07302602.V9-variant-type-and-helpers.plan.md`.
-The released PySpark 4.0/4.2 Variant implementation slice is complete; PySpark 4.2 live probing remains an explicit
-infrastructure follow-up, and 4.3+ mutation helpers remain design-gated until released profiles exist.
+The released PySpark 4.0/4.2 Variant implementation slice is complete; the repository has no PySpark 4.2 live lane,
+so `is_valid_variant(...)` retains capability-only evidence without a positive runtime claim. PySpark 4.3+ mutation
+helpers remain design-gated until released profiles exist. Global selected-row and broad analytic-window helpers are
+streaming-ineligible; finite grouped selected-value aggregates are admitted. Arbitrary state remains design-gated
+under the typed model specification.
 The dated execution schedule is
 `docs/dev/planning/P07302603.V9-closeout-and-release.plan.md`.
 - Diagnostics and explain output tell users whether a streaming issue should be fixed in Structure source,
@@ -465,3 +468,28 @@ The dated execution schedule is
 - Every admitted Structure-owned streaming claim has PySpark 3.5/4.0 live evidence, generated-source lifecycle scans,
   online/generated parity, documentation, and troubleshooting coverage.
 - The final v9 hardening sprint records release evidence and passes `make build` without adding new API scope.
+
+## M15: v10 API Catalog and Streaming Contract Expansion
+
+Status: planned. V10 begins after the V9 Sprints 45–48 closeout and runs through Sprint 54 hardening.
+
+### Exit Criteria
+
+- V10 API Catalog rows have typed contracts, precise statuses, owners, diagnostics, references, tests, and evidence.
+- Geometry remains provider-neutral and optional providers remain outside the bundled plugin.
+- Sampling and missing-column union behavior has explicit reproducibility, nullability, alias, nested-schema, and
+  streaming classifications.
+- Streaming state stages and additional stream-stream join candidates are compiler-visible and supported only with
+  PySpark 3.5/4.0 online/generated parity and restart evidence.
+- Side-effect guidance is caller-owned, and arbitrary-state APIs have an implementation-ready typed model without
+  Structure-owned lifecycle generation.
+- Generated artifacts, documentation, compatibility ledgers, diagnostics, and traceability agree.
+- Sprint 54 admits no new feature scope and passes `make build`.
+
+### Governing Documents
+
+- `docs/dev/project-management/V10.md`
+- `docs/dev/planning/P08022601.V10-api-catalog-and-schema-evolution.plan.md`
+- `docs/dev/planning/P08022602.V10-streaming-state-and-join-contracts.plan.md`
+- `docs/dev/planning/P08022603.V10-streaming-side-effects-and-arbitrary-state.plan.md`
+- `docs/dev/planning/P08022604.V10-evidence-catalog-reconciliation-and-hardening.plan.md`

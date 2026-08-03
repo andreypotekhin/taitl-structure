@@ -98,3 +98,13 @@ caller-owned. Chained stateful operations, unbounded state, and opaque state pro
 Each v4 family must preserve the first-slice principle: compiler-visible state and late-data semantics, fail-early
 diagnostics, explain output that states the caller's required output mode, and live streaming evidence before support
 is claimed.
+
+## V10 Adoption Boundary
+
+V10 adopts stateful operation families, additional stream-stream join candidates, and side-effect safety/arbitrary-state
+modeling. It does not adopt Structure-owned source, sink, checkpoint, trigger, output-mode, query-lifecycle, deployment,
+recovery, or external-side-effect ownership. The grouped implementation plans are:
+
+- `docs/dev/planning/P08022602.V10-streaming-state-and-join-contracts.plan.md`;
+- `docs/dev/planning/P08022603.V10-streaming-side-effects-and-arbitrary-state.plan.md`; and
+- `docs/dev/planning/P08022604.V10-evidence-catalog-reconciliation-and-hardening.plan.md`.

@@ -57,8 +57,7 @@ from examples.search.transforms.cohorts import ResolveCohortBands
 from examples.search.transforms.indexing import Indexing
 from examples.search.transforms.labeling import Labeling
 from examples.search.transforms.relevance.BuildRelevanceSignals import BuildRelevanceSignals
-from examples.search.transforms.scoring import Scoring
-from examples.search.transforms.scoring.SelectPopularQueries import SelectPopularQueries
+from examples.search.transforms.scoring import OfflineScoring
 from examples.search.transforms.similarities import Similarities
 from examples.search.transforms.stats import AnalyzeText, CorpusText, ProfileDocuments
 from structure import Transform, input, output, parameter, stage
@@ -99,25 +98,20 @@ class All(Transform):
         )
     )
     labeled = stage(Labeling(queries=queries, query_labels=query_labels, intents=intents, patterns=patterns))
-    popular = stage(
-        SelectPopularQueries(
+    scored = stage(
+        OfflineScoring(
             queries=labeled.labeled_queries,
             daily_impressions=daily_impressions,
-            maximum_queries=maximum_offline_queries,
-        )
-    )
-    scored = stage(
-        Scoring(
-            queries=popular.selected_queries,
             document_terms=indexed.document_terms,
-            document_summary=indexed.document_summary,
             section_terms=indexed.section_terms,
-            section_summary=indexed.section_summary,
             paragraph_terms=indexed.paragraph_terms,
-            paragraph_summary=indexed.paragraph_summary,
             sentence_terms=indexed.sentence_terms,
+            document_summary=indexed.document_summary,
+            section_summary=indexed.section_summary,
+            paragraph_summary=indexed.paragraph_summary,
             sentence_summary=indexed.sentence_summary,
             score_policy=score_policy,
+            maximum_offline_queries=maximum_offline_queries,
         )
     )
     cohorts = stage(ResolveCohortBands(users=users, bands=bands))

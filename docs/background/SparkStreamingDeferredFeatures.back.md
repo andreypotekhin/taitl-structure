@@ -21,7 +21,8 @@ More complex stateful transformation features remain deferred until their state 
 
 - chained windowed/stateful aggregations beyond the admitted single-stage event-time and session-window shapes;
 - cross and anti stream joins;
-- selected-row helpers such as latest or earliest on streaming inputs;
+- global selected-row helpers such as latest or earliest on streaming inputs; finite grouped `first_value(...)` and
+  `last_value(...)` alternatives are supported inside watermarked event-time windows;
 - ranking, lag/lead, and rolling windows;
 - arbitrary state APIs.
 
@@ -38,5 +39,11 @@ A deferred feature can become supported only when Structure defines:
 - execution and generated-code execution behavior where both apply;
 - live Spark Structured Streaming verification;
 - troubleshooting guidance for likely operational failures.
+
+## V10 Planning Boundary
+
+V10 adopts the actionable state, join, side-effect safety, and arbitrary-state design work through grouped ExecPlans.
+Structure still does not own streaming sources, sinks, triggers, checkpoints, output modes, query lifecycle, deployment,
+recovery, or external side effects. See `docs/dev/project-management/V10.md` and the P08022602–P08022604 plans.
 
 Keep lifecycle concerns in caller-owned Spark code and pass compatible streaming DataFrames into Structure transforms.

@@ -60,6 +60,32 @@ def test_search_scoring_subpackage_transform_is_discovered_and_compiled() -> Non
     Compiler.frontend.compile()(scoring, config=config, materialize_schemas=False)
 
 
+def test_search_documents_propagates_streaming_query_lineage() -> None:
+    """The online document-search graph declares every query-derived boundary as streaming."""
+
+    from examples.search.transforms.scoring.ScoreBase import ScoreBase
+    from examples.search.transforms.scoring.Scoring import Scoring
+    from examples.search.transforms.searching.online.scoring import OnlineScoring, SelectGapQueries
+    from examples.search.transforms.searching.search_docs import OverlapDocuments, RerankDocuments, RetrieveDocuments
+    from examples.search.transforms.searching.search_docs.SearchDocuments import SearchDocuments
+
+    declarations = (
+        (SearchDocuments, "queries"),
+        (SearchDocuments, "requests"),
+        (OnlineScoring, "queries"),
+        (OnlineScoring, "requests"),
+        (SelectGapQueries, "queries"),
+        (SelectGapQueries, "requests"),
+        (Scoring, "queries"),
+        (ScoreBase, "queries"),
+        (RetrieveDocuments, "queries"),
+        (OverlapDocuments, "candidates"),
+        (RerankDocuments, "overlapped_candidates"),
+    )
+    for transform, input_name in declarations:
+        assert getattr(transform, input_name).streaming
+
+
 def test_search_all_builds_the_complete_offline_artifact_graph() -> None:
     """The build facade publishes pre-serving artifacts without result-presentation dependencies."""
 
@@ -183,7 +209,12 @@ def test_search_all_builds_the_complete_offline_artifact_graph() -> None:
     assert stages.index("chunked") < stages.index("analyzed") < stages.index("corpus")
     assert stages.index("profiled") < stages.index("analyzed")
     assert stages.index("labeled") < stages.index("scored")
-    assert stages.index("labeled") < stages.index("popular") < stages.index("scored")
+    scoring_steps = [step.name for step in plan.steps if step.name.startswith("scored.")]
+
+    def first(stage: str) -> int:
+        return next(index for index, name in enumerate(scoring_steps) if name.startswith(f"scored.{stage}."))
+
+    assert first("popular") < first("recent") < first("offline") < first("scored")
     assert stages.index("indexed") < stages.index("scored")
     assert stages.index("indexed") < stages.index("similarities")
     assert stages.index("cohorts") < stages.index("relevance")

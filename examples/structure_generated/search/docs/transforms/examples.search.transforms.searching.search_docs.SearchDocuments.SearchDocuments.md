@@ -32,6 +32,7 @@ Source: `examples.search.transforms.searching.search_docs.SearchDocuments.Search
 
 - `results`: `DocumentSearchResult`
 - `online_document_scores`: `DocumentScore`
+- `online_streamed_document_scores`: `DocumentScore`
 - `online_document_overlap_scores`: `DocumentOverlapScore`
 
 ## Step methods
@@ -62,6 +63,7 @@ Source: `examples.search.transforms.searching.search_docs.SearchDocuments.Search
 - `scoring.scoring.selected.score_paragraphs`: `ParagraphOverlapScore` -> `ParagraphScore`
 - `scoring.scoring.selected.score_sentences`: `SentenceOverlapScore` -> `SentenceScore`
 - `retrieved.merge_stored_scores`: `DocumentScore` -> `DocumentScore`
+- `retrieved.merge_streamed_scores`: `DocumentScore` -> `DocumentScore`
 - `retrieved.select_stored_candidates`: `Document` -> `DocumentSearchCandidate`
 - `retrieved.select_streamed_candidates`: `Document` -> `DocumentSearchCandidate`
 - `retrieved.rank_candidates`: `DocumentSearchCandidate` -> `DocumentSearchCandidate`
@@ -104,6 +106,7 @@ Source: `examples.search.transforms.searching.search_docs.SearchDocuments.Search
 - `reranked__query_feedback`
 - `retrieved__stored_scores`
 - `retrieved__streamed_candidates`
+- `retrieved__streamed_scores`
 - `score`
 - `score_policy`
 - `scoring__gap__document_availability`
@@ -121,7 +124,6 @@ Source: `examples.search.transforms.searching.search_docs.SearchDocuments.Search
 - `sentence_terms`
 - `signal`
 - `size`
-- `streamed_document_scores`
 - `summary`
 - `term`
 

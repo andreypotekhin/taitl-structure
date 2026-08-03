@@ -7,6 +7,7 @@ from structure.core.cli.commands.RenderExplainReport import render_explain_repor
 from structure.core.compiler.api import Compiler
 from structure.plugin.pyspark import (
     PySpark,
+    array,
     except_all,
     integer,
     intersect,
@@ -39,6 +40,18 @@ class ActiveItemWithNote(Schema):
 class ArchivedItemWithoutNote(Schema):
     item_id = string(nullable=False)
     score = integer(nullable=False)
+
+
+class ActiveItemWithRequiredNote(Schema):
+    item_id = string(nullable=False)
+    score = integer(nullable=False)
+    note = string(nullable=False)
+
+
+class ActiveItemWithAliasedRequiredNote(Schema):
+    item_id = string(nullable=False)
+    score = integer(nullable=False)
+    note = string(nullable=False, alias="item_note")
 
 
 class ArchivedItemIdOnly(Schema):
@@ -101,6 +114,32 @@ class MergeItemsByNameWithMissingNullable(Transform):
         return ActiveItemWithNote.project(merged)
 
 
+class MergeItemsByNameWithDefault(Transform):
+    active = input(ActiveItemWithRequiredNote)
+    archived = input(ArchivedItemWithoutNote)
+    merged = output(ActiveItemWithRequiredNote)
+
+    def merge(
+        self, active: ActiveItemWithRequiredNote, archived: ArchivedItemWithoutNote
+    ) -> ActiveItemWithRequiredNote:
+        merged = union_by_name(archived, allow_missing_columns=True, defaults={"note": "unknown"})
+        return ActiveItemWithRequiredNote.project(merged)
+
+
+class MergeItemsByNameWithAliasedDefault(Transform):
+    active = input(ActiveItemWithAliasedRequiredNote)
+    archived = input(ArchivedItemWithoutNote)
+    merged = output(ActiveItemWithAliasedRequiredNote)
+
+    def merge(
+        self,
+        active: ActiveItemWithAliasedRequiredNote,
+        archived: ArchivedItemWithoutNote,
+    ) -> ActiveItemWithAliasedRequiredNote:
+        merged = union_by_name(archived, allow_missing_columns=True, defaults={"note": "unknown"})
+        return ActiveItemWithAliasedRequiredNote.project(merged)
+
+
 class IntersectItems(Transform):
     active = input(ActiveItem)
     archived = input(ArchivedItem)
@@ -160,9 +199,7 @@ def test_union_all_records_exact_schema_relation_operation() -> None:
         (ExceptAllItems, "except_all"),
     ),
 )
-def test_set_operations_record_exact_schema_relation_operation(
-    transform: type[Transform], operation: str
-) -> None:
+def test_set_operations_record_exact_schema_relation_operation(transform: type[Transform], operation: str) -> None:
     recipe = _lowered(transform).steps[0].operations[0]
 
     assert recipe.kind == operation
@@ -242,6 +279,33 @@ def test_union_by_name_renders_missing_nullable_column_composition() -> None:
     assert "active = active.unionByName(archived, allowMissingColumns=True)" in text
 
 
+def test_union_by_name_records_and_renders_typed_default_for_missing_non_nullable_field() -> None:
+    operation = _lowered(MergeItemsByNameWithDefault).steps[0].operations[0]
+
+    assert operation.relation_set is not None
+    assert operation.relation_set.defaults[0][0] == "note"
+    assert operation.relation_set.defaults[0][1].data == {"value": "unknown"}
+
+    text = render_pyspark_step(
+        _lowered(MergeItemsByNameWithDefault).steps[0],
+        current="active",
+        sources={"active": "active", "archived": "archived"},
+    )
+
+    assert 'archived = archived.withColumn("note", F.lit(\'unknown\').cast(T.StringType()))' in text
+    assert "active = active.unionByName(archived, allowMissingColumns=True)" in text
+
+
+def test_union_by_name_preserves_alias_when_rendering_typed_default() -> None:
+    text = render_pyspark_step(
+        _lowered(MergeItemsByNameWithAliasedDefault).steps[0],
+        current="active",
+        sources={"active": "active", "archived": "archived"},
+    )
+
+    assert 'archived = archived.withColumn("item_note", F.lit(\'unknown\').cast(T.StringType()))' in text
+
+
 @pytest.mark.parametrize(
     ("transform", "snippet"),
     (
@@ -251,9 +315,7 @@ def test_union_by_name_renders_missing_nullable_column_composition() -> None:
         (ExceptAllItems, "active = active.exceptAll(archived)"),
     ),
 )
-def test_set_operations_render_public_pyspark_set_sources(
-    transform: type[Transform], snippet: str
-) -> None:
+def test_set_operations_render_public_pyspark_set_sources(transform: type[Transform], snippet: str) -> None:
     text = render_pyspark_step(
         _lowered(transform).steps[0],
         current="active",
@@ -329,21 +391,42 @@ def test_union_by_name_rejects_missing_non_nullable_columns() -> None:
             merged = union_by_name(mismatched, allow_missing_columns=True)
             return ActiveItem.project(merged)
 
-    with pytest.raises(TypeError, match="non-null field\\(s\\) need defaults: score"):
+    with pytest.raises(TypeError, match="requires defaults for non-null missing field\\(s\\): score"):
         Compiler.frontend.compile()(BadMerge, materialize_schemas=False)
 
 
-def test_union_by_name_rejects_defaults_until_fill_design_exists() -> None:
+def test_union_by_name_rejects_untyped_or_ambiguous_defaults() -> None:
     class BadMerge(Transform):
         active = input(ActiveItemWithNote)
         archived = input(ArchivedItemWithoutNote)
         merged = output(ActiveItemWithNote)
 
         def merge(self, active: ActiveItemWithNote, archived: ArchivedItemWithoutNote) -> ActiveItemWithNote:
-            merged = union_by_name(archived, allow_missing_columns=True, defaults={"note": "unknown"})
+            merged = union_by_name(archived, allow_missing_columns=True, defaults={"missing": "unknown"})
             return ActiveItemWithNote.project(merged)
 
-    with pytest.raises(TypeError, match="defaults=.*design-gated"):
+    with pytest.raises(TypeError, match="unknown field path"):
+        Compiler.frontend.compile()(BadMerge, materialize_schemas=False)
+
+
+def test_union_by_name_rejects_collection_defaults_until_element_evolution_is_defined() -> None:
+    class WithTags(Schema):
+        item_id = string(nullable=False)
+        tags = array(string(), nullable=False)
+
+    class WithoutTags(Schema):
+        item_id = string(nullable=False)
+
+    class BadMerge(Transform):
+        active = input(WithTags)
+        archived = input(WithoutTags)
+        merged = output(WithTags)
+
+        def merge(self, active: WithTags, archived: WithoutTags) -> WithTags:
+            merged = union_by_name(archived, allow_missing_columns=True, defaults={"tags": ["new"]})
+            return WithTags.project(merged)
+
+    with pytest.raises(TypeError, match="cannot partially evolve collection or struct field: tags"):
         Compiler.frontend.compile()(BadMerge, materialize_schemas=False)
 
 

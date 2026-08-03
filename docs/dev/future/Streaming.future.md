@@ -100,3 +100,14 @@ To adopt from above:
 - selected-row helpers on streaming inputs;
 - ranking, lag/lead, and rolling windows; and
 - arbitrary state APIs with declared state, timeout, recovery, and restart semantics.
+
+## V10 Adoption
+
+The adopted streaming slices are governed by grouped plans rather than one plan per source document:
+
+- `docs/dev/planning/P08022602.V10-streaming-state-and-join-contracts.plan.md`;
+- `docs/dev/planning/P08022603.V10-streaming-side-effects-and-arbitrary-state.plan.md`; and
+- `docs/dev/planning/P08022604.V10-evidence-catalog-reconciliation-and-hardening.plan.md`.
+
+V10 keeps the permanent caller-owned lifecycle boundary. Sources, sinks, triggers, checkpoints, output modes,
+start/stop, deployment, recovery, and external side effects remain outside ordinary Structure transforms.

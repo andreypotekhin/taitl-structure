@@ -320,6 +320,42 @@ boundary; unimplemented parity work is now marked `planned` in `docs/dev/Gaps.md
 - Add schema-aware relational transformations and planned analytical gaps.
 - Admit generators only after a schema-and-cardinality design gate.
 
+## V10 Backlog: API Catalog and Streaming Contract Expansion
+
+### Epic: API Catalog and Schema Evolution
+
+- Define and verify provider-neutral Geometry with positive literal SRIDs, WKT operations, nullable predicates, and
+  optional-provider diagnostics.
+- Preserve sampling's explicit seed/reproducibility policy and batch-only streaming boundary.
+- Implement or explicitly gate `union_by_name(..., defaults=...)` for nullable, nested-struct, alias-preserving schema
+  evolution; reject implicit array/map element evolution.
+- Reconcile XML, Variant mutation profiles, and opt-in join reordering with precise catalog statuses.
+
+### Epic: Streaming State and Join Contracts
+
+- Record ordered state-stage metadata for aggregates, dedupe, windows, and stream-stream joins.
+- Prototype bounded cross and anti stream-stream candidates with watermarks, event-time bounds, retention, and output
+  mode requirements.
+- Preserve finite grouped selected-value alternatives and explicit batch boundaries for global selected-row and broad
+  analytic-window helpers.
+
+### Epic: Side-Effect Safety and Arbitrary State
+
+- Document caller-owned sink identity, idempotence, retry, checkpoint, failure, recovery, and callback security rules.
+- Test caller-owned `foreachBatch` adoption and generated-source lifecycle cleanliness.
+- Specify typed arbitrary-state input/state/output schemas, timeout clocks, initialization, cleanup, target profiles,
+  generated-code boundaries, hooks, and restart evidence.
+
+### Epic: Evidence and Hardening
+
+- Keep API Catalog, capability ledgers, diagnostics, references, examples, generated artifacts, and background
+  companions synchronized.
+- Run PySpark 3.5/4.0 live parity and restart lanes for every claimed streaming support row.
+- Run optional-provider evidence only with pinned dependencies and finish Sprint 54 with `make build`.
+
+The V10 backlog is governed by `docs/dev/project-management/V10.md` and the grouped plans P08022601–P08022604. The
+application-specific future documents are not V10 backlog commitments.
+
 ## Sprint 09 Backlog
 
 - + Promote Spark Connect from experimental parity to supported batch status for completed v1/v2 features.

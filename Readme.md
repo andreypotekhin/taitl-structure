@@ -373,7 +373,7 @@ I included some example apps to illustrate how Structure applies to various doma
 | [School](examples/school/Readme.md)     | Algebra, vectors, matrices                     | Streaming scalars, batch matrices.              |
 | [Search](examples/search/Readme.md)     | Scoring, ranking, searching, evaluation        | Batch corpus, streaming clicks.                 |
 | [Security](examples/security/Readme.md) | Vulnerabilities per device, user, team, or org | Streaming discovery, batch reports.             |
-| [Store](examples/store/Readme.md)       | Retail order enrichment and analytics          | Streaming fulfillment, batch analytics.         |
+| [Store](examples/store/Readme.md)       | Retail merchandising and fulfillment     | Shipment facts, planning, analytics.      |
 | [Stocks](examples/stocks/Readme.md)     | Daily-bar technical analysis                   | Trend, momentum, volatility, return indicators. |
 | [Streams](examples/streams/Readme.md)   | White-water kayaking                           | Streaming timing, progress and penalties.       |
 

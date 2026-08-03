@@ -981,9 +981,12 @@ def render_search_example() -> dict[str, str]:
         from examples.search.transforms.labeling import CreateQueryLabels, Labeling, MergeQueryLabels
         from examples.search.transforms.relevance.BuildRelevanceSignals import BuildRelevanceSignals
         from examples.search.transforms.score import Scoring
+        from examples.search.transforms.scoring.MergeOfflineQueries import MergeOfflineQueries
+        from examples.search.transforms.scoring.OfflineScoring import OfflineScoring
         from examples.search.transforms.scoring.ScoreBm25 import ScoreBm25
         from examples.search.transforms.scoring.ScoreOverlap import ScoreOverlap
         from examples.search.transforms.scoring.SelectPopularQueries import SelectPopularQueries
+        from examples.search.transforms.scoring.SelectRecentQueries import SelectRecentQueries
         from examples.search.transforms.search import SearchDocuments, SearchSentences
         from examples.search.transforms.searching.online.scoring import OnlineScoring
         from examples.search.transforms.searching.search_similarity import SearchSimilarity
@@ -1238,7 +1241,10 @@ def render_search_example() -> dict[str, str]:
             (ScoreOverlap, "examples.search.transforms.scoring.ScoreOverlap.ScoreOverlap"),
             (ScoreBm25, "examples.search.transforms.scoring.ScoreBm25.ScoreBm25"),
             (Scoring, "examples.search.transforms.scoring.Scoring.Scoring"),
+            (OfflineScoring, "examples.search.transforms.scoring.OfflineScoring.OfflineScoring"),
+            (MergeOfflineQueries, "examples.search.transforms.scoring.MergeOfflineQueries.MergeOfflineQueries"),
             (SelectPopularQueries, "examples.search.transforms.scoring.SelectPopularQueries.SelectPopularQueries"),
+            (SelectRecentQueries, "examples.search.transforms.scoring.SelectRecentQueries.SelectRecentQueries"),
             (OnlineScoring, "examples.search.transforms.searching.online.scoring.OnlineScoring.OnlineScoring"),
             (
                 Scoring001AdjustBm,

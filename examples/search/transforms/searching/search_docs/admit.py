@@ -10,6 +10,7 @@ from structure.plugin.pyspark import (
     cross_join,
     datediff,
     drop_duplicates,
+    event_time_between,
     inner_join,
     left_join,
     lower,
@@ -18,6 +19,7 @@ from structure.plugin.pyspark import (
     trim,
     union_all,
     where,
+    watermark,
 )
 from structure.plugin.pyspark.dsl.expressions import literal
 
@@ -27,16 +29,18 @@ class RetrieveDocuments(Transform):
 
     maximum_candidates = 1000
 
-    queries = input(SearchQuery)
+    queries = input(SearchQuery, streaming=True)
     documents = input(Document)
     document_scores = input(DocumentScore)
     streamed_documents = input(Document, streaming=True)
     streamed_document_scores = input(DocumentScore, streaming=True)
-    online_document_scores = input(DocumentScore)
-    requests = input(SearchRequest)
+    online_streamed_document_scores = input(DocumentScore, streaming=True)
+    online_document_scores = input(DocumentScore, streaming=True)
+    requests = input(SearchRequest, streaming=True)
     band_memberships = input(BandMembership)
     score_policy = input(ScorePolicy)
     stored_scores = lane(DocumentScore)
+    streamed_scores = lane(DocumentScore)
     stored_candidates = lane(DocumentSearchCandidate)
     streamed_candidates = lane(DocumentSearchCandidate)
     candidates = output(DocumentSearchCandidate)
@@ -45,6 +49,30 @@ class RetrieveDocuments(Transform):
     def merge_stored_scores(
         self,
         stored: DocumentScore,
+        online: DocumentScore,
+        request: SearchRequest,
+        policy: ScorePolicy,
+    ) -> DocumentScore:
+        candidate: DocumentScore = union_all(online)
+        inner_join(request, on=request.query_id == candidate.query_id)
+        cross_join(policy, allow_cartesian=True)
+        age = datediff(request.requested_at, candidate.scored_at)
+        where(
+            (candidate.scored_at <= request.requested_at)
+            & (age >= 0)
+            & (age <= policy.maximum_age_days)
+            & candidate.experiment_id.null_safe_eq(request.experiment_id)
+        )
+        drop_duplicates(candidate.query_id, candidate.document_id, candidate.experiment_id)
+        return DocumentScore.project(candidate)
+
+    @step(
+        input=[streamed_document_scores, online_streamed_document_scores, requests, score_policy],
+        output=streamed_scores,
+    )
+    def merge_streamed_scores(
+        self,
+        streamed: DocumentScore,
         online: DocumentScore,
         request: SearchRequest,
         policy: ScorePolicy,
@@ -71,9 +99,11 @@ class RetrieveDocuments(Transform):
         request: SearchRequest,
         band: BandMembership,
     ) -> DocumentSearchCandidate:
+        watermark(query.requested_at, delay="10 minutes")
+        watermark(request.requested_at, delay="10 minutes")
         return self._candidate(document, score, query, request, band)
 
-    @step(input=[streamed_documents, streamed_document_scores, queries, requests, band_memberships], output=streamed_candidates)
+    @step(input=[streamed_documents, streamed_scores, queries, requests, band_memberships], output=streamed_candidates)
     def select_streamed_candidates(
         self,
         document: Document,
@@ -82,6 +112,8 @@ class RetrieveDocuments(Transform):
         request: SearchRequest,
         band: BandMembership,
     ) -> DocumentSearchCandidate:
+        watermark(query.requested_at, delay="10 minutes")
+        watermark(request.requested_at, delay="10 minutes")
         return self._candidate(document, score, query, request, band)
 
     @step(input=[stored_candidates, streamed_candidates], output=candidates)
@@ -108,7 +140,12 @@ class RetrieveDocuments(Transform):
         inner_join(on=query.id == score.query_id)
         inner_join(on=request.query_id == query.id)
         left_join(on=band.user_id == request.user_id)
-        where(score.score.is_not_null() & score.experiment_id.null_safe_eq(request.experiment_id))
+        where(
+            score.score.is_not_null()
+            & score.experiment_id.null_safe_eq(request.experiment_id)
+            & (query.requested_at == request.requested_at)
+            & event_time_between(query.requested_at, request.requested_at, upper="0 seconds")
+        )
         return DocumentSearchCandidate.project(score, document)(
             search_query_id=query.id,
             user_band_id=coalesce(band.user_band_id, literal(None)),

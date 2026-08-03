@@ -365,7 +365,14 @@ class RunOnlinePySparkTransform:
                     if source in prepared_frames
                     else prepared_frames[operation.relation_set.input_name]
                 )
-                df = self._relation_set(df, frame, operation.relation_set)
+                df = self._relation_set(
+                    df,
+                    frame,
+                    operation.relation_set,
+                    step=step,
+                    functions=functions,
+                    types=types,
+                )
             if operation.kind == "watermark" and operation.watermark is not None:
                 if operation.watermark.scope == getattr(step, "source_scope", ""):
                     df = self._watermark(operation.watermark, df)
@@ -461,7 +468,9 @@ class RunOnlinePySparkTransform:
             "REL-E0703: require_all(...) found rows that do not satisfy the predicate; "
             "see docs/Diagnostics.md#rel-e0703"
         )
-        predicate = self._expressions.evaluate(assertion.predicate, functions=functions, aliases=self._scope_aliases(step))
+        predicate = self._expressions.evaluate(
+            assertion.predicate, functions=functions, aliases=self._scope_aliases(step)
+        )
         violations = frame.where(~functions.coalesce(predicate, functions.lit(False))).agg(
             functions.count(functions.lit(1)).alias("__structure_violations")
         )
@@ -476,7 +485,9 @@ class RunOnlinePySparkTransform:
     def _require_reference(self, step, frame, assertion, *, frames, functions):
         assert assertion.value is not None
         assert assertion.reference_key is not None
-        message = "REL-E0704: require_reference(...) found values without a reference row; see docs/Diagnostics.md#rel-e0704"
+        message = (
+            "REL-E0704: require_reference(...) found values without a reference row; see docs/Diagnostics.md#rel-e0704"
+        )
         value_column = "__structure_reference_value"
         key_column = "__structure_reference_key"
         reference = (
@@ -524,7 +535,9 @@ class RunOnlinePySparkTransform:
         )
         node_id = self._expressions.evaluate(assertion.keys[0], functions=functions, aliases=aliases)
         parent_id = self._expressions.evaluate(assertion.parent, functions=functions, aliases=aliases)
-        order_by = self._expressions.evaluate(self._order_value(assertion.order_by), functions=functions, aliases=aliases)
+        order_by = self._expressions.evaluate(
+            self._order_value(assertion.order_by), functions=functions, aliases=aliases
+        )
         nodes = frame.select(node_id.alias(node), parent_id.alias(parent), order_by.alias(order))
         known = nodes.select(functions.col(node).alias("__structure_hierarchy_known_parent"))
         missing = nodes.where(functions.col(parent).isNotNull()).join(
@@ -556,30 +569,38 @@ class RunOnlinePySparkTransform:
                 & ~functions.array_contains(functions.col(path), functions.col(parent))
             )
             frontier = frontier.withColumn(path, functions.array_append(functions.col(path), functions.col(parent)))
-            frontier = frontier.alias("frontier").join(
-                nodes.alias("next_parent"),
-                functions.col(f"frontier.{parent}") == functions.col(f"next_parent.{node}"),
-                "left",
-            ).select(
-                functions.col(f"frontier.{node}").alias(node),
-                functions.col(f"next_parent.{parent}").alias(parent),
-                functions.col(f"frontier.{order}").alias(order),
-                functions.col(f"frontier.{path}").alias(path),
+            frontier = (
+                frontier.alias("frontier")
+                .join(
+                    nodes.alias("next_parent"),
+                    functions.col(f"frontier.{parent}") == functions.col(f"next_parent.{node}"),
+                    "left",
+                )
+                .select(
+                    functions.col(f"frontier.{node}").alias(node),
+                    functions.col(f"next_parent.{parent}").alias(parent),
+                    functions.col(f"frontier.{order}").alias(order),
+                    functions.col(f"frontier.{path}").alias(path),
+                )
             )
             cycles = cycles.unionByName(
                 frontier.where(functions.array_contains(functions.col(path), functions.col(parent))),
                 allowMissingColumns=False,
             )
         overrun = frontier.where(functions.col(parent).isNotNull())
-        violations = missing.unionByName(
-            parent_order,
-            allowMissingColumns=False,
-        ).unionByName(
-            cycles.select(missing.columns),
-            allowMissingColumns=False,
-        ).unionByName(
-            overrun.select(missing.columns),
-            allowMissingColumns=False,
+        violations = (
+            missing.unionByName(
+                parent_order,
+                allowMissingColumns=False,
+            )
+            .unionByName(
+                cycles.select(missing.columns),
+                allowMissingColumns=False,
+            )
+            .unionByName(
+                overrun.select(missing.columns),
+                allowMissingColumns=False,
+            )
         )
         violations = violations.agg(functions.count(functions.lit(1)).alias("__structure_violations"))
         guard = violations.select(
@@ -612,9 +633,13 @@ class RunOnlinePySparkTransform:
 
         keyed = frame
         for column, expression in zip(partition_columns, scan.partition_by, strict=True):
-            keyed = keyed.withColumn(column, self._expressions.evaluate(expression, functions=functions, aliases=aliases))
+            keyed = keyed.withColumn(
+                column, self._expressions.evaluate(expression, functions=functions, aliases=aliases)
+            )
         for column, expression in zip(order_columns, scan.order_by, strict=True):
-            keyed = keyed.withColumn(column, self._expressions.evaluate(expression, functions=functions, aliases=aliases))
+            keyed = keyed.withColumn(
+                column, self._expressions.evaluate(expression, functions=functions, aliases=aliases)
+            )
 
         guard = self._scan_guard(keyed, partition_columns, order_columns, scan, functions=functions)
         keyed = guard.crossJoin(keyed)
@@ -658,7 +683,9 @@ class RunOnlinePySparkTransform:
                 functions.concat(current_rows, functions.array(before)).alias(rows),
             )
 
-        folded_frame = grouped.select(functions.aggregate(functions.col(items), initial_accumulator, merge).alias(folded))
+        folded_frame = grouped.select(
+            functions.aggregate(functions.col(items), initial_accumulator, merge).alias(folded)
+        )
         expanded = folded_frame.select(functions.posexplode(functions.col(folded).getField(rows)).alias(position, row))
         return expanded.select(
             *(functions.col(f"{row}.{payload}.{column}").alias(column) for column in input_columns),
@@ -755,7 +782,9 @@ class RunOnlinePySparkTransform:
             type=expression.type,
             nullable=expression.nullable,
             data=expression.data,
-            args=tuple(self._scan_rewrite(argument, scan, state=state, payload=payload) for argument in expression.args),
+            args=tuple(
+                self._scan_rewrite(argument, scan, state=state, payload=payload) for argument in expression.args
+            ),
         )
 
     def _scan_field(self, expression, root):
@@ -776,7 +805,20 @@ class RunOnlinePySparkTransform:
             )
         return rewritten
 
-    def _relation_set(self, left, right, relation_set):
+    def _relation_set(self, left, right, relation_set, *, step, functions, types):
+        for path, default in relation_set.defaults:
+            left_field = step.input_schema._structure_fields.get(path)
+            right_field = relation_set.schema._structure_fields.get(path)
+            field = left_field or right_field
+            if field is None:
+                raise TypeError(f"Unknown relation-set default field: {path}")
+            frame = left if left_field is None else right
+            value = self._expressions.evaluate(default, functions=functions, aliases=self._scope_aliases(step))
+            frame = frame.withColumn(field.column, value.cast(self._spark_type(field.type, types)))
+            if left_field is None:
+                left = frame
+            else:
+                right = frame
         if relation_set.by_name:
             return left.unionByName(right, allowMissingColumns=relation_set.allow_missing_columns)
         function = {
@@ -896,13 +938,17 @@ class RunOnlinePySparkTransform:
             )
             closure_frame = closure_frame.unionByName(branch, allowMissingColumns=False)
             frontier = frontier.where(functions.col(source_parent).isNotNull())
-            frontier = frontier.alias("frontier").join(
-                nodes.alias("parent"),
-                functions.col(f"frontier.{source_parent}") == functions.col(f"parent.{source_node}"),
-                "left",
-            ).select(
-                functions.col(f"frontier.{source_node}").alias(source_node),
-                functions.col(f"parent.{source_parent}").alias(source_parent),
+            frontier = (
+                frontier.alias("frontier")
+                .join(
+                    nodes.alias("parent"),
+                    functions.col(f"frontier.{source_parent}") == functions.col(f"parent.{source_node}"),
+                    "left",
+                )
+                .select(
+                    functions.col(f"frontier.{source_node}").alias(source_node),
+                    functions.col(f"parent.{source_parent}").alias(source_parent),
+                )
             )
         return closure_frame
 
@@ -956,10 +1002,14 @@ class RunOnlinePySparkTransform:
             functions.lit(1),
             functions.size(functions.col(path)) - functions.lit(1),
         )
-        return functions.when(functions.col(parent).isNull(), head).when(
-            functions.array_contains(head, functions.col(parent)),
-            head,
-        ).otherwise(functions.concat(head, functions.array(functions.col(parent))))
+        return (
+            functions.when(functions.col(parent).isNull(), head)
+            .when(
+                functions.array_contains(head, functions.col(parent)),
+                head,
+            )
+            .otherwise(functions.concat(head, functions.array(functions.col(parent))))
+        )
 
     def _online_fallback_id(self, functions, fallback, path: str):
         return functions.when(

@@ -528,8 +528,9 @@ The PySpark target lowers these helpers to `row_number()` over
 `Window.partitionBy(...).orderBy(...)`, keeps rank `1`, then drops the temporary rank column. `partition_by` is
 required so the selection is reviewable, and the current public tie policy is `"error"`.
 
-Streaming: selected-row helpers are batch-only. Keep streaming-safe ranking and top-N state policy in caller-owned
-PySpark until Structure admits a symbolic state contract.
+Streaming: global selected-row helpers are batch-only. For finite event-time selection, use grouped
+`first_value(...)` or `last_value(...)` inside a watermarked `window(...)`; otherwise use caller-owned PySpark after a
+materialization boundary.
 
 For complete, outcome-oriented examples, see the [Latest Rows recipe](recipes/LatestRows.md) and the
 [Earliest Rows recipe](recipes/EarliestRows.md).
@@ -591,8 +592,9 @@ Reusable windows require explicit frames such as `rows_between(preceding(2), cur
 `window_stddev`, `window_variance`, `window_collect_list`, and `window_collect_set`. Spark does not permit distinct
 window aggregates; use grouped `count_distinct(...)` instead.
 
-Streaming: analytical window helpers are batch-only. Use event-time `window(...)` or `session_window(...)` grouping for
-the admitted Structured Streaming aggregate shapes.
+Streaming: broad analytical window helpers are batch-only. Use event-time `window(...)` or `session_window(...)`
+grouping for admitted Structured Streaming aggregates; grouped `first_value(...)` and `last_value(...)` are the finite
+typed selection alternatives.
 
 Reference: [windows API](api/Windows.api.md),
 [advanced analytical operations](background/DSL.back.md), [DSL](background/DSL.back.md),

@@ -197,3 +197,21 @@ This matrix maps early sprints to specification sections and major deliverables.
 - As a developer, I can upgrade to v4 with published release evidence for the supported transformation API surface.
 - As a maintainer, I can cut v4 only after its release-blocking defects are resolved or explicitly deferred and the
   released targets, generated artifacts, documentation, diagnostics, parity, and performance baselines are verified.
+
+## V10
+
+- As a developer, I can inspect one precise APICatalog status, owner, contract, diagnostic, test, and evidence path for
+  every V10 API family.
+- As a developer, I can use provider-neutral Geometry with explicit SRID and nullable WKT/predicate semantics without
+  adding an optional provider to the bundled plugin.
+- As a developer, I can request reproducible sampling and receive explicit batch-only streaming classification.
+- As a developer, I can use typed missing-column union defaults for nullable, nested-struct, alias-preserving schema
+  evolution, with actionable failures for unsafe fields.
+- As a developer, I can inspect streaming state stages, watermarks, retention, event-time bounds, and required output
+  modes in diagnostics and explain output.
+- As a developer, I can adopt bounded stream-stream join or finite selected-value shapes only when target parity and
+  restart evidence exist.
+- As a developer, I can apply caller-owned streaming side effects with explicit sink identity, idempotence, retry,
+  checkpoint, and recovery policy.
+- As a maintainer, I can verify that generated transform modules contain no streaming lifecycle or side-effect calls.
+- As a maintainer, I can close V10 with synchronized ledgers, fresh generated artifacts, live evidence, and `make build`.

@@ -26,7 +26,7 @@ from structure import Transform, input, output, stage
 class SearchDocuments(Transform):
     """Retrieve BM25 candidates, then rerank them with relevance signals."""
 
-    queries = input(SearchQuery)
+    queries = input(SearchQuery, streaming=True)
     documents = input(Document)
     document_scores = input(DocumentScore)
     streamed_documents = input(Document, streaming=True)
@@ -41,7 +41,7 @@ class SearchDocuments(Transform):
     paragraph_summary = input(ParagraphIndexSummary)
     sentence_summary = input(SentenceIndexSummary)
     score_policy = input(ScorePolicy)
-    requests = input(SearchRequest)
+    requests = input(SearchRequest, streaming=True)
     band_memberships = input(BandMembership)
     query_document_signals = input(QueryDocumentSignals)
     document_popularity = input(DocumentPopularity)
@@ -72,6 +72,7 @@ class SearchDocuments(Transform):
             online_document_scores=scoring.online_document_scores,
             streamed_documents=streamed_documents,
             streamed_document_scores=streamed_document_scores,
+            online_streamed_document_scores=scoring.online_streamed_document_scores,
             requests=requests,
             band_memberships=band_memberships,
             score_policy=score_policy,
@@ -97,4 +98,5 @@ class SearchDocuments(Transform):
     )
     results = output(DocumentSearchResult, reranked.results)
     online_document_scores = output(DocumentScore, scoring.online_document_scores)
+    online_streamed_document_scores = output(DocumentScore, scoring.online_streamed_document_scores)
     online_document_overlap_scores = output(DocumentOverlapScore, scoring.online_document_overlap_scores)

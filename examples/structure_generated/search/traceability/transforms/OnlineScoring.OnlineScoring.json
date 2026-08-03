@@ -1183,38 +1183,43 @@
       "source": "source:examples.search.transforms.searching.online.scoring.OnlineScoring.OnlineScoring.output.online_document_scores"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.OnlineScoring.OnlineScoringGenerated.run.output.1.online_section_scores.validation.final",
-      "ir": "ir:OnlineScoring.output.1.online_section_scores.validation.final",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.OnlineScoring.OnlineScoringGenerated.run.output.1.online_streamed_document_scores.validation.final",
+      "ir": "ir:OnlineScoring.output.1.online_streamed_document_scores.validation.final",
+      "source": "source:examples.search.transforms.searching.online.scoring.OnlineScoring.OnlineScoring.output.online_streamed_document_scores"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.OnlineScoring.OnlineScoringGenerated.run.output.2.online_section_scores.validation.final",
+      "ir": "ir:OnlineScoring.output.2.online_section_scores.validation.final",
       "source": "source:examples.search.transforms.searching.online.scoring.OnlineScoring.OnlineScoring.output.online_section_scores"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.OnlineScoring.OnlineScoringGenerated.run.output.2.online_paragraph_scores.validation.final",
-      "ir": "ir:OnlineScoring.output.2.online_paragraph_scores.validation.final",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.OnlineScoring.OnlineScoringGenerated.run.output.3.online_paragraph_scores.validation.final",
+      "ir": "ir:OnlineScoring.output.3.online_paragraph_scores.validation.final",
       "source": "source:examples.search.transforms.searching.online.scoring.OnlineScoring.OnlineScoring.output.online_paragraph_scores"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.OnlineScoring.OnlineScoringGenerated.run.output.3.online_sentence_scores.validation.final",
-      "ir": "ir:OnlineScoring.output.3.online_sentence_scores.validation.final",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.OnlineScoring.OnlineScoringGenerated.run.output.4.online_sentence_scores.validation.final",
+      "ir": "ir:OnlineScoring.output.4.online_sentence_scores.validation.final",
       "source": "source:examples.search.transforms.searching.online.scoring.OnlineScoring.OnlineScoring.output.online_sentence_scores"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.OnlineScoring.OnlineScoringGenerated.run.output.4.online_document_overlap_scores.validation.final",
-      "ir": "ir:OnlineScoring.output.4.online_document_overlap_scores.validation.final",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.OnlineScoring.OnlineScoringGenerated.run.output.5.online_document_overlap_scores.validation.final",
+      "ir": "ir:OnlineScoring.output.5.online_document_overlap_scores.validation.final",
       "source": "source:examples.search.transforms.searching.online.scoring.OnlineScoring.OnlineScoring.output.online_document_overlap_scores"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.OnlineScoring.OnlineScoringGenerated.run.output.5.online_section_overlap_scores.validation.final",
-      "ir": "ir:OnlineScoring.output.5.online_section_overlap_scores.validation.final",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.OnlineScoring.OnlineScoringGenerated.run.output.6.online_section_overlap_scores.validation.final",
+      "ir": "ir:OnlineScoring.output.6.online_section_overlap_scores.validation.final",
       "source": "source:examples.search.transforms.searching.online.scoring.OnlineScoring.OnlineScoring.output.online_section_overlap_scores"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.OnlineScoring.OnlineScoringGenerated.run.output.6.online_paragraph_overlap_scores.validation.final",
-      "ir": "ir:OnlineScoring.output.6.online_paragraph_overlap_scores.validation.final",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.OnlineScoring.OnlineScoringGenerated.run.output.7.online_paragraph_overlap_scores.validation.final",
+      "ir": "ir:OnlineScoring.output.7.online_paragraph_overlap_scores.validation.final",
       "source": "source:examples.search.transforms.searching.online.scoring.OnlineScoring.OnlineScoring.output.online_paragraph_overlap_scores"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.OnlineScoring.OnlineScoringGenerated.run.output.7.online_sentence_overlap_scores.validation.final",
-      "ir": "ir:OnlineScoring.output.7.online_sentence_overlap_scores.validation.final",
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.OnlineScoring.OnlineScoringGenerated.run.output.8.online_sentence_overlap_scores.validation.final",
+      "ir": "ir:OnlineScoring.output.8.online_sentence_overlap_scores.validation.final",
       "source": "source:examples.search.transforms.searching.online.scoring.OnlineScoring.OnlineScoring.output.online_sentence_overlap_scores"
     }
   ],
@@ -4238,6 +4243,17 @@
         },
         "operation": "validate_schema",
         "sources": [
+          "DocumentScore"
+        ],
+        "step": null,
+        "target": "DocumentScore.validation.final"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
           "SectionScore"
         ],
         "step": null,
@@ -5127,6 +5143,11 @@
       {
         "mode": "strict",
         "name": "online_document_scores",
+        "schema": "DocumentScore"
+      },
+      {
+        "mode": "strict",
+        "name": "online_streamed_document_scores",
         "schema": "DocumentScore"
       },
       {

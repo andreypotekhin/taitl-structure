@@ -36,7 +36,7 @@ class RerankDocuments(Transform):
     document_popularity = input(DocumentPopularity)
     band_fallbacks = input(BandFallback)
     policy = input(RelevancePolicy)
-    overlapped_candidates = input(DocumentSearchCandidate)
+    overlapped_candidates = input(DocumentSearchCandidate, streaming=True)
     fallback_options = lane(DocumentFeedbackOption)
     global_options = lane(DocumentFeedbackOption)
     feedback_options = lane(DocumentFeedbackOption)

@@ -434,13 +434,13 @@ separate Structure-owned typed transformations from caller-owned PySpark lifecyc
   watermark, output-mode, diagnostics, and live restart evidence.
 - Sprint 43 complete: hardened lifecycle diagnostics, explain output, troubleshooting, and owner-boundary documentation.
 - Sprint 44 complete: closed v9 release evidence without adding new API scope.
-- Sprint 45 active (target close: 2026-08-07): inventory and close the existing V9 design-gate decisions.
-- Sprint 46 planned (2026-08-10--2026-08-21): complete bounded selected-row and analytic-window decisions, the Variant
-  child plan, arbitrary-state contract, and the provider-neutral Geometry contract.
-- Sprint 47 planned (2026-08-24--2026-09-04): collect live target evidence and reconcile the API catalog, ledgers,
-  diagnostics, generated artifacts, and public documentation.
-- Sprint 48 planned (2026-09-07--2026-09-18): dedicated V9 hardening with no new API scope, final `make build`, and the
-  release evidence report.
+- Sprint 45 complete (closed 2026-08-02): inventoried and closed the existing V9 design-gate decisions.
+- Sprint 46 complete (closed 2026-08-02): completed finite selected-value support, broad selected-row and analytic-window
+  decisions, the Variant child plan, arbitrary-state contract, and provider-neutral Geometry contract.
+- Sprint 47 complete (closed 2026-08-02): collected pinned PySpark 3.5/4.0 evidence and reconciled the API catalog,
+  ledgers, diagnostics, generated artifacts, and public documentation; the unavailable 4.2 lane is recorded honestly.
+- Sprint 48 complete (closed 2026-08-02): performed dedicated V9 hardening with no new API scope, final `make build`,
+  and the release evidence report.
 - The governing closeout schedule is
   `docs/dev/planning/P07302603.V9-closeout-and-release.plan.md`; XML remains low-priority design-gated work.
 
@@ -472,6 +472,44 @@ separate Structure-owned typed transformations from caller-owned PySpark lifecyc
   data-quality constraints, and incremental compile cache diagnostics, unless a selected v9 streaming slice directly
   needs it.
 
+## v10 Scope
+
+V10 follows the completed V9 design-gate closeout and expands only the core API and streaming contracts explicitly
+adopted from `docs/dev/future/API.future.md` and `docs/dev/future/Streaming.future.md`. It keeps streaming lifecycle,
+deployment, recovery, and side effects caller-owned.
+
+### v10 sequence
+
+- Sprint 49 (2026-09-21--2026-10-02): V10 admission, V9 handoff, and grouped ExecPlan foundation.
+- Sprint 50 (2026-10-05--2026-10-16): API Catalog contracts, Geometry, sampling, and open-row dispositions.
+- Sprint 51 (2026-10-19--2026-10-30): schema evolution and missing-column union evidence.
+- Sprint 52 (2026-11-02--2026-11-13): compiler-visible streaming state stages and stream-stream join contracts.
+- Sprint 53 (2026-11-16--2026-11-27): caller-owned side-effect safety and arbitrary-state programming model.
+- Sprint 54 (2026-11-30--2026-12-11): dedicated V10 hardening and release evidence.
+
+The governing V10 plans are the four `P08022601`--`P08022604` documents under `docs/dev/planning/`. Application-specific
+future documents remain outside V10.
+
+### v10 must include
+
+- Provider-neutral Geometry, explicit sampling reproducibility, and typed schema-evolution decisions.
+- `union_by_name(..., defaults=...)` contract work for nullable, nested-struct, alias-preserving evolution, with
+  streaming support claimed only after target evidence.
+- State-stage metadata, bounded stream-stream join candidates, finite selected-row alternatives, and corrective
+  diagnostics for unsafe state composition.
+- Caller-owned idempotence/recovery guidance for streaming side effects and an implementation-ready arbitrary-state
+  model without Structure-owned lifecycle generation.
+- Synchronized API Catalog, capability inventories, diagnostics, references, examples, generated artifacts, live target
+  evidence, and final `make build`.
+
+### v10 non-goals
+
+- Structure-owned streaming sources, sinks, triggers, checkpoints, output modes, query lifecycle, deployment, recovery,
+  `foreach`, `foreachBatch`, custom sinks, or external side effects.
+- Silent support claims for XML, unreleased Variant mutation profiles, unsafe join reordering, arbitrary state, or
+  unsupported stream-stream joins.
+- Search, Store, Stocks, Streams, or School application futures.
+
 ## Release Milestones
 
 | Milestone | Goal | Sprints |
@@ -491,3 +529,4 @@ separate Structure-owned typed transformations from caller-owned PySpark lifecyc
 | M12 | v7 broad PySpark transformation coverage and caller-owned streaming adoption | Sprints 28--35 |
 | M13 | v8 PySpark Structured Streaming coverage parity | Sprints 36--39 and v8 hardening |
 | M14 | v9 PySpark streaming API coverage, design-gate follow-up, and release hardening | Sprints 40--48 |
+| M15 | v10 API Catalog and streaming contract expansion | Sprints 49--54 |

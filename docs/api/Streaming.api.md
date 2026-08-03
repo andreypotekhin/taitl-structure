@@ -50,6 +50,10 @@ Examples abbreviate `order` as `o` and a second streaming relation as `c`.
   rejected with `STREAM-E0801`.
 - `session_window(...)` requires a preceding watermark on the same event-time field, a static positive gap, one
   ordinary grouping key in addition to the session key, and caller-owned `append` mode. Dynamic gaps remain deferred.
+- Broad analytic windows and global selected-row helpers are streaming-ineligible. For finite event-time selection,
+  use grouped `first_value(...)` or `last_value(...)` inside a watermarked `window(...)`; these preserve the typed
+  selected value and lower through public `min_by(...)`/`max_by(...)`. The existing `latest_by(...)` and
+  `earliest_by(...)` relation helpers remain batch-only.
 - `drop_duplicates(...)` remains cross-mode: batch lowers to `dropDuplicates`, while a streaming frame lowers to
   watermark-bounded `dropDuplicatesWithinWatermark`. `drop_duplicates_within_watermark(...)` makes that streaming-only
   choice explicit and requires `streaming=True` plus a preceding watermark.
@@ -57,7 +61,7 @@ Examples abbreviate `order` as `o` and a second streaming relation as `c`.
   They retain the existing `warn_on_udfs` warning policy and remain unavailable on Spark Connect.
 - Variant fields and helpers are admitted as profile-gated streaming transformations on ordinary PySpark 4 profiles.
   PySpark 4.0 live evidence covers parsing, extraction, schema inspection, object conversion, JSON-null testing,
-  watermarked `schema_of_variant_agg`, and typed inner/outer TVF expansion; PySpark 3.5 fails through the standard
+  validated `variant_literal(...)` extraction, watermarked `schema_of_variant_agg`, and typed inner/outer TVF expansion; PySpark 3.5 fails through the standard
   capability diagnostic before execution. PySpark 4.2-only helpers such as `is_valid_variant(...)` remain
   capability-gated until a 4.2 live lane exists.
 - `event_time_between(...)` supplies the bounded event-time relation required by supported stream-stream joins.

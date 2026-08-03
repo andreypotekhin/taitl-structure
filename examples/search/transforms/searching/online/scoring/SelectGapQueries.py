@@ -11,8 +11,8 @@ from structure.plugin.pyspark import cross_join, datediff, drop_duplicates, inne
 class SelectGapQueries(Transform):
     """Select queries without fresh document and overlap scores."""
 
-    queries = input(SearchQuery)
-    requests = input(SearchRequest)
+    queries = input(SearchQuery, streaming=True)
+    requests = input(SearchRequest, streaming=True)
     document_scores = input(DocumentScore)
     document_overlap_scores = input(DocumentOverlapScore)
     score_policy = input(ScorePolicy)

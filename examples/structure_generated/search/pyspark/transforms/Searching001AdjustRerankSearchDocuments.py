@@ -1244,7 +1244,58 @@ class RetrieveDocumentsGenerated:
             "retrieved__stored_scores": retrieved__stored_scores,
         }
 
-    def _step_retrieved_select_stored_candidates_26(self, frames):
+    def _step_retrieved_merge_streamed_scores_26(self, frames):
+        # Step method: retrieved.merge_streamed_scores
+        retrieved__streamed_scores = frames["streamed_document_scores"].alias("document_score")
+        retrieved__streamed_scores = retrieved__streamed_scores.union(
+            frames["scoring__scoring__selected__document_scores"]
+        )
+        requests_joined = frames["requests"].alias("requests")
+        retrieved__streamed_scores = retrieved__streamed_scores.join(
+            requests_joined,
+            (F.col("requests.query_id") == F.col("query_id")),
+            "inner",
+        )
+        score_policy_2_joined = frames["score_policy"].alias("score_policy_2")
+        retrieved__streamed_scores = retrieved__streamed_scores.crossJoin(score_policy_2_joined)
+        retrieved__streamed_scores = retrieved__streamed_scores.where(
+            (
+                (
+                    (
+                        (
+                            (F.col("scored_at") <= F.col("requests.requested_at"))
+                            & (F.datediff(F.col("requests.requested_at"), F.col("scored_at")) >= F.lit(0))
+                        )
+                        & (
+                            F.datediff(F.col("requests.requested_at"), F.col("scored_at"))
+                            <= F.col("score_policy_2.maximum_age_days")
+                        )
+                    )
+                    & F.col("experiment_id").eqNullSafe(F.col("requests.experiment_id"))
+                )
+            )
+        )
+        if retrieved__streamed_scores.isStreaming:
+            retrieved__streamed_scores = retrieved__streamed_scores.dropDuplicatesWithinWatermark(
+                ["query_id", "document_id", "experiment_id"]
+            )
+        else:
+            retrieved__streamed_scores = retrieved__streamed_scores.dropDuplicates(
+                ["query_id", "document_id", "experiment_id"]
+            )
+        retrieved__streamed_scores = retrieved__streamed_scores.select(
+            F.col("query_id"),
+            F.col("document_id"),
+            F.col("experiment_id"),
+            F.col("scored_at"),
+            F.col("score"),
+        )
+        assert_schema(retrieved__streamed_scores, DOCUMENT_SCORE_SCHEMA, name="DocumentScore", mode="strict")
+        return {
+            "retrieved__streamed_scores": retrieved__streamed_scores,
+        }
+
+    def _step_retrieved_select_stored_candidates_27(self, frames):
         # Step method: retrieved.select_stored_candidates
         retrieved__stored_candidates = frames["documents"].alias("document")
         retrieved__stored_scores_joined = frames["retrieved__stored_scores"].alias("retrieved__stored_scores")
@@ -1305,19 +1356,19 @@ class RetrieveDocumentsGenerated:
             "retrieved__stored_candidates": retrieved__stored_candidates,
         }
 
-    def _step_retrieved_select_streamed_candidates_27(self, frames):
+    def _step_retrieved_select_streamed_candidates_28(self, frames):
         # Step method: retrieved.select_streamed_candidates
         retrieved__streamed_candidates = frames["streamed_documents"].alias("document")
-        streamed_document_scores_joined = frames["streamed_document_scores"].alias("streamed_document_scores")
+        retrieved__streamed_scores_joined = frames["retrieved__streamed_scores"].alias("retrieved__streamed_scores")
         retrieved__streamed_candidates = retrieved__streamed_candidates.join(
-            streamed_document_scores_joined,
-            (F.col("document.id") == F.col("streamed_document_scores.document_id")),
+            retrieved__streamed_scores_joined,
+            (F.col("document.id") == F.col("retrieved__streamed_scores.document_id")),
             "inner",
         )
         queries_2_joined = frames["queries"].alias("queries_2")
         retrieved__streamed_candidates = retrieved__streamed_candidates.join(
             queries_2_joined,
-            (F.col("queries_2.id") == F.col("streamed_document_scores.query_id")),
+            (F.col("queries_2.id") == F.col("retrieved__streamed_scores.query_id")),
             "inner",
         )
         requests_3_joined = frames["requests"].alias("requests_3")
@@ -1335,14 +1386,14 @@ class RetrieveDocumentsGenerated:
         retrieved__streamed_candidates = retrieved__streamed_candidates.where(
             (
                 (
-                    F.col("streamed_document_scores.score").isNotNull()
-                    & F.col("streamed_document_scores.experiment_id").eqNullSafe(F.col("requests_3.experiment_id"))
+                    F.col("retrieved__streamed_scores.score").isNotNull()
+                    & F.col("retrieved__streamed_scores.experiment_id").eqNullSafe(F.col("requests_3.experiment_id"))
                 )
             )
         )
         retrieved__streamed_candidates = retrieved__streamed_candidates.select(
             F.col("queries_2.id").alias("search_query_id"),
-            F.col("streamed_document_scores.experiment_id"),
+            F.col("retrieved__streamed_scores.experiment_id"),
             F.coalesce(F.col("band_memberships_4.user_band_id"), F.lit(None)).alias("user_band_id"),
             F.col("band_memberships_4.band_id"),
             F.lower(F.regexp_replace(F.trim(F.col("queries_2.content")), '\\s+', ' ')).alias("query"),
@@ -1350,7 +1401,7 @@ class RetrieveDocumentsGenerated:
             F.col("document.id").alias("document_id"),
             F.col("document.title"),
             F.col("document.url"),
-            F.col("streamed_document_scores.score"),
+            F.col("retrieved__streamed_scores.score"),
             F.lit(0.0).alias("score_feedback"),
             F.lit(0.0).alias("score_rank"),
             F.lit(0.0).alias("score_weight"),
@@ -1366,7 +1417,7 @@ class RetrieveDocumentsGenerated:
             "retrieved__streamed_candidates": retrieved__streamed_candidates,
         }
 
-    def _step_retrieved_rank_candidates_28(self, frames):
+    def _step_retrieved_rank_candidates_29(self, frames):
         # Step method: retrieved.rank_candidates
         retrieved__candidates = frames["retrieved__stored_candidates"].alias("document_search_candidate")
         retrieved__candidates = retrieved__candidates.union(frames["retrieved__streamed_candidates"])
@@ -1402,7 +1453,7 @@ class RetrieveDocumentsGenerated:
 
 
 class OverlapDocumentsGenerated:
-    def _step_overlapped_merge_scores_29(self, frames):
+    def _step_overlapped_merge_scores_30(self, frames):
         # Step method: overlapped.merge_scores
         overlapped__merged_scores = frames["document_overlap_scores"].alias("document_overlap_score")
         overlapped__merged_scores = overlapped__merged_scores.union(
@@ -1449,7 +1500,7 @@ class OverlapDocumentsGenerated:
             "overlapped__merged_scores": overlapped__merged_scores,
         }
 
-    def _step_overlapped_rank_candidates_30(self, frames):
+    def _step_overlapped_rank_candidates_31(self, frames):
         # Step method: overlapped.rank_candidates
         overlapped__ranked_candidates = frames["retrieved__candidates"].alias("document_search_candidate")
         overlapped__ranked_candidates = overlapped__ranked_candidates.where(
@@ -1503,7 +1554,7 @@ class OverlapDocumentsGenerated:
             "overlapped__ranked_candidates": overlapped__ranked_candidates,
         }
 
-    def _step_overlapped_select_candidates_31(self, frames):
+    def _step_overlapped_select_candidates_32(self, frames):
         # Step method: overlapped.select_candidates
         overlapped__overlapped_candidates = frames["overlapped__ranked_candidates"].alias("document_search_candidate")
         overlapped__overlapped_candidates = overlapped__overlapped_candidates.where(
@@ -1537,7 +1588,7 @@ class OverlapDocumentsGenerated:
 
 
 class RerankDocumentsGenerated:
-    def _step_reranked_select_fallback_options_32(self, frames):
+    def _step_reranked_select_fallback_options_33(self, frames):
         # Step method: reranked.select_fallback_options
         reranked__fallback_options = frames["overlapped__overlapped_candidates"].alias("document_search_candidate")
         reranked__fallback_options = reranked__fallback_options.where(
@@ -1578,7 +1629,7 @@ class RerankDocumentsGenerated:
             "reranked__fallback_options": reranked__fallback_options,
         }
 
-    def _step_reranked_select_global_options_33(self, frames):
+    def _step_reranked_select_global_options_34(self, frames):
         # Step method: reranked.select_global_options
         reranked__global_options = frames["overlapped__overlapped_candidates"].alias("document_search_candidate")
         reranked__global_options = reranked__global_options.where(
@@ -1613,7 +1664,7 @@ class RerankDocumentsGenerated:
             "reranked__global_options": reranked__global_options,
         }
 
-    def _step_reranked_merge_feedback_options_34(self, frames):
+    def _step_reranked_merge_feedback_options_35(self, frames):
         # Step method: reranked.merge_feedback_options
         reranked__feedback_options = frames["reranked__fallback_options"].alias("document_feedback_option")
         reranked__feedback_options = reranked__feedback_options.union(frames["reranked__global_options"])
@@ -1643,7 +1694,7 @@ class RerankDocumentsGenerated:
             "reranked__feedback_options": reranked__feedback_options,
         }
 
-    def _step_reranked_select_query_feedback_35(self, frames):
+    def _step_reranked_select_query_feedback_36(self, frames):
         # Step method: reranked.select_query_feedback
         reranked__query_feedback = frames["reranked__feedback_options"].alias("document_feedback_option")
         query_document_signals_joined = frames["query_document_signals"].alias("query_document_signals")
@@ -1791,7 +1842,7 @@ class RerankDocumentsGenerated:
             "reranked__query_feedback": reranked__query_feedback,
         }
 
-    def _step_reranked_select_popularity_feedback_36(self, frames):
+    def _step_reranked_select_popularity_feedback_37(self, frames):
         # Step method: reranked.select_popularity_feedback
         reranked__popularity_feedback = frames["reranked__feedback_options"].alias("document_feedback_option")
         document_popularity_joined = frames["document_popularity"].alias("document_popularity")
@@ -1936,7 +1987,7 @@ class RerankDocumentsGenerated:
             "reranked__popularity_feedback": reranked__popularity_feedback,
         }
 
-    def _step_reranked_normalize_score_38(self, frames):
+    def _step_reranked_normalize_score_39(self, frames):
         # Step method: reranked.normalize_score
         reranked__normalized_candidates = frames["reranked__scored_candidates"].alias("document_search_candidate")
         reranked__normalized_candidates = reranked__normalized_candidates.select(
@@ -1982,7 +2033,7 @@ class RerankDocumentsGenerated:
             "reranked__normalized_candidates": reranked__normalized_candidates,
         }
 
-    def _step_reranked_rank_results_39(self, frames):
+    def _step_reranked_rank_results_40(self, frames):
         # Step method: reranked.rank_results
         reranked__results = frames["reranked__normalized_candidates"].alias("document_search_candidate")
         reranked__results = reranked__results.select(
@@ -2017,7 +2068,7 @@ class RerankDocumentsGenerated:
 
 
 class Searching001AdjustRerankDocumentsGenerated:
-    def _step_reranked_score_candidates_37(self, frames):
+    def _step_reranked_score_candidates_38(self, frames):
         # Step method: reranked.score_candidates
         reranked__scored_candidates = frames["overlapped__overlapped_candidates"].alias("document_search_candidate")
         reranked__scored_candidates = reranked__scored_candidates.where(
@@ -2268,20 +2319,21 @@ class Searching001AdjustRerankSearchDocumentsGenerated(
         frames.update(self._step_scoring_scoring_selected_score_paragraphs_23(frames))
         frames.update(self._step_scoring_scoring_selected_score_sentences_24(frames))
         frames.update(self._step_retrieved_merge_stored_scores_25(frames))
-        frames.update(self._step_retrieved_select_stored_candidates_26(frames))
-        frames.update(self._step_retrieved_select_streamed_candidates_27(frames))
-        frames.update(self._step_retrieved_rank_candidates_28(frames))
-        frames.update(self._step_overlapped_merge_scores_29(frames))
-        frames.update(self._step_overlapped_rank_candidates_30(frames))
-        frames.update(self._step_overlapped_select_candidates_31(frames))
-        frames.update(self._step_reranked_select_fallback_options_32(frames))
-        frames.update(self._step_reranked_select_global_options_33(frames))
-        frames.update(self._step_reranked_merge_feedback_options_34(frames))
-        frames.update(self._step_reranked_select_query_feedback_35(frames))
-        frames.update(self._step_reranked_select_popularity_feedback_36(frames))
-        frames.update(self._step_reranked_score_candidates_37(frames))
-        frames.update(self._step_reranked_normalize_score_38(frames))
-        frames.update(self._step_reranked_rank_results_39(frames))
+        frames.update(self._step_retrieved_merge_streamed_scores_26(frames))
+        frames.update(self._step_retrieved_select_stored_candidates_27(frames))
+        frames.update(self._step_retrieved_select_streamed_candidates_28(frames))
+        frames.update(self._step_retrieved_rank_candidates_29(frames))
+        frames.update(self._step_overlapped_merge_scores_30(frames))
+        frames.update(self._step_overlapped_rank_candidates_31(frames))
+        frames.update(self._step_overlapped_select_candidates_32(frames))
+        frames.update(self._step_reranked_select_fallback_options_33(frames))
+        frames.update(self._step_reranked_select_global_options_34(frames))
+        frames.update(self._step_reranked_merge_feedback_options_35(frames))
+        frames.update(self._step_reranked_select_query_feedback_36(frames))
+        frames.update(self._step_reranked_select_popularity_feedback_37(frames))
+        frames.update(self._step_reranked_score_candidates_38(frames))
+        frames.update(self._step_reranked_normalize_score_39(frames))
+        frames.update(self._step_reranked_rank_results_40(frames))
 
         # Step method: results
         results = frames["reranked__results"].alias("document_search_result")
@@ -2290,6 +2342,10 @@ class Searching001AdjustRerankSearchDocumentsGenerated(
         # Step method: online_document_scores
         online_document_scores = frames["scoring__scoring__selected__document_scores"].alias("document_score")
         assert_schema(online_document_scores, DOCUMENT_SCORE_SCHEMA, name="DocumentScore", mode="strict")
+
+        # Step method: online_streamed_document_scores
+        online_streamed_document_scores = frames["scoring__scoring__selected__document_scores"].alias("document_score")
+        assert_schema(online_streamed_document_scores, DOCUMENT_SCORE_SCHEMA, name="DocumentScore", mode="strict")
 
         # Step method: online_document_overlap_scores
         online_document_overlap_scores = frames["scoring__scoring__overlap__document_overlap_scores"].alias(
@@ -2302,12 +2358,14 @@ class Searching001AdjustRerankSearchDocumentsGenerated(
             {
                 "results": results,
                 "online_document_scores": online_document_scores,
+                "online_streamed_document_scores": online_streamed_document_scores,
                 "online_document_overlap_scores": online_document_overlap_scores,
             },
             single=False,
             schema={
                 "results": DOCUMENT_SEARCH_RESULT_SCHEMA,
                 "online_document_scores": DOCUMENT_SCORE_SCHEMA,
+                "online_streamed_document_scores": DOCUMENT_SCORE_SCHEMA,
                 "online_document_overlap_scores": DOCUMENT_OVERLAP_SCORE_SCHEMA,
             },
         )

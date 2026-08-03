@@ -304,3 +304,14 @@ The v9 API catalog design-gate plan is accepted when:
 - every implemented row has source syntax, IR/lowering, diagnostics, docs, and tests;
 - every rejected row has a public rationale and a diagnostic or catalog reference;
 - `make build` passes.
+
+## V10 Continuation
+
+V10 carries forward only the actionable core API slices from `docs/dev/future/API.future.md`: provider-neutral Geometry,
+sampling refinements, and typed missing-column schema evolution. The grouped V10 API plan also records explicit
+dispositions for XML, unreleased Variant mutation profiles, and opt-in join reordering. Application-specific future
+documents are not part of the V10 implementation boundary.
+
+The V10 contract requires canonical field paths for `union_by_name(..., defaults=...)`, typed literals, nullable or
+explicitly defaulted nested structs, preserved aliases, and rejection of implicit array/map element evolution. Streaming
+schema evolution is not promoted until the exact behavior has PySpark 3.5/4.0 evidence.

@@ -44,9 +44,9 @@ can slice comparable ranking runs by query source.
 use them. Neither is a calibrated relevance probability.
 
 Every unified score row also carries `scored_at`. `ScorePolicy` supplies the score snapshot timestamp and its maximum
-serving age. The offline `All` graph aggregates daily impression volume by normalized query and bounds `Scoring` to
-the most popular configured number of queries, keeping disk use practical while leaving arbitrary production queries
-to online resolution.
+serving age. `OfflineScoring` aggregates daily impression volume by normalized query, scores the most popular
+configured number of queries, and adds every query observed in the preceding seven days. This keeps disk use practical
+while covering the current query population and leaving arbitrary older production queries to online resolution.
 
 ## Search Presentations
 
@@ -70,8 +70,9 @@ prompt assembly. This preserves lexical evidence and avoids imposing an answer-m
 `SearchDocuments` first runs `OnlineScoring`. It treats caller-supplied document and overlap score relations as
 cache-compatible snapshots, discards rows older than `ScorePolicy.maximum_age_days` (or newer than the request), and
 calculates missing query groups from the reusable indexes. The newly calculated rows are exposed as additional score
-outputs; retrieval unions them with caller-supplied rows, so a caller can persist those rows and reuse them on a later
-request. Score relations remain the cache contract—there are no parallel cache schemas, query-key, or index-version fields.
+outputs; retrieval unions them with caller-supplied stored and streamed rows, so a caller can persist those rows and
+reuse them on a later request. Score relations remain the cache contract—there are no parallel cache schemas, query-key,
+or index-version fields.
 
 The resulting three-stage document path admits up to 1000 persisted or streamed candidates per query using descending
 score and document ID as the deterministic tie-breaker. It then filters to 100 candidates by overlap score before
@@ -82,6 +83,31 @@ feedback.
 The feedback score combines query-document evidence and document-wide popularity. Within each candidate set, BM25 is
 normalized by that query's maximum candidate BM25. The final score blends normalized BM25 and feedback with the
 caller-supplied policy weights. Overlap is used only as the explicit candidate-narrowing boundary.
+
+### Streaming query boundary
+
+`SearchDocuments.queries` is a declared streaming input. That declaration is propagated through `OnlineScoring`, gap
+selection, `Scoring`/`ScoreBase`, `RetrieveDocuments`, `OverlapDocuments`, and `RerankDocuments`; the compiler therefore
+keeps query-derived scores, candidates, and results in the same streaming lineage. The corpus, lexical indexes,
+freshness policy, feedback snapshots, and ranking policy remain caller-supplied side inputs. Offline `All` and its
+query-producing stages remain batch-only.
+
+The current graph is a compiler-visible migration boundary, not yet a ready-to-start Structured Streaming query. The
+implementation roadmap is recorded in
+[`P08022605.SearchDocuments-structured-streaming.plan.md`](../planning/P08022605.SearchDocuments-structured-streaming.plan.md).
+The required end state is append-only: one final result set per query after a finite event-time completion window, with
+no later revisions. Query and request events use immutable matching `requested_at` timestamps and caller-configured
+watermark delay; indexes, score caches, feedback, and policy relations are immutable static snapshots for one run.
+
+The migration must remove global query-term and score-cache deduplication, replace static/streaming unions with
+streaming branches followed by exact-schema stream/stream unions, and replace candidate/overlap `row_number` windows
+with bounded finite-window top-K state. Feedback fallback and popularity selection must be pre-resolved in the static
+snapshot, leaving only stream/static lookups and bounded normalization in the query path. Any remaining unbounded state,
+global analytic window, unsupported stream-stream join, or arbitrary-state API remains rejected before query start.
+
+Structure still owns only DataFrame transformations. The caller owns sources, watermarks, checkpoints, triggers, output
+sinks, snapshot refreshes, restart policy, and downstream materialization. A snapshot refresh starts a new run; emitted
+append-only results are never revised.
 
 ## Feedback Evidence
 

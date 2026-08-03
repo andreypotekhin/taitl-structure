@@ -23,6 +23,7 @@ Source: `examples.search.transforms.searching.online.scoring.OnlineScoring.Onlin
 ## Outputs
 
 - `online_document_scores`: `DocumentScore`
+- `online_streamed_document_scores`: `DocumentScore`
 - `online_section_scores`: `SectionScore`
 - `online_paragraph_scores`: `ParagraphScore`
 - `online_sentence_scores`: `SentenceScore`

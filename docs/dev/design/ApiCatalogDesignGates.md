@@ -89,3 +89,15 @@ Use `implemented` or `supported` when Structure owns the public contract, `unsup
 `design-gated` when a contract exists but evidence or implementation is incomplete, `streaming-ineligible` for batch
 materialization boundaries, and `caller-owned-guided` for runnable caller integration. Mixed rows must name supported
 and gated portions precisely.
+
+## V10 Continuation
+
+V10 adopts the actionable API work recorded in `docs/dev/future/API.future.md`. The implementation and evidence sequence
+is grouped in `docs/dev/planning/P08022601.V10-api-catalog-and-schema-evolution.plan.md` rather than split into one plan
+per source document. It covers provider-neutral Geometry, sampling refinements, and missing-column union defaults with
+nested-struct and alias-preserving rules. XML, unreleased Variant mutation profiles, and opt-in join reordering receive
+explicit dispositions but do not become support claims without their target and semantic evidence.
+
+The API Catalog, capability inventories, diagnostics, references, examples, and background companions must be updated
+together. A skipped target lane is recorded as unavailable evidence, and streaming schema evolution remains gated until
+public PySpark 3.5/4.0 evidence proves the exact contract.

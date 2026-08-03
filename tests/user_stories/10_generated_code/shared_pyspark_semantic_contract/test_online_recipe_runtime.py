@@ -47,6 +47,15 @@ class RawOrder(Schema):
     status = string(nullable=True)
 
 
+class RequiredStatusOrder(Schema):
+    id = string(nullable=False)
+    status = string(nullable=False)
+
+
+class IdOnlyOrder(Schema):
+    id = string(nullable=False)
+
+
 class PublishedOrder(Schema):
     id = string(nullable=False)
     status = string(nullable=True)
@@ -1252,6 +1261,54 @@ def test_online_runner_applies_missing_column_union_by_name_before_projection(mo
         "unionByName:archived:allowMissingColumns=True",
         "select:id=col(id),status=col(status)",
         "alias:published",
+    )
+
+
+def test_online_runner_applies_typed_default_before_missing_column_union(monkeypatch) -> None:
+    """A non-nullable missing field is materialized on the source frame before union."""
+
+    _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
+    status = RequiredStatusOrder._structure_fields["status"]
+    relation_set = PySparkRelationSetRecipe(
+        operation="union_by_name",
+        input_name="archived",
+        source="archived",
+        schema=IdOnlyOrder,
+        by_name=True,
+        allow_missing_columns=True,
+        defaults=(
+            (
+                "status",
+                PySparkExpressionRecipe(
+                    kind="literal",
+                    type=status.type,
+                    nullable=False,
+                    data={"value": "unknown"},
+                ),
+            ),
+        ),
+    )
+    step = SimpleNamespace(
+        input_schema=RequiredStatusOrder,
+        input_alias="",
+        source_scope=None,
+        ordinal=0,
+        operations=(),
+        joins=(),
+    )
+
+    result = RunOnlinePySparkTransform()._relation_set(
+        _frame("orders", RequiredStatusOrder),
+        _frame("archived", IdOnlyOrder),
+        relation_set,
+        step=step,
+        functions=FakeFunctions("pyspark.sql.functions"),
+        types=FakeTypes,
+    )
+
+    assert result.operations == (
+        "withColumn:status=cast(lit('unknown') as StringType())",
+        "unionByName:archived:allowMissingColumns=True",
     )
 
 
@@ -4129,9 +4186,7 @@ class FakeFrame:
         return FakeFrame(self.name, FakeSchema(tuple(fields)), self.operations + ("select:" + ",".join(rendered),))
 
     def agg(self, *columns: FakeColumn):
-        fields = tuple(
-            FakeField(_column_name(column), _fake_column_type(column), True) for column in columns
-        )
+        fields = tuple(FakeField(_column_name(column), _fake_column_type(column), True) for column in columns)
         rendered = ",".join(f"{_column_name(column)}={column.expression}" for column in columns)
         return FakeFrame(self.name, FakeSchema(fields), self.operations + ("agg:" + rendered,))
 
@@ -4209,16 +4264,9 @@ class FakeGroupedFrame:
     def agg(self, *columns: FakeColumn):
         fields_by_name = {schema_field.name: schema_field for schema_field in self.frame.schema}
         key_fields = tuple(self._key_field(column, fields_by_name) for column in self.keys)
-        aggregate_fields = tuple(
-            FakeField(_column_name(column), self._type(column), True) for column in columns
-        )
-        group = "groupBy:" + ",".join(
-            f"{_column_name(column)}={column.expression}"
-            for column in self.keys
-        )
-        aggregate = "agg:" + ",".join(
-            f"{_column_name(column)}={column.expression}" for column in columns
-        )
+        aggregate_fields = tuple(FakeField(_column_name(column), self._type(column), True) for column in columns)
+        group = "groupBy:" + ",".join(f"{_column_name(column)}={column.expression}" for column in self.keys)
+        aggregate = "agg:" + ",".join(f"{_column_name(column)}={column.expression}" for column in columns)
         return FakeFrame(
             self.frame.name,
             FakeSchema((*key_fields, *aggregate_fields)),

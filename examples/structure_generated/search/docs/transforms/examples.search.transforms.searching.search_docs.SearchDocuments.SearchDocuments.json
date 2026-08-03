@@ -25,6 +25,7 @@
     "reranked__query_feedback",
     "retrieved__stored_scores",
     "retrieved__streamed_candidates",
+    "retrieved__streamed_scores",
     "score",
     "score_policy",
     "scoring__gap__document_availability",
@@ -42,7 +43,6 @@
     "sentence_terms",
     "signal",
     "size",
-    "streamed_document_scores",
     "summary",
     "term"
   ],
@@ -167,8 +167,13 @@
       "schema": "DocumentScore"
     },
     {
-      "name": "online_document_overlap_scores",
+      "name": "online_streamed_document_scores",
       "ordinal": 2,
+      "schema": "DocumentScore"
+    },
+    {
+      "name": "online_document_overlap_scores",
+      "ordinal": 3,
       "schema": "DocumentOverlapScore"
     }
   ],
@@ -1153,6 +1158,56 @@
       ]
     },
     {
+      "input_lane": "streamed_document_scores",
+      "input_schema": "DocumentScore",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "streamed",
+          "schema": "DocumentScore",
+          "source": "streamed_document_scores"
+        },
+        {
+          "driving": false,
+          "parameter": "online",
+          "schema": "DocumentScore",
+          "source": "scoring__scoring__selected__document_scores"
+        },
+        {
+          "driving": false,
+          "parameter": "request",
+          "schema": "SearchRequest",
+          "source": "requests"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "ScorePolicy",
+          "source": "score_policy"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "request"
+        },
+        {
+          "how": "cross",
+          "input": "policy"
+        }
+      ],
+      "name": "retrieved.merge_streamed_scores",
+      "output_lane": "retrieved__streamed_scores",
+      "output_schema": "DocumentScore",
+      "results": [
+        {
+          "frame": "retrieved__streamed_scores",
+          "lane": "retrieved__streamed_scores",
+          "schema": "DocumentScore"
+        }
+      ]
+    },
+    {
       "input_lane": "documents",
       "input_schema": "Document",
       "inputs": [
@@ -1230,7 +1285,7 @@
           "driving": false,
           "parameter": "score",
           "schema": "DocumentScore",
-          "source": "streamed_document_scores"
+          "source": "retrieved__streamed_scores"
         },
         {
           "driving": false,

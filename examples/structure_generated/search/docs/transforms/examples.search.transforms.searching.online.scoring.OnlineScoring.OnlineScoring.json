@@ -102,38 +102,43 @@
       "schema": "DocumentScore"
     },
     {
-      "name": "online_section_scores",
+      "name": "online_streamed_document_scores",
       "ordinal": 1,
+      "schema": "DocumentScore"
+    },
+    {
+      "name": "online_section_scores",
+      "ordinal": 2,
       "schema": "SectionScore"
     },
     {
       "name": "online_paragraph_scores",
-      "ordinal": 2,
+      "ordinal": 3,
       "schema": "ParagraphScore"
     },
     {
       "name": "online_sentence_scores",
-      "ordinal": 3,
+      "ordinal": 4,
       "schema": "SentenceScore"
     },
     {
       "name": "online_document_overlap_scores",
-      "ordinal": 4,
+      "ordinal": 5,
       "schema": "DocumentOverlapScore"
     },
     {
       "name": "online_section_overlap_scores",
-      "ordinal": 5,
+      "ordinal": 6,
       "schema": "SectionOverlapScore"
     },
     {
       "name": "online_paragraph_overlap_scores",
-      "ordinal": 6,
+      "ordinal": 7,
       "schema": "ParagraphOverlapScore"
     },
     {
       "name": "online_sentence_overlap_scores",
-      "ordinal": 7,
+      "ordinal": 8,
       "schema": "SentenceOverlapScore"
     }
   ],

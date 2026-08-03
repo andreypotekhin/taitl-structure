@@ -14,7 +14,7 @@ For the architecture, evidence boundaries, and ownership model, see the
 | --- | --- | --- | --- |
 | Chunking | `Chunking` | sections, paragraphs, sentences, words | Plain-text hierarchy and shared token normalization. |
 | Indexing | `Indexing` | target-grain terms and summaries | Build once; score many query batches. |
-| Scoring | `Scoring`, `OnlineScoring` | timestamped score relations | Bound offline scoring to popular queries; fill ad-hoc query gaps online and persist bridge rows in the same relations. |
+| Scoring | `OfflineScoring`, `Scoring`, `OnlineScoring` | timestamped score relations | Score popular and seven-day recent queries offline; fill ad-hoc gaps online and persist bridge rows in the same relations. |
 | Similarity | `CreateSimilarityQueries`, `ReduceSimilarityScores` | same-grain corpus pairs | Reuse the lexical index; BM25 stays directional. |
 | Feedback | `Impressions`, `Clicks`, `BuildRelevanceSignals` | daily facts and batch signals | Exposure-aware, attributed, propensity-corrected evidence. |
 | Presentation | `SearchSentences`, `SearchPassages`, `SearchDocuments` | deterministic ranks | Sentence and passage ranking are lexical; document ranking is staged retrieval, overlap narrowing, and reranking. |
@@ -23,7 +23,7 @@ For the architecture, evidence boundaries, and ownership model, see the
 
 ## Build all search artifacts
 
-`All` is the one-call pre-serving build boundary. It accepts corpus documents, one similarity policy, one `ScorePolicy`, queries and label configuration, persisted daily feedback facts, user/band catalogs, and one relevance policy. It emits the extracted hierarchy, document profiles, text and corpus statistics, blocked near-duplicate candidates, every lexical index relation, corpus similarity pairs, labeled queries, overlap/BM25/selected lexical scores, resolved cohort context, and relevance signals. Offline scoring is capped by `maximum_offline_queries` after query popularity is aggregated from daily impressions. Its stage graph keeps document profiling independent from chunking; after chunking, indexing feeds scoring and the existing `Similarities` pipeline independently from text analysis.
+`All` is the one-call pre-serving build boundary. It accepts corpus documents, one similarity policy, one `ScorePolicy`, queries and label configuration, persisted daily feedback facts, user/band catalogs, and one relevance policy. It emits the extracted hierarchy, document profiles, text and corpus statistics, blocked near-duplicate candidates, every lexical index relation, corpus similarity pairs, labeled queries, overlap/BM25/selected lexical scores, resolved cohort context, and relevance signals. `OfflineScoring` caps popular-query scoring by `maximum_offline_queries` and unions in every query observed during the seven days ending at `ScorePolicy.scored_at`. Its stage graph keeps document profiling independent from chunking; after chunking, indexing feeds scoring and the existing `Similarities` pipeline independently from text analysis.
 
 ```python
 from examples.search.transforms.all import All
@@ -452,10 +452,37 @@ document_popularity = signals.document_popularity
 
 `SearchDocuments` composes `OnlineScoring`, `RetrieveDocuments`, `OverlapDocuments`, and `RerankDocuments` as explicit stages.
 `OnlineScoring` filters stale caller-supplied document and overlap scores, calculates missing query groups from the
-reusable indexes, and exposes only newly calculated bridge rows. `RetrieveDocuments` unions those rows with the
-caller-supplied scores and admits up to 1000 persisted or streamed documents per query by descending score.
+reusable indexes, and exposes only newly calculated bridge rows for stored and streamed retrieval. `RetrieveDocuments`
+unions those rows with the caller-supplied scores and admits up to 1000 persisted or streamed documents per query by
+descending score.
 `OverlapDocuments` narrows those candidates to 100 by overlap score, then `RerankDocuments` joins user click feedback
 and emits results.
+
+The `queries` input to `SearchDocuments` is streaming-declared and that mode is propagated through the online scoring
+and document-ranking stages. A query carries its immutable `requested_at` event time, and the matching
+`SearchRequest.requested_at` must agree. A caller that adopts the future streaming shape supplies both event streams,
+applies the configured watermark delay, and waits for the finite query-completion window before accepting results.
+
+The path to a ready-to-start Structured Streaming job is deliberately explicit:
+
+1. Replace query-term and score-cache global deduplication with row-local `array_distinct`, unique query IDs, and
+   bounded event-time state. Do not use an unbounded `drop_duplicates` or a global selected-row helper.
+2. Resolve persisted scores, online scores, and static index lookups into streaming branches before combining them;
+   only exact-schema stream/stream unions are allowed. Static documents, policies, and feedback snapshots remain
+   static lookup inputs for one serving run.
+3. Replace the current global `row_number` candidate and overlap windows with a bounded finite-window top-K state
+   operation. Keep the existing score/document-ID tie-breakers and retain only the configured 1000/100 candidates.
+4. Pre-resolve feedback fallback and popularity into the immutable serving snapshot. Streaming reranking may perform
+   stream/static lookups and bounded normalization, but may not run `select_first_qualified` or a global analytic window.
+5. Emit one final result set per query in append mode after the watermark closes its completion window. Late or duplicate
+   events are discarded according to the watermark contract; emitted results are never revised. Snapshot refreshes start
+   a new caller-owned run.
+
+The current graph is therefore a compiler-visible migration boundary, not yet a ready-to-start job. The compiler must
+reject any remaining unbounded deduplication, global ranking window, unsupported stream-stream join, or unbounded state
+stage before query start. Structure continues to own only DataFrame transformations; the caller owns the source,
+watermark application, checkpoint, trigger, output sink, snapshot refresh, restart policy, and any downstream
+materialization.
 
 Feedback combines 80% of the normalized query-document signal with 20% global document popularity. Within each BM25
 candidate set, the reranker calculates:

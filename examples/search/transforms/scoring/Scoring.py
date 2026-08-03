@@ -39,7 +39,7 @@ from structure import Transform, input, output, parameter, stage
 class Scoring(Transform):
     """Run production scoring and select one unified score per target grain."""
 
-    queries = input(SearchQuery)
+    queries = input(SearchQuery, streaming=True)
     document_terms = input(DocumentIndexTerm)
     section_terms = input(SectionIndexTerm)
     paragraph_terms = input(ParagraphIndexTerm)

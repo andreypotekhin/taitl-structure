@@ -13,10 +13,10 @@ class OverlapDocuments(Transform):
 
     maximum_candidates = 100
 
-    candidates = input(DocumentSearchCandidate)
+    candidates = input(DocumentSearchCandidate, streaming=True)
     document_overlap_scores = input(DocumentOverlapScore)
     online_document_overlap_scores = input(DocumentOverlapScore)
-    requests = input(SearchRequest)
+    requests = input(SearchRequest, streaming=True)
     score_policy = input(ScorePolicy)
     merged_scores = lane(DocumentOverlapScore)
     ranked_candidates = lane(DocumentSearchCandidate)

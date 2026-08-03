@@ -212,9 +212,12 @@ from examples.search.transforms.indexing import Indexing
 from examples.search.transforms.labeling import CreateQueryLabels, Labeling, MergeQueryLabels
 from examples.search.transforms.relevance.BuildRelevanceSignals import BuildRelevanceSignals
 from examples.search.transforms.score import Scoring
+from examples.search.transforms.scoring.MergeOfflineQueries import MergeOfflineQueries
+from examples.search.transforms.scoring.OfflineScoring import OfflineScoring
 from examples.search.transforms.scoring.ScoreBm25 import ScoreBm25
 from examples.search.transforms.scoring.ScoreOverlap import ScoreOverlap
 from examples.search.transforms.scoring.SelectPopularQueries import SelectPopularQueries
+from examples.search.transforms.scoring.SelectRecentQueries import SelectRecentQueries
 from examples.search.transforms.search import SearchDocuments, SearchPassages, SearchSentences
 from examples.search.transforms.searching.online.scoring import OnlineScoring
 from examples.search.transforms.searching.search_similarity import SearchSimilarity
@@ -533,7 +536,10 @@ TRANSFORMS = (
     (ScoreOverlap, "examples.search.transforms.scoring.ScoreOverlap.ScoreOverlap"),
     (ScoreBm25, "examples.search.transforms.scoring.ScoreBm25.ScoreBm25"),
     (Scoring, "examples.search.transforms.scoring.Scoring.Scoring"),
+    (OfflineScoring, "examples.search.transforms.scoring.OfflineScoring.OfflineScoring"),
+    (MergeOfflineQueries, "examples.search.transforms.scoring.MergeOfflineQueries.MergeOfflineQueries"),
     (SelectPopularQueries, "examples.search.transforms.scoring.SelectPopularQueries.SelectPopularQueries"),
+    (SelectRecentQueries, "examples.search.transforms.scoring.SelectRecentQueries.SelectRecentQueries"),
     (OnlineScoring, "examples.search.transforms.searching.online.scoring.OnlineScoring.OnlineScoring"),
     (
         Scoring001AdjustBm,
@@ -593,13 +599,14 @@ def test_query_intents_create_multilingual_english_labels_online_and_generated(s
                     "q-en",
                     "natural",
                     "What is the current status?",
+                    datetime(2026, 7, 21, 9),
                     {"is_question": 0, "is_time_sensitive": 0, "tier": 2},
                     False,
                     False,
                     None,
                 ),
-                ("q-uk", "natural", "What is the status?", {"tier": 1}, False, False, "en_UK"),
-                ("q-es", "natural", "¿Qué es Structure?", {"tier": 3}, False, True, "es_ES"),
+                ("q-uk", "natural", "What is the status?", datetime(2026, 7, 21, 9), {"tier": 1}, False, False, "en_UK"),
+                ("q-es", "natural", "¿Qué es Structure?", datetime(2026, 7, 21, 9), {"tier": 3}, False, True, "es_ES"),
             ],
             search.SEARCH_QUERY_SCHEMA,
         )
@@ -803,8 +810,8 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
 
         queries = spark.createDataFrame(
             [
-                ("q-structure", "natural", "Structure transformations", {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
-                ("q-reference", "natural", "reference text", {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
+                ("q-structure", "natural", "Structure transformations", datetime(2026, 7, 21, 9), {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
+                ("q-reference", "natural", "reference text", datetime(2026, 7, 21, 9), {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
             ],
             __import__(f"{PACKAGE}.pyspark.schemas.search", fromlist=["SEARCH_QUERY_SCHEMA"]).SEARCH_QUERY_SCHEMA,
         )
@@ -1086,8 +1093,8 @@ def test_search_ranks_fixture_sentences_online_and_generated(spark, tmp_path) ->
         documents = spark.createDataFrame(_search_documents(), text_schemas.DOCUMENT_SCHEMA)
         queries = spark.createDataFrame(
             [
-                ("q-aurora", "natural", "aurora beacon navigation", {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
-                ("q-free-form", "natural", "  AURORA,   beacon! navigation?  ", {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
+                ("q-aurora", "natural", "aurora beacon navigation", datetime(2026, 7, 21, 9), {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
+                ("q-free-form", "natural", "  AURORA,   beacon! navigation?  ", datetime(2026, 7, 21, 9), {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
             ],
             search_schemas.SEARCH_QUERY_SCHEMA,
         )
@@ -1190,8 +1197,8 @@ def test_passage_search_ranks_paragraphs_with_same_section_context(spark, tmp_pa
         )
         queries = spark.createDataFrame(
             [
-                ("q-free-form", "natural", "  SIGNAL!  ", {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
-                ("q-boundary", "natural", "next section", {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
+                ("q-free-form", "natural", "  SIGNAL!  ", datetime(2026, 7, 21, 9), {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
+                ("q-boundary", "natural", "next section", datetime(2026, 7, 21, 9), {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
             ],
             search_schemas.SEARCH_QUERY_SCHEMA,
         )
@@ -1362,8 +1369,8 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
         )
         queries = spark.createDataFrame(
             [
-                ("q-free-form", "natural", "  AURORA,   beacon!  ", {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
-                ("q-navigation", "natural", "navigation", {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
+                ("q-free-form", "natural", "  AURORA,   beacon!  ", datetime(2026, 7, 21, 9), {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
+                ("q-navigation", "natural", "navigation", datetime(2026, 7, 21, 9), {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
             ],
             search_schemas.SEARCH_QUERY_SCHEMA,
         )

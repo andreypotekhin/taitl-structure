@@ -167,6 +167,35 @@ The following remain caller-owned unless a separate product decision changes Str
 - sending customer or operator communications; and
 - production model hosting, artifact promotion, secret management, and access-control enforcement.
 
+## Package-boundary directions
+
+### Inventory as a first-class domain
+
+Inventory is currently a first-class subpackage of fulfillment, with `schemas/fulfillment/inventory/` holding inventory
+positions, inbound inventory, and lead times and `transforms/fulfillment/inventory/` holding dated projection logic.
+That is the right boundary while the admitted inventory behavior exists to support fulfillment planning.
+
+Inventory should become a sibling Store package only when it has an independent public contract and more than one
+meaningful consumer. Candidates include snapshot normalization, reservation and receipt reconciliation, reusable
+availability publication, inventory quality diagnostics, and tenant or warehouse inventory summaries. A future package
+could then be organized as `schemas/inventory/` and `transforms/inventory/`, with fulfillment consuming its facts rather
+than owning their preparation. Moving the current projection alone would rename a boundary without giving inventory an
+independent purpose.
+
+### Shipping as a first-class domain
+
+Shipping should be modeled as observed execution, separate from fulfillment planning. Fulfillment decides how demand is
+served; shipping records packages, carrier events, dispatch, and delivery. The current `Shipment` relation is only an
+observed input to order publication, plan reconciliation, and service evaluation, so it does not yet justify a separate
+shipping package.
+
+When Store admits shipping-specific workflows—carrier-event normalization, package or split-shipment modeling,
+delivery milestones, tracking, returns, or carrier-performance summaries—prefer a sibling `schemas/shipping/` and
+`transforms/shipping/` package. Fulfillment should consume those observed shipping facts for plan-versus-actual
+evaluation. Do not place shipping under fulfillment merely because shipments are used to evaluate fulfillment; that
+would conflate the decision boundary with the execution boundary. Keep `orders/` focused on commercial order
+publication, and let it consume shipping facts when needed.
+
 ## Admission guidance
 
 Future Store work should be admitted in small vertical slices. Each slice should introduce one business contract and

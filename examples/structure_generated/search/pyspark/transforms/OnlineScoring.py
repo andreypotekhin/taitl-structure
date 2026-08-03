@@ -1196,6 +1196,10 @@ class OnlineScoringGenerated(
         online_document_scores = frames["scoring__selected__document_scores"].alias("document_score")
         assert_schema(online_document_scores, DOCUMENT_SCORE_SCHEMA, name="DocumentScore", mode="strict")
 
+        # Step method: online_streamed_document_scores
+        online_streamed_document_scores = frames["scoring__selected__document_scores"].alias("document_score")
+        assert_schema(online_streamed_document_scores, DOCUMENT_SCORE_SCHEMA, name="DocumentScore", mode="strict")
+
         # Step method: online_section_scores
         online_section_scores = frames["scoring__selected__section_scores"].alias("section_score")
         assert_schema(online_section_scores, SECTION_SCORE_SCHEMA, name="SectionScore", mode="strict")
@@ -1242,6 +1246,7 @@ class OnlineScoringGenerated(
         return TransformResult(
             {
                 "online_document_scores": online_document_scores,
+                "online_streamed_document_scores": online_streamed_document_scores,
                 "online_section_scores": online_section_scores,
                 "online_paragraph_scores": online_paragraph_scores,
                 "online_sentence_scores": online_sentence_scores,
@@ -1253,6 +1258,7 @@ class OnlineScoringGenerated(
             single=False,
             schema={
                 "online_document_scores": DOCUMENT_SCORE_SCHEMA,
+                "online_streamed_document_scores": DOCUMENT_SCORE_SCHEMA,
                 "online_section_scores": SECTION_SCORE_SCHEMA,
                 "online_paragraph_scores": PARAGRAPH_SCORE_SCHEMA,
                 "online_sentence_scores": SENTENCE_SCORE_SCHEMA,

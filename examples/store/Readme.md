@@ -6,35 +6,60 @@ commercial demand, plan warehouse allocation and backorders from inventory facts
 separate, and demonstrate operational summaries. Structure owns the transformations; callers provide sources,
 persistence, stream lifecycle, and the business actions taken from the results.
 
-| Concern | Transform | Result | Details |
-| --- | --- | --- | --- |
-| Catalog preparation | `PrepareCatalog` | `CatalogProduct` | Tenant-visible product facts for recommendation eligibility. |
-| Recommendations | `Recommender` / `Merchandising` | `RecommendedProduct`, `RecommendationRun` | Transparent policy, promotion, behavior, and personal product ranking. |
-| Recommendation feedback | `BuildProductSignals` | Daily facts and product signals | Impression/click attribution and reusable product signals. |
-| Merchandising evaluation | `EvaluateRecommendations` | Request and daily behavior summaries | Zero-result, click, and exposure-aware behavior evaluation. |
-| Catalog normalization and taxonomy | `NormalizeCatalog` / `ExpandProductTaxonomy` | Normalized catalog and ancestor facts | Stable tenant-scoped category joins with bounded hierarchy expansion. |
-| Session and purchase feedback | `BuildSessionSignals` / `BuildPurchaseSignals` | Session features and attributed purchases | Event-time bounded interests and explicit recommendation-attribution status. |
-| Candidate workflow | `BuildRecommendationCandidates` | Candidates and decision evidence | Admit catalog candidates, enrich them with taxonomy, session, and feedback facts, then filter with explicit reasons. |
-| Diversification | `DiversifyRecommendations` | Diverse ranked products | Deterministic taxonomy-branch caps after ranking. |
-| Recommendation experiments | `AssignRecommendationVariants` / `EvaluateRecommendationExperiment` | Assignments, exposures, variant metrics | Stable tenant-scoped assignments and descriptive observed-variant comparisons. |
-| Fulfillment pipeline | `Fulfillment` | Demand, plans, suggestions, summaries | Main planning boundary from commercial order inputs to fulfillment outputs. |
-| Demand preparation | `PrepareOrderDemand` | `Order` | Valid commercial order lines before warehouse or shipment decisions. |
-| Fulfillment planning | `PlanFulfillment` | Allocations, backorders, plans, suggestions | Deterministic warehouse selection and conservative replenishment signals. |
-| Planning analytics | `FulfillmentAnalytics` | Daily and warehouse load summaries | Batch service-risk and load summaries. |
-| Plan versus actual | `ReconcileFulfillmentPlan` | `FulfillmentReconciliation` | Planned lines observed later in shipment facts. |
-| Dated inventory | `BuildDemandWindows` / `ProjectInventory` | `DemandWindow`, `InventoryProjection` | Observed demand windows, inbound receipts, lead-time-aware usable dates, and projected stock. |
-| Shortages and substitutions | `DetectShortages` / `FindSubstitutions` | `FulfillmentShortage`, `FulfillmentSubstitutionOption` | First projected deficit and ranked policy-approved alternatives. |
-| Operational exceptions | `PrioritizeExceptions` | `FulfillmentException` | Stable priority queue exposing shortage, late-inbound, service-risk, and substitution reasons. |
-| Service evaluation | `EvaluateFulfillment` | `FulfillmentServiceEvaluation` | Line-safe on-time, in-full, lateness, and target-attainment results from actual shipments. |
-| Enrichment | `EnrichOrders` | `OrderPublished` | Streaming-compatible order enrichment. |
-| Daily analytics | `OrderAnalytics` | Customer and product daily results | Batch aggregation and windows. |
-| Advanced analytics | `AdvancedOrderAnalytics` | Rollups, cubes, and profiles | Batch analytical examples. |
-| Join shapes | `RowsetJoinExamples` | Reconciliations and candidates | Full, right, Cartesian joins. |
+| Funnel stage | Transform package | Transform | Result | Details |
+| --- | --- | --- | --- | --- |
+| **1. Product foundation** | `transforms/catalog/`, `transforms/taxonomy/` | — | — | Establish tenant-scoped product facts before serving or ordering. |
+| | `transforms/catalog/` | `PrepareCatalog` | `CatalogProduct` | Tenant-visible product facts for recommendation eligibility. |
+| | `transforms/catalog/` | `NormalizeCatalog` | Normalized catalog | Stable identifiers and category joins for downstream transforms. |
+| | `transforms/taxonomy/` | `ExpandProductTaxonomy` | Ancestor facts | Bounded hierarchy expansion for category-aware retrieval and ranking. |
+| **2. Candidate and recommendation serving** | `transforms/recommender/`, `transforms/personalization/`, `transforms/merchandising/` | — | — | Turn product facts and shopper context into ranked recommendations. |
+| | `transforms/recommender/`, `transforms/merchandising/` | `BuildRecommendationCandidates` / `Recommender` / `Merchandising` | Candidates, `RecommendedProduct`, `RecommendationRun` | Admit candidates, enrich them with context, and rank with transparent policy and behavior signals. |
+| | `transforms/recommender/` | `DiversifyRecommendations` | Diverse ranked products | Deterministic taxonomy-branch caps after ranking. |
+| | `transforms/recommender/signals/`, `transforms/merchandising/` | `BuildProductSignals` / `BuildSessionSignals` / `BuildPurchaseSignals` | Daily facts and product signals | Derive reusable signals from impressions, clicks, sessions, and attributed purchases. |
+| | `transforms/evaluation/recommender/` | `EvaluateRecommendations` | Request and daily behavior summaries | Zero-result, click, and exposure-aware behavior evaluation. |
+| | `transforms/experiments/` | `AssignRecommendationVariants` / `EvaluateRecommendationExperiment` | Assignments, exposures, variant metrics | Stable tenant-scoped assignments and descriptive observed-variant comparisons. |
+| **3. Commercial demand admission** | `transforms/fulfillment/demand/` | — | — | Convert incoming orders into valid demand before warehouse or shipment decisions. |
+| | `transforms/fulfillment/demand/` | `PrepareOrderDemand` | `Order` | Valid commercial order lines ready for fulfillment planning. |
+| **4. Fulfillment planning** | `transforms/fulfillment/` and its `inventory/`, `planning/`, `shortages/`, and `substitutions/` subpackages | — | — | Decide how demand can be served from inventory and expose planning risk. |
+| | `transforms/fulfillment/` | `Fulfillment` | Demand, plans, suggestions, summaries | Main planning boundary from commercial order inputs to fulfillment outputs. |
+| | `transforms/fulfillment/planning/` | `PlanFulfillment` | Allocations, backorders, plans, suggestions | Deterministic warehouse selection and conservative replenishment signals. |
+| | `transforms/fulfillment/demand/`, `transforms/fulfillment/inventory/` | `BuildDemandWindows` / `ProjectInventory` | `DemandWindow`, `InventoryProjection` | Observed demand windows, inbound receipts, lead-time-aware usable dates, and projected stock. |
+| | `transforms/fulfillment/shortages/`, `transforms/fulfillment/substitutions/` | `DetectShortages` / `FindSubstitutions` | `FulfillmentShortage`, `FulfillmentSubstitutionOption` | First projected deficit and ranked policy-approved alternatives. |
+| | `transforms/fulfillment/shortages/` | `PrioritizeExceptions` | `FulfillmentException` | Stable priority queue exposing shortage, late-inbound, service-risk, and substitution reasons. |
+| **5. Shipment-backed publication and actuals** | `transforms/orders/`, `transforms/fulfillment/reconciliation/`, `transforms/evaluation/fulfillment/` | — | — | Keep observed shipment facts distinct from plans and commercial demand. |
+| | `transforms/orders/` | `EnrichOrders` | `OrderPublished` | Streaming-compatible order enrichment joined to observed shipment facts. |
+| | `transforms/fulfillment/reconciliation/` | `ReconcileFulfillmentPlan` | `FulfillmentReconciliation` | Planned lines observed later in shipment facts. |
+| | `transforms/evaluation/fulfillment/` | `EvaluateFulfillment` | `FulfillmentServiceEvaluation` | Line-safe on-time, in-full, lateness, and target-attainment results from actual shipments. |
+| **6. Analytics and teaching shapes** | `transforms/analytics/`, `transforms/rowset_joins/` | — | — | Summarize outcomes and demonstrate reusable join shapes after the main paths. |
+| | `transforms/analytics/fulfillment/` | `FulfillmentAnalytics` | Daily and warehouse load summaries | Batch service-risk and load summaries. |
+| | `transforms/analytics/orders/` | `OrderAnalytics` | Customer and product daily results | Batch aggregation and windows. |
+| | `transforms/adv_analytics.py` | `AdvancedOrderAnalytics` | Rollups, cubes, and profiles | Batch analytical examples. |
+| | `transforms/rowset_joins/` | `RowsetJoinExamples` | Reconciliations and candidates | Full, right, and Cartesian joins. |
 
 Store keeps reusable domain boundaries at the top level: catalog preparation lives under `transforms/catalog/`,
 taxonomy expansion under `transforms/taxonomy/`, recommendation serving under `transforms/recommender/`, fulfillment
 planning under `transforms/fulfillment/`, and order enrichment under `transforms/orders/`. The `Merchandising` facade
-composes its recommendation boundaries, while reporting remains under the analytics packages.
+composes its recommendation boundaries, while reporting remains under the analytics packages. The table follows the
+data funnel from product facts to recommendations, demand, planning, shipment-backed actuals, and analytics; the
+section rows identify the package boundary responsible for each stage.
+
+### Inventory and shipping package boundaries
+
+Inventory is already a first-class concern inside fulfillment: `transforms/fulfillment/inventory/` owns dated inventory
+projection, while planning consumes inventory positions and inbound facts. The next architectural question is whether
+inventory should become a sibling top-level package. That promotion is justified when inventory has reusable workflows
+independent of an order plan—such as snapshot normalization, reservation reconciliation, availability publication, or
+inventory quality checks consumed by both recommendations and fulfillment. Until those workflows have their own
+contracts, keeping inventory under fulfillment makes the current ownership honest: the existing inventory outputs are
+planning inputs and projections, not a general inventory service.
+
+Shipping should remain distinct from fulfillment planning. Fulfillment answers how a demand line should be served;
+shipping represents execution and delivery evidence after that decision. The current `Shipment` relation is therefore
+consumed by order publication, reconciliation, and service evaluation without creating a shipping package that has no
+shipping-specific workflow yet. If Store later adds carrier-event normalization, package or split-shipment facts,
+delivery milestones, tracking, returns, or carrier performance, those contracts should form a sibling
+`transforms/shipping/` package. Fulfillment can consume its observed outputs for plan-versus-actual evaluation, while
+shipping remains separate from both planning and the `orders/` publication facade.
 
 ## Recommendations and merchandising
 

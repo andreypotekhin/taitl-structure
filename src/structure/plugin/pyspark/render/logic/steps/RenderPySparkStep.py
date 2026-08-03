@@ -417,7 +417,7 @@ class RenderPySparkStep:
                     operation.relation_set.source,
                     prepared_sources.get(operation.relation_set.input_name, operation.relation_set.source),
                 )
-                ordered_lines.extend(self._relation_set(source, operation.relation_set, target=target))
+                ordered_lines.extend(self._relation_set(source, operation.relation_set, step=step, target=target))
             if operation.kind == "watermark" and operation.watermark is not None:
                 if operation.watermark.scope == getattr(step, "source_scope", ""):
                     ordered_lines.extend(self._watermark(operation.watermark, target=target))
@@ -492,10 +492,7 @@ class RenderPySparkStep:
             for expression in assertion.keys
         )
         prefix = f"{target}_require_unique_{index}"
-        message = (
-            "REL-E0702: require_unique(...) found duplicate keys; "
-            "see docs/Diagnostics.md#rel-e0702"
-        )
+        message = "REL-E0702: require_unique(...) found duplicate keys; " "see docs/Diagnostics.md#rel-e0702"
         return [
             f"        {prefix}_duplicates = {target}.groupBy({keys}).agg(",
             '            F.count(F.lit(1)).alias("__structure_count")',
@@ -548,7 +545,9 @@ class RenderPySparkStep:
         reference_key = render_pyspark_expression(assertion.reference_key, scope_aliases=reference_aliases)
         candidates = f"{prefix}_candidates"
         if assertion.nulls == "allow":
-            candidates_line = f'        {candidates} = {prefix}_left.where(F.col({self._literal(value_column)}).isNotNull())'
+            candidates_line = (
+                f'        {candidates} = {prefix}_left.where(F.col({self._literal(value_column)}).isNotNull())'
+            )
         else:
             candidates_line = f"        {candidates} = {prefix}_left"
         message = (
@@ -813,17 +812,12 @@ class RenderPySparkStep:
         for name, expression in scan.initial:
             field = scan.state_schema._structure_fields[name]
             rendered = render_pyspark_expression(expression, scope_aliases=aliases)
-            fields.append(
-                f"{rendered}.cast({self._scan_type(field.type)}).alias({self._literal(field.column)})"
-            )
+            fields.append(f"{rendered}.cast({self._scan_type(field.type)}).alias({self._literal(field.column)})")
         return f"F.struct({', '.join(fields)})"
 
     def _scan_merge(self, scan: PySparkOrderedTimelineScanRecipe) -> str:
         before = (
-            "F.struct("
-            "item.getField('__payload').alias('__payload'), "
-            "acc.getField('__state').alias('__state')"
-            ")"
+            "F.struct(" "item.getField('__payload').alias('__payload'), " "acc.getField('__state').alias('__state')" ")"
         )
         next_state = self._scan_next_state(scan)
         rows = f"F.concat(acc.getField('__rows'), F.array({before})).alias('__rows')"
@@ -835,9 +829,7 @@ class RenderPySparkStep:
             field = scan.state_schema._structure_fields[name]
             rewritten = self._scan_rewrite(expression, scan, state="acc", payload="item")
             rendered = render_pyspark_expression(rewritten, scope_aliases={})
-            fields.append(
-                f"{rendered}.cast({self._scan_type(field.type)}).alias({self._literal(field.column)})"
-            )
+            fields.append(f"{rendered}.cast({self._scan_type(field.type)}).alias({self._literal(field.column)})")
         return f"F.struct({', '.join(fields)})"
 
     def _scan_rows_type(
@@ -886,7 +878,9 @@ class RenderPySparkStep:
             type=expression.type,
             nullable=expression.nullable,
             data=expression.data,
-            args=tuple(self._scan_rewrite(argument, scan, state=state, payload=payload) for argument in expression.args),
+            args=tuple(
+                self._scan_rewrite(argument, scan, state=state, payload=payload) for argument in expression.args
+            ),
         )
 
     def _scan_field(self, expression, root: str, first: str):
@@ -907,12 +901,24 @@ class RenderPySparkStep:
             )
         return rewritten
 
-    def _relation_set(self, source: str, relation_set, *, target: str) -> list[str]:
+    def _relation_set(self, source: str, relation_set, *, step, target: str) -> list[str]:
+        lines: list[str] = []
+        for path, default in relation_set.defaults:
+            left_field = step.input_schema._structure_fields.get(path)
+            right_field = relation_set.schema._structure_fields.get(path)
+            field = left_field or right_field
+            if field is None:
+                raise TypeError(f"Unknown relation-set default field: {path}")
+            frame = target if left_field is None else source
+            rendered = render_pyspark_expression(default, scope_aliases=self._scope_aliases(step))
+            rendered = f"{rendered}.cast({self._schema.render().type(field.type)})"
+            lines.append(f"        {frame} = {frame}.withColumn({self._literal(field.column)}, {rendered})")
         if relation_set.by_name:
-            return [
+            lines.append(
                 f"        {target} = {target}.unionByName("
                 f"{source}, allowMissingColumns={relation_set.allow_missing_columns})"
-            ]
+            )
+            return lines
         function = {
             "union_all": "union",
             "intersect": "intersect",
@@ -920,9 +926,12 @@ class RenderPySparkStep:
             "subtract": "subtract",
             "except_all": "exceptAll",
         }[relation_set.operation]
-        return [f"        {target} = {target}.{function}({source})"]
+        lines.append(f"        {target} = {target}.{function}({source})")
+        return lines
 
-    def _relation_order(self, relation_order, *, step: PySparkStepRecipe | PySparkOutputRecipe, target: str) -> list[str]:
+    def _relation_order(
+        self, relation_order, *, step: PySparkStepRecipe | PySparkOutputRecipe, target: str
+    ) -> list[str]:
         order = ", ".join(
             render_pyspark_expression(expression, scope_aliases=self._scope_aliases(step))
             for expression in relation_order.order_by
@@ -1173,10 +1182,7 @@ class RenderPySparkStep:
         return lines
 
     def _fallback_next_path(self, path: str, parent: str) -> str:
-        head = (
-            f"F.slice(F.col({self._literal(path)}), "
-            f"F.lit(1), F.size(F.col({self._literal(path)})) - F.lit(1))"
-        )
+        head = f"F.slice(F.col({self._literal(path)}), " f"F.lit(1), F.size(F.col({self._literal(path)})) - F.lit(1))"
         return (
             f"F.when(F.col({self._literal(parent)}).isNull(), {head})"
             f".when(F.array_contains({head}, F.col({self._literal(parent)})), {head})"
@@ -1358,10 +1364,7 @@ class RenderPySparkStep:
                 expression = self._deterministic_mode(expression)
             else:
                 expression = f"F.mode({expression})"
-            return (
-                f"{expression}.cast({self._schema.render().type(assignment.field.type)})"
-                f".alias({alias})"
-            )
+            return f"{expression}.cast({self._schema.render().type(assignment.field.type)})" f".alias({alias})"
         if assignment.function == "grouping_id":
             return f"F.grouping_id().cast({self._schema.render().type(assignment.field.type)}).alias({alias})"
         if assignment.function == "is_grouped" and assignment.expression is not None:

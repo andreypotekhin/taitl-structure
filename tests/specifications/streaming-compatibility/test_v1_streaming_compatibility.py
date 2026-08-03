@@ -95,6 +95,13 @@ class StreamWindowSummary(Schema):
     row_count = long(nullable=False)
 
 
+class StreamFiniteSelectionSummary(Schema):
+    bucket = struct(TimeWindow, nullable=False)
+    id = string(nullable=False)
+    first_event_time = timestamp(nullable=True)
+    last_event_time = timestamp(nullable=True)
+
+
 @transform(streaming=True)
 class StreamingFirstWindow(Transform):
     rows = input(StreamRaw, streaming=True)
@@ -415,6 +422,22 @@ class StreamingWindowProjection(Transform):
         return StreamRanked(
             id=row.id,
             rank=row_number(partition_by=row.id, order_by=row.event_time),
+        )
+
+
+@transform(streaming=True)
+class StreamingFiniteSelection(Transform):
+    rows = input(StreamRaw, streaming=True)
+    summary = output(StreamFiniteSelectionSummary)
+
+    def select(self, row: StreamRaw) -> StreamFiniteSelectionSummary:
+        watermark(row.event_time, delay="10 minutes")
+        group_by(bucket=window(row.event_time, "10 minutes"), id=row.id)
+        return StreamFiniteSelectionSummary(
+            bucket=window(row.event_time, "10 minutes"),
+            id=row.id,
+            first_event_time=first_value(row.event_time, order_by=row.event_time),
+            last_event_time=last_value(row.event_time, order_by=row.event_time),
         )
 
 
@@ -1165,6 +1188,38 @@ def test_v9_chained_event_time_windows_render_window_time_without_lifecycle_call
     )
 
     assert "F.window_time(" in rendered
+    assert "readStream" not in rendered
+    assert "writeStream" not in rendered
+
+
+@pytest.mark.parametrize("profile", [">=3.5,<4.0", ">=4.0,<4.1"])
+def test_v9_finite_window_selection_uses_a_watermarked_ordered_aggregate(profile: str) -> None:
+    plan = cast(PySparkExecutionPlan, _compile_with_plugin(StreamingFiniteSelection, profile).lowered)
+
+    report = Compiler.compileability.streaming()(plan, required=True)
+
+    assert report.support is StreamingSupport.COMPATIBLE
+    assert report.findings == ()
+    aggregate = next(operation.aggregate for operation in plan.steps[0].operations if operation.aggregate is not None)
+    assert aggregate is not None
+    assert len([assignment for assignment in aggregate.assignments if assignment.function == "first_value"]) == 1
+    assert len([assignment for assignment in aggregate.assignments if assignment.function == "last_value"]) == 1
+    assert aggregate.keys[0].expression.kind == "time_window"
+
+
+def test_v9_finite_window_selection_renders_public_min_by_and_max_by_without_lifecycle_calls() -> None:
+    plan = cast(PySparkExecutionPlan, _compile_with_plugin(StreamingFiniteSelection, ">=4.0,<4.1").lowered)
+    rendered = "\n".join(
+        PySpark.render.project()(
+            plan,
+            source_transform="tests.specifications.streaming_compatibility.StreamingFiniteSelection",
+            generated_package="streaming_generated",
+            source_schema_modules={__name__: [StreamRaw, StreamFiniteSelectionSummary]},
+        ).values()
+    )
+
+    assert "F.min_by(" in rendered
+    assert "F.max_by(" in rendered
     assert "readStream" not in rendered
     assert "writeStream" not in rendered
 

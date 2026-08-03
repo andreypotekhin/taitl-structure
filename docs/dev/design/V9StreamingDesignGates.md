@@ -111,6 +111,11 @@ Tie policy must be explicit. A streaming selected-row helper cannot default to a
 the same order key and no secondary order key, the helper must either reject at compile time when the tie cannot be
 represented or emit a runtime assertion with a documented diagnostic.
 
+The v9 prototype closes the finite candidate without broadening the relation API: grouped `first_value(...)` and
+`last_value(...)` inside a watermarked event-time window are supported typed aggregate alternatives. Global
+`latest_by(...)`, `earliest_by(...)`, and their dedupe forms remain streaming-ineligible because their state is not
+bounded by a window.
+
 ## Analytic Window Projections
 
 Analytic projections include `row_number(...)`, `rank(...)`, `dense_rank(...)`, `lag(...)`, `lead(...)`, and rolling
@@ -127,6 +132,10 @@ the few user-facing intents behind them:
 If Spark rejects these plans or the generated form requires arbitrary state, the catalog row should move from
 `design-gated` to `streaming-ineligible` for the broad batch helper and point users to either the supported finite
 streaming alternative or caller-owned PySpark after a materialization boundary.
+
+The v9 result is the latter: broad analytic projections remain streaming-ineligible, while the finite selected-value
+aggregate alternative is documented separately and does not reinterpret `row_number`, `rank`, `lag`, `lead`, or
+rolling projections.
 
 The prototype must not use Spark actions, collection, RDDs, raw SQL strings, private JVM state, or lifecycle APIs to
 simulate bounded state. Those forms would prove only caller-owned PySpark feasibility, not Structure transform support.
@@ -180,3 +189,15 @@ Public docs must distinguish three outcomes:
 - `design-gated`: the shape has a written design and specification, but no Structure support claim yet.
 
 Do not use `planned` or generic `deferred` in the APICatalog Streaming section. V9's value is precise accounting.
+
+## V10 Continuation
+
+The V10 continuation is governed by `docs/dev/planning/P08022602.V10-streaming-state-and-join-contracts.plan.md`,
+`P08022603.V10-streaming-side-effects-and-arbitrary-state.plan.md`, and
+`P08022604.V10-evidence-catalog-reconciliation-and-hardening.plan.md`. It groups active implementation-relevant work
+by domain rather than creating one plan per design or background document.
+
+V10 may prototype additional bounded stream-stream join shapes, state-stage metadata, and finite selected-value forms.
+Each candidate needs explicit watermarks, event-time bounds, retention, output mode, generated behavior, online parity,
+and restart evidence. Global selected-row helpers, broad analytic windows, arbitrary state, and side-effect sinks remain
+gated or caller-owned unless a complete contract and live evidence changes their status.

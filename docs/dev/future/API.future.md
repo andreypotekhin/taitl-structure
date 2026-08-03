@@ -43,7 +43,6 @@ materialization boundaries, and `caller-owned-guided` for runnable caller integr
 ````
 
 To adopt from above:
-- future Variant profile work for Spark 4.3+ mutation helpers; the released 4.0/4.2 literal, equality, and typed row-expansion slice is covered by V9;
 - provider-neutral geometry contract with explicit SRID compatibility and no bundled provider dependency;
 - sampling refinements that preserve explicit reproducibility and batch-only streaming behavior; and
 - missing-column union defaults plus nested, alias-preserving, and streaming schema-evolution rules.
@@ -83,3 +82,10 @@ To adopt from above:
 - require online/generated parity and generated-source evidence where both execution modes apply;
 - require Spark Connect and streaming classifications to be explicit rather than inferred; and
 - keep raw SQL, arbitrary callbacks, UDTFs, actions, storage, and lifecycle APIs at explicit caller-owned boundaries.
+
+## V10 Adoption
+
+The adopted core API slices are governed by the grouped plan
+`docs/dev/planning/P08022601.V10-api-catalog-and-schema-evolution.plan.md`. It covers provider-neutral Geometry,
+sampling refinements, and missing-column union defaults with nested-struct and alias-preserving rules. XML, unreleased
+Variant mutation profiles, and join reordering remain explicit catalog dispositions rather than automatic support claims.

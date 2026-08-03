@@ -488,6 +488,10 @@ class MapPySparkStep:
                                 schema=operation.relation_set.schema,
                                 by_name=operation.relation_set.by_name,
                                 allow_missing_columns=operation.relation_set.allow_missing_columns,
+                                defaults=tuple(
+                                    (path, self._expressions.map(expression, capabilities=capabilities))
+                                    for path, expression in operation.relation_set.defaults
+                                ),
                             )
                         ),
                         operation,

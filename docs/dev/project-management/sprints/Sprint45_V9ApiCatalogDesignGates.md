@@ -1,6 +1,6 @@
 # Sprint 45: V9 API Catalog Design Gates
 
-Status: active; target close: 2026-08-07.
+Status: complete; closed: 2026-08-02.
 
 ## Sprint Goal
 
@@ -67,13 +67,30 @@ online execution, diagnostics, and streaming compatibility.
 
 ## Schedule and Handoff
 
-Sprint 45 is the inventory and decision-closure slice. It hands implementation work to Sprint 46, target evidence and
-catalog reconciliation to Sprint 47, and release-only verification to Sprint 48. The dated sequence, dependencies,
-fallback rules, and exit criteria are maintained in the
+Sprint 45 closed the inventory and decision-closure slice. The implementation, evidence, and hardening work originally
+scheduled for Sprints 46--48 was completed on 2026-08-02 under the umbrella closeout plan. The dated sequence,
+dependencies, fallback rules, and exit criteria remain documented in the
 [V9 closeout ExecPlan](../../planning/P07302603.V9-closeout-and-release.plan.md).
 
-Sprint 45 exits when every selected V9 row has an owner, a precise status, a linked specification, and an acceptance
-command. It must not consume Sprint 48 by adding new scope after the handoff.
+Sprint 45 exited when every selected V9 row had an owner, a precise status, a linked specification, and an acceptance
+command. The final hardening pass added no new API scope.
+
+## Current Closure Inventory
+
+The active inventory now has precise outcomes for the implementation and design slices touched in this sprint:
+
+| Row | Status and owner | Dependency or missing contract | Acceptance command |
+| --- | --- | --- | --- |
+| `union_by_name(..., allow_missing_columns=True)` | implemented; Structure transform | Nullable top-level batch fills only; defaults, nested fills, and streaming evidence remain out of scope | `PYTHONPATH=.:src:tests poetry run pytest -q tests/specifications/v6-api-ledger/test_v6_relation_union.py tests/specifications/streaming-compatibility/test_v1_streaming_compatibility.py` |
+| `streaming.chained-window-aggregation` | structure-supported; Structure transform | Exact watermarked two-stage `window_time(...)` shape; broader stateful chains remain gated | `PYTHONPATH=.:src:tests poetry run pytest -q tests/specifications/streaming-compatibility/test_v1_streaming_compatibility.py` |
+| `streaming.selected-row-helpers` | streaming-ineligible for global relation helpers; batch-materialization boundary | No finite state for global selection; the finite grouped `first_value(...)`/`last_value(...)` alternative has a live integration path pending target-lane execution | `PYTHONPATH=.:src:tests poetry run pytest -q tests/specifications/streaming-compatibility/test_v1_streaming_compatibility.py` |
+| `streaming.analytic-windows` | streaming-ineligible; batch-materialization boundary | Broad ranking, lag/lead, and rolling projections lack a finite state contract | `PYTHONPATH=.:src:tests poetry run pytest -q tests/specifications/streaming-compatibility/test_v1_streaming_compatibility.py` |
+| `streaming.foreach` and arbitrary state | design-gated; future lifecycle/state owner | Sink identity, retries, checkpoints, typed state, timeout, and restart contracts are missing | `PYTHONPATH=.:src:tests poetry run pytest -q tests/specifications/compatibility/test_pyspark_streaming_api_coverage.py tests/specifications/streaming-compatibility/test_v1_streaming_compatibility.py` |
+| Variant, Geometry, sampling, nearest as-of, aggregate aliases, and join reordering | implemented, design-gated, or unsupported as recorded in `docs/APICatalog.md`; Structure or future-design owners | Profile-specific live evidence and future provider/optimizer contracts are linked from the catalog rows | `PYTHONPATH=.:src:tests poetry run pytest -q tests/specifications/compatibility/test_api_catalog_design_gates.py tests/specifications/compatibility/test_pyspark_transformation_coverage.py` |
+
+The focused catalog and compatibility pass currently reports `85 passed`. The remaining live PySpark 3.5/4.0
+selected-row execution and restart evidence is handed to Sprint 47; it is not treated as evidence merely because the
+integration test exists.
 
 ## Governing Documents
 

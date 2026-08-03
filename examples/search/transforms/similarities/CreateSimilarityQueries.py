@@ -1,5 +1,7 @@
 """Create tagged self-queries from reusable text indexes."""
 
+from datetime import datetime, timezone
+
 from examples.search.schemas.indexing.lexical.index import (
     DocumentIndexSummary,
     DocumentIndexTerm,
@@ -229,6 +231,7 @@ class CreateSimilarityQueries(Transform):
             id=query_id,
             queryset="synthetic",
             content=concat_ws(" ", tokens),
+            requested_at=datetime(1970, 1, 1, tzinfo=timezone.utc),
             labels=map_from_entries(
                 array(
                     LabelMapEntry(key="is_question", value=zero),

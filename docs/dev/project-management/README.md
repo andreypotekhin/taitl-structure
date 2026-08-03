@@ -20,6 +20,7 @@ project-management/
   Roadmap.md
   Milestones.md
   Backlog.md
+  V10.md
   V3.md
   DefinitionOfDone.md
   SprintPlanningGuide.md
@@ -37,6 +38,15 @@ project-management/
     Sprint15_V3CollectionHelperParity.md
     Sprint16_V3StreamingOrchestration.md
     Sprint18_V4StreamingMigration.md
+    Sprint46_V9ContractAndFeatureCompletion.md
+    Sprint47_V9EvidenceCatalogReconciliation.md
+    Sprint48_V9Hardening.md
+    Sprint49_V10AdmissionAndExecPlanFoundation.md
+    Sprint50_V10ApiCatalogGeometrySampling.md
+    Sprint51_V10SchemaEvolutionAndUnion.md
+    Sprint52_V10StreamingStateAndJoins.md
+    Sprint53_V10SideEffectsAndArbitraryState.md
+    Sprint54_V10Hardening.md
     Sprint36_V8StreamingCoverageMeasurement.md
     Sprint37_V8StatelessStreamingGaps.md
     Sprint38_V8StatefulAndOrderedStreamingGaps.md
@@ -169,3 +179,8 @@ the PySpark Structured Streaming API surface while keeping lifecycle ownership e
 7. **V9 closeout schedule**: execute Sprint 45 inventory, Sprint 46 contract and feature completion, Sprint 47 evidence
    and catalog reconciliation, and Sprint 48 release hardening through
    `docs/dev/planning/P07302603.V9-closeout-and-release.plan.md`.
+
+V10 follows the completed V9 design-gate closeout. It uses grouped ExecPlans for the adopted API Catalog, schema
+evolution, streaming state/join, side-effect safety, arbitrary-state, and evidence work. The V10 sprint sequence is
+documented in `V10.md` and runs from Sprint 49 through the dedicated Sprint 54 hardening sprint. Application-specific
+future documents remain outside the release.

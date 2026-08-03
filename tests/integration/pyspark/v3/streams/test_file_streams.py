@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import shutil
 from datetime import date as calendar_date
+from datetime import datetime as calendar_datetime
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
@@ -58,6 +59,7 @@ class StreamVariantClean(Schema):
     safe_name = string(nullable=True)
     object = variant(nullable=True)
     is_json_null = boolean(nullable=True)
+    literal_source = string(nullable=True)
 
 
 class StreamVariantExplodeRaw(Schema):
@@ -114,6 +116,13 @@ class StreamWindowSummary(Schema):
     row_count = long(nullable=False)
 
 
+class StreamFiniteSelectionSummary(Schema):
+    bucket = struct(TimeWindow, nullable=False)
+    id = string(nullable=False)
+    first_event_time = timestamp(nullable=True)
+    last_event_time = timestamp(nullable=True)
+
+
 @transform(streaming=True)
 class StreamingFirstWindow(Transform):
     rows = input(StreamWindowRaw, streaming=True)
@@ -133,6 +142,22 @@ class StreamingSecondWindow(Transform):
     def summarize(self, row: StreamWindowSummary) -> StreamWindowSummary:
         group_by(bucket=window(window_time(row.bucket), "1 hour"), id=row.id)
         return StreamWindowSummary(bucket=window(window_time(row.bucket), "1 hour"), id=row.id, row_count=count())
+
+
+@transform(streaming=True)
+class StreamingFiniteSelection(Transform):
+    rows = input(StreamWindowRaw, streaming=True)
+    summary = output(StreamFiniteSelectionSummary)
+
+    def select(self, row: StreamWindowRaw) -> StreamFiniteSelectionSummary:
+        watermark(row.event_time, delay="10 minutes")
+        group_by(bucket=window(row.event_time, "10 minutes"), id=row.id)
+        return StreamFiniteSelectionSummary(
+            bucket=window(row.event_time, "10 minutes"),
+            id=row.id,
+            first_event_time=first_value(row.event_time, order_by=row.event_time),
+            last_event_time=last_value(row.event_time, order_by=row.event_time),
+        )
 
 
 @transform(streaming=True)
@@ -174,6 +199,11 @@ class StreamingVariantHelpers(Transform):
             safe_name=try_variant_get(parsed, "$.name", as_type=types.string()),
             object=to_variant_object(row.attributes),
             is_json_null=is_variant_null(parse_json("null")),
+            literal_source=variant_get(
+                variant_literal('{"source":"literal"}'),
+                "$.source",
+                as_type=types.string(),
+            ),
         )
 
 
@@ -459,14 +489,14 @@ def test_variant_helpers_run_as_profile_gated_streaming_transforms(spark, tmp_pa
                 tmp_path / "online-variant-checkpoint",
                 output_mode="append",
                 order_by="id",
-                columns=("id", "schema", "name", "safe_name", "is_json_null"),
+                columns=("id", "schema", "name", "safe_name", "is_json_null", "literal_source"),
             )
             generated_rows = _collect_stream_projection(
                 generated,
                 tmp_path / "generated-variant-checkpoint",
                 output_mode="append",
                 order_by="id",
-                columns=("id", "schema", "name", "safe_name", "is_json_null"),
+                columns=("id", "schema", "name", "safe_name", "is_json_null", "literal_source"),
             )
     finally:
         shutil.rmtree(source, ignore_errors=True)
@@ -478,6 +508,7 @@ def test_variant_helpers_run_as_profile_gated_streaming_transforms(spark, tmp_pa
             "name": "Ava",
             "safe_name": "Ava",
             "is_json_null": True,
+            "literal_source": "literal",
         }
     ]
     assert generated_rows == online_rows
@@ -497,7 +528,7 @@ def test_variant_explode_runs_online_and_generated_on_pyspark_4_streams(spark, t
                     __name__: [StreamVariantExplodeRaw, StreamVariantExplodeEntry, StreamVariantExplodeOutput],
                 },
             )
-        assert raised.value.diagnostic.feature_name == "variant"
+        assert raised.value.diagnostic.feature_name == "variant_explode"
         return
 
     if not backend_name().endswith("40"):
@@ -519,7 +550,13 @@ def test_variant_explode_runs_online_and_generated_on_pyspark_4_streams(spark, t
         / f"variant-explode-{uuid4().hex}"
     )
     try:
-        _write_json(source / "events.json", [{"id": "event-1", "payload_json": '["a", "b"]'}])
+        _write_json(
+            source / "events.json",
+            [
+                {"id": "event-1", "payload_json": '["a", "b"]'},
+                {"id": "event-2", "payload_json": '{"name":"Ava"}'},
+            ],
+        )
 
         with generated_project(tmp_path, package, files):
             from pyspark.sql.types import StringType, StructField, StructType
@@ -540,14 +577,14 @@ def test_variant_explode_runs_online_and_generated_on_pyspark_4_streams(spark, t
                 online,
                 tmp_path / "online-variant-explode-checkpoint",
                 output_mode="append",
-                order_by="pos",
+                order_by="id",
                 columns=("id", "pos", "key", "item"),
             )
             generated_rows = _collect_stream_projection(
                 generated,
                 tmp_path / "generated-variant-explode-checkpoint",
                 output_mode="append",
-                order_by="pos",
+                order_by="id",
                 columns=("id", "pos", "key", "item"),
             )
     finally:
@@ -556,6 +593,7 @@ def test_variant_explode_runs_online_and_generated_on_pyspark_4_streams(spark, t
     assert online_rows == [
         {"id": "event-1", "pos": 0, "key": None, "item": "a"},
         {"id": "event-1", "pos": 1, "key": None, "item": "b"},
+        {"id": "event-2", "pos": 0, "key": "name", "item": "Ava"},
     ]
     assert generated_rows == online_rows
 
@@ -578,7 +616,7 @@ def test_variant_explode_outer_preserves_null_rows_online_and_generated_on_pyspa
                     ],
                 },
             )
-        assert raised.value.diagnostic.feature_name == "variant"
+        assert raised.value.diagnostic.feature_name == "variant_explode_outer"
         return
 
     if not backend_name().endswith("40"):
@@ -666,7 +704,7 @@ def test_variant_schema_aggregate_runs_with_a_watermarked_window_on_pyspark_4_st
                     "structure.plugin.pyspark.dsl.TimeWindow": [TimeWindow],
                 },
             )
-        assert raised.value.diagnostic.feature_name == "variant"
+        assert raised.value.diagnostic.feature_name == "schema_of_variant_agg"
         return
 
     if not backend_name().endswith("40"):
@@ -754,15 +792,16 @@ def test_chained_event_time_windows_run_online_and_generated(spark, tmp_path) ->
         },
     )
     source = Path(__file__).resolve().parents[5] / ".pytest-workspace-tmp" / "integration" / f"window-{uuid4().hex}"
+    online_source = source / "online"
+    generated_source = source / "generated"
     try:
-        _write_json(
-            source / "events.json",
-            [
-                {"id": "event-1", "event_time": "2026-01-01T10:01:00Z"},
-                {"id": "event-1", "event_time": "2026-01-01T10:02:00Z"},
-                {"id": "watermark-advance", "event_time": "2026-01-01T12:00:00Z"},
-            ],
-        )
+        events = [
+            {"id": "event-1", "event_time": "2026-01-01T10:01:00Z"},
+            {"id": "event-1", "event_time": "2026-01-01T10:02:00Z"},
+            {"id": "watermark-advance", "event_time": "2026-01-01T12:00:00Z"},
+        ]
+        _write_json(online_source / "events.json", events)
+        _write_json(generated_source / "events.json", events)
 
         with generated_project(tmp_path, package, files):
             from pyspark.sql.types import StringType, StructField, StructType, TimestampType
@@ -773,8 +812,8 @@ def test_chained_event_time_windows_run_online_and_generated(spark, tmp_path) ->
                     StructField("event_time", TimestampType(), nullable=False),
                 ]
             )
-            online_input = read_json_stream(spark, schema, source)
-            generated_input = read_json_stream(spark, schema, source)
+            online_input = read_json_stream(spark, schema, online_source)
+            generated_input = read_json_stream(spark, schema, generated_source)
             online_result = StreamingWindowRollup(rows=online_input).run(session(spark, execution_mode="online")).summary
             generated_result = StreamingWindowRollup(rows=generated_input).run(
                 session(spark, execution_mode="generated", generated_package=package)
@@ -797,6 +836,81 @@ def test_chained_event_time_windows_run_online_and_generated(spark, tmp_path) ->
         shutil.rmtree(source, ignore_errors=True)
 
     assert online_rows == [{"id": "event-1", "row_count": 1}]
+    assert generated_rows == online_rows
+
+
+def test_finite_window_selection_runs_online_and_generated(spark, tmp_path) -> None:
+    if backend_name().startswith("spark-connect"):
+        pytest.skip("finite selected-value evidence is for the ordinary PySpark runtime")
+
+    package = "integration_streaming_finite_selection_generated"
+    files = render_generated_project(
+        StreamingFiniteSelection,
+        source_transform=f"{__name__}.StreamingFiniteSelection",
+        generated_package=package,
+        source_schema_modules={
+            __name__: [StreamWindowRaw, StreamFiniteSelectionSummary],
+            "structure.plugin.pyspark.dsl.TimeWindow": [TimeWindow],
+        },
+    )
+    source = (
+        Path(__file__).resolve().parents[5]
+        / ".pytest-workspace-tmp"
+        / "integration"
+        / f"finite-selection-{uuid4().hex}"
+    )
+    online_source = source / "online"
+    generated_source = source / "generated"
+    try:
+        events = [
+            {"id": "event-1", "event_time": "2026-01-01T10:02:00Z"},
+            {"id": "event-1", "event_time": "2026-01-01T10:01:00Z"},
+            {"id": "watermark-advance", "event_time": "2026-01-01T12:00:00Z"},
+        ]
+        _write_json(online_source / "events.json", events)
+        _write_json(generated_source / "events.json", events)
+
+        with generated_project(tmp_path, package, files):
+            from pyspark.sql.types import StringType, StructField, StructType, TimestampType
+
+            schema = StructType(
+                [
+                    StructField("id", StringType(), nullable=False),
+                    StructField("event_time", TimestampType(), nullable=False),
+                ]
+            )
+            online_input = read_json_stream(spark, schema, online_source)
+            generated_input = read_json_stream(spark, schema, generated_source)
+            online = StreamingFiniteSelection(rows=online_input).run(
+                session(spark, execution_mode="online")
+            ).summary
+            generated = StreamingFiniteSelection(rows=generated_input).run(
+                session(spark, execution_mode="generated", generated_package=package)
+            ).summary
+            online_rows = _collect_stream_projection(
+                online,
+                tmp_path / "online-finite-selection-checkpoint",
+                output_mode="append",
+                order_by="id",
+                columns=("id", "first_event_time", "last_event_time"),
+            )
+            generated_rows = _collect_stream_projection(
+                generated,
+                tmp_path / "generated-finite-selection-checkpoint",
+                output_mode="append",
+                order_by="id",
+                columns=("id", "first_event_time", "last_event_time"),
+            )
+    finally:
+        shutil.rmtree(source, ignore_errors=True)
+
+    assert online_rows == [
+        {
+            "id": "event-1",
+            "first_event_time": calendar_datetime(2026, 1, 1, 10, 1),
+            "last_event_time": calendar_datetime(2026, 1, 1, 10, 2),
+        }
+    ]
     assert generated_rows == online_rows
 
 

@@ -165,31 +165,33 @@ Source: `examples.search.transforms.all.all.All`
 - `labeled.merged.create_assignments`: `QueryLabelAssignmentEntries` -> `QueryLabelAssignments`
 - `labeled.merged.merge_caller_labels`: `SearchQuery` -> `SearchQuery`
 - `labeled.merged.merge_created_labels`: `SearchQuery` -> `SearchQuery`
-- `popular.summarize_popularity`: `DailyImpressions` -> `QueryPopularity`
-- `popular.rank_queries`: `SearchQuery` -> `PopularQueryCandidate`
-- `popular.select_queries`: `PopularQueryCandidate` -> `SearchQuery`
-- `scored.overlap.expand_query_terms`: `SearchQuery` -> `QueryTerm`
-- `scored.overlap.select_distinct_query_terms`: `QueryTerm` -> `QueryTerm`
-- `scored.overlap.count_query_terms`: `QueryTerm` -> `QueryTermCount`
-- `scored.overlap.match_documents`: `QueryTerm` -> `DocumentOverlapMatch`
-- `scored.overlap.match_sections`: `QueryTerm` -> `SectionOverlapMatch`
-- `scored.overlap.match_paragraphs`: `QueryTerm` -> `ParagraphOverlapMatch`
-- `scored.overlap.match_sentences`: `QueryTerm` -> `SentenceOverlapMatch`
-- `scored.overlap.publish_document_overlap_scores`: `DocumentOverlapMatch` -> `DocumentOverlapScore`
-- `scored.overlap.publish_section_overlap_scores`: `SectionOverlapMatch` -> `SectionOverlapScore`
-- `scored.overlap.publish_paragraph_overlap_scores`: `ParagraphOverlapMatch` -> `ParagraphOverlapScore`
-- `scored.overlap.publish_sentence_overlap_scores`: `SentenceOverlapMatch` -> `SentenceOverlapScore`
-- `scored.bm25.expand_query_terms`: `SearchQuery` -> `QueryTerm`
-- `scored.bm25.select_distinct_query_terms`: `QueryTerm` -> `QueryTerm`
-- `scored.bm25.count_query_terms`: `QueryTerm` -> `QueryTermCount`
-- `scored.bm25.score_document_bm25`: `QueryTerm` -> `DocumentBm25Score`
-- `scored.bm25.score_section_bm25`: `QueryTerm` -> `SectionBm25Score`
-- `scored.bm25.score_paragraph_bm25`: `QueryTerm` -> `ParagraphBm25Score`
-- `scored.bm25.score_sentence_bm25`: `QueryTerm` -> `SentenceBm25Score`
-- `scored.selected.score_documents`: `DocumentOverlapScore` -> `DocumentScore`
-- `scored.selected.score_sections`: `SectionOverlapScore` -> `SectionScore`
-- `scored.selected.score_paragraphs`: `ParagraphOverlapScore` -> `ParagraphScore`
-- `scored.selected.score_sentences`: `SentenceOverlapScore` -> `SentenceScore`
+- `scored.popular.summarize_popularity`: `DailyImpressions` -> `QueryPopularity`
+- `scored.popular.rank_queries`: `SearchQuery` -> `PopularQueryCandidate`
+- `scored.popular.select_queries`: `PopularQueryCandidate` -> `SearchQuery`
+- `scored.recent.select_recent_queries`: `DailyImpressions` -> `SearchQuery`
+- `scored.offline.merge_queries`: `SearchQuery` -> `SearchQuery`
+- `scored.scored.overlap.expand_query_terms`: `SearchQuery` -> `QueryTerm`
+- `scored.scored.overlap.select_distinct_query_terms`: `QueryTerm` -> `QueryTerm`
+- `scored.scored.overlap.count_query_terms`: `QueryTerm` -> `QueryTermCount`
+- `scored.scored.overlap.match_documents`: `QueryTerm` -> `DocumentOverlapMatch`
+- `scored.scored.overlap.match_sections`: `QueryTerm` -> `SectionOverlapMatch`
+- `scored.scored.overlap.match_paragraphs`: `QueryTerm` -> `ParagraphOverlapMatch`
+- `scored.scored.overlap.match_sentences`: `QueryTerm` -> `SentenceOverlapMatch`
+- `scored.scored.overlap.publish_document_overlap_scores`: `DocumentOverlapMatch` -> `DocumentOverlapScore`
+- `scored.scored.overlap.publish_section_overlap_scores`: `SectionOverlapMatch` -> `SectionOverlapScore`
+- `scored.scored.overlap.publish_paragraph_overlap_scores`: `ParagraphOverlapMatch` -> `ParagraphOverlapScore`
+- `scored.scored.overlap.publish_sentence_overlap_scores`: `SentenceOverlapMatch` -> `SentenceOverlapScore`
+- `scored.scored.bm25.expand_query_terms`: `SearchQuery` -> `QueryTerm`
+- `scored.scored.bm25.select_distinct_query_terms`: `QueryTerm` -> `QueryTerm`
+- `scored.scored.bm25.count_query_terms`: `QueryTerm` -> `QueryTermCount`
+- `scored.scored.bm25.score_document_bm25`: `QueryTerm` -> `DocumentBm25Score`
+- `scored.scored.bm25.score_section_bm25`: `QueryTerm` -> `SectionBm25Score`
+- `scored.scored.bm25.score_paragraph_bm25`: `QueryTerm` -> `ParagraphBm25Score`
+- `scored.scored.bm25.score_sentence_bm25`: `QueryTerm` -> `SentenceBm25Score`
+- `scored.scored.selected.score_documents`: `DocumentOverlapScore` -> `DocumentScore`
+- `scored.scored.selected.score_sections`: `SectionOverlapScore` -> `SectionScore`
+- `scored.scored.selected.score_paragraphs`: `ParagraphOverlapScore` -> `ParagraphScore`
+- `scored.scored.selected.score_sentences`: `SentenceOverlapScore` -> `SentenceScore`
 - `cohorts.validate_bands`: `Band` -> `Band`
 - `cohorts.match_bands`: `User` -> `BandMatch`
 - `cohorts.select_leaf_matches`: `BandMatch` -> `BandMatch`
@@ -269,10 +271,10 @@ Source: `examples.search.transforms.all.all.All`
 - `labeled__created__labels`
 - `labeled__created__valid_intents`
 - `labeled__merged__assignments`
+- `labeled__merged__labeled_queries`
 - `membership`
 - `path`
 - `policy`
-- `popular__popularities`
 - `popularity`
 - `profiled__documents`
 - `query`
@@ -287,11 +289,13 @@ Source: `examples.search.transforms.all.all.All`
 - `reverse_sentence`
 - `right`
 - `score_policy`
-- `scored__bm25__document_bm25_scores`
-- `scored__bm25__paragraph_bm25_scores`
-- `scored__bm25__section_bm25_scores`
-- `scored__bm25__sentence_bm25_scores`
-- `scored__overlap__query_sizes`
+- `scored__popular__popularities`
+- `scored__recent__recent_queries`
+- `scored__scored__bm25__document_bm25_scores`
+- `scored__scored__bm25__paragraph_bm25_scores`
+- `scored__scored__bm25__section_bm25_scores`
+- `scored__scored__bm25__sentence_bm25_scores`
+- `scored__scored__overlap__query_sizes`
 - `section`
 - `sentence`
 - `similarities__bm25__document_bm25_scores`

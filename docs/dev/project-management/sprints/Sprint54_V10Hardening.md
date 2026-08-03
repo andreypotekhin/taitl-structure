@@ -1,0 +1,32 @@
+# Sprint 54: V10 Hardening and Release Evidence
+
+Status: planned; target: 2026-12-11.
+
+## Sprint Goal
+
+Verify and close V10 without admitting new feature scope.
+
+## User-Facing Outcome
+
+V10 support claims, generated artifacts, documentation, diagnostics, compatibility behavior, and build outputs are
+reproducible and mutually consistent.
+
+## Implementation Tasks
+
+- Run focused no-Spark and all available PySpark 3.5/4.0 lanes.
+- Run restart, generated-source, optional-provider, documentation, and performance checks.
+- Fix only release blockers and record every retained gate and deferred owner.
+- Run `make build` and publish the final evidence report.
+
+## Acceptance and Demo
+
+Every claimed support row has evidence; every gated row has a missing contract; generated artifacts are fresh; exact
+pass/skip totals and unavailable lanes are recorded; and `make build` passes.
+
+## Risks and Non-Goals
+
+No new API scope. A skipped lane remains unavailable evidence rather than a release claim.
+
+## Governing Plan
+
+`docs/dev/planning/P08022604.V10-evidence-catalog-reconciliation-and-hardening.plan.md`.

@@ -99,3 +99,9 @@ diagnostics should name the operation and explain the fix. Typical fixes are:
 - add explicit `streaming=True`, `watermark(...)`, or `event_time_between(...)` metadata where the transformation
   requires state;
 - keep lifecycle, sinks, checkpoints, and query starts in caller-owned Spark code.
+
+## V10 Continuation
+
+V10 may admit additional stateful transformation shapes only with compiler-visible state stages, explicit watermarks and
+retention, public generated APIs, online/generated parity, and restart evidence. Side-effect and arbitrary-state work
+remains caller-owned or design-gated. The grouped plans are linked from `docs/dev/project-management/V10.md`.

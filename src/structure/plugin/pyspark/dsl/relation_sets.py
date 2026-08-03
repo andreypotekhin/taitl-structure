@@ -8,6 +8,8 @@ context; users get immediate validation without executing Spark.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+
 import structure.plugin.pyspark.dsl.options as options
 from structure.dsl import Schema
 from structure.plugin.api.v1.model import current_symbolic_context
@@ -28,7 +30,7 @@ from structure.plugin.pyspark.dsl.operations import (
     RelationSetPlan,
 )
 from structure.plugin.pyspark.dsl.RowScope import RowScope
-from structure.plugin.pyspark.dsl.types import ArrayType, LongType, StringType
+from structure.plugin.pyspark.dsl.types import ArrayType, DecimalType, LongType, MapType, StringType, StructType
 
 _ORDERABLE_TYPES = frozenset({"date", "decimal", "double", "float", "integer", "long", "string", "timestamp"})
 
@@ -146,9 +148,7 @@ def require_unique(*keys: object) -> RowScope:
     if not expressions:
         raise TypeError("require_unique(...) requires at least one key expression")
     context.operations.append(
-        OperationPlan.relation_assertion_operation(
-            RelationAssertionPlan(operation="require_unique", keys=expressions)
-        )
+        OperationPlan.relation_assertion_operation(RelationAssertionPlan(operation="require_unique", keys=expressions))
     )
     return RowScope(name=_current_scope(context.default_project_source), schema=source_schema)
 
@@ -161,9 +161,7 @@ def require_all(predicate: object) -> RowScope:
     if expression.type is None or expression.type.name != "boolean":
         raise TypeError("require_all(predicate) requires a Boolean expression")
     context.operations.append(
-        OperationPlan.relation_assertion_operation(
-            RelationAssertionPlan(operation="require_all", predicate=expression)
-        )
+        OperationPlan.relation_assertion_operation(RelationAssertionPlan(operation="require_all", predicate=expression))
     )
     return RowScope(name=_current_scope(context.default_project_source), schema=source_schema)
 
@@ -452,24 +450,26 @@ def union_by_name(
     relation: object,
     *,
     allow_missing_columns: bool = False,
-    defaults: object | None = None,
+    defaults: Mapping[str, object] | None = None,
 ) -> RowScope:
     """Union the current relation with another relation by field name.
 
     Args:
         relation: Relation parameter or transform input.
         allow_missing_columns: Fill nullable top-level missing columns with null.
-        defaults: Reserved for a later explicit-fill design.
+        defaults: Typed literal defaults for non-nullable missing fields, keyed by
+            canonical Structure field name.
     """
-    if defaults is not None:
-        raise TypeError("union_by_name(defaults=...) is design-gated; use nullable fields or exact schemas")
     if not isinstance(allow_missing_columns, bool):
         raise TypeError("union_by_name(allow_missing_columns=...) requires a Boolean")
+    if defaults is not None and not isinstance(defaults, Mapping):
+        raise TypeError("union_by_name(defaults=...) requires a mapping of field paths to typed literals")
     return _set(
         relation,
         operation="union_by_name",
         by_name=True,
         allow_missing_columns=allow_missing_columns,
+        defaults=defaults,
     )
 
 
@@ -499,6 +499,7 @@ def _set(
     operation: str,
     by_name: bool,
     allow_missing_columns: bool = False,
+    defaults: Mapping[str, object] | None = None,
 ) -> RowScope:
     context = _context(f"{operation}(...)")
     if not isinstance(relation, InputScope):
@@ -508,8 +509,16 @@ def _set(
     _validate_prior_operations(context.operations, function=operation)
 
     source_schema = _current_schema(context.default_project_source, function=operation)
+    default_expressions: tuple[tuple[str, Expression], ...] = ()
     if allow_missing_columns:
-        _validate_missing_column_union(source_schema, relation._structure_input_schema, function=operation)
+        default_expressions = _validate_missing_column_union(
+            source_schema,
+            relation._structure_input_schema,
+            defaults=defaults or {},
+            function=operation,
+        )
+    elif defaults is not None:
+        raise TypeError("union_by_name(defaults=...) requires allow_missing_columns=True")
     else:
         _validate_same_schema(source_schema, relation._structure_input_schema, function=operation)
 
@@ -522,6 +531,7 @@ def _set(
                 schema=relation._structure_input_schema,
                 by_name=by_name,
                 allow_missing_columns=allow_missing_columns,
+                defaults=default_expressions,
             )
         )
     )
@@ -543,9 +553,7 @@ def _bound(operation: str, count: int) -> RowScope:
         raise TypeError(f"{operation}(...) count must be a non-negative integer literal")
     _validate_ordered_state(context.operations, function=operation)
     source_schema = _current_schema(context.default_project_source, function=operation)
-    context.operations.append(
-        OperationPlan.relation_bound_operation(operation, RelationBoundPlan(count=count))
-    )
+    context.operations.append(OperationPlan.relation_bound_operation(operation, RelationBoundPlan(count=count)))
     return RowScope(name=_current_scope(context.default_project_source), schema=source_schema)
 
 
@@ -618,7 +626,8 @@ def _validate_prior_operations(operations, *, function: str) -> None:
     blocked = [
         operation.kind
         for operation in operations
-        if operation.kind in {
+        if operation.kind
+        in {
             "join",
             "aggregate",
             "selected_rows",
@@ -634,9 +643,7 @@ def _validate_prior_operations(operations, *, function: str) -> None:
         }
     ]
     if blocked:
-        raise TypeError(
-            f"{function}(relation) must be called before shape-changing operation(s): {', '.join(blocked)}"
-        )
+        raise TypeError(f"{function}(relation) must be called before shape-changing operation(s): {', '.join(blocked)}")
 
 
 def _validate_ordered_state(operations, *, function: str) -> None:
@@ -692,36 +699,87 @@ def _validate_same_schema(left: type[Schema], right: type[Schema], *, function: 
     if left_fields == right_fields:
         return
     raise TypeError(
-        f"{function}(relation) requires identical declared schemas; "
-        f"got {left.__name__} and {right.__name__}"
+        f"{function}(relation) requires identical declared schemas; " f"got {left.__name__} and {right.__name__}"
     )
 
 
-def _validate_missing_column_union(left: type[Schema], right: type[Schema], *, function: str) -> None:
+def _validate_missing_column_union(
+    left: type[Schema],
+    right: type[Schema],
+    *,
+    defaults: Mapping[str, object],
+    function: str,
+) -> tuple[tuple[str, Expression], ...]:
     left_fields = left._structure_fields
     right_fields = right._structure_fields
     common = set(left_fields).intersection(right_fields)
     mismatched = [
         name
         for name in common
-        if _compatible_missing_union_field(left_fields[name]) != _compatible_missing_union_field(right_fields[name])
+        if left_fields[name].column != right_fields[name].column
+        or not _same_structure_type(left_fields[name].type, right_fields[name].type)
     ]
     if mismatched:
         names = ", ".join(sorted(mismatched))
         raise TypeError(f"{function}(allow_missing_columns=True) requires matching common field types: {names}")
+    normalized: list[tuple[str, Expression]] = []
+    for path, value in defaults.items():
+        if not isinstance(path, str) or not path or "." in path:
+            raise TypeError(
+                f"{function}(defaults=...) requires canonical top-level Structure field paths; got {path!r}"
+            )
+        if path not in left_fields and path not in right_fields:
+            raise TypeError(f"{function}(defaults=...) names unknown field path: {path}")
+        if path in left_fields and path in right_fields:
+            raise TypeError(f"{function}(defaults=...) may target only a missing field: {path}")
+        field = left_fields.get(path) or right_fields[path]
+        if isinstance(field.type, (ArrayType, MapType, StructType)):
+            raise TypeError(f"{function}(defaults=...) cannot partially evolve collection or struct field: {path}")
+        expression = literal(value)
+        type_matches = (expression.type is None and field.nullable) or _same_structure_type(expression.type, field.type)
+        if not type_matches or expression.nullable and not field.nullable:
+            raise TypeError(
+                f"{function}(defaults=...) value for {path} must be a typed literal compatible with {field.type.name}"
+            )
+        normalized.append((path, expression))
     missing_left = [field for name, field in right_fields.items() if name not in left_fields]
     missing_right = [field for name, field in left_fields.items() if name not in right_fields]
-    required = [field.name for field in (*missing_left, *missing_right) if not field.nullable]
+    defaulted = {path for path, _ in normalized}
+    required = [
+        field.name for field in (*missing_left, *missing_right) if not field.nullable and field.name not in defaulted
+    ]
     if required:
         names = ", ".join(sorted(required))
         raise TypeError(
-            f"{function}(allow_missing_columns=True) can only null-fill nullable missing fields; "
-            f"non-null field(s) need defaults: {names}"
+            f"{function}(allow_missing_columns=True) requires defaults for non-null missing field(s): {names}"
         )
+    return tuple(normalized)
 
 
-def _compatible_missing_union_field(field) -> tuple[str, object]:
-    return field.column, field.type
+def _same_structure_type(left, right) -> bool:
+    if left == right or left is right:
+        return True
+    if left is None or right is None or left.name != right.name:
+        return False
+    if isinstance(left, DecimalType) and isinstance(right, DecimalType):
+        return left.precision == right.precision and left.scale == right.scale
+    if isinstance(left, ArrayType) and isinstance(right, ArrayType):
+        return left.contains_null == right.contains_null and _same_structure_type(left.element, right.element)
+    if isinstance(left, MapType) and isinstance(right, MapType):
+        return (
+            left.value_contains_null == right.value_contains_null
+            and _same_structure_type(left.key, right.key)
+            and _same_structure_type(left.value, right.value)
+        )
+    if isinstance(left, StructType) and isinstance(right, StructType):
+        left_fields, right_fields = left.schema._structure_fields, right.schema._structure_fields
+        return tuple(left_fields) == tuple(right_fields) and all(
+            left_fields[name].column == right_fields[name].column
+            and left_fields[name].nullable == right_fields[name].nullable
+            and _same_structure_type(left_fields[name].type, right_fields[name].type)
+            for name in left_fields
+        )
+    return True
 
 
 def _field_signature(field) -> tuple[str, str, object, bool]:

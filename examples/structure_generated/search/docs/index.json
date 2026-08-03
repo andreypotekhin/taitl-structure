@@ -5142,10 +5142,10 @@
         "labeled__created__labels",
         "labeled__created__valid_intents",
         "labeled__merged__assignments",
+        "labeled__merged__labeled_queries",
         "membership",
         "path",
         "policy",
-        "popular__popularities",
         "popularity",
         "profiled__documents",
         "query",
@@ -5160,11 +5160,13 @@
         "reverse_sentence",
         "right",
         "score_policy",
-        "scored__bm25__document_bm25_scores",
-        "scored__bm25__paragraph_bm25_scores",
-        "scored__bm25__section_bm25_scores",
-        "scored__bm25__sentence_bm25_scores",
-        "scored__overlap__query_sizes",
+        "scored__popular__popularities",
+        "scored__recent__recent_queries",
+        "scored__scored__bm25__document_bm25_scores",
+        "scored__scored__bm25__paragraph_bm25_scores",
+        "scored__scored__bm25__section_bm25_scores",
+        "scored__scored__bm25__sentence_bm25_scores",
+        "scored__scored__overlap__query_sizes",
         "section",
         "sentence",
         "similarities__bm25__document_bm25_scores",
@@ -8250,13 +8252,13 @@
               "source": "daily_impressions"
             }
           ],
-          "name": "popular.summarize_popularity",
-          "output_lane": "popular__popularities",
+          "name": "scored.popular.summarize_popularity",
+          "output_lane": "scored__popular__popularities",
           "output_schema": "QueryPopularity",
           "results": [
             {
-              "frame": "popular__popularities",
-              "lane": "popular__popularities",
+              "frame": "scored__popular__popularities",
+              "lane": "scored__popular__popularities",
               "schema": "QueryPopularity"
             }
           ]
@@ -8275,7 +8277,7 @@
               "driving": false,
               "parameter": "popularity",
               "schema": "QueryPopularity",
-              "source": "popular__popularities"
+              "source": "scored__popular__popularities"
             }
           ],
           "joins": [
@@ -8284,120 +8286,192 @@
               "input": "popularity"
             }
           ],
-          "name": "popular.rank_queries",
-          "output_lane": "popular__ranked_queries",
+          "name": "scored.popular.rank_queries",
+          "output_lane": "scored__popular__ranked_queries",
           "output_schema": "PopularQueryCandidate",
           "results": [
             {
-              "frame": "popular__ranked_queries",
-              "lane": "popular__ranked_queries",
+              "frame": "scored__popular__ranked_queries",
+              "lane": "scored__popular__ranked_queries",
               "schema": "PopularQueryCandidate"
             }
           ]
         },
         {
-          "input_lane": "popular__ranked_queries",
+          "input_lane": "scored__popular__ranked_queries",
           "input_schema": "PopularQueryCandidate",
           "inputs": [
             {
               "driving": true,
               "parameter": "query",
               "schema": "PopularQueryCandidate",
-              "source": "popular__ranked_queries"
+              "source": "scored__popular__ranked_queries"
             }
           ],
-          "name": "popular.select_queries",
-          "output_lane": "popular__selected_queries",
+          "name": "scored.popular.select_queries",
+          "output_lane": "scored__popular__selected_queries",
           "output_schema": "SearchQuery",
           "results": [
             {
-              "frame": "popular__selected_queries",
-              "lane": "popular__selected_queries",
+              "frame": "scored__popular__selected_queries",
+              "lane": "scored__popular__selected_queries",
               "schema": "SearchQuery"
             }
           ]
         },
         {
-          "input_lane": "popular__selected_queries",
+          "input_lane": "daily_impressions",
+          "input_schema": "DailyImpressions",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "impression",
+              "schema": "DailyImpressions",
+              "source": "daily_impressions"
+            },
+            {
+              "driving": false,
+              "parameter": "query",
+              "schema": "SearchQuery",
+              "source": "labeled__merged__labeled_queries"
+            },
+            {
+              "driving": false,
+              "parameter": "policy",
+              "schema": "ScorePolicy",
+              "source": "score_policy"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "query"
+            },
+            {
+              "how": "cross",
+              "input": "policy"
+            }
+          ],
+          "name": "scored.recent.select_recent_queries",
+          "output_lane": "scored__recent__recent_queries",
+          "output_schema": "SearchQuery",
+          "results": [
+            {
+              "frame": "scored__recent__recent_queries",
+              "lane": "scored__recent__recent_queries",
+              "schema": "SearchQuery"
+            }
+          ]
+        },
+        {
+          "input_lane": "scored__popular__selected_queries",
+          "input_schema": "SearchQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "popular",
+              "schema": "SearchQuery",
+              "source": "scored__popular__selected_queries"
+            },
+            {
+              "driving": false,
+              "parameter": "recent",
+              "schema": "SearchQuery",
+              "source": "scored__recent__recent_queries"
+            }
+          ],
+          "name": "scored.offline.merge_queries",
+          "output_lane": "scored__offline__offline_queries",
+          "output_schema": "SearchQuery",
+          "results": [
+            {
+              "frame": "scored__offline__offline_queries",
+              "lane": "scored__offline__offline_queries",
+              "schema": "SearchQuery"
+            }
+          ]
+        },
+        {
+          "input_lane": "scored__offline__offline_queries",
           "input_schema": "SearchQuery",
           "inputs": [
             {
               "driving": true,
               "parameter": "query",
               "schema": "SearchQuery",
-              "source": "popular__selected_queries"
+              "source": "scored__offline__offline_queries"
             }
           ],
-          "name": "scored.overlap.expand_query_terms",
-          "output_lane": "scored__overlap__expanded_query_terms",
+          "name": "scored.scored.overlap.expand_query_terms",
+          "output_lane": "scored__scored__overlap__expanded_query_terms",
           "output_schema": "QueryTerm",
           "results": [
             {
-              "frame": "scored__overlap__expanded_query_terms",
-              "lane": "scored__overlap__expanded_query_terms",
+              "frame": "scored__scored__overlap__expanded_query_terms",
+              "lane": "scored__scored__overlap__expanded_query_terms",
               "schema": "QueryTerm"
             }
           ]
         },
         {
-          "input_lane": "scored__overlap__expanded_query_terms",
+          "input_lane": "scored__scored__overlap__expanded_query_terms",
           "input_schema": "QueryTerm",
           "inputs": [
             {
               "driving": true,
               "parameter": "query",
               "schema": "QueryTerm",
-              "source": "scored__overlap__expanded_query_terms"
+              "source": "scored__scored__overlap__expanded_query_terms"
             }
           ],
-          "name": "scored.overlap.select_distinct_query_terms",
-          "output_lane": "scored__overlap__query_terms",
+          "name": "scored.scored.overlap.select_distinct_query_terms",
+          "output_lane": "scored__scored__overlap__query_terms",
           "output_schema": "QueryTerm",
           "results": [
             {
-              "frame": "scored__overlap__query_terms",
-              "lane": "scored__overlap__query_terms",
+              "frame": "scored__scored__overlap__query_terms",
+              "lane": "scored__scored__overlap__query_terms",
               "schema": "QueryTerm"
             }
           ]
         },
         {
-          "input_lane": "scored__overlap__query_terms",
+          "input_lane": "scored__scored__overlap__query_terms",
           "input_schema": "QueryTerm",
           "inputs": [
             {
               "driving": true,
               "parameter": "query",
               "schema": "QueryTerm",
-              "source": "scored__overlap__query_terms"
+              "source": "scored__scored__overlap__query_terms"
             }
           ],
-          "name": "scored.overlap.count_query_terms",
-          "output_lane": "scored__overlap__query_sizes",
+          "name": "scored.scored.overlap.count_query_terms",
+          "output_lane": "scored__scored__overlap__query_sizes",
           "output_schema": "QueryTermCount",
           "results": [
             {
-              "frame": "scored__overlap__query_sizes",
-              "lane": "scored__overlap__query_sizes",
+              "frame": "scored__scored__overlap__query_sizes",
+              "lane": "scored__scored__overlap__query_sizes",
               "schema": "QueryTermCount"
             }
           ]
         },
         {
-          "input_lane": "scored__overlap__query_terms",
+          "input_lane": "scored__scored__overlap__query_terms",
           "input_schema": "QueryTerm",
           "inputs": [
             {
               "driving": true,
               "parameter": "query",
               "schema": "QueryTerm",
-              "source": "scored__overlap__query_terms"
+              "source": "scored__scored__overlap__query_terms"
             },
             {
               "driving": false,
               "parameter": "size",
               "schema": "QueryTermCount",
-              "source": "scored__overlap__query_sizes"
+              "source": "scored__scored__overlap__query_sizes"
             },
             {
               "driving": false,
@@ -8416,32 +8490,32 @@
               "input": "size"
             }
           ],
-          "name": "scored.overlap.match_documents",
-          "output_lane": "scored__overlap__document_overlap_matches",
+          "name": "scored.scored.overlap.match_documents",
+          "output_lane": "scored__scored__overlap__document_overlap_matches",
           "output_schema": "DocumentOverlapMatch",
           "results": [
             {
-              "frame": "scored__overlap__document_overlap_matches",
-              "lane": "scored__overlap__document_overlap_matches",
+              "frame": "scored__scored__overlap__document_overlap_matches",
+              "lane": "scored__scored__overlap__document_overlap_matches",
               "schema": "DocumentOverlapMatch"
             }
           ]
         },
         {
-          "input_lane": "scored__overlap__query_terms",
+          "input_lane": "scored__scored__overlap__query_terms",
           "input_schema": "QueryTerm",
           "inputs": [
             {
               "driving": true,
               "parameter": "query",
               "schema": "QueryTerm",
-              "source": "scored__overlap__query_terms"
+              "source": "scored__scored__overlap__query_terms"
             },
             {
               "driving": false,
               "parameter": "size",
               "schema": "QueryTermCount",
-              "source": "scored__overlap__query_sizes"
+              "source": "scored__scored__overlap__query_sizes"
             },
             {
               "driving": false,
@@ -8460,32 +8534,32 @@
               "input": "size"
             }
           ],
-          "name": "scored.overlap.match_sections",
-          "output_lane": "scored__overlap__section_overlap_matches",
+          "name": "scored.scored.overlap.match_sections",
+          "output_lane": "scored__scored__overlap__section_overlap_matches",
           "output_schema": "SectionOverlapMatch",
           "results": [
             {
-              "frame": "scored__overlap__section_overlap_matches",
-              "lane": "scored__overlap__section_overlap_matches",
+              "frame": "scored__scored__overlap__section_overlap_matches",
+              "lane": "scored__scored__overlap__section_overlap_matches",
               "schema": "SectionOverlapMatch"
             }
           ]
         },
         {
-          "input_lane": "scored__overlap__query_terms",
+          "input_lane": "scored__scored__overlap__query_terms",
           "input_schema": "QueryTerm",
           "inputs": [
             {
               "driving": true,
               "parameter": "query",
               "schema": "QueryTerm",
-              "source": "scored__overlap__query_terms"
+              "source": "scored__scored__overlap__query_terms"
             },
             {
               "driving": false,
               "parameter": "size",
               "schema": "QueryTermCount",
-              "source": "scored__overlap__query_sizes"
+              "source": "scored__scored__overlap__query_sizes"
             },
             {
               "driving": false,
@@ -8504,32 +8578,32 @@
               "input": "size"
             }
           ],
-          "name": "scored.overlap.match_paragraphs",
-          "output_lane": "scored__overlap__paragraph_overlap_matches",
+          "name": "scored.scored.overlap.match_paragraphs",
+          "output_lane": "scored__scored__overlap__paragraph_overlap_matches",
           "output_schema": "ParagraphOverlapMatch",
           "results": [
             {
-              "frame": "scored__overlap__paragraph_overlap_matches",
-              "lane": "scored__overlap__paragraph_overlap_matches",
+              "frame": "scored__scored__overlap__paragraph_overlap_matches",
+              "lane": "scored__scored__overlap__paragraph_overlap_matches",
               "schema": "ParagraphOverlapMatch"
             }
           ]
         },
         {
-          "input_lane": "scored__overlap__query_terms",
+          "input_lane": "scored__scored__overlap__query_terms",
           "input_schema": "QueryTerm",
           "inputs": [
             {
               "driving": true,
               "parameter": "query",
               "schema": "QueryTerm",
-              "source": "scored__overlap__query_terms"
+              "source": "scored__scored__overlap__query_terms"
             },
             {
               "driving": false,
               "parameter": "size",
               "schema": "QueryTermCount",
-              "source": "scored__overlap__query_sizes"
+              "source": "scored__scored__overlap__query_sizes"
             },
             {
               "driving": false,
@@ -8548,26 +8622,26 @@
               "input": "size"
             }
           ],
-          "name": "scored.overlap.match_sentences",
-          "output_lane": "scored__overlap__sentence_overlap_matches",
+          "name": "scored.scored.overlap.match_sentences",
+          "output_lane": "scored__scored__overlap__sentence_overlap_matches",
           "output_schema": "SentenceOverlapMatch",
           "results": [
             {
-              "frame": "scored__overlap__sentence_overlap_matches",
-              "lane": "scored__overlap__sentence_overlap_matches",
+              "frame": "scored__scored__overlap__sentence_overlap_matches",
+              "lane": "scored__scored__overlap__sentence_overlap_matches",
               "schema": "SentenceOverlapMatch"
             }
           ]
         },
         {
-          "input_lane": "scored__overlap__document_overlap_matches",
+          "input_lane": "scored__scored__overlap__document_overlap_matches",
           "input_schema": "DocumentOverlapMatch",
           "inputs": [
             {
               "driving": true,
               "parameter": "match",
               "schema": "DocumentOverlapMatch",
-              "source": "scored__overlap__document_overlap_matches"
+              "source": "scored__scored__overlap__document_overlap_matches"
             },
             {
               "driving": false,
@@ -8582,26 +8656,26 @@
               "input": "policy"
             }
           ],
-          "name": "scored.overlap.publish_document_overlap_scores",
-          "output_lane": "scored__overlap__document_overlap_scores",
+          "name": "scored.scored.overlap.publish_document_overlap_scores",
+          "output_lane": "scored__scored__overlap__document_overlap_scores",
           "output_schema": "DocumentOverlapScore",
           "results": [
             {
-              "frame": "scored__overlap__document_overlap_scores",
-              "lane": "scored__overlap__document_overlap_scores",
+              "frame": "scored__scored__overlap__document_overlap_scores",
+              "lane": "scored__scored__overlap__document_overlap_scores",
               "schema": "DocumentOverlapScore"
             }
           ]
         },
         {
-          "input_lane": "scored__overlap__section_overlap_matches",
+          "input_lane": "scored__scored__overlap__section_overlap_matches",
           "input_schema": "SectionOverlapMatch",
           "inputs": [
             {
               "driving": true,
               "parameter": "match",
               "schema": "SectionOverlapMatch",
-              "source": "scored__overlap__section_overlap_matches"
+              "source": "scored__scored__overlap__section_overlap_matches"
             },
             {
               "driving": false,
@@ -8616,26 +8690,26 @@
               "input": "policy"
             }
           ],
-          "name": "scored.overlap.publish_section_overlap_scores",
-          "output_lane": "scored__overlap__section_overlap_scores",
+          "name": "scored.scored.overlap.publish_section_overlap_scores",
+          "output_lane": "scored__scored__overlap__section_overlap_scores",
           "output_schema": "SectionOverlapScore",
           "results": [
             {
-              "frame": "scored__overlap__section_overlap_scores",
-              "lane": "scored__overlap__section_overlap_scores",
+              "frame": "scored__scored__overlap__section_overlap_scores",
+              "lane": "scored__scored__overlap__section_overlap_scores",
               "schema": "SectionOverlapScore"
             }
           ]
         },
         {
-          "input_lane": "scored__overlap__paragraph_overlap_matches",
+          "input_lane": "scored__scored__overlap__paragraph_overlap_matches",
           "input_schema": "ParagraphOverlapMatch",
           "inputs": [
             {
               "driving": true,
               "parameter": "match",
               "schema": "ParagraphOverlapMatch",
-              "source": "scored__overlap__paragraph_overlap_matches"
+              "source": "scored__scored__overlap__paragraph_overlap_matches"
             },
             {
               "driving": false,
@@ -8650,26 +8724,26 @@
               "input": "policy"
             }
           ],
-          "name": "scored.overlap.publish_paragraph_overlap_scores",
-          "output_lane": "scored__overlap__paragraph_overlap_scores",
+          "name": "scored.scored.overlap.publish_paragraph_overlap_scores",
+          "output_lane": "scored__scored__overlap__paragraph_overlap_scores",
           "output_schema": "ParagraphOverlapScore",
           "results": [
             {
-              "frame": "scored__overlap__paragraph_overlap_scores",
-              "lane": "scored__overlap__paragraph_overlap_scores",
+              "frame": "scored__scored__overlap__paragraph_overlap_scores",
+              "lane": "scored__scored__overlap__paragraph_overlap_scores",
               "schema": "ParagraphOverlapScore"
             }
           ]
         },
         {
-          "input_lane": "scored__overlap__sentence_overlap_matches",
+          "input_lane": "scored__scored__overlap__sentence_overlap_matches",
           "input_schema": "SentenceOverlapMatch",
           "inputs": [
             {
               "driving": true,
               "parameter": "match",
               "schema": "SentenceOverlapMatch",
-              "source": "scored__overlap__sentence_overlap_matches"
+              "source": "scored__scored__overlap__sentence_overlap_matches"
             },
             {
               "driving": false,
@@ -8684,92 +8758,92 @@
               "input": "policy"
             }
           ],
-          "name": "scored.overlap.publish_sentence_overlap_scores",
-          "output_lane": "scored__overlap__sentence_overlap_scores",
+          "name": "scored.scored.overlap.publish_sentence_overlap_scores",
+          "output_lane": "scored__scored__overlap__sentence_overlap_scores",
           "output_schema": "SentenceOverlapScore",
           "results": [
             {
-              "frame": "scored__overlap__sentence_overlap_scores",
-              "lane": "scored__overlap__sentence_overlap_scores",
+              "frame": "scored__scored__overlap__sentence_overlap_scores",
+              "lane": "scored__scored__overlap__sentence_overlap_scores",
               "schema": "SentenceOverlapScore"
             }
           ]
         },
         {
-          "input_lane": "popular__selected_queries",
+          "input_lane": "scored__offline__offline_queries",
           "input_schema": "SearchQuery",
           "inputs": [
             {
               "driving": true,
               "parameter": "query",
               "schema": "SearchQuery",
-              "source": "popular__selected_queries"
+              "source": "scored__offline__offline_queries"
             }
           ],
-          "name": "scored.bm25.expand_query_terms",
-          "output_lane": "scored__bm25__expanded_query_terms",
+          "name": "scored.scored.bm25.expand_query_terms",
+          "output_lane": "scored__scored__bm25__expanded_query_terms",
           "output_schema": "QueryTerm",
           "results": [
             {
-              "frame": "scored__bm25__expanded_query_terms",
-              "lane": "scored__bm25__expanded_query_terms",
+              "frame": "scored__scored__bm25__expanded_query_terms",
+              "lane": "scored__scored__bm25__expanded_query_terms",
               "schema": "QueryTerm"
             }
           ]
         },
         {
-          "input_lane": "scored__bm25__expanded_query_terms",
+          "input_lane": "scored__scored__bm25__expanded_query_terms",
           "input_schema": "QueryTerm",
           "inputs": [
             {
               "driving": true,
               "parameter": "query",
               "schema": "QueryTerm",
-              "source": "scored__bm25__expanded_query_terms"
+              "source": "scored__scored__bm25__expanded_query_terms"
             }
           ],
-          "name": "scored.bm25.select_distinct_query_terms",
-          "output_lane": "scored__bm25__query_terms",
+          "name": "scored.scored.bm25.select_distinct_query_terms",
+          "output_lane": "scored__scored__bm25__query_terms",
           "output_schema": "QueryTerm",
           "results": [
             {
-              "frame": "scored__bm25__query_terms",
-              "lane": "scored__bm25__query_terms",
+              "frame": "scored__scored__bm25__query_terms",
+              "lane": "scored__scored__bm25__query_terms",
               "schema": "QueryTerm"
             }
           ]
         },
         {
-          "input_lane": "scored__bm25__query_terms",
+          "input_lane": "scored__scored__bm25__query_terms",
           "input_schema": "QueryTerm",
           "inputs": [
             {
               "driving": true,
               "parameter": "query",
               "schema": "QueryTerm",
-              "source": "scored__bm25__query_terms"
+              "source": "scored__scored__bm25__query_terms"
             }
           ],
-          "name": "scored.bm25.count_query_terms",
-          "output_lane": "scored__bm25__query_sizes",
+          "name": "scored.scored.bm25.count_query_terms",
+          "output_lane": "scored__scored__bm25__query_sizes",
           "output_schema": "QueryTermCount",
           "results": [
             {
-              "frame": "scored__bm25__query_sizes",
-              "lane": "scored__bm25__query_sizes",
+              "frame": "scored__scored__bm25__query_sizes",
+              "lane": "scored__scored__bm25__query_sizes",
               "schema": "QueryTermCount"
             }
           ]
         },
         {
-          "input_lane": "scored__bm25__query_terms",
+          "input_lane": "scored__scored__bm25__query_terms",
           "input_schema": "QueryTerm",
           "inputs": [
             {
               "driving": true,
               "parameter": "query",
               "schema": "QueryTerm",
-              "source": "scored__bm25__query_terms"
+              "source": "scored__scored__bm25__query_terms"
             },
             {
               "driving": false,
@@ -8794,26 +8868,26 @@
               "input": "summary"
             }
           ],
-          "name": "scored.bm25.score_document_bm25",
-          "output_lane": "scored__bm25__document_bm25_scores",
+          "name": "scored.scored.bm25.score_document_bm25",
+          "output_lane": "scored__scored__bm25__document_bm25_scores",
           "output_schema": "DocumentBm25Score",
           "results": [
             {
-              "frame": "scored__bm25__document_bm25_scores",
-              "lane": "scored__bm25__document_bm25_scores",
+              "frame": "scored__scored__bm25__document_bm25_scores",
+              "lane": "scored__scored__bm25__document_bm25_scores",
               "schema": "DocumentBm25Score"
             }
           ]
         },
         {
-          "input_lane": "scored__bm25__query_terms",
+          "input_lane": "scored__scored__bm25__query_terms",
           "input_schema": "QueryTerm",
           "inputs": [
             {
               "driving": true,
               "parameter": "query",
               "schema": "QueryTerm",
-              "source": "scored__bm25__query_terms"
+              "source": "scored__scored__bm25__query_terms"
             },
             {
               "driving": false,
@@ -8838,26 +8912,26 @@
               "input": "summary"
             }
           ],
-          "name": "scored.bm25.score_section_bm25",
-          "output_lane": "scored__bm25__section_bm25_scores",
+          "name": "scored.scored.bm25.score_section_bm25",
+          "output_lane": "scored__scored__bm25__section_bm25_scores",
           "output_schema": "SectionBm25Score",
           "results": [
             {
-              "frame": "scored__bm25__section_bm25_scores",
-              "lane": "scored__bm25__section_bm25_scores",
+              "frame": "scored__scored__bm25__section_bm25_scores",
+              "lane": "scored__scored__bm25__section_bm25_scores",
               "schema": "SectionBm25Score"
             }
           ]
         },
         {
-          "input_lane": "scored__bm25__query_terms",
+          "input_lane": "scored__scored__bm25__query_terms",
           "input_schema": "QueryTerm",
           "inputs": [
             {
               "driving": true,
               "parameter": "query",
               "schema": "QueryTerm",
-              "source": "scored__bm25__query_terms"
+              "source": "scored__scored__bm25__query_terms"
             },
             {
               "driving": false,
@@ -8882,26 +8956,26 @@
               "input": "summary"
             }
           ],
-          "name": "scored.bm25.score_paragraph_bm25",
-          "output_lane": "scored__bm25__paragraph_bm25_scores",
+          "name": "scored.scored.bm25.score_paragraph_bm25",
+          "output_lane": "scored__scored__bm25__paragraph_bm25_scores",
           "output_schema": "ParagraphBm25Score",
           "results": [
             {
-              "frame": "scored__bm25__paragraph_bm25_scores",
-              "lane": "scored__bm25__paragraph_bm25_scores",
+              "frame": "scored__scored__bm25__paragraph_bm25_scores",
+              "lane": "scored__scored__bm25__paragraph_bm25_scores",
               "schema": "ParagraphBm25Score"
             }
           ]
         },
         {
-          "input_lane": "scored__bm25__query_terms",
+          "input_lane": "scored__scored__bm25__query_terms",
           "input_schema": "QueryTerm",
           "inputs": [
             {
               "driving": true,
               "parameter": "query",
               "schema": "QueryTerm",
-              "source": "scored__bm25__query_terms"
+              "source": "scored__scored__bm25__query_terms"
             },
             {
               "driving": false,
@@ -8926,32 +9000,32 @@
               "input": "summary"
             }
           ],
-          "name": "scored.bm25.score_sentence_bm25",
-          "output_lane": "scored__bm25__sentence_bm25_scores",
+          "name": "scored.scored.bm25.score_sentence_bm25",
+          "output_lane": "scored__scored__bm25__sentence_bm25_scores",
           "output_schema": "SentenceBm25Score",
           "results": [
             {
-              "frame": "scored__bm25__sentence_bm25_scores",
-              "lane": "scored__bm25__sentence_bm25_scores",
+              "frame": "scored__scored__bm25__sentence_bm25_scores",
+              "lane": "scored__scored__bm25__sentence_bm25_scores",
               "schema": "SentenceBm25Score"
             }
           ]
         },
         {
-          "input_lane": "scored__overlap__document_overlap_scores",
+          "input_lane": "scored__scored__overlap__document_overlap_scores",
           "input_schema": "DocumentOverlapScore",
           "inputs": [
             {
               "driving": true,
               "parameter": "overlap",
               "schema": "DocumentOverlapScore",
-              "source": "scored__overlap__document_overlap_scores"
+              "source": "scored__scored__overlap__document_overlap_scores"
             },
             {
               "driving": false,
               "parameter": "bm25",
               "schema": "DocumentBm25Score",
-              "source": "scored__bm25__document_bm25_scores"
+              "source": "scored__scored__bm25__document_bm25_scores"
             },
             {
               "driving": false,
@@ -8970,32 +9044,32 @@
               "input": "policy"
             }
           ],
-          "name": "scored.selected.score_documents",
-          "output_lane": "scored__selected__document_scores",
+          "name": "scored.scored.selected.score_documents",
+          "output_lane": "scored__scored__selected__document_scores",
           "output_schema": "DocumentScore",
           "results": [
             {
-              "frame": "scored__selected__document_scores",
-              "lane": "scored__selected__document_scores",
+              "frame": "scored__scored__selected__document_scores",
+              "lane": "scored__scored__selected__document_scores",
               "schema": "DocumentScore"
             }
           ]
         },
         {
-          "input_lane": "scored__overlap__section_overlap_scores",
+          "input_lane": "scored__scored__overlap__section_overlap_scores",
           "input_schema": "SectionOverlapScore",
           "inputs": [
             {
               "driving": true,
               "parameter": "overlap",
               "schema": "SectionOverlapScore",
-              "source": "scored__overlap__section_overlap_scores"
+              "source": "scored__scored__overlap__section_overlap_scores"
             },
             {
               "driving": false,
               "parameter": "bm25",
               "schema": "SectionBm25Score",
-              "source": "scored__bm25__section_bm25_scores"
+              "source": "scored__scored__bm25__section_bm25_scores"
             },
             {
               "driving": false,
@@ -9014,32 +9088,32 @@
               "input": "policy"
             }
           ],
-          "name": "scored.selected.score_sections",
-          "output_lane": "scored__selected__section_scores",
+          "name": "scored.scored.selected.score_sections",
+          "output_lane": "scored__scored__selected__section_scores",
           "output_schema": "SectionScore",
           "results": [
             {
-              "frame": "scored__selected__section_scores",
-              "lane": "scored__selected__section_scores",
+              "frame": "scored__scored__selected__section_scores",
+              "lane": "scored__scored__selected__section_scores",
               "schema": "SectionScore"
             }
           ]
         },
         {
-          "input_lane": "scored__overlap__paragraph_overlap_scores",
+          "input_lane": "scored__scored__overlap__paragraph_overlap_scores",
           "input_schema": "ParagraphOverlapScore",
           "inputs": [
             {
               "driving": true,
               "parameter": "overlap",
               "schema": "ParagraphOverlapScore",
-              "source": "scored__overlap__paragraph_overlap_scores"
+              "source": "scored__scored__overlap__paragraph_overlap_scores"
             },
             {
               "driving": false,
               "parameter": "bm25",
               "schema": "ParagraphBm25Score",
-              "source": "scored__bm25__paragraph_bm25_scores"
+              "source": "scored__scored__bm25__paragraph_bm25_scores"
             },
             {
               "driving": false,
@@ -9058,32 +9132,32 @@
               "input": "policy"
             }
           ],
-          "name": "scored.selected.score_paragraphs",
-          "output_lane": "scored__selected__paragraph_scores",
+          "name": "scored.scored.selected.score_paragraphs",
+          "output_lane": "scored__scored__selected__paragraph_scores",
           "output_schema": "ParagraphScore",
           "results": [
             {
-              "frame": "scored__selected__paragraph_scores",
-              "lane": "scored__selected__paragraph_scores",
+              "frame": "scored__scored__selected__paragraph_scores",
+              "lane": "scored__scored__selected__paragraph_scores",
               "schema": "ParagraphScore"
             }
           ]
         },
         {
-          "input_lane": "scored__overlap__sentence_overlap_scores",
+          "input_lane": "scored__scored__overlap__sentence_overlap_scores",
           "input_schema": "SentenceOverlapScore",
           "inputs": [
             {
               "driving": true,
               "parameter": "overlap",
               "schema": "SentenceOverlapScore",
-              "source": "scored__overlap__sentence_overlap_scores"
+              "source": "scored__scored__overlap__sentence_overlap_scores"
             },
             {
               "driving": false,
               "parameter": "bm25",
               "schema": "SentenceBm25Score",
-              "source": "scored__bm25__sentence_bm25_scores"
+              "source": "scored__scored__bm25__sentence_bm25_scores"
             },
             {
               "driving": false,
@@ -9102,13 +9176,13 @@
               "input": "policy"
             }
           ],
-          "name": "scored.selected.score_sentences",
-          "output_lane": "scored__selected__sentence_scores",
+          "name": "scored.scored.selected.score_sentences",
+          "output_lane": "scored__scored__selected__sentence_scores",
           "output_schema": "SentenceScore",
           "results": [
             {
-              "frame": "scored__selected__sentence_scores",
-              "lane": "scored__selected__sentence_scores",
+              "frame": "scored__scored__selected__sentence_scores",
+              "lane": "scored__scored__selected__sentence_scores",
               "schema": "SentenceScore"
             }
           ]
@@ -16555,6 +16629,7 @@
         "reranked__query_feedback",
         "retrieved__stored_scores",
         "retrieved__streamed_candidates",
+        "retrieved__streamed_scores",
         "score",
         "score_policy",
         "scoring__gap__document_availability",
@@ -16572,7 +16647,6 @@
         "sentence_terms",
         "signal",
         "size",
-        "streamed_document_scores",
         "summary",
         "term"
       ],
@@ -16696,8 +16770,13 @@
           "schema": "DocumentScore"
         },
         {
-          "name": "online_document_overlap_scores",
+          "name": "online_streamed_document_scores",
           "ordinal": 2,
+          "schema": "DocumentScore"
+        },
+        {
+          "name": "online_document_overlap_scores",
+          "ordinal": 3,
           "schema": "DocumentOverlapScore"
         }
       ],
@@ -17682,6 +17761,56 @@
           ]
         },
         {
+          "input_lane": "streamed_document_scores",
+          "input_schema": "DocumentScore",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "streamed",
+              "schema": "DocumentScore",
+              "source": "streamed_document_scores"
+            },
+            {
+              "driving": false,
+              "parameter": "online",
+              "schema": "DocumentScore",
+              "source": "scoring__scoring__selected__document_scores"
+            },
+            {
+              "driving": false,
+              "parameter": "request",
+              "schema": "SearchRequest",
+              "source": "requests"
+            },
+            {
+              "driving": false,
+              "parameter": "policy",
+              "schema": "ScorePolicy",
+              "source": "score_policy"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "request"
+            },
+            {
+              "how": "cross",
+              "input": "policy"
+            }
+          ],
+          "name": "retrieved.merge_streamed_scores",
+          "output_lane": "retrieved__streamed_scores",
+          "output_schema": "DocumentScore",
+          "results": [
+            {
+              "frame": "retrieved__streamed_scores",
+              "lane": "retrieved__streamed_scores",
+              "schema": "DocumentScore"
+            }
+          ]
+        },
+        {
           "input_lane": "documents",
           "input_schema": "Document",
           "inputs": [
@@ -17759,7 +17888,7 @@
               "driving": false,
               "parameter": "score",
               "schema": "DocumentScore",
-              "source": "streamed_document_scores"
+              "source": "retrieved__streamed_scores"
             },
             {
               "driving": false,
@@ -20302,6 +20431,1167 @@
     },
     {
       "dependencies": [
+        "recent_queries"
+      ],
+      "inputs": [
+        {
+          "name": "popular_queries",
+          "ordinal": 0,
+          "schema": "SearchQuery"
+        },
+        {
+          "name": "recent_queries",
+          "ordinal": 1,
+          "schema": "SearchQuery"
+        }
+      ],
+      "name": "MergeOfflineQueries",
+      "outputs": [
+        {
+          "name": "offline_queries",
+          "ordinal": 0,
+          "schema": "SearchQuery"
+        }
+      ],
+      "source": "examples.search.transforms.scoring.MergeOfflineQueries.MergeOfflineQueries",
+      "step_methods": [
+        {
+          "input_lane": "popular_queries",
+          "input_schema": "SearchQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "popular",
+              "schema": "SearchQuery",
+              "source": "popular_queries"
+            },
+            {
+              "driving": false,
+              "parameter": "recent",
+              "schema": "SearchQuery",
+              "source": "recent_queries"
+            }
+          ],
+          "name": "merge_queries",
+          "output_lane": "offline_queries",
+          "output_schema": "SearchQuery",
+          "results": [
+            {
+              "frame": "offline_queries",
+              "lane": "offline_queries",
+              "schema": "SearchQuery"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/MergeOfflineQueries.py",
+        "traceability": "traceability/transforms/MergeOfflineQueries.MergeOfflineQueries.json"
+      }
+    },
+    {
+      "dependencies": [
+        "bm25",
+        "document_summary",
+        "document_terms",
+        "paragraph_summary",
+        "paragraph_terms",
+        "policy",
+        "popular__popularities",
+        "popularity",
+        "queries",
+        "query",
+        "recent__recent_queries",
+        "score_policy",
+        "scored__bm25__document_bm25_scores",
+        "scored__bm25__paragraph_bm25_scores",
+        "scored__bm25__section_bm25_scores",
+        "scored__bm25__sentence_bm25_scores",
+        "scored__overlap__query_sizes",
+        "section_summary",
+        "section_terms",
+        "sentence_summary",
+        "sentence_terms",
+        "size",
+        "summary",
+        "term"
+      ],
+      "inputs": [
+        {
+          "name": "queries",
+          "ordinal": 0,
+          "schema": "SearchQuery"
+        },
+        {
+          "name": "daily_impressions",
+          "ordinal": 1,
+          "schema": "DailyImpressions"
+        },
+        {
+          "name": "score_policy",
+          "ordinal": 2,
+          "schema": "ScorePolicy"
+        },
+        {
+          "name": "document_terms",
+          "ordinal": 3,
+          "schema": "DocumentIndexTerm"
+        },
+        {
+          "name": "section_terms",
+          "ordinal": 4,
+          "schema": "SectionIndexTerm"
+        },
+        {
+          "name": "paragraph_terms",
+          "ordinal": 5,
+          "schema": "ParagraphIndexTerm"
+        },
+        {
+          "name": "sentence_terms",
+          "ordinal": 6,
+          "schema": "SentenceIndexTerm"
+        },
+        {
+          "name": "document_summary",
+          "ordinal": 7,
+          "schema": "DocumentIndexSummary"
+        },
+        {
+          "name": "section_summary",
+          "ordinal": 8,
+          "schema": "SectionIndexSummary"
+        },
+        {
+          "name": "paragraph_summary",
+          "ordinal": 9,
+          "schema": "ParagraphIndexSummary"
+        },
+        {
+          "name": "sentence_summary",
+          "ordinal": 10,
+          "schema": "SentenceIndexSummary"
+        }
+      ],
+      "name": "OfflineScoring",
+      "outputs": [
+        {
+          "name": "document_scores",
+          "ordinal": 0,
+          "schema": "DocumentScore"
+        },
+        {
+          "name": "section_scores",
+          "ordinal": 1,
+          "schema": "SectionScore"
+        },
+        {
+          "name": "paragraph_scores",
+          "ordinal": 2,
+          "schema": "ParagraphScore"
+        },
+        {
+          "name": "sentence_scores",
+          "ordinal": 3,
+          "schema": "SentenceScore"
+        },
+        {
+          "name": "document_overlap_scores",
+          "ordinal": 4,
+          "schema": "DocumentOverlapScore"
+        },
+        {
+          "name": "section_overlap_scores",
+          "ordinal": 5,
+          "schema": "SectionOverlapScore"
+        },
+        {
+          "name": "paragraph_overlap_scores",
+          "ordinal": 6,
+          "schema": "ParagraphOverlapScore"
+        },
+        {
+          "name": "sentence_overlap_scores",
+          "ordinal": 7,
+          "schema": "SentenceOverlapScore"
+        },
+        {
+          "name": "document_bm25_scores",
+          "ordinal": 8,
+          "schema": "DocumentBm25Score"
+        },
+        {
+          "name": "section_bm25_scores",
+          "ordinal": 9,
+          "schema": "SectionBm25Score"
+        },
+        {
+          "name": "paragraph_bm25_scores",
+          "ordinal": 10,
+          "schema": "ParagraphBm25Score"
+        },
+        {
+          "name": "sentence_bm25_scores",
+          "ordinal": 11,
+          "schema": "SentenceBm25Score"
+        }
+      ],
+      "source": "examples.search.transforms.scoring.OfflineScoring.OfflineScoring",
+      "step_methods": [
+        {
+          "input_lane": "daily_impressions",
+          "input_schema": "DailyImpressions",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "impression",
+              "schema": "DailyImpressions",
+              "source": "daily_impressions"
+            }
+          ],
+          "name": "popular.summarize_popularity",
+          "output_lane": "popular__popularities",
+          "output_schema": "QueryPopularity",
+          "results": [
+            {
+              "frame": "popular__popularities",
+              "lane": "popular__popularities",
+              "schema": "QueryPopularity"
+            }
+          ]
+        },
+        {
+          "input_lane": "queries",
+          "input_schema": "SearchQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "SearchQuery",
+              "source": "queries"
+            },
+            {
+              "driving": false,
+              "parameter": "popularity",
+              "schema": "QueryPopularity",
+              "source": "popular__popularities"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "popularity"
+            }
+          ],
+          "name": "popular.rank_queries",
+          "output_lane": "popular__ranked_queries",
+          "output_schema": "PopularQueryCandidate",
+          "results": [
+            {
+              "frame": "popular__ranked_queries",
+              "lane": "popular__ranked_queries",
+              "schema": "PopularQueryCandidate"
+            }
+          ]
+        },
+        {
+          "input_lane": "popular__ranked_queries",
+          "input_schema": "PopularQueryCandidate",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "PopularQueryCandidate",
+              "source": "popular__ranked_queries"
+            }
+          ],
+          "name": "popular.select_queries",
+          "output_lane": "popular__selected_queries",
+          "output_schema": "SearchQuery",
+          "results": [
+            {
+              "frame": "popular__selected_queries",
+              "lane": "popular__selected_queries",
+              "schema": "SearchQuery"
+            }
+          ]
+        },
+        {
+          "input_lane": "daily_impressions",
+          "input_schema": "DailyImpressions",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "impression",
+              "schema": "DailyImpressions",
+              "source": "daily_impressions"
+            },
+            {
+              "driving": false,
+              "parameter": "query",
+              "schema": "SearchQuery",
+              "source": "queries"
+            },
+            {
+              "driving": false,
+              "parameter": "policy",
+              "schema": "ScorePolicy",
+              "source": "score_policy"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "query"
+            },
+            {
+              "how": "cross",
+              "input": "policy"
+            }
+          ],
+          "name": "recent.select_recent_queries",
+          "output_lane": "recent__recent_queries",
+          "output_schema": "SearchQuery",
+          "results": [
+            {
+              "frame": "recent__recent_queries",
+              "lane": "recent__recent_queries",
+              "schema": "SearchQuery"
+            }
+          ]
+        },
+        {
+          "input_lane": "popular__selected_queries",
+          "input_schema": "SearchQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "popular",
+              "schema": "SearchQuery",
+              "source": "popular__selected_queries"
+            },
+            {
+              "driving": false,
+              "parameter": "recent",
+              "schema": "SearchQuery",
+              "source": "recent__recent_queries"
+            }
+          ],
+          "name": "offline.merge_queries",
+          "output_lane": "offline__offline_queries",
+          "output_schema": "SearchQuery",
+          "results": [
+            {
+              "frame": "offline__offline_queries",
+              "lane": "offline__offline_queries",
+              "schema": "SearchQuery"
+            }
+          ]
+        },
+        {
+          "input_lane": "offline__offline_queries",
+          "input_schema": "SearchQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "SearchQuery",
+              "source": "offline__offline_queries"
+            }
+          ],
+          "name": "scored.overlap.expand_query_terms",
+          "output_lane": "scored__overlap__expanded_query_terms",
+          "output_schema": "QueryTerm",
+          "results": [
+            {
+              "frame": "scored__overlap__expanded_query_terms",
+              "lane": "scored__overlap__expanded_query_terms",
+              "schema": "QueryTerm"
+            }
+          ]
+        },
+        {
+          "input_lane": "scored__overlap__expanded_query_terms",
+          "input_schema": "QueryTerm",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "QueryTerm",
+              "source": "scored__overlap__expanded_query_terms"
+            }
+          ],
+          "name": "scored.overlap.select_distinct_query_terms",
+          "output_lane": "scored__overlap__query_terms",
+          "output_schema": "QueryTerm",
+          "results": [
+            {
+              "frame": "scored__overlap__query_terms",
+              "lane": "scored__overlap__query_terms",
+              "schema": "QueryTerm"
+            }
+          ]
+        },
+        {
+          "input_lane": "scored__overlap__query_terms",
+          "input_schema": "QueryTerm",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "QueryTerm",
+              "source": "scored__overlap__query_terms"
+            }
+          ],
+          "name": "scored.overlap.count_query_terms",
+          "output_lane": "scored__overlap__query_sizes",
+          "output_schema": "QueryTermCount",
+          "results": [
+            {
+              "frame": "scored__overlap__query_sizes",
+              "lane": "scored__overlap__query_sizes",
+              "schema": "QueryTermCount"
+            }
+          ]
+        },
+        {
+          "input_lane": "scored__overlap__query_terms",
+          "input_schema": "QueryTerm",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "QueryTerm",
+              "source": "scored__overlap__query_terms"
+            },
+            {
+              "driving": false,
+              "parameter": "size",
+              "schema": "QueryTermCount",
+              "source": "scored__overlap__query_sizes"
+            },
+            {
+              "driving": false,
+              "parameter": "term",
+              "schema": "DocumentIndexTerm",
+              "source": "document_terms"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "term"
+            },
+            {
+              "how": "inner",
+              "input": "size"
+            }
+          ],
+          "name": "scored.overlap.match_documents",
+          "output_lane": "scored__overlap__document_overlap_matches",
+          "output_schema": "DocumentOverlapMatch",
+          "results": [
+            {
+              "frame": "scored__overlap__document_overlap_matches",
+              "lane": "scored__overlap__document_overlap_matches",
+              "schema": "DocumentOverlapMatch"
+            }
+          ]
+        },
+        {
+          "input_lane": "scored__overlap__query_terms",
+          "input_schema": "QueryTerm",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "QueryTerm",
+              "source": "scored__overlap__query_terms"
+            },
+            {
+              "driving": false,
+              "parameter": "size",
+              "schema": "QueryTermCount",
+              "source": "scored__overlap__query_sizes"
+            },
+            {
+              "driving": false,
+              "parameter": "term",
+              "schema": "SectionIndexTerm",
+              "source": "section_terms"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "term"
+            },
+            {
+              "how": "inner",
+              "input": "size"
+            }
+          ],
+          "name": "scored.overlap.match_sections",
+          "output_lane": "scored__overlap__section_overlap_matches",
+          "output_schema": "SectionOverlapMatch",
+          "results": [
+            {
+              "frame": "scored__overlap__section_overlap_matches",
+              "lane": "scored__overlap__section_overlap_matches",
+              "schema": "SectionOverlapMatch"
+            }
+          ]
+        },
+        {
+          "input_lane": "scored__overlap__query_terms",
+          "input_schema": "QueryTerm",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "QueryTerm",
+              "source": "scored__overlap__query_terms"
+            },
+            {
+              "driving": false,
+              "parameter": "size",
+              "schema": "QueryTermCount",
+              "source": "scored__overlap__query_sizes"
+            },
+            {
+              "driving": false,
+              "parameter": "term",
+              "schema": "ParagraphIndexTerm",
+              "source": "paragraph_terms"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "term"
+            },
+            {
+              "how": "inner",
+              "input": "size"
+            }
+          ],
+          "name": "scored.overlap.match_paragraphs",
+          "output_lane": "scored__overlap__paragraph_overlap_matches",
+          "output_schema": "ParagraphOverlapMatch",
+          "results": [
+            {
+              "frame": "scored__overlap__paragraph_overlap_matches",
+              "lane": "scored__overlap__paragraph_overlap_matches",
+              "schema": "ParagraphOverlapMatch"
+            }
+          ]
+        },
+        {
+          "input_lane": "scored__overlap__query_terms",
+          "input_schema": "QueryTerm",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "QueryTerm",
+              "source": "scored__overlap__query_terms"
+            },
+            {
+              "driving": false,
+              "parameter": "size",
+              "schema": "QueryTermCount",
+              "source": "scored__overlap__query_sizes"
+            },
+            {
+              "driving": false,
+              "parameter": "term",
+              "schema": "SentenceIndexTerm",
+              "source": "sentence_terms"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "term"
+            },
+            {
+              "how": "inner",
+              "input": "size"
+            }
+          ],
+          "name": "scored.overlap.match_sentences",
+          "output_lane": "scored__overlap__sentence_overlap_matches",
+          "output_schema": "SentenceOverlapMatch",
+          "results": [
+            {
+              "frame": "scored__overlap__sentence_overlap_matches",
+              "lane": "scored__overlap__sentence_overlap_matches",
+              "schema": "SentenceOverlapMatch"
+            }
+          ]
+        },
+        {
+          "input_lane": "scored__overlap__document_overlap_matches",
+          "input_schema": "DocumentOverlapMatch",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "match",
+              "schema": "DocumentOverlapMatch",
+              "source": "scored__overlap__document_overlap_matches"
+            },
+            {
+              "driving": false,
+              "parameter": "policy",
+              "schema": "ScorePolicy",
+              "source": "score_policy"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "policy"
+            }
+          ],
+          "name": "scored.overlap.publish_document_overlap_scores",
+          "output_lane": "scored__overlap__document_overlap_scores",
+          "output_schema": "DocumentOverlapScore",
+          "results": [
+            {
+              "frame": "scored__overlap__document_overlap_scores",
+              "lane": "scored__overlap__document_overlap_scores",
+              "schema": "DocumentOverlapScore"
+            }
+          ]
+        },
+        {
+          "input_lane": "scored__overlap__section_overlap_matches",
+          "input_schema": "SectionOverlapMatch",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "match",
+              "schema": "SectionOverlapMatch",
+              "source": "scored__overlap__section_overlap_matches"
+            },
+            {
+              "driving": false,
+              "parameter": "policy",
+              "schema": "ScorePolicy",
+              "source": "score_policy"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "policy"
+            }
+          ],
+          "name": "scored.overlap.publish_section_overlap_scores",
+          "output_lane": "scored__overlap__section_overlap_scores",
+          "output_schema": "SectionOverlapScore",
+          "results": [
+            {
+              "frame": "scored__overlap__section_overlap_scores",
+              "lane": "scored__overlap__section_overlap_scores",
+              "schema": "SectionOverlapScore"
+            }
+          ]
+        },
+        {
+          "input_lane": "scored__overlap__paragraph_overlap_matches",
+          "input_schema": "ParagraphOverlapMatch",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "match",
+              "schema": "ParagraphOverlapMatch",
+              "source": "scored__overlap__paragraph_overlap_matches"
+            },
+            {
+              "driving": false,
+              "parameter": "policy",
+              "schema": "ScorePolicy",
+              "source": "score_policy"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "policy"
+            }
+          ],
+          "name": "scored.overlap.publish_paragraph_overlap_scores",
+          "output_lane": "scored__overlap__paragraph_overlap_scores",
+          "output_schema": "ParagraphOverlapScore",
+          "results": [
+            {
+              "frame": "scored__overlap__paragraph_overlap_scores",
+              "lane": "scored__overlap__paragraph_overlap_scores",
+              "schema": "ParagraphOverlapScore"
+            }
+          ]
+        },
+        {
+          "input_lane": "scored__overlap__sentence_overlap_matches",
+          "input_schema": "SentenceOverlapMatch",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "match",
+              "schema": "SentenceOverlapMatch",
+              "source": "scored__overlap__sentence_overlap_matches"
+            },
+            {
+              "driving": false,
+              "parameter": "policy",
+              "schema": "ScorePolicy",
+              "source": "score_policy"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "policy"
+            }
+          ],
+          "name": "scored.overlap.publish_sentence_overlap_scores",
+          "output_lane": "scored__overlap__sentence_overlap_scores",
+          "output_schema": "SentenceOverlapScore",
+          "results": [
+            {
+              "frame": "scored__overlap__sentence_overlap_scores",
+              "lane": "scored__overlap__sentence_overlap_scores",
+              "schema": "SentenceOverlapScore"
+            }
+          ]
+        },
+        {
+          "input_lane": "offline__offline_queries",
+          "input_schema": "SearchQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "SearchQuery",
+              "source": "offline__offline_queries"
+            }
+          ],
+          "name": "scored.bm25.expand_query_terms",
+          "output_lane": "scored__bm25__expanded_query_terms",
+          "output_schema": "QueryTerm",
+          "results": [
+            {
+              "frame": "scored__bm25__expanded_query_terms",
+              "lane": "scored__bm25__expanded_query_terms",
+              "schema": "QueryTerm"
+            }
+          ]
+        },
+        {
+          "input_lane": "scored__bm25__expanded_query_terms",
+          "input_schema": "QueryTerm",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "QueryTerm",
+              "source": "scored__bm25__expanded_query_terms"
+            }
+          ],
+          "name": "scored.bm25.select_distinct_query_terms",
+          "output_lane": "scored__bm25__query_terms",
+          "output_schema": "QueryTerm",
+          "results": [
+            {
+              "frame": "scored__bm25__query_terms",
+              "lane": "scored__bm25__query_terms",
+              "schema": "QueryTerm"
+            }
+          ]
+        },
+        {
+          "input_lane": "scored__bm25__query_terms",
+          "input_schema": "QueryTerm",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "QueryTerm",
+              "source": "scored__bm25__query_terms"
+            }
+          ],
+          "name": "scored.bm25.count_query_terms",
+          "output_lane": "scored__bm25__query_sizes",
+          "output_schema": "QueryTermCount",
+          "results": [
+            {
+              "frame": "scored__bm25__query_sizes",
+              "lane": "scored__bm25__query_sizes",
+              "schema": "QueryTermCount"
+            }
+          ]
+        },
+        {
+          "input_lane": "scored__bm25__query_terms",
+          "input_schema": "QueryTerm",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "QueryTerm",
+              "source": "scored__bm25__query_terms"
+            },
+            {
+              "driving": false,
+              "parameter": "term",
+              "schema": "DocumentIndexTerm",
+              "source": "document_terms"
+            },
+            {
+              "driving": false,
+              "parameter": "summary",
+              "schema": "DocumentIndexSummary",
+              "source": "document_summary"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "term"
+            },
+            {
+              "how": "cross",
+              "input": "summary"
+            }
+          ],
+          "name": "scored.bm25.score_document_bm25",
+          "output_lane": "scored__bm25__document_bm25_scores",
+          "output_schema": "DocumentBm25Score",
+          "results": [
+            {
+              "frame": "scored__bm25__document_bm25_scores",
+              "lane": "scored__bm25__document_bm25_scores",
+              "schema": "DocumentBm25Score"
+            }
+          ]
+        },
+        {
+          "input_lane": "scored__bm25__query_terms",
+          "input_schema": "QueryTerm",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "QueryTerm",
+              "source": "scored__bm25__query_terms"
+            },
+            {
+              "driving": false,
+              "parameter": "term",
+              "schema": "SectionIndexTerm",
+              "source": "section_terms"
+            },
+            {
+              "driving": false,
+              "parameter": "summary",
+              "schema": "SectionIndexSummary",
+              "source": "section_summary"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "term"
+            },
+            {
+              "how": "cross",
+              "input": "summary"
+            }
+          ],
+          "name": "scored.bm25.score_section_bm25",
+          "output_lane": "scored__bm25__section_bm25_scores",
+          "output_schema": "SectionBm25Score",
+          "results": [
+            {
+              "frame": "scored__bm25__section_bm25_scores",
+              "lane": "scored__bm25__section_bm25_scores",
+              "schema": "SectionBm25Score"
+            }
+          ]
+        },
+        {
+          "input_lane": "scored__bm25__query_terms",
+          "input_schema": "QueryTerm",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "QueryTerm",
+              "source": "scored__bm25__query_terms"
+            },
+            {
+              "driving": false,
+              "parameter": "term",
+              "schema": "ParagraphIndexTerm",
+              "source": "paragraph_terms"
+            },
+            {
+              "driving": false,
+              "parameter": "summary",
+              "schema": "ParagraphIndexSummary",
+              "source": "paragraph_summary"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "term"
+            },
+            {
+              "how": "cross",
+              "input": "summary"
+            }
+          ],
+          "name": "scored.bm25.score_paragraph_bm25",
+          "output_lane": "scored__bm25__paragraph_bm25_scores",
+          "output_schema": "ParagraphBm25Score",
+          "results": [
+            {
+              "frame": "scored__bm25__paragraph_bm25_scores",
+              "lane": "scored__bm25__paragraph_bm25_scores",
+              "schema": "ParagraphBm25Score"
+            }
+          ]
+        },
+        {
+          "input_lane": "scored__bm25__query_terms",
+          "input_schema": "QueryTerm",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "QueryTerm",
+              "source": "scored__bm25__query_terms"
+            },
+            {
+              "driving": false,
+              "parameter": "term",
+              "schema": "SentenceIndexTerm",
+              "source": "sentence_terms"
+            },
+            {
+              "driving": false,
+              "parameter": "summary",
+              "schema": "SentenceIndexSummary",
+              "source": "sentence_summary"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "term"
+            },
+            {
+              "how": "cross",
+              "input": "summary"
+            }
+          ],
+          "name": "scored.bm25.score_sentence_bm25",
+          "output_lane": "scored__bm25__sentence_bm25_scores",
+          "output_schema": "SentenceBm25Score",
+          "results": [
+            {
+              "frame": "scored__bm25__sentence_bm25_scores",
+              "lane": "scored__bm25__sentence_bm25_scores",
+              "schema": "SentenceBm25Score"
+            }
+          ]
+        },
+        {
+          "input_lane": "scored__overlap__document_overlap_scores",
+          "input_schema": "DocumentOverlapScore",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "overlap",
+              "schema": "DocumentOverlapScore",
+              "source": "scored__overlap__document_overlap_scores"
+            },
+            {
+              "driving": false,
+              "parameter": "bm25",
+              "schema": "DocumentBm25Score",
+              "source": "scored__bm25__document_bm25_scores"
+            },
+            {
+              "driving": false,
+              "parameter": "policy",
+              "schema": "ScorePolicy",
+              "source": "score_policy"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "bm25"
+            },
+            {
+              "how": "cross",
+              "input": "policy"
+            }
+          ],
+          "name": "scored.selected.score_documents",
+          "output_lane": "scored__selected__document_scores",
+          "output_schema": "DocumentScore",
+          "results": [
+            {
+              "frame": "scored__selected__document_scores",
+              "lane": "scored__selected__document_scores",
+              "schema": "DocumentScore"
+            }
+          ]
+        },
+        {
+          "input_lane": "scored__overlap__section_overlap_scores",
+          "input_schema": "SectionOverlapScore",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "overlap",
+              "schema": "SectionOverlapScore",
+              "source": "scored__overlap__section_overlap_scores"
+            },
+            {
+              "driving": false,
+              "parameter": "bm25",
+              "schema": "SectionBm25Score",
+              "source": "scored__bm25__section_bm25_scores"
+            },
+            {
+              "driving": false,
+              "parameter": "policy",
+              "schema": "ScorePolicy",
+              "source": "score_policy"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "bm25"
+            },
+            {
+              "how": "cross",
+              "input": "policy"
+            }
+          ],
+          "name": "scored.selected.score_sections",
+          "output_lane": "scored__selected__section_scores",
+          "output_schema": "SectionScore",
+          "results": [
+            {
+              "frame": "scored__selected__section_scores",
+              "lane": "scored__selected__section_scores",
+              "schema": "SectionScore"
+            }
+          ]
+        },
+        {
+          "input_lane": "scored__overlap__paragraph_overlap_scores",
+          "input_schema": "ParagraphOverlapScore",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "overlap",
+              "schema": "ParagraphOverlapScore",
+              "source": "scored__overlap__paragraph_overlap_scores"
+            },
+            {
+              "driving": false,
+              "parameter": "bm25",
+              "schema": "ParagraphBm25Score",
+              "source": "scored__bm25__paragraph_bm25_scores"
+            },
+            {
+              "driving": false,
+              "parameter": "policy",
+              "schema": "ScorePolicy",
+              "source": "score_policy"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "bm25"
+            },
+            {
+              "how": "cross",
+              "input": "policy"
+            }
+          ],
+          "name": "scored.selected.score_paragraphs",
+          "output_lane": "scored__selected__paragraph_scores",
+          "output_schema": "ParagraphScore",
+          "results": [
+            {
+              "frame": "scored__selected__paragraph_scores",
+              "lane": "scored__selected__paragraph_scores",
+              "schema": "ParagraphScore"
+            }
+          ]
+        },
+        {
+          "input_lane": "scored__overlap__sentence_overlap_scores",
+          "input_schema": "SentenceOverlapScore",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "overlap",
+              "schema": "SentenceOverlapScore",
+              "source": "scored__overlap__sentence_overlap_scores"
+            },
+            {
+              "driving": false,
+              "parameter": "bm25",
+              "schema": "SentenceBm25Score",
+              "source": "scored__bm25__sentence_bm25_scores"
+            },
+            {
+              "driving": false,
+              "parameter": "policy",
+              "schema": "ScorePolicy",
+              "source": "score_policy"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "bm25"
+            },
+            {
+              "how": "cross",
+              "input": "policy"
+            }
+          ],
+          "name": "scored.selected.score_sentences",
+          "output_lane": "scored__selected__sentence_scores",
+          "output_schema": "SentenceScore",
+          "results": [
+            {
+              "frame": "scored__selected__sentence_scores",
+              "lane": "scored__selected__sentence_scores",
+              "schema": "SentenceScore"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/OfflineScoring.py",
+        "traceability": "traceability/transforms/OfflineScoring.OfflineScoring.json"
+      }
+    },
+    {
+      "dependencies": [
         "document_summary",
         "document_terms",
         "paragraph_summary",
@@ -22140,6 +23430,90 @@
     },
     {
       "dependencies": [
+        "policy",
+        "queries",
+        "query",
+        "score_policy"
+      ],
+      "inputs": [
+        {
+          "name": "queries",
+          "ordinal": 0,
+          "schema": "SearchQuery"
+        },
+        {
+          "name": "daily_impressions",
+          "ordinal": 1,
+          "schema": "DailyImpressions"
+        },
+        {
+          "name": "score_policy",
+          "ordinal": 2,
+          "schema": "ScorePolicy"
+        }
+      ],
+      "name": "SelectRecentQueries",
+      "outputs": [
+        {
+          "name": "recent_queries",
+          "ordinal": 0,
+          "schema": "SearchQuery"
+        }
+      ],
+      "source": "examples.search.transforms.scoring.SelectRecentQueries.SelectRecentQueries",
+      "step_methods": [
+        {
+          "input_lane": "daily_impressions",
+          "input_schema": "DailyImpressions",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "impression",
+              "schema": "DailyImpressions",
+              "source": "daily_impressions"
+            },
+            {
+              "driving": false,
+              "parameter": "query",
+              "schema": "SearchQuery",
+              "source": "queries"
+            },
+            {
+              "driving": false,
+              "parameter": "policy",
+              "schema": "ScorePolicy",
+              "source": "score_policy"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "query"
+            },
+            {
+              "how": "cross",
+              "input": "policy"
+            }
+          ],
+          "name": "select_recent_queries",
+          "output_lane": "recent_queries",
+          "output_schema": "SearchQuery",
+          "results": [
+            {
+              "frame": "recent_queries",
+              "lane": "recent_queries",
+              "schema": "SearchQuery"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/SelectRecentQueries.py",
+        "traceability": "traceability/transforms/SelectRecentQueries.SelectRecentQueries.json"
+      }
+    },
+    {
+      "dependencies": [
         "bm25",
         "document",
         "document_summary",
@@ -22241,38 +23615,43 @@
           "schema": "DocumentScore"
         },
         {
-          "name": "online_section_scores",
+          "name": "online_streamed_document_scores",
           "ordinal": 1,
+          "schema": "DocumentScore"
+        },
+        {
+          "name": "online_section_scores",
+          "ordinal": 2,
           "schema": "SectionScore"
         },
         {
           "name": "online_paragraph_scores",
-          "ordinal": 2,
+          "ordinal": 3,
           "schema": "ParagraphScore"
         },
         {
           "name": "online_sentence_scores",
-          "ordinal": 3,
+          "ordinal": 4,
           "schema": "SentenceScore"
         },
         {
           "name": "online_document_overlap_scores",
-          "ordinal": 4,
+          "ordinal": 5,
           "schema": "DocumentOverlapScore"
         },
         {
           "name": "online_section_overlap_scores",
-          "ordinal": 5,
+          "ordinal": 6,
           "schema": "SectionOverlapScore"
         },
         {
           "name": "online_paragraph_overlap_scores",
-          "ordinal": 6,
+          "ordinal": 7,
           "schema": "ParagraphOverlapScore"
         },
         {
           "name": "online_sentence_overlap_scores",
-          "ordinal": 7,
+          "ordinal": 8,
           "schema": "SentenceOverlapScore"
         }
       ],
@@ -23239,6 +24618,7 @@
         "reranked__query_feedback",
         "retrieved__stored_scores",
         "retrieved__streamed_candidates",
+        "retrieved__streamed_scores",
         "score",
         "score_policy",
         "scoring__gap__document_availability",
@@ -23256,7 +24636,6 @@
         "sentence_terms",
         "signal",
         "size",
-        "streamed_document_scores",
         "summary",
         "term"
       ],
@@ -23380,8 +24759,13 @@
           "schema": "DocumentScore"
         },
         {
-          "name": "online_document_overlap_scores",
+          "name": "online_streamed_document_scores",
           "ordinal": 2,
+          "schema": "DocumentScore"
+        },
+        {
+          "name": "online_document_overlap_scores",
+          "ordinal": 3,
           "schema": "DocumentOverlapScore"
         }
       ],
@@ -24366,6 +25750,56 @@
           ]
         },
         {
+          "input_lane": "streamed_document_scores",
+          "input_schema": "DocumentScore",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "streamed",
+              "schema": "DocumentScore",
+              "source": "streamed_document_scores"
+            },
+            {
+              "driving": false,
+              "parameter": "online",
+              "schema": "DocumentScore",
+              "source": "scoring__scoring__selected__document_scores"
+            },
+            {
+              "driving": false,
+              "parameter": "request",
+              "schema": "SearchRequest",
+              "source": "requests"
+            },
+            {
+              "driving": false,
+              "parameter": "policy",
+              "schema": "ScorePolicy",
+              "source": "score_policy"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "request"
+            },
+            {
+              "how": "cross",
+              "input": "policy"
+            }
+          ],
+          "name": "retrieved.merge_streamed_scores",
+          "output_lane": "retrieved__streamed_scores",
+          "output_schema": "DocumentScore",
+          "results": [
+            {
+              "frame": "retrieved__streamed_scores",
+              "lane": "retrieved__streamed_scores",
+              "schema": "DocumentScore"
+            }
+          ]
+        },
+        {
           "input_lane": "documents",
           "input_schema": "Document",
           "inputs": [
@@ -24443,7 +25877,7 @@
               "driving": false,
               "parameter": "score",
               "schema": "DocumentScore",
-              "source": "streamed_document_scores"
+              "source": "retrieved__streamed_scores"
             },
             {
               "driving": false,

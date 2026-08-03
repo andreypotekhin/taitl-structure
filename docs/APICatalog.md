@@ -4,6 +4,11 @@ This catalog is the reference for API compatibility decisions. Use `@raw` or cal
 
 For extensions on top of PySpark, see [APIExtensions.md](APIExtensions.md). For Structure own APIs such as schemas, transforms, hooks, see Core APIs in [API.md](API.md).
 
+V10 planning for remaining actionable rows is grouped in
+`docs/dev/planning/P08022601.V10-api-catalog-and-schema-evolution.plan.md`. Companion streaming state, side-effect,
+and evidence plans are linked from `docs/dev/project-management/V10.md`. An open or gated row is not a support claim;
+each entry must name its owner boundary, evidence, and caller remedy.
+
 ## Column API
 
 Structure supports typed field references, nested struct field access, equality and ordering comparisons, boolean
@@ -151,14 +156,14 @@ lifecycle recipe.
 | Explicit bounded dedupe | implemented | `dropDuplicatesWithinWatermark` | `drop_duplicates_within_watermark(...)` requires `streaming=True` and a preceding watermark | [Streaming API](api/Streaming.api.md) |
 | Session-window aggregation | implemented | `session_window` | Requires a preceding watermark on the event-time field, a static positive gap, at least one ordinary grouping key, and caller-owned `append` mode | [Streaming API](api/Streaming.api.md) |
 | Chained window aggregation | implemented | `window_time`, `window(window_time(...))` | Exactly one watermarked event-time window aggregate followed by a second window aggregate; PySpark 3.5/4.0 online and generated evidence passes | [Streaming API](api/Streaming.api.md) |
-| Variant row-local helpers | implemented | `parse_json`, `schema_of_variant`, `variant_get`, `to_variant_object`, `is_variant_null`, `variant_explode`, `variant_explode_outer` | Ordinary PySpark 4 profile-gated streaming transforms; PySpark 4.0 has live online/generated evidence for both TVF forms, including the outer null-row contract, and PySpark 3.5 fails before execution | [Streaming API](api/Streaming.api.md) |
+| Variant row-local helpers | implemented | `parse_json`, `schema_of_variant`, `variant_get`, `to_variant_object`, `is_variant_null`, `variant_literal`, `variant_explode`, `variant_explode_outer` | Ordinary PySpark 4 profile-gated streaming transforms; PySpark 4.0 has live online/generated evidence for validated literals, watermarked schema aggregation, and both TVF forms, including outer null-row and object-key contracts, and PySpark 3.5 fails before execution | [Streaming API](api/Streaming.api.md) |
 | Bounded stream-stream outer and semi joins | implemented | Left/right/full outer and left-semi stream-stream joins | Requires declared streaming inputs, watermarks on both bound event-time fields, a compiler-visible event-time bound, and caller-owned `append` mode | [Streaming API](api/Streaming.api.md) |
 | Stream-static left semi join | implemented | Left-semi stream-static join | Non-stateful `exists(...)` filter when the active input is streaming and the right input is static | [Streaming API](api/Streaming.api.md) |
 | Unsupported stream-static directions | unsupported | Right/full/cross/anti stream-static joins | These runtime shapes are not admitted by Spark Structured Streaming | Use supported left/inner/left-semi lookup or caller-owned redesign |
 | Global/unbounded aggregation and dedupe | unsupported | Global `groupBy`, unwatermarked `dropDuplicates` | Structure will not admit unbounded state | Group by watermarked event time/window or bound state outside Structure |
 | Global ordering, limits, and offsets | streaming-ineligible | `orderBy`, `sort`, `limit`, `offset` | V9 classifies these as batch-materialization boundaries over unbounded streams | Use caller-owned PySpark after a materialization boundary |
 | Priority selection | streaming-ineligible | `select_first_qualified`, top-N | Lowers through ranking and validation aggregates; v9 keeps it batch-only | Use caller-owned PySpark after a materialization boundary |
-| Analytic windows and selected-row helpers | design-gated | ranking, `Window`, lag/lead, rolling windows, latest/earliest | Need bounded streaming state, tie, frame, and output-mode contracts before admission | Use caller-owned PySpark |
+| Analytic windows and selected-row helpers | streaming-ineligible | ranking, `Window`, lag/lead, rolling windows, latest/earliest | Broad analytic projections and global selected-row helpers have no finite streaming state contract; grouped `first_value(...)`/`last_value(...)` inside a watermarked event-time window is the admitted finite alternative | Use the finite grouped aggregate or caller-owned PySpark after materialization |
 | Stateful composition boundary | implemented | One streaming aggregate/dedupe/join followed by stateless operations | V9 checks the one-stateful-plus-stateless policy and rejects a second stateful operation with diagnostics | [Streaming API](api/Streaming.api.md) |
 | Chained stateful operators | design-gated | Chains of streaming aggregates/dedupe/joins | Needs explicit composition and state-budget policy before Structure can own the shape | Use caller-owned PySpark |
 | Pandas, RDD, and state-processor boundaries | unsupported | Pandas UDF, RDD, `mapInPandas`, state processors | Opaque execution and user-owned state semantics do not fit Structure's symbolic transform contract | Use caller-owned streaming code |

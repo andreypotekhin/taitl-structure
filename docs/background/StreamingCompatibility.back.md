@@ -158,6 +158,10 @@ These operations are not streaming-compatible:
 - local Spark actions such as `collect()`, `count()`, `toPandas()`, `show()`, and `take()`;
 - arbitrary hooks unless marked streaming-safe.
 
+Finite selected-value alternatives remain supported through grouped `first_value(...)` and `last_value(...)` inside a
+watermarked event-time window. They are aggregate expressions, not reinterpretations of the batch selected-row or
+analytic-window helpers above.
+
 Some of these operations are supported by Spark Structured Streaming under specific watermarks, output modes, or state
 policies. Structure admits only the shapes whose transformation policy is compiler-visible.
 
@@ -363,3 +367,7 @@ Generated PySpark must:
 
 Generated PySpark may use the same code path for batch and streaming DataFrames. Separate batch and streaming generated
 classes are not required.
+
+V10 extends this rule to state-stage lists and additional stream-stream join candidates. A compatibility report must
+never imply that a skipped live lane passed, and it must identify whether the caller should add a watermark/bound,
+materialize to batch, or retain the operation in caller-owned PySpark.

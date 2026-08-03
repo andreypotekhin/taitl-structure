@@ -11,21 +11,22 @@ from examples.search.schemas.scoring.intermediate import ExpandedQueryToken, Que
 from examples.search.schemas.search import SearchQuery
 from structure import Transform, input, lane, step
 from structure.plugin.pyspark import (
+    arr_distinct,
     arr_transform,
     count,
-    drop_duplicates,
     group_by,
     posexplode_struct,
     split,
     trim,
     where,
+    watermark,
 )
 
 
 class ScoreBase(Transform):
     """Accept one or more queries and four reusable target-grain indexes."""
 
-    queries = input(SearchQuery)
+    queries = input(SearchQuery, streaming=True)
     document_terms = input(DocumentIndexTerm)
     section_terms = input(SectionIndexTerm)
     paragraph_terms = input(ParagraphIndexTerm)
@@ -36,8 +37,9 @@ class ScoreBase(Transform):
 
     @step(input=queries, output=expanded_query_terms)
     def expand_query_terms(self, query: SearchQuery) -> QueryTerm:
+        watermark(query.requested_at, delay="10 minutes")
         tokens = arr_transform(
-            split(trim(query.content), pattern=r"\s+"),
+            arr_distinct(split(trim(query.content), pattern=r"\s+")),
             lambda token: QueryToken(
                 token=normalized_token(token)
             ),
@@ -48,7 +50,6 @@ class ScoreBase(Transform):
 
     @step(input=expanded_query_terms, output=query_terms)
     def select_distinct_query_terms(self, query: QueryTerm) -> QueryTerm:
-        drop_duplicates(query.query_id, query.token)
         return QueryTerm.project(query)
 
     @step(input=query_terms, output=query_sizes)

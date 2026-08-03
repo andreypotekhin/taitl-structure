@@ -113,23 +113,26 @@ Accepted candidate:
 - `order_by` is a deterministic list of scalar expressions;
 - ties are resolved by an explicit secondary order key or rejected.
 
-Implementation should first attempt a typed struct aggregate such as a deterministic max/min-by recipe if both PySpark
-3.5 and 4.0 evidence prove streaming support. If Spark rejects the plan, the row may move to `streaming-ineligible`
-for transform support only with that evidence, and the docs must say to materialize to batch before using selected-row
-helpers.
+The v9 prototype uses the existing typed `first_value(...)` and `last_value(...)` aggregate forms inside a grouped,
+watermarked event-time window. They lower to public `min_by(...)`/`max_by(...)` expressions, preserve the selected
+value's Structure type, and remain compatible on the PySpark 3.5 and 4.0 profiles. This is the supported finite
+alternative; it does not reinterpret the existing global `latest_by(...)` or `earliest_by(...)` relation operations.
+
+Global selected-row helpers remain `streaming-ineligible`: the broad relation operation has no finite state boundary.
+Callers should use the finite grouped aggregate form when its window and tie contract fit, or materialize to batch
+before using the broad selected-row helpers.
 
 Global selected-row helpers over unbounded streams are not a candidate for v9 support.
 
-Diagnostics must distinguish global unbounded selection from finite-window selection. Global selection should explain
-that no watermark/window bounds the state. Finite-window rejection should name the missing watermark, missing explicit
-tie policy, unsupported aggregate recipe, or Spark target evidence gap.
+Diagnostics distinguish global unbounded selection from finite-window selection. Global selection explains that no
+watermark/window bounds the state. Finite-window rejection names the missing watermark, missing explicit tie policy,
+unsupported aggregate recipe, or Spark target evidence gap.
 
 ## Analytic Window Projections
 
-No broad analytic window projection is accepted by this specification. The v9 work should prototype finite-window
-alternatives for the user-facing intents behind `row_number(...)`, `rank(...)`, `dense_rank(...)`, `lag(...)`, `lead(...)`,
-`rolling_sum(...)`, `rolling_avg(...)`, `rolling_min(...)`, and `rolling_max(...)`. The existing batch helpers remain
-batch-only over streaming input unless a later specification defines a finite state contract for that exact helper.
+No broad analytic window projection is accepted by this specification. The v9 prototype confirms that the existing
+grouped `first_value(...)`/`last_value(...)` aggregate forms provide a finite selected-value alternative, but not a
+general analytic projection. The existing batch helpers remain batch-only over streaming input.
 
 Any admitted finite alternative must use a new explicit API or option and must not silently reinterpret the existing
 batch analytic-window helpers. Existing batch helpers keep their batch meaning; streaming callers should receive a
@@ -190,6 +193,13 @@ Without this contract, arbitrary state cannot be implemented through `@raw(strea
 ordinary row-local PySpark expressions, but it does not authorize hidden state processors or user-managed checkpointed
 state inside Structure transforms.
 
+V9 closes the design gate with this implementation-ready model, but does not implement the APIs. A future
+`StructureStateTransform` contract must declare `(input_schema, state_schema, output_schema, timeout_policy,
+target_profile)` as one typed model; generated code must expose the corresponding public PySpark state operation and
+checkpoint/restart boundary; and the live acceptance fixture must write state, restart from the same checkpoint, and
+prove the recovered output. Until that separate runtime contract and evidence exist, the ledger remains
+`design-gated` and callers own arbitrary-state PySpark code.
+
 ## Acceptance
 
 The v9 design-gate follow-up is accepted when:
@@ -204,3 +214,13 @@ The v9 design-gate follow-up is accepted when:
 - an ExecPlan exists under `docs/dev/planning/` that describes how to prototype, implement, test, and document each
   gate;
 - guard tests fail if the catalog or ledger drifts away from this specification.
+
+## V10 Continuation
+
+V10 extends the design-gated work through grouped plans rather than one plan per source document. State-stage metadata,
+additional stream-stream join candidates, caller-owned side-effect safety, and arbitrary-state modeling are governed by
+the V10 project-management and planning documents. The caller-owned lifecycle boundary remains unchanged.
+
+An operation may move to `structure-supported` only when its typed source/IR contract, capability checks, diagnostics,
+explain output, generated/online behavior, PySpark target evidence, and restart behavior agree. Otherwise it remains
+`design-gated`, `streaming-ineligible`, `unsupported`, or `caller-owned-guided` with a corrective remedy.

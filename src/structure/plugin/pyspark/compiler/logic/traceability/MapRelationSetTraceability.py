@@ -33,12 +33,19 @@ class MapRelationSetTraceability:
                 sources=(step.source_scope, operation.relation_set.input_name),
                 operation=operation.kind,
                 step=step.name,
-                detail={
-                    "source": operation.relation_set.source,
-                    "schema": operation.relation_set.schema.__name__,
-                    "by_name": operation.relation_set.by_name,
-                },
+                detail=self._detail(operation.relation_set),
             )
             for index, operation in enumerate(step.operations)
             if operation.relation_set is not None
         )
+
+    @staticmethod
+    def _detail(relation_set) -> dict[str, object]:
+        detail: dict[str, object] = {
+            "source": relation_set.source,
+            "schema": relation_set.schema.__name__,
+            "by_name": relation_set.by_name,
+        }
+        if relation_set.defaults:
+            detail["defaults"] = tuple(path for path, _ in relation_set.defaults)
+        return detail

@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from structure.dsl import Schema
+from structure.plugin.pyspark.dsl.Expression import Expression
 
 
 @dataclass(frozen=True)
@@ -13,3 +14,4 @@ class RelationSetPlan:
     schema: type[Schema]
     by_name: bool
     allow_missing_columns: bool = False
+    defaults: tuple[tuple[str, Expression], ...] = ()
