@@ -21,9 +21,9 @@ For the architecture, evidence boundaries, and ownership model, see the
 | Experiments | `SelectExperimentScores`, experiment evaluators | comparable named runs | Named score variants flow through serving and evaluation. |
 | Evaluation | judged-quality and behavior evaluators | daily quality and serving metrics | Slice by labels and inclusive band hierarchies. |
 
-## Build all search artifacts
+## Build search artifacts
 
-`All` is the one-call pre-serving build boundary. It accepts corpus documents, one similarity policy, one `ScorePolicy`, queries and label configuration, persisted daily feedback facts, user/band catalogs, and one relevance policy. It emits the extracted hierarchy, document profiles, text and corpus statistics, blocked near-duplicate candidates, every lexical index relation, corpus similarity pairs, labeled queries, overlap/BM25/selected lexical scores, resolved cohort context, and relevance signals. `OfflineScoring` caps popular-query scoring by `maximum_offline_queries` and unions in every query observed during the seven days ending at `ScorePolicy.scored_at`. Its stage graph keeps document profiling independent from chunking; after chunking, indexing feeds scoring and the existing `Similarities` pipeline independently from text analysis.
+`All` workflow is the a one-call pre-serving build. It accepts corpus documents, one similarity policy, one `ScorePolicy`, queries and label configuration, persisted daily feedback facts, user/band catalogs, and one relevance policy. It emits the extracted document sections, paragraphs, sentences, words, corpus statistics, blocked near-duplicate candidates, lexical index, similarity pairs, labeled queries, overlap/BM25 scores, user cohorts and relevance signals. `OfflineScoring` caps by 1000 most popular queries plus every query observed in the preceeding seven days.
 
 ```python
 from examples.search.transforms.all import All
@@ -50,9 +50,7 @@ query_document_signals = artifacts.query_document_signals
 document_similarities = artifacts.document_similarities
 ```
 
-`All` intentionally excludes raw event aggregation, result presentation, evaluation, experiments, training, and optional model feature engineering. Callers run streaming `Impressions` and `Clicks`, persist their daily facts, then invoke `All` for a batch relevance snapshot. Callers also own query serving: pass `All`'s documents, scores, cohort context, and relevance outputs to `SearchSentences`, `SearchPassages`, or `SearchDocuments` with request-time inputs.
-
-Use `examples.search.transforms.all.training.Training` as the focused offline-training endpoint. It builds `DocumentFeatures`, `QueryFeatures`, and `DocumentTrainingData`; pass persisted training rows through `training_examples(...)` and then run `TrainingPipeline` to produce a manually promoted ranking artifact. `DocumentFeatures` and `QueryFeatures` are not required for the lexical-plus-feedback search path, so they stay out of `All`.
+`All`  does not include event aggregation, result presentation, evaluation, experiments, training and  feature engineering. Callers invoke `All` for a batch relevance snapshot. Callers also own query serving: pass `All`'s outputs to `SearchSentences`, `SearchPassages`, or `SearchDocuments`.
 
 ## Chunking
 
@@ -100,46 +98,6 @@ document_statistics = corpus.corpus_statistics
 `corpus.corpus_vocabulary` independently estimates distinct corpus vocabulary; it never sums per-document vocabularies,
 which would double-count shared terms.
 
-## Text profiling demonstration
-
-`ProfileDocuments` remains a Search-local DSL demonstration. It intentionally
-exercises string, array, numeric, hash, date, and window expressions over the
-document corpus; it is not a production feature-store contract.
-
-## Offline training
-
-`BuildTrainingData` produces a candidate-scoped, judged snapshot for offline
-ranking. Persist that caller-owned snapshot, convert its rows with
-`training_examples(...)`, and run `TrainingPipeline(...).run(...,
-snapshot_id=...)`. The pipeline keeps complete query IDs in a deterministic
-train/validation split, trains the built-in `grade-regression` and
-`pairwise-linear` rankers, evaluates both against the lexical baseline, and
-recommends an artifact by nDCG@10, nDCG@5, MRR, then ranker ID. The
-recommendation is advisory: the caller persists and manually promotes exactly
-one artifact.
-
-Rankers are swappable through `RankerCatalog`. A ranker supplies a stable
-`ranker_id` and artifact version plus its trainer; artifacts resolve to a
-shared serving scorer only after their feature contract is validated. Unknown
-rankers, version mismatches, malformed coefficients, missing features, and
-duplicate catalog registrations fail before ranking.
-
-`RankDocumentCandidates` applies a manually promoted `RankingArtifact` to
-lexical candidates together with `DocumentFeatures` and `QueryFeatures`.
-The transform requires exactly one artifact, sets its model ID as the ranking
-version, and ranks with the artifact score. Calling `SearchDocuments` without
-that transform remains the exact no-model lexical-plus-feedback fallback.
-Structure inputs are required relations, so this explicit branch is the
-library's optional-model boundary; callers choose the fallback or promoted
-artifact path at composition time.
-
-`transforms/training/` is intentionally separate from Search serving.
-It supplies a deterministic linear-ranking baseline for caller-built,
-judgment-labeled feature rows. `BuildDocumentFeatures` and
-`BuildQueryFeatures` publish the reusable relations; `BuildTrainingData`
-explicitly joins them to lexical candidates and caller-supplied judgments. The
-caller owns snapshots, persistence, deployment, and inference.
-
 ## Indexing
 
 `Indexing` builds reusable document, section, paragraph, and sentence index from the extracted words. Each
@@ -163,9 +121,7 @@ section_terms = index.section_terms
 
 ### Index grains
 
-Document, section, paragraph, and sentence rows deliberately have independent term frequencies, document frequencies,
-and length statistics. A document score is not silently reused as a sentence score. This permits corpus search and
-passage-level presentation to share normalization without conflating their retrieval models.
+Document, section, paragraph, and sentence rows deliberately have independent statistics; scores for one grain are not silently reused for another. This permits different search types - document search, passage-search - to stay independent from each other.
 
 ## Keyword Search
 
@@ -176,8 +132,8 @@ composition and owns the score `experiment_id`. Together they accept a DataFrame
 reusable indexes, emit separate overlap/BM25 score families, and preserve the distinction between lexical scoring and
 result presentation.
 
-`Scoring` accepts a caller-supplied DataFrame conforming to `SearchQuery` (`id`, `queryset`, and `content`) plus matching index
-artifacts and creates a score row for every document, section, paragraph, and sentence that shares a keyword with the
+`Scoring` accepts a caller-supplied DataFrame conforming to `SearchQuery` (`id`, `queryset`, `content`, and immutable
+`requested_at`) plus matching index artifacts and creates a score row for every document, section, paragraph, and sentence that shares a keyword with the
 query. `content` is free-form text: callers do not pre-tokenize it. For example, `"  AURORA,   beacon! navigation?  "` is equivalent to
 `"aurora beacon navigation"`.
 The algorithms normalize query terms exactly as
@@ -188,7 +144,8 @@ Each selected score row carries `scored_at` from `ScorePolicy`; serving rejects 
 
 `SearchQuery.id` is the request-local key used to partition scores and ranks; one invocation can contain many query
 rows. Query text is normalized with the same lowercasing, whitespace, punctuation, and token rules as extraction.
-This is also the feedback join key, letting equivalent searches share evidence across request IDs.
+This is also the feedback join key, letting equivalent searches share evidence across request IDs. `requested_at` is
+the event-time field used by the streaming query contract and must remain immutable for the query ID.
 `SearchQuery.queryset` is a required caller-owned collection name, such as `natural` or `synthetic`.
 
 ```text
@@ -200,27 +157,6 @@ BM25(k1 = 1.2, b = 0.75)
 
 Overlap is bounded and symmetric at a fixed grain. BM25 is corpus-dependent and directional when used for similarity;
 do not interpret either score as a calibrated relevance probability.
-
-## User Bands
-
-`User` is a caller-owned profile and `Band` is a caller-owned demographic predicate. A band can constrain one
-half-open age range and lists of gender, locale, country, opaque `geo_tag`, device type, and time zone. Matching
-requires every constrained dimension; an empty list means unrestricted. `country` and `geo_tag` are intentionally
-opaque caller strings, so callers own their normalization and semantics.
-
-A user can match several bands. `ResolveCohortBands` retains the most-specific matches, orders them by caller-defined
-band priority, and assigns identical ordered sets one reusable `UserBand` row and `user_band_id`. `UserBandMembership`
-maps a user to that exact context; `BandMembership` maps the user to each direct or inherited caller band and its
-singleton `UserBand`. `BandFallback` connects one `UserBand` to its next fallback `UserBand` (or global). Thus every
-`user_band_id` in these relations is a foreign-key-like reference to `UserBand`.
-
-`BuildRelevanceSignals` emits global feedback plus feedback for each context and its fallback chain. Fallback weakens
-the least-important band first through its `parent_band_id`, then ultimately uses the global signal. Missing or cyclic
-parents are configuration errors.
-
-`SearchRequest.user_id` is nullable for anonymous traffic; logged-in requests map to their user's reusable context.
-Search results are keyed by query, user band, and experiment, not by a single demographic band ID. Use the user-band
-evaluator for one band, or the combined evaluator when both query labels and a band define the population.
 
 ## Similarity Search
 
@@ -403,7 +339,7 @@ daily_clicks = Clicks(
 # daily_clicks.writeStream.outputMode("update").toTable("search_daily_clicks")
 ```
 
-### Build relevance snapshot
+### Relevance snapshot
 
 `BuildRelevanceSignals` reads persisted daily facts and applies a 30-day exponential decay. It retains impressions,
 raw clicks, binary clicked-impression counts, raw dwell seconds, long clicks, and CTR for observability. A click is an
@@ -448,7 +384,7 @@ query_document_signals = signals.query_document_signals
 document_popularity = signals.document_popularity
 ```
 
-### Retrieve and rerank documents
+### Retrieve and rerank
 
 `SearchDocuments` composes `OnlineScoring`, `RetrieveDocuments`, `OverlapDocuments`, and `RerankDocuments` as explicit stages.
 `OnlineScoring` filters stale caller-supplied document and overlap scores, calculates missing query groups from the
@@ -457,32 +393,6 @@ unions those rows with the caller-supplied scores and admits up to 1000 persiste
 descending score.
 `OverlapDocuments` narrows those candidates to 100 by overlap score, then `RerankDocuments` joins user click feedback
 and emits results.
-
-The `queries` input to `SearchDocuments` is streaming-declared and that mode is propagated through the online scoring
-and document-ranking stages. A query carries its immutable `requested_at` event time, and the matching
-`SearchRequest.requested_at` must agree. A caller that adopts the future streaming shape supplies both event streams,
-applies the configured watermark delay, and waits for the finite query-completion window before accepting results.
-
-The path to a ready-to-start Structured Streaming job is deliberately explicit:
-
-1. Replace query-term and score-cache global deduplication with row-local `array_distinct`, unique query IDs, and
-   bounded event-time state. Do not use an unbounded `drop_duplicates` or a global selected-row helper.
-2. Resolve persisted scores, online scores, and static index lookups into streaming branches before combining them;
-   only exact-schema stream/stream unions are allowed. Static documents, policies, and feedback snapshots remain
-   static lookup inputs for one serving run.
-3. Replace the current global `row_number` candidate and overlap windows with a bounded finite-window top-K state
-   operation. Keep the existing score/document-ID tie-breakers and retain only the configured 1000/100 candidates.
-4. Pre-resolve feedback fallback and popularity into the immutable serving snapshot. Streaming reranking may perform
-   stream/static lookups and bounded normalization, but may not run `select_first_qualified` or a global analytic window.
-5. Emit one final result set per query in append mode after the watermark closes its completion window. Late or duplicate
-   events are discarded according to the watermark contract; emitted results are never revised. Snapshot refreshes start
-   a new caller-owned run.
-
-The current graph is therefore a compiler-visible migration boundary, not yet a ready-to-start job. The compiler must
-reject any remaining unbounded deduplication, global ranking window, unsupported stream-stream join, or unbounded state
-stage before query start. Structure continues to own only DataFrame transformations; the caller owns the source,
-watermark application, checkpoint, trigger, output sink, snapshot refresh, restart policy, and any downstream
-materialization.
 
 Feedback combines 80% of the normalized query-document signal with 20% global document popularity. Within each BM25
 candidate set, the reranker calculates:
@@ -534,9 +444,38 @@ first_page = ranked_documents.where("rank <= 20").orderBy("rank")
 `DocumentSearchResult` exposes candidate rank, final rank, BM25, feedback, and final rank score so a serving layer can
 explain movement without reconstructing the scoring path.
 
-## Quality and behavior metrics
+## Passage Search
 
-`EvaluateDocumentRanking` is the offline quality anchor. It compares one daily result batch with caller-supplied
+Passage Search can be used as a foundation for quesion-answer search engine.
+
+`SearchPassages` ranks the scored paragraph and holds its immediate preceding and trailing paragraphs as context.
+It returns `PassageSearchResult` rows with the document title and URL for citations, the section heading, and `preceding_content` and `following_content` if they exist. Context stays within a document section -  no heading transitions. The adjacent paragraphs do not affect lexical relevance or rank.
+It uses the same free-form `SearchQuery` DataFrame, immutable paragraphs, and `Scoring.paragraph_scores` as sentence and
+document search.
+
+```python
+passages = SearchPassages(
+    queries=queries,
+    paragraph_scores=scores.paragraph_scores,
+    paragraphs=segments.paragraphs,
+    sections=segments.sections,
+    documents=documents,
+).run(session).results
+
+# Pick a ranked top-K, then let the answering layer combine or deduplicate contexts.
+answer_evidence = passages.where("rank <= 5").orderBy("search_query_id", "rank")
+```
+
+`SearchPassages` returns every matching paragraph: adjacent matches remain distinct rows. Callers own refreshing the corpus and index, selecting a current snapshot, and turning
+these evidence outputs into an answer; this example neither invokes an answer model nor creates a cross-document prompt.
+
+## Evaluation
+
+`EvaluateDocumentRanking` measures judged relevance, while
+`EvaluateDocSearchBehavior` monitors served requests, impressions, and clicks. Both preserve an
+`EvaluationParams` value in their output for persisted metrics to identify their slice.
+
+`EvaluateDocumentRanking` is the quality anchor. It compares one daily result batch with caller-supplied
 four-grade query-document judgments (`0` not relevant, `1` related, `2` relevant, `3` ideal). It reports
 nDCG, precision, judged recall, success, and reciprocal-rank metrics at 5, 10, and 15. Clicks are not used as
 judgments. Returned documents without a judgment make the affected metric unavailable rather than silently wrong.
@@ -547,7 +486,7 @@ serving attempt, including no-result attempts, and link every displayed `Impress
 daily version-level no-result, click, long-click, first-satisfying-rank, and propensity-adjusted exposure metrics.
 These are observed engagement signals, not relevance claims.
 
-### Evaluate judged ranking quality
+### Evaluate ranking quality
 
 Evaluation is caller-owned and batch-only. The caller persists a shared judgment pool before comparing rankings:
 for each query, collect the candidate documents from every ranking run being compared, deduplicate query-document
@@ -580,7 +519,7 @@ result positions contribute zero gain. A returned unjudged document makes the af
 silently treating an unknown document as irrelevant. The daily summary includes eligible-query counts, so a consumer
 can distinguish a real quality change from weaker judgment coverage.
 
-### Monitor served-result behavior
+### Evaluate user behavior
 
 Behavior evaluation consumes the raw events from the serving system, not the feedback daily aggregates. Emit one
 `SearchRequest` even for a no-result response. Every displayed document gets an `Impression` whose
@@ -609,37 +548,6 @@ its reciprocal is zero when no long click occurs. The daily output groups by ran
 funnel counts plus inverse-propensity-weighted long-click and dwell-credit exposure rates. These rates help monitor a
 served experience; they do not establish relevance or replace the judged-quality flow above.
 
-## Passage Search
-
-Passage Search can be used as a foundation for quesion-answer search engine.
-
-`SearchPassages` ranks the scored paragraph and holds its immediate preceding and trailing paragraphs as context.
-It returns `PassageSearchResult` rows with the document title and URL for citations, the section heading, and `preceding_content` and `following_content` if they exist. Context stays within a document section -  no heading transitions. The adjacent paragraphs do not affect lexical relevance or rank.
-It uses the same free-form `SearchQuery` DataFrame, immutable paragraphs, and `Scoring.paragraph_scores` as sentence and
-document search.
-
-```python
-passages = SearchPassages(
-    queries=queries,
-    paragraph_scores=scores.paragraph_scores,
-    paragraphs=segments.paragraphs,
-    sections=segments.sections,
-    documents=documents,
-).run(session).results
-
-# Pick a ranked top-K, then let the answering layer combine or deduplicate contexts.
-answer_evidence = passages.where("rank <= 5").orderBy("search_query_id", "rank")
-```
-
-`SearchPassages` returns every matching paragraph: adjacent matches remain distinct rows. Callers own refreshing the corpus and index, selecting a current snapshot, and turning
-these evidence outputs into an answer; this example neither invokes an answer model nor creates a cross-document prompt.
-
-## Evaluation
-
-Evaluation is caller-owned and batch-only. `EvaluateDocumentRanking` measures judged relevance, while
-`EvaluateDocSearchBehavior` monitors served requests, impressions, and clicks. Both preserve an
-`EvaluationParams` value in their output so persisted metrics identify their slice.
-
 ### Labels
 
 `EvaluationParams.queryset` selects one `SearchQuery.queryset`; `null` evaluates every query set in the batch.
@@ -656,7 +564,28 @@ locale such as `en_UK`; a missing value uses `en_US`. `MergeQueryLabels` applies
 those intent-label values while preserving unrelated labels. `is_question` and `is_time_sensitive` remain convenience
 fields derived from the final label map. Intent labels are evaluation slices, not relevance judgments or ranking inputs.
 
-### Bands
+### User Bands
+
+`User` is a caller-owned profile and `Band` is a caller-owned demographic predicate. A band can constrain one
+half-open age range and lists of gender, locale, country, opaque `geo_tag`, device type, and time zone. Matching
+requires every constrained dimension; an empty list means unrestricted. `country` and `geo_tag` are intentionally
+opaque caller strings, so callers own their normalization and semantics.
+
+A user can match several bands. `ResolveCohortBands` retains the most-specific matches, orders them by caller-defined
+band priority, and assigns identical ordered sets one reusable `UserBand` row and `user_band_id`. `UserBandMembership`
+maps a user to that exact context; `BandMembership` maps the user to each direct or inherited caller band and its
+singleton `UserBand`. `BandFallback` connects one `UserBand` to its next fallback `UserBand` (or global). Thus every
+`user_band_id` in these relations is a foreign-key-like reference to `UserBand`.
+
+`BuildRelevanceSignals` emits global feedback plus feedback for each context and its fallback chain. Fallback weakens
+the least-important band first through its `parent_band_id`, then ultimately uses the global signal. Missing or cyclic
+parents are configuration errors.
+
+`SearchRequest.user_id` is nullable for anonymous traffic; logged-in requests map to their user's reusable context.
+Search results are keyed by query, user band, and experiment, not by a single demographic band ID. Use the user-band
+evaluator for one band, or the combined evaluator when both query labels and a band define the population.
+
+### Bands in evaluation
 
 `EvaluationParams.band_id` selects a persisted band; `null` selects the global, non-demographic context. Search
 materializes one band-only context for every direct and ancestor band, so a parent context learns from all descendant
@@ -685,7 +614,45 @@ live under `experiments/evaluation/search_docs`, separate from experiment defini
 Experiment evaluators compare active experiment result rows using the same judgments, labels, band slice, and
 batch as the production evaluation. This keeps experiments comparable without mixing them into one ranking.
 
-## Design Constraints
+## Training
+
+`BuildTrainingData` produces a candidate-scoped, judged snapshot for offline
+ranking. Persist that caller-owned snapshot, convert its rows with
+`training_examples(...)`, and run `TrainingPipeline(...).run(...,
+snapshot_id=...)`. The pipeline keeps complete query IDs in a deterministic
+train/validation split, trains the built-in `grade-regression` and
+`pairwise-linear` rankers, evaluates both against the lexical baseline, and
+recommends an artifact by nDCG@10, nDCG@5, MRR, then ranker ID. The
+recommendation is advisory: the caller persists and manually promotes exactly
+one artifact.
+
+Rankers are swappable through `RankerCatalog`. A ranker supplies a stable
+`ranker_id` and artifact version plus its trainer; artifacts resolve to a
+shared serving scorer only after their feature contract is validated. Unknown
+rankers, version mismatches, malformed coefficients, missing features, and
+duplicate catalog registrations fail before ranking.
+
+`RankDocumentCandidates` applies a manually promoted `RankingArtifact` to
+lexical candidates together with `DocumentFeatures` and `QueryFeatures`.
+The transform requires exactly one artifact, sets its model ID as the ranking
+version, and ranks with the artifact score. Calling `SearchDocuments` without
+that transform remains the exact no-model lexical-plus-feedback fallback.
+Structure inputs are required relations, so this explicit branch is the
+library's optional-model boundary; callers choose the fallback or promoted
+artifact path at composition time.
+
+`transforms/training/` is intentionally separate from Search serving.
+It supplies a deterministic linear-ranking baseline for caller-built,
+judgment-labeled feature rows. `BuildDocumentFeatures` and
+`BuildQueryFeatures` publish the reusable relations; `BuildTrainingData`
+explicitly joins them to lexical candidates and caller-supplied judgments. The
+caller owns snapshots, persistence, deployment, and inference.
+
+Use `transforms/training/all/training.Training` as an offline-training endpoint. It builds `DocumentFeatures`, `QueryFeatures`, and `DocumentTrainingData`; pass persisted training rows through `training_examples(...)` and then run `TrainingPipeline` to produce a manually promoted ranking artifact. `DocumentFeatures` and `QueryFeatures` are not required for the lexical-plus-feedback search path, so they stay out of `All`.
+
+## Appendix
+
+### Design Constraints
 
 - The corpus and relevance snapshots are batch inputs, because similarity distributions and decayed normalization need bounded
   input sets.
@@ -693,3 +660,31 @@ batch as the production evaluation. This keeps experiments comparable without mi
 - All rank orders have explicit identifier tie-breakers. Consumers must paginate by emitted rank, not DataFrame order.
 - Similarity flow uses title prefix, source, and language as a candidate block before measuring the distance, avoiding
   an unrestricted self-Cartesian join.
+
+## Query Streaming
+
+The `queries` input to `SearchDocuments` is streaming-declared and that mode is propagated through the online scoring
+and document-ranking stages. A query carries its immutable `requested_at` event time, and the matching
+`SearchRequest.requested_at` must agree. A caller that adopts the future streaming shape supplies both event streams,
+applies the configured watermark delay, and waits for the finite query-completion window before accepting results.
+
+The path to a ready-to-start Structured Streaming job is deliberately explicit:
+
+1. Replace query-term and score-cache global deduplication with row-local `array_distinct`, unique query IDs, and
+   bounded event-time state. Do not use an unbounded `drop_duplicates` or a global selected-row helper.
+2. Resolve persisted scores, online scores, and static index lookups into streaming branches before combining them;
+   only exact-schema stream/stream unions are allowed. Static documents, policies, and feedback snapshots remain
+   static lookup inputs for one serving run.
+3. Replace the current global `row_number` candidate and overlap windows with a bounded finite-window top-K state
+   operation. Keep the existing score/document-ID tie-breakers and retain only the configured 1000/100 candidates.
+4. Pre-resolve feedback fallback and popularity into the immutable serving snapshot. Streaming reranking may perform
+   stream/static lookups and bounded normalization, but may not run `select_first_qualified` or a global analytic window.
+5. Emit one final result set per query in append mode after the watermark closes its completion window. Late or duplicate
+   events are discarded according to the watermark contract; emitted results are never revised. Snapshot refreshes start
+   a new caller-owned run.
+
+The current graph is therefore a compiler-visible migration boundary, not yet a ready-to-start job. The compiler must
+reject any remaining unbounded deduplication, global ranking window, unsupported stream-stream join, or unbounded state
+stage before query start. Structure continues to own only DataFrame transformations; the caller owns the source,
+watermark application, checkpoint, trigger, output sink, snapshot refresh, restart policy, and any downstream
+materialization.

@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from structure.core.compiler.compileability.streaming_compatibility.model.StreamingFinding import StreamingFinding
+from structure.core.compiler.compileability.streaming_compatibility.model.StreamingStateStage import StreamingStateStage
 from structure.plugin.api.v1.model import StreamingSupport
 
 
@@ -12,6 +13,7 @@ class StreamingReport:
     support: StreamingSupport
     required: bool
     findings: tuple[StreamingFinding, ...] = ()
+    stages: tuple[StreamingStateStage, ...] = ()
 
     def compatible(self) -> bool:
         return self.support is StreamingSupport.COMPATIBLE

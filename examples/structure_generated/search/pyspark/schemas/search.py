@@ -8,6 +8,7 @@ SEARCH_QUERY_SCHEMA = T.StructType([
     T.StructField("id", T.StringType(), False),
     T.StructField("queryset", T.StringType(), False),
     T.StructField("content", T.StringType(), False),
+    T.StructField("requested_at", T.TimestampType(), False),
     T.StructField("labels", T.MapType(T.StringType(), T.LongType(), valueContainsNull=False), False),
     T.StructField("is_question", T.BooleanType(), False),
     T.StructField("is_time_sensitive", T.BooleanType(), False),

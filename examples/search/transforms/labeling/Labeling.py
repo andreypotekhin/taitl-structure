@@ -4,7 +4,7 @@ from examples.search.schemas.label import Intent, IntentPattern, QueryLabel
 from examples.search.schemas.search import SearchQuery
 from examples.search.transforms.labeling.CreateQueryLabels import CreateQueryLabels
 from examples.search.transforms.labeling.MergeQueryLabels import MergeQueryLabels
-from structure import Transform, input, output, stage
+from structure import Transform, input, output
 
 
 class Labeling(Transform):
@@ -15,8 +15,16 @@ class Labeling(Transform):
     intents = input(Intent)
     patterns = input(IntentPattern)
 
-    created = stage(
-        CreateQueryLabels(queries=queries, intents=intents, patterns=patterns),
+    created = CreateQueryLabels(
+        queries=queries,
+        intents=intents,
+        patterns=patterns,
     )
-    merged = stage(MergeQueryLabels(queries=queries, query_labels=query_labels, created_labels=created.labels))
+
+    merged = MergeQueryLabels(
+        queries=queries,
+        query_labels=query_labels,
+        created_labels=created.labels
+    )
+
     labeled_queries = output(SearchQuery, merged.labeled_queries)

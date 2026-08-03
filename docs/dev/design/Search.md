@@ -34,8 +34,10 @@ term frequency, document frequency, target length, vocabulary size, target count
 grain must never be reused as a score at another grain.
 
 `SearchQuery.id` is the request-local partition key for scores and ranks. Query text is normalized with the same token
-rules used for extraction. The normalized query text is also the feedback aggregation key, allowing separately issued
-equivalent requests to share historical evidence without confusing their request-local result ranks.
+rules used for extraction. `SearchQuery.requested_at` is a required immutable event-time field for streaming query
+serving and must agree with the matching `SearchRequest.requested_at`. The normalized query text is also the feedback
+aggregation key, allowing separately issued equivalent requests to share historical evidence without confusing their
+request-local result ranks.
 `SearchQuery.queryset` is a required caller-defined collection name, for example `natural` or `synthetic`, so evaluation
 can slice comparable ranking runs by query source.
 

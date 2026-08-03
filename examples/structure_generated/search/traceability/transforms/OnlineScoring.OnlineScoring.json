@@ -248,6 +248,11 @@
       "source": "source:examples.search.transforms.searching.online.scoring.OnlineScoring.OnlineScoring.gap.select_gap_queries.field.content"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.OnlineScoring.OnlineScoringGenerated.run.step.2.gap.select_gap_queries.select.requested_at",
+      "ir": "ir:OnlineScoring.step.2.gap.select_gap_queries.project.requested_at",
+      "source": "source:examples.search.transforms.searching.online.scoring.OnlineScoring.OnlineScoring.gap.select_gap_queries.field.requested_at"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.OnlineScoring.OnlineScoringGenerated.run.step.2.gap.select_gap_queries.select.labels",
       "ir": "ir:OnlineScoring.step.2.gap.select_gap_queries.project.labels",
       "source": "source:examples.search.transforms.searching.online.scoring.OnlineScoring.OnlineScoring.gap.select_gap_queries.field.labels"
@@ -283,9 +288,9 @@
       "source": "source:examples.search.transforms.searching.online.scoring.OnlineScoring.OnlineScoring.scoring.overlap.expand_query_terms.filter.0"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.OnlineScoring.OnlineScoringGenerated.run.step.3.scoring.overlap.expand_query_terms.posexplode_struct.0",
-      "ir": "ir:OnlineScoring.step.3.scoring.overlap.expand_query_terms.posexplode_struct.0",
-      "source": "source:examples.search.transforms.searching.online.scoring.OnlineScoring.OnlineScoring.scoring.overlap.expand_query_terms.posexplode_struct.0"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.OnlineScoring.OnlineScoringGenerated.run.step.3.scoring.overlap.expand_query_terms.posexplode_struct.1",
+      "ir": "ir:OnlineScoring.step.3.scoring.overlap.expand_query_terms.posexplode_struct.1",
+      "source": "source:examples.search.transforms.searching.online.scoring.OnlineScoring.OnlineScoring.scoring.overlap.expand_query_terms.posexplode_struct.1"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.OnlineScoring.OnlineScoringGenerated.run.step.3.scoring.overlap.expand_query_terms.select.query_id",
@@ -306,11 +311,6 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.OnlineScoring.OnlineScoringGenerated.run.step.4.scoring.overlap.select_distinct_query_terms",
       "ir": "ir:OnlineScoring.step.4.scoring.overlap.select_distinct_query_terms",
       "source": "source:examples.search.transforms.searching.online.scoring.OnlineScoring.OnlineScoring.scoring.overlap.select_distinct_query_terms"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.OnlineScoring.OnlineScoringGenerated.run.step.4.scoring.overlap.select_distinct_query_terms.drop_duplicates.0",
-      "ir": "ir:OnlineScoring.step.4.scoring.overlap.select_distinct_query_terms.drop_duplicates.0",
-      "source": "source:examples.search.transforms.searching.online.scoring.OnlineScoring.OnlineScoring.scoring.overlap.select_distinct_query_terms.drop_duplicates.0"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.OnlineScoring.OnlineScoringGenerated.run.step.4.scoring.overlap.select_distinct_query_terms.select.query_id",
@@ -738,9 +738,9 @@
       "source": "source:examples.search.transforms.searching.online.scoring.OnlineScoring.OnlineScoring.scoring.bm25.expand_query_terms.filter.0"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.OnlineScoring.OnlineScoringGenerated.run.step.14.scoring.bm25.expand_query_terms.posexplode_struct.0",
-      "ir": "ir:OnlineScoring.step.14.scoring.bm25.expand_query_terms.posexplode_struct.0",
-      "source": "source:examples.search.transforms.searching.online.scoring.OnlineScoring.OnlineScoring.scoring.bm25.expand_query_terms.posexplode_struct.0"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.OnlineScoring.OnlineScoringGenerated.run.step.14.scoring.bm25.expand_query_terms.posexplode_struct.1",
+      "ir": "ir:OnlineScoring.step.14.scoring.bm25.expand_query_terms.posexplode_struct.1",
+      "source": "source:examples.search.transforms.searching.online.scoring.OnlineScoring.OnlineScoring.scoring.bm25.expand_query_terms.posexplode_struct.1"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.OnlineScoring.OnlineScoringGenerated.run.step.14.scoring.bm25.expand_query_terms.select.query_id",
@@ -761,11 +761,6 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.OnlineScoring.OnlineScoringGenerated.run.step.15.scoring.bm25.select_distinct_query_terms",
       "ir": "ir:OnlineScoring.step.15.scoring.bm25.select_distinct_query_terms",
       "source": "source:examples.search.transforms.searching.online.scoring.OnlineScoring.OnlineScoring.scoring.bm25.select_distinct_query_terms"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.OnlineScoring.OnlineScoringGenerated.run.step.15.scoring.bm25.select_distinct_query_terms.drop_duplicates.0",
-      "ir": "ir:OnlineScoring.step.15.scoring.bm25.select_distinct_query_terms.drop_duplicates.0",
-      "source": "source:examples.search.transforms.searching.online.scoring.OnlineScoring.OnlineScoring.scoring.bm25.select_distinct_query_terms.drop_duplicates.0"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.OnlineScoring.OnlineScoringGenerated.run.step.15.scoring.bm25.select_distinct_query_terms.select.query_id",
@@ -2166,6 +2161,17 @@
       },
       {
         "detail": {
+          "field": "requested_at"
+        },
+        "operation": "project",
+        "sources": [
+          "query.requested_at"
+        ],
+        "step": "gap.select_gap_queries",
+        "target": "SearchQuery.requested_at"
+      },
+      {
+        "detail": {
           "field": "labels"
         },
         "operation": "project",
@@ -2240,7 +2246,7 @@
           "queries.content"
         ],
         "step": "scoring.overlap.expand_query_terms",
-        "target": "scoring.overlap.expand_query_terms.posexplode_struct[0].query_token"
+        "target": "scoring.overlap.expand_query_terms.posexplode_struct[1].query_token"
       },
       {
         "detail": {
@@ -2275,19 +2281,6 @@
         ],
         "step": "scoring.overlap.select_distinct_query_terms",
         "target": "scoring.overlap.select_distinct_query_terms"
-      },
-      {
-        "detail": {
-          "scope": "QueryTerm",
-          "subset": "2"
-        },
-        "operation": "drop_duplicates",
-        "sources": [
-          "QueryTerm.query_id",
-          "QueryTerm.token"
-        ],
-        "step": "scoring.overlap.select_distinct_query_terms",
-        "target": "scoring.overlap.select_distinct_query_terms.drop_duplicates[0]"
       },
       {
         "detail": {
@@ -3245,7 +3238,7 @@
           "queries.content"
         ],
         "step": "scoring.bm25.expand_query_terms",
-        "target": "scoring.bm25.expand_query_terms.posexplode_struct[0].query_token"
+        "target": "scoring.bm25.expand_query_terms.posexplode_struct[1].query_token"
       },
       {
         "detail": {
@@ -3280,19 +3273,6 @@
         ],
         "step": "scoring.bm25.select_distinct_query_terms",
         "target": "scoring.bm25.select_distinct_query_terms"
-      },
-      {
-        "detail": {
-          "scope": "QueryTerm",
-          "subset": "2"
-        },
-        "operation": "drop_duplicates",
-        "sources": [
-          "QueryTerm.query_id",
-          "QueryTerm.token"
-        ],
-        "step": "scoring.bm25.select_distinct_query_terms",
-        "target": "scoring.bm25.select_distinct_query_terms.drop_duplicates[0]"
       },
       {
         "detail": {

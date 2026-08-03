@@ -13,6 +13,7 @@ from structure.plugin.pyspark import (
     intersect,
     intersect_all,
     string,
+    struct,
     subtract,
     union_all,
     union_by_name,
@@ -40,6 +41,29 @@ class ActiveItemWithNote(Schema):
 class ArchivedItemWithoutNote(Schema):
     item_id = string(nullable=False)
     score = integer(nullable=False)
+
+
+class CurrentAddress(Schema):
+    street = string(nullable=False, alias="street_name")
+    city = string(nullable=False, alias="city_name")
+
+
+class ArchivedAddress(Schema):
+    street = string(nullable=False, alias="street_name")
+
+
+class CurrentItemWithAddress(Schema):
+    item_id = string(nullable=False)
+    address = struct(CurrentAddress, nullable=False, alias="shipping_address")
+
+
+class ArchivedItemWithAddress(Schema):
+    item_id = string(nullable=False)
+    address = struct(ArchivedAddress, nullable=False, alias="shipping_address")
+
+
+class ArchivedItemWithoutAddress(Schema):
+    item_id = string(nullable=False)
 
 
 class ActiveItemWithRequiredNote(Schema):
@@ -138,6 +162,34 @@ class MergeItemsByNameWithAliasedDefault(Transform):
     ) -> ActiveItemWithAliasedRequiredNote:
         merged = union_by_name(archived, allow_missing_columns=True, defaults={"note": "unknown"})
         return ActiveItemWithAliasedRequiredNote.project(merged)
+
+
+class MergeItemsByNameWithNestedDefault(Transform):
+    active = input(CurrentItemWithAddress)
+    archived = input(ArchivedItemWithAddress)
+    merged = output(CurrentItemWithAddress)
+
+    def merge(
+        self, active: CurrentItemWithAddress, archived: ArchivedItemWithAddress
+    ) -> CurrentItemWithAddress:
+        merged = union_by_name(archived, allow_missing_columns=True, defaults={"address.city": "unknown"})
+        return CurrentItemWithAddress.project(merged)
+
+
+class MergeItemsByNameWithNestedStructDefault(Transform):
+    active = input(CurrentItemWithAddress)
+    archived = input(ArchivedItemWithoutAddress)
+    merged = output(CurrentItemWithAddress)
+
+    def merge(
+        self, active: CurrentItemWithAddress, archived: ArchivedItemWithoutAddress
+    ) -> CurrentItemWithAddress:
+        merged = union_by_name(
+            archived,
+            allow_missing_columns=True,
+            defaults={"address": CurrentAddress(street="unknown", city="unknown")},
+        )
+        return CurrentItemWithAddress.project(merged)
 
 
 class IntersectItems(Transform):
@@ -306,6 +358,40 @@ def test_union_by_name_preserves_alias_when_rendering_typed_default() -> None:
     assert 'archived = archived.withColumn("item_note", F.lit(\'unknown\').cast(T.StringType()))' in text
 
 
+def test_union_by_name_records_and_renders_nested_typed_default_with_aliases() -> None:
+    operation = _lowered(MergeItemsByNameWithNestedDefault).steps[0].operations[0]
+
+    assert operation.relation_set is not None
+    assert operation.relation_set.defaults[0][0] == "address.city"
+    assert operation.relation_set.defaults[0][1].data == {"value": "unknown"}
+
+    text = render_pyspark_step(
+        _lowered(MergeItemsByNameWithNestedDefault).steps[0],
+        current="active",
+        sources={"active": "active", "archived": "archived"},
+    )
+
+    assert (
+        'archived = archived.withColumn("shipping_address", '
+        'F.col("shipping_address").withField("city_name", F.lit(\'unknown\').cast(T.StringType())))'
+    ) in text
+    assert "active = active.unionByName(archived, allowMissingColumns=True)" in text
+
+
+def test_union_by_name_accepts_explicit_default_for_missing_nested_struct() -> None:
+    text = render_pyspark_step(
+        _lowered(MergeItemsByNameWithNestedStructDefault).steps[0],
+        current="active",
+        sources={"active": "active", "archived": "archived"},
+    )
+
+    assert (
+        'archived = archived.withColumn("shipping_address", '
+        "F.struct(F.lit('unknown').alias(\"street_name\"), "
+        "F.lit('unknown').alias(\"city_name\")).cast(CURRENT_ADDRESS_SCHEMA)"
+    ) in text
+
+
 @pytest.mark.parametrize(
     ("transform", "snippet"),
     (
@@ -427,6 +513,22 @@ def test_union_by_name_rejects_collection_defaults_until_element_evolution_is_de
             return WithTags.project(merged)
 
     with pytest.raises(TypeError, match="cannot partially evolve collection or struct field: tags"):
+        Compiler.frontend.compile()(BadMerge, materialize_schemas=False)
+
+
+def test_union_by_name_rejects_missing_non_nullable_nested_field_without_default() -> None:
+    class BadMerge(Transform):
+        active = input(CurrentItemWithAddress)
+        archived = input(ArchivedItemWithAddress)
+        merged = output(CurrentItemWithAddress)
+
+        def merge(
+            self, active: CurrentItemWithAddress, archived: ArchivedItemWithAddress
+        ) -> CurrentItemWithAddress:
+            merged = union_by_name(archived, allow_missing_columns=True)
+            return CurrentItemWithAddress.project(merged)
+
+    with pytest.raises(TypeError, match=r"requires defaults for non-null missing field\(s\): address.city"):
         Compiler.frontend.compile()(BadMerge, materialize_schemas=False)
 
 

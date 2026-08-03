@@ -101,6 +101,7 @@ class MergeQueryLabelsGenerated:
             F.col("search_query.id"),
             F.col("search_query.queryset"),
             F.col("search_query.content"),
+            F.col("search_query.requested_at"),
             F.coalesce(
                 F.when(
                     F.col("assignments.query_id").isNotNull(),
@@ -178,6 +179,7 @@ class MergeQueryLabelsGenerated:
             F.col("search_query.id"),
             F.col("search_query.queryset"),
             F.col("search_query.content"),
+            F.col("search_query.requested_at"),
             F.coalesce(
                 F.when(
                     F.col("created_labels.query_id").isNotNull(),

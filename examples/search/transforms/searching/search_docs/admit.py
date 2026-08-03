@@ -18,8 +18,8 @@ from structure.plugin.pyspark import (
     row_number,
     trim,
     union_all,
-    where,
     watermark,
+    where,
 )
 from structure.plugin.pyspark.dsl.expressions import literal
 

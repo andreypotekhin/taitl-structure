@@ -49,58 +49,53 @@ class Recommender(Transform):
     recommendation_signals = output(ProductRecommendationSignal)
     recommendation_purchases = output(RecommendationPurchase)
 
-    signals = stage(
-        BuildRecommendationSignals(
-            session_events=session_events,
-            fulfilled_orders=fulfilled_orders,
-            impressions=feedback_impressions,
-            clicks=feedback_clicks,
-        )
+    signals = BuildRecommendationSignals(
+        session_events=session_events,
+        fulfilled_orders=fulfilled_orders,
+        impressions=feedback_impressions,
+        clicks=feedback_clicks,
     )
-    personalized = stage(
-        BuildPersonalizedRecommendations(
-            requests=requests,
-            catalog=catalog,
-            preferences=preferences,
-            session_events=session_events,
-            fulfilled_orders=fulfilled_orders,
-        )
+
+    personalized = BuildPersonalizedRecommendations(
+        requests=requests,
+        catalog=catalog,
+        preferences=preferences,
+        session_events=session_events,
+        fulfilled_orders=fulfilled_orders,
     )
-    candidates = stage(
-        BuildRecommendationCandidates(
-            requests=requests,
-            catalog=catalog,
-            taxonomy=taxonomy,
-            session_features=signals.session_features,
-            signals=signals.recommendation_signals,
-            suppressions=suppressions,
-        )
+
+    candidates = BuildRecommendationCandidates(
+        requests=requests,
+        catalog=catalog,
+        taxonomy=taxonomy,
+        session_features=signals.session_features,
+        signals=signals.recommendation_signals,
+        suppressions=suppressions,
     )
-    ranked = stage(
-        RankRecommendationCandidates(
-            candidates=candidates.candidates,
-            policy=policy,
-            boosts=boosts,
-            suppressions=suppressions,
-            signals=signals.recommendation_signals,
-            personalized=personalized.recommendations,
-            ranker=ranker,
-        )
+
+    ranked = RankRecommendationCandidates(
+        candidates=candidates.candidates,
+        policy=policy,
+        boosts=boosts,
+        suppressions=suppressions,
+        signals=signals.recommendation_signals,
+        personalized=personalized.recommendations,
+        ranker=ranker,
     )
-    diversified = stage(
-        DiversifyRecommendations(
-            ranked=ranked.ranked_candidates,
-            policy=policy,
-        )
+
+    diversified = DiversifyRecommendations(
+        ranked=ranked.ranked_candidates,
+        policy=policy,
     )
-    published = stage(SelectRecommendedProducts(ranked_candidates=diversified.diversified))
-    summarized = stage(
-        SummarizeRecommendationRuns(
-            requests=requests,
-            policy=policy,
-            products=published.products,
-        )
+
+    published = SelectRecommendedProducts(ranked_candidates=diversified.diversified)
+
+    summarized = SummarizeRecommendationRuns(
+        requests=requests,
+        policy=policy,
+        products=published.products,
     )
+
     result = output(
         recommended_products=published.products,
         recommendation_runs=summarized.runs,

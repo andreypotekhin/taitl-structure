@@ -8,9 +8,8 @@ Deliver or explicitly gate typed defaults, nested-struct evolution, alias preser
 
 ## Progress Snapshot
 
-As of 2026-08-02, top-level scalar defaults are implemented through symbolic validation, generated PySpark, online
-execution, alias-preserving rendering, and traceability. Nested-struct defaults and live streaming evidence remain
-open sprint work.
+As of 2026-08-02, top-level scalar defaults and nested struct defaults are implemented through symbolic validation,
+generated PySpark, online execution, alias-preserving rendering, and traceability. Live streaming evidence remains open.
 
 ## User-Facing Outcome
 

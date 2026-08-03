@@ -33,7 +33,7 @@ from examples.store.transforms.fulfillment.planning import PlanFulfillment
 from examples.store.transforms.fulfillment.reconciliation import ReconcileFulfillmentPlan
 from examples.store.transforms.fulfillment.shortages import DetectShortages, PrioritizeExceptions
 from examples.store.transforms.fulfillment.substitutions import FindSubstitutions
-from structure import Transform, input, output, stage, transform
+from structure import Transform, input, output, transform
 
 
 @transform
@@ -66,69 +66,63 @@ class Fulfillment(Transform):
     service_evaluations = output(FulfillmentServiceEvaluation)
     daily_service_summary = output(DailyFulfillmentServiceSummary)
 
-    prepared = stage(
-        PrepareOrderDemand(
-            orders=orders,
-            customers=customers,
-            products=products,
-            blocked_products=blocked_products,
-            promotions=promotions,
-        )
+    prepared = PrepareOrderDemand(
+        orders=orders,
+        customers=customers,
+        products=products,
+        blocked_products=blocked_products,
+        promotions=promotions,
     )
-    planned = stage(
-        PlanFulfillment(
-            demand=prepared.demand,
-            warehouses=warehouses,
-            inventory_positions=inventory_positions,
-            inbound_inventory=inbound_inventory,
-        )
+
+    planned = PlanFulfillment(
+        demand=prepared.demand,
+        warehouses=warehouses,
+        inventory_positions=inventory_positions,
+        inbound_inventory=inbound_inventory,
     )
-    windows = stage(BuildDemandWindows(demand=prepared.demand))
-    inventory_projection = stage(
-        ProjectInventory(
-            windows=windows.windows,
-            inventory_positions=inventory_positions,
-            inbound_inventory=inbound_inventory,
-            lead_times=lead_times,
-        )
+
+    windows = BuildDemandWindows(demand=prepared.demand)
+
+    inventory_projection = ProjectInventory(
+        windows=windows.windows,
+        inventory_positions=inventory_positions,
+        inbound_inventory=inbound_inventory,
+        lead_times=lead_times,
     )
-    shortage_stage = stage(DetectShortages(projections=inventory_projection.projections))
-    substitution_stage = stage(
-        FindSubstitutions(
-            demand=prepared.demand,
-            rules=substitution_rules,
-            inventory_positions=inventory_positions,
-        )
+
+    shortage_stage = DetectShortages(projections=inventory_projection.projections)
+
+    substitution_stage = FindSubstitutions(
+        demand=prepared.demand,
+        rules=substitution_rules,
+        inventory_positions=inventory_positions,
     )
-    exception_stage = stage(
-        PrioritizeExceptions(
-            shortages=shortage_stage.shortages,
-            plans=planned.plans,
-            demand=prepared.demand,
-            substitutions=substitution_stage.options,
-            service_targets=service_targets,
-        )
+
+    exception_stage = PrioritizeExceptions(
+        shortages=shortage_stage.shortages,
+        plans=planned.plans,
+        demand=prepared.demand,
+        substitutions=substitution_stage.options,
+        service_targets=service_targets,
     )
-    reconciled = stage(
-        ReconcileFulfillmentPlan(
-            plans=planned.plans,
-            fulfilled=fulfilled,
-        )
+
+    reconciled = ReconcileFulfillmentPlan(
+        plans=planned.plans,
+        fulfilled=fulfilled,
     )
-    summarized = stage(
-        FulfillmentAnalytics(
-            plans=planned.plans,
-            allocations=planned.allocations,
-            backorders=planned.backorders,
-        )
+
+    summarized = FulfillmentAnalytics(
+        plans=planned.plans,
+        allocations=planned.allocations,
+        backorders=planned.backorders,
     )
-    evaluated = stage(
-        EvaluateFulfillment(
-            plans=planned.plans,
-            fulfilled=fulfilled,
-            service_targets=service_targets,
-        )
+
+    evaluated = EvaluateFulfillment(
+        plans=planned.plans,
+        fulfilled=fulfilled,
+        service_targets=service_targets,
     )
+
     result = output(
         demand=prepared.demand,
         allocations=planned.allocations,

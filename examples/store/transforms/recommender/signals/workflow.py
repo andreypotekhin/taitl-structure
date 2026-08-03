@@ -12,7 +12,7 @@ from examples.store.schemas.order import OrderFulfillment
 from examples.store.transforms.recommender.signals.products import BuildProductSignals
 from examples.store.transforms.recommender.signals.purchases import BuildPurchaseSignals
 from examples.store.transforms.recommender.signals.session import BuildSessionSignals
-from structure import Transform, input, output, stage
+from structure import Transform, input, output
 
 
 class BuildRecommendationSignals(Transform):
@@ -28,14 +28,15 @@ class BuildRecommendationSignals(Transform):
     daily_clicks = output(DailyRecommendationClicks)
     recommendation_signals = output(ProductRecommendationSignal)
 
-    session = stage(BuildSessionSignals(events=session_events))
-    purchases = stage(
-        BuildPurchaseSignals(
-            fulfilled_orders=fulfilled_orders,
-            impressions=impressions,
-        )
+    session = BuildSessionSignals(events=session_events)
+
+    purchases = BuildPurchaseSignals(
+        fulfilled_orders=fulfilled_orders,
+        impressions=impressions,
     )
-    recommendation = stage(BuildProductSignals(impressions=impressions, clicks=clicks))
+
+    recommendation = BuildProductSignals(impressions=impressions, clicks=clicks)
+
     result = output(
         session_features=session.features,
         recommendation_purchases=purchases.purchases,

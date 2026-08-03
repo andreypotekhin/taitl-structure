@@ -66,6 +66,25 @@ class Address(Schema):
     postal_code = string(nullable=False)
 
 
+class CurrentAddress(Schema):
+    street = string(nullable=False, alias="street_name")
+    city = string(nullable=False, alias="city_name")
+
+
+class ArchivedAddress(Schema):
+    street = string(nullable=False, alias="street_name")
+
+
+class CurrentItemWithAddress(Schema):
+    item_id = string(nullable=False)
+    address = struct(CurrentAddress, nullable=False, alias="shipping_address")
+
+
+class ArchivedItemWithAddress(Schema):
+    item_id = string(nullable=False)
+    address = struct(ArchivedAddress, nullable=False, alias="shipping_address")
+
+
 class RawShippedOrder(Schema):
     id = string(nullable=False)
     shipping = struct(Address, nullable=True)
@@ -1308,6 +1327,54 @@ def test_online_runner_applies_typed_default_before_missing_column_union(monkeyp
 
     assert result.operations == (
         "withColumn:status=cast(lit('unknown') as StringType())",
+        "unionByName:archived:allowMissingColumns=True",
+    )
+
+
+def test_online_runner_applies_nested_typed_default_before_missing_column_union(monkeypatch) -> None:
+    """A nested non-nullable missing field is filled through its physical aliases."""
+
+    _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
+    city = CurrentAddress._structure_fields["city"]
+    relation_set = PySparkRelationSetRecipe(
+        operation="union_by_name",
+        input_name="archived",
+        source="archived",
+        schema=ArchivedItemWithAddress,
+        by_name=True,
+        allow_missing_columns=True,
+        defaults=(
+            (
+                "address.city",
+                PySparkExpressionRecipe(
+                    kind="literal",
+                    type=city.type,
+                    nullable=False,
+                    data={"value": "unknown"},
+                ),
+            ),
+        ),
+    )
+    step = SimpleNamespace(
+        input_schema=CurrentItemWithAddress,
+        input_alias="",
+        source_scope=None,
+        ordinal=0,
+        operations=(),
+        joins=(),
+    )
+
+    result = RunOnlinePySparkTransform()._relation_set(
+        _frame("active", CurrentItemWithAddress),
+        _frame("archived", ArchivedItemWithAddress),
+        relation_set,
+        step=step,
+        functions=FakeFunctions("pyspark.sql.functions"),
+        types=FakeTypes,
+    )
+
+    assert result.operations == (
+        "withColumn:shipping_address=col(shipping_address).withField('city_name',cast(lit('unknown') as StringType()))",
         "unionByName:archived:allowMissingColumns=True",
     )
 
@@ -4015,6 +4082,9 @@ class FakeColumn:
 
     def getField(self, field):
         return FakeColumn(f"{self.expression}.getField({field!r})")
+
+    def withField(self, field, value):
+        return FakeColumn(f"{self.expression}.withField({field!r},{value.expression})")
 
     def __and__(self, other):
         return FakeColumn(f"({self.expression} AND {other.expression})")

@@ -353,6 +353,11 @@
       "source": "source:examples.search.transforms.similarities.CreateSimilarityQueries.CreateSimilarityQueries.publish_document_search_queries.field.content"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.CreateSimilarityQueries.CreateSimilarityQueriesGenerated.run.step.5.publish_document_search_queries.select.requested_at",
+      "ir": "ir:CreateSimilarityQueries.step.5.publish_document_search_queries.project.requested_at",
+      "source": "source:examples.search.transforms.similarities.CreateSimilarityQueries.CreateSimilarityQueries.publish_document_search_queries.field.requested_at"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.CreateSimilarityQueries.CreateSimilarityQueriesGenerated.run.step.5.publish_document_search_queries.select.labels",
       "ir": "ir:CreateSimilarityQueries.step.5.publish_document_search_queries.project.labels",
       "source": "source:examples.search.transforms.similarities.CreateSimilarityQueries.CreateSimilarityQueries.publish_document_search_queries.field.labels"
@@ -396,6 +401,11 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.CreateSimilarityQueries.CreateSimilarityQueriesGenerated.run.step.6.publish_section_search_queries.select.content",
       "ir": "ir:CreateSimilarityQueries.step.6.publish_section_search_queries.project.content",
       "source": "source:examples.search.transforms.similarities.CreateSimilarityQueries.CreateSimilarityQueries.publish_section_search_queries.field.content"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.CreateSimilarityQueries.CreateSimilarityQueriesGenerated.run.step.6.publish_section_search_queries.select.requested_at",
+      "ir": "ir:CreateSimilarityQueries.step.6.publish_section_search_queries.project.requested_at",
+      "source": "source:examples.search.transforms.similarities.CreateSimilarityQueries.CreateSimilarityQueries.publish_section_search_queries.field.requested_at"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.CreateSimilarityQueries.CreateSimilarityQueriesGenerated.run.step.6.publish_section_search_queries.select.labels",
@@ -443,6 +453,11 @@
       "source": "source:examples.search.transforms.similarities.CreateSimilarityQueries.CreateSimilarityQueries.publish_paragraph_search_queries.field.content"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.CreateSimilarityQueries.CreateSimilarityQueriesGenerated.run.step.7.publish_paragraph_search_queries.select.requested_at",
+      "ir": "ir:CreateSimilarityQueries.step.7.publish_paragraph_search_queries.project.requested_at",
+      "source": "source:examples.search.transforms.similarities.CreateSimilarityQueries.CreateSimilarityQueries.publish_paragraph_search_queries.field.requested_at"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.CreateSimilarityQueries.CreateSimilarityQueriesGenerated.run.step.7.publish_paragraph_search_queries.select.labels",
       "ir": "ir:CreateSimilarityQueries.step.7.publish_paragraph_search_queries.project.labels",
       "source": "source:examples.search.transforms.similarities.CreateSimilarityQueries.CreateSimilarityQueries.publish_paragraph_search_queries.field.labels"
@@ -486,6 +501,11 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.CreateSimilarityQueries.CreateSimilarityQueriesGenerated.run.step.8.publish_sentence_search_queries.select.content",
       "ir": "ir:CreateSimilarityQueries.step.8.publish_sentence_search_queries.project.content",
       "source": "source:examples.search.transforms.similarities.CreateSimilarityQueries.CreateSimilarityQueries.publish_sentence_search_queries.field.content"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.CreateSimilarityQueries.CreateSimilarityQueriesGenerated.run.step.8.publish_sentence_search_queries.select.requested_at",
+      "ir": "ir:CreateSimilarityQueries.step.8.publish_sentence_search_queries.project.requested_at",
+      "source": "source:examples.search.transforms.similarities.CreateSimilarityQueries.CreateSimilarityQueries.publish_sentence_search_queries.field.requested_at"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.CreateSimilarityQueries.CreateSimilarityQueriesGenerated.run.step.8.publish_sentence_search_queries.select.labels",
@@ -656,6 +676,11 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.CreateSimilarityQueries.CreateSimilarityQueriesGenerated.run.step.13.merge_queries.select.content",
       "ir": "ir:CreateSimilarityQueries.step.13.merge_queries.project.content",
       "source": "source:examples.search.transforms.similarities.CreateSimilarityQueries.CreateSimilarityQueries.merge_queries.field.content"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.CreateSimilarityQueries.CreateSimilarityQueriesGenerated.run.step.13.merge_queries.select.requested_at",
+      "ir": "ir:CreateSimilarityQueries.step.13.merge_queries.project.requested_at",
+      "source": "source:examples.search.transforms.similarities.CreateSimilarityQueries.CreateSimilarityQueries.merge_queries.field.requested_at"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.CreateSimilarityQueries.CreateSimilarityQueriesGenerated.run.step.13.merge_queries.select.labels",
@@ -1962,6 +1987,17 @@
       },
       {
         "detail": {
+          "field": "requested_at"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "publish_document_search_queries",
+        "target": "SearchQuery.requested_at"
+      },
+      {
+        "detail": {
           "field": "labels"
         },
         "operation": "project",
@@ -2048,6 +2084,17 @@
         ],
         "step": "publish_section_search_queries",
         "target": "SearchQuery.content"
+      },
+      {
+        "detail": {
+          "field": "requested_at"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "publish_section_search_queries",
+        "target": "SearchQuery.requested_at"
       },
       {
         "detail": {
@@ -2140,6 +2187,17 @@
       },
       {
         "detail": {
+          "field": "requested_at"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "publish_paragraph_search_queries",
+        "target": "SearchQuery.requested_at"
+      },
+      {
+        "detail": {
           "field": "labels"
         },
         "operation": "project",
@@ -2226,6 +2284,17 @@
         ],
         "step": "publish_sentence_search_queries",
         "target": "SearchQuery.content"
+      },
+      {
+        "detail": {
+          "field": "requested_at"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "publish_sentence_search_queries",
+        "target": "SearchQuery.requested_at"
       },
       {
         "detail": {
@@ -2559,6 +2628,17 @@
         ],
         "step": "merge_queries",
         "target": "SearchQuery.content"
+      },
+      {
+        "detail": {
+          "field": "requested_at"
+        },
+        "operation": "project",
+        "sources": [
+          "document.requested_at"
+        ],
+        "step": "merge_queries",
+        "target": "SearchQuery.requested_at"
       },
       {
         "detail": {

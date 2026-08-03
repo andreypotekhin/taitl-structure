@@ -87,6 +87,7 @@ class SelectPopularQueriesGenerated:
             F.col("search_query.id"),
             F.col("search_query.queryset"),
             F.col("search_query.content"),
+            F.col("search_query.requested_at"),
             F.col("search_query.labels"),
             F.col("search_query.is_question"),
             F.col("search_query.is_time_sensitive"),
@@ -120,6 +121,7 @@ class SelectPopularQueriesGenerated:
             F.col("popular_query_candidate.id"),
             F.col("popular_query_candidate.queryset"),
             F.col("popular_query_candidate.content"),
+            F.col("popular_query_candidate.requested_at"),
             F.col("popular_query_candidate.labels"),
             F.col("popular_query_candidate.is_question"),
             F.col("popular_query_candidate.is_time_sensitive"),
@@ -162,6 +164,7 @@ class SelectRecentQueriesGenerated:
             F.col("queries.id"),
             F.col("queries.queryset"),
             F.col("queries.content"),
+            F.col("queries.requested_at"),
             F.col("queries.labels"),
             F.col("queries.is_question"),
             F.col("queries.is_time_sensitive"),
@@ -186,6 +189,7 @@ class MergeOfflineQueriesGenerated:
             F.col("id"),
             F.col("queryset"),
             F.col("content"),
+            F.col("requested_at"),
             F.col("labels"),
             F.col("is_question"),
             F.col("is_time_sensitive"),
@@ -201,11 +205,14 @@ class ScoreBaseGenerated:
     def _step_scored_overlap_expand_query_terms_5(self, frames):
         # Step method: scored.overlap.expand_query_terms
         scored__overlap__expanded_query_terms = frames["offline__offline_queries"].alias("search_query")
+        scored__overlap__expanded_query_terms = scored__overlap__expanded_query_terms.withWatermark(
+            "requested_at", '10 minutes'
+        )
         scored__overlap__expanded_query_terms = scored__overlap__expanded_query_terms.select(
             "*",
             F.posexplode(
                 F.transform(
-                    F.split(F.trim(F.col("search_query.content")), '\\s+', -1),
+                    F.array_distinct(F.split(F.trim(F.col("search_query.content")), '\\s+', -1)),
                     lambda item: F.struct(
                         F.lower(F.regexp_replace(F.trim(item), '^[^A-Za-z0-9]+|[^A-Za-z0-9]+$', '')).alias("token")
                     ),
@@ -238,12 +245,6 @@ class ScoreBaseGenerated:
     def _step_scored_overlap_select_distinct_query_terms_6(self, frames):
         # Step method: scored.overlap.select_distinct_query_terms
         scored__overlap__query_terms = frames["scored__overlap__expanded_query_terms"].alias("query_term")
-        if scored__overlap__query_terms.isStreaming:
-            scored__overlap__query_terms = scored__overlap__query_terms.dropDuplicatesWithinWatermark(
-                ["query_id", "token"]
-            )
-        else:
-            scored__overlap__query_terms = scored__overlap__query_terms.dropDuplicates(["query_id", "token"])
         scored__overlap__query_terms = scored__overlap__query_terms.select(
             F.col("query_term.query_id"),
             F.col("query_term.token"),
@@ -276,11 +277,14 @@ class ScoreBaseGenerated:
     def _step_scored_bm25_expand_query_terms_16(self, frames):
         # Step method: scored.bm25.expand_query_terms
         scored__bm25__expanded_query_terms = frames["offline__offline_queries"].alias("search_query")
+        scored__bm25__expanded_query_terms = scored__bm25__expanded_query_terms.withWatermark(
+            "requested_at", '10 minutes'
+        )
         scored__bm25__expanded_query_terms = scored__bm25__expanded_query_terms.select(
             "*",
             F.posexplode(
                 F.transform(
-                    F.split(F.trim(F.col("search_query.content")), '\\s+', -1),
+                    F.array_distinct(F.split(F.trim(F.col("search_query.content")), '\\s+', -1)),
                     lambda item: F.struct(
                         F.lower(F.regexp_replace(F.trim(item), '^[^A-Za-z0-9]+|[^A-Za-z0-9]+$', '')).alias("token")
                     ),
@@ -311,10 +315,6 @@ class ScoreBaseGenerated:
     def _step_scored_bm25_select_distinct_query_terms_17(self, frames):
         # Step method: scored.bm25.select_distinct_query_terms
         scored__bm25__query_terms = frames["scored__bm25__expanded_query_terms"].alias("query_term")
-        if scored__bm25__query_terms.isStreaming:
-            scored__bm25__query_terms = scored__bm25__query_terms.dropDuplicatesWithinWatermark(["query_id", "token"])
-        else:
-            scored__bm25__query_terms = scored__bm25__query_terms.dropDuplicates(["query_id", "token"])
         scored__bm25__query_terms = scored__bm25__query_terms.select(
             F.col("query_term.query_id"),
             F.col("query_term.token"),

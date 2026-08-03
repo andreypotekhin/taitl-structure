@@ -157,6 +157,7 @@ class SelectGapQueriesGenerated:
             F.col("search_query.id"),
             F.col("search_query.queryset"),
             F.col("search_query.content"),
+            F.col("search_query.requested_at"),
             F.col("search_query.labels"),
             F.col("search_query.is_question"),
             F.col("search_query.is_time_sensitive"),
@@ -172,11 +173,14 @@ class ScoreBaseGenerated:
     def _step_scoring_overlap_expand_query_terms_3(self, frames):
         # Step method: scoring.overlap.expand_query_terms
         scoring__overlap__expanded_query_terms = frames["gap__gap_queries"].alias("search_query")
+        scoring__overlap__expanded_query_terms = scoring__overlap__expanded_query_terms.withWatermark(
+            "requested_at", '10 minutes'
+        )
         scoring__overlap__expanded_query_terms = scoring__overlap__expanded_query_terms.select(
             "*",
             F.posexplode(
                 F.transform(
-                    F.split(F.trim(F.col("search_query.content")), '\\s+', -1),
+                    F.array_distinct(F.split(F.trim(F.col("search_query.content")), '\\s+', -1)),
                     lambda item: F.struct(
                         F.lower(F.regexp_replace(F.trim(item), '^[^A-Za-z0-9]+|[^A-Za-z0-9]+$', '')).alias("token")
                     ),
@@ -209,12 +213,6 @@ class ScoreBaseGenerated:
     def _step_scoring_overlap_select_distinct_query_terms_4(self, frames):
         # Step method: scoring.overlap.select_distinct_query_terms
         scoring__overlap__query_terms = frames["scoring__overlap__expanded_query_terms"].alias("query_term")
-        if scoring__overlap__query_terms.isStreaming:
-            scoring__overlap__query_terms = scoring__overlap__query_terms.dropDuplicatesWithinWatermark(
-                ["query_id", "token"]
-            )
-        else:
-            scoring__overlap__query_terms = scoring__overlap__query_terms.dropDuplicates(["query_id", "token"])
         scoring__overlap__query_terms = scoring__overlap__query_terms.select(
             F.col("query_term.query_id"),
             F.col("query_term.token"),
@@ -247,11 +245,14 @@ class ScoreBaseGenerated:
     def _step_scoring_bm25_expand_query_terms_14(self, frames):
         # Step method: scoring.bm25.expand_query_terms
         scoring__bm25__expanded_query_terms = frames["gap__gap_queries"].alias("search_query")
+        scoring__bm25__expanded_query_terms = scoring__bm25__expanded_query_terms.withWatermark(
+            "requested_at", '10 minutes'
+        )
         scoring__bm25__expanded_query_terms = scoring__bm25__expanded_query_terms.select(
             "*",
             F.posexplode(
                 F.transform(
-                    F.split(F.trim(F.col("search_query.content")), '\\s+', -1),
+                    F.array_distinct(F.split(F.trim(F.col("search_query.content")), '\\s+', -1)),
                     lambda item: F.struct(
                         F.lower(F.regexp_replace(F.trim(item), '^[^A-Za-z0-9]+|[^A-Za-z0-9]+$', '')).alias("token")
                     ),
@@ -282,10 +283,6 @@ class ScoreBaseGenerated:
     def _step_scoring_bm25_select_distinct_query_terms_15(self, frames):
         # Step method: scoring.bm25.select_distinct_query_terms
         scoring__bm25__query_terms = frames["scoring__bm25__expanded_query_terms"].alias("query_term")
-        if scoring__bm25__query_terms.isStreaming:
-            scoring__bm25__query_terms = scoring__bm25__query_terms.dropDuplicatesWithinWatermark(["query_id", "token"])
-        else:
-            scoring__bm25__query_terms = scoring__bm25__query_terms.dropDuplicates(["query_id", "token"])
         scoring__bm25__query_terms = scoring__bm25__query_terms.select(
             F.col("query_term.query_id"),
             F.col("query_term.token"),

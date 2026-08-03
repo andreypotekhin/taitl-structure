@@ -869,6 +869,28 @@ class StreamingOneSidedStreamJoin(Transform):
         return StreamEnriched(id=row.id, value=lookup.value)
 
 
+@transform(streaming=True)
+class StreamingCrossStreamJoin(Transform):
+    rows = input(StreamRaw, streaming=True)
+    lookups = input(StreamLookup, streaming=True)
+    enriched = output(StreamOuter)
+
+    def enrich(self, row: StreamRaw, lookup: StreamLookup) -> StreamOuter:
+        cross_join(lookup, allow_cartesian=True)
+        return StreamOuter(id=row.id, value=lookup.value)
+
+
+@transform(streaming=True)
+class StreamingAntiStreamJoin(Transform):
+    rows = input(StreamRaw, streaming=True)
+    lookups = input(StreamLookup, streaming=True)
+    clean = output(StreamClean)
+
+    def discard_known(self, row: StreamRaw, lookup: StreamLookup) -> StreamClean:
+        where(not_exists(lookup, on=lookup.id == row.id))
+        return StreamClean(id=row.id)
+
+
 def test_v1_streaming_projection_filter_and_schema_validation_are_compatible_without_spark() -> None:
     before = {name for name in sys.modules if name.startswith("pyspark")}
 
@@ -1200,6 +1222,7 @@ def test_v9_finite_window_selection_uses_a_watermarked_ordered_aggregate(profile
 
     assert report.support is StreamingSupport.COMPATIBLE
     assert report.findings == ()
+    assert report.stages[0].order_keys == ("rows.event_time",)
     aggregate = next(operation.aggregate for operation in plan.steps[0].operations if operation.aggregate is not None)
     assert aggregate is not None
     assert len([assignment for assignment in aggregate.assignments if assignment.function == "first_value"]) == 1
@@ -1222,6 +1245,10 @@ def test_v9_finite_window_selection_renders_public_min_by_and_max_by_without_lif
     assert "F.max_by(" in rendered
     assert "readStream" not in rendered
     assert "writeStream" not in rendered
+    from structure.core.cli.api import CliApp
+
+    explain = CliApp.render_explain_report()(StreamingFiniteSelection)
+    assert "order_keys: rows.event_time" in explain
 
 
 def test_v4_session_window_aggregate_requires_a_business_key_and_reports_append_only() -> None:
@@ -1273,6 +1300,41 @@ def test_v2_windowed_watermarked_aggregate_is_streaming_without_spark() -> None:
     assert report.findings == ()
 
 
+def test_v10_streaming_state_stage_records_watermark_retention_and_output_mode() -> None:
+    report = Compiler.compileability.streaming()(_recipe(StreamingWatermarkedAggregate), required=True)
+
+    assert len(report.stages) == 1
+    stage = report.stages[0]
+    assert stage.step == "summarize"
+    assert stage.operation == "watermark-bounded event-time aggregate"
+    assert stage.event_time == ("rows.event_time",)
+    assert stage.watermarks == (("rows.event_time", "10 minutes"),)
+    assert stage.keys == ("bucket", "id")
+    assert stage.retention == ("window=10 minutes",)
+    assert stage.output_modes == ("append", "update")
+    assert stage.allows_later_stateful is True
+
+
+def test_v10_streaming_state_stages_preserve_order_and_retain_join_bounds() -> None:
+    chained = StreamingFirstWindow(rows=object()).to(StreamingSecondWindow())
+    chained_report = Compiler.compileability.streaming()(
+        cast(PySparkExecutionPlan, _compile_with_plugin(chained, ">=4.0,<4.1").lowered),
+        required=True,
+    )
+
+    assert [stage.step for stage in chained_report.stages] == [
+        "streaming_first_window.summarize",
+        "streaming_second_window.summarize",
+    ]
+    assert [stage.allows_later_stateful for stage in chained_report.stages] == [True, False]
+    assert chained_report.stages[1].event_time == ("window_time(windows.bucket)",)
+
+    join_report = Compiler.compileability.streaming()(_recipe(StreamingInnerStreamJoin), required=True)
+    assert join_report.stages[0].keys == ("lookup.id=row.id",)
+    assert join_report.stages[0].retention == ("lower=0 seconds", "upper=1 hour")
+    assert join_report.stages[0].output_modes == ()
+
+
 def test_v2_watermarked_dedupe_is_streaming_without_spark() -> None:
     plan = _analysis(StreamingWatermarkedDedupe)
 
@@ -1308,6 +1370,10 @@ def test_v7_second_admitted_stateful_operation_is_batch_only_without_spark() -> 
     report = Compiler.compileability.streaming()(_recipe(StreamingDedupeThenAggregate), required=True)
 
     assert report.support is StreamingSupport.BATCH_ONLY
+    assert [stage.operation for stage in report.stages] == [
+        "watermark-bounded duplicate removal",
+        "watermark-bounded event-time aggregate",
+    ]
     assert report.findings[-1].operation == "stateful streaming composition"
     assert "watermark-bounded duplicate removal" in report.findings[-1].problem
     assert "watermark-bounded event-time aggregate" in report.findings[-1].problem
@@ -1387,6 +1453,38 @@ def test_v2_stream_stream_join_requires_both_inputs_declared_streaming() -> None
     assert "streaming=True" in report.findings[0].use
 
 
+@pytest.mark.parametrize(
+    ("transform_type", "operation", "problem", "use"),
+    [
+        (
+            StreamingCrossStreamJoin,
+            "stream-stream cross join lookup",
+            "Cartesian state",
+            "static snapshot",
+        ),
+        (
+            StreamingAntiStreamJoin,
+            "stream-stream anti join lookup",
+            "late right-side match",
+            "completion",
+        ),
+    ],
+)
+def test_v10_cross_and_anti_stream_stream_candidates_are_explicitly_rejected(
+    transform_type: type[Transform],
+    operation: str,
+    problem: str,
+    use: str,
+) -> None:
+    report = Compiler.compileability.streaming()(_recipe(transform_type), required=True)
+
+    assert report.support is StreamingSupport.BATCH_ONLY
+    assert report.stages == ()
+    assert report.findings[0].operation == operation
+    assert problem in report.findings[0].problem
+    assert use in report.findings[0].use
+
+
 def test_v1_streaming_unsafe_hook_is_unknown_with_registered_finding() -> None:
     plan = _analysis(StreamingUnknownHook)
 
@@ -1437,6 +1535,9 @@ def test_v2_watermarked_aggregate_explain_output_names_policy() -> None:
         "operations: watermark(event_time 10 minutes), aggregate(aggregate keys=bucket,id metrics=count streaming_modes=append|update)"
         in report
     )
+    assert "state stages:" in report
+    assert "watermarks: rows.event_time=10 minutes" in report
+    assert "retention: window=10 minutes" in report
 
 
 def test_v4_session_aggregate_explain_output_names_append_only_policy() -> None:

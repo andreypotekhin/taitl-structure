@@ -20,20 +20,19 @@ class BuildPersonalizedRecommendations(Transform):
     fulfilled_orders = input(OrderFulfillment, streaming=True)
     recommendations = output(PersonalizedRecommendation)
 
-    featured = stage(BuildProductFeatures(catalog=catalog))
-    history = stage(
-        BuildPersonalizationHistory(
-            session_events=session_events,
-            fulfilled_orders=fulfilled_orders,
-        )
+    featured = BuildProductFeatures(catalog=catalog)
+
+    history = BuildPersonalizationHistory(
+        session_events=session_events,
+        fulfilled_orders=fulfilled_orders,
     )
-    scored = stage(
-        ScorePersonalizedRecommendations(
-            algorithm=algorithm,
-            requests=requests,
-            catalog=featured.featured,
-            preferences=preferences,
-            history=history.history,
-        )
+
+    scored = ScorePersonalizedRecommendations(
+        algorithm=algorithm,
+        requests=requests,
+        catalog=featured.featured,
+        preferences=preferences,
+        history=history.history,
     )
+
     result = output(recommendations=scored.recommendations)

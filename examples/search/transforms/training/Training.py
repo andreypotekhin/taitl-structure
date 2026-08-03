@@ -7,7 +7,7 @@ from examples.search.schemas.text import Document
 from examples.search.schemas.training import DocumentTrainingData
 from examples.search.transforms.features import Features
 from examples.search.transforms.training.BuildTrainingData import BuildTrainingData
-from structure import Transform, input, output, stage
+from structure import Transform, input, output
 
 
 class Training(Transform):
@@ -18,14 +18,13 @@ class Training(Transform):
     document_scores = input(DocumentScore)
     judgments = input(DocumentRelevanceJudgment)
 
-    features = stage(Features(documents=documents, queries=queries))
-    data = stage(
-        BuildTrainingData(
-            document_scores=document_scores,
-            judgments=judgments,
-            document_features=features.document_features,
-            query_features=features.query_features,
-        )
+    features = Features(documents=documents, queries=queries)
+
+    data = BuildTrainingData(
+        document_scores=document_scores,
+        judgments=judgments,
+        document_features=features.document_features,
+        query_features=features.query_features,
     )
 
     document_features = output(DocumentFeatures, features.document_features)

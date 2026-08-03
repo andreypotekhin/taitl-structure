@@ -2,8 +2,9 @@
 # Source: examples.search.transforms.similarities.Similarities.Similarities
 
 from __future__ import annotations
-from pyspark.sql import DataFrame, SparkSession
+import datetime
 from pyspark.sql import Window
+from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
@@ -410,6 +411,7 @@ class CreateSimilarityQueriesGenerated:
             F.col("document_similarity_query_text.query_id").alias("id"),
             F.lit('synthetic').alias("queryset"),
             F.concat_ws(' ', F.col("document_similarity_query_text.content_tokens")).alias("content"),
+            F.lit(datetime.datetime(1970, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)).alias("requested_at"),
             F.map_from_entries(
                 F.array(
                     F.struct(
@@ -442,6 +444,7 @@ class CreateSimilarityQueriesGenerated:
             F.col("section_similarity_query_text.query_id").alias("id"),
             F.lit('synthetic').alias("queryset"),
             F.concat_ws(' ', F.col("section_similarity_query_text.content_tokens")).alias("content"),
+            F.lit(datetime.datetime(1970, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)).alias("requested_at"),
             F.map_from_entries(
                 F.array(
                     F.struct(
@@ -476,6 +479,7 @@ class CreateSimilarityQueriesGenerated:
             F.col("paragraph_similarity_query_text.query_id").alias("id"),
             F.lit('synthetic').alias("queryset"),
             F.concat_ws(' ', F.col("paragraph_similarity_query_text.content_tokens")).alias("content"),
+            F.lit(datetime.datetime(1970, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)).alias("requested_at"),
             F.map_from_entries(
                 F.array(
                     F.struct(
@@ -510,6 +514,7 @@ class CreateSimilarityQueriesGenerated:
             F.col("sentence_similarity_query_text.query_id").alias("id"),
             F.lit('synthetic').alias("queryset"),
             F.concat_ws(' ', F.col("sentence_similarity_query_text.content_tokens")).alias("content"),
+            F.lit(datetime.datetime(1970, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)).alias("requested_at"),
             F.map_from_entries(
                 F.array(
                     F.struct(
@@ -610,6 +615,7 @@ class CreateSimilarityQueriesGenerated:
             F.col("id"),
             F.col("queryset"),
             F.col("content"),
+            F.col("requested_at"),
             F.col("labels"),
             F.col("is_question"),
             F.col("is_time_sensitive"),
@@ -625,11 +631,12 @@ class ScoreBaseGenerated:
     def _step_overlap_expand_query_terms_14(self, frames):
         # Step method: overlap.expand_query_terms
         overlap__expanded_query_terms = frames["queries__queries"].alias("search_query")
+        overlap__expanded_query_terms = overlap__expanded_query_terms.withWatermark("requested_at", '10 minutes')
         overlap__expanded_query_terms = overlap__expanded_query_terms.select(
             "*",
             F.posexplode(
                 F.transform(
-                    F.split(F.trim(F.col("search_query.content")), '\\s+', -1),
+                    F.array_distinct(F.split(F.trim(F.col("search_query.content")), '\\s+', -1)),
                     lambda item: F.struct(
                         F.lower(F.regexp_replace(F.trim(item), '^[^A-Za-z0-9]+|[^A-Za-z0-9]+$', '')).alias("token")
                     ),
@@ -660,10 +667,6 @@ class ScoreBaseGenerated:
     def _step_overlap_select_distinct_query_terms_15(self, frames):
         # Step method: overlap.select_distinct_query_terms
         overlap__query_terms = frames["overlap__expanded_query_terms"].alias("query_term")
-        if overlap__query_terms.isStreaming:
-            overlap__query_terms = overlap__query_terms.dropDuplicatesWithinWatermark(["query_id", "token"])
-        else:
-            overlap__query_terms = overlap__query_terms.dropDuplicates(["query_id", "token"])
         overlap__query_terms = overlap__query_terms.select(
             F.col("query_term.query_id"),
             F.col("query_term.token"),
@@ -696,11 +699,12 @@ class ScoreBaseGenerated:
     def _step_bm25_expand_query_terms_25(self, frames):
         # Step method: bm25.expand_query_terms
         bm25__expanded_query_terms = frames["queries__queries"].alias("search_query")
+        bm25__expanded_query_terms = bm25__expanded_query_terms.withWatermark("requested_at", '10 minutes')
         bm25__expanded_query_terms = bm25__expanded_query_terms.select(
             "*",
             F.posexplode(
                 F.transform(
-                    F.split(F.trim(F.col("search_query.content")), '\\s+', -1),
+                    F.array_distinct(F.split(F.trim(F.col("search_query.content")), '\\s+', -1)),
                     lambda item: F.struct(
                         F.lower(F.regexp_replace(F.trim(item), '^[^A-Za-z0-9]+|[^A-Za-z0-9]+$', '')).alias("token")
                     ),
@@ -731,10 +735,6 @@ class ScoreBaseGenerated:
     def _step_bm25_select_distinct_query_terms_26(self, frames):
         # Step method: bm25.select_distinct_query_terms
         bm25__query_terms = frames["bm25__expanded_query_terms"].alias("query_term")
-        if bm25__query_terms.isStreaming:
-            bm25__query_terms = bm25__query_terms.dropDuplicatesWithinWatermark(["query_id", "token"])
-        else:
-            bm25__query_terms = bm25__query_terms.dropDuplicates(["query_id", "token"])
         bm25__query_terms = bm25__query_terms.select(
             F.col("query_term.query_id"),
             F.col("query_term.token"),

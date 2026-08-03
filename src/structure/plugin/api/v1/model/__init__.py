@@ -48,6 +48,7 @@ _CORE_CONTRACTS = {
     "RuntimeDiagnostic": "structure.core.runtime.session.model.RuntimeDiagnostic",
     "StreamingFinding": "structure.core.compiler.compileability.streaming_compatibility.model.StreamingFinding",
     "StreamingReport": "structure.core.compiler.compileability.streaming_compatibility.model.StreamingReport",
+    "StreamingStateStage": "structure.core.compiler.compileability.streaming_compatibility.model.StreamingStateStage",
     "StructureRuntimeError": "structure.core.runtime.session.model.StructureRuntimeError",
     "StructureToolError": "structure.core.tools.model.StructureToolError",
     "TransformResult": "structure.core.runtime.session.model.TransformResult",

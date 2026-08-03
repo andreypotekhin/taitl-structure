@@ -5,7 +5,7 @@ from examples.search.schemas.search import SearchQuery
 from examples.search.schemas.text import Document
 from examples.search.transforms.features.BuildDocumentFeatures import BuildDocumentFeatures
 from examples.search.transforms.features.BuildQueryFeatures import BuildQueryFeatures
-from structure import Transform, input, output, stage
+from structure import Transform, input, output
 
 
 class Features(Transform):
@@ -16,5 +16,5 @@ class Features(Transform):
     document_features = output(DocumentFeatures)
     query_features = output(QueryFeatures)
 
-    documents_built = stage(BuildDocumentFeatures(documents=documents))
-    queries_built = stage(BuildQueryFeatures(queries=queries))
+    documents_built = BuildDocumentFeatures(documents=documents)
+    queries_built = BuildQueryFeatures(queries=queries)

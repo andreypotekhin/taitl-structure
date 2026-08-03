@@ -33,11 +33,12 @@ class ScoreBaseGenerated:
     def _step_expand_query_terms_0(self, frames):
         # Step method: expand_query_terms
         expanded_query_terms = frames["queries"].alias("search_query")
+        expanded_query_terms = expanded_query_terms.withWatermark("requested_at", '10 minutes')
         expanded_query_terms = expanded_query_terms.select(
             "*",
             F.posexplode(
                 F.transform(
-                    F.split(F.trim(F.col("search_query.content")), '\\s+', -1),
+                    F.array_distinct(F.split(F.trim(F.col("search_query.content")), '\\s+', -1)),
                     lambda item: F.struct(
                         F.lower(F.regexp_replace(F.trim(item), '^[^A-Za-z0-9]+|[^A-Za-z0-9]+$', '')).alias("token")
                     ),
@@ -68,10 +69,6 @@ class ScoreBaseGenerated:
     def _step_select_distinct_query_terms_1(self, frames):
         # Step method: select_distinct_query_terms
         query_terms = frames["expanded_query_terms"].alias("query_term")
-        if query_terms.isStreaming:
-            query_terms = query_terms.dropDuplicatesWithinWatermark(["query_id", "token"])
-        else:
-            query_terms = query_terms.dropDuplicates(["query_id", "token"])
         query_terms = query_terms.select(
             F.col("query_term.query_id"),
             F.col("query_term.token"),

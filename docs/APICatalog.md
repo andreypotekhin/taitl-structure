@@ -121,7 +121,7 @@ Structure additions over public DataFrame transformation patterns, not raw DataF
 
 | Capability | Status | PySpark parity | Structure contract | Reference |
 | --- | --- | --- | --- | --- |
-| Set operations | implemented/design-gated | `union`, `unionByName`, `intersect`, `intersectAll`, `subtract`, `exceptAll` | Exact-schema relation set composition is implemented; `union_by_name(..., allow_missing_columns=True)` is implemented for nullable top-level batch fills | Defaults, nested partial fills, and streaming missing-column union remain design-gated |
+| Set operations | implemented/design-gated | `union`, `unionByName`, `intersect`, `intersectAll`, `subtract`, `exceptAll` | Exact-schema relation set composition is implemented; batch `union_by_name(..., allow_missing_columns=True)` supports nullable fills, typed scalar defaults, nested struct paths, aliases, and explicit struct defaults | Streaming missing-column union remains design-gated; array/map element evolution is rejected |
 | Branchable typed union | implemented | Union of compatible DataFrames | Independently materialized exact-schema lanes can converge through `union_all(...)` | Retired relevance-context expansion hooks |
 | `relation_alias` self joins | implemented | DataFrame aliases for self joins | Named typed occurrence of the active rowset or an unjoined relation | [Joins API](api/Joins.api.md) |
 | Relation order/limit/offset | implemented | `orderBy`, `limit`, `offset` | Typed order descriptors and literal bounds; bounds require ordered current relation state | [APIExtensions.md](APIExtensions.md#added-relation-helpers) |
@@ -201,7 +201,7 @@ streaming-specific rows remain in
 | Generator variants | supported | `explode_struct`, `explode_outer_struct`, `posexplode_struct`, `posexplode_outer_struct`, `inline_struct`, `inline_outer_struct` | Typed struct generators expand declared struct values with schema/cardinality contracts. |
 | Projection and filtering | supported | Schema projection and `where` | Schema owns output names and replacement. |
 | Joins and hints | supported | Typed join helpers, `relation_alias` | Explicit schema/cardinality; cross needs opt-in; self joins require named aliases. |
-| Set operations | supported/design-gated | `union_all`, `union_by_name`, `intersect`, `intersect_all`, `subtract`, `except_all`; nullable missing-column `union_by_name` | Exact-schema set operations are supported; `allow_missing_columns=True` null-fills nullable top-level batch fields. Defaults, nested fills, and streaming missing-column union remain design-gated. |
+| Set operations | supported/design-gated | `union_all`, `union_by_name`, `intersect`, `intersect_all`, `subtract`, `except_all`; nullable missing-column `union_by_name` | Exact-schema set operations are supported; batch `allow_missing_columns=True` fills nullable or explicitly defaulted top-level and nested struct fields while preserving aliases. | Streaming missing-column union remains design-gated; array/map element evolution is rejected. |
 | Ordering/limit/sample | supported | `order_by`, `limit`, `offset`, `sample` | Ordered bounds are compiler-visible and batch-only; sampling requires explicit reproducibility policy and is batch-only. |
 | Priority selection | supported | `select_first_qualified` | Declared business keys, eligibility, and priority order select one row per key; configured missing/tie failures report `REL-E0705`. |
 | Distinct and deduplication | supported | `distinct`, `drop_duplicates` | Watermark form is streaming classified. |

@@ -4,7 +4,7 @@ from examples.search.schemas.text import Document, Paragraph, Section, Sentence,
 from examples.search.transforms.chunking.DocumentChunking import DocumentChunking
 from examples.search.transforms.chunking.SentenceChunking import SentenceChunking
 from examples.search.transforms.chunking.WordChunking import WordChunking
-from structure import Transform, input, output, stage
+from structure import Transform, input, output
 
 
 class Chunking(Transform):
@@ -16,6 +16,6 @@ class Chunking(Transform):
     sentences = output(Sentence)
     words = output(Word)
 
-    documents_chunked = stage(DocumentChunking(documents=documents))
-    sentences_chunked = stage(SentenceChunking(paragraphs=documents_chunked.paragraphs))
-    words_chunked = stage(WordChunking(sentences=sentences_chunked.sentences))
+    documents_chunked = DocumentChunking(documents=documents)
+    sentences_chunked = SentenceChunking(paragraphs=documents_chunked.paragraphs)
+    words_chunked = WordChunking(sentences=sentences_chunked.sentences)

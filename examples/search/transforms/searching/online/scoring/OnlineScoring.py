@@ -27,7 +27,7 @@ from examples.search.schemas.search import (
 )
 from examples.search.transforms.scoring.Scoring import Scoring
 from examples.search.transforms.searching.online.scoring.SelectGapQueries import SelectGapQueries
-from structure import Transform, input, output, stage
+from structure import Transform, input, output
 
 
 class OnlineScoring(Transform):
@@ -48,25 +48,25 @@ class OnlineScoring(Transform):
     score_policy = input(ScorePolicy)
 
     gap = SelectGapQueries(
-            queries=queries,
-            requests=requests,
-            document_scores=document_scores,
-            document_overlap_scores=document_overlap_scores,
-            score_policy=score_policy,
-        )
+        queries=queries,
+        requests=requests,
+        document_scores=document_scores,
+        document_overlap_scores=document_overlap_scores,
+        score_policy=score_policy,
+    )
 
     scoring = Scoring(
-            queries=gap.gap_queries,
-            document_terms=document_terms,
-            section_terms=section_terms,
-            paragraph_terms=paragraph_terms,
-            sentence_terms=sentence_terms,
-            document_summary=document_summary,
-            section_summary=section_summary,
-            paragraph_summary=paragraph_summary,
-            sentence_summary=sentence_summary,
-            score_policy=score_policy,
-        )
+        queries=gap.gap_queries,
+        document_terms=document_terms,
+        section_terms=section_terms,
+        paragraph_terms=paragraph_terms,
+        sentence_terms=sentence_terms,
+        document_summary=document_summary,
+        section_summary=section_summary,
+        paragraph_summary=paragraph_summary,
+        sentence_summary=sentence_summary,
+        score_policy=score_policy,
+    )
 
     online_document_scores = output(DocumentScore, scoring.document_scores)
     online_streamed_document_scores = output(DocumentScore, scoring.document_scores)

@@ -143,6 +143,11 @@
       "source": "source:examples.search.transforms.labeling.MergeQueryLabels.MergeQueryLabels.merge_caller_labels.field.content"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.MergeQueryLabels.MergeQueryLabelsGenerated.run.step.3.merge_caller_labels.select.requested_at",
+      "ir": "ir:MergeQueryLabels.step.3.merge_caller_labels.project.requested_at",
+      "source": "source:examples.search.transforms.labeling.MergeQueryLabels.MergeQueryLabels.merge_caller_labels.field.requested_at"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.MergeQueryLabels.MergeQueryLabelsGenerated.run.step.3.merge_caller_labels.select.labels",
       "ir": "ir:MergeQueryLabels.step.3.merge_caller_labels.project.labels",
       "source": "source:examples.search.transforms.labeling.MergeQueryLabels.MergeQueryLabels.merge_caller_labels.field.labels"
@@ -191,6 +196,11 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.MergeQueryLabels.MergeQueryLabelsGenerated.run.step.4.merge_created_labels.select.content",
       "ir": "ir:MergeQueryLabels.step.4.merge_created_labels.project.content",
       "source": "source:examples.search.transforms.labeling.MergeQueryLabels.MergeQueryLabels.merge_created_labels.field.content"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.MergeQueryLabels.MergeQueryLabelsGenerated.run.step.4.merge_created_labels.select.requested_at",
+      "ir": "ir:MergeQueryLabels.step.4.merge_created_labels.project.requested_at",
+      "source": "source:examples.search.transforms.labeling.MergeQueryLabels.MergeQueryLabels.merge_created_labels.field.requested_at"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.MergeQueryLabels.MergeQueryLabelsGenerated.run.step.4.merge_created_labels.select.labels",
@@ -1120,6 +1130,17 @@
       },
       {
         "detail": {
+          "field": "requested_at"
+        },
+        "operation": "project",
+        "sources": [
+          "query.requested_at"
+        ],
+        "step": "merge_caller_labels",
+        "target": "SearchQuery.requested_at"
+      },
+      {
+        "detail": {
           "field": "labels"
         },
         "operation": "project",
@@ -1228,6 +1249,17 @@
         ],
         "step": "merge_created_labels",
         "target": "SearchQuery.content"
+      },
+      {
+        "detail": {
+          "field": "requested_at"
+        },
+        "operation": "project",
+        "sources": [
+          "query.requested_at"
+        ],
+        "step": "merge_created_labels",
+        "target": "SearchQuery.requested_at"
       },
       {
         "detail": {

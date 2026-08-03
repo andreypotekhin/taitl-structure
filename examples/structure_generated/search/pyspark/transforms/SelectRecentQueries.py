@@ -59,6 +59,7 @@ class SelectRecentQueriesGenerated:
             F.col("queries.id"),
             F.col("queries.queryset"),
             F.col("queries.content"),
+            F.col("queries.requested_at"),
             F.col("queries.labels"),
             F.col("queries.is_question"),
             F.col("queries.is_time_sensitive"),

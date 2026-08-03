@@ -123,9 +123,9 @@
       "source": "source:examples.search.transforms.experiments.scoring.Scoring001AdjustBm.Scoring001AdjustBm.overlap.expand_query_terms.filter.0"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Scoring001AdjustBm.Scoring001AdjustBmGenerated.run.step.0.overlap.expand_query_terms.posexplode_struct.0",
-      "ir": "ir:Scoring001AdjustBm.step.0.overlap.expand_query_terms.posexplode_struct.0",
-      "source": "source:examples.search.transforms.experiments.scoring.Scoring001AdjustBm.Scoring001AdjustBm.overlap.expand_query_terms.posexplode_struct.0"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Scoring001AdjustBm.Scoring001AdjustBmGenerated.run.step.0.overlap.expand_query_terms.posexplode_struct.1",
+      "ir": "ir:Scoring001AdjustBm.step.0.overlap.expand_query_terms.posexplode_struct.1",
+      "source": "source:examples.search.transforms.experiments.scoring.Scoring001AdjustBm.Scoring001AdjustBm.overlap.expand_query_terms.posexplode_struct.1"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Scoring001AdjustBm.Scoring001AdjustBmGenerated.run.step.0.overlap.expand_query_terms.select.query_id",
@@ -146,11 +146,6 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Scoring001AdjustBm.Scoring001AdjustBmGenerated.run.step.1.overlap.select_distinct_query_terms",
       "ir": "ir:Scoring001AdjustBm.step.1.overlap.select_distinct_query_terms",
       "source": "source:examples.search.transforms.experiments.scoring.Scoring001AdjustBm.Scoring001AdjustBm.overlap.select_distinct_query_terms"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Scoring001AdjustBm.Scoring001AdjustBmGenerated.run.step.1.overlap.select_distinct_query_terms.drop_duplicates.0",
-      "ir": "ir:Scoring001AdjustBm.step.1.overlap.select_distinct_query_terms.drop_duplicates.0",
-      "source": "source:examples.search.transforms.experiments.scoring.Scoring001AdjustBm.Scoring001AdjustBm.overlap.select_distinct_query_terms.drop_duplicates.0"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Scoring001AdjustBm.Scoring001AdjustBmGenerated.run.step.1.overlap.select_distinct_query_terms.select.query_id",
@@ -578,9 +573,9 @@
       "source": "source:examples.search.transforms.experiments.scoring.Scoring001AdjustBm.Scoring001AdjustBm.bm25.expand_query_terms.filter.0"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Scoring001AdjustBm.Scoring001AdjustBmGenerated.run.step.11.bm25.expand_query_terms.posexplode_struct.0",
-      "ir": "ir:Scoring001AdjustBm.step.11.bm25.expand_query_terms.posexplode_struct.0",
-      "source": "source:examples.search.transforms.experiments.scoring.Scoring001AdjustBm.Scoring001AdjustBm.bm25.expand_query_terms.posexplode_struct.0"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Scoring001AdjustBm.Scoring001AdjustBmGenerated.run.step.11.bm25.expand_query_terms.posexplode_struct.1",
+      "ir": "ir:Scoring001AdjustBm.step.11.bm25.expand_query_terms.posexplode_struct.1",
+      "source": "source:examples.search.transforms.experiments.scoring.Scoring001AdjustBm.Scoring001AdjustBm.bm25.expand_query_terms.posexplode_struct.1"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Scoring001AdjustBm.Scoring001AdjustBmGenerated.run.step.11.bm25.expand_query_terms.select.query_id",
@@ -601,11 +596,6 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Scoring001AdjustBm.Scoring001AdjustBmGenerated.run.step.12.bm25.select_distinct_query_terms",
       "ir": "ir:Scoring001AdjustBm.step.12.bm25.select_distinct_query_terms",
       "source": "source:examples.search.transforms.experiments.scoring.Scoring001AdjustBm.Scoring001AdjustBm.bm25.select_distinct_query_terms"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Scoring001AdjustBm.Scoring001AdjustBmGenerated.run.step.12.bm25.select_distinct_query_terms.drop_duplicates.0",
-      "ir": "ir:Scoring001AdjustBm.step.12.bm25.select_distinct_query_terms.drop_duplicates.0",
-      "source": "source:examples.search.transforms.experiments.scoring.Scoring001AdjustBm.Scoring001AdjustBm.bm25.select_distinct_query_terms.drop_duplicates.0"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Scoring001AdjustBm.Scoring001AdjustBmGenerated.run.step.12.bm25.select_distinct_query_terms.select.query_id",
@@ -1811,7 +1801,7 @@
           "queries.content"
         ],
         "step": "overlap.expand_query_terms",
-        "target": "overlap.expand_query_terms.posexplode_struct[0].query_token"
+        "target": "overlap.expand_query_terms.posexplode_struct[1].query_token"
       },
       {
         "detail": {
@@ -1846,19 +1836,6 @@
         ],
         "step": "overlap.select_distinct_query_terms",
         "target": "overlap.select_distinct_query_terms"
-      },
-      {
-        "detail": {
-          "scope": "QueryTerm",
-          "subset": "2"
-        },
-        "operation": "drop_duplicates",
-        "sources": [
-          "QueryTerm.query_id",
-          "QueryTerm.token"
-        ],
-        "step": "overlap.select_distinct_query_terms",
-        "target": "overlap.select_distinct_query_terms.drop_duplicates[0]"
       },
       {
         "detail": {
@@ -2816,7 +2793,7 @@
           "queries.content"
         ],
         "step": "bm25.expand_query_terms",
-        "target": "bm25.expand_query_terms.posexplode_struct[0].query_token"
+        "target": "bm25.expand_query_terms.posexplode_struct[1].query_token"
       },
       {
         "detail": {
@@ -2851,19 +2828,6 @@
         ],
         "step": "bm25.select_distinct_query_terms",
         "target": "bm25.select_distinct_query_terms"
-      },
-      {
-        "detail": {
-          "scope": "QueryTerm",
-          "subset": "2"
-        },
-        "operation": "drop_duplicates",
-        "sources": [
-          "QueryTerm.query_id",
-          "QueryTerm.token"
-        ],
-        "step": "bm25.select_distinct_query_terms",
-        "target": "bm25.select_distinct_query_terms.drop_duplicates[0]"
       },
       {
         "detail": {

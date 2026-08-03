@@ -20,6 +20,12 @@
       "type": "string"
     },
     {
+      "column": "requested_at",
+      "name": "requested_at",
+      "nullable": false,
+      "type": "timestamp"
+    },
+    {
       "column": "labels",
       "name": "labels",
       "nullable": false,

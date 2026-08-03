@@ -904,15 +904,23 @@ class RenderPySparkStep:
     def _relation_set(self, source: str, relation_set, *, step, target: str) -> list[str]:
         lines: list[str] = []
         for path, default in relation_set.defaults:
-            left_field = step.input_schema._structure_fields.get(path)
-            right_field = relation_set.schema._structure_fields.get(path)
-            field = left_field or right_field
-            if field is None:
+            left_path = self._field_path(step.input_schema, path)
+            right_path = self._field_path(relation_set.schema, path)
+            if left_path is None and right_path is None:
                 raise TypeError(f"Unknown relation-set default field: {path}")
-            frame = target if left_field is None else source
+            target_path = right_path if left_path is None else left_path
+            frame = target if left_path is None else source
             rendered = render_pyspark_expression(default, scope_aliases=self._scope_aliases(step))
-            rendered = f"{rendered}.cast({self._schema.render().type(field.type)})"
-            lines.append(f"        {frame} = {frame}.withColumn({self._literal(field.column)}, {rendered})")
+            rendered = f"{rendered}.cast({self._schema.render().type(target_path[-1].type)})"
+            for index in range(len(target_path) - 1, 0, -1):
+                parent = ".".join(field.column for field in target_path[:index])
+                rendered = (
+                    f"F.col({self._literal(parent)}).withField({self._literal(target_path[index].column)}, "
+                    f"{rendered})"
+                )
+            lines.append(
+                f"        {frame} = {frame}.withColumn({self._literal(target_path[0].column)}, {rendered})"
+            )
         if relation_set.by_name:
             lines.append(
                 f"        {target} = {target}.unionByName("
@@ -928,6 +936,21 @@ class RenderPySparkStep:
         }[relation_set.operation]
         lines.append(f"        {target} = {target}.{function}({source})")
         return lines
+
+    def _field_path(self, schema, path):
+        fields = schema._structure_fields
+        resolved = []
+        parts = path.split(".")
+        for index, name in enumerate(parts):
+            field = fields.get(name)
+            if field is None:
+                return None
+            resolved.append(field)
+            if index < len(parts) - 1:
+                if not isinstance(field.type, StructType):
+                    return None
+                fields = field.type.schema._structure_fields
+        return tuple(resolved)
 
     def _relation_order(
         self, relation_order, *, step: PySparkStepRecipe | PySparkOutputRecipe, target: str

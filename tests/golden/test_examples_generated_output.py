@@ -86,6 +86,16 @@ def test_search_documents_propagates_streaming_query_lineage() -> None:
         assert getattr(transform, input_name).streaming
 
 
+def test_search_query_declares_immutable_event_time() -> None:
+    """Streaming query serving has a required event-time field."""
+
+    from examples.search.schemas.search import SearchQuery
+
+    field = SearchQuery._structure_fields["requested_at"]
+    assert field.nullable is False
+    assert field.type.name == "timestamp"
+
+
 def test_search_all_builds_the_complete_offline_artifact_graph() -> None:
     """The build facade publishes pre-serving artifacts without result-presentation dependencies."""
 
@@ -267,8 +277,9 @@ def test_search_experiments_replace_production_stages() -> None:
     )
 
     assert {step.name.split(".")[0] for step in scoring.steps} == {"overlap", "bm25", "selected"}
-    assert Scoring001AdjustBm.bm25.invocation.k1 == 1.35
-    assert Scoring001AdjustBm.bm25.invocation.b == 0.70
+    parameters = getattr(Scoring001AdjustBm.bm25, "_structure_bound_parameters")
+    assert parameters["k1"] == 1.35
+    assert parameters["b"] == 0.70
     assert Scoring001AdjustBm.experiment_id == "Scoring001AdjustBm"
     assert Scoring001AdjustBm.selected is Scoring.selected
     rerank = next(step for step in searching.steps if step.name == "reranked.score_candidates")

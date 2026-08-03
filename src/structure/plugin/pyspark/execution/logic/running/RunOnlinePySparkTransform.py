@@ -807,15 +807,15 @@ class RunOnlinePySparkTransform:
 
     def _relation_set(self, left, right, relation_set, *, step, functions, types):
         for path, default in relation_set.defaults:
-            left_field = step.input_schema._structure_fields.get(path)
-            right_field = relation_set.schema._structure_fields.get(path)
-            field = left_field or right_field
-            if field is None:
+            left_path = self._field_path(step.input_schema, path)
+            right_path = self._field_path(relation_set.schema, path)
+            if left_path is None and right_path is None:
                 raise TypeError(f"Unknown relation-set default field: {path}")
-            frame = left if left_field is None else right
+            target_path = right_path if left_path is None else left_path
+            frame = left if left_path is None else right
             value = self._expressions.evaluate(default, functions=functions, aliases=self._scope_aliases(step))
-            frame = frame.withColumn(field.column, value.cast(self._spark_type(field.type, types)))
-            if left_field is None:
+            frame = self._apply_default(frame, target_path, value, functions=functions, types=types)
+            if left_path is None:
                 left = frame
             else:
                 right = frame
@@ -829,6 +829,28 @@ class RunOnlinePySparkTransform:
             "except_all": "exceptAll",
         }[relation_set.operation]
         return getattr(left, function)(right)
+
+    def _apply_default(self, frame, path, value, *, functions, types):
+        rendered = value.cast(self._spark_type(path[-1].type, types))
+        for index in range(len(path) - 1, 0, -1):
+            parent = ".".join(field.column for field in path[:index])
+            rendered = functions.col(parent).withField(path[index].column, rendered)
+        return frame.withColumn(path[0].column, rendered)
+
+    def _field_path(self, schema, path):
+        fields = schema._structure_fields
+        resolved = []
+        parts = path.split(".")
+        for index, name in enumerate(parts):
+            field = fields.get(name)
+            if field is None:
+                return None
+            resolved.append(field)
+            if index < len(parts) - 1:
+                if not isinstance(field.type, StructType):
+                    return None
+                fields = field.type.schema._structure_fields
+        return tuple(resolved)
 
     def _relation_order(self, step, frame, relation_order, *, functions):
         return frame.orderBy(

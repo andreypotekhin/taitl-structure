@@ -192,6 +192,7 @@ Help a new user to get familiar with the library by making it easy to absorb con
    - containing each stable English label name -> containing each English label name
 - Be mindful of use of adjectives/adverbs of degree. Remember that these can affect reader's trust:
   - Wrong -> Right: can become tightly coupled -> can become coupled
+- Avoid overusing 'online'/'offline' esp. outside online/offline discussions/comparisons.
 
 Typical reading order for first-time reader:
 - [Readme.md](../../Readme.md) is the main entry point for end-users

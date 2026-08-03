@@ -363,6 +363,11 @@
       "source": "source:examples.search.transforms.similarities.Similarities.Similarities.queries.publish_document_search_queries.field.content"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.5.queries.publish_document_search_queries.select.requested_at",
+      "ir": "ir:Similarities.step.5.queries.publish_document_search_queries.project.requested_at",
+      "source": "source:examples.search.transforms.similarities.Similarities.Similarities.queries.publish_document_search_queries.field.requested_at"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.5.queries.publish_document_search_queries.select.labels",
       "ir": "ir:Similarities.step.5.queries.publish_document_search_queries.project.labels",
       "source": "source:examples.search.transforms.similarities.Similarities.Similarities.queries.publish_document_search_queries.field.labels"
@@ -406,6 +411,11 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.6.queries.publish_section_search_queries.select.content",
       "ir": "ir:Similarities.step.6.queries.publish_section_search_queries.project.content",
       "source": "source:examples.search.transforms.similarities.Similarities.Similarities.queries.publish_section_search_queries.field.content"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.6.queries.publish_section_search_queries.select.requested_at",
+      "ir": "ir:Similarities.step.6.queries.publish_section_search_queries.project.requested_at",
+      "source": "source:examples.search.transforms.similarities.Similarities.Similarities.queries.publish_section_search_queries.field.requested_at"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.6.queries.publish_section_search_queries.select.labels",
@@ -453,6 +463,11 @@
       "source": "source:examples.search.transforms.similarities.Similarities.Similarities.queries.publish_paragraph_search_queries.field.content"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.7.queries.publish_paragraph_search_queries.select.requested_at",
+      "ir": "ir:Similarities.step.7.queries.publish_paragraph_search_queries.project.requested_at",
+      "source": "source:examples.search.transforms.similarities.Similarities.Similarities.queries.publish_paragraph_search_queries.field.requested_at"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.7.queries.publish_paragraph_search_queries.select.labels",
       "ir": "ir:Similarities.step.7.queries.publish_paragraph_search_queries.project.labels",
       "source": "source:examples.search.transforms.similarities.Similarities.Similarities.queries.publish_paragraph_search_queries.field.labels"
@@ -496,6 +511,11 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.8.queries.publish_sentence_search_queries.select.content",
       "ir": "ir:Similarities.step.8.queries.publish_sentence_search_queries.project.content",
       "source": "source:examples.search.transforms.similarities.Similarities.Similarities.queries.publish_sentence_search_queries.field.content"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.8.queries.publish_sentence_search_queries.select.requested_at",
+      "ir": "ir:Similarities.step.8.queries.publish_sentence_search_queries.project.requested_at",
+      "source": "source:examples.search.transforms.similarities.Similarities.Similarities.queries.publish_sentence_search_queries.field.requested_at"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.8.queries.publish_sentence_search_queries.select.labels",
@@ -668,6 +688,11 @@
       "source": "source:examples.search.transforms.similarities.Similarities.Similarities.queries.merge_queries.field.content"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.13.queries.merge_queries.select.requested_at",
+      "ir": "ir:Similarities.step.13.queries.merge_queries.project.requested_at",
+      "source": "source:examples.search.transforms.similarities.Similarities.Similarities.queries.merge_queries.field.requested_at"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.13.queries.merge_queries.select.labels",
       "ir": "ir:Similarities.step.13.queries.merge_queries.project.labels",
       "source": "source:examples.search.transforms.similarities.Similarities.Similarities.queries.merge_queries.field.labels"
@@ -703,9 +728,9 @@
       "source": "source:examples.search.transforms.similarities.Similarities.Similarities.overlap.expand_query_terms.filter.0"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.14.overlap.expand_query_terms.posexplode_struct.0",
-      "ir": "ir:Similarities.step.14.overlap.expand_query_terms.posexplode_struct.0",
-      "source": "source:examples.search.transforms.similarities.Similarities.Similarities.overlap.expand_query_terms.posexplode_struct.0"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.14.overlap.expand_query_terms.posexplode_struct.1",
+      "ir": "ir:Similarities.step.14.overlap.expand_query_terms.posexplode_struct.1",
+      "source": "source:examples.search.transforms.similarities.Similarities.Similarities.overlap.expand_query_terms.posexplode_struct.1"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.14.overlap.expand_query_terms.select.query_id",
@@ -726,11 +751,6 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.15.overlap.select_distinct_query_terms",
       "ir": "ir:Similarities.step.15.overlap.select_distinct_query_terms",
       "source": "source:examples.search.transforms.similarities.Similarities.Similarities.overlap.select_distinct_query_terms"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.15.overlap.select_distinct_query_terms.drop_duplicates.0",
-      "ir": "ir:Similarities.step.15.overlap.select_distinct_query_terms.drop_duplicates.0",
-      "source": "source:examples.search.transforms.similarities.Similarities.Similarities.overlap.select_distinct_query_terms.drop_duplicates.0"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.15.overlap.select_distinct_query_terms.select.query_id",
@@ -1158,9 +1178,9 @@
       "source": "source:examples.search.transforms.similarities.Similarities.Similarities.bm25.expand_query_terms.filter.0"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.25.bm25.expand_query_terms.posexplode_struct.0",
-      "ir": "ir:Similarities.step.25.bm25.expand_query_terms.posexplode_struct.0",
-      "source": "source:examples.search.transforms.similarities.Similarities.Similarities.bm25.expand_query_terms.posexplode_struct.0"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.25.bm25.expand_query_terms.posexplode_struct.1",
+      "ir": "ir:Similarities.step.25.bm25.expand_query_terms.posexplode_struct.1",
+      "source": "source:examples.search.transforms.similarities.Similarities.Similarities.bm25.expand_query_terms.posexplode_struct.1"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.25.bm25.expand_query_terms.select.query_id",
@@ -1181,11 +1201,6 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.26.bm25.select_distinct_query_terms",
       "ir": "ir:Similarities.step.26.bm25.select_distinct_query_terms",
       "source": "source:examples.search.transforms.similarities.Similarities.Similarities.bm25.select_distinct_query_terms"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.26.bm25.select_distinct_query_terms.drop_duplicates.0",
-      "ir": "ir:Similarities.step.26.bm25.select_distinct_query_terms.drop_duplicates.0",
-      "source": "source:examples.search.transforms.similarities.Similarities.Similarities.bm25.select_distinct_query_terms.drop_duplicates.0"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.Similarities.SimilaritiesGenerated.run.step.26.bm25.select_distinct_query_terms.select.query_id",
@@ -4128,6 +4143,17 @@
       },
       {
         "detail": {
+          "field": "requested_at"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "queries.publish_document_search_queries",
+        "target": "SearchQuery.requested_at"
+      },
+      {
+        "detail": {
           "field": "labels"
         },
         "operation": "project",
@@ -4214,6 +4240,17 @@
         ],
         "step": "queries.publish_section_search_queries",
         "target": "SearchQuery.content"
+      },
+      {
+        "detail": {
+          "field": "requested_at"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "queries.publish_section_search_queries",
+        "target": "SearchQuery.requested_at"
       },
       {
         "detail": {
@@ -4306,6 +4343,17 @@
       },
       {
         "detail": {
+          "field": "requested_at"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "queries.publish_paragraph_search_queries",
+        "target": "SearchQuery.requested_at"
+      },
+      {
+        "detail": {
           "field": "labels"
         },
         "operation": "project",
@@ -4392,6 +4440,17 @@
         ],
         "step": "queries.publish_sentence_search_queries",
         "target": "SearchQuery.content"
+      },
+      {
+        "detail": {
+          "field": "requested_at"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "queries.publish_sentence_search_queries",
+        "target": "SearchQuery.requested_at"
       },
       {
         "detail": {
@@ -4728,6 +4787,17 @@
       },
       {
         "detail": {
+          "field": "requested_at"
+        },
+        "operation": "project",
+        "sources": [
+          "document.requested_at"
+        ],
+        "step": "queries.merge_queries",
+        "target": "SearchQuery.requested_at"
+      },
+      {
+        "detail": {
           "field": "labels"
         },
         "operation": "project",
@@ -4802,7 +4872,7 @@
           "queries.content"
         ],
         "step": "overlap.expand_query_terms",
-        "target": "overlap.expand_query_terms.posexplode_struct[0].query_token"
+        "target": "overlap.expand_query_terms.posexplode_struct[1].query_token"
       },
       {
         "detail": {
@@ -4837,19 +4907,6 @@
         ],
         "step": "overlap.select_distinct_query_terms",
         "target": "overlap.select_distinct_query_terms"
-      },
-      {
-        "detail": {
-          "scope": "QueryTerm",
-          "subset": "2"
-        },
-        "operation": "drop_duplicates",
-        "sources": [
-          "QueryTerm.query_id",
-          "QueryTerm.token"
-        ],
-        "step": "overlap.select_distinct_query_terms",
-        "target": "overlap.select_distinct_query_terms.drop_duplicates[0]"
       },
       {
         "detail": {
@@ -5807,7 +5864,7 @@
           "queries.content"
         ],
         "step": "bm25.expand_query_terms",
-        "target": "bm25.expand_query_terms.posexplode_struct[0].query_token"
+        "target": "bm25.expand_query_terms.posexplode_struct[1].query_token"
       },
       {
         "detail": {
@@ -5842,19 +5899,6 @@
         ],
         "step": "bm25.select_distinct_query_terms",
         "target": "bm25.select_distinct_query_terms"
-      },
-      {
-        "detail": {
-          "scope": "QueryTerm",
-          "subset": "2"
-        },
-        "operation": "drop_duplicates",
-        "sources": [
-          "QueryTerm.query_id",
-          "QueryTerm.token"
-        ],
-        "step": "bm25.select_distinct_query_terms",
-        "target": "bm25.select_distinct_query_terms.drop_duplicates[0]"
       },
       {
         "detail": {

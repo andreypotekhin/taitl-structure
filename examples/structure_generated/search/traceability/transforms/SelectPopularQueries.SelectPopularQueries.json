@@ -78,6 +78,11 @@
       "source": "source:examples.search.transforms.scoring.SelectPopularQueries.SelectPopularQueries.rank_queries.field.content"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.SelectPopularQueries.SelectPopularQueriesGenerated.run.step.1.rank_queries.select.requested_at",
+      "ir": "ir:SelectPopularQueries.step.1.rank_queries.project.requested_at",
+      "source": "source:examples.search.transforms.scoring.SelectPopularQueries.SelectPopularQueries.rank_queries.field.requested_at"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.SelectPopularQueries.SelectPopularQueriesGenerated.run.step.1.rank_queries.select.labels",
       "ir": "ir:SelectPopularQueries.step.1.rank_queries.project.labels",
       "source": "source:examples.search.transforms.scoring.SelectPopularQueries.SelectPopularQueries.rank_queries.field.labels"
@@ -136,6 +141,11 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.SelectPopularQueries.SelectPopularQueriesGenerated.run.step.2.select_queries.select.content",
       "ir": "ir:SelectPopularQueries.step.2.select_queries.project.content",
       "source": "source:examples.search.transforms.scoring.SelectPopularQueries.SelectPopularQueries.select_queries.field.content"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.SelectPopularQueries.SelectPopularQueriesGenerated.run.step.2.select_queries.select.requested_at",
+      "ir": "ir:SelectPopularQueries.step.2.select_queries.project.requested_at",
+      "source": "source:examples.search.transforms.scoring.SelectPopularQueries.SelectPopularQueries.select_queries.field.requested_at"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.SelectPopularQueries.SelectPopularQueriesGenerated.run.step.2.select_queries.select.labels",
@@ -957,6 +967,17 @@
       },
       {
         "detail": {
+          "field": "requested_at"
+        },
+        "operation": "project",
+        "sources": [
+          "query.requested_at"
+        ],
+        "step": "rank_queries",
+        "target": "PopularQueryCandidate.requested_at"
+      },
+      {
+        "detail": {
           "field": "labels"
         },
         "operation": "project",
@@ -1076,6 +1097,17 @@
         ],
         "step": "select_queries",
         "target": "SearchQuery.content"
+      },
+      {
+        "detail": {
+          "field": "requested_at"
+        },
+        "operation": "project",
+        "sources": [
+          "PopularQueryCandidate.requested_at"
+        ],
+        "step": "select_queries",
+        "target": "SearchQuery.requested_at"
       },
       {
         "detail": {

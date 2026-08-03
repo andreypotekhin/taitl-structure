@@ -9,6 +9,7 @@ context; users get immediate validation without executing Spark.
 from __future__ import annotations
 
 from collections.abc import Mapping
+from typing import Any
 
 import structure.plugin.pyspark.dsl.options as options
 from structure.dsl import Schema
@@ -712,28 +713,37 @@ def _validate_missing_column_union(
 ) -> tuple[tuple[str, Expression], ...]:
     left_fields = left._structure_fields
     right_fields = right._structure_fields
-    common = set(left_fields).intersection(right_fields)
-    mismatched = [
-        name
-        for name in common
-        if left_fields[name].column != right_fields[name].column
-        or not _same_structure_type(left_fields[name].type, right_fields[name].type)
-    ]
+    missing: dict[str, tuple[Any, str]] = {}
+    mismatched: list[str] = []
+    for name in left_fields.keys() | right_fields.keys():
+        left_field = left_fields.get(name)
+        right_field = right_fields.get(name)
+        if left_field is None:
+            missing[name] = (right_field, "left")
+        elif right_field is None:
+            missing[name] = (left_field, "right")
+        elif left_field.column != right_field.column:
+            mismatched.append(name)
+        elif not _collect_nested_schema_evolution(
+            left_field.type,
+            right_field.type,
+            path=name,
+            missing=missing,
+        ):
+            mismatched.append(name)
     if mismatched:
         names = ", ".join(sorted(mismatched))
         raise TypeError(f"{function}(allow_missing_columns=True) requires matching common field types: {names}")
     normalized: list[tuple[str, Expression]] = []
     for path, value in defaults.items():
-        if not isinstance(path, str) or not path or "." in path:
+        if not isinstance(path, str) or not path or any(not part for part in path.split(".")):
             raise TypeError(
-                f"{function}(defaults=...) requires canonical top-level Structure field paths; got {path!r}"
+                f"{function}(defaults=...) requires canonical Structure field paths; got {path!r}"
             )
-        if path not in left_fields and path not in right_fields:
+        if path not in missing:
             raise TypeError(f"{function}(defaults=...) names unknown field path: {path}")
-        if path in left_fields and path in right_fields:
-            raise TypeError(f"{function}(defaults=...) may target only a missing field: {path}")
-        field = left_fields.get(path) or right_fields[path]
-        if isinstance(field.type, (ArrayType, MapType, StructType)):
+        field = missing[path][0]
+        if isinstance(field.type, (ArrayType, MapType)):
             raise TypeError(f"{function}(defaults=...) cannot partially evolve collection or struct field: {path}")
         expression = literal(value)
         type_matches = (expression.type is None and field.nullable) or _same_structure_type(expression.type, field.type)
@@ -742,18 +752,43 @@ def _validate_missing_column_union(
                 f"{function}(defaults=...) value for {path} must be a typed literal compatible with {field.type.name}"
             )
         normalized.append((path, expression))
-    missing_left = [field for name, field in right_fields.items() if name not in left_fields]
-    missing_right = [field for name, field in left_fields.items() if name not in right_fields]
     defaulted = {path for path, _ in normalized}
-    required = [
-        field.name for field in (*missing_left, *missing_right) if not field.nullable and field.name not in defaulted
-    ]
+    required = [path for path, (field, _) in missing.items() if not field.nullable and path not in defaulted]
     if required:
         names = ", ".join(sorted(required))
         raise TypeError(
             f"{function}(allow_missing_columns=True) requires defaults for non-null missing field(s): {names}"
         )
-    return tuple(normalized)
+    return tuple(sorted(normalized))
+
+
+def _collect_nested_schema_evolution(
+    left,
+    right,
+    *,
+    path: str,
+    missing: dict[str, tuple[Any, str]],
+) -> bool:
+    if isinstance(left, StructType) and isinstance(right, StructType):
+        left_fields = left.schema._structure_fields
+        right_fields = right.schema._structure_fields
+        for name in left_fields.keys() | right_fields.keys():
+            nested_path = f"{path}.{name}"
+            left_field = left_fields.get(name)
+            right_field = right_fields.get(name)
+            if left_field is None:
+                missing[nested_path] = (right_field, "left")
+            elif right_field is None:
+                missing[nested_path] = (left_field, "right")
+            elif left_field.column != right_field.column or not _collect_nested_schema_evolution(
+                left_field.type,
+                right_field.type,
+                path=nested_path,
+                missing=missing,
+            ):
+                return False
+        return True
+    return _same_structure_type(left, right)
 
 
 def _same_structure_type(left, right) -> bool:

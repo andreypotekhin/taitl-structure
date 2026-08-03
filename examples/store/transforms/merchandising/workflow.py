@@ -21,7 +21,7 @@ from examples.store.schemas.taxonomy import ProductTaxonomy, TaxonomyNode
 from examples.store.transforms.catalog import NormalizeCatalog, PrepareCatalog
 from examples.store.transforms.recommender import Recommender
 from examples.store.transforms.taxonomy import ExpandProductTaxonomy
-from structure import Transform, input, output, stage
+from structure import Transform, input, output
 
 
 class Merchandising(Transform):
@@ -46,30 +46,30 @@ class Merchandising(Transform):
     recommendation_signals = output(ProductRecommendationSignal)
     recommendation_purchases = output(RecommendationPurchase)
 
-    cataloged = stage(
-        PrepareCatalog(
-            products=products,
-            blocked_products=blocked_products,
-            promotions=promotions,
-        )
+    cataloged = PrepareCatalog(
+        products=products,
+        blocked_products=blocked_products,
+        promotions=promotions,
     )
-    normalized = stage(NormalizeCatalog(catalog=cataloged.catalog))
-    taxonomy = stage(ExpandProductTaxonomy(product_taxonomy=product_taxonomy, taxonomy=taxonomy_nodes))
-    recommended = stage(
-        Recommender(
-            requests=requests,
-            catalog=normalized.normalized,
-            policy=policy,
-            boosts=boosts,
-            suppressions=suppressions,
-            taxonomy=taxonomy.expanded,
-            session_events=session_events,
-            fulfilled_orders=fulfilled_orders,
-            feedback_impressions=feedback_impressions,
-            feedback_clicks=feedback_clicks,
-            preferences=preferences,
-        )
+
+    normalized = NormalizeCatalog(catalog=cataloged.catalog)
+
+    taxonomy = ExpandProductTaxonomy(product_taxonomy=product_taxonomy, taxonomy=taxonomy_nodes)
+
+    recommended = Recommender(
+        requests=requests,
+        catalog=normalized.normalized,
+        policy=policy,
+        boosts=boosts,
+        suppressions=suppressions,
+        taxonomy=taxonomy.expanded,
+        session_events=session_events,
+        fulfilled_orders=fulfilled_orders,
+        feedback_impressions=feedback_impressions,
+        feedback_clicks=feedback_clicks,
+        preferences=preferences,
     )
+
     result = output(
         recommended_products=recommended.recommended_products,
         recommendation_runs=recommended.recommendation_runs,

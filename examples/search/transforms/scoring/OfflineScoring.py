@@ -35,7 +35,7 @@ from examples.search.transforms.scoring.MergeOfflineQueries import MergeOfflineQ
 from examples.search.transforms.scoring.Scoring import Scoring
 from examples.search.transforms.scoring.SelectPopularQueries import SelectPopularQueries
 from examples.search.transforms.scoring.SelectRecentQueries import SelectRecentQueries
-from structure import Transform, input, output, parameter, stage
+from structure import Transform, input, output, parameter
 
 
 class OfflineScoring(Transform):
@@ -54,39 +54,34 @@ class OfflineScoring(Transform):
     score_policy = input(ScorePolicy)
     maximum_offline_queries = parameter(1000)
 
-    popular = stage(
-        SelectPopularQueries(
-            queries=queries,
-            daily_impressions=daily_impressions,
-            maximum_queries=maximum_offline_queries,
-        )
+    popular = SelectPopularQueries(
+        queries=queries,
+        daily_impressions=daily_impressions,
+        maximum_queries=maximum_offline_queries,
     )
-    recent = stage(
-        SelectRecentQueries(
-            queries=queries,
-            daily_impressions=daily_impressions,
-            score_policy=score_policy,
-        )
+
+    recent = SelectRecentQueries(
+        queries=queries,
+        daily_impressions=daily_impressions,
+        score_policy=score_policy,
     )
-    offline = stage(
-        MergeOfflineQueries(
-            popular_queries=popular.selected_queries,
-            recent_queries=recent.recent_queries,
-        )
+
+    offline = MergeOfflineQueries(
+        popular_queries=popular.selected_queries,
+        recent_queries=recent.recent_queries,
     )
-    scored = stage(
-        Scoring(
-            queries=offline.offline_queries,
-            document_terms=document_terms,
-            section_terms=section_terms,
-            paragraph_terms=paragraph_terms,
-            sentence_terms=sentence_terms,
-            document_summary=document_summary,
-            section_summary=section_summary,
-            paragraph_summary=paragraph_summary,
-            sentence_summary=sentence_summary,
-            score_policy=score_policy,
-        )
+
+    scored = Scoring(
+        queries=offline.offline_queries,
+        document_terms=document_terms,
+        section_terms=section_terms,
+        paragraph_terms=paragraph_terms,
+        sentence_terms=sentence_terms,
+        document_summary=document_summary,
+        section_summary=section_summary,
+        paragraph_summary=paragraph_summary,
+        sentence_summary=sentence_summary,
+        score_policy=score_policy,
     )
 
     document_scores = output(DocumentScore, scored.document_scores)

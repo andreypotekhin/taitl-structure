@@ -12,7 +12,7 @@ from examples.search.schemas.indexing.lexical.index import (
 )
 from examples.search.schemas.text import Word
 from examples.search.transforms.indexing.lexical.LexIndex import LexIndex
-from structure import Transform, input, output, stage
+from structure import Transform, input, output
 
 
 class Indexing(Transform):
@@ -28,4 +28,4 @@ class Indexing(Transform):
     sentence_terms = output(SentenceIndexTerm)
     sentence_summary = output(SentenceIndexSummary)
 
-    lexical = stage(LexIndex(words=words))
+    lexical = LexIndex(words=words)

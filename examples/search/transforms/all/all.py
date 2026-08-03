@@ -60,7 +60,7 @@ from examples.search.transforms.relevance.BuildRelevanceSignals import BuildRele
 from examples.search.transforms.scoring import OfflineScoring
 from examples.search.transforms.similarities import Similarities
 from examples.search.transforms.stats import AnalyzeText, CorpusText, ProfileDocuments
-from structure import Transform, input, output, parameter, stage
+from structure import Transform, input, output, parameter
 
 
 class All(Transform):
@@ -80,62 +80,69 @@ class All(Transform):
     similarity_policy = input(SimilarityPolicy)
     maximum_offline_queries = parameter(1000)
 
-    chunked = stage(Chunking(documents=documents))
-    profiled = stage(ProfileDocuments(documents=documents))
-    indexed = stage(Indexing(words=chunked.words))
-    similarities = stage(
-        Similarities(
-            policy=similarity_policy,
-            document_terms=indexed.document_terms,
-            document_summary=indexed.document_summary,
-            section_terms=indexed.section_terms,
-            section_summary=indexed.section_summary,
-            paragraph_terms=indexed.paragraph_terms,
-            paragraph_summary=indexed.paragraph_summary,
-            sentence_terms=indexed.sentence_terms,
-            sentence_summary=indexed.sentence_summary,
-            score_policy=score_policy,
-        )
+    chunked = Chunking(documents=documents)
+    profiled = ProfileDocuments(documents=documents)
+    indexed = Indexing(words=chunked.words)
+
+    similarities = Similarities(
+        policy=similarity_policy,
+        document_terms=indexed.document_terms,
+        document_summary=indexed.document_summary,
+        section_terms=indexed.section_terms,
+        section_summary=indexed.section_summary,
+        paragraph_terms=indexed.paragraph_terms,
+        paragraph_summary=indexed.paragraph_summary,
+        sentence_terms=indexed.sentence_terms,
+        sentence_summary=indexed.sentence_summary,
+        score_policy=score_policy,
     )
-    labeled = stage(Labeling(queries=queries, query_labels=query_labels, intents=intents, patterns=patterns))
-    scored = stage(
-        OfflineScoring(
-            queries=labeled.labeled_queries,
-            daily_impressions=daily_impressions,
-            document_terms=indexed.document_terms,
-            section_terms=indexed.section_terms,
-            paragraph_terms=indexed.paragraph_terms,
-            sentence_terms=indexed.sentence_terms,
-            document_summary=indexed.document_summary,
-            section_summary=indexed.section_summary,
-            paragraph_summary=indexed.paragraph_summary,
-            sentence_summary=indexed.sentence_summary,
-            score_policy=score_policy,
-            maximum_offline_queries=maximum_offline_queries,
-        )
+
+    labeled = Labeling(
+        queries=queries,
+        query_labels=query_labels,
+        intents=intents,
+        patterns=patterns
     )
-    cohorts = stage(ResolveCohortBands(users=users, bands=bands))
-    relevance = stage(
-        BuildRelevanceSignals(
-            daily_impressions=daily_impressions,
-            daily_clicks=daily_clicks,
-            band_memberships=cohorts.band_memberships,
-            user_band_memberships=cohorts.user_band_memberships,
-            band_fallbacks=cohorts.band_fallbacks,
-            policy=policy,
-        )
+
+    scored = OfflineScoring(
+        queries=labeled.labeled_queries,
+        daily_impressions=daily_impressions,
+        document_terms=indexed.document_terms,
+        section_terms=indexed.section_terms,
+        paragraph_terms=indexed.paragraph_terms,
+        sentence_terms=indexed.sentence_terms,
+        document_summary=indexed.document_summary,
+        section_summary=indexed.section_summary,
+        paragraph_summary=indexed.paragraph_summary,
+        sentence_summary=indexed.sentence_summary,
+        score_policy=score_policy,
+        maximum_offline_queries=maximum_offline_queries,
     )
-    analyzed = stage(
-        AnalyzeText(
-            words=chunked.words,
-            sentences=chunked.sentences,
-            paragraphs=chunked.paragraphs,
-            sections=chunked.sections,
-            comparison_left=profiled.features,
-            comparison_right=profiled.features,
-        )
+
+    cohorts = ResolveCohortBands(users=users, bands=bands)
+
+    relevance = BuildRelevanceSignals(
+        daily_impressions=daily_impressions,
+        daily_clicks=daily_clicks,
+        band_memberships=cohorts.band_memberships,
+        user_band_memberships=cohorts.user_band_memberships,
+        band_fallbacks=cohorts.band_fallbacks,
+        policy=policy,
     )
-    corpus = stage(CorpusText(documents=analyzed.document_statistics, words=chunked.words))
+
+    analyzed = AnalyzeText(
+        words=chunked.words,
+        sentences=chunked.sentences,
+        paragraphs=chunked.paragraphs,
+        sections=chunked.sections,
+        comparison_left=profiled.features,
+        comparison_right=profiled.features,
+    )
+
+    corpus = CorpusText(
+        documents=analyzed.document_statistics,
+        words=chunked.words
+    )
 
     sections = output(Section, chunked.sections)
     paragraphs = output(Paragraph, chunked.paragraphs)

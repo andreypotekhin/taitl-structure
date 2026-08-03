@@ -113,9 +113,9 @@
       "source": "source:examples.search.transforms.scoring.ScoreBm25.ScoreBm25.expand_query_terms.filter.0"
     },
     {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ScoreBm25.ScoreBm25Generated.run.step.0.expand_query_terms.posexplode_struct.0",
-      "ir": "ir:ScoreBm25.step.0.expand_query_terms.posexplode_struct.0",
-      "source": "source:examples.search.transforms.scoring.ScoreBm25.ScoreBm25.expand_query_terms.posexplode_struct.0"
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ScoreBm25.ScoreBm25Generated.run.step.0.expand_query_terms.posexplode_struct.1",
+      "ir": "ir:ScoreBm25.step.0.expand_query_terms.posexplode_struct.1",
+      "source": "source:examples.search.transforms.scoring.ScoreBm25.ScoreBm25.expand_query_terms.posexplode_struct.1"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.ScoreBm25.ScoreBm25Generated.run.step.0.expand_query_terms.select.query_id",
@@ -136,11 +136,6 @@
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.ScoreBm25.ScoreBm25Generated.run.step.1.select_distinct_query_terms",
       "ir": "ir:ScoreBm25.step.1.select_distinct_query_terms",
       "source": "source:examples.search.transforms.scoring.ScoreBm25.ScoreBm25.select_distinct_query_terms"
-    },
-    {
-      "generated": "generated:examples.structure_generated.search.pyspark.transforms.ScoreBm25.ScoreBm25Generated.run.step.1.select_distinct_query_terms.drop_duplicates.0",
-      "ir": "ir:ScoreBm25.step.1.select_distinct_query_terms.drop_duplicates.0",
-      "source": "source:examples.search.transforms.scoring.ScoreBm25.ScoreBm25.select_distinct_query_terms.drop_duplicates.0"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.ScoreBm25.ScoreBm25Generated.run.step.1.select_distinct_query_terms.select.query_id",
@@ -1095,7 +1090,7 @@
           "queries.content"
         ],
         "step": "expand_query_terms",
-        "target": "expand_query_terms.posexplode_struct[0].query_token"
+        "target": "expand_query_terms.posexplode_struct[1].query_token"
       },
       {
         "detail": {
@@ -1130,19 +1125,6 @@
         ],
         "step": "select_distinct_query_terms",
         "target": "select_distinct_query_terms"
-      },
-      {
-        "detail": {
-          "scope": "QueryTerm",
-          "subset": "2"
-        },
-        "operation": "drop_duplicates",
-        "sources": [
-          "QueryTerm.query_id",
-          "QueryTerm.token"
-        ],
-        "step": "select_distinct_query_terms",
-        "target": "select_distinct_query_terms.drop_duplicates[0]"
       },
       {
         "detail": {

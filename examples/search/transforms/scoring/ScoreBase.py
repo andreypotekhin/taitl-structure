@@ -18,8 +18,8 @@ from structure.plugin.pyspark import (
     posexplode_struct,
     split,
     trim,
-    where,
     watermark,
+    where,
 )
 
 

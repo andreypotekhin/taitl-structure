@@ -11,7 +11,7 @@ from examples.store.schemas.taxonomy import ExpandedProductTaxonomy
 from examples.store.transforms.recommender.candidates.admit import SelectRecommendationCandidates
 from examples.store.transforms.recommender.candidates.filter import FilterRecommendationCandidates
 from examples.store.transforms.recommender.candidates.generate import GenerateRecommendationCandidates
-from structure import Transform, input, output, stage, transform
+from structure import Transform, input, output, transform
 
 
 @transform
@@ -27,27 +27,24 @@ class BuildRecommendationCandidates(Transform):
     candidates = output(RecommendationCandidate)
     decisions = output(RecommendationCandidateDecision)
 
-    admitted = stage(
-        SelectRecommendationCandidates(
-            requests=requests,
-            catalog=catalog,
-        )
+    admitted = SelectRecommendationCandidates(
+        requests=requests,
+        catalog=catalog,
     )
-    retrieved = stage(
-        GenerateRecommendationCandidates(
-            admitted=admitted.candidates,
-            taxonomy=taxonomy,
-            session_features=session_features,
-            signals=signals,
-        )
+
+    retrieved = GenerateRecommendationCandidates(
+        admitted=admitted.candidates,
+        taxonomy=taxonomy,
+        session_features=session_features,
+        signals=signals,
     )
-    filtered = stage(
-        FilterRecommendationCandidates(
-            candidates=retrieved.candidates,
-            suppressions=suppressions,
-            session_features=session_features,
-        )
+
+    filtered = FilterRecommendationCandidates(
+        candidates=retrieved.candidates,
+        suppressions=suppressions,
+        session_features=session_features,
     )
+
     result = output(
         candidates=filtered.filtered,
         decisions=filtered.decisions,

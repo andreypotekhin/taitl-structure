@@ -2,6 +2,7 @@
 # Source: examples.search.transforms.similarities.CreateSimilarityQueries.CreateSimilarityQueries
 
 from __future__ import annotations
+import datetime
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
@@ -362,6 +363,7 @@ class CreateSimilarityQueriesGenerated:
             F.col("document_similarity_query_text.query_id").alias("id"),
             F.lit('synthetic').alias("queryset"),
             F.concat_ws(' ', F.col("document_similarity_query_text.content_tokens")).alias("content"),
+            F.lit(datetime.datetime(1970, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)).alias("requested_at"),
             F.map_from_entries(
                 F.array(
                     F.struct(
@@ -390,6 +392,7 @@ class CreateSimilarityQueriesGenerated:
             F.col("section_similarity_query_text.query_id").alias("id"),
             F.lit('synthetic').alias("queryset"),
             F.concat_ws(' ', F.col("section_similarity_query_text.content_tokens")).alias("content"),
+            F.lit(datetime.datetime(1970, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)).alias("requested_at"),
             F.map_from_entries(
                 F.array(
                     F.struct(
@@ -418,6 +421,7 @@ class CreateSimilarityQueriesGenerated:
             F.col("paragraph_similarity_query_text.query_id").alias("id"),
             F.lit('synthetic').alias("queryset"),
             F.concat_ws(' ', F.col("paragraph_similarity_query_text.content_tokens")).alias("content"),
+            F.lit(datetime.datetime(1970, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)).alias("requested_at"),
             F.map_from_entries(
                 F.array(
                     F.struct(
@@ -446,6 +450,7 @@ class CreateSimilarityQueriesGenerated:
             F.col("sentence_similarity_query_text.query_id").alias("id"),
             F.lit('synthetic').alias("queryset"),
             F.concat_ws(' ', F.col("sentence_similarity_query_text.content_tokens")).alias("content"),
+            F.lit(datetime.datetime(1970, 1, 1, 0, 0, tzinfo=datetime.timezone.utc)).alias("requested_at"),
             F.map_from_entries(
                 F.array(
                     F.struct(
@@ -517,6 +522,7 @@ class CreateSimilarityQueriesGenerated:
             F.col("id"),
             F.col("queryset"),
             F.col("content"),
+            F.col("requested_at"),
             F.col("labels"),
             F.col("is_question"),
             F.col("is_time_sensitive"),

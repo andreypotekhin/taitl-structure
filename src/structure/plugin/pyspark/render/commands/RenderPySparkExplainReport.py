@@ -63,6 +63,24 @@ class RenderPySparkExplainReport:
         )
         for finding in streaming.findings:
             lines.append(f"    {finding.code}: {finding.support.value} in {finding.step} ({finding.operation})")
+        lines.extend(["", "  state stages:"])
+        if not streaming.stages:
+            lines.append("    none")
+        for ordinal, stage in enumerate(streaming.stages, start=1):
+            event_time = ", ".join(stage.event_time) if stage.event_time else "none"
+            watermarks = ", ".join(f"{source}={delay}" for source, delay in stage.watermarks) or "none"
+            keys = ", ".join(stage.keys) or "none"
+            retention = ", ".join(stage.retention) or "none"
+            order_keys = ", ".join(stage.order_keys) or "none"
+            modes = ", ".join(stage.output_modes) or "none"
+            lines.append(f"    {ordinal}: {stage.step} ({stage.operation})")
+            lines.append(f"      event_time: {event_time}")
+            lines.append(f"      watermarks: {watermarks}")
+            lines.append(f"      keys: {keys}")
+            lines.append(f"      retention: {retention}")
+            lines.append(f"      order_keys: {order_keys}")
+            lines.append(f"      output_modes: {modes}")
+            lines.append(f"      allows_later_stateful: {str(stage.allows_later_stateful).lower()}")
         lines.extend(["", "  inputs:"])
         for item in recipe.inputs:
             lines.append(f"    {item.name}: {item.schema.__name__}")

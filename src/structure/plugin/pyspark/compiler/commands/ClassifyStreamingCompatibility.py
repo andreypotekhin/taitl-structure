@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from structure.plugin.api.v1.model import StreamingFinding, StreamingReport
+from structure.plugin.api.v1.model import StreamingFinding, StreamingReport, StreamingStateStage
 from structure.plugin.pyspark.compiler.logic.streaming.ClassifyGeneratorStreamingCompatibility import (
     ClassifyGeneratorStreamingCompatibility,
 )
@@ -36,7 +36,9 @@ class ClassifyStreamingCompatibility:
         findings: list[StreamingFinding] = []
         input_modes = {input.name: input.streaming for input in plan.inputs}
         watermarks: dict[str, set[str]] = {}
+        watermark_delays: dict[str, dict[str, str]] = {}
         stateful_operations: list[_StatefulStreamingOperation] = []
+        state_stages: list[StreamingStateStage] = []
         for step in plan.steps:
             streaming_source = bool(input_modes.get(step.source))
             uses_streaming_input = self._uses_streaming_input(step, input_modes)
@@ -51,6 +53,9 @@ class ClassifyStreamingCompatibility:
                     if not streaming_step:
                         continue
                     watermarks.setdefault(operation.watermark.scope, set()).add(operation.watermark.column)
+                    watermark_delays.setdefault(operation.watermark.scope, {})[
+                        operation.watermark.column
+                    ] = operation.watermark.delay
                     continue
                 if operation.aggregate is not None:
                     allow_chained_window = len(stateful_operations) == 1 and self._approved_chained_window(
@@ -66,6 +71,15 @@ class ClassifyStreamingCompatibility:
                     )
                     findings.extend(operation_findings)
                     if streaming_step and not self._has_blocking_findings(operation_findings):
+                        state_stages.append(
+                            self._aggregate_stage(
+                                step.name,
+                                operation,
+                                operation.aggregate,
+                                watermarks=watermarks,
+                                watermark_delays=watermark_delays,
+                            )
+                        )
                         stateful_operations.append(
                             _StatefulStreamingOperation(
                                 step.name,
@@ -86,6 +100,15 @@ class ClassifyStreamingCompatibility:
                     )
                     findings.extend(operation_findings)
                     if streaming_step and not operation_findings:
+                        state_stages.append(
+                            self._dedupe_stage(
+                                step.name,
+                                operation,
+                                operation.duplicate_rows,
+                                watermark_delays=watermark_delays,
+                                scope=step.source_scope,
+                            )
+                        )
                         stateful_operations.append(
                             _StatefulStreamingOperation(step.name, "watermark-bounded duplicate removal")
                         )
@@ -139,6 +162,14 @@ class ClassifyStreamingCompatibility:
                         current_scope=step.source_scope,
                         watermarks=watermarks,
                     ):
+                        state_stages.append(
+                            self._join_stage(
+                                step.name,
+                                operation,
+                                operation.join,
+                                watermark_delays=watermark_delays,
+                            )
+                        )
                         stateful_operations.append(_StatefulStreamingOperation(step.name, "bounded stream-stream join"))
             for hook in (
                 *step.before_hooks,
@@ -165,7 +196,188 @@ class ClassifyStreamingCompatibility:
             support=self._fold(findings),
             required=required,
             findings=tuple(findings),
+            stages=tuple(state_stages),
         )
+
+    def _aggregate_stage(
+        self,
+        step: str,
+        operation,
+        aggregate,
+        *,
+        watermarks: dict[str, set[str]],
+        watermark_delays: dict[str, dict[str, str]],
+    ) -> StreamingStateStage:
+        scope = self._aggregate_scope(aggregate)
+        watermark_columns = watermarks.get(scope, set())
+        return StreamingStateStage(
+            step=step,
+            operation=self._aggregate_operation(aggregate),
+            event_time=self._aggregate_event_time(aggregate, watermark_columns),
+            watermarks=self._watermark_metadata(scope, watermark_delays),
+            keys=tuple(key.name for key in aggregate.keys),
+            retention=self._aggregate_retention(aggregate),
+            order_keys=tuple(
+                dict.fromkeys(
+                    self._expression_label(assignment.order_by)
+                    for assignment in aggregate.assignments
+                    if assignment.order_by is not None
+                )
+            ),
+            output_modes=tuple(mode.value for mode in operation.streaming_output_modes),
+            allows_later_stateful=any(
+                self._is_event_time_window(key.expression) and not self._is_window_time_window(key.expression)
+                for key in aggregate.keys
+            ),
+        )
+
+    def _dedupe_stage(
+        self,
+        step: str,
+        operation,
+        duplicate_rows,
+        *,
+        watermark_delays: dict[str, dict[str, str]],
+        scope: str,
+    ) -> StreamingStateStage:
+        return StreamingStateStage(
+            step=step,
+            operation="watermark-bounded duplicate removal",
+            event_time=tuple(f"{scope}.{column}" for column in sorted(watermark_delays.get(scope, {}))),
+            watermarks=self._watermark_metadata(scope, watermark_delays),
+            keys=tuple(self._expression_label(expression) for expression in (duplicate_rows.subset if duplicate_rows else ())),
+            retention=tuple(sorted(watermark_delays.get(scope, {}).values())),
+            output_modes=tuple(mode.value for mode in operation.streaming_output_modes),
+        )
+
+    def _join_stage(
+        self,
+        step: str,
+        operation,
+        join: PySparkJoinRecipe,
+        *,
+        watermark_delays: dict[str, dict[str, str]],
+    ) -> StreamingStateStage:
+        event_time = self._join_event_time(join.predicate)
+        scopes = tuple(sorted({scope for scope, _ in event_time}))
+        metadata = tuple(
+            item
+            for scope in scopes
+            for item in self._watermark_metadata(scope, watermark_delays)
+        )
+        modes = tuple(mode.value for mode in operation.streaming_output_modes)
+        if not modes and (join.method is JoinMethod.EXISTS or join.how in {Join.LEFT, Join.RIGHT, Join.FULL}):
+            modes = ("append",)
+        return StreamingStateStage(
+            step=step,
+            operation="bounded stream-stream join",
+            event_time=tuple(f"{scope}.{field}" for scope, field in event_time),
+            watermarks=metadata,
+            keys=tuple(
+                self._join_key_label(candidate)
+                for candidate in self._walk_expressions(join.predicate)
+                if candidate.kind == "eq"
+            ),
+            retention=self._join_retention(join.predicate),
+            output_modes=modes,
+        )
+
+    def _aggregate_scope(self, aggregate) -> str:
+        for key in aggregate.keys:
+            for expression in self._walk_expressions(key.expression):
+                scope = str(expression.data.get("scope", ""))
+                if scope:
+                    return scope
+        return ""
+
+    def _aggregate_event_time(self, aggregate, watermark_columns: set[str]) -> tuple[str, ...]:
+        values: list[str] = []
+        for key in aggregate.keys:
+            if self._is_event_time_window(key.expression) or self._is_session_window(key.expression):
+                values.extend(
+                    self._expression_label(expression)
+                    for expression in key.expression.args[:1]
+                )
+        if values:
+            return tuple(dict.fromkeys(values))
+        return tuple(
+            self._expression_label(expression)
+            for key in aggregate.keys
+            for expression in self._walk_expressions(key.expression)
+            if expression.kind == "field" and str(expression.data.get("field", "")) in watermark_columns
+        )
+
+    def _aggregate_retention(self, aggregate) -> tuple[str, ...]:
+        values: list[str] = []
+        for key in aggregate.keys:
+            for expression in self._walk_expressions(key.expression):
+                data = expression.data or {}
+                if expression.kind == "time_window" and data.get("duration"):
+                    values.append(f"window={data['duration']}")
+                if data.get("function") == "session_window" and data.get("gap"):
+                    values.append(f"session_gap={data['gap']}")
+        return tuple(dict.fromkeys(values))
+
+    def _watermark_metadata(
+        self,
+        scope: str,
+        watermark_delays: dict[str, dict[str, str]],
+    ) -> tuple[tuple[str, str], ...]:
+        return tuple(
+            (f"{scope}.{column}", delay)
+            for column, delay in sorted(watermark_delays.get(scope, {}).items())
+        )
+
+    def _join_event_time(self, expression: PySparkExpressionRecipe) -> tuple[tuple[str, str], ...]:
+        values: list[tuple[str, str]] = []
+        for candidate in self._walk_expressions(expression):
+            if candidate.kind != "event_time_between" or len(candidate.args) != 2:
+                continue
+            for argument in candidate.args:
+                if argument.kind == "field":
+                    values.append((str(argument.data.get("scope", "")), str(argument.data.get("field", ""))))
+        return tuple(dict.fromkeys(values))
+
+    def _join_retention(self, expression: PySparkExpressionRecipe) -> tuple[str, ...]:
+        values: list[str] = []
+        for candidate in self._walk_expressions(expression):
+            if candidate.kind != "event_time_between":
+                continue
+            data = candidate.data or {}
+            if data.get("lower") is not None:
+                values.append(f"lower={data['lower']}")
+            if data.get("upper") is not None:
+                values.append(f"upper={data['upper']}")
+        return tuple(dict.fromkeys(values))
+
+    def _join_key_label(self, expression: PySparkExpressionRecipe) -> str:
+        if expression.kind == "event_time_between":
+            return "event_time_between"
+        if expression.kind == "eq" and len(expression.args) == 2:
+            return "=".join(self._expression_label(argument) for argument in expression.args)
+        if expression.kind == "field":
+            return self._expression_label(expression)
+        return expression.kind
+
+    def _expression_label(self, expression: PySparkExpressionRecipe) -> str:
+        if expression.kind == "field":
+            scope = str(expression.data.get("scope", ""))
+            field = str(expression.data.get("field", ""))
+            return f"{scope}.{field}" if scope else field
+        if expression.kind == "window_time" and expression.args:
+            return f"window_time({self._expression_label(expression.args[0])})"
+        if expression.kind == "time_window" and expression.args:
+            duration = str((expression.data or {}).get("duration", ""))
+            return f"window({self._expression_label(expression.args[0])}, {duration})"
+        if (expression.data or {}).get("function") == "session_window" and expression.args:
+            gap = str((expression.data or {}).get("gap", ""))
+            return f"session_window({self._expression_label(expression.args[0])}, {gap})"
+        return expression.kind
+
+    def _walk_expressions(self, expression: PySparkExpressionRecipe):
+        yield expression
+        for argument in expression.args:
+            yield from self._walk_expressions(argument)
 
     def _aggregate_operation(self, aggregate) -> str:
         if any(self._is_session_window(key.expression) for key in aggregate.keys):
@@ -716,6 +928,42 @@ class ClassifyStreamingCompatibility:
         current_scope: str,
         watermarks: dict[str, set[str]],
     ) -> tuple[StreamingFinding, ...]:
+        if join.how is Join.CROSS:
+            return (
+                StreamingFinding(
+                    code="STREAM-E0801",
+                    support=StreamingSupport.BATCH_ONLY,
+                    step=step,
+                    operation=f"stream-stream cross join {join.input_name}",
+                    problem=(
+                        "A stream-stream cross join has Cartesian state. Watermarks without an event-time pair "
+                        "cannot establish finite retention for every possible row pair."
+                    ),
+                    use=(
+                        "Materialize one side as a static snapshot, or keep this candidate caller-owned until a "
+                        "versioned bounded cross-join contract proves retention and restart semantics."
+                    ),
+                ),
+            )
+        if join.method is JoinMethod.NOT_EXISTS:
+            return (
+                StreamingFinding(
+                    code="STREAM-E0801",
+                    support=StreamingSupport.BATCH_ONLY,
+                    step=step,
+                    operation=f"stream-stream anti join {join.input_name}",
+                    problem=(
+                        "A stream-stream anti join can revise an emitted left row when a late right-side match "
+                        "arrives. Structure has no finite completion, timeout, and append-final contract for this "
+                        "candidate."
+                    ),
+                    use=(
+                        "Use a supported bounded stream-stream semi join, materialize the right side as a static "
+                        "snapshot, or keep the anti join caller-owned until restart evidence proves its completion "
+                        "policy."
+                    ),
+                ),
+            )
         admitted = (
             join.method is JoinMethod.ROWSET and join.how in {Join.INNER, Join.LEFT, Join.RIGHT, Join.FULL}
         ) or join.method is JoinMethod.EXISTS

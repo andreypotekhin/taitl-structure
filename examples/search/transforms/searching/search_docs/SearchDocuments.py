@@ -20,7 +20,7 @@ from examples.search.transforms.searching.online.scoring import OnlineScoring
 from examples.search.transforms.searching.search_docs.admit import RetrieveDocuments
 from examples.search.transforms.searching.search_docs.overlap import OverlapDocuments
 from examples.search.transforms.searching.search_docs.rerank import RerankDocuments
-from structure import Transform, input, output, stage
+from structure import Transform, input, output
 
 
 class SearchDocuments(Transform):
@@ -47,56 +47,50 @@ class SearchDocuments(Transform):
     document_popularity = input(DocumentPopularity)
     band_fallbacks = input(BandFallback)
     policy = input(RelevancePolicy)
-    scoring = stage(
-        OnlineScoring(
-            queries=queries,
-            requests=requests,
-            document_scores=document_scores,
-            document_overlap_scores=document_overlap_scores,
-            document_terms=document_terms,
-            section_terms=section_terms,
-            paragraph_terms=paragraph_terms,
-            sentence_terms=sentence_terms,
-            document_summary=document_summary,
-            section_summary=section_summary,
-            paragraph_summary=paragraph_summary,
-            sentence_summary=sentence_summary,
-            score_policy=score_policy,
-        )
+
+    scored = OnlineScoring(
+        queries=queries,
+        requests=requests,
+        document_scores=document_scores,
+        document_overlap_scores=document_overlap_scores,
+        document_terms=document_terms,
+        section_terms=section_terms,
+        paragraph_terms=paragraph_terms,
+        sentence_terms=sentence_terms,
+        document_summary=document_summary,
+        section_summary=section_summary,
+        paragraph_summary=paragraph_summary,
+        sentence_summary=sentence_summary,
+        score_policy=score_policy,
     )
-    retrieved = stage(
-        RetrieveDocuments(
-            queries=queries,
-            documents=documents,
-            document_scores=document_scores,
-            online_document_scores=scoring.online_document_scores,
-            streamed_documents=streamed_documents,
-            streamed_document_scores=streamed_document_scores,
-            online_streamed_document_scores=scoring.online_streamed_document_scores,
-            requests=requests,
-            band_memberships=band_memberships,
-            score_policy=score_policy,
-        )
+
+    retrieved = RetrieveDocuments(
+        queries=queries,
+        documents=documents,
+        document_scores=document_scores,
+        online_document_scores=scored.online_document_scores,
+        streamed_documents=streamed_documents,
+        streamed_document_scores=streamed_document_scores,
+        online_streamed_document_scores=scored.online_streamed_document_scores,
+        requests=requests,
+        band_memberships=band_memberships,
+        score_policy=score_policy,
     )
-    overlapped = stage(
-        OverlapDocuments(
-            candidates=retrieved.candidates,
-            document_overlap_scores=document_overlap_scores,
-            online_document_overlap_scores=scoring.online_document_overlap_scores,
-            requests=requests,
-            score_policy=score_policy,
-        )
+
+    overlapped = OverlapDocuments(
+        candidates=retrieved.candidates,
+        document_overlap_scores=document_overlap_scores,
+        online_document_overlap_scores=scored.online_document_overlap_scores,
+        requests=requests,
+        score_policy=score_policy,
     )
-    reranked = stage(
-        RerankDocuments(
-            overlapped_candidates=overlapped.overlapped_candidates,
-            query_document_signals=query_document_signals,
-            document_popularity=document_popularity,
-            band_fallbacks=band_fallbacks,
-            policy=policy,
-        )
+
+    reranked = RerankDocuments(
+        overlapped_candidates=overlapped.overlapped_candidates,
+        query_document_signals=query_document_signals,
+        document_popularity=document_popularity,
+        band_fallbacks=band_fallbacks,
+        policy=policy,
     )
+
     results = output(DocumentSearchResult, reranked.results)
-    online_document_scores = output(DocumentScore, scoring.online_document_scores)
-    online_streamed_document_scores = output(DocumentScore, scoring.online_streamed_document_scores)
-    online_document_overlap_scores = output(DocumentOverlapScore, scoring.online_document_overlap_scores)

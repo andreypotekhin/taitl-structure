@@ -37,6 +37,7 @@ class MergeOfflineQueriesGenerated:
             F.col("id"),
             F.col("queryset"),
             F.col("content"),
+            F.col("requested_at"),
             F.col("labels"),
             F.col("is_question"),
             F.col("is_time_sensitive"),

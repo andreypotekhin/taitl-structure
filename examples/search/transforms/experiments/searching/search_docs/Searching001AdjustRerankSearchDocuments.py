@@ -4,7 +4,7 @@ from examples.search.schemas.relevance import DocumentPopularity, QueryDocumentS
 from examples.search.schemas.search import DocumentSearchCandidate, PopularityFeedback, QueryDocumentFeedback
 from examples.search.transforms.searching.search_docs.rerank import RerankDocuments
 from examples.search.transforms.searching.search_docs.SearchDocuments import SearchDocuments
-from structure import stage, step
+from structure import step
 from structure.plugin.pyspark import coalesce, cross_join, left_join, where
 
 
@@ -50,12 +50,10 @@ class Searching001AdjustRerankDocuments(RerankDocuments):
 class Searching001AdjustRerankSearchDocuments(SearchDocuments):
     """Run document search with the searching001 reranking stage."""
 
-    reranked = stage(
-        Searching001AdjustRerankDocuments(
-            overlapped_candidates=SearchDocuments.overlapped.overlapped_candidates,
-            query_document_signals=SearchDocuments.query_document_signals,
-            document_popularity=SearchDocuments.document_popularity,
-            band_fallbacks=SearchDocuments.band_fallbacks,
-            policy=SearchDocuments.policy,
-        )
+    reranked = Searching001AdjustRerankDocuments(
+        overlapped_candidates=SearchDocuments.overlapped.overlapped_candidates,
+        query_document_signals=SearchDocuments.query_document_signals,
+        document_popularity=SearchDocuments.document_popularity,
+        band_fallbacks=SearchDocuments.band_fallbacks,
+        policy=SearchDocuments.policy,
     )
