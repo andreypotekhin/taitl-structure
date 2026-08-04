@@ -40,5 +40,5 @@ Source: `examples.store.transforms.recommender.signals.workflow.BuildRecommendat
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/signals_workflow.py`
-- `traceability`: `traceability/transforms/signals_workflow.BuildRecommendationSignals.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/recommender/signals/workflow.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/recommender/signals/workflow.BuildRecommendationSignals.json`

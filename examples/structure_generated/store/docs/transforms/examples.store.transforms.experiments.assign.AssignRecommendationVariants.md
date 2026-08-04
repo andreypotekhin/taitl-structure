@@ -24,5 +24,5 @@ Source: `examples.store.transforms.experiments.assign.AssignRecommendationVarian
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/assign.py`
-- `traceability`: `traceability/transforms/assign.AssignRecommendationVariants.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/experiments/assign.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/experiments/assign.AssignRecommendationVariants.json`

@@ -81,5 +81,5 @@ Source: `examples.search.transforms.scoring.Scoring.Scoring`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/Scoring.py`
-- `traceability`: `traceability/transforms/Scoring.Scoring.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/scoring/Scoring.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/scoring/Scoring.Scoring.json`

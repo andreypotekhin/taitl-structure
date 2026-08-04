@@ -1,0 +1,2 @@
+tenant_id,source_system,ingested_at,id,name,category,features,active,list_price,weight,rating,reason
+t1,quality,2026-01-02T10:00:00,p-blocked,Restricted Device,compute,internal,false,100.00,3.0,3.0,recall

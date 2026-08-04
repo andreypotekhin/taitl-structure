@@ -32,5 +32,5 @@ Source: `examples.store.transforms.recommender.signals.products.BuildProductSign
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/products.py`
-- `traceability`: `traceability/transforms/products.BuildProductSignals.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/recommender/signals/products.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/recommender/signals/products.BuildProductSignals.json`

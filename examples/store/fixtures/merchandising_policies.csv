@@ -1,0 +1,4 @@
+tenant_id,strategy_id,policy_version,maximum_results,minimum_feedback_impressions,feedback_weight,maximum_per_taxonomy_branch
+t1,featured,v1,3,10,0.30,2
+t1,related,v2,2,5,0.20,
+t2,featured,v1,3,10,0.25,2

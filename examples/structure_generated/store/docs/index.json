@@ -7390,8 +7390,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/adv_analytics.py",
-        "traceability": "traceability/transforms/adv_analytics.AdvancedOrderAnalytics.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/adv_analytics.py",
+        "traceability": "traceability/transforms/examples/store/transforms/adv_analytics.AdvancedOrderAnalytics.json"
       }
     },
     {
@@ -7496,8 +7496,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/analytics.py",
-        "traceability": "traceability/transforms/analytics.FulfillmentAnalytics.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/analytics/fulfillment/analytics.py",
+        "traceability": "traceability/transforms/examples/store/transforms/analytics/fulfillment/analytics.FulfillmentAnalytics.json"
       }
     },
     {
@@ -7597,8 +7597,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/orders_workflow.py",
-        "traceability": "traceability/transforms/orders_workflow.OrderAnalytics.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/analytics/orders/workflow.py",
+        "traceability": "traceability/transforms/examples/store/transforms/analytics/orders/workflow.OrderAnalytics.json"
       }
     },
     {
@@ -7618,7 +7618,7 @@
           "schema": "CatalogProduct"
         }
       ],
-      "source": "examples.store.transforms.catalog.normalize_catalog.NormalizeCatalog",
+      "source": "examples.store.transforms.catalog.normalize.NormalizeCatalog",
       "step_methods": [
         {
           "input_lane": "catalog",
@@ -7644,8 +7644,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/normalize_catalog.py",
-        "traceability": "traceability/transforms/normalize_catalog.NormalizeCatalog.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/catalog/normalize.py",
+        "traceability": "traceability/transforms/examples/store/transforms/catalog/normalize.NormalizeCatalog.json"
       }
     },
     {
@@ -7728,8 +7728,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/prepare_catalog.py",
-        "traceability": "traceability/transforms/prepare_catalog.PrepareCatalog.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/catalog/prepare_catalog.py",
+        "traceability": "traceability/transforms/examples/store/transforms/catalog/prepare_catalog.PrepareCatalog.json"
       }
     },
     {
@@ -7882,8 +7882,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/service.py",
-        "traceability": "traceability/transforms/service.EvaluateFulfillment.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/evaluation/fulfillment/service.py",
+        "traceability": "traceability/transforms/examples/store/transforms/evaluation/fulfillment/service.EvaluateFulfillment.json"
       }
     },
     {
@@ -8186,8 +8186,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/behavior_workflow.py",
-        "traceability": "traceability/transforms/behavior_workflow.EvaluateRecommendations.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/evaluation/recommender/behavior/workflow.py",
+        "traceability": "traceability/transforms/examples/store/transforms/evaluation/recommender/behavior/workflow.EvaluateRecommendations.json"
       }
     },
     {
@@ -8253,8 +8253,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/assign.py",
-        "traceability": "traceability/transforms/assign.AssignRecommendationVariants.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/experiments/assign.py",
+        "traceability": "traceability/transforms/examples/store/transforms/experiments/assign.AssignRecommendationVariants.json"
       }
     },
     {
@@ -8443,8 +8443,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/experiment.py",
-        "traceability": "traceability/transforms/experiment.EvaluateRecommendationExperiment.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/experiments/evaluation/recommendations/experiment.py",
+        "traceability": "traceability/transforms/examples/store/transforms/experiments/evaluation/recommendations/experiment.EvaluateRecommendationExperiment.json"
       }
     },
     {
@@ -8527,8 +8527,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/exposure.py",
-        "traceability": "traceability/transforms/exposure.RecordRecommendationExposures.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/experiments/exposure.py",
+        "traceability": "traceability/transforms/examples/store/transforms/experiments/exposure.RecordRecommendationExposures.json"
       }
     },
     {
@@ -8574,8 +8574,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/select_active.py",
-        "traceability": "traceability/transforms/select_active.SelectActiveRecommendationExperiments.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/experiments/select_active.py",
+        "traceability": "traceability/transforms/examples/store/transforms/experiments/select_active.SelectActiveRecommendationExperiments.json"
       }
     },
     {
@@ -8810,8 +8810,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/prepare.py",
-        "traceability": "traceability/transforms/prepare.PrepareOrderDemand.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/fulfillment/demand/prepare.py",
+        "traceability": "traceability/transforms/examples/store/transforms/fulfillment/demand/prepare.PrepareOrderDemand.json"
       }
     },
     {
@@ -8857,8 +8857,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/windows.py",
-        "traceability": "traceability/transforms/windows.BuildDemandWindows.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/fulfillment/demand/windows.py",
+        "traceability": "traceability/transforms/examples/store/transforms/fulfillment/demand/windows.BuildDemandWindows.json"
       }
     },
     {
@@ -8980,8 +8980,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/project.py",
-        "traceability": "traceability/transforms/project.ProjectInventory.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/fulfillment/inventory/project.py",
+        "traceability": "traceability/transforms/examples/store/transforms/fulfillment/inventory/project.ProjectInventory.json"
       }
     },
     {
@@ -9250,8 +9250,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/plan.py",
-        "traceability": "traceability/transforms/plan.PlanFulfillment.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/fulfillment/planning/plan.py",
+        "traceability": "traceability/transforms/examples/store/transforms/fulfillment/planning/plan.PlanFulfillment.json"
       }
     },
     {
@@ -9316,8 +9316,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/reconcile.py",
-        "traceability": "traceability/transforms/reconcile.ReconcileFulfillmentPlan.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/fulfillment/reconciliation/reconcile.py",
+        "traceability": "traceability/transforms/examples/store/transforms/fulfillment/reconciliation/reconcile.ReconcileFulfillmentPlan.json"
       }
     },
     {
@@ -9385,8 +9385,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/detect.py",
-        "traceability": "traceability/transforms/detect.DetectShortages.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/fulfillment/shortages/detect.py",
+        "traceability": "traceability/transforms/examples/store/transforms/fulfillment/shortages/detect.DetectShortages.json"
       }
     },
     {
@@ -9593,8 +9593,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/exceptions.py",
-        "traceability": "traceability/transforms/exceptions.PrioritizeExceptions.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/fulfillment/shortages/exceptions.py",
+        "traceability": "traceability/transforms/examples/store/transforms/fulfillment/shortages/exceptions.PrioritizeExceptions.json"
       }
     },
     {
@@ -9699,8 +9699,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/find_substitutions.py",
-        "traceability": "traceability/transforms/find_substitutions.FindSubstitutions.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/fulfillment/substitutions/find_substitutions.py",
+        "traceability": "traceability/transforms/examples/store/transforms/fulfillment/substitutions/find_substitutions.FindSubstitutions.json"
       }
     },
     {
@@ -10840,8 +10840,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/fulfillment_workflow.py",
-        "traceability": "traceability/transforms/fulfillment_workflow.Fulfillment.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/fulfillment/workflow.py",
+        "traceability": "traceability/transforms/examples/store/transforms/fulfillment/workflow.Fulfillment.json"
       }
     },
     {
@@ -11860,8 +11860,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/merchandising_workflow.py",
-        "traceability": "traceability/transforms/merchandising_workflow.Merchandising.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/merchandising/workflow.py",
+        "traceability": "traceability/transforms/examples/store/transforms/merchandising/workflow.Merchandising.json"
       }
     },
     {
@@ -12137,8 +12137,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/enrich.py",
-        "traceability": "traceability/transforms/enrich.EnrichOrders.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/orders/enrich.py",
+        "traceability": "traceability/transforms/examples/store/transforms/orders/enrich.EnrichOrders.json"
       }
     },
     {
@@ -12184,8 +12184,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/features.py",
-        "traceability": "traceability/transforms/features.BuildProductFeatures.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/personalization/features.py",
+        "traceability": "traceability/transforms/examples/store/transforms/personalization/features.BuildProductFeatures.json"
       }
     },
     {
@@ -12288,8 +12288,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/history.py",
-        "traceability": "traceability/transforms/history.BuildPersonalizationHistory.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/personalization/history.py",
+        "traceability": "traceability/transforms/examples/store/transforms/personalization/history.BuildPersonalizationHistory.json"
       }
     },
     {
@@ -12389,8 +12389,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/score.py",
-        "traceability": "traceability/transforms/score.ScorePersonalizedRecommendations.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/personalization/score.py",
+        "traceability": "traceability/transforms/examples/store/transforms/personalization/score.ScorePersonalizedRecommendations.json"
       }
     },
     {
@@ -12590,8 +12590,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/personalization_workflow.py",
-        "traceability": "traceability/transforms/personalization_workflow.BuildPersonalizedRecommendations.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/personalization/workflow.py",
+        "traceability": "traceability/transforms/examples/store/transforms/personalization/workflow.BuildPersonalizedRecommendations.json"
       }
     },
     {
@@ -12657,8 +12657,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/admit.py",
-        "traceability": "traceability/transforms/admit.SelectRecommendationCandidates.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/recommender/candidates/admit.py",
+        "traceability": "traceability/transforms/examples/store/transforms/recommender/candidates/admit.SelectRecommendationCandidates.json"
       }
     },
     {
@@ -12782,8 +12782,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/filter.py",
-        "traceability": "traceability/transforms/filter.FilterRecommendationCandidates.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/recommender/candidates/filter.py",
+        "traceability": "traceability/transforms/examples/store/transforms/recommender/candidates/filter.FilterRecommendationCandidates.json"
       }
     },
     {
@@ -12882,8 +12882,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/generate.py",
-        "traceability": "traceability/transforms/generate.GenerateRecommendationCandidates.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/recommender/candidates/generate.py",
+        "traceability": "traceability/transforms/examples/store/transforms/recommender/candidates/generate.GenerateRecommendationCandidates.json"
       }
     },
     {
@@ -13115,8 +13115,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/candidates_workflow.py",
-        "traceability": "traceability/transforms/candidates_workflow.BuildRecommendationCandidates.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/recommender/candidates/workflow.py",
+        "traceability": "traceability/transforms/examples/store/transforms/recommender/candidates/workflow.BuildRecommendationCandidates.json"
       }
     },
     {
@@ -13222,8 +13222,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/diversify.py",
-        "traceability": "traceability/transforms/diversify.DiversifyRecommendations.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/recommender/diversify.py",
+        "traceability": "traceability/transforms/examples/store/transforms/recommender/diversify.DiversifyRecommendations.json"
       }
     },
     {
@@ -13422,8 +13422,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/products.py",
-        "traceability": "traceability/transforms/products.BuildProductSignals.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/recommender/signals/products.py",
+        "traceability": "traceability/transforms/examples/store/transforms/recommender/signals/products.BuildProductSignals.json"
       }
     },
     {
@@ -13489,8 +13489,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/purchases.py",
-        "traceability": "traceability/transforms/purchases.BuildPurchaseSignals.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/recommender/signals/purchases.py",
+        "traceability": "traceability/transforms/examples/store/transforms/recommender/signals/purchases.BuildPurchaseSignals.json"
       }
     },
     {
@@ -13536,8 +13536,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/session.py",
-        "traceability": "traceability/transforms/session.BuildSessionSignals.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/recommender/signals/session.py",
+        "traceability": "traceability/transforms/examples/store/transforms/recommender/signals/session.BuildSessionSignals.json"
       }
     },
     {
@@ -13814,8 +13814,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/signals_workflow.py",
-        "traceability": "traceability/transforms/signals_workflow.BuildRecommendationSignals.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/recommender/signals/workflow.py",
+        "traceability": "traceability/transforms/examples/store/transforms/recommender/signals/workflow.BuildRecommendationSignals.json"
       }
     },
     {
@@ -14678,8 +14678,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/recommender_workflow.py",
-        "traceability": "traceability/transforms/recommender_workflow.Recommender.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/recommender/workflow.py",
+        "traceability": "traceability/transforms/examples/store/transforms/recommender/workflow.Recommender.json"
       }
     },
     {
@@ -14820,8 +14820,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/rowset_join_examples.py",
-        "traceability": "traceability/transforms/rowset_join_examples.RowsetJoinExamples.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/rowset_joins/rowset_join_examples.py",
+        "traceability": "traceability/transforms/examples/store/transforms/rowset_joins/rowset_join_examples.RowsetJoinExamples.json"
       }
     },
     {
@@ -14921,8 +14921,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/expand_taxonomy.py",
-        "traceability": "traceability/transforms/expand_taxonomy.ExpandProductTaxonomy.json"
+        "pyspark_transform": "pyspark/transforms/examples/store/transforms/taxonomy/expand_taxonomy.py",
+        "traceability": "traceability/transforms/examples/store/transforms/taxonomy/expand_taxonomy.ExpandProductTaxonomy.json"
       }
     }
   ]

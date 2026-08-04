@@ -42,5 +42,5 @@ Source: `examples.store.transforms.evaluation.recommender.behavior.workflow.Eval
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/behavior_workflow.py`
-- `traceability`: `traceability/transforms/behavior_workflow.EvaluateRecommendations.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/evaluation/recommender/behavior/workflow.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/evaluation/recommender/behavior/workflow.EvaluateRecommendations.json`

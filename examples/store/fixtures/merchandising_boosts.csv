@@ -1,0 +1,5 @@
+tenant_id,policy_version,product_id,category,boost_score,active
+t1,v1,p-200,,0.10,true
+t1,v1,,accessories,0.05,true
+t1,v1,p-300,,0.20,false
+t2,v1,p-100,,0.08,true

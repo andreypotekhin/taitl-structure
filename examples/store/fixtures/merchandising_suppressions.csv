@@ -1,0 +1,5 @@
+tenant_id,policy_version,product_id,category,penalty,exclude,active,reason
+t1,v1,p-blocked,,1.00,true,true,quality_hold
+t1,v1,p-inactive,,0.50,true,false,retired
+t1,v1,,stationery,0.15,false,true,seasonal
+t2,v1,p-100,,0.10,false,true,inventory

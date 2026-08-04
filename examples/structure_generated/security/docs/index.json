@@ -4430,8 +4430,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/alarms.py",
-        "traceability": "traceability/transforms/alarms.VulnerabilityAlarms.json"
+        "pyspark_transform": "pyspark/transforms/examples/security/transforms/alarms.py",
+        "traceability": "traceability/transforms/examples/security/transforms/alarms.VulnerabilityAlarms.json"
       }
     },
     {
@@ -4709,8 +4709,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/deadlines.py",
-        "traceability": "traceability/transforms/deadlines.VulnerabilityDeadlineReports.json"
+        "pyspark_transform": "pyspark/transforms/examples/security/transforms/deadlines.py",
+        "traceability": "traceability/transforms/examples/security/transforms/deadlines.VulnerabilityDeadlineReports.json"
       }
     },
     {
@@ -4827,8 +4827,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/events.py",
-        "traceability": "traceability/transforms/events.EnrichAppEvents.json"
+        "pyspark_transform": "pyspark/transforms/examples/security/transforms/events.py",
+        "traceability": "traceability/transforms/examples/security/transforms/events.EnrichAppEvents.json"
       }
     },
     {
@@ -4945,8 +4945,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/events.py",
-        "traceability": "traceability/transforms/events.EnrichVulnerabilityEvents.json"
+        "pyspark_transform": "pyspark/transforms/examples/security/transforms/events.py",
+        "traceability": "traceability/transforms/examples/security/transforms/events.EnrichVulnerabilityEvents.json"
       }
     },
     {
@@ -5214,8 +5214,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/notify.py",
-        "traceability": "traceability/transforms/notify.VulnerabilityNotifications.json"
+        "pyspark_transform": "pyspark/transforms/examples/security/transforms/notify.py",
+        "traceability": "traceability/transforms/examples/security/transforms/notify.VulnerabilityNotifications.json"
       }
     },
     {
@@ -5460,8 +5460,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/posture.py",
-        "traceability": "traceability/transforms/posture.SecurityPosture.json"
+        "pyspark_transform": "pyspark/transforms/examples/security/transforms/posture.py",
+        "traceability": "traceability/transforms/examples/security/transforms/posture.SecurityPosture.json"
       }
     },
     {
@@ -5804,8 +5804,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/quality.py",
-        "traceability": "traceability/transforms/quality.SecurityInventoryQuality.json"
+        "pyspark_transform": "pyspark/transforms/examples/security/transforms/quality.py",
+        "traceability": "traceability/transforms/examples/security/transforms/quality.SecurityInventoryQuality.json"
       }
     },
     {
@@ -6388,8 +6388,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/remediate_workflow.py",
-        "traceability": "traceability/transforms/remediate_workflow.VulnerabilityRemediationWorkflow.json"
+        "pyspark_transform": "pyspark/transforms/examples/security/transforms/remediate/workflow.py",
+        "traceability": "traceability/transforms/examples/security/transforms/remediate/workflow.VulnerabilityRemediationWorkflow.json"
       }
     },
     {
@@ -6543,8 +6543,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/reports.py",
-        "traceability": "traceability/transforms/reports.ActiveVulnerabilityReports.json"
+        "pyspark_transform": "pyspark/transforms/examples/security/transforms/reports.py",
+        "traceability": "traceability/transforms/examples/security/transforms/reports.ActiveVulnerabilityReports.json"
       }
     },
     {
@@ -6884,8 +6884,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/reports.py",
-        "traceability": "traceability/transforms/reports.VulnerabilityStatistics.json"
+        "pyspark_transform": "pyspark/transforms/examples/security/transforms/reports.py",
+        "traceability": "traceability/transforms/examples/security/transforms/reports.VulnerabilityStatistics.json"
       }
     }
   ]

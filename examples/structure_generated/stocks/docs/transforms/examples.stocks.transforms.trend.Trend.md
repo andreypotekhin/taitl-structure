@@ -22,5 +22,5 @@ Source: `examples.stocks.transforms.trend.Trend`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/trend.py`
-- `traceability`: `traceability/transforms/trend.Trend.json`
+- `pyspark_transform`: `pyspark/transforms/examples/stocks/transforms/trend.py`
+- `traceability`: `traceability/transforms/examples/stocks/transforms/trend.Trend.json`

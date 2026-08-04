@@ -621,8 +621,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/passages.py",
-        "traceability": "traceability/transforms/passages.PreparePassages.json"
+        "pyspark_transform": "pyspark/transforms/examples/streams/transforms/passages.py",
+        "traceability": "traceability/transforms/examples/streams/transforms/passages.PreparePassages.json"
       }
     },
     {
@@ -688,8 +688,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/penalties.py",
-        "traceability": "traceability/transforms/penalties.CorrelatePenalties.json"
+        "pyspark_transform": "pyspark/transforms/examples/streams/transforms/penalties.py",
+        "traceability": "traceability/transforms/examples/streams/transforms/penalties.CorrelatePenalties.json"
       }
     },
     {
@@ -735,8 +735,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/progress.py",
-        "traceability": "traceability/transforms/progress.BuildGateProgress.json"
+        "pyspark_transform": "pyspark/transforms/examples/streams/transforms/progress.py",
+        "traceability": "traceability/transforms/examples/streams/transforms/progress.BuildGateProgress.json"
       }
     }
   ]

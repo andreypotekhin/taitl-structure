@@ -50,5 +50,5 @@ Source: `examples.search.transforms.relevance.BuildRelevanceSignals.BuildRelevan
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/BuildRelevanceSignals.py`
-- `traceability`: `traceability/transforms/BuildRelevanceSignals.BuildRelevanceSignals.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/relevance/BuildRelevanceSignals.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/relevance/BuildRelevanceSignals.BuildRelevanceSignals.json`

@@ -44,5 +44,5 @@ Source: `examples.search.transforms.evaluation.search_docs.behavior.eval_behavio
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/eval_behavior.py`
-- `traceability`: `traceability/transforms/eval_behavior.EvaluateDocSearchBehavior.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/evaluation/search_docs/behavior/eval_behavior.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/evaluation/search_docs/behavior/eval_behavior.EvaluateDocSearchBehavior.json`

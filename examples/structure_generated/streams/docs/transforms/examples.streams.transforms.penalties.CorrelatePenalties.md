@@ -24,5 +24,5 @@ Source: `examples.streams.transforms.penalties.CorrelatePenalties`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/penalties.py`
-- `traceability`: `traceability/transforms/penalties.CorrelatePenalties.json`
+- `pyspark_transform`: `pyspark/transforms/examples/streams/transforms/penalties.py`
+- `traceability`: `traceability/transforms/examples/streams/transforms/penalties.CorrelatePenalties.json`

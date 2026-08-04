@@ -41,5 +41,5 @@ Source: `examples.store.transforms.recommender.candidates.workflow.BuildRecommen
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/candidates_workflow.py`
-- `traceability`: `traceability/transforms/candidates_workflow.BuildRecommendationCandidates.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/recommender/candidates/workflow.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/recommender/candidates/workflow.BuildRecommendationCandidates.json`

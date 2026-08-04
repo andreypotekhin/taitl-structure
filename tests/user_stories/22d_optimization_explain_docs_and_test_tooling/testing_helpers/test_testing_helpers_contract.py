@@ -45,11 +45,19 @@ def test_pytest_helpers_cover_compiler_freshness_and_snapshots() -> None:
         assert_generated_fresh(project_root=root)
 
         snapshot = generated_files(root / "generated")
-        assert "structure_generated/pyspark/transforms/transforms.py" in snapshot
+        assert "structure_generated/pyspark/transforms/orders/transforms.py" in snapshot
         assert "docs/index.md" in snapshot
         assert_generated_snapshot(root / "generated", snapshot)
 
-        target = root / "generated" / "structure_generated" / "pyspark" / "transforms" / "transforms.py"
+        target = (
+            root
+            / "generated"
+            / "structure_generated"
+            / "pyspark"
+            / "transforms"
+            / "orders"
+            / "transforms.py"
+        )
         target.write_text(target.read_text(encoding="utf-8") + "\n# stale edit\n", encoding="utf-8")
 
         assert "Structure check passed" in checked

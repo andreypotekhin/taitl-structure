@@ -22,5 +22,5 @@ Source: `examples.search.transforms.stats.ProfileDocuments.ProfileDocuments`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/ProfileDocuments.py`
-- `traceability`: `traceability/transforms/ProfileDocuments.ProfileDocuments.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/stats/ProfileDocuments.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/stats/ProfileDocuments.ProfileDocuments.json`

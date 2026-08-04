@@ -30,5 +30,5 @@ Source: `examples.search.transforms.labeling.MergeQueryLabels.MergeQueryLabels`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/MergeQueryLabels.py`
-- `traceability`: `traceability/transforms/MergeQueryLabels.MergeQueryLabels.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/labeling/MergeQueryLabels.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/labeling/MergeQueryLabels.MergeQueryLabels.json`

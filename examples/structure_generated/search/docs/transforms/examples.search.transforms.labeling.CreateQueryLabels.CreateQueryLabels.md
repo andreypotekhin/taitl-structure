@@ -29,5 +29,5 @@ Source: `examples.search.transforms.labeling.CreateQueryLabels.CreateQueryLabels
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/CreateQueryLabels.py`
-- `traceability`: `traceability/transforms/CreateQueryLabels.CreateQueryLabels.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/labeling/CreateQueryLabels.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/labeling/CreateQueryLabels.CreateQueryLabels.json`

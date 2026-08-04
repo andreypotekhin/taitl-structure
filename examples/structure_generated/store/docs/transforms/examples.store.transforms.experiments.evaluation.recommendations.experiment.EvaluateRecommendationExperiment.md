@@ -42,5 +42,5 @@ Source: `examples.store.transforms.experiments.evaluation.recommendations.experi
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/experiment.py`
-- `traceability`: `traceability/transforms/experiment.EvaluateRecommendationExperiment.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/experiments/evaluation/recommendations/experiment.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/experiments/evaluation/recommendations/experiment.EvaluateRecommendationExperiment.json`

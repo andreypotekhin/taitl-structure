@@ -42,5 +42,5 @@ Source: `examples.store.transforms.orders.enrich.EnrichOrders`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/enrich.py`
-- `traceability`: `traceability/transforms/enrich.EnrichOrders.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/orders/enrich.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/orders/enrich.EnrichOrders.json`

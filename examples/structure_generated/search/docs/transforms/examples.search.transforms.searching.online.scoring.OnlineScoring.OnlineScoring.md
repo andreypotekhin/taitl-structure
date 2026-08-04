@@ -90,5 +90,5 @@ Source: `examples.search.transforms.searching.online.scoring.OnlineScoring.Onlin
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/OnlineScoring.py`
-- `traceability`: `traceability/transforms/OnlineScoring.OnlineScoring.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/searching/online/scoring/OnlineScoring.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/searching/online/scoring/OnlineScoring.OnlineScoring.json`

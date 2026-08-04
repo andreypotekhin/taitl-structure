@@ -1,0 +1,8 @@
+tenant_id,product_id,taxonomy_id,category
+t1,p-100,compute,compute
+t1,p-200,accessories,accessories
+t1,p-300,stationery,stationery
+t1,p-301,accessories,accessories
+t1,p-302,accessories,accessories
+t1,p-inactive,retired,retired
+t2,p-100,compute,compute

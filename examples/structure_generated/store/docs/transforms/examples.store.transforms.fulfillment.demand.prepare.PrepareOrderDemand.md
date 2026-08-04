@@ -38,5 +38,5 @@ Source: `examples.store.transforms.fulfillment.demand.prepare.PrepareOrderDemand
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/prepare.py`
-- `traceability`: `traceability/transforms/prepare.PrepareOrderDemand.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/fulfillment/demand/prepare.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/fulfillment/demand/prepare.PrepareOrderDemand.json`

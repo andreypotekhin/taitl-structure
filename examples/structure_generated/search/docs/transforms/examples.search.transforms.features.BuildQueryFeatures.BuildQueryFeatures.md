@@ -26,5 +26,5 @@ Source: `examples.search.transforms.features.BuildQueryFeatures.BuildQueryFeatur
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/BuildQueryFeatures.py`
-- `traceability`: `traceability/transforms/BuildQueryFeatures.BuildQueryFeatures.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/features/BuildQueryFeatures.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/features/BuildQueryFeatures.BuildQueryFeatures.json`

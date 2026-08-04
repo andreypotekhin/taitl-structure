@@ -1,0 +1,4 @@
+tenant_id,source_system,ingested_at,warehouse_id,product_id,expected_quantity,expected_at,source_type
+t1,supply,2026-01-02T06:00:00,wh-east,p-200,20,2026-01-05,purchase_order
+t1,supply,2026-01-02T06:01:00,wh-east,p-300,4,,transfer
+t2,supply,2026-01-03T06:00:00,wh-north,p-100,10,2026-01-04,purchase_order

@@ -72,6 +72,7 @@ class RenderPySparkExplainReport:
             keys = ", ".join(stage.keys) or "none"
             retention = ", ".join(stage.retention) or "none"
             order_keys = ", ".join(stage.order_keys) or "none"
+            completion_window = stage.completion_window or "none"
             modes = ", ".join(stage.output_modes) or "none"
             lines.append(f"    {ordinal}: {stage.step} ({stage.operation})")
             lines.append(f"      event_time: {event_time}")
@@ -79,6 +80,7 @@ class RenderPySparkExplainReport:
             lines.append(f"      keys: {keys}")
             lines.append(f"      retention: {retention}")
             lines.append(f"      order_keys: {order_keys}")
+            lines.append(f"      completion_window: {completion_window}")
             lines.append(f"      output_modes: {modes}")
             lines.append(f"      allows_later_stateful: {str(stage.allows_later_stateful).lower()}")
         lines.extend(["", "  inputs:"])

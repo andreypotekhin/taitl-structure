@@ -22,5 +22,5 @@ Source: `examples.streams.transforms.progress.BuildGateProgress`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/progress.py`
-- `traceability`: `traceability/transforms/progress.BuildGateProgress.json`
+- `pyspark_transform`: `pyspark/transforms/examples/streams/transforms/progress.py`
+- `traceability`: `traceability/transforms/examples/streams/transforms/progress.BuildGateProgress.json`

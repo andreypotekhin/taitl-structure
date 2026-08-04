@@ -59,7 +59,9 @@ def test_store_example_matches_independent_reference_rows() -> None:
 
 
 def test_orders_generated_code_matches_independent_reference_operations() -> None:
-    transform = render_store_example()["examples/structure_generated/store/pyspark/transforms/enrich.py"]
+    transform = render_store_example()[
+        "examples/structure_generated/store/pyspark/transforms/examples/store/transforms/orders/enrich.py"
+    ]
 
     reference_fragments = [
         'assert_schema(orders, ORDER_RAW_SCHEMA, name="OrderRaw", mode="strict")',
@@ -191,7 +193,9 @@ def test_fulfillment_planning_matches_independent_reference_rows() -> None:
 
 
 def test_fulfillment_generated_code_exposes_planning_contract() -> None:
-    transform = render_store_example()["examples/structure_generated/store/pyspark/transforms/plan.py"]
+    transform = render_store_example()[
+        "examples/structure_generated/store/pyspark/transforms/examples/store/transforms/fulfillment/planning/plan.py"
+    ]
 
     reference_fragments = [
         'assert_schema(demand, ORDER_SCHEMA, name="Order", mode="strict")',
@@ -211,7 +215,9 @@ def test_fulfillment_generated_code_exposes_planning_contract() -> None:
 
 
 def test_fulfillment_pipeline_generated_code_exposes_overall_flow() -> None:
-    transform = render_store_example()["examples/structure_generated/store/pyspark/transforms/fulfillment_workflow.py"]
+    transform = render_store_example()[
+        "examples/structure_generated/store/pyspark/transforms/examples/store/transforms/fulfillment/workflow.py"
+    ]
 
     reference_fragments = [
         "# Source: examples.store.transforms.fulfillment.workflow.Fulfillment",
@@ -230,11 +236,25 @@ def test_fulfillment_pipeline_generated_code_exposes_overall_flow() -> None:
 
 def test_fulfillment_followup_generated_code_exposes_temporal_policy_and_service_contracts() -> None:
     generated = render_store_example()
-    order = generated["examples/structure_generated/store/pyspark/transforms/enrich.py"]
-    projection = generated["examples/structure_generated/store/pyspark/transforms/project.py"]
-    substitution = generated["examples/structure_generated/store/pyspark/transforms/find_substitutions.py"]
-    exception = generated["examples/structure_generated/store/pyspark/transforms/exceptions.py"]
-    service = generated["examples/structure_generated/store/pyspark/transforms/service.py"]
+    order = generated[
+        "examples/structure_generated/store/pyspark/transforms/examples/store/transforms/orders/enrich.py"
+    ]
+    projection = generated[
+        "examples/structure_generated/store/pyspark/transforms/examples/store/transforms/fulfillment/inventory/"
+        "project.py"
+    ]
+    substitution = generated[
+        "examples/structure_generated/store/pyspark/transforms/examples/store/transforms/fulfillment/"
+        "substitutions/find_substitutions.py"
+    ]
+    exception = generated[
+        "examples/structure_generated/store/pyspark/transforms/examples/store/transforms/fulfillment/shortages/"
+        "exceptions.py"
+    ]
+    service = generated[
+        "examples/structure_generated/store/pyspark/transforms/examples/store/transforms/evaluation/fulfillment/"
+        "service.py"
+    ]
 
     assert '(F.col("shipments.line_number") == F.col("order_with_promotion.line_number"))' in order
     assert "F.date_add(F.col(\"demand_window.window_start\")" in projection
@@ -310,7 +330,9 @@ def test_merchandising_recommendations_match_independent_reference_rows() -> Non
 
 
 def test_recommend_generated_code_exposes_named_score_and_ranking_contract() -> None:
-    transform = render_store_example()["examples/structure_generated/store/pyspark/transforms/recommender_workflow.py"]
+    transform = render_store_example()[
+        "examples/structure_generated/store/pyspark/transforms/examples/store/transforms/recommender/workflow.py"
+    ]
 
     reference_fragments = [
         "class RankRecommendationCandidatesGenerated:",
@@ -337,10 +359,18 @@ def test_recommend_generated_code_exposes_named_score_and_ranking_contract() -> 
 
 def test_recommendation_enhancements_expose_explicit_stage_contracts() -> None:
     generated = render_store_example()
-    taxonomy = generated["examples/structure_generated/store/pyspark/transforms/expand_taxonomy.py"]
-    assignment = generated["examples/structure_generated/store/pyspark/transforms/assign.py"]
-    diversity = generated["examples/structure_generated/store/pyspark/transforms/diversify.py"]
-    recommender = generated["examples/structure_generated/store/pyspark/transforms/recommender_workflow.py"]
+    taxonomy = generated[
+        "examples/structure_generated/store/pyspark/transforms/examples/store/transforms/taxonomy/expand_taxonomy.py"
+    ]
+    assignment = generated[
+        "examples/structure_generated/store/pyspark/transforms/examples/store/transforms/experiments/assign.py"
+    ]
+    diversity = generated[
+        "examples/structure_generated/store/pyspark/transforms/examples/store/transforms/recommender/diversify.py"
+    ]
+    recommender = generated[
+        "examples/structure_generated/store/pyspark/transforms/examples/store/transforms/recommender/workflow.py"
+    ]
 
     assert "hierarchy_closure" in taxonomy
     assert "F.xxhash64(" in assignment

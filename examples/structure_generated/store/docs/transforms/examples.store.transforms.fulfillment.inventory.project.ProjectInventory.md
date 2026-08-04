@@ -31,5 +31,5 @@ Source: `examples.store.transforms.fulfillment.inventory.project.ProjectInventor
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/project.py`
-- `traceability`: `traceability/transforms/project.ProjectInventory.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/fulfillment/inventory/project.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/fulfillment/inventory/project.ProjectInventory.json`

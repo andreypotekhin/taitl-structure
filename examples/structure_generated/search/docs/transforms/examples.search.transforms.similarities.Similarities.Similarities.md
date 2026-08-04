@@ -124,5 +124,5 @@ Source: `examples.search.transforms.similarities.Similarities.Similarities`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/Similarities.py`
-- `traceability`: `traceability/transforms/Similarities.Similarities.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/similarities/Similarities.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/similarities/Similarities.Similarities.json`

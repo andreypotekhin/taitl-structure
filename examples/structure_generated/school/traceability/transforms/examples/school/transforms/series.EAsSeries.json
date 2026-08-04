@@ -1,0 +1,184 @@
+{
+  "backend": {
+    "name": "pyspark",
+    "target": ">=3.5,<4.1"
+  },
+  "generated_transform_class": "EAsSeriesGenerated",
+  "inputs": [
+    {
+      "name": "ticks",
+      "ordinal": 0,
+      "schema": "Tick"
+    }
+  ],
+  "provenance": [
+    {
+      "generated": "generated:examples.structure_generated.school.pyspark.transforms.examples.school.transforms.series.EAsSeriesGenerated",
+      "ir": "ir:EAsSeries",
+      "source": "source:examples.school.transforms.series.EAsSeries"
+    },
+    {
+      "generated": "generated:examples.structure_generated.school.pyspark.transforms.examples.school.transforms.series.EAsSeriesGenerated.run.input.ticks",
+      "ir": "ir:EAsSeries.input.0.ticks",
+      "source": "source:examples.school.transforms.series.EAsSeries.input.ticks"
+    },
+    {
+      "generated": "generated:examples.structure_generated.school.pyspark.transforms.examples.school.transforms.series.EAsSeriesGenerated.run.step.0.approximate",
+      "ir": "ir:EAsSeries.step.0.approximate",
+      "source": "source:examples.school.transforms.series.EAsSeries.approximate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.school.pyspark.transforms.examples.school.transforms.series.EAsSeriesGenerated.run.step.0.approximate.select.index",
+      "ir": "ir:EAsSeries.step.0.approximate.project.index",
+      "source": "source:examples.school.transforms.series.EAsSeries.approximate.field.index"
+    },
+    {
+      "generated": "generated:examples.structure_generated.school.pyspark.transforms.examples.school.transforms.series.EAsSeriesGenerated.run.step.0.approximate.select.term",
+      "ir": "ir:EAsSeries.step.0.approximate.project.term",
+      "source": "source:examples.school.transforms.series.EAsSeries.approximate.field.term"
+    },
+    {
+      "generated": "generated:examples.structure_generated.school.pyspark.transforms.examples.school.transforms.series.EAsSeriesGenerated.run.step.0.approximate.select.value",
+      "ir": "ir:EAsSeries.step.0.approximate.project.value",
+      "source": "source:examples.school.transforms.series.EAsSeries.approximate.field.value"
+    },
+    {
+      "generated": "generated:examples.structure_generated.school.pyspark.transforms.examples.school.transforms.series.EAsSeriesGenerated.run.output.0.result.validation.final",
+      "ir": "ir:EAsSeries.output.0.result.validation.final",
+      "source": "source:examples.school.transforms.series.EAsSeries.output.result"
+    }
+  ],
+  "schema_constants": {
+    "FibonacciNumber": {
+      "constant": "FIBONACCI_NUMBER_SCHEMA",
+      "module": "examples.structure_generated.school.pyspark.schemas.sequences"
+    },
+    "FibonacciState": {
+      "constant": "FIBONACCI_STATE_SCHEMA",
+      "module": "examples.structure_generated.school.pyspark.schemas.sequences"
+    },
+    "PrimeNumber": {
+      "constant": "PRIME_NUMBER_SCHEMA",
+      "module": "examples.structure_generated.school.pyspark.schemas.sequences"
+    },
+    "PrimeState": {
+      "constant": "PRIME_STATE_SCHEMA",
+      "module": "examples.structure_generated.school.pyspark.schemas.sequences"
+    },
+    "SeriesApproximation": {
+      "constant": "SERIES_APPROXIMATION_SCHEMA",
+      "module": "examples.structure_generated.school.pyspark.schemas.sequences"
+    },
+    "SeriesState": {
+      "constant": "SERIES_STATE_SCHEMA",
+      "module": "examples.structure_generated.school.pyspark.schemas.sequences"
+    },
+    "Tick": {
+      "constant": "TICK_SCHEMA",
+      "module": "examples.structure_generated.school.pyspark.schemas.sequences"
+    }
+  },
+  "source_transform": "examples.school.transforms.series.EAsSeries",
+  "static_dataflow": {
+    "dependencies": [
+      {
+        "detail": {
+          "backend": "pyspark"
+        },
+        "operation": "transform",
+        "sources": [
+          "ticks"
+        ],
+        "step": null,
+        "target": "EAsSeries"
+      },
+      {
+        "detail": {
+          "input_schema": "Tick",
+          "output_schema": "SeriesApproximation"
+        },
+        "operation": "step",
+        "sources": [
+          "ticks"
+        ],
+        "step": "approximate",
+        "target": "approximate"
+      },
+      {
+        "detail": {
+          "field": "index"
+        },
+        "operation": "project",
+        "sources": [
+          "ticks.index"
+        ],
+        "step": "approximate",
+        "target": "SeriesApproximation.index"
+      },
+      {
+        "detail": {
+          "field": "term"
+        },
+        "operation": "project",
+        "sources": [
+          "__scan.term"
+        ],
+        "step": "approximate",
+        "target": "SeriesApproximation.term"
+      },
+      {
+        "detail": {
+          "field": "value"
+        },
+        "operation": "project",
+        "sources": [
+          "__scan.total"
+        ],
+        "step": "approximate",
+        "target": "SeriesApproximation.value"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "SeriesApproximation"
+        ],
+        "step": null,
+        "target": "SeriesApproximation.validation.final"
+      }
+    ],
+    "opaque_boundaries": []
+  },
+  "steps": [
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "tick",
+      "joins": [],
+      "name": "approximate",
+      "output_alias": "series_approximation",
+      "output_schema": "SeriesApproximation",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "ticks",
+          "lane": "ticks",
+          "schema": "SeriesApproximation"
+        }
+      ],
+      "validation": []
+    }
+  ],
+  "target_module": "examples.structure_generated.school.pyspark.transforms.examples.school.transforms.series",
+  "validation": {
+    "outputs": [
+      {
+        "mode": "strict",
+        "name": "result",
+        "schema": "SeriesApproximation"
+      }
+    ]
+  }
+}

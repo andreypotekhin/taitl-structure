@@ -30,5 +30,5 @@ Source: `examples.store.transforms.personalization.score.ScorePersonalizedRecomm
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/score.py`
-- `traceability`: `traceability/transforms/score.ScorePersonalizedRecommendations.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/personalization/score.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/personalization/score.ScorePersonalizedRecommendations.json`

@@ -12,8 +12,14 @@ from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySpark
 
 def test_store_generated_personalization_is_separate_and_tenant_aware() -> None:
     generated = render_store_example()
-    workflow = generated["examples/structure_generated/store/pyspark/transforms/personalization_workflow.py"]
-    recommender = generated["examples/structure_generated/store/pyspark/transforms/recommender_workflow.py"]
+    workflow = generated[
+        "examples/structure_generated/store/pyspark/transforms/examples/store/transforms/"
+        "personalization/workflow.py"
+    ]
+    recommender = generated[
+        "examples/structure_generated/store/pyspark/transforms/examples/store/transforms/"
+        "recommender/workflow.py"
+    ]
 
     assert "class BuildProductFeaturesGenerated:" in workflow
     assert "class BuildPersonalizationHistoryGenerated:" in workflow

@@ -1,0 +1,1842 @@
+{
+  "backend": {
+    "name": "pyspark",
+    "target": ">=3.5,<4.1"
+  },
+  "generated_transform_class": "SecurityInventoryQualityGenerated",
+  "inputs": [
+    {
+      "name": "vulnerabilities",
+      "ordinal": 0,
+      "schema": "Vuln"
+    },
+    {
+      "name": "devices",
+      "ordinal": 1,
+      "schema": "Device"
+    },
+    {
+      "name": "device_types",
+      "ordinal": 2,
+      "schema": "DeviceType"
+    },
+    {
+      "name": "software",
+      "ordinal": 3,
+      "schema": "Software"
+    },
+    {
+      "name": "vuln_types",
+      "ordinal": 4,
+      "schema": "VulnType"
+    },
+    {
+      "name": "people",
+      "ordinal": 5,
+      "schema": "Person"
+    },
+    {
+      "name": "teams",
+      "ordinal": 6,
+      "schema": "Team"
+    },
+    {
+      "name": "departments",
+      "ordinal": 7,
+      "schema": "Department"
+    },
+    {
+      "name": "orgs",
+      "ordinal": 8,
+      "schema": "Org"
+    }
+  ],
+  "provenance": [
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated",
+      "ir": "ir:SecurityInventoryQuality",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.input.vulnerabilities",
+      "ir": "ir:SecurityInventoryQuality.input.0.vulnerabilities",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.input.vulnerabilities"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.input.devices",
+      "ir": "ir:SecurityInventoryQuality.input.1.devices",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.input.devices"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.input.device_types",
+      "ir": "ir:SecurityInventoryQuality.input.2.device_types",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.input.device_types"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.input.software",
+      "ir": "ir:SecurityInventoryQuality.input.3.software",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.input.software"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.input.vuln_types",
+      "ir": "ir:SecurityInventoryQuality.input.4.vuln_types",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.input.vuln_types"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.input.people",
+      "ir": "ir:SecurityInventoryQuality.input.5.people",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.input.people"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.input.teams",
+      "ir": "ir:SecurityInventoryQuality.input.6.teams",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.input.teams"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.input.departments",
+      "ir": "ir:SecurityInventoryQuality.input.7.departments",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.input.departments"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.input.orgs",
+      "ir": "ir:SecurityInventoryQuality.input.8.orgs",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.input.orgs"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.0.check_references",
+      "ir": "ir:SecurityInventoryQuality.step.0.check_references",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.check_references"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.0.check_references.join.1.device",
+      "ir": "ir:SecurityInventoryQuality.step.0.check_references.join.1.device",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.check_references.join.1.device"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.0.check_references.join.2.device_type",
+      "ir": "ir:SecurityInventoryQuality.step.0.check_references.join.2.device_type",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.check_references.join.2.device_type"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.0.check_references.join.3.software",
+      "ir": "ir:SecurityInventoryQuality.step.0.check_references.join.3.software",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.check_references.join.3.software"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.0.check_references.join.4.vuln_type",
+      "ir": "ir:SecurityInventoryQuality.step.0.check_references.join.4.vuln_type",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.check_references.join.4.vuln_type"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.0.check_references.join.5.person",
+      "ir": "ir:SecurityInventoryQuality.step.0.check_references.join.5.person",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.check_references.join.5.person"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.0.check_references.join.6.team",
+      "ir": "ir:SecurityInventoryQuality.step.0.check_references.join.6.team",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.check_references.join.6.team"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.0.check_references.join.7.department",
+      "ir": "ir:SecurityInventoryQuality.step.0.check_references.join.7.department",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.check_references.join.7.department"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.0.check_references.join.8.org",
+      "ir": "ir:SecurityInventoryQuality.step.0.check_references.join.8.org",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.check_references.join.8.org"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.0.check_references.select.vuln_id",
+      "ir": "ir:SecurityInventoryQuality.step.0.check_references.project.vuln_id",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.check_references.field.vuln_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.0.check_references.select.device_id",
+      "ir": "ir:SecurityInventoryQuality.step.0.check_references.project.device_id",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.check_references.field.device_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.0.check_references.select.owner_id",
+      "ir": "ir:SecurityInventoryQuality.step.0.check_references.project.owner_id",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.check_references.field.owner_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.0.check_references.select.software_id",
+      "ir": "ir:SecurityInventoryQuality.step.0.check_references.project.software_id",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.check_references.field.software_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.0.check_references.select.vuln_type_id",
+      "ir": "ir:SecurityInventoryQuality.step.0.check_references.project.vuln_type_id",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.check_references.field.vuln_type_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.0.check_references.select.issues",
+      "ir": "ir:SecurityInventoryQuality.step.0.check_references.project.issues",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.check_references.field.issues"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.0.check_references.select.is_valid",
+      "ir": "ir:SecurityInventoryQuality.step.0.check_references.project.is_valid",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.check_references.field.is_valid"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.0.check_references.validation.0.intermediate",
+      "ir": "ir:SecurityInventoryQuality.step.0.check_references.validation.0.intermediate",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.check_references.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.1.publish_reference_checks",
+      "ir": "ir:SecurityInventoryQuality.step.1.publish_reference_checks",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reference_checks"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.1.publish_reference_checks.select.vuln_id",
+      "ir": "ir:SecurityInventoryQuality.step.1.publish_reference_checks.project.vuln_id",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reference_checks.field.vuln_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.1.publish_reference_checks.select.device_id",
+      "ir": "ir:SecurityInventoryQuality.step.1.publish_reference_checks.project.device_id",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reference_checks.field.device_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.1.publish_reference_checks.select.owner_id",
+      "ir": "ir:SecurityInventoryQuality.step.1.publish_reference_checks.project.owner_id",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reference_checks.field.owner_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.1.publish_reference_checks.select.software_id",
+      "ir": "ir:SecurityInventoryQuality.step.1.publish_reference_checks.project.software_id",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reference_checks.field.software_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.1.publish_reference_checks.select.vuln_type_id",
+      "ir": "ir:SecurityInventoryQuality.step.1.publish_reference_checks.project.vuln_type_id",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reference_checks.field.vuln_type_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.1.publish_reference_checks.select.issues",
+      "ir": "ir:SecurityInventoryQuality.step.1.publish_reference_checks.project.issues",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reference_checks.field.issues"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.1.publish_reference_checks.select.is_valid",
+      "ir": "ir:SecurityInventoryQuality.step.1.publish_reference_checks.project.is_valid",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reference_checks.field.is_valid"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.1.publish_reference_checks.validation.0.intermediate",
+      "ir": "ir:SecurityInventoryQuality.step.1.publish_reference_checks.validation.0.intermediate",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reference_checks.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.2.publish_reference_issues",
+      "ir": "ir:SecurityInventoryQuality.step.2.publish_reference_issues",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reference_issues"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.2.publish_reference_issues.where.0",
+      "ir": "ir:SecurityInventoryQuality.step.2.publish_reference_issues.filter.0",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reference_issues.filter.0"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.2.publish_reference_issues.select.vuln_id",
+      "ir": "ir:SecurityInventoryQuality.step.2.publish_reference_issues.project.vuln_id",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reference_issues.field.vuln_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.2.publish_reference_issues.select.device_id",
+      "ir": "ir:SecurityInventoryQuality.step.2.publish_reference_issues.project.device_id",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reference_issues.field.device_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.2.publish_reference_issues.select.owner_id",
+      "ir": "ir:SecurityInventoryQuality.step.2.publish_reference_issues.project.owner_id",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reference_issues.field.owner_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.2.publish_reference_issues.select.software_id",
+      "ir": "ir:SecurityInventoryQuality.step.2.publish_reference_issues.project.software_id",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reference_issues.field.software_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.2.publish_reference_issues.select.vuln_type_id",
+      "ir": "ir:SecurityInventoryQuality.step.2.publish_reference_issues.project.vuln_type_id",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reference_issues.field.vuln_type_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.2.publish_reference_issues.select.issues",
+      "ir": "ir:SecurityInventoryQuality.step.2.publish_reference_issues.project.issues",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reference_issues.field.issues"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.2.publish_reference_issues.select.is_valid",
+      "ir": "ir:SecurityInventoryQuality.step.2.publish_reference_issues.project.is_valid",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reference_issues.field.is_valid"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.2.publish_reference_issues.validation.0.intermediate",
+      "ir": "ir:SecurityInventoryQuality.step.2.publish_reference_issues.validation.0.intermediate",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reference_issues.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.3.prepare_inventory_reconciliation",
+      "ir": "ir:SecurityInventoryQuality.step.3.prepare_inventory_reconciliation",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.prepare_inventory_reconciliation"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.3.prepare_inventory_reconciliation.join.1.device",
+      "ir": "ir:SecurityInventoryQuality.step.3.prepare_inventory_reconciliation.join.1.device",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.prepare_inventory_reconciliation.join.1.device"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.3.prepare_inventory_reconciliation.select.vuln_id",
+      "ir": "ir:SecurityInventoryQuality.step.3.prepare_inventory_reconciliation.project.vuln_id",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.prepare_inventory_reconciliation.field.vuln_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.3.prepare_inventory_reconciliation.select.device_id",
+      "ir": "ir:SecurityInventoryQuality.step.3.prepare_inventory_reconciliation.project.device_id",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.prepare_inventory_reconciliation.field.device_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.3.prepare_inventory_reconciliation.select.software_id",
+      "ir": "ir:SecurityInventoryQuality.step.3.prepare_inventory_reconciliation.project.software_id",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.prepare_inventory_reconciliation.field.software_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.3.prepare_inventory_reconciliation.select.device_lists_vulnerability",
+      "ir": "ir:SecurityInventoryQuality.step.3.prepare_inventory_reconciliation.project.device_lists_vulnerability",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.prepare_inventory_reconciliation.field.device_lists_vulnerability"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.3.prepare_inventory_reconciliation.select.os_id",
+      "ir": "ir:SecurityInventoryQuality.step.3.prepare_inventory_reconciliation.project.os_id",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.prepare_inventory_reconciliation.field.os_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.3.prepare_inventory_reconciliation.select.apps",
+      "ir": "ir:SecurityInventoryQuality.step.3.prepare_inventory_reconciliation.project.apps",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.prepare_inventory_reconciliation.field.apps"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.3.prepare_inventory_reconciliation.select.device_has_software",
+      "ir": "ir:SecurityInventoryQuality.step.3.prepare_inventory_reconciliation.project.device_has_software",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.prepare_inventory_reconciliation.field.device_has_software"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.3.prepare_inventory_reconciliation.select.is_reconciled",
+      "ir": "ir:SecurityInventoryQuality.step.3.prepare_inventory_reconciliation.project.is_reconciled",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.prepare_inventory_reconciliation.field.is_reconciled"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.3.prepare_inventory_reconciliation.validation.0.intermediate",
+      "ir": "ir:SecurityInventoryQuality.step.3.prepare_inventory_reconciliation.validation.0.intermediate",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.prepare_inventory_reconciliation.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.4.publish_reconciliation",
+      "ir": "ir:SecurityInventoryQuality.step.4.publish_reconciliation",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reconciliation"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.4.publish_reconciliation.select.vuln_id",
+      "ir": "ir:SecurityInventoryQuality.step.4.publish_reconciliation.project.vuln_id",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reconciliation.field.vuln_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.4.publish_reconciliation.select.device_id",
+      "ir": "ir:SecurityInventoryQuality.step.4.publish_reconciliation.project.device_id",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reconciliation.field.device_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.4.publish_reconciliation.select.software_id",
+      "ir": "ir:SecurityInventoryQuality.step.4.publish_reconciliation.project.software_id",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reconciliation.field.software_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.4.publish_reconciliation.select.device_lists_vulnerability",
+      "ir": "ir:SecurityInventoryQuality.step.4.publish_reconciliation.project.device_lists_vulnerability",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reconciliation.field.device_lists_vulnerability"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.4.publish_reconciliation.select.device_has_software",
+      "ir": "ir:SecurityInventoryQuality.step.4.publish_reconciliation.project.device_has_software",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reconciliation.field.device_has_software"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.4.publish_reconciliation.select.is_reconciled",
+      "ir": "ir:SecurityInventoryQuality.step.4.publish_reconciliation.project.is_reconciled",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reconciliation.field.is_reconciled"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.4.publish_reconciliation.validation.0.intermediate",
+      "ir": "ir:SecurityInventoryQuality.step.4.publish_reconciliation.validation.0.intermediate",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reconciliation.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.5.publish_reconciliation_checks",
+      "ir": "ir:SecurityInventoryQuality.step.5.publish_reconciliation_checks",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reconciliation_checks"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.5.publish_reconciliation_checks.select.vuln_id",
+      "ir": "ir:SecurityInventoryQuality.step.5.publish_reconciliation_checks.project.vuln_id",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reconciliation_checks.field.vuln_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.5.publish_reconciliation_checks.select.device_id",
+      "ir": "ir:SecurityInventoryQuality.step.5.publish_reconciliation_checks.project.device_id",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reconciliation_checks.field.device_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.5.publish_reconciliation_checks.select.software_id",
+      "ir": "ir:SecurityInventoryQuality.step.5.publish_reconciliation_checks.project.software_id",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reconciliation_checks.field.software_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.5.publish_reconciliation_checks.select.device_lists_vulnerability",
+      "ir": "ir:SecurityInventoryQuality.step.5.publish_reconciliation_checks.project.device_lists_vulnerability",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reconciliation_checks.field.device_lists_vulnerability"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.5.publish_reconciliation_checks.select.device_has_software",
+      "ir": "ir:SecurityInventoryQuality.step.5.publish_reconciliation_checks.project.device_has_software",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reconciliation_checks.field.device_has_software"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.5.publish_reconciliation_checks.select.is_reconciled",
+      "ir": "ir:SecurityInventoryQuality.step.5.publish_reconciliation_checks.project.is_reconciled",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reconciliation_checks.field.is_reconciled"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.5.publish_reconciliation_checks.validation.0.intermediate",
+      "ir": "ir:SecurityInventoryQuality.step.5.publish_reconciliation_checks.validation.0.intermediate",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reconciliation_checks.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.6.publish_reconciliation_issues",
+      "ir": "ir:SecurityInventoryQuality.step.6.publish_reconciliation_issues",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reconciliation_issues"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.6.publish_reconciliation_issues.where.0",
+      "ir": "ir:SecurityInventoryQuality.step.6.publish_reconciliation_issues.filter.0",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reconciliation_issues.filter.0"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.6.publish_reconciliation_issues.select.vuln_id",
+      "ir": "ir:SecurityInventoryQuality.step.6.publish_reconciliation_issues.project.vuln_id",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reconciliation_issues.field.vuln_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.6.publish_reconciliation_issues.select.device_id",
+      "ir": "ir:SecurityInventoryQuality.step.6.publish_reconciliation_issues.project.device_id",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reconciliation_issues.field.device_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.6.publish_reconciliation_issues.select.software_id",
+      "ir": "ir:SecurityInventoryQuality.step.6.publish_reconciliation_issues.project.software_id",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reconciliation_issues.field.software_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.6.publish_reconciliation_issues.select.device_lists_vulnerability",
+      "ir": "ir:SecurityInventoryQuality.step.6.publish_reconciliation_issues.project.device_lists_vulnerability",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reconciliation_issues.field.device_lists_vulnerability"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.6.publish_reconciliation_issues.select.device_has_software",
+      "ir": "ir:SecurityInventoryQuality.step.6.publish_reconciliation_issues.project.device_has_software",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reconciliation_issues.field.device_has_software"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.step.6.publish_reconciliation_issues.select.is_reconciled",
+      "ir": "ir:SecurityInventoryQuality.step.6.publish_reconciliation_issues.project.is_reconciled",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.publish_reconciliation_issues.field.is_reconciled"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.output.0.reference_checks.validation.final",
+      "ir": "ir:SecurityInventoryQuality.output.0.reference_checks.validation.final",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.output.reference_checks"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.output.1.reference_issues.validation.final",
+      "ir": "ir:SecurityInventoryQuality.output.1.reference_issues.validation.final",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.output.reference_issues"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.output.2.reconciliation_checks.validation.final",
+      "ir": "ir:SecurityInventoryQuality.output.2.reconciliation_checks.validation.final",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.output.reconciliation_checks"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality.SecurityInventoryQualityGenerated.run.output.3.reconciliation_issues.validation.final",
+      "ir": "ir:SecurityInventoryQuality.output.3.reconciliation_issues.validation.final",
+      "source": "source:examples.security.transforms.quality.SecurityInventoryQuality.output.reconciliation_issues"
+    }
+  ],
+  "schema_constants": {
+    "App": {
+      "constant": "APP_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.assets"
+    },
+    "AppAuditEvent": {
+      "constant": "APP_AUDIT_EVENT_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "AppEvent": {
+      "constant": "APP_EVENT_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.events"
+    },
+    "DeliveryReceipt": {
+      "constant": "DELIVERY_RECEIPT_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "Department": {
+      "constant": "DEPARTMENT_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.organization"
+    },
+    "DepartmentActiveVulnerability": {
+      "constant": "DEPARTMENT_ACTIVE_VULNERABILITY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "DepartmentRemediationWorkflowSummary": {
+      "constant": "DEPARTMENT_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.remediate"
+    },
+    "DepartmentVulnerabilityDeadlineSummary": {
+      "constant": "DEPARTMENT_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "DepartmentVulnerabilityStatistic": {
+      "constant": "DEPARTMENT_VULNERABILITY_STATISTIC_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "Device": {
+      "constant": "DEVICE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.assets"
+    },
+    "DeviceActiveVulnerability": {
+      "constant": "DEVICE_ACTIVE_VULNERABILITY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "DeviceType": {
+      "constant": "DEVICE_TYPE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.assets"
+    },
+    "ExpiredExceptionVulnerability": {
+      "constant": "EXPIRED_EXCEPTION_VULNERABILITY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.remediate"
+    },
+    "ExpiringExceptionVulnerability": {
+      "constant": "EXPIRING_EXCEPTION_VULNERABILITY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.remediate"
+    },
+    "OS": {
+      "constant": "O_S_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.assets"
+    },
+    "Org": {
+      "constant": "ORG_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.organization"
+    },
+    "OrgActiveVulnerability": {
+      "constant": "ORG_ACTIVE_VULNERABILITY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "OrgRemediationWorkflowSummary": {
+      "constant": "ORG_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.remediate"
+    },
+    "OrgVulnerabilityDeadlineSummary": {
+      "constant": "ORG_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "OrgVulnerabilityStatistic": {
+      "constant": "ORG_VULNERABILITY_STATISTIC_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "PendingExceptionVulnerability": {
+      "constant": "PENDING_EXCEPTION_VULNERABILITY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.remediate"
+    },
+    "Person": {
+      "constant": "PERSON_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.organization"
+    },
+    "PersonActiveVulnerability": {
+      "constant": "PERSON_ACTIVE_VULNERABILITY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "PersonRemediationWorkflowSummary": {
+      "constant": "PERSON_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.remediate"
+    },
+    "PersonVulnerabilityDeadlineSummary": {
+      "constant": "PERSON_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "PersonVulnerabilityNotification": {
+      "constant": "PERSON_VULNERABILITY_NOTIFICATION_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.notifications"
+    },
+    "PersonVulnerabilityStatistic": {
+      "constant": "PERSON_VULNERABILITY_STATISTIC_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "RawEvent": {
+      "constant": "RAW_EVENT_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.events"
+    },
+    "RemediationCase": {
+      "constant": "REMEDIATION_CASE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.remediate"
+    },
+    "RemediationCaseAggregate": {
+      "constant": "REMEDIATION_CASE_AGGREGATE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.remediate"
+    },
+    "RemediationCaseCheck": {
+      "constant": "REMEDIATION_CASE_CHECK_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.remediate"
+    },
+    "RemediationCaseIssue": {
+      "constant": "REMEDIATION_CASE_ISSUE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.remediate"
+    },
+    "RemediationPolicy": {
+      "constant": "REMEDIATION_POLICY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.risk"
+    },
+    "RemediationWorkflowActivity": {
+      "constant": "REMEDIATION_WORKFLOW_ACTIVITY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.remediate"
+    },
+    "RemediationWorkflowSummary": {
+      "constant": "REMEDIATION_WORKFLOW_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.remediate"
+    },
+    "ReportingPeriod": {
+      "constant": "REPORTING_PERIOD_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "Scanner": {
+      "constant": "SCANNER_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.assets"
+    },
+    "SecurityEvaluation": {
+      "constant": "SECURITY_EVALUATION_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "Software": {
+      "constant": "SOFTWARE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.assets"
+    },
+    "Team": {
+      "constant": "TEAM_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.organization"
+    },
+    "TeamActiveVulnerability": {
+      "constant": "TEAM_ACTIVE_VULNERABILITY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "TeamRemediationWorkflowSummary": {
+      "constant": "TEAM_REMEDIATION_WORKFLOW_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.remediate"
+    },
+    "TeamVulnerabilityAlarm": {
+      "constant": "TEAM_VULNERABILITY_ALARM_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.alarms"
+    },
+    "TeamVulnerabilityDeadlineSummary": {
+      "constant": "TEAM_VULNERABILITY_DEADLINE_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "TeamVulnerabilityStatistic": {
+      "constant": "TEAM_VULNERABILITY_STATISTIC_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "UnacknowledgedVulnerability": {
+      "constant": "UNACKNOWLEDGED_VULNERABILITY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.remediate"
+    },
+    "Vuln": {
+      "constant": "VULN_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.risk"
+    },
+    "VulnEvent": {
+      "constant": "VULN_EVENT_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.events"
+    },
+    "VulnType": {
+      "constant": "VULN_TYPE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.risk"
+    },
+    "VulnerabilityAuditEvent": {
+      "constant": "VULNERABILITY_AUDIT_EVENT_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityDeadlineActivity": {
+      "constant": "VULNERABILITY_DEADLINE_ACTIVITY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityDeadlineSummary": {
+      "constant": "VULNERABILITY_DEADLINE_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityDiscovery": {
+      "constant": "VULNERABILITY_DISCOVERY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityExposure": {
+      "constant": "VULNERABILITY_EXPOSURE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityInventoryCandidate": {
+      "constant": "VULNERABILITY_INVENTORY_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityInventoryCheck": {
+      "constant": "VULNERABILITY_INVENTORY_CHECK_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityInventoryIssue": {
+      "constant": "VULNERABILITY_INVENTORY_ISSUE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityLifecycle": {
+      "constant": "VULNERABILITY_LIFECYCLE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityPeriodActivity": {
+      "constant": "VULNERABILITY_PERIOD_ACTIVITY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityPostureCandidate": {
+      "constant": "VULNERABILITY_POSTURE_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityQualityCheck": {
+      "constant": "VULNERABILITY_QUALITY_CHECK_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityQualityIssue": {
+      "constant": "VULNERABILITY_QUALITY_ISSUE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityStatistic": {
+      "constant": "VULNERABILITY_STATISTIC_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityWorkflowExposure": {
+      "constant": "VULNERABILITY_WORKFLOW_EXPOSURE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.remediate"
+    }
+  },
+  "source_transform": "examples.security.transforms.quality.SecurityInventoryQuality",
+  "static_dataflow": {
+    "dependencies": [
+      {
+        "detail": {
+          "backend": "pyspark"
+        },
+        "operation": "transform",
+        "sources": [
+          "vulnerabilities",
+          "devices",
+          "device_types",
+          "software",
+          "vuln_types",
+          "people",
+          "teams",
+          "departments",
+          "orgs"
+        ],
+        "step": null,
+        "target": "SecurityInventoryQuality"
+      },
+      {
+        "detail": {
+          "input_schema": "Vuln",
+          "output_schema": "VulnerabilityQualityCheck"
+        },
+        "operation": "step",
+        "sources": [
+          "vulnerabilities",
+          "device",
+          "device_type",
+          "software",
+          "vuln_type",
+          "person",
+          "team",
+          "department",
+          "org"
+        ],
+        "step": "check_references",
+        "target": "check_references"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "left",
+          "right_alias": "devices"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "device.id",
+          "vuln.device_id"
+        ],
+        "step": "check_references",
+        "target": "check_references.join[1].device"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "left",
+          "right_alias": "device_types_2"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "device_type.id",
+          "device.device_type_id"
+        ],
+        "step": "check_references",
+        "target": "check_references.join[2].device_type"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "left",
+          "right_alias": "software_3"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "software.id",
+          "vuln.software_id"
+        ],
+        "step": "check_references",
+        "target": "check_references.join[3].software"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "left",
+          "right_alias": "vuln_types_4"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "vuln_type.id",
+          "vuln.vuln_type_id"
+        ],
+        "step": "check_references",
+        "target": "check_references.join[4].vuln_type"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "left",
+          "right_alias": "people_5"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "person.id",
+          "vuln.owner_id"
+        ],
+        "step": "check_references",
+        "target": "check_references.join[5].person"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "left",
+          "right_alias": "teams_6"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "team.id",
+          "person.team_id"
+        ],
+        "step": "check_references",
+        "target": "check_references.join[6].team"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "left",
+          "right_alias": "departments_7"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "department.id",
+          "team.department_id"
+        ],
+        "step": "check_references",
+        "target": "check_references.join[7].department"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "left",
+          "right_alias": "orgs_8"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "org.id",
+          "department.org_id"
+        ],
+        "step": "check_references",
+        "target": "check_references.join[8].org"
+      },
+      {
+        "detail": {
+          "field": "vuln_id"
+        },
+        "operation": "project",
+        "sources": [
+          "vuln.id"
+        ],
+        "step": "check_references",
+        "target": "VulnerabilityQualityCheck.vuln_id"
+      },
+      {
+        "detail": {
+          "field": "device_id"
+        },
+        "operation": "project",
+        "sources": [
+          "vuln.device_id"
+        ],
+        "step": "check_references",
+        "target": "VulnerabilityQualityCheck.device_id"
+      },
+      {
+        "detail": {
+          "field": "owner_id"
+        },
+        "operation": "project",
+        "sources": [
+          "vuln.owner_id"
+        ],
+        "step": "check_references",
+        "target": "VulnerabilityQualityCheck.owner_id"
+      },
+      {
+        "detail": {
+          "field": "software_id"
+        },
+        "operation": "project",
+        "sources": [
+          "vuln.software_id"
+        ],
+        "step": "check_references",
+        "target": "VulnerabilityQualityCheck.software_id"
+      },
+      {
+        "detail": {
+          "field": "vuln_type_id"
+        },
+        "operation": "project",
+        "sources": [
+          "vuln.vuln_type_id"
+        ],
+        "step": "check_references",
+        "target": "VulnerabilityQualityCheck.vuln_type_id"
+      },
+      {
+        "detail": {
+          "field": "issues"
+        },
+        "operation": "project",
+        "sources": [
+          "device.id",
+          "device_type.id",
+          "software.id",
+          "vuln_type.id",
+          "person.id",
+          "team.id",
+          "department.id",
+          "org.id",
+          "device.owner_id",
+          "vuln.owner_id",
+          "vuln.is_active",
+          "vuln.date_addressed"
+        ],
+        "step": "check_references",
+        "target": "VulnerabilityQualityCheck.issues"
+      },
+      {
+        "detail": {
+          "field": "is_valid"
+        },
+        "operation": "project",
+        "sources": [
+          "device.id",
+          "device_type.id",
+          "software.id",
+          "vuln_type.id",
+          "person.id",
+          "team.id",
+          "department.id",
+          "org.id",
+          "device.owner_id",
+          "vuln.owner_id",
+          "vuln.is_active",
+          "vuln.date_addressed"
+        ],
+        "step": "check_references",
+        "target": "VulnerabilityQualityCheck.is_valid"
+      },
+      {
+        "detail": {
+          "input_schema": "VulnerabilityQualityCheck",
+          "output_schema": "VulnerabilityQualityCheck"
+        },
+        "operation": "step",
+        "sources": [
+          "VulnerabilityQualityCheck"
+        ],
+        "step": "publish_reference_checks",
+        "target": "publish_reference_checks"
+      },
+      {
+        "detail": {
+          "field": "vuln_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityQualityCheck.vuln_id"
+        ],
+        "step": "publish_reference_checks",
+        "target": "VulnerabilityQualityCheck.vuln_id"
+      },
+      {
+        "detail": {
+          "field": "device_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityQualityCheck.device_id"
+        ],
+        "step": "publish_reference_checks",
+        "target": "VulnerabilityQualityCheck.device_id"
+      },
+      {
+        "detail": {
+          "field": "owner_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityQualityCheck.owner_id"
+        ],
+        "step": "publish_reference_checks",
+        "target": "VulnerabilityQualityCheck.owner_id"
+      },
+      {
+        "detail": {
+          "field": "software_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityQualityCheck.software_id"
+        ],
+        "step": "publish_reference_checks",
+        "target": "VulnerabilityQualityCheck.software_id"
+      },
+      {
+        "detail": {
+          "field": "vuln_type_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityQualityCheck.vuln_type_id"
+        ],
+        "step": "publish_reference_checks",
+        "target": "VulnerabilityQualityCheck.vuln_type_id"
+      },
+      {
+        "detail": {
+          "field": "issues"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityQualityCheck.issues"
+        ],
+        "step": "publish_reference_checks",
+        "target": "VulnerabilityQualityCheck.issues"
+      },
+      {
+        "detail": {
+          "field": "is_valid"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityQualityCheck.is_valid"
+        ],
+        "step": "publish_reference_checks",
+        "target": "VulnerabilityQualityCheck.is_valid"
+      },
+      {
+        "detail": {
+          "input_schema": "VulnerabilityQualityCheck",
+          "output_schema": "VulnerabilityQualityIssue"
+        },
+        "operation": "step",
+        "sources": [
+          "VulnerabilityQualityCheck"
+        ],
+        "step": "publish_reference_issues",
+        "target": "publish_reference_issues"
+      },
+      {
+        "detail": {},
+        "operation": "filter",
+        "sources": [
+          "VulnerabilityQualityCheck.is_valid"
+        ],
+        "step": "publish_reference_issues",
+        "target": "publish_reference_issues.filter[0]"
+      },
+      {
+        "detail": {
+          "field": "vuln_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityQualityCheck.vuln_id"
+        ],
+        "step": "publish_reference_issues",
+        "target": "VulnerabilityQualityIssue.vuln_id"
+      },
+      {
+        "detail": {
+          "field": "device_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityQualityCheck.device_id"
+        ],
+        "step": "publish_reference_issues",
+        "target": "VulnerabilityQualityIssue.device_id"
+      },
+      {
+        "detail": {
+          "field": "owner_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityQualityCheck.owner_id"
+        ],
+        "step": "publish_reference_issues",
+        "target": "VulnerabilityQualityIssue.owner_id"
+      },
+      {
+        "detail": {
+          "field": "software_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityQualityCheck.software_id"
+        ],
+        "step": "publish_reference_issues",
+        "target": "VulnerabilityQualityIssue.software_id"
+      },
+      {
+        "detail": {
+          "field": "vuln_type_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityQualityCheck.vuln_type_id"
+        ],
+        "step": "publish_reference_issues",
+        "target": "VulnerabilityQualityIssue.vuln_type_id"
+      },
+      {
+        "detail": {
+          "field": "issues"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityQualityCheck.issues"
+        ],
+        "step": "publish_reference_issues",
+        "target": "VulnerabilityQualityIssue.issues"
+      },
+      {
+        "detail": {
+          "field": "is_valid"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityQualityCheck.is_valid"
+        ],
+        "step": "publish_reference_issues",
+        "target": "VulnerabilityQualityIssue.is_valid"
+      },
+      {
+        "detail": {
+          "input_schema": "Vuln",
+          "output_schema": "VulnerabilityInventoryCandidate"
+        },
+        "operation": "step",
+        "sources": [
+          "VulnerabilityQualityIssue",
+          "device"
+        ],
+        "step": "prepare_inventory_reconciliation",
+        "target": "prepare_inventory_reconciliation"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "devices"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "device.id",
+          "vuln.device_id"
+        ],
+        "step": "prepare_inventory_reconciliation",
+        "target": "prepare_inventory_reconciliation.join[1].device"
+      },
+      {
+        "detail": {
+          "field": "vuln_id"
+        },
+        "operation": "project",
+        "sources": [
+          "vuln.id"
+        ],
+        "step": "prepare_inventory_reconciliation",
+        "target": "VulnerabilityInventoryCandidate.vuln_id"
+      },
+      {
+        "detail": {
+          "field": "device_id"
+        },
+        "operation": "project",
+        "sources": [
+          "vuln.device_id"
+        ],
+        "step": "prepare_inventory_reconciliation",
+        "target": "VulnerabilityInventoryCandidate.device_id"
+      },
+      {
+        "detail": {
+          "field": "software_id"
+        },
+        "operation": "project",
+        "sources": [
+          "vuln.software_id"
+        ],
+        "step": "prepare_inventory_reconciliation",
+        "target": "VulnerabilityInventoryCandidate.software_id"
+      },
+      {
+        "detail": {
+          "field": "device_lists_vulnerability"
+        },
+        "operation": "project",
+        "sources": [
+          "device.vuln_ids",
+          "vuln.id"
+        ],
+        "step": "prepare_inventory_reconciliation",
+        "target": "VulnerabilityInventoryCandidate.device_lists_vulnerability"
+      },
+      {
+        "detail": {
+          "field": "os_id"
+        },
+        "operation": "project",
+        "sources": [
+          "device.os_id"
+        ],
+        "step": "prepare_inventory_reconciliation",
+        "target": "VulnerabilityInventoryCandidate.os_id"
+      },
+      {
+        "detail": {
+          "field": "apps"
+        },
+        "operation": "project",
+        "sources": [
+          "device.apps"
+        ],
+        "step": "prepare_inventory_reconciliation",
+        "target": "VulnerabilityInventoryCandidate.apps"
+      },
+      {
+        "detail": {
+          "field": "device_has_software"
+        },
+        "operation": "project",
+        "sources": [
+          "device.os_id",
+          "vuln.software_id",
+          "device.apps"
+        ],
+        "step": "prepare_inventory_reconciliation",
+        "target": "VulnerabilityInventoryCandidate.device_has_software"
+      },
+      {
+        "detail": {
+          "field": "is_reconciled"
+        },
+        "operation": "project",
+        "sources": [
+          "device.vuln_ids",
+          "vuln.id",
+          "device.os_id",
+          "vuln.software_id",
+          "device.apps"
+        ],
+        "step": "prepare_inventory_reconciliation",
+        "target": "VulnerabilityInventoryCandidate.is_reconciled"
+      },
+      {
+        "detail": {
+          "input_schema": "VulnerabilityInventoryCandidate",
+          "output_schema": "VulnerabilityInventoryCheck"
+        },
+        "operation": "step",
+        "sources": [
+          "VulnerabilityInventoryCandidate"
+        ],
+        "step": "publish_reconciliation",
+        "target": "publish_reconciliation"
+      },
+      {
+        "detail": {
+          "field": "vuln_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityInventoryCandidate.vuln_id"
+        ],
+        "step": "publish_reconciliation",
+        "target": "VulnerabilityInventoryCheck.vuln_id"
+      },
+      {
+        "detail": {
+          "field": "device_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityInventoryCandidate.device_id"
+        ],
+        "step": "publish_reconciliation",
+        "target": "VulnerabilityInventoryCheck.device_id"
+      },
+      {
+        "detail": {
+          "field": "software_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityInventoryCandidate.software_id"
+        ],
+        "step": "publish_reconciliation",
+        "target": "VulnerabilityInventoryCheck.software_id"
+      },
+      {
+        "detail": {
+          "field": "device_lists_vulnerability"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityInventoryCandidate.device_lists_vulnerability"
+        ],
+        "step": "publish_reconciliation",
+        "target": "VulnerabilityInventoryCheck.device_lists_vulnerability"
+      },
+      {
+        "detail": {
+          "field": "device_has_software"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityInventoryCandidate.device_has_software"
+        ],
+        "step": "publish_reconciliation",
+        "target": "VulnerabilityInventoryCheck.device_has_software"
+      },
+      {
+        "detail": {
+          "field": "is_reconciled"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityInventoryCandidate.is_reconciled"
+        ],
+        "step": "publish_reconciliation",
+        "target": "VulnerabilityInventoryCheck.is_reconciled"
+      },
+      {
+        "detail": {
+          "input_schema": "VulnerabilityInventoryCheck",
+          "output_schema": "VulnerabilityInventoryCheck"
+        },
+        "operation": "step",
+        "sources": [
+          "VulnerabilityInventoryCheck"
+        ],
+        "step": "publish_reconciliation_checks",
+        "target": "publish_reconciliation_checks"
+      },
+      {
+        "detail": {
+          "field": "vuln_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityInventoryCheck.vuln_id"
+        ],
+        "step": "publish_reconciliation_checks",
+        "target": "VulnerabilityInventoryCheck.vuln_id"
+      },
+      {
+        "detail": {
+          "field": "device_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityInventoryCheck.device_id"
+        ],
+        "step": "publish_reconciliation_checks",
+        "target": "VulnerabilityInventoryCheck.device_id"
+      },
+      {
+        "detail": {
+          "field": "software_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityInventoryCheck.software_id"
+        ],
+        "step": "publish_reconciliation_checks",
+        "target": "VulnerabilityInventoryCheck.software_id"
+      },
+      {
+        "detail": {
+          "field": "device_lists_vulnerability"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityInventoryCheck.device_lists_vulnerability"
+        ],
+        "step": "publish_reconciliation_checks",
+        "target": "VulnerabilityInventoryCheck.device_lists_vulnerability"
+      },
+      {
+        "detail": {
+          "field": "device_has_software"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityInventoryCheck.device_has_software"
+        ],
+        "step": "publish_reconciliation_checks",
+        "target": "VulnerabilityInventoryCheck.device_has_software"
+      },
+      {
+        "detail": {
+          "field": "is_reconciled"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityInventoryCheck.is_reconciled"
+        ],
+        "step": "publish_reconciliation_checks",
+        "target": "VulnerabilityInventoryCheck.is_reconciled"
+      },
+      {
+        "detail": {
+          "input_schema": "VulnerabilityInventoryCheck",
+          "output_schema": "VulnerabilityInventoryIssue"
+        },
+        "operation": "step",
+        "sources": [
+          "VulnerabilityInventoryCheck"
+        ],
+        "step": "publish_reconciliation_issues",
+        "target": "publish_reconciliation_issues"
+      },
+      {
+        "detail": {},
+        "operation": "filter",
+        "sources": [
+          "VulnerabilityInventoryCheck.is_reconciled"
+        ],
+        "step": "publish_reconciliation_issues",
+        "target": "publish_reconciliation_issues.filter[0]"
+      },
+      {
+        "detail": {
+          "field": "vuln_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityInventoryCheck.vuln_id"
+        ],
+        "step": "publish_reconciliation_issues",
+        "target": "VulnerabilityInventoryIssue.vuln_id"
+      },
+      {
+        "detail": {
+          "field": "device_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityInventoryCheck.device_id"
+        ],
+        "step": "publish_reconciliation_issues",
+        "target": "VulnerabilityInventoryIssue.device_id"
+      },
+      {
+        "detail": {
+          "field": "software_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityInventoryCheck.software_id"
+        ],
+        "step": "publish_reconciliation_issues",
+        "target": "VulnerabilityInventoryIssue.software_id"
+      },
+      {
+        "detail": {
+          "field": "device_lists_vulnerability"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityInventoryCheck.device_lists_vulnerability"
+        ],
+        "step": "publish_reconciliation_issues",
+        "target": "VulnerabilityInventoryIssue.device_lists_vulnerability"
+      },
+      {
+        "detail": {
+          "field": "device_has_software"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityInventoryCheck.device_has_software"
+        ],
+        "step": "publish_reconciliation_issues",
+        "target": "VulnerabilityInventoryIssue.device_has_software"
+      },
+      {
+        "detail": {
+          "field": "is_reconciled"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityInventoryCheck.is_reconciled"
+        ],
+        "step": "publish_reconciliation_issues",
+        "target": "VulnerabilityInventoryIssue.is_reconciled"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "VulnerabilityQualityCheck"
+        ],
+        "step": null,
+        "target": "VulnerabilityQualityCheck.validation.final"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "VulnerabilityQualityIssue"
+        ],
+        "step": null,
+        "target": "VulnerabilityQualityIssue.validation.final"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "VulnerabilityInventoryCheck"
+        ],
+        "step": null,
+        "target": "VulnerabilityInventoryCheck.validation.final"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "VulnerabilityInventoryIssue"
+        ],
+        "step": null,
+        "target": "VulnerabilityInventoryIssue.validation.final"
+      }
+    ],
+    "opaque_boundaries": []
+  },
+  "steps": [
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "vuln",
+      "joins": [
+        {
+          "how": "left",
+          "input": "device",
+          "right_alias": "devices"
+        },
+        {
+          "how": "left",
+          "input": "device_type",
+          "right_alias": "device_types_2"
+        },
+        {
+          "how": "left",
+          "input": "software",
+          "right_alias": "software_3"
+        },
+        {
+          "how": "left",
+          "input": "vuln_type",
+          "right_alias": "vuln_types_4"
+        },
+        {
+          "how": "left",
+          "input": "person",
+          "right_alias": "people_5"
+        },
+        {
+          "how": "left",
+          "input": "team",
+          "right_alias": "teams_6"
+        },
+        {
+          "how": "left",
+          "input": "department",
+          "right_alias": "departments_7"
+        },
+        {
+          "how": "left",
+          "input": "org",
+          "right_alias": "orgs_8"
+        }
+      ],
+      "name": "check_references",
+      "output_alias": "vulnerability_quality_check",
+      "output_schema": "VulnerabilityQualityCheck",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "quality_lane",
+          "lane": "quality_lane",
+          "schema": "VulnerabilityQualityCheck"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "VulnerabilityQualityCheck"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "vulnerability_quality_check",
+      "joins": [],
+      "name": "publish_reference_checks",
+      "output_alias": "vulnerability_quality_check",
+      "output_schema": "VulnerabilityQualityCheck",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "quality_lane",
+          "lane": "quality_lane",
+          "schema": "VulnerabilityQualityCheck"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "VulnerabilityQualityCheck"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "vulnerability_quality_check",
+      "joins": [],
+      "name": "publish_reference_issues",
+      "output_alias": "vulnerability_quality_issue",
+      "output_schema": "VulnerabilityQualityIssue",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "reference_issues",
+          "lane": "reference_issues",
+          "schema": "VulnerabilityQualityIssue"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "VulnerabilityQualityIssue"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "vuln",
+      "joins": [
+        {
+          "how": "inner",
+          "input": "device",
+          "right_alias": "devices"
+        }
+      ],
+      "name": "prepare_inventory_reconciliation",
+      "output_alias": "vulnerability_inventory_candidate",
+      "output_schema": "VulnerabilityInventoryCandidate",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "inventory_candidates",
+          "lane": "inventory_candidates",
+          "schema": "VulnerabilityInventoryCandidate"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "VulnerabilityInventoryCandidate"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "vulnerability_inventory_candidate",
+      "joins": [],
+      "name": "publish_reconciliation",
+      "output_alias": "vulnerability_inventory_check",
+      "output_schema": "VulnerabilityInventoryCheck",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "reconciliation_lane",
+          "lane": "reconciliation_lane",
+          "schema": "VulnerabilityInventoryCheck"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "VulnerabilityInventoryCheck"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "vulnerability_inventory_check",
+      "joins": [],
+      "name": "publish_reconciliation_checks",
+      "output_alias": "vulnerability_inventory_check",
+      "output_schema": "VulnerabilityInventoryCheck",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "reconciliation_lane",
+          "lane": "reconciliation_lane",
+          "schema": "VulnerabilityInventoryCheck"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "VulnerabilityInventoryCheck"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "vulnerability_inventory_check",
+      "joins": [],
+      "name": "publish_reconciliation_issues",
+      "output_alias": "vulnerability_inventory_issue",
+      "output_schema": "VulnerabilityInventoryIssue",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "reconciliation_issues",
+          "lane": "reconciliation_issues",
+          "schema": "VulnerabilityInventoryIssue"
+        }
+      ],
+      "validation": []
+    }
+  ],
+  "target_module": "examples.structure_generated.security.pyspark.transforms.examples.security.transforms.quality",
+  "validation": {
+    "outputs": [
+      {
+        "mode": "strict",
+        "name": "reference_checks",
+        "schema": "VulnerabilityQualityCheck"
+      },
+      {
+        "mode": "strict",
+        "name": "reference_issues",
+        "schema": "VulnerabilityQualityIssue"
+      },
+      {
+        "mode": "strict",
+        "name": "reconciliation_checks",
+        "schema": "VulnerabilityInventoryCheck"
+      },
+      {
+        "mode": "strict",
+        "name": "reconciliation_issues",
+        "schema": "VulnerabilityInventoryIssue"
+      }
+    ]
+  }
+}

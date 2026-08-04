@@ -22,5 +22,5 @@ Source: `examples.stocks.transforms.volume.Volume`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/volume.py`
-- `traceability`: `traceability/transforms/volume.Volume.json`
+- `pyspark_transform`: `pyspark/transforms/examples/stocks/transforms/volume.py`
+- `traceability`: `traceability/transforms/examples/stocks/transforms/volume.Volume.json`

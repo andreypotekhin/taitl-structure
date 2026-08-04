@@ -48,5 +48,5 @@ Source: `examples.search.transforms.scoring.ScoreOverlap.ScoreOverlap`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/ScoreOverlap.py`
-- `traceability`: `traceability/transforms/ScoreOverlap.ScoreOverlap.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/scoring/ScoreOverlap.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/scoring/ScoreOverlap.ScoreOverlap.json`

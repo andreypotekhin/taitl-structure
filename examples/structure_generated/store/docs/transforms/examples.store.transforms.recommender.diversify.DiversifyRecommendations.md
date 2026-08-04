@@ -27,5 +27,5 @@ Source: `examples.store.transforms.recommender.diversify.DiversifyRecommendation
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/diversify.py`
-- `traceability`: `traceability/transforms/diversify.DiversifyRecommendations.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/recommender/diversify.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/recommender/diversify.DiversifyRecommendations.json`

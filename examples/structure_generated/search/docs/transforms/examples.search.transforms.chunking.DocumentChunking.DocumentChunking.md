@@ -32,5 +32,5 @@ Source: `examples.search.transforms.chunking.DocumentChunking.DocumentChunking`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/DocumentChunking.py`
-- `traceability`: `traceability/transforms/DocumentChunking.DocumentChunking.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/chunking/DocumentChunking.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/chunking/DocumentChunking.DocumentChunking.json`

@@ -27,5 +27,5 @@ Source: `examples.store.transforms.taxonomy.expand_taxonomy.ExpandProductTaxonom
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/expand_taxonomy.py`
-- `traceability`: `traceability/transforms/expand_taxonomy.ExpandProductTaxonomy.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/taxonomy/expand_taxonomy.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/taxonomy/expand_taxonomy.ExpandProductTaxonomy.json`

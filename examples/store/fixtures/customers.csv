@@ -1,0 +1,5 @@
+tenant_id,source_system,ingested_at,id,name,tier,region,email
+t1,crm,2026-01-01T09:00:00,c-100,Ada Lovelace,gold,east,ada@example.test
+t1,crm,2026-01-01T09:01:00,c-101,Grace Hopper,silver,west,grace@example.test
+t1,crm,2026-01-01T09:02:00,c-102,Alan Turing,bronze,east,alan@example.test
+t2,crm,2026-01-02T09:00:00,c-200,Katherine Johnson,gold,north,katherine@example.test

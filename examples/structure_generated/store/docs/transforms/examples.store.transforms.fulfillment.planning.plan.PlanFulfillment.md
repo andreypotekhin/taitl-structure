@@ -40,5 +40,5 @@ Source: `examples.store.transforms.fulfillment.planning.plan.PlanFulfillment`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/plan.py`
-- `traceability`: `traceability/transforms/plan.PlanFulfillment.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/fulfillment/planning/plan.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/fulfillment/planning/plan.PlanFulfillment.json`

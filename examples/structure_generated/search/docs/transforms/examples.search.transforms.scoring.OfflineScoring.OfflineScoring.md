@@ -92,5 +92,5 @@ Source: `examples.search.transforms.scoring.OfflineScoring.OfflineScoring`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/OfflineScoring.py`
-- `traceability`: `traceability/transforms/OfflineScoring.OfflineScoring.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/scoring/OfflineScoring.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/scoring/OfflineScoring.OfflineScoring.json`

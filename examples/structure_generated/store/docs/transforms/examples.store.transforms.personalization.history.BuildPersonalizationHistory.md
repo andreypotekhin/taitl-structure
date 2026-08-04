@@ -25,5 +25,5 @@ Source: `examples.store.transforms.personalization.history.BuildPersonalizationH
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/history.py`
-- `traceability`: `traceability/transforms/history.BuildPersonalizationHistory.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/personalization/history.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/personalization/history.BuildPersonalizationHistory.json`

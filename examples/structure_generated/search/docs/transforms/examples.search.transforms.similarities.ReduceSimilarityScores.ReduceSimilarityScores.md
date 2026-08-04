@@ -76,5 +76,5 @@ Source: `examples.search.transforms.similarities.ReduceSimilarityScores.ReduceSi
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/ReduceSimilarityScores.py`
-- `traceability`: `traceability/transforms/ReduceSimilarityScores.ReduceSimilarityScores.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/similarities/ReduceSimilarityScores.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/similarities/ReduceSimilarityScores.ReduceSimilarityScores.json`

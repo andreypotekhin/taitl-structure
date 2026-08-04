@@ -24,5 +24,5 @@ Source: `examples.store.transforms.recommender.candidates.admit.SelectRecommenda
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/admit.py`
-- `traceability`: `traceability/transforms/admit.SelectRecommendationCandidates.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/recommender/candidates/admit.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/recommender/candidates/admit.SelectRecommendationCandidates.json`

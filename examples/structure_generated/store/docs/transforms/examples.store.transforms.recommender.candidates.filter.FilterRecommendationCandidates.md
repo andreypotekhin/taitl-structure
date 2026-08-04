@@ -31,5 +31,5 @@ Source: `examples.store.transforms.recommender.candidates.filter.FilterRecommend
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/filter.py`
-- `traceability`: `traceability/transforms/filter.FilterRecommendationCandidates.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/recommender/candidates/filter.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/recommender/candidates/filter.FilterRecommendationCandidates.json`

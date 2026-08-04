@@ -48,5 +48,5 @@ Source: `examples.search.transforms.scoring.ScoreBm25.ScoreBm25`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/ScoreBm25.py`
-- `traceability`: `traceability/transforms/ScoreBm25.ScoreBm25.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/scoring/ScoreBm25.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/scoring/ScoreBm25.ScoreBm25.json`

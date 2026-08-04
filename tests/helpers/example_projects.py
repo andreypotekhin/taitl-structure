@@ -128,7 +128,7 @@ def render_store_example() -> dict[str, str]:
         )
         from examples.store.transforms.adv_analytics import AdvancedOrderAnalytics
         from examples.store.transforms.analytics import FulfillmentAnalytics, OrderAnalytics
-        from examples.store.transforms.catalog.normalize_catalog import NormalizeCatalog
+        from examples.store.transforms.catalog.normalize import NormalizeCatalog
         from examples.store.transforms.catalog.prepare_catalog import PrepareCatalog
         from examples.store.transforms.evaluation.fulfillment.service import EvaluateFulfillment
         from examples.store.transforms.evaluation.recommender.behavior.workflow import EvaluateRecommendations
@@ -336,7 +336,7 @@ def render_store_example() -> dict[str, str]:
             (PrepareCatalog, "examples.store.transforms.catalog.prepare_catalog.PrepareCatalog"),
             (
                 NormalizeCatalog,
-                "examples.store.transforms.catalog.normalize_catalog.NormalizeCatalog",
+                "examples.store.transforms.catalog.normalize.NormalizeCatalog",
             ),
             (
                 ExpandProductTaxonomy,

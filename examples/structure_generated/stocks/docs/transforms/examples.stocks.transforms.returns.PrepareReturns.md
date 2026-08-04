@@ -22,5 +22,5 @@ Source: `examples.stocks.transforms.returns.PrepareReturns`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/returns.py`
-- `traceability`: `traceability/transforms/returns.PrepareReturns.json`
+- `pyspark_transform`: `pyspark/transforms/examples/stocks/transforms/returns.py`
+- `traceability`: `traceability/transforms/examples/stocks/transforms/returns.PrepareReturns.json`

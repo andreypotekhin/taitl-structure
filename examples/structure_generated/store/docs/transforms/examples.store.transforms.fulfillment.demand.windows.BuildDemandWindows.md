@@ -22,5 +22,5 @@ Source: `examples.store.transforms.fulfillment.demand.windows.BuildDemandWindows
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/windows.py`
-- `traceability`: `traceability/transforms/windows.BuildDemandWindows.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/fulfillment/demand/windows.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/fulfillment/demand/windows.BuildDemandWindows.json`

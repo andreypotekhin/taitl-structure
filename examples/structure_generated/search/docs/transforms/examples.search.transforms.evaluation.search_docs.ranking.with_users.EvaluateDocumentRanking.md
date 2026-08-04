@@ -44,5 +44,5 @@ Source: `examples.search.transforms.evaluation.search_docs.ranking.with_users.Ev
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/with_users.py`
-- `traceability`: `traceability/transforms/with_users.EvaluateDocumentRanking.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/evaluation/search_docs/ranking/with_users.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/evaluation/search_docs/ranking/with_users.EvaluateDocumentRanking.json`

@@ -1,0 +1,5 @@
+tenant_id,id,session_id,customer_id,event_type,product_id,category,occurred_at
+t1,se-100,s-100,c-100,view,p-200,accessories,2026-01-02T08:55:00
+t1,se-101,s-100,c-100,add_to_cart,p-200,accessories,2026-01-02T08:56:00
+t1,se-102,s-101,,view,p-300,stationery,2026-01-02T09:04:00
+t2,se-200,s-200,c-200,view,p-100,compute,2026-01-03T08:55:00

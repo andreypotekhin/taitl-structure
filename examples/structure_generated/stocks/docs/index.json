@@ -478,8 +478,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/advanced.py",
-        "traceability": "traceability/transforms/advanced.Advanced.json"
+        "pyspark_transform": "pyspark/transforms/examples/stocks/transforms/advanced.py",
+        "traceability": "traceability/transforms/examples/stocks/transforms/advanced.Advanced.json"
       }
     },
     {
@@ -525,8 +525,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/momentum.py",
-        "traceability": "traceability/transforms/momentum.Momentum.json"
+        "pyspark_transform": "pyspark/transforms/examples/stocks/transforms/momentum.py",
+        "traceability": "traceability/transforms/examples/stocks/transforms/momentum.Momentum.json"
       }
     },
     {
@@ -572,8 +572,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/returns.py",
-        "traceability": "traceability/transforms/returns.PrepareReturns.json"
+        "pyspark_transform": "pyspark/transforms/examples/stocks/transforms/returns.py",
+        "traceability": "traceability/transforms/examples/stocks/transforms/returns.PrepareReturns.json"
       }
     },
     {
@@ -619,8 +619,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/trend.py",
-        "traceability": "traceability/transforms/trend.Trend.json"
+        "pyspark_transform": "pyspark/transforms/examples/stocks/transforms/trend.py",
+        "traceability": "traceability/transforms/examples/stocks/transforms/trend.Trend.json"
       }
     },
     {
@@ -666,8 +666,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/volatility.py",
-        "traceability": "traceability/transforms/volatility.Volatility.json"
+        "pyspark_transform": "pyspark/transforms/examples/stocks/transforms/volatility.py",
+        "traceability": "traceability/transforms/examples/stocks/transforms/volatility.Volatility.json"
       }
     },
     {
@@ -713,8 +713,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/volume.py",
-        "traceability": "traceability/transforms/volume.Volume.json"
+        "pyspark_transform": "pyspark/transforms/examples/stocks/transforms/volume.py",
+        "traceability": "traceability/transforms/examples/stocks/transforms/volume.Volume.json"
       }
     }
   ]

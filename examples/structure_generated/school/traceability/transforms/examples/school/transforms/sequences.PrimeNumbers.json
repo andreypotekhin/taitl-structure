@@ -1,0 +1,168 @@
+{
+  "backend": {
+    "name": "pyspark",
+    "target": ">=3.5,<4.1"
+  },
+  "generated_transform_class": "PrimeNumbersGenerated",
+  "inputs": [
+    {
+      "name": "ticks",
+      "ordinal": 0,
+      "schema": "Tick"
+    }
+  ],
+  "provenance": [
+    {
+      "generated": "generated:examples.structure_generated.school.pyspark.transforms.examples.school.transforms.sequences.PrimeNumbersGenerated",
+      "ir": "ir:PrimeNumbers",
+      "source": "source:examples.school.transforms.sequences.PrimeNumbers"
+    },
+    {
+      "generated": "generated:examples.structure_generated.school.pyspark.transforms.examples.school.transforms.sequences.PrimeNumbersGenerated.run.input.ticks",
+      "ir": "ir:PrimeNumbers.input.0.ticks",
+      "source": "source:examples.school.transforms.sequences.PrimeNumbers.input.ticks"
+    },
+    {
+      "generated": "generated:examples.structure_generated.school.pyspark.transforms.examples.school.transforms.sequences.PrimeNumbersGenerated.run.step.0.calculate",
+      "ir": "ir:PrimeNumbers.step.0.calculate",
+      "source": "source:examples.school.transforms.sequences.PrimeNumbers.calculate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.school.pyspark.transforms.examples.school.transforms.sequences.PrimeNumbersGenerated.run.step.0.calculate.select.index",
+      "ir": "ir:PrimeNumbers.step.0.calculate.project.index",
+      "source": "source:examples.school.transforms.sequences.PrimeNumbers.calculate.field.index"
+    },
+    {
+      "generated": "generated:examples.structure_generated.school.pyspark.transforms.examples.school.transforms.sequences.PrimeNumbersGenerated.run.step.0.calculate.select.prime",
+      "ir": "ir:PrimeNumbers.step.0.calculate.project.prime",
+      "source": "source:examples.school.transforms.sequences.PrimeNumbers.calculate.field.prime"
+    },
+    {
+      "generated": "generated:examples.structure_generated.school.pyspark.transforms.examples.school.transforms.sequences.PrimeNumbersGenerated.run.output.0.result.validation.final",
+      "ir": "ir:PrimeNumbers.output.0.result.validation.final",
+      "source": "source:examples.school.transforms.sequences.PrimeNumbers.output.result"
+    }
+  ],
+  "schema_constants": {
+    "FibonacciNumber": {
+      "constant": "FIBONACCI_NUMBER_SCHEMA",
+      "module": "examples.structure_generated.school.pyspark.schemas.sequences"
+    },
+    "FibonacciState": {
+      "constant": "FIBONACCI_STATE_SCHEMA",
+      "module": "examples.structure_generated.school.pyspark.schemas.sequences"
+    },
+    "PrimeNumber": {
+      "constant": "PRIME_NUMBER_SCHEMA",
+      "module": "examples.structure_generated.school.pyspark.schemas.sequences"
+    },
+    "PrimeState": {
+      "constant": "PRIME_STATE_SCHEMA",
+      "module": "examples.structure_generated.school.pyspark.schemas.sequences"
+    },
+    "SeriesApproximation": {
+      "constant": "SERIES_APPROXIMATION_SCHEMA",
+      "module": "examples.structure_generated.school.pyspark.schemas.sequences"
+    },
+    "SeriesState": {
+      "constant": "SERIES_STATE_SCHEMA",
+      "module": "examples.structure_generated.school.pyspark.schemas.sequences"
+    },
+    "Tick": {
+      "constant": "TICK_SCHEMA",
+      "module": "examples.structure_generated.school.pyspark.schemas.sequences"
+    }
+  },
+  "source_transform": "examples.school.transforms.sequences.PrimeNumbers",
+  "static_dataflow": {
+    "dependencies": [
+      {
+        "detail": {
+          "backend": "pyspark"
+        },
+        "operation": "transform",
+        "sources": [
+          "ticks"
+        ],
+        "step": null,
+        "target": "PrimeNumbers"
+      },
+      {
+        "detail": {
+          "input_schema": "Tick",
+          "output_schema": "PrimeNumber"
+        },
+        "operation": "step",
+        "sources": [
+          "ticks"
+        ],
+        "step": "calculate",
+        "target": "calculate"
+      },
+      {
+        "detail": {
+          "field": "index"
+        },
+        "operation": "project",
+        "sources": [
+          "ticks.index"
+        ],
+        "step": "calculate",
+        "target": "PrimeNumber.index"
+      },
+      {
+        "detail": {
+          "field": "prime"
+        },
+        "operation": "project",
+        "sources": [
+          "__scan.current"
+        ],
+        "step": "calculate",
+        "target": "PrimeNumber.prime"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "PrimeNumber"
+        ],
+        "step": null,
+        "target": "PrimeNumber.validation.final"
+      }
+    ],
+    "opaque_boundaries": []
+  },
+  "steps": [
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "tick",
+      "joins": [],
+      "name": "calculate",
+      "output_alias": "prime_number",
+      "output_schema": "PrimeNumber",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "ticks",
+          "lane": "ticks",
+          "schema": "PrimeNumber"
+        }
+      ],
+      "validation": []
+    }
+  ],
+  "target_module": "examples.structure_generated.school.pyspark.transforms.examples.school.transforms.sequences",
+  "validation": {
+    "outputs": [
+      {
+        "mode": "strict",
+        "name": "result",
+        "schema": "PrimeNumber"
+      }
+    ]
+  }
+}

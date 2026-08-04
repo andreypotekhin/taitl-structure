@@ -23,5 +23,5 @@ Source: `examples.search.transforms.scoring.MergeOfflineQueries.MergeOfflineQuer
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/MergeOfflineQueries.py`
-- `traceability`: `traceability/transforms/MergeOfflineQueries.MergeOfflineQueries.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/scoring/MergeOfflineQueries.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/scoring/MergeOfflineQueries.MergeOfflineQueries.json`

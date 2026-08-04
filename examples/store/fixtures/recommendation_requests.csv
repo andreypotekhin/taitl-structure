@@ -1,0 +1,5 @@
+tenant_id,id,customer_id,session_id,strategy_id,policy_version,experiment_id,experiment_version,variant_id,category,collection_id,requested_at
+t1,r-100,c-100,s-100,featured,v1,rec-home,v1,A,accessories,homepage,2026-01-02T09:00:00
+t1,r-101,,s-101,featured,v1,,,,stationery,homepage,2026-01-02T09:05:00
+t1,r-102,c-101,,featured,v1,rec-home,v1,B,compute,homepage,2026-01-02T09:10:00
+t2,r-200,c-200,s-200,featured,v1,,,,compute,homepage,2026-01-03T09:00:00

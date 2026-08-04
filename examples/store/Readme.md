@@ -6,6 +6,13 @@ commercial demand, plan warehouse allocation and backorders from inventory facts
 separate, and demonstrate operational summaries. Structure owns the transformations; callers provide sources,
 persistence, stream lifecycle, and the business actions taken from the results.
 
+### Source fixtures
+
+Small, typed-source-oriented CSV fixtures live under [`fixtures/`](fixtures/). They cover the main order, fulfillment,
+catalog, taxonomy, and recommendation paths, including multiple tenants, repeated order products on distinct lines,
+inventory outcomes, and nullable lookup facts. The fixtures are intentionally representative rather than exhaustive;
+tests compare selected rows and columns instead of asserting the entire dataset.
+
 | Funnel stage | Transform package | Transform | Result | Details |
 | --- | --- | --- | --- | --- |
 | **1. Product foundation** | `transforms/catalog/`, `transforms/taxonomy/` | — | — | Establish tenant-scoped product facts before serving or ordering. |

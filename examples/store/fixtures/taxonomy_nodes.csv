@@ -1,0 +1,8 @@
+tenant_id,taxonomy_id,parent_taxonomy_id,category,active
+t1,root,,all,true
+t1,compute,root,compute,true
+t1,accessories,root,accessories,true
+t1,stationery,root,stationery,true
+t1,retired,root,retired,false
+t2,root,,all,true
+t2,compute,root,compute,true

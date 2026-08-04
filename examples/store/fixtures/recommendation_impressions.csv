@@ -1,0 +1,5 @@
+tenant_id,id,request_id,strategy_id,policy_version,product_id,rank,examination_propensity,customer_id,session_id,experiment_id,experiment_version,variant_id,shown_at
+t1,i-100-1,r-100,featured,v1,p-200,1,0.50,c-100,s-100,rec-home,v1,A,2026-01-02T09:00:01
+t1,i-100-2,r-100,featured,v1,p-100,2,0.25,c-100,s-100,rec-home,v1,A,2026-01-02T09:00:01
+t1,i-102-1,r-102,featured,v1,p-100,1,0.50,c-101,,rec-home,v1,B,2026-01-02T09:10:01
+t2,i-200-1,r-200,featured,v1,p-100,1,0.50,c-200,s-200,,,,2026-01-03T09:00:01

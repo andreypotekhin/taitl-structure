@@ -1,0 +1,9 @@
+tenant_id,source_system,ingested_at,id,name,category,features,active,list_price,weight,rating
+t1,erp,2026-01-01T06:00:00,p-100,Analytical Engine,compute,fast;precise,true,650.00,2.5,4.9
+t1,erp,2026-01-01T06:01:00,p-200,Mechanical Keyboard,accessories,quiet;wireless,true,80.00,1.2,4.5
+t1,erp,2026-01-01T06:02:00,p-300,Notebook,stationery,paper;ruled,true,8.00,0.4,4.2
+t1,erp,2026-01-01T06:03:00,p-301,Tablet Stand,accessories,adjustable,true,35.00,1.0,4.1
+t1,erp,2026-01-01T06:04:00,p-302,Desk Mat,accessories,large;felt,true,25.00,0.8,4.0
+t1,erp,2026-01-01T06:05:00,p-blocked,Restricted Device,compute,internal,false,100.00,3.0,3.0
+t1,erp,2026-01-01T06:06:00,p-inactive,Retired Cable,accessories,old,false,12.00,0.2,2.0
+t2,erp,2026-01-02T06:00:00,p-100,Analytical Engine,compute,fast;precise,true,640.00,2.5,4.8

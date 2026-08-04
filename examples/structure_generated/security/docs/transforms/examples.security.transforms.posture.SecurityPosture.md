@@ -49,5 +49,5 @@ Source: `examples.security.transforms.posture.SecurityPosture`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/posture.py`
-- `traceability`: `traceability/transforms/posture.SecurityPosture.json`
+- `pyspark_transform`: `pyspark/transforms/examples/security/transforms/posture.py`
+- `traceability`: `traceability/transforms/examples/security/transforms/posture.SecurityPosture.json`

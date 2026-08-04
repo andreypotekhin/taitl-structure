@@ -1311,6 +1311,7 @@ def test_v10_streaming_state_stage_records_watermark_retention_and_output_mode()
     assert stage.watermarks == (("rows.event_time", "10 minutes"),)
     assert stage.keys == ("bucket", "id")
     assert stage.retention == ("window=10 minutes",)
+    assert stage.completion_window is None
     assert stage.output_modes == ("append", "update")
     assert stage.allows_later_stateful is True
 

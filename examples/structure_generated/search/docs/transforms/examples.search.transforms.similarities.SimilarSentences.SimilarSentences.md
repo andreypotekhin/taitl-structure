@@ -28,5 +28,5 @@ Source: `examples.search.transforms.similarities.SimilarSentences.SimilarSentenc
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/SimilarSentences.py`
-- `traceability`: `traceability/transforms/SimilarSentences.SimilarSentences.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/similarities/SimilarSentences.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/similarities/SimilarSentences.SimilarSentences.json`

@@ -35,5 +35,5 @@ Source: `examples.store.transforms.fulfillment.shortages.exceptions.PrioritizeEx
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/exceptions.py`
-- `traceability`: `traceability/transforms/exceptions.PrioritizeExceptions.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/fulfillment/shortages/exceptions.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/fulfillment/shortages/exceptions.PrioritizeExceptions.json`

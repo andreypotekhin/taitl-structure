@@ -3,6 +3,7 @@ from typing import Any, cast
 from structure.plugin.api.v1 import GenerationAPI as GenerationAPIV1
 from structure.plugin.api.v1 import GenerationRequest, GenerationResult
 from structure.plugin.pyspark.api.PySpark import PySpark
+from structure.plugin.pyspark.GeneratedPySparkTransformModule import generated_pyspark_transform_module
 
 
 class GenerationAPI(GenerationAPIV1):
@@ -18,10 +19,10 @@ class GenerationAPI(GenerationAPIV1):
             generated_code_options=request.generated_code_options,
             generated_code_hard_wrap=request.generated_code_hard_wrap,
         )
-        source = request.source_module.rsplit(".", 1)[1]
+        source = request.source_module
         plans = cast(dict[str, object], request.payload)
         return GenerationResult(
             files=files,
-            module_name=f"{request.generated_package}.pyspark.transforms.{source}",
+            module_name=generated_pyspark_transform_module(source, generated_package=request.generated_package),
             classes=tuple(f"{name.rsplit('.', 1)[1]}Generated" for name in plans),
         )

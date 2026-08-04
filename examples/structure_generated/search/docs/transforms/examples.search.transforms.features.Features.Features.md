@@ -29,5 +29,5 @@ Source: `examples.search.transforms.features.Features.Features`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/Features.py`
-- `traceability`: `traceability/transforms/Features.Features.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/features/Features.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/features/Features.Features.json`

@@ -27,5 +27,5 @@ Source: `examples.store.transforms.experiments.exposure.RecordRecommendationExpo
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/exposure.py`
-- `traceability`: `traceability/transforms/exposure.RecordRecommendationExposures.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/experiments/exposure.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/experiments/exposure.RecordRecommendationExposures.json`

@@ -27,5 +27,5 @@ Source: `examples.search.transforms.searching.search_sentences.SearchSentences.S
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/SearchSentences.py`
-- `traceability`: `traceability/transforms/SearchSentences.SearchSentences.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/searching/search_sentences/SearchSentences.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/searching/search_sentences/SearchSentences.SearchSentences.json`

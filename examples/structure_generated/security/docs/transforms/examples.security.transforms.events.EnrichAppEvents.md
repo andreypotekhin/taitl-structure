@@ -33,5 +33,5 @@ Source: `examples.security.transforms.events.EnrichAppEvents`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/events.py`
-- `traceability`: `traceability/transforms/events.EnrichAppEvents.json`
+- `pyspark_transform`: `pyspark/transforms/examples/security/transforms/events.py`
+- `traceability`: `traceability/transforms/examples/security/transforms/events.EnrichAppEvents.json`

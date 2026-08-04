@@ -86,5 +86,5 @@ Source: `examples.store.transforms.recommender.workflow.Recommender`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/recommender_workflow.py`
-- `traceability`: `traceability/transforms/recommender_workflow.Recommender.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/recommender/workflow.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/recommender/workflow.Recommender.json`

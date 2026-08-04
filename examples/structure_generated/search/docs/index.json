@@ -10237,8 +10237,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/all.py",
-        "traceability": "traceability/transforms/all.All.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/all/all.py",
+        "traceability": "traceability/transforms/examples/search/transforms/all/all.All.json"
       }
     },
     {
@@ -10534,8 +10534,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/Chunking.py",
-        "traceability": "traceability/transforms/Chunking.Chunking.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/chunking/Chunking.py",
+        "traceability": "traceability/transforms/examples/search/transforms/chunking/Chunking.Chunking.json"
       }
     },
     {
@@ -10777,8 +10777,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/DocumentChunking.py",
-        "traceability": "traceability/transforms/DocumentChunking.DocumentChunking.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/chunking/DocumentChunking.py",
+        "traceability": "traceability/transforms/examples/search/transforms/chunking/DocumentChunking.DocumentChunking.json"
       }
     },
     {
@@ -10824,8 +10824,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/SentenceChunking.py",
-        "traceability": "traceability/transforms/SentenceChunking.SentenceChunking.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/chunking/SentenceChunking.py",
+        "traceability": "traceability/transforms/examples/search/transforms/chunking/SentenceChunking.SentenceChunking.json"
       }
     },
     {
@@ -10871,8 +10871,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/WordChunking.py",
-        "traceability": "traceability/transforms/WordChunking.WordChunking.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/chunking/WordChunking.py",
+        "traceability": "traceability/transforms/examples/search/transforms/chunking/WordChunking.WordChunking.json"
       }
     },
     {
@@ -10938,8 +10938,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/Clicks.py",
-        "traceability": "traceability/transforms/Clicks.Clicks.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/clicks/Clicks.py",
+        "traceability": "traceability/transforms/examples/search/transforms/clicks/Clicks.Clicks.json"
       }
     },
     {
@@ -10985,8 +10985,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/Impressions.py",
-        "traceability": "traceability/transforms/Impressions.Impressions.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/clicks/Impressions.py",
+        "traceability": "traceability/transforms/examples/search/transforms/clicks/Impressions.Impressions.json"
       }
     },
     {
@@ -11464,8 +11464,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/ResolveCohortBands.py",
-        "traceability": "traceability/transforms/ResolveCohortBands.ResolveCohortBands.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/cohorts/ResolveCohortBands.py",
+        "traceability": "traceability/transforms/examples/search/transforms/cohorts/ResolveCohortBands.ResolveCohortBands.json"
       }
     },
     {
@@ -11854,8 +11854,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/eval_behavior.py",
-        "traceability": "traceability/transforms/eval_behavior.EvaluateDocSearchBehavior.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/evaluation/search_docs/behavior/eval_behavior.py",
+        "traceability": "traceability/transforms/examples/search/transforms/evaluation/search_docs/behavior/eval_behavior.EvaluateDocSearchBehavior.json"
       }
     },
     {
@@ -12294,8 +12294,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/with_all.py",
-        "traceability": "traceability/transforms/with_all.EvaluateDocSearchBehavior.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/evaluation/search_docs/behavior/with_all.py",
+        "traceability": "traceability/transforms/examples/search/transforms/evaluation/search_docs/behavior/with_all.EvaluateDocSearchBehavior.json"
       }
     },
     {
@@ -12717,8 +12717,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/with_labels.py",
-        "traceability": "traceability/transforms/with_labels.EvaluateDocSearchBehavior.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/evaluation/search_docs/behavior/with_labels.py",
+        "traceability": "traceability/transforms/examples/search/transforms/evaluation/search_docs/behavior/with_labels.EvaluateDocSearchBehavior.json"
       }
     },
     {
@@ -13157,8 +13157,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/with_users.py",
-        "traceability": "traceability/transforms/with_users.EvaluateDocSearchBehavior.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/evaluation/search_docs/behavior/with_users.py",
+        "traceability": "traceability/transforms/examples/search/transforms/evaluation/search_docs/behavior/with_users.EvaluateDocSearchBehavior.json"
       }
     },
     {
@@ -13488,8 +13488,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/eval_ranking.py",
-        "traceability": "traceability/transforms/eval_ranking.EvaluateDocumentRanking.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/evaluation/search_docs/ranking/eval_ranking.py",
+        "traceability": "traceability/transforms/examples/search/transforms/evaluation/search_docs/ranking/eval_ranking.EvaluateDocumentRanking.json"
       }
     },
     {
@@ -13845,8 +13845,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/with_all.py",
-        "traceability": "traceability/transforms/with_all.EvaluateDocumentRanking.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/evaluation/search_docs/ranking/with_all.py",
+        "traceability": "traceability/transforms/examples/search/transforms/evaluation/search_docs/ranking/with_all.EvaluateDocumentRanking.json"
       }
     },
     {
@@ -14192,8 +14192,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/with_labels.py",
-        "traceability": "traceability/transforms/with_labels.EvaluateDocumentRanking.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/evaluation/search_docs/ranking/with_labels.py",
+        "traceability": "traceability/transforms/examples/search/transforms/evaluation/search_docs/ranking/with_labels.EvaluateDocumentRanking.json"
       }
     },
     {
@@ -14549,8 +14549,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/with_users.py",
-        "traceability": "traceability/transforms/with_users.EvaluateDocumentRanking.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/evaluation/search_docs/ranking/with_users.py",
+        "traceability": "traceability/transforms/examples/search/transforms/evaluation/search_docs/ranking/with_users.EvaluateDocumentRanking.json"
       }
     },
     {
@@ -14748,8 +14748,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/SelectExperimentScores.py",
-        "traceability": "traceability/transforms/SelectExperimentScores.SelectExperimentScores.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/experiments/SelectExperimentScores.py",
+        "traceability": "traceability/transforms/examples/search/transforms/experiments/SelectExperimentScores.SelectExperimentScores.json"
       }
     },
     {
@@ -15253,8 +15253,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/eval_behavior.py",
-        "traceability": "traceability/transforms/eval_behavior.EvaluateDocSearchBehavior.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/experiments/evaluation/search_docs/eval_behavior.py",
+        "traceability": "traceability/transforms/examples/search/transforms/experiments/evaluation/search_docs/eval_behavior.EvaluateDocSearchBehavior.json"
       }
     },
     {
@@ -15669,8 +15669,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/eval_ranking.py",
-        "traceability": "traceability/transforms/eval_ranking.EvaluateDocumentRanking.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/experiments/evaluation/search_docs/eval_ranking.py",
+        "traceability": "traceability/transforms/examples/search/transforms/experiments/evaluation/search_docs/eval_ranking.EvaluateDocumentRanking.json"
       }
     },
     {
@@ -16610,8 +16610,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/Scoring001AdjustBm.py",
-        "traceability": "traceability/transforms/Scoring001AdjustBm.Scoring001AdjustBm.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/experiments/scoring/Scoring001AdjustBm.py",
+        "traceability": "traceability/transforms/examples/search/transforms/experiments/scoring/Scoring001AdjustBm.Scoring001AdjustBm.json"
       }
     },
     {
@@ -18343,8 +18343,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/Searching001AdjustRerankSearchDocuments.py",
-        "traceability": "traceability/transforms/Searching001AdjustRerankSearchDocuments.Searching001AdjustRerankSearchDocuments.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/experiments/searching/search_docs/Searching001AdjustRerankSearchDocuments.py",
+        "traceability": "traceability/transforms/examples/search/transforms/experiments/searching/search_docs/Searching001AdjustRerankSearchDocuments.Searching001AdjustRerankSearchDocuments.json"
       }
     },
     {
@@ -18390,8 +18390,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/BuildDocumentFeatures.py",
-        "traceability": "traceability/transforms/BuildDocumentFeatures.BuildDocumentFeatures.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/features/BuildDocumentFeatures.py",
+        "traceability": "traceability/transforms/examples/search/transforms/features/BuildDocumentFeatures.BuildDocumentFeatures.json"
       }
     },
     {
@@ -18518,8 +18518,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/BuildQueryFeatures.py",
-        "traceability": "traceability/transforms/BuildQueryFeatures.BuildQueryFeatures.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/features/BuildQueryFeatures.py",
+        "traceability": "traceability/transforms/examples/search/transforms/features/BuildQueryFeatures.BuildQueryFeatures.json"
       }
     },
     {
@@ -18678,8 +18678,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/Features.py",
-        "traceability": "traceability/transforms/Features.Features.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/features/Features.py",
+        "traceability": "traceability/transforms/examples/search/transforms/features/Features.Features.json"
       }
     },
     {
@@ -19277,8 +19277,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/Indexing.py",
-        "traceability": "traceability/transforms/Indexing.Indexing.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/indexing/Indexing.py",
+        "traceability": "traceability/transforms/examples/search/transforms/indexing/Indexing.Indexing.json"
       }
     },
     {
@@ -19446,8 +19446,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/CreateQueryLabels.py",
-        "traceability": "traceability/transforms/CreateQueryLabels.CreateQueryLabels.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/labeling/CreateQueryLabels.py",
+        "traceability": "traceability/transforms/examples/search/transforms/labeling/CreateQueryLabels.CreateQueryLabels.json"
       }
     },
     {
@@ -19757,8 +19757,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/Labeling.py",
-        "traceability": "traceability/transforms/Labeling.Labeling.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/labeling/Labeling.py",
+        "traceability": "traceability/transforms/examples/search/transforms/labeling/Labeling.Labeling.json"
       }
     },
     {
@@ -19930,8 +19930,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/MergeQueryLabels.py",
-        "traceability": "traceability/transforms/MergeQueryLabels.MergeQueryLabels.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/labeling/MergeQueryLabels.py",
+        "traceability": "traceability/transforms/examples/search/transforms/labeling/MergeQueryLabels.MergeQueryLabels.json"
       }
     },
     {
@@ -20422,8 +20422,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/BuildRelevanceSignals.py",
-        "traceability": "traceability/transforms/BuildRelevanceSignals.BuildRelevanceSignals.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/relevance/BuildRelevanceSignals.py",
+        "traceability": "traceability/transforms/examples/search/transforms/relevance/BuildRelevanceSignals.BuildRelevanceSignals.json"
       }
     },
     {
@@ -20482,8 +20482,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/MergeOfflineQueries.py",
-        "traceability": "traceability/transforms/MergeOfflineQueries.MergeOfflineQueries.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/scoring/MergeOfflineQueries.py",
+        "traceability": "traceability/transforms/examples/search/transforms/scoring/MergeOfflineQueries.MergeOfflineQueries.json"
       }
     },
     {
@@ -21583,8 +21583,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/OfflineScoring.py",
-        "traceability": "traceability/transforms/OfflineScoring.OfflineScoring.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/scoring/OfflineScoring.py",
+        "traceability": "traceability/transforms/examples/search/transforms/scoring/OfflineScoring.OfflineScoring.json"
       }
     },
     {
@@ -21916,8 +21916,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/ScoreBm25.py",
-        "traceability": "traceability/transforms/ScoreBm25.ScoreBm25.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/scoring/ScoreBm25.py",
+        "traceability": "traceability/transforms/examples/search/transforms/scoring/ScoreBm25.ScoreBm25.json"
       }
     },
     {
@@ -22369,8 +22369,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/ScoreOverlap.py",
-        "traceability": "traceability/transforms/ScoreOverlap.ScoreOverlap.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/scoring/ScoreOverlap.py",
+        "traceability": "traceability/transforms/examples/search/transforms/scoring/ScoreOverlap.ScoreOverlap.json"
       }
     },
     {
@@ -23310,8 +23310,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/Scoring.py",
-        "traceability": "traceability/transforms/Scoring.Scoring.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/scoring/Scoring.py",
+        "traceability": "traceability/transforms/examples/search/transforms/scoring/Scoring.Scoring.json"
       }
     },
     {
@@ -23421,8 +23421,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/SelectPopularQueries.py",
-        "traceability": "traceability/transforms/SelectPopularQueries.SelectPopularQueries.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/scoring/SelectPopularQueries.py",
+        "traceability": "traceability/transforms/examples/search/transforms/scoring/SelectPopularQueries.SelectPopularQueries.json"
       }
     },
     {
@@ -23505,8 +23505,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/SelectRecentQueries.py",
-        "traceability": "traceability/transforms/SelectRecentQueries.SelectRecentQueries.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/scoring/SelectRecentQueries.py",
+        "traceability": "traceability/transforms/examples/search/transforms/scoring/SelectRecentQueries.SelectRecentQueries.json"
       }
     },
     {
@@ -24584,8 +24584,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/OnlineScoring.py",
-        "traceability": "traceability/transforms/OnlineScoring.OnlineScoring.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/searching/online/scoring/OnlineScoring.py",
+        "traceability": "traceability/transforms/examples/search/transforms/searching/online/scoring/OnlineScoring.OnlineScoring.json"
       }
     },
     {
@@ -26317,8 +26317,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/SearchDocuments.py",
-        "traceability": "traceability/transforms/SearchDocuments.SearchDocuments.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/searching/search_docs/SearchDocuments.py",
+        "traceability": "traceability/transforms/examples/search/transforms/searching/search_docs/SearchDocuments.SearchDocuments.json"
       }
     },
     {
@@ -26401,8 +26401,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/SearchSentences.py",
-        "traceability": "traceability/transforms/SearchSentences.SearchSentences.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/searching/search_sentences/SearchSentences.py",
+        "traceability": "traceability/transforms/examples/search/transforms/searching/search_sentences/SearchSentences.SearchSentences.json"
       }
     },
     {
@@ -26507,8 +26507,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/SearchSimilarity.py",
-        "traceability": "traceability/transforms/SearchSimilarity.SearchSimilarity.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/searching/search_similarity/SearchSimilarity.py",
+        "traceability": "traceability/transforms/examples/search/transforms/searching/search_similarity/SearchSimilarity.SearchSimilarity.json"
       }
     },
     {
@@ -27017,8 +27017,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/CreateSimilarityQueries.py",
-        "traceability": "traceability/transforms/CreateSimilarityQueries.CreateSimilarityQueries.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/similarities/CreateSimilarityQueries.py",
+        "traceability": "traceability/transforms/examples/search/transforms/similarities/CreateSimilarityQueries.CreateSimilarityQueries.json"
       }
     },
     {
@@ -27795,8 +27795,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/ReduceSimilarityScores.py",
-        "traceability": "traceability/transforms/ReduceSimilarityScores.ReduceSimilarityScores.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/similarities/ReduceSimilarityScores.py",
+        "traceability": "traceability/transforms/examples/search/transforms/similarities/ReduceSimilarityScores.ReduceSimilarityScores.json"
       }
     },
     {
@@ -27901,8 +27901,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/SimilarParagraphs.py",
-        "traceability": "traceability/transforms/SimilarParagraphs.SimilarParagraphs.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/similarities/SimilarParagraphs.py",
+        "traceability": "traceability/transforms/examples/search/transforms/similarities/SimilarParagraphs.SimilarParagraphs.json"
       }
     },
     {
@@ -28007,8 +28007,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/SimilarSections.py",
-        "traceability": "traceability/transforms/SimilarSections.SimilarSections.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/similarities/SimilarSections.py",
+        "traceability": "traceability/transforms/examples/search/transforms/similarities/SimilarSections.SimilarSections.json"
       }
     },
     {
@@ -28113,8 +28113,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/SimilarSentences.py",
-        "traceability": "traceability/transforms/SimilarSentences.SimilarSentences.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/similarities/SimilarSentences.py",
+        "traceability": "traceability/transforms/examples/search/transforms/similarities/SimilarSentences.SimilarSentences.json"
       }
     },
     {
@@ -29933,8 +29933,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/Similarities.py",
-        "traceability": "traceability/transforms/Similarities.Similarities.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/similarities/Similarities.py",
+        "traceability": "traceability/transforms/examples/search/transforms/similarities/Similarities.Similarities.json"
       }
     },
     {
@@ -30156,8 +30156,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/AnalyzeText.py",
-        "traceability": "traceability/transforms/AnalyzeText.AnalyzeText.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/stats/AnalyzeText.py",
+        "traceability": "traceability/transforms/examples/search/transforms/stats/AnalyzeText.AnalyzeText.json"
       }
     },
     {
@@ -30235,8 +30235,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/CorpusText.py",
-        "traceability": "traceability/transforms/CorpusText.CorpusText.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/stats/CorpusText.py",
+        "traceability": "traceability/transforms/examples/search/transforms/stats/CorpusText.CorpusText.json"
       }
     },
     {
@@ -30282,8 +30282,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/ProfileDocuments.py",
-        "traceability": "traceability/transforms/ProfileDocuments.ProfileDocuments.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/stats/ProfileDocuments.py",
+        "traceability": "traceability/transforms/examples/search/transforms/stats/ProfileDocuments.ProfileDocuments.json"
       }
     },
     {
@@ -30383,8 +30383,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/BuildTrainingData.py",
-        "traceability": "traceability/transforms/BuildTrainingData.BuildTrainingData.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/training/BuildTrainingData.py",
+        "traceability": "traceability/transforms/examples/search/transforms/training/BuildTrainingData.BuildTrainingData.json"
       }
     },
     {
@@ -30484,8 +30484,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/RankDocumentCandidates.py",
-        "traceability": "traceability/transforms/RankDocumentCandidates.RankDocumentCandidates.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/training/RankDocumentCandidates.py",
+        "traceability": "traceability/transforms/examples/search/transforms/training/RankDocumentCandidates.RankDocumentCandidates.json"
       }
     },
     {
@@ -30719,8 +30719,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/Training.py",
-        "traceability": "traceability/transforms/Training.Training.json"
+        "pyspark_transform": "pyspark/transforms/examples/search/transforms/training/Training.py",
+        "traceability": "traceability/transforms/examples/search/transforms/training/Training.Training.json"
       }
     }
   ]

@@ -323,5 +323,5 @@ Source: `examples.search.transforms.all.all.All`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/all.py`
-- `traceability`: `traceability/transforms/all.All.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/all/all.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/all/all.All.json`

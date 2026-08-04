@@ -48,14 +48,18 @@ def test_embedded_parent_hook_has_online_generated_runtime_parity(spark, tmp_pat
         source_schema_modules={SCHEMA_MODULE: [schemas.RawRow, schemas.NormalizedRow, schemas.PublishedRow]},
         generated_code_options=("embed_hooks",),
     )
-    transform_source = files[f"{package}/pyspark/transforms/transforms.py"]
+    transform_source = files[
+        f"{package}/pyspark/transforms/integration/pyspark/v1/fixtures/parity/transforms.py"
+    ]
 
     assert SOURCE_MODULE not in transform_source
     assert "self._impl" not in transform_source
 
     with generated_project(tmp_path, package, files):
         generated_schemas = importlib.import_module(f"{package}.pyspark.schemas.schemas")
-        generated_transforms = importlib.import_module(f"{package}.pyspark.transforms.transforms")
+        generated_transforms = importlib.import_module(
+            f"{package}.pyspark.transforms.integration.pyspark.v1.fixtures.parity.transforms"
+        )
         frame = spark.createDataFrame([("one",)], generated_schemas.RAW_ROW_SCHEMA)
         online = transforms.ParentHookPublished(rows=frame).run(session(spark, execution_mode="online"))
         generated = generated_transforms.ParentHookPublishedGenerated(spark=spark).run(rows=frame)

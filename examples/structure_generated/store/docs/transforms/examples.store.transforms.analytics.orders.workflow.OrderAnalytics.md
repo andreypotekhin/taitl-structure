@@ -26,5 +26,5 @@ Source: `examples.store.transforms.analytics.orders.workflow.OrderAnalytics`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/orders_workflow.py`
-- `traceability`: `traceability/transforms/orders_workflow.OrderAnalytics.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/analytics/orders/workflow.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/analytics/orders/workflow.OrderAnalytics.json`

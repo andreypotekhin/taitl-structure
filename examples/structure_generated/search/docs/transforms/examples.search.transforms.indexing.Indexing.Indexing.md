@@ -57,5 +57,5 @@ Source: `examples.search.transforms.indexing.Indexing.Indexing`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/Indexing.py`
-- `traceability`: `traceability/transforms/Indexing.Indexing.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/indexing/Indexing.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/indexing/Indexing.Indexing.json`

@@ -125,16 +125,12 @@ class StructureDocsData:
 
     def _target_transform(self, source: str) -> str:
         module = self._generated_module_name(source.rsplit(".", 1)[0])
-        return f"pyspark/transforms/{module}.py"
+        return f"pyspark/transforms/{module.replace('.', '/')}.py"
 
     def _traceability(self, source: str, plan: TransformPlan) -> str:
         module = self._generated_module_name(source.rsplit(".", 1)[0])
-        return f"traceability/transforms/{module}.{plan.name}.json"
+        return f"traceability/transforms/{module.replace('.', '/')}.{plan.name}.json"
 
     @staticmethod
     def _generated_module_name(source_module: str) -> str:
-        parts = source_module.rsplit(".", 1)
-        name = parts[-1]
-        if name != "workflow":
-            return name
-        return f"{parts[0].rsplit('.', 1)[1]}_workflow"
+        return source_module

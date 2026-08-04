@@ -53,5 +53,5 @@ Source: `examples.security.transforms.quality.SecurityInventoryQuality`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/quality.py`
-- `traceability`: `traceability/transforms/quality.SecurityInventoryQuality.json`
+- `pyspark_transform`: `pyspark/transforms/examples/security/transforms/quality.py`
+- `traceability`: `traceability/transforms/examples/security/transforms/quality.SecurityInventoryQuality.json`

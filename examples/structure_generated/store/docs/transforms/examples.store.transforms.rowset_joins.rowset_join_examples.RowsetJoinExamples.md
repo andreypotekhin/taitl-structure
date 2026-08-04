@@ -29,5 +29,5 @@ Source: `examples.store.transforms.rowset_joins.rowset_join_examples.RowsetJoinE
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/rowset_join_examples.py`
-- `traceability`: `traceability/transforms/rowset_join_examples.RowsetJoinExamples.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/rowset_joins/rowset_join_examples.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/rowset_joins/rowset_join_examples.RowsetJoinExamples.json`

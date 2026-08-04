@@ -1,0 +1,1651 @@
+{
+  "backend": {
+    "name": "pyspark",
+    "target": ">=3.5,<4.1"
+  },
+  "generated_transform_class": "EvaluateFulfillmentGenerated",
+  "inputs": [
+    {
+      "name": "plans",
+      "ordinal": 0,
+      "schema": "FulfillmentPlan"
+    },
+    {
+      "name": "fulfilled",
+      "ordinal": 1,
+      "schema": "OrderFulfillment"
+    },
+    {
+      "name": "service_targets",
+      "ordinal": 2,
+      "schema": "ServiceRiskTarget"
+    }
+  ],
+  "provenance": [
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated",
+      "ir": "ir:EvaluateFulfillment",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.input.plans",
+      "ir": "ir:EvaluateFulfillment.input.0.plans",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.input.plans"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.input.fulfilled",
+      "ir": "ir:EvaluateFulfillment.input.1.fulfilled",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.input.fulfilled"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.input.service_targets",
+      "ir": "ir:EvaluateFulfillment.input.2.service_targets",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.input.service_targets"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.0.evaluate",
+      "ir": "ir:EvaluateFulfillment.step.0.evaluate",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.evaluate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.0.evaluate.join.1.fulfilled",
+      "ir": "ir:EvaluateFulfillment.step.0.evaluate.join.1.fulfilled",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.evaluate.join.1.fulfilled"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.0.evaluate.join.2.target",
+      "ir": "ir:EvaluateFulfillment.step.0.evaluate.join.2.target",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.evaluate.join.2.target"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.0.evaluate.aggregate.tenant",
+      "ir": "ir:EvaluateFulfillment.step.0.evaluate.aggregate.tenant",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.evaluate.aggregate.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.0.evaluate.aggregate.business",
+      "ir": "ir:EvaluateFulfillment.step.0.evaluate.aggregate.business",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.evaluate.aggregate.business"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.0.evaluate.aggregate.order_id",
+      "ir": "ir:EvaluateFulfillment.step.0.evaluate.aggregate.order_id",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.evaluate.aggregate.order_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.0.evaluate.aggregate.line_number",
+      "ir": "ir:EvaluateFulfillment.step.0.evaluate.aggregate.line_number",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.evaluate.aggregate.line_number"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.0.evaluate.aggregate.product_id",
+      "ir": "ir:EvaluateFulfillment.step.0.evaluate.aggregate.product_id",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.evaluate.aggregate.product_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.0.evaluate.aggregate.selected_warehouse_id",
+      "ir": "ir:EvaluateFulfillment.step.0.evaluate.aggregate.selected_warehouse_id",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.evaluate.aggregate.selected_warehouse_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.0.evaluate.aggregate.target_id",
+      "ir": "ir:EvaluateFulfillment.step.0.evaluate.aggregate.target_id",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.evaluate.aggregate.target_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.0.evaluate.aggregate.target_on_time",
+      "ir": "ir:EvaluateFulfillment.step.0.evaluate.aggregate.target_on_time",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.evaluate.aggregate.target_on_time"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.0.evaluate.aggregate.requested_quantity",
+      "ir": "ir:EvaluateFulfillment.step.0.evaluate.aggregate.requested_quantity",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.evaluate.aggregate.requested_quantity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.0.evaluate.aggregate.planned_quantity",
+      "ir": "ir:EvaluateFulfillment.step.0.evaluate.aggregate.planned_quantity",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.evaluate.aggregate.planned_quantity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.0.evaluate.aggregate.shipped_quantity",
+      "ir": "ir:EvaluateFulfillment.step.0.evaluate.aggregate.shipped_quantity",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.evaluate.aggregate.shipped_quantity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.0.evaluate.aggregate.planned_ship_date",
+      "ir": "ir:EvaluateFulfillment.step.0.evaluate.aggregate.planned_ship_date",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.evaluate.aggregate.planned_ship_date"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.0.evaluate.aggregate.actual_ship_date",
+      "ir": "ir:EvaluateFulfillment.step.0.evaluate.aggregate.actual_ship_date",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.evaluate.aggregate.actual_ship_date"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.0.evaluate.aggregate.shipped",
+      "ir": "ir:EvaluateFulfillment.step.0.evaluate.aggregate.shipped",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.evaluate.aggregate.shipped"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.0.evaluate.validation.0.intermediate",
+      "ir": "ir:EvaluateFulfillment.step.0.evaluate.validation.0.intermediate",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.evaluate.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.1.classify",
+      "ir": "ir:EvaluateFulfillment.step.1.classify",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.classify"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.1.classify.select.tenant",
+      "ir": "ir:EvaluateFulfillment.step.1.classify.project.tenant",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.classify.field.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.1.classify.select.business",
+      "ir": "ir:EvaluateFulfillment.step.1.classify.project.business",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.classify.field.business"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.1.classify.select.order_id",
+      "ir": "ir:EvaluateFulfillment.step.1.classify.project.order_id",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.classify.field.order_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.1.classify.select.line_number",
+      "ir": "ir:EvaluateFulfillment.step.1.classify.project.line_number",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.classify.field.line_number"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.1.classify.select.product_id",
+      "ir": "ir:EvaluateFulfillment.step.1.classify.project.product_id",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.classify.field.product_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.1.classify.select.selected_warehouse_id",
+      "ir": "ir:EvaluateFulfillment.step.1.classify.project.selected_warehouse_id",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.classify.field.selected_warehouse_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.1.classify.select.target_id",
+      "ir": "ir:EvaluateFulfillment.step.1.classify.project.target_id",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.classify.field.target_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.1.classify.select.target_on_time",
+      "ir": "ir:EvaluateFulfillment.step.1.classify.project.target_on_time",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.classify.field.target_on_time"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.1.classify.select.requested_quantity",
+      "ir": "ir:EvaluateFulfillment.step.1.classify.project.requested_quantity",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.classify.field.requested_quantity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.1.classify.select.planned_quantity",
+      "ir": "ir:EvaluateFulfillment.step.1.classify.project.planned_quantity",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.classify.field.planned_quantity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.1.classify.select.shipped_quantity",
+      "ir": "ir:EvaluateFulfillment.step.1.classify.project.shipped_quantity",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.classify.field.shipped_quantity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.1.classify.select.planned_ship_date",
+      "ir": "ir:EvaluateFulfillment.step.1.classify.project.planned_ship_date",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.classify.field.planned_ship_date"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.1.classify.select.actual_ship_date",
+      "ir": "ir:EvaluateFulfillment.step.1.classify.project.actual_ship_date",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.classify.field.actual_ship_date"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.1.classify.select.on_time_status",
+      "ir": "ir:EvaluateFulfillment.step.1.classify.project.on_time_status",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.classify.field.on_time_status"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.1.classify.select.in_full_status",
+      "ir": "ir:EvaluateFulfillment.step.1.classify.project.in_full_status",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.classify.field.in_full_status"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.1.classify.select.lateness_days",
+      "ir": "ir:EvaluateFulfillment.step.1.classify.project.lateness_days",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.classify.field.lateness_days"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.1.classify.select.service_status",
+      "ir": "ir:EvaluateFulfillment.step.1.classify.project.service_status",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.classify.field.service_status"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.1.classify.validation.0.intermediate",
+      "ir": "ir:EvaluateFulfillment.step.1.classify.validation.0.intermediate",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.classify.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.2.summarize",
+      "ir": "ir:EvaluateFulfillment.step.2.summarize",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.summarize"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.2.summarize.aggregate.tenant",
+      "ir": "ir:EvaluateFulfillment.step.2.summarize.aggregate.tenant",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.summarize.aggregate.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.2.summarize.aggregate.business_date",
+      "ir": "ir:EvaluateFulfillment.step.2.summarize.aggregate.business_date",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.summarize.aggregate.business_date"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.2.summarize.aggregate.warehouse_id",
+      "ir": "ir:EvaluateFulfillment.step.2.summarize.aggregate.warehouse_id",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.summarize.aggregate.warehouse_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.2.summarize.aggregate.target_id",
+      "ir": "ir:EvaluateFulfillment.step.2.summarize.aggregate.target_id",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.summarize.aggregate.target_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.2.summarize.aggregate.evaluated_line_count",
+      "ir": "ir:EvaluateFulfillment.step.2.summarize.aggregate.evaluated_line_count",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.summarize.aggregate.evaluated_line_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.2.summarize.aggregate.on_time_in_full_count",
+      "ir": "ir:EvaluateFulfillment.step.2.summarize.aggregate.on_time_in_full_count",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.summarize.aggregate.on_time_in_full_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.2.summarize.aggregate.on_time_line_count",
+      "ir": "ir:EvaluateFulfillment.step.2.summarize.aggregate.on_time_line_count",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.summarize.aggregate.on_time_line_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.2.summarize.aggregate.in_full_line_count",
+      "ir": "ir:EvaluateFulfillment.step.2.summarize.aggregate.in_full_line_count",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.summarize.aggregate.in_full_line_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.2.summarize.aggregate.service_level",
+      "ir": "ir:EvaluateFulfillment.step.2.summarize.aggregate.service_level",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.summarize.aggregate.service_level"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.2.summarize.aggregate.target_on_time",
+      "ir": "ir:EvaluateFulfillment.step.2.summarize.aggregate.target_on_time",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.summarize.aggregate.target_on_time"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.2.summarize.aggregate.target_attained",
+      "ir": "ir:EvaluateFulfillment.step.2.summarize.aggregate.target_attained",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.summarize.aggregate.target_attained"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.2.summarize.validation.0.intermediate",
+      "ir": "ir:EvaluateFulfillment.step.2.summarize.validation.0.intermediate",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.summarize.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.3.publish_summary",
+      "ir": "ir:EvaluateFulfillment.step.3.publish_summary",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.publish_summary"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.3.publish_summary.select.tenant",
+      "ir": "ir:EvaluateFulfillment.step.3.publish_summary.project.tenant",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.publish_summary.field.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.3.publish_summary.select.business_date",
+      "ir": "ir:EvaluateFulfillment.step.3.publish_summary.project.business_date",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.publish_summary.field.business_date"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.3.publish_summary.select.warehouse_id",
+      "ir": "ir:EvaluateFulfillment.step.3.publish_summary.project.warehouse_id",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.publish_summary.field.warehouse_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.3.publish_summary.select.target_id",
+      "ir": "ir:EvaluateFulfillment.step.3.publish_summary.project.target_id",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.publish_summary.field.target_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.3.publish_summary.select.evaluated_line_count",
+      "ir": "ir:EvaluateFulfillment.step.3.publish_summary.project.evaluated_line_count",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.publish_summary.field.evaluated_line_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.3.publish_summary.select.on_time_in_full_count",
+      "ir": "ir:EvaluateFulfillment.step.3.publish_summary.project.on_time_in_full_count",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.publish_summary.field.on_time_in_full_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.3.publish_summary.select.on_time_line_count",
+      "ir": "ir:EvaluateFulfillment.step.3.publish_summary.project.on_time_line_count",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.publish_summary.field.on_time_line_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.3.publish_summary.select.in_full_line_count",
+      "ir": "ir:EvaluateFulfillment.step.3.publish_summary.project.in_full_line_count",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.publish_summary.field.in_full_line_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.3.publish_summary.select.service_level",
+      "ir": "ir:EvaluateFulfillment.step.3.publish_summary.project.service_level",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.publish_summary.field.service_level"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.3.publish_summary.select.target_on_time",
+      "ir": "ir:EvaluateFulfillment.step.3.publish_summary.project.target_on_time",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.publish_summary.field.target_on_time"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.step.3.publish_summary.select.target_attained",
+      "ir": "ir:EvaluateFulfillment.step.3.publish_summary.project.target_attained",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.publish_summary.field.target_attained"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.output.0.service_evaluations.validation.final",
+      "ir": "ir:EvaluateFulfillment.output.0.service_evaluations.validation.final",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.output.service_evaluations"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillmentGenerated.run.output.1.daily_summary.validation.final",
+      "ir": "ir:EvaluateFulfillment.output.1.daily_summary.validation.final",
+      "source": "source:examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.output.daily_summary"
+    }
+  ],
+  "schema_constants": {
+    "Address": {
+      "constant": "ADDRESS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "AuditStamp": {
+      "constant": "AUDIT_STAMP_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "BlockedProduct": {
+      "constant": "BLOCKED_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.product"
+    },
+    "BusinessDate": {
+      "constant": "BUSINESS_DATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "CatalogAvailability": {
+      "constant": "CATALOG_AVAILABILITY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+    },
+    "CatalogProduct": {
+      "constant": "CATALOG_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+    },
+    "Customer": {
+      "constant": "CUSTOMER_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.customer"
+    },
+    "CustomerDailyTotal": {
+      "constant": "CUSTOMER_DAILY_TOTAL_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.analytics"
+    },
+    "CustomerEventRank": {
+      "constant": "CUSTOMER_EVENT_RANK_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.analytics"
+    },
+    "CustomerOrderBackfill": {
+      "constant": "CUSTOMER_ORDER_BACKFILL_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "DailyFulfillmentServiceSummary": {
+      "constant": "DAILY_FULFILLMENT_SERVICE_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.service"
+    },
+    "DailyFulfillmentSummary": {
+      "constant": "DAILY_FULFILLMENT_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.summary"
+    },
+    "DailyRecommendationBehavior": {
+      "constant": "DAILY_RECOMMENDATION_BEHAVIOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.evaluation"
+    },
+    "DailyRecommendationClicks": {
+      "constant": "DAILY_RECOMMENDATION_CLICKS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "DailyRecommendationCounts": {
+      "constant": "DAILY_RECOMMENDATION_COUNTS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "DailyRecommendationImpressions": {
+      "constant": "DAILY_RECOMMENDATION_IMPRESSIONS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "DemandWindow": {
+      "constant": "DEMAND_WINDOW_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.windows"
+    },
+    "DiversificationDecision": {
+      "constant": "DIVERSIFICATION_DECISION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "DiversifiedRecommendationCandidate": {
+      "constant": "DIVERSIFIED_RECOMMENDATION_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "EvaluationBatch": {
+      "constant": "EVALUATION_BATCH_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.batch"
+    },
+    "ExpandedProductTaxonomy": {
+      "constant": "EXPANDED_PRODUCT_TAXONOMY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
+    },
+    "FulfillmentAllocation": {
+      "constant": "FULFILLMENT_ALLOCATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "FulfillmentBackorder": {
+      "constant": "FULFILLMENT_BACKORDER_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "FulfillmentException": {
+      "constant": "FULFILLMENT_EXCEPTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.exception"
+    },
+    "FulfillmentOption": {
+      "constant": "FULFILLMENT_OPTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.workflow"
+    },
+    "FulfillmentPlan": {
+      "constant": "FULFILLMENT_PLAN_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "FulfillmentPreferredOption": {
+      "constant": "FULFILLMENT_PREFERRED_OPTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.workflow"
+    },
+    "FulfillmentReconciliation": {
+      "constant": "FULFILLMENT_RECONCILIATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.reconciliation"
+    },
+    "FulfillmentServiceEvaluation": {
+      "constant": "FULFILLMENT_SERVICE_EVALUATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.service"
+    },
+    "FulfillmentServiceTotals": {
+      "constant": "FULFILLMENT_SERVICE_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.service"
+    },
+    "FulfillmentShortage": {
+      "constant": "FULFILLMENT_SHORTAGE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.shortage"
+    },
+    "FulfillmentShortageRanked": {
+      "constant": "FULFILLMENT_SHORTAGE_RANKED_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.shortage"
+    },
+    "FulfillmentSubstitutionOption": {
+      "constant": "FULFILLMENT_SUBSTITUTION_OPTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.substitution"
+    },
+    "InboundInventory": {
+      "constant": "INBOUND_INVENTORY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
+    },
+    "InboundInventoryAvailability": {
+      "constant": "INBOUND_INVENTORY_AVAILABILITY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.workflow"
+    },
+    "InventoryPosition": {
+      "constant": "INVENTORY_POSITION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
+    },
+    "InventoryProjection": {
+      "constant": "INVENTORY_PROJECTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.projection"
+    },
+    "LeadTime": {
+      "constant": "LEAD_TIME_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
+    },
+    "MerchandisingBoost": {
+      "constant": "MERCHANDISING_BOOST_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.policy"
+    },
+    "MerchandisingPolicy": {
+      "constant": "MERCHANDISING_POLICY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.policy"
+    },
+    "MerchandisingSuppression": {
+      "constant": "MERCHANDISING_SUPPRESSION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.policy"
+    },
+    "Order": {
+      "constant": "ORDER_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.demand"
+    },
+    "OrderCollectionProfile": {
+      "constant": "ORDER_COLLECTION_PROFILE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderCollectionSource": {
+      "constant": "ORDER_COLLECTION_SOURCE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderCustomerReconciliation": {
+      "constant": "ORDER_CUSTOMER_RECONCILIATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderCustomerWindow": {
+      "constant": "ORDER_CUSTOMER_WINDOW_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderFulfillment": {
+      "constant": "ORDER_FULFILLMENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderNormalized": {
+      "constant": "ORDER_NORMALIZED_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderProductCandidate": {
+      "constant": "ORDER_PRODUCT_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderProductCube": {
+      "constant": "ORDER_PRODUCT_CUBE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderPublication": {
+      "constant": "ORDER_PUBLICATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderPublished": {
+      "constant": "ORDER_PUBLISHED_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderRaw": {
+      "constant": "ORDER_RAW_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderRevenueRollup": {
+      "constant": "ORDER_REVENUE_ROLLUP_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderWithCustomer": {
+      "constant": "ORDER_WITH_CUSTOMER_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderWithProduct": {
+      "constant": "ORDER_WITH_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderWithPromotion": {
+      "constant": "ORDER_WITH_PROMOTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "PersonalizationHistory": {
+      "constant": "PERSONALIZATION_HISTORY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.personalization"
+    },
+    "PersonalizedRecommendation": {
+      "constant": "PERSONALIZED_RECOMMENDATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.personalization"
+    },
+    "Product": {
+      "constant": "PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.product"
+    },
+    "ProductBase": {
+      "constant": "PRODUCT_BASE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.product"
+    },
+    "ProductDailySummary": {
+      "constant": "PRODUCT_DAILY_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.analytics"
+    },
+    "ProductRecommendationSignal": {
+      "constant": "PRODUCT_RECOMMENDATION_SIGNAL_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "ProductRecommendationSignalTotals": {
+      "constant": "PRODUCT_RECOMMENDATION_SIGNAL_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "ProductTaxonomy": {
+      "constant": "PRODUCT_TAXONOMY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
+    },
+    "Promotion": {
+      "constant": "PROMOTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.promotion"
+    },
+    "PublicationFlags": {
+      "constant": "PUBLICATION_FLAGS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "RankedRecommendationCandidate": {
+      "constant": "RANKED_RECOMMENDATION_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "RecommendationAssignment": {
+      "constant": "RECOMMENDATION_ASSIGNMENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.experiment"
+    },
+    "RecommendationBehavior": {
+      "constant": "RECOMMENDATION_BEHAVIOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendations"
+    },
+    "RecommendationBehaviorImpression": {
+      "constant": "RECOMMENDATION_BEHAVIOR_IMPRESSION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "RecommendationCandidate": {
+      "constant": "RECOMMENDATION_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
+    },
+    "RecommendationCandidateDecision": {
+      "constant": "RECOMMENDATION_CANDIDATE_DECISION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
+    },
+    "RecommendationClick": {
+      "constant": "RECOMMENDATION_CLICK_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "RecommendationClickSummary": {
+      "constant": "RECOMMENDATION_CLICK_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "RecommendationEvaluationBatch": {
+      "constant": "RECOMMENDATION_EVALUATION_BATCH_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.evaluation"
+    },
+    "RecommendationExperiment": {
+      "constant": "RECOMMENDATION_EXPERIMENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.experiment"
+    },
+    "RecommendationExposure": {
+      "constant": "RECOMMENDATION_EXPOSURE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.experiment"
+    },
+    "RecommendationImpression": {
+      "constant": "RECOMMENDATION_IMPRESSION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "RecommendationPurchase": {
+      "constant": "RECOMMENDATION_PURCHASE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "RecommendationRequest": {
+      "constant": "RECOMMENDATION_REQUEST_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
+    },
+    "RecommendationRequestBehavior": {
+      "constant": "RECOMMENDATION_REQUEST_BEHAVIOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.evaluation"
+    },
+    "RecommendationRun": {
+      "constant": "RECOMMENDATION_RUN_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
+    },
+    "RecommendationVariantMetric": {
+      "constant": "RECOMMENDATION_VARIANT_METRIC_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendations"
+    },
+    "RecommendationVariantMetricTotals": {
+      "constant": "RECOMMENDATION_VARIANT_METRIC_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendations"
+    },
+    "RecommendedProduct": {
+      "constant": "RECOMMENDED_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
+    },
+    "ReplenishmentSuggestion": {
+      "constant": "REPLENISHMENT_SUGGESTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "ServiceRiskTarget": {
+      "constant": "SERVICE_RISK_TARGET_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.exception"
+    },
+    "SessionEvent": {
+      "constant": "SESSION_EVENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.session"
+    },
+    "SessionFeature": {
+      "constant": "SESSION_FEATURE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.session"
+    },
+    "Shipment": {
+      "constant": "SHIPMENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.shipment"
+    },
+    "SubstitutionRule": {
+      "constant": "SUBSTITUTION_RULE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.substitution"
+    },
+    "TaxonomyAncestor": {
+      "constant": "TAXONOMY_ANCESTOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
+    },
+    "TaxonomyNode": {
+      "constant": "TAXONOMY_NODE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
+    },
+    "TenantKey": {
+      "constant": "TENANT_KEY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "UserFeaturePreference": {
+      "constant": "USER_FEATURE_PREFERENCE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.personalization"
+    },
+    "Warehouse": {
+      "constant": "WAREHOUSE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.warehouse"
+    },
+    "WarehouseLoadSummary": {
+      "constant": "WAREHOUSE_LOAD_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.summary"
+    }
+  },
+  "source_transform": "examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment",
+  "static_dataflow": {
+    "dependencies": [
+      {
+        "detail": {
+          "backend": "pyspark"
+        },
+        "operation": "transform",
+        "sources": [
+          "plans",
+          "fulfilled",
+          "service_targets"
+        ],
+        "step": null,
+        "target": "EvaluateFulfillment"
+      },
+      {
+        "detail": {
+          "input_schema": "FulfillmentPlan",
+          "output_schema": "FulfillmentServiceTotals"
+        },
+        "operation": "step",
+        "sources": [
+          "plans",
+          "fulfilled",
+          "target"
+        ],
+        "step": "evaluate",
+        "target": "evaluate"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "left",
+          "right_alias": "fulfilled"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "fulfilled.tenant.tenant_id",
+          "plan.tenant.tenant_id",
+          "fulfilled.id",
+          "plan.order_id",
+          "fulfilled.line_number",
+          "plan.line_number"
+        ],
+        "step": "evaluate",
+        "target": "evaluate.join[1].fulfilled"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "left",
+          "right_alias": "service_targets_2"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "target.tenant.tenant_id",
+          "plan.tenant.tenant_id",
+          "target.active"
+        ],
+        "step": "evaluate",
+        "target": "evaluate.join[2].target"
+      },
+      {
+        "detail": {
+          "field": "tenant",
+          "function": "first",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "plan.tenant"
+        ],
+        "step": "evaluate",
+        "target": "FulfillmentServiceTotals.tenant"
+      },
+      {
+        "detail": {
+          "field": "business",
+          "function": "key",
+          "key": "business"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "plan.business"
+        ],
+        "step": "evaluate",
+        "target": "FulfillmentServiceTotals.business"
+      },
+      {
+        "detail": {
+          "field": "order_id",
+          "function": "key",
+          "key": "order_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "plan.order_id"
+        ],
+        "step": "evaluate",
+        "target": "FulfillmentServiceTotals.order_id"
+      },
+      {
+        "detail": {
+          "field": "line_number",
+          "function": "key",
+          "key": "line_number"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "plan.line_number"
+        ],
+        "step": "evaluate",
+        "target": "FulfillmentServiceTotals.line_number"
+      },
+      {
+        "detail": {
+          "field": "product_id",
+          "function": "key",
+          "key": "product_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "plan.product_id"
+        ],
+        "step": "evaluate",
+        "target": "FulfillmentServiceTotals.product_id"
+      },
+      {
+        "detail": {
+          "field": "selected_warehouse_id",
+          "function": "key",
+          "key": "selected_warehouse_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "plan.selected_warehouse_id"
+        ],
+        "step": "evaluate",
+        "target": "FulfillmentServiceTotals.selected_warehouse_id"
+      },
+      {
+        "detail": {
+          "field": "target_id",
+          "function": "key",
+          "key": "target_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "target.target_id"
+        ],
+        "step": "evaluate",
+        "target": "FulfillmentServiceTotals.target_id"
+      },
+      {
+        "detail": {
+          "field": "target_on_time",
+          "function": "key",
+          "key": "target_on_time"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "target.on_time_target"
+        ],
+        "step": "evaluate",
+        "target": "FulfillmentServiceTotals.target_on_time"
+      },
+      {
+        "detail": {
+          "field": "requested_quantity",
+          "function": "key",
+          "key": "requested_quantity"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "plan.requested_quantity"
+        ],
+        "step": "evaluate",
+        "target": "FulfillmentServiceTotals.requested_quantity"
+      },
+      {
+        "detail": {
+          "field": "planned_quantity",
+          "function": "key",
+          "key": "planned_quantity"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "plan.allocated_quantity"
+        ],
+        "step": "evaluate",
+        "target": "FulfillmentServiceTotals.planned_quantity"
+      },
+      {
+        "detail": {
+          "field": "shipped_quantity",
+          "function": "sum",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.quantity"
+        ],
+        "step": "evaluate",
+        "target": "FulfillmentServiceTotals.shipped_quantity"
+      },
+      {
+        "detail": {
+          "field": "planned_ship_date",
+          "function": "key",
+          "key": "planned_ship_date"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "plan.planned_ship_date"
+        ],
+        "step": "evaluate",
+        "target": "FulfillmentServiceTotals.planned_ship_date"
+      },
+      {
+        "detail": {
+          "field": "actual_ship_date",
+          "function": "max",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.shipped_at"
+        ],
+        "step": "evaluate",
+        "target": "FulfillmentServiceTotals.actual_ship_date"
+      },
+      {
+        "detail": {
+          "field": "shipped",
+          "function": "bool_or",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.line_number"
+        ],
+        "step": "evaluate",
+        "target": "FulfillmentServiceTotals.shipped"
+      },
+      {
+        "detail": {
+          "input_schema": "FulfillmentServiceTotals",
+          "output_schema": "FulfillmentServiceEvaluation"
+        },
+        "operation": "step",
+        "sources": [
+          "FulfillmentServiceTotals"
+        ],
+        "step": "classify",
+        "target": "classify"
+      },
+      {
+        "detail": {
+          "field": "tenant"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentServiceTotals.tenant"
+        ],
+        "step": "classify",
+        "target": "FulfillmentServiceEvaluation.tenant"
+      },
+      {
+        "detail": {
+          "field": "business"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentServiceTotals.business"
+        ],
+        "step": "classify",
+        "target": "FulfillmentServiceEvaluation.business"
+      },
+      {
+        "detail": {
+          "field": "order_id"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentServiceTotals.order_id"
+        ],
+        "step": "classify",
+        "target": "FulfillmentServiceEvaluation.order_id"
+      },
+      {
+        "detail": {
+          "field": "line_number"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentServiceTotals.line_number"
+        ],
+        "step": "classify",
+        "target": "FulfillmentServiceEvaluation.line_number"
+      },
+      {
+        "detail": {
+          "field": "product_id"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentServiceTotals.product_id"
+        ],
+        "step": "classify",
+        "target": "FulfillmentServiceEvaluation.product_id"
+      },
+      {
+        "detail": {
+          "field": "selected_warehouse_id"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentServiceTotals.selected_warehouse_id"
+        ],
+        "step": "classify",
+        "target": "FulfillmentServiceEvaluation.selected_warehouse_id"
+      },
+      {
+        "detail": {
+          "field": "target_id"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentServiceTotals.target_id"
+        ],
+        "step": "classify",
+        "target": "FulfillmentServiceEvaluation.target_id"
+      },
+      {
+        "detail": {
+          "field": "target_on_time"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentServiceTotals.target_on_time"
+        ],
+        "step": "classify",
+        "target": "FulfillmentServiceEvaluation.target_on_time"
+      },
+      {
+        "detail": {
+          "field": "requested_quantity"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentServiceTotals.requested_quantity"
+        ],
+        "step": "classify",
+        "target": "FulfillmentServiceEvaluation.requested_quantity"
+      },
+      {
+        "detail": {
+          "field": "planned_quantity"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentServiceTotals.planned_quantity"
+        ],
+        "step": "classify",
+        "target": "FulfillmentServiceEvaluation.planned_quantity"
+      },
+      {
+        "detail": {
+          "field": "shipped_quantity"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentServiceTotals.shipped_quantity"
+        ],
+        "step": "classify",
+        "target": "FulfillmentServiceEvaluation.shipped_quantity"
+      },
+      {
+        "detail": {
+          "field": "planned_ship_date"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentServiceTotals.planned_ship_date"
+        ],
+        "step": "classify",
+        "target": "FulfillmentServiceEvaluation.planned_ship_date"
+      },
+      {
+        "detail": {
+          "field": "actual_ship_date"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentServiceTotals.actual_ship_date"
+        ],
+        "step": "classify",
+        "target": "FulfillmentServiceEvaluation.actual_ship_date"
+      },
+      {
+        "detail": {
+          "field": "on_time_status"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentServiceTotals.actual_ship_date",
+          "FulfillmentServiceTotals.planned_ship_date"
+        ],
+        "step": "classify",
+        "target": "FulfillmentServiceEvaluation.on_time_status"
+      },
+      {
+        "detail": {
+          "field": "in_full_status"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentServiceTotals.shipped",
+          "FulfillmentServiceTotals.shipped_quantity",
+          "FulfillmentServiceTotals.planned_quantity"
+        ],
+        "step": "classify",
+        "target": "FulfillmentServiceEvaluation.in_full_status"
+      },
+      {
+        "detail": {
+          "field": "lateness_days"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentServiceTotals.actual_ship_date",
+          "FulfillmentServiceTotals.planned_ship_date"
+        ],
+        "step": "classify",
+        "target": "FulfillmentServiceEvaluation.lateness_days"
+      },
+      {
+        "detail": {
+          "field": "service_status"
+        },
+        "operation": "project",
+        "sources": [
+          "FulfillmentServiceTotals.shipped",
+          "FulfillmentServiceTotals.actual_ship_date",
+          "FulfillmentServiceTotals.planned_ship_date",
+          "FulfillmentServiceTotals.shipped_quantity",
+          "FulfillmentServiceTotals.planned_quantity"
+        ],
+        "step": "classify",
+        "target": "FulfillmentServiceEvaluation.service_status"
+      },
+      {
+        "detail": {
+          "input_schema": "FulfillmentServiceEvaluation",
+          "output_schema": "DailyFulfillmentServiceSummary"
+        },
+        "operation": "step",
+        "sources": [
+          "FulfillmentServiceEvaluation"
+        ],
+        "step": "summarize",
+        "target": "summarize"
+      },
+      {
+        "detail": {
+          "field": "tenant",
+          "function": "first",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "FulfillmentServiceEvaluation.tenant"
+        ],
+        "step": "summarize",
+        "target": "DailyFulfillmentServiceSummary.tenant"
+      },
+      {
+        "detail": {
+          "field": "business_date",
+          "function": "key",
+          "key": "business_date"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "FulfillmentServiceEvaluation.business.order_date"
+        ],
+        "step": "summarize",
+        "target": "DailyFulfillmentServiceSummary.business_date"
+      },
+      {
+        "detail": {
+          "field": "warehouse_id",
+          "function": "key",
+          "key": "warehouse_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "FulfillmentServiceEvaluation.selected_warehouse_id"
+        ],
+        "step": "summarize",
+        "target": "DailyFulfillmentServiceSummary.warehouse_id"
+      },
+      {
+        "detail": {
+          "field": "target_id",
+          "function": "key",
+          "key": "target_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "FulfillmentServiceEvaluation.target_id"
+        ],
+        "step": "summarize",
+        "target": "DailyFulfillmentServiceSummary.target_id"
+      },
+      {
+        "detail": {
+          "field": "evaluated_line_count",
+          "function": "count",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "evaluations"
+        ],
+        "step": "summarize",
+        "target": "DailyFulfillmentServiceSummary.evaluated_line_count"
+      },
+      {
+        "detail": {
+          "field": "on_time_in_full_count",
+          "function": "sum",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "FulfillmentServiceEvaluation.service_status"
+        ],
+        "step": "summarize",
+        "target": "DailyFulfillmentServiceSummary.on_time_in_full_count"
+      },
+      {
+        "detail": {
+          "field": "on_time_line_count",
+          "function": "sum",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "FulfillmentServiceEvaluation.on_time_status"
+        ],
+        "step": "summarize",
+        "target": "DailyFulfillmentServiceSummary.on_time_line_count"
+      },
+      {
+        "detail": {
+          "field": "in_full_line_count",
+          "function": "sum",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "FulfillmentServiceEvaluation.in_full_status"
+        ],
+        "step": "summarize",
+        "target": "DailyFulfillmentServiceSummary.in_full_line_count"
+      },
+      {
+        "detail": {
+          "field": "service_level",
+          "function": "sum",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "evaluations"
+        ],
+        "step": "summarize",
+        "target": "DailyFulfillmentServiceSummary.service_level"
+      },
+      {
+        "detail": {
+          "field": "target_on_time",
+          "function": "key",
+          "key": "target_on_time"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "FulfillmentServiceEvaluation.target_on_time"
+        ],
+        "step": "summarize",
+        "target": "DailyFulfillmentServiceSummary.target_on_time"
+      },
+      {
+        "detail": {
+          "field": "target_attained",
+          "function": "bool_or",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "FulfillmentServiceEvaluation.service_status"
+        ],
+        "step": "summarize",
+        "target": "DailyFulfillmentServiceSummary.target_attained"
+      },
+      {
+        "detail": {
+          "input_schema": "DailyFulfillmentServiceSummary",
+          "output_schema": "DailyFulfillmentServiceSummary"
+        },
+        "operation": "step",
+        "sources": [
+          "DailyFulfillmentServiceSummary"
+        ],
+        "step": "publish_summary",
+        "target": "publish_summary"
+      },
+      {
+        "detail": {
+          "field": "tenant"
+        },
+        "operation": "project",
+        "sources": [
+          "DailyFulfillmentServiceSummary.tenant"
+        ],
+        "step": "publish_summary",
+        "target": "DailyFulfillmentServiceSummary.tenant"
+      },
+      {
+        "detail": {
+          "field": "business_date"
+        },
+        "operation": "project",
+        "sources": [
+          "DailyFulfillmentServiceSummary.business_date"
+        ],
+        "step": "publish_summary",
+        "target": "DailyFulfillmentServiceSummary.business_date"
+      },
+      {
+        "detail": {
+          "field": "warehouse_id"
+        },
+        "operation": "project",
+        "sources": [
+          "DailyFulfillmentServiceSummary.warehouse_id"
+        ],
+        "step": "publish_summary",
+        "target": "DailyFulfillmentServiceSummary.warehouse_id"
+      },
+      {
+        "detail": {
+          "field": "target_id"
+        },
+        "operation": "project",
+        "sources": [
+          "DailyFulfillmentServiceSummary.target_id"
+        ],
+        "step": "publish_summary",
+        "target": "DailyFulfillmentServiceSummary.target_id"
+      },
+      {
+        "detail": {
+          "field": "evaluated_line_count"
+        },
+        "operation": "project",
+        "sources": [
+          "DailyFulfillmentServiceSummary.evaluated_line_count"
+        ],
+        "step": "publish_summary",
+        "target": "DailyFulfillmentServiceSummary.evaluated_line_count"
+      },
+      {
+        "detail": {
+          "field": "on_time_in_full_count"
+        },
+        "operation": "project",
+        "sources": [
+          "DailyFulfillmentServiceSummary.on_time_in_full_count"
+        ],
+        "step": "publish_summary",
+        "target": "DailyFulfillmentServiceSummary.on_time_in_full_count"
+      },
+      {
+        "detail": {
+          "field": "on_time_line_count"
+        },
+        "operation": "project",
+        "sources": [
+          "DailyFulfillmentServiceSummary.on_time_line_count"
+        ],
+        "step": "publish_summary",
+        "target": "DailyFulfillmentServiceSummary.on_time_line_count"
+      },
+      {
+        "detail": {
+          "field": "in_full_line_count"
+        },
+        "operation": "project",
+        "sources": [
+          "DailyFulfillmentServiceSummary.in_full_line_count"
+        ],
+        "step": "publish_summary",
+        "target": "DailyFulfillmentServiceSummary.in_full_line_count"
+      },
+      {
+        "detail": {
+          "field": "service_level"
+        },
+        "operation": "project",
+        "sources": [
+          "DailyFulfillmentServiceSummary.evaluated_line_count",
+          "DailyFulfillmentServiceSummary.on_time_in_full_count"
+        ],
+        "step": "publish_summary",
+        "target": "DailyFulfillmentServiceSummary.service_level"
+      },
+      {
+        "detail": {
+          "field": "target_on_time"
+        },
+        "operation": "project",
+        "sources": [
+          "DailyFulfillmentServiceSummary.target_on_time"
+        ],
+        "step": "publish_summary",
+        "target": "DailyFulfillmentServiceSummary.target_on_time"
+      },
+      {
+        "detail": {
+          "field": "target_attained"
+        },
+        "operation": "project",
+        "sources": [
+          "DailyFulfillmentServiceSummary.target_on_time",
+          "DailyFulfillmentServiceSummary.evaluated_line_count",
+          "DailyFulfillmentServiceSummary.on_time_in_full_count"
+        ],
+        "step": "publish_summary",
+        "target": "DailyFulfillmentServiceSummary.target_attained"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "FulfillmentServiceEvaluation"
+        ],
+        "step": null,
+        "target": "FulfillmentServiceEvaluation.validation.final"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "DailyFulfillmentServiceSummary"
+        ],
+        "step": null,
+        "target": "DailyFulfillmentServiceSummary.validation.final"
+      }
+    ],
+    "opaque_boundaries": []
+  },
+  "steps": [
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "fulfillment_plan",
+      "joins": [
+        {
+          "how": "left",
+          "input": "fulfilled",
+          "right_alias": "fulfilled"
+        },
+        {
+          "how": "left",
+          "input": "target",
+          "right_alias": "service_targets_2"
+        }
+      ],
+      "name": "evaluate",
+      "output_alias": "fulfillment_service_totals",
+      "output_schema": "FulfillmentServiceTotals",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "totals",
+          "lane": "totals",
+          "schema": "FulfillmentServiceTotals"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "FulfillmentServiceTotals"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "fulfillment_service_totals",
+      "joins": [],
+      "name": "classify",
+      "output_alias": "fulfillment_service_evaluation",
+      "output_schema": "FulfillmentServiceEvaluation",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "evaluations",
+          "lane": "evaluations",
+          "schema": "FulfillmentServiceEvaluation"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "FulfillmentServiceEvaluation"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "fulfillment_service_evaluation",
+      "joins": [],
+      "name": "summarize",
+      "output_alias": "daily_fulfillment_service_summary",
+      "output_schema": "DailyFulfillmentServiceSummary",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "summary_totals",
+          "lane": "summary_totals",
+          "schema": "DailyFulfillmentServiceSummary"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "DailyFulfillmentServiceSummary"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "daily_fulfillment_service_summary",
+      "joins": [],
+      "name": "publish_summary",
+      "output_alias": "daily_fulfillment_service_summary",
+      "output_schema": "DailyFulfillmentServiceSummary",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "daily_summary",
+          "lane": "daily_summary",
+          "schema": "DailyFulfillmentServiceSummary"
+        }
+      ],
+      "validation": []
+    }
+  ],
+  "target_module": "examples.structure_generated.store.pyspark.transforms.examples.store.transforms.evaluation.fulfillment.service",
+  "validation": {
+    "outputs": [
+      {
+        "mode": "strict",
+        "name": "service_evaluations",
+        "schema": "FulfillmentServiceEvaluation"
+      },
+      {
+        "mode": "strict",
+        "name": "daily_summary",
+        "schema": "DailyFulfillmentServiceSummary"
+      }
+    ]
+  }
+}

@@ -1,0 +1,5 @@
+tenant_id,source_system,ingested_at,id,name,region,priority,active
+t1,warehouse,2025-12-01T08:00:00,wh-east,East Hub,east,1,true
+t1,warehouse,2025-12-01T08:01:00,wh-west,West Hub,west,2,true
+t1,warehouse,2025-12-01T08:02:00,wh-closed,Closed Hub,east,0,false
+t2,warehouse,2025-12-01T08:00:00,wh-north,North Hub,north,1,true

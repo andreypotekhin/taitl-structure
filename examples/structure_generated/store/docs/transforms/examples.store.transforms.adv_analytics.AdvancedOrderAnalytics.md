@@ -29,5 +29,5 @@ Source: `examples.store.transforms.adv_analytics.AdvancedOrderAnalytics`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/adv_analytics.py`
-- `traceability`: `traceability/transforms/adv_analytics.AdvancedOrderAnalytics.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/adv_analytics.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/adv_analytics.AdvancedOrderAnalytics.json`

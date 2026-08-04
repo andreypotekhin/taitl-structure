@@ -23,5 +23,5 @@ Source: `examples.store.transforms.fulfillment.shortages.detect.DetectShortages`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/detect.py`
-- `traceability`: `traceability/transforms/detect.DetectShortages.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/fulfillment/shortages/detect.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/fulfillment/shortages/detect.DetectShortages.json`

@@ -22,5 +22,5 @@ Source: `examples.store.transforms.recommender.signals.session.BuildSessionSigna
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/session.py`
-- `traceability`: `traceability/transforms/session.BuildSessionSignals.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/recommender/signals/session.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/recommender/signals/session.BuildSessionSignals.json`

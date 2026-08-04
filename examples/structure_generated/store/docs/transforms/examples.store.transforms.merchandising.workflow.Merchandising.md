@@ -102,5 +102,5 @@ Source: `examples.store.transforms.merchandising.workflow.Merchandising`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/merchandising_workflow.py`
-- `traceability`: `traceability/transforms/merchandising_workflow.Merchandising.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/merchandising/workflow.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/merchandising/workflow.Merchandising.json`

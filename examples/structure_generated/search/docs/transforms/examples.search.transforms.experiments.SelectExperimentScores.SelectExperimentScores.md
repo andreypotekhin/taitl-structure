@@ -33,5 +33,5 @@ Source: `examples.search.transforms.experiments.SelectExperimentScores.SelectExp
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/SelectExperimentScores.py`
-- `traceability`: `traceability/transforms/SelectExperimentScores.SelectExperimentScores.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/experiments/SelectExperimentScores.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/experiments/SelectExperimentScores.SelectExperimentScores.json`

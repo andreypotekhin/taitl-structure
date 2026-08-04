@@ -22,5 +22,5 @@ Source: `examples.search.transforms.features.BuildDocumentFeatures.BuildDocument
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/BuildDocumentFeatures.py`
-- `traceability`: `traceability/transforms/BuildDocumentFeatures.BuildDocumentFeatures.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/features/BuildDocumentFeatures.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/features/BuildDocumentFeatures.BuildDocumentFeatures.json`

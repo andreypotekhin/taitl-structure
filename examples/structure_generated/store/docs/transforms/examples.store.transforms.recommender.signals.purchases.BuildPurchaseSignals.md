@@ -24,5 +24,5 @@ Source: `examples.store.transforms.recommender.signals.purchases.BuildPurchaseSi
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/purchases.py`
-- `traceability`: `traceability/transforms/purchases.BuildPurchaseSignals.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/recommender/signals/purchases.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/recommender/signals/purchases.BuildPurchaseSignals.json`

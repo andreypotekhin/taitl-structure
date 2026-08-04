@@ -25,5 +25,5 @@ Source: `examples.search.transforms.stats.CorpusText.CorpusText`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/CorpusText.py`
-- `traceability`: `traceability/transforms/CorpusText.CorpusText.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/stats/CorpusText.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/stats/CorpusText.CorpusText.json`

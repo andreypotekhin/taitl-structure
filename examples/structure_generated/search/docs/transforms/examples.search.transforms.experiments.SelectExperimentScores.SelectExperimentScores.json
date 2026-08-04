@@ -194,7 +194,7 @@
     }
   ],
   "target_artifacts": {
-    "pyspark_transform": "pyspark/transforms/SelectExperimentScores.py",
-    "traceability": "traceability/transforms/SelectExperimentScores.SelectExperimentScores.json"
+    "pyspark_transform": "pyspark/transforms/examples/search/transforms/experiments/SelectExperimentScores.py",
+    "traceability": "traceability/transforms/examples/search/transforms/experiments/SelectExperimentScores.SelectExperimentScores.json"
   }
 }

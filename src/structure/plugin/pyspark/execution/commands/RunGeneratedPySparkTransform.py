@@ -7,6 +7,10 @@ from structure.dsl import Transform
 from structure.plugin.api.v1.model import RuntimeDiagnostic, StructureRuntimeError, TransformResult
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.plugin.pyspark.execution.logic.SparkConnectRuntimeDiagnostics import spark_connect_runtime_error
+from structure.plugin.pyspark.GeneratedPySparkTransformModule import (
+    generated_pyspark_transform_module,
+    legacy_generated_pyspark_transform_module,
+)
 
 
 class RunGeneratedPySparkTransform:
@@ -80,30 +84,27 @@ class RunGeneratedPySparkTransform:
         return {output.name: output.aliases for output in plan.outputs if output.aliases}
 
     def _import_module(self, invocation: Transform, *, session) -> ModuleType:
-        module_name = self._module_name(invocation, generated_package=session.generated_package)
+        source = type(invocation).__module__
+        module_names = (
+            generated_pyspark_transform_module(source, generated_package=session.generated_package),
+            legacy_generated_pyspark_transform_module(source, generated_package=session.generated_package),
+        )
         storage = getattr(session, "storage", None)
-        if storage is not None and hasattr(storage, "import_module"):
+        errors = []
+        for module_name in dict.fromkeys(module_names):
             try:
-                return storage.import_module(module_name)
+                if storage is not None and hasattr(storage, "import_module"):
+                    return storage.import_module(module_name)
+                return importlib.import_module(module_name)
             except (ImportError, KeyError) as error:
-                raise self._error(
-                    invocation,
-                    session=session,
-                    problem=f"Structure could not import generated module {module_name} from configured storage.",
-                ) from error
-        try:
-            return importlib.import_module(module_name)
-        except ImportError as error:
-            raise self._error(
-                invocation,
-                session=session,
-                problem=f"Structure could not import generated module {module_name}.",
-            ) from error
+                errors.append(error)
+        location = "configured storage" if storage is not None and hasattr(storage, "import_module") else "the import path"
+        problem = f"Structure could not import generated modules {', '.join(module_names)} from {location}."
+        raise self._error(invocation, session=session, problem=problem) from errors[-1]
 
     def _module_name(self, invocation: Transform, *, generated_package: str) -> str:
         source = type(invocation).__module__
-        name = source.rsplit(".", 1)[1]
-        return f"{generated_package}.pyspark.transforms.{name}"
+        return generated_pyspark_transform_module(source, generated_package=generated_package)
 
     def _verify_fingerprint(self, module, *, source_transform: str, expected: str | None, invocation, session) -> None:
         if expected is None:

@@ -149,7 +149,7 @@
     }
   ],
   "target_artifacts": {
-    "pyspark_transform": "pyspark/transforms/service.py",
-    "traceability": "traceability/transforms/service.EvaluateFulfillment.json"
+    "pyspark_transform": "pyspark/transforms/examples/store/transforms/evaluation/fulfillment/service.py",
+    "traceability": "traceability/transforms/examples/store/transforms/evaluation/fulfillment/service.EvaluateFulfillment.json"
   }
 }

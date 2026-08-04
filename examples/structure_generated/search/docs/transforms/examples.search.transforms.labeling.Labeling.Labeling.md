@@ -38,5 +38,5 @@ Source: `examples.search.transforms.labeling.Labeling.Labeling`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/Labeling.py`
-- `traceability`: `traceability/transforms/Labeling.Labeling.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/labeling/Labeling.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/labeling/Labeling.Labeling.json`

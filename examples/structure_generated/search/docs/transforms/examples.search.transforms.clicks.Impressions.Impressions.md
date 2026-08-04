@@ -22,5 +22,5 @@ Source: `examples.search.transforms.clicks.Impressions.Impressions`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/Impressions.py`
-- `traceability`: `traceability/transforms/Impressions.Impressions.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/clicks/Impressions.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/clicks/Impressions.Impressions.json`

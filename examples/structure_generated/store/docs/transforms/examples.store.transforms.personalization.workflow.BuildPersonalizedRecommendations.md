@@ -36,5 +36,5 @@ Source: `examples.store.transforms.personalization.workflow.BuildPersonalizedRec
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/personalization_workflow.py`
-- `traceability`: `traceability/transforms/personalization_workflow.BuildPersonalizedRecommendations.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/personalization/workflow.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/personalization/workflow.BuildPersonalizedRecommendations.json`

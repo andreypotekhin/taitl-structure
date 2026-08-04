@@ -28,5 +28,5 @@ Source: `examples.store.transforms.fulfillment.substitutions.find_substitutions.
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/find_substitutions.py`
-- `traceability`: `traceability/transforms/find_substitutions.FindSubstitutions.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/fulfillment/substitutions/find_substitutions.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/fulfillment/substitutions/find_substitutions.FindSubstitutions.json`

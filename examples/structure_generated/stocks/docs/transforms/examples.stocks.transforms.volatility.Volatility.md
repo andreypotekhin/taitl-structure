@@ -22,5 +22,5 @@ Source: `examples.stocks.transforms.volatility.Volatility`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/volatility.py`
-- `traceability`: `traceability/transforms/volatility.Volatility.json`
+- `pyspark_transform`: `pyspark/transforms/examples/stocks/transforms/volatility.py`
+- `traceability`: `traceability/transforms/examples/stocks/transforms/volatility.Volatility.json`

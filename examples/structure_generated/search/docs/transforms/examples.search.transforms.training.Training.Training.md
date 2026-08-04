@@ -39,5 +39,5 @@ Source: `examples.search.transforms.training.Training.Training`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/Training.py`
-- `traceability`: `traceability/transforms/Training.Training.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/training/Training.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/training/Training.Training.json`

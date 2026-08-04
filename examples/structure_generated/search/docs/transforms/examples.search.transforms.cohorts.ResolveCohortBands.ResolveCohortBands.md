@@ -51,5 +51,5 @@ Source: `examples.search.transforms.cohorts.ResolveCohortBands.ResolveCohortBand
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/ResolveCohortBands.py`
-- `traceability`: `traceability/transforms/ResolveCohortBands.ResolveCohortBands.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/cohorts/ResolveCohortBands.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/cohorts/ResolveCohortBands.ResolveCohortBands.json`

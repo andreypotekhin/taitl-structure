@@ -57,10 +57,12 @@ def test_colocated_intermediate_schema_compiles_and_generates(tmp_path: Path, mo
     assert [schema.__name__ for schema in project.schema_modules["orders.transforms.publish"]] == ["OrderNormalized"]
     assert artifact.schemas.steps["normalize"].name == "StructType"
     assert Path("generated/structure_generated/pyspark/schemas/publish.py").exists()
-    assert Path("generated/structure_generated/pyspark/transforms/publish.py").exists()
+    assert Path("generated/structure_generated/pyspark/transforms/orders/transforms/publish.py").exists()
     assert Path("generated/docs/schemas/OrderNormalized.md").exists()
     assert Path("generated/docs/transforms/orders.transforms.publish.PublishOrders.json").exists()
-    generated = Path("generated/structure_generated/pyspark/transforms/publish.py").read_text(encoding="utf-8")
+    generated = Path("generated/structure_generated/pyspark/transforms/orders/transforms/publish.py").read_text(
+        encoding="utf-8"
+    )
     assert "from structure_generated.pyspark.schemas.publish import ORDER_NORMALIZED_SCHEMA" in generated
 
 

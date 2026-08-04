@@ -30,5 +30,5 @@ Source: `examples.search.transforms.training.RankDocumentCandidates.RankDocument
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/RankDocumentCandidates.py`
-- `traceability`: `traceability/transforms/RankDocumentCandidates.RankDocumentCandidates.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/training/RankDocumentCandidates.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/training/RankDocumentCandidates.RankDocumentCandidates.json`

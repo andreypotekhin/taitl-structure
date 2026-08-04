@@ -24,5 +24,5 @@ Source: `examples.stocks.transforms.advanced.Advanced`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/advanced.py`
-- `traceability`: `traceability/transforms/advanced.Advanced.json`
+- `pyspark_transform`: `pyspark/transforms/examples/stocks/transforms/advanced.py`
+- `traceability`: `traceability/transforms/examples/stocks/transforms/advanced.Advanced.json`

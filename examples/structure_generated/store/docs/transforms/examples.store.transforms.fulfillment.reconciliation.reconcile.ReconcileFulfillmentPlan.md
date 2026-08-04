@@ -23,5 +23,5 @@ Source: `examples.store.transforms.fulfillment.reconciliation.reconcile.Reconcil
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/reconcile.py`
-- `traceability`: `traceability/transforms/reconcile.ReconcileFulfillmentPlan.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/fulfillment/reconciliation/reconcile.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/fulfillment/reconciliation/reconcile.ReconcileFulfillmentPlan.json`

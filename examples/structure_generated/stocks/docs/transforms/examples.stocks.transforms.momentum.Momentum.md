@@ -22,5 +22,5 @@ Source: `examples.stocks.transforms.momentum.Momentum`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/momentum.py`
-- `traceability`: `traceability/transforms/momentum.Momentum.json`
+- `pyspark_transform`: `pyspark/transforms/examples/stocks/transforms/momentum.py`
+- `traceability`: `traceability/transforms/examples/stocks/transforms/momentum.Momentum.json`

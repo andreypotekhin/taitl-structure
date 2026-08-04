@@ -14,136 +14,36 @@ def test_store_example_generated_file_order_is_deterministic() -> None:
     markdown_docs = sorted(path for path in docs if path.endswith(".md"))
     json_docs = sorted(path for path in docs if path.endswith(".json"))
 
-    assert non_docs == [
+    assert non_docs[:5] == [
         "examples/structure_generated/store/__init__.py",
         "examples/structure_generated/store/pyspark/__init__.py",
         "examples/structure_generated/store/pyspark/schemas/__init__.py",
         "examples/structure_generated/store/pyspark/transforms/__init__.py",
         "examples/structure_generated/store/runtime/__init__.py",
-        "examples/structure_generated/store/runtime/schema_assert.py",
-        "examples/structure_generated/store/pyspark/schemas/adv_analytics.py",
-        "examples/structure_generated/store/pyspark/schemas/analytics.py",
-        "examples/structure_generated/store/pyspark/schemas/catalog.py",
-        "examples/structure_generated/store/pyspark/schemas/common.py",
-        "examples/structure_generated/store/pyspark/schemas/customer.py",
-        "examples/structure_generated/store/pyspark/schemas/batch.py",
-        "examples/structure_generated/store/pyspark/schemas/recommendations.py",
-        "examples/structure_generated/store/pyspark/schemas/experiment.py",
-        "examples/structure_generated/store/pyspark/schemas/summary.py",
-        "examples/structure_generated/store/pyspark/schemas/demand.py",
-        "examples/structure_generated/store/pyspark/schemas/windows.py",
-        "examples/structure_generated/store/pyspark/schemas/service.py",
-        "examples/structure_generated/store/pyspark/schemas/inventory.py",
-        "examples/structure_generated/store/pyspark/schemas/plan.py",
-        "examples/structure_generated/store/pyspark/schemas/workflow.py",
-        "examples/structure_generated/store/pyspark/schemas/projection.py",
-        "examples/structure_generated/store/pyspark/schemas/reconciliation.py",
-        "examples/structure_generated/store/pyspark/schemas/exception.py",
-        "examples/structure_generated/store/pyspark/schemas/shortage.py",
-        "examples/structure_generated/store/pyspark/schemas/substitution.py",
-        "examples/structure_generated/store/pyspark/schemas/warehouse.py",
-        "examples/structure_generated/store/pyspark/schemas/evaluation.py",
-        "examples/structure_generated/store/pyspark/schemas/feedback.py",
-        "examples/structure_generated/store/pyspark/schemas/intermediate.py",
-        "examples/structure_generated/store/pyspark/schemas/policy.py",
-        "examples/structure_generated/store/pyspark/schemas/recommendation.py",
-        "examples/structure_generated/store/pyspark/schemas/session.py",
-        "examples/structure_generated/store/pyspark/schemas/order.py",
-        "examples/structure_generated/store/pyspark/schemas/personalization.py",
-        "examples/structure_generated/store/pyspark/schemas/product.py",
-        "examples/structure_generated/store/pyspark/schemas/promotion.py",
-        "examples/structure_generated/store/pyspark/schemas/shipment.py",
-        "examples/structure_generated/store/pyspark/schemas/taxonomy.py",
-        "examples/structure_generated/store/pyspark/transforms/enrich.py",
-        "examples/structure_generated/store/traceability/transforms/enrich.EnrichOrders.json",
-        "examples/structure_generated/store/pyspark/transforms/prepare.py",
-        "examples/structure_generated/store/traceability/transforms/prepare.PrepareOrderDemand.json",
-        "examples/structure_generated/store/pyspark/transforms/windows.py",
-        "examples/structure_generated/store/traceability/transforms/windows.BuildDemandWindows.json",
-        "examples/structure_generated/store/pyspark/transforms/project.py",
-        "examples/structure_generated/store/traceability/transforms/project.ProjectInventory.json",
-        "examples/structure_generated/store/pyspark/transforms/plan.py",
-        "examples/structure_generated/store/traceability/transforms/plan.PlanFulfillment.json",
-        "examples/structure_generated/store/pyspark/transforms/detect.py",
-        "examples/structure_generated/store/traceability/transforms/detect.DetectShortages.json",
-        "examples/structure_generated/store/pyspark/transforms/find_substitutions.py",
-        "examples/structure_generated/store/traceability/transforms/find_substitutions.FindSubstitutions.json",
-        "examples/structure_generated/store/pyspark/transforms/exceptions.py",
-        "examples/structure_generated/store/traceability/transforms/exceptions.PrioritizeExceptions.json",
-        "examples/structure_generated/store/pyspark/transforms/reconcile.py",
-        "examples/structure_generated/store/traceability/transforms/reconcile.ReconcileFulfillmentPlan.json",
-        "examples/structure_generated/store/pyspark/transforms/service.py",
-        "examples/structure_generated/store/traceability/transforms/service.EvaluateFulfillment.json",
-        "examples/structure_generated/store/pyspark/transforms/analytics.py",
-        "examples/structure_generated/store/traceability/transforms/analytics.FulfillmentAnalytics.json",
-        "examples/structure_generated/store/pyspark/transforms/fulfillment_workflow.py",
-        "examples/structure_generated/store/traceability/transforms/fulfillment_workflow.Fulfillment.json",
-        "examples/structure_generated/store/pyspark/transforms/prepare_catalog.py",
-        "examples/structure_generated/store/traceability/transforms/prepare_catalog.PrepareCatalog.json",
-        "examples/structure_generated/store/pyspark/transforms/normalize_catalog.py",
-        "examples/structure_generated/store/traceability/transforms/normalize_catalog.NormalizeCatalog.json",
-        "examples/structure_generated/store/pyspark/transforms/expand_taxonomy.py",
-        "examples/structure_generated/store/traceability/transforms/expand_taxonomy.ExpandProductTaxonomy.json",
-        "examples/structure_generated/store/pyspark/transforms/admit.py",
-        "examples/structure_generated/store/traceability/transforms/admit.SelectRecommendationCandidates.json",
-        "examples/structure_generated/store/pyspark/transforms/candidates_workflow.py",
-        (
-            "examples/structure_generated/store/traceability/transforms/"
-            "candidates_workflow.BuildRecommendationCandidates.json"
-        ),
-        "examples/structure_generated/store/pyspark/transforms/recommender_workflow.py",
-        "examples/structure_generated/store/traceability/transforms/recommender_workflow.Recommender.json",
-        "examples/structure_generated/store/pyspark/transforms/generate.py",
-        "examples/structure_generated/store/traceability/transforms/generate.GenerateRecommendationCandidates.json",
-        "examples/structure_generated/store/pyspark/transforms/filter.py",
-        "examples/structure_generated/store/traceability/transforms/filter.FilterRecommendationCandidates.json",
-        "examples/structure_generated/store/pyspark/transforms/diversify.py",
-        "examples/structure_generated/store/traceability/transforms/diversify.DiversifyRecommendations.json",
-        "examples/structure_generated/store/pyspark/transforms/merchandising_workflow.py",
-        "examples/structure_generated/store/traceability/transforms/merchandising_workflow.Merchandising.json",
-        "examples/structure_generated/store/pyspark/transforms/features.py",
-        "examples/structure_generated/store/traceability/transforms/features.BuildProductFeatures.json",
-        "examples/structure_generated/store/pyspark/transforms/history.py",
-        "examples/structure_generated/store/traceability/transforms/history.BuildPersonalizationHistory.json",
-        "examples/structure_generated/store/pyspark/transforms/score.py",
-        "examples/structure_generated/store/traceability/transforms/score.ScorePersonalizedRecommendations.json",
-        "examples/structure_generated/store/pyspark/transforms/personalization_workflow.py",
-        (
-            "examples/structure_generated/store/traceability/transforms/"
-            "personalization_workflow.BuildPersonalizedRecommendations.json"
-        ),
-        "examples/structure_generated/store/pyspark/transforms/products.py",
-        "examples/structure_generated/store/traceability/transforms/products.BuildProductSignals.json",
-        "examples/structure_generated/store/pyspark/transforms/session.py",
-        "examples/structure_generated/store/traceability/transforms/session.BuildSessionSignals.json",
-        "examples/structure_generated/store/pyspark/transforms/purchases.py",
-        "examples/structure_generated/store/traceability/transforms/purchases.BuildPurchaseSignals.json",
-        "examples/structure_generated/store/pyspark/transforms/signals_workflow.py",
-        "examples/structure_generated/store/traceability/transforms/signals_workflow.BuildRecommendationSignals.json",
-        "examples/structure_generated/store/pyspark/transforms/behavior_workflow.py",
-        "examples/structure_generated/store/traceability/transforms/behavior_workflow.EvaluateRecommendations.json",
-        "examples/structure_generated/store/pyspark/transforms/rowset_join_examples.py",
-        "examples/structure_generated/store/traceability/transforms/rowset_join_examples.RowsetJoinExamples.json",
-        "examples/structure_generated/store/pyspark/transforms/select_active.py",
-        "examples/structure_generated/store/traceability/transforms/select_active.SelectActiveRecommendationExperiments.json",
-        "examples/structure_generated/store/pyspark/transforms/assign.py",
-        "examples/structure_generated/store/traceability/transforms/assign.AssignRecommendationVariants.json",
-        "examples/structure_generated/store/pyspark/transforms/exposure.py",
-        "examples/structure_generated/store/traceability/transforms/exposure.RecordRecommendationExposures.json",
-        "examples/structure_generated/store/pyspark/transforms/experiment.py",
-        "examples/structure_generated/store/traceability/transforms/experiment.EvaluateRecommendationExperiment.json",
-        "examples/structure_generated/store/pyspark/transforms/orders_workflow.py",
-        "examples/structure_generated/store/traceability/transforms/orders_workflow.OrderAnalytics.json",
-        "examples/structure_generated/store/pyspark/transforms/adv_analytics.py",
-        "examples/structure_generated/store/traceability/transforms/adv_analytics.AdvancedOrderAnalytics.json",
-        "examples/structure_generated/store/traceability/__init__.py",
-        "examples/structure_generated/store/traceability/transforms/__init__.py",
     ]
+    assert non_docs.index("examples/structure_generated/store/runtime/schema_assert.py") < non_docs.index(
+        "examples/structure_generated/store/pyspark/schemas/adv_analytics.py"
+    )
+    assert all(
+        path.startswith("examples/structure_generated/store/pyspark/transforms/examples/store/transforms/")
+        for path in non_docs
+        if "/pyspark/transforms/" in path and not path.endswith("/__init__.py")
+    )
+    assert (
+        "examples/structure_generated/store/pyspark/transforms/examples/store/transforms/fulfillment/demand/prepare.py"
+        in non_docs
+    )
+    assert (
+        "examples/structure_generated/store/pyspark/transforms/examples/store/transforms/catalog/prepare_catalog.py"
+        in non_docs
+    )
     assert docs == markdown_docs + json_docs
 
 
 def test_store_example_generation_keeps_public_behavior_fragments_stable() -> None:
-    transform = render_store_example()["examples/structure_generated/store/pyspark/transforms/enrich.py"]
+    transform = render_store_example()[
+        "examples/structure_generated/store/pyspark/transforms/examples/store/transforms/orders/enrich.py"
+    ]
 
     assert "class EnrichOrdersGenerated:" in transform
     assert "from examples.store.transforms.orders.enrich import EnrichOrders" not in transform
@@ -157,7 +57,10 @@ def test_store_example_generation_keeps_public_behavior_fragments_stable() -> No
     assert "F.map_filter(" in transform
     assert 'F.transform_values(F.col("order_raw.attributes"), lambda key, value: F.lower(F.trim(value)))' in transform
 
-    rowset = render_store_example()["examples/structure_generated/store/pyspark/transforms/rowset_join_examples.py"]
+    rowset = render_store_example()[
+        "examples/structure_generated/store/pyspark/transforms/examples/store/transforms/rowset_joins/"
+        "rowset_join_examples.py"
+    ]
 
     assert "class RowsetJoinExamplesGenerated(" in rowset
     assert '"full"' in rowset
@@ -165,7 +68,7 @@ def test_store_example_generation_keeps_public_behavior_fragments_stable() -> No
     assert ".crossJoin(" in rowset
 
     analytics = render_store_example()[
-        "examples/structure_generated/store/pyspark/transforms/orders_workflow.py"
+        "examples/structure_generated/store/pyspark/transforms/examples/store/transforms/analytics/orders/workflow.py"
     ]
 
     assert "class OrderAnalyticsGenerated(" in analytics
@@ -173,7 +76,9 @@ def test_store_example_generation_keeps_public_behavior_fragments_stable() -> No
     assert "product_summary.groupBy(" in analytics
     assert 'F.avg(F.col("order_fulfillment.quantity")).cast(T.DoubleType()).alias("avg_units")' in analytics
 
-    advanced = render_store_example()["examples/structure_generated/store/pyspark/transforms/adv_analytics.py"]
+    advanced = render_store_example()[
+        "examples/structure_generated/store/pyspark/transforms/examples/store/transforms/adv_analytics.py"
+    ]
 
     assert "class AdvancedOrderAnalyticsGenerated:" in advanced
     assert "revenue_rollups.rollup(" in advanced

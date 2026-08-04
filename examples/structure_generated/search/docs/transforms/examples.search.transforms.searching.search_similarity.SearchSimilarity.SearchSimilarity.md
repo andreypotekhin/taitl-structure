@@ -28,5 +28,5 @@ Source: `examples.search.transforms.searching.search_similarity.SearchSimilarity
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/SearchSimilarity.py`
-- `traceability`: `traceability/transforms/SearchSimilarity.SearchSimilarity.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/searching/search_similarity/SearchSimilarity.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/searching/search_similarity/SearchSimilarity.SearchSimilarity.json`

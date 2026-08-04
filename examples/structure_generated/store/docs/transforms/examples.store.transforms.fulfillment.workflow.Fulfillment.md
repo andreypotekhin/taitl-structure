@@ -105,5 +105,5 @@ Source: `examples.store.transforms.fulfillment.workflow.Fulfillment`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/fulfillment_workflow.py`
-- `traceability`: `traceability/transforms/fulfillment_workflow.Fulfillment.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/fulfillment/workflow.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/fulfillment/workflow.Fulfillment.json`

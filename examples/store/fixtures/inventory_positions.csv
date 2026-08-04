@@ -1,0 +1,8 @@
+tenant_id,source_system,ingested_at,warehouse_id,product_id,on_hand_quantity,reserved_quantity,safety_stock_quantity,as_of
+t1,inventory,2026-01-02T05:00:00,wh-east,p-100,8,0,6,2026-01-02
+t1,inventory,2026-01-02T05:01:00,wh-west,p-100,20,0,2,2026-01-02
+t1,inventory,2026-01-02T05:02:00,wh-east,p-200,4,1,5,2026-01-02
+t1,inventory,2026-01-02T05:03:00,wh-east,p-300,0,0,1,2026-01-02
+t1,inventory,2026-01-02T05:04:00,wh-east,p-301,10,0,1,2026-01-02
+t1,inventory,2026-01-02T05:05:00,wh-east,p-302,3,0,1,2026-01-02
+t2,inventory,2026-01-03T05:00:00,wh-north,p-100,5,1,2,2026-01-03

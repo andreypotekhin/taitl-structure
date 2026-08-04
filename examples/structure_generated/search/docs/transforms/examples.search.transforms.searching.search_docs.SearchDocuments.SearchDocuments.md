@@ -126,5 +126,5 @@ Source: `examples.search.transforms.searching.search_docs.SearchDocuments.Search
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/SearchDocuments.py`
-- `traceability`: `traceability/transforms/SearchDocuments.SearchDocuments.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/searching/search_docs/SearchDocuments.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/searching/search_docs/SearchDocuments.SearchDocuments.json`

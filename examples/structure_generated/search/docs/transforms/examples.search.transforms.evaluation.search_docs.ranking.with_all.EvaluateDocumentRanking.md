@@ -44,5 +44,5 @@ Source: `examples.search.transforms.evaluation.search_docs.ranking.with_all.Eval
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/with_all.py`
-- `traceability`: `traceability/transforms/with_all.EvaluateDocumentRanking.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/evaluation/search_docs/ranking/with_all.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/evaluation/search_docs/ranking/with_all.EvaluateDocumentRanking.json`

@@ -22,5 +22,5 @@ Source: `examples.search.transforms.chunking.SentenceChunking.SentenceChunking`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/SentenceChunking.py`
-- `traceability`: `traceability/transforms/SentenceChunking.SentenceChunking.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/chunking/SentenceChunking.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/chunking/SentenceChunking.SentenceChunking.json`

@@ -22,5 +22,5 @@ Source: `examples.search.transforms.chunking.WordChunking.WordChunking`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/WordChunking.py`
-- `traceability`: `traceability/transforms/WordChunking.WordChunking.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/chunking/WordChunking.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/chunking/WordChunking.WordChunking.json`

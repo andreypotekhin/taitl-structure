@@ -49,5 +49,5 @@ Source: `examples.search.transforms.evaluation.search_docs.behavior.with_labels.
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/with_labels.py`
-- `traceability`: `traceability/transforms/with_labels.EvaluateDocSearchBehavior.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/evaluation/search_docs/behavior/with_labels.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/evaluation/search_docs/behavior/with_labels.EvaluateDocSearchBehavior.json`

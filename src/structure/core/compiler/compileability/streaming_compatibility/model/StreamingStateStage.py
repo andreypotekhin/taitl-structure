@@ -14,5 +14,6 @@ class StreamingStateStage:
     keys: tuple[str, ...] = ()
     retention: tuple[str, ...] = ()
     order_keys: tuple[str, ...] = ()
+    completion_window: str | None = None
     output_modes: tuple[str, ...] = ()
     allows_later_stateful: bool = False

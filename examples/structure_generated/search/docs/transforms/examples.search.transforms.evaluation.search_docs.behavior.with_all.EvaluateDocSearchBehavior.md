@@ -52,5 +52,5 @@ Source: `examples.search.transforms.evaluation.search_docs.behavior.with_all.Eva
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/with_all.py`
-- `traceability`: `traceability/transforms/with_all.EvaluateDocSearchBehavior.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/evaluation/search_docs/behavior/with_all.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/evaluation/search_docs/behavior/with_all.EvaluateDocSearchBehavior.json`

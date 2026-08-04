@@ -27,5 +27,5 @@ Source: `examples.search.transforms.scoring.SelectRecentQueries.SelectRecentQuer
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/SelectRecentQueries.py`
-- `traceability`: `traceability/transforms/SelectRecentQueries.SelectRecentQueries.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/scoring/SelectRecentQueries.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/scoring/SelectRecentQueries.SelectRecentQueries.json`

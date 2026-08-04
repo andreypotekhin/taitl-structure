@@ -272,7 +272,7 @@ def test_v1_cli_compile_writes_generated_files_and_fail_on_diff_passes() -> None
 
         assert compiled.exit_code == 0, compiled.output
         assert checked.exit_code == 0, checked.output
-        assert Path("generated/structure_generated/pyspark/transforms/transforms.py").exists()
+        assert Path("generated/structure_generated/pyspark/transforms/orders/transforms.py").exists()
         assert Path("generated/docs/index.md").exists()
         assert Path("generated/docs/schemas/OrderRaw.md").exists()
         assert Path("generated/docs/transforms/orders.transforms.NormalizeOrders.json").exists()
@@ -287,7 +287,7 @@ def test_v1_cli_compile_writes_one_transform_module_per_source_unit() -> None:
 
         result = CliRunner().invoke(cli, ["compile"])
 
-        text = Path("generated/structure_generated/pyspark/transforms/transforms.py").read_text(encoding="utf-8")
+        text = Path("generated/structure_generated/pyspark/transforms/orders/transforms.py").read_text(encoding="utf-8")
         assert result.exit_code == 0, result.output
         assert "class NormalizeOrdersGenerated" in text
         assert "class PublishOrdersGenerated" in text
@@ -308,9 +308,9 @@ def test_v1_transform_generate_writes_one_transform_module_per_source_unit() -> 
                 schema_types=FakeTypes,
             )
 
-            text = storage.files["structure_generated/pyspark/transforms/transforms.py"]
+            text = storage.files["structure_generated/pyspark/transforms/orders/transforms.py"]
             assert generated.source_unit == "orders.transforms"
-            assert generated.module_name == "structure_generated.pyspark.transforms.transforms"
+            assert generated.module_name == "structure_generated.pyspark.transforms.orders.transforms"
             assert generated.classes == ("NormalizeOrdersGenerated", "PublishOrdersGenerated")
             assert generated.result == "captured"
             assert "class NormalizeOrdersGenerated" in text
@@ -352,7 +352,7 @@ def test_v1_cli_compile_writes_generated_docs_contract() -> None:
         assert transform["inputs"] == [{"name": "orders", "ordinal": 0, "schema": "OrderRaw"}]
         assert transform["outputs"] == [{"name": "normalized", "ordinal": 0, "schema": "OrderNormalized"}]
         assert transform["step_methods"][0]["name"] == "normalize"
-        assert transform["target_artifacts"]["pyspark_transform"] == "pyspark/transforms/transforms.py"
+        assert transform["target_artifacts"]["pyspark_transform"] == "pyspark/transforms/orders/transforms.py"
 
 
 def test_v1_cli_compile_respects_generated_docs_format_override() -> None:
@@ -373,7 +373,7 @@ def test_v1_cli_compile_allows_generated_docs_opt_out() -> None:
         result = CliRunner().invoke(cli, ["compile", "--no-generated-docs"])
 
         assert result.exit_code == 0, result.output
-        assert Path("generated/structure_generated/pyspark/transforms/transforms.py").exists()
+        assert Path("generated/structure_generated/pyspark/transforms/orders/transforms.py").exists()
         assert not Path("generated/docs").exists()
         assert "generated docs: disabled" in result.output
 
@@ -393,7 +393,7 @@ def test_v1_cli_fail_on_diff_reports_stale_generated_output_without_writing() ->
     with workspace_tmp() as root:
         write_project(root)
         CliRunner().invoke(cli, ["compile"])
-        target = Path("generated/structure_generated/pyspark/transforms/transforms.py")
+        target = Path("generated/structure_generated/pyspark/transforms/orders/transforms.py")
         original = target.read_text(encoding="utf-8")
         target.write_text(original + "\n# stale edit\n", encoding="utf-8")
 
@@ -442,7 +442,7 @@ def test_v1_cli_clean_removes_owned_generated_files_only() -> None:
 
         assert result.exit_code == 0
         assert manual.exists()
-        assert not Path("generated/structure_generated/pyspark/transforms/transforms.py").exists()
+        assert not Path("generated/structure_generated/pyspark/transforms/orders/transforms.py").exists()
 
 
 def test_v1_cli_unexpected_failure_renders_internal_diagnostic(mocker) -> None:

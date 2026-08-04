@@ -26,5 +26,5 @@ Source: `examples.search.transforms.scoring.SelectPopularQueries.SelectPopularQu
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/SelectPopularQueries.py`
-- `traceability`: `traceability/transforms/SelectPopularQueries.SelectPopularQueries.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/scoring/SelectPopularQueries.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/scoring/SelectPopularQueries.SelectPopularQueries.json`

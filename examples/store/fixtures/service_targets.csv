@@ -1,0 +1,4 @@
+tenant_id,target_id,fill_rate_target,on_time_target,active
+t1,standard,0.95,0.90,true
+t1,priority,0.99,0.98,true
+t2,standard,0.90,0.85,true

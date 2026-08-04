@@ -40,5 +40,5 @@ Source: `examples.search.transforms.stats.AnalyzeText.AnalyzeText`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/AnalyzeText.py`
-- `traceability`: `traceability/transforms/AnalyzeText.AnalyzeText.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/stats/AnalyzeText.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/stats/AnalyzeText.AnalyzeText.json`

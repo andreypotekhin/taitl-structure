@@ -28,5 +28,5 @@ Source: `examples.search.transforms.similarities.SimilarSections.SimilarSections
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/SimilarSections.py`
-- `traceability`: `traceability/transforms/SimilarSections.SimilarSections.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/similarities/SimilarSections.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/similarities/SimilarSections.SimilarSections.json`

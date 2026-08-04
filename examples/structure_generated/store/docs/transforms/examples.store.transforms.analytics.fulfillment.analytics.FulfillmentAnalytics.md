@@ -27,5 +27,5 @@ Source: `examples.store.transforms.analytics.fulfillment.analytics.FulfillmentAn
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/analytics.py`
-- `traceability`: `traceability/transforms/analytics.FulfillmentAnalytics.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/analytics/fulfillment/analytics.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/analytics/fulfillment/analytics.FulfillmentAnalytics.json`

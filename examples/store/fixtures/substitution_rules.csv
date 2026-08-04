@@ -1,0 +1,5 @@
+tenant_id,source_system,ingested_at,product_id,substitute_product_id,equivalence_group,policy_rank,active
+t1,policy,2026-01-01T07:00:00,p-300,p-301,desk-accessories,1,true
+t1,policy,2026-01-01T07:01:00,p-300,p-302,desk-accessories,2,true
+t1,policy,2026-01-01T07:02:00,p-300,p-inactive,desk-accessories,3,true
+t1,policy,2026-01-01T07:03:00,p-300,p-302,desk-accessories,4,false

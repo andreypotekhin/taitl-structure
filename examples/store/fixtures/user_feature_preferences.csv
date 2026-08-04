@@ -1,0 +1,4 @@
+tenant_id,customer_id,included_categories,excluded_categories,updated_at
+t1,c-100,accessories;compute,stationery,2026-01-02T08:00:00
+t1,c-101,compute,,2026-01-02T08:01:00
+t2,c-200,compute;accessories,,2026-01-03T08:00:00

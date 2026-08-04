@@ -1,0 +1,351 @@
+{
+  "backend": {
+    "name": "pyspark",
+    "target": ">=3.5,<4.1"
+  },
+  "generated_transform_class": "CorrelatePenaltiesGenerated",
+  "inputs": [
+    {
+      "name": "passages",
+      "ordinal": 0,
+      "schema": "Passage"
+    },
+    {
+      "name": "calls",
+      "ordinal": 1,
+      "schema": "JudgeCall"
+    }
+  ],
+  "provenance": [
+    {
+      "generated": "generated:examples.structure_generated.streams.pyspark.transforms.examples.streams.transforms.penalties.CorrelatePenaltiesGenerated",
+      "ir": "ir:CorrelatePenalties",
+      "source": "source:examples.streams.transforms.penalties.CorrelatePenalties"
+    },
+    {
+      "generated": "generated:examples.structure_generated.streams.pyspark.transforms.examples.streams.transforms.penalties.CorrelatePenaltiesGenerated.run.input.passages",
+      "ir": "ir:CorrelatePenalties.input.0.passages",
+      "source": "source:examples.streams.transforms.penalties.CorrelatePenalties.input.passages"
+    },
+    {
+      "generated": "generated:examples.structure_generated.streams.pyspark.transforms.examples.streams.transforms.penalties.CorrelatePenaltiesGenerated.run.input.calls",
+      "ir": "ir:CorrelatePenalties.input.1.calls",
+      "source": "source:examples.streams.transforms.penalties.CorrelatePenalties.input.calls"
+    },
+    {
+      "generated": "generated:examples.structure_generated.streams.pyspark.transforms.examples.streams.transforms.penalties.CorrelatePenaltiesGenerated.run.step.0.correlate",
+      "ir": "ir:CorrelatePenalties.step.0.correlate",
+      "source": "source:examples.streams.transforms.penalties.CorrelatePenalties.correlate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.streams.pyspark.transforms.examples.streams.transforms.penalties.CorrelatePenaltiesGenerated.run.step.0.correlate.join.1.call",
+      "ir": "ir:CorrelatePenalties.step.0.correlate.join.1.call",
+      "source": "source:examples.streams.transforms.penalties.CorrelatePenalties.correlate.join.1.call"
+    },
+    {
+      "generated": "generated:examples.structure_generated.streams.pyspark.transforms.examples.streams.transforms.penalties.CorrelatePenaltiesGenerated.run.step.0.correlate.select.event_id",
+      "ir": "ir:CorrelatePenalties.step.0.correlate.project.event_id",
+      "source": "source:examples.streams.transforms.penalties.CorrelatePenalties.correlate.field.event_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.streams.pyspark.transforms.examples.streams.transforms.penalties.CorrelatePenaltiesGenerated.run.step.0.correlate.select.call_id",
+      "ir": "ir:CorrelatePenalties.step.0.correlate.project.call_id",
+      "source": "source:examples.streams.transforms.penalties.CorrelatePenalties.correlate.field.call_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.streams.pyspark.transforms.examples.streams.transforms.penalties.CorrelatePenaltiesGenerated.run.step.0.correlate.select.race_id",
+      "ir": "ir:CorrelatePenalties.step.0.correlate.project.race_id",
+      "source": "source:examples.streams.transforms.penalties.CorrelatePenalties.correlate.field.race_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.streams.pyspark.transforms.examples.streams.transforms.penalties.CorrelatePenaltiesGenerated.run.step.0.correlate.select.run_id",
+      "ir": "ir:CorrelatePenalties.step.0.correlate.project.run_id",
+      "source": "source:examples.streams.transforms.penalties.CorrelatePenalties.correlate.field.run_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.streams.pyspark.transforms.examples.streams.transforms.penalties.CorrelatePenaltiesGenerated.run.step.0.correlate.select.paddler_id",
+      "ir": "ir:CorrelatePenalties.step.0.correlate.project.paddler_id",
+      "source": "source:examples.streams.transforms.penalties.CorrelatePenalties.correlate.field.paddler_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.streams.pyspark.transforms.examples.streams.transforms.penalties.CorrelatePenaltiesGenerated.run.step.0.correlate.select.gate_number",
+      "ir": "ir:CorrelatePenalties.step.0.correlate.project.gate_number",
+      "source": "source:examples.streams.transforms.penalties.CorrelatePenalties.correlate.field.gate_number"
+    },
+    {
+      "generated": "generated:examples.structure_generated.streams.pyspark.transforms.examples.streams.transforms.penalties.CorrelatePenaltiesGenerated.run.step.0.correlate.select.elapsed_millis",
+      "ir": "ir:CorrelatePenalties.step.0.correlate.project.elapsed_millis",
+      "source": "source:examples.streams.transforms.penalties.CorrelatePenalties.correlate.field.elapsed_millis"
+    },
+    {
+      "generated": "generated:examples.structure_generated.streams.pyspark.transforms.examples.streams.transforms.penalties.CorrelatePenaltiesGenerated.run.step.0.correlate.select.penalty_code",
+      "ir": "ir:CorrelatePenalties.step.0.correlate.project.penalty_code",
+      "source": "source:examples.streams.transforms.penalties.CorrelatePenalties.correlate.field.penalty_code"
+    },
+    {
+      "generated": "generated:examples.structure_generated.streams.pyspark.transforms.examples.streams.transforms.penalties.CorrelatePenaltiesGenerated.run.step.0.correlate.select.penalty_seconds",
+      "ir": "ir:CorrelatePenalties.step.0.correlate.project.penalty_seconds",
+      "source": "source:examples.streams.transforms.penalties.CorrelatePenalties.correlate.field.penalty_seconds"
+    },
+    {
+      "generated": "generated:examples.structure_generated.streams.pyspark.transforms.examples.streams.transforms.penalties.CorrelatePenaltiesGenerated.run.step.0.correlate.select.adjusted_millis",
+      "ir": "ir:CorrelatePenalties.step.0.correlate.project.adjusted_millis",
+      "source": "source:examples.streams.transforms.penalties.CorrelatePenalties.correlate.field.adjusted_millis"
+    },
+    {
+      "generated": "generated:examples.structure_generated.streams.pyspark.transforms.examples.streams.transforms.penalties.CorrelatePenaltiesGenerated.run.output.0.penalties.validation.final",
+      "ir": "ir:CorrelatePenalties.output.0.penalties.validation.final",
+      "source": "source:examples.streams.transforms.penalties.CorrelatePenalties.output.penalties"
+    }
+  ],
+  "schema_constants": {
+    "Gate": {
+      "constant": "GATE_SCHEMA",
+      "module": "examples.structure_generated.streams.pyspark.schemas.race"
+    },
+    "GateProgress": {
+      "constant": "GATE_PROGRESS_SCHEMA",
+      "module": "examples.structure_generated.streams.pyspark.schemas.events"
+    },
+    "JudgeCall": {
+      "constant": "JUDGE_CALL_SCHEMA",
+      "module": "examples.structure_generated.streams.pyspark.schemas.events"
+    },
+    "Paddler": {
+      "constant": "PADDLER_SCHEMA",
+      "module": "examples.structure_generated.streams.pyspark.schemas.race"
+    },
+    "Passage": {
+      "constant": "PASSAGE_SCHEMA",
+      "module": "examples.structure_generated.streams.pyspark.schemas.events"
+    },
+    "Penalty": {
+      "constant": "PENALTY_SCHEMA",
+      "module": "examples.structure_generated.streams.pyspark.schemas.events"
+    },
+    "Race": {
+      "constant": "RACE_SCHEMA",
+      "module": "examples.structure_generated.streams.pyspark.schemas.race"
+    },
+    "RaceWinner": {
+      "constant": "RACE_WINNER_SCHEMA",
+      "module": "examples.structure_generated.streams.pyspark.schemas.race"
+    },
+    "RawEvent": {
+      "constant": "RAW_EVENT_SCHEMA",
+      "module": "examples.structure_generated.streams.pyspark.schemas.events"
+    }
+  },
+  "source_transform": "examples.streams.transforms.penalties.CorrelatePenalties",
+  "static_dataflow": {
+    "dependencies": [
+      {
+        "detail": {
+          "backend": "pyspark"
+        },
+        "operation": "transform",
+        "sources": [
+          "passages",
+          "calls"
+        ],
+        "step": null,
+        "target": "CorrelatePenalties"
+      },
+      {
+        "detail": {
+          "input_schema": "Passage",
+          "output_schema": "Penalty"
+        },
+        "operation": "step",
+        "sources": [
+          "passages",
+          "call"
+        ],
+        "step": "correlate",
+        "target": "correlate"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "calls"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "call.race_id",
+          "passage.race_id",
+          "call.run_id",
+          "passage.run_id",
+          "call.paddler_id",
+          "passage.paddler_id",
+          "call.gate_number",
+          "passage.gate_number",
+          "passage.at",
+          "call.at"
+        ],
+        "step": "correlate",
+        "target": "correlate.join[1].call"
+      },
+      {
+        "detail": {
+          "field": "event_id"
+        },
+        "operation": "project",
+        "sources": [
+          "passage.id"
+        ],
+        "step": "correlate",
+        "target": "Penalty.event_id"
+      },
+      {
+        "detail": {
+          "field": "call_id"
+        },
+        "operation": "project",
+        "sources": [
+          "call.id"
+        ],
+        "step": "correlate",
+        "target": "Penalty.call_id"
+      },
+      {
+        "detail": {
+          "field": "race_id"
+        },
+        "operation": "project",
+        "sources": [
+          "passage.race_id"
+        ],
+        "step": "correlate",
+        "target": "Penalty.race_id"
+      },
+      {
+        "detail": {
+          "field": "run_id"
+        },
+        "operation": "project",
+        "sources": [
+          "passage.run_id"
+        ],
+        "step": "correlate",
+        "target": "Penalty.run_id"
+      },
+      {
+        "detail": {
+          "field": "paddler_id"
+        },
+        "operation": "project",
+        "sources": [
+          "passage.paddler_id"
+        ],
+        "step": "correlate",
+        "target": "Penalty.paddler_id"
+      },
+      {
+        "detail": {
+          "field": "gate_number"
+        },
+        "operation": "project",
+        "sources": [
+          "passage.gate_number"
+        ],
+        "step": "correlate",
+        "target": "Penalty.gate_number"
+      },
+      {
+        "detail": {
+          "field": "elapsed_millis"
+        },
+        "operation": "project",
+        "sources": [
+          "passage.elapsed_millis"
+        ],
+        "step": "correlate",
+        "target": "Penalty.elapsed_millis"
+      },
+      {
+        "detail": {
+          "field": "penalty_code"
+        },
+        "operation": "project",
+        "sources": [
+          "call.code"
+        ],
+        "step": "correlate",
+        "target": "Penalty.penalty_code"
+      },
+      {
+        "detail": {
+          "field": "penalty_seconds"
+        },
+        "operation": "project",
+        "sources": [
+          "call.penalty_seconds"
+        ],
+        "step": "correlate",
+        "target": "Penalty.penalty_seconds"
+      },
+      {
+        "detail": {
+          "field": "adjusted_millis"
+        },
+        "operation": "project",
+        "sources": [
+          "passage.elapsed_millis",
+          "call.penalty_seconds"
+        ],
+        "step": "correlate",
+        "target": "Penalty.adjusted_millis"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "Penalty"
+        ],
+        "step": null,
+        "target": "Penalty.validation.final"
+      }
+    ],
+    "opaque_boundaries": []
+  },
+  "steps": [
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "passage",
+      "joins": [
+        {
+          "how": "inner",
+          "input": "call",
+          "right_alias": "calls"
+        }
+      ],
+      "name": "correlate",
+      "output_alias": "penalty",
+      "output_schema": "Penalty",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "passages",
+          "lane": "passages",
+          "schema": "Penalty"
+        }
+      ],
+      "validation": []
+    }
+  ],
+  "target_module": "examples.structure_generated.streams.pyspark.transforms.examples.streams.transforms.penalties",
+  "validation": {
+    "outputs": [
+      {
+        "mode": "strict",
+        "name": "penalties",
+        "schema": "Penalty"
+      }
+    ]
+  }
+}

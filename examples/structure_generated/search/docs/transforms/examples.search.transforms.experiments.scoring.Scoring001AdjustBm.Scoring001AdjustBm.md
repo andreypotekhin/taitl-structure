@@ -81,5 +81,5 @@ Source: `examples.search.transforms.experiments.scoring.Scoring001AdjustBm.Scori
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/Scoring001AdjustBm.py`
-- `traceability`: `traceability/transforms/Scoring001AdjustBm.Scoring001AdjustBm.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/experiments/scoring/Scoring001AdjustBm.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/experiments/scoring/Scoring001AdjustBm.Scoring001AdjustBm.json`

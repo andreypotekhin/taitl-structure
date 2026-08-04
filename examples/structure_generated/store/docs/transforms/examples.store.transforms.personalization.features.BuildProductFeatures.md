@@ -22,5 +22,5 @@ Source: `examples.store.transforms.personalization.features.BuildProductFeatures
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/features.py`
-- `traceability`: `traceability/transforms/features.BuildProductFeatures.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/personalization/features.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/personalization/features.BuildProductFeatures.json`

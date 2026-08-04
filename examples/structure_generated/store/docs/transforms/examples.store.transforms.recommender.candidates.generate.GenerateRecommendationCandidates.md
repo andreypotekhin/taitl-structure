@@ -29,5 +29,5 @@ Source: `examples.store.transforms.recommender.candidates.generate.GenerateRecom
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/generate.py`
-- `traceability`: `traceability/transforms/generate.GenerateRecommendationCandidates.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/recommender/candidates/generate.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/recommender/candidates/generate.GenerateRecommendationCandidates.json`

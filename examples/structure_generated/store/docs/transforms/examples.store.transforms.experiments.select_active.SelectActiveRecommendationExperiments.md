@@ -22,5 +22,5 @@ Source: `examples.store.transforms.experiments.select_active.SelectActiveRecomme
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/select_active.py`
-- `traceability`: `traceability/transforms/select_active.SelectActiveRecommendationExperiments.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/experiments/select_active.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/experiments/select_active.SelectActiveRecommendationExperiments.json`

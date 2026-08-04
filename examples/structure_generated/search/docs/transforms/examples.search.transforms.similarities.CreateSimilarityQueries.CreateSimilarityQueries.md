@@ -56,5 +56,5 @@ Source: `examples.search.transforms.similarities.CreateSimilarityQueries.CreateS
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/CreateSimilarityQueries.py`
-- `traceability`: `traceability/transforms/CreateSimilarityQueries.CreateSimilarityQueries.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/similarities/CreateSimilarityQueries.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/similarities/CreateSimilarityQueries.CreateSimilarityQueries.json`

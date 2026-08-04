@@ -1,0 +1,4 @@
+tenant_id,experiment_id,experiment_version,name,variant_a,variant_b,variant_a_percent,active,maximum_zero_result_rate
+t1,rec-home,v1,Home recommendation test,A,B,50,true,0.25
+t1,old-test,v1,Inactive test,A,B,50,false,0.40
+t2,rec-home,v1,Home recommendation test,A,B,50,true,0.30

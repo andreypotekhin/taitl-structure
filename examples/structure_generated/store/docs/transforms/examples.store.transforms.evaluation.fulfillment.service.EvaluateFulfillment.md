@@ -30,5 +30,5 @@ Source: `examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfil
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/service.py`
-- `traceability`: `traceability/transforms/service.EvaluateFulfillment.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/evaluation/fulfillment/service.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/evaluation/fulfillment/service.EvaluateFulfillment.json`

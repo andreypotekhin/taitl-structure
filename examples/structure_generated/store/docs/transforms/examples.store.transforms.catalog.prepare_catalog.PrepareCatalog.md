@@ -27,5 +27,5 @@ Source: `examples.store.transforms.catalog.prepare_catalog.PrepareCatalog`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/prepare_catalog.py`
-- `traceability`: `traceability/transforms/prepare_catalog.PrepareCatalog.json`
+- `pyspark_transform`: `pyspark/transforms/examples/store/transforms/catalog/prepare_catalog.py`
+- `traceability`: `traceability/transforms/examples/store/transforms/catalog/prepare_catalog.PrepareCatalog.json`

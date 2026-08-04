@@ -85,7 +85,7 @@ src/orders/schemas/order.py
   -> generated/structure_generated/store/pyspark/schemas/order.py
 
 src/orders/transforms/order.py
-  -> generated/structure_generated/store/pyspark/transforms/order.py
+  -> generated/structure_generated/store/pyspark/transforms/orders/transforms/order.py
 ```
 
 ## Configuration

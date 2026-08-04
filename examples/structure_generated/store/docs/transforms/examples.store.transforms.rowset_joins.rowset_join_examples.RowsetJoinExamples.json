@@ -137,7 +137,7 @@
     }
   ],
   "target_artifacts": {
-    "pyspark_transform": "pyspark/transforms/rowset_join_examples.py",
-    "traceability": "traceability/transforms/rowset_join_examples.RowsetJoinExamples.json"
+    "pyspark_transform": "pyspark/transforms/examples/store/transforms/rowset_joins/rowset_join_examples.py",
+    "traceability": "traceability/transforms/examples/store/transforms/rowset_joins/rowset_join_examples.RowsetJoinExamples.json"
   }
 }

@@ -126,5 +126,5 @@ Source: `examples.search.transforms.experiments.searching.search_docs.Searching0
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/Searching001AdjustRerankSearchDocuments.py`
-- `traceability`: `traceability/transforms/Searching001AdjustRerankSearchDocuments.Searching001AdjustRerankSearchDocuments.json`
+- `pyspark_transform`: `pyspark/transforms/examples/search/transforms/experiments/searching/search_docs/Searching001AdjustRerankSearchDocuments.py`
+- `traceability`: `traceability/transforms/examples/search/transforms/experiments/searching/search_docs/Searching001AdjustRerankSearchDocuments.Searching001AdjustRerankSearchDocuments.json`

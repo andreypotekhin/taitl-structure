@@ -1,0 +1,658 @@
+{
+  "backend": {
+    "name": "pyspark",
+    "target": ">=3.5,<4.1"
+  },
+  "generated_transform_class": "SelectActiveRecommendationExperimentsGenerated",
+  "inputs": [
+    {
+      "name": "experiments",
+      "ordinal": 0,
+      "schema": "RecommendationExperiment"
+    }
+  ],
+  "provenance": [
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.experiments.select_active.SelectActiveRecommendationExperimentsGenerated",
+      "ir": "ir:SelectActiveRecommendationExperiments",
+      "source": "source:examples.store.transforms.experiments.select_active.SelectActiveRecommendationExperiments"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.experiments.select_active.SelectActiveRecommendationExperimentsGenerated.run.input.experiments",
+      "ir": "ir:SelectActiveRecommendationExperiments.input.0.experiments",
+      "source": "source:examples.store.transforms.experiments.select_active.SelectActiveRecommendationExperiments.input.experiments"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.experiments.select_active.SelectActiveRecommendationExperimentsGenerated.run.step.0.select",
+      "ir": "ir:SelectActiveRecommendationExperiments.step.0.select",
+      "source": "source:examples.store.transforms.experiments.select_active.SelectActiveRecommendationExperiments.select"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.experiments.select_active.SelectActiveRecommendationExperimentsGenerated.run.step.0.select.where.0",
+      "ir": "ir:SelectActiveRecommendationExperiments.step.0.select.filter.0",
+      "source": "source:examples.store.transforms.experiments.select_active.SelectActiveRecommendationExperiments.select.filter.0"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.experiments.select_active.SelectActiveRecommendationExperimentsGenerated.run.step.0.select.select.tenant",
+      "ir": "ir:SelectActiveRecommendationExperiments.step.0.select.project.tenant",
+      "source": "source:examples.store.transforms.experiments.select_active.SelectActiveRecommendationExperiments.select.field.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.experiments.select_active.SelectActiveRecommendationExperimentsGenerated.run.step.0.select.select.experiment_id",
+      "ir": "ir:SelectActiveRecommendationExperiments.step.0.select.project.experiment_id",
+      "source": "source:examples.store.transforms.experiments.select_active.SelectActiveRecommendationExperiments.select.field.experiment_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.experiments.select_active.SelectActiveRecommendationExperimentsGenerated.run.step.0.select.select.experiment_version",
+      "ir": "ir:SelectActiveRecommendationExperiments.step.0.select.project.experiment_version",
+      "source": "source:examples.store.transforms.experiments.select_active.SelectActiveRecommendationExperiments.select.field.experiment_version"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.experiments.select_active.SelectActiveRecommendationExperimentsGenerated.run.step.0.select.select.name",
+      "ir": "ir:SelectActiveRecommendationExperiments.step.0.select.project.name",
+      "source": "source:examples.store.transforms.experiments.select_active.SelectActiveRecommendationExperiments.select.field.name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.experiments.select_active.SelectActiveRecommendationExperimentsGenerated.run.step.0.select.select.variant_a",
+      "ir": "ir:SelectActiveRecommendationExperiments.step.0.select.project.variant_a",
+      "source": "source:examples.store.transforms.experiments.select_active.SelectActiveRecommendationExperiments.select.field.variant_a"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.experiments.select_active.SelectActiveRecommendationExperimentsGenerated.run.step.0.select.select.variant_b",
+      "ir": "ir:SelectActiveRecommendationExperiments.step.0.select.project.variant_b",
+      "source": "source:examples.store.transforms.experiments.select_active.SelectActiveRecommendationExperiments.select.field.variant_b"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.experiments.select_active.SelectActiveRecommendationExperimentsGenerated.run.step.0.select.select.variant_a_percent",
+      "ir": "ir:SelectActiveRecommendationExperiments.step.0.select.project.variant_a_percent",
+      "source": "source:examples.store.transforms.experiments.select_active.SelectActiveRecommendationExperiments.select.field.variant_a_percent"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.experiments.select_active.SelectActiveRecommendationExperimentsGenerated.run.step.0.select.select.active",
+      "ir": "ir:SelectActiveRecommendationExperiments.step.0.select.project.active",
+      "source": "source:examples.store.transforms.experiments.select_active.SelectActiveRecommendationExperiments.select.field.active"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.experiments.select_active.SelectActiveRecommendationExperimentsGenerated.run.step.0.select.select.maximum_zero_result_rate",
+      "ir": "ir:SelectActiveRecommendationExperiments.step.0.select.project.maximum_zero_result_rate",
+      "source": "source:examples.store.transforms.experiments.select_active.SelectActiveRecommendationExperiments.select.field.maximum_zero_result_rate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.examples.store.transforms.experiments.select_active.SelectActiveRecommendationExperimentsGenerated.run.output.0.active_experiments.validation.final",
+      "ir": "ir:SelectActiveRecommendationExperiments.output.0.active_experiments.validation.final",
+      "source": "source:examples.store.transforms.experiments.select_active.SelectActiveRecommendationExperiments.output.active_experiments"
+    }
+  ],
+  "schema_constants": {
+    "Address": {
+      "constant": "ADDRESS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "AuditStamp": {
+      "constant": "AUDIT_STAMP_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "BlockedProduct": {
+      "constant": "BLOCKED_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.product"
+    },
+    "BusinessDate": {
+      "constant": "BUSINESS_DATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "CatalogAvailability": {
+      "constant": "CATALOG_AVAILABILITY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+    },
+    "CatalogProduct": {
+      "constant": "CATALOG_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.catalog"
+    },
+    "Customer": {
+      "constant": "CUSTOMER_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.customer"
+    },
+    "CustomerDailyTotal": {
+      "constant": "CUSTOMER_DAILY_TOTAL_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.analytics"
+    },
+    "CustomerEventRank": {
+      "constant": "CUSTOMER_EVENT_RANK_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.analytics"
+    },
+    "CustomerOrderBackfill": {
+      "constant": "CUSTOMER_ORDER_BACKFILL_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "DailyFulfillmentServiceSummary": {
+      "constant": "DAILY_FULFILLMENT_SERVICE_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.service"
+    },
+    "DailyFulfillmentSummary": {
+      "constant": "DAILY_FULFILLMENT_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.summary"
+    },
+    "DailyRecommendationBehavior": {
+      "constant": "DAILY_RECOMMENDATION_BEHAVIOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.evaluation"
+    },
+    "DailyRecommendationClicks": {
+      "constant": "DAILY_RECOMMENDATION_CLICKS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "DailyRecommendationCounts": {
+      "constant": "DAILY_RECOMMENDATION_COUNTS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "DailyRecommendationImpressions": {
+      "constant": "DAILY_RECOMMENDATION_IMPRESSIONS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "DemandWindow": {
+      "constant": "DEMAND_WINDOW_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.windows"
+    },
+    "DiversificationDecision": {
+      "constant": "DIVERSIFICATION_DECISION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "DiversifiedRecommendationCandidate": {
+      "constant": "DIVERSIFIED_RECOMMENDATION_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "EvaluationBatch": {
+      "constant": "EVALUATION_BATCH_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.batch"
+    },
+    "ExpandedProductTaxonomy": {
+      "constant": "EXPANDED_PRODUCT_TAXONOMY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
+    },
+    "FulfillmentAllocation": {
+      "constant": "FULFILLMENT_ALLOCATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "FulfillmentBackorder": {
+      "constant": "FULFILLMENT_BACKORDER_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "FulfillmentException": {
+      "constant": "FULFILLMENT_EXCEPTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.exception"
+    },
+    "FulfillmentOption": {
+      "constant": "FULFILLMENT_OPTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.workflow"
+    },
+    "FulfillmentPlan": {
+      "constant": "FULFILLMENT_PLAN_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "FulfillmentPreferredOption": {
+      "constant": "FULFILLMENT_PREFERRED_OPTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.workflow"
+    },
+    "FulfillmentReconciliation": {
+      "constant": "FULFILLMENT_RECONCILIATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.reconciliation"
+    },
+    "FulfillmentServiceEvaluation": {
+      "constant": "FULFILLMENT_SERVICE_EVALUATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.service"
+    },
+    "FulfillmentServiceTotals": {
+      "constant": "FULFILLMENT_SERVICE_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.service"
+    },
+    "FulfillmentShortage": {
+      "constant": "FULFILLMENT_SHORTAGE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.shortage"
+    },
+    "FulfillmentShortageRanked": {
+      "constant": "FULFILLMENT_SHORTAGE_RANKED_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.shortage"
+    },
+    "FulfillmentSubstitutionOption": {
+      "constant": "FULFILLMENT_SUBSTITUTION_OPTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.substitution"
+    },
+    "InboundInventory": {
+      "constant": "INBOUND_INVENTORY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
+    },
+    "InboundInventoryAvailability": {
+      "constant": "INBOUND_INVENTORY_AVAILABILITY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.workflow"
+    },
+    "InventoryPosition": {
+      "constant": "INVENTORY_POSITION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
+    },
+    "InventoryProjection": {
+      "constant": "INVENTORY_PROJECTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.projection"
+    },
+    "LeadTime": {
+      "constant": "LEAD_TIME_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.inventory"
+    },
+    "MerchandisingBoost": {
+      "constant": "MERCHANDISING_BOOST_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.policy"
+    },
+    "MerchandisingPolicy": {
+      "constant": "MERCHANDISING_POLICY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.policy"
+    },
+    "MerchandisingSuppression": {
+      "constant": "MERCHANDISING_SUPPRESSION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.policy"
+    },
+    "Order": {
+      "constant": "ORDER_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.demand"
+    },
+    "OrderCollectionProfile": {
+      "constant": "ORDER_COLLECTION_PROFILE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderCollectionSource": {
+      "constant": "ORDER_COLLECTION_SOURCE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderCustomerReconciliation": {
+      "constant": "ORDER_CUSTOMER_RECONCILIATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderCustomerWindow": {
+      "constant": "ORDER_CUSTOMER_WINDOW_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderFulfillment": {
+      "constant": "ORDER_FULFILLMENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderNormalized": {
+      "constant": "ORDER_NORMALIZED_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderProductCandidate": {
+      "constant": "ORDER_PRODUCT_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderProductCube": {
+      "constant": "ORDER_PRODUCT_CUBE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderPublication": {
+      "constant": "ORDER_PUBLICATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderPublished": {
+      "constant": "ORDER_PUBLISHED_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderRaw": {
+      "constant": "ORDER_RAW_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderRevenueRollup": {
+      "constant": "ORDER_REVENUE_ROLLUP_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderWithCustomer": {
+      "constant": "ORDER_WITH_CUSTOMER_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderWithProduct": {
+      "constant": "ORDER_WITH_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderWithPromotion": {
+      "constant": "ORDER_WITH_PROMOTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "PersonalizationHistory": {
+      "constant": "PERSONALIZATION_HISTORY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.personalization"
+    },
+    "PersonalizedRecommendation": {
+      "constant": "PERSONALIZED_RECOMMENDATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.personalization"
+    },
+    "Product": {
+      "constant": "PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.product"
+    },
+    "ProductBase": {
+      "constant": "PRODUCT_BASE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.product"
+    },
+    "ProductDailySummary": {
+      "constant": "PRODUCT_DAILY_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.analytics"
+    },
+    "ProductRecommendationSignal": {
+      "constant": "PRODUCT_RECOMMENDATION_SIGNAL_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "ProductRecommendationSignalTotals": {
+      "constant": "PRODUCT_RECOMMENDATION_SIGNAL_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "ProductTaxonomy": {
+      "constant": "PRODUCT_TAXONOMY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
+    },
+    "Promotion": {
+      "constant": "PROMOTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.promotion"
+    },
+    "PublicationFlags": {
+      "constant": "PUBLICATION_FLAGS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "RankedRecommendationCandidate": {
+      "constant": "RANKED_RECOMMENDATION_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "RecommendationAssignment": {
+      "constant": "RECOMMENDATION_ASSIGNMENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.experiment"
+    },
+    "RecommendationBehavior": {
+      "constant": "RECOMMENDATION_BEHAVIOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendations"
+    },
+    "RecommendationBehaviorImpression": {
+      "constant": "RECOMMENDATION_BEHAVIOR_IMPRESSION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "RecommendationCandidate": {
+      "constant": "RECOMMENDATION_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
+    },
+    "RecommendationCandidateDecision": {
+      "constant": "RECOMMENDATION_CANDIDATE_DECISION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
+    },
+    "RecommendationClick": {
+      "constant": "RECOMMENDATION_CLICK_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "RecommendationClickSummary": {
+      "constant": "RECOMMENDATION_CLICK_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.intermediate"
+    },
+    "RecommendationEvaluationBatch": {
+      "constant": "RECOMMENDATION_EVALUATION_BATCH_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.evaluation"
+    },
+    "RecommendationExperiment": {
+      "constant": "RECOMMENDATION_EXPERIMENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.experiment"
+    },
+    "RecommendationExposure": {
+      "constant": "RECOMMENDATION_EXPOSURE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.experiment"
+    },
+    "RecommendationImpression": {
+      "constant": "RECOMMENDATION_IMPRESSION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "RecommendationPurchase": {
+      "constant": "RECOMMENDATION_PURCHASE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.feedback"
+    },
+    "RecommendationRequest": {
+      "constant": "RECOMMENDATION_REQUEST_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
+    },
+    "RecommendationRequestBehavior": {
+      "constant": "RECOMMENDATION_REQUEST_BEHAVIOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.evaluation"
+    },
+    "RecommendationRun": {
+      "constant": "RECOMMENDATION_RUN_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
+    },
+    "RecommendationVariantMetric": {
+      "constant": "RECOMMENDATION_VARIANT_METRIC_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendations"
+    },
+    "RecommendationVariantMetricTotals": {
+      "constant": "RECOMMENDATION_VARIANT_METRIC_TOTALS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendations"
+    },
+    "RecommendedProduct": {
+      "constant": "RECOMMENDED_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.recommendation"
+    },
+    "ReplenishmentSuggestion": {
+      "constant": "REPLENISHMENT_SUGGESTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.plan"
+    },
+    "ServiceRiskTarget": {
+      "constant": "SERVICE_RISK_TARGET_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.exception"
+    },
+    "SessionEvent": {
+      "constant": "SESSION_EVENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.session"
+    },
+    "SessionFeature": {
+      "constant": "SESSION_FEATURE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.session"
+    },
+    "Shipment": {
+      "constant": "SHIPMENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.shipment"
+    },
+    "SubstitutionRule": {
+      "constant": "SUBSTITUTION_RULE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.substitution"
+    },
+    "TaxonomyAncestor": {
+      "constant": "TAXONOMY_ANCESTOR_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
+    },
+    "TaxonomyNode": {
+      "constant": "TAXONOMY_NODE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.taxonomy"
+    },
+    "TenantKey": {
+      "constant": "TENANT_KEY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "UserFeaturePreference": {
+      "constant": "USER_FEATURE_PREFERENCE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.personalization"
+    },
+    "Warehouse": {
+      "constant": "WAREHOUSE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.warehouse"
+    },
+    "WarehouseLoadSummary": {
+      "constant": "WAREHOUSE_LOAD_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.summary"
+    }
+  },
+  "source_transform": "examples.store.transforms.experiments.select_active.SelectActiveRecommendationExperiments",
+  "static_dataflow": {
+    "dependencies": [
+      {
+        "detail": {
+          "backend": "pyspark"
+        },
+        "operation": "transform",
+        "sources": [
+          "experiments"
+        ],
+        "step": null,
+        "target": "SelectActiveRecommendationExperiments"
+      },
+      {
+        "detail": {
+          "input_schema": "RecommendationExperiment",
+          "output_schema": "RecommendationExperiment"
+        },
+        "operation": "step",
+        "sources": [
+          "experiments"
+        ],
+        "step": "select",
+        "target": "select"
+      },
+      {
+        "detail": {},
+        "operation": "filter",
+        "sources": [
+          "experiments.active"
+        ],
+        "step": "select",
+        "target": "select.filter[0]"
+      },
+      {
+        "detail": {
+          "field": "tenant"
+        },
+        "operation": "project",
+        "sources": [
+          "experiments.tenant"
+        ],
+        "step": "select",
+        "target": "RecommendationExperiment.tenant"
+      },
+      {
+        "detail": {
+          "field": "experiment_id"
+        },
+        "operation": "project",
+        "sources": [
+          "experiments.experiment_id"
+        ],
+        "step": "select",
+        "target": "RecommendationExperiment.experiment_id"
+      },
+      {
+        "detail": {
+          "field": "experiment_version"
+        },
+        "operation": "project",
+        "sources": [
+          "experiments.experiment_version"
+        ],
+        "step": "select",
+        "target": "RecommendationExperiment.experiment_version"
+      },
+      {
+        "detail": {
+          "field": "name"
+        },
+        "operation": "project",
+        "sources": [
+          "experiments.name"
+        ],
+        "step": "select",
+        "target": "RecommendationExperiment.name"
+      },
+      {
+        "detail": {
+          "field": "variant_a"
+        },
+        "operation": "project",
+        "sources": [
+          "experiments.variant_a"
+        ],
+        "step": "select",
+        "target": "RecommendationExperiment.variant_a"
+      },
+      {
+        "detail": {
+          "field": "variant_b"
+        },
+        "operation": "project",
+        "sources": [
+          "experiments.variant_b"
+        ],
+        "step": "select",
+        "target": "RecommendationExperiment.variant_b"
+      },
+      {
+        "detail": {
+          "field": "variant_a_percent"
+        },
+        "operation": "project",
+        "sources": [
+          "experiments.variant_a_percent"
+        ],
+        "step": "select",
+        "target": "RecommendationExperiment.variant_a_percent"
+      },
+      {
+        "detail": {
+          "field": "active"
+        },
+        "operation": "project",
+        "sources": [
+          "experiments.active"
+        ],
+        "step": "select",
+        "target": "RecommendationExperiment.active"
+      },
+      {
+        "detail": {
+          "field": "maximum_zero_result_rate"
+        },
+        "operation": "project",
+        "sources": [
+          "experiments.maximum_zero_result_rate"
+        ],
+        "step": "select",
+        "target": "RecommendationExperiment.maximum_zero_result_rate"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "RecommendationExperiment"
+        ],
+        "step": null,
+        "target": "RecommendationExperiment.validation.final"
+      }
+    ],
+    "opaque_boundaries": []
+  },
+  "steps": [
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "recommendation_experiment",
+      "joins": [],
+      "name": "select",
+      "output_alias": "recommendation_experiment",
+      "output_schema": "RecommendationExperiment",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "experiments",
+          "lane": "experiments",
+          "schema": "RecommendationExperiment"
+        }
+      ],
+      "validation": []
+    }
+  ],
+  "target_module": "examples.structure_generated.store.pyspark.transforms.examples.store.transforms.experiments.select_active",
+  "validation": {
+    "outputs": [
+      {
+        "mode": "strict",
+        "name": "active_experiments",
+        "schema": "RecommendationExperiment"
+      }
+    ]
+  }
+}

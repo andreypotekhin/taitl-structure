@@ -102,7 +102,7 @@
     }
   ],
   "target_artifacts": {
-    "pyspark_transform": "pyspark/transforms/diversify.py",
-    "traceability": "traceability/transforms/diversify.DiversifyRecommendations.json"
+    "pyspark_transform": "pyspark/transforms/examples/store/transforms/recommender/diversify.py",
+    "traceability": "traceability/transforms/examples/store/transforms/recommender/diversify.DiversifyRecommendations.json"
   }
 }

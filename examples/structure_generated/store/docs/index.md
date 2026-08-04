@@ -109,7 +109,7 @@
 - [AdvancedOrderAnalytics](transforms/examples.store.transforms.adv_analytics.AdvancedOrderAnalytics.md)
 - [FulfillmentAnalytics](transforms/examples.store.transforms.analytics.fulfillment.analytics.FulfillmentAnalytics.md)
 - [OrderAnalytics](transforms/examples.store.transforms.analytics.orders.workflow.OrderAnalytics.md)
-- [NormalizeCatalog](transforms/examples.store.transforms.catalog.normalize_catalog.NormalizeCatalog.md)
+- [NormalizeCatalog](transforms/examples.store.transforms.catalog.normalize.NormalizeCatalog.md)
 - [PrepareCatalog](transforms/examples.store.transforms.catalog.prepare_catalog.PrepareCatalog.md)
 - [EvaluateFulfillment](transforms/examples.store.transforms.evaluation.fulfillment.service.EvaluateFulfillment.md)
 - [EvaluateRecommendations](transforms/examples.store.transforms.evaluation.recommender.behavior.workflow.EvaluateRecommendations.md)

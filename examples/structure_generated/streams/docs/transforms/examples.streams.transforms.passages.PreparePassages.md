@@ -30,5 +30,5 @@ Source: `examples.streams.transforms.passages.PreparePassages`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/passages.py`
-- `traceability`: `traceability/transforms/passages.PreparePassages.json`
+- `pyspark_transform`: `pyspark/transforms/examples/streams/transforms/passages.py`
+- `traceability`: `traceability/transforms/examples/streams/transforms/passages.PreparePassages.json`
