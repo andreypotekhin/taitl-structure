@@ -169,6 +169,8 @@ Directory structure:
 - Model generated source: /res/testing/model/structure_generated/
 
 ## Documenting
+Main: [Documenting.md](Documenting.md)
+
 ### End-User documentation
 The end-user documentation consists of [Readme.md](../../Readme.md), [Troubleshooting.md](../../Troubleshooting.md), and the `/docs/` directory.
 It is characterized as being concise and all-encompassing, clearly conveying the meaning,

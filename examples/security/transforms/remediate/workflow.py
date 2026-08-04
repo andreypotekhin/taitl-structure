@@ -46,33 +46,30 @@ class VulnerabilityRemediationWorkflow(Transform):
     department_summaries = output(DepartmentRemediationWorkflowSummary)
     org_summaries = output(OrgRemediationWorkflowSummary)
 
-    prepared = stage(
-        VulnerabilityRemediationPrepare(cases=cases, vulnerabilities=vulnerabilities)
+    prepared = VulnerabilityRemediationPrepare(
+        cases=cases, vulnerabilities=vulnerabilities
     )
-    accessed = stage(
-        VulnerabilityRemediationAccess(
-            exposures=exposures,
-            case_checks=prepared.case_checks,
-            evaluation=evaluation,
-        )
+
+    accessed = VulnerabilityRemediationAccess(
+        exposures=exposures,
+        case_checks=prepared.case_checks,
+        evaluation=evaluation,
     )
-    published = stage(
-        VulnerabilityRemediationPublish(
-            workflow_exposures=accessed.workflow_exposures,
-            evaluation=evaluation,
-        )
+
+    published = VulnerabilityRemediationPublish(
+        workflow_exposures=accessed.workflow_exposures,
+        evaluation=evaluation,
     )
-    summarized = stage(
-        VulnerabilityRemediationSummaries(
-            workflow_exposures=accessed.workflow_exposures,
-            unacknowledged=published.unacknowledged,
-            pending_exceptions=published.pending_exceptions,
-            expiring_exceptions=published.expiring_exceptions,
-            expired_exceptions=published.expired_exceptions,
-            people=people,
-            teams=teams,
-            departments=departments,
-            orgs=orgs,
-            evaluation=evaluation,
-        )
+
+    summarized = VulnerabilityRemediationSummaries(
+        workflow_exposures=accessed.workflow_exposures,
+        unacknowledged=published.unacknowledged,
+        pending_exceptions=published.pending_exceptions,
+        expiring_exceptions=published.expiring_exceptions,
+        expired_exceptions=published.expired_exceptions,
+        people=people,
+        teams=teams,
+        departments=departments,
+        orgs=orgs,
+        evaluation=evaluation,
     )

@@ -18,7 +18,7 @@ from examples.store.schemas.personalization import UserFeaturePreference
 from examples.store.schemas.product import BlockedProduct, Product
 from examples.store.schemas.promotion import Promotion
 from examples.store.schemas.taxonomy import ProductTaxonomy, TaxonomyNode
-from examples.store.transforms.catalog import NormalizeCatalog, PrepareCatalog
+from examples.store.transforms.catalog import PrepareCatalog
 from examples.store.transforms.recommender import Recommender
 from examples.store.transforms.taxonomy import ExpandProductTaxonomy
 from structure import Transform, input, output
@@ -46,19 +46,17 @@ class Merchandising(Transform):
     recommendation_signals = output(ProductRecommendationSignal)
     recommendation_purchases = output(RecommendationPurchase)
 
-    cataloged = PrepareCatalog(
+    catalog = PrepareCatalog(
         products=products,
         blocked_products=blocked_products,
         promotions=promotions,
     )
 
-    normalized = NormalizeCatalog(catalog=cataloged.catalog)
-
     taxonomy = ExpandProductTaxonomy(product_taxonomy=product_taxonomy, taxonomy=taxonomy_nodes)
 
     recommended = Recommender(
         requests=requests,
-        catalog=normalized.normalized,
+        catalog=catalog.catalog,
         policy=policy,
         boosts=boosts,
         suppressions=suppressions,

@@ -43,8 +43,8 @@ def test_colocated_intermediate_schema_compiles_and_generates(tmp_path: Path, mo
     monkeypatch.chdir(tmp_path)
 
     checked = CliRunner().invoke(cli, ["check"])
-    compiled = CliRunner().invoke(cli, ["compile"])
-    unchanged = CliRunner().invoke(cli, ["compile", "--fail-on-diff"])
+    compiled = CliRunner().invoke(cli, ["compile", "--generated-docs"])
+    unchanged = CliRunner().invoke(cli, ["compile", "--generated-docs", "--fail-on-diff"])
 
     project = DiscoverStructureProject()(StructureConfig.resolve(project_root=tmp_path))
     transform = project.transforms[0]

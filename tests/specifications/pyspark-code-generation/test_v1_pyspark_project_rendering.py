@@ -52,6 +52,7 @@ def test_v1_project_renderer_emits_runtime_schemas_transform_and_traceability() 
         source_transform="testing.model.orders.transforms.order.EnrichOrders",
         generated_package="testing.model.structure_generated.orders",
         source_schema_modules=_source_schema_modules(),
+        traceability="compiler",
     )
 
     assert "testing/model/structure_generated/orders/runtime/schema_assert.py" in files
@@ -131,6 +132,20 @@ def test_v1_project_renderer_is_deterministic() -> None:
     assert PySpark.render.project()(plan, **kwargs) == PySpark.render.project()(plan, **kwargs)
 
 
+def test_v1_project_renderer_keeps_runtime_but_omits_traceability_by_default() -> None:
+    from testing.model.orders.transforms.order import EnrichOrders
+
+    files = PySpark.render.project()(
+        _recipe(EnrichOrders),
+        source_transform="testing.model.orders.transforms.order.EnrichOrders",
+        generated_package="testing.model.structure_generated.orders",
+        source_schema_modules=_source_schema_modules(),
+    )
+
+    assert "testing/model/structure_generated/orders/runtime/schema_assert.py" in files
+    assert not any("/traceability/" in path for path in files)
+
+
 def test_v10_project_renderer_preserves_same_basename_transform_modules() -> None:
     from testing.model.orders.transforms.order import EnrichOrders
 
@@ -140,12 +155,14 @@ def test_v10_project_renderer_preserves_same_basename_transform_modules() -> Non
         source_transform="demo.catalog.prepare.First",
         generated_package="generated",
         source_schema_modules=_source_schema_modules(),
+        traceability="compiler",
     )
     second = PySpark.render.project()(
         plan,
         source_transform="demo.fulfillment.prepare.Second",
         generated_package="generated",
         source_schema_modules=_source_schema_modules(),
+        traceability="compiler",
     )
 
     assert "generated/pyspark/transforms/demo/catalog/prepare.py" in first

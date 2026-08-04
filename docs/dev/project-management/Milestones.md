@@ -493,3 +493,27 @@ Status: planned. V10 begins after the V9 Sprints 45–48 closeout and runs throu
 - `docs/dev/planning/P08022602.V10-streaming-state-and-join-contracts.plan.md`
 - `docs/dev/planning/P08022603.V10-streaming-side-effects-and-arbitrary-state.plan.md`
 - `docs/dev/planning/P08022604.V10-evidence-catalog-reconciliation-and-hardening.plan.md`
+
+## M16: V11 PySpark 4.1 Adoption
+
+Status: planned. V11 follows the V10 closeout and runs from Sprint 55 through Sprint 60, ending 2027-03-05.
+
+### Exit criteria
+
+- The `>=4.1,<4.2` capability profile supports ordinary PySpark as the primary variant and has separately evidenced
+  Spark Connect support where claimed.
+- Every reviewed PySpark 4.1 addition has one catalog status, typed contract or explicit boundary, capability key,
+  diagnostic, test, and evidence path.
+- Admitted expression and relational features have online/generated parity, schemas, explain/traceability, and live
+  ordinary 4.1 evidence.
+- Complex observations, sketches, Arrow UDF/UDTFs, and row-based state have implemented contracts or stable gates with
+  caller-owned remedies.
+- The integration matrix runs PySpark 3.5, 4.0, and 4.1 in ordinary and Connect lanes without dropping regression
+  coverage; generated artifacts are fresh; and `make build` passes.
+
+### Governing documents
+
+- `docs/dev/project-management/V11.md`
+- `docs/dev/planning/P08042601.V11-pyspark-4.1-adoption.plan.md`
+- `docs/dev/design/V11PySpark41Adoption.md`
+- `docs/dev/specifications/V11PySpark41Parity.md`

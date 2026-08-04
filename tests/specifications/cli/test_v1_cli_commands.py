@@ -219,7 +219,7 @@ def test_v1_cli_init_writes_seed_config() -> None:
         assert Path("structure.toml").exists()
         text = Path("structure.toml").read_text(encoding="utf-8")
         assert 'generated_package = "structure_generated"' in text
-        assert "generated_docs = true" in text
+        assert "generated_docs = false" in text
         assert 'generated_docs_dir = "docs"' in text
         assert 'generated_docs_formats = ["markdown", "json"]' in text
         assert '[tool.structure.plugin]' in text
@@ -267,8 +267,10 @@ def test_v1_cli_compile_writes_generated_files_and_fail_on_diff_passes() -> None
     with workspace_tmp() as root:
         write_project(root)
 
-        compiled = CliRunner().invoke(cli, ["compile"])
-        checked = CliRunner().invoke(cli, ["compile", "--fail-on-diff"])
+        compiled = CliRunner().invoke(cli, ["compile", "--generated-docs", "--traceability", "compiler"])
+        checked = CliRunner().invoke(
+            cli, ["compile", "--generated-docs", "--traceability", "compiler", "--fail-on-diff"]
+        )
 
         assert compiled.exit_code == 0, compiled.output
         assert checked.exit_code == 0, checked.output
@@ -280,12 +282,38 @@ def test_v1_cli_compile_writes_generated_files_and_fail_on_diff_passes() -> None
         assert "generated docs dir: generated/docs" in compiled.output
 
 
+def test_v1_cli_compile_omits_auxiliary_artifacts_by_default() -> None:
+    with workspace_tmp() as root:
+        write_project(root)
+
+        result = CliRunner().invoke(cli, ["compile"])
+
+        assert result.exit_code == 0, result.output
+        assert Path("generated/structure_generated/runtime/schema_assert.py").exists()
+        assert not Path("generated/docs").exists()
+        assert not Path("generated/structure_generated/traceability").exists()
+        assert "generated docs: disabled" in result.output
+
+
+def test_v1_cli_compile_can_enable_traceability_without_generated_docs() -> None:
+    with workspace_tmp() as root:
+        write_project(root)
+
+        result = CliRunner().invoke(cli, ["compile", "--traceability", "compiler"])
+
+        assert result.exit_code == 0, result.output
+        assert not Path("generated/docs").exists()
+        assert Path(
+            "generated/structure_generated/traceability/transforms/orders/transforms.NormalizeOrders.json"
+        ).exists()
+
+
 def test_v1_cli_compile_writes_one_transform_module_per_source_unit() -> None:
     with workspace_tmp() as root:
         write_project(root)
         append_second_transform(root)
 
-        result = CliRunner().invoke(cli, ["compile"])
+        result = CliRunner().invoke(cli, ["compile", "--generated-docs"])
 
         text = Path("generated/structure_generated/pyspark/transforms/orders/transforms.py").read_text(encoding="utf-8")
         assert result.exit_code == 0, result.output
@@ -340,7 +368,7 @@ def test_v1_cli_compile_writes_generated_docs_contract() -> None:
     with workspace_tmp() as root:
         write_project(root)
 
-        result = CliRunner().invoke(cli, ["compile"])
+        result = CliRunner().invoke(cli, ["compile", "--generated-docs"])
 
         schema = Path("generated/docs/schemas/OrderRaw.md").read_text(encoding="utf-8")
         transform = json.loads(Path("generated/docs/transforms/orders.transforms.NormalizeOrders.json").read_text())
@@ -359,7 +387,7 @@ def test_v1_cli_compile_respects_generated_docs_format_override() -> None:
     with workspace_tmp() as root:
         write_project(root)
 
-        result = CliRunner().invoke(cli, ["compile", "--generated-docs-formats", "json"])
+        result = CliRunner().invoke(cli, ["compile", "--generated-docs", "--generated-docs-formats", "json"])
 
         assert result.exit_code == 0, result.output
         assert Path("generated/docs/index.json").exists()
@@ -381,7 +409,7 @@ def test_v1_cli_compile_allows_generated_docs_opt_out() -> None:
 def test_v1_cli_fail_on_diff_ignores_existing_docs_when_docs_are_disabled() -> None:
     with workspace_tmp() as root:
         write_project(root)
-        CliRunner().invoke(cli, ["compile"])
+        CliRunner().invoke(cli, ["compile", "--generated-docs"])
 
         result = CliRunner().invoke(cli, ["compile", "--fail-on-diff", "--no-generated-docs"])
 

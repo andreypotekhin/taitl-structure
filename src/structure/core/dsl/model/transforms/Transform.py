@@ -344,6 +344,7 @@ class Transform:
                 semantic_fingerprints=fingerprints,
                 generated_code_options=resolved.generated_code_options,
                 generated_code_hard_wrap=resolved.generated_code_hard_wrap,
+                traceability=resolved.traceability,
             )
         )
         target = storage or DiskStorage(resolved.generated_dir)

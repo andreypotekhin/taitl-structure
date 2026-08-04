@@ -18,6 +18,7 @@ The sprint plan assumes the documentation set from the Structure design package 
 ```text
 project-management/
   Roadmap.md
+  V11.md
   Milestones.md
   Backlog.md
   V10.md
@@ -47,6 +48,12 @@ project-management/
     Sprint52_V10StreamingStateAndJoins.md
     Sprint53_V10SideEffectsAndArbitraryState.md
     Sprint54_V10Hardening.md
+    Sprint55_V11AdmissionAndApiDiff.md
+    Sprint56_V11ExpressionParity.md
+    Sprint57_V11QueryOperations.md
+    Sprint58_V11ObservationsPythonAndState.md
+    Sprint59_V11IntegrationMatrix.md
+    Sprint60_V11HardeningAndCloseout.md
     Sprint36_V8StreamingCoverageMeasurement.md
     Sprint37_V8StatelessStreamingGaps.md
     Sprint38_V8StatefulAndOrderedStreamingGaps.md

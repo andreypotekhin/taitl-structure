@@ -66,7 +66,7 @@ Seed defaults:
 source_roots = ["src"]
 generated_dir = "generated"
 generated_package = "structure_generated"
-generated_docs = true
+generated_docs = false
 generated_docs_dir = "docs"
 generated_docs_formats = ["markdown", "json"]
 execution_mode = "online"
@@ -74,7 +74,7 @@ target_backend = "pyspark"
 target_profile = ">=3.5,<4.1"
 target_variant = "ordinary"
 hook_target_default = ["pyspark"]
-traceability = "compiler"
+traceability = "none"
 validate_intermediate = true
 input_validation_mode = "schema_only"
 intermediate_validation_mode = "schema_only"
@@ -134,7 +134,7 @@ Rules:
 
 Type: boolean.
 
-Default: `true`.
+Default: `false`.
 
 Rules:
 
@@ -284,7 +284,7 @@ columns
 debug
 ```
 
-Default: `"compiler"`.
+Default: `"none"`.
 
 `compiler` includes compiler provenance and static dataflow basics. `columns` and `debug` may be richer modes, but
 must remain deterministic and documented before release.

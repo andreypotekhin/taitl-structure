@@ -11,3 +11,4 @@ class GenerationRequest:
     semantic_fingerprints: Mapping[str, str] | None = None
     generated_code_options: tuple[str, ...] = ()
     generated_code_hard_wrap: int = 120
+    traceability: str = "none"

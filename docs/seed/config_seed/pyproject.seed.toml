@@ -40,7 +40,7 @@ spark.sql.ansi.enabled = true
 spark.sql.storeAssignmentPolicy = "ANSI"
 
 # Compiler traceability output: none, compiler, columns, debug.
-traceability = "compiler"
+traceability = "none"
 
 # Streaming compatibility checks for generated DataFrame transforms.
 # v1/v2 do not generate readStream/writeStream orchestration.

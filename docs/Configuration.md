@@ -18,7 +18,7 @@ Preferred:
 source_roots = ["src"]
 generated_dir = "generated"
 generated_package = "structure_generated"
-generated_docs = true
+generated_docs = false
 generated_docs_dir = "docs"
 generated_docs_formats = ["markdown", "json"]
 execution_mode = "online"
@@ -32,7 +32,7 @@ Alternative:
 source_roots = ["src"]
 generated_dir = "generated"
 generated_package = "structure_generated"
-generated_docs = true
+generated_docs = false
 generated_docs_dir = "docs"
 generated_docs_formats = ["markdown", "json"]
 execution_mode = "online"
@@ -140,7 +140,7 @@ when the settings need to be shared or inspected.
 source_roots = ["src"]
 generated_dir = "generated"
 generated_package = "structure_generated"
-generated_docs = true
+generated_docs = false
 generated_docs_dir = "docs"
 generated_docs_formats = ["markdown", "json"]
 ```
@@ -292,7 +292,7 @@ are rejected.
 ## Traceability Settings
 
 ```toml
-traceability = "compiler"
+traceability = "none"
 ```
 
 Supported traceability levels:
@@ -304,7 +304,7 @@ columns
 debug
 ```
 
-Default: `compiler`.
+Default: `none`.
 
 `compiler` records source-to-IR-to-generated provenance and compact static dataflow dependencies. `columns`
 adds field-level static dependencies where the compiler can infer them. `debug` may include fuller expression

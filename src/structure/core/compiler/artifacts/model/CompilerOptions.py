@@ -17,6 +17,7 @@ class CompilerOptions:
     generated_code_options: tuple[str, ...]
     generated_code_hard_wrap: int
     target: str
+    traceability: str
     validate_inputs: bool
     input_validation_mode: str
     validate_intermediate: bool
@@ -60,6 +61,7 @@ class CompilerOptions:
             generated_code_options=config.generated_code_options,
             generated_code_hard_wrap=config.generated_code_hard_wrap,
             target=config.target,
+            traceability=config.traceability,
             validate_inputs=config.validate_inputs,
             input_validation_mode=config.input_validation_mode,
             validate_intermediate=config.validate_intermediate,
@@ -80,6 +82,7 @@ class CompilerOptions:
             self.generated_code_options,
             self.generated_code_hard_wrap,
             self.target,
+            self.traceability,
             self.validate_inputs,
             self.input_validation_mode,
             self.validate_intermediate,

@@ -9,10 +9,7 @@ def test_store_example_generation_is_byte_identical_across_repeated_runs() -> No
 
 def test_store_example_generated_file_order_is_deterministic() -> None:
     paths = list(render_store_example())
-    non_docs = [path for path in paths if "/docs/" not in path]
-    docs = [path for path in paths if "/docs/" in path]
-    markdown_docs = sorted(path for path in docs if path.endswith(".md"))
-    json_docs = sorted(path for path in docs if path.endswith(".json"))
+    non_docs = [path for path in paths if "/docs/" not in path and "/traceability/" not in path]
 
     assert non_docs[:5] == [
         "examples/structure_generated/store/__init__.py",
@@ -37,7 +34,7 @@ def test_store_example_generated_file_order_is_deterministic() -> None:
         "examples/structure_generated/store/pyspark/transforms/examples/store/transforms/catalog/prepare_catalog.py"
         in non_docs
     )
-    assert docs == markdown_docs + json_docs
+    assert not any("/docs/" in path or "/traceability/" in path for path in paths)
 
 
 def test_store_example_generation_keeps_public_behavior_fragments_stable() -> None:

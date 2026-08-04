@@ -7,10 +7,7 @@ from pathlib import Path
 from typing import Iterator, Sequence, cast
 
 from structure import *
-from structure.core.cli.model.DiscoveredStructureProject import DiscoveredStructureProject
 from structure.core.compiler.api import Compiler
-from structure.core.configuration.model.StructureConfig import StructureConfig
-from structure.core.docs.api import Docs
 from structure.core.dsl.model.schemas.Schema import Schema
 from structure.plugin.pyspark import *
 from structure.plugin.pyspark import PySpark
@@ -128,8 +125,7 @@ def render_store_example() -> dict[str, str]:
         )
         from examples.store.transforms.adv_analytics import AdvancedOrderAnalytics
         from examples.store.transforms.analytics import FulfillmentAnalytics, OrderAnalytics
-        from examples.store.transforms.catalog.normalize import NormalizeCatalog
-        from examples.store.transforms.catalog.prepare_catalog import PrepareCatalog
+        from examples.store.transforms.catalog.prepare import PrepareCatalog
         from examples.store.transforms.evaluation.fulfillment.service import EvaluateFulfillment
         from examples.store.transforms.evaluation.recommender.behavior.workflow import EvaluateRecommendations
         from examples.store.transforms.experiments.assign import AssignRecommendationVariants
@@ -335,10 +331,6 @@ def render_store_example() -> dict[str, str]:
             (Fulfillment, "examples.store.transforms.fulfillment.workflow.Fulfillment"),
             (PrepareCatalog, "examples.store.transforms.catalog.prepare_catalog.PrepareCatalog"),
             (
-                NormalizeCatalog,
-                "examples.store.transforms.catalog.normalize.NormalizeCatalog",
-            ),
-            (
                 ExpandProductTaxonomy,
                 "examples.store.transforms.taxonomy.expand_taxonomy.ExpandProductTaxonomy",
             ),
@@ -439,25 +431,6 @@ def render_store_example() -> dict[str, str]:
                     source_schema_modules=schema_modules,
                 )
             )
-        docs = Docs.render.project()(
-            StructureConfig.resolve(
-                project_root=ROOT,
-                source_roots=["examples"],
-                generated_dir="examples/structure_generated/store",
-                generated_package="examples.structure_generated.store",
-            ),
-            DiscoveredStructureProject(
-                transforms=tuple(transform for transform, _ in transforms),
-                schema_modules={module: tuple(schemas) for module, schemas in schema_modules.items()},
-            ),
-        )
-        files.update({f"examples/structure_generated/store/{path}": text for path, text in docs.items()})
-        files["examples/structure_generated/store/traceability/__init__.py"] = (
-            "# Generated traceability package marker.\n"
-        )
-        files["examples/structure_generated/store/traceability/transforms/__init__.py"] = (
-            "# Generated transform traceability package marker.\n"
-        )
         return files
 
 
@@ -495,25 +468,6 @@ def render_streams_example() -> dict[str, str]:
                     source_schema_modules=schema_modules,
                 )
             )
-        docs = Docs.render.project()(
-            StructureConfig.resolve(
-                project_root=ROOT,
-                source_roots=["examples"],
-                generated_dir="examples/structure_generated/streams",
-                generated_package="examples.structure_generated.streams",
-            ),
-            DiscoveredStructureProject(
-                transforms=tuple(transform for transform, _ in transforms),
-                schema_modules={module: tuple(schemas) for module, schemas in schema_modules.items()},
-            ),
-        )
-        files.update({f"examples/structure_generated/streams/{path}": text for path, text in docs.items()})
-        files["examples/structure_generated/streams/traceability/__init__.py"] = (
-            "# Generated traceability package marker.\n"
-        )
-        files["examples/structure_generated/streams/traceability/transforms/__init__.py"] = (
-            "# Generated transform traceability package marker.\n"
-        )
         return files
 
 
@@ -569,25 +523,6 @@ def render_stocks_example() -> dict[str, str]:
                     source_schema_modules=schema_modules,
                 )
             )
-        docs = Docs.render.project()(
-            StructureConfig.resolve(
-                project_root=ROOT,
-                source_roots=["examples"],
-                generated_dir="examples/structure_generated/stocks",
-                generated_package="examples.structure_generated.stocks",
-            ),
-            DiscoveredStructureProject(
-                transforms=tuple(transform for transform, _ in transforms),
-                schema_modules={module: tuple(schemas) for module, schemas in schema_modules.items()},
-            ),
-        )
-        files.update({f"examples/structure_generated/stocks/{path}": text for path, text in docs.items()})
-        files["examples/structure_generated/stocks/traceability/__init__.py"] = (
-            "# Generated traceability package marker.\n"
-        )
-        files["examples/structure_generated/stocks/traceability/transforms/__init__.py"] = (
-            "# Generated transform traceability package marker.\n"
-        )
         return {path: text.rstrip() + "\n" for path, text in files.items()}
 
 
@@ -748,25 +683,6 @@ def render_security_example() -> dict[str, str]:
                     source_schema_modules=schema_modules,
                 )
             )
-        docs = Docs.render.project()(
-            StructureConfig.resolve(
-                project_root=ROOT,
-                source_roots=["examples"],
-                generated_dir="examples/structure_generated/security",
-                generated_package="examples.structure_generated.security",
-            ),
-            DiscoveredStructureProject(
-                transforms=tuple(transform for transform, _ in transforms),
-                schema_modules={module: tuple(schemas) for module, schemas in schema_modules.items()},
-            ),
-        )
-        files.update({f"examples/structure_generated/security/{path}": text for path, text in docs.items()})
-        files["examples/structure_generated/security/traceability/__init__.py"] = (
-            "# Generated traceability package marker.\n"
-        )
-        files["examples/structure_generated/security/traceability/transforms/__init__.py"] = (
-            "# Generated transform traceability package marker.\n"
-        )
         return {path: text.rstrip() + "\n" for path, text in files.items()}
 
 
@@ -1341,104 +1257,6 @@ def render_search_example() -> dict[str, str]:
                     generated_code_options=("embed_udfs",),
                 )
             )
-        documented_schema_modules = {
-            module: tuple(
-                schema
-                for schema in schemas
-                if schema
-                not in {
-                    BehaviorDailyCounts,
-                    BehaviorExposure,
-                    BehaviorImpression,
-                    BehaviorRequest,
-                    BehaviorRequestMetrics,
-                    BehaviorRequestTotals,
-                    BandAncestor,
-                    BandMatch,
-                    ContextDailyClicks,
-                    ContextDailyImpressions,
-                    DocumentLine,
-                    DocumentFeedbackOption,
-                    DocumentIndexTargetStats,
-                    DocumentIndexTermCount,
-                    DocumentPopularityTotals,
-                    DocumentSimilarityCandidate,
-                    DocumentSimilarityPair,
-                    DocumentOverlapMatch,
-                    DocumentSimilarityQueryText,
-                    ExpandedDocumentLine,
-                    ExpandedSentenceText,
-                    ExpandedWordText,
-                    ExpandedQueryToken,
-                    EvaluationIdealDcg,
-                    EvaluationJudgment,
-                    EvaluationJudgmentTotals,
-                    IndexTokenFrequency,
-                    LabelMapEntry,
-                    MarkedDocumentLine,
-                    ParagraphContent,
-                    ParagraphDraft,
-                    ParagraphIndexTargetStats,
-                    ParagraphIndexTermCount,
-                    ParagraphLine,
-                    ParagraphLineGroup,
-                    ParagraphOverlapMatch,
-                    ParagraphSimilarityCandidate,
-                    ParagraphSimilarityPair,
-                    PopularityFeedback,
-                    QueryDocumentFeedback,
-                    QueryDocumentSignalTotals,
-                    ParagraphSimilarityQueryText,
-                    QueryTerm,
-                    QueryTermCount,
-                    QueryToken,
-                    QueryLabelAssignmentEntries,
-                    QueryLabelAssignments,
-                    SectionIndexTargetStats,
-                    SectionIndexTermCount,
-                    SectionHeading,
-                    SectionKey,
-                    SectionOverlapMatch,
-                    SectionSimilarityCandidate,
-                    SectionSimilarityPair,
-                    SectionSimilarityQueryText,
-                    SingletonUserBand,
-                    SentenceIndexTargetStats,
-                    SentenceIndexTermCount,
-                    SentenceOverlapMatch,
-                    SentenceSimilarityCandidate,
-                    SentenceSimilarityPair,
-                    SentenceSimilarityQueryText,
-                    EvaluationQuery,
-                    EvaluationResult,
-                    EvaluationResultTotals,
-                    TimeWindow,
-                    UserBandPath,
-                    SentenceText,
-                    WordText,
-                }
-            )
-            for module, schemas in schema_modules.items()
-        }
-        docs = Docs.render.project()(
-            StructureConfig.resolve(
-                project_root=ROOT,
-                source_roots=["examples"],
-                generated_dir="examples/structure_generated/search",
-                generated_package="examples.structure_generated.search",
-            ),
-            DiscoveredStructureProject(
-                transforms=tuple(transform for transform, _ in transforms),
-                schema_modules=documented_schema_modules,
-            ),
-        )
-        files.update({f"examples/structure_generated/search/{path}": text for path, text in docs.items()})
-        files["examples/structure_generated/search/traceability/__init__.py"] = (
-            "# Generated traceability package marker.\n"
-        )
-        files["examples/structure_generated/search/traceability/transforms/__init__.py"] = (
-            "# Generated transform traceability package marker.\n"
-        )
         return {path: text.rstrip() + "\n" for path, text in files.items()}
 
 
@@ -1605,10 +1423,6 @@ def _render_school_pyspark_example() -> dict[str, str]:
             generated_package="examples.structure_generated.school",
             source_schema_modules=schema_modules,
         )
-    )
-    files["examples/structure_generated/school/traceability/__init__.py"] = "# Generated traceability package marker.\n"
-    files["examples/structure_generated/school/traceability/transforms/__init__.py"] = (
-        "# Generated transform traceability package marker.\n"
     )
     return files
 

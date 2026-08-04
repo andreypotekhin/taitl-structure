@@ -54,12 +54,12 @@ from examples.structure_generated.store.pyspark.schemas.taxonomy import (
 
 
 class PrepareCatalogGenerated:
-    def _step_cataloged_prepare_0(self, frames):
-        # Step method: cataloged.prepare
-        cataloged__products = frames["products"].alias("product")
-        cataloged__products = cataloged__products.where((F.col("product.active")))
+    def _step_catalog_prepare_0(self, frames):
+        # Step method: catalog.prepare
+        catalog__products = frames["products"].alias("product")
+        catalog__products = catalog__products.where((F.col("product.active")))
         blocked_products_joined = frames["blocked_products"].alias("blocked_products")
-        cataloged__products = cataloged__products.join(
+        catalog__products = catalog__products.join(
             blocked_products_joined,
             (
                 (F.col("blocked_products.tenant.tenant_id") == F.col("product.tenant.tenant_id"))
@@ -68,7 +68,7 @@ class PrepareCatalogGenerated:
             "left_anti",
         )
         promotions_2_joined = frames["promotions"].alias("promotions_2")
-        cataloged__products = cataloged__products.join(
+        catalog__products = catalog__products.join(
             promotions_2_joined,
             (
                 (F.col("promotions_2.tenant.tenant_id") == F.col("product.tenant.tenant_id"))
@@ -79,7 +79,7 @@ class PrepareCatalogGenerated:
             ),
             "left",
         )
-        cataloged__products = cataloged__products.select(
+        catalog__products = catalog__products.select(
             F.col("product.tenant"),
             F.col("product.audit"),
             F.col("product.id").alias("product_id"),
@@ -99,17 +99,15 @@ class PrepareCatalogGenerated:
             F.when(F.col("promotions_2.code").isNotNull(), F.lit(0.5)).otherwise(F.lit(0.0)).alias("promotion_score"),
             F.lit(True).alias("eligible"),
         )
-        assert_schema(cataloged__products, CATALOG_PRODUCT_SCHEMA, name="CatalogProduct", mode="strict")
+        assert_schema(catalog__products, CATALOG_PRODUCT_SCHEMA, name="CatalogProduct", mode="strict")
         return {
-            "cataloged__products": cataloged__products,
+            "catalog__products": catalog__products,
         }
 
-
-class NormalizeCatalogGenerated:
-    def _step_normalized_normalize_1(self, frames):
-        # Step method: normalized.normalize
-        normalized__catalog = frames["cataloged__products"].alias("catalog_product")
-        normalized__catalog = normalized__catalog.select(
+    def _step_catalog_normalize_1(self, frames):
+        # Step method: catalog.normalize
+        catalog__products = frames["catalog__products"].alias("catalog_product")
+        catalog__products = catalog__products.select(
             F.col("catalog_product.tenant"),
             F.col("catalog_product.audit"),
             F.lower(F.trim(F.col("catalog_product.product_id"))).alias("product_id"),
@@ -127,9 +125,9 @@ class NormalizeCatalogGenerated:
             F.col("catalog_product.promotion_score"),
             F.col("catalog_product.eligible"),
         )
-        assert_schema(normalized__catalog, CATALOG_PRODUCT_SCHEMA, name="CatalogProduct", mode="strict")
+        assert_schema(catalog__products, CATALOG_PRODUCT_SCHEMA, name="CatalogProduct", mode="strict")
         return {
-            "normalized__catalog": normalized__catalog,
+            "catalog__products": catalog__products,
         }
 
 
@@ -1104,7 +1102,7 @@ class BuildProductSignalsGenerated:
 class BuildProductFeaturesGenerated:
     def _step_recommended_personalized_featured_build_12(self, frames):
         # Step method: recommended.personalized.featured.build
-        recommended__personalized__featured__catalog = frames["normalized__catalog"].alias("catalog_product")
+        recommended__personalized__featured__catalog = frames["catalog__products"].alias("catalog_product")
         recommended__personalized__featured__catalog = recommended__personalized__featured__catalog.select(
             F.col("catalog_product.tenant"),
             F.col("catalog_product.audit"),
@@ -1451,17 +1449,17 @@ class SelectRecommendationCandidatesGenerated:
     def _step_recommended_candidates_admitted_select_17(self, frames):
         # Step method: recommended.candidates.admitted.select
         recommended__candidates__admitted__requests = frames["requests"].alias("recommendation_request")
-        normalized__catalog_joined = frames["normalized__catalog"].alias("normalized__catalog")
+        catalog__products_joined = frames["catalog__products"].alias("catalog__products")
         recommended__candidates__admitted__requests = recommended__candidates__admitted__requests.join(
-            normalized__catalog_joined,
+            catalog__products_joined,
             (
                 (
-                    (F.col("normalized__catalog.tenant.tenant_id") == F.col("recommendation_request.tenant.tenant_id"))
-                    & F.col("normalized__catalog.eligible")
+                    (F.col("catalog__products.tenant.tenant_id") == F.col("recommendation_request.tenant.tenant_id"))
+                    & F.col("catalog__products.eligible")
                 )
                 & (
                     F.col("recommendation_request.category").isNull()
-                    | F.col("recommendation_request.category").eqNullSafe(F.col("normalized__catalog.category"))
+                    | F.col("recommendation_request.category").eqNullSafe(F.col("catalog__products.category"))
                 )
             ),
             "inner",
@@ -1479,17 +1477,17 @@ class SelectRecommendationCandidatesGenerated:
             F.col("recommendation_request.variant_id"),
             F.col("recommendation_request.category").alias("category_filter"),
             F.col("recommendation_request.collection_id"),
-            F.col("normalized__catalog.product_id"),
-            F.col("normalized__catalog.product_name"),
-            F.col("normalized__catalog.category"),
-            F.col("normalized__catalog.has_promotion"),
-            F.col("normalized__catalog.promotion_code"),
-            F.col("normalized__catalog.base_score"),
-            F.col("normalized__catalog.promotion_score"),
+            F.col("catalog__products.product_id"),
+            F.col("catalog__products.product_name"),
+            F.col("catalog__products.category"),
+            F.col("catalog__products.has_promotion"),
+            F.col("catalog__products.promotion_code"),
+            F.col("catalog__products.base_score"),
+            F.col("catalog__products.promotion_score"),
             F.lit(0.0).alias("inventory_boost"),
             F.lit('catalog').alias("candidate_source"),
             F.lit(None).cast(T.StringType()).alias("taxonomy_id"),
-            F.col("normalized__catalog.category").alias("taxonomy_branch"),
+            F.col("catalog__products.category").alias("taxonomy_branch"),
             F.lit(False).alias("session_match"),
             F.lit(0.0).alias("purchase_signal"),
             F.lit('eligible').alias("eligibility_status"),
@@ -2367,7 +2365,6 @@ class SummarizeRecommendationRunsGenerated:
 
 class MerchandisingGenerated(
     PrepareCatalogGenerated,
-    NormalizeCatalogGenerated,
     ExpandProductTaxonomyGenerated,
     BuildSessionSignalsGenerated,
     BuildPurchaseSignalsGenerated,
@@ -2466,8 +2463,8 @@ class MerchandisingGenerated(
             "input:policy": _input_policy,
             "input:boosts": _input_boosts,
         }
-        frames.update(self._step_cataloged_prepare_0(frames))
-        frames.update(self._step_normalized_normalize_1(frames))
+        frames.update(self._step_catalog_prepare_0(frames))
+        frames.update(self._step_catalog_normalize_1(frames))
         frames.update(self._step_taxonomy_build_ancestors_2(frames))
         frames.update(self._step_taxonomy_expand_3(frames))
         frames.update(self._step_recommended_signals_session_build_4(frames))

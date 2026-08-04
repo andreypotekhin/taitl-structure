@@ -9,6 +9,31 @@ V10 planning for remaining actionable rows is grouped in
 and evidence plans are linked from `docs/dev/project-management/V10.md`. An open or gated row is not a support claim;
 each entry must name its owner boundary, evidence, and caller remedy.
 
+## PySpark 4.1 adoption (V11)
+
+V11 adds a separate ledger for the PySpark `>=4.1,<4.2` profile. These rows are admission classifications, not current
+support claims. The primary target variant is ordinary PySpark; Spark Connect receives a support claim only when its
+4.1-specific evidence passes. The governing design and specification are
+[V11 PySpark 4.1 design](dev/design/V11PySpark41Adoption.md) and
+[V11 PySpark 4.1 parity specification](dev/specifications/V11PySpark41Parity.md).
+
+| PySpark 4.1 addition | Status | Structure boundary | Design evidence or remedy |
+| --- | --- | --- | --- |
+| `Column.transform` and new higher-order column operations | design-gated | Typed symbolic element callback with declared result type; row-preserving array transformation only | Expression design, nullability/type tests, online/generated ordinary 4.1 parity, then Connect parity if documented |
+| New deterministic scalar, string, binary, temporal, and collection functions | design-gated | Admit only functions with explicit type, nullability, generated spelling, and streaming contracts | 4.0-to-4.1 inventory diff and one capability/test/evidence row per function family |
+| Random and seeded helpers such as `random`, `uniform`, `randstr`, and `uuid` | design-gated | Requires an explicit seed and nondeterminism policy; no silent streaming claim | Use a caller-owned PySpark expression or wait for the V11 expression design gate |
+| `DataFrame.exists` and IN-subquery operations | design-gated | Correlated boolean relation predicate with explicit aliases and null semantics | Query design, duplicate/empty/null/correlation tests, explain traceability, ordinary and proven Connect evidence |
+| `DataFrame.lateralJoin` | design-gated | Requires typed output schema, correlation scope, cardinality, and streaming classification | Use caller-owned PySpark until the typed relation contract is implemented |
+| Complex-valued `DataFrame.observe` metrics | design-gated | Observation is a metric side channel, not an implicit output-field mutation | Use caller-owned observation hooks until metric types, retrieval, and parity are specified |
+| KLL and Theta approximate-sketch aggregates | design-gated | Requires binary result, mergeability, precision, dependency, and determinism contracts | Use caller-owned PySpark or ordinary aggregate alternatives |
+| Arrow-optimized Python UDF/UDTF APIs | caller-owned-guided | Arbitrary worker Python and UDTF cardinality remain outside the symbolic compiler contract | Use an explicit raw/caller-owned hook; no generated UDF/UDTF claim |
+| Row-based `transformWithState` | design-gated | User-owned state, timers, recovery, and streaming lifecycle remain outside Structure | Use caller-owned Structured Streaming state code |
+| Declarative Pipelines, SQL Scripting, Python Data Sources, readers/writers, and catalog/session APIs | unsupported | Not compiler-visible DataFrame transformations | Use native PySpark/Spark orchestration around Structure |
+
+The V11 target is intentionally additive: the existing `>=3.5,<4.1` catalog remains the current baseline until V11
+closeout promotes the default. Every row above must move to a final status with a capability key, diagnostic,
+specification, focused test, and evidence path before release.
+
 ## Column API
 
 Structure supports typed field references, nested struct field access, equality and ordering comparisons, boolean

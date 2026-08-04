@@ -50,7 +50,12 @@ class RenderStructureDocsProject:
         if not callable(describe):
             raise ValueError(f"PLUGIN-E2709: Plugin {config.target!r} does not provide documentation analysis.")
         platform_details = {source: describe(plan) for source, plan in plans.items()}
-        data = self._data.project(project, plans, platform_details=platform_details)
+        data = self._data.project(
+            project,
+            plans,
+            platform_details=platform_details,
+            traceability=config.traceability,
+        )
 
         files: OrderedDict[str, str] = OrderedDict()
         if "markdown" in formats:

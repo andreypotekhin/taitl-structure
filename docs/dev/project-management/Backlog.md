@@ -446,6 +446,21 @@ application-specific future documents are not V10 backlog commitments.
   expansion, document reranking, and cohort-band resolution only after their prerequisite operations are proven.
 - Compare normalized, deterministic rows from the raw and typed implementations before removing every hook.
 
+### Epic: V11 PySpark 4.1 Adoption
+
+- Inventory every reviewed PySpark 4.1 Python API addition against the 4.0 baseline and give it exactly one Structure
+  status, owner boundary, capability key, diagnostic, test, and evidence path.
+- Add the exact `>=4.1,<4.2` ordinary and Spark Connect capability profiles while preserving 3.5/4.0 regression lanes.
+- Implement the approved typed 4.1 expression, `Column.transform`, existence/IN-subquery, and lateral-relation slices.
+- Decide and specify complex observations and KLL/Theta sketch aggregates; retain explicit gates where metric or binary
+  semantics are not typed and deterministic.
+- Document and test caller-owned boundaries for Arrow UDF/UDTFs, row-based `transformWithState`, Declarative Pipelines,
+  SQL Scripting, Python Data Sources, readers, writers, sessions, and catalogs.
+- Extend Compose, runner selection, backend metadata, fixtures, version assertions, CI, and evidence reports to
+  `pyspark41` and `spark-connect41`.
+- Reconcile API Catalog, API Reference, machine-readable inventories, compatibility/troubleshooting docs, generated
+  artifacts, traceability, and release evidence before deciding whether the default profile includes 4.1.
+
 ### Epic: Bounded Timeline Recurrence
 
 - Implement the separately planned typed, ordered, bounded `scan(...)` feature and Fibonacci evidence.

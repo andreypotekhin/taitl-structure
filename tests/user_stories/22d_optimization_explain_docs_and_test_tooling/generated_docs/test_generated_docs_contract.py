@@ -29,7 +29,7 @@ def test_generated_docs_make_transform_contract_readable() -> None:
     with workspace_tmp() as root:
         _write_project(root)
 
-        result = CliRunner().invoke(cli, ["compile"])
+        result = CliRunner().invoke(cli, ["compile", "--generated-docs"])
 
         index = Path("generated/docs/index.md").read_text(encoding="utf-8")
         schema = Path("generated/docs/schemas/OrderRaw.md").read_text(encoding="utf-8")

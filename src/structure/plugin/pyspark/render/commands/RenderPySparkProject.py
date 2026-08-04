@@ -32,6 +32,7 @@ class RenderPySparkProject:
         semantic_fingerprint: str | None = None,
         generated_code_options: tuple[str, ...] = (),
         generated_code_hard_wrap: int = 120,
+        traceability: str = "none",
     ) -> dict[str, str]:
         schema_source_modules = self._schema_source_modules(
             source_schema_modules, generated_package=generated_package
@@ -68,12 +69,13 @@ class RenderPySparkProject:
             generated_code_hard_wrap=generated_code_hard_wrap,
         )
 
-        files[self._traceability_path(generated_package, source_transform, plan)] = self._traceability.render(
-            plan,
-            source_transform=source_transform,
-            transform_module=transform_module,
-            schema_modules=schema_modules,
-        )
+        if traceability != "none":
+            files[self._traceability_path(generated_package, source_transform, plan)] = self._traceability.render(
+                plan,
+                source_transform=source_transform,
+                transform_module=transform_module,
+                schema_modules=schema_modules,
+            )
         return dict(files)
 
     def source_unit(
@@ -86,6 +88,7 @@ class RenderPySparkProject:
         semantic_fingerprints: Mapping[str, str] | None = None,
         generated_code_options: tuple[str, ...] = (),
         generated_code_hard_wrap: int = 120,
+        traceability: str = "none",
     ) -> dict[str, str]:
         schema_source_modules = self._schema_source_modules(
             source_schema_modules, generated_package=generated_package
@@ -121,13 +124,16 @@ class RenderPySparkProject:
             generated_code_hard_wrap=generated_code_hard_wrap,
         )
 
-        for source_transform, plan in plans.items():
-            files[self._traceability_path(generated_package, source_transform, plan)] = self._traceability.render(
-                plan,
-                source_transform=source_transform,
-                transform_module=transform_module,
-                schema_modules=schema_modules,
-            )
+        if traceability != "none":
+            for source_transform, plan in plans.items():
+                files[self._traceability_path(generated_package, source_transform, plan)] = (
+                    self._traceability.render(
+                        plan,
+                        source_transform=source_transform,
+                        transform_module=transform_module,
+                        schema_modules=schema_modules,
+                    )
+                )
         return dict(files)
 
     def _schema_modules(

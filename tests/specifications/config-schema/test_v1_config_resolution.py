@@ -31,9 +31,10 @@ def test_v1_config_uses_defaults_and_tracks_sources() -> None:
 
         assert [path.name for path in config.source_roots] == ["src"]
         assert config.generated_package == "structure_generated"
-        assert config.generated_docs is True
+        assert config.generated_docs is False
         assert config.generated_docs_dir == root / "generated" / "docs"
         assert config.generated_docs_formats == ("markdown", "json")
+        assert config.traceability == "none"
         assert config.generated_code_options == ()
         assert config.generated_code_hard_wrap == 120
         assert config.warn_on_udfs is True

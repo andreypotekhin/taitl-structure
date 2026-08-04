@@ -18,6 +18,7 @@ class GenerationAPI(GenerationAPIV1):
             semantic_fingerprints=request.semantic_fingerprints,
             generated_code_options=request.generated_code_options,
             generated_code_hard_wrap=request.generated_code_hard_wrap,
+            traceability=request.traceability,
         )
         source = request.source_module
         plans = cast(dict[str, object], request.payload)

@@ -17,10 +17,12 @@ class StructureDocsData:
         plans: Mapping[str, TransformPlan],
         *,
         platform_details: Mapping[str, Mapping[str, object]],
+        traceability: str = "none",
     ) -> dict[str, object]:
         schemas = [self.schema(schema, module) for module, items in project.schema_modules.items() for schema in items]
         transforms = [
-            self.transform(source, plan, platform_details.get(source, {})) for source, plan in sorted(plans.items())
+            self.transform(source, plan, platform_details.get(source, {}), traceability=traceability)
+            for source, plan in sorted(plans.items())
         ]
         return {
             "schemas": sorted(schemas, key=lambda item: str(item["name"])),
@@ -48,7 +50,17 @@ class StructureDocsData:
             data["metadata"] = dict(field.metadata)
         return data
 
-    def transform(self, source: str, plan: TransformPlan, platform_details: Mapping[str, object]) -> dict[str, object]:
+    def transform(
+        self,
+        source: str,
+        plan: TransformPlan,
+        platform_details: Mapping[str, object],
+        *,
+        traceability: str = "none",
+    ) -> dict[str, object]:
+        target_artifacts: dict[str, str] = {"pyspark_transform": self._target_transform(source)}
+        if traceability != "none":
+            target_artifacts["traceability"] = self._traceability(source, plan)
         return {
             "name": plan.name,
             "source": source,
@@ -61,10 +73,7 @@ class StructureDocsData:
             ],
             "step_methods": [self.step(step, self._step_details(platform_details, step.name)) for step in plan.steps],
             "dependencies": sorted(self._dependencies(plan, platform_details)),
-            "target_artifacts": {
-                "pyspark_transform": self._target_transform(source),
-                "traceability": self._traceability(source, plan),
-            },
+            "target_artifacts": target_artifacts,
         }
 
     def step(self, step: StepPlan, platform_details: Mapping[str, object]) -> dict[str, object]:

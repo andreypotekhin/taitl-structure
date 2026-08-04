@@ -103,3 +103,16 @@ supplies target-specific service facets, and external wheels can supply equivale
 - An internal finite-iterable wheel proving discovery, isolation, execution, serialization, and conformance without
   receiving a public product-support claim.
 - Immediate removal of target-owned names from the `structure` package root.
+
+## v11
+
+- Adopt PySpark `>=4.1,<4.2` with ordinary PySpark as the primary target variant and separately evidenced Spark Connect
+  parity.
+- Maintain a versioned 4.0-to-4.1 API inventory with one status, owner boundary, contract, diagnostic, test, and
+  evidence path for every reviewed addition.
+- Admit only typed, symbolic, explainable 4.1 expression and relational APIs; keep arbitrary Python, readers/writers,
+  session/catalog, declarative-pipeline, SQL-scripting, and streaming-state/lifecycle families explicitly gated or
+  caller-owned.
+- Extend the six-lane live integration matrix to PySpark 4.1 and retain 3.5/4.0 regression evidence.
+- Close V11 only after catalog/reference reconciliation, generated-artifact freshness, live parity evidence, and
+  `make build`.

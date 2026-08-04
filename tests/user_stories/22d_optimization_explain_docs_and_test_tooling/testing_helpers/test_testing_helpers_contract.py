@@ -41,8 +41,8 @@ def test_pytest_helpers_cover_compiler_freshness_and_snapshots() -> None:
         _write_project(root)
 
         checked = assert_check_success(project_root=root)
-        compiled = assert_compile_success(project_root=root)
-        assert_generated_fresh(project_root=root)
+        compiled = assert_compile_success(project_root=root, generated_docs=True)
+        assert_generated_fresh(project_root=root, generated_docs=True)
 
         snapshot = generated_files(root / "generated")
         assert "structure_generated/pyspark/transforms/orders/transforms.py" in snapshot

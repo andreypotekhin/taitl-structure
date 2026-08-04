@@ -75,6 +75,28 @@ class PrepareCatalogGenerated:
             F.when(F.col("promotions_2.code").isNotNull(), F.lit(0.5)).otherwise(F.lit(0.0)).alias("promotion_score"),
             F.lit(True).alias("eligible"),
         )
+        assert_schema(products, CATALOG_PRODUCT_SCHEMA, name="CatalogProduct", mode="strict")
+
+        # Step method: normalize
+        products = products.alias("catalog_product")
+        products = products.select(
+            F.col("catalog_product.tenant"),
+            F.col("catalog_product.audit"),
+            F.lower(F.trim(F.col("catalog_product.product_id"))).alias("product_id"),
+            F.col("catalog_product.product_name"),
+            F.lower(F.trim(F.col("catalog_product.category"))).alias("category"),
+            F.col("catalog_product.features"),
+            F.col("catalog_product.active"),
+            F.col("catalog_product.list_price"),
+            F.col("catalog_product.rating"),
+            F.col("catalog_product.has_promotion"),
+            F.lower(F.trim(F.col("catalog_product.promotion_code"))).alias("promotion_code"),
+            F.col("catalog_product.promotion_name"),
+            F.col("catalog_product.promotion_discount"),
+            F.col("catalog_product.base_score"),
+            F.col("catalog_product.promotion_score"),
+            F.col("catalog_product.eligible"),
+        )
 
         # Step method: catalog
         catalog = products.alias("catalog_product")

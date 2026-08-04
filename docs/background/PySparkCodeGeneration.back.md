@@ -100,7 +100,7 @@ generated_package = "structure_generated"
 execution_mode = "online"
 target_backend = "pyspark"
 target_profile = ">=3.5,<4.1"
-traceability = "compiler"
+traceability = "none"
 validate_inputs = true
 input_validation_mode = "schema_only"
 validate_intermediate = true

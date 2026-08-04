@@ -14,6 +14,26 @@ Connect. See [Compatibility.md](../Compatibility.md) for the full target policy,
 [APICatalog.md](../APICatalog.md) for the public API catalog and checked coverage table, and
 [API Gaps](../dev/Gaps.md) for the developer backlog.
 
+## PySpark 4.1 adoption reference
+
+V11 plans the exact target profile `>=4.1,<4.2`. Ordinary PySpark is the primary variant; Spark Connect is a separate
+claim requiring 4.1-specific live evidence. The rows below describe the planned boundary and do not widen the current
+default support range until V11 closes.
+
+| PySpark 4.1 surface | Planned Structure status | Contract |
+| --- | --- | --- |
+| `Column.transform` and typed higher-order additions | design-gated | Symbolic element callback, declared result type, nullability, and row-preserving array semantics |
+| Deterministic new scalar/string/binary/collection functions | design-gated | Typed helpers with capability checks and online/generated parity |
+| Random/seeded helpers (`random`, `uniform`, `randstr`, `uuid`) | design-gated | Explicit seed and nondeterminism policy required; streaming remains unclaimed |
+| `DataFrame.exists` and IN subqueries | planned | Correlation scope, aliases, null behavior, boolean result, and explainable dependencies |
+| `DataFrame.lateralJoin` | design-gated | Typed relation output, cardinality, correlation, and streaming contract required |
+| Complex observations and sketch aggregates | design-gated | Metric side channels and serialized approximate sketches need separate typed contracts |
+| Arrow UDF/UDTF and `transformWithState` | caller-owned-guided/design-gated | Use raw/caller-owned PySpark; Structure does not generate arbitrary worker Python or state stores |
+
+V11's full ledger is in [APICatalog.md](../APICatalog.md#pyspark-41-adoption-v11). The current public baseline remains
+ordinary and Connect PySpark `>=3.5,<4.1` until every promoted 4.1 row has capability, diagnostics, tests, and runtime
+evidence.
+
 ## Core APIs
 
 | API Area | Status | PySpark Coverage | Reference |
