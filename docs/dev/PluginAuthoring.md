@@ -72,7 +72,7 @@ Use the public conformance helper in the plugin's own tests. It performs descrip
 highest mutually supported API version, requests that façade, and verifies all required facets. Its diagnostics pinpoint
 the missing contract pieces.
 
-    from structure.plugin.conformance import PluginConformance
+    from structure.plugin.api.conformance import PluginConformance
     
     result = PluginConformance.negotiate(
         ExamplePlugin(),

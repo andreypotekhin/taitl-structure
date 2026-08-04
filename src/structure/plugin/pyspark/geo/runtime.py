@@ -22,7 +22,7 @@ def geometry_type():
     providers = tuple(entry_points(group="structure.geo_provider"))
     if not providers:
         try:
-            from structure.geo.providers.sedona import provider as create_provider
+            from structure.plugin.pyspark.geo.providers.sedona import provider as create_provider
         except ImportError as error:
             raise RuntimeError(
                 "GEO-E0901: The active Spark runtime has no Geometry SQL provider. "

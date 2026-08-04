@@ -762,6 +762,7 @@ class ResolveCohortBandsGenerated:
         # Step method: merge_user_band_catalog
         all_user_bands = resolved_user_bands.alias("user_band")
         all_user_bands = all_user_bands.union(singleton_catalog)
+        all_user_bands = all_user_bands.alias("user_band")
         if all_user_bands.isStreaming:
             all_user_bands = all_user_bands.dropDuplicatesWithinWatermark(["user_band_id", "band_ids"])
         else:
@@ -845,6 +846,7 @@ class ResolveCohortBandsGenerated:
         # Step method: merge_band_memberships
         band_memberships = direct_band_memberships.alias("band_membership")
         band_memberships = band_memberships.union(resolved_band_memberships)
+        band_memberships = band_memberships.alias("band_membership")
         band_memberships = band_memberships.select(
             F.col("user_id"),
             F.col("band_id"),

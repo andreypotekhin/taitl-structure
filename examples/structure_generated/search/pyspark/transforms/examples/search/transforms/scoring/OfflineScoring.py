@@ -181,6 +181,7 @@ class MergeOfflineQueriesGenerated:
         # Step method: offline.merge_queries
         offline__offline_queries = frames["popular__selected_queries"].alias("search_query")
         offline__offline_queries = offline__offline_queries.union(frames["recent__recent_queries"])
+        offline__offline_queries = offline__offline_queries.alias("search_query")
         if offline__offline_queries.isStreaming:
             offline__offline_queries = offline__offline_queries.dropDuplicatesWithinWatermark(["id"])
         else:

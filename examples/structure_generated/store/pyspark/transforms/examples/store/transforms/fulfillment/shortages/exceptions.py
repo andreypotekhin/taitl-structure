@@ -209,7 +209,9 @@ class PrioritizeExceptionsGenerated:
         # Step method: merge_exceptions
         merged = shortage_exceptions.alias("fulfillment_exception")
         merged = merged.union(plan_exceptions)
+        merged = merged.alias("fulfillment_exception")
         merged = merged.union(substitution_exceptions)
+        merged = merged.alias("fulfillment_exception")
         merged = merged.select(
             F.col("tenant"),
             F.col("business"),

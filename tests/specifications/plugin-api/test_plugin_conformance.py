@@ -4,8 +4,8 @@ from typing import cast
 import pytest
 
 from structure.plugin.api import PluginDescriptor
+from structure.plugin.api.conformance import PluginConformance
 from structure.plugin.api.v1 import AuthoringAPI, CapabilitiesAPI, CompilerAPI, PluginAPI, SchemaAPI
-from structure.plugin.conformance import PluginConformance
 
 
 class Facet:

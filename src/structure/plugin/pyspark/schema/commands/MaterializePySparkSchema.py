@@ -56,7 +56,7 @@ class MaterializePySparkSchema:
         if isinstance(type, VariantType):
             return spark_types.VariantType()
         if isinstance(type, GeometryType):
-            from structure.geo import geometry_type
+            from structure.plugin.pyspark.geo import geometry_type
 
             return geometry_type()
         if isinstance(type, DecimalType):

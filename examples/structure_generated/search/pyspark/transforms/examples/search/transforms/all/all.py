@@ -8,6 +8,7 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.search.transforms.all.all import All
+from examples.search.transforms.chunking.SentenceChunking import SentenceChunking
 from examples.search.transforms.labeling.CreateQueryLabels import CreateQueryLabels
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
 from examples.structure_generated.search.pyspark.schemas.analytics import (
@@ -1870,12 +1871,15 @@ class CreateSimilarityQueriesGenerated:
         similarities__queries__queries = similarities__queries__queries.union(
             frames["similarities__queries__section_search_queries"]
         )
+        similarities__queries__queries = similarities__queries__queries.alias("search_query")
         similarities__queries__queries = similarities__queries__queries.union(
             frames["similarities__queries__paragraph_search_queries"]
         )
+        similarities__queries__queries = similarities__queries__queries.alias("search_query")
         similarities__queries__queries = similarities__queries__queries.union(
             frames["similarities__queries__sentence_search_queries"]
         )
+        similarities__queries__queries = similarities__queries__queries.alias("search_query")
         similarities__queries__queries = similarities__queries__queries.select(
             F.col("id"),
             F.col("queryset"),
@@ -3689,6 +3693,7 @@ class ReduceSimilarityScoresGenerated:
         similarities__reduced__document_pairs = similarities__reduced__document_pairs.union(
             frames["similarities__reduced__document_reversed_pairs"]
         )
+        similarities__reduced__document_pairs = similarities__reduced__document_pairs.alias("document_similarity_pair")
         similarities__reduced__document_pairs = similarities__reduced__document_pairs.select(
             F.col("left_document_id"),
             F.col("right_document_id"),
@@ -3919,6 +3924,7 @@ class ReduceSimilarityScoresGenerated:
         similarities__reduced__section_pairs = similarities__reduced__section_pairs.union(
             frames["similarities__reduced__section_reversed_pairs"]
         )
+        similarities__reduced__section_pairs = similarities__reduced__section_pairs.alias("section_similarity_pair")
         similarities__reduced__section_pairs = similarities__reduced__section_pairs.select(
             F.col("left_document_id"),
             F.col("left_section_id"),
@@ -4187,6 +4193,9 @@ class ReduceSimilarityScoresGenerated:
         )
         similarities__reduced__paragraph_pairs = similarities__reduced__paragraph_pairs.union(
             frames["similarities__reduced__paragraph_reversed_pairs"]
+        )
+        similarities__reduced__paragraph_pairs = similarities__reduced__paragraph_pairs.alias(
+            "paragraph_similarity_pair"
         )
         similarities__reduced__paragraph_pairs = similarities__reduced__paragraph_pairs.select(
             F.col("left_document_id"),
@@ -4490,6 +4499,7 @@ class ReduceSimilarityScoresGenerated:
         similarities__reduced__sentence_pairs = similarities__reduced__sentence_pairs.union(
             frames["similarities__reduced__sentence_reversed_pairs"]
         )
+        similarities__reduced__sentence_pairs = similarities__reduced__sentence_pairs.alias("sentence_similarity_pair")
         similarities__reduced__sentence_pairs = similarities__reduced__sentence_pairs.select(
             F.col("left_document_id"),
             F.col("left_section_id"),
@@ -5245,6 +5255,7 @@ class MergeOfflineQueriesGenerated:
         scored__offline__offline_queries = scored__offline__offline_queries.union(
             frames["scored__recent__recent_queries"]
         )
+        scored__offline__offline_queries = scored__offline__offline_queries.alias("search_query")
         if scored__offline__offline_queries.isStreaming:
             scored__offline__offline_queries = scored__offline__offline_queries.dropDuplicatesWithinWatermark(["id"])
         else:
@@ -6325,6 +6336,7 @@ class ResolveCohortBandsGenerated:
         # Step method: cohorts.merge_user_band_catalog
         cohorts__all_user_bands = frames["cohorts__resolved_user_bands"].alias("user_band")
         cohorts__all_user_bands = cohorts__all_user_bands.union(frames["cohorts__singleton_catalog"])
+        cohorts__all_user_bands = cohorts__all_user_bands.alias("user_band")
         if cohorts__all_user_bands.isStreaming:
             cohorts__all_user_bands = cohorts__all_user_bands.dropDuplicatesWithinWatermark(
                 ["user_band_id", "band_ids"]
@@ -6443,6 +6455,7 @@ class ResolveCohortBandsGenerated:
         # Step method: cohorts.merge_band_memberships
         cohorts__band_memberships = frames["cohorts__direct_band_memberships"].alias("band_membership")
         cohorts__band_memberships = cohorts__band_memberships.union(frames["cohorts__resolved_band_memberships"])
+        cohorts__band_memberships = cohorts__band_memberships.alias("band_membership")
         cohorts__band_memberships = cohorts__band_memberships.select(
             F.col("user_id"),
             F.col("band_id"),
@@ -7116,9 +7129,11 @@ class BuildRelevanceSignalsGenerated:
         relevance__context_impressions = relevance__context_impressions.union(
             frames["relevance__fallback_context_impressions"]
         )
+        relevance__context_impressions = relevance__context_impressions.alias("context_daily_impressions")
         relevance__context_impressions = relevance__context_impressions.union(
             frames["relevance__band_context_impressions"]
         )
+        relevance__context_impressions = relevance__context_impressions.alias("context_daily_impressions")
         relevance__context_impressions = relevance__context_impressions.select(
             F.col("window"),
             F.col("query"),
@@ -7242,7 +7257,9 @@ class BuildRelevanceSignalsGenerated:
         # Step method: relevance.merge_context_clicks
         relevance__context_clicks = frames["relevance__global_context_clicks"].alias("context_daily_clicks")
         relevance__context_clicks = relevance__context_clicks.union(frames["relevance__fallback_context_clicks"])
+        relevance__context_clicks = relevance__context_clicks.alias("context_daily_clicks")
         relevance__context_clicks = relevance__context_clicks.union(frames["relevance__band_context_clicks"])
+        relevance__context_clicks = relevance__context_clicks.alias("context_daily_clicks")
         relevance__context_clicks = relevance__context_clicks.select(
             F.col("window"),
             F.col("query"),
@@ -8199,6 +8216,7 @@ class AllGenerated(
         self.ctx = ctx
         self._impl = All()
         self._impl_labeled_CreateQueryLabels = CreateQueryLabels()
+        self._impl_udf_examples_search_transforms_chunking_SentenceChunking_SentenceChunking = SentenceChunking()
         self._structure_udf_examples_search_transforms_chunking_sentencechunking_sentencechunking_default_sentence_texts = (
             F
             .udf(

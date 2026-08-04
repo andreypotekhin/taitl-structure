@@ -1216,6 +1216,7 @@ def test_online_runner_applies_relation_union_before_projection(monkeypatch) -> 
     assert published.operations == (
         "alias:rawOrder",
         "union:archived",
+        "alias:rawOrder",
         "select:id=col(id),status=col(status)",
         "alias:published",
     )
@@ -1247,6 +1248,7 @@ def test_online_runner_applies_relation_union_by_name_before_projection(monkeypa
     assert published.operations == (
         "alias:rawOrder",
         "unionByName:archived:allowMissingColumns=False",
+        "alias:rawOrder",
         "select:id=col(id),status=col(status)",
         "alias:published",
     )
@@ -1278,6 +1280,7 @@ def test_online_runner_applies_missing_column_union_by_name_before_projection(mo
     assert published.operations == (
         "alias:rawOrder",
         "unionByName:archived:allowMissingColumns=True",
+        "alias:rawOrder",
         "select:id=col(id),status=col(status)",
         "alias:published",
     )
@@ -1416,6 +1419,7 @@ def test_online_runner_applies_relation_set_operation_before_projection(
     assert published.operations == (
         "alias:rawOrder",
         expected,
+        "alias:rawOrder",
         "select:id=col(id),status=col(status)",
         "alias:published",
     )

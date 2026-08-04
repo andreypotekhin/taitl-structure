@@ -28,7 +28,7 @@ class RenderPySparkSchemaModule:
     def _imports(self, dependencies: Mapping[str, tuple[str, ...]], geometry: bool) -> str:
         lines = ["from pyspark.sql import types as T"]
         if geometry:
-            lines.append("from structure.geo import geometry_type")
+            lines.append("from structure.plugin.pyspark.geo import geometry_type")
         for module in sorted(dependencies):
             constants = dependencies[module]
             if len(constants) == 1:

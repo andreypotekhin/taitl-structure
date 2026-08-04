@@ -925,6 +925,7 @@ class RenderPySparkStep:
                 f"        {target} = {target}.unionByName("
                 f"{source}, allowMissingColumns={relation_set.allow_missing_columns})"
             )
+            lines.append(f'        {target} = {target}.alias({self._literal(step.input_alias)})')
             return lines
         function = {
             "union_all": "union",
@@ -934,6 +935,7 @@ class RenderPySparkStep:
             "except_all": "exceptAll",
         }[relation_set.operation]
         lines.append(f"        {target} = {target}.{function}({source})")
+        lines.append(f'        {target} = {target}.alias({self._literal(step.input_alias)})')
         return lines
 
     def _field_path(self, schema, path):
@@ -1836,7 +1838,7 @@ class RenderPySparkStep:
             aliases[source_scope] = step.input_alias
         if step.ordinal == 0:
             aliases["orders"] = step.input_alias
-        if any(operation.relation_set is not None for operation in step.operations):
+        if join is None and not step.joins and any(operation.relation_set is not None for operation in step.operations):
             if source_scope is not None:
                 aliases[source_scope] = ""
             aliases[step.input_schema.__name__] = ""

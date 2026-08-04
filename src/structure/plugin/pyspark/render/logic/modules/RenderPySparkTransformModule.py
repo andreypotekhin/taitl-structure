@@ -231,8 +231,9 @@ class RenderPySparkTransformModule:
         if self._requires_impl(plan, generated_code_options=generated_code_options):
             lines.append(f"        self._impl = {source_name}()")
             lines.extend(self._hook_impl_initializers(plan, source_transform=source_transform))
+            lines.extend(self._udf_impl_initializers(plan, source_transform=source_transform))
         lines.extend(
-            self._udf_initializers(plan, source_name=source_name, generated_code_options=generated_code_options)
+            self._udf_initializers(plan, source_transform=source_transform, generated_code_options=generated_code_options)
         )
 
         methods = self._mirror_step_methods(plan, source_transform=source_transform, fields=fields)
@@ -421,8 +422,9 @@ class RenderPySparkTransformModule:
         if self._requires_impl(plan, generated_code_options=generated_code_options):
             lines.append(f"        self._impl = {source_name}()")
             lines.extend(self._hook_impl_initializers(plan, source_transform=source_transform))
+            lines.extend(self._udf_impl_initializers(plan, source_transform=source_transform))
         lines.extend(
-            self._udf_initializers(plan, source_name=source_name, generated_code_options=generated_code_options)
+            self._udf_initializers(plan, source_transform=source_transform, generated_code_options=generated_code_options)
         )
         lines.extend(["", "    def run(", "        self,", "        *,"])
         for input in plan.inputs:
@@ -533,8 +535,9 @@ class RenderPySparkTransformModule:
         if self._requires_impl(plan, generated_code_options=generated_code_options):
             lines.append(f"        self._impl = {source_name}()")
             lines.extend(self._hook_impl_initializers(plan, source_transform=source_transform))
+            lines.extend(self._udf_impl_initializers(plan, source_transform=source_transform))
         lines.extend(
-            self._udf_initializers(plan, source_name=source_name, generated_code_options=generated_code_options)
+            self._udf_initializers(plan, source_transform=source_transform, generated_code_options=generated_code_options)
         )
         lines.extend(["", "    def run(", "        self,", "        *,"])
         for input in plan.inputs:
@@ -739,6 +742,10 @@ class RenderPySparkTransformModule:
             if hook.origin is None:
                 continue
             imports[hook.origin.module].add(hook.origin.class_name)
+        for udf in self._udfs(plan):
+            module, owner, owner_import = self._udf_owner(udf)
+            if owner_import != source_transform:
+                imports[module].add(owner)
         return [f"from {module} import {', '.join(sorted(names))}" for module, names in sorted(imports.items())]
 
     def _hook_impl_initializers(self, plan: PySparkExecutionPlan, *, source_transform: str) -> list[str]:
@@ -775,21 +782,47 @@ class RenderPySparkTransformModule:
             bool(self._udfs(plan)) and not self._options.enabled(generated_code_options, "embed_udfs")
         )
 
+    def _udf_owner(self, udf: dict[str, object]) -> tuple[str, str, str]:
+        module = str(udf["module"])
+        qualname = str(udf["qualname"])
+        owner = qualname.split(".", 1)[0]
+        return module, owner, f"{module}.{owner}"
+
+    def _udf_impl_field(self, udf: dict[str, object]) -> str:
+        module, owner, _ = self._udf_owner(udf)
+        return f"_impl_udf_{self._identifier(f'{module}_{owner}')}"
+
+    def _udf_impl_initializers(self, plan: PySparkExecutionPlan, *, source_transform: str) -> list[str]:
+        lines: list[str] = []
+        seen: set[str] = set()
+        for udf in self._udfs(plan):
+            _, owner, owner_import = self._udf_owner(udf)
+            if owner_import == source_transform or owner_import in seen:
+                continue
+            seen.add(owner_import)
+            lines.append(f"        self.{self._udf_impl_field(udf)} = {owner}()")
+        return lines
+
     def _udf_initializers(
         self,
         plan: PySparkExecutionPlan,
         *,
-        source_name: str,
+        source_transform: str,
         generated_code_options: tuple[str, ...],
     ) -> list[str]:
         lines: list[str] = []
         for udf in self._udfs(plan):
             function_name = udf["function_name"]
-            return_type = self._udf_return_type(udf, source_name=source_name)
+            return_type = self._udf_return_type(udf, source_name=source_transform.rsplit(".", 1)[1])
+            _, _, owner_import = self._udf_owner(udf)
             implementation = (
                 f"self.{function_name}"
                 if self._options.enabled(generated_code_options, "embed_udfs")
-                else (f"self._impl.{function_name}")
+                else (
+                    f"self._impl.{function_name}"
+                    if owner_import == source_transform
+                    else f"self.{self._udf_impl_field(udf)}.{function_name}"
+                )
             )
             lines.append(f"        self.{udf['udf_name']} = F.udf({implementation}, returnType={return_type})")
         return lines

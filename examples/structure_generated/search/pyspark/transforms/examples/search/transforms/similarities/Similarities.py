@@ -609,8 +609,11 @@ class CreateSimilarityQueriesGenerated:
         # Step method: queries.merge_queries
         queries__queries = frames["queries__document_search_queries"].alias("search_query")
         queries__queries = queries__queries.union(frames["queries__section_search_queries"])
+        queries__queries = queries__queries.alias("search_query")
         queries__queries = queries__queries.union(frames["queries__paragraph_search_queries"])
+        queries__queries = queries__queries.alias("search_query")
         queries__queries = queries__queries.union(frames["queries__sentence_search_queries"])
+        queries__queries = queries__queries.alias("search_query")
         queries__queries = queries__queries.select(
             F.col("id"),
             F.col("queryset"),
@@ -1464,6 +1467,7 @@ class ReduceSimilarityScoresGenerated:
         # Step method: reduced.merge_document_pairs
         reduced__document_pairs = frames["reduced__document_canonical_pairs"].alias("document_similarity_pair")
         reduced__document_pairs = reduced__document_pairs.union(frames["reduced__document_reversed_pairs"])
+        reduced__document_pairs = reduced__document_pairs.alias("document_similarity_pair")
         reduced__document_pairs = reduced__document_pairs.select(
             F.col("left_document_id"),
             F.col("right_document_id"),
@@ -1655,6 +1659,7 @@ class ReduceSimilarityScoresGenerated:
         # Step method: reduced.merge_section_pairs
         reduced__section_pairs = frames["reduced__section_canonical_pairs"].alias("section_similarity_pair")
         reduced__section_pairs = reduced__section_pairs.union(frames["reduced__section_reversed_pairs"])
+        reduced__section_pairs = reduced__section_pairs.alias("section_similarity_pair")
         reduced__section_pairs = reduced__section_pairs.select(
             F.col("left_document_id"),
             F.col("left_section_id"),
@@ -1888,6 +1893,7 @@ class ReduceSimilarityScoresGenerated:
         # Step method: reduced.merge_paragraph_pairs
         reduced__paragraph_pairs = frames["reduced__paragraph_canonical_pairs"].alias("paragraph_similarity_pair")
         reduced__paragraph_pairs = reduced__paragraph_pairs.union(frames["reduced__paragraph_reversed_pairs"])
+        reduced__paragraph_pairs = reduced__paragraph_pairs.alias("paragraph_similarity_pair")
         reduced__paragraph_pairs = reduced__paragraph_pairs.select(
             F.col("left_document_id"),
             F.col("left_section_id"),
@@ -2153,6 +2159,7 @@ class ReduceSimilarityScoresGenerated:
         # Step method: reduced.merge_sentence_pairs
         reduced__sentence_pairs = frames["reduced__sentence_canonical_pairs"].alias("sentence_similarity_pair")
         reduced__sentence_pairs = reduced__sentence_pairs.union(frames["reduced__sentence_reversed_pairs"])
+        reduced__sentence_pairs = reduced__sentence_pairs.alias("sentence_similarity_pair")
         reduced__sentence_pairs = reduced__sentence_pairs.select(
             F.col("left_document_id"),
             F.col("left_section_id"),

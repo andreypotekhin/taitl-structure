@@ -56,6 +56,12 @@ class UdfPublished(Transform):
         return UdfRaw(id=self.normalize(row.id))
 
 
+class UdfPipeline(Transform):
+    rows = input(UdfRaw)
+
+    pipeline = Transform.to(UdfPublished(rows=rows))
+
+
 @transform
 class CachePublishedOrders(Transform):
     orders = input(CacheRaw)
@@ -186,6 +192,20 @@ def test_v1_transform_module_renderer_composes_steps_and_final_return() -> None:
         '        return TransformResult({"published": published}, single=True, '
         'schema={"published": ORDER_PUBLISHED_SCHEMA})'
     )
+
+
+def test_composed_transform_qualifies_nested_special_udf_owner() -> None:
+    text = PySpark.render.transform()(
+        _recipe(UdfPipeline),
+        source_transform=f"{__name__}.UdfPipeline",
+        runtime_module="testing.model.structure_generated.runtime.schema_assert",
+        schema_modules={UdfRaw: "testing.model.structure_generated.cache.pyspark.schemas.order"},
+    )
+
+    ast.parse(text)
+    assert "UdfPublished()" in text
+    assert "self._impl_udf_" in text
+    assert ".normalize" in text
 
 
 def test_mirror_methods_render_source_named_steps_and_constructor_inputs() -> None:

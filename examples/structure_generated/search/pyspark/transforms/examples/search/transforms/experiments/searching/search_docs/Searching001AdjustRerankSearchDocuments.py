@@ -1180,10 +1180,11 @@ class RetrieveDocumentsGenerated:
         # Step method: retrieved.merge_stored_scores
         retrieved__stored_scores = frames["document_scores"].alias("document_score")
         retrieved__stored_scores = retrieved__stored_scores.union(frames["scored__scoring__selected__document_scores"])
+        retrieved__stored_scores = retrieved__stored_scores.alias("document_score")
         requests_joined = frames["requests"].alias("requests")
         retrieved__stored_scores = retrieved__stored_scores.join(
             requests_joined,
-            (F.col("requests.query_id") == F.col("query_id")),
+            (F.col("requests.query_id") == F.col("document_score.query_id")),
             "inner",
         )
         score_policy_2_joined = frames["score_policy"].alias("score_policy_2")
@@ -1193,15 +1194,18 @@ class RetrieveDocumentsGenerated:
                 (
                     (
                         (
-                            (F.col("scored_at") <= F.col("requests.requested_at"))
-                            & (F.datediff(F.col("requests.requested_at"), F.col("scored_at")) >= F.lit(0))
+                            (F.col("document_score.scored_at") <= F.col("requests.requested_at"))
+                            & (
+                                F.datediff(F.col("requests.requested_at"), F.col("document_score.scored_at"))
+                                >= F.lit(0)
+                            )
                         )
                         & (
-                            F.datediff(F.col("requests.requested_at"), F.col("scored_at"))
+                            F.datediff(F.col("requests.requested_at"), F.col("document_score.scored_at"))
                             <= F.col("score_policy_2.maximum_age_days")
                         )
                     )
-                    & F.col("experiment_id").eqNullSafe(F.col("requests.experiment_id"))
+                    & F.col("document_score.experiment_id").eqNullSafe(F.col("requests.experiment_id"))
                 )
             )
         )
@@ -1214,11 +1218,11 @@ class RetrieveDocumentsGenerated:
                 ["query_id", "document_id", "experiment_id"]
             )
         retrieved__stored_scores = retrieved__stored_scores.select(
-            F.col("query_id"),
-            F.col("document_id"),
-            F.col("experiment_id"),
-            F.col("scored_at"),
-            F.col("score"),
+            F.col("document_score.query_id"),
+            F.col("document_score.document_id"),
+            F.col("document_score.experiment_id"),
+            F.col("document_score.scored_at"),
+            F.col("document_score.score"),
         )
         assert_schema(retrieved__stored_scores, DOCUMENT_SCORE_SCHEMA, name="DocumentScore", mode="strict")
         return {
@@ -1231,10 +1235,11 @@ class RetrieveDocumentsGenerated:
         retrieved__streamed_scores = retrieved__streamed_scores.union(
             frames["scored__scoring__selected__document_scores"]
         )
+        retrieved__streamed_scores = retrieved__streamed_scores.alias("document_score")
         requests_joined = frames["requests"].alias("requests")
         retrieved__streamed_scores = retrieved__streamed_scores.join(
             requests_joined,
-            (F.col("requests.query_id") == F.col("query_id")),
+            (F.col("requests.query_id") == F.col("document_score.query_id")),
             "inner",
         )
         score_policy_2_joined = frames["score_policy"].alias("score_policy_2")
@@ -1244,15 +1249,18 @@ class RetrieveDocumentsGenerated:
                 (
                     (
                         (
-                            (F.col("scored_at") <= F.col("requests.requested_at"))
-                            & (F.datediff(F.col("requests.requested_at"), F.col("scored_at")) >= F.lit(0))
+                            (F.col("document_score.scored_at") <= F.col("requests.requested_at"))
+                            & (
+                                F.datediff(F.col("requests.requested_at"), F.col("document_score.scored_at"))
+                                >= F.lit(0)
+                            )
                         )
                         & (
-                            F.datediff(F.col("requests.requested_at"), F.col("scored_at"))
+                            F.datediff(F.col("requests.requested_at"), F.col("document_score.scored_at"))
                             <= F.col("score_policy_2.maximum_age_days")
                         )
                     )
-                    & F.col("experiment_id").eqNullSafe(F.col("requests.experiment_id"))
+                    & F.col("document_score.experiment_id").eqNullSafe(F.col("requests.experiment_id"))
                 )
             )
         )
@@ -1265,11 +1273,11 @@ class RetrieveDocumentsGenerated:
                 ["query_id", "document_id", "experiment_id"]
             )
         retrieved__streamed_scores = retrieved__streamed_scores.select(
-            F.col("query_id"),
-            F.col("document_id"),
-            F.col("experiment_id"),
-            F.col("scored_at"),
-            F.col("score"),
+            F.col("document_score.query_id"),
+            F.col("document_score.document_id"),
+            F.col("document_score.experiment_id"),
+            F.col("document_score.scored_at"),
+            F.col("document_score.score"),
         )
         assert_schema(retrieved__streamed_scores, DOCUMENT_SCORE_SCHEMA, name="DocumentScore", mode="strict")
         return {
@@ -1436,6 +1444,7 @@ class RetrieveDocumentsGenerated:
         # Step method: retrieved.rank_candidates
         retrieved__candidates = frames["retrieved__stored_candidates"].alias("document_search_candidate")
         retrieved__candidates = retrieved__candidates.union(frames["retrieved__streamed_candidates"])
+        retrieved__candidates = retrieved__candidates.alias("document_search_candidate")
         retrieved__candidates = retrieved__candidates.select(
             F.col("search_query_id"),
             F.col("experiment_id"),
@@ -1474,10 +1483,11 @@ class OverlapDocumentsGenerated:
         overlapped__merged_scores = overlapped__merged_scores.union(
             frames["scored__scoring__overlap__document_overlap_scores"]
         )
+        overlapped__merged_scores = overlapped__merged_scores.alias("document_overlap_score")
         requests_joined = frames["requests"].alias("requests")
         overlapped__merged_scores = overlapped__merged_scores.join(
             requests_joined,
-            (F.col("requests.query_id") == F.col("query_id")),
+            (F.col("requests.query_id") == F.col("document_overlap_score.query_id")),
             "inner",
         )
         score_policy_2_joined = frames["score_policy"].alias("score_policy_2")
@@ -1486,11 +1496,14 @@ class OverlapDocumentsGenerated:
             (
                 (
                     (
-                        (F.col("scored_at") <= F.col("requests.requested_at"))
-                        & (F.datediff(F.col("requests.requested_at"), F.col("scored_at")) >= F.lit(0))
+                        (F.col("document_overlap_score.scored_at") <= F.col("requests.requested_at"))
+                        & (
+                            F.datediff(F.col("requests.requested_at"), F.col("document_overlap_score.scored_at"))
+                            >= F.lit(0)
+                        )
                     )
                     & (
-                        F.datediff(F.col("requests.requested_at"), F.col("scored_at"))
+                        F.datediff(F.col("requests.requested_at"), F.col("document_overlap_score.scored_at"))
                         <= F.col("score_policy_2.maximum_age_days")
                     )
                 )
@@ -1503,10 +1516,10 @@ class OverlapDocumentsGenerated:
         else:
             overlapped__merged_scores = overlapped__merged_scores.dropDuplicates(["query_id", "document_id"])
         overlapped__merged_scores = overlapped__merged_scores.select(
-            F.col("query_id"),
-            F.col("document_id"),
-            F.col("scored_at"),
-            F.col("score_overlap"),
+            F.col("document_overlap_score.query_id"),
+            F.col("document_overlap_score.document_id"),
+            F.col("document_overlap_score.scored_at"),
+            F.col("document_overlap_score.score_overlap"),
         )
         assert_schema(
             overlapped__merged_scores, DOCUMENT_OVERLAP_SCORE_SCHEMA, name="DocumentOverlapScore", mode="strict"
@@ -1683,6 +1696,7 @@ class RerankDocumentsGenerated:
         # Step method: reranked.merge_feedback_options
         reranked__feedback_options = frames["reranked__fallback_options"].alias("document_feedback_option")
         reranked__feedback_options = reranked__feedback_options.union(frames["reranked__global_options"])
+        reranked__feedback_options = reranked__feedback_options.alias("document_feedback_option")
         reranked__feedback_options = reranked__feedback_options.select(
             F.col("search_query_id"),
             F.col("experiment_id"),

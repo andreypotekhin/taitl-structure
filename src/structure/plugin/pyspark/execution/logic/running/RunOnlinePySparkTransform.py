@@ -373,6 +373,7 @@ class RunOnlinePySparkTransform:
                     functions=functions,
                     types=types,
                 )
+                df = df.alias(step.input_alias)
             if operation.kind == "watermark" and operation.watermark is not None:
                 if operation.watermark.scope == getattr(step, "source_scope", ""):
                     df = self._watermark(operation.watermark, df)
@@ -1665,7 +1666,7 @@ class RunOnlinePySparkTransform:
             aliases[source_scope] = step.input_alias
         if step.ordinal == 0:
             aliases["orders"] = step.input_alias
-        if any(operation.relation_set is not None for operation in step.operations):
+        if join is None and not step.joins and any(operation.relation_set is not None for operation in step.operations):
             if source_scope is not None:
                 aliases[source_scope] = ""
             aliases[step.input_schema.__name__] = ""

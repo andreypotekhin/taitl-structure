@@ -124,6 +124,7 @@ class BuildPersonalizationHistoryGenerated:
         # Step method: history.merge
         history__history = frames["history__session_history"].alias("personalization_history")
         history__history = history__history.union(frames["history__purchase_history"])
+        history__history = history__history.alias("personalization_history")
         history__history = (
             history__history.groupBy(
                 F.col("tenant.tenant_id").alias("tenant_id"),

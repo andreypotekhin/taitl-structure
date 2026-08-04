@@ -1,10 +1,10 @@
 import pytest
 
-from structure.geo import runtime as geometry_runtime
 from structure.plugin.pyspark import contains, geometry, geometry_as_wkt, geometry_from_wkt, intersects, string, within
 from structure.plugin.pyspark.capabilities.model.PySparkCapabilities import PySparkCapabilities
 from structure.plugin.pyspark.compiler.logic.maps.MapPySparkExpression import MapPySparkExpression
 from structure.plugin.pyspark.dsl.types import GeometryType, StringType
+from structure.plugin.pyspark.geo import runtime as geometry_runtime
 from structure.plugin.pyspark.render.logic.expressions.RenderPySparkExpression import RenderPySparkExpression
 from structure.plugin.pyspark.schema.commands.RenderPySparkSchemaModule import render_pyspark_schema_module
 
@@ -53,7 +53,7 @@ def test_geometry_schema_module_is_provider_neutral() -> None:
 
     source = render_pyspark_schema_module((GeometryRow,))
 
-    assert "from structure.geo import geometry_type" in source
+    assert "from structure.plugin.pyspark.geo import geometry_type" in source
     assert "geometry_type()" in source
     assert "sedona" not in source.lower()
 

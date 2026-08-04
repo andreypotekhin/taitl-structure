@@ -516,8 +516,11 @@ class CreateSimilarityQueriesGenerated:
         # Step method: merge_queries
         queries = document_search_queries.alias("search_query")
         queries = queries.union(section_search_queries)
+        queries = queries.alias("search_query")
         queries = queries.union(paragraph_search_queries)
+        queries = queries.alias("search_query")
         queries = queries.union(sentence_search_queries)
+        queries = queries.alias("search_query")
         queries = queries.select(
             F.col("id"),
             F.col("queryset"),

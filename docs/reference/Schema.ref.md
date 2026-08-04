@@ -1112,7 +1112,7 @@ declaration.
 
 `schema_and_constraints` reserves opt-in validation for such checks. Until concrete families are implemented, it may
 report that only schema checks are available. Generated schemas remain shape-only; future constraint metadata must use
-separate artifacts unless a later design explicitly changes this contract. Each data-quality constraint needs its own
+separate artifacts unless a later design explicitly changes this contract. Each constraint needs its own
 streaming admission rule.
 
 Opt in at the phases where the extra Spark work is intended:

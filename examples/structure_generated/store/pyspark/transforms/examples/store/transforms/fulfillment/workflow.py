@@ -1410,7 +1410,9 @@ class PrioritizeExceptionsGenerated:
         # Step method: exception_stage.merge_exceptions
         exception_stage__merged = frames["exception_stage__shortage_exceptions"].alias("fulfillment_exception")
         exception_stage__merged = exception_stage__merged.union(frames["exception_stage__plan_exceptions"])
+        exception_stage__merged = exception_stage__merged.alias("fulfillment_exception")
         exception_stage__merged = exception_stage__merged.union(frames["exception_stage__substitution_exceptions"])
+        exception_stage__merged = exception_stage__merged.alias("fulfillment_exception")
         exception_stage__merged = exception_stage__merged.select(
             F.col("tenant"),
             F.col("business"),

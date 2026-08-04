@@ -626,6 +626,7 @@ class BuildPersonalizationHistoryGenerated:
         personalized__history__history = personalized__history__history.union(
             frames["personalized__history__purchase_history"]
         )
+        personalized__history__history = personalized__history__history.alias("personalization_history")
         personalized__history__history = (
             personalized__history__history.groupBy(
                 F.col("tenant.tenant_id").alias("tenant_id"),

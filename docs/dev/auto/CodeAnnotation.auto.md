@@ -9,6 +9,13 @@ Currently, we only maintain annotated code for these code dirs and their subdirs
 - examples/store/transforms/personalization
 - examples/store/transforms/recommender
 - examples/security/transforms
+- src/structure/core/configuration
+- src/structure/core/docs
+
+## Output
+Destination: close/annotated/
+- Example sources output without 'example': examples/search -> close/annotated/search 
+- Main sources output without directly: src/structure/core/docs -> close/annotated/structure/core/docs 
 
 ## Creating annotated code
 Maintain creation of annotated code documents for project source code:
@@ -44,7 +51,6 @@ close/annotated/
           rerank.py.md
           workflow.py.md         
 ```
-- We only target example apps transform code in the first slice - will include other code if proves useful.
 - Of example code, we only currently target transform code. Schema definitions are not listed, just named in transform code.
 - Annotated source document structure for a Transform class: 
  - Heading (follows class name), Sections: Intro (no heading), Inputs (no heading), Step sections (follow step method names)
@@ -101,3 +107,19 @@ without explaining (e.g. '(from cache batch)' when used first time).
 the algorithm version used to calculate it.'
  - Try this: 'The `Score` step joins products to preferences and matching history.'
 - Do not explain the obvious.
+
+### Non-example app annotated source 
+Non-example app annotated source, e.g. annotated source for core packages, 
+follows the above instructions for example code, with following adjustments:
+- For top-level packages under core/, plugin/, plugin/pyspark, create Package document: package.py.md 
+- In the package document, describe the purpose of the package and overall flow.  
+- Package dirs, modules and methods do not typically follow 'top-to-bottom' sequence inherent to transforms.
+Therefore, it may be more difficult to create a continuous narrative for top-to-bottom reader.
+Instead, the responsibility of providing structure and clarity for the reader belongs to the package document.
+There is still some top-to-bottom opportunity, since our api-commands-logic are alpha ordered, general-to-detail sequence. 
+So the expectation is the reader is still following top-to-bottom, but because it stops at the subpackage, readers need
+project doc for backtracking to the correct path.
+- Can incorporate Readme.md into project doc, if it exists.
+
+Tips:
+- Drop 'package', 'flow' from package doc headings

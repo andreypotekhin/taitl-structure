@@ -15,8 +15,8 @@ from structure.core.plugins.logic.PluginRegistry import PluginRegistry
 from structure.core.plugins.model.EngineManifest import EngineManifest
 from structure.core.plugins.model.PluginConfiguration import PluginConfiguration
 from structure.core.runtime.execution.commands.ExecutePluginArtifact import ExecutePluginArtifact
+from structure.plugin.api.conformance import PluginConformance
 from structure.plugin.api.v1 import GenerationRequest
-from structure.plugin.conformance import PluginConformance
 from structure.version import VERSION
 
 FIXTURE = Path(__file__).parents[3] / "examples" / "plugins" / "iterable"

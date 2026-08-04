@@ -5,8 +5,8 @@ from typing import Any, Callable, Iterable
 from structure.core.plugins.model.DiscoveredPlugin import DiscoveredPlugin
 from structure.core.plugins.model.SelectedPlugin import SelectedPlugin
 from structure.plugin.api import CORE_API_MAX_VERSION, CORE_API_MIN_VERSION, PLUGIN_ENTRY_POINT_GROUP
+from structure.plugin.api.conformance import PluginConformance
 from structure.plugin.BundledPySparkEntry import BundledPySparkEntry
-from structure.plugin.conformance import PluginConformance
 
 
 class PluginRegistry:

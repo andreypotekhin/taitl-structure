@@ -112,9 +112,12 @@ def test_store_fixtures_match_online_and_generated_planning_for_selected_rows(sp
             ),
         }
 
-        online_demand = PrepareOrderDemand(**inputs).run(session(spark, execution_mode="online")).demand
+        demand_inputs = {
+            name: inputs[name] for name in ("orders", "customers", "products", "blocked_products", "promotions")
+        }
+        online_demand = PrepareOrderDemand(**demand_inputs).run(session(spark, execution_mode="online")).demand
         generated_demand = (
-            PrepareOrderDemand(**inputs)
+            PrepareOrderDemand(**demand_inputs)
             .run(session(spark, execution_mode="generated", generated_package=PACKAGE))
             .demand
         )

@@ -185,6 +185,7 @@ class ReduceSimilarityScoresGenerated:
         # Step method: merge_document_pairs
         document_pairs = document_canonical_pairs.alias("document_similarity_pair")
         document_pairs = document_pairs.union(document_reversed_pairs)
+        document_pairs = document_pairs.alias("document_similarity_pair")
         document_pairs = document_pairs.select(
             F.col("left_document_id"),
             F.col("right_document_id"),
@@ -338,6 +339,7 @@ class ReduceSimilarityScoresGenerated:
         # Step method: merge_section_pairs
         section_pairs = section_canonical_pairs.alias("section_similarity_pair")
         section_pairs = section_pairs.union(section_reversed_pairs)
+        section_pairs = section_pairs.alias("section_similarity_pair")
         section_pairs = section_pairs.select(
             F.col("left_document_id"),
             F.col("left_section_id"),
@@ -530,6 +532,7 @@ class ReduceSimilarityScoresGenerated:
         # Step method: merge_paragraph_pairs
         paragraph_pairs = paragraph_canonical_pairs.alias("paragraph_similarity_pair")
         paragraph_pairs = paragraph_pairs.union(paragraph_reversed_pairs)
+        paragraph_pairs = paragraph_pairs.alias("paragraph_similarity_pair")
         paragraph_pairs = paragraph_pairs.select(
             F.col("left_document_id"),
             F.col("left_section_id"),
@@ -749,6 +752,7 @@ class ReduceSimilarityScoresGenerated:
         # Step method: merge_sentence_pairs
         sentence_pairs = sentence_canonical_pairs.alias("sentence_similarity_pair")
         sentence_pairs = sentence_pairs.union(sentence_reversed_pairs)
+        sentence_pairs = sentence_pairs.alias("sentence_similarity_pair")
         sentence_pairs = sentence_pairs.select(
             F.col("left_document_id"),
             F.col("left_section_id"),

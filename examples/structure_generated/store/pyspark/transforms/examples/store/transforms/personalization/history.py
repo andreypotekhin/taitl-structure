@@ -91,6 +91,7 @@ class BuildPersonalizationHistoryGenerated:
         # Step method: merge
         history = session_history.alias("personalization_history")
         history = history.union(purchase_history)
+        history = history.alias("personalization_history")
         history = (
             history.groupBy(
                 F.col("tenant.tenant_id").alias("tenant_id"),

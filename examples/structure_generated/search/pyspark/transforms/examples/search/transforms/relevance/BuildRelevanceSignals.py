@@ -132,7 +132,9 @@ class BuildRelevanceSignalsGenerated:
         # Step method: merge_context_impressions
         context_impressions = global_context_impressions.alias("context_daily_impressions")
         context_impressions = context_impressions.union(fallback_context_impressions)
+        context_impressions = context_impressions.alias("context_daily_impressions")
         context_impressions = context_impressions.union(band_context_impressions)
+        context_impressions = context_impressions.alias("context_daily_impressions")
         context_impressions = context_impressions.select(
             F.col("window"),
             F.col("query"),
@@ -227,7 +229,9 @@ class BuildRelevanceSignalsGenerated:
         # Step method: merge_context_clicks
         context_clicks = global_context_clicks.alias("context_daily_clicks")
         context_clicks = context_clicks.union(fallback_context_clicks)
+        context_clicks = context_clicks.alias("context_daily_clicks")
         context_clicks = context_clicks.union(band_context_clicks)
+        context_clicks = context_clicks.alias("context_daily_clicks")
         context_clicks = context_clicks.select(
             F.col("window"),
             F.col("query"),
