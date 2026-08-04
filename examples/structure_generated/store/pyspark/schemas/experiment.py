@@ -26,7 +26,7 @@ RECOMMENDATION_ASSIGNMENT_SCHEMA = T.StructType([
     T.StructField("assigned_at", T.TimestampType(), False),
 ])
 
-RECOMMENDATION_EXPOSURE_SCHEMA = T.StructType([
+EXPERIMENT_RECOMMENDATION_EXPOSURE_SCHEMA = T.StructType([
     T.StructField("tenant", TENANT_KEY_SCHEMA, False),
     T.StructField("request_id", T.StringType(), False),
     T.StructField("experiment_id", T.StringType(), False),

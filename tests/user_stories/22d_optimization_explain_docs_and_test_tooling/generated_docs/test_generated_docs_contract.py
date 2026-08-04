@@ -32,16 +32,38 @@ def test_generated_docs_make_transform_contract_readable() -> None:
         result = CliRunner().invoke(cli, ["compile", "--generated-docs"])
 
         index = Path("generated/docs/index.md").read_text(encoding="utf-8")
-        schema = Path("generated/docs/schemas/OrderRaw.md").read_text(encoding="utf-8")
+        schema = Path("generated/docs/schemas/orders/schemas/OrderRaw.md").read_text(encoding="utf-8")
         transform = json.loads(Path("generated/docs/transforms/orders.transforms.NormalizeOrders.json").read_text())
         assert result.exit_code == 0, result.output
-        assert "[OrderRaw](schemas/OrderRaw.md)" in index
+        assert "[OrderRaw](schemas/orders/schemas/OrderRaw.md)" in index
         assert "[NormalizeOrders](transforms/orders.transforms.NormalizeOrders.md)" in index
         assert "| `total` | `total` | `string` | yes |" in schema
         assert transform["inputs"] == [{"name": "orders", "ordinal": 0, "schema": "OrderRaw"}]
         assert transform["outputs"] == [{"name": "normalized", "ordinal": 0, "schema": "OrderNormalized"}]
         assert transform["step_methods"][0]["input_schema"] == "OrderRaw"
         assert transform["step_methods"][0]["output_schema"] == "OrderNormalized"
+
+
+def test_generated_docs_preserve_duplicate_schema_names_by_source_module() -> None:
+    with workspace_tmp() as root:
+        _write_project(root)
+        alternate = root / "src" / "alternate"
+        alternate.mkdir(parents=True)
+        (alternate / "__init__.py").write_text("", encoding="utf-8")
+        (alternate / "schemas.py").write_text(
+            "from structure import *\nfrom structure.plugin.pyspark import *\n\n"
+            "class OrderRaw(Schema):\n    id = string(nullable=False)\n",
+            encoding="utf-8",
+        )
+
+        result = CliRunner().invoke(cli, ["compile", "--generated-docs"])
+
+        assert result.exit_code == 0, result.output
+        assert Path("generated/docs/schemas/orders/schemas/OrderRaw.md").exists()
+        assert Path("generated/docs/schemas/alternate/schemas/OrderRaw.md").exists()
+        index = Path("generated/docs/index.md").read_text(encoding="utf-8")
+        assert "schemas/orders/schemas/OrderRaw.md" in index
+        assert "schemas/alternate/schemas/OrderRaw.md" in index
 
 
 def _write_project(root: Path) -> None:

@@ -8,17 +8,16 @@ from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkSte
 
 class PySparkTraceabilityReport:
 
+    def __init__(self, schema_names: Mapping[type[Schema], str] | None = None) -> None:
+        from structure.plugin.pyspark.api.PySpark import PySpark
+
+        self._schema = PySpark.schema.render(schema_names)
+
     @property
     def _traceability(self):
         from structure.plugin.pyspark.api.PySpark import PySpark
 
         return PySpark.compiler.traceability()
-
-    @property
-    def _schema(self):
-        from structure.plugin.pyspark.api.PySpark import PySpark
-
-        return PySpark.schema
 
     def render(
         self,
@@ -63,8 +62,8 @@ class PySparkTraceabilityReport:
 
     def _schema_constants(self, schema_modules: Mapping[type[Schema], str]) -> dict[str, dict[str, str]]:
         return {
-            schema.__name__: {
-                "constant": self._schema.render().constant_name(schema),
+            f"{schema.__module__}.{schema.__qualname__}": {
+                "constant": self._schema.constant_name(schema),
                 "module": module,
             }
             for schema, module in sorted(schema_modules.items(), key=lambda item: item[0].__name__)

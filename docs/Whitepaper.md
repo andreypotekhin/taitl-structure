@@ -6,36 +6,33 @@ Structure is an open-source Python DSL and runtime/compiler toolkit for building
 Spark-optimized data pipelines. It lets developers describe data processing as typed schema-to-schema transformations
 while running or generating clean PySpark DataFrame code suitable for Airflow, Spark jobs, and batch data plugins.
 
-Structure is designed for teams that want the maintainability of object-style schema transformations without giving up Spark's optimizer-friendly DataFrame execution model.
+Structure is designed for teams that want object-oriented data transformations without giving up Spark optimizer-friendly DataFrame execution model.
 
-The central idea is simple: author compact, typed transformation code; execute optimizer-visible PySpark by default;
-generate explicit, reviewable PySpark artifacts when useful.
+The idea is simple: write compact, typed data transformation code, execute as optimizer-visible PySpark, optionally generate explicit PySpark artifacts.
 
 ## Problem
 
-Large-scale data pipelines are often written directly in PySpark DataFrame code, SQL, or table-oriented transformation frameworks. These approaches are powerful, but they can become difficult to maintain when business logic is naturally expressed as transformations between nested records, domain objects, or stable schemas.
+Large-scale data pipelines are usually written in PySpark DataFrame code, SQL, or table-oriented transformation frameworks. They can become difficult to maintain when business logic becomes non-trivial.
 
 Common pain points include:
 
 - Weak schema enforcement across multi-step pipelines.
-- Transformations represented through column-name strings.
-- Limited IDE navigation for fields and transformation logic.
-- Hard-to-review dynamically assembled DataFrame code.
-- Business logic hidden in arbitrary Python functions or UDFs.
-- Airflow DAGs overloaded with transformation internals.
-- Difficulty separating generated compiler-checked logic from custom PySpark escape hatches.
-- Unclear intermediate pipeline states.
-- Hidden performance regressions caused by row-wise Python execution.
+- Orchestration DAGs overloaded with transformation details.
+- Transformations represented through column-name strings/aliases.
+- Limited IDE navigation caused by heavy use of string literals.
+- Hard-to-review organically evolving DataFrame code.
+- Weak enforcement of intermediate schemas between pipeline stages.
+- Mixing of optimizer-friendly code with opaque escape hatches such as UDFs.
+- Hidden performance regressions caused by row-wise Python executions.
 
-Structure addresses these problems by providing a typed source DSL that compiles to IR and runs as explicit PySpark
-operations, with optional generated PySpark output.
+Structure attempts to address these problems by providing a typed DSL that compiles to  
+PySpark operations. This allows code author to deal with classes, fields and methods instead 
+of dealing with strings and freely-mutating data frames. 
 
 ## Performance and Optimization Rationale
 
-Structure's focus on PySpark DataFrame and Column operations is not merely an implementation preference. It is a
-performance strategy.
-
-Spark optimizes work that remains visible in its logical plan. Projection, filtering, joins, predicate pushdown, column pruning, aggregation planning, broadcast joins, whole-stage code generation, and many runtime optimizations depend on transformations being expressed through Spark's DataFrame and Column APIs.
+Structure's focus on PySpark DataFrame and Column operations is not merely an implementation preference - it is a
+performance strategy. Spark optimizes work that remains visible in its logical plan. Projection, filtering, joins, predicate pushdown, column pruning, aggregation planning, broadcast joins, whole-stage code generation, and many runtime optimizations depend on transformations being expressed through Spark's DataFrame and Column APIs.
 
 If Structure accepted arbitrary Python logic inside compiled transforms, it would have to generate one of the following:
 
@@ -45,9 +42,7 @@ If Structure accepted arbitrary Python logic inside compiled transforms, it woul
 - RDD operations.
 - opaque callback hooks.
 
-Those forms are sometimes useful, but they reduce optimizer visibility and can introduce serialization overhead or runtime surprises. Structure therefore rejects unsupported compiled-transform code and asks developers to either rewrite it using Structure's expression DSL, define an `@special(type="expr")` helper, or move arbitrary logic into an explicit hook.
-
-This principle can be summarized as:
+Those forms are sometimes useful, but they reduce optimizer visibility and can introduce serialization overhead or runtime surprises. Structure therefore rejects unsupported compiled-transform code and asks developers to either rewrite it using Structure's expression DSL or move arbitrary logic into an explicit hook. This principle can be summarized as:
 
 ```text
 Make the fast path pleasant.
@@ -57,17 +52,17 @@ Never silently choose the slow path.
 
 ## Design Goals
 
-1. **Schema-first transformation design**
+1. **Schema-first data transformations**
    Pipelines should be described as transformations between typed schemas.
 
 2. **IDE-friendly authoring**
-   Developers should be able to jump to schema declarations, transform classes, helper functions, and hook methods.
+   Developers should be able to jump to schema declarations, transform classes, stages, steps, API function definitions.
 
 3. **Spark-optimized execution**
    Compiled transformations should lower to PySpark DataFrame and Column expressions, not row-wise Python functions.
 
 4. **Runtime and generated-code visibility**
-   Execution should preserve generated-code semantics, and optional code generation should be deterministic,
+   Execution should preserve code semantics, and optional code generation should be deterministic,
    readable, and suitable for code review.
 
 5. **Explicit escape hatches**

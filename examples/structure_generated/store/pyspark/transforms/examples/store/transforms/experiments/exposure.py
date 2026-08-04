@@ -7,8 +7,8 @@ from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.store.runtime.schema_assert import TransformResult, assert_schema, project_schema
 from examples.structure_generated.store.pyspark.schemas.experiment import (
+    EXPERIMENT_RECOMMENDATION_EXPOSURE_SCHEMA,
     RECOMMENDATION_ASSIGNMENT_SCHEMA,
-    RECOMMENDATION_EXPOSURE_SCHEMA,
 )
 from examples.structure_generated.store.pyspark.schemas.recommendation import (
     RECOMMENDATION_REQUEST_SCHEMA,
@@ -74,7 +74,9 @@ class RecordRecommendationExposuresGenerated:
 
         # Step method: exposures
         exposures = requests.alias("recommendation_exposure")
-        assert_schema(exposures, RECOMMENDATION_EXPOSURE_SCHEMA, name="RecommendationExposure", mode="strict")
+        assert_schema(
+            exposures, EXPERIMENT_RECOMMENDATION_EXPOSURE_SCHEMA, name="RecommendationExposure", mode="strict"
+        )
         return TransformResult(
-            {"exposures": exposures}, single=True, schema={"exposures": RECOMMENDATION_EXPOSURE_SCHEMA}
+            {"exposures": exposures}, single=True, schema={"exposures": EXPERIMENT_RECOMMENDATION_EXPOSURE_SCHEMA}
         )

@@ -1103,7 +1103,7 @@ the result. Streaming DataFrames can use schema-only validation because it inspe
 A hook may opt into `SchemaMode.ALLOW_EXTRA_COLUMNS`; `project_output=True` then restores target columns and order.
 Execution and generated-code execution validate at identical boundaries.
 
-## Data Quality Boundary
+## Data Quality vs Schema
 
 Schema shape and data quality are distinct. Accepted values, ranges, patterns, decimal domains, uniqueness,
 referential checks, freshness, and row-count rules are value or dataset facts that can require filters, aggregation,

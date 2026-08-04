@@ -61,19 +61,23 @@ class RenderStructureDocsProject:
         if "markdown" in formats:
             files[f"{docs_root}/index.md"] = self._markdown.index(data)
             for schema in self._items(data, "schemas"):
-                files[f"{docs_root}/schemas/{schema['name']}.md"] = self._markdown.schema(schema)
+                files[self._schema_path(docs_root, schema, "md")] = self._markdown.schema(schema)
             for transform in self._items(data, "transforms"):
                 files[f"{docs_root}/transforms/{transform['source']}.md"] = self._markdown.transform(transform)
         if "json" in formats:
             files[f"{docs_root}/index.json"] = self._json(data)
             for schema in self._items(data, "schemas"):
-                files[f"{docs_root}/schemas/{schema['name']}.json"] = self._json(schema)
+                files[self._schema_path(docs_root, schema, "json")] = self._json(schema)
             for transform in self._items(data, "transforms"):
                 files[f"{docs_root}/transforms/{transform['source']}.json"] = self._json(transform)
         return dict(files)
 
     def _docs_root(self, config: StructureConfig) -> str:
         return config.generated_docs_dir.relative_to(config.generated_dir).as_posix()
+
+    def _schema_path(self, docs_root: str, schema: Mapping[str, object], suffix: str) -> str:
+        module = str(schema["module"]).replace(".", "/")
+        return f"{docs_root}/schemas/{module}/{schema['name']}.{suffix}"
 
     def _json(self, data: object) -> str:
         if isinstance(data, dict):

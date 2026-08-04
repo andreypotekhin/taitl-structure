@@ -21,7 +21,7 @@ def test_traceability_maps_source_ir_and_generated_nodes(orders_traceability) ->
     assert (
         "source:testing.model.orders.transforms.order.EnrichOrders.add_customer",
         "ir:EnrichOrders.step.1.add_customer",
-        "generated:testing.model.structure_generated.orders.pyspark.transforms.order."
+        "generated:testing.model.structure_generated.orders.pyspark.transforms.testing.model.orders.transforms.order."
         "EnrichOrdersGenerated.run.step.1.add_customer",
     ) in records
     assert any(

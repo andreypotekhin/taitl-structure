@@ -12,7 +12,7 @@ def _traceability():
     return Compiler.traceability.build()(
         Compiler.frontend.compile()(EnrichOrders, materialize_schemas=False).lowered,
         source_transform="testing.model.orders.transforms.order.EnrichOrders",
-        transform_module="testing.model.structure_generated.orders.pyspark.transforms.order",
+        transform_module="testing.model.structure_generated.orders.pyspark.transforms.testing.model.orders.transforms.order",
     )
 
 
@@ -34,7 +34,7 @@ def test_v1_compiler_traceability_maps_source_ir_and_generated_nodes() -> None:
     assert (
         "source:testing.model.orders.transforms.order.EnrichOrders.add_customer",
         "ir:EnrichOrders.step.1.add_customer",
-        "generated:testing.model.structure_generated.orders.pyspark.transforms.order."
+        "generated:testing.model.structure_generated.orders.pyspark.transforms.testing.model.orders.transforms.order."
         "EnrichOrdersGenerated.run.step.1.add_customer",
     ) in records
     assert any(record.ir == "ir:EnrichOrders.step.1.add_customer.join.1.customer" for record in traceability.provenance)

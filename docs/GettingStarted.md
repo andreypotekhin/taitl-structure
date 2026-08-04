@@ -1,6 +1,6 @@
 # Getting Started
 
-This guide builds a small but realistic Structure transform: normalize order rows, validate required keys,
+This guide builds a small Structure transform: normalize order rows, validate required keys,
 enrich with customer data, and run it through `StructureSession`. Generated PySpark remains available as
 optional build output.
 
@@ -250,7 +250,7 @@ class EnrichOrdersGenerated:
 ## 8. (Optional) Use Generated Code
 
 ```python
-from structure_generated.store.pyspark.transforms.order import EnrichOrdersGenerated
+from structure_generated.store.pyspark.transforms.examples.store.transforms.orders.enrich import EnrichOrdersGenerated
 
 result = EnrichOrdersGenerated(spark=spark).run(
     orders=orders_df,

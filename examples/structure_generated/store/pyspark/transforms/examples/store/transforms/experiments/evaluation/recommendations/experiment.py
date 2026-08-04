@@ -9,8 +9,8 @@ from examples.structure_generated.store.runtime.schema_assert import TransformRe
 from examples.structure_generated.store.pyspark.schemas.batch import EVALUATION_BATCH_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.common import TENANT_KEY_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.experiment import (
+    EXPERIMENT_RECOMMENDATION_EXPOSURE_SCHEMA,
     RECOMMENDATION_EXPERIMENT_SCHEMA,
-    RECOMMENDATION_EXPOSURE_SCHEMA,
 )
 from examples.structure_generated.store.pyspark.schemas.feedback import (
     RECOMMENDATION_CLICK_SCHEMA,
@@ -47,7 +47,9 @@ class EvaluateRecommendationExperimentGenerated:
     ) -> TransformResult:
         assert_schema(evaluation_batch, EVALUATION_BATCH_SCHEMA, name="EvaluationBatch", mode="strict")
         assert_schema(experiments, RECOMMENDATION_EXPERIMENT_SCHEMA, name="RecommendationExperiment", mode="strict")
-        assert_schema(exposures, RECOMMENDATION_EXPOSURE_SCHEMA, name="RecommendationExposure", mode="strict")
+        assert_schema(
+            exposures, EXPERIMENT_RECOMMENDATION_EXPOSURE_SCHEMA, name="RecommendationExposure", mode="strict"
+        )
         assert_schema(requests, RECOMMENDATION_REQUEST_SCHEMA, name="RecommendationRequest", mode="strict")
         assert_schema(runs, RECOMMENDATION_RUN_SCHEMA, name="RecommendationRun", mode="strict")
         assert_schema(impressions, RECOMMENDATION_IMPRESSION_SCHEMA, name="RecommendationImpression", mode="strict")

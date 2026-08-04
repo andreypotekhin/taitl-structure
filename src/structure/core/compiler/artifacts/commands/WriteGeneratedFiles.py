@@ -5,6 +5,7 @@ from pathlib import Path
 
 from structure.core.compiler.artifacts.model.GeneratedFileChange import GeneratedFileChange
 from structure.core.compiler.artifacts.model.GeneratedFileSetResult import GeneratedFileSetResult
+from structure.plugin.api.v1.logic import generated_file_target
 
 
 class WriteGeneratedFiles:
@@ -15,7 +16,7 @@ class WriteGeneratedFiles:
         return GeneratedFileSetResult(changes)
 
     def _write(self, path: str, text: str, *, root: Path) -> GeneratedFileChange:
-        target = root / Path(path)
+        target = generated_file_target(path, root=root)
         if target.exists() and target.read_text(encoding="utf-8") == text:
             return GeneratedFileChange(path, "unchanged")
 

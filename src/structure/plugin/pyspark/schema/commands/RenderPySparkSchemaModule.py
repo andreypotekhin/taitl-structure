@@ -5,10 +5,14 @@ from typing import Mapping, Sequence
 
 from structure.dsl import Schema
 from structure.plugin.pyspark.dsl.types import ArrayType, GeometryType, MapType, StructType, StructureType
-from structure.plugin.pyspark.schema.commands.RenderPySparkSchema import render_pyspark_schema
 
 
 class RenderPySparkSchemaModule:
+
+    def __init__(self, schema_names: Mapping[type[Schema], str] | None = None) -> None:
+        from structure.plugin.pyspark.schema.commands.RenderPySparkSchema import RenderPySparkSchema
+
+        self._schema = RenderPySparkSchema(schema_names)
 
     def __call__(
         self,
@@ -18,7 +22,7 @@ class RenderPySparkSchemaModule:
     ) -> str:
         dependencies = self._dependencies(schemas, dependency_modules or {})
         imports = self._imports(dependencies, any(self._uses_geometry(schema) for schema in schemas))
-        constants = "\n\n".join(render_pyspark_schema(schema) for schema in schemas)
+        constants = "\n\n".join(self._schema(schema) for schema in schemas)
         return f"{imports}\n\n\n{constants}\n"
 
     def _imports(self, dependencies: Mapping[str, tuple[str, ...]], geometry: bool) -> str:
@@ -48,7 +52,7 @@ class RenderPySparkSchemaModule:
                 module = dependency_modules.get(dependency)
                 if module is None:
                     continue
-                modules[module].add(render_pyspark_schema.constant_name(dependency))
+                modules[module].add(self._schema.constant_name(dependency))
 
         return {module: tuple(sorted(constants)) for module, constants in modules.items()}
 

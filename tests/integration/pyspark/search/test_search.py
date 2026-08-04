@@ -569,7 +569,7 @@ def test_query_labeling_pipeline_renders_with_stage_owned_raw_hook() -> None:
         source_schema_modules=SCHEMA_MODULES,
     )
 
-    text = files[f"{PACKAGE}/pyspark/transforms/Labeling.py"]
+    text = files[f"{PACKAGE}/pyspark/transforms/examples/search/transforms/labeling/Labeling.py"]
     assert "from examples.search.transforms.labeling.CreateQueryLabels import CreateQueryLabels" in text
     assert "match_patterns(" in text
     assert "merge_created_labels" in text

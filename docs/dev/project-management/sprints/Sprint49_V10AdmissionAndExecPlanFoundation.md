@@ -14,7 +14,8 @@ family.
 ## Implementation Tasks
 
 - Review the V9 final report and carry forward only bounded follow-ups.
-- Publish the four V10 ExecPlans and update governing design/specification/background links.
+- Publish the four baseline V10 ExecPlans and update governing design/specification/background links; admit the
+  collision-safe generated identities plan to the Sprint 54 hardening workstream when a release blocker is found.
 - Inventory APICatalog rows, capability ledgers, diagnostics, references, and examples.
 - Add V10 milestone, backlog, roadmap, traceability, and sprint navigation.
 

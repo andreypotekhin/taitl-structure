@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from pathlib import Path
 
+from structure.plugin.api.v1.logic import generated_file_target
 from structure.plugin.pyspark.files.model import GeneratedFileChange, GeneratedFileSetResult
 
 
@@ -14,7 +15,7 @@ class WriteGeneratedFiles:
         return GeneratedFileSetResult(changes)
 
     def _write(self, path: str, text: str, *, root: Path) -> GeneratedFileChange:
-        target = root / Path(path)
+        target = generated_file_target(path, root=root)
         if target.exists() and target.read_text(encoding="utf-8") == text:
             return GeneratedFileChange(path, "unchanged")
 

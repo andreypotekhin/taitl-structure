@@ -484,6 +484,8 @@ Status: planned. V10 begins after the V9 Sprints 45–48 closeout and runs throu
 - Side-effect guidance is caller-owned, and arbitrary-state APIs have an implementation-ready typed model without
   Structure-owned lifecycle generation.
 - Generated artifacts, documentation, compatibility ledgers, diagnostics, and traceability agree.
+- Generated backend modules, schema symbols, schema documentation, and plugin file maps preserve full source identity
+  without silent overwrite or shadowing.
 - Sprint 54 admits no new feature scope and passes `make build`.
 
 ### Governing Documents
@@ -493,6 +495,7 @@ Status: planned. V10 begins after the V9 Sprints 45–48 closeout and runs throu
 - `docs/dev/planning/P08022602.V10-streaming-state-and-join-contracts.plan.md`
 - `docs/dev/planning/P08022603.V10-streaming-side-effects-and-arbitrary-state.plan.md`
 - `docs/dev/planning/P08022604.V10-evidence-catalog-reconciliation-and-hardening.plan.md`
+- `docs/dev/planning/P08042601.Collision-safe-generated-identities.plan.md`
 
 ## M16: V11 PySpark 4.1 Adoption
 

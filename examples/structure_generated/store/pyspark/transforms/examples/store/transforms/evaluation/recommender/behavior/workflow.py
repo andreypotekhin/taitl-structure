@@ -18,8 +18,8 @@ from examples.structure_generated.store.pyspark.schemas.feedback import (
 )
 from examples.structure_generated.store.pyspark.schemas.intermediate import (
     DAILY_RECOMMENDATION_COUNTS_SCHEMA,
+    INTERMEDIATE_RECOMMENDATION_EXPOSURE_SCHEMA,
     RECOMMENDATION_BEHAVIOR_IMPRESSION_SCHEMA,
-    RECOMMENDATION_EXPOSURE_SCHEMA,
 )
 from examples.structure_generated.store.pyspark.schemas.recommendation import RECOMMENDATION_REQUEST_SCHEMA
 
@@ -336,7 +336,10 @@ class SummarizeRecommendationBehaviorGenerated:
             )
         )
         assert_schema(
-            summarized__exposure, RECOMMENDATION_EXPOSURE_SCHEMA, name="RecommendationExposure", mode="strict"
+            summarized__exposure,
+            INTERMEDIATE_RECOMMENDATION_EXPOSURE_SCHEMA,
+            name="RecommendationExposure",
+            mode="strict",
         )
         return {
             "summarized__exposure": summarized__exposure,

@@ -276,7 +276,7 @@ def test_v1_cli_compile_writes_generated_files_and_fail_on_diff_passes() -> None
         assert checked.exit_code == 0, checked.output
         assert Path("generated/structure_generated/pyspark/transforms/orders/transforms.py").exists()
         assert Path("generated/docs/index.md").exists()
-        assert Path("generated/docs/schemas/OrderRaw.md").exists()
+        assert Path("generated/docs/schemas/orders/schemas/OrderRaw.md").exists()
         assert Path("generated/docs/transforms/orders.transforms.NormalizeOrders.json").exists()
         assert "files written:" in compiled.output
         assert "generated docs dir: generated/docs" in compiled.output
@@ -370,7 +370,7 @@ def test_v1_cli_compile_writes_generated_docs_contract() -> None:
 
         result = CliRunner().invoke(cli, ["compile", "--generated-docs"])
 
-        schema = Path("generated/docs/schemas/OrderRaw.md").read_text(encoding="utf-8")
+        schema = Path("generated/docs/schemas/orders/schemas/OrderRaw.md").read_text(encoding="utf-8")
         transform = json.loads(Path("generated/docs/transforms/orders.transforms.NormalizeOrders.json").read_text())
         assert result.exit_code == 0, result.output
         assert "# OrderRaw" in schema

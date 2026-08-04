@@ -14,7 +14,10 @@ class RenderStructureDocsMarkdown:
             "",
             "## Schemas",
             "",
-            *(f"- [{schema['name']}](schemas/{schema['name']}.md)" for schema in schemas),
+            *(
+                f"- [{schema['name']}](schemas/{str(schema['module']).replace('.', '/')}/{schema['name']}.md)"
+                for schema in schemas
+            ),
             "",
             "## Transforms",
             "",

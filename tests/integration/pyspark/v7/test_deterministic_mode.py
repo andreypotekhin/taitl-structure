@@ -46,7 +46,7 @@ def test_v7_deterministic_mode_matches_generated_execution_on_live_backend(spark
         generated_package=PACKAGE,
         source_schema_modules={SOURCE_MODULE: [CustomerEvent, CustomerPreference]},
     )
-    transform_source = files[f"{PACKAGE}/pyspark/transforms/test_deterministic_mode.py"]
+    transform_source = files[f"{PACKAGE}/pyspark/transforms/integration/pyspark/v7/test_deterministic_mode.py"]
     assert "F.collect_list(" in transform_source
     assert ".array_min(" in transform_source
     assert "_structure_count" in transform_source

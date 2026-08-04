@@ -16,6 +16,8 @@ reproducible and mutually consistent.
 - Run focused no-Spark and all available PySpark 3.5/4.0 lanes.
 - Run restart, generated-source, optional-provider, documentation, and performance checks.
 - Fix only release blockers and record every retained gate and deferred owner.
+- Implement and verify collision-safe generated identities across the Iterable plugin, PySpark schema symbols,
+  generated documentation, plugin file-map merging, and generated-file writers.
 - Run `make build` and publish the final evidence report.
 
 ## Acceptance and Demo
@@ -29,4 +31,5 @@ No new API scope. A skipped lane remains unavailable evidence rather than a rele
 
 ## Governing Plan
 
-`docs/dev/planning/P08022604.V10-evidence-catalog-reconciliation-and-hardening.plan.md`.
+`docs/dev/planning/P08022604.V10-evidence-catalog-reconciliation-and-hardening.plan.md` and
+`docs/dev/planning/P08042601.Collision-safe-generated-identities.plan.md`.

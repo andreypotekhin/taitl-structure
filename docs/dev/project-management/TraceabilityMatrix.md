@@ -215,6 +215,8 @@ This matrix maps early sprints to specification sections and major deliverables.
   checkpoint, and recovery policy.
 - As a maintainer, I can verify that generated transform modules contain no streaming lifecycle or side-effect calls.
 - As a maintainer, I can close V10 with synchronized ledgers, fresh generated artifacts, live evidence, and `make build`.
+- As a maintainer, I can generate same-basename transforms and same-name schemas without generated files being silently
+  overwritten or Python symbols being silently shadowed.
 
 ## V11
 

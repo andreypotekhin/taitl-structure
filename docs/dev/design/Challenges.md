@@ -43,10 +43,10 @@ namespace. For example:
 
 ```text
 src/my_package/transforms/order.py
-  -> generated/structure_generated/my_package/pyspark/transforms/order.py
+  -> generated/structure_generated/my_package/pyspark/transforms/my_package/transforms/order.py
 
 my_package/transforms/order.py
-  -> generated/structure_generated/my_package/pyspark/transforms/order.py
+  -> generated/structure_generated/my_package/pyspark/transforms/my_package/transforms/order.py
 ```
 
 This avoids shadowing the installed `structure` library while respecting both common Python layouts: `src/`

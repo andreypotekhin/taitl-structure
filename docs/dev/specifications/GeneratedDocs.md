@@ -40,7 +40,8 @@ endpoints.
 For each compile run, Structure writes:
 
 - `index.md` and/or `index.json` with links or summaries for all discovered schemas and compiled transforms.
-- `schemas/<Schema>.md` and/or `schemas/<Schema>.json` for every discovered schema class.
+- `schemas/<source-module-path>/<Schema>.md` and/or `schemas/<source-module-path>/<Schema>.json` for every discovered
+  schema class.
 - `transforms/<module>.<Transform>.md` and/or `transforms/<module>.<Transform>.json` for every compiled transform.
 
 Markdown files start with the standard Structure ownership header. JSON files remain valid JSON and include

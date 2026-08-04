@@ -487,8 +487,9 @@ deployment, recovery, and side effects caller-owned.
 - Sprint 53 (2026-11-16--2026-11-27): caller-owned side-effect safety and arbitrary-state programming model.
 - Sprint 54 (2026-11-30--2026-12-11): dedicated V10 hardening and release evidence.
 
-The governing V10 plans are the four `P08022601`--`P08022604` documents under `docs/dev/planning/`. Application-specific
-future documents remain outside V10.
+The governing V10 plans are the four `P08022601`--`P08022604` documents under `docs/dev/planning/`, together with the
+Sprint 54 hardening plan `P08042601.Collision-safe-generated-identities.plan.md`. Application-specific future
+documents remain outside V10.
 
 ### v10 must include
 

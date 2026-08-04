@@ -3,6 +3,8 @@ from contextlib import contextmanager
 from pathlib import Path
 from uuid import uuid4
 
+import pytest
+
 from structure.plugin.pyspark import PySpark
 
 
@@ -19,6 +21,13 @@ def workspace_tmp():
 def test_v1_write_generated_files_adds_modifies_and_preserves_unchanged_files() -> None:
     with workspace_tmp() as root:
         _assert_write_generated_files_adds_modifies_and_preserves_unchanged_files(root)
+
+
+@pytest.mark.parametrize("path", ["../outside.py", "/outside.py", "pkg/../outside.py", "pkg//outside.py"])
+def test_v10_write_generated_files_rejects_paths_outside_normalized_output(path: str) -> None:
+    with workspace_tmp() as root:
+        with pytest.raises(ValueError, match="Generated file path"):
+            PySpark.files.write()({path: "content"}, root=root)
 
 
 def _assert_write_generated_files_adds_modifies_and_preserves_unchanged_files(root: Path) -> None:

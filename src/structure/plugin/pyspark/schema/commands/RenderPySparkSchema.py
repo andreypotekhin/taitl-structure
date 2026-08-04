@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Mapping
 
 from structure.dsl import FieldDefinition, Schema
 from structure.plugin.pyspark.dsl.types import (
@@ -26,8 +27,11 @@ from structure.plugin.pyspark.dsl.types import (
 
 class RenderPySparkSchema:
 
+    def __init__(self, schema_names: Mapping[type[Schema], str] | None = None) -> None:
+        self._schema_names = schema_names or {}
+
     def constant_name(self, schema: type[Schema]) -> str:
-        return f"{self._upper_snake(schema.__name__)}_SCHEMA"
+        return self._schema_names.get(schema, f"{self._upper_snake(schema.__name__)}_SCHEMA")
 
     def __call__(self, schema: type[Schema]) -> str:
         return f"{self.constant_name(schema)} = {self.expression(schema)}"

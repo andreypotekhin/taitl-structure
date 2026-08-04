@@ -20,7 +20,7 @@ Programmatic integrations can call `Docs.render.project()` from `structure.app.d
 Generated documentation includes:
 
 - `index.md` and/or `index.json` with discovered schemas and compiled transforms.
-- `schemas/<Schema>.md` and/or `schemas/<Schema>.json`.
+- `schemas/<source-module-path>/<Schema>.md` and/or `schemas/<source-module-path>/<Schema>.json`.
 - `transforms/<module>.<Transform>.md` and/or `transforms/<module>.<Transform>.json`.
 
 Schema pages list field names, Spark columns, Structure types, nullability, and primary-key flags. Transform pages list

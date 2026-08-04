@@ -350,11 +350,13 @@ boundary; unimplemented parity work is now marked `planned` in `docs/dev/Gaps.md
 
 - Keep API Catalog, capability ledgers, diagnostics, references, examples, generated artifacts, and background
   companions synchronized.
+- Preserve full source identity in every generated backend module, schema symbol, schema document, traceability path,
+  and plugin-generated file map; reject conflicting duplicate paths instead of overwriting them.
 - Run PySpark 3.5/4.0 live parity and restart lanes for every claimed streaming support row.
 - Run optional-provider evidence only with pinned dependencies and finish Sprint 54 with `make build`.
 
-The V10 backlog is governed by `docs/dev/project-management/V10.md` and the grouped plans P08022601–P08022604. The
-application-specific future documents are not V10 backlog commitments.
+The V10 backlog is governed by `docs/dev/project-management/V10.md`, the grouped plans P08022601–P08022604, and the
+Sprint 54 hardening plan P08042601. The application-specific future documents are not V10 backlog commitments.
 
 ## Sprint 09 Backlog
 

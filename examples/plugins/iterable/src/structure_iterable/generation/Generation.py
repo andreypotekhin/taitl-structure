@@ -3,6 +3,7 @@ from typing import cast
 
 from structure.plugin.api.v1 import GenerationAPI as GenerationAPIV1
 from structure.plugin.api.v1 import GenerationRequest, GenerationResult
+from structure.plugin.api.v1.logic import SourceModulePath
 
 from ..authoring.Authoring import BinaryStateExpression, LiteralStateExpression, StateExpression, StateValue
 from ..compiler.Compiler import IterableRecipe
@@ -15,9 +16,10 @@ class Generation(GenerationAPIV1):
         if request.source_module is None or request.generated_package is None:
             raise ValueError("Iterable generation requires source-module and generated-package context.")
         recipes = cast(Mapping[str, IterableRecipe], request.payload)
-        source = request.source_module.rsplit(".", 1)[1]
-        module = f"{request.generated_package}.iterable.transforms.{source}"
-        root = request.generated_package.replace(".", "/")
+        source = SourceModulePath.from_module(request.source_module)
+        package = SourceModulePath.from_module(request.generated_package)
+        module = f"{package.module}.iterable.transforms.{source.module}"
+        root = package.path
         path = module.replace(".", "/") + ".py"
         files = {
             f"{root}/__init__.py": "",
@@ -25,6 +27,9 @@ class Generation(GenerationAPIV1):
             f"{root}/iterable/transforms/__init__.py": "",
             path: self._module(recipes),
         }
+        parts = module.split(".")[:-1]
+        for width in range(len(package.parts) + 3, len(parts) + 1):
+            files["/".join(parts[:width]) + "/__init__.py"] = ""
         return GenerationResult(files, module, tuple(f"{recipe.name}Generated" for recipe in recipes.values()))
 
     def _module(self, recipes: Mapping[str, IterableRecipe]) -> str:

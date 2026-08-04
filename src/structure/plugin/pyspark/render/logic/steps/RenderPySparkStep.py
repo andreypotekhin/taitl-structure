@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from typing import cast
 
+from structure.dsl import Schema
 from structure.plugin.pyspark.compiler.model.PySparkAggregateAssignment import PySparkAggregateAssignment
 from structure.plugin.pyspark.compiler.model.PySparkAggregateKey import PySparkAggregateKey
 from structure.plugin.pyspark.compiler.model.PySparkAggregateRecipe import PySparkAggregateRecipe
@@ -26,16 +28,13 @@ from structure.plugin.pyspark.render.logic.steps.RenderPySparkStructGenerator im
 
 class RenderPySparkStep:
 
-    def __init__(self) -> None:
+    def __init__(self, schema_names: Mapping[type[Schema], str] | None = None) -> None:
         self._aggregate_renderer = RenderPySparkAggregatePlan(self)
         self._filters_renderer = RenderPySparkFilters()
         self._struct_generator_renderer = RenderPySparkStructGenerator()
-
-    @property
-    def _schema(self):
         from structure.plugin.pyspark.api.PySpark import PySpark
 
-        return PySpark.schema
+        self._schema = PySpark.schema.render(schema_names)
 
     def __call__(
         self,
@@ -851,7 +850,7 @@ class RenderPySparkStep:
 
     def _inline_field(self, field, *, scan_internal: bool = False) -> str:
         nullable = "True" if field.nullable else "False"
-        type_ = self._scan_type(field.type) if scan_internal else self._schema.render().type(field.type)
+        type_ = self._scan_type(field.type) if scan_internal else self._schema.type(field.type)
         return f"T.StructField({self._literal(field.column)}, {type_}, {nullable})"
 
     def _scan_type(self, type_: StructureType) -> str:
@@ -864,7 +863,7 @@ class RenderPySparkStep:
                 self._inline_field(field, scan_internal=True) for field in type_.schema._structure_fields.values()
             )
             return f"T.StructType([{fields}])"
-        return self._schema.render().type(type_)
+        return self._schema.type(type_)
 
     def _scan_rewrite(self, expression, scan, *, state: str, payload: str):
         if expression.kind == "field" and "scope" in expression.data:
@@ -911,7 +910,7 @@ class RenderPySparkStep:
             target_path = right_path if left_path is None else left_path
             frame = target if left_path is None else source
             rendered = render_pyspark_expression(default, scope_aliases=self._scope_aliases(step))
-            rendered = f"{rendered}.cast({self._schema.render().type(target_path[-1].type)})"
+            rendered = f"{rendered}.cast({self._schema.type(target_path[-1].type)})"
             for index in range(len(target_path) - 1, 0, -1):
                 parent = ".".join(field.column for field in target_path[:index])
                 rendered = (
@@ -1313,14 +1312,14 @@ class RenderPySparkStep:
             if assignment.key in level:
                 column = self._grouping_set_key_column(assignment, key_columns=key_columns)
                 return f"F.col({self._literal(column)}).alias({alias})"
-            return f"F.lit(None).cast({self._schema.render().type(assignment.field.type)}).alias({alias})"
+            return f"F.lit(None).cast({self._schema.type(assignment.field.type)}).alias({alias})"
         if assignment.function == "grouping_id":
             mask = self._grouping_id(aggregate, level=level)
-            return f"F.lit({mask}).cast({self._schema.render().type(assignment.field.type)}).alias({alias})"
+            return f"F.lit({mask}).cast({self._schema.type(assignment.field.type)}).alias({alias})"
         if assignment.function == "is_grouped":
             key = self._grouping_set_expression_key(assignment, aggregate=aggregate)
             grouped = "True" if key not in level else "False"
-            return f"F.lit({grouped}).cast({self._schema.render().type(assignment.field.type)}).alias({alias})"
+            return f"F.lit({grouped}).cast({self._schema.type(assignment.field.type)}).alias({alias})"
         return f"F.col({alias})"
 
     def _grouping_id(self, aggregate: PySparkAggregateRecipe, *, level: set[str]) -> int:
@@ -1370,7 +1369,7 @@ class RenderPySparkStep:
             if assignment.filter is not None:
                 predicate = render_pyspark_expression(assignment.filter, scope_aliases=self._scope_aliases(step))
                 expression = f"F.when({predicate}, F.lit(1))"
-            return f"F.count({expression}).cast({self._schema.render().type(assignment.field.type)}).alias({alias})"
+            return f"F.count({expression}).cast({self._schema.type(assignment.field.type)}).alias({alias})"
         if (
             assignment.function == "collect_list"
             and assignment.order_by is not None
@@ -1387,9 +1386,9 @@ class RenderPySparkStep:
                 expression = self._deterministic_mode(expression)
             else:
                 expression = f"F.mode({expression})"
-            return f"{expression}.cast({self._schema.render().type(assignment.field.type)})" f".alias({alias})"
+            return f"{expression}.cast({self._schema.type(assignment.field.type)})" f".alias({alias})"
         if assignment.function == "grouping_id":
-            return f"F.grouping_id().cast({self._schema.render().type(assignment.field.type)}).alias({alias})"
+            return f"F.grouping_id().cast({self._schema.type(assignment.field.type)}).alias({alias})"
         if assignment.function == "is_grouped" and assignment.expression is not None:
             expression = self._aggregate_grouping_expression(
                 assignment,
@@ -1397,7 +1396,7 @@ class RenderPySparkStep:
                 aggregate=aggregate,
                 key_columns=key_columns,
             )
-            return f"F.grouping({expression}).cast({self._schema.render().type(assignment.field.type)}).alias({alias})"
+            return f"F.grouping({expression}).cast({self._schema.type(assignment.field.type)}).alias({alias})"
         arguments = assignment.arguments or (() if assignment.expression is None else (assignment.expression,))
         if assignment.function in self._aggregate_functions() and arguments:
             rendered_arguments = [
@@ -1418,7 +1417,7 @@ class RenderPySparkStep:
                 rendered_arguments.extend((repr(options["percentage"]), repr(options["frequency"])))
             expression = f"{function}({', '.join(rendered_arguments)})"
             if not self._keeps_struct_collection_type(assignment, backend_target=backend_target):
-                expression = f"{expression}.cast({self._schema.render().type(assignment.field.type)})"
+                expression = f"{expression}.cast({self._schema.type(assignment.field.type)})"
             return f"{expression}.alias({alias})"
         if assignment.function in {"first_value", "last_value"} and assignment.expression is not None:
             if assignment.order_by is None:
@@ -1777,7 +1776,7 @@ class RenderPySparkStep:
     def _assignment(self, assignment, *, scope_aliases: dict[str, str]) -> str:
         expression = render_pyspark_expression(assignment.expression, scope_aliases=scope_aliases)
         if self._needs_cast(assignment):
-            expression = f"{expression}.cast({self._schema.render().type(assignment.field.type)})"
+            expression = f"{expression}.cast({self._schema.type(assignment.field.type)})"
         if self._needs_alias(assignment):
             return f"{expression}.alias({self._literal(assignment.field.column)})"
         return expression
@@ -1816,7 +1815,7 @@ class RenderPySparkStep:
     ) -> list[str]:
         lines: list[str] = []
         for validation in validations:
-            schema = self._schema.render().constant_name(validation.schema)
+            schema = self._schema.constant_name(validation.schema)
             if validation.check:
                 lines.append(
                     f'        assert_schema({target}, {schema}, '
@@ -1865,4 +1864,21 @@ class RenderPySparkStep:
         return json.dumps(value)
 
 
-render_pyspark_step = RenderPySparkStep()
+def render_pyspark_step(
+    step: PySparkStepRecipe | PySparkOutputRecipe,
+    *,
+    current: str,
+    sources: dict[str, str] | None = None,
+    source_transform: str | None = None,
+    generated_hooks: bool = False,
+    backend_target: str = ">=3.5,<4.1",
+) -> str:
+    """Render a step through the legacy function-shaped entry point."""
+    return RenderPySparkStep()(
+        step,
+        current=current,
+        sources=sources,
+        source_transform=source_transform,
+        generated_hooks=generated_hooks,
+        backend_target=backend_target,
+    )

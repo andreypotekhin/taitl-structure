@@ -171,6 +171,41 @@ def test_v10_project_renderer_preserves_same_basename_transform_modules() -> Non
     assert "generated/traceability/transforms/demo/fulfillment/prepare.EnrichOrders.json" in second
 
 
+def test_v10_project_renderer_qualifies_duplicate_schema_constant_names() -> None:
+    class LeftCustomer(Schema):
+        id = string(nullable=False)
+
+    class RightCustomer(Schema):
+        id = string(nullable=False)
+
+    LeftCustomer.__name__ = "Customer"
+    RightCustomer.__name__ = "Customer"
+
+    @transform
+    class MergeCustomers(Transform):
+        left = input(LeftCustomer)
+        right = input(RightCustomer)
+        result = output(LeftCustomer)
+
+        @step(input=[left, right], output=result)
+        def merge(self, left_row: LeftCustomer, right_row: RightCustomer) -> LeftCustomer:
+            return LeftCustomer(id=left_row.id)
+
+    plan = _recipe(MergeCustomers)
+    files = PySpark.render.project()(
+        plan,
+        source_transform="demo.transforms.merge.MergeCustomers",
+        generated_package="generated",
+        source_schema_modules={"demo.left": [LeftCustomer], "demo.right": [RightCustomer]},
+    )
+
+    generated_text = files["generated/pyspark/transforms/demo/transforms/merge.py"]
+    assert "from generated.pyspark.schemas.left import LEFT_CUSTOMER_SCHEMA" in generated_text
+    assert "from generated.pyspark.schemas.right import RIGHT_CUSTOMER_SCHEMA" in generated_text
+    assert 'schema={"result": LEFT_CUSTOMER_SCHEMA}' in generated_text
+    assert "RIGHT_CUSTOMER_SCHEMA" in generated_text
+
+
 def test_v1_project_renderer_qualifies_duplicate_schema_module_basenames() -> None:
     from testing.model.orders.transforms.order import EnrichOrders
 

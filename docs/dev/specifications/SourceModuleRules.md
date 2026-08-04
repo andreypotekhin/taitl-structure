@@ -55,10 +55,10 @@ Generated path mapping:
 
 ```text
 src/orders/transforms/order.py
-  -> generated/structure_generated/store/pyspark/transforms/order.py
+  -> generated/structure_generated/store/pyspark/transforms/orders/transforms/order.py
 
 orders/transforms/order.py
-  -> generated/structure_generated/store/pyspark/transforms/order.py
+  -> generated/structure_generated/store/pyspark/transforms/orders/transforms/order.py
 ```
 
 The default generated package is `structure_generated`.
@@ -228,7 +228,7 @@ See docs/dev/specifications/SourceModuleRules.md
 - A source root inside `generated_dir` fails.
 - The same module import path under two roots fails.
 - `src/orders/transforms/order.py` maps to `orders.transforms.order`.
-- Generated output for that module maps below `generated/structure_generated/store/pyspark/transforms/order.py`.
+- Generated output for that module maps below `generated/structure_generated/store/pyspark/transforms/orders/transforms/order.py`.
 - Importing user modules for discovery does not import PySpark through Structure internals.
 - Unsafe import failures point users to this specification.
 - Class-body source order is preserved for fields, inputs, step methods, hooks, and helpers.

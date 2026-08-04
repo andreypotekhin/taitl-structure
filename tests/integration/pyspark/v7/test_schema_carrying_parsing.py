@@ -58,7 +58,7 @@ def test_v7_schema_carrying_parsing_matches_generated_execution_on_live_backend(
         generated_package=PACKAGE,
         source_schema_modules={SOURCE_MODULE: [Payload, RawPayload, ParsedPayload]},
     )
-    transform_source = files[f"{PACKAGE}/pyspark/transforms/test_schema_carrying_parsing.py"]
+    transform_source = files[f"{PACKAGE}/pyspark/transforms/integration/pyspark/v7/test_schema_carrying_parsing.py"]
     assert "from_json" in transform_source
     assert "to_json" in transform_source
     assert "from_csv" in transform_source

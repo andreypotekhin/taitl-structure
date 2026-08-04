@@ -130,7 +130,7 @@ The acknowledgement prevents an accidentally missing predicate from creating a C
 The checked-in store example includes a compact rowset-join transform:
 
 - source: `examples/store/transforms/rowset_join.py`;
-- generated PySpark: `examples/structure_generated/store/pyspark/transforms/rowset_join.py`.
+- generated PySpark: `examples/structure_generated/store/pyspark/transforms/examples/store/transforms/rowset_joins/rowset_join_examples.py`.
 
 It demonstrates a bare `full_join(...)`, a bare `right_join(...)`, and an explicit `cross_join(...,
 allow_cartesian=True)`.

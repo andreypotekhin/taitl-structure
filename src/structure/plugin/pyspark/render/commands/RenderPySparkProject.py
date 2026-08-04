@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 from collections import OrderedDict
 from collections.abc import Mapping, Sequence
 
@@ -7,21 +8,11 @@ from structure.dsl import Schema
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.plugin.pyspark.GeneratedPySparkTransformModule import generated_pyspark_transform_module
 from structure.plugin.pyspark.render.commands.RenderPySparkRuntimeModule import render_pyspark_runtime_module
-from structure.plugin.pyspark.render.commands.RenderPySparkTransformModule import render_pyspark_transform_module
+from structure.plugin.pyspark.render.commands.RenderPySparkTransformModule import RenderPySparkTransformModule
 from structure.plugin.pyspark.render.logic.PySparkTraceabilityReport import PySparkTraceabilityReport
 
 
 class RenderPySparkProject:
-
-    def __init__(self) -> None:
-        self._traceability = PySparkTraceabilityReport()
-
-    @property
-    def _schema(self):
-        from structure.plugin.pyspark.api.PySpark import PySpark
-
-        return PySpark.schema
-
     def __call__(
         self,
         plan: PySparkExecutionPlan,
@@ -38,6 +29,12 @@ class RenderPySparkProject:
             source_schema_modules, generated_package=generated_package
         )
         schema_modules = self._schema_modules(schema_source_modules, source_schema_modules)
+        schema_names = self._schema_names(source_schema_modules, schema_source_modules)
+        from structure.plugin.pyspark.api.PySpark import PySpark
+
+        schema_renderer = PySpark.schema.module(schema_names)
+        transform_renderer = RenderPySparkTransformModule(schema_names)
+        traceability_report = PySparkTraceabilityReport(schema_names)
         runtime_module = f"{generated_package}.runtime.schema_assert"
         transform_module = self._transform_module(source_transform, generated_package=generated_package)
 
@@ -52,14 +49,14 @@ class RenderPySparkProject:
         for source_module in sorted(source_schema_modules):
             module = schema_source_modules[source_module]
             schemas = source_schema_modules[source_module]
-            files[self._module_path(module)] = self._header(source_module) + self._schema.module()(
+            files[self._module_path(module)] = self._header(source_module) + schema_renderer(
                 schemas,
                 dependency_modules=schema_modules,
             )
 
         files[self._module_path(transform_module)] = self._header(
             self._transform_source(source_transform, generated_code_options)
-        ) + render_pyspark_transform_module(
+        ) + transform_renderer(
             plan,
             source_transform=source_transform,
             schema_modules=schema_modules,
@@ -70,7 +67,7 @@ class RenderPySparkProject:
         )
 
         if traceability != "none":
-            files[self._traceability_path(generated_package, source_transform, plan)] = self._traceability.render(
+            files[self._traceability_path(generated_package, source_transform, plan)] = traceability_report.render(
                 plan,
                 source_transform=source_transform,
                 transform_module=transform_module,
@@ -94,6 +91,12 @@ class RenderPySparkProject:
             source_schema_modules, generated_package=generated_package
         )
         schema_modules = self._schema_modules(schema_source_modules, source_schema_modules)
+        schema_names = self._schema_names(source_schema_modules, schema_source_modules)
+        from structure.plugin.pyspark.api.PySpark import PySpark
+
+        schema_renderer = PySpark.schema.module(schema_names)
+        transform_renderer = RenderPySparkTransformModule(schema_names)
+        traceability_report = PySparkTraceabilityReport(schema_names)
         runtime_module = f"{generated_package}.runtime.schema_assert"
         transform_module = self._source_transform_module(source_module, generated_package=generated_package)
 
@@ -108,14 +111,14 @@ class RenderPySparkProject:
         for schema_source_module in sorted(source_schema_modules):
             module = schema_source_modules[schema_source_module]
             schemas = source_schema_modules[schema_source_module]
-            files[self._module_path(module)] = self._header(schema_source_module) + self._schema.module()(
+            files[self._module_path(module)] = self._header(schema_source_module) + schema_renderer(
                 schemas,
                 dependency_modules=schema_modules,
             )
 
         files[self._module_path(transform_module)] = self._header(
             self._transform_source(source_module, generated_code_options)
-        ) + render_pyspark_transform_module.source_unit(
+        ) + transform_renderer.source_unit(
             plans,
             schema_modules=schema_modules,
             runtime_module=runtime_module,
@@ -127,7 +130,7 @@ class RenderPySparkProject:
         if traceability != "none":
             for source_transform, plan in plans.items():
                 files[self._traceability_path(generated_package, source_transform, plan)] = (
-                    self._traceability.render(
+                    traceability_report.render(
                         plan,
                         source_transform=source_transform,
                         transform_module=transform_module,
@@ -147,6 +150,45 @@ class RenderPySparkProject:
             for schema in schemas:
                 modules[schema] = module
         return modules
+
+    def _schema_names(
+        self,
+        source_schema_modules: Mapping[str, Sequence[type[Schema]]],
+        generated_modules: Mapping[str, str],
+    ) -> dict[type[Schema], str]:
+        from structure.plugin.pyspark.api.PySpark import PySpark
+
+        renderer = PySpark.schema.render()
+        entries = [
+            (source_module, schema)
+            for source_module, schemas in source_schema_modules.items()
+            for schema in schemas
+        ]
+        base_counts: dict[str, int] = {}
+        for _, schema in entries:
+            base = renderer.constant_name(schema)
+            base_counts[base] = base_counts.get(base, 0) + 1
+
+        names: dict[type[Schema], str] = {}
+        for source_module, schema in entries:
+            base = renderer.constant_name(schema)
+            if base_counts[base] == 1:
+                names[schema] = base
+                continue
+            module = generated_modules[source_module].rsplit(".", 1)[-1].upper()
+            names[schema] = f"{module}_{base}"
+
+        collisions: dict[str, list[type[Schema]]] = {}
+        for schema, name in names.items():
+            collisions.setdefault(name, []).append(schema)
+        for name, schemas in collisions.items():
+            if len(schemas) < 2:
+                continue
+            for schema in schemas:
+                identity = f"{schema.__module__}.{schema.__qualname__}"
+                digest = hashlib.sha256(identity.encode()).hexdigest()[:8].upper()
+                names[schema] = f"{name}_{digest}"
+        return names
 
     def _schema_source_modules(
         self,

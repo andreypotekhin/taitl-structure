@@ -227,7 +227,7 @@ Failure output must name changed paths and show enough context for CI users to a
 CompileError GEN-E0901: Generated output is stale
 
 Changed files:
-  modified generated/structure_generated/store/pyspark/transforms/order.py
+  modified generated/structure_generated/store/pyspark/transforms/orders/transforms/order.py
   added    generated/structure_generated/runtime/schema_assert.py
 
 Use:

@@ -1,3 +1,6 @@
+from collections.abc import Mapping
+
+from structure.dsl import Schema as StructureSchema
 from structure.plugin.pyspark.schema.commands.BuildTransformSchemas import BuildTransformSchemas
 from structure.plugin.pyspark.schema.commands.MaterializePySparkSchema import MaterializePySparkSchema
 from structure.plugin.pyspark.schema.commands.ReadPySparkSchema import ReadPySparkSchema
@@ -12,11 +15,11 @@ class Schema:
     def materialize(self) -> MaterializePySparkSchema:
         return MaterializePySparkSchema()
 
-    def render(self) -> RenderPySparkSchema:
-        return RenderPySparkSchema()
+    def render(self, schema_names: Mapping[type[StructureSchema], str] | None = None) -> RenderPySparkSchema:
+        return RenderPySparkSchema(schema_names)
 
-    def module(self) -> RenderPySparkSchemaModule:
-        return RenderPySparkSchemaModule()
+    def module(self, schema_names: Mapping[type[StructureSchema], str] | None = None) -> RenderPySparkSchemaModule:
+        return RenderPySparkSchemaModule(schema_names)
 
     def build(self) -> BuildTransformSchemas:
         return BuildTransformSchemas()

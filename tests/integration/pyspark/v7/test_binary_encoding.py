@@ -55,10 +55,11 @@ def test_v7_binary_encoding_matches_generated_execution_on_live_backend(spark, t
         source_schema_modules={SOURCE_MODULE: [EncodedInput, DecodedOutput]},
     )
     assert "T.BinaryType()" in files[f"{PACKAGE}/pyspark/schemas/test_binary_encoding.py"]
-    assert "F.base64(" in files[f"{PACKAGE}/pyspark/transforms/test_binary_encoding.py"]
-    assert "F.unbase64(" in files[f"{PACKAGE}/pyspark/transforms/test_binary_encoding.py"]
-    assert "F.encode(" in files[f"{PACKAGE}/pyspark/transforms/test_binary_encoding.py"]
-    assert "F.decode(" in files[f"{PACKAGE}/pyspark/transforms/test_binary_encoding.py"]
+    transform_path = f"{PACKAGE}/pyspark/transforms/integration/pyspark/v7/test_binary_encoding.py"
+    assert "F.base64(" in files[transform_path]
+    assert "F.unbase64(" in files[transform_path]
+    assert "F.encode(" in files[transform_path]
+    assert "F.decode(" in files[transform_path]
 
     with generated_project(tmp_path, PACKAGE, files):
         generated_schemas = importlib.import_module(f"{PACKAGE}.pyspark.schemas.test_binary_encoding")

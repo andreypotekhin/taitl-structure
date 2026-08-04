@@ -82,10 +82,6 @@ An external plugin may use its own import package and DSL. Different transforms 
 installed plugins, but one composed pipeline always uses one target. See [Configuration.md](Configuration.md) and
 [Plugin Authoring](dev/PluginAuthoring.md).
 
-Rebuilding
-
-
-
 ## Testing
 
 Main: [Testing.md](Testing.md)

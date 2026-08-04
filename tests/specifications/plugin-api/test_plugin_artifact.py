@@ -4,6 +4,7 @@ from typing import Any, cast
 import pytest
 
 from structure import Schema, StructureConfig, Transform, input, output, transform
+from structure.core.cli.commands.RenderConfiguredPluginProject import RenderConfiguredPluginProject
 from structure.core.compiler.api import Compiler as CoreCompiler
 from structure.core.compiler.artifacts.commands import GeneratePluginArtifact, SerializePluginArtifact
 from structure.core.plugins.api import Plugin
@@ -18,6 +19,7 @@ from structure.plugin.api.v1 import (
     PluginCompilation,
     StepAuthoringRequest,
 )
+from structure.plugin.api.v1.logic import SourceModulePath
 from structure.plugin.pyspark import *
 from structure.plugin.pyspark.symbolic_execution.model import (
     PySparkStepBody,
@@ -123,6 +125,24 @@ class FakePlugin:
         return PluginAPI(
             Facet(), Compiler(), Facet(), Facet(), executor=Executor(), generator=Generator(), serializer=Serializer()
         )
+
+
+def test_configured_project_renderer_rejects_conflicting_generated_paths() -> None:
+    renderer = RenderConfiguredPluginProject()
+    files: dict[str, str] = {}
+    owners: dict[str, str] = {}
+
+    renderer._merge_files(files, {"generated/shared.py": "one"}, source_module="first.transforms", owners=owners)
+    renderer._merge_files(files, {"generated/shared.py": "one"}, source_module="second.transforms", owners=owners)
+
+    with pytest.raises(ValueError, match="first.transforms.*third.transforms"):
+        renderer._merge_files(files, {"generated/shared.py": "two"}, source_module="third.transforms", owners=owners)
+
+
+@pytest.mark.parametrize("module", ["", "demo..prepare", "demo/prepare", "demo.__init__", "../prepare"])
+def test_v10_source_module_path_rejects_noncanonical_module_names(module: str) -> None:
+    with pytest.raises(ValueError, match="module name"):
+        SourceModulePath.from_module(module)
 
 
 class CapturingCompiler:

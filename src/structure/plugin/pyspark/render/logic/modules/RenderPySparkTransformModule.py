@@ -21,21 +21,19 @@ from structure.plugin.pyspark.render.logic.RenderEmbeddedHooks import (
     EmbeddedHookError,
     RenderEmbeddedHooks,
 )
-from structure.plugin.pyspark.render.logic.steps.RenderPySparkStep import render_pyspark_step
+from structure.plugin.pyspark.render.logic.steps.RenderPySparkStep import RenderPySparkStep
 
 
 class RenderPySparkTransformModule:
 
-    def __init__(self) -> None:
+    def __init__(self, schema_names: Mapping[type[Schema], str] | None = None) -> None:
         self._embedded_hooks = RenderEmbeddedHooks()
         self._options = GeneratedCodeOptions()
         self._hard_wrap = HardWrapGeneratedPython()
-
-    @property
-    def _schema(self):
         from structure.plugin.pyspark.api.PySpark import PySpark
 
-        return PySpark.schema
+        self._schema = PySpark.schema.render(schema_names)
+        self._step = RenderPySparkStep(schema_names)
 
     def __call__(
         self,
@@ -263,7 +261,7 @@ class RenderPySparkTransformModule:
         for output in plan.outputs:
             lines.append("")
             lines.append(
-                render_pyspark_step(
+                self._step(
                     output,
                     current=sources[output.source],
                     sources=sources,
@@ -272,7 +270,7 @@ class RenderPySparkTransformModule:
             )
             lines.append(f"        self.{fields[output.name]} = {output.name}")
             result_entries.append(f'"{output.name}": self.{fields[output.name]}')
-            schema_entries.append(f'"{output.name}": {self._schema.render().constant_name(output.output_schema)}')
+            schema_entries.append(f'"{output.name}": {self._schema.constant_name(output.output_schema)}')
         single = "True" if len(plan.outputs) == 1 else "False"
         aliases = self._output_aliases(plan)
         alias_argument = f", aliases={aliases!r}" if aliases else ""
@@ -308,7 +306,7 @@ class RenderPySparkTransformModule:
                 methods.append("")
             methods.append(f"    def {self._mirror_step_method(step)}(self):")
             methods.append(
-                render_pyspark_step(
+                self._step(
                     step,
                     current=sources[step.source],
                     sources=sources,
@@ -440,7 +438,7 @@ class RenderPySparkTransformModule:
         for step in plan.steps:
             lines.append("")
             lines.append(
-                render_pyspark_step(
+                self._step(
                     step,
                     current=sources[step.source],
                     sources=sources,
@@ -456,7 +454,7 @@ class RenderPySparkTransformModule:
         for output in plan.outputs:
             lines.append("")
             lines.append(
-                render_pyspark_step(
+                self._step(
                     output,
                     current=sources[output.source],
                     sources=sources,
@@ -464,7 +462,7 @@ class RenderPySparkTransformModule:
                 )
             )
             result_entries.append(f'"{output.name}": {output.name}')
-            schema_entries.append(f'"{output.name}": {self._schema.render().constant_name(output.output_schema)}')
+            schema_entries.append(f'"{output.name}": {self._schema.constant_name(output.output_schema)}')
         single = "True" if len(plan.outputs) == 1 else "False"
         aliases = self._output_aliases(plan)
         alias_argument = f", aliases={aliases!r}" if aliases else ""
@@ -557,7 +555,7 @@ class RenderPySparkTransformModule:
         for output in plan.outputs:
             lines.append("")
             lines.append(
-                render_pyspark_step(
+                self._step(
                     output,
                     current=sources[output.source],
                     sources=sources,
@@ -565,7 +563,7 @@ class RenderPySparkTransformModule:
                 )
             )
             result_entries.append(f'"{output.name}": {output.name}')
-            schema_entries.append(f'"{output.name}": {self._schema.render().constant_name(output.output_schema)}')
+            schema_entries.append(f'"{output.name}": {self._schema.constant_name(output.output_schema)}')
         single = "True" if len(plan.outputs) == 1 else "False"
         aliases = self._output_aliases(plan)
         alias_argument = f", aliases={aliases!r}" if aliases else ""
@@ -599,7 +597,7 @@ class RenderPySparkTransformModule:
                 methods.append("")
             methods.append(f"    def {self._step_method(step)}(self, frames):")
             methods.append(
-                render_pyspark_step(
+                self._step(
                     step,
                     current=sources[step.source],
                     sources=sources,
@@ -807,7 +805,7 @@ class RenderPySparkTransformModule:
     def _udf_return_type(self, udf: dict[str, object], *, source_name: str) -> str:
         if udf.get("pyspark_return_type"):
             return f"{source_name}.{udf['function_name']}.return_type"
-        return self._schema.render().type(cast(StructureType, udf["return_type"]))
+        return self._schema.type(cast(StructureType, udf["return_type"]))
 
     def _udfs(self, plan: PySparkExecutionPlan) -> tuple[dict[str, object], ...]:
         found: dict[str, dict[str, object]] = {}
@@ -944,7 +942,7 @@ class RenderPySparkTransformModule:
         return f"_input_{name}"
 
     def _validation(self, validation: PySparkValidationRecipe, *, target: str | None = None) -> list[str]:
-        schema = self._schema.render().constant_name(validation.schema)
+        schema = self._schema.constant_name(validation.schema)
         frame = target or (validation.target if validation.reason == "input" else "df")
         lines = []
         if validation.check:
@@ -965,7 +963,7 @@ class RenderPySparkTransformModule:
             module = schema_modules.get(schema)
             if module is None:
                 continue
-            modules[module].add(self._schema.render().constant_name(schema))
+            modules[module].add(self._schema.constant_name(schema))
         return {module: tuple(sorted(constants)) for module, constants in sorted(modules.items())}
 
     def _schemas(self, plan: PySparkExecutionPlan) -> set[type[Schema]]:
@@ -1076,4 +1074,6 @@ class RenderPySparkTransformModule:
         ) or any(self._has_window_projection(argument) for argument in expression.args)
 
 
-render_pyspark_transform_module = RenderPySparkTransformModule()
+def render_pyspark_transform_module(*args, **kwargs) -> str:
+    """Render a transform module through the legacy function-shaped entry point."""
+    return RenderPySparkTransformModule()(*args, **kwargs)

@@ -162,8 +162,28 @@ def test_isolated_fixture_wheel_discovers_executes_and_serializes(tmp_path, monk
             generated_package="generated",
         )
     )
-    source = generated.files["generated/iterable/transforms/transforms.py"]
+    source = generated.files["generated/iterable/transforms/sample/transforms.py"]
     assert "for row in orders:" in source
+    duplicate_one = selected.api.generator.generate(
+        GenerationRequest(
+            payload={"demo.catalog.prepare.Projected": projected.payload},
+            source_module="demo.catalog.prepare",
+            generated_package="generated",
+        )
+    )
+    duplicate_two = selected.api.generator.generate(
+        GenerationRequest(
+            payload={"demo.fulfillment.prepare.Projected": projected.payload},
+            source_module="demo.fulfillment.prepare",
+            generated_package="generated",
+        )
+    )
+    assert duplicate_one.module_name == "generated.iterable.transforms.demo.catalog.prepare"
+    assert duplicate_two.module_name == "generated.iterable.transforms.demo.fulfillment.prepare"
+    assert (
+        "generated/iterable/transforms/demo/catalog/prepare.py" in duplicate_one.files
+        and "generated/iterable/transforms/demo/fulfillment/prepare.py" in duplicate_two.files
+    )
     namespace: dict[str, object] = {}
     exec(source, namespace)
     generated_class = cast(Any, namespace["ProjectedGenerated"])

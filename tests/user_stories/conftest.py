@@ -63,5 +63,5 @@ def orders_traceability(orders_recipe):
     return Compiler.traceability.build()(
         orders_recipe,
         source_transform="testing.model.orders.transforms.order.EnrichOrders",
-        transform_module="testing.model.structure_generated.orders.pyspark.transforms.order",
+        transform_module="testing.model.structure_generated.orders.pyspark.transforms.testing.model.orders.transforms.order",
     )
