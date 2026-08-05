@@ -90,6 +90,55 @@ The helpers may receive an explicit relation as their first positional argument.
 relation inference is unambiguous. The returned relation scope can be assigned when a later expression needs to refer to
 the joined occurrence explicitly.
 
+### Worked Optional Enrichment
+
+An ordinary enrichment step makes the current row explicit, joins the typed side input, and constructs only the target
+fields:
+
+```python
+class EnrichOrders(Transform):
+    orders = input(OrderNormalized)
+    customers = input(Customer)
+    enriched = output(OrderWithCustomer)
+
+    @step(input=[orders, customers], output=enriched)
+    def add_customer(
+        self, order: OrderNormalized, customer: Customer
+    ) -> OrderWithCustomer:
+        left_join(
+            customer,
+            on=(customer.tenant_id == order.tenant_id)
+            & (customer.id == order.customer_id),
+            hint="broadcast",
+        )
+        return OrderWithCustomer.base(order)(
+            customer_name=customer.name,
+            customer_segment=customer.segment,
+        )
+```
+
+The left join preserves the order even when customer details are absent. The output schema must declare those joined
+fields nullable, or the step must repair or narrow them explicitly. The broadcast hint can change execution strategy,
+but never changes row semantics.
+
+### Worked Row-Multiplying Join
+
+When the output is one row per matching line, use an inner rowset join rather than a select-one lookup:
+
+```python
+def expand_lines(self, order: Order, line: OrderLine) -> OrderLineFact:
+    inner_join(on=line.order_id == order.id)
+    return OrderLineFact(
+        order_id=order.id,
+        line_number=line.line_number,
+        product_id=line.product_id,
+        quantity=line.quantity,
+    )
+```
+
+Duplicate right rows are intentional in this family. No lookup uniqueness warning or hidden dedupe is applied. If the
+business rule is instead one selected line per order, use `lookup_join(...)` with an explicit dedupe or temporal policy.
+
 ### Rowset Join Types
 
 `"inner"` keeps matching row pairs. Duplicate right rows are allowed, so one current row may become many rows.

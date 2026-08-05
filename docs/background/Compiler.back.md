@@ -56,6 +56,41 @@ Supported source forms include:
 Dynamic Python branching, arbitrary callbacks, string SQL predicates, local data collection, RDD operations, and
 unsupported method calls fail during symbolic capture.
 
+### Worked Symbolic Capture
+
+Consider a step that normalizes a nullable amount and filters invalid rows:
+
+```python
+class NormalizeOrders(Transform):
+    orders = input(OrderRaw)
+    normalized = output(OrderNormalized)
+
+    def normalize(self, order: OrderRaw) -> OrderNormalized:
+        where(order.id.is_not_null())
+        return OrderNormalized(
+            id=order.id,
+            total=coalesce(
+                to_decimal(order.total, precision=12, scale=2),
+                0,
+            ),
+        )
+```
+
+Symbolic execution does not evaluate `order.id` or `order.total`. It records a field reference, a null-check
+predicate, a conversion, a typed literal, a coalesce expression, and an ordered output projection. The generated or
+online PySpark lowerer later turns those records into DataFrame and `Column` operations.
+
+The same distinction applies to relation operations:
+
+```python
+def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
+    left_join(customer, on=customer.id == order.customer_id, hint="broadcast")
+    return OrderWithCustomer.base(order)(customer_name=customer.name)
+```
+
+The join is captured as an operation with a right scope, predicate, hint, source order, and output effect. The compiler
+does not read either relation or infer whether `customer.id` is unique from data.
+
 
 ## Symbolic Capture Rules
 
@@ -70,6 +105,20 @@ available for diagnostics and provenance.
 The compiler records field paths separately from rendered Spark names so aliases containing dots remain one field. A
 joined field is unavailable until its join is captured, and left-join fields become nullable. Schema constructors retain
 field assignments in schema order; `Schema.base(...)` overlays are expanded before type and nullability checks.
+
+Capture is isolated from ordinary Python state. A compiled method should calculate only symbolic values and should not
+mutate module globals, create files, call services, or depend on a live session:
+
+```python
+# Compiler-visible and deterministic:
+value = lower(trim(order.customer_id))
+
+# Invalid compiler-time dependency:
+value = fetch_customer_name(order.customer_id)  # network call
+```
+
+When target-specific code is intentional, move it to an explicit `@raw` hook. When the logic is a reusable typed scalar
+expression, use `@special(type="expr")` so the helper remains visible to capture and diagnostics.
 
 
 ## Intermediate Representation
@@ -163,6 +212,24 @@ strictness, projection, and constraint boundary. Streaming metadata classifies o
 or `unknown`. Provenance maps source nodes to IR and lowered/generated nodes; dataflow records transform, schema, field,
 and artifact dependencies.
 
+For the normalization example, a plan may be represented conceptually as:
+
+```text
+TransformPlan NormalizeOrders
+  InputPlan orders: OrderRaw
+  StepPlan normalize
+    read orders.id
+    filter is_not_null(orders.id)
+    read orders.total
+    call to_decimal(precision=12, scale=2)
+    call coalesce(default=0)
+    project OrderNormalized(id, total)
+  OutputPlan normalized: OrderNormalized
+```
+
+This is explanatory notation, not a serialized public API. Actual IR records retain immutable metadata, stable IDs,
+source anchors, capabilities, and provenance required by execution, generation, explain, and diagnostics.
+
 
 ## Operations And Expressions
 
@@ -176,6 +243,24 @@ expressions. Expressions carry Structure type and static nullability metadata. L
 
 The IR must preserve enough information for a target lowerer to produce equivalent online and generated behavior without
 re-reading user source. It must not store live DataFrames, Spark sessions, open files, or other runtime resources.
+
+### Operation Admission Example
+
+A new compiler-visible operation is admitted only after its source behavior, IR, target recipe, parity, and guardrails
+exist:
+
+```text
+source DSL       -> where(predicate)
+symbolic capture -> Filter(predicate, source_anchor)
+IR validation    -> Boolean type and scope checks
+target lowering  -> DataFrame.where(column)
+online runner    -> execute the recipe with live DataFrame objects
+generator        -> render the same recipe as PySpark source
+parity tests     -> compare rows, schema, order, and diagnostics
+```
+
+If any stage is missing, the operation remains unsupported or belongs behind an explicit hook. A one-to-one wrapper
+around a PySpark function is not by itself a Structure semantic feature.
 
 
 ## Validation, Streaming, And Capabilities
@@ -242,6 +327,20 @@ owned by the execution boundary.
 
 Cache keys include every input that can affect semantic output. Cache invalidation is conservative; a cache hit must not
 suppress diagnostics or change source locations.
+
+### Compiler Commands
+
+The public compiler commands expose progressively more output without taking ownership of runtime execution:
+
+```text
+structure check orders.transforms.order.EnrichOrders
+structure compile orders.transforms.order.EnrichOrders
+structure explain orders.transforms.order.EnrichOrders
+```
+
+`check` discovers and validates source without writing generated files. `compile` lowers the checked plan for the
+selected target and writes or updates artifacts according to configuration. `explain` renders the plan, dependencies,
+capabilities, and warnings without starting Spark. All three commands require import-safe modules.
 
 
 ## Diagnostics And Extensions

@@ -67,6 +67,18 @@ unknown     an opaque operation prevents proof, with no known incompatibility
 An undeclared stream-to-batch boundary follows `stream_to_batch_policy`. A strict policy requires an explicit streaming
 declaration or `allow_stream_to_batch=True`; no allowance suppresses a known incompatible operation.
 
+### Compatibility Policy At A Glance
+
+```text
+checks disabled, no marker       -> no streaming diagnostics
+checks enabled, batch transform  -> incompatible shapes warn
+checks enabled, streaming=True   -> incompatible or unknown shapes error
+marker with checks disabled      -> marker still runs its compatibility pass
+```
+
+The marker is an author promise about every operation in the transform. It does not turn batch-only operations into
+streaming operations and does not change the caller-owned runtime lifecycle.
+
 
 ## Supported Stateless Operations
 
@@ -82,6 +94,29 @@ compile-time information only.
 Watermarks are compatible when declared with `watermark(field, delay=...)` before the stateful operation they support.
 The same transform semantics must apply in online and generated-code execution.
 
+### Stateless Streaming Transform
+
+Projection and filtering remain ordinary compiler-visible operations when their expressions are row-local:
+
+```python
+@transform(streaming=True)
+class CleanEvents(Transform):
+    events = input(RawEvent, streaming=True)
+    clean = output(CleanEvent)
+
+    def clean_event(self, event: RawEvent) -> CleanEvent:
+        where(event.event_id.is_not_null())
+        return CleanEvent(
+            event_id=event.event_id,
+            account_id=event.account_id,
+            occurred_at=to_timestamp(event.occurred_at),
+        )
+```
+
+Schema-only validation, compiler traceability, typed expressions, and row-local filters do not require a Spark action.
+An expression that collects rows, calls Pandas or RDD APIs, or depends on an opaque unmarked hook changes the
+classification.
+
 
 ## Stateful Operations And Joins
 
@@ -96,6 +131,56 @@ provide stream-static left-semi filtering. Broadcast hints apply only to the sta
 Bounded stream-stream joins require both inputs to declare `streaming=True`, watermarks on both sides, and an event-time
 bound such as `event_time_between(left_time, right_time, upper=...)`. Structure admits only shapes whose state and
 retention policy are compiler-visible.
+
+### Watermarked Stream-Stream Join
+
+```python
+@transform(streaming=True)
+class AttributeClicks(Transform):
+    impressions = input(Impression, streaming=True)
+    clicks = input(Click, streaming=True)
+    attributed = output(AttributedClick)
+
+    def attribute(
+        self, impression: Impression, click: Click
+    ) -> AttributedClick:
+        watermark(impression.shown_at, delay="7 days")
+        watermark(click.occurred_at, delay="7 days")
+        inner_join(
+            click,
+            on=(click.impression_id == impression.impression_id)
+            & event_time_between(
+                impression.shown_at,
+                click.occurred_at,
+                upper="24 hours",
+            ),
+        )
+        return AttributedClick(
+            impression_id=impression.impression_id,
+            click_id=click.click_id,
+            occurred_at=click.occurred_at,
+        )
+```
+
+The two watermarks bound state retention and the event-time predicate bounds matching. The caller still chooses output
+mode, checkpoint, trigger, and sink. A stream-stream join without these declarations is not silently treated as safe.
+
+### Watermarked Dedupe
+
+```python
+@transform(streaming=True)
+class LatestClicks(Transform):
+    clicks = input(Click, streaming=True)
+    latest = output(Click)
+
+    def keep_latest(self, click: Click) -> Click:
+        watermark(click.occurred_at, delay="7 days")
+        drop_duplicates_within_watermark(click.click_id)
+        return Click.project(click)
+```
+
+The watermark-bounded spelling is explicit. Global `distinct()` or unbounded `drop_duplicates(...)` does not acquire
+streaming semantics merely because a watermark appears elsewhere in the transform.
 
 
 ## API Ledger And Stateful Boundaries
@@ -134,6 +219,17 @@ Structure trusts the marker and records it in traceability; it does not prove th
 Input, intermediate, and output validation is streaming-compatible only when it is schema-only. Row-level constraints,
 uniqueness checks, sampling, counts, collections, and other scans classify the plan as batch-only unless a future policy
 proves them safe.
+
+Hooks need the same explicit promise:
+
+```python
+@raw(inout=lane(events) | lane(events), streaming=True)
+def retain_valid(self, *, events, spark, ctx):
+    return events.where(F.col("event_id").isNotNull())
+```
+
+Structure records the declaration but does not inspect the hook body. The hook must avoid actions, RDD/Pandas
+conversion, query lifecycle APIs, external side effects, and unmodeled state.
 
 
 ## Compile-Time And IR Contract
@@ -175,6 +271,23 @@ The following remain batch-only or deferred for streaming inputs:
 Finite grouped `first_value(...)` and `last_value(...)` remain possible inside a watermarked event-time window. They are
 aggregate expressions, not a streaming reinterpretation of batch selected-row or analytic-window helpers.
 
+This is rejected even though it is valid batch Structure code:
+
+```python
+@transform(streaming=True)
+class TopStreamingEvents(Transform):
+    events = input(RawEvent, streaming=True)
+    top = output(RawEvent)
+
+    def top_events(self, event: RawEvent) -> RawEvent:
+        order_by(event.occurred_at)
+        limit(100)
+        return RawEvent.project(event)
+```
+
+Global ordering and limit require an unbounded view of the stream. Keep the transform batch-only, or replace the shape
+with an admitted bounded-state policy.
+
 
 ## Diagnostics
 
@@ -203,4 +316,3 @@ requirements, diagnostics, explain output, online/generated parity, live Spark v
 guidance.
 V10 may add state-stage lists, more bounded stream-stream joins, and explicit retention rules, but sources, sinks,
 triggers, checkpoints, output modes, deployment, recovery, and external side effects remain caller-owned.
-

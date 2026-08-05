@@ -17,6 +17,35 @@ The executable source is the [Search example](../../examples/search/Readme.md) a
 This background is synchronized to those example contracts; it does not introduce a separate search API or a
 hosted-service promise.
 
+## Search Pipeline At A Glance
+
+The example is easiest to understand as four separately inspectable flows:
+
+```text
+document text
+  -> hierarchy extraction
+  -> normalized lexical index
+  -> grain-specific scoring
+  -> ranked document, passage, or sentence results
+
+served result list
+  -> impression and click facts
+  -> attributed daily facts
+  -> batch relevance signals
+  -> feedback-aware reranking
+
+target document and corpus index
+  -> same-grain similarity query
+  -> directed scores
+  -> bounded similarity pair
+
+served ranking + judgments
+  -> behavior metrics or judgment metrics
+```
+
+Each arrow is a typed transformation boundary. A later flow consumes the persisted relation produced by an earlier flow;
+it does not reach backward into an opaque cache or recompute an unrelated grain's score.
+
 ## Corpus Ownership and Freshness
 
 `Document.content` is plain text. Heading lines form sections, blank lines form paragraphs, sentences are derived
@@ -27,6 +56,34 @@ The caller owns harvesting, source validation, persistence, corpus snapshots, an
 uses precisely the documents and index artifacts supplied to it; the example has no hidden corpus cache or freshness
 schedule. This lets an application choose its own current-corpus policy, including a batch replacement, an incremental
 pipeline, or a separately operated serving index.
+
+### Deterministic Text Extraction
+
+The extraction boundary preserves the hierarchy needed by every later scoring grain:
+
+```python
+class ExtractDocumentText(Transform):
+    documents = input(Document)
+    sections = output(DocumentSection)
+    paragraphs = output(DocumentParagraph)
+    sentences = output(DocumentSentence)
+
+    def extract(self, document: Document) -> tuple[
+        DocumentSection,
+        DocumentParagraph,
+        DocumentSentence,
+    ]:
+        return extract_text_hierarchy(
+            document,
+            section_separator="heading",
+            paragraph_separator="blank_line",
+            sentence_separator="sentence",
+        )
+```
+
+The helper name above represents the example's typed extraction stages; callers should use the concrete transforms in
+`examples/search/transforms/chunking` rather than treating it as a generic text parser. Each output carries source
+identity and an ordinal so later context and ranking remain reproducible.
 
 `CreateIndex` creates independent document, section, paragraph, and sentence index artifacts. Term frequency,
 document frequency, target length, target count, vocabulary size, and average target length are specific to the text
@@ -56,6 +113,33 @@ physical DataFrame order:
 Every query in one batch remains independently ranked. The deterministic identifier tie-breakers ensure equal lexical
 scores do not produce a nondeterministic result order.
 
+### Grain-Specific Scoring
+
+The scorer consumes the index at the same text grain as the requested result:
+
+```python
+class ScoreDocuments(Transform):
+    queries = input(SearchQuery)
+    document_terms = input(DocumentIndexTerm)
+    scores = output(DocumentScore)
+
+    def score(self, query: SearchQuery, term: DocumentIndexTerm) -> DocumentScore:
+        inner_join(
+            term,
+            on=(term.normalized_term == query.normalized_term),
+        )
+        return DocumentScore(
+            query_id=query.id,
+            document_id=term.document_id,
+            overlap_score=score_overlap(query, term),
+            bm25_score=score_bm25(query, term, k1=1.2, b=0.75),
+        )
+```
+
+The concrete example expands query terms and joins term statistics before calculating overlap and BM25. The conceptual
+snippet emphasizes the boundary: document scores are not reused for paragraph or sentence results. Each score carries
+the query, target, text grain, and scoring timestamp needed by retrieval and serving freshness policy.
+
 ## Passage Search and Answer Evidence
 
 Paragraphs are the first passage unit because extraction and indexing already preserve them independently and because
@@ -72,6 +156,38 @@ neighboring content. Those fields make the row suitable as directly attributable
 an answer model, choose a top-K, create a cross-document prompt, or synthesize a final answer. Those choices belong to
 the application because they depend on its model, citation policy, latency budget, and user experience.
 
+### Passage Context Example
+
+```python
+class SearchPassages(Transform):
+    queries = input(SearchQuery)
+    paragraphs = input(DocumentParagraph)
+    paragraph_scores = input(ParagraphScore)
+    passages = output(SearchPassage)
+
+    def present(
+        self, query: SearchQuery, paragraph: DocumentParagraph, score: ParagraphScore
+    ) -> SearchPassage:
+        inner_join(
+            score,
+            on=(score.query_id == query.id)
+            & (score.paragraph_id == paragraph.id),
+        )
+        return SearchPassage(
+            query_id=query.id,
+            paragraph_id=paragraph.id,
+            title=paragraph.title,
+            section_heading=paragraph.section_heading,
+            content=paragraph.content,
+            score=score.bm25_score,
+            rank=score.rank,
+        )
+```
+
+Neighbor context is selected within the same document section and is nullable at a heading boundary. It is display
+evidence, not additional scoring input. A caller can later apply a product-specific top-K or context budget without
+changing lexical ranking semantics.
+
 ## Document Retrieval and Feedback
 
 Document search begins with `OnlineScoring`. It treats the caller's existing score relations as cache-compatible
@@ -87,6 +203,42 @@ those candidates to 100 by overlap score. Rerank enriches only those candidates 
 score.
 A document outside the lexical candidate set cannot enter only because it is popular or has historical clicks.
 
+### Retrieval And Reranking Boundaries
+
+```python
+class SearchDocuments(Transform):
+    queries = input(SearchQuery)
+    lexical_scores = input(DocumentScore)
+    feedback = input(DocumentRelevanceSignal)
+    results = output(RecommendedDocument)
+
+    def retrieve(self, query: SearchQuery, score: DocumentScore) -> CandidateDocument:
+        where(score.query_id == query.id)
+        order_by(score.bm25_score, score.document_id)
+        limit(1000)
+        return CandidateDocument(
+            query_id=query.id,
+            document_id=score.document_id,
+            lexical_score=score.bm25_score,
+        )
+
+    def rerank(
+        self, candidate: CandidateDocument, feedback: DocumentRelevanceSignal
+    ) -> RecommendedDocument:
+        left_join(feedback, on=feedback.document_id == candidate.document_id)
+        return RecommendedDocument(
+            query_id=candidate.query_id,
+            document_id=candidate.document_id,
+            final_score=combine_scores(
+                candidate.lexical_score,
+                coalesce(feedback.feedback_score, 0),
+            ),
+        )
+```
+
+The concrete Search pipeline uses separate retrieval, overlap, and rerank stages. The example illustrates the invariant:
+feedback enriches an admitted lexical candidate set; it does not create new candidates outside that set.
+
 Within a candidate set, BM25 is normalized by the query's maximum candidate score. Caller-supplied relevance-policy
 weights combine that normalized lexical score with feedback evidence. A document with no feedback remains eligible and
 has zero feedback contribution. Overlap is an explicit narrowing boundary before feedback, not a final reranking
@@ -95,6 +247,41 @@ ingredient.
 Feedback starts with immutable `SearchRequest`, `Impression`, and `Click` records. Every attempt produces a request,
 including a no-result attempt. An impression records the displayed position and its logged examination propensity; a
 click records the impression it follows and its dwell duration.
+
+### Impression And Click Attribution
+
+```python
+@transform(streaming=True)
+class AttributeClicks(Transform):
+    impressions = input(Impression, streaming=True)
+    clicks = input(Click, streaming=True)
+    attributed = output(AttributedClick)
+
+    def attribute(
+        self, impression: Impression, click: Click
+    ) -> AttributedClick:
+        watermark(impression.displayed_at, delay="7 days")
+        watermark(click.clicked_at, delay="7 days")
+        inner_join(
+            click,
+            on=(click.impression_id == impression.id)
+            & event_time_between(
+                impression.displayed_at,
+                click.clicked_at,
+                upper="24 hours",
+            ),
+        )
+        return AttributedClick(
+            impression_id=impression.id,
+            click_id=click.id,
+            display_date=to_date(impression.displayed_at),
+            dwell_seconds=click.dwell_seconds,
+        )
+```
+
+The stream is responsible for bounded attribution facts. Late, orphaned, duplicate, or out-of-window clicks do not
+become facts merely because they exist in a source relation. Batch aggregation can then apply the policy for recency,
+propensity correction, and dwell credit.
 
 Streaming processing produces daily impression and attributed-click facts. A click must reference an impression and
 fall between its display time and 24 hours afterward. Duplicate, late, orphaned, and out-of-window clicks do not
@@ -132,12 +319,72 @@ Logged propensity is a serving-system responsibility. Position alone is not a pr
 ranking evidence, but it can reflect result position, interface design, traffic mix, and user intent, so it is never
 treated as offline relevance truth.
 
+### Feedback Signal Contract
+
+```python
+def build_query_document_signal(
+    impression: DailyImpression,
+    click: DailyAttributedClick,
+    policy: RelevancePolicy,
+) -> QueryDocumentSignal:
+    group_by(
+        query_text=impression.normalized_query,
+        document_id=impression.document_id,
+    )
+    return QueryDocumentSignal(
+        query_text=impression.normalized_query,
+        document_id=impression.document_id,
+        impression_count=count(),
+        clicked_impression_count=count_distinct(
+            click.impression_id,
+            where=click.impression_id.is_not_null(),
+        ),
+        ips_ctr=compute_ips_ctr(impression, click, policy),
+        normalized_dwell=compute_capped_dwell(click, policy),
+    )
+```
+
+This is policy-bearing evidence, not a relevance label. The output should retain counts and thresholds so a caller can
+inspect why a signal was eligible, zeroed, or omitted.
+
 ## Similarity
 
 Similarity reuses the lexical index rather than introducing an embedding model. It creates a query from each target's
 vocabulary, scores targets at the same text grain, and reduces directed scores into bounded same-grain neighbors. The
 result retains overlap, both directed BM25 scores, and their mean for inspection. The mean is a convenience value, not
 a probability.
+
+### Same-Grain Similarity
+
+```python
+class SimilarParagraphs(Transform):
+    query = input(SimilarityParagraphQuery)
+    paragraphs = input(Paragraph)
+    scores = input(ParagraphSimilarityScore)
+    similar = output(SimilarParagraph)
+
+    def publish(
+        self,
+        query: SimilarityParagraphQuery,
+        paragraph: Paragraph,
+        score: ParagraphSimilarityScore,
+    ) -> SimilarParagraph:
+        inner_join(
+            score,
+            on=(score.query_id == query.id)
+            & (score.target_id == paragraph.id),
+        )
+        return SimilarParagraph(
+            source_id=query.source_id,
+            target_id=paragraph.id,
+            forward_bm25=score.forward_bm25,
+            reverse_bm25=score.reverse_bm25,
+            mean_score=(score.forward_bm25 + score.reverse_bm25) / 2,
+        )
+```
+
+The target and query must use the same text grain. Similarity does not imply semantic equivalence, an embedding score,
+or a calibrated probability. It is a bounded, inspectable lexical relationship.
 
 Callers may prune common terms through a maximum document-frequency ratio and may apply source, language, access, or
 collection restrictions appropriate to their product. Such constraints are application policy, not hidden similarity
@@ -158,6 +405,29 @@ silently counting as nonrelevant.
 to displayed impressions, and reports request-level behavior and daily summaries by ranking version. Outputs include
 result and click counts, first click and long-click ranks, and exposure-adjusted long-click and dwell-credit rates. A
 long click has dwell time of at least ten seconds.
+
+### Evaluation Input Choice
+
+```python
+def evaluate_quality(
+    self, result: RecommendedDocument, judgment: RelevanceJudgment
+) -> DocumentRankingMetric:
+    left_join(
+        judgment,
+        on=(judgment.query_id == result.query_id)
+        & (judgment.document_id == result.document_id),
+    )
+    return DocumentRankingMetric(
+        query_id=result.query_id,
+        rank=result.rank,
+        judged_grade=judgment.grade,
+        judged=judgment.grade.is_not_null(),
+    )
+```
+
+An unjudged result is not automatically nonrelevant. The metric stage must preserve enough information to mark a
+judgment-based metric unavailable when its required evidence is missing. Behavior evaluation uses impressions and
+clicks instead; it must not be labeled Precision, Recall, MRR, or relevance quality.
 
 Behavior measures observed satisfaction with the served experience. It must not be called Precision, Recall, MRR, or
 relevance quality, which require an explicit relevance-judgment contract. Compare ranking runs using the same persisted

@@ -505,7 +505,7 @@ return CustomerOrderSummary(
 ```
 
 Reference: [aggregations API](api/Aggregations.api.md),
-[advanced analytical operations](background/AdvancedAnalyticalOperations.back.md),
+[aggregations](background/Aggregations.back.md),
 [Transform](background/Transform.back.md),
 [IR](background/Compiler.back.md), [PySpark code generation](background/Generation.back.md), and
 [streaming compatibility](background/Streaming.back.md).
@@ -599,7 +599,7 @@ grouping for admitted Structured Streaming aggregates; grouped `first_value(...)
 typed selection alternatives.
 
 Reference: [windows API](api/Windows.api.md),
-[advanced analytical operations](background/AdvancedAnalyticalOperations.back.md),
+[aggregations](background/Aggregations.back.md),
 [Transform](background/Transform.back.md),
 [IR](background/Compiler.back.md), [PySpark code generation](background/Generation.back.md), and
 [streaming compatibility](background/Streaming.back.md).
@@ -750,7 +750,7 @@ bodies must return typed Structure expressions or typed literals. Python boolean
 is rejected; combine symbolic predicates with `&`, `|`, and `~`.
 
 Reference: [collections API](api/Collections.api.md),
-[advanced analytical operations](background/AdvancedAnalyticalOperations.back.md),
+[aggregations](background/Aggregations.back.md),
 [Transform](background/Transform.back.md), and
 [backend capabilities](background/Capabilities.back.md).
 

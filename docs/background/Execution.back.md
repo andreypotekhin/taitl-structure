@@ -100,6 +100,39 @@ declared output names such as `result.published`, `result.accepted`, and `result
 the same names through `result.schema`, such as `result.schema.published` and `result.schema["rejected"]`. There is no
 automatic `df` alias; `df` is present only when a field-declared output is explicitly named `df`.
 
+### Deferred Invocation And Result Access
+
+Construction and execution are separate operations:
+
+```python
+invocation = EnrichOrders(
+    orders=orders_df,
+    customers=customers_df,
+)
+
+# No Spark action occurs above. The application may compose or pass the invocation onward.
+result = invocation.run(session)
+
+published = result.published
+published_schema = result.schema.published
+```
+
+Multi-output transforms retain declared names rather than returning an untyped tuple:
+
+```python
+result = Fulfillment(
+    orders=orders_df,
+    warehouses=warehouses_df,
+).run(session)
+
+plans = result.plans
+shortages = result["shortages"]
+assert result.schema.plans == plans.schema
+```
+
+The result object is read-only. Structure does not write, cache, or publish any output unless the caller performs those
+operations on the returned DataFrames.
+
 If an output declaration has a transform boundary alias, the alias is an additional lookup name, not an extra mapping
 key:
 
@@ -165,6 +198,21 @@ config = StructureConfig.resolve(project_root=".", execution_mode="generated")
 session = StructureSession(spark=spark, config=config)
 ```
 
+Generated execution can use an in-memory artifact when a project wants generated semantics without generated files:
+
+```python
+from structure import MemoryStorage, StructureConfig, StructureSession
+
+storage = MemoryStorage()
+config = StructureConfig.resolve(execution_mode="generated")
+EnrichOrders.generate(storage=storage)
+session = StructureSession(spark=spark, config=config, storage=storage)
+result = EnrichOrders(orders=orders_df, customers=customers_df).run(session)
+```
+
+The storage choice changes artifact packaging, not transform meaning. A generated artifact remains tied to its source,
+configuration, target profile, and semantic fingerprint.
+
 
 ## Session Responsibilities
 
@@ -185,6 +233,22 @@ queries, or own orchestration concerns such as Airflow DAGs, triggers, checkpoin
 The session compiles a transform on its first compatible run and reuses that result for later invocations.
 `Transform.compile(...)` remains available for early diagnostics; load its result with `session.load(artifact)`.
 Sessions are isolated by default, while applications may deliberately share a `CompiledArtifactPool`.
+
+The lifecycle is lazy but deterministic:
+
+```text
+first compatible invocation
+  -> resolve configuration and target
+  -> discover and compile source
+  -> cache immutable artifact in the session pool
+  -> execute with caller-owned Spark objects
+
+later compatible invocation
+  -> reuse the matching immutable artifact
+  -> execute with the new invocation's inputs and context
+```
+
+A cache hit cannot suppress diagnostics, change source anchors, or reuse live DataFrames from an earlier invocation.
 
 
 ## Execution Modes
@@ -227,6 +291,22 @@ projection shape, schema projection, result shape, and performance guardrails.
 
 For a multi-result step, joins and filters execute once. Each result projection starts from that shared DataFrame and is
 stored under its output lane name.
+
+For a transform with one hook between two steps, the observable order is:
+
+```text
+input schema validation
+  -> step.normalize projection
+  -> intermediate validation
+  -> raw.audit hook
+  -> hook schema policy and validation
+  -> step.publish projection
+  -> output validation
+  -> read-only TransformResult
+```
+
+Generated code and direct execution must expose the same boundaries even when one path uses rendered Python and the
+other interprets recipes.
 
 The shared semantic contract is defined in the section below. Execution owns live DataFrame binding and runtime hook
 invocation; it must not independently choose aliases, validation placement, expression mapping, or literal typing when a
@@ -330,6 +410,19 @@ DataFrames, hook instances, and Spark runtime objects remain outside the cached 
 Runtime errors should preserve Structure diagnostic code and context at declared boundaries. Plugin-specific runtime
 errors remain opaque payloads to Core except where the plugin maps them to the shared diagnostic contract.
 
+Common remedies remain at the execution boundary:
+
+```text
+missing declared input       -> bind the input by its declared keyword name
+generated class unavailable   -> run `structure compile` or switch to online mode
+schema mismatch               -> inspect result.schema and the input validation diagnostic
+hook failure                  -> inspect the hook's selected lane, target, and schema mode
+stale artifact                -> regenerate or clear the configured artifact storage
+```
+
+Execution must not convert a compile-time or validation failure into a silent empty result. The diagnostic retains the
+transform, output or lane, execution mode, selected target, and shortest source-level correction.
+
 
 ## Acceptance Contract
 
@@ -337,3 +430,25 @@ Execution is complete when tests prove deferred construction, named input bindin
 every admitted operation family, identical validation boundaries, hook order and ownership, capability rejection before
 runtime, streaming classification, generated artifact fingerprint checks, and caller-owned Spark and streaming
 lifecycle. Direct and generated execution must expose equivalent output schemas.
+
+### Parity Test Shape
+
+A focused parity test should exercise both consumers of the same source transform:
+
+```python
+online = run_transform(
+    transform=EnrichOrders(orders=orders_df, customers=customers_df),
+    execution_mode="online",
+)
+generated = run_transform(
+    transform=EnrichOrders(orders=orders_df, customers=customers_df),
+    execution_mode="generated",
+)
+
+assert online.schema.published == generated.schema.published
+assert online.published.schema == generated.published.schema
+assert collect_rows(online.published) == collect_rows(generated.published)
+```
+
+The actual test helper may use a local Spark fixture or a fake recipe runner, but the contract compares output fields,
+types, nullability where reliable, rows, extra-column behavior, and expected diagnostics.

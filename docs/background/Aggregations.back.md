@@ -1,4 +1,4 @@
-# Advanced Analytical Operations
+# Aggregations
 
 Advanced analytical operations are the broader aggregation, window, and collection-helper features added after the
 first v2 analytical slice. They let Structure cover multi-level summaries, explicit window frames, and richer array/map
@@ -15,6 +15,102 @@ labels genuinely deferred behavior below.
 The analytical surface supports common grouped aggregates, custom grouping sets, ranking, lag/lead, rolling row
 metrics, deterministic latest/earliest selection, exact/subset duplicate removal, and basic array/map callbacks. This
 page describes the admitted surface and the boundaries still enforced by backend capability checks.
+
+## Choosing an Analytical Shape
+
+Use the smallest operation family that expresses the intended cardinality:
+
+```text
+one row per group             -> group_by(...) and aggregate metrics
+multiple subtotal levels      -> rollup(...), cube(...), grouping_sets(...)
+one value per input row       -> window(...) or inline window helpers
+one selected row per key      -> latest_by(...) or earliest_by(...)
+one transformed collection    -> arr_* or map_* higher-order helpers
+one relation-wide assertion   -> the Relations API, not a scalar aggregate callback
+```
+
+Grouped aggregation changes relation cardinality. Window projection preserves the current rows while adding derived
+values. Selected-row helpers reduce each partition to one deterministic row. Array and map helpers keep one row and
+transform a nested value. These distinctions affect nullability, ordering, streaming compatibility, and which fields
+are legal in a later expression.
+
+### Ordinary Grouped Summary
+
+The smallest useful aggregate step names its grouping keys and returns one typed output row per group:
+
+```python
+class DailyCustomerSales(Schema):
+    customer_id = string(nullable=False)
+    business_date = date(nullable=False)
+    order_count = long(nullable=False)
+    gross_total = decimal(22, 2, nullable=True)
+
+
+def summarize(self, order: FulfilledOrder) -> DailyCustomerSales:
+    group_by(
+        customer_id=order.customer_id,
+        business_date=order.business_date,
+    )
+    return DailyCustomerSales(
+        customer_id=order.customer_id,
+        business_date=order.business_date,
+        order_count=count(),
+        gross_total=sum(order.total),
+    )
+```
+
+The output constructor describes the post-aggregate row, not the input row. Input fields that are neither grouping keys
+nor aggregate expressions are unavailable as ordinary row-local values after `group_by(...)`.
+
+### Windowed Enrichment
+
+Window expressions add metrics without changing the number of input rows:
+
+```python
+def add_customer_rank(self, order: FulfilledOrder) -> RankedOrder:
+    customer_window = window(
+        partition_by=order.customer_id,
+        order_by=[order.business_date.asc(), order.id.asc()],
+        frame=rows_between(preceding(6), current_row()),
+    )
+    return RankedOrder(
+        order_id=order.id,
+        customer_id=order.customer_id,
+        order_rank=row_number(
+            partition_by=order.customer_id,
+            order_by=order.business_date,
+        ),
+        seven_order_total=window_sum(order.total, over=customer_window),
+    )
+```
+
+The partition and order expressions are part of the contract. A window does not imply a global order at the result
+boundary, and a frame does not imply a watermark or streaming state policy.
+
+### Nested Collection Transformation
+
+Higher-order helpers transform arrays and maps inside one row. Their callbacks are captured symbolically:
+
+```python
+def normalize_attributes(self, product: Product) -> ProductProfile:
+    attributes = map_filter(
+        map_transform_values(
+            product.attributes,
+            lambda key, value: lower(trim(value)),
+        ),
+        lambda key, value: value.is_not_null(),
+    )
+    return ProductProfile(
+        product_id=product.id,
+        tags=arr_distinct(
+            arr_transform(product.tags, lambda tag: lower(trim(tag)))
+        ),
+        attributes=attributes,
+    )
+```
+
+Callbacks run during symbolic compilation against typed placeholders. They never run once per row as ordinary Python
+functions, and they may not collect data, access a live Spark object, or return an untyped value.
 
 ## Scope and First-Slice Boundary
 
@@ -105,6 +201,35 @@ return OrderGroupingSetSummary(
 )
 ```
 
+### Subtotal Nullability And Grouping Identity
+
+Rollups, cubes, and explicit grouping sets can emit subtotal rows in which a grouping key is absent. The missing key is
+not a source null; it represents the subtotal level. Keep the field nullable or replace it with a documented label:
+
+```python
+return OrderRevenueRollup(
+    tenant_id=order.tenant_id,
+    product_category=when(
+        is_grouped(order.product_category),
+        "<all categories>",
+    ).otherwise(order.product_category),
+    order_date=order.order_date,
+    grouping_id=grouping_id(),
+    category_subtotal=is_grouped(order.product_category),
+    order_count=count(),
+    quantity_total=sum(order.quantity),
+)
+```
+
+`grouping_id()` is the machine-readable grouping level. `is_grouped(...)` identifies which dimension is absent. Do not
+use a null key alone to infer a subtotal when the source field itself is nullable.
+
+### Grouping Order And Output Order
+
+Grouping keys retain source order in the plan and explain output. Named keys determine output field names; positional
+keys remain ordered expressions and should be projected explicitly. The generated schema follows the target schema
+declaration, not the order in which metrics happen to be written in the constructor.
+
 
 ## Aggregates
 
@@ -146,6 +271,31 @@ Rules:
 - Approximate metrics stay visibly approximate in generated PySpark.
 - `having(...)` predicates can reference grouped keys and aggregate output metrics through the callback argument; input
   row fields are unavailable after aggregation.
+
+### Aggregate Null And Empty Semantics
+
+Aggregate result nullability follows the target's Spark-compatible contract rather than the input field declaration
+alone:
+
+- `count()` and `count_distinct(...)` return non-null counts, including zero for an empty group where a group exists;
+- `sum(...)`, `avg(...)`, `min(...)`, `max(...)`, and statistical metrics can be null when no input value qualifies;
+- metric-local `where=` can make a result null even when the unfiltered group has rows;
+- `collect_list(...)` and `collect_set(...)` return typed collections with their documented empty/null behavior;
+- ordered `first_value(...)` and `last_value(...)` remain deterministic only with an explicit order expression;
+- approximate metrics retain their approximation and accuracy metadata in IR and explain output.
+
+Use `coalesce(...)` only when replacing a null aggregate with a business-approved value:
+
+```python
+return CustomerSales(
+    customer_id=order.customer_id,
+    gross_total=coalesce(sum(order.total), 0),
+    average_order=avg(order.total),
+)
+```
+
+Do not use `0` to hide the distinction between no qualifying value and a measured zero unless the output contract makes
+that distinction intentionally irrelevant.
 
 Metric-local filtering:
 
@@ -193,6 +343,41 @@ return OrderRevenueRollup(
     order_ids=collect_list(order.id),
 )
 ```
+
+
+## Selected-Row Operations
+
+`latest_by(...)` and `earliest_by(...)` select one row per explicit partition. They are not ordinary aggregate metrics
+and are not interchangeable with `max(...)` or `min(...)`: the selected row retains all fields from one winning input
+row.
+
+```python
+def latest_customer_order(self, order: FulfilledOrder) -> LatestOrder:
+    latest_by(
+        order.business_date,
+        partition_by=order.customer_id,
+    )
+    return LatestOrder(
+        customer_id=order.customer_id,
+        order_id=order.id,
+        business_date=order.business_date,
+        total=order.total,
+    )
+```
+
+The order expression and partition are required. Ties use the configured public tie policy; the admitted default is
+`"error"`. Use an ordering expression that is unique at the chosen partition when the domain needs a stable winner
+rather than a tie diagnostic:
+
+```python
+latest_by(
+    order.business_date,
+    partition_by=[order.customer_id, order.product_id],
+)
+```
+
+The selected-row operation is batch-only until Structure defines a bounded streaming state and watermark contract.
+`dedupe_latest_by(...)` and `dedupe_earliest_by(...)` are intent-specific aliases for the same deterministic family.
 
 
 ## Reusable Windows
@@ -438,6 +623,163 @@ return OrderCollectionProfile(
     roundtrip_attributes=map_from_entries(map_entries(normalized_attributes)),
 )
 ```
+
+
+## Worked Analytical Pipeline
+
+An analytical transform commonly separates relation shaping, aggregation, and row-preserving ranking into typed
+intermediate schemas:
+
+```python
+class DailyCustomerTotals(Schema):
+    customer_id = string(nullable=False)
+    business_date = date(nullable=False)
+    order_count = long(nullable=False)
+    gross_total = decimal(22, 2, nullable=True)
+
+
+class RankedCustomerDay(Schema):
+    customer_id = string(nullable=False)
+    business_date = date(nullable=False)
+    gross_total = decimal(22, 2, nullable=True)
+    day_rank = long(nullable=False)
+
+
+class CustomerAnalytics(Transform):
+    orders = input(FulfilledOrder)
+    daily = lane(DailyCustomerTotals)
+    ranked = output(RankedCustomerDay)
+
+    @step(output=daily)
+    def summarize(self, order: FulfilledOrder) -> DailyCustomerTotals:
+        group_by(
+            customer_id=order.customer_id,
+            business_date=order.business_date,
+        )
+        return DailyCustomerTotals(
+            customer_id=order.customer_id,
+            business_date=order.business_date,
+            order_count=count(),
+            gross_total=sum(order.total),
+        )
+
+    @step(output=ranked)
+    def rank_days(self, day: DailyCustomerTotals) -> RankedCustomerDay:
+        return RankedCustomerDay(
+            customer_id=day.customer_id,
+            business_date=day.business_date,
+            gross_total=day.gross_total,
+            day_rank=rank(
+                partition_by=day.customer_id,
+                order_by=day.gross_total,
+                descending=True,
+            ),
+        )
+```
+
+The first step changes cardinality and establishes the daily schema. The second step preserves one row per daily total
+while adding a rank. Intermediate schema validation can catch an aggregate type or nullability mismatch before the
+window step runs.
+
+### One Step With Multiple Metrics
+
+Metrics can share one grouping operation while retaining separate filters and types:
+
+```python
+def summarize_product(self, order: FulfilledOrder) -> ProductSummary:
+    group_by(product_id=order.product_id)
+    return ProductSummary(
+        product_id=order.product_id,
+        orders=count(),
+        paid_orders=count(where=order.is_paid),
+        units=sum(order.quantity),
+        average_price=avg(order.unit_price),
+        customers=count_distinct(order.customer_id),
+        high_value_orders=count(where=order.total >= 1000),
+    )
+```
+
+Metric-local filters do not remove rows from another metric. If a metric has no qualifying values, its nullable result
+remains distinct from a measured zero unless the output explicitly uses `coalesce(...)`.
+
+### Aggregate Then Join
+
+Aggregate results can be joined like any other typed relation. Keep the aggregate boundary explicit so a later join does
+not accidentally multiply the input rows before the metric is computed:
+
+```python
+def publish_customer_metrics(
+    self, day: DailyCustomerTotals, target: CustomerTarget
+) -> CustomerMetric:
+    left_join(
+        target,
+        on=(target.customer_id == day.customer_id)
+        & (target.business_date == day.business_date),
+    )
+    return CustomerMetric(
+        customer_id=day.customer_id,
+        business_date=day.business_date,
+        gross_total=day.gross_total,
+        target_total=target.target_total,
+        target_attained=(day.gross_total >= target.target_total),
+    )
+```
+
+If the target relation can contain duplicates, select-one or dedupe it before this step. Aggregation does not establish
+uniqueness for a later join, and a schema does not declare that proof implicitly.
+
+
+## Diagnostics And Boundaries
+
+Analytical diagnostics identify the transform, step, operation family, grouping or window scope, source location,
+selected target, and shortest correction. They should distinguish a type error from an unsupported capability and from a
+business-level null or tie condition.
+
+```text
+CompileError: Aggregate input is not numeric
+
+Step:
+  CustomerAnalytics.summarize_product
+
+Expression:
+  sum(order.status)
+
+Use:
+  aggregate a numeric field, or convert the source explicitly before summing.
+
+See docs/api/Aggregations.api.md
+```
+
+```text
+CompileError: Window frame is incomplete
+
+Expression:
+  window_sum(order.total, over=customer_window)
+
+Problem:
+  Aggregate window helpers require an explicit rows or range frame.
+
+Use:
+  frame=rows_between(preceding(6), current_row())
+
+See docs/api/Windows.api.md
+```
+
+```text
+CompileError: Symbolic callback required
+
+Expression:
+  arr_exists(order.tags, lambda tag: bool(tag))
+
+Use:
+  return a symbolic Boolean expression such as `tag == "priority"` or `tag.is_not_null()`.
+
+See docs/api/Collections.api.md
+```
+
+Tie failures, approximate metric behavior, empty-frame nullability, and streaming incompatibility should remain
+visible in diagnostics and explain output. Structure must not silently select an arbitrary row, silently collect data,
+or fall back to a Python UDF when an analytical contract is missing.
 
 
 ## IR, Capabilities, and Optimization Boundary

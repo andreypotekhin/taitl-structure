@@ -309,7 +309,7 @@ pipelines, internal-lane bindings, and wrapper-local interleaving that has no ex
 
 ## Transform Inheritance
 
-Use transform inheritance when one logical pipeline specializes reusable parent steps. Parent classes may contribute
+Use transform inheritance when one logical pipeline builds upon reusable parent steps. Parent classes may contribute
 inputs, lanes, outputs, expression helpers, hooks, and step methods without being decorated standalone transforms.
 
 ```python
