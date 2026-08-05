@@ -5,6 +5,21 @@ caller-supplied Spark Connect session while keeping the same Structure DSL and g
 [Spark Connect specification](../dev/specifications/SparkConnect.md) and [design](../dev/design/SparkConnect.md) define
 its configuration, runtime boundaries, and support contract.
 
+## Reader Flow
+
+Spark Connect support has four separate questions:
+
+```text
+configuration -> select the spark-connect variant
+compiler      -> compile the same Spark-free Structure plan
+runtime       -> execute through a caller-owned remote session
+verification  -> prove parity without classic-only internals
+```
+
+The variant changes the target capability profile and runtime boundary; it does not create a second Structure DSL.
+Start with configuration, inspect the supported feature families, then check hook and runtime ownership before moving a
+project from ordinary PySpark to Spark Connect.
+
 ## Configuration
 
 ```toml
@@ -19,6 +34,10 @@ Ordinary PySpark remains the default:
 ```toml
 target_variant = "ordinary"
 ```
+
+Configuration is resolved before compilation. A project can therefore run `structure check` and `structure compile`
+without connecting to Spark, while execution and generated-code integration tests select a real Connect session. The
+resolved variant becomes part of capability decisions and generated artifact identity.
 
 ## What Is Supported
 
@@ -65,6 +84,10 @@ StructureTools schema generation can use Spark Connect metadata paths that the r
 path schema extraction fails through Spark Connect, the tool names Spark Connect in the error and suggests passing an
 explicit `schema=...` object.
 
+The metadata distinction is important: schema generation may need a remote metadata request, while compiler checks must
+remain Spark-free. A tool may ask the caller's Connect session for supported metadata, but it must not silently fall
+back to private classic fields or infer a schema by collecting user data.
+
 ## Runtime Use
 
 Create the Spark Connect session outside Structure and pass it in:
@@ -82,6 +105,24 @@ result = NormalizeOrdersGenerated(spark=spark, ctx=ctx).run(orders=orders_df)
 
 Structure does not create or manage the remote Spark Connect server.
 
+The caller owns session creation, authentication, remote endpoint lifecycle, input DataFrames, actions, result
+materialization, and cleanup. Structure owns only transform invocation and the semantic plan it supplies to the target.
+This ownership is the same as ordinary execution except that the Connect variant rejects classic-only runtime access.
+
+For a migration, keep the transform invocation unchanged and isolate target-specific code at the hook or session edge:
+
+```python
+config = StructureConfig.resolve(
+    project_root=project_root,
+    overrides={"target_variant": "spark-connect"},
+)
+session = StructureSession(spark=connect_spark, ctx=ctx, config=config)
+result = NormalizeOrders(orders=orders_df).run(session)
+```
+
+Compiler-visible expressions, schemas, joins, aggregates, and validation should not need a Connect-specific branch.
+Only code that intentionally touches the runtime or a raw hook should require a target decision.
+
 ## Diagnostics
 
 When a transform asks Spark Connect to run classic-only behavior, Structure should fail before execution or generation
@@ -97,6 +138,10 @@ with a backend capability diagnostic. The diagnostic should name the unsupported
 Spark Connect is supported for completed compiler-visible batch features only after the project has parity evidence
 against a real Spark Connect session. Streaming orchestration remains separate roadmap work.
 
+Support is feature-family based, not version-name based. A profile may claim Connect support for expressions and joins
+while rejecting a newly introduced hook or relation operation until that feature has public-API lowering and parity
+evidence. A successful import is not evidence of runtime support.
+
 ## Capability And Verification Contract
 
 Spark Connect is admitted through the PySpark capability profile, not a generic fallback. The profile must explicitly
@@ -111,5 +156,39 @@ remain Spark-free, generated-source scans for `_jdf`, `sparkContext`, `.rdd`, `_
 for
 ordinary-only hooks and runtime boundaries.
 
+The smallest useful verification matrix is:
+
+| Path | Ordinary PySpark | Spark Connect |
+| --- | --- | --- |
+| Spark-free `check` | accepted | accepted |
+| Spark-free `compile` | target recipes render | Connect recipes render |
+| online execution | live session parity | live remote session parity |
+| generated execution | result and schema parity | result and schema parity |
+| prohibited runtime access | ordinary-only behavior may run | `CONNECT-E2601` |
+
+For each admitted feature, compare output names, schema, rows, null behavior, diagnostics, and generated-source scans.
+Run an ordered comparison only when the transform explicitly promises order. When a Connect limitation is discovered,
+record it as a capability decision and diagnostic rather than adding a hidden fallback.
+
 StructureTools may use Connect-supported metadata paths for schema generation. Unsupported path or table metadata access
 must preserve the cause, name Spark Connect, and suggest an explicit schema.
+
+## Diagnostics And Repair Order
+
+When a Connect execution fails, diagnose from the outside in:
+
+1. Confirm that `target_variant` resolves to `spark-connect` and that the caller supplied a Connect session.
+2. Check the capability decision for the operation family named in the failure.
+3. Search hooks and generated code for classic-only access such as `sparkContext`, `rdd`, `_jvm`, `_jdf`, or Py4J.
+4. Replace the operation with compiler-visible DSL or public Connect APIs, or explicitly select ordinary PySpark.
+5. Re-run generated and online parity against the same input fixtures.
+
+The repair must not be “catch the Connect error and execute locally.” That changes the target boundary and can
+silently move data or semantics outside the caller's remote session.
+
+## Acceptance Contract
+
+Spark Connect support is complete for a feature when configuration resolution, Spark-free compilation, capability
+admission, online execution, generated execution, public-API source scans, hook target checks, metadata diagnostics,
+and parity evidence agree. Streaming ownership, storage writes, and unsupported classic internals remain explicit
+boundaries until their own contracts are admitted.

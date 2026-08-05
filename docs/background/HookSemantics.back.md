@@ -10,6 +10,27 @@ compiler-visible.
 This reference covers hook decorator behavior, signatures, source ordering, input access, schema handling,
 streaming-safety metadata, generated and online invocation, diagnostics, and tests.
 
+## Hook Lifecycle At A Glance
+
+A hook crosses the compiler/runtime boundary at a declared lane position:
+
+```text
+@raw declaration
+  -> binding and signature validation
+  -> source-order placement in the transform plan
+  -> opaque HookDef in IR
+  -> target-scope and streaming checks
+  -> online or generated invocation
+  -> schema validation and lane replacement
+```
+
+The compiler validates the boundary around a hook, not the arbitrary backend code inside it. Read the document in that
+order: first decide whether a hook is necessary, then declare its bindings and target, and finally verify its runtime
+and generated behavior.
+
+Prefer compiler-visible Structure expressions for logic that can be expressed in the DSL. Reserve `@raw` for a genuine
+backend escape hatch, such as a public DataFrame operation that has no admitted Structure equivalent.
+
 ## Public API
 
 Canonical hook forms:
@@ -65,7 +86,7 @@ Rules:
 - `project_output=True` requires a schema mode and target schema that make projection meaningful.
 - `streaming=True` is an author promise, not compiler inspection of the hook body.
 - `target_backend=None` means the hook inherits the configured `hook_target_default`.
-- `target_platform` narrows the hook to a target variants? of the backend when supported.
+- `target_platform` narrows the hook to a target variant of the backend when supported.
 
 ## Signatures
 
@@ -145,6 +166,25 @@ Hook order is deterministic:
 
 Multiple adjacent hooks are allowed. A hook can rely on the DataFrame returned by the previous hook for the same lane.
 
+For example, the following sequence keeps normalization compiler-visible, inserts a raw quality check, and then
+publishes the checked lane:
+
+```python
+def normalize(self, order: OrderRaw) -> OrderNormalized:
+    return OrderNormalized.project(order)(id=lower(trim(order.id)))
+
+@raw(inout=lane(normalized) | lane(normalized), schema_mode=SchemaMode.STRICT)
+def check_quality(self, *, normalized, spark, ctx):
+    return normalized.where(F.col("id").isNotNull())
+
+def publish(self, order: OrderNormalized) -> OrderPublished:
+    return OrderPublished.project(order)
+```
+
+The hook receives the result of `normalize`, not the original input. If it were declared before `normalize`, its lane
+binding would resolve differently and its output would not be the same contract. Moving a raw method is therefore a
+semantic change even when its body is unchanged.
+
 ## Opaque Boundary
 
 Hooks are not symbolically executed.
@@ -212,6 +252,18 @@ ALLOW_EXTRA_COLUMNS
 
 Public examples may omit the strict default.
 
+Choose schema behavior according to ownership of the hook output:
+
+| Hook output | Recommended mode | Meaning |
+| --- | --- | --- |
+| same columns and types | `STRICT` | backend logic preserves the declared lane contract |
+| temporary or diagnostic extras | `ALLOW_EXTRA_COLUMNS` | extras may cross this boundary |
+| intentional narrowing or shaping | `project_output=True` | project back to the target schema |
+
+Projection is not a substitute for declaring required fields. A hook that drops a required column must still fail the
+target schema contract; a hook that adds an auxiliary column should use extra-column mode only when the next stage can
+legitimately see it.
+
 ## Streaming Safety
 
 Hooks are batch-only by default for streaming compatibility checks.
@@ -224,6 +276,11 @@ Rules:
 - Structure may still reject a streaming-safe hook when its declared schema mode or input access is incompatible with
   the configured backend.
 - Hook internals remain opaque, so runtime backend failures inside a hook are not compiler proof failures.
+
+The streaming declaration applies to the complete hook body, including helper calls and any operation selected by a
+backend expression. It does not make an unsupported stateful operation safe. A hook that reads or writes external state,
+uses a batch-only action, or depends on unbounded local collection must remain batch-only unless a separate streaming
+contract admits that behavior.
 
 ## IR Contract
 
