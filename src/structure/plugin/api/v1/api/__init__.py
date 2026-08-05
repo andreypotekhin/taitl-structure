@@ -8,8 +8,9 @@ from structure.plugin.api.v1.api.GenerationAPI import GenerationAPI
 from structure.plugin.api.v1.api.PluginAPI import PluginAPI
 from structure.plugin.api.v1.api.SchemaAPI import SchemaAPI
 from structure.plugin.api.v1.api.SerializationAPI import SerializationAPI
+from structure.plugin.api.v1.api.SemanticDefaultsAPI import SemanticDefaultsAPI
 
 __all__ = [
     "AnalysisAPI", "AuthoringAPI", "CapabilitiesAPI", "CompilerAPI", "ExecutionAPI", "ExplainAPI", "GenerationAPI",
-    "PluginAPI", "SchemaAPI", "SerializationAPI",
+    "PluginAPI", "SchemaAPI", "SemanticDefaultsAPI", "SerializationAPI",
 ]

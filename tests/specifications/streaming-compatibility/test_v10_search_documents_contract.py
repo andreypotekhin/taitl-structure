@@ -140,6 +140,27 @@ def test_search_documents_run_contract_rejects_non_append_or_revision_policy() -
         contract.validate()
 
 
+def test_search_documents_run_contract_rejects_non_finite_completion_window() -> None:
+    """A run handoff must identify a positive finite completion interval."""
+
+    contract = SearchDocumentsRunContract(
+        snapshot_id="search-snapshot-v1",
+        snapshot_inputs=REQUIRED_SNAPSHOT_INPUTS,
+        sink_identity="search-results-parquet",
+        checkpoint_identity="search-documents-v1",
+        trigger="availableNow",
+        output_mode="append",
+        event_time_field="requested_at",
+        completion_window="eventually",
+        refresh_restart_policy="new_run_on_snapshot_refresh",
+        finality_policy="append_final_no_revisions",
+        downstream_materialization="persist final results before serving",
+    )
+
+    with pytest.raises(ValueError, match="SEARCH-RUN-E1001"):
+        contract.validate()
+
+
 @pytest.mark.parametrize(
     ("stage", "retained_bound"),
     [("candidate_admission", 1000), ("overlap_narrowing", 100)],
@@ -184,4 +205,26 @@ def test_search_documents_finite_top_k_contract_rejects_unbounded_or_nondetermin
     )
 
     with pytest.raises(ValueError, match="SEARCH-TOPK-E1011"):
+        contract.validate()
+
+
+def test_search_documents_finite_top_k_contract_requires_query_grouping_and_positive_durations() -> None:
+    """A top-K stage must be bounded by a query group and finite time declarations."""
+
+    contract = SearchFiniteTopKContract(
+        stage="candidate_admission",
+        retained_bound=1000,
+        grouping_key=("document_id",),
+        order_keys=("score desc", "document_id asc"),
+        tie_policy="score_desc_document_id_asc",
+        event_time_field="requested_at",
+        watermark_delay="0 seconds",
+        completion_window="10 minutes",
+        output_mode="append",
+        snapshot_id="search-snapshot-v1",
+        state_identity="search-candidate-v1",
+        restart_policy="same_checkpoint_same_snapshot",
+    )
+
+    with pytest.raises(ValueError, match="SEARCH-TOPK-E1010"):
         contract.validate()

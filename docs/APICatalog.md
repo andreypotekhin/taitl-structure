@@ -4,24 +4,25 @@ This catalog is the reference for API compatibility decisions. Use `@raw` or cal
 
 For extensions on top of PySpark, see [APIExtensions.md](APIExtensions.md). For Structure own APIs such as schemas, transforms, hooks, see Core APIs in [API.md](API.md).
 
-V10 planning for remaining actionable rows is grouped in
-`docs/dev/planning/P08022601.V10-api-catalog-and-schema-evolution.plan.md`. Companion streaming state, side-effect,
-and evidence plans are linked from `docs/dev/project-management/V10.md`. An open or gated row is not a support claim;
+Planning for remaining actionable rows is grouped in the
+[API catalog and schema-evolution plan](dev/planning/P08022601.V10-api-catalog-and-schema-evolution.plan.md).
+Companion streaming state, side-effect, and evidence plans are linked from the
+[streaming project plan](dev/project-management/V10.md). An open or gated row is not a support claim;
 each entry must name its owner boundary, evidence, and caller remedy.
 
-## PySpark 4.1 adoption (V11)
+## PySpark 4.1 adoption
 
-V11 adds a separate ledger for the PySpark `>=4.1,<4.2` profile. These rows are admission classifications, not current
-support claims. The primary target variant is ordinary PySpark; Spark Connect receives a support claim only when its
-4.1-specific evidence passes. The governing design and specification are
-[V11 PySpark 4.1 design](dev/design/V11PySpark41Adoption.md) and
-[V11 PySpark 4.1 parity specification](dev/specifications/V11PySpark41Parity.md).
+The adoption work adds a separate ledger for the PySpark `>=4.1,<4.2` profile. These rows are admission classifications,
+not current support claims. The primary target variant is ordinary PySpark; Spark Connect receives a support claim only
+when its 4.1-specific evidence passes. The governing design and specification are
+[PySpark 4.1 design](dev/design/V11PySpark41Adoption.md) and
+[PySpark 4.1 parity specification](dev/specifications/V11PySpark41Parity.md).
 
 | PySpark 4.1 addition | Status | Structure boundary | Design evidence or remedy |
 | --- | --- | --- | --- |
 | `Column.transform` and new higher-order column operations | design-gated | Typed symbolic element callback with declared result type; row-preserving array transformation only | Expression design, nullability/type tests, online/generated ordinary 4.1 parity, then Connect parity if documented |
 | New deterministic scalar, string, binary, temporal, and collection functions | design-gated | Admit only functions with explicit type, nullability, generated spelling, and streaming contracts | 4.0-to-4.1 inventory diff and one capability/test/evidence row per function family |
-| Random and seeded helpers such as `random`, `uniform`, `randstr`, and `uuid` | design-gated | Requires an explicit seed and nondeterminism policy; no silent streaming claim | Use a caller-owned PySpark expression or wait for the V11 expression design gate |
+| Random and seeded helpers such as `random`, `uniform`, `randstr`, and `uuid` | design-gated | Requires an explicit seed and nondeterminism policy; no silent streaming claim | Use a caller-owned PySpark expression or wait for the expression design gate |
 | `DataFrame.exists` and IN-subquery operations | design-gated | Correlated boolean relation predicate with explicit aliases and null semantics | Query design, duplicate/empty/null/correlation tests, explain traceability, ordinary and proven Connect evidence |
 | `DataFrame.lateralJoin` | design-gated | Requires typed output schema, correlation scope, cardinality, and streaming classification | Use caller-owned PySpark until the typed relation contract is implemented |
 | Complex-valued `DataFrame.observe` metrics | design-gated | Observation is a metric side channel, not an implicit output-field mutation | Use caller-owned observation hooks until metric types, retrieval, and parity are specified |
@@ -30,8 +31,8 @@ support claims. The primary target variant is ordinary PySpark; Spark Connect re
 | Row-based `transformWithState` | design-gated | User-owned state, timers, recovery, and streaming lifecycle remain outside Structure | Use caller-owned Structured Streaming state code |
 | Declarative Pipelines, SQL Scripting, Python Data Sources, readers/writers, and catalog/session APIs | unsupported | Not compiler-visible DataFrame transformations | Use native PySpark/Spark orchestration around Structure |
 
-The V11 target is intentionally additive: the existing `>=3.5,<4.1` catalog remains the current baseline until V11
-closeout promotes the default. Every row above must move to a final status with a capability key, diagnostic,
+The 4.1 target is intentionally additive: the existing `>=3.5,<4.1` catalog remains the current baseline until the
+adoption closeout promotes the default. Every row above must move to a final status with a capability key, diagnostic,
 specification, focused test, and evidence path before release.
 
 ## Column API
@@ -69,11 +70,11 @@ window helpers, and selected array/map higher-order functions.
 | Hash helpers | implemented | `hash`, `xxhash64`, `md5`, `sha1`, `sha2` | Typed scalar hashes and string digests; not security or cross-engine identity primitives | [Expressions API](api/Expressions.api.md) |
 | Encoding/binary helpers | implemented | `base64`, `unbase64`, `encode`, `decode` | Binary helpers use the public binary field type and typed scalar lowering | [Expressions API](api/Expressions.api.md) |
 | JSON/CSV helpers | implemented | `from_json`, `to_json`, `from_csv`, `to_csv` | Schema-carrying parsing keeps data contracts compiler-visible | [Expressions API](api/Expressions.api.md) |
-| XML helpers | design-gated | Spark XML functions | Low-priority schema-carrying parser/generator design; XML remains outside the active v9 implementation path | [API Catalog Design Gates](dev/design/ApiCatalogDesignGates.md) |
+| XML helpers | design-gated | Spark XML functions | Low-priority schema-carrying parser/generator design; XML remains outside the active implementation path | [API Catalog Design Gates](dev/design/ApiCatalogDesignGates.md) |
 | Variant field | implemented | `VariantType` | `variant(...)` preserves an opaque Spark Variant value in schemas; it requires a resolved PySpark 4 profile | [Schemas API](api/Schemas.api.md) |
 | Variant helpers | implemented | `parse_json`, `try_parse_json`, `variant_literal`, `variant_get`, `try_variant_get`, `schema_of_variant`, `schema_of_variant_agg`, `to_variant_object`, `is_variant_null`, `is_valid_variant`, `variant_explode`, `variant_explode_outer` | Typed strict/safe parsing, validated literals, extraction, schema inspection, conversion, JSON-null testing, equality, validation, and PySpark 4 TVF row expansion. `is_valid_variant(...)` requires `>=4.2,<4.3`. | [Expressions API](api/Expressions.api.md) |
 | Variant mutation helpers | design-gated | `variant_array_append`, `try_variant_array_append`, `variant_insert`, `try_variant_insert`, `variant_set`, `try_variant_set`, `variant_delete` | Reserved for PySpark 4.3+ profiles, which are not yet released in the supported project matrix; current PySpark 4.2 transforms reject these helpers before lowering. | [API Catalog Design Gates](dev/design/ApiCatalogDesignGates.md) |
-| Geospatial helpers | design-gated | Provider-neutral Spark SQL `GEOMETRY`/`ST_*` contract | V9 admits a narrow typed geometry slice in the bundled DSL; runtime providers remain optional and provider-specific | [API Catalog Design Gates](dev/design/ApiCatalogDesignGates.md) |
+| Geospatial helpers | design-gated | Provider-neutral Spark SQL `GEOMETRY`/`ST_*` contract | The bundled DSL admits a narrow typed geometry slice; runtime providers remain optional and provider-specific | [API Catalog Design Gates](dev/design/ApiCatalogDesignGates.md) |
 | Scalar Python UDFs | implemented | PySpark `udf`; `@special(type="udf")` | Ordinary PySpark row-local batch and streaming support with warning policy | Spark Connect unsupported |
 | Python UDTFs and UDTs | unsupported | `udtf`, UDT | Row expansion and custom type semantics are caller-owned | Use caller-owned PySpark or hooks |
 | Raw SQL string expressions | unsupported | `expr`, `call_function` | Compiler-visible expressions stay structured | Use typed helpers or hooks |
@@ -87,7 +88,7 @@ window helpers, and selected array/map higher-order functions.
 | Right join diagnostics hardening | implemented | `how="right"` | Rowset API exists; projection rules stay explicit | [Joins API](api/Joins.api.md) |
 | Cross join safety | implemented | `crossJoin`, `how="cross"` | Requires `allow_cartesian=True` | [Joins API](api/Joins.api.md) |
 | Join strategy directives | implemented | `broadcast`, `merge`, shuffle hints | Capability-checked PySpark hints | [Joins API](api/Joins.api.md) |
-| Join reordering | design-gated | Cost-based join planning | No public `join_order(...)` in v9; logical reordering needs dependency-safe predicate analysis and explainable selected order | [API Catalog Design Gates](dev/design/ApiCatalogDesignGates.md) |
+| Join reordering | design-gated | Cost-based join planning | No public `join_order(...)` in the current profile; logical reordering needs dependency-safe predicate analysis and explainable selected order | [API Catalog Design Gates](dev/design/ApiCatalogDesignGates.md) |
 | Backward/forward as-of joins | implemented | Directional as-of matching | Selects the latest previous or earliest following qualifying right row | [Joins API](api/Joins.api.md) |
 | Nearest as-of joins | implemented | Nearest time matching | Selects the closest non-null right time and fails equidistant matches with `ties="error"` | [Joins API](api/Joins.api.md) |
 | Unbounded or non-contract stream-stream joins | unsupported | Streaming stream-stream joins | Only admitted bounded forms are allowed; all need input modes, watermarks, event-time bounds, and state diagnostics | [Streaming API](api/Streaming.api.md) |
@@ -186,10 +187,10 @@ lifecycle recipe.
 | Stream-static left semi join | implemented | Left-semi stream-static join | Non-stateful `exists(...)` filter when the active input is streaming and the right input is static | [Streaming API](api/Streaming.api.md) |
 | Unsupported stream-static directions | unsupported | Right/full/cross/anti stream-static joins | These runtime shapes are not admitted by Spark Structured Streaming | Use supported left/inner/left-semi lookup or caller-owned redesign |
 | Global/unbounded aggregation and dedupe | unsupported | Global `groupBy`, unwatermarked `dropDuplicates` | Structure will not admit unbounded state | Group by watermarked event time/window or bound state outside Structure |
-| Global ordering, limits, and offsets | streaming-ineligible | `orderBy`, `sort`, `limit`, `offset` | V9 classifies these as batch-materialization boundaries over unbounded streams | Use caller-owned PySpark after a materialization boundary |
-| Priority selection | streaming-ineligible | `select_first_qualified`, top-N | Lowers through ranking and validation aggregates; v9 keeps it batch-only | Use caller-owned PySpark after a materialization boundary |
+| Global ordering, limits, and offsets | streaming-ineligible | `orderBy`, `sort`, `limit`, `offset` | These are batch-materialization boundaries over unbounded streams | Use caller-owned PySpark after a materialization boundary |
+| Priority selection | streaming-ineligible | `select_first_qualified`, top-N | Lowers through ranking and validation aggregates; remains batch-only | Use caller-owned PySpark after a materialization boundary |
 | Analytic windows and selected-row helpers | streaming-ineligible | ranking, `Window`, lag/lead, rolling windows, latest/earliest | Broad analytic projections and global selected-row helpers have no finite streaming state contract; grouped `first_value(...)`/`last_value(...)` inside a watermarked event-time window is the admitted finite alternative | Use the finite grouped aggregate or caller-owned PySpark after materialization |
-| Stateful composition boundary | implemented | One streaming aggregate/dedupe/join followed by stateless operations | V9 checks the one-stateful-plus-stateless policy and rejects a second stateful operation with diagnostics | [Streaming API](api/Streaming.api.md) |
+| Stateful composition boundary | implemented | One streaming aggregate/dedupe/join followed by stateless operations | The one-stateful-plus-stateless policy rejects a second stateful operation with diagnostics | [Streaming API](api/Streaming.api.md) |
 | Chained stateful operators | design-gated | Chains of streaming aggregates/dedupe/joins | Needs explicit composition and state-budget policy before Structure can own the shape | Use caller-owned PySpark |
 | Pandas and RDD boundaries | unsupported | Pandas UDF, RDD, `mapInPandas` | Opaque execution does not fit Structure's symbolic transform contract | Use caller-owned streaming code |
 | Arbitrary state processors | design-gated | `applyInPandasWithState`, `transformWithState` | `ArbitraryStateContract` validates the typed state boundary, but does not provide a runtime or recovery guarantee | Use caller-owned state code only after recording the contract and live restart evidence |

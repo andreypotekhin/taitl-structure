@@ -6,14 +6,14 @@ compiler understanding, and cleans generated files.
 
 The CLI is intentionally a compiler surface, not a Spark job runner. `structure check`, `structure compile`, and
 `structure compile --fail-on-diff` must run without PySpark, Java, Spark startup, a `SparkSession`, or a Spark cluster.
-Direct runtime execution remains available through `StructureSession`, not through the v1 CLI.
+Direct runtime execution remains available through `StructureSession`, not through the CLI.
 
 The normative sources are the [CLI specification](../dev/specifications/CLI.md) and
 [CLI design](../dev/design/CLI.md).
 
 ## Command Surface
 
-The v1 command set is:
+The command set is:
 
 ```bash
 structure init
@@ -97,8 +97,8 @@ Recommended initial CLI override flags:
 Implementations may stage these flags across milestones, but every supported flag must behave as a config override and
 must appear in help text with the corresponding config key.
 
-V1 accepts `--target-profile` and `--compat-targets` as reserved alternative-backend metadata. Non-PySpark compatibility
-targets must be reported as pending, not as executed compatibility checks.
+The CLI accepts `--target-profile` and `--compat-targets` as reserved alternative-backend metadata. Non-PySpark
+compatibility targets must be reported as pending, not as executed compatibility checks.
 
 ## `structure init`
 
@@ -171,13 +171,14 @@ Structure check passed
 
 Warnings do not fail the command by default. Errors fail with exit code `1`.
 
-V1 `--compat-targets` behavior:
+`--compat-targets` behavior:
 
 ```bash
 structure check --compat-targets pyspark,polars,duckdb
 ```
 
-V1 validates the active PySpark target as usual, then prints a pending-status summary for listed non-PySpark targets.
+The CLI validates the active PySpark target as usual, then prints a pending-status summary for listed non-PySpark
+targets.
 It must not claim that Polars, DuckDB, Spark SQL, or Ibis checks have run. Future versions will replace the pending
 summary with capability-engine portability reports. Unsupported active-target requirements remain errors.
 
@@ -304,7 +305,8 @@ both of these safety markers:
 - file headers that identify Structure-generated files.
 
 If the configured `generated_dir` contains unknown files, `clean` should refuse to remove the directory wholesale and
-print the unknown paths. A future explicit force flag may remove unknown files, but v1 should be conservative.
+print the unknown paths. A future explicit force flag may remove unknown files, but the current implementation is
+conservative.
 
 Successful output:
 
@@ -373,7 +375,7 @@ Setting:
   target_profile = "<3.0"
 
 Problem:
-  Structure v1 supports PySpark 3.5.x and 4.0.x by default.
+  The configured target supports PySpark 3.5.x and 4.0.x by default.
 
 Use:
   Set `target_profile = ">=3.5,<4.1"` or choose a supported range.

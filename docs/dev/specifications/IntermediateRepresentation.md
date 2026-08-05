@@ -243,12 +243,14 @@ Rules:
 - `steps` preserve source-order compiled step method order.
 - Undecorated steps consume and update the uniquely inferred lane.
 - Method-level `@transform(output=target_lane)` writes a named lane or final output while the source is inferred.
-- Method-level `@transform(input=source, output=target_lane)` selects an original input or existing lane and writes the
-  target lane.
+- Method-level `@transform(input=source, output=target_lane)` selects an original input, existing lane, or produced
+  output and writes the target lane.
 - Method-level `input=[...]` and `output=[...]` bind multiple schema parameters or returned values in order.
 - Method-level `inout=source | target` is normalized to the same input and output declaration tuples.
 - If an input declaration name already exists as a lane, that lane shadows the original input for method-level
   `input=`.
+- Produced outputs are source-order frames. They may be read as immutable branches when `allow_output_to_input` is
+  enabled; rebinding an already-produced output is separately controlled by `allow_to_reassign_output`.
 - Role selectors preserve raw input, lane, and final output intent. A source key such as `input:orders` identifies the
   original runtime input even after the logical lane `orders` has been updated.
 - `outputs` preserve class-body output declaration order.

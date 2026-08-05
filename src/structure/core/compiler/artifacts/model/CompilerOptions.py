@@ -28,6 +28,8 @@ class CompilerOptions:
     warn_on_udfs: bool
     allow_stream_to_batch: bool
     stream_to_batch_policy: str
+    allow_output_to_input: bool
+    allow_to_reassign_output: bool
     schema_types_key: str | None = None
     plugin_options: Mapping[str, Mapping[str, object]] = field(default_factory=lambda: MappingProxyType({}))
 
@@ -72,6 +74,8 @@ class CompilerOptions:
             warn_on_udfs=config.warn_on_udfs,
             allow_stream_to_batch=config.allow_stream_to_batch,
             stream_to_batch_policy=config.stream_to_batch_policy,
+            allow_output_to_input=config.allow_output_to_input,
+            allow_to_reassign_output=config.allow_to_reassign_output,
             plugin_options=config.plugin_options,
             schema_types_key=cls._schema_types_key(schema_types),
         )
@@ -93,6 +97,8 @@ class CompilerOptions:
             self.warn_on_udfs,
             self.allow_stream_to_batch,
             self.stream_to_batch_policy,
+            self.allow_output_to_input,
+            self.allow_to_reassign_output,
             self._plugin_options_key(),
             self.schema_types_key,
         )

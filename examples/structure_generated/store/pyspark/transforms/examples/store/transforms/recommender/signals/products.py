@@ -35,11 +35,11 @@ class BuildProductSignalsGenerated:
         _input_clicks = clicks
 
         # Step method: summarize_impressions
-        impression_facts = impressions.alias("recommendation_impression")
-        impression_facts = impression_facts.withWatermark("shown_at", '7 days')
-        impression_facts = impression_facts.dropDuplicatesWithinWatermark(["id"])
-        impression_facts = (
-            impression_facts.groupBy(
+        daily_impressions = impressions.alias("recommendation_impression")
+        daily_impressions = daily_impressions.withWatermark("shown_at", '7 days')
+        daily_impressions = daily_impressions.dropDuplicatesWithinWatermark(["id"])
+        daily_impressions = (
+            daily_impressions.groupBy(
                 F.window(F.col("recommendation_impression.shown_at"), '1 day').alias("window"),
                 F.col("recommendation_impression.tenant.tenant_id").alias("tenant_id"),
                 F.col("recommendation_impression.strategy_id").alias("strategy_id"),
@@ -64,19 +64,19 @@ class BuildProductSignalsGenerated:
             )
         )
         assert_schema(
-            impression_facts,
+            daily_impressions,
             DAILY_RECOMMENDATION_IMPRESSIONS_SCHEMA,
             name="DailyRecommendationImpressions",
             mode="strict",
         )
 
         # Step method: summarize_clicks
-        click_facts = impressions.alias("recommendation_impression")
-        click_facts = click_facts.withWatermark("shown_at", '7 days')
-        click_facts = click_facts.dropDuplicatesWithinWatermark(["id"])
-        click_facts_click_deduped_1 = clicks.dropDuplicatesWithinWatermark(["id"])
-        clicks_joined = click_facts_click_deduped_1.withWatermark("occurred_at", '7 days').alias("clicks")
-        click_facts = click_facts.join(
+        daily_clicks = impressions.alias("recommendation_impression")
+        daily_clicks = daily_clicks.withWatermark("shown_at", '7 days')
+        daily_clicks = daily_clicks.dropDuplicatesWithinWatermark(["id"])
+        daily_clicks_click_deduped_1 = clicks.dropDuplicatesWithinWatermark(["id"])
+        clicks_joined = daily_clicks_click_deduped_1.withWatermark("occurred_at", '7 days').alias("clicks")
+        daily_clicks = daily_clicks.join(
             clicks_joined,
             (
                 (F.col("clicks.impression_id") == F.col("recommendation_impression.id"))
@@ -93,8 +93,8 @@ class BuildProductSignalsGenerated:
             ),
             "inner",
         )
-        click_facts = (
-            click_facts.groupBy(
+        daily_clicks = (
+            daily_clicks.groupBy(
                 F.window(F.col("recommendation_impression.shown_at"), '1 day').alias("window"),
                 F.col("recommendation_impression.tenant.tenant_id").alias("tenant_id"),
                 F.col("recommendation_impression.strategy_id").alias("strategy_id"),
@@ -120,75 +120,41 @@ class BuildProductSignalsGenerated:
                 F.col("clicked_impression_count"),
             )
         )
-        assert_schema(click_facts, DAILY_RECOMMENDATION_CLICKS_SCHEMA, name="DailyRecommendationClicks", mode="strict")
-
-        # Step method: publish_daily_impressions
-        daily_impressions = impression_facts.alias("daily_recommendation_impressions")
-        daily_impressions = daily_impressions.select(
-            F.col("daily_recommendation_impressions.window"),
-            F.col("daily_recommendation_impressions.tenant"),
-            F.col("daily_recommendation_impressions.strategy_id"),
-            F.col("daily_recommendation_impressions.policy_version"),
-            F.col("daily_recommendation_impressions.product_id"),
-            F.col("daily_recommendation_impressions.rank"),
-            F.col("daily_recommendation_impressions.examination_propensity"),
-            F.col("daily_recommendation_impressions.impression_count"),
-        )
-        assert_schema(
-            daily_impressions,
-            DAILY_RECOMMENDATION_IMPRESSIONS_SCHEMA,
-            name="DailyRecommendationImpressions",
-            mode="strict",
-        )
-
-        # Step method: publish_daily_clicks
-        daily_clicks = click_facts.alias("daily_recommendation_clicks")
-        daily_clicks = daily_clicks.select(
-            F.col("daily_recommendation_clicks.window"),
-            F.col("daily_recommendation_clicks.tenant"),
-            F.col("daily_recommendation_clicks.strategy_id"),
-            F.col("daily_recommendation_clicks.policy_version"),
-            F.col("daily_recommendation_clicks.product_id"),
-            F.col("daily_recommendation_clicks.rank"),
-            F.col("daily_recommendation_clicks.examination_propensity"),
-            F.col("daily_recommendation_clicks.click_count"),
-            F.col("daily_recommendation_clicks.clicked_impression_count"),
-        )
         assert_schema(daily_clicks, DAILY_RECOMMENDATION_CLICKS_SCHEMA, name="DailyRecommendationClicks", mode="strict")
 
         # Step method: summarize_signals
-        signal_totals = impression_facts.alias("daily_recommendation_impressions")
-        click_facts_joined = click_facts.alias("click_facts")
+        signal_totals = daily_impressions.alias("daily_recommendation_impressions")
+        daily_clicks_joined = daily_clicks.alias("daily_clicks")
         signal_totals = signal_totals.join(
-            click_facts_joined,
+            daily_clicks_joined,
             (
                 (
                     (
                         (
                             (
                                 (
-                                    (F.col("click_facts.window") == F.col("daily_recommendation_impressions.window"))
+                                    (F.col("daily_clicks.window") == F.col("daily_recommendation_impressions.window"))
                                     & (
-                                        F.col("click_facts.tenant.tenant_id")
+                                        F.col("daily_clicks.tenant.tenant_id")
                                         == F.col("daily_recommendation_impressions.tenant.tenant_id")
                                     )
                                 )
                                 & (
-                                    F.col("click_facts.strategy_id")
+                                    F.col("daily_clicks.strategy_id")
                                     == F.col("daily_recommendation_impressions.strategy_id")
                                 )
                             )
                             & (
-                                F.col("click_facts.policy_version")
+                                F.col("daily_clicks.policy_version")
                                 == F.col("daily_recommendation_impressions.policy_version")
                             )
                         )
-                        & (F.col("click_facts.product_id") == F.col("daily_recommendation_impressions.product_id"))
+                        & (F.col("daily_clicks.product_id") == F.col("daily_recommendation_impressions.product_id"))
                     )
-                    & (F.col("click_facts.rank") == F.col("daily_recommendation_impressions.rank"))
+                    & (F.col("daily_clicks.rank") == F.col("daily_recommendation_impressions.rank"))
                 )
                 & (
-                    F.col("click_facts.examination_propensity")
+                    F.col("daily_clicks.examination_propensity")
                     == F.col("daily_recommendation_impressions.examination_propensity")
                 )
             ),
@@ -205,10 +171,10 @@ class BuildProductSignalsGenerated:
                 F.sum(F.col("daily_recommendation_impressions.impression_count"))
                 .cast(T.LongType())
                 .alias("impression_count"),
-                F.sum(F.coalesce(F.col("click_facts.clicked_impression_count"), F.lit(0)))
+                F.sum(F.coalesce(F.col("daily_clicks.clicked_impression_count"), F.lit(0)))
                 .cast(T.LongType())
                 .alias("clicked_impression_count"),
-                F.sum(F.coalesce(F.col("click_facts.click_count"), F.lit(0)))
+                F.sum(F.coalesce(F.col("daily_clicks.click_count"), F.lit(0)))
                 .cast(T.LongType())
                 .alias("raw_click_count"),
                 F.sum(F.lit(0.0)).cast(T.DoubleType()).alias("click_through_rate"),
@@ -228,7 +194,7 @@ class BuildProductSignalsGenerated:
                 .alias("exposure_weight"),
                 F.sum(
                     (
-                        F.coalesce(F.col("click_facts.clicked_impression_count"), F.lit(0))
+                        F.coalesce(F.col("daily_clicks.clicked_impression_count"), F.lit(0))
                         / F.when(
                             (F.col("daily_recommendation_impressions.examination_propensity") > F.lit(0.0)),
                             F.col("daily_recommendation_impressions.examination_propensity"),

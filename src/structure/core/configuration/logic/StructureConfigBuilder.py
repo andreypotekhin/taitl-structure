@@ -20,6 +20,21 @@ class StructureConfigBuilder:
         target = plugin_configuration.default
         if target is None:
             raise ValueError("PLUGIN-E2701: plugin.default must select a plugin.")
+        semantic_defaults = {}
+        try:
+            from structure.core.plugins.api.Plugin import Plugin
+
+            semantic_api = getattr(Plugin.registry().select(target).api, "semantic_defaults", None)
+            resolve_defaults = getattr(semantic_api, "resolve", None)
+            if callable(resolve_defaults):
+                semantic_defaults = dict(resolve_defaults(options=plugins.get(target, {})))
+        except (ImportError, ValueError):
+            semantic_defaults = {}
+
+        def semantic_bool(name: str) -> bool:
+            if sources.get(name) != "default":
+                return bool(values[name])
+            return bool(semantic_defaults.get(name, values[name]))
         hook_targets = (
             str(hook_target_default)
             if isinstance(hook_target_default, str)
@@ -49,6 +64,8 @@ class StructureConfigBuilder:
             warn_on_udfs=bool(values["warn_on_udfs"]),
             allow_stream_to_batch=bool(values["allow_stream_to_batch"]),
             stream_to_batch_policy=str(values["stream_to_batch_policy"]),
+            allow_output_to_input=semantic_bool("allow_output_to_input"),
+            allow_to_reassign_output=semantic_bool("allow_to_reassign_output"),
             fail_on_diff=bool(values["fail_on_diff"]),
             spark_sql={
                 "spark.sql.ansi.enabled": values["spark.sql.ansi.enabled"],

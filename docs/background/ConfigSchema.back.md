@@ -125,7 +125,7 @@ Default: `"generated"`.
 
 Rules:
 
-- Must be a project-relative directory path in v1.
+- Must be a project-relative directory path.
 - The compiler may create it during `structure compile`.
 - `structure check` must not require it to exist.
 
@@ -216,7 +216,7 @@ Default: `"online"`.
 
 Type: string enum.
 
-Allowed in v1:
+Allowed values:
 
 ```text
 pyspark
@@ -228,7 +228,7 @@ Unknown backends fail through backend capability diagnostics.
 
 Type: version range string.
 
-Default: `">=3.5,<4.1"` in v1.
+Default: `">=3.5,<4.1"`.
 
 Rules:
 
@@ -263,7 +263,7 @@ Type: list of strings.
 
 Default: empty list.
 
-V1 status: recognized and stored. `structure check` and `structure explain` may report non-PySpark targets as pending;
+Status: recognized and stored. `structure check` and `structure explain` may report non-PySpark targets as pending;
 they must not claim Polars, DuckDB, or other future checks have run.
 
 Future compatibility-report targets. This setting asks `structure check` and `StructureTools.compatibility` to report
@@ -276,7 +276,7 @@ Type: list of strings or string enum.
 
 Default: `["pyspark"]`.
 
-V1 status: recognized by configuration and hook decorators. The executable hook target remains PySpark.
+Status: recognized by configuration and hook decorators. The executable hook target remains PySpark.
 
 Allowed future values:
 
@@ -375,7 +375,7 @@ Rules:
 
 - When true, unsupported compiler-visible operations fail instead of silently becoming UDFs, row-wise callbacks, RDD
   operations, or opaque generated code.
-- v1 docs should keep this true in examples.
+- Documentation examples should keep this true.
 
 ### warn_on_udfs
 
@@ -435,7 +435,7 @@ STRICT
 
 Default: `"ANSI"`.
 
-Detailed v1 assignment rules are specified for `ANSI`.
+Detailed assignment rules are specified for `ANSI`.
 
 ## Unknown Keys
 
@@ -515,5 +515,5 @@ StructureConfig
 
 ## Security
 
-Configuration diagnostics must not print secrets. v1 Structure config should avoid secret-bearing fields. If future
+Configuration diagnostics must not print secrets. Structure config should avoid secret-bearing fields. If future
 settings can include credentials or tokens, diagnostics must redact values by default.

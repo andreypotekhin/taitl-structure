@@ -53,7 +53,7 @@ Conceptually, the unversioned API definitions contain:
 ## PluginAPI
 
 `PluginAPI` is the only versioned public façade returned by a plugin. It is immutable or session-scoped and has no
-global activation behavior. It exposes four required service facets and three optional lifecycle facets:
+global activation behavior. It exposes four required service facets and optional lifecycle and semantic-default facets:
 
     class PluginAPI(Protocol):
         schema: SchemaAPI
@@ -63,6 +63,7 @@ global activation behavior. It exposes four required service facets and three op
         executor: ExecutionAPI | None
         generator: GenerationAPI | None
         serializer: SerializationAPI | None
+        semantic_defaults: SemanticDefaultsAPI | None
 
 The version belongs to the import package, and the façade class follows the conventional name order. For example, v1
 code imports `structure.plugin.api.v1.PluginAPI` and `CompilerAPI`; it never imports `V1PluginAPI` or
@@ -78,6 +79,10 @@ Core routes a workflow to the appropriate service facet. It never registers, dis
 configures a
 facet independently. A facet may delegate internally to any number of plugin-owned classes; that is not a Plugin
 API extension point.
+
+The optional `semantic_defaults` facet supplies defaults for Core-owned semantic policies. Core still resolves, validates,
+fingerprints, documents, and enforces those policies; a plugin supplies compatibility defaults only. For example, the
+bundled PySpark plugin returns `allow_output_to_input=True` and `allow_to_reassign_output=True`.
 
 ## Compiler Facet
 

@@ -1,6 +1,6 @@
 # Execution
 
-Execution is the default v1 way to run Structure transforms. A user depends on the Structure library, supplies an
+Execution is the default way to run Structure transforms. A user depends on the Structure library, supplies an
 existing Spark session, constructs a transform invocation with input DataFrames, and runs it through a
 `StructureSession`. The user does not need to commit generated PySpark code to their repository.
 
@@ -184,7 +184,7 @@ Generated-code execution may also use explicit in-memory generated artifacts. `M
 writing generated Python files to disk. This preserves the default "no generated files required" workflow while keeping
 generated-code semantics available for no-disk environments.
 
-`target_backend` and `target_profile` remain backend selection inputs. In v1 the only supported backend is `pyspark`.
+`target_backend` and `target_profile` remain backend selection inputs. The supported backend is `pyspark`.
 Future backends should be selected by the session, not by changing transform constructors. Backend support is checked
 against the session's resolved `StructureConfig` through [Capabilities](Capabilities.back.md), so
 execution and generated-code execution share the same target capability decisions.
@@ -318,7 +318,7 @@ shared PySpark recipe already defines them.
 `Transform.__init__(**inputs)` stores DataFrame inputs by declared Structure input name. Positional arguments are not
 allowed. Unknown input names are errors. Missing declared inputs must be reported no later than `run(session)`.
 
-For v1, custom transform construction parameters should not be mixed into the transform constructor. Runtime context
+Custom transform construction parameters should not be mixed into the transform constructor. Runtime context
 belongs in `StructureSession(ctx=...)`. Future explicit APIs may add richer parameter binding if a concrete use case
 requires it.
 

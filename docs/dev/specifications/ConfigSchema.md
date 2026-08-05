@@ -50,6 +50,8 @@ intermediate_validation_mode = "schema_only"
 output_validation_mode = "schema_only"
 strict_performance = true
 warn_on_udfs = true
+allow_output_to_input = true
+allow_to_reassign_output = true
 fail_on_diff = false
 
 spark.sql.ansi.enabled = true
@@ -356,6 +358,25 @@ Rules:
 - When true, compiled transforms that use `@special(type="udf")` emit a warning because Python UDF bodies are opaque
   to Spark optimization.
 - When false, UDFs still compile, but the optimizer-opacity warning is suppressed.
+
+### allow_output_to_input
+
+Type: boolean.
+
+Default: supplied by the selected plugin; `true` for the bundled PySpark plugin.
+
+When true, a public output produced by an earlier step may be selected or inferred as a later step input. When false,
+Core rejects output-to-input bindings with an actionable configuration diagnostic.
+
+### allow_to_reassign_output
+
+Type: boolean.
+
+Default: supplied by the selected plugin; `true` for the bundled PySpark plugin.
+
+When true, a later step may bind the same output declaration again. This is immutable-plan rebinding, equivalent to
+`df = transform(df)` in PySpark; it does not mutate or invalidate the earlier DataFrame branch. When false, Core
+rejects the second assignment.
 
 ### fail_on_diff
 

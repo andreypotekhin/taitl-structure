@@ -14,14 +14,12 @@ from structure.plugin.pyspark import *
 class BuildProductSignals(Transform):
     impressions = input(RecommendationImpression, streaming=True)
     clicks = input(RecommendationClick, streaming=True)
-    impression_facts = lane(DailyRecommendationImpressions)
-    click_facts = lane(DailyRecommendationClicks)
     signal_totals = lane(ProductRecommendationSignalTotals)
     daily_impressions = output(DailyRecommendationImpressions)
     daily_clicks = output(DailyRecommendationClicks)
     signals = output(ProductRecommendationSignal)
 
-    @step(input=impressions, output=impression_facts)
+    @step(input=impressions, output=daily_impressions)
     def summarize_impressions(self, impression: RecommendationImpression) -> DailyRecommendationImpressions:
         watermark(impression.shown_at, delay="7 days")
         drop_duplicates_within_watermark(impression.id)
@@ -40,7 +38,7 @@ class BuildProductSignals(Transform):
             impression_count=count(),
         )
 
-    @step(input=[impressions, clicks], output=click_facts)
+    @step(input=[impressions, clicks], output=daily_clicks)
     def summarize_clicks(
         self, impression: RecommendationImpression, click: RecommendationClick
     ) -> DailyRecommendationClicks:
@@ -69,15 +67,7 @@ class BuildProductSignals(Transform):
             clicked_impression_count=count_distinct(click.impression_id),
         )
 
-    @step(input=impression_facts, output=daily_impressions)
-    def publish_daily_impressions(self, impression: DailyRecommendationImpressions) -> DailyRecommendationImpressions:
-        return DailyRecommendationImpressions.project(impression)
-
-    @step(input=click_facts, output=daily_clicks)
-    def publish_daily_clicks(self, click: DailyRecommendationClicks) -> DailyRecommendationClicks:
-        return DailyRecommendationClicks.project(click)
-
-    @step(input=[impression_facts, click_facts], output=signal_totals)
+    @step(input=[daily_impressions, daily_clicks], output=signal_totals)
     def summarize_signals(
         self, impression: DailyRecommendationImpressions, click: DailyRecommendationClicks
     ) -> ProductRecommendationSignalTotals:

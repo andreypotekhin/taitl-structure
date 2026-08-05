@@ -9,8 +9,8 @@ from structure.plugin.pyspark import *
 from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 
 
-def _analysis(transform):
-    return Compiler.frontend.compile()(transform, materialize_schemas=False).analysis
+def _analysis(transform, **settings):
+    return Compiler.frontend.compile()(transform, materialize_schemas=False, **settings).analysis
 
 
 def _recipe(transform):
@@ -565,19 +565,84 @@ def test_v1_output_method_return_schema_must_match_output_lane_schema() -> None:
     assert "returns Published, not Accepted" in str(raised.value)
 
 
-def test_v1_output_lane_method_input_is_rejected() -> None:
-    with pytest.raises(TypeError) as raised:
+def test_v1_produced_output_can_be_used_as_a_step_input_by_default() -> None:
+    @transform
+    class RouteOrders(Transform):
+        rows = input(Raw)
+        accepted = output(Accepted)
 
-        @transform
-        class RouteOrders(Transform):
-            rows = input(Raw)
-            accepted = output(Accepted)
+        @step(output=accepted)
+        def accept(self, row: Raw) -> Accepted:
+            return Accepted(id=row.id, status="accepted")
 
-            @step(input=accepted)
-            def accept(self, row: Raw) -> Accepted:
-                return Accepted(id=row.id, status="accepted")
+        @step(input=accepted, output=accepted)
+        def revise(self, row: Accepted) -> Accepted:
+            return Accepted(id=row.id, status=row.status)
 
-    assert "@step(input=...) requires input(...) or lane(...) declarations" in str(raised.value)
+    plan = _analysis(RouteOrders)
+    assert [(step.name, step.source, step.input_lane, step.output_lane) for step in plan.steps] == [
+        ("accept", "rows", "rows", "accepted"),
+        ("revise", "accepted", "accepted", "accepted"),
+    ]
+
+
+def test_v1_output_to_input_can_be_disabled() -> None:
+    @transform
+    class RouteOrders(Transform):
+        rows = input(Raw)
+        accepted = output(Accepted)
+
+        @step(output=accepted)
+        def accept(self, row: Raw) -> Accepted:
+            return Accepted(id=row.id, status="accepted")
+
+        @step(input=accepted, output=accepted)
+        def revise(self, row: Accepted) -> Accepted:
+            return Accepted(id=row.id, status=row.status)
+
+    with pytest.raises(Exception) as raised:
+        _analysis(RouteOrders, allow_output_to_input=False)
+
+    assert "cannot be used as a step input" in str(raised.value)
+
+
+def test_v1_output_reassignment_can_be_disabled_independently() -> None:
+    @transform
+    class RouteOrders(Transform):
+        rows = input(Raw)
+        accepted = output(Accepted)
+
+        @step(output=accepted)
+        def accept(self, row: Raw) -> Accepted:
+            return Accepted(id=row.id, status="accepted")
+
+        @step(input=accepted, output=accepted)
+        def revise(self, row: Accepted) -> Accepted:
+            return Accepted(id=row.id, status=row.status)
+
+    with pytest.raises(Exception) as raised:
+        _analysis(RouteOrders, allow_to_reassign_output=False)
+
+    assert "assigned more than once" in str(raised.value)
+
+
+def test_v1_bare_schema_inference_can_select_a_produced_output() -> None:
+    @transform
+    class RouteOrders(Transform):
+        rows = input(Raw)
+        accepted = output(Accepted)
+        rejected = output(Rejected)
+
+        @step(output=accepted)
+        def accept(self, row: Raw) -> Accepted:
+            return Accepted(id=row.id, status="accepted")
+
+        @step(output=rejected)
+        def reject(self, row: Accepted) -> Rejected:
+            return Rejected(id=row.id, reason="not accepted")
+
+    plan = _analysis(RouteOrders)
+    assert plan.steps[1].source == "accepted"
 
 
 def test_v1_input_declaration_method_output_is_rejected() -> None:

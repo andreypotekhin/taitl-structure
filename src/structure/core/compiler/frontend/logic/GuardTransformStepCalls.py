@@ -37,7 +37,7 @@ class GuardTransformStepCalls:
                         f"{owner.__name__}.{name} directly."
                     ),
                     use=(
-                        "Step methods are pipeline steps. Use source order, lane bindings, Transform.to(...), "
+                        "Step methods are pipeline steps. Use source order, lane bindings, invocation.to(...), "
                         "a private helper, or @special(type=\"expr\") instead. Only an override may call its overridden "
                         "parent step method."
                     ),

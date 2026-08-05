@@ -59,7 +59,7 @@ class UdfPublished(Transform):
 class UdfPipeline(Transform):
     rows = input(UdfRaw)
 
-    pipeline = Transform.to(UdfPublished(rows=rows))
+    pipeline = UdfPublished(rows=rows).to()
 
 
 @transform

@@ -62,8 +62,9 @@ automatic `df` alias; `df` is present only when a field-declared output is expli
 
 Execution evaluates transform methods in source order while preserving independent lane frames. When schemas are
 unambiguous, methods consume and update inferred lanes without method-level selectors. Method-level `input=` selects
-original inputs or existing lanes, `output=` names intermediate lanes or final outputs, and both options accept ordered
-lists. If a lane shares an input name, the lane shadows that original input in method-level `input=`.
+original inputs, existing lanes, or already-produced outputs; `output=` names intermediate lanes or final outputs, and
+both options accept ordered lists. If a lane shares an input name, the lane shadows that original input. Reusing an
+output preserves the earlier branch for return and for other consumers, as it would in ordinary lazy PySpark code.
 
 ## Configuration
 

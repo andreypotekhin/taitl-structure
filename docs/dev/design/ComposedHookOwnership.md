@@ -1,8 +1,9 @@
 # Composed Hook Ownership
 
 Transform composition may include hook-bearing stages because hook ownership is explicit. This applies equally to
-linear `Transform.to(...)` pipelines and class-body `stage(...)` graphs. Hook-free composition remains supported, and
-hook-bearing stages follow the owner-retention rules below.
+invocation-level `.to(...)` pipelines and class-body dependency graphs. Authored graphs use bare transform assignments;
+the explicit `stage(...)` helper remains a compatibility form. Hook-free composition remains supported, and hook-bearing
+stages follow the owner-retention rules below.
 
 ## Decision
 

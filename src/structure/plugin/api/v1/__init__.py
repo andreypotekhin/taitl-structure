@@ -1,6 +1,6 @@
 from structure.plugin.api.v1.api import (
     AnalysisAPI, AuthoringAPI, CapabilitiesAPI, CompilerAPI, ExecutionAPI, ExplainAPI, GenerationAPI, PluginAPI,
-    SchemaAPI, SerializationAPI,
+    SchemaAPI, SemanticDefaultsAPI, SerializationAPI,
 )
 from structure.plugin.api.v1.model import (
     CompilationPurpose, CompileRequest, ExecutionRequest, ExplainRequest, GenerationRequest, GenerationResult, InputPlan, PluginCompilation,
@@ -27,6 +27,7 @@ __all__ = [
     "PluginAPI",
     "PluginCompilation",
     "SchemaAPI",
+    "SemanticDefaultsAPI",
     "SchemaInspectionRequest",
     "SchemaValidationRequest",
     "StepAuthoringCapture",

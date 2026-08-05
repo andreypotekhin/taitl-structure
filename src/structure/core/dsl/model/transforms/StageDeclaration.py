@@ -24,9 +24,9 @@ class StageOutputReference:
 class StageDeclaration:
     """A named transform invocation embedded in another transform.
 
-    Users create stage declarations with ``stage(OtherTransform(...))`` or by
-    assigning a transform invocation directly in a transform class, then map
-    outputs with ``output(..., stage_name.output_name)``.
+    Users create stage declarations by assigning a transform invocation directly
+    in a transform class, then map outputs with ``output(..., stage_name.output_name)``.
+    The explicit ``stage(...)`` helper remains supported for compatibility.
     """
 
     invocation: Transform

@@ -45,7 +45,8 @@ Examples abbreviate `order` as `o` and a second streaming relation as `c`.
 - Event-time windows return `Struct[TimeWindow]` with non-null `start` and `end` timestamps. Tumbling and sliding
   aggregates require a preceding watermark on that same event-time field and use caller-owned `append` or `update` mode.
 - `window_time(...)` accepts only a `TimeWindow` produced by `window(...)` and is supported for one chained pair:
-  a watermarked first event-time window aggregate, stateless work, then a second `window(window_time(first_window), ...)`
+  a watermarked first event-time window aggregate, stateless work, then a second
+  `window(window_time(first_window), ...)`
   aggregate. The generated transform uses public `functions.window_time`; broader chained stateful operations remain
   rejected with `STREAM-E0801`.
 - `session_window(...)` requires a preceding watermark on the same event-time field, a static positive gap, one
@@ -80,7 +81,7 @@ state assumptions visible in explain output; it does not make Structure own quer
 - Arbitrary state APIs remain design-gated. A future admission requires typed input, state, and output Schemas;
   grouping keys; event-time or processing-time timeout policy; initialization, update, and removal behavior; a
   resolved PySpark profile; a visible generated-code or hook boundary; and checkpoint/restart evidence. See the
-  [V9 arbitrary-state contract](../dev/specifications/V9StreamingDesignGatedFeatures.md#arbitrary-state-apis).
+  [arbitrary-state contract](../dev/specifications/V9StreamingDesignGatedFeatures.md#arbitrary-state-apis).
 - Pandas, RDD, `mapInPandas`, and state-processor boundaries remain unsupported because their execution and state
   semantics are opaque to the compiler.
 
@@ -132,8 +133,12 @@ future ready-to-start path, `SearchDocumentsRunContract` records one immutable s
 - `downstream_materialization` states where final results become durable before serving.
 
 `SearchDocumentsRunContract.validate()` checks this handoff metadata only. It does not prove bounded top-K state,
-watermark completion, stream-stream join support, checkpoint recovery, or generated-code readiness. Those remain separate
+watermark completion, stream-stream join support, checkpoint recovery, or generated-code readiness. Those remain
+separate
 compiler and live-evidence gates.
+
+`completion_window` must be a positive finite Spark duration such as `10 minutes`; an unbounded or zero-width
+declaration cannot establish when a query is final.
 
 ## SearchDocuments Finite-Window Top-K Contract
 
@@ -143,6 +148,9 @@ must retain exactly 100. Both stages require a `query_id` grouping key, `request
 and completion-window declarations, append output, the immutable serving `snapshot_id`, and restart on the same
 checkpoint only when that snapshot is unchanged.
 
-The order contract is `score desc, document_id asc`; the identifier tie-breaker is mandatory. The metadata guard does not
-lower `row_number`, provide arbitrary state, or prove live restart behavior. Until those runtime and evidence gates pass,
+The order contract is `score desc, document_id asc`; the identifier tie-breaker is mandatory. The metadata guard does
+not lower `row_number`, provide arbitrary state, or prove live restart behavior. Until those runtime and evidence gates
+pass,
 SearchDocuments remains design-gated and callers must use a batch/materialization boundary.
+
+`watermark_delay` and `completion_window` must be positive finite durations, and `grouping_key` must include `query_id`.

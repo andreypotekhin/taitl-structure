@@ -1,4 +1,4 @@
-"""Linear transform pipelines created with ``Transform.to(...)``."""
+"""Linear transform pipelines created with invocation-level ``.to(...)``."""
 
 from __future__ import annotations
 
@@ -43,7 +43,7 @@ class TransformPipeline:
     def __init__(self, stages: Iterable[Transform]) -> None:
         flattened = tuple(self._flatten(stages))
         if not flattened:
-            raise TypeError("Transform.to(...) requires at least one transform invocation")
+            raise TypeError(".to(...) requires at least one transform invocation")
         self.stages = tuple(TransformPipelineStage(stage) for stage in flattened)
         self._structure_bound_inputs = self._bound_inputs()
 
@@ -113,7 +113,7 @@ class TransformPipeline:
                 yield from stage.invocations
                 continue
             if not isinstance(stage, Transform):
-                raise TypeError("Transform.to(...) accepts transform invocations, not transform classes")
+                raise TypeError(".to(...) accepts transform invocations, not transform classes")
             yield stage
 
     def _bound_inputs(self) -> dict[str, object]:

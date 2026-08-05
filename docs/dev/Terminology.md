@@ -206,7 +206,8 @@ where(to_decimal(order.total, precision=12, scale=2) >= 0)
 
 ### Join
 
-A join is a symbolic relationship between the current row and a declared input. In v1, the main supported form is `lookup_join(...)`, which represents a lookup-style join.
+A join is a symbolic relationship between the current row and a declared input. The main lookup-style form is
+`lookup_join(...)`.
 
 A join creates a joined scope. Fields from that scope can be used in later filters or in the returned output schema.
 
@@ -300,7 +301,8 @@ order.id  # FieldRef(scope="order", field="id")
 
 ### Input Scope
 
-An input scope represents a declared transform input during symbolic execution. It is accessible through `self.<input>` and is the source for `lookup_join(...)` in v1.
+An input scope represents a declared transform input during symbolic execution. It is accessible through `self.<input>`
+and is the source for `lookup_join(...)`.
 
 Input scopes are not DataFrames and do not expose a live DataFrame API.
 
@@ -469,8 +471,8 @@ Hook boundaries are marked opaque.
 
 ### Capability Metadata
 
-Capability metadata records target backend and version information used by backend capability checks. For v1, the main
-target is PySpark.
+Capability metadata records target backend and version information used by backend capability checks. The main target
+is PySpark.
 
 Capability checks happen before execution or code generation so unsupported operations fail early.
 

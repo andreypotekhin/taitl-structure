@@ -42,6 +42,11 @@ def test_pyspark_plugin_api_composes_named_v1_facet_adapters() -> None:
     assert isinstance(api.generator, GenerationAPI)
     assert isinstance(api.explainer, ExplainAPI)
     assert isinstance(api.analysis, AnalysisAPI)
+    assert api.semantic_defaults is not None
+    assert api.semantic_defaults.resolve(options={}) == {
+        "allow_output_to_input": True,
+        "allow_to_reassign_output": True,
+    }
 
 
 class Source(Schema):

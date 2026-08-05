@@ -972,7 +972,10 @@ class Publish(Normalize):
 
 ## Transform Composition
 
-The transforms can also be composed into pipelines using `.to(...)` method.
+Complete transform invocations can be composed dynamically with the invocation-level `.to(...)` method.
+
+For authored pipelines, prefer a class-body stage graph with bare transform assignments, as shown by the Search and
+Store example apps.
 
 This is an alternative to inheritance, providing more encapsulation (transforms are opaque to each other,
 only connected through inputs/outputs) and allowing to combine independent transforms.
@@ -1017,39 +1020,20 @@ interprets it as a conflict and fails with an error.
 
 The `.to(...)` method does not allow to bind to transform's lanes. Hook-bearing transforms are currently rejected.
 
-Alternative notations:
-
-```python
-result = (
-    Transform.to(NormalizeOrders(orders=orders_df))
-    .to(AddProduct(products=products_df))
-    .to(PublishOrders())
-    .run(session)
-)
-```
-
-```python
-result = (
-    Transform.to(
-        NormalizeOrders(orders=orders_df),
-        AddProduct(products=products_df),
-        PublishOrders())
-    .run(session)
-)
-```
-
-For generated PySpark, wrap the pipeline in one transform field:
+For generated PySpark, author the composed graph with bare transform assignments:
 
 ```python
 class OrderPipeline(Transform):
     orders = input(OrderRaw)
     products = input(Product)
 
-    pipeline = Transform.to(
-        NormalizeOrders(orders=orders),
-        AddProduct(products=products),
-        PublishOrders(),
+    normalized = NormalizeOrders(orders=orders)
+    enriched = AddProduct(
+        normalized=normalized.normalized,
+        products=products,
     )
+    published = PublishOrders(enriched=enriched.enriched)
+    result = output(published=published.published)
 ```
 
 Reference: [transforms API](api/Transforms.api.md),

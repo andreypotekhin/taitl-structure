@@ -1,8 +1,7 @@
 # Aggregations
 
-Advanced analytical operations are the broader aggregation, window, and collection-helper features added after the
-first v2 analytical slice. They let Structure cover multi-level summaries, explicit window frames, and richer array/map
-logic while keeping the work visible to Spark.
+Advanced analytical operations are the broader aggregation, window, and collection-helper features that let Structure
+cover multi-level summaries, explicit window frames, and richer array/map logic while keeping the work visible to Spark.
 
 See the exhaustive [aggregations](../api/Aggregations.api.md), [windows](../api/Windows.api.md), and
 [collections](../api/Collections.api.md) API tables for supported names, parity, and examples.
@@ -810,8 +809,8 @@ Advanced analytical helpers depend on backend support. When a configured PySpark
 cannot support a helper, Structure should fail during compilation or generation with a backend capability diagnostic
 instead of producing generated code that will fail later.
 
-Streaming compatibility is conservative. Advanced grouping and broad windows are batch-only in v2. Row-preserving HOFs
-may become streaming-compatible only when target evidence and tests prove the specific helper shape.
+Streaming compatibility is conservative. Advanced grouping and broad windows are batch-only. Row-preserving HOFs may
+become streaming-compatible only when target evidence and tests prove the specific helper shape.
 
 
 ## Explain Output

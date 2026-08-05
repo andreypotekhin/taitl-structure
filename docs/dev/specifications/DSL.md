@@ -240,15 +240,20 @@ Rules:
   result.
 - Final output fields must be materialized by explicit method-level `output=...` or by unique schema matching at the
   end of the funnel.
-- Method-level `@transform(input=declared_input_or_lane)` selects an original class input or an already-produced lane.
-  If a lane with the same name as an input declaration already exists, the lane shadows the original input.
+- Method-level `@transform(input=declared_input_or_lane_or_output)` selects an original class input, an already-produced
+  lane, or a produced public output. If a lane with the same name as an input declaration already exists, the lane
+  shadows the original input.
 - Method-level `@transform(output=declared_lane_or_output)` writes a declared lane or final output. If the selected
   name already exists as a lane, the write updates that lane.
 - Method-level `input(...)`, `lane(...)`, and `output(...)` can also wrap declarations as role selectors:
   `input(orders)` forces the original runtime input, `lane(orders)` selects or writes the current working lane named
   `orders`, and `output(published)` selects the final output declaration.
 - Bare method-level declarations smart-resolve by the schema expected by the step-method parameter or return. When an
-  original input and a latest same-named lane both match, the latest lane wins.
+  original input and a latest same-named lane both match, the latest lane wins. Produced outputs are also candidates; a
+  matching lane shadows an output, and ambiguous matches require an explicit declaration.
+- Outputs are immutable DataFrame branches, not consumed sinks. A produced output may feed a later step when
+  `allow_output_to_input` is enabled (the PySpark default). A later write to the same output is independently governed
+  by `allow_to_reassign_output` and means rebinding the output to a new lazy plan, not mutating the earlier one.
 - Method-level `input=[...]` and `output=[...]` bind multiple parameters or returned values in order.
 - Method-level `inout=source | target` is shorthand for one explicit source and target; one side may be a list.
 - Method-level `cache=...` records an explicit v2 cache directive for the step method. It is intentionally part of

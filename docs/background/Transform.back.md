@@ -188,7 +188,7 @@ class EnrichOrders(Transform):
 
 Private helper methods are not compiled. Public helpers without schema return annotations are not steps and should not
 be used for reusable compiler-visible logic; use `@special(type="expr")` for that purpose. Async, generator,
-classmethod, and staticmethod step forms are outside the v1 compiled DSL. Step methods cannot call other step methods
+classmethod, and staticmethod step forms are outside the compiled DSL. Step methods cannot call other step methods
 directly, because
 source order, lanes, and explicit composition own pipeline flow.
 
@@ -226,9 +226,9 @@ result = (
 )
 ```
 
-`.to(...)` accepts invocations, not classes. `a.to(b, c)` and `a.to(b).to(c)` flatten to the same pipeline, and
-`Transform.to(a, b, c)` starts a pipeline without a receiver. A downstream input is supplied by its constructor binding
-or by one matching upstream output; supplying both is ambiguous and fails.
+`.to(...)` accepts invocations, not classes. `a.to(b, c)` and `a.to(b).to(c)` flatten to the same pipeline. Use
+invocation-level `.to(...)` for dynamic composition without a wrapper class. A downstream input is supplied by its
+constructor binding or by one matching upstream output; supplying both is ambiguous and fails.
 
 Composition matches exact schema identity. If several upstream outputs share a schema, a matching output alias wins,
 then a same-name output wins; unresolved ambiguity fails. Internal lanes cannot be composition bindings. The composed
@@ -258,18 +258,20 @@ result = (
 Schema field aliases, transform boundary aliases, invocation result aliases, and Spark DataFrame aliases are separate
 namespaces. Renaming an invocation result does not rename schema fields or generated Spark columns.
 
-Generated-capable composition uses a wrapper with one pipeline field:
+Generated-capable authored composition uses a wrapper with bare transform assignments:
 
 ```python
 class OrderPipeline(Transform):
     orders = input(OrderRaw)
     products = input(Product)
 
-    pipeline = Transform.to(
-        NormalizeOrders(orders=orders),
-        AddProduct(products=products),
-        PublishOrders(),
+    normalized = NormalizeOrders(orders=orders)
+    enriched = AddProduct(
+        normalized=normalized.normalized,
+        products=products,
     )
+    published = PublishOrders(enriched=enriched.enriched)
+    result = output(published=published.published)
 ```
 
 The compiler flattens stage plans into one generated class and prefixes stage step names so source and diagnostics
@@ -286,22 +288,22 @@ class OrderPipeline(Transform):
     orders = input(OrderRaw)
     products = input(Product)
 
-    normalized = stage(NormalizeOrders(orders=orders))
-    enriched = stage(AddProduct(
+    normalized = NormalizeOrders(orders=orders)
+    enriched = AddProduct(
         orders=normalized.normalized,
         products=products,
-    ))
+    )
     outputs = output(name=enriched.enriched)
 ```
 
-The explicit `stage(...)` wrapper remains supported. Ordinary class assignments that are not transform invocations or
+The compatibility `stage(...)` wrapper remains supported. Ordinary class assignments that are not transform invocations or
 declared output mappings remain ordinary Python values and do not become pipeline stages.
 
 
 ## Composition Graph Details
 
 Class-field assignments whose values are transform invocations may form a dependency graph, while ordinary assignments
-remain ordinary Python values. Existing `stage(...)` declarations remain supported. A wrapper may collect stage outputs
+remain ordinary Python values. Existing explicit stage declarations remain supported. A wrapper may collect stage outputs
 in one output mapping, but its public output declaration order remains authoritative. Stage constructor inputs bind to
 wrapper inputs, not runtime DataFrames created during class definition. The compiler flattens a valid graph into one
 generated artifact, prefixes stage methods, retains hook owners, and rejects cycles, unresolved outputs, cross-target
@@ -351,7 +353,7 @@ class StrictPublishOrders(NormalizeBase):
 Supported parent-call forms are `super().method(row)`, `Base.method(self, row)`, and
 `super(Base, self).method(row)`. The parent retains its hooks, validation boundary, lane writes, and traceability entry.
 Compiled step methods may not call other step methods directly; use source order and lanes, private inline helpers,
-`Transform.to(...)`, or `@special(type="expr")` for reusable compiler-visible expressions.
+invocation-level `.to(...)`, or `@special(type="expr")` for reusable compiler-visible expressions.
 
 The parent implementation remains a separate plan step when it is scheduled explicitly:
 

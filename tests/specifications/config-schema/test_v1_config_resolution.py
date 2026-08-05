@@ -40,6 +40,8 @@ def test_v1_config_uses_defaults_and_tracks_sources() -> None:
         assert config.warn_on_udfs is True
         assert config.allow_stream_to_batch is False
         assert config.stream_to_batch_policy == "default"
+        assert config.allow_output_to_input is True
+        assert config.allow_to_reassign_output is True
         assert config.execution_mode == "online"
         assert dict(config.plugin_options["pyspark"])["profile"] == ">=3.5,<4.1"
         assert dict(config.plugin_options["pyspark"])["variant"] == "ordinary"
@@ -51,6 +53,21 @@ def test_v1_config_uses_defaults_and_tracks_sources() -> None:
         assert config.source_map["warn_on_udfs"] == "default"
         assert config.source_map["allow_stream_to_batch"] == "default"
         assert config.source_map["stream_to_batch_policy"] == "default"
+
+
+def test_v1_output_policies_accept_independent_overrides_and_fingerprint_them() -> None:
+    config = StructureConfig.create(allow_output_to_input=False, allow_to_reassign_output=True)
+    options = CompilerArtifactOptions.from_config(config)
+
+    assert config.allow_output_to_input is False
+    assert config.allow_to_reassign_output is True
+    assert options.allow_output_to_input is False
+    assert options.allow_to_reassign_output is True
+
+    changed = CompilerArtifactOptions.from_config(
+        StructureConfig.create(allow_output_to_input=True, allow_to_reassign_output=True)
+    )
+    assert options.fingerprint() != changed.fingerprint()
 
 
 def test_v1_config_resolves_stream_to_batch_boundary_policy() -> None:

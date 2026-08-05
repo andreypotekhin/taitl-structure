@@ -1,5 +1,6 @@
 """Caller-owned SearchDocuments streaming adoption contracts."""
 
+import re
 from dataclasses import dataclass
 from typing import Literal
 
@@ -18,6 +19,16 @@ REQUIRED_SNAPSHOT_INPUTS = (
     "popularity",
     "policy",
 )
+
+_POSITIVE_DURATION = re.compile(r"^[1-9][0-9]* (?:second|seconds|minute|minutes|hour|hours|day|days)$")
+
+
+def _require_positive_duration(value: str, *, code: str, name: str, anchor: str) -> None:
+    if not _POSITIVE_DURATION.fullmatch(value.strip()):
+        raise ValueError(
+            f"{code}: {name} must be a positive finite duration such as '10 minutes'; "
+            f"see docs/api/Streaming.api.md#{anchor}"
+        )
 
 
 @dataclass(frozen=True)
@@ -53,6 +64,13 @@ class SearchDocumentsRunContract:
                     f"SEARCH-RUN-E1001: {name} must be a non-empty stable declaration; "
                     "see docs/api/Streaming.api.md#searchdocuments-caller-owned-run-handoff"
                 )
+
+        _require_positive_duration(
+            self.completion_window,
+            code="SEARCH-RUN-E1001",
+            name="completion_window",
+            anchor="searchdocuments-caller-owned-run-handoff",
+        )
 
         duplicates = tuple(
             name for index, name in enumerate(self.snapshot_inputs) if name in self.snapshot_inputs[:index]
@@ -122,9 +140,22 @@ class SearchFiniteTopKContract:
                     "see docs/api/Streaming.api.md#searchdocuments-finite-window-top-k-contract"
                 )
 
-        if not self.grouping_key or any(not key.strip() for key in self.grouping_key):
+        _require_positive_duration(
+            self.watermark_delay,
+            code="SEARCH-TOPK-E1010",
+            name="watermark_delay",
+            anchor="searchdocuments-finite-window-top-k-contract",
+        )
+        _require_positive_duration(
+            self.completion_window,
+            code="SEARCH-TOPK-E1010",
+            name="completion_window",
+            anchor="searchdocuments-finite-window-top-k-contract",
+        )
+
+        if "query_id" not in self.grouping_key or any(not key.strip() for key in self.grouping_key):
             raise ValueError(
-                "SEARCH-TOPK-E1011: grouping_key must name a finite query grouping field; "
+                "SEARCH-TOPK-E1011: grouping_key must include query_id and name finite grouping fields; "
                 "see docs/api/Streaming.api.md#searchdocuments-finite-window-top-k-contract"
             )
         if self.order_keys != ("score desc", "document_id asc"):

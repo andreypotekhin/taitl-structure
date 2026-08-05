@@ -1,16 +1,12 @@
 # Roadmap
 
-The roadmap is staged around an IR-first north star. v1 first proves one useful executable transform running both
-through execution and as generated PySpark, then broadens into the contract that lets Structure replace hand-maintained PySpark
-boilerplate with strict execution and optional generated-code workflow. v2 makes that workflow useful for
-mainstream analytical pipelines, promotes Spark Connect for completed batch features, and completes static
-caller-owned Spark streaming compatibility diagnostics. v3 closes its scheduled PySpark parity work and hardens
-compiler-visible streaming transformations while callers retain lifecycle ownership. v4 expands predictable PySpark
-transformation API coverage while loading, storage, and orchestration remain caller-owned. v5 makes target ownership
-explicit through a public Plugin API: Core continues to orchestrate every workflow, the bundled PySpark plugin
+The roadmap is staged around an IR-first north star. The initial release proved one useful executable transform running
+both through execution and as generated PySpark. The analytical expansion made that workflow useful for mainstream
+pipelines, while later hardening broadened PySpark parity and caller-owned streaming compatibility. Target ownership is
+now explicit through a public Plugin API: Core continues to orchestrate every workflow, the bundled PySpark plugin
 supplies target-specific service facets, and external wheels can supply equivalent plugin integrations.
 
-## v1
+## Foundations
 
 - Typed schema definitions.
 - Transform classes.
@@ -26,7 +22,7 @@ supplies target-specific service facets, and external wheels can supply equivale
 - Generated schema constants usable by caller code for reads and pre-write validation/projection.
 - Online-materialized Spark schemas available after `.run(session)`.
 - Input, intermediate, and output validation modes.
-- Explicit data-quality constraint boundary: v1 validation is schema-first and schema-only by default.
+- Explicit data-quality constraint boundary: validation is schema-first and schema-only by default.
 - Filtering with `where(...)`.
 - Add/drop columns via schema projection.
 - Symbolic `lookup_join(...)`.
@@ -42,7 +38,7 @@ supplies target-specific service facets, and external wheels can supply equivale
 - TOML configuration with explicit precedence and schema validation diagnostics.
 - Incremental-compile architecture hooks, without production cache semantics.
 
-## v2
+## Analytical Platform
 
 - Windowing.
 - Deduplication helpers.
@@ -60,13 +56,13 @@ supplies target-specific service facets, and external wheels can supply equivale
 - More detailed performance diagnostics.
 - Generated documentation artifacts for schemas and transforms completed in Sprint 10 adoption tooling.
 - Pytest helper or plugin completed in Sprint 10 adoption tooling.
-- Spark Connect support for completed v1/v2 batch features, using `plugin.default = "pyspark"` and
+- Spark Connect support for completed batch features, using `plugin.default = "pyspark"` and
   `plugin.pyspark.variant = "spark-connect"`, backed by live execution/generated-code runtime evidence.
 - Static first-slice Spark streaming compatibility for caller-owned streaming DataFrames, static lookup side inputs,
   row-local projection/filtering, schema-only validation, and explicit lifecycle/source/sink deferrals. Live
-  execution/generated-code runtime evidence remains a v3 entry gate.
+  execution/generated-code runtime evidence remains a later entry gate.
 
-## v3
+## Streaming And API Coverage
 
 - Planned Column API and SQL function PySpark parity gaps.
 - Using-key joins, right/full diagnostics hardening, cross join safety, join strategy directives, and forward as-of
@@ -78,7 +74,7 @@ supplies target-specific service facets, and external wheels can supply equivale
 - Compiler-visible watermarks, stateful dedupe, streaming aggregates, and compatibility diagnostics.
 - Caller-owned source, sink, trigger, checkpoint, output-mode, and query-lifecycle guidance.
 
-## v4
+## Coverage Hardening
 
 - A checked PySpark 3.5.x/4.0.x transformation coverage catalog.
 - Broader typed Column, SQL-function, nested-value, relational, join, aggregation, window, and collection coverage.
@@ -87,9 +83,9 @@ supplies target-specific service facets, and external wheels can supply equivale
   remain caller-owned in Sprint 18.
 - Row generators only after an explicit schema-and-cardinality design gate.
 - No loading, storage, actions, orchestration, alternative backends, or non-batch Spark Connect work.
-- A final hardening sprint after all v4 feature sprints, with no new feature scope.
+- A final hardening sprint after all coverage sprints, with no new feature scope.
 
-## v5
+## Plugin Architecture
 
 - Core-orchestrated schema, compilation, execution, generation, serialization, capability, and diagnostic workflows,
   with private target-local replacement of a compatible individual engine when an advanced plugin requires it.
@@ -104,7 +100,7 @@ supplies target-specific service facets, and external wheels can supply equivale
   receiving a public product-support claim.
 - Immediate removal of target-owned names from the `structure` package root.
 
-## v11
+## Current Adoption Focus
 
 - Adopt PySpark `>=4.1,<4.2` with ordinary PySpark as the primary target variant and separately evidenced Spark Connect
   parity.
@@ -114,5 +110,5 @@ supplies target-specific service facets, and external wheels can supply equivale
   session/catalog, declarative-pipeline, SQL-scripting, and streaming-state/lifecycle families explicitly gated or
   caller-owned.
 - Extend the six-lane live integration matrix to PySpark 4.1 and retain 3.5/4.0 regression evidence.
-- Close V11 only after catalog/reference reconciliation, generated-artifact freshness, live parity evidence, and
-  `make build`.
+- Close the adoption work only after catalog/reference reconciliation, generated-artifact freshness, live parity
+  evidence, and `make build`.

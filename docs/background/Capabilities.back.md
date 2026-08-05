@@ -105,7 +105,7 @@ implementation family recorded by existing generated artifacts.
 
 ## Active Target Configuration
 
-The v1 default is:
+The default is:
 
 ```toml
 [tool.structure]
@@ -115,7 +115,7 @@ target_profile = ">=3.5,<4.1"
 target_variant = "ordinary"
 ```
 
-Structure v1 supports Python 3.11 and newer. The default PySpark profile targets PySpark 3.5.x and 4.0.x. The target
+Structure supports Python 3.11 and newer. The default PySpark profile targets PySpark 3.5.x and 4.0.x. The target
 layer owns version-specific API decisions and should prefer the oldest compatible API when a range spans supported
 PySpark lines.
 
@@ -125,7 +125,7 @@ The active target is distinct from compatibility reporting. Future configuration
 compat_targets = ["pyspark", "polars", "duckdb"]
 ```
 
-Compatibility targets do not change the active execution target. In v1, non-PySpark targets may be recorded as reserved
+Compatibility targets do not change the active execution target. Non-PySpark targets may be recorded as reserved
 metadata but do not claim execution support.
 
 The target-family vocabulary is diagnostic metadata rather than an additional support claim. It includes
@@ -245,7 +245,7 @@ StructureTools.compatibility.targets()
 ```
 
 Results are structured values before rendering, compiler checks do not import backend runtimes, and callers may choose
-fail-fast exceptions or report-returning behavior. The v1 CLI reports non-PySpark targets as pending rather than
+fail-fast exceptions or report-returning behavior. The CLI reports non-PySpark targets as pending rather than
 claiming that an unimplemented backend was checked.
 
 
@@ -322,4 +322,3 @@ Capabilities do not define the meaning of joins, schemas, streaming operations, 
 remain in their focused references. Capabilities only decide whether a selected target can support those meanings in the
 requested mode. Capabilities also do not make Structure an orchestrator: data loading, storage writes, Spark lifecycle,
 streaming query lifecycle, and deployment remain caller-owned.
-

@@ -4,7 +4,11 @@ from pathlib import Path
 from typing import Mapping, cast, get_origin, get_type_hints
 
 from structure.core.compiler.diagnostics.api import StructureCompileError
-from structure.core.compiler.frontend.commands.CompileTransform import CompileTransform
+from structure.core.compiler.frontend.commands.CompileTransform import (
+    CompileTransform,
+    _assigned_outputs,
+    _semantic_policies,
+)
 from structure.core.compiler.frontend.logic.CompilerTransformMember import CompilerTransformMember
 from structure.core.compiler.ir.model.StepPlan import StepPlan
 from structure.core.compiler.ir.model.StepResultPlan import StepResultPlan
@@ -39,7 +43,13 @@ class AnalyzeTransform(CompileTransform):
             raise ValueError(f"Configuration override supplied twice: {names}.")
         merged.update(settings)
         resolved = config or StructureConfig.resolve(project_root=project_root, overrides=merged)
-        return self._analyze(transform_class, config=resolved)
+        policy_token = _semantic_policies.set((resolved.allow_output_to_input, resolved.allow_to_reassign_output))
+        assigned_token = _assigned_outputs.set(set())
+        try:
+            return self._analyze(transform_class, config=resolved)
+        finally:
+            _assigned_outputs.reset(assigned_token)
+            _semantic_policies.reset(policy_token)
 
     def _analyze(
         self, transform_class: type[Transform] | TransformPipeline, *, config: StructureConfig
@@ -55,7 +65,7 @@ class AnalyzeTransform(CompileTransform):
                 "DSL-E0402",
                 transform_class=transform_class if isinstance(transform_class, type) else None,
                 problem=f"{getattr(transform_class, '__name__', transform_class)} is not a Transform subclass.",
-                use="Compile a class that inherits from structure.Transform or compile a Transform.to(...) pipeline.",
+                use="Compile a class that inherits from structure.Transform or a pipeline built with invocation.to(...).",
             )
         self._require_module_level_schemas(transform_class)
         pipeline = getattr(transform_class, "_structure_pipeline", None)
@@ -139,6 +149,7 @@ class AnalyzeTransform(CompileTransform):
             streaming = self._source_streaming(result.source, lanes, inputs)
             for item in result.results:
                 lanes[item.lane] = {
+                    "kind": "lane" if item.lane in transform_class._structure_lanes else "output",
                     "schema": item.schema,
                     "source": item.frame,
                     "scope": item.schema.__name__,

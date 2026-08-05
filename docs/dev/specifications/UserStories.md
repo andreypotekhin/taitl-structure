@@ -126,6 +126,10 @@ narrower use cases and roadmap features.
 - + As a developer, I receive a compiler error when a step method calls another step method directly so that pipeline
   flow remains controlled by source order, lanes, and composition.
 - + As a developer, I can chain step methods by return type and next input type so that schema flow is validated.
+- + As a developer, I can use a produced public output as a later step input so that PySpark-style immutable branches do
+  not require identity publication steps.
+- + As a developer, I can configure output-to-input reuse and same-output rebinding independently so that Core can
+  preserve stricter graph contracts when a project needs them.
 - + As a developer, I can construct an output schema from inherited base schema rows plus explicit overrides so that
   enrichment transforms do not repeat every inherited
 - + As a developer, I can receive a structured compiler error when source order does not match type flow.

@@ -193,7 +193,7 @@ def write_optional_transform_project(root: Path) -> None:
                 "class NormalizePipeline(Transform):",
                 "    orders = input(OrderRaw)",
                 "",
-                "    pipeline = Transform.to(NormalizeOrders(orders=orders))",
+                "    pipeline = NormalizeOrders(orders=orders).to()",
                 "",
             ]
         ),

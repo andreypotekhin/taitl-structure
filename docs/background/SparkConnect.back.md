@@ -41,10 +41,11 @@ resolved variant becomes part of capability decisions and generated artifact ide
 
 ## What Is Supported
 
-Spark Connect support covers completed v1/v2 batch features that lower through public PySpark DataFrame and Column APIs:
+Spark Connect support covers completed batch features that lower through public PySpark DataFrame and Column APIs:
 
 - projections, filters, casts, literals, and expression helpers;
-- v1 joins, completed analytical joins, and implemented rowset joins such as right, full, explicit cross, non-equi, and
+- lookup joins, completed analytical joins, and implemented rowset joins such as right, full, explicit cross, non-equi,
+  and
   disjunctive joins;
 - first-slice aggregations plus implemented advanced analytical helpers such as rollup, cube, grouping metadata,
   additional aggregate metrics, metric-local filters, reusable windows, distribution/value/window aggregate helpers,

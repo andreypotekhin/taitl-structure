@@ -173,8 +173,15 @@ def test_multi_argument_to_matches_sequential_to() -> None:
     assert [step.name for step in _analysis(multi).steps] == [step.name for step in _analysis(sequential).steps]
 
 
-def test_static_transform_to_starts_pipeline() -> None:
-    pipeline = Transform.to(NormalizeOrders(orders=object()), AddProduct(products=object()), PublishOrders())
+def test_transform_to_is_instance_only() -> None:
+    with pytest.raises(AttributeError, match="available only on transform invocations") as raised:
+        Transform.to
+
+    assert "use an invocation.to(...)" in str(raised.value)
+
+
+def test_instance_to_starts_pipeline() -> None:
+    pipeline = NormalizeOrders(orders=object()).to(AddProduct(products=object()), PublishOrders())
 
     assert [step.name for step in _analysis(pipeline).steps] == [
         "normalize_orders.normalize",
@@ -696,7 +703,7 @@ def test_lane_declaration_cannot_be_constructor_binding() -> None:
     class LaneOwner(Transform):
         rows = lane(Raw)
 
-    pipeline = Transform.to(NormalizeOrders(orders=LaneOwner.rows))
+    pipeline = NormalizeOrders(orders=LaneOwner.rows).to()
 
     with pytest.raises(StructureCompileError, match="bound to a lane"):
         _analysis(pipeline)
@@ -707,8 +714,7 @@ def test_class_field_pipeline_compiles_and_renders_generated_transform() -> None
         orders = input(Raw)
         products = input(Product)
 
-        pipeline = Transform.to(
-            NormalizeOrders(orders=orders),
+        pipeline = NormalizeOrders(orders=orders).to(
             AddProduct(products=products),
             PublishOrders(),
         )
@@ -791,7 +797,7 @@ def test_composed_stage_owned_hook_traceability_records_opaque_boundary() -> Non
     class HookPipeline(Transform):
         orders = input(Raw)
 
-        pipeline = Transform.to(HookedNormalizeOrders(orders=orders), PublishNormalized())
+        pipeline = HookedNormalizeOrders(orders=orders).to(PublishNormalized())
 
     traceability = Compiler.traceability.build()(
         PySpark.compiler.lower()(_analysis(HookPipeline)),
@@ -835,7 +841,7 @@ def test_generated_composed_pipeline_imports_and_dispatches_stage_owned_hooks() 
     class HookPipeline(Transform):
         orders = input(Raw)
 
-        pipeline = Transform.to(HookedNormalizeOrders(orders=orders), PublishNormalized())
+        pipeline = HookedNormalizeOrders(orders=orders).to(PublishNormalized())
 
     text = PySpark.render.transform()(
         PySpark.compiler.lower()(_analysis(HookPipeline)),
@@ -855,7 +861,7 @@ def test_generated_repeated_composed_hook_class_uses_stage_local_delegates() -> 
     class HookPipeline(Transform):
         source = input(TextRow)
 
-        pipeline = Transform.to(HookedTextStage(source=source), HookedTextStage())
+        pipeline = HookedTextStage(source=source).to(HookedTextStage())
 
     text = PySpark.render.transform()(
         PySpark.compiler.lower()(_analysis(HookPipeline)),
@@ -881,7 +887,7 @@ def test_embedded_generated_composed_pipeline_dispatches_stage_owned_hooks() -> 
     class HookPipeline(Transform):
         orders = input(Raw)
 
-        pipeline = Transform.to(HookedNormalizeOrders(orders=orders), PublishNormalized())
+        pipeline = HookedNormalizeOrders(orders=orders).to(PublishNormalized())
 
     text = PySpark.render.transform()(
         PySpark.compiler.lower()(_analysis(HookPipeline)),

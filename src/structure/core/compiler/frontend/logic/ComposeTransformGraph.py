@@ -38,7 +38,7 @@ class ComposeTransformGraph:
         stages = tuple(self._stage(wrapper_class, stage) for stage in wrapper_class._structure_stages.values())
         if not stages:
             raise self._error(
-                wrapper_class.__name__, "Transform graph has no stages.", "Declare at least one stage(...)."
+                wrapper_class.__name__, "Transform graph has no stages.", "Declare at least one transform assignment."
             )
         if not wrapper_class._structure_outputs:
             raise self._error(
@@ -482,7 +482,7 @@ class ComposeTransformGraph:
                     raise self._error(
                         wrapper_class.__name__,
                         f"{stage.name} references a stage that is not declared on {wrapper_class.__name__}.",
-                        "Use only stage(...) fields declared on the same transform.",
+                        "Use only transform assignments declared on the same transform.",
                     )
                 if value.stage.name not in known:
                     raise self._error(

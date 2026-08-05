@@ -129,7 +129,7 @@ Rules:
 - `self` is required.
 - Hook runtime parameters must be keyword-only.
 - every distinct binding name, `spark`, and `ctx` are required.
-- Extra parameters are invalid in v1.
+- Extra parameters are invalid.
 - Hooks must return a DataFrame at runtime.
 
 Signature validation should happen during compiler checks, not only when a hook is first invoked in production.
@@ -217,7 +217,7 @@ Rules:
 - Use `target_backend="pyspark"` for a single backend.
 - Use `target_backend=["pyspark", "polars"]` only when one hook intentionally supports multiple Python-hosted backends.
 - Missing `target_backend` resolves from `hook_target_default` in configuration.
-- The v1 compatibility default is `hook_target_default = ["pyspark"]`.
+- The compatibility default is `hook_target_default = ["pyspark"]`.
 - A future strict mode may use `hook_target_default = "explicit"` to require every hook to declare target backends.
 - Runtime execution must not invoke a hook when the active target is outside the hook's effective target set.
 - Compatibility checks warn when an unmarked hook inherits a default while checking other targets.
@@ -226,8 +226,8 @@ Rules:
 Target scope prevents accidental runtime errors such as calling a PySpark hook with a Polars LazyFrame or DuckDB
 relation. It does not make hook internals compiler-visible.
 
-V1 accepts and carries `target_backend` metadata so documented PySpark hook examples are usable now. A hook whose
-effective target set excludes `pyspark` must fail during compilation in v1 because PySpark is the only executable hook
+The compiler accepts and carries `target_backend` metadata so documented PySpark hook examples are usable now. A hook
+whose effective target set excludes `pyspark` must fail during compilation because PySpark is the only executable hook
 ABI.
 
 ## Schema Handling
@@ -310,7 +310,7 @@ pipeline invocation; hooks from separate stages never share an instance. `embed_
 under a deterministic stage/owner-qualified name, and is all-or-error for the composed artifact. Embedding changes
 packaging, not hook order, bindings, validation, traceability, or streaming classification.
 
-Composition follows `.to(...)` order or dependency order induced by `stage(...)` output references. Independent branches
+Composition follows invocation-level `.to(...)` order or dependency order induced by graph output references. Independent branches
 retain local hook order but promise no order between branches until a later stage consumes both. Internal lanes remain
 internal to their declaring transform and are not composition boundaries.
 

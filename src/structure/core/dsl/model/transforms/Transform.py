@@ -18,6 +18,26 @@ from structure.core.dsl.model.transforms.StageDeclaration import (
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline
 
 
+class _InvocationOnlyMethod:
+    """Expose a transform operation only on transform invocations."""
+
+    def __init__(self, method) -> None:
+        self._method = method
+        self.__doc__ = method.__doc__
+
+    def __set_name__(self, owner: type, name: str) -> None:
+        self._name = name
+
+    def __get__(self, instance: object | None, owner: type | None = None):
+        if instance is None:
+            owner_name = getattr(owner, "__name__", "Transform")
+            raise AttributeError(
+                f"{owner_name}.{self._name} is available only on transform invocations; "
+                f"use an invocation.{self._name}(...) for ad-hoc composition or a class-body stage assignment."
+            )
+        return self._method.__get__(instance, owner)
+
+
 class Transform:
     """A declarative transform made of schema-bound step methods.
 
@@ -116,7 +136,7 @@ class Transform:
                 implicit_stage.__set_name__(cls, name)
                 stages[name] = implicit_stage
         if pipelines and stages:
-            raise TypeError(f"{cls.__name__} cannot combine Transform.to(...) pipeline and stage(...) composition")
+            raise TypeError(f"{cls.__name__} cannot combine a .to(...) pipeline and stage(...) composition")
         cls._structure_pipeline = pipelines[0] if pipelines else None
         cls._structure_stages = stages
         cls._structure_transform = False
@@ -359,9 +379,11 @@ class Transform:
             result=result,
         )
 
-    def to(self, *stages: "Transform") -> TransformPipeline:
+    def _to(self, *stages: "Transform") -> TransformPipeline:
         """Compose this invocation with later transform invocations."""
         return TransformPipeline((self, *stages))
+
+    to = _InvocationOnlyMethod(_to)
 
     def rename(self, **outputs: str) -> "Transform":
         """Rename declared outputs on this invocation.

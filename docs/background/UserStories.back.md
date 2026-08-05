@@ -183,7 +183,7 @@ narrower use cases and roadmap features.
 ## 10. Generated Code
 
 - + As a developer, I can use generated PySpark as an optional provenance and generated-mode artifact rather than as the
-  only v1 runtime path.
+  only runtime path.
 - + As a developer, I can inspect generated PySpark code so that transformation behavior is reviewable.
 - + As a developer, I can generate a class named after the source transform class so that source-to-generated mapping is
   obvious.
@@ -273,8 +273,8 @@ narrower use cases and roadmap features.
   limited to three inputs.
 - + As a developer, I can specify join type and hints using enum values so that free-form join strings are avoided in
   source code.
-- + As a developer, I can see that semi, anti, row-multiplying, deduped lookup, temporal, and as-of joins are staged as
-  v2 analytical join forms so that v1 lookup semantics stay predictable.
+- + As a developer, I can see that semi, anti, row-multiplying, deduped lookup, temporal, and as-of joins have distinct
+  analytical semantics while lookup joins remain predictable.
 
 ## 16. Hooks
 
@@ -362,25 +362,26 @@ narrower use cases and roadmap features.
 - + As a developer, I can run execution/generated-code parity tests for every supported operation family.
 - + As a developer, I can assert schema, configuration, diagnostic registry, negative compiler, and warning behavior.
 
-## 22. v2 Roadmap
+## 22. Analytical Roadmap
 
-v2 makes Structure useful for mainstream analytical batch pipelines. It extends the v1 transform model without taking
-over streaming orchestration, storage writes, automatic cost-based optimization, or hidden UDF execution. Sprint 09 adds
+The analytical roadmap makes Structure useful for mainstream analytical batch pipelines. It extends the transform model
+without taking over streaming orchestration, storage writes, automatic cost-based optimization, or hidden UDF execution.
+Sprint 09 adds
 Spark Connect support for completed compiler-visible batch features and the full PySpark rowset join forms left out of
 the first analytical join slice.
 
-## 22A. v2 Foundations
+## 22A. Analytical Foundations
 
-- As a developer, I can see a published v2 scope and non-goals so that I know which analytical features are safe to
-  plan around.
-- As a developer, I can receive backend capability diagnostics for every v2 operation so that unsupported PySpark target
-  combinations fail before runtime.
-- As a developer, I can inspect v2 operation cardinality in explain output so that row-preserving, row-filtering,
+- As a developer, I can see a published analytical scope and non-goals so that I know which analytical features are
+  safe to plan around.
+- As a developer, I can receive backend capability diagnostics for every analytical operation so that unsupported
+  PySpark target combinations fail before runtime.
+- As a developer, I can inspect operation cardinality in explain output so that row-preserving, row-filtering,
   row-multiplying, and select-one behavior is visible.
-- As a developer, I can rely on execution and generated-code execution using the same v2 PySpark recipe layer so that
+- As a developer, I can rely on execution and generated-code execution using the same PySpark recipe layer so that
   supported
   analytical behavior cannot drift between runtime modes.
-- As a developer, I can keep caller-owned streaming lifecycle in v2 so that existing streaming compatibility boundaries
+- As a developer, I can keep caller-owned streaming lifecycle so that existing streaming compatibility boundaries
   remain stable.
 
 ## 22B. Aggregations, Windows, and Higher-Order Functions
@@ -495,7 +496,7 @@ the first analytical join slice.
 
 ## 24. Spark Connect Roadmap
 
-- + As a developer, I can target Spark Connect for completed v1/v2 batch features when Structure defines and tests a
+- + As a developer, I can target Spark Connect for completed batch features when Structure defines and tests a
   compatible generated-code contract.
 - As a developer, I can run completed batch transforms online through Spark Connect so that remote Spark execution uses
   the same StructureSession contract.

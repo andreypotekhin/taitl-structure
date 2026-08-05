@@ -129,7 +129,7 @@ Execution should be tested by:
 - deferred construction without Spark work
 - `StructureSession.run(...)` delegation
 - PySpark execution against small Spark DataFrames
-- parity with generated PySpark output for every supported v1 operation
+- parity with generated PySpark output for every supported operation
 
 ## Execution/Generated-Code Parity
 
@@ -187,7 +187,7 @@ Each supported DSL feature needs at least one intentionally broken transform tes
 These tests should assert the diagnostic code, location, problem summary, and suggested fix, not merely that compilation
 failed.
 
-Required v1 negative cases:
+Required negative cases:
 
 - missing fields
 - wrong types

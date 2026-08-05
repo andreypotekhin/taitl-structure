@@ -314,5 +314,6 @@ See docs/background/Streaming.back.md
 A deferred streaming feature may be admitted only when Structure defines its public DSL or configuration, capability
 requirements, diagnostics, explain output, online/generated parity, live Spark verification, and troubleshooting
 guidance.
-V10 may add state-stage lists, more bounded stream-stream joins, and explicit retention rules, but sources, sinks,
-triggers, checkpoints, output modes, deployment, recovery, and external side effects remain caller-owned.
+Future additions may include state-stage lists, more bounded stream-stream joins, and explicit retention rules, but
+sources, sinks, triggers, checkpoints, output modes, deployment, recovery, and external side effects remain
+caller-owned.

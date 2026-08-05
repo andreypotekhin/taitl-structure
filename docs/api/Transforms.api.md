@@ -14,7 +14,7 @@ are documented in the [Relations API](Relations.api.md).
 | `input(...)` | DataFrame input | `orders = input(OrderRaw)` |
 | `output(...)` | DataFrame result | `published = output(OrderPublished)` |
 | `lane(...)` | Intermediate DataFrame | `clean = lane(OrderClean)` |
-| `stage(...)` | Composed transform stage | `normalized = stage(NormalizeOrders(orders=orders))` |
+| `stage(...)` | Explicit composed-stage compatibility API | `normalized = NormalizeOrders(orders=orders)` |
 | `@transform(...)` | Pipeline declaration | `@transform\nclass Publish(Transform): pass` |
 | `@step(...)` | Named pipeline step | `@step(inout=lane(clean) \| output(published))` |
 

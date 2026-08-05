@@ -42,7 +42,7 @@ class ComposeTransformPlans:
         stages = pipeline.stages
         if not stages:
             raise self._error(
-                name, "Transform pipeline has no stages.", "Call Transform.to(...) with at least one stage."
+                name, "Transform pipeline has no stages.", "Call invocation.to(...) with at least one stage."
             )
         stage_plans = tuple(compile_stage(stage.transform_class) for stage in stages)
 

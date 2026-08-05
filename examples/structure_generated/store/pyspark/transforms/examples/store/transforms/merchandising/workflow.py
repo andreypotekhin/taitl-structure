@@ -734,22 +734,22 @@ class BuildPurchaseSignalsGenerated:
 class BuildProductSignalsGenerated:
     def _step_recommended_signals_recommendation_summarize_impressions_6(self, frames):
         # Step method: recommended.signals.recommendation.summarize_impressions
-        recommended__signals__recommendation__impression_facts = frames["feedback_impressions"].alias(
+        recommended__signals__recommendation__daily_impressions = frames["feedback_impressions"].alias(
             "recommendation_impression"
         )
-        recommended__signals__recommendation__impression_facts = (
-            recommended__signals__recommendation__impression_facts.withWatermark("shown_at", '7 days')
+        recommended__signals__recommendation__daily_impressions = (
+            recommended__signals__recommendation__daily_impressions.withWatermark("shown_at", '7 days')
         )
-        if recommended__signals__recommendation__impression_facts.isStreaming:
-            recommended__signals__recommendation__impression_facts = (
-                recommended__signals__recommendation__impression_facts.dropDuplicatesWithinWatermark(["id"])
+        if recommended__signals__recommendation__daily_impressions.isStreaming:
+            recommended__signals__recommendation__daily_impressions = (
+                recommended__signals__recommendation__daily_impressions.dropDuplicatesWithinWatermark(["id"])
             )
         else:
-            recommended__signals__recommendation__impression_facts = (
-                recommended__signals__recommendation__impression_facts.dropDuplicates(["id"])
+            recommended__signals__recommendation__daily_impressions = (
+                recommended__signals__recommendation__daily_impressions.dropDuplicates(["id"])
             )
-        recommended__signals__recommendation__impression_facts = (
-            recommended__signals__recommendation__impression_facts.groupBy(
+        recommended__signals__recommendation__daily_impressions = (
+            recommended__signals__recommendation__daily_impressions.groupBy(
                 F.window(F.col("recommendation_impression.shown_at"), '1 day').alias("window"),
                 F.col("recommendation_impression.tenant.tenant_id").alias("tenant_id"),
                 F.col("recommendation_impression.strategy_id").alias("strategy_id"),
@@ -774,43 +774,43 @@ class BuildProductSignalsGenerated:
             )
         )
         assert_schema(
-            recommended__signals__recommendation__impression_facts,
+            recommended__signals__recommendation__daily_impressions,
             DAILY_RECOMMENDATION_IMPRESSIONS_SCHEMA,
             name="DailyRecommendationImpressions",
             mode="strict",
         )
         return {
-            "recommended__signals__recommendation__impression_facts": recommended__signals__recommendation__impression_facts,
+            "recommended__signals__recommendation__daily_impressions": recommended__signals__recommendation__daily_impressions,
         }
 
     def _step_recommended_signals_recommendation_summarize_clicks_7(self, frames):
         # Step method: recommended.signals.recommendation.summarize_clicks
-        recommended__signals__recommendation__click_facts = frames["feedback_impressions"].alias(
+        recommended__signals__recommendation__daily_clicks = frames["feedback_impressions"].alias(
             "recommendation_impression"
         )
-        recommended__signals__recommendation__click_facts = (
-            recommended__signals__recommendation__click_facts.withWatermark("shown_at", '7 days')
+        recommended__signals__recommendation__daily_clicks = (
+            recommended__signals__recommendation__daily_clicks.withWatermark("shown_at", '7 days')
         )
-        if recommended__signals__recommendation__click_facts.isStreaming:
-            recommended__signals__recommendation__click_facts = (
-                recommended__signals__recommendation__click_facts.dropDuplicatesWithinWatermark(["id"])
+        if recommended__signals__recommendation__daily_clicks.isStreaming:
+            recommended__signals__recommendation__daily_clicks = (
+                recommended__signals__recommendation__daily_clicks.dropDuplicatesWithinWatermark(["id"])
             )
         else:
-            recommended__signals__recommendation__click_facts = (
-                recommended__signals__recommendation__click_facts.dropDuplicates(["id"])
+            recommended__signals__recommendation__daily_clicks = (
+                recommended__signals__recommendation__daily_clicks.dropDuplicates(["id"])
             )
         if frames["feedback_clicks"].isStreaming:
-            recommended__signals__recommendation__click_facts_click_deduped_1 = frames[
+            recommended__signals__recommendation__daily_clicks_click_deduped_1 = frames[
                 "feedback_clicks"
             ].dropDuplicatesWithinWatermark(["id"])
         else:
-            recommended__signals__recommendation__click_facts_click_deduped_1 = frames[
+            recommended__signals__recommendation__daily_clicks_click_deduped_1 = frames[
                 "feedback_clicks"
             ].dropDuplicates(["id"])
-        feedback_clicks_joined = recommended__signals__recommendation__click_facts_click_deduped_1.withWatermark(
+        feedback_clicks_joined = recommended__signals__recommendation__daily_clicks_click_deduped_1.withWatermark(
             "occurred_at", '7 days'
         ).alias("feedback_clicks")
-        recommended__signals__recommendation__click_facts = recommended__signals__recommendation__click_facts.join(
+        recommended__signals__recommendation__daily_clicks = recommended__signals__recommendation__daily_clicks.join(
             feedback_clicks_joined,
             (
                 (F.col("feedback_clicks.impression_id") == F.col("recommendation_impression.id"))
@@ -827,8 +827,8 @@ class BuildProductSignalsGenerated:
             ),
             "inner",
         )
-        recommended__signals__recommendation__click_facts = (
-            recommended__signals__recommendation__click_facts.groupBy(
+        recommended__signals__recommendation__daily_clicks = (
+            recommended__signals__recommendation__daily_clicks.groupBy(
                 F.window(F.col("recommendation_impression.shown_at"), '1 day').alias("window"),
                 F.col("recommendation_impression.tenant.tenant_id").alias("tenant_id"),
                 F.col("recommendation_impression.strategy_id").alias("strategy_id"),
@@ -857,59 +857,6 @@ class BuildProductSignalsGenerated:
             )
         )
         assert_schema(
-            recommended__signals__recommendation__click_facts,
-            DAILY_RECOMMENDATION_CLICKS_SCHEMA,
-            name="DailyRecommendationClicks",
-            mode="strict",
-        )
-        return {
-            "recommended__signals__recommendation__click_facts": recommended__signals__recommendation__click_facts,
-        }
-
-    def _step_recommended_signals_recommendation_publish_daily_impressions_8(self, frames):
-        # Step method: recommended.signals.recommendation.publish_daily_impressions
-        recommended__signals__recommendation__daily_impressions = frames[
-            "recommended__signals__recommendation__impression_facts"
-        ].alias("daily_recommendation_impressions")
-        recommended__signals__recommendation__daily_impressions = (
-            recommended__signals__recommendation__daily_impressions.select(
-                F.col("daily_recommendation_impressions.window"),
-                F.col("daily_recommendation_impressions.tenant"),
-                F.col("daily_recommendation_impressions.strategy_id"),
-                F.col("daily_recommendation_impressions.policy_version"),
-                F.col("daily_recommendation_impressions.product_id"),
-                F.col("daily_recommendation_impressions.rank"),
-                F.col("daily_recommendation_impressions.examination_propensity"),
-                F.col("daily_recommendation_impressions.impression_count"),
-            )
-        )
-        assert_schema(
-            recommended__signals__recommendation__daily_impressions,
-            DAILY_RECOMMENDATION_IMPRESSIONS_SCHEMA,
-            name="DailyRecommendationImpressions",
-            mode="strict",
-        )
-        return {
-            "recommended__signals__recommendation__daily_impressions": recommended__signals__recommendation__daily_impressions,
-        }
-
-    def _step_recommended_signals_recommendation_publish_daily_clicks_9(self, frames):
-        # Step method: recommended.signals.recommendation.publish_daily_clicks
-        recommended__signals__recommendation__daily_clicks = frames[
-            "recommended__signals__recommendation__click_facts"
-        ].alias("daily_recommendation_clicks")
-        recommended__signals__recommendation__daily_clicks = recommended__signals__recommendation__daily_clicks.select(
-            F.col("daily_recommendation_clicks.window"),
-            F.col("daily_recommendation_clicks.tenant"),
-            F.col("daily_recommendation_clicks.strategy_id"),
-            F.col("daily_recommendation_clicks.policy_version"),
-            F.col("daily_recommendation_clicks.product_id"),
-            F.col("daily_recommendation_clicks.rank"),
-            F.col("daily_recommendation_clicks.examination_propensity"),
-            F.col("daily_recommendation_clicks.click_count"),
-            F.col("daily_recommendation_clicks.clicked_impression_count"),
-        )
-        assert_schema(
             recommended__signals__recommendation__daily_clicks,
             DAILY_RECOMMENDATION_CLICKS_SCHEMA,
             name="DailyRecommendationClicks",
@@ -919,16 +866,16 @@ class BuildProductSignalsGenerated:
             "recommended__signals__recommendation__daily_clicks": recommended__signals__recommendation__daily_clicks,
         }
 
-    def _step_recommended_signals_recommendation_summarize_signals_10(self, frames):
+    def _step_recommended_signals_recommendation_summarize_signals_8(self, frames):
         # Step method: recommended.signals.recommendation.summarize_signals
         recommended__signals__recommendation__signal_totals = frames[
-            "recommended__signals__recommendation__impression_facts"
+            "recommended__signals__recommendation__daily_impressions"
         ].alias("daily_recommendation_impressions")
-        recommended__signals__recommendation__click_facts_joined = frames[
-            "recommended__signals__recommendation__click_facts"
-        ].alias("recommended__signals__recommendation__click_facts")
+        recommended__signals__recommendation__daily_clicks_joined = frames[
+            "recommended__signals__recommendation__daily_clicks"
+        ].alias("recommended__signals__recommendation__daily_clicks")
         recommended__signals__recommendation__signal_totals = recommended__signals__recommendation__signal_totals.join(
-            recommended__signals__recommendation__click_facts_joined,
+            recommended__signals__recommendation__daily_clicks_joined,
             (
                 (
                     (
@@ -936,36 +883,36 @@ class BuildProductSignalsGenerated:
                             (
                                 (
                                     (
-                                        F.col("recommended__signals__recommendation__click_facts.window")
+                                        F.col("recommended__signals__recommendation__daily_clicks.window")
                                         == F.col("daily_recommendation_impressions.window")
                                     )
                                     & (
-                                        F.col("recommended__signals__recommendation__click_facts.tenant.tenant_id")
+                                        F.col("recommended__signals__recommendation__daily_clicks.tenant.tenant_id")
                                         == F.col("daily_recommendation_impressions.tenant.tenant_id")
                                     )
                                 )
                                 & (
-                                    F.col("recommended__signals__recommendation__click_facts.strategy_id")
+                                    F.col("recommended__signals__recommendation__daily_clicks.strategy_id")
                                     == F.col("daily_recommendation_impressions.strategy_id")
                                 )
                             )
                             & (
-                                F.col("recommended__signals__recommendation__click_facts.policy_version")
+                                F.col("recommended__signals__recommendation__daily_clicks.policy_version")
                                 == F.col("daily_recommendation_impressions.policy_version")
                             )
                         )
                         & (
-                            F.col("recommended__signals__recommendation__click_facts.product_id")
+                            F.col("recommended__signals__recommendation__daily_clicks.product_id")
                             == F.col("daily_recommendation_impressions.product_id")
                         )
                     )
                     & (
-                        F.col("recommended__signals__recommendation__click_facts.rank")
+                        F.col("recommended__signals__recommendation__daily_clicks.rank")
                         == F.col("daily_recommendation_impressions.rank")
                     )
                 )
                 & (
-                    F.col("recommended__signals__recommendation__click_facts.examination_propensity")
+                    F.col("recommended__signals__recommendation__daily_clicks.examination_propensity")
                     == F.col("daily_recommendation_impressions.examination_propensity")
                 )
             ),
@@ -984,12 +931,12 @@ class BuildProductSignalsGenerated:
                 .alias("impression_count"),
                 F.sum(
                     F.coalesce(
-                        F.col("recommended__signals__recommendation__click_facts.clicked_impression_count"), F.lit(0)
+                        F.col("recommended__signals__recommendation__daily_clicks.clicked_impression_count"), F.lit(0)
                     )
                 )
                 .cast(T.LongType())
                 .alias("clicked_impression_count"),
-                F.sum(F.coalesce(F.col("recommended__signals__recommendation__click_facts.click_count"), F.lit(0)))
+                F.sum(F.coalesce(F.col("recommended__signals__recommendation__daily_clicks.click_count"), F.lit(0)))
                 .cast(T.LongType())
                 .alias("raw_click_count"),
                 F.sum(F.lit(0.0)).cast(T.DoubleType()).alias("click_through_rate"),
@@ -1010,7 +957,7 @@ class BuildProductSignalsGenerated:
                 F.sum(
                     (
                         F.coalesce(
-                            F.col("recommended__signals__recommendation__click_facts.clicked_impression_count"),
+                            F.col("recommended__signals__recommendation__daily_clicks.clicked_impression_count"),
                             F.lit(0),
                         )
                         / F.when(
@@ -1047,7 +994,7 @@ class BuildProductSignalsGenerated:
             "recommended__signals__recommendation__signal_totals": recommended__signals__recommendation__signal_totals,
         }
 
-    def _step_recommended_signals_recommendation_publish_signals_11(self, frames):
+    def _step_recommended_signals_recommendation_publish_signals_9(self, frames):
         # Step method: recommended.signals.recommendation.publish_signals
         recommended__signals__recommendation__signals = frames[
             "recommended__signals__recommendation__signal_totals"
@@ -1100,7 +1047,7 @@ class BuildProductSignalsGenerated:
 
 
 class BuildProductFeaturesGenerated:
-    def _step_recommended_personalized_featured_build_12(self, frames):
+    def _step_recommended_personalized_featured_build_10(self, frames):
         # Step method: recommended.personalized.featured.build
         recommended__personalized__featured__catalog = frames["catalog__products"].alias("catalog_product")
         recommended__personalized__featured__catalog = recommended__personalized__featured__catalog.select(
@@ -1132,7 +1079,7 @@ class BuildProductFeaturesGenerated:
 
 
 class BuildPersonalizationHistoryGenerated:
-    def _step_recommended_personalized_history_browse_13(self, frames):
+    def _step_recommended_personalized_history_browse_11(self, frames):
         # Step method: recommended.personalized.history.browse
         recommended__personalized__history__session_history = frames["session_events"].alias("session_event")
         recommended__personalized__history__session_history = recommended__personalized__history__session_history.where(
@@ -1177,7 +1124,7 @@ class BuildPersonalizationHistoryGenerated:
             "recommended__personalized__history__session_history": recommended__personalized__history__session_history,
         }
 
-    def _step_recommended_personalized_history_purchase_14(self, frames):
+    def _step_recommended_personalized_history_purchase_12(self, frames):
         # Step method: recommended.personalized.history.purchase
         recommended__personalized__history__purchase_history = frames["fulfilled_orders"].alias("order_fulfillment")
         recommended__personalized__history__purchase_history = (
@@ -1211,7 +1158,7 @@ class BuildPersonalizationHistoryGenerated:
             "recommended__personalized__history__purchase_history": recommended__personalized__history__purchase_history,
         }
 
-    def _step_recommended_personalized_history_merge_15(self, frames):
+    def _step_recommended_personalized_history_merge_13(self, frames):
         # Step method: recommended.personalized.history.merge
         recommended__personalized__history__history = frames[
             "recommended__personalized__history__session_history"
@@ -1255,7 +1202,7 @@ class BuildPersonalizationHistoryGenerated:
 
 
 class ScorePersonalizedRecommendationsGenerated:
-    def _step_recommended_personalized_scored_score_16(self, frames):
+    def _step_recommended_personalized_scored_score_14(self, frames):
         # Step method: recommended.personalized.scored.score
         recommended__personalized__scored__requests = frames["requests"].alias("recommendation_request")
         recommended__personalized__featured__catalog_joined = frames[
@@ -1449,7 +1396,7 @@ class ScorePersonalizedRecommendationsGenerated:
 
 
 class SelectRecommendationCandidatesGenerated:
-    def _step_recommended_candidates_admitted_select_17(self, frames):
+    def _step_recommended_candidates_admitted_select_15(self, frames):
         # Step method: recommended.candidates.admitted.select
         recommended__candidates__admitted__requests = frames["requests"].alias("recommendation_request")
         catalog__products_joined = frames["catalog__products"].alias("catalog__products")
@@ -1507,7 +1454,7 @@ class SelectRecommendationCandidatesGenerated:
 
 
 class GenerateRecommendationCandidatesGenerated:
-    def _step_recommended_candidates_retrieved_retrieve_18(self, frames):
+    def _step_recommended_candidates_retrieved_retrieve_16(self, frames):
         # Step method: recommended.candidates.retrieved.retrieve
         recommended__candidates__retrieved__admitted = frames["recommended__candidates__admitted__requests"].alias(
             "recommendation_candidate"
@@ -1625,7 +1572,7 @@ class GenerateRecommendationCandidatesGenerated:
 
 
 class FilterRecommendationCandidatesGenerated:
-    def _step_recommended_candidates_filtered_evaluate_19(self, frames):
+    def _step_recommended_candidates_filtered_evaluate_17(self, frames):
         # Step method: recommended.candidates.filtered.evaluate
         recommended__candidates__filtered__evaluated = frames["recommended__candidates__retrieved__admitted"].alias(
             "recommendation_candidate"
@@ -1705,7 +1652,7 @@ class FilterRecommendationCandidatesGenerated:
             "recommended__candidates__filtered__evaluated": recommended__candidates__filtered__evaluated,
         }
 
-    def _step_recommended_candidates_filtered_publish_20(self, frames):
+    def _step_recommended_candidates_filtered_publish_18(self, frames):
         # Step method: recommended.candidates.filtered.publish
         recommended__candidates__filtered__filtered = frames["recommended__candidates__retrieved__admitted"].alias(
             "recommendation_candidate"
@@ -1776,7 +1723,7 @@ class FilterRecommendationCandidatesGenerated:
 
 
 class RankRecommendationCandidatesGenerated:
-    def _step_recommended_ranked_rank_21(self, frames):
+    def _step_recommended_ranked_rank_19(self, frames):
         # Step method: recommended.ranked.rank
         recommended__ranked__candidates = frames["recommended__candidates__filtered__filtered"].alias(
             "recommendation_candidate"
@@ -2052,7 +1999,7 @@ class RankRecommendationCandidatesGenerated:
 
 
 class DiversifyRecommendationsGenerated:
-    def _step_recommended_diversified_decide_22(self, frames):
+    def _step_recommended_diversified_decide_20(self, frames):
         # Step method: recommended.diversified.decide
         recommended__diversified__decisions = frames["recommended__ranked__candidates"].alias(
             "ranked_recommendation_candidate"
@@ -2136,7 +2083,7 @@ class DiversifyRecommendationsGenerated:
             "recommended__diversified__decisions": recommended__diversified__decisions,
         }
 
-    def _step_recommended_diversified_publish_23(self, frames):
+    def _step_recommended_diversified_publish_21(self, frames):
         # Step method: recommended.diversified.publish
         recommended__diversified__diversified = frames["recommended__ranked__candidates"].alias(
             "ranked_recommendation_candidate"
@@ -2225,7 +2172,7 @@ class DiversifyRecommendationsGenerated:
 
 
 class SelectRecommendedProductsGenerated:
-    def _step_recommended_published_select_products_24(self, frames):
+    def _step_recommended_published_select_products_22(self, frames):
         # Step method: recommended.published.select_products
         recommended__published__ranked_candidates = frames["recommended__diversified__diversified"].alias(
             "diversified_recommendation_candidate"
@@ -2286,7 +2233,7 @@ class SelectRecommendedProductsGenerated:
 
 
 class SummarizeRecommendationRunsGenerated:
-    def _step_recommended_summarized_summarize_25(self, frames):
+    def _step_recommended_summarized_summarize_23(self, frames):
         # Step method: recommended.summarized.summarize
         recommended__summarized__requests = frames["requests"].alias("recommendation_request")
         policy_joined = frames["policy"].alias("policy")
@@ -2474,24 +2421,22 @@ class MerchandisingGenerated(
         frames.update(self._step_recommended_signals_purchases_attribute_5(frames))
         frames.update(self._step_recommended_signals_recommendation_summarize_impressions_6(frames))
         frames.update(self._step_recommended_signals_recommendation_summarize_clicks_7(frames))
-        frames.update(self._step_recommended_signals_recommendation_publish_daily_impressions_8(frames))
-        frames.update(self._step_recommended_signals_recommendation_publish_daily_clicks_9(frames))
-        frames.update(self._step_recommended_signals_recommendation_summarize_signals_10(frames))
-        frames.update(self._step_recommended_signals_recommendation_publish_signals_11(frames))
-        frames.update(self._step_recommended_personalized_featured_build_12(frames))
-        frames.update(self._step_recommended_personalized_history_browse_13(frames))
-        frames.update(self._step_recommended_personalized_history_purchase_14(frames))
-        frames.update(self._step_recommended_personalized_history_merge_15(frames))
-        frames.update(self._step_recommended_personalized_scored_score_16(frames))
-        frames.update(self._step_recommended_candidates_admitted_select_17(frames))
-        frames.update(self._step_recommended_candidates_retrieved_retrieve_18(frames))
-        frames.update(self._step_recommended_candidates_filtered_evaluate_19(frames))
-        frames.update(self._step_recommended_candidates_filtered_publish_20(frames))
-        frames.update(self._step_recommended_ranked_rank_21(frames))
-        frames.update(self._step_recommended_diversified_decide_22(frames))
-        frames.update(self._step_recommended_diversified_publish_23(frames))
-        frames.update(self._step_recommended_published_select_products_24(frames))
-        frames.update(self._step_recommended_summarized_summarize_25(frames))
+        frames.update(self._step_recommended_signals_recommendation_summarize_signals_8(frames))
+        frames.update(self._step_recommended_signals_recommendation_publish_signals_9(frames))
+        frames.update(self._step_recommended_personalized_featured_build_10(frames))
+        frames.update(self._step_recommended_personalized_history_browse_11(frames))
+        frames.update(self._step_recommended_personalized_history_purchase_12(frames))
+        frames.update(self._step_recommended_personalized_history_merge_13(frames))
+        frames.update(self._step_recommended_personalized_scored_score_14(frames))
+        frames.update(self._step_recommended_candidates_admitted_select_15(frames))
+        frames.update(self._step_recommended_candidates_retrieved_retrieve_16(frames))
+        frames.update(self._step_recommended_candidates_filtered_evaluate_17(frames))
+        frames.update(self._step_recommended_candidates_filtered_publish_18(frames))
+        frames.update(self._step_recommended_ranked_rank_19(frames))
+        frames.update(self._step_recommended_diversified_decide_20(frames))
+        frames.update(self._step_recommended_diversified_publish_21(frames))
+        frames.update(self._step_recommended_published_select_products_22(frames))
+        frames.update(self._step_recommended_summarized_summarize_23(frames))
 
         # Step method: recommended_products
         recommended_products = frames["recommended__published__ranked_candidates"].alias("recommended_product")

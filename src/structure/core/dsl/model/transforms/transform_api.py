@@ -47,13 +47,13 @@ def input(value: type[Schema], *, streaming: bool = False) -> InputDeclaration:
 
 
 @overload
-def input(value: InputDeclaration) -> BindingSelector:
-    """Select an existing declaration for input-side step binding."""
+def input(value: InputDeclaration | OutputDeclaration) -> BindingSelector:
+    """Select an existing input or produced output for input-side binding."""
     ...
 
 
 def input(
-    value: type[Schema] | InputDeclaration,
+    value: type[Schema] | InputDeclaration | OutputDeclaration,
     *,
     streaming: bool = _DEFAULT_STREAMING,
 ) -> InputDeclaration | BindingSelector:
@@ -77,7 +77,7 @@ def input(
         streaming = False
     if not isinstance(streaming, bool):
         raise TypeError("input(streaming=...) must be a Boolean")
-    if isinstance(value, InputDeclaration):
+    if isinstance(value, (InputDeclaration, OutputDeclaration)):
         if streaming:
             raise TypeError("input(existing_input, streaming=...) is invalid; set streaming on the declaration")
         return BindingSelector("input", value)
@@ -203,8 +203,11 @@ def stage(value: Transform) -> StageDeclaration:
         A stage declaration whose outputs can be referenced by attribute.
 
     Example:
-        enrich = stage(EnrichOrders())
+        enrich = EnrichOrders()
         published = output(PublishedOrder, enrich.published)
+
+    The direct assignment form is canonical for authored graphs; ``stage(...)``
+    remains available for compatibility.
     """
     if not isinstance(value, Transform):
         raise TypeError("stage(...) requires a Transform invocation")
@@ -361,8 +364,8 @@ def _decorate_transform_method(function, kwargs):
     inputs = _method_declarations(
         kwargs,
         name="input",
-        bare=(InputDeclaration, LaneDeclaration),
-        roles={"input", "lane"},
+        bare=(InputDeclaration, LaneDeclaration, OutputDeclaration),
+        roles={"input", "lane", "output"},
     )
     outputs = _method_declarations(
         kwargs,
@@ -378,7 +381,7 @@ def _decorate_transform_method(function, kwargs):
             binding.inputs,
             option="@step(inout=...) input side",
             bare=(InputDeclaration, LaneDeclaration),
-            roles={"input", "lane"},
+            roles={"input", "lane", "output"},
         )
         outputs = _method_declaration_values(
             binding.outputs,
@@ -489,7 +492,7 @@ def _valid_binding(value: object, *, bare: tuple[type, ...], roles: set[str]) ->
     if not isinstance(value, BindingSelector) or value.role not in roles:
         return False
     if value.role == "input":
-        return isinstance(value.declaration, InputDeclaration)
+        return isinstance(value.declaration, (InputDeclaration, OutputDeclaration))
     if value.role == "lane":
         return isinstance(value.declaration, (InputDeclaration, LaneDeclaration, OutputDeclaration))
     if value.role == "output":
@@ -507,7 +510,7 @@ def _declaration_kinds(allowed: tuple[type, ...], roles: set[str] | None = None)
     if allowed == (InputDeclaration,):
         return "input(...)"
     if allowed == (InputDeclaration, LaneDeclaration):
-        return "input(...) or lane(...)"
+        return "input(...), output(...), or lane(...)"
     if allowed == (LaneDeclaration, OutputDeclaration):
         return "lane(...) or output(...)"
     return "input(...), lane(...), or output(...)"

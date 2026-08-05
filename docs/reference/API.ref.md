@@ -15,9 +15,9 @@ Connect. See [Compatibility.md](../Compatibility.md) for the full target policy,
 
 ## PySpark 4.1 adoption reference
 
-V11 plans the exact target profile `>=4.1,<4.2`. Ordinary PySpark is the primary variant; Spark Connect is a separate
-claim requiring 4.1-specific live evidence. The rows below describe the planned boundary and do not widen the current
-default support range until V11 closes.
+The planned target profile is `>=4.1,<4.2`. Ordinary PySpark is the primary variant; Spark Connect is a separate claim
+requiring 4.1-specific live evidence. The rows below describe the planned boundary and do not widen the current
+default support range until the adoption work closes.
 
 | PySpark 4.1 surface | Planned Structure status | Contract |
 | --- | --- | --- |
@@ -29,7 +29,7 @@ default support range until V11 closes.
 | Complex observations and sketch aggregates | design-gated | Metric side channels and serialized sketch contracts |
 | Arrow UDF/UDTF; `transformWithState` | caller-owned/design-gated | Raw PySpark; no worker Python |
 
-V11's full ledger is in [APICatalog.md](../APICatalog.md#pyspark-41-adoption-v11). The current public baseline remains
+The full ledger is in [APICatalog.md](../APICatalog.md#pyspark-41-adoption). The current public baseline remains
 ordinary and Connect PySpark `>=3.5,<4.1` until every promoted 4.1 row has capability, diagnostics, tests, and runtime
 evidence.
 

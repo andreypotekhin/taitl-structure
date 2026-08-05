@@ -41,15 +41,28 @@ from structure.plugin.api.v1 import (
     TransformMemberOrigin,
 )
 
-SourceDeclaration = InputDeclaration | LaneDeclaration | BindingSelector
+SourceDeclaration = InputDeclaration | LaneDeclaration | OutputDeclaration | BindingSelector
 WriteDeclaration = LaneDeclaration | OutputDeclaration | BindingSelector
 _diagnostic_project_root: ContextVar[Path | None] = ContextVar("diagnostic_project_root", default=None)
 _authoring: ContextVar[tuple[object | None, str, Mapping[str, object], Mapping[str, object]]] = ContextVar(
     "structure_platform_authoring", default=(None, "", {}, {})
 )
+_semantic_policies: ContextVar[tuple[bool, bool]] = ContextVar(
+    "structure_output_policies", default=(False, False)
+)
+_assigned_outputs: ContextVar[set[str] | None] = ContextVar("structure_assigned_outputs", default=None)
 
 
 class CompileTransform:
+
+    @staticmethod
+    def _output_policy() -> tuple[bool, bool]:
+        return _semantic_policies.get()
+
+    @staticmethod
+    def _assigned_output_names() -> set[str]:
+        assigned = _assigned_outputs.get()
+        return assigned if assigned is not None else set()
 
     def __init__(self) -> None:
         self._composer = ComposeTransformPlans()
@@ -93,9 +106,15 @@ class CompileTransform:
                 cast(Mapping[str, object], plugin_options or {}),
             )
         )
+        policy_token = _semantic_policies.set((resolved.allow_output_to_input, resolved.allow_to_reassign_output))
         try:
-            return self._compile(transform_class, config=resolved)
+            assigned_token = _assigned_outputs.set(set())
+            try:
+                return self._compile(transform_class, config=resolved)
+            finally:
+                _assigned_outputs.reset(assigned_token)
         finally:
+            _semantic_policies.reset(policy_token)
             _authoring.reset(authoring_token)
             _diagnostic_project_root.reset(token)
 
@@ -116,7 +135,7 @@ class CompileTransform:
                 "DSL-E0402",
                 transform_class=transform_class if isinstance(transform_class, type) else None,
                 problem=f"{getattr(transform_class, '__name__', transform_class)} is not a Transform subclass.",
-                use="Compile a class that inherits from structure.Transform or compile a Transform.to(...) pipeline.",
+                use="Compile a class that inherits from structure.Transform or a pipeline built with invocation.to(...).",
             )
         self._require_module_level_schemas(transform_class)
         pipeline = getattr(transform_class, "_structure_pipeline", None)
@@ -683,6 +702,7 @@ class CompileTransform:
         streaming = self._source_streaming(driver.source, lanes, inputs)
         for result in result_plans:
             lanes[result.lane] = {
+                "kind": "lane" if result.lane in transform_class._structure_lanes else "output",
                 "schema": result.schema,
                 "source": result.frame,
                 "scope": result.schema.__name__,
@@ -920,8 +940,16 @@ class CompileTransform:
             current = [
                 (lane, source)
                 for lane, source in lanes.items()
-                if source["schema"] is schema and (lane, str(source["source"])) not in used
+                if source["schema"] is schema
+                and source.get("kind") != "output"
+                and (lane, str(source["source"])) not in used
             ]
+            if not current:
+                current = [
+                    (lane, source)
+                    for lane, source in lanes.items()
+                    if source["schema"] is schema and (lane, str(source["source"])) not in used
+                ]
             preferred = self._preferred_source(current, parameter)
             if preferred is not None:
                 return preferred
@@ -954,10 +982,13 @@ class CompileTransform:
             }
             if input_plan.schema is schema and (input_plan.name, source_name) not in used:
                 candidates.append((input_plan.name, source))
+        lane_candidates: list[tuple[str, dict[str, object]]] = []
+        output_candidates: list[tuple[str, dict[str, object]]] = []
         for lane, source in lanes.items():
             key = (lane, str(source["source"]))
             if source["schema"] is schema and key not in used:
-                candidates.append((lane, source))
+                (output_candidates if source.get("kind") == "output" else lane_candidates).append((lane, source))
+        candidates.extend(lane_candidates or output_candidates)
         preferred = self._preferred_source(candidates, parameter)
         if preferred is not None:
             return preferred
@@ -1003,6 +1034,8 @@ class CompileTransform:
                 return self._selected_input_source(transform_class, declaration, member=member)
             if declaration.role == "lane":
                 return self._selected_lane_source(transform_class, declaration, lanes, member=member)
+            if declaration.role == "output":
+                return self._selected_output_source(transform_class, declaration, lanes, member=member)
             raise self._error(
                 "DSL-E0402",
                 transform_class=transform_class,
@@ -1012,7 +1045,68 @@ class CompileTransform:
             )
         if isinstance(declaration, InputDeclaration):
             return self._declared_input_source(transform_class, declaration, lanes, inputs, schema, member=member)
+        if isinstance(declaration, OutputDeclaration):
+            return self._declared_output_source(transform_class, declaration, lanes, member=member)
         return self._declared_lane_source(transform_class, declaration, lanes, member=member)
+
+    def _declared_output_source(
+        self,
+        transform_class: type[Transform],
+        declaration: OutputDeclaration,
+        lanes: dict[str, dict[str, object]],
+        *,
+        member: str,
+    ) -> tuple[str, dict[str, object]]:
+        self._declared_output(transform_class, declaration, member=member, role="input")
+        return self._output_source(transform_class, declaration, lanes, member=member)
+
+    def _selected_output_source(
+        self,
+        transform_class: type[Transform],
+        selector: BindingSelector,
+        lanes: dict[str, dict[str, object]],
+        *,
+        member: str,
+    ) -> tuple[str, dict[str, object]]:
+        if not isinstance(selector.declaration, OutputDeclaration):
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=member,
+                problem="@transform(input=output(...)) must select an output(...) field.",
+                use="Use input(output_name) only after that output has been produced.",
+            )
+        self._declared_output(transform_class, selector.declaration, member=member, role="input")
+        return self._output_source(transform_class, selector.declaration, lanes, member=member)
+
+    def _output_source(
+        self,
+        transform_class: type[Transform],
+        declaration: OutputDeclaration,
+        lanes: dict[str, dict[str, object]],
+        *,
+        member: str,
+    ) -> tuple[str, dict[str, object]]:
+        allow, _ = self._output_policy()
+        if not allow:
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=member,
+                problem=f"Output {declaration.name} cannot be used as a step input by configuration.",
+                use="Set allow_output_to_input=True to allow lazy output branching.",
+                context={"output": declaration.name},
+            )
+        if declaration.name not in self._assigned_output_names() or declaration.name not in lanes:
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=member,
+                problem=f"Output {declaration.name} is not available yet.",
+                use="Consume an output only after an earlier step has produced it.",
+                context={"output": declaration.name},
+            )
+        return declaration.name, lanes[declaration.name]
 
     def _declared_input_source(
         self,
@@ -1182,9 +1276,11 @@ class CompileTransform:
                         ),
                         use="Order output=[...] to match the tuple return annotation.",
                     )
+                self._check_output_assignment(transform_class, declaration, member=member)
                 output_lanes.append(declaration.name)
-                if self._writes_output(declaration) and declaration.name not in lanes:
+                if self._writes_output(declaration):
                     explicit_outputs.add(declaration.name)
+                    self._assigned_output_names().add(declaration.name)
             return tuple(output_lanes)
         available = list(transform_class._structure_outputs.values())
         selected: list[str] = []
@@ -1229,7 +1325,17 @@ class CompileTransform:
         member: str,
         parameter: str,
     ) -> tuple[str, dict[str, object]]:
-        current = [(lane, source) for lane, source in lanes.items() if source["schema"] is input_schema]
+        lane_matches = [
+            (lane, source)
+            for lane, source in lanes.items()
+            if source["schema"] is input_schema and source.get("kind") != "output"
+        ]
+        output_matches = [
+            (lane, source)
+            for lane, source in lanes.items()
+            if source["schema"] is input_schema and source.get("kind") == "output"
+        ]
+        current = lane_matches or output_matches
         preferred = self._preferred_source(current, parameter)
         if preferred is not None:
             return preferred
@@ -1281,6 +1387,7 @@ class CompileTransform:
         if declaration is None:
             return default_lane
         self._declared_write(transform_class, declaration, member=member)
+        self._check_output_assignment(transform_class, declaration, member=member)
         if not self._write_compatible(output_schema, declaration):
             raise self._error(
                 "DSL-E0402",
@@ -1293,9 +1400,25 @@ class CompileTransform:
                 use="Return the schema declared by the bound output(...) field.",
                 context={"expected": declaration.schema.__name__, "actual": output_schema.__name__},
             )
-        if self._writes_output(declaration) and declaration.name not in lanes:
+        if self._writes_output(declaration):
             explicit_outputs.add(declaration.name)
+            self._assigned_output_names().add(declaration.name)
         return declaration.name
+
+    def _check_output_assignment(self, transform_class: type[Transform], declaration: WriteDeclaration, *, member: str) -> None:
+        if not self._writes_output(declaration) or declaration.name not in self._assigned_output_names():
+            return
+        _, allow_reassign = self._output_policy()
+        if allow_reassign:
+            return
+        raise self._error(
+            "DSL-E0402",
+            transform_class=transform_class,
+            member=member,
+            problem=f"Output {declaration.name} is assigned more than once by configuration.",
+            use="Set allow_to_reassign_output=True to permit immutable-plan rebinding.",
+            context={"output": declaration.name},
+        )
 
     def _outputs(
         self,
