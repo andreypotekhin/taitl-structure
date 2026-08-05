@@ -24,7 +24,7 @@ PySpark, start Java, create a `SparkSession`, or inspect live data.
 The canonical declaration form is explicit:
 
 ```python
-from structure import Schema
+from structure import *
 from structure.plugin.pyspark import *
 
 
@@ -84,7 +84,7 @@ for compiler checks, generated Spark `StructType` code, runtime validation, trac
 The PySpark schema declaration DSL is imported from `structure.plugin.pyspark`:
 
 ```python
-from structure import Schema
+from structure import *
 from structure.plugin.pyspark import *
 ```
 
@@ -97,7 +97,9 @@ In descriptive form, the accepted schema declaration grammar is:
 
 ```text
 schema_class      := class NAME(Schema): field_decl*
-field_decl        := NAME ':' hint | NAME ':' hint '=' field_factory(field_kwarg*) | NAME '=' field_factory(field_kwarg*)
+field_decl        := NAME ':' hint
+                  | NAME ':' hint '=' field_factory(field_kwarg*)
+                  | NAME '=' field_factory(field_kwarg*)
 field_factory     := scalar_type | decimal_type | array_type | struct_type | map_type
 scalar_type       := string() | integer() | long() | float() | double() | boolean() | date() | timestamp()
 decimal_type      := decimal(precision, scale)
@@ -182,7 +184,12 @@ This declaration uses every field option in its ordinary role:
 
 ```python
 class CustomerSource(Schema):
-    customer_id = string(nullable=False, alias='customer-id', metadata={'source': 'crm', 'pii': 'indirect'}, description='Stable customer identifier supplied by the CRM.')
+    customer_id = string(
+        nullable=False,
+        alias='customer-id',
+        metadata={'source': 'crm', 'pii': 'indirect'},
+        description='Stable customer identifier supplied by the CRM.',
+    )
     display_name = string(nullable=True, description='Name displayed to account users.')
 ```
 
@@ -527,7 +534,7 @@ columns, partition columns, tenancy fields, and common source metadata. It is no
 ### Canonical Form
 
 ```python
-from structure import Schema
+from structure import *
 from structure.plugin.pyspark import *
 
 
@@ -704,120 +711,10 @@ The following are not supported:
 
 ## Compiler Model
 
-The schema model represents user-declared data structures independently from PySpark.
-
-### Core Model
-
-```text
-SchemaDef
-  name
-  qualified_name
-  module
-  source_path
-  source_line
-  bases
-  fields
-  local_fields
-  constraints
-  metadata
-
-FieldDef
-  name
-  type
-  nullable
-  alias
-  metadata
-  description
-  declaring_schema
-  owning_schema
-  inherited
-  overrides
-  source_path
-  source_line
-
-TypeDef
-  kind
-  parameters
-```
-
-`SchemaDef.fields` is the effective ordered field list after inheritance resolution. `SchemaDef.local_fields` contains
-only fields declared directly on the schema class.
-
-### SchemaDef Rules
-
-`SchemaDef` represents one discovered `Schema` class.
-
-Rules:
-
-- `name` is the class name.
-- `qualified_name` is the importable module-qualified class name.
-- `module` is the source module name.
-- `source_path` and `source_line` are included when available.
-- `bases` lists direct schema bases in class definition order.
-- `fields` contains effective fields in generated output order.
-- `local_fields` contains fields declared directly on the class.
-- `constraints` contains schema-level constraints owned by the data-quality constraint model.
-- `metadata` is immutable.
-
-### FieldDef Rules
-
-`FieldDef` represents one effective schema
-
-Rules:
-
-- `name` is the Python class attribute name.
-- `type` is a Structure `TypeDef`.
-- `nullable` defaults to `True`.
-- `alias` is an optional Spark column name. If absent, the Spark column name is `name`.
-- `metadata` is immutable and defaults to empty.
-- `description` is optional.
-- `declaring_schema` is the schema class that declared the effective
-- `owning_schema` is the schema whose effective field list contains this
-- `inherited` is true when `declaring_schema != owning_schema`.
-- `overrides` points to the overridden field origin when the field replaces an inherited
-
-Field order is part of the schema contract. Generated Spark schemas and projections must use `SchemaDef.fields` order.
-Python constructors, symbolic field access, diagnostics, and compiler checks use `name`; Spark schemas, validation,
-expression rendering, and projection output use `alias or name`.
-
-### Extraction Flow
-
-```text
-Schema class
-  -> local field capture
-  -> inheritance resolution
-  -> type validation
-  -> SchemaDef
-  -> compile-time checks
-  -> generated Spark schema
-  -> runtime validation
-```
-
-Schema extraction must reject:
-
-- invalid or non-field-factory declarations;
-- invalid decimal precision or scale;
-- invalid nested type expressions;
-- recursive struct cycles;
-- ambiguous inherited fields;
-- non-schema bases;
-- duplicate effective field names after inheritance resolution;
-- empty or non-string field aliases;
-- duplicate effective Spark column names after aliases and inheritance are resolved;
-- unsupported field declaration shapes.
-
-Errors should link to the most specific relevant section.
-
-### Performance
-
-Schema extraction should be cacheable by source fingerprint.
-
-Targets:
-
-- extraction should not import PySpark, start Java, create a SparkSession, or contact a Spark cluster;
-- type objects should be lightweight immutable values;
-- inheritance resolution should be linear in the number of schema classes plus field declarations;
-- generated Spark `StructType` text should be deterministic and cheap to emit.
+The compiler model is an implementation-facing representation of the public schema contract. The
+[Schema background](../background/Schema.back.md#compiler-model) describes its `SchemaDef`, `FieldDef`, `TypeDef`,
+extraction flow, invariants, and performance expectations. The public implications are field identity, effective order,
+aliases, nullability, generated shape, and validation behavior described in the surrounding sections.
 
 ## Output Construction
 
@@ -1021,8 +918,8 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
 
 ## Runtime Shape And Validation
 
-Generated `*_SCHEMA` constants and execution result schemas are equivalent shape-only `StructType` artifacts. They include
-effective Spark names, order, data types, nullability, and nested shape.
+Generated `*_SCHEMA` constants and execution result schemas are equivalent shape-only `StructType` artifacts. They
+include effective Spark names, order, data types, nullability, and nested shape.
 
 Example:
 
@@ -1046,7 +943,7 @@ CUSTOMER_SCHEMA = T.StructType([
 The generated constant is an ordinary PySpark `StructType`, so callers may use it at a storage boundary:
 
 ```python
-from structure_generated.store.pyspark.schemas.customer import CUSTOMER_SCHEMA
+from structure_generated.store.pyspark.schemas.customer import *
 
 customers = spark.read.schema(CUSTOMER_SCHEMA).parquet(customer_source_path)
 ```
@@ -1058,7 +955,8 @@ Callers may use generated schemas with `spark.read.schema(...)`, their own valid
 do not execute value-level constraints.
 
 Execution must materialize equivalent Spark schemas from `SchemaDef.fields` and expose them from the transform
-invocation after `run(session)`. This gives direct-runtime callers the same shape contract without requiring generated files.
+invocation after `run(session)`. This gives direct-runtime callers the same shape contract without requiring generated
+files.
 
 ### Validation Phases
 

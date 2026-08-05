@@ -58,7 +58,7 @@ Advanced aggregate helpers should include:
 - exact metrics: `first_value(...)`, `last_value(...)`, `bool_and(...)`, `bool_or(...)`;
 - statistical metrics: `stddev(...)`, `variance(...)`, `corr(...)`, and `covar(...)`;
 - approximate metrics: `approx_count_distinct(...)` and `approx_percentile(...)`;
-- collection metrics: `collect_list(...)` and `collect_set(...)` only with explicit output element type and
+- collection metrics: `collect_list(...)` and `collect_set(...)`, with optional explicit output element type and
   cardinality warning;
 - filtered metrics using `where=...`, such as `sum(order.total, where=order.status == "paid")`.
 
@@ -69,8 +69,8 @@ Rules:
   them with a literal label.
 - `first_value(...)` and `last_value(...)` are valid only with explicit ordering, because unordered first/last is not
   deterministic.
-- Collection metrics must warn that result array ordering is not guaranteed unless an explicit ordered aggregate form
-  is later admitted.
+- `collect_list(...)` preserves an explicit `order_by=` sequence; without it, and for `collect_set(...)`, result array
+  ordering is not guaranteed.
 - Filtered aggregate predicates may reference the pre-aggregate row scope only.
 - Post-aggregate filtering should be represented as `having(...)`, not as a pre-aggregate `where(...)`.
 
@@ -87,14 +87,17 @@ Public helpers should include:
 - ranking helpers `percent_rank()`, `cume_dist()`, and `ntile(n)`;
 - value helpers `first_value(...)`, `last_value(...)`, and `nth_value(...)`;
 - window aggregate helpers `window_sum(...)`, `window_avg(...)`, `window_min(...)`, `window_max(...)`,
-  `window_count(...)`, and `window_count_distinct(...)` where supported.
+  `window_count(...)`, `window_bool_and(...)`, `window_bool_or(...)`, `window_stddev(...)`,
+  `window_variance(...)`, `window_collect_list(...)`, and `window_collect_set(...)`.
 
 Rules:
 
 - Window specs are immutable value objects captured during symbolic execution.
 - Ranking and offset windows require `order_by`.
 - Aggregate windows require a frame; default frames are not inferred for broad helpers.
-- Range frames require one order expression with a numeric, date, timestamp, or interval-compatible type.
+- Distinct window aggregates are not supported because Spark rejects them; use grouped `count_distinct(...)` instead.
+- Bounded range frames require one numeric order expression. Fully unbounded range frames may use multiple compatible
+  scalar order keys.
 - Multi-column ordering supports explicit direction and null ordering per key.
 - Offset and value helpers may opt into `ignore_nulls=True` only when the backend supports it.
 - Any helper that can choose among tied rows must expose the tie policy or require a complete deterministic order.
@@ -132,8 +135,8 @@ Rules:
 - Callback returns must be typed Structure expressions or typed literals.
 - Python `if`, `and`, `or`, loops, mutation, list/dict construction with symbolic values, and side effects are
   rejected inside callbacks unless a later symbolic form admits them explicitly.
-- Lambdas may close over literals, enum values, and `@special(type="expr")` helpers, but not live DataFrames, Spark columns,
-  sessions, mutable containers, or runtime-only objects.
+- Lambdas may close over literals, enum values, and `@special(type="expr")` helpers, but not live DataFrames, Spark
+  columns, sessions, mutable containers, or runtime-only objects.
 - Nested HOFs are admitted only when the inner lambda does not capture an outer placeholder in a way the target cannot
   lower.
 - Map key transforms must reject duplicate-key ambiguity unless the helper names a merge policy.

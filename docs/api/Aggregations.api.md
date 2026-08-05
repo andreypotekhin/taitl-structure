@@ -23,8 +23,8 @@ the current `order` row scope as `o`.
 - `where=` must be Boolean. A filtered min/max/avg/sum/first/last can be null when no row qualifies.
 - `sum(...)` widens Integer values to Long, Float values to Double, and Decimal precision by ten digits (capped at 38),
   matching Spark's aggregate result type.
-- `avg(...)` returns Double for non-Decimal inputs; Decimal averages grow precision and scale by four digits, each capped
-  at 38.
+- `avg(...)` returns Double for non-Decimal inputs; Decimal averages grow precision and scale by four digits, each
+  capped at 38.
 
 ## Subtotals And Aggregate Metadata
 
@@ -62,14 +62,15 @@ the current `order` row scope as `o`.
 | `mode(...)` | `mode` | `mode(order.category, deterministic=True)` |
 | `skewness(...)` | `skewness` | `skewness(order.total)` |
 | `kurtosis(...)` | `kurtosis` | `kurtosis(order.total)` |
-| `collect_list(...)` | `collect_list` | `collect_list(order.customer_id)` |
+| `collect_list(...)` | `collect_list` | `collect_list(order.customer_id, order_by=order.created_at)` |
 | `collect_set(...)` | `collect_set` | `collect_set(order.customer_id)` |
 | `first_value(...)` | Ordered first-value aggregate | `first_value(order.id, order_by=order.created_at)` |
 | `last_value(...)` | Ordered last-value aggregate | `last_value(order.id, order_by=order.created_at)` |
 
 **Details And Differences**
 
-- Statistical metrics return nullable doubles. Collection order is Spark-dependent.
+- Statistical metrics return nullable doubles. `collect_list(...)` can preserve an explicit `order_by=` sequence;
+  without it, and for `collect_set(...)`, collection order is Spark-dependent.
 - `collect_list(...)` and `collect_set(...)` skip null inputs and return an empty non-null array when no values qualify.
 - `first_value(...)` and `last_value(...)` aggregate forms require a scalar `order_by=` and currently use
   `"error"`; `ignore_nulls=` is supported only with `over=`.
@@ -91,7 +92,7 @@ the current `order` row scope as `o`.
 | `dedupe_latest_by(...)` | Deterministic dedupe | `dedupe_latest_by(order.at, partition_by=order.customer_id)` |
 | `dedupe_earliest_by(...)` | Deterministic dedupe | `dedupe_earliest_by(order.at, partition_by=order.customer_id)` |
 | `drop_duplicates(...)` | `dropDuplicates` / `dropDuplicatesWithinWatermark` | `drop_duplicates(order.customer_id)` |
-| `drop_duplicates_within_watermark(...)` | `dropDuplicatesWithinWatermark` | `drop_duplicates_within_watermark(order.customer_id)` |
+| `drop_duplicates_within_watermark` | `dropDuplicatesWithinWatermark` | `drop_duplicates_within_watermark(...)` |
 | `distinct(...)` | `distinct` | `distinct(order)` |
 
 **Details And Differences**

@@ -43,7 +43,7 @@ as `o`, its customer key as `p`, and its event-time order key as `t`.
 | Structure API | PySpark parity | Example |
 | --- | --- | --- |
 | `window(...)` | `Window.partitionBy(...).orderBy(...)` | `w = window(partition_by=o.customer_id, order_by=o.at)` |
-| `window(event_time, duration, slide=None, start=None)` | `functions.window` | `window(o.at, "10 minutes", "5 minutes")` |
+| `window(event_time, ...)` | `functions.window` | `window(o.at, "10 minutes", "5 minutes")` |
 | `rows_between(...)` | `rowsBetween` | `rows_between(preceding(2), current_row())` |
 | `range_between(...)` | `rangeBetween` | `range_between(preceding(10), current_row())` |
 | `unbounded_preceding()` | `Window.unboundedPreceding` | `rows_between(unbounded_preceding(), current_row())` |
@@ -75,7 +75,6 @@ as `o`, its customer key as `p`, and its event-time order key as `t`.
 | `window_min(...)` | `min` over window | `window_min(order.total, over=w)` |
 | `window_max(...)` | `max` over window | `window_max(order.total, over=w)` |
 | `window_count(...)` | `count` over window | `window_count(over=w)` |
-| `window_count_distinct(...)` | `count_distinct` over window | `window_count_distinct(order.id, over=w)` |
 | `window_bool_and(...)` | `bool_and` over window | `window_bool_and(order.is_paid, over=w)` |
 | `window_bool_or(...)` | `bool_or` over window | `window_bool_or(order.is_overdue, over=w)` |
 | `window_stddev(...)` | `stddev` over window | `window_stddev(order.total, over=w)` |
@@ -91,6 +90,8 @@ as `o`, its customer key as `p`, and its event-time order key as `t`.
   order key; a fully unbounded range frame permits multiple order keys of any orderable scalar type.
 - Window `collect_list(...)` and `collect_set(...)` skip null inputs and return empty non-null arrays for empty frames.
 - Value window aggregates other than `count(...)` can be null for an empty frame, even when their input is non-null.
-- Spark does not permit distinct window aggregates, so `window_count_distinct(...)` rejects the combination early.
 - Raw `Column.over(...)` and raw PySpark `WindowSpec` objects are unsupported. See the
   [Transforms background](../background/Transform.back.md).
+
+`window_count_distinct(...)` is intentionally unsupported because Spark does not permit distinct window aggregates.
+Use `window_count(...)` or grouped `count_distinct(...)` instead.

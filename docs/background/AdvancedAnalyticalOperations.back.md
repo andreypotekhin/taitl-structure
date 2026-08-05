@@ -9,10 +9,8 @@ See the exhaustive [aggregations](../api/Aggregations.api.md), [windows](../api/
 
 The governing sources are the
 [Advanced Analytical Operations specification](../dev/specifications/AdvancedAnalyticalOperations.md) and
-[design](../dev/design/AdvancedAnalyticalOperations.md). The specification contains staged-scope language: its
-opening boundary defers explicit grouping-set and post-aggregate lowering, while its later implementation sections,
-the capability profile, and the checked tests define those forms. This background follows the implemented, tested
-contract and labels genuinely deferred behavior below.
+[design](../dev/design/AdvancedAnalyticalOperations.md). This background follows the implemented, tested contract and
+labels genuinely deferred behavior below.
 
 The analytical surface supports common grouped aggregates, custom grouping sets, ranking, lag/lead, rolling row
 metrics, deterministic latest/earliest selection, exact/subset duplicate removal, and basic array/map callbacks. This
@@ -25,9 +23,9 @@ already covers `group_by(...)`, basic aggregates, selected-row helpers, exact/su
 basic array/map transforms. This topic adds `rollup(...)`, `cube(...)`, explicit grouping sets, additional metrics,
 filtered aggregates, reusable windows and frames, richer collection helpers, diagnostics, capabilities, and parity.
 
-Streaming aggregation and broad analytic windows, automatic cost-based optimization, hidden UDF/RDD/Pandas fallback,
-and storage writes remain outside this contract. A feature is admitted only when its source semantics, IR, target
-recipe, explain/traceability, diagnostics, and tests agree.
+Advanced streaming aggregation and broad analytic windows, automatic cost-based optimization, hidden UDF/RDD/Pandas
+fallback, and storage writes remain outside this contract. A feature is admitted only when its source semantics, IR,
+target recipe, explain/traceability, diagnostics, and tests agree.
 
 
 ## Grouping
@@ -67,54 +65,44 @@ def revenue_rollup(self, order: OrderFulfillment) -> OrderRevenueRollup:
     )
 ```
 
-Shortcut form:
-
-```python
-return rollup(
-    tenant_id=order.tenant.tenant_id,
-    product_category=order.product_category,
-    order_date=order.business.order_date,
-).agg(
-    grouping_id=grouping_id(),
-    category_subtotal=is_grouped(order.product_category),
-    order_count=count(),
-    quantity_total=sum(order.quantity),
-).as_schema(OrderRevenueRollup)
-```
-
-The shortcut form is useful when the output schema mostly mirrors grouping keys and metrics. The canonical constructor
-form is clearer when the output also includes parent structures, literals, or non-key fields that compile through
-Structure's implicit first-value aggregate for grouped parent fields.
-
 Cube form:
 
 ```python
-return cube(
+cube(
     tenant_id=order.tenant.tenant_id,
     product_category=order.product_category,
     customer_tier=order.customer_tier,
-).agg(
+)
+
+return OrderProductCube(
+    tenant_id=order.tenant.tenant_id,
+    product_category=order.product_category,
+    customer_tier=order.customer_tier,
     grouping_id=grouping_id(),
     order_count=count(),
     distinct_customers=count_distinct(order.customer_id),
     gross_total=sum(order.total),
-).as_schema(OrderProductCube)
+)
 ```
 
 Grouping-set form:
 
 ```python
-return grouping_sets(
+grouping_sets(
     (order.region, order.customer_id),
     (order.region,),
     (),
-).agg(
+)
+
+return OrderGroupingSetSummary(
+    region=order.region,
+    customer_id=order.customer_id,
     grouping_id=grouping_id(),
     region_subtotal=is_grouped(order.region),
     customer_subtotal=is_grouped(order.customer_id),
     order_count=count(),
     gross_total=sum(order.total),
-).as_schema(OrderGroupingSetSummary)
+)
 ```
 
 
@@ -139,7 +127,7 @@ Supported advanced aggregates:
 - `covar(left, right, where=None)`;
 - `approx_count_distinct(value, relative_sd=None, where=None)`;
 - `approx_percentile(value, percentage, accuracy=None, where=None)`;
-- `collect_list(value, element_type=None, where=None)`;
+- `collect_list(value, order_by=None, element_type=None, where=None)`;
 - `collect_set(value, element_type=None, where=None)`;
 - `first_value(value, order_by=..., where=None, ties="error")`;
 - `last_value(value, order_by=..., where=None, ties="error")`.
@@ -152,7 +140,8 @@ Rules:
 - `where=...` filters only the metric that owns it. It does not filter grouping keys or other metrics.
 - `first_value(...)` and `last_value(...)` are deterministic aggregate helpers only when `order_by=...` is supplied.
 - `ties="error"` is the admitted tie policy for deterministic first/last aggregate helpers.
-- `collect_list(...)` and `collect_set(...)` produce Spark collection aggregates; element ordering is not guaranteed.
+- `collect_list(...)` preserves the declared `order_by=` sequence; without it, and for `collect_set(...)`, element
+  ordering is not guaranteed.
 - `element_type=...` is required when Structure cannot infer the collection aggregate element type.
 - Approximate metrics stay visibly approximate in generated PySpark.
 - `having(...)` predicates can reference grouped keys and aggregate output metrics through the callback argument; input
@@ -176,12 +165,16 @@ return OrderRevenueRollup(
 Post-aggregate filtering:
 
 ```python
-return group_by(customer_id=order.customer_id).agg(
+group_by(customer_id=order.customer_id)
+having(
+    lambda total: total.order_count > 1
+)
+
+return CustomerOrderSummary(
+    customer_id=order.customer_id,
     order_count=count(),
     gross_total=sum(order.total),
-).having(
-    lambda total: total.order_count > 1
-).as_schema(CustomerOrderSummary)
+)
 ```
 
 Statistical, approximate, and ordered metrics:
@@ -214,10 +207,10 @@ customer_window = window(
 )
 ```
 
-Window frames are explicit. Row frames count physical rows. Range frames use values in the ordering column and require
-a compatible order type. `order_by` accepts one expression or an ordered list/tuple. Use `asc_nulls_first()`,
-`asc_nulls_last()`, `desc_nulls_first()`, or `desc_nulls_last()` when null placement must be deterministic. A range
-frame accepts exactly one order key.
+Window frames are explicit. Row frames count physical rows. Bounded range frames use values in one numeric ordering
+column; fully unbounded range frames may use multiple compatible scalar order keys. `order_by` accepts one expression
+or an ordered list/tuple. Use `asc_nulls_first()`, `asc_nulls_last()`, `desc_nulls_first()`, or `desc_nulls_last()`
+when null placement must be deterministic.
 
 Frame helpers:
 
@@ -463,8 +456,8 @@ strategy hints are separate compiler-visible operations. Structure never introdu
 repartitioning, or materialization implicitly. Storage writes and Spark job lifecycle remain caller-owned.
 
 Advanced analytical operations are accepted only when source semantics, IR, capability checks, execution and generated
-lowering, explain/traceability, diagnostics, and parity tests agree. Streaming aggregation and broad analytic windows,
-automatic cost optimization, hidden UDF/RDD/Pandas fallback, and storage writes remain deferred or rejected.
+lowering, explain/traceability, diagnostics, and parity tests agree. Advanced streaming aggregation and broad analytic
+windows, automatic cost optimization, hidden UDF/RDD/Pandas fallback, and storage writes remain deferred or rejected.
 
 See also: [Transform](Transform.back.md), [Compiler](Compiler.back.md), [PySpark code generation](Generation.back.md),
 [Streaming](Streaming.back.md), and [Capabilities](Capabilities.back.md).

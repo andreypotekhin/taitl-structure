@@ -134,3 +134,15 @@ future ready-to-start path, `SearchDocumentsRunContract` records one immutable s
 `SearchDocumentsRunContract.validate()` checks this handoff metadata only. It does not prove bounded top-K state,
 watermark completion, stream-stream join support, checkpoint recovery, or generated-code readiness. Those remain separate
 compiler and live-evidence gates.
+
+## SearchDocuments Finite-Window Top-K Contract
+
+`SearchFiniteTopKContract` records the state boundary required for the two bounded selection stages without admitting a
+runtime implementation. `candidate_admission` must retain exactly 1,000 rows per query window and `overlap_narrowing`
+must retain exactly 100. Both stages require a `query_id` grouping key, `requested_at` event time, compatible watermark
+and completion-window declarations, append output, the immutable serving `snapshot_id`, and restart on the same
+checkpoint only when that snapshot is unchanged.
+
+The order contract is `score desc, document_id asc`; the identifier tie-breaker is mandatory. The metadata guard does not
+lower `row_number`, provide arbitrary state, or prove live restart behavior. Until those runtime and evidence gates pass,
+SearchDocuments remains design-gated and callers must use a batch/materialization boundary.

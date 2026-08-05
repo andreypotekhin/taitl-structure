@@ -710,3 +710,24 @@ run = SearchDocumentsRunContract(
 )
 run.validate()
 ```
+
+The future bounded ranking stages are reviewed separately from the run handoff:
+
+```python
+from examples.search.adoption import SearchFiniteTopKContract
+
+SearchFiniteTopKContract(
+    stage="candidate_admission",
+    retained_bound=1000,
+    grouping_key=("query_id",),
+    order_keys=("score desc", "document_id asc"),
+    tie_policy="score_desc_document_id_asc",
+    event_time_field="requested_at",
+    watermark_delay="10 minutes",
+    completion_window="10 minutes",
+    output_mode="append",
+    snapshot_id="search-snapshot-v1",
+    state_identity="search-candidate-v1",
+    restart_policy="same_checkpoint_same_snapshot",
+).validate()
+```

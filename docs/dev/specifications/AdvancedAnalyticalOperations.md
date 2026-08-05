@@ -6,14 +6,15 @@ This specification defines the remaining aggregation, window, and higher-order f
 Sprint 08 analytical slice. It is implementation-ready input for Sprint 09 work.
 
 The feature goal is full compiler-visible analytical coverage for mainstream batch pipelines. A supported operation
-must compile to IR, pass backend capability checks, lower through shared execution/generated-code PySpark recipes, appear in
-traceability and explain output, and reject unsupported forms before runtime.
+must compile to IR, pass backend capability checks, lower through shared execution/generated-code PySpark recipes,
+appear in traceability and explain output, and reject unsupported forms before runtime.
 
 ## Scope
 
 In scope:
 
 - advanced grouping through `rollup(...)` and `cube(...)`;
+- explicit `grouping_sets(...)` lowering and post-aggregate `having(...)` predicates;
 - additional aggregate metric helpers;
 - filtered aggregates;
 - reusable `window(...)` specifications and explicit row/range frames;
@@ -23,10 +24,8 @@ In scope:
 
 Out of scope:
 
-- streaming aggregation and streaming window orchestration;
+- advanced streaming aggregation and streaming window orchestration;
 - automatic cost-based optimization;
-- explicit `grouping_sets(...)` lowering;
-- post-aggregate `having(...)` predicates;
 - hidden UDFs, RDD fallback, Pandas UDF fallback, or arbitrary row-wise Python callbacks;
 - storage writes, table management, and Spark job lifecycle.
 
@@ -45,14 +44,14 @@ This specification adds the remaining public surface. Implementations must prese
 
 ## Public Imports
 
-The following new symbols are candidates for export from `structure` when implemented:
+The advanced helpers are exported from `structure.plugin.pyspark`. The root `structure` package remains
+target-neutral and does not export target-specific DSL symbols.
 
 ```python
-import structure
+from structure.plugin.pyspark import *
 ```
 
-Public export is part of implementation acceptance. `grouping_sets(...)` is admitted for explicit grouping levels and
-lowers through the shared PySpark recipe layer.
+`grouping_sets(...)` is admitted for explicit grouping levels and lowers through the shared PySpark recipe layer.
 
 ## Advanced Grouping
 
@@ -116,8 +115,8 @@ Approximate metrics:
 
 Collection metrics:
 
-- `collect_list(value, element_type=...)`;
-- `collect_set(value, element_type=...)`.
+- `collect_list(value, order_by=None, element_type=None, where=None)`;
+- `collect_set(value, element_type=None, where=None)`.
 
 Rules:
 
@@ -127,9 +126,8 @@ Rules:
 - Unordered first/last aggregates are invalid.
 - Approximate metrics must be named as approximate in generated code comments, traceability, and explain output.
 - `relative_sd`, `percentage`, and `accuracy` must be literals so capability checks can validate them without Spark.
-- Collection metrics produce nullable arrays unless the aggregate function and value expression prove otherwise.
-- Collection metrics should emit a warning that element ordering is not guaranteed unless an ordered form is later
-  admitted.
+- `collect_list(...)` and `collect_set(...)` produce non-null arrays. `collect_list(...)` preserves an explicit
+  `order_by=` sequence; without it, and for `collect_set(...)`, element ordering is not guaranteed.
 
 ## Filtered Aggregates
 
@@ -165,7 +163,8 @@ Rules:
 - `order_by` accepts expressions or order descriptors with direction and null ordering.
 - `frame` is required for broad aggregate window helpers.
 - `rows_between(start, end)` uses physical row offsets.
-- `range_between(start, end)` uses order-value ranges and requires exactly one compatible order expression.
+- `range_between(start, end)` uses order-value ranges. Bounded ranges require exactly one numeric order expression;
+  fully unbounded ranges may use multiple compatible scalar order keys.
 - Frame bounds may be unbounded, current row, preceding N, or following N.
 - Window specs are immutable and may be reused by multiple projection assignments.
 

@@ -7,6 +7,9 @@ SearchOutputMode = Literal["append"]
 SearchEventTimeField = Literal["requested_at"]
 SearchFinalityPolicy = Literal["append_final_no_revisions"]
 SearchRefreshRestartPolicy = Literal["new_run_on_snapshot_refresh"]
+SearchTopKStage = Literal["candidate_admission", "overlap_narrowing"]
+SearchTopKTiePolicy = Literal["score_desc_document_id_asc"]
+SearchTopKRestartPolicy = Literal["same_checkpoint_same_snapshot"]
 
 REQUIRED_SNAPSHOT_INPUTS = (
     "index",
@@ -83,4 +86,71 @@ class SearchDocumentsRunContract:
             raise ValueError(
                 "SEARCH-RUN-E1003: emitted SearchDocuments results must be final and never revised; "
                 "see docs/api/Streaming.api.md#searchdocuments-caller-owned-run-handoff"
+            )
+
+
+@dataclass(frozen=True)
+class SearchFiniteTopKContract:
+    """Metadata for one bounded SearchDocuments candidate-selection stage."""
+
+    stage: SearchTopKStage
+    retained_bound: int
+    grouping_key: tuple[str, ...]
+    order_keys: tuple[str, ...]
+    tie_policy: SearchTopKTiePolicy
+    event_time_field: SearchEventTimeField
+    watermark_delay: str
+    completion_window: str
+    output_mode: SearchOutputMode
+    snapshot_id: str
+    state_identity: str
+    restart_policy: SearchTopKRestartPolicy
+
+    def validate(self) -> None:
+        """Reject a top-K shape that is unbounded or can revise its tie order."""
+
+        declarations = (
+            ("watermark_delay", self.watermark_delay),
+            ("completion_window", self.completion_window),
+            ("snapshot_id", self.snapshot_id),
+            ("state_identity", self.state_identity),
+        )
+        for name, value in declarations:
+            if not value.strip():
+                raise ValueError(
+                    f"SEARCH-TOPK-E1010: {name} must be a non-empty stable declaration; "
+                    "see docs/api/Streaming.api.md#searchdocuments-finite-window-top-k-contract"
+                )
+
+        if not self.grouping_key or any(not key.strip() for key in self.grouping_key):
+            raise ValueError(
+                "SEARCH-TOPK-E1011: grouping_key must name a finite query grouping field; "
+                "see docs/api/Streaming.api.md#searchdocuments-finite-window-top-k-contract"
+            )
+        if self.order_keys != ("score desc", "document_id asc"):
+            raise ValueError(
+                "SEARCH-TOPK-E1011: order_keys must be score desc followed by document_id asc for deterministic ties; "
+                "see docs/api/Streaming.api.md#searchdocuments-finite-window-top-k-contract"
+            )
+
+        expected_bound = {"candidate_admission": 1000, "overlap_narrowing": 100}.get(self.stage)
+        if expected_bound is None or self.retained_bound != expected_bound:
+            raise ValueError(
+                "SEARCH-TOPK-E1011: candidate_admission retains 1000 rows and overlap_narrowing retains 100 rows; "
+                "see docs/api/Streaming.api.md#searchdocuments-finite-window-top-k-contract"
+            )
+        if self.tie_policy != "score_desc_document_id_asc":
+            raise ValueError(
+                "SEARCH-TOPK-E1012: top-K tie policy must be score_desc_document_id_asc; "
+                "see docs/api/Streaming.api.md#searchdocuments-finite-window-top-k-contract"
+            )
+        if self.event_time_field != "requested_at" or self.output_mode != "append":
+            raise ValueError(
+                "SEARCH-TOPK-E1012: top-K requires requested_at event time and append output; "
+                "see docs/api/Streaming.api.md#searchdocuments-finite-window-top-k-contract"
+            )
+        if self.restart_policy != "same_checkpoint_same_snapshot":
+            raise ValueError(
+                "SEARCH-TOPK-E1012: restart must reuse the checkpoint only with the same snapshot; "
+                "see docs/api/Streaming.api.md#searchdocuments-finite-window-top-k-contract"
             )

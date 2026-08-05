@@ -11,8 +11,7 @@ wrapper: admitted APIs remain typed, symbolic, capability-checked, explainable, 
 
 The default target is ordinary PySpark `>=3.5,<4.1`; completed compiler-visible batch features also target Spark
 Connect. See [Compatibility.md](../Compatibility.md) for the full target policy,
-[APICatalog.md](../APICatalog.md) for the public API catalog and checked coverage table, and
-[API Gaps](../dev/Gaps.md) for the developer backlog.
+[APICatalog.md](../APICatalog.md) for the public API catalog and checked coverage table.
 
 ## PySpark 4.1 adoption reference
 
@@ -22,13 +21,13 @@ default support range until V11 closes.
 
 | PySpark 4.1 surface | Planned Structure status | Contract |
 | --- | --- | --- |
-| `Column.transform` and typed higher-order additions | design-gated | Symbolic element callback, declared result type, nullability, and row-preserving array semantics |
-| Deterministic new scalar/string/binary/collection functions | design-gated | Typed helpers with capability checks and online/generated parity |
-| Random/seeded helpers (`random`, `uniform`, `randstr`, `uuid`) | design-gated | Explicit seed and nondeterminism policy required; streaming remains unclaimed |
-| `DataFrame.exists` and IN subqueries | planned | Correlation scope, aliases, null behavior, boolean result, and explainable dependencies |
-| `DataFrame.lateralJoin` | design-gated | Typed relation output, cardinality, correlation, and streaming contract required |
-| Complex observations and sketch aggregates | design-gated | Metric side channels and serialized approximate sketches need separate typed contracts |
-| Arrow UDF/UDTF and `transformWithState` | caller-owned-guided/design-gated | Use raw/caller-owned PySpark; Structure does not generate arbitrary worker Python or state stores |
+| `Column.transform` and higher-order additions | design-gated | Typed callback/result; nullability; row preservation |
+| Deterministic scalar/string/binary/collection functions | design-gated | Typed helpers with capability/parity checks |
+| Random/seeded helpers | design-gated | Explicit seed and nondeterminism policy; no streaming |
+| `DataFrame.exists` and IN subqueries | planned | Correlation, aliases, null behavior, and boolean result |
+| `DataFrame.lateralJoin` | design-gated | Typed relation output, cardinality, correlation, and streaming contract |
+| Complex observations and sketch aggregates | design-gated | Metric side channels and serialized sketch contracts |
+| Arrow UDF/UDTF; `transformWithState` | caller-owned/design-gated | Raw PySpark; no worker Python |
 
 V11's full ledger is in [APICatalog.md](../APICatalog.md#pyspark-41-adoption-v11). The current public baseline remains
 ordinary and Connect PySpark `>=3.5,<4.1` until every promoted 4.1 row has capability, diagnostics, tests, and runtime
@@ -57,7 +56,7 @@ evidence.
 | Aggregations and dedupe | supported | `GroupedData` and Window patterns | [Aggregates](../api/Aggregations.api.md) |
 | Inline and reusable windows | supported | `Window` and window functions | [Windows API](../api/Windows.api.md) |
 | Array/map helpers | supported | Higher-order and map SQL functions | [Collections API](../api/Collections.api.md) |
-| Relation operations | supported | Set composition, ordering, assertions, hierarchy, and sampling | [Relations API](../api/Relations.api.md) |
+| Relation operations | supported | Sets, order, assertions, hierarchy, sampling | [API](../api/Relations.api.md) |
 
 **Details And Differences**
 
@@ -92,17 +91,17 @@ and stay outside Structure's scope.
 
 | API Area | Status | PySpark Parity | Details |
 | --- | --- | --- | --- |
-| Struct mutation | supported | `withField`, `dropFields` | Explicit result Schema preserves the exact nested type and aliases. |
-| Bitwise expressions | supported | `bitwise_and`, `bitwise_or`, `bitwise_xor`, `bitwise_not` | Integer/long-only typed Column expressions. |
-| Nearest as-of and extra stats | supported | Advanced joins and analytics | Nearest as-of matching and typed statistics are implemented with explicit tie and target rules. |
-| Join reordering | design-gated | Cost-based join planning | No public optimizer-ordering helper; dependency-safe, explainable planning is still required. |
-| Array variants; generators | partial | `slice`, `explode`, `posexplode`, `inline` | Typed struct generators are supported; raw or untyped generators need distinct contracts. |
-| Window order; more aggregates | supported | Window functions and aggregate frames | Sprint 14. |
+| Struct mutation | supported | `withField`, `dropFields` | Explicit result Schema preserves nested type and aliases. |
+| Bitwise expressions | supported | Bitwise functions | Integer/long-only typed expressions. |
+| Nearest as-of; stats | supported | Advanced joins | Typed statistics with explicit ties and targets. |
+| Join reordering | design-gated | Cost-based join planning | No public helper; planning must remain explainable. |
+| Array variants; generators | partial | `slice`/`explode`/`inline` | Typed only; raw needs contracts. |
+| Window order; more aggregates | supported | Window and aggregate frames | Typed window and aggregate helpers. |
 | Collection basics | supported | Core arrays/maps | [Collections API](../api/Collections.api.md) |
-| Raw APIs/lifecycle | unsupported | `expr`, raw `WindowSpec`, UDTF | Use hooks; caller owns lifecycle. Scalar `@special(type="udf")` is row-local ordinary-PySpark supported. |
+| Raw APIs/lifecycle | unsupported | `expr`, `WindowSpec`, UDTF | Use hooks; caller owns lifecycle. |
 
-For detailed restrictions, diagnostics, and feature-admission rationale, consult [APICatalog.md](../APICatalog.md),
-[API Gaps](../dev/Gaps.md), and the linked reference pages.
+For detailed restrictions, diagnostics, and feature-admission rationale, consult [APICatalog.md](../APICatalog.md)
+and the linked reference pages.
 
 ## Next Steps
 

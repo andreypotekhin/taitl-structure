@@ -249,6 +249,8 @@ class EnrichOrdersGenerated:
 
 ## 8. (Optional) Use Generated Code
 
+Step is optional because it is simpler to execute the transform with `.run()` method, without generating the code.
+
 ```python
 from structure_generated.store.pyspark.transforms.examples.store.transforms.orders.enrich import EnrichOrdersGenerated
 

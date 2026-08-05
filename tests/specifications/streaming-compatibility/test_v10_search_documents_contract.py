@@ -4,7 +4,7 @@ from typing import Any, cast
 
 import pytest
 
-from examples.search.adoption import REQUIRED_SNAPSHOT_INPUTS, SearchDocumentsRunContract
+from examples.search.adoption import REQUIRED_SNAPSHOT_INPUTS, SearchDocumentsRunContract, SearchFiniteTopKContract
 from examples.search.transforms.searching.search_docs.SearchDocuments import SearchDocuments
 from structure.core.compiler.api import Compiler
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
@@ -137,4 +137,51 @@ def test_search_documents_run_contract_rejects_non_append_or_revision_policy() -
     )
 
     with pytest.raises(ValueError, match="SEARCH-RUN-E1002"):
+        contract.validate()
+
+
+@pytest.mark.parametrize(
+    ("stage", "retained_bound"),
+    [("candidate_admission", 1000), ("overlap_narrowing", 100)],
+)
+def test_search_documents_finite_top_k_contract_is_bounded_and_deterministic(stage: str, retained_bound: int) -> None:
+    """Candidate and overlap stages declare finite state and deterministic ties."""
+
+    contract = SearchFiniteTopKContract(
+        stage=cast(Any, stage),
+        retained_bound=retained_bound,
+        grouping_key=("query_id",),
+        order_keys=("score desc", "document_id asc"),
+        tie_policy="score_desc_document_id_asc",
+        event_time_field="requested_at",
+        watermark_delay="10 minutes",
+        completion_window="10 minutes",
+        output_mode="append",
+        snapshot_id="search-snapshot-v1",
+        state_identity=f"search-{stage}-v1",
+        restart_policy="same_checkpoint_same_snapshot",
+    )
+
+    contract.validate()
+
+
+def test_search_documents_finite_top_k_contract_rejects_unbounded_or_nondeterministic_shape() -> None:
+    """A top-K contract cannot silently accept a global rank window or unstable ties."""
+
+    contract = SearchFiniteTopKContract(
+        stage="candidate_admission",
+        retained_bound=100,
+        grouping_key=("query_id",),
+        order_keys=("score desc",),
+        tie_policy="score_desc_document_id_asc",
+        event_time_field="requested_at",
+        watermark_delay="10 minutes",
+        completion_window="10 minutes",
+        output_mode="append",
+        snapshot_id="search-snapshot-v1",
+        state_identity="search-candidate-v1",
+        restart_policy="same_checkpoint_same_snapshot",
+    )
+
+    with pytest.raises(ValueError, match="SEARCH-TOPK-E1011"):
         contract.validate()

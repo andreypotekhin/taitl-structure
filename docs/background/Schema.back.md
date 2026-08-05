@@ -60,6 +60,10 @@ The PySpark field DSL is imported from `structure.plugin.pyspark`. Standalone Py
 function contracts are available through `structure.plugin.pyspark.types`. Transform modules that need an expression
 `array(...)` helper should import the PySpark DSL explicitly rather than combining wildcard imports.
 
+Public schema examples should use the canonical form: import `Schema` from `structure` and field factories from
+`structure.plugin.pyspark`. A schema declaration is intentionally ordinary Python class syntax so that it remains
+cheap to inspect for compiler checks, generated schemas, runtime validation, traceability, and IDE navigation.
+
 A field declaration has a Python class attribute name and a field factory, a Python hint, or both:
 
 ```python
@@ -78,6 +82,17 @@ class Order(Schema):
 A bare supported hint infers the matching default factory. An explicit factory adds Spark-specific detail such as
 nullability, aliases, decimal precision and scale, and collection-member nullability. Hints never control nullability;
 the factory default and `nullable=` do.
+
+### Schema Classes
+
+A schema class inherits from `Schema` and declares fields with supported factories, hints, or both. Schema classes are
+declarative contracts rather than data classes. Their constructors are used in transform methods to capture output
+projections, not to create Python row objects.
+
+Schema classes may inherit directly from `Schema` or from one or more user-defined schema classes. Every non-`object`
+base must itself be a schema class, and Python must be able to construct a valid C3 MRO. User-defined non-field class
+attributes are allowed when they do not look like failed field declarations. Public schema classes should be
+import-safe.
 
 ### Declaration Grammar
 
@@ -146,6 +161,26 @@ generated Spark fields, symbolic projections, runtime validation, and generated 
 Structure does not declare primary keys or uniqueness. A required field is expressed only with `nullable=False` and does
 not establish a key or a runtime quality rule.
 
+Each effective field retains its name, type, nullability, alias, metadata, description, declaring schema, owning schema,
+inherited and override status, and source location. These details are semantic model data for diagnostics, traceability,
+and generated documentation; metadata and descriptions do not alter Spark shape semantics.
+
+### Field Options in Use
+
+```python
+class CustomerSource(Schema):
+    customer_id = string(
+        nullable=False,
+        alias="customer-id",
+        metadata={"source": "crm", "pii": "indirect"},
+        description="Stable customer identifier supplied by the CRM.",
+    )
+    display_name = string(nullable=True, description="Name displayed to account users.")
+```
+
+`customer_id` is the Python name used in Structure code; `customer-id` is the Spark column read or written. Structure
+does not declare primary keys or uniqueness through these options.
+
 ### Aliases
 
 Use `alias=` when the physical Spark name differs from the Python name:
@@ -184,6 +219,21 @@ class StillRawPromotion(RawPromotion):
 Aliases must be non-empty strings. Duplicate Python field names and duplicate effective Spark column names after
 inheritance and alias resolution are rejected. Schema field `alias=` is separate from transform output `.alias(...)` and
 generated Spark projection `.alias(...)`; those APIs name outputs or rendered columns and do not change schema fields.
+
+For example, this duplicate effective Spark name is rejected:
+
+```python
+class Duplicate(Schema):
+    promotion_code = string(alias="promo-code")
+    alternate_code = string(alias="promo-code")
+```
+
+An invalid alias is rejected before compilation:
+
+```python
+string(alias="")
+string(alias=123)
+```
 
 ### Unsupported Declaration Syntax
 
@@ -258,6 +308,28 @@ binary()     -> T.BinaryType()
 
 `decimal(precision, scale)` requires positive integer precision and non-negative integer scale, with `scale <=
 precision`. Omitted precision or scale is rejected. `decimal(12, 2)` maps to `T.DecimalType(12, 2)`.
+
+One schema can use all scalar types; the choice is part of the contract and is never inferred from live data:
+
+```python
+class ScalarSample(Schema):
+    label = string(nullable=False)
+    item_count = integer(nullable=False)
+    event_sequence = long(nullable=False)
+    confidence = float(nullable=True)
+    score = double(nullable=True)
+    active = boolean(nullable=False)
+    business_date = date(nullable=False)
+    recorded_at = timestamp(nullable=False)
+```
+
+Decimal precision and scale are explicit. A currency field with ten integral digits and two fractional digits uses
+`decimal(12, 2)`:
+
+```python
+class Payment(Schema):
+    total = decimal(12, 2, nullable=False)
+```
 
 ### Arrays
 
@@ -382,6 +454,27 @@ The effective order is `id`, `tenant_id`, `created_at`, `updated_at`, `customer_
 A schema may inherit directly from `Schema` or from one or more user-defined schema classes. Every non-`object` base
 must be a schema class, and Python must be able to construct a valid C3 MRO. Non-schema mixins are rejected.
 
+Supported inheritance can be as small as one shared base:
+
+```python
+class Customer(EntityKeys):
+    name = string(nullable=True)
+```
+
+and can combine multiple schema bases:
+
+```python
+class Order(EntityKeys, AuditFields):
+    total = decimal(12, 2, nullable=True)
+```
+
+This is rejected because `SomePlainMixin` is not a schema class:
+
+```python
+class Order(EntityKeys, SomePlainMixin):
+    total = decimal(12, 2, nullable=True)
+```
+
 ### Effective Field Algorithm
 
 The compiler builds an ordered effective field map:
@@ -432,6 +525,28 @@ class Order(SourceKeys, BusinessKeys):
 
 The resolved field keeps the first inherited position. A shared diamond ancestor contributes only once.
 
+Diamond inheritance is valid when the shared ancestor is reached through multiple paths:
+
+```python
+class Keys(Schema):
+    id = string(nullable=False)
+
+
+class CustomerKeys(Keys):
+    customer_id = string(nullable=False)
+
+
+class ProductKeys(Keys):
+    product_id = string(nullable=False)
+
+
+class CustomerProduct(CustomerKeys, ProductKeys):
+    score = decimal(8, 4, nullable=True)
+```
+
+`Keys.id` is collected once. By contrast, two unrelated bases that declare the same field require a local redeclaration;
+the local field keeps the first inherited position.
+
 ### Field Origin and Identity
 
 Every effective `FieldDef` retains final owning schema, declaring schema, field name, effective order, inherited status,
@@ -441,6 +556,10 @@ traceability, and source navigation.
 Inheritance does not erase nominal identity. `OrderRaw(EntityKeys)` and `CustomerRaw(EntityKeys)` can have compatible
 structure while remaining different schema types. Transform flow validation uses schema identity unless a compatibility
 rule explicitly requests structural compatibility.
+
+Inheritance does not support deleting inherited fields, partial field overrides, metadata or description merging,
+non-schema mixins, local reordering without a full redeclaration, or polymorphic transform dispatch based on schema
+subclassing.
 
 ## Compiler Model
 
@@ -479,9 +598,18 @@ TypeDef
 ```
 
 `SchemaDef.fields` is the effective ordered list. `SchemaDef.local_fields` contains only declarations written directly
-on
-the class. Python constructors, symbolic field access, diagnostics, and compiler checks use Python `name`; Spark
+on the class. Python constructors, symbolic field access, diagnostics, and compiler checks use Python `name`; Spark
 schemas, validation, expression rendering, and projection use `alias or name`.
+
+`SchemaDef` represents one discovered `Schema` class: `name` is the class name, `qualified_name` is its importable
+module-qualified identity, `module` is the source module, `source_path` and `source_line` are optional diagnostics,
+`bases` lists direct schema bases in declaration order, `fields` is the effective output list, `local_fields` contains
+direct declarations, and `constraints` and immutable `metadata` carry separate model information.
+
+`FieldDef` represents one effective field. Its `name` is the Python attribute name; its `type`, `nullable`, `alias`,
+immutable `metadata`, and optional `description` define the field contract. `declaring_schema` identifies where the
+field was declared, `owning_schema` identifies the effective schema, `inherited` records whether it was inherited,
+`overrides` records a replaced origin, and source path and line support diagnostics.
 
 Extraction follows:
 
@@ -504,6 +632,10 @@ Extraction should be cacheable by source fingerprint. Type values should be ligh
 resolution should be linear in schema classes plus field declarations; generated `StructType` text should be
 deterministic
 and cheap to emit. None of these operations may import PySpark or contact a Spark cluster.
+
+The extraction pipeline is therefore: capture local fields, resolve inheritance, validate types, build `SchemaDef`, run
+compile-time checks, generate the Spark schema, and validate runtime shape. Extraction should be cacheable by source
+fingerprint, and type objects should remain lightweight immutable values.
 
 ## Symbolic Output Construction
 
@@ -607,6 +739,14 @@ Only fields required by each direct base are copied. Extra fields on `order` are
 
 Nullability is part of every field and every expression. Static nullability is conservative: it comes from declarations,
 literals, helper rules, and simple filter narrowing. It does not scan data or prove arbitrary Python conditions.
+
+A nullable expression cannot feed a non-nullable target unless it is narrowed or repaired. A
+`where(parent_struct.is_not_null())` guard can narrow nested reads through that parent according to each nested field's
+own declared nullability. Structure does not infer these facts from arbitrary predicates.
+
+Assignment through joins follows the declared join semantics: a `left` join makes right-side fields nullable, while an
+`inner` join preserves right-side declared nullability unless a later operation narrows it. Hooks do not establish
+compile-time nullability facts unless a later hook postcondition contract says so.
 
 ### Spark SQL Assumptions
 
@@ -720,6 +860,9 @@ customers = spark.read.schema(CUSTOMER_SCHEMA).parquet(customer_source_path)
 Structure validates and projects DataFrames, but callers own reads, writes, table creation, partitioning, checkpoints,
 output modes, and storage-specific options. Execution materializes equivalent schemas from `SchemaDef.fields` and
 exposes them after `run(session)` without requiring generated files.
+
+Generated schemas are shape-only artifacts. Callers may reuse them for their own reads, validation, or pre-write
+projection, but generated schemas do not execute storage operations or value-level constraints.
 
 ### Validation Phases and Policy
 
@@ -845,6 +988,47 @@ Inheritance diagnostics include schema, conflicting field, involved bases, sourc
 fix. Runtime constraint diagnostics additionally include constraint kind and cost because action-triggering checks are
 materially different from schema-shape failures.
 
+Additional declaration diagnostics should remain actionable:
+
+```text
+Invalid schema field type:
+  OrderRaw.id uses string
+
+Use an explicit Structure type object:
+  id = string(nullable=False)
+
+See docs/dev/specifications/SchemaDeclarationSyntax.md
+```
+
+```text
+Invalid decimal type:
+  OrderNormalized.total uses decimal(2, 12)
+
+Decimal scale must be less than or equal to precision:
+  total = decimal(12, 2, nullable=True)
+
+See docs/dev/specifications/SchemaModel.md
+```
+
+```text
+Ambiguous inherited field:
+  Order.id is declared by SourceKeys and BusinessKeys.
+
+Resolve the field in Order with a local declaration:
+  id = string(nullable=False)
+
+See docs/dev/specifications/SchemaInheritance.md
+```
+
+```text
+Invalid schema base:
+  Order inherits from SomePlainMixin, which is not a Schema class.
+
+Use only Schema classes in schema inheritance.
+
+See docs/dev/specifications/SchemaInheritance.md
+```
+
 ## Implementation and Acceptance Contract
 
 The implementation must:
@@ -874,3 +1058,8 @@ row scans; and actionable diagnostics.
 Schema declarations do not provide Python row objects, primary-key enforcement, uniqueness proofs, implicit data scans,
 hidden semantic casts, arbitrary Python mixin composition, partial nested updates, polymorphic transform dispatch based
 on schema subclassing, storage orchestration, checkpoints, writes, or automatic value-level constraint execution.
+
+## More Details
+
+- [Schemas API](../api/Schemas.api.md) lists the compiler-visible declaration surface and PySpark parity.
+- [Schema reference](../reference/Schema.ref.md) lists the end-user operation surface summarized by this background.

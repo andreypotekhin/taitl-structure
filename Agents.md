@@ -160,9 +160,14 @@ Troubleshooting documentation
 - End-user issues go to /Troubleshooting.md
 - Development issues go to /docs/dev/Troubleshooting.md
 
+Annotated source
+- Adjust annotated source following code changes.
+- See /docs/dev/auto/CodeAnnotation.auto.md for instructions and scope.
+
 ## Automation Contract
 See /docs/dev/auto/Automation.md document for automation contract and details on agents' parallel work.  
 See /docs/dev/auto/AutomationFocus.md document for automation focus.
+See /docs/dev/auto/CodeAnnotation.auto.md for annotated source maintenance.
 
 ## Team roles
 All roles: see 'Task completion' section above for task completion requirements.
