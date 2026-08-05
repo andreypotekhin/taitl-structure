@@ -155,6 +155,10 @@ The first useful v9 outcome is now admitted as caller-owned guidance: applicatio
 streaming DataFrame. This is not Structure-owned side-effect support. Generated transform modules must remain free of
 `foreach`, `foreachBatch`, `writeStream`, `start`, checkpoint configuration, triggers, and output sink calls.
 
+The helper requires caller-owned `ForeachBatchSafety` metadata for sink identity, idempotence key, retry policy, and
+snapshot identity. Validation makes omitted safety assumptions fail before `start()`; it does not make callback code
+idempotent or transactional.
+
 Row-level `foreach` stays design-gated. It runs per-row callbacks and needs a tighter sink identity, idempotence, retry,
 security, and recovery model before Structure should provide any public support around it.
 
@@ -179,6 +183,10 @@ The design path is a separate stateful-programming model, not a small transform 
 Until those facts are explicit, arbitrary state stays design-gated and outside streaming-compatible transform support.
 For v9 closeout, the expected outcome is at least an implementation-ready typed state-model specification rather than a
 bare deferral.
+
+The executable review boundary is `examples.streams.adoption.ArbitraryStateContract`. It records the typed schemas,
+grouping, timeout, profile, hook, checkpoint, version, and restart declarations without claiming that Structure owns or
+implements the state processor.
 
 ## Public Documentation Rule
 

@@ -164,6 +164,9 @@ V9 admits `foreachBatch` as `caller-owned-guided`, not Structure-owned. The exec
 `examples.streams.adoption.start_foreach_batch_query(...)`, and tests prove it builds the ordinary PySpark writer chain
 outside generated transform modules. Row-level `foreach` remains design-gated.
 
+The helper also validates caller-owned `ForeachBatchSafety` metadata before starting the writer chain. This records sink
+identity, idempotence key, retry policy, and snapshot identity without moving side-effect enforcement into Structure.
+
 The caller-owned recipe is accepted only when it shows this shape:
 
 - caller creates or receives a streaming DataFrame;
@@ -192,6 +195,10 @@ Required contract:
 Without this contract, arbitrary state cannot be implemented through `@raw(streaming=True)`. That annotation may allow
 ordinary row-local PySpark expressions, but it does not authorize hidden state processors or user-managed checkpointed
 state inside Structure transforms.
+
+The caller-owned metadata guard is `examples.streams.adoption.ArbitraryStateContract`. Its `validate()` method checks
+contract completeness and timeout consistency only; it does not start a query, lower a state processor, or promote this
+ledger row. The contract remains `design-gated` until a separate runtime and live restart lane exist.
 
 V9 closes the design gate with this implementation-ready model, but does not implement the APIs. A future
 `StructureStateTransform` contract must declare `(input_schema, state_schema, output_schema, timeout_policy,

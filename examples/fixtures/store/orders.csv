@@ -1,3 +1,8 @@
-id,customer_id,total
-o-1,c-1,1250.50
-o-2,c-2,
+tenant_id,source_system,ingested_at,order_date,id,line_number,customer_id,product_id,promotion_code,total,discount,quantity,tags,attributes,shipping_line1,shipping_line2,shipping_city,shipping_state,shipping_postal_code,shipping_country
+t1,checkout,2026-01-02T08:00:00,2026-01-02,o-100,1,c-100,p-100,SUMMER,1200.50,50.00,2,featured;gift,channel=web;priority=high,1 Main Street,,Oakland,CA,94607,US
+t1,checkout,2026-01-02T08:01:00,2026-01-02,o-100,2,c-100,p-100,,30.00,0.00,1,,channel=web,1 Main Street,,Oakland,CA,94607,US
+t1,checkout,2026-01-02T08:02:00,2026-01-02,o-101,1,c-101,p-200,CLEARANCE,90.00,0.00,6,bulk,channel=store,22 Market Street,Suite 4,San Francisco,CA,94105,US
+t1,checkout,2026-01-02T08:03:00,2026-01-02,o-102,1,c-102,p-300,,40.00,0.00,5,,channel=web,9 Lake Road,,Berkeley,CA,94704,US
+t1,checkout,2026-01-02T08:04:00,2026-01-02,o-103,1,c-missing,p-100,,10.00,0.00,1,,channel=web,9 Lake Road,,Berkeley,CA,94704,US
+t1,checkout,2026-01-02T08:05:00,2026-01-02,o-104,1,c-100,p-blocked,,25.00,0.00,1,,channel=web,1 Main Street,,Oakland,CA,94607,US
+t2,checkout,2026-01-03T08:00:00,2026-01-03,o-200,1,c-200,p-100,,75.00,5.00,2,,channel=mobile,7 Cedar Avenue,,Seattle,WA,98101,US

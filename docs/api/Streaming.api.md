@@ -61,11 +61,28 @@ Examples abbreviate `order` as `o` and a second streaming relation as `c`.
   They retain the existing `warn_on_udfs` warning policy and remain unavailable on Spark Connect.
 - Variant fields and helpers are admitted as profile-gated streaming transformations on ordinary PySpark 4 profiles.
   PySpark 4.0 live evidence covers parsing, extraction, schema inspection, object conversion, JSON-null testing,
-  validated `variant_literal(...)` extraction, watermarked `schema_of_variant_agg`, and typed inner/outer TVF expansion; PySpark 3.5 fails through the standard
-  capability diagnostic before execution. PySpark 4.2-only helpers such as `is_valid_variant(...)` remain
-  capability-gated until a 4.2 live lane exists.
+  validated `variant_literal(...)` extraction, watermarked `schema_of_variant_agg`, and typed inner/outer TVF expansion;
+  PySpark 3.5 fails through the standard capability diagnostic before execution. PySpark 4.2-only helpers such as
+  `is_valid_variant(...)` remain capability-gated until a 4.2 live lane exists.
 - `event_time_between(...)` supplies the bounded event-time relation required by supported stream-stream joins.
 - `streaming=True` declares the hook safe for its stated streaming shape; Structure does not inspect hook code.
+
+## Stateful Composition And Deferred State
+
+The compiler records state-stage metadata for admitted aggregates, bounded deduplication, and bounded stream-stream
+joins, including watermarks, grouping or join keys, retention bounds, and required output modes. This metadata makes the
+state assumptions visible in explain output; it does not make Structure own query lifecycle or recovery.
+
+- The supported composition boundary is one admitted stateful operation followed by stateless work. A second stateful
+  operation remains rejected with `STREAM-E0801` unless a specific finite contract is admitted.
+- Cross and anti stream-stream joins remain rejected until finite completion, retention, and restart behavior are
+  proven.
+- Arbitrary state APIs remain design-gated. A future admission requires typed input, state, and output Schemas;
+  grouping keys; event-time or processing-time timeout policy; initialization, update, and removal behavior; a
+  resolved PySpark profile; a visible generated-code or hook boundary; and checkpoint/restart evidence. See the
+  [V9 arbitrary-state contract](../dev/specifications/V9StreamingDesignGatedFeatures.md#arbitrary-state-apis).
+- Pandas, RDD, `mapInPandas`, and state-processor boundaries remain unsupported because their execution and state
+  semantics are opaque to the compiler.
 
 ## Lifecycle Boundaries
 
@@ -79,3 +96,25 @@ contract defines sink identity, idempotence, retry, and recovery behavior. Use `
 tested caller-owned recipe shape. See
 [Spark Streaming](../dev/specifications/SparkStreaming.md), and the
 [Execution reference](../background/Execution.back.md).
+
+## Caller-Owned Side-Effect Safety
+
+Before starting a `foreachBatch` sink, callers provide a `ForeachBatchSafety` declaration with a stable `sink_identity`,
+an `idempotence_key` such as `snapshot_id:batch_id`, a `retry_policy` (`at_least_once`, `idempotent`, or
+`transactional`), and a stable `snapshot_id`. The adoption helper rejects missing or unknown declarations before
+calling `start()`. These declarations make the recovery assumptions reviewable; they do not make callback code
+idempotent, transactional, or secure. The callback and its sink remain the caller's responsibility, including using the
+declared key, handling retries, and ensuring that the checkpoint and snapshot identity remain compatible.
+
+## Typed Arbitrary-State Contract
+
+Arbitrary state remains design-gated; `ArbitraryStateContract` is a metadata completeness guard, not a state processor
+runtime. Before caller-owned `applyInPandasWithState`, `transformWithState`, or a related state API is reviewed, the
+contract records typed input, key, state, and output Schemas; grouping fields; timeout policy, clock, and duration;
+initialization, update, and removal behavior; target PySpark profile; hook boundary; checkpoint identity; serialized
+state version; and restart policy. `contract.validate()` rejects missing or inconsistent declarations with
+`ARBITRARY-STATE-E0901`, `ARBITRARY-STATE-E0902`, or `ARBITRARY-STATE-E0903`.
+
+Validation does not start a query, generate a state processor, own a checkpoint, or prove recovery. The caller still
+owns the native PySpark API and live restart evidence. Structure must not promote the streaming ledger row until a
+separate runtime contract and PySpark 3.5/4.0 evidence exist.

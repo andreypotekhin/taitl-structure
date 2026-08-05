@@ -7,9 +7,28 @@ logic while keeping the work visible to Spark.
 See the exhaustive [aggregations](../api/Aggregations.api.md), [windows](../api/Windows.api.md), and
 [collections](../api/Collections.api.md) API tables for supported names, parity, and examples.
 
+The governing sources are the
+[Advanced Analytical Operations specification](../dev/specifications/AdvancedAnalyticalOperations.md) and
+[design](../dev/design/AdvancedAnalyticalOperations.md). The specification contains staged-scope language: its
+opening boundary defers explicit grouping-set and post-aggregate lowering, while its later implementation sections,
+the capability profile, and the checked tests define those forms. This background follows the implemented, tested
+contract and labels genuinely deferred behavior below.
+
 The analytical surface supports common grouped aggregates, custom grouping sets, ranking, lag/lead, rolling row
 metrics, deterministic latest/earliest selection, exact/subset duplicate removal, and basic array/map callbacks. This
 page describes the admitted surface and the boundaries still enforced by backend capability checks.
+
+## Scope and First-Slice Boundary
+
+This topic owns advanced batch aggregation, metric, window, and higher-order behavior. The first analytical slice
+already covers `group_by(...)`, basic aggregates, selected-row helpers, exact/subset dedupe, projection windows, and
+basic array/map transforms. This topic adds `rollup(...)`, `cube(...)`, explicit grouping sets, additional metrics,
+filtered aggregates, reusable windows and frames, richer collection helpers, diagnostics, capabilities, and parity.
+
+Streaming aggregation and broad analytic windows, automatic cost-based optimization, hidden UDF/RDD/Pandas fallback,
+and storage writes remain outside this contract. A feature is admitted only when its source semantics, IR, target
+recipe, explain/traceability, diagnostics, and tests agree.
+
 
 ## Grouping
 
@@ -98,6 +117,7 @@ return grouping_sets(
 ).as_schema(OrderGroupingSetSummary)
 ```
 
+
 ## Aggregates
 
 Supported exact aggregates:
@@ -180,6 +200,7 @@ return OrderRevenueRollup(
     order_ids=collect_list(order.id),
 )
 ```
+
 
 ## Reusable Windows
 
@@ -293,6 +314,7 @@ return OrderCustomerWindow(
     running_order_count=window_count(over=customer_window),
 )
 ```
+
 
 ## Higher-Order Helpers
 
@@ -424,6 +446,29 @@ return OrderCollectionProfile(
 )
 ```
 
+
+## IR, Capabilities, and Optimization Boundary
+
+Analytical operations remain compiler-visible. Their IR records grouping kind and ordered levels, metric inputs and
+filters, `having(...)` dependencies, window partition/order/frame expressions, callback placeholders and bodies,
+cardinality, streaming classification, source anchors, and capability requirements. The online runner and generated
+emitter consume the same lowered recipes; neither reinterprets an aggregate or window while rendering.
+
+The relevant capability names include `aggregate.grouping_sets`, `aggregate.having`, `aggregate.window`,
+`higher_order.array`, `higher_order.map`, `window.frame`, and `streaming.aggregate`. Unsupported requirements fail
+before execution or generated rendering with the selected target and the shortest supported alternative.
+
+Explicit optimization controls such as cache/persist hints, repartition requests, checkpoint boundaries, and join
+strategy hints are separate compiler-visible operations. Structure never introduces caching, cost-based rewrites,
+repartitioning, or materialization implicitly. Storage writes and Spark job lifecycle remain caller-owned.
+
+Advanced analytical operations are accepted only when source semantics, IR, capability checks, execution and generated
+lowering, explain/traceability, diagnostics, and parity tests agree. Streaming aggregation and broad analytic windows,
+automatic cost optimization, hidden UDF/RDD/Pandas fallback, and storage writes remain deferred or rejected.
+
+See also: [Transform](Transform.back.md), [Compiler](Compiler.back.md), [PySpark code generation](Generation.back.md),
+[Streaming](Streaming.back.md), and [Capabilities](Capabilities.back.md).
+
 ## Compatibility
 
 Advanced analytical helpers depend on backend support. When a configured PySpark profile or Spark Connect variant
@@ -433,19 +478,17 @@ instead of producing generated code that will fail later.
 Streaming compatibility is conservative. Advanced grouping and broad windows are batch-only in v2. Row-preserving HOFs
 may become streaming-compatible only when target evidence and tests prove the specific helper shape.
 
+
 ## Explain Output
 
 Compact explain should summarize advanced operations without overwhelming routine output:
 
 ```text
-aggregate(aggregate keys=region,customer_id levels=region+customer_id|region|() metrics=count streaming_modes=update|complete)
+aggregate(aggregate keys=region,customer_id
+  levels=region+customer_id|region|() metrics=count streaming_modes=update|complete)
 window(percent_rank, partitions=2, order=2, frame=rows)
 hof(arr_zip_with, callback=symbolic)
 ```
 
 Expanded explain should show grouping levels, metric inputs, filter predicates, window partition/order/frame
 dependencies, and higher-order callback lineage.
-
-See also: [DSL](DSL.back.md)), [Intermediate representation](IntermediateRepresentation.back.md)),
-[PySpark code generation](PySparkCodeGeneration.back.md)), [Streaming compatibility](StreamingCompatibility.back.md)), and
-[Backend capabilities](BackendCapabilities.back.md)).

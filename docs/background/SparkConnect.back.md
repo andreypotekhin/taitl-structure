@@ -46,7 +46,8 @@ Spark Connect support does not include:
 - hidden fallback to Python UDFs, local collection, row-wise loops, or SQL string rewrites.
 - deferred batch features such as same-name join-key shorthand until their owning specifications admit them.
 
-Hooks remain user-owned PySpark code. Structure validates hook signatures and target scope, but arbitrary hook bodies are
+Hooks remain user-owned PySpark code. Structure validates hook signatures and target scope, but arbitrary hook bodies
+are
 opaque. For Spark Connect, hook bodies must use public Connect-compatible PySpark APIs.
 
 ## Runtime Boundaries
@@ -93,3 +94,20 @@ with a backend capability diagnostic. The diagnostic should name the unsupported
 
 Spark Connect is supported for completed compiler-visible batch features only after the project has parity evidence
 against a real Spark Connect session. Streaming orchestration remains separate roadmap work.
+
+## Capability And Verification Contract
+
+Spark Connect is admitted through the PySpark capability profile, not a generic fallback. The profile must explicitly
+cover the completed compiler-visible feature families it claims: expressions, joins, analytical operations, aggregates,
+windows, dedupe, higher-order arrays and maps, schema-only validation, strict projection, and generated imports.
+Deferred features remain unsupported decisions rather than silent rewrites.
+
+The minimum evidence matrix covers ordinary and Spark Connect variants, PySpark 3.5.x and 4.0.x, and both online and
+generated execution. If CI cannot run the full matrix, a documented manual verification script is a release blocker
+before publishing a stable support claim. Evidence must include live execution/generated parity, compiler commands that
+remain Spark-free, generated-source scans for `_jdf`, `sparkContext`, `.rdd`, `_jvm`, and Py4J, and clear diagnostics
+for
+ordinary-only hooks and runtime boundaries.
+
+StructureTools may use Connect-supported metadata paths for schema generation. Unsupported path or table metadata access
+must preserve the cause, name Spark Connect, and suggest an explicit schema.

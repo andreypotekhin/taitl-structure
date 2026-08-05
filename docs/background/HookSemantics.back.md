@@ -1,5 +1,8 @@
 # Hook Semantics
 
+The normative source is [Hook Semantics](../dev/specifications/HookSemantics.md). Composed hook ownership is defined by
+the [Composed Hook Ownership design](../dev/design/ComposedHookOwnership.md).
+
 Hooks are Structure's explicit runtime escape hatch. A hook is a method decorated with `@raw`; it lets a developer run
 arbitrary backend DataFrame logic at a precise point in the transform class without pretending the hook body is
 compiler-visible.
@@ -243,6 +246,17 @@ HookDef
   source_line
 ```
 
+For composed transforms, the hook owner remains the declaring stage. A wrapper must retain stage ordinal or graph-stage
+name, owner class, hook name, lane bindings, schema mode, validation flags, target scope, and streaming declaration.
+Online execution and delegated generated execution create one private implementation instance per hook-owning stage per
+pipeline invocation; hooks from separate stages never share an instance. `embed_hooks` copies every eligible raw hook
+under a deterministic stage/owner-qualified name, and is all-or-error for the composed artifact. Embedding changes
+packaging, not hook order, bindings, validation, traceability, or streaming classification.
+
+Composition follows `.to(...)` order or dependency order induced by `stage(...)` output references. Independent branches
+retain local hook order but promise no order between branches until a later stage consumes both. Internal lanes remain
+internal to their declaring transform and are not composition boundaries.
+
 The shared PySpark execution plan lowers each `HookDef` to a deterministic hook call recipe consumed by execution and
 generated-code execution.
 
@@ -265,3 +279,10 @@ Use:
 
 See docs/background/HookSemantics.back.md
 ```
+
+## Acceptance Contract
+
+Hook support is complete when tests cover decorator metadata, source order, default and `pass_inputs=True` signatures,
+read-only original-input namespaces, opaque boundaries, strict and extra-column schema modes, projection, target scope,
+streaming safety, online/generated parity, composed owner dispatch, embedded-hook all-or-error behavior, traceability,
+and diagnostics with source-order context.

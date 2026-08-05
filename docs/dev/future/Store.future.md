@@ -182,6 +182,19 @@ could then be organized as `schemas/inventory/` and `transforms/inventory/`, wit
 than owning their preparation. Moving the current projection alone would rename a boundary without giving inventory an
 independent purpose.
 
+### Warehousing as a first-class domain
+
+The current `Warehouse` schema is a fulfillment-planning reference: it identifies a tenant-scoped active facility and
+provides region and priority fields for deterministic warehouse selection. It does not yet model warehouse operations,
+so `schemas/fulfillment/warehouses/` is an appropriate home. A top-level warehousing package would be premature if it
+only moved that relation without adding an independent contract.
+
+Promote warehousing to sibling `schemas/warehousing/` and `transforms/warehousing/` packages when Store admits facility
+capabilities or operational facts such as zones and locations, capacity, labor and processing calendars, cutoff times,
+pick/pack capability, dock constraints, maintenance, or warehouse-level service metrics. Fulfillment should consume
+those facts when selecting or evaluating a plan. Keep the domains distinct: warehousing describes facility capability,
+inventory describes stock, fulfillment makes the service decision, and shipping records execution.
+
 ### Shipping as a first-class domain
 
 Shipping should be modeled as observed execution, separate from fulfillment planning. Fulfillment decides how demand is

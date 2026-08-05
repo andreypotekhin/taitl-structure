@@ -1231,12 +1231,5 @@ See docs/reference/Schema.ref.md
 ## More Details
 
 - [Schemas API](../api/Schemas.api.md) lists the compiler-visible declaration surface and PySpark parity.
-- [Schema semantics background](../background/SchemaSemantics.back.md) records the original consolidated semantic
-  contract.
-- [Schema declaration syntax background](../background/SchemaDeclarationSyntax.back.md) contains source syntax detail.
-- [Schema model background](../background/SchemaModel.back.md) contains compiler-model and Spark-mapping detail.
-- [Schema inheritance background](../background/SchemaInheritance.back.md) contains worked composition examples.
-- [Nullability and type coercion](../background/NullabilityAndTypeCoercion.back.md) defines expression assignment in
-  detail.
-- [Validation semantics](../background/ValidationSemantics.back.md) defines phase policy and runtime placement.
-- [Data quality constraints](../background/DataQualityConstraints.back.md) defines the value-quality boundary.
+- [Schema background](../background/Schema.back.md) gathers the contract, declaration syntax, inheritance,
+  compiler model, assignment rules, validation phases, and data-quality boundary in reader order.

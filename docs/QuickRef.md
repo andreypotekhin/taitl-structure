@@ -3,7 +3,8 @@
 For exhaustive reference on supported APIs, PySpark parity, examples and semantic differences, see the
 [API](API.md): [schemas](api/Schemas.api.md), [transforms](api/Transforms.api.md),
 [expressions](api/Expressions.api.md), [joins](api/Joins.api.md), [aggregations](api/Aggregations.api.md),
-[windows](api/Windows.api.md), [collections](api/Collections.api.md), and [streaming](api/Streaming.api.md).
+[windows](api/Windows.api.md), [collections](api/Collections.api.md), [relations](api/Relations.api.md), and
+[streaming](api/Streaming.api.md).
 
 ## Schema Classes
 
@@ -91,9 +92,9 @@ Parent transform step methods run before child transform step methods. Multiple 
 
 Step methods do not call other step methods directly. Attempt to do so, except for the override as shown above, will result in error.
 
-Reference: [transforms API](api/Transforms.api.md), [DSL](background/DSL.back.md),
+Reference: [transforms API](api/Transforms.api.md), [Transform background](background/Transform.back.md),
 [execution](background/Execution.back.md), and
-[transform inheritance and composition](background/DSL.back.md).
+[transform inheritance and composition](background/Transform.back.md).
 
 ## Input/Output
 
@@ -118,8 +119,8 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
 
 Outputs are Transform fields that correspond to produced (output) DataFrames.
 
-Reference: [transforms API](api/Transforms.api.md), [DSL inputs](background/DSL.back.md), and
-[source module rules](background/PySparkCodeGeneration.back.md).
+Reference: [transforms API](api/Transforms.api.md), [Transform inputs](background/Transform.back.md), and
+[source module rules](background/Generation.back.md).
 
 ## Lanes
 
@@ -191,8 +192,8 @@ def publish(self, order: OrderNormalized) -> OrderPublished:
 `input(orders)` means the original runtime input. `lane(orders)` means the current working lane named
 `orders`. `output(published)` means the final result declaration.
 
-Reference: [transforms API](api/Transforms.api.md), [DSL step methods](background/DSL.back.md),
-[symbolic execution](background/DSL.back.md), and
+Reference: [transforms API](api/Transforms.api.md), [Transform step methods](background/Transform.back.md),
+[symbolic execution](background/Compiler.back.md), and
 [execution semantics](background/Execution.back.md).
 
 ## Execution
@@ -245,7 +246,7 @@ orders = orders.where(
 ```
 
 Reference: [transforms API](api/Transforms.api.md) and
-[PySpark code generation](background/PySparkCodeGeneration.back.md).
+[PySpark code generation](background/Generation.back.md).
 
 ## Filtering
 
@@ -266,8 +267,8 @@ Multiple `where(...)` calls are combined with logical AND.
 When filters and joins are mixed, Structure preserves the source order. A filter written before a join runs
 before that join; a filter written after a join can reference the joined relation.
 
-Reference: [expressions API](api/Expressions.api.md), [DSL filtering](background/DSL.back.md), and
-[symbolic execution](background/DSL.back.md).
+Reference: [expressions API](api/Expressions.api.md), [Transform filtering](background/Transform.back.md), and
+[symbolic execution](background/Compiler.back.md).
 
 ## Add and Drop Columns
 
@@ -314,7 +315,7 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
 ```
 
 Reference: [transforms API](api/Transforms.api.md), [schema semantics](reference/Schema.ref.md), and
-[PySpark code generation](background/PySparkCodeGeneration.back.md).
+[PySpark code generation](background/Generation.back.md).
 
 ## Expressions
 
@@ -344,7 +345,7 @@ Temporal helpers include `date_add(...)`, `datediff(...)`, and `date_trunc(...)`
 Numeric helpers include `abs(...)`, `round(...)`, `ceil(...)`, and `floor(...)`.
 Predicate helpers include `isnull(...)`, `isnotnull(...)`, and `isnan(...)`.
 
-Reference: [expressions API](api/Expressions.api.md), [DSL expressions](background/DSL.back.md), and
+Reference: [expressions API](api/Expressions.api.md), [Transform expressions](background/Transform.back.md), and
 [nullability and type coercion](reference/Schema.ref.md).
 
 ## Expression Methods
@@ -363,7 +364,7 @@ Expression methods do not take `self`, but can be called through `self`.
 customer_id=self.clean_id(order.customer_id)
 ```
 
-Reference: [expressions API](api/Expressions.api.md) and [DSL expression helpers](background/DSL.back.md).
+Reference: [expressions API](api/Expressions.api.md) and [Transform expression helpers](background/Transform.back.md).
 
 ### Intentional Scalar Python UDFs
 
@@ -504,9 +505,10 @@ return CustomerOrderSummary(
 ```
 
 Reference: [aggregations API](api/Aggregations.api.md),
-[advanced analytical operations](background/DSL.back.md), [DSL](background/DSL.back.md),
-[IR](background/PySparkCodeGeneration.back.md), [PySpark code generation](background/PySparkCodeGeneration.back.md), and
-[streaming compatibility](background/StreamingCompatibility.back.md).
+[advanced analytical operations](background/AdvancedAnalyticalOperations.back.md),
+[Transform](background/Transform.back.md),
+[IR](background/Compiler.back.md), [PySpark code generation](background/Generation.back.md), and
+[streaming compatibility](background/Streaming.back.md).
 
 ## Latest/Earliest Rows
 
@@ -535,10 +537,10 @@ materialization boundary.
 For complete, outcome-oriented examples, see the [Latest Rows recipe](recipes/LatestRows.md) and the
 [Earliest Rows recipe](recipes/EarliestRows.md).
 
-Reference: [aggregations API](api/Aggregations.api.md), [DSL](background/DSL.back.md),
-[IR](background/PySparkCodeGeneration.back.md),
-[PySpark code generation](background/PySparkCodeGeneration.back.md), and
-[streaming compatibility](background/StreamingCompatibility.back.md).
+Reference: [aggregations API](api/Aggregations.api.md), [Transform](background/Transform.back.md),
+[IR](background/Compiler.back.md),
+[PySpark code generation](background/Generation.back.md), and
+[streaming compatibility](background/Streaming.back.md).
 
 ## Window Projection Functions
 
@@ -597,9 +599,10 @@ grouping for admitted Structured Streaming aggregates; grouped `first_value(...)
 typed selection alternatives.
 
 Reference: [windows API](api/Windows.api.md),
-[advanced analytical operations](background/DSL.back.md), [DSL](background/DSL.back.md),
-[IR](background/PySparkCodeGeneration.back.md), [PySpark code generation](background/PySparkCodeGeneration.back.md), and
-[streaming compatibility](background/StreamingCompatibility.back.md).
+[advanced analytical operations](background/AdvancedAnalyticalOperations.back.md),
+[Transform](background/Transform.back.md),
+[IR](background/Compiler.back.md), [PySpark code generation](background/Generation.back.md), and
+[streaming compatibility](background/Streaming.back.md).
 
 ## Duplicate Rows
 
@@ -669,10 +672,10 @@ def choose_feedback(self, option: FeedbackOption) -> FeedbackOption:
 Keys must be declared field references. Tied eligible candidates fail with `REL-E0705`; `missing="error"` also fails
 when a key has no eligible candidate. The helper is batch-only for streaming inputs.
 
-Reference: [aggregations API](api/Aggregations.api.md), [DSL](background/DSL.back.md),
-[IR](background/PySparkCodeGeneration.back.md),
-[PySpark code generation](background/PySparkCodeGeneration.back.md), and
-[streaming compatibility](background/StreamingCompatibility.back.md).
+Reference: [aggregations API](api/Aggregations.api.md), [Transform](background/Transform.back.md),
+[IR](background/Compiler.back.md),
+[PySpark code generation](background/Generation.back.md), and
+[streaming compatibility](background/Streaming.back.md).
 
 ## Higher-Order Functions
 
@@ -747,8 +750,9 @@ bodies must return typed Structure expressions or typed literals. Python boolean
 is rejected; combine symbolic predicates with `&`, `|`, and `~`.
 
 Reference: [collections API](api/Collections.api.md),
-[advanced analytical operations](background/DSL.back.md), [DSL](background/DSL.back.md), and
-[backend capabilities](background/BackendCapabilities.back.md).
+[advanced analytical operations](background/AdvancedAnalyticalOperations.back.md),
+[Transform](background/Transform.back.md), and
+[backend capabilities](background/Capabilities.back.md).
 
 ## Joins
 
@@ -878,9 +882,7 @@ orders = orders.join(
 )
 ```
 
-Ref: [joins API](api/Joins.api.md), [Join semantics](background/DSL.back.md),
-[analytical join coverage](background/DSL.back.md), and
-[full PySpark join support](background/DSL.back.md).
+Ref: [joins API](api/Joins.api.md), [Join background](background/Join.back.md).
 
 ## Inheritance
 
@@ -1051,8 +1053,8 @@ class OrderPipeline(Transform):
 ```
 
 Reference: [transforms API](api/Transforms.api.md),
-[transform inheritance and composition](background/DSL.back.md),
-[DSL](background/DSL.back.md), and [execution semantics](background/Execution.back.md).
+[transform inheritance and composition](background/Transform.back.md),
+[Transform](background/Transform.back.md), and [execution semantics](background/Execution.back.md).
 
 ## Hooks
 
@@ -1182,7 +1184,7 @@ In composed transforms, default policy propagates streaming lineage through a sa
 explicit `streaming=False` remains a compilation error. Structure does not materialize batches or own query lifecycles.
 
 Reference: [streaming API](api/Streaming.api.md) and
-[streaming compatibility](background/StreamingCompatibility.back.md).
+[streaming compatibility](background/Streaming.back.md).
 
 ## Source and Generated Paths
 
@@ -1196,9 +1198,9 @@ generated/structure_generated/store/...
 Generated paths are used only when Structure is configured to emit PySpark code; execution is the
 default. These paths are configurable. Mark `src` and `generated` as source roots in the IDE.
 
-Reference: [source module rules](background/PySparkCodeGeneration.back.md),
+Reference: [source module rules](background/Generation.back.md),
 [configuration schema](background/CLI.back.md), and
-[PySpark code generation](background/PySparkCodeGeneration.back.md).
+[PySpark code generation](background/Generation.back.md).
 
 ### Disk-less Environments
 
@@ -1221,7 +1223,7 @@ The session compiles every concrete transform in `sources` and retains those res
 its Python module and class name. See [disk-less source compilation](dev/specifications/DisklessSourceCompilation.md).
 
 Reference: [transforms API](api/Transforms.api.md), [execution](background/Execution.back.md), and
-[execution semantic contract](background/ExecutionSemanticContract.back.md).
+[execution semantic contract](background/Execution.back.md#semantic-parity-contract).
 
 ## Compatibility
 
@@ -1252,8 +1254,8 @@ make integration BACKEND=spark-connect35
 make integration BACKEND=spark-connect40
 ```
 
-Reference: [compatibility policy](background/CompatibilityPolicy.back.md) and
-[backend capabilities](background/BackendCapabilities.back.md).
+Reference: [compatibility policy](background/Capabilities.back.md) and
+[backend capabilities](background/Capabilities.back.md).
 
 ## Schema Generation Tool
 
@@ -1385,5 +1387,5 @@ sort the payload timeline, fold it with higher-order `aggregate(...)`, then expa
 batch-only and ordinary-PySpark-only; it does not use UDFs, Pandas, RDDs, Spark actions, driver loops, streaming state; nor it persists the state between transform runs.
 
 Reference: [Ordered Timeline Scan](dev/specifications/OrderedTimelineScan.md),
-[API extensions](APIExtensions.md), [IR](background/PySparkCodeGeneration.back.md), and
-[PySpark code generation](background/PySparkCodeGeneration.back.md).
+[API extensions](APIExtensions.md), [IR](background/Compiler.back.md), and
+[PySpark code generation](background/Generation.back.md).

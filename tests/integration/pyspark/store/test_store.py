@@ -48,7 +48,7 @@ from structure.core.dsl.model.schemas.Schema import Schema
 pytestmark = pytest.mark.integration
 
 PACKAGE = "integration_store_generated"
-FIXTURES = Path(__file__).resolve().parents[4] / "examples" / "store" / "fixtures"
+FIXTURES = Path(__file__).resolve().parents[4] / "examples" / "fixtures" / "store"
 SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
     "examples.store.schemas.common": [TenantKey, AuditStamp, Address, BusinessDate],
     "examples.store.schemas.customer": [Customer],

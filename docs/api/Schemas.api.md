@@ -15,8 +15,10 @@ Schema declarations define Structure's typed row contract and materialize to Spa
 | `double()` | Spark double type | `double()` |
 | `date()` | Spark date type | `date()` |
 | `timestamp()` | Spark timestamp type | `timestamp()` |
+| `binary()` | Spark binary type | `payload = binary(nullable=True)` |
 | `decimal(...)` | `DecimalType` | `total = decimal(12, 2)` |
 | `variant(...)` | `VariantType` | `payload = variant(nullable=True)` |
+| `geometry(srid=...)` | Provider-neutral `GEOMETRY` | `location = geometry(srid=4326)` |
 
 **Details And Differences**
 
@@ -27,6 +29,10 @@ Schema declarations define Structure's typed row contract and materialize to Spa
 - `variant(...)` declares Spark's opaque semi-structured `VariantType`. It preserves schema and field nullability only.
   A transform using it must resolve to a PySpark 4 profile, including when that profile comes from
   `[tool.structure.plugin.pyspark]`.
+- `geometry(srid=...)` is a provider-neutral, currently design-gated Geometry contract. `srid` must be a positive
+  integer literal and is part of the type; `GEOGRAPHY`, runtime-selected SRIDs, and provider-specific fields are not
+  admitted. Geometry runtime availability remains an optional provider concern. See the
+  [Geometry expressions](Expressions.api.md#geometry-expressions).
 
 ## Nested Declarations
 

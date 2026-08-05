@@ -259,7 +259,7 @@ and generated-code execution may use. The default targets
 PySpark 3.5.x and 4.0.x. If a DSL feature cannot be generated for the configured profile, `structure check` and
 `structure compile` should fail with `BACKEND-E2402` and name the unsupported capability. Unknown backend
 targets fail with `BACKEND-E2401`. Backend capability behavior is specified in
-[BackendCapabilities.md](background/BackendCapabilities.back.md).
+[Capabilities background](background/Capabilities.back.md).
 
 `plugin.pyspark.variant` selects the runtime variant inside the PySpark target. `ordinary` is the default in-process PySpark
 contract. `spark-connect` supports completed compiler-visible batch features; streaming remains caller-owned ordinary

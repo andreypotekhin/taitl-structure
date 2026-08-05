@@ -1,7 +1,9 @@
 import sys
-from typing import cast
+from typing import Any, cast
 
-from examples.streams.adoption import start_foreach_batch_query
+import pytest
+
+from examples.streams.adoption import ArbitraryStateContract, ForeachBatchSafety, start_foreach_batch_query
 from structure import *
 from structure.core.compiler.api import Compiler
 from structure.core.compiler.compileability.streaming_compatibility.api import StreamingSupport
@@ -16,6 +18,19 @@ class StreamRaw(Schema):
 
 class StreamClean(Schema):
     id = string(nullable=False)
+
+
+class StateKey(Schema):
+    id = string(nullable=False)
+
+
+class StateValue(Schema):
+    total = integer(nullable=False)
+
+
+class StateOutput(Schema):
+    id = string(nullable=False)
+    total = integer(nullable=False)
 
 
 @transform(streaming=True)
@@ -106,6 +121,12 @@ def test_foreach_batch_recipe_is_caller_owned_and_executable_without_spark() -> 
         callback,
         checkpoint="/tmp/structure-checkpoint",
         output_mode="append",
+        safety=ForeachBatchSafety(
+            sink_identity="test-memory-sink",
+            idempotence_key="snapshot_id:batch_id",
+            retry_policy="idempotent",
+            snapshot_id="streams-test-v1",
+        ),
         trigger={"availableNow": True},
     )
 
@@ -117,6 +138,122 @@ def test_foreach_batch_recipe_is_caller_owned_and_executable_without_spark() -> 
         "trigger:availableNow=True",
         "start",
     )
+
+
+def test_foreach_batch_recipe_rejects_missing_safety_declarations() -> None:
+    """Caller-owned side effects fail before the query is started without safety metadata."""
+
+    with pytest.raises(ValueError, match="FOREACH-BATCH-E0901"):
+        start_foreach_batch_query(
+            FakeStreamingFrame(FakeStreamingWriter()),
+            lambda frame, batch_id: None,
+            checkpoint="/tmp/structure-checkpoint",
+            output_mode="append",
+            safety=ForeachBatchSafety(
+                sink_identity=" ",
+                idempotence_key="snapshot_id:batch_id",
+                retry_policy="idempotent",
+                snapshot_id="streams-test-v1",
+            ),
+        )
+
+
+def test_foreach_batch_recipe_rejects_unknown_retry_policy() -> None:
+    """Caller-owned side effects use a finite retry-policy vocabulary."""
+
+    with pytest.raises(ValueError, match="FOREACH-BATCH-E0902"):
+        start_foreach_batch_query(
+            FakeStreamingFrame(FakeStreamingWriter()),
+            lambda frame, batch_id: None,
+            checkpoint="/tmp/structure-checkpoint",
+            output_mode="append",
+            safety=ForeachBatchSafety(
+                sink_identity="test-memory-sink",
+                idempotence_key="snapshot_id:batch_id",
+                retry_policy=cast(Any, "manual-retry"),
+                snapshot_id="streams-test-v1",
+            ),
+        )
+
+
+def test_arbitrary_state_contract_is_typed_and_explicit() -> None:
+    """Arbitrary state adoption records every state and restart boundary."""
+
+    contract = ArbitraryStateContract(
+        operation="transformWithState",
+        input_schema=StreamRaw,
+        key_schema=StateKey,
+        state_schema=StateValue,
+        output_schema=StateOutput,
+        grouping_key=("id",),
+        timeout_policy="processing_time",
+        timeout_clock="processing_time",
+        timeout_duration="10 minutes",
+        initialization_policy="initialize total to zero",
+        update_policy="add each batch value exactly once",
+        removal_policy="remove after processing-time timeout",
+        target_profile=">=4.0,<4.1",
+        hook_boundary="caller-owned",
+        checkpoint_identity="streams-state-v1",
+        state_version="state-schema-v1",
+        restart_policy="same_checkpoint",
+    )
+
+    contract.validate()
+
+
+def test_arbitrary_state_contract_rejects_missing_state_declarations() -> None:
+    """Arbitrary state cannot be adopted without typed keys and policies."""
+
+    contract = ArbitraryStateContract(
+        operation="transformWithState",
+        input_schema=StreamRaw,
+        key_schema=StateKey,
+        state_schema=StateValue,
+        output_schema=StateOutput,
+        grouping_key=(),
+        timeout_policy="none",
+        timeout_clock=None,
+        timeout_duration=None,
+        initialization_policy="initialize",
+        update_policy="update",
+        removal_policy="remove",
+        target_profile=">=4.0,<4.1",
+        hook_boundary="caller-owned",
+        checkpoint_identity="checkpoint-v1",
+        state_version="state-v1",
+        restart_policy="same_checkpoint",
+    )
+
+    with pytest.raises(ValueError, match="ARBITRARY-STATE-E0901"):
+        contract.validate()
+
+
+def test_arbitrary_state_contract_rejects_inconsistent_timeout() -> None:
+    """A timed state contract must bind its policy to its clock and duration."""
+
+    contract = ArbitraryStateContract(
+        operation="applyInPandasWithState",
+        input_schema=StreamRaw,
+        key_schema=StateKey,
+        state_schema=StateValue,
+        output_schema=StateOutput,
+        grouping_key=("id",),
+        timeout_policy="event_time",
+        timeout_clock="processing_time",
+        timeout_duration="10 minutes",
+        initialization_policy="initialize",
+        update_policy="update",
+        removal_policy="remove",
+        target_profile=">=3.5,<4.1",
+        hook_boundary="caller-owned",
+        checkpoint_identity="checkpoint-v1",
+        state_version="state-v1",
+        restart_policy="same_checkpoint",
+    )
+
+    with pytest.raises(ValueError, match="ARBITRARY-STATE-E0902"):
+        contract.validate()
 
 
 class FakeStreamingFrame:

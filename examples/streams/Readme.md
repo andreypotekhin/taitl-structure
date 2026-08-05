@@ -87,7 +87,7 @@ The generated Structure module still contains only DataFrame transformations. Th
 For side-effecting sinks, keep `foreachBatch` in the same caller-owned layer:
 
 ```python
-from examples.streams.adoption import start_foreach_batch_query
+from examples.streams.adoption import ForeachBatchSafety, start_foreach_batch_query
 
 def write_batch(batch, batch_id):
     # Idempotence and sink retry policy belong to the caller.
@@ -98,6 +98,12 @@ query = start_foreach_batch_query(
     write_batch,
     checkpoint=checkpoint,
     output_mode="append",
+    safety=ForeachBatchSafety(
+        sink_identity="passage-parquet",
+        idempotence_key="snapshot_id:batch_id",
+        retry_policy="idempotent",
+        snapshot_id="race-snapshot-v1",
+    ),
     trigger={"availableNow": True},
 )
 ```
@@ -105,6 +111,34 @@ query = start_foreach_batch_query(
 Structure does not call `foreachBatch` from transform methods or generated transform modules. Row-level `foreach`
 callbacks remain design-gated until a future side-effect contract defines sink identity, idempotence, retry, and
 recovery behavior.
+
+Arbitrary state is also design-gated. Callers can use `ArbitraryStateContract` to review the typed boundary before
+writing native `applyInPandasWithState` or `transformWithState` code, but validation does not provide a state runtime:
+
+```python
+from examples.streams.adoption import ArbitraryStateContract
+
+state_contract = ArbitraryStateContract(
+    operation="transformWithState",
+    input_schema=Event,
+    key_schema=EventKey,
+    state_schema=EventState,
+    output_schema=EventResult,
+    grouping_key=("account_id",),
+    timeout_policy="event_time",
+    timeout_clock="event_time",
+    timeout_duration="1 hour",
+    initialization_policy="initialize empty state",
+    update_policy="apply each event once",
+    removal_policy="remove after watermark timeout",
+    target_profile=">=4.0,<4.1",
+    hook_boundary="caller-owned",
+    checkpoint_identity="events-state-v1",
+    state_version="event-state-v1",
+    restart_policy="same_checkpoint",
+)
+state_contract.validate()
+```
 
 ## Correlate judge penalties
 

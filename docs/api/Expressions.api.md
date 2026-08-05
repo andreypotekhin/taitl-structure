@@ -3,6 +3,9 @@
 These supported helpers and expression methods compile to Spark Column expressions. Examples abbreviate the current
 typed `order` row scope as `o`.
 
+The default transformation baseline is ordinary PySpark `>=3.5,<4.1`. Helpers with a narrower target profile or an
+explicit design gate are marked in the details below.
+
 ## Simple Field And Predicate Expressions
 
 | Structure API | PySpark parity | Example |
@@ -136,12 +139,16 @@ typed `order` row scope as `o`.
 | `nullif(...)` | `functions.nullif` | `nullif(o.status, "unknown")` |
 | `nanvl(...)` | `functions.nanvl` | `nanvl(o.score, 0.0)` |
 | `when(...).otherwise(...)` | `when`, `otherwise` | `when(o.total > 0, "paid").otherwise("free")` |
+| `base64(...)`, `unbase64(...)` | `base64`, `unbase64` | `base64(o.payload)` |
+| `encode(...)`, `decode(...)` | `encode`, `decode` | `decode(encode(o.name, charset="UTF-8"), charset="UTF-8")` |
+| `from_json(...)`, `to_json(...)` | `from_json`, `to_json` | `from_json(o.payload_json, as_=Payload)` |
+| `from_csv(...)`, `to_csv(...)` | `from_csv`, `to_csv` | `from_csv(o.payload_csv, as_=Payload)` |
 | `parse_json(...)`, `try_parse_json(...)` | Variant JSON parsing | `parse_json(o.payload_json)` |
 | `variant_literal(...)` | Compile-time JSON Variant literal | `variant_literal('{"source":"migration"}')` |
-| `variant_array_append(...)`, `try_variant_array_append(...)` | Variant array mutation | `variant_array_append(o.payload, "$.items", 1)` |
-| `variant_insert(...)`, `try_variant_insert(...)` | Variant object/array insertion | `variant_insert(o.payload, "$.name", "spark")` |
-| `variant_set(...)`, `try_variant_set(...)` | Variant upsert | `variant_set(o.payload, "$.name", "spark")` |
-| `variant_delete(...)` | Variant path deletion | `variant_delete(o.payload, "$.name")` |
+| **Design-gated:** `variant_array_append(...)`, `try_variant_array_append(...)` | Variant array mutation | `variant_array_append(o.payload, "$.items", 1)` |
+| **Design-gated:** `variant_insert(...)`, `try_variant_insert(...)` | Variant object/array insertion | `variant_insert(o.payload, "$.name", "spark")` |
+| **Design-gated:** `variant_set(...)`, `try_variant_set(...)` | Variant upsert | `variant_set(o.payload, "$.name", "spark")` |
+| **Design-gated:** `variant_delete(...)` | Variant path deletion | `variant_delete(o.payload, "$.name")` |
 | `variant_explode(...)`, `variant_explode_outer(...)` | Variant TVF row expansion | `entry = variant_explode(o.payload, as_=VariantEntry)` |
 | `schema_of_variant(...)` | Variant schema inspection | `schema_of_variant(o.payload)` |
 | `variant_get(...)`, `try_variant_get(...)` | Variant extraction | `try_variant_get(o.payload, "$.name", as_type=types.string())` |
@@ -167,16 +174,60 @@ typed `order` row scope as `o`.
 - `hash(...)` and `xxhash64(...)` accept scalar inputs. They are Spark hash functions, not cryptographic identifiers;
   do not use them for security, cross-engine interchange, or persistent identifiers. `md5(...)`, `sha1(...)`, and
   `sha2(...)` are deterministic digests of String values, not password-storage primitives.
-- Raw `expr(...)`, `call_function(...)`, and UDF/UDTF expressions are unsupported. See the
-  [Schemas reference](../reference/Schema.ref.md).
+- `base64(...)` and `decode(...)` return String values; `unbase64(...)` and `encode(...)` return Binary values.
+  `encode(...)` and `decode(...)` accept compiler-visible charset names.
+- `from_json(...)` and `from_csv(...)` require an explicit result Schema; `to_json(...)` and `to_csv(...)` require a
+  Struct expression. Parsing and rendering results are nullable.
+- Raw `expr(...)`, `call_function(...)`, direct UDF/UDTF expressions, and implicit Python-to-UDF conversion are
+  unsupported. Scalar `@special(type="udf")` remains an ordinary-PySpark row-local feature with its warning policy;
+  see the [Transforms API](Transforms.api.md).
 - Variant helpers require a resolved PySpark 4 profile. `is_valid_variant(...)` requires the `>=4.2,<4.3` profile.
   Paths are non-empty literal strings beginning with `$`; extraction requires an explicit Structure `as_type` and is
   nullable when the path is absent. The `try_` form is also nullable when casting fails. `schema_of_variant(...)`
   returns a nullable SQL-format schema string. `to_variant_object(...)` accepts declared Array, Map, or Struct values
   and rejects a Map with non-String keys anywhere in its nested type graph.
-- Variant row expansion uses typed `variant_explode(...)`/`variant_explode_outer(...)` generators and the PySpark 4 TVF/lateral-join API. Dynamic paths, implicit extraction types, and ordering are not part of the current typed contract.
+- `schema_of_variant_agg(...)` is the grouped form of Variant schema inspection. It returns a nullable SQL-format schema
+  string and requires a Variant expression in an aggregate step.
+- Variant row expansion uses typed `variant_explode(...)`/`variant_explode_outer(...)` generators and the PySpark 4
+  TVF/lateral-join API. Dynamic paths, implicit extraction types, and ordering are not part of the current typed
+  contract.
 - `variant_literal(...)` requires non-empty, standard JSON text and validates it during symbolic capture. It lowers to
   `parse_json(F.lit(...))` and does not expose PySpark's Python-specific `VariantVal` object.
 - Mutation helpers use literal `$`-prefixed paths, but remain design-gated until a released PySpark 4.3+ profile is
-  added to Structure's compatibility matrix. They are not admitted by the current PySpark 4.2 target and therefore
-  do not lower in V9.
+  added to Structure's compatibility matrix. They are not admitted by the current PySpark 4.2 target and therefore do
+  not lower in the current baseline.
+
+## JSON And CSV Options
+
+`from_json(...)`, `to_json(...)`, `from_csv(...)`, and `to_csv(...)` accept immutable, compiler-visible option records.
+Options are literals rather than arbitrary dictionaries, so generated and online execution use the same Spark option
+names and validation rules.
+
+| Option record | Fields | Example |
+| --- | --- | --- |
+| `JsonOptions(...)` | `null_value`, `date_format`, `timestamp_format`, `mode` | `JsonOptions(date_format="...")` |
+| `CsvOptions(...)` | `delimiter`, `quote`, `escape`, `null_value`, `date_format`, `timestamp_format`, `mode` | `CsvOptions(delimiter="|")` |
+
+`mode` is currently limited to `"PERMISSIVE"`; writer calls omit it. Other options must be non-empty strings when
+provided, except `null_value`, which may be an empty string. Parser Schemas must make every parsed field nullable,
+including nested fields, because permissive Spark parsing can produce null values.
+
+## Geometry Expressions
+
+These expressions form the provider-neutral planar Geometry slice. Geometry runtime support is optional and resolved
+late through the active `GeoProvider`; the bundled PySpark plugin does not require a provider during ordinary
+compilation or generated-source import.
+
+| Structure API | PySpark parity | Example |
+| --- | --- | --- |
+| `geometry_from_wkt(...)` | `ST_GeomFromWKT` | `geometry_from_wkt(o.wkt, srid=4326)` |
+| `geometry_as_wkt(...)` | `ST_AsText` | `geometry_as_wkt(o.shape)` |
+| `intersects(...)` | `ST_Intersects` | `intersects(o.shape, other.shape)` |
+| `contains(...)` | `ST_Contains` | `contains(o.shape, other.shape)` |
+| `within(...)` | `ST_Within` | `within(o.shape, other.shape)` |
+
+The WKT constructor requires a String expression and a positive literal SRID. Geometry predicates require matching
+SRIDs and return nullable Boolean values; null inputs propagate null. WKT serialization returns nullable String. The
+contract excludes `GEOGRAPHY`, runtime-selected SRIDs, CRS transformation, measurements, spatial joins/indexes, and
+raw provider-specific `ST_*` calls. Missing providers fail with the Geometry runtime diagnostic when the type or
+operation is materialized.

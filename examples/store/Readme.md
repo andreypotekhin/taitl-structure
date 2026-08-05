@@ -8,7 +8,7 @@ persistence, stream lifecycle, and the business actions taken from the results.
 
 ### Source fixtures
 
-Small, typed-source-oriented CSV fixtures live under [`fixtures/`](fixtures/). They cover the main order, fulfillment,
+Small, typed-source-oriented CSV fixtures live under [`examples/fixtures/store/`](../fixtures/store/). They cover the main order, fulfillment,
 catalog, taxonomy, and recommendation paths, including multiple tenants, repeated order products on distinct lines,
 inventory outcomes, and nullable lookup facts. The fixtures are intentionally representative rather than exhaustive;
 tests compare selected rows and columns instead of asserting the entire dataset.
@@ -50,7 +50,7 @@ composes its recommendation boundaries, while reporting remains under the analyt
 data funnel from product facts to recommendations, demand, planning, shipment-backed actuals, and analytics; the
 section rows identify the package boundary responsible for each stage.
 
-### Inventory and shipping package boundaries
+### Inventory, warehousing, and shipping package boundaries
 
 Inventory is already a first-class concern inside fulfillment: `transforms/fulfillment/inventory/` owns dated inventory
 projection, while planning consumes inventory positions and inbound facts. The next architectural question is whether
@@ -59,6 +59,19 @@ independent of an order plan—such as snapshot normalization, reservation recon
 inventory quality checks consumed by both recommendations and fulfillment. Until those workflows have their own
 contracts, keeping inventory under fulfillment makes the current ownership honest: the existing inventory outputs are
 planning inputs and projections, not a general inventory service.
+
+Warehousing is currently a fulfillment planning reference, not a separate operational domain. The
+`schemas/fulfillment/warehouses/` package contains the tenant-scoped `Warehouse` relation used for active-facility
+filtering, regional preference, and deterministic priority ordering. That is enough while a warehouse means “a place
+the planner may select.” It should not yet become a top-level `warehousing/` package with only a facility dimension and
+no independent transformations.
+
+Promote warehousing to a sibling package when Store models facility operations independently—such as zones and
+locations, capacity, labor or processing calendars, cutoff times, pick/pack capability, dock constraints, maintenance,
+or warehouse-level service metrics. At that point, `schemas/warehousing/` and `transforms/warehousing/` can publish
+facility capabilities and operational facts consumed by fulfillment. Keep the meanings separate: warehousing describes
+where and how work can happen, inventory describes what stock exists, fulfillment decides how demand is served, and
+shipping records what was dispatched or delivered.
 
 Shipping should remain distinct from fulfillment planning. Fulfillment answers how a demand line should be served;
 shipping represents execution and delivery evidence after that decision. The current `Shipment` relation is therefore

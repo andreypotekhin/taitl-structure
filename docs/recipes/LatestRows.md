@@ -117,4 +117,4 @@ Selected-row helpers are batch-only. A streaming current-state table needs expli
 use a batch input for this recipe.
 
 For the complete helper contract, see [Latest and Earliest Rows](../QuickRef.md#latest-and-earliest-rows) and the
-[DSL reference](../background/DSL.back.md#selected-row-dedupe).
+[Transform background](../background/Transform.back.md).

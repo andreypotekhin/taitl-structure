@@ -8,6 +8,9 @@ The CLI is intentionally a compiler surface, not a Spark job runner. `structure 
 `structure compile --fail-on-diff` must run without PySpark, Java, Spark startup, a `SparkSession`, or a Spark cluster.
 Direct runtime execution remains available through `StructureSession`, not through the v1 CLI.
 
+The normative sources are the [CLI specification](../dev/specifications/CLI.md) and
+[CLI design](../dev/design/CLI.md).
+
 ## Command Surface
 
 The v1 command set is:
@@ -152,7 +155,8 @@ It must run:
 7. compatibility checks for the configured target backend and PySpark range;
 8. compiler provenance and static dataflow traceability construction in memory when enabled.
 
-It must not write generated schemas, transforms, runtime support, provenance files, traceability files, cache files, or temp
+It must not write generated schemas, transforms, runtime support, provenance files, traceability files, cache files, or
+temp
 artifacts that survive command completion. Temporary files are allowed only if they are cleaned before exit.
 
 Successful output should be compact:
@@ -357,7 +361,7 @@ When used with `--fail-on-diff`, `files written` means files written to the temp
 ## Diagnostics
 
 Diagnostic code format, severity names, lifecycle rules, registry requirements, and stable documentation anchors are
-owned by [Diagnostics.md](Diagnostics.back.md)). This section defines CLI rendering and command-specific context.
+owned by [Diagnostics.md](Diagnostics.back.md). This section defines CLI rendering and command-specific context.
 
 CLI diagnostics should wrap compiler, configuration, discovery, generation, diff, and clean failures in one consistent
 shape:
@@ -395,3 +399,37 @@ These commands must not import PySpark, start Java, create a `SparkSession`, con
 Spark environment variables. They may import user source modules only if discovery keeps module import Structure-safe.
 If a user module starts Spark at import time and discovery executes that import, Structure should fail with a diagnostic
 that explains module imports must be compiler-safe and suggests moving Spark startup into runtime code.
+
+## Implementation Interfaces
+
+The CLI is a thin shell over reusable application logic. A practical decomposition is:
+
+- `CliApp` owns command feature instances;
+- `CheckCommand` runs configuration, discovery, symbolic execution, IR construction, and checks;
+- `CompileCommand` runs the check pipeline and writes artifacts;
+- `ExplainCommand` renders one transform report from compiler IR;
+- `InitCommand` creates configuration files;
+- `CleanCommand` removes generated artifacts safely;
+- `ProfileReport` renders phase timings and counters;
+- `CompareGeneratedOutput` compares temporary generation with checked-in output;
+- `RenderDiagnostic` maps structured diagnostics to terminal text.
+
+Command classes should expose named-argument `__call__` entrypoints and delegate to stateless logic classes. The
+compiler
+pipeline should also expose programmatic APIs so tests and build integrations do not need to shell out for ordinary
+behavior.
+
+## Acceptance And Test Placement
+
+The CLI contract is complete only when tests cover help and command wiring, configuration precedence and CLI overrides,
+init file creation, check diagnostics, compile output and write-if-changed behavior, stale-output detection, explain
+reports, clean safety, profile metrics, and the no-Spark compiler contract.
+
+`structure compile --fail-on-diff` tests must prove that stale-output failures do not modify the configured generated
+directory. `structure clean` tests must prove that unknown files are not removed. Compiler commands should use small
+fixture projects and explicit filesystem assertions.
+
+Implementation tests belong under `tests/app/cli/...`; specification-backed stories belong under
+`tests/user_stories/...`; direct specification tests belong under `tests/specifications/cli/...`. PySpark runtime tests
+remain separate from compiler-command tests because `check`, `compile`, `compile --fail-on-diff`, and `explain` are
+Spark-free by contract.

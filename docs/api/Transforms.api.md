@@ -3,6 +3,9 @@
 These declarations and operations define compiler-visible transform methods. Examples assume declared `OrderRaw`,
 `OrderClean`, `OrderPublished`, and `order` schemas or row scopes.
 
+Whole-rowset operations such as set composition, ordering, assertions, hierarchy expansion, sampling, and bounded scans
+are documented in the [Relations API](Relations.api.md).
+
 ## Simple Transform Declarations
 
 | Structure API | PySpark parity | Example |
@@ -61,4 +64,4 @@ These declarations and operations define compiler-visible transform methods. Exa
 - `@raw(...)` is the explicit opaque boundary: Structure validates its binding declaration, not the hook body.
 - `SchemaMode.STRICT` is the default; `SchemaMode.ALLOW_EXTRA_COLUMNS` permits additional hook output columns.
 - `StructureCompileError` exposes a rendered diagnostic with remediation. See the
-  [Transforms reference](../background/DSL.back.md) and [Hooks reference](../background/HookSemantics.back.md).
+  [Transforms background](../background/Transform.back.md) and [Hooks reference](../background/HookSemantics.back.md).

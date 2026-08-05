@@ -58,6 +58,7 @@ the current `order` row scope as `o`.
 | `approx_count_distinct(...)` | `approx_count_distinct` | `approx_count_distinct(o.customer_id, relative_sd=0.05)` |
 | `approx_percentile(...)` | `approx_percentile` | `approx_percentile(order.total, 0.5, accuracy=100)` |
 | `percentile(...)` | `percentile` | `percentile(order.total, 0.5)` |
+| `schema_of_variant_agg(...)` | Variant schema aggregate | `schema_of_variant_agg(order.payload)` |
 | `mode(...)` | `mode` | `mode(order.category, deterministic=True)` |
 | `skewness(...)` | `skewness` | `skewness(order.total)` |
 | `kurtosis(...)` | `kurtosis` | `kurtosis(order.total)` |
@@ -76,6 +77,8 @@ the current `order` row scope as `o`.
   the selected minimum or maximum.
 - `mode(value, deterministic=False)` requires grouped keys. With `deterministic=True`, ties return the lowest
   orderable candidate across supported PySpark targets.
+- `schema_of_variant_agg(...)` requires a Variant expression and returns a nullable SQL-format schema string. It is
+  available only on resolved PySpark 4 profiles.
 - Raw aggregate aliases are unsupported. Name aggregate outputs through the returned Schema constructor, and use schema
   field `alias=...` when the physical Spark column name must differ from the Structure field name.
 
@@ -97,4 +100,4 @@ the current `order` row scope as `o`.
 - `drop_duplicates(...)` accepts a same-scope field subset; `distinct(...)` can use the whole relation. For streaming
   frames it requires a preceding watermark and uses bounded `dropDuplicatesWithinWatermark`; batch frames use normal
   `dropDuplicates`. `drop_duplicates_within_watermark(...)` is the explicit streaming-only spelling.
-- Operations apply in source order. See [Transforms reference](../background/DSL.back.md).
+- Operations apply in source order. See [Transforms background](../background/Transform.back.md).

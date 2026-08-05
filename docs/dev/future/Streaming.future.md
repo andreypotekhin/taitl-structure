@@ -64,10 +64,10 @@ To adopt from above:
 - additional stream-stream join shapes with declared state and retention semantics; and
 - a safety and idempotence model for arbitrary hooks, `foreachBatch`, `foreach`, external side effects, and custom sinks.
 
-## Deferred Work - SparkStreamingDeferredFeatures.back.md
-Include Deferred Work from SparkStreamingDeferredFeatures.back.md
+## Deferred Work - Streaming.back.md
+Include deferred streaming work from Streaming.back.md
 
-Ref: SparkStreamingDeferredFeatures.back.md
+Ref: docs/background/Streaming.back.md
 Quote:
 ````
 Permanent Non-Goals

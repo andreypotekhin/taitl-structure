@@ -1,14 +1,18 @@
 # Configuration Schema
 
 Structure configuration controls source discovery, generated output, execution mode, target backend, validation,
-traceability, Spark SQL assumptions, and CI behavior. Configuration errors must fail early with structured diagnostics and
+traceability, Spark SQL assumptions, and CI behavior. Configuration errors must fail early with structured diagnostics
+and
 allowed values.
 
 This reference covers configuration files, resolution order, keys, defaults, validation rules, diagnostics, and tests.
+The normative sources are [ConfigSchema](../dev/specifications/ConfigSchema.md) and
+[PluginConfiguration](../dev/specifications/PluginConfiguration.md).
 
 ## Plugin Configuration
 
-Plugin selection replaces the root-level `target_backend`, `target_profile`, `target_variant`, and `compat_targets` configuration
+Plugin selection replaces the root-level `target_backend`, `target_profile`, `target_variant`, and `compat_targets`
+configuration
 with plugin selection and plugin-owned option tables. Core validates selection syntax and passes the selected plugin
 only its own immutable option mapping; a plugin owns the meaning of its option keys.
 
@@ -41,6 +45,11 @@ pipeline must resolve one identical target before a plugin service facet runs.
 
 The normative selection contract is [PluginConfiguration.md](../dev/specifications/PluginConfiguration.md).
 
+The root-level target settings shown in the compatibility seed below are the pre-plugin configuration contract. The
+released plugin contract uses `plugin.default`, `plugin.disabled_distributions`, and `plugin.<name>` tables; legacy
+`target_backend`, `target_profile`, `target_variant`, and `compat_targets` keys must not be silently mixed with that
+shape. A migration boundary must reject legacy keys with a diagnostic that names the equivalent plugin setting.
+
 ## Configuration Sources
 
 Supported sources, lowest to highest precedence:
@@ -69,6 +78,8 @@ generated_package = "structure_generated"
 generated_docs = false
 generated_docs_dir = "docs"
 generated_docs_formats = ["markdown", "json"]
+generated_code_options = []
+generated_code_hard_wrap = 120
 execution_mode = "online"
 target_backend = "pyspark"
 target_profile = ">=3.5,<4.1"
@@ -89,7 +100,7 @@ spark.sql.storeAssignmentPolicy = "ANSI"
 ```
 
 When no configuration file exists, source-root discovery may replace `source_roots = ["src"]` with `["."]` according
-to [SourceModuleRules.md](SourceModuleRules.back.md)).
+to [Transform](Transform.back.md#source-modules-and-expression-boundaries).
 
 ## Keys
 
@@ -129,6 +140,21 @@ Rules:
 - Must be a valid dotted Python package name.
 - Must not be `"structure"`.
 - Must not collide with a discovered source package.
+
+### generated_code_options
+
+Type: list of unique, non-empty strings. Default: `[]`.
+
+Values are canonicalized into sorted order before entering `StructureConfig` and compiler options. The setting changes
+generated source only; it does not change online semantics. `embed_hooks` copies eligible raw-hook methods into the
+generated class when they use only local dependencies, parameters, Python builtins, and `self.spark` or `self.ctx`.
+`embed_hooks` without `embed_udfs` is invalid for a transform using a Python UDF because the generated class would still
+require the source implementation.
+
+### generated_code_hard_wrap
+
+Type: integer. Default: `120`. Generated Python should not contain lines longer than this value. Values below `80` are
+rejected because deeply nested PySpark expressions need room to remain readable.
 
 ### generated_docs
 

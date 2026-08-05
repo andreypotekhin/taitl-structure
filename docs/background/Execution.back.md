@@ -7,6 +7,12 @@ existing Spark session, constructs a transform invocation with input DataFrames,
 Generated PySpark remains available for provenance, review, debugging, CI diff checks, and projects that deliberately
 choose generated-code execution.
 
+The normative sources are [Execution](../dev/specifications/Execution.md),
+[Execution Semantic Contract](../dev/specifications/ExecutionSemanticContract.md), and
+[Online Execution](../dev/specifications/OnlineExecution.md). The execution flow is designed in
+[Execution Data Flows](../dev/design/ExecutionDataFlows.md) and
+[Online Execution Runtime](../dev/design/OnlineExecutionRuntime.md).
+
 ## Plugin-Dispatched Execution
 
 Core owns invocation lifecycle and the standard result boundary, but it no longer owns PySpark runners or target
@@ -30,6 +36,7 @@ streaming queries, triggers, checkpoints, sinks, and orchestration.
 
 The detailed execution semantics below apply through this boundary. Target selection and target behavior follow the
 plugin model above and [Plugin API](../dev/specifications/PluginAPI.md).
+
 
 ## Public API
 
@@ -128,6 +135,7 @@ unambiguous, methods consume and update inferred lanes without method-level sele
 original inputs or existing lanes, `output=` names intermediate lanes or final outputs, and both options accept ordered
 lists. If a lane shares an input name, the lane shadows that original input in method-level `input=`.
 
+
 ## Configuration
 
 Execution is the default:
@@ -158,7 +166,7 @@ generated-code semantics available for no-disk environments.
 
 `target_backend` and `target_profile` remain backend selection inputs. In v1 the only supported backend is `pyspark`.
 Future backends should be selected by the session, not by changing transform constructors. Backend support is checked
-against the session's resolved `StructureConfig` through [BackendCapabilities.md](BackendCapabilities.back.md)), so
+against the session's resolved `StructureConfig` through [Capabilities](Capabilities.back.md), so
 execution and generated-code execution share the same target capability decisions.
 
 Python users may pass a resolved config to the runtime session:
@@ -183,6 +191,7 @@ config = StructureConfig.resolve(project_root=".", execution_mode="generated")
 session = StructureSession(spark=spark, config=config)
 ```
 
+
 ## Session Responsibilities
 
 `StructureSession` owns runtime knowledge:
@@ -203,6 +212,7 @@ The session compiles a transform on its first compatible run and reuses that res
 `Transform.compile(...)` remains available for early diagnostics; load its result with `session.load(artifact)`.
 Sessions are isolated by default, while applications may deliberately share a `CompiledArtifactPool`.
 
+
 ## Execution Modes
 
 In direct execution (`execution_mode = "online"`), the session obtains a checked compiled artifact from its pool and
@@ -210,8 +220,8 @@ delegates to `OnlinePySparkRunner`.
 The runner interprets the artifact's shared PySpark recipes with live PySpark DataFrame and Column APIs. It must not
 write generated files and must not execute generated Python source text.
 
-The execution runner must also materialize the transform's Spark schemas from the checked schema model and expose them on
-the transform invocation. This gives caller code the same shape contract that generated schema modules provide in
+The execution runner must also materialize the transform's Spark schemas from the checked schema model and expose them
+on the transform invocation. This gives caller code the same shape contract that generated schema modules provide in
 generated-code workflows.
 
 In generated-code execution (`execution_mode = "generated"`), the session delegates to `GeneratedPySparkRunner`. The
@@ -221,6 +231,7 @@ stored inputs.
 
 If generated mode cannot import the generated class, Structure must fail with a diagnostic that suggests running
 `structure compile`, making the generated source root importable, or switching to `execution_mode = "online"`.
+
 
 ## Execution Order
 
@@ -236,15 +247,17 @@ Execution must preserve generated-code semantics:
 8. Validate every output DataFrame.
 9. Return a read-only `TransformResult`.
 
-Execution and generated-code execution must agree on hook order, validation placement, expression lowering, join aliasing,
+Execution and generated-code execution must agree on hook order, validation placement, expression lowering, join
+aliasing,
 projection shape, schema projection, result shape, and performance guardrails.
 
 For a multi-result step, joins and filters execute once. Each result projection starts from that shared DataFrame and is
 stored under its output lane name.
 
-Those shared semantics are owned by [ExecutionSemanticContract.md](ExecutionSemanticContract.back.md)). Execution owns
-live DataFrame binding and runtime hook invocation; it must not independently choose aliases, validation placement,
-expression mapping, or literal typing when a shared PySpark recipe already defines them.
+The shared semantic contract is defined in the section below. Execution owns live DataFrame binding and runtime hook
+invocation; it must not independently choose aliases, validation placement, expression mapping, or literal typing when a
+shared PySpark recipe already defines them.
+
 
 ## Transform Input Binding
 
@@ -258,6 +271,7 @@ requires it.
 `run` is reserved for execution. A public schema-returning step method named `run` must fail with a structured
 diagnostic that asks the user to rename it.
 
+
 ## Compiler Boundary
 
 `structure check`, `structure compile`, and generated-file diff checks remain Spark-free. They must not require
@@ -266,11 +280,49 @@ PySpark, Java, SparkSession, Spark startup, or a Spark cluster.
 Execution is a runtime boundary and may import PySpark. It requires a local or remote Spark runtime supplied by
 the caller.
 
+
+## Semantic Parity Contract
+
+Online execution and generated-code execution are two consumers of the same checked transform meaning. Online execution
+interprets lowered PySpark recipes with live objects; generated execution renders those recipes as deterministic source.
+Neither path re-decides projection order, filter order, join aliasing, hook order, validation placement, schema
+projection, literal typing, or capability admission.
+
+```text
+checked TransformPlan + selected PySpark capabilities
+  -> lowered PySpark execution plan
+       -> online runner with live PySpark objects
+       -> generated PySpark source
+```
+
+The shared plan preserves transform identity, capabilities, input bindings, source-ordered steps, final validation,
+operation recipes, aliases, schema projections, hook placement, and compiled-path guardrails. The generated emitter does
+not invent semantics while rendering text, and the online runner does not execute generated source as an intermediate
+step.
+
+Shared invariants include:
+
+- identical source-order operation semantics and output projection;
+- identical field aliases, joined-scope aliases, and repeated-join suffixes;
+- identical literal typing, expression nullability, and explicit conversion behavior;
+- identical hook order, selected inputs, schema mode, and validation boundaries;
+- deterministic output for identical source, configuration, target profile, and Structure version;
+- identical branch and lane selection, output wrapping, and semantic fingerprints;
+- no hidden actions, local row loops, RDD or Pandas fallback, implicit Python UDF fallback, storage writes, or
+  streaming lifecycle ownership.
+
+An operation is admitted only when its checked IR and selected backend capabilities can describe its runtime behavior.
+Unknown or unsupported required capabilities fail before execution or generation. Source-text formatting, imports, file
+headers, and generated module layout remain generator concerns; operation meaning remains this execution contract.
+
+
 ## Streaming Compatibility
 
-Execution does not change the streaming compatibility contract. A transform is streaming-compatible when
+Execution does not change the [Streaming](Streaming.back.md) compatibility contract. A transform is
+streaming-compatible when
 its compiled operations are valid for the caller's streaming DataFrame shape. The caller owns `readStream`,
 `writeStream`, triggers, checkpoints, output modes, and query lifecycle.
+
 
 ## Diagnostics
 
@@ -293,3 +345,21 @@ Use:
 
 See docs/background/Execution.back.md
 ```
+
+
+## Plan Cache And Error Boundaries
+
+Compilation may cache immutable plans by source fingerprint, configuration, target, plugin version, and relevant
+runtime-support version. Cache hits must not suppress diagnostics or change source anchors. Mutable sessions,
+DataFrames, hook instances, and Spark runtime objects remain outside the cached plan.
+
+Runtime errors should preserve Structure diagnostic code and context at declared boundaries. Plugin-specific runtime
+errors remain opaque payloads to Core except where the plugin maps them to the shared diagnostic contract.
+
+
+## Acceptance Contract
+
+Execution is complete when tests prove deferred construction, named input binding, output result access, parity for
+every admitted operation family, identical validation boundaries, hook order and ownership, capability rejection before
+runtime, streaming classification, generated artifact fingerprint checks, and caller-owned Spark and streaming
+lifecycle. Direct and generated execution must expose equivalent output schemas.

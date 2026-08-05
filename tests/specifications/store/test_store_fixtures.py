@@ -3,7 +3,7 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 
-FIXTURES = Path(__file__).resolve().parents[3] / "examples" / "store" / "fixtures"
+FIXTURES = Path(__file__).resolve().parents[3] / "examples" / "fixtures" / "store"
 
 CORE_FILES = {
     "orders.csv",

@@ -12,6 +12,10 @@ The example deliberately keeps three kinds of evidence separate:
 
 None is a calibrated probability of relevance, and none is silently substituted for another.
 
+The executable source is the [Search example](../../examples/search/Readme.md) and its transforms under
+`examples/search/transforms`. This background is synchronized to those example contracts; it does not introduce a
+separate search API or a hosted-service promise.
+
 ## Corpus Ownership and Freshness
 
 `Document.content` is plain text. Heading lines form sections, blank lines form paragraphs, sentences are derived
@@ -72,12 +76,14 @@ the application because they depend on its model, citation policy, latency budge
 Document search begins with `OnlineScoring`. It treats the caller's existing score relations as cache-compatible
 inputs, filters stale or future rows, and calculates missing query groups from the reusable lexical index. It emits only
 the bridge rows calculated for the current request. Retrieval unions those rows with the caller's pre-calculated stored
-and streamed rows, so the caller can persist the bridge output in the same score relation and reuse it on a repeat query.
+and streamed rows, so the caller can persist the bridge output in the same score relation and reuse it on a repeat
+query.
 No separate cache schema, query-key field, or index-version field is required.
 
 The remaining three stages are `RetrieveDocuments`, `OverlapDocuments`, and `RerankDocuments`. Retrieval admits up to
 1000 persisted or streamed candidates per query by descending score with a document-ID tie-breaker. Overlap narrows
-those candidates to 100 by overlap score. Rerank enriches only those candidates with feedback and ranks their combined score.
+those candidates to 100 by overlap score. Rerank enriches only those candidates with feedback and ranks their combined
+score.
 A document outside the lexical candidate set cannot enter only because it is popular or has historical clicks.
 
 Within a candidate set, BM25 is normalized by the query's maximum candidate score. Caller-supplied relevance-policy
@@ -140,7 +146,8 @@ behavior.
 
 Search quality has two complementary, non-interchangeable facets.
 
-`EvaluateDocumentRankingQuality` measures a document ranking against caller-provided four-grade relevance judgments: 0 (not
+`EvaluateDocumentRankingQuality` measures a document ranking against caller-provided four-grade relevance judgments: 0
+(not
 relevant), 1 (related), 2 (relevant), and 3 (ideal). Grades 2 and 3 count as binary relevant, while all grades affect
 nDCG. Per-query and daily outputs include Precision, judged Recall, Success, nDCG, and reciprocal-rank measures at
 the supported cutoffs. An unjudged returned document makes the affected judgment-based metric unavailable rather than

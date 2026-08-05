@@ -518,5 +518,6 @@ Status: planned. V11 follows the V10 closeout and runs from Sprint 55 through Sp
 
 - `docs/dev/project-management/V11.md`
 - `docs/dev/planning/P08042601.V11-pyspark-4.1-adoption.plan.md`
+- `docs/dev/planning/P08042603.V11-retained-v9-design-gates.plan.md`
 - `docs/dev/design/V11PySpark41Adoption.md`
 - `docs/dev/specifications/V11PySpark41Parity.md`

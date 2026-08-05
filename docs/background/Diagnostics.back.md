@@ -7,6 +7,10 @@ behavior, and runtime execution.
 Diagnostics must explain what failed, why it matters, and how to fix it. They are also stable enough for tests, CI
 annotations, IDEs, troubleshooting guides, and documentation links.
 
+The normative sources are [Diagnostics](../dev/specifications/Diagnostics.md) and the
+[diagnostics registry design](../dev/design/DiagnosticsContract.md). Feature backgrounds own the meaning of their
+diagnostics; this document owns codes, lifecycle, registry, rendering, and security.
+
 ## Scope
 
 This reference covers:
@@ -22,98 +26,9 @@ This reference covers:
 - renderer responsibilities.
 
 Feature references still own the domain meaning of their diagnostics. For example,
-[JoinSemantics.md](JoinSemantics.back.md)) owns which join shapes are invalid. This document owns the code, lifecycle, and
+[Join](Join.back.md) owns which join shapes are invalid. This document owns the code, lifecycle, and
 documentation contract that makes that join diagnostic stable.
 
-## REL-E0701
-
-`REL-E0701` means an `exactly_one(...)` relation assertion found a relation cardinality other than one at Spark
-evaluation time. Structure checks this with Spark-visible DataFrame expressions, so generated and direct online
-execution both fail during action evaluation without collecting relation rows to the driver.
-
-Common causes:
-
-- the asserted relation was not filtered to the intended policy row;
-- the upstream input is empty;
-- the upstream input contains duplicate policy/configuration rows;
-- the transform used `exactly_one(...)` where ordinary row multiplication is valid.
-
-Fix the source relation so it produces one row before the assertion, aggregate it to one row intentionally, or remove
-the assertion and use an explicit join when multiple rows are intended.
-
-## REL-E0702
-
-`REL-E0702` means a `require_unique(...)` relation assertion found duplicate keys during Spark evaluation. Structure
-checks duplicate groups in the Spark plan and fails through a Spark assertion expression; it does not collect the
-relation to the driver.
-
-Common causes:
-
-- the declared key is incomplete;
-- upstream data has duplicate catalog/configuration identifiers;
-- deduplication or aggregation was expected but not declared.
-
-Fix the source relation, declare a fuller business key, or explicitly deduplicate/aggregate before the assertion.
-
-## REL-E0703
-
-`REL-E0703` means a `require_all(...)` relation assertion found at least one row where the predicate is not true. Null
-predicate results count as failures.
-
-Common causes:
-
-- an input catalog contains invalid ranges or required fields;
-- the predicate is too strict for legitimate data;
-- upstream normalization did not run before validation.
-
-Fix or filter invalid rows before asserting `require_all(...)`, or loosen the predicate when those rows are valid.
-
-## REL-E0704
-
-`REL-E0704` means a `require_reference(...)` relation assertion found at least one checked value without a matching
-row in the declared reference relation. By default null checked values are allowed; `nulls="reject"` treats nulls as
-missing references.
-
-Common causes:
-
-- a catalog contains a parent or foreign-key value that is absent from the reference relation;
-- upstream normalization uses different physical key values on the checked and reference sides;
-- null values are invalid but were not rejected before validation.
-
-Correct the referenced catalog, normalize both sides to the same business key, or filter invalid rows before asserting
-`require_reference(...)`.
-
-## REL-E0705
-
-`REL-E0705` means a `select_first_qualified(...)` relation operation could not choose one deterministic candidate for
-each declared key under its configured policies. With `missing="error"`, every key in the candidate relation must have
-at least one eligible row. With `ties="error"`, no key may have two eligible rows with the same priority value.
-
-Common causes:
-
-- the eligibility predicate filters out every candidate for a required key;
-- the priority expression is not specific enough to break ties;
-- the declared key is too broad and combines unrelated candidates into one partition;
-- missing candidates are valid, but the operation was configured with `missing="error"`.
-
-Fix the eligibility predicate, declare a more specific business key, add a deterministic priority tie-breaker in a
-future supported priority expression, or use `missing="allow"` when absent candidates should simply produce no row.
-
-## REL-E0706
-
-`REL-E0706` means a `require_parent_hierarchy(...)` relation assertion found an invalid bounded parent hierarchy
-during Spark evaluation. The assertion checks missing parents, cycles, depth overruns, and child ordering with
-Spark-visible DataFrame expressions; it does not collect the catalog to the driver.
-
-Common causes:
-
-- a non-null parent id has no matching row in the same relation;
-- parent links contain a cycle;
-- a valid chain exceeds the declared `max_depth`;
-- a child row does not sort after its parent by the declared ordering expression.
-
-Correct the catalog, increase the literal depth only when the longer hierarchy is intentional, or fix the ordering
-field before asserting `require_parent_hierarchy(...)`.
 
 ## Design Principles
 
@@ -126,6 +41,7 @@ Diagnostics must be:
 - testable by code and high-signal fields, not by whole terminal snapshots only;
 - free of live Spark objects, Python object memory addresses, and nondeterministic values;
 - concise by default, with enough context for a developer to act without reading source internals.
+
 
 ## Code Format
 
@@ -151,6 +67,7 @@ The four digits are stable within the component prefix. The severity letter may 
 allow a compatible change. If a warning becomes an error in a way that can break CI, create a new error code and
 deprecate the warning code.
 
+
 ## Component Prefixes
 
 ```text
@@ -174,6 +91,15 @@ CLI     CLI command behavior, clean safety, profile output, and command usage
 
 New feature references must either use an existing component prefix or reserve a new prefix here before publishing
 examples with codes.
+
+
+## Plugin Diagnostic Reservation
+
+Plugins may emit diagnostics only through a reserved plugin range and must not reuse Core or another plugin's code. A
+plugin diagnostic still carries the common structured model, stable docs link, source context, lifecycle status, and
+renderer-preserved fix. Capability and plugin selection failures remain backend or configuration diagnostics when Core
+owns the decision; a plugin owns only failures in its declared service boundary.
+
 
 ## Diagnostic Model
 
@@ -220,6 +146,7 @@ identifies supporting source such as a conflicting declaration. Renderers show t
 `Source:` section. Diagnostics without a trustworthy span retain their logical `source` display and must never fail
 merely because source text is unavailable.
 
+
 ## Registry
 
 The implementation must contain a diagnostic registry before broad diagnostic work begins. The registry may be a Python
@@ -251,6 +178,7 @@ examples
 
 The registry must reject duplicate codes at test time. It should also reject missing docs links, malformed codes,
 unknown statuses, and codes that use an unknown or wrong component prefix.
+
 
 ## Lifecycle
 
@@ -289,9 +217,11 @@ Potentially breaking changes:
 Breaking changes require a new code unless the project is still before the first public release and the affected code
 has not been published.
 
+
 ## Documentation Contract
 
-[Diagnostics.md](../Diagnostics.md) is the compact public index. Every active, deprecated, and retired published code must have a
+[Diagnostics.md](../Diagnostics.md) is the compact public index. Every active, deprecated, and retired published code
+must have a
 stable lowercase Markdown heading anchor there:
 
 ```text
@@ -309,6 +239,7 @@ The public entry should contain:
 
 Specialized specs may contain richer examples, but diagnostics should link through the public index when practical so
 external tools have one stable target.
+
 
 ## Rendering
 
@@ -333,6 +264,7 @@ CLI rendering should avoid stack traces for expected Structure errors. Unexpecte
 internal diagnostic such as `CLI-X1101`, include a concise bug-report prompt, and keep the underlying exception
 available to logs or debug mode when that exists.
 
+
 ## Determinism and Security
 
 Diagnostics must not include:
@@ -346,3 +278,111 @@ Diagnostics must not include:
 
 When a diagnostic includes a path, prefer project-relative paths. When it includes a config value that may be sensitive,
 show the setting path and redact the value.
+
+
+## REL-E0701
+
+`REL-E0701` means an `exactly_one(...)` relation assertion found a relation cardinality other than one at Spark
+evaluation time. Structure checks this with Spark-visible DataFrame expressions, so generated and direct online
+execution both fail during action evaluation without collecting relation rows to the driver.
+
+Common causes:
+
+- the asserted relation was not filtered to the intended policy row;
+- the upstream input is empty;
+- the upstream input contains duplicate policy/configuration rows;
+- the transform used `exactly_one(...)` where ordinary row multiplication is valid.
+
+Fix the source relation so it produces one row before the assertion, aggregate it to one row intentionally, or remove
+the assertion and use an explicit join when multiple rows are intended.
+
+
+## REL-E0702
+
+`REL-E0702` means a `require_unique(...)` relation assertion found duplicate keys during Spark evaluation. Structure
+checks duplicate groups in the Spark plan and fails through a Spark assertion expression; it does not collect the
+relation to the driver.
+
+Common causes:
+
+- the declared key is incomplete;
+- upstream data has duplicate catalog/configuration identifiers;
+- deduplication or aggregation was expected but not declared.
+
+Fix the source relation, declare a fuller business key, or explicitly deduplicate/aggregate before the assertion.
+
+
+## REL-E0703
+
+`REL-E0703` means a `require_all(...)` relation assertion found at least one row where the predicate is not true. Null
+predicate results count as failures.
+
+Common causes:
+
+- an input catalog contains invalid ranges or required fields;
+- the predicate is too strict for legitimate data;
+- upstream normalization did not run before validation.
+
+Fix or filter invalid rows before asserting `require_all(...)`, or loosen the predicate when those rows are valid.
+
+
+## REL-E0704
+
+`REL-E0704` means a `require_reference(...)` relation assertion found at least one checked value without a matching
+row in the declared reference relation. By default null checked values are allowed; `nulls="reject"` treats nulls as
+missing references.
+
+Common causes:
+
+- a catalog contains a parent or foreign-key value that is absent from the reference relation;
+- upstream normalization uses different physical key values on the checked and reference sides;
+- null values are invalid but were not rejected before validation.
+
+Correct the referenced catalog, normalize both sides to the same business key, or filter invalid rows before asserting
+`require_reference(...)`.
+
+
+## REL-E0705
+
+`REL-E0705` means a `select_first_qualified(...)` relation operation could not choose one deterministic candidate for
+each declared key under its configured policies. With `missing="error"`, every key in the candidate relation must have
+at least one eligible row. With `ties="error"`, no key may have two eligible rows with the same priority value.
+
+Common causes:
+
+- the eligibility predicate filters out every candidate for a required key;
+- the priority expression is not specific enough to break ties;
+- the declared key is too broad and combines unrelated candidates into one partition;
+- missing candidates are valid, but the operation was configured with `missing="error"`.
+
+Fix the eligibility predicate, declare a more specific business key, add a deterministic priority tie-breaker in a
+future supported priority expression, or use `missing="allow"` when absent candidates should simply produce no row.
+
+
+## REL-E0706
+
+`REL-E0706` means a `require_parent_hierarchy(...)` relation assertion found an invalid bounded parent hierarchy
+during Spark evaluation. The assertion checks missing parents, cycles, depth overruns, and child ordering with
+Spark-visible DataFrame expressions; it does not collect the catalog to the driver.
+
+Common causes:
+
+- a non-null parent id has no matching row in the same relation;
+- parent links contain a cycle;
+- a valid chain exceeds the declared `max_depth`;
+- a child row does not sort after its parent by the declared ordering expression.
+
+Correct the catalog, increase the literal depth only when the longer hierarchy is intentional, or fix the ordering
+field before asserting `require_parent_hierarchy(...)`.
+
+
+## Testing And Acceptance
+
+The registry must be available to tests without importing PySpark. Tests should reject duplicate codes, malformed codes,
+missing docs links, unknown prefixes, invalid lifecycle states, and missing templates. Feature tests should assert codes
+and high-signal structured fields rather than whole terminal snapshots alone.
+
+The diagnostics contract is complete when expected user errors render without stack traces, unexpected failures use an
+internal code, source spans remain project-relative and deterministic, active/deprecated/retired anchors remain stable,
+secret values and live data are not leaked, and CLI, CI, runtime, and future IDE renderers preserve code, severity,
+title, problem, fix, and docs link.

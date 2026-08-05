@@ -113,4 +113,4 @@ As with latest-row selection, ties are not a silent "pick either" case. The curr
 These helpers are batch-only; do not use this recipe for a streaming input.
 
 For the complete helper contract, see [Latest and Earliest Rows](../QuickRef.md#latest-and-earliest-rows) and the
-[DSL reference](../background/DSL.back.md#selected-row-dedupe).
+[Transform background](../background/Transform.back.md).

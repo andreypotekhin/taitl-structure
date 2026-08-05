@@ -28,6 +28,7 @@ and `e` denote a temporal predicate, event time, valid-from, and valid-to expres
 | `right_join(...)` | `join(..., how="right")` | `right_join(on=o.customer_id == c.id)` |
 | `full_join(...)` | `join(..., how="full")` | `full_join(on=o.customer_id == c.id)` |
 | `cross_join(...)` | `crossJoin` | `cross_join(calendar, allow_cartesian=True)` |
+| `relation_alias(...)` | DataFrame alias | `historical = relation_alias(customer, name="historical_customer")` |
 
 **Details And Differences**
 
@@ -37,6 +38,8 @@ and `e` denote a temporal predicate, event time, valid-from, and valid-to expres
 - Cross joins require `allow_cartesian=True` and do not accept `on=`.
 - Same-name key shorthand is supported: `left_join(on="customer_id")` and
   `inner_join(on=["tenant_id", "order_id"])`.
+- `relation_alias(...)` creates a named typed occurrence of the current rowset or an unjoined relation for a self join.
+  The name must be a unique non-empty Python identifier within the step; aliasing does not execute or duplicate data.
 
 ## Time-Aware Joins
 
@@ -70,4 +73,4 @@ and `e` denote a temporal predicate, event time, valid-from, and valid-to expres
 
 - String options are validated and normalized before compilation; enum constants remain accepted as aliases.
 - Dedupe is only for lookup joins and must make the right-row selection rule explicit.
-- Raw SQL join predicates are unsupported. See the [Transforms reference](../background/DSL.back.md).
+- Raw SQL join predicates are unsupported. See the [Transforms background](../background/Transform.back.md).

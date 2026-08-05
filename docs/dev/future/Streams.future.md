@@ -125,4 +125,4 @@ make generated transforms remain pure DataFrame transformations.
 
 - Current Streams application: `examples/streams/Readme.md`
 - Streaming future boundary: `docs/dev/future/Streaming.future.md`
-- Current streaming architecture: `docs/background/SparkStreaming.back.md`
+- Current streaming architecture: `docs/background/Streaming.back.md`

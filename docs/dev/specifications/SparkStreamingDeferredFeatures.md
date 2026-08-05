@@ -88,6 +88,10 @@ guidance for `foreachBatch` through `examples.streams.adoption.start_foreach_bat
 after Structure returns a transformed streaming DataFrame. Generated transform modules still must not contain
 `foreachBatch`, `writeStream`, query lifecycle calls, checkpoints, or triggers.
 
+The adoption helper requires a `ForeachBatchSafety` declaration for stable sink identity, idempotence key, retry policy,
+and serving snapshot identity. It validates that metadata before query start but cannot enforce callback idempotence or
+transactionality; those remain caller responsibilities.
+
 Row-level `foreach`, external side effects inside transforms, and custom sink hooks still need a separate lifecycle and
 idempotence contract. They must make retry behavior, side effects, and failure handling explicit before Structure can
 own them.

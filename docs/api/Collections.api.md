@@ -3,6 +3,9 @@
 These helpers map to Spark array and map operations while keeping callback bodies symbolic. Examples abbreviate
 `order.tags` as `o.tags` and `order.attributes` as `o.attributes`.
 
+Typed struct generators are documented below. Raw or untyped PySpark generator escape hatches remain outside the
+Structure contract.
+
 ## Simple Array Helpers
 
 | Structure API | PySpark parity | Example |
@@ -18,6 +21,10 @@ These helpers map to Spark array and map operations while keeping callback bodie
 | `array_except(...)` | `array_except` | `array_except(order.tags, order.extra_tags)` |
 | `array_intersect(...)` | `array_intersect` | `array_intersect(order.tags, order.extra_tags)` |
 | `slice(...)` | `slice` | `slice(order.tags, 1, 10)` |
+| `sequence(...)` | `sequence` | `sequence(order.first, order.last, step=1)` |
+| `arr_append(...)`, `arr_prepend(...)` | Array mutation | `arr_append(order.tags, "priority")` |
+| `arr_insert(...)`, `arr_remove(...)` | Array mutation | `arr_insert(order.tags, 1, "priority")` |
+| `arr_compact(...)` | `array_compact` | `arr_compact(order.tags)` |
 | `element_at(...)` | `element_at` | `element_at(order.tags, 1)` |
 | `try_element_at(...)` | `try_element_at` | `try_element_at(order.tags, 2)` |
 
@@ -67,6 +74,26 @@ These helpers map to Spark array and map operations while keeping callback bodie
 - `arr_sort_by(..., descending=...)` requires a Boolean direction flag.
 - `arr_sort(...)` accepts arrays whose element type Spark can order; `arr_reverse(...)` preserves the array element type.
 
+## Typed Struct Generators
+
+| Structure API | PySpark parity | Example |
+| --- | --- | --- |
+| `explode_struct(...)` | `explode` | `item = explode_struct(order.items, as_=OrderItem)` |
+| `explode_outer_struct(...)` | `explode_outer` | `item = explode_outer_struct(order.items, as_=OrderItem)` |
+| `posexplode_struct(...)` | `posexplode` | `item = posexplode_struct(order.items, as_=PositionedItem)` |
+| `posexplode_outer_struct(...)` | `posexplode_outer` | `item = posexplode_outer_struct(order.items, as_=PositionedItem)` |
+| `inline_struct(...)` | `inline` | `item = inline_struct(order.items, as_=OrderItem)` |
+| `inline_outer_struct(...)` | `inline_outer` | `item = inline_outer_struct(order.items, as_=OrderItem)` |
+
+**Details And Differences**
+
+- Each generator requires an `array<struct>` expression and an explicit `as_` Schema. `scope=` controls the generated
+  row scope used by later expressions.
+- Inner generators drop null or empty arrays. Outer generators preserve the input row with nullable generated fields.
+- `posexplode_struct(...)` and its outer form add a zero-based ordinal field, named `ordinal` by default.
+- Generator cardinality and streaming compatibility are recorded in the compiler plan; generated fields remain typed and
+  compiler-visible.
+
 ## Map Helpers
 
 | Structure API | PySpark parity | Example |
@@ -93,5 +120,6 @@ These helpers map to Spark array and map operations while keeping callback bodie
 - `map_concat(...)` accepts `duplicates="error"` only. Its inputs must not contain duplicate runtime keys; run Spark
   with `spark.sql.mapKeyDedupPolicy=EXCEPTION` (the default) so a conflicting merge fails instead of silently choosing
   a value.
-- Python callback control flow and row-expanding generators such as `explode(...)` are unsupported. See the
-  [Transforms reference](../background/DSL.back.md).
+- Python callback control flow and raw/untyped row-expanding generators such as direct `explode(...)` are unsupported.
+  Use the typed struct generator forms above when the element schema is known. See the
+  [Transforms background](../background/Transform.back.md).

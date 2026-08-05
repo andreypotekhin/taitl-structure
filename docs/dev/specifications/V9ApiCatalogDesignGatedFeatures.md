@@ -288,6 +288,11 @@ Tests:
 - streaming reports `STREAM-E0801` for `allow_missing_columns=True`;
 - defaults remain design-gated.
 
+The bullets above record the V9 first-slice boundary. The current V10 batch contract supersedes the defaults and nested
+struct restrictions: typed `defaults={"field.path": literal}` values now support missing non-nullable fields and nested
+struct fields, including alias-preserving rendering. Array/map element evolution and streaming missing-column union
+remain gated. See the V10 continuation below.
+
 ## Streaming Design Gates
 
 Streaming-specific contracts live in [V9StreamingDesignGatedFeatures.md](V9StreamingDesignGatedFeatures.md). This

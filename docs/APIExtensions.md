@@ -2,7 +2,8 @@
 
 This page lists additions to PySpark APIs added to facilitate writing data transforms. They are contracts that do not correspond to a direct PySpark method or function.
 
-For PySpark APIs, see [APICatalog.md](APICatalog.md). For Structure APIs such as schemas, transforms, hooks etc. see Core APIs in [API.md](API.md).
+For PySpark APIs, see [APICatalog.md](APICatalog.md). For detailed whole-rowset contracts, see the
+[Relations API](api/Relations.api.md). For Structure APIs such as schemas, transforms, and hooks, see [API.md](API.md).
 
 ## Added PySpark Vocabulary
 
@@ -15,15 +16,15 @@ For PySpark APIs, see [APICatalog.md](APICatalog.md). For Structure APIs such as
 
 | Capability | Status | Built on | Addition | Reference |
 | --- | --- | --- | --- | --- |
-| Relation cardinality assertion | implemented | Spark-plan validation | `exactly_one` fails zero or multiple matches with stable `REL-E0701` diagnostics without driver collection | [APICatalog.md](APICatalog.md#relation-operations) |
-| Relation integrity assertion | implemented | Spark-plan validation | `require_unique`, `require_all`, and `require_reference` express key, predicate, and parent-reference integrity checks with `REL-E0702`/`REL-E0703`/`REL-E0704` diagnostics | [APICatalog.md](APICatalog.md#relation-operations) |
-| Parent hierarchy validation | implemented | Finite self-join validation pattern | `require_parent_hierarchy` checks bounded parent catalogs for missing parents, cycles, depth overruns, and child ordering with `REL-E0706` diagnostics | [APICatalog.md](APICatalog.md#relation-operations) |
-| Priority row selection | implemented | Ordered grouping/window pattern | `select_first_qualified` selects one eligible row per declared business key and reports configured missing/tie failures as `REL-E0705` | [APICatalog.md](APICatalog.md#relation-operations) |
-| Parent hierarchy closure | implemented | Iterative relation expansion pattern | `hierarchy_closure` emits typed `(node, ancestor, depth)` closure rows from a bounded parent catalog without driver collection | [APICatalog.md](APICatalog.md#relation-operations) |
-| Bounded parent hierarchy fallbacks | implemented | Iterative relation expansion pattern | `hierarchy_fallbacks` emits deterministic fallback rows from a declared band-id path and unjoined parent catalog without driver collection | [APICatalog.md](APICatalog.md#relation-operations) |
-| Relation sampling | implemented | Spark `DataFrame.sample` | `sample(fraction, seed=...)` records reproducible batch sampling; `reproducible=False` is required for unseeded sampling | [APICatalog.md](APICatalog.md#relation-operations) |
-| Missing-column union | implemented/design-gated | Spark `DataFrame.unionByName` | `union_by_name(relation, allow_missing_columns=True)` supports nullable fills, typed scalar defaults, canonical nested struct paths, aliases, and explicit struct defaults for batch relations; array/map element evolution and streaming missing-column union remain gated | [APICatalog.md](APICatalog.md#relation-operations) |
-| Bounded ordered `scan(...)` | implemented | Ordered recurrence pattern | Batch-only typed state progression over a caller-supplied, partitioned, ordered timeline without general recursive DataFrame semantics | [Ordered Timeline Scan](dev/specifications/OrderedTimelineScan.md) |
+| Relation cardinality assertion | implemented | Spark-plan validation | `exactly_one` fails zero or multiple matches with stable `REL-E0701` diagnostics without driver collection | [Relations API](api/Relations.api.md) |
+| Relation integrity assertion | implemented | Spark-plan validation | `require_unique`, `require_all`, and `require_reference` express typed integrity checks | [Relations API](api/Relations.api.md) |
+| Parent hierarchy validation | implemented | Finite self-join validation pattern | `require_parent_hierarchy` checks bounded catalogs and reports `REL-E0706` | [Relations API](api/Relations.api.md) |
+| Priority row selection | implemented | Ordered grouping/window pattern | `select_first_qualified` selects one eligible row per declared business key and reports `REL-E0705` | [Relations API](api/Relations.api.md) |
+| Parent hierarchy closure | implemented | Iterative relation expansion pattern | `hierarchy_closure` emits typed `(node, ancestor, depth)` closure rows | [Relations API](api/Relations.api.md) |
+| Bounded parent hierarchy fallbacks | implemented | Iterative relation expansion pattern | `hierarchy_fallbacks` emits deterministic fallback rows from a bounded path | [Relations API](api/Relations.api.md) |
+| Relation sampling | implemented | Spark `DataFrame.sample` | `sample(fraction, seed=...)` records reproducible batch sampling | [Relations API](api/Relations.api.md) |
+| Missing-column union | implemented/design-gated | Spark `DataFrame.unionByName` | Batch nullable/defaulted and nested-struct evolution is supported; array/map and streaming evolution remain gated | [Relations API](api/Relations.api.md) |
+| Bounded ordered `scan(...)` | implemented | Ordered recurrence pattern | Batch-only typed state progression over a bounded ordered timeline | [Relations API](api/Relations.api.md) |
 
 ## Added Selection Helpers
 

@@ -75,6 +75,7 @@ as `o`, its customer key as `p`, and its event-time order key as `t`.
 | `window_min(...)` | `min` over window | `window_min(order.total, over=w)` |
 | `window_max(...)` | `max` over window | `window_max(order.total, over=w)` |
 | `window_count(...)` | `count` over window | `window_count(over=w)` |
+| `window_count_distinct(...)` | `count_distinct` over window | `window_count_distinct(order.id, over=w)` |
 | `window_bool_and(...)` | `bool_and` over window | `window_bool_and(order.is_paid, over=w)` |
 | `window_bool_or(...)` | `bool_or` over window | `window_bool_or(order.is_overdue, over=w)` |
 | `window_stddev(...)` | `stddev` over window | `window_stddev(order.total, over=w)` |
@@ -92,4 +93,4 @@ as `o`, its customer key as `p`, and its event-time order key as `t`.
 - Value window aggregates other than `count(...)` can be null for an empty frame, even when their input is non-null.
 - Spark does not permit distinct window aggregates, so `window_count_distinct(...)` rejects the combination early.
 - Raw `Column.over(...)` and raw PySpark `WindowSpec` objects are unsupported. See the
-  [Transforms reference](../background/DSL.back.md).
+  [Transforms background](../background/Transform.back.md).

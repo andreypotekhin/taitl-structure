@@ -45,5 +45,5 @@ Do not nest the schema in `PublishOrders`. Declare it at module scope as shown;
 Structure reports an actionable compile error for a `Schema` class nested inside a
 transform.
 
-See the [schema API](../api/Schemas.api.md) and [source module rules](../background/SourceModuleRules.back.md) for
+See the [schema API](../api/Schemas.api.md) and [source module rules](../background/Generation.back.md) for
 the broader declaration and discovery contracts.
