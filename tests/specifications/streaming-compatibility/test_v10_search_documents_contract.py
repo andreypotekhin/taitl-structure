@@ -1,7 +1,10 @@
 from __future__ import annotations
 
-from typing import cast
+from typing import Any, cast
 
+import pytest
+
+from examples.search.adoption import REQUIRED_SNAPSHOT_INPUTS, SearchDocumentsRunContract
 from examples.search.transforms.searching.search_docs.SearchDocuments import SearchDocuments
 from structure.core.compiler.api import Compiler
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
@@ -61,10 +64,8 @@ def test_search_documents_captures_exact_query_request_event_time_contract() -> 
             expression
             for expression in expressions
             if expression.kind == "eq"
-            and {str(argument.data.get("scope")) for argument in expression.args}
-            == {"query", "request"}
-            and {str(argument.data.get("field")) for argument in expression.args}
-            == {"requested_at"}
+            and {str(argument.data.get("scope")) for argument in expression.args} == {"query", "request"}
+            and {str(argument.data.get("field")) for argument in expression.args} == {"requested_at"}
         ]
         bounds = [
             expression
@@ -75,3 +76,65 @@ def test_search_documents_captures_exact_query_request_event_time_contract() -> 
         ]
         assert len(timestamp_equalities) == 1
         assert len(bounds) == 1
+
+
+def test_search_documents_run_contract_requires_immutable_append_handoff() -> None:
+    """The caller-owned run binds one snapshot, checkpoint, trigger, and finality policy."""
+
+    contract = SearchDocumentsRunContract(
+        snapshot_id="search-snapshot-v1",
+        snapshot_inputs=REQUIRED_SNAPSHOT_INPUTS,
+        sink_identity="search-results-parquet",
+        checkpoint_identity="search-documents-v1",
+        trigger="availableNow",
+        output_mode="append",
+        event_time_field="requested_at",
+        completion_window="10 minutes",
+        refresh_restart_policy="new_run_on_snapshot_refresh",
+        finality_policy="append_final_no_revisions",
+        downstream_materialization="persist final results before serving",
+    )
+
+    contract.validate()
+
+
+def test_search_documents_run_contract_rejects_incomplete_snapshot() -> None:
+    """A run cannot silently mix or omit serving snapshot inputs."""
+
+    contract = SearchDocumentsRunContract(
+        snapshot_id="search-snapshot-v1",
+        snapshot_inputs=("index", "score_cache", "feedback", "policy"),
+        sink_identity="search-results-parquet",
+        checkpoint_identity="search-documents-v1",
+        trigger="availableNow",
+        output_mode="append",
+        event_time_field="requested_at",
+        completion_window="10 minutes",
+        refresh_restart_policy="new_run_on_snapshot_refresh",
+        finality_policy="append_final_no_revisions",
+        downstream_materialization="persist final results before serving",
+    )
+
+    with pytest.raises(ValueError, match="SEARCH-RUN-E1001"):
+        contract.validate()
+
+
+def test_search_documents_run_contract_rejects_non_append_or_revision_policy() -> None:
+    """The handoff refuses output or refresh policies that permit revisions."""
+
+    contract = SearchDocumentsRunContract(
+        snapshot_id="search-snapshot-v1",
+        snapshot_inputs=REQUIRED_SNAPSHOT_INPUTS,
+        sink_identity="search-results-parquet",
+        checkpoint_identity="search-documents-v1",
+        trigger="processingTime:5 minutes",
+        output_mode=cast(Any, "update"),
+        event_time_field=cast(Any, "event_time"),
+        completion_window="10 minutes",
+        refresh_restart_policy="new_run_on_snapshot_refresh",
+        finality_policy="append_final_no_revisions",
+        downstream_materialization="persist final results before serving",
+    )
+
+    with pytest.raises(ValueError, match="SEARCH-RUN-E1002"):
+        contract.validate()

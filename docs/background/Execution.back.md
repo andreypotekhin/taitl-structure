@@ -43,21 +43,8 @@ plugin model above and [Plugin API](../dev/specifications/PluginAPI.md).
 The default runtime shape is:
 
 ```python
-from structure import (
-    Schema,
-    StructureConfig,
-    StructureSession,
-    StructureTools,
-    Transform,
-    input,
-    lane,
-    output,
-    raw,
-    special,
-    step,
-    transform,
-)
-from orders.transforms.order import EnrichOrders
+from structure import *
+from orders.transforms.order import *
 
 session = StructureSession(spark=spark, ctx=ctx)
 
@@ -172,20 +159,7 @@ execution and generated-code execution share the same target capability decision
 Python users may pass a resolved config to the runtime session:
 
 ```python
-from structure import (
-    Schema,
-    StructureConfig,
-    StructureSession,
-    StructureTools,
-    Transform,
-    input,
-    lane,
-    output,
-    raw,
-    special,
-    step,
-    transform,
-)
+from structure import *
 
 config = StructureConfig.resolve(project_root=".", execution_mode="generated")
 session = StructureSession(spark=spark, config=config)

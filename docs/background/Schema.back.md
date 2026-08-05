@@ -40,7 +40,7 @@ PySpark, start Java, create a `SparkSession`, inspect live data, or contact a Sp
 The canonical PySpark schema form is:
 
 ```python
-from structure import Schema
+from structure import *
 from structure.plugin.pyspark import *
 
 
@@ -712,7 +712,7 @@ CUSTOMER_SCHEMA = T.StructType([
 Callers may use generated schemas at storage boundaries:
 
 ```python
-from structure_generated.store.pyspark.schemas.customer import CUSTOMER_SCHEMA
+from structure_generated.store.pyspark.schemas.customer import *
 
 customers = spark.read.schema(CUSTOMER_SCHEMA).parquet(customer_source_path)
 ```

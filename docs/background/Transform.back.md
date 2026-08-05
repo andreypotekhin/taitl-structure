@@ -30,7 +30,7 @@ an explicit hook boundary and is outside the compiler-visible portability promis
 ## Canonical Source Shape
 
 ```python
-from structure import Transform, input, output, step, transform
+from structure import *
 from structure.plugin.pyspark import *
 
 
@@ -326,4 +326,3 @@ The [API reference](../reference/API.ref.md) remains the source for supported op
 [Execution background](Execution.back.md), [Hook semantics](HookSemantics.back.md), and
 [Streaming](Streaming.back.md) background covers runtime topics intentionally kept
 separate from the authoring contract.
-

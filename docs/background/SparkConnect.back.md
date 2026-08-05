@@ -1,7 +1,9 @@
 # Spark Connect
 
 Spark Connect is a PySpark target variant. It lets Structure run completed compiler-visible batch transforms with a
-caller-supplied Spark Connect session while keeping the same Structure DSL and generated-code API.
+caller-supplied Spark Connect session while keeping the same Structure DSL and generated-code API. The governing
+[Spark Connect specification](../dev/specifications/SparkConnect.md) and [design](../dev/design/SparkConnect.md) define
+its configuration, runtime boundaries, and support contract.
 
 ## Configuration
 

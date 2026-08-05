@@ -118,3 +118,19 @@ state version; and restart policy. `contract.validate()` rejects missing or inco
 Validation does not start a query, generate a state processor, own a checkpoint, or prove recovery. The caller still
 owns the native PySpark API and live restart evidence. Structure must not promote the streaming ledger row until a
 separate runtime contract and PySpark 3.5/4.0 evidence exist.
+
+## SearchDocuments Caller-Owned Run Handoff
+
+The SearchDocuments streaming path is design-gated and does not start a query for the caller. Before a caller adopts a
+future ready-to-start path, `SearchDocumentsRunContract` records one immutable serving run:
+
+- `snapshot_id` binds the index, score cache, feedback, popularity, and policy snapshots;
+- `checkpoint_identity`, `sink_identity`, `trigger`, and `completion_window` identify the operational run;
+- output mode is `append` and event time is immutable `requested_at`;
+- `refresh_restart_policy` requires a new run whenever a serving snapshot changes;
+- `finality_policy` requires one final result set with no later revisions;
+- `downstream_materialization` states where final results become durable before serving.
+
+`SearchDocumentsRunContract.validate()` checks this handoff metadata only. It does not prove bounded top-K state,
+watermark completion, stream-stream join support, checkpoint recovery, or generated-code readiness. Those remain separate
+compiler and live-evidence gates.

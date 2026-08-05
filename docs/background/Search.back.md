@@ -13,8 +13,9 @@ The example deliberately keeps three kinds of evidence separate:
 None is a calibrated probability of relevance, and none is silently substituted for another.
 
 The executable source is the [Search example](../../examples/search/Readme.md) and its transforms under
-`examples/search/transforms`. This background is synchronized to those example contracts; it does not introduce a
-separate search API or a hosted-service promise.
+`examples/search/transforms`. The governing [Search design](../dev/design/Search.md) defines the evidence boundaries.
+This background is synchronized to those example contracts; it does not introduce a separate search API or a
+hosted-service promise.
 
 ## Corpus Ownership and Freshness
 

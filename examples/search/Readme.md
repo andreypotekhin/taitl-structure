@@ -688,3 +688,25 @@ reject any remaining unbounded deduplication, global ranking window, unsupported
 stage before query start. Structure continues to own only DataFrame transformations; the caller owns the source,
 watermark application, checkpoint, trigger, output sink, snapshot refresh, restart policy, and any downstream
 materialization.
+
+Record the caller-owned run boundary before wiring a future streaming sink. This validates the snapshot and finality
+assumptions without starting a query:
+
+```python
+from examples.search.adoption import SearchDocumentsRunContract
+
+run = SearchDocumentsRunContract(
+    snapshot_id="search-snapshot-v1",
+    snapshot_inputs=("index", "score_cache", "feedback", "popularity", "policy"),
+    sink_identity="search-results",
+    checkpoint_identity="search-documents-v1",
+    trigger="availableNow",
+    output_mode="append",
+    event_time_field="requested_at",
+    completion_window="10 minutes",
+    refresh_restart_policy="new_run_on_snapshot_refresh",
+    finality_policy="append_final_no_revisions",
+    downstream_materialization="persist final results before serving",
+)
+run.validate()
+```
