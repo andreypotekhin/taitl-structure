@@ -16,10 +16,19 @@ class SearchQuery(Schema):
 
 
 class ScorePolicy(Schema):
-    """Freshness and timestamp policy for online score resolution."""
+    """Freshness, lexical-weight, and timestamp policy for score resolution."""
 
     maximum_age_days = long(nullable=False)
     scored_at = timestamp(nullable=False)
+    effective_at = timestamp(nullable=False)
+    document_bm25_weight = double(nullable=False)
+    document_overlap_weight = double(nullable=False)
+    section_bm25_weight = double(nullable=False)
+    section_overlap_weight = double(nullable=False)
+    paragraph_bm25_weight = double(nullable=False)
+    paragraph_overlap_weight = double(nullable=False)
+    sentence_bm25_weight = double(nullable=False)
+    sentence_overlap_weight = double(nullable=False)
 
 
 class QueryPopularity(Schema):

@@ -3,9 +3,16 @@
 
 from __future__ import annotations
 from pyspark.sql import DataFrame, SparkSession
+from pyspark.sql import Window
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
-from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
+from examples.structure_generated.search.runtime.schema_assert import (
+    TransformResult,
+    assert_schema,
+    project_schema,
+    apply_plan_boundary,
+    close_plan_boundaries,
+)
 from examples.structure_generated.search.pyspark.schemas.bm25 import (
     DOCUMENT_BM25_SCORE_SCHEMA,
     PARAGRAPH_BM25_SCORE_SCHEMA,
@@ -64,7 +71,10 @@ class SelectGapQueriesGenerated:
             (
                 (
                     (
-                        (F.col("document_score.scored_at") <= F.col("requests.requested_at"))
+                        (
+                            (F.col("document_score.scored_at") <= F.col("requests.requested_at"))
+                            & (F.col("document_score.scored_at") >= F.col("score_policy_2.effective_at"))
+                        )
                         & (F.datediff(F.col("requests.requested_at"), F.col("document_score.scored_at")) >= F.lit(0))
                     )
                     & (
@@ -103,7 +113,10 @@ class SelectGapQueriesGenerated:
             (
                 (
                     (
-                        (F.col("document_overlap_score.scored_at") <= F.col("requests.requested_at"))
+                        (
+                            (F.col("document_overlap_score.scored_at") <= F.col("requests.requested_at"))
+                            & (F.col("document_overlap_score.scored_at") >= F.col("score_policy_2.effective_at"))
+                        )
                         & (
                             F.datediff(F.col("requests.requested_at"), F.col("document_overlap_score.scored_at"))
                             >= F.lit(0)
@@ -242,7 +255,7 @@ class ScoreBaseGenerated:
             "scoring__overlap__query_sizes": scoring__overlap__query_sizes,
         }
 
-    def _step_scoring_bm25_expand_query_terms_14(self, frames):
+    def _step_scoring_bm25_expand_query_terms_26(self, frames):
         # Step method: scoring.bm25.expand_query_terms
         scoring__bm25__expanded_query_terms = frames["gap__gap_queries"].alias("search_query")
         scoring__bm25__expanded_query_terms = scoring__bm25__expanded_query_terms.withWatermark(
@@ -280,7 +293,7 @@ class ScoreBaseGenerated:
             "scoring__bm25__expanded_query_terms": scoring__bm25__expanded_query_terms,
         }
 
-    def _step_scoring_bm25_select_distinct_query_terms_15(self, frames):
+    def _step_scoring_bm25_select_distinct_query_terms_27(self, frames):
         # Step method: scoring.bm25.select_distinct_query_terms
         scoring__bm25__query_terms = frames["scoring__bm25__expanded_query_terms"].alias("query_term")
         scoring__bm25__query_terms = scoring__bm25__query_terms.select(
@@ -292,7 +305,7 @@ class ScoreBaseGenerated:
             "scoring__bm25__query_terms": scoring__bm25__query_terms,
         }
 
-    def _step_scoring_bm25_count_query_terms_16(self, frames):
+    def _step_scoring_bm25_count_query_terms_28(self, frames):
         # Step method: scoring.bm25.count_query_terms
         scoring__bm25__query_sizes = frames["scoring__bm25__query_terms"].alias("query_term")
         scoring__bm25__query_sizes = (
@@ -314,7 +327,378 @@ class ScoreBaseGenerated:
 
 
 class ScoreOverlapGenerated:
-    def _step_scoring_overlap_match_documents_6(self, frames):
+    def _step_scoring_overlap_select_document_vocabulary_6(self, frames):
+        # Step method: scoring.overlap.select_document_vocabulary
+        scoring__overlap__document_vocabulary = frames["document_terms"].alias("document_index_term")
+        if scoring__overlap__document_vocabulary.isStreaming:
+            scoring__overlap__document_vocabulary = scoring__overlap__document_vocabulary.dropDuplicatesWithinWatermark(
+                ["token"]
+            )
+        else:
+            scoring__overlap__document_vocabulary = scoring__overlap__document_vocabulary.dropDuplicates(["token"])
+        scoring__overlap__document_vocabulary = scoring__overlap__document_vocabulary.select(
+            F.col("document_index_term.document_id"),
+            F.col("document_index_term.token"),
+            F.col("document_index_term.term_frequency"),
+            F.col("document_index_term.target_word_count"),
+            F.col("document_index_term.target_distinct_terms"),
+            F.col("document_index_term.document_frequency"),
+        )
+        assert_schema(
+            scoring__overlap__document_vocabulary, DOCUMENT_INDEX_TERM_SCHEMA, name="DocumentIndexTerm", mode="strict"
+        )
+        return {
+            "scoring__overlap__document_vocabulary": scoring__overlap__document_vocabulary,
+        }
+
+    def _step_scoring_overlap_select_section_vocabulary_7(self, frames):
+        # Step method: scoring.overlap.select_section_vocabulary
+        scoring__overlap__section_vocabulary = frames["section_terms"].alias("section_index_term")
+        if scoring__overlap__section_vocabulary.isStreaming:
+            scoring__overlap__section_vocabulary = scoring__overlap__section_vocabulary.dropDuplicatesWithinWatermark(
+                ["token"]
+            )
+        else:
+            scoring__overlap__section_vocabulary = scoring__overlap__section_vocabulary.dropDuplicates(["token"])
+        scoring__overlap__section_vocabulary = scoring__overlap__section_vocabulary.select(
+            F.col("section_index_term.document_id"),
+            F.col("section_index_term.section_id"),
+            F.col("section_index_term.token"),
+            F.col("section_index_term.term_frequency"),
+            F.col("section_index_term.target_word_count"),
+            F.col("section_index_term.target_distinct_terms"),
+            F.col("section_index_term.document_frequency"),
+        )
+        assert_schema(
+            scoring__overlap__section_vocabulary, SECTION_INDEX_TERM_SCHEMA, name="SectionIndexTerm", mode="strict"
+        )
+        return {
+            "scoring__overlap__section_vocabulary": scoring__overlap__section_vocabulary,
+        }
+
+    def _step_scoring_overlap_select_paragraph_vocabulary_8(self, frames):
+        # Step method: scoring.overlap.select_paragraph_vocabulary
+        scoring__overlap__paragraph_vocabulary = frames["paragraph_terms"].alias("paragraph_index_term")
+        if scoring__overlap__paragraph_vocabulary.isStreaming:
+            scoring__overlap__paragraph_vocabulary = (
+                scoring__overlap__paragraph_vocabulary.dropDuplicatesWithinWatermark(["token"])
+            )
+        else:
+            scoring__overlap__paragraph_vocabulary = scoring__overlap__paragraph_vocabulary.dropDuplicates(["token"])
+        scoring__overlap__paragraph_vocabulary = scoring__overlap__paragraph_vocabulary.select(
+            F.col("paragraph_index_term.document_id"),
+            F.col("paragraph_index_term.section_id"),
+            F.col("paragraph_index_term.paragraph_id"),
+            F.col("paragraph_index_term.token"),
+            F.col("paragraph_index_term.term_frequency"),
+            F.col("paragraph_index_term.target_word_count"),
+            F.col("paragraph_index_term.target_distinct_terms"),
+            F.col("paragraph_index_term.document_frequency"),
+        )
+        assert_schema(
+            scoring__overlap__paragraph_vocabulary,
+            PARAGRAPH_INDEX_TERM_SCHEMA,
+            name="ParagraphIndexTerm",
+            mode="strict",
+        )
+        return {
+            "scoring__overlap__paragraph_vocabulary": scoring__overlap__paragraph_vocabulary,
+        }
+
+    def _step_scoring_overlap_select_sentence_vocabulary_9(self, frames):
+        # Step method: scoring.overlap.select_sentence_vocabulary
+        scoring__overlap__sentence_vocabulary = frames["sentence_terms"].alias("sentence_index_term")
+        if scoring__overlap__sentence_vocabulary.isStreaming:
+            scoring__overlap__sentence_vocabulary = scoring__overlap__sentence_vocabulary.dropDuplicatesWithinWatermark(
+                ["token"]
+            )
+        else:
+            scoring__overlap__sentence_vocabulary = scoring__overlap__sentence_vocabulary.dropDuplicates(["token"])
+        scoring__overlap__sentence_vocabulary = scoring__overlap__sentence_vocabulary.select(
+            F.col("sentence_index_term.document_id"),
+            F.col("sentence_index_term.section_id"),
+            F.col("sentence_index_term.paragraph_id"),
+            F.col("sentence_index_term.sentence_id"),
+            F.col("sentence_index_term.token"),
+            F.col("sentence_index_term.term_frequency"),
+            F.col("sentence_index_term.target_word_count"),
+            F.col("sentence_index_term.target_distinct_terms"),
+            F.col("sentence_index_term.document_frequency"),
+        )
+        assert_schema(
+            scoring__overlap__sentence_vocabulary, SENTENCE_INDEX_TERM_SCHEMA, name="SentenceIndexTerm", mode="strict"
+        )
+        return {
+            "scoring__overlap__sentence_vocabulary": scoring__overlap__sentence_vocabulary,
+        }
+
+    def _step_scoring_overlap_weight_document_query_terms_10(self, frames):
+        # Step method: scoring.overlap.weight_document_query_terms
+        scoring__overlap__document_query_idfs = frames["scoring__overlap__query_terms"].alias("query_term")
+        scoring__overlap__document_vocabulary_joined = frames["scoring__overlap__document_vocabulary"].alias(
+            "scoring__overlap__document_vocabulary"
+        )
+        scoring__overlap__document_query_idfs = scoring__overlap__document_query_idfs.join(
+            scoring__overlap__document_vocabulary_joined,
+            (F.col("scoring__overlap__document_vocabulary.token") == F.col("query_term.token")),
+            "left",
+        )
+        document_summary_2_joined = frames["document_summary"].alias("document_summary_2")
+        scoring__overlap__document_query_idfs = scoring__overlap__document_query_idfs.crossJoin(
+            document_summary_2_joined
+        )
+        scoring__overlap__document_query_idfs = scoring__overlap__document_query_idfs.select(
+            F.col("query_term.query_id"),
+            F.col("query_term.token"),
+            F.log(
+                (
+                    F.lit(1.0)
+                    + (
+                        (
+                            (
+                                F.col("document_summary_2.target_count")
+                                - F.coalesce(
+                                    F.col("scoring__overlap__document_vocabulary.document_frequency"), F.lit(0)
+                                )
+                            )
+                            + F.lit(0.5)
+                        )
+                        / (
+                            F.coalesce(F.col("scoring__overlap__document_vocabulary.document_frequency"), F.lit(0))
+                            + F.lit(0.5)
+                        )
+                    )
+                )
+            ).alias("idf"),
+        )
+        assert_schema(scoring__overlap__document_query_idfs, QUERY_TERM_IDF_SCHEMA, name="QueryTermIdf", mode="strict")
+        return {
+            "scoring__overlap__document_query_idfs": scoring__overlap__document_query_idfs,
+        }
+
+    def _step_scoring_overlap_weight_section_query_terms_11(self, frames):
+        # Step method: scoring.overlap.weight_section_query_terms
+        scoring__overlap__section_query_idfs = frames["scoring__overlap__query_terms"].alias("query_term")
+        scoring__overlap__section_vocabulary_joined = frames["scoring__overlap__section_vocabulary"].alias(
+            "scoring__overlap__section_vocabulary"
+        )
+        scoring__overlap__section_query_idfs = scoring__overlap__section_query_idfs.join(
+            scoring__overlap__section_vocabulary_joined,
+            (F.col("scoring__overlap__section_vocabulary.token") == F.col("query_term.token")),
+            "left",
+        )
+        section_summary_2_joined = frames["section_summary"].alias("section_summary_2")
+        scoring__overlap__section_query_idfs = scoring__overlap__section_query_idfs.crossJoin(section_summary_2_joined)
+        scoring__overlap__section_query_idfs = scoring__overlap__section_query_idfs.select(
+            F.col("query_term.query_id"),
+            F.col("query_term.token"),
+            F.log(
+                (
+                    F.lit(1.0)
+                    + (
+                        (
+                            (
+                                F.col("section_summary_2.target_count")
+                                - F.coalesce(F.col("scoring__overlap__section_vocabulary.document_frequency"), F.lit(0))
+                            )
+                            + F.lit(0.5)
+                        )
+                        / (
+                            F.coalesce(F.col("scoring__overlap__section_vocabulary.document_frequency"), F.lit(0))
+                            + F.lit(0.5)
+                        )
+                    )
+                )
+            ).alias("idf"),
+        )
+        assert_schema(scoring__overlap__section_query_idfs, QUERY_TERM_IDF_SCHEMA, name="QueryTermIdf", mode="strict")
+        return {
+            "scoring__overlap__section_query_idfs": scoring__overlap__section_query_idfs,
+        }
+
+    def _step_scoring_overlap_weight_paragraph_query_terms_12(self, frames):
+        # Step method: scoring.overlap.weight_paragraph_query_terms
+        scoring__overlap__paragraph_query_idfs = frames["scoring__overlap__query_terms"].alias("query_term")
+        scoring__overlap__paragraph_vocabulary_joined = frames["scoring__overlap__paragraph_vocabulary"].alias(
+            "scoring__overlap__paragraph_vocabulary"
+        )
+        scoring__overlap__paragraph_query_idfs = scoring__overlap__paragraph_query_idfs.join(
+            scoring__overlap__paragraph_vocabulary_joined,
+            (F.col("scoring__overlap__paragraph_vocabulary.token") == F.col("query_term.token")),
+            "left",
+        )
+        paragraph_summary_2_joined = frames["paragraph_summary"].alias("paragraph_summary_2")
+        scoring__overlap__paragraph_query_idfs = scoring__overlap__paragraph_query_idfs.crossJoin(
+            paragraph_summary_2_joined
+        )
+        scoring__overlap__paragraph_query_idfs = scoring__overlap__paragraph_query_idfs.select(
+            F.col("query_term.query_id"),
+            F.col("query_term.token"),
+            F.log(
+                (
+                    F.lit(1.0)
+                    + (
+                        (
+                            (
+                                F.col("paragraph_summary_2.target_count")
+                                - F.coalesce(
+                                    F.col("scoring__overlap__paragraph_vocabulary.document_frequency"), F.lit(0)
+                                )
+                            )
+                            + F.lit(0.5)
+                        )
+                        / (
+                            F.coalesce(F.col("scoring__overlap__paragraph_vocabulary.document_frequency"), F.lit(0))
+                            + F.lit(0.5)
+                        )
+                    )
+                )
+            ).alias("idf"),
+        )
+        assert_schema(scoring__overlap__paragraph_query_idfs, QUERY_TERM_IDF_SCHEMA, name="QueryTermIdf", mode="strict")
+        return {
+            "scoring__overlap__paragraph_query_idfs": scoring__overlap__paragraph_query_idfs,
+        }
+
+    def _step_scoring_overlap_weight_sentence_query_terms_13(self, frames):
+        # Step method: scoring.overlap.weight_sentence_query_terms
+        scoring__overlap__sentence_query_idfs = frames["scoring__overlap__query_terms"].alias("query_term")
+        scoring__overlap__sentence_vocabulary_joined = frames["scoring__overlap__sentence_vocabulary"].alias(
+            "scoring__overlap__sentence_vocabulary"
+        )
+        scoring__overlap__sentence_query_idfs = scoring__overlap__sentence_query_idfs.join(
+            scoring__overlap__sentence_vocabulary_joined,
+            (F.col("scoring__overlap__sentence_vocabulary.token") == F.col("query_term.token")),
+            "left",
+        )
+        sentence_summary_2_joined = frames["sentence_summary"].alias("sentence_summary_2")
+        scoring__overlap__sentence_query_idfs = scoring__overlap__sentence_query_idfs.crossJoin(
+            sentence_summary_2_joined
+        )
+        scoring__overlap__sentence_query_idfs = scoring__overlap__sentence_query_idfs.select(
+            F.col("query_term.query_id"),
+            F.col("query_term.token"),
+            F.log(
+                (
+                    F.lit(1.0)
+                    + (
+                        (
+                            (
+                                F.col("sentence_summary_2.target_count")
+                                - F.coalesce(
+                                    F.col("scoring__overlap__sentence_vocabulary.document_frequency"), F.lit(0)
+                                )
+                            )
+                            + F.lit(0.5)
+                        )
+                        / (
+                            F.coalesce(F.col("scoring__overlap__sentence_vocabulary.document_frequency"), F.lit(0))
+                            + F.lit(0.5)
+                        )
+                    )
+                )
+            ).alias("idf"),
+        )
+        assert_schema(scoring__overlap__sentence_query_idfs, QUERY_TERM_IDF_SCHEMA, name="QueryTermIdf", mode="strict")
+        return {
+            "scoring__overlap__sentence_query_idfs": scoring__overlap__sentence_query_idfs,
+        }
+
+    def _step_scoring_overlap_total_document_query_idf_14(self, frames):
+        # Step method: scoring.overlap.total_document_query_idf
+        scoring__overlap__document_query_totals = frames["scoring__overlap__document_query_idfs"].alias(
+            "query_term_idf"
+        )
+        scoring__overlap__document_query_totals = (
+            scoring__overlap__document_query_totals.groupBy(
+                F.col("query_term_idf.query_id").alias("query_id"),
+            )
+            .agg(
+                F.sum(F.col("query_term_idf.idf")).cast(T.DoubleType()).alias("query_idf"),
+            )
+            .select(
+                F.col("query_id"),
+                F.col("query_idf"),
+            )
+        )
+        assert_schema(
+            scoring__overlap__document_query_totals, QUERY_IDF_TOTAL_SCHEMA, name="QueryIdfTotal", mode="strict"
+        )
+        return {
+            "scoring__overlap__document_query_totals": scoring__overlap__document_query_totals,
+        }
+
+    def _step_scoring_overlap_total_section_query_idf_15(self, frames):
+        # Step method: scoring.overlap.total_section_query_idf
+        scoring__overlap__section_query_totals = frames["scoring__overlap__section_query_idfs"].alias("query_term_idf")
+        scoring__overlap__section_query_totals = (
+            scoring__overlap__section_query_totals.groupBy(
+                F.col("query_term_idf.query_id").alias("query_id"),
+            )
+            .agg(
+                F.sum(F.col("query_term_idf.idf")).cast(T.DoubleType()).alias("query_idf"),
+            )
+            .select(
+                F.col("query_id"),
+                F.col("query_idf"),
+            )
+        )
+        assert_schema(
+            scoring__overlap__section_query_totals, QUERY_IDF_TOTAL_SCHEMA, name="QueryIdfTotal", mode="strict"
+        )
+        return {
+            "scoring__overlap__section_query_totals": scoring__overlap__section_query_totals,
+        }
+
+    def _step_scoring_overlap_total_paragraph_query_idf_16(self, frames):
+        # Step method: scoring.overlap.total_paragraph_query_idf
+        scoring__overlap__paragraph_query_totals = frames["scoring__overlap__paragraph_query_idfs"].alias(
+            "query_term_idf"
+        )
+        scoring__overlap__paragraph_query_totals = (
+            scoring__overlap__paragraph_query_totals.groupBy(
+                F.col("query_term_idf.query_id").alias("query_id"),
+            )
+            .agg(
+                F.sum(F.col("query_term_idf.idf")).cast(T.DoubleType()).alias("query_idf"),
+            )
+            .select(
+                F.col("query_id"),
+                F.col("query_idf"),
+            )
+        )
+        assert_schema(
+            scoring__overlap__paragraph_query_totals, QUERY_IDF_TOTAL_SCHEMA, name="QueryIdfTotal", mode="strict"
+        )
+        return {
+            "scoring__overlap__paragraph_query_totals": scoring__overlap__paragraph_query_totals,
+        }
+
+    def _step_scoring_overlap_total_sentence_query_idf_17(self, frames):
+        # Step method: scoring.overlap.total_sentence_query_idf
+        scoring__overlap__sentence_query_totals = frames["scoring__overlap__sentence_query_idfs"].alias(
+            "query_term_idf"
+        )
+        scoring__overlap__sentence_query_totals = (
+            scoring__overlap__sentence_query_totals.groupBy(
+                F.col("query_term_idf.query_id").alias("query_id"),
+            )
+            .agg(
+                F.sum(F.col("query_term_idf.idf")).cast(T.DoubleType()).alias("query_idf"),
+            )
+            .select(
+                F.col("query_id"),
+                F.col("query_idf"),
+            )
+        )
+        assert_schema(
+            scoring__overlap__sentence_query_totals, QUERY_IDF_TOTAL_SCHEMA, name="QueryIdfTotal", mode="strict"
+        )
+        return {
+            "scoring__overlap__sentence_query_totals": scoring__overlap__sentence_query_totals,
+        }
+
+    def _step_scoring_overlap_match_documents_18(self, frames):
         # Step method: scoring.overlap.match_documents
         scoring__overlap__document_overlap_matches = frames["scoring__overlap__query_terms"].alias("query_term")
         document_terms_joined = frames["document_terms"].alias("document_terms")
@@ -323,30 +707,39 @@ class ScoreOverlapGenerated:
             (F.col("document_terms.token") == F.col("query_term.token")),
             "inner",
         )
-        scoring__overlap__query_sizes_2_joined = frames["scoring__overlap__query_sizes"].alias(
-            "scoring__overlap__query_sizes_2"
+        scoring__overlap__document_query_idfs_2_joined = frames["scoring__overlap__document_query_idfs"].alias(
+            "scoring__overlap__document_query_idfs_2"
         )
         scoring__overlap__document_overlap_matches = scoring__overlap__document_overlap_matches.join(
-            scoring__overlap__query_sizes_2_joined,
-            (F.col("scoring__overlap__query_sizes_2.query_id") == F.col("query_term.query_id")),
+            scoring__overlap__document_query_idfs_2_joined,
+            (
+                (F.col("scoring__overlap__document_query_idfs_2.query_id") == F.col("query_term.query_id"))
+                & (F.col("scoring__overlap__document_query_idfs_2.token") == F.col("query_term.token"))
+            ),
+            "inner",
+        )
+        scoring__overlap__document_query_totals_3_joined = frames["scoring__overlap__document_query_totals"].alias(
+            "scoring__overlap__document_query_totals_3"
+        )
+        scoring__overlap__document_overlap_matches = scoring__overlap__document_overlap_matches.join(
+            scoring__overlap__document_query_totals_3_joined,
+            (F.col("scoring__overlap__document_query_totals_3.query_id") == F.col("query_term.query_id")),
             "inner",
         )
         scoring__overlap__document_overlap_matches = (
             scoring__overlap__document_overlap_matches.groupBy(
                 F.col("query_term.query_id").alias("query_id"),
                 F.col("document_terms.document_id").alias("document_id"),
-                F.col("scoring__overlap__query_sizes_2.query_terms").alias("query_terms"),
-                F.col("document_terms.target_distinct_terms").alias("target_distinct_terms"),
+                F.col("scoring__overlap__document_query_totals_3.query_idf").alias("query_idf"),
             )
             .agg(
-                F.countDistinct(F.col("query_term.token")).cast(T.LongType()).alias("matched_terms"),
+                F.sum(F.col("scoring__overlap__document_query_idfs_2.idf")).cast(T.DoubleType()).alias("matched_idf"),
             )
             .select(
                 F.col("query_id"),
                 F.col("document_id"),
-                F.col("query_terms"),
-                F.col("target_distinct_terms"),
-                F.col("matched_terms"),
+                F.col("query_idf"),
+                F.col("matched_idf"),
             )
         )
         assert_schema(
@@ -359,7 +752,7 @@ class ScoreOverlapGenerated:
             "scoring__overlap__document_overlap_matches": scoring__overlap__document_overlap_matches,
         }
 
-    def _step_scoring_overlap_match_sections_7(self, frames):
+    def _step_scoring_overlap_match_sections_19(self, frames):
         # Step method: scoring.overlap.match_sections
         scoring__overlap__section_overlap_matches = frames["scoring__overlap__query_terms"].alias("query_term")
         section_terms_joined = frames["section_terms"].alias("section_terms")
@@ -368,12 +761,23 @@ class ScoreOverlapGenerated:
             (F.col("section_terms.token") == F.col("query_term.token")),
             "inner",
         )
-        scoring__overlap__query_sizes_2_joined = frames["scoring__overlap__query_sizes"].alias(
-            "scoring__overlap__query_sizes_2"
+        scoring__overlap__section_query_idfs_2_joined = frames["scoring__overlap__section_query_idfs"].alias(
+            "scoring__overlap__section_query_idfs_2"
         )
         scoring__overlap__section_overlap_matches = scoring__overlap__section_overlap_matches.join(
-            scoring__overlap__query_sizes_2_joined,
-            (F.col("scoring__overlap__query_sizes_2.query_id") == F.col("query_term.query_id")),
+            scoring__overlap__section_query_idfs_2_joined,
+            (
+                (F.col("scoring__overlap__section_query_idfs_2.query_id") == F.col("query_term.query_id"))
+                & (F.col("scoring__overlap__section_query_idfs_2.token") == F.col("query_term.token"))
+            ),
+            "inner",
+        )
+        scoring__overlap__section_query_totals_3_joined = frames["scoring__overlap__section_query_totals"].alias(
+            "scoring__overlap__section_query_totals_3"
+        )
+        scoring__overlap__section_overlap_matches = scoring__overlap__section_overlap_matches.join(
+            scoring__overlap__section_query_totals_3_joined,
+            (F.col("scoring__overlap__section_query_totals_3.query_id") == F.col("query_term.query_id")),
             "inner",
         )
         scoring__overlap__section_overlap_matches = (
@@ -381,18 +785,16 @@ class ScoreOverlapGenerated:
                 F.col("query_term.query_id").alias("query_id"),
                 F.col("section_terms.document_id").alias("document_id"),
                 F.col("section_terms.section_id").alias("section_id"),
-                F.col("scoring__overlap__query_sizes_2.query_terms").alias("query_terms"),
-                F.col("section_terms.target_distinct_terms").alias("target_distinct_terms"),
+                F.col("scoring__overlap__section_query_totals_3.query_idf").alias("query_idf"),
             )
             .agg(
-                F.countDistinct(F.col("query_term.token")).cast(T.LongType()).alias("matched_terms"),
+                F.sum(F.col("scoring__overlap__section_query_idfs_2.idf")).cast(T.DoubleType()).alias("matched_idf"),
             )
             .select(
                 F.col("query_id"),
                 F.col("document_id"),
-                F.col("query_terms"),
-                F.col("target_distinct_terms"),
-                F.col("matched_terms"),
+                F.col("query_idf"),
+                F.col("matched_idf"),
                 F.col("section_id"),
             )
         )
@@ -406,7 +808,7 @@ class ScoreOverlapGenerated:
             "scoring__overlap__section_overlap_matches": scoring__overlap__section_overlap_matches,
         }
 
-    def _step_scoring_overlap_match_paragraphs_8(self, frames):
+    def _step_scoring_overlap_match_paragraphs_20(self, frames):
         # Step method: scoring.overlap.match_paragraphs
         scoring__overlap__paragraph_overlap_matches = frames["scoring__overlap__query_terms"].alias("query_term")
         paragraph_terms_joined = frames["paragraph_terms"].alias("paragraph_terms")
@@ -415,12 +817,23 @@ class ScoreOverlapGenerated:
             (F.col("paragraph_terms.token") == F.col("query_term.token")),
             "inner",
         )
-        scoring__overlap__query_sizes_2_joined = frames["scoring__overlap__query_sizes"].alias(
-            "scoring__overlap__query_sizes_2"
+        scoring__overlap__paragraph_query_idfs_2_joined = frames["scoring__overlap__paragraph_query_idfs"].alias(
+            "scoring__overlap__paragraph_query_idfs_2"
         )
         scoring__overlap__paragraph_overlap_matches = scoring__overlap__paragraph_overlap_matches.join(
-            scoring__overlap__query_sizes_2_joined,
-            (F.col("scoring__overlap__query_sizes_2.query_id") == F.col("query_term.query_id")),
+            scoring__overlap__paragraph_query_idfs_2_joined,
+            (
+                (F.col("scoring__overlap__paragraph_query_idfs_2.query_id") == F.col("query_term.query_id"))
+                & (F.col("scoring__overlap__paragraph_query_idfs_2.token") == F.col("query_term.token"))
+            ),
+            "inner",
+        )
+        scoring__overlap__paragraph_query_totals_3_joined = frames["scoring__overlap__paragraph_query_totals"].alias(
+            "scoring__overlap__paragraph_query_totals_3"
+        )
+        scoring__overlap__paragraph_overlap_matches = scoring__overlap__paragraph_overlap_matches.join(
+            scoring__overlap__paragraph_query_totals_3_joined,
+            (F.col("scoring__overlap__paragraph_query_totals_3.query_id") == F.col("query_term.query_id")),
             "inner",
         )
         scoring__overlap__paragraph_overlap_matches = (
@@ -429,18 +842,16 @@ class ScoreOverlapGenerated:
                 F.col("paragraph_terms.document_id").alias("document_id"),
                 F.col("paragraph_terms.section_id").alias("section_id"),
                 F.col("paragraph_terms.paragraph_id").alias("paragraph_id"),
-                F.col("scoring__overlap__query_sizes_2.query_terms").alias("query_terms"),
-                F.col("paragraph_terms.target_distinct_terms").alias("target_distinct_terms"),
+                F.col("scoring__overlap__paragraph_query_totals_3.query_idf").alias("query_idf"),
             )
             .agg(
-                F.countDistinct(F.col("query_term.token")).cast(T.LongType()).alias("matched_terms"),
+                F.sum(F.col("scoring__overlap__paragraph_query_idfs_2.idf")).cast(T.DoubleType()).alias("matched_idf"),
             )
             .select(
                 F.col("query_id"),
                 F.col("document_id"),
-                F.col("query_terms"),
-                F.col("target_distinct_terms"),
-                F.col("matched_terms"),
+                F.col("query_idf"),
+                F.col("matched_idf"),
                 F.col("section_id"),
                 F.col("paragraph_id"),
             )
@@ -455,7 +866,7 @@ class ScoreOverlapGenerated:
             "scoring__overlap__paragraph_overlap_matches": scoring__overlap__paragraph_overlap_matches,
         }
 
-    def _step_scoring_overlap_match_sentences_9(self, frames):
+    def _step_scoring_overlap_match_sentences_21(self, frames):
         # Step method: scoring.overlap.match_sentences
         scoring__overlap__sentence_overlap_matches = frames["scoring__overlap__query_terms"].alias("query_term")
         sentence_terms_joined = frames["sentence_terms"].alias("sentence_terms")
@@ -464,12 +875,23 @@ class ScoreOverlapGenerated:
             (F.col("sentence_terms.token") == F.col("query_term.token")),
             "inner",
         )
-        scoring__overlap__query_sizes_2_joined = frames["scoring__overlap__query_sizes"].alias(
-            "scoring__overlap__query_sizes_2"
+        scoring__overlap__sentence_query_idfs_2_joined = frames["scoring__overlap__sentence_query_idfs"].alias(
+            "scoring__overlap__sentence_query_idfs_2"
         )
         scoring__overlap__sentence_overlap_matches = scoring__overlap__sentence_overlap_matches.join(
-            scoring__overlap__query_sizes_2_joined,
-            (F.col("scoring__overlap__query_sizes_2.query_id") == F.col("query_term.query_id")),
+            scoring__overlap__sentence_query_idfs_2_joined,
+            (
+                (F.col("scoring__overlap__sentence_query_idfs_2.query_id") == F.col("query_term.query_id"))
+                & (F.col("scoring__overlap__sentence_query_idfs_2.token") == F.col("query_term.token"))
+            ),
+            "inner",
+        )
+        scoring__overlap__sentence_query_totals_3_joined = frames["scoring__overlap__sentence_query_totals"].alias(
+            "scoring__overlap__sentence_query_totals_3"
+        )
+        scoring__overlap__sentence_overlap_matches = scoring__overlap__sentence_overlap_matches.join(
+            scoring__overlap__sentence_query_totals_3_joined,
+            (F.col("scoring__overlap__sentence_query_totals_3.query_id") == F.col("query_term.query_id")),
             "inner",
         )
         scoring__overlap__sentence_overlap_matches = (
@@ -479,18 +901,16 @@ class ScoreOverlapGenerated:
                 F.col("sentence_terms.section_id").alias("section_id"),
                 F.col("sentence_terms.paragraph_id").alias("paragraph_id"),
                 F.col("sentence_terms.sentence_id").alias("sentence_id"),
-                F.col("scoring__overlap__query_sizes_2.query_terms").alias("query_terms"),
-                F.col("sentence_terms.target_distinct_terms").alias("target_distinct_terms"),
+                F.col("scoring__overlap__sentence_query_totals_3.query_idf").alias("query_idf"),
             )
             .agg(
-                F.countDistinct(F.col("query_term.token")).cast(T.LongType()).alias("matched_terms"),
+                F.sum(F.col("scoring__overlap__sentence_query_idfs_2.idf")).cast(T.DoubleType()).alias("matched_idf"),
             )
             .select(
                 F.col("query_id"),
                 F.col("document_id"),
-                F.col("query_terms"),
-                F.col("target_distinct_terms"),
-                F.col("matched_terms"),
+                F.col("query_idf"),
+                F.col("matched_idf"),
                 F.col("section_id"),
                 F.col("paragraph_id"),
                 F.col("sentence_id"),
@@ -506,7 +926,7 @@ class ScoreOverlapGenerated:
             "scoring__overlap__sentence_overlap_matches": scoring__overlap__sentence_overlap_matches,
         }
 
-    def _step_scoring_overlap_publish_document_overlap_scores_10(self, frames):
+    def _step_scoring_overlap_publish_document_overlap_scores_22(self, frames):
         # Step method: scoring.overlap.publish_document_overlap_scores
         scoring__overlap__document_overlap_scores = frames["scoring__overlap__document_overlap_matches"].alias(
             "document_overlap_match"
@@ -519,16 +939,12 @@ class ScoreOverlapGenerated:
             F.col("document_overlap_match.query_id"),
             F.col("document_overlap_match.document_id"),
             F.col("score_policy.scored_at"),
-            (
-                F.col("document_overlap_match.matched_terms")
-                / F.when(
-                    (
-                        F.col("document_overlap_match.query_terms")
-                        < F.col("document_overlap_match.target_distinct_terms")
-                    ),
-                    F.col("document_overlap_match.query_terms"),
-                ).otherwise(F.col("document_overlap_match.target_distinct_terms"))
-            ).alias("score_overlap"),
+            F.when(
+                (F.col("document_overlap_match.query_idf") > F.lit(0.0)),
+                (F.col("document_overlap_match.matched_idf") / F.col("document_overlap_match.query_idf")),
+            )
+            .otherwise(F.lit(0.0))
+            .alias("score_overlap"),
         )
         assert_schema(
             scoring__overlap__document_overlap_scores,
@@ -540,7 +956,7 @@ class ScoreOverlapGenerated:
             "scoring__overlap__document_overlap_scores": scoring__overlap__document_overlap_scores,
         }
 
-    def _step_scoring_overlap_publish_section_overlap_scores_11(self, frames):
+    def _step_scoring_overlap_publish_section_overlap_scores_23(self, frames):
         # Step method: scoring.overlap.publish_section_overlap_scores
         scoring__overlap__section_overlap_scores = frames["scoring__overlap__section_overlap_matches"].alias(
             "section_overlap_match"
@@ -554,13 +970,12 @@ class ScoreOverlapGenerated:
             F.col("section_overlap_match.document_id"),
             F.col("section_overlap_match.section_id"),
             F.col("score_policy.scored_at"),
-            (
-                F.col("section_overlap_match.matched_terms")
-                / F.when(
-                    (F.col("section_overlap_match.query_terms") < F.col("section_overlap_match.target_distinct_terms")),
-                    F.col("section_overlap_match.query_terms"),
-                ).otherwise(F.col("section_overlap_match.target_distinct_terms"))
-            ).alias("score_overlap"),
+            F.when(
+                (F.col("section_overlap_match.query_idf") > F.lit(0.0)),
+                (F.col("section_overlap_match.matched_idf") / F.col("section_overlap_match.query_idf")),
+            )
+            .otherwise(F.lit(0.0))
+            .alias("score_overlap"),
         )
         assert_schema(
             scoring__overlap__section_overlap_scores,
@@ -572,7 +987,7 @@ class ScoreOverlapGenerated:
             "scoring__overlap__section_overlap_scores": scoring__overlap__section_overlap_scores,
         }
 
-    def _step_scoring_overlap_publish_paragraph_overlap_scores_12(self, frames):
+    def _step_scoring_overlap_publish_paragraph_overlap_scores_24(self, frames):
         # Step method: scoring.overlap.publish_paragraph_overlap_scores
         scoring__overlap__paragraph_overlap_scores = frames["scoring__overlap__paragraph_overlap_matches"].alias(
             "paragraph_overlap_match"
@@ -587,16 +1002,12 @@ class ScoreOverlapGenerated:
             F.col("paragraph_overlap_match.section_id"),
             F.col("paragraph_overlap_match.paragraph_id"),
             F.col("score_policy.scored_at"),
-            (
-                F.col("paragraph_overlap_match.matched_terms")
-                / F.when(
-                    (
-                        F.col("paragraph_overlap_match.query_terms")
-                        < F.col("paragraph_overlap_match.target_distinct_terms")
-                    ),
-                    F.col("paragraph_overlap_match.query_terms"),
-                ).otherwise(F.col("paragraph_overlap_match.target_distinct_terms"))
-            ).alias("score_overlap"),
+            F.when(
+                (F.col("paragraph_overlap_match.query_idf") > F.lit(0.0)),
+                (F.col("paragraph_overlap_match.matched_idf") / F.col("paragraph_overlap_match.query_idf")),
+            )
+            .otherwise(F.lit(0.0))
+            .alias("score_overlap"),
         )
         assert_schema(
             scoring__overlap__paragraph_overlap_scores,
@@ -608,7 +1019,7 @@ class ScoreOverlapGenerated:
             "scoring__overlap__paragraph_overlap_scores": scoring__overlap__paragraph_overlap_scores,
         }
 
-    def _step_scoring_overlap_publish_sentence_overlap_scores_13(self, frames):
+    def _step_scoring_overlap_publish_sentence_overlap_scores_25(self, frames):
         # Step method: scoring.overlap.publish_sentence_overlap_scores
         scoring__overlap__sentence_overlap_scores = frames["scoring__overlap__sentence_overlap_matches"].alias(
             "sentence_overlap_match"
@@ -624,16 +1035,12 @@ class ScoreOverlapGenerated:
             F.col("sentence_overlap_match.paragraph_id"),
             F.col("sentence_overlap_match.sentence_id"),
             F.col("score_policy.scored_at"),
-            (
-                F.col("sentence_overlap_match.matched_terms")
-                / F.when(
-                    (
-                        F.col("sentence_overlap_match.query_terms")
-                        < F.col("sentence_overlap_match.target_distinct_terms")
-                    ),
-                    F.col("sentence_overlap_match.query_terms"),
-                ).otherwise(F.col("sentence_overlap_match.target_distinct_terms"))
-            ).alias("score_overlap"),
+            F.when(
+                (F.col("sentence_overlap_match.query_idf") > F.lit(0.0)),
+                (F.col("sentence_overlap_match.matched_idf") / F.col("sentence_overlap_match.query_idf")),
+            )
+            .otherwise(F.lit(0.0))
+            .alias("score_overlap"),
         )
         assert_schema(
             scoring__overlap__sentence_overlap_scores,
@@ -647,7 +1054,7 @@ class ScoreOverlapGenerated:
 
 
 class ScoreBm25Generated:
-    def _step_scoring_bm25_score_document_bm25_17(self, frames):
+    def _step_scoring_bm25_score_document_bm25_29(self, frames):
         # Step method: scoring.bm25.score_document_bm25
         scoring__bm25__document_bm25_scores = frames["scoring__bm25__query_terms"].alias("query_term")
         document_terms_joined = frames["document_terms"].alias("document_terms")
@@ -718,7 +1125,7 @@ class ScoreBm25Generated:
             "scoring__bm25__document_bm25_scores": scoring__bm25__document_bm25_scores,
         }
 
-    def _step_scoring_bm25_score_section_bm25_18(self, frames):
+    def _step_scoring_bm25_score_section_bm25_30(self, frames):
         # Step method: scoring.bm25.score_section_bm25
         scoring__bm25__section_bm25_scores = frames["scoring__bm25__query_terms"].alias("query_term")
         section_terms_joined = frames["section_terms"].alias("section_terms")
@@ -791,7 +1198,7 @@ class ScoreBm25Generated:
             "scoring__bm25__section_bm25_scores": scoring__bm25__section_bm25_scores,
         }
 
-    def _step_scoring_bm25_score_paragraph_bm25_19(self, frames):
+    def _step_scoring_bm25_score_paragraph_bm25_31(self, frames):
         # Step method: scoring.bm25.score_paragraph_bm25
         scoring__bm25__paragraph_bm25_scores = frames["scoring__bm25__query_terms"].alias("query_term")
         paragraph_terms_joined = frames["paragraph_terms"].alias("paragraph_terms")
@@ -868,7 +1275,7 @@ class ScoreBm25Generated:
             "scoring__bm25__paragraph_bm25_scores": scoring__bm25__paragraph_bm25_scores,
         }
 
-    def _step_scoring_bm25_score_sentence_bm25_20(self, frames):
+    def _step_scoring_bm25_score_sentence_bm25_32(self, frames):
         # Step method: scoring.bm25.score_sentence_bm25
         scoring__bm25__sentence_bm25_scores = frames["scoring__bm25__query_terms"].alias("query_term")
         sentence_terms_joined = frames["sentence_terms"].alias("sentence_terms")
@@ -947,7 +1354,7 @@ class ScoreBm25Generated:
 
 
 class SelectScoresGenerated:
-    def _step_scoring_selected_score_documents_21(self, frames):
+    def _step_scoring_selected_score_documents_33(self, frames):
         # Step method: scoring.selected.score_documents
         scoring__selected__document_scores = frames["scoring__overlap__document_overlap_scores"].alias(
             "document_overlap_score"
@@ -973,14 +1380,37 @@ class SelectScoresGenerated:
             F.col("document_overlap_score.document_id"),
             F.lit(None).cast(T.StringType()).alias("experiment_id"),
             F.col("score_policy_2.scored_at"),
-            F.col("scoring__bm25__document_bm25_scores.score_bm25").alias("score"),
+            (
+                (
+                    F.col("score_policy_2.document_bm25_weight")
+                    * F.when(
+                        (
+                            F.max(F.col("scoring__bm25__document_bm25_scores.score_bm25")).over(
+                                Window.partitionBy(F.col("scoring__bm25__document_bm25_scores.query_id"))
+                                .orderBy(F.col("scoring__bm25__document_bm25_scores.document_id").asc())
+                                .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
+                            )
+                            > F.lit(0.0)
+                        ),
+                        (
+                            F.col("scoring__bm25__document_bm25_scores.score_bm25")
+                            / F.max(F.col("scoring__bm25__document_bm25_scores.score_bm25")).over(
+                                Window.partitionBy(F.col("scoring__bm25__document_bm25_scores.query_id"))
+                                .orderBy(F.col("scoring__bm25__document_bm25_scores.document_id").asc())
+                                .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
+                            )
+                        ),
+                    ).otherwise(F.lit(0.0))
+                )
+                + (F.col("score_policy_2.document_overlap_weight") * F.col("document_overlap_score.score_overlap"))
+            ).alias("score"),
         )
         assert_schema(scoring__selected__document_scores, DOCUMENT_SCORE_SCHEMA, name="DocumentScore", mode="strict")
         return {
             "scoring__selected__document_scores": scoring__selected__document_scores,
         }
 
-    def _step_scoring_selected_score_sections_22(self, frames):
+    def _step_scoring_selected_score_sections_34(self, frames):
         # Step method: scoring.selected.score_sections
         scoring__selected__section_scores = frames["scoring__overlap__section_overlap_scores"].alias(
             "section_overlap_score"
@@ -1004,14 +1434,43 @@ class SelectScoresGenerated:
             F.col("section_overlap_score.section_id"),
             F.lit(None).cast(T.StringType()).alias("experiment_id"),
             F.col("score_policy_2.scored_at"),
-            F.col("scoring__bm25__section_bm25_scores.score_bm25").alias("score"),
+            (
+                (
+                    F.col("score_policy_2.section_bm25_weight")
+                    * F.when(
+                        (
+                            F.max(F.col("scoring__bm25__section_bm25_scores.score_bm25")).over(
+                                Window.partitionBy(
+                                    F.col("scoring__bm25__section_bm25_scores.query_id"),
+                                    F.col("scoring__bm25__section_bm25_scores.document_id"),
+                                )
+                                .orderBy(F.col("scoring__bm25__section_bm25_scores.section_id").asc())
+                                .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
+                            )
+                            > F.lit(0.0)
+                        ),
+                        (
+                            F.col("scoring__bm25__section_bm25_scores.score_bm25")
+                            / F.max(F.col("scoring__bm25__section_bm25_scores.score_bm25")).over(
+                                Window.partitionBy(
+                                    F.col("scoring__bm25__section_bm25_scores.query_id"),
+                                    F.col("scoring__bm25__section_bm25_scores.document_id"),
+                                )
+                                .orderBy(F.col("scoring__bm25__section_bm25_scores.section_id").asc())
+                                .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
+                            )
+                        ),
+                    ).otherwise(F.lit(0.0))
+                )
+                + (F.col("score_policy_2.section_overlap_weight") * F.col("section_overlap_score.score_overlap"))
+            ).alias("score"),
         )
         assert_schema(scoring__selected__section_scores, SECTION_SCORE_SCHEMA, name="SectionScore", mode="strict")
         return {
             "scoring__selected__section_scores": scoring__selected__section_scores,
         }
 
-    def _step_scoring_selected_score_paragraphs_23(self, frames):
+    def _step_scoring_selected_score_paragraphs_35(self, frames):
         # Step method: scoring.selected.score_paragraphs
         scoring__selected__paragraph_scores = frames["scoring__overlap__paragraph_overlap_scores"].alias(
             "paragraph_overlap_score"
@@ -1039,14 +1498,45 @@ class SelectScoresGenerated:
             F.col("paragraph_overlap_score.paragraph_id"),
             F.lit(None).cast(T.StringType()).alias("experiment_id"),
             F.col("score_policy_2.scored_at"),
-            F.col("paragraph_overlap_score.score_overlap").alias("score"),
+            (
+                (
+                    F.col("score_policy_2.paragraph_bm25_weight")
+                    * F.when(
+                        (
+                            F.max(F.col("scoring__bm25__paragraph_bm25_scores.score_bm25")).over(
+                                Window.partitionBy(
+                                    F.col("scoring__bm25__paragraph_bm25_scores.query_id"),
+                                    F.col("scoring__bm25__paragraph_bm25_scores.document_id"),
+                                    F.col("scoring__bm25__paragraph_bm25_scores.section_id"),
+                                )
+                                .orderBy(F.col("scoring__bm25__paragraph_bm25_scores.paragraph_id").asc())
+                                .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
+                            )
+                            > F.lit(0.0)
+                        ),
+                        (
+                            F.col("scoring__bm25__paragraph_bm25_scores.score_bm25")
+                            / F.max(F.col("scoring__bm25__paragraph_bm25_scores.score_bm25")).over(
+                                Window.partitionBy(
+                                    F.col("scoring__bm25__paragraph_bm25_scores.query_id"),
+                                    F.col("scoring__bm25__paragraph_bm25_scores.document_id"),
+                                    F.col("scoring__bm25__paragraph_bm25_scores.section_id"),
+                                )
+                                .orderBy(F.col("scoring__bm25__paragraph_bm25_scores.paragraph_id").asc())
+                                .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
+                            )
+                        ),
+                    ).otherwise(F.lit(0.0))
+                )
+                + (F.col("score_policy_2.paragraph_overlap_weight") * F.col("paragraph_overlap_score.score_overlap"))
+            ).alias("score"),
         )
         assert_schema(scoring__selected__paragraph_scores, PARAGRAPH_SCORE_SCHEMA, name="ParagraphScore", mode="strict")
         return {
             "scoring__selected__paragraph_scores": scoring__selected__paragraph_scores,
         }
 
-    def _step_scoring_selected_score_sentences_24(self, frames):
+    def _step_scoring_selected_score_sentences_36(self, frames):
         # Step method: scoring.selected.score_sentences
         scoring__selected__sentence_scores = frames["scoring__overlap__sentence_overlap_scores"].alias(
             "sentence_overlap_score"
@@ -1075,7 +1565,40 @@ class SelectScoresGenerated:
             F.col("sentence_overlap_score.sentence_id"),
             F.lit(None).cast(T.StringType()).alias("experiment_id"),
             F.col("score_policy_2.scored_at"),
-            F.col("sentence_overlap_score.score_overlap").alias("score"),
+            (
+                (
+                    F.col("score_policy_2.sentence_bm25_weight")
+                    * F.when(
+                        (
+                            F.max(F.col("scoring__bm25__sentence_bm25_scores.score_bm25")).over(
+                                Window.partitionBy(
+                                    F.col("scoring__bm25__sentence_bm25_scores.query_id"),
+                                    F.col("scoring__bm25__sentence_bm25_scores.document_id"),
+                                    F.col("scoring__bm25__sentence_bm25_scores.section_id"),
+                                    F.col("scoring__bm25__sentence_bm25_scores.paragraph_id"),
+                                )
+                                .orderBy(F.col("scoring__bm25__sentence_bm25_scores.sentence_id").asc())
+                                .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
+                            )
+                            > F.lit(0.0)
+                        ),
+                        (
+                            F.col("scoring__bm25__sentence_bm25_scores.score_bm25")
+                            / F.max(F.col("scoring__bm25__sentence_bm25_scores.score_bm25")).over(
+                                Window.partitionBy(
+                                    F.col("scoring__bm25__sentence_bm25_scores.query_id"),
+                                    F.col("scoring__bm25__sentence_bm25_scores.document_id"),
+                                    F.col("scoring__bm25__sentence_bm25_scores.section_id"),
+                                    F.col("scoring__bm25__sentence_bm25_scores.paragraph_id"),
+                                )
+                                .orderBy(F.col("scoring__bm25__sentence_bm25_scores.sentence_id").asc())
+                                .rowsBetween(Window.unboundedPreceding, Window.unboundedFollowing)
+                            )
+                        ),
+                    ).otherwise(F.lit(0.0))
+                )
+                + (F.col("score_policy_2.sentence_overlap_weight") * F.col("sentence_overlap_score.score_overlap"))
+            ).alias("score"),
         )
         return {
             "scoring__selected__sentence_scores": scoring__selected__sentence_scores,
@@ -1089,6 +1612,9 @@ class OnlineScoringGenerated(
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
         self.ctx = ctx
+
+    def close(self) -> None:
+        close_plan_boundaries(self.spark)
 
     def run(
         self,
@@ -1169,25 +1695,37 @@ class OnlineScoringGenerated(
         frames.update(self._step_scoring_overlap_expand_query_terms_3(frames))
         frames.update(self._step_scoring_overlap_select_distinct_query_terms_4(frames))
         frames.update(self._step_scoring_overlap_count_query_terms_5(frames))
-        frames.update(self._step_scoring_overlap_match_documents_6(frames))
-        frames.update(self._step_scoring_overlap_match_sections_7(frames))
-        frames.update(self._step_scoring_overlap_match_paragraphs_8(frames))
-        frames.update(self._step_scoring_overlap_match_sentences_9(frames))
-        frames.update(self._step_scoring_overlap_publish_document_overlap_scores_10(frames))
-        frames.update(self._step_scoring_overlap_publish_section_overlap_scores_11(frames))
-        frames.update(self._step_scoring_overlap_publish_paragraph_overlap_scores_12(frames))
-        frames.update(self._step_scoring_overlap_publish_sentence_overlap_scores_13(frames))
-        frames.update(self._step_scoring_bm25_expand_query_terms_14(frames))
-        frames.update(self._step_scoring_bm25_select_distinct_query_terms_15(frames))
-        frames.update(self._step_scoring_bm25_count_query_terms_16(frames))
-        frames.update(self._step_scoring_bm25_score_document_bm25_17(frames))
-        frames.update(self._step_scoring_bm25_score_section_bm25_18(frames))
-        frames.update(self._step_scoring_bm25_score_paragraph_bm25_19(frames))
-        frames.update(self._step_scoring_bm25_score_sentence_bm25_20(frames))
-        frames.update(self._step_scoring_selected_score_documents_21(frames))
-        frames.update(self._step_scoring_selected_score_sections_22(frames))
-        frames.update(self._step_scoring_selected_score_paragraphs_23(frames))
-        frames.update(self._step_scoring_selected_score_sentences_24(frames))
+        frames.update(self._step_scoring_overlap_select_document_vocabulary_6(frames))
+        frames.update(self._step_scoring_overlap_select_section_vocabulary_7(frames))
+        frames.update(self._step_scoring_overlap_select_paragraph_vocabulary_8(frames))
+        frames.update(self._step_scoring_overlap_select_sentence_vocabulary_9(frames))
+        frames.update(self._step_scoring_overlap_weight_document_query_terms_10(frames))
+        frames.update(self._step_scoring_overlap_weight_section_query_terms_11(frames))
+        frames.update(self._step_scoring_overlap_weight_paragraph_query_terms_12(frames))
+        frames.update(self._step_scoring_overlap_weight_sentence_query_terms_13(frames))
+        frames.update(self._step_scoring_overlap_total_document_query_idf_14(frames))
+        frames.update(self._step_scoring_overlap_total_section_query_idf_15(frames))
+        frames.update(self._step_scoring_overlap_total_paragraph_query_idf_16(frames))
+        frames.update(self._step_scoring_overlap_total_sentence_query_idf_17(frames))
+        frames.update(self._step_scoring_overlap_match_documents_18(frames))
+        frames.update(self._step_scoring_overlap_match_sections_19(frames))
+        frames.update(self._step_scoring_overlap_match_paragraphs_20(frames))
+        frames.update(self._step_scoring_overlap_match_sentences_21(frames))
+        frames.update(self._step_scoring_overlap_publish_document_overlap_scores_22(frames))
+        frames.update(self._step_scoring_overlap_publish_section_overlap_scores_23(frames))
+        frames.update(self._step_scoring_overlap_publish_paragraph_overlap_scores_24(frames))
+        frames.update(self._step_scoring_overlap_publish_sentence_overlap_scores_25(frames))
+        frames.update(self._step_scoring_bm25_expand_query_terms_26(frames))
+        frames.update(self._step_scoring_bm25_select_distinct_query_terms_27(frames))
+        frames.update(self._step_scoring_bm25_count_query_terms_28(frames))
+        frames.update(self._step_scoring_bm25_score_document_bm25_29(frames))
+        frames.update(self._step_scoring_bm25_score_section_bm25_30(frames))
+        frames.update(self._step_scoring_bm25_score_paragraph_bm25_31(frames))
+        frames.update(self._step_scoring_bm25_score_sentence_bm25_32(frames))
+        frames.update(self._step_scoring_selected_score_documents_33(frames))
+        frames.update(self._step_scoring_selected_score_sections_34(frames))
+        frames.update(self._step_scoring_selected_score_paragraphs_35(frames))
+        frames.update(self._step_scoring_selected_score_sentences_36(frames))
 
         # Step method: online_document_scores
         online_document_scores = frames["scoring__selected__document_scores"].alias("document_score")

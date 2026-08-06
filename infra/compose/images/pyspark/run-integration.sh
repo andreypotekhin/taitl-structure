@@ -27,11 +27,30 @@ if [[ "${backend}" == spark-connect* ]]; then
     )
 
     connect_jars=("${SPARK_HOME}"/jars/spark-connect_*.jar)
+    connect_packages=()
+    connect_resource=""
     if [[ -e "${connect_jars[0]}" ]]; then
-        connect_args+=("${connect_jars[0]}")
+        connect_resource="${connect_jars[0]}"
     else
         scala_version="${SPARK_CONNECT_SCALA_VERSION:-2.12}"
-        connect_args+=(--packages "org.apache.spark:spark-connect_${scala_version}:${STRUCTURE_EXPECTED_SPARK}")
+        connect_packages+=("org.apache.spark:spark-connect_${scala_version}:${STRUCTURE_EXPECTED_SPARK}")
+    fi
+
+    # Spark Connect rejects static session options from the client.  Install
+    # integration-only extensions on the server instead, where Spark can apply
+    # them during session construction (for example, Sedona geometry support).
+    if [[ -n "${STRUCTURE_SPARK_JARS_PACKAGES:-}" ]]; then
+        connect_packages+=("${STRUCTURE_SPARK_JARS_PACKAGES}")
+        if [[ "${STRUCTURE_SPARK_JARS_PACKAGES}" == *sedona* ]]; then
+            connect_args+=(--conf "spark.sql.extensions=org.apache.sedona.sql.SedonaSqlExtensions")
+        fi
+    fi
+    if (( ${#connect_packages[@]} > 0 )); then
+        packages_arg=$(IFS=,; printf '%s' "${connect_packages[*]}")
+        connect_args+=(--packages "${packages_arg}")
+    fi
+    if [[ -n "${connect_resource}" ]]; then
+        connect_args+=("${connect_resource}")
     fi
 
     connect_log="/tmp/spark-connect-server.log"

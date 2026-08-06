@@ -77,8 +77,8 @@ evidence.
 
 - Callers own streaming sources, sinks, triggers, checkpoints, output modes, and query lifecycle. Event-time
   tumbling/sliding aggregation, session-window aggregation, watermark-bounded dedupe, bounded stream-stream joins,
-  stream-static joins, and scalar Python UDFs are compiler-visible transformations; scalar UDFs remain
-  ordinary-PySpark only. Use the tested caller-owned recipe in
+  stream-static joins, and scalar Python UDFs are compiler-visible transformations; scalar UDFs are batch-supported
+  on Spark Connect but remain ordinary-PySpark-only for streaming. Use the tested caller-owned recipe in
   [`examples/streams/adoption.py`](../../examples/streams/adoption.py) for source/sink/query lifecycle code.
 - Classic-only Spark internals such as SparkContext, RDDs, JVM access, and `_jdf` are unsupported for Spark Connect.
 

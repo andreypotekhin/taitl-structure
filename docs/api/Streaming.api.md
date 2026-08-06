@@ -132,10 +132,10 @@ future ready-to-start path, `SearchDocumentsRunContract` records one immutable s
 - `finality_policy` requires one final result set with no later revisions;
 - `downstream_materialization` states where final results become durable before serving.
 
-`SearchDocumentsRunContract.validate()` checks this handoff metadata only. It does not prove bounded top-K state,
-watermark completion, stream-stream join support, checkpoint recovery, or generated-code readiness. Those remain
-separate
-compiler and live-evidence gates.
+`SearchDocumentsRunContract.validate()` checks this handoff metadata only when the Search streaming proving switch is
+enabled. It is currently disabled for integration delivery, so validation is intentionally inactive. It does not prove
+bounded top-K state, watermark completion, stream-stream join support, checkpoint recovery, or generated-code readiness.
+Those remain separate compiler and live-evidence gates.
 
 `completion_window` must be a positive finite Spark duration such as `10 minutes`; an unbounded or zero-width
 declaration cannot establish when a query is final.
@@ -148,9 +148,9 @@ must retain exactly 100. Both stages require a `query_id` grouping key, `request
 and completion-window declarations, append output, the immutable serving `snapshot_id`, and restart on the same
 checkpoint only when that snapshot is unchanged.
 
-The order contract is `score desc, document_id asc`; the identifier tie-breaker is mandatory. The metadata guard does
-not lower `row_number`, provide arbitrary state, or prove live restart behavior. Until those runtime and evidence gates
-pass,
+The order contract is `score desc, document_id asc`; the identifier tie-breaker is mandatory. The metadata guard is
+inactive while `SEARCH_STREAMING_CONTRACTS_ENABLED` is false; when enabled, it still does not lower `row_number`,
+provide arbitrary state, or prove live restart behavior. Until those runtime and evidence gates pass,
 SearchDocuments remains design-gated and callers must use a batch/materialization boundary.
 
 `watermark_delay` and `completion_window` must be positive finite durations, and `grouping_key` must include `query_id`.

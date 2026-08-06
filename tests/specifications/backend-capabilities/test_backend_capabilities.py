@@ -53,6 +53,13 @@ def test_bitwise_expression_capability_is_available_on_each_batch_target(target_
     assert resolved.require(CapabilityRequirement(group="expression", name="bitwise")).supported
 
 
+@pytest.mark.parametrize("group, name", [("expression", "python_udf"), ("relation", "exactly_one")])
+def test_spark_connect_accepts_public_batch_capabilities(group: str, name: str) -> None:
+    resolved = Capabilities.resolve()(target="pyspark", options={"variant": "spark-connect"})
+
+    assert resolved.require(CapabilityRequirement(group=group, name=name)).supported
+
+
 @pytest.mark.parametrize(
     "name",
     [

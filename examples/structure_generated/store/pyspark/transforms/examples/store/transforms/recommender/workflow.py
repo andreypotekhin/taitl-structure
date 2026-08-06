@@ -7,7 +7,13 @@ from pyspark.sql import Window
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
-from examples.structure_generated.store.runtime.schema_assert import TransformResult, assert_schema, project_schema
+from examples.structure_generated.store.runtime.schema_assert import (
+    TransformResult,
+    assert_schema,
+    project_schema,
+    apply_plan_boundary,
+    close_plan_boundaries,
+)
 from examples.structure_generated.store.pyspark.schemas.catalog import CATALOG_PRODUCT_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.common import TENANT_KEY_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.feedback import (
@@ -1663,6 +1669,9 @@ class RecommenderGenerated(
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
         self.ctx = ctx
+
+    def close(self) -> None:
+        close_plan_boundaries(self.spark)
 
     def run(
         self,

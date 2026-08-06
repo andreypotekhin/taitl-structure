@@ -27,6 +27,10 @@ project from ordinary PySpark to Spark Connect.
 target_backend = "pyspark"
 target_profile = ">=3.5,<4.1"
 target_variant = "spark-connect"
+
+[tool.structure.plugin.pyspark]
+variant = "spark-connect"
+connect_plan_boundaries = "auto"
 ```
 
 Ordinary PySpark remains the default:
@@ -51,6 +55,9 @@ Spark Connect support covers completed batch features that lower through public 
   additional aggregate metrics, metric-local filters, reusable windows, distribution/value/window aggregate helpers,
   selected-row helpers, ranking, lag/lead, rolling metrics, and dedupe helpers;
 - the implemented compiler-visible array and map helper set;
+- bounded ordered `scan(...)` recurrences, lowered through public higher-order DataFrame/Column functions;
+- explicit scalar Python UDFs through Spark Connect's public UDF API, with the same generated/online ownership rules;
+- batch-only `exactly_one(...)` relation assertions implemented with public aggregate and join expressions;
 - schema-only validation and strict projection;
 - execution through `StructureSession`;
 - generated PySpark execution with the same constructor and `run(...)` signature as ordinary PySpark.
@@ -65,7 +72,8 @@ Spark Connect support does not include:
 - SparkContext access;
 - direct JVM/Py4J access;
 - `_jdf` or private classic PySpark fields;
-- hidden fallback to Python UDFs, local collection, row-wise loops, or SQL string rewrites.
+- hidden fallback to Python UDFs, local collection, row-wise loops, or SQL string rewrites. Explicit scalar UDFs are
+  supported only when declared with `@special(type="udf")`.
 - deferred batch features such as same-name join-key shorthand until their owning specifications admit them.
 
 Hooks remain user-owned PySpark code. Structure validates hook signatures and target scope, but arbitrary hook bodies
@@ -98,10 +106,12 @@ session = StructureSession(spark=spark, ctx=ctx, config=config)
 result = NormalizeOrders(orders=orders_df).run(session)
 ```
 
-Generated classes keep the same shape:
+Generated classes keep the same shape and expose `close()` for Structure-created temporary-view resources:
 
 ```python
-result = NormalizeOrdersGenerated(spark=spark, ctx=ctx).run(orders=orders_df)
+generated = NormalizeOrdersGenerated(spark=spark, ctx=ctx)
+result = generated.run(orders=orders_df)
+# generated.close() after lazy results have been materialized or released
 ```
 
 Structure does not create or manage the remote Spark Connect server.
@@ -109,6 +119,11 @@ Structure does not create or manage the remote Spark Connect server.
 The caller owns session creation, authentication, remote endpoint lifecycle, input DataFrames, actions, result
 materialization, and cleanup. Structure owns only transform invocation and the semantic plan it supplies to the target.
 This ownership is the same as ordinary execution except that the Connect variant rejects classic-only runtime access.
+
+For Connect, input and final-output schema checks remain strict. Intermediate checks are disabled by default because
+`DataFrame.schema` is a remote analysis request; set `validate_intermediate = true` for exhaustive diagnostics. The
+`connect_plan_boundaries` option independently limits serialized logical-plan growth with session-scoped temporary
+views. `StructureSession.close()` drops only Structure-created views and never stops the caller's Spark session.
 
 For a migration, keep the transform invocation unchanged and isolate target-specific code at the hook or session edge:
 

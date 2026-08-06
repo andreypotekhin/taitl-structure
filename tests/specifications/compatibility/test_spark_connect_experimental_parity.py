@@ -418,14 +418,38 @@ class BatchJoinFeatures(Transform):
         )
 
 
-def test_completed_batch_feature_rendering_is_identical_for_spark_connect_variant() -> None:
+def test_completed_batch_feature_rendering_preserves_strict_mode_for_spark_connect_variant() -> None:
     for transform_class in _completed_batch_transforms():
         ordinary = _lower(transform_class, target_variant="ordinary")
-        spark_connect = _lower(transform_class, target_variant="spark-connect")
+        spark_connect = _lower(
+            transform_class,
+            target_variant="spark-connect",
+            validate_intermediate=True,
+            connect_plan_boundaries="off",
+        )
 
         assert spark_connect.backend.variant == "spark-connect"
         assert spark_connect.backend.family == "spark_connect_dataframe"
         assert _render(ordinary) == _render(spark_connect)
+
+
+def test_spark_connect_default_skips_intermediate_checks_and_emits_boundaries() -> None:
+    plan = _lower(BatchJoinFeatures, target_variant="spark-connect")
+    intermediate = [validation for step in plan.steps for validation in step.validations]
+
+    assert intermediate
+    assert any(not validation.check for validation in intermediate)
+    assert any(validation.boundary for validation in intermediate)
+
+    strict = _lower(
+        BatchJoinFeatures,
+        target_variant="spark-connect",
+        validate_intermediate=True,
+        connect_plan_boundaries="strict",
+    )
+    strict_intermediate = [validation for step in strict.steps for validation in step.validations]
+    assert all(validation.check for validation in strict_intermediate)
+    assert all(validation.boundary for validation in strict_intermediate)
 
 
 def test_completed_batch_feature_set_exercises_sprint08_feature_families_under_spark_connect() -> None:
@@ -491,11 +515,23 @@ def test_spark_connect_traceability_shape_matches_ordinary_pyspark_for_completed
     ]
 
 
-def _lower(transform_class: type[Transform], *, target_variant: str) -> Any:
+def _lower(
+    transform_class: type[Transform],
+    *,
+    target_variant: str,
+    validate_intermediate: bool | None = None,
+    connect_plan_boundaries: str | None = None,
+) -> Any:
+    plugin_options: dict[str, object] = {"variant": target_variant}
+    if connect_plan_boundaries is not None:
+        plugin_options["connect_plan_boundaries"] = connect_plan_boundaries
+    settings: dict[str, object] = {"plugin": {"pyspark": plugin_options}}
+    if validate_intermediate is not None:
+        settings["validate_intermediate"] = validate_intermediate
     return Compiler.frontend.compile()(
         transform_class,
         materialize_schemas=False,
-        plugin={"pyspark": {"variant": target_variant}},
+        **cast(Any, settings),
     ).lowered
 
 

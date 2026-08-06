@@ -6,7 +6,13 @@ import datetime
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
-from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
+from examples.structure_generated.search.runtime.schema_assert import (
+    TransformResult,
+    assert_schema,
+    project_schema,
+    apply_plan_boundary,
+    close_plan_boundaries,
+)
 from examples.structure_generated.search.pyspark.schemas.index import (
     DOCUMENT_INDEX_SUMMARY_SCHEMA,
     DOCUMENT_INDEX_TERM_SCHEMA,
@@ -38,6 +44,9 @@ class CreateSimilarityQueriesGenerated:
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
         self.ctx = ctx
+
+    def close(self) -> None:
+        close_plan_boundaries(self.spark)
 
     def run(
         self,

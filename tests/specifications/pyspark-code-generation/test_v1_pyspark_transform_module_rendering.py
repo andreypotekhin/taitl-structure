@@ -153,10 +153,12 @@ def test_v1_transform_module_renderer_renders_class_runtime_shape() -> None:
     )
 
     assert "from testing.model.orders.transforms.order import EnrichOrders" in text
-    assert (
-        "from testing.model.structure_generated.runtime.schema_assert import "
-        "TransformResult, assert_schema, project_schema" in text
-    )
+    assert "from testing.model.structure_generated.runtime.schema_assert import" in text
+    assert "TransformResult," in text
+    assert "assert_schema," in text
+    assert "project_schema," in text
+    assert "apply_plan_boundary," in text
+    assert "close_plan_boundaries," in text
     assert "class EnrichOrdersGenerated:" in text
     assert "        self._impl = EnrichOrders()" in text
     assert "        orders: DataFrame," in text

@@ -61,6 +61,10 @@ class Similarities(Transform):
         section_terms=section_terms,
         paragraph_terms=paragraph_terms,
         sentence_terms=sentence_terms,
+        document_summary=document_summary,
+        section_summary=section_summary,
+        paragraph_summary=paragraph_summary,
+        sentence_summary=sentence_summary,
         score_policy=score_policy,
     )
 

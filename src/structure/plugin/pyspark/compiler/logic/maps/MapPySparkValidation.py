@@ -5,7 +5,14 @@ from structure.plugin.pyspark.compiler.model.PySparkValidationRecipe import PySp
 
 class MapPySparkValidation:
 
-    def step(self, step: StepPlan, *, last: bool, check_intermediate: bool = True) -> tuple[PySparkValidationRecipe, ...]:
+    def step(
+        self,
+        step: StepPlan,
+        *,
+        last: bool,
+        check_intermediate: bool = True,
+        boundary: bool = False,
+    ) -> tuple[PySparkValidationRecipe, ...]:
         recipes = self._hooks(step.after_hooks, schema=step.output_schema)
         if not last:
             recipes.append(
@@ -16,11 +23,19 @@ class MapPySparkValidation:
                     project=False,
                     reason="intermediate",
                     check=check_intermediate,
+                    boundary=boundary,
                 )
             )
         return tuple(recipes)
 
-    def result(self, result: StepResultPlan, *, last: bool, check_intermediate: bool = True) -> tuple[PySparkValidationRecipe, ...]:
+    def result(
+        self,
+        result: StepResultPlan,
+        *,
+        last: bool,
+        check_intermediate: bool = True,
+        boundary: bool = False,
+    ) -> tuple[PySparkValidationRecipe, ...]:
         recipes = self._hooks(result.after_hooks, schema=result.schema)
         if not last:
             recipes.append(
@@ -31,6 +46,7 @@ class MapPySparkValidation:
                     project=False,
                     reason="intermediate",
                     check=check_intermediate,
+                    boundary=boundary,
                 )
             )
         return tuple(recipes)

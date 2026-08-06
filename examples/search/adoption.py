@@ -12,6 +12,10 @@ SearchTopKStage = Literal["candidate_admission", "overlap_narrowing"]
 SearchTopKTiePolicy = Literal["score_desc_document_id_asc"]
 SearchTopKRestartPolicy = Literal["same_checkpoint_same_snapshot"]
 
+# Disabled until the SearchDocuments streaming proving lane is ready.  Keep the metadata contracts available for
+# later re-enablement without making ordinary Search batch compilation depend on unfinished state/restart evidence.
+SEARCH_STREAMING_CONTRACTS_ENABLED = False
+
 REQUIRED_SNAPSHOT_INPUTS = (
     "index",
     "score_cache",
@@ -49,6 +53,9 @@ class SearchDocumentsRunContract:
 
     def validate(self) -> None:
         """Reject a run handoff that cannot be reviewed as one immutable serving run."""
+
+        if not SEARCH_STREAMING_CONTRACTS_ENABLED:
+            return
 
         declarations = (
             ("snapshot_id", self.snapshot_id),
@@ -126,6 +133,9 @@ class SearchFiniteTopKContract:
 
     def validate(self) -> None:
         """Reject a top-K shape that is unbounded or can revise its tie order."""
+
+        if not SEARCH_STREAMING_CONTRACTS_ENABLED:
+            return
 
         declarations = (
             ("watermark_delay", self.watermark_delay),

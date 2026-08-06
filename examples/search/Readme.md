@@ -15,6 +15,7 @@ For the architecture, evidence boundaries, and ownership model, see the
 | Chunking | `Chunking` | sections, paragraphs, sentences, words | Plain-text hierarchy and shared token normalization. |
 | Indexing | `Indexing` | target-grain terms and summaries | Build once; score many query batches. |
 | Scoring | `OfflineScoring`, `Scoring`, `OnlineScoring` | timestamped score relations | Score popular and seven-day recent queries offline; fill ad-hoc gaps online and persist bridge rows in the same relations. |
+| Filtering | `Filtering`, `OnlineFiltering`, `SelectFilterTargets` | timestamped filter artifacts and document targets | Prefilter selected queries offline, resolve missing query groups online, and retain at most 10,000 simple-overlap document targets. |
 | Similarity | `CreateSimilarityQueries`, `ReduceSimilarityScores` | same-grain corpus pairs | Reuse the lexical index; BM25 stays directional. |
 | Feedback | `Impressions`, `Clicks`, `BuildRelevanceSignals` | daily facts and batch signals | Exposure-aware, attributed, propensity-corrected evidence. |
 | Presentation | `SearchSentences`, `SearchPassages`, `SearchDocuments` | deterministic ranks | Sentence and passage ranking are lexical; document ranking is staged retrieval, overlap narrowing, and reranking. |
@@ -137,10 +138,11 @@ result presentation.
 query. `content` is free-form text: callers do not pre-tokenize it. For example, `"  AURORA,   beacon! navigation?  "` is equivalent to
 `"aurora beacon navigation"`.
 The algorithms normalize query terms exactly as
-`Chunking` normalizes document words. `score_overlap` is the standard overlap coefficient: matching distinct terms
-divided by the smaller of the query and target vocabularies. `score_bm25` uses fixed `k1=1.2` and `b=0.75` constants.
-The scores remain separate: choosing an algorithm or combining parent and child targets is deliberately caller-owned.
-Each selected score row carries `scored_at` from `ScorePolicy`; serving rejects rows outside its maximum age.
+`Chunking` normalizes document words. `score_overlap` is IDF-weighted: the IDF sum of successfully matched distinct
+terms divided by the total IDF of the query. `score_bm25` uses fixed `k1=1.2` and `b=0.75` constants. `SelectScores`
+normalizes BM25 per query and combines it with overlap using independent caller-supplied `ScorePolicy` weights for each
+grain. Each selected score row carries `scored_at`; serving also rejects rows older than `effective_at` when the policy
+has changed.
 
 `SearchQuery.id` is the request-local key used to partition scores and ranks; one invocation can contain many query
 rows. Query text is normalized with the same lowercasing, whitespace, punctuation, and token rules as extraction.
@@ -149,7 +151,7 @@ the event-time field used by the streaming query contract and must remain immuta
 `SearchQuery.queryset` is a required caller-owned collection name, such as `natural` or `synthetic`.
 
 ```text
-overlap = matching_distinct_terms / min(query_distinct_terms, target_distinct_terms)
+overlap = sum(idf(matched_distinct_terms)) / sum(idf(query_distinct_terms))
 BM25(k1 = 1.2, b = 0.75)
 ```
 
@@ -386,13 +388,11 @@ document_popularity = signals.document_popularity
 
 ### Retrieve and rerank
 
-`SearchDocuments` composes `OnlineScoring`, `RetrieveDocuments`, `OverlapDocuments`, and `RerankDocuments` as explicit stages.
-`OnlineScoring` filters stale caller-supplied document and overlap scores, calculates missing query groups from the
-reusable indexes, and exposes only newly calculated bridge rows for stored and streamed retrieval. `RetrieveDocuments`
-unions those rows with the caller-supplied scores and admits up to 1000 persisted or streamed documents per query by
-descending score.
-`OverlapDocuments` narrows those candidates to 100 by overlap score, then `RerankDocuments` joins user click feedback
-and emits results.
+`SearchDocuments` composes `OnlineFiltering`, `SelectFilterTargets`, `OnlineScoring`, `RetrieveDocuments`, and `RerankDocuments` as explicit
+stages. `Filtering` can precompute timestamped `DocumentFilterScore` rows for selected queries; `OnlineFiltering`
+fills missing query groups at serving time; and `SelectFilterTargets` retains the top 10,000 simple-overlap matches per
+query. `RetrieveDocuments` admits up to 1,000 candidates by composite lexical score, while `RerankDocuments` applies
+feedback and emits the final top 100.
 
 Feedback combines 80% of the normalized query-document signal with 20% global document popularity. Within each BM25
 candidate set, the reranker calculates:
@@ -408,9 +408,9 @@ eligible with zero feedback. Final rank is descending `rank_score`, then documen
 100 cannot enter through feedback, and a no-history query preserves BM25 order.
 
 `SearchDocuments` uses the same free-form `SearchQuery` DataFrame, immutable documents, reusable index relations,
-timestamped score relations, and `ScorePolicy`. Its `online_document_scores` and
-`online_document_overlap_scores` outputs are bridge rows that callers may append to their persisted score relations.
-The online stage does not invent a parallel cache schema or change query parsing.
+timestamped score and filter relations, and `ScorePolicy`. `SelectFilterTargets` first limits simple-overlap targets to
+10,000 per query; `RetrieveDocuments` selects 1,000 composite lexical candidates; and `RerankDocuments` ranks and
+returns the top 100. The online stages share the offline schemas and query parsing.
 
 ```python
 ranked_documents = SearchDocuments(
@@ -420,6 +420,7 @@ ranked_documents = SearchDocuments(
     streamed_documents=streamed_documents,
     streamed_document_scores=streamed_document_scores,
     document_overlap_scores=scores.document_overlap_scores,
+    document_filter_scores=document_filter_scores,
     document_terms=index.document_terms,
     section_terms=index.section_terms,
     paragraph_terms=index.paragraph_terms,
@@ -663,10 +664,15 @@ Use `transforms/training/all/training.Training` as an offline-training endpoint.
 
 ## Query Streaming
 
-The `queries` input to `SearchDocuments` is streaming-declared and that mode is propagated through the online scoring
-and document-ranking stages. A query carries its immutable `requested_at` event time, and the matching
-`SearchRequest.requested_at` must agree. A caller that adopts the future streaming shape supplies both event streams,
-applies the configured watermark delay, and waits for the finite query-completion window before accepting results.
+The SearchDocuments design-gated streaming contract is temporarily disabled for integration testing and delivery.
+`SEARCH_STREAMING_CONTRACTS_ENABLED` is `False`, so the document-search graph compiles and runs as a batch transform;
+its query, request, score, candidate, and reranking inputs are not treated as streaming by default. This switch does not
+remove the future contract or weaken the general Structured Streaming compiler. `SearchQuery.requested_at` remains a
+required schema field, but it is currently ordinary batch data in this path.
+
+When the switch is re-enabled, the `queries` input will propagate streaming mode through online scoring and document
+ranking. A caller will then supply both event streams, apply the configured watermark delay, and wait for the finite
+query-completion window before accepting results.
 
 The path to a ready-to-start Structured Streaming job is deliberately explicit:
 
@@ -683,14 +689,14 @@ The path to a ready-to-start Structured Streaming job is deliberately explicit:
    events are discarded according to the watermark contract; emitted results are never revised. Snapshot refreshes start
    a new caller-owned run.
 
-The current graph is therefore a compiler-visible migration boundary, not yet a ready-to-start job. The compiler must
+The future graph is therefore a compiler-visible migration boundary, not yet a ready-to-start job. The compiler must
 reject any remaining unbounded deduplication, global ranking window, unsupported stream-stream join, or unbounded state
 stage before query start. Structure continues to own only DataFrame transformations; the caller owns the source,
 watermark application, checkpoint, trigger, output sink, snapshot refresh, restart policy, and any downstream
 materialization.
 
-Record the caller-owned run boundary before wiring a future streaming sink. This validates the snapshot and finality
-assumptions without starting a query:
+The caller-owned run and top-K metadata examples below remain reserved for the future proving lane. While the switch is
+disabled, their `validate()` methods are intentionally inactive and they do not gate Search batch integration:
 
 ```python
 from examples.search.adoption import SearchDocumentsRunContract

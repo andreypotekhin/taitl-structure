@@ -493,11 +493,11 @@ class RenderPySparkExpression:
         if function == "from_json":
             schema = self._inline_schema(cast(type, expression.data["schema"]))
             options = cast(dict[str, str], expression.data["options"])
-            return f"F.{function}({args[0]}, {schema}, {options!r})"
+            return f"F.{function}({args[0]}, {schema})" if not options else f"F.{function}({args[0]}, {schema}, {options!r})"
         if function == "from_csv":
             schema = self._ddl_schema(cast(type, expression.data["schema"]))
             options = cast(dict[str, str], expression.data["options"])
-            return f"F.from_csv({args[0]}, {schema!r}, {options!r})"
+            return f"F.from_csv({args[0]}, {schema!r})" if not options else f"F.from_csv({args[0]}, {schema!r}, {options!r})"
         if function in {
             "is_valid_variant",
             "parse_json",
@@ -531,7 +531,7 @@ class RenderPySparkExpression:
             return f"F.variant_delete({args[0]}, {paths})"
         if function in {"to_json", "to_csv"}:
             options = cast(dict[str, str], expression.data["options"])
-            return f"F.{function}({args[0]}, {options!r})"
+            return f"F.{function}({args[0]})" if not options else f"F.{function}({args[0]}, {options!r})"
         if function == "coalesce":
             return f"F.coalesce({', '.join(args)})"
         if function in {"nvl", "ifnull"}:

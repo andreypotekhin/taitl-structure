@@ -1,17 +1,31 @@
 """Experiment searching001: favor query-document feedback more strongly during reranking."""
 
 from examples.search.schemas.relevance import DocumentPopularity, QueryDocumentSignals, RelevancePolicy
-from examples.search.schemas.search import DocumentSearchCandidate, PopularityFeedback, QueryDocumentFeedback
+from examples.search.schemas.search import (
+    DocumentSearchCandidate,
+    DocumentSearchResult,
+    PopularityFeedback,
+    QueryDocumentFeedback,
+)
+from examples.search.transforms.searching.search_docs.obtain import RetrieveDocuments
 from examples.search.transforms.searching.search_docs.rerank import RerankDocuments
 from examples.search.transforms.searching.search_docs.SearchDocuments import SearchDocuments
-from structure import step
+from structure import output, step
 from structure.plugin.pyspark import coalesce, cross_join, left_join, where
 
 
 class Searching001AdjustRerankDocuments(RerankDocuments):
     """Favor query-specific feedback over global popularity."""
 
-    @step(input=[RerankDocuments.overlapped_candidates, RerankDocuments.query_feedback, RerankDocuments.popularity_feedback, RerankDocuments.policy], output=RerankDocuments.scored_candidates)
+    @step(
+        input=[
+            RerankDocuments.candidates,
+            RerankDocuments.query_feedback,
+            RerankDocuments.popularity_feedback,
+            RerankDocuments.policy,
+        ],
+        output=RerankDocuments.scored_candidates,
+    )
     def score_candidates(
         self,
         candidate: DocumentSearchCandidate,
@@ -19,7 +33,7 @@ class Searching001AdjustRerankDocuments(RerankDocuments):
         popularity: PopularityFeedback,
         policy: RelevancePolicy,
     ) -> DocumentSearchCandidate:
-        where(candidate.candidate_rank <= 100)
+        where(candidate.candidate_rank <= RetrieveDocuments.maximum_candidates)
         left_join(
             query,
             on=(query.search_query_id == candidate.search_query_id)
@@ -51,9 +65,11 @@ class Searching001AdjustRerankSearchDocuments(SearchDocuments):
     """Run document search with the searching001 reranking stage."""
 
     reranked = Searching001AdjustRerankDocuments(
-        overlapped_candidates=SearchDocuments.overlapped.overlapped_candidates,
+        candidates=SearchDocuments.retrieved.candidates,
         query_document_signals=SearchDocuments.query_document_signals,
         document_popularity=SearchDocuments.document_popularity,
         band_fallbacks=SearchDocuments.band_fallbacks,
         policy=SearchDocuments.policy,
     )
+
+    results = output(DocumentSearchResult, reranked.results)

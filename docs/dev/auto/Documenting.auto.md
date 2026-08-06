@@ -48,6 +48,7 @@ and code as source of truth.
 
 #### End-User documentation tips 
 - Use caution/consider alternative wording on corporate speak such as 'owns', 'boundary', 'intentional'
+- In Recipe documents, avoid excess use of word 'recipe' (reader already realizes that).
 
 ### Developer documentation - Top-level
 Location: docs/dev/ (top level)

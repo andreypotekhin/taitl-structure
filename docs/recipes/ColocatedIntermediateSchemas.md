@@ -1,18 +1,19 @@
 # Colocated Intermediate Schemas
 
-Keep reusable row contracts in model schema files. When a shape genuinely belongs
-to one transform only, Structure also accepts a module-level intermediate schema
-beside that transform.
+**Problem:** An order-normalization shape is useful only to one publishing
+transform, but putting it in the shared model package makes a private intermediate
+contract look reusable. Nesting it inside `PublishOrders` is not a valid alternative
+because Structure cannot discover nested schema classes.
 
-This is a source-organization choice, not a private runtime type: Structure still
-validates the intermediate DataFrame and emits its Spark schema, generated
+**Solution:** Declare the intermediate schema at module scope beside the transform.
+The raw input and published output remain shared model contracts, while Structure
+still validates the intermediate DataFrame and emits its Spark schema, generated
 documentation, and traceability entry.
 
-## Scenario
+## Declare and use the colocated schema
 
-An order normalization is useful only as the first stage of one publishing
-transform. The raw input and published output remain shared model contracts;
-only the normalization shape is colocated.
+Place the intermediate `OrderNormalized` contract at module scope, then pass it
+between the transform's steps.
 
 ```python
 # src/orders/transforms/publish.py
@@ -36,14 +37,18 @@ class PublishOrders(Transform):
         return OrderPublished(id=order.id)
 ```
 
-`OrderNormalized` is a normal schema contract. `structure check` discovers it,
-and `structure compile` creates a generated schema module alongside the generated
-transform module. Use a dedicated model schema file instead when another
-transform, read, write, or caller needs the same shape.
+`OrderNormalized` is a normal schema contract, not a private implementation type.
+The `normalize` step produces it, and `publish` consumes it as its input.
 
-Do not nest the schema in `PublishOrders`. Declare it at module scope as shown;
-Structure reports an actionable compile error for a `Schema` class nested inside a
-transform.
+## Keep the contract discoverable
+
+`structure check` discovers the module-level schema, and `structure compile`
+creates a generated schema module alongside the generated transform module. Use a
+dedicated model schema file instead when another transform, read, write, or caller
+needs the same shape.
+
+Do not nest `OrderNormalized` in `PublishOrders`. Structure reports an actionable
+compile error for a `Schema` class nested inside a transform.
 
 See the [schema API](../api/Schemas.api.md) and [source module rules](../background/Generation.back.md) for
 the broader declaration and discovery contracts.

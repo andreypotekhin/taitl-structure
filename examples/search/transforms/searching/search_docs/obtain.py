@@ -1,7 +1,14 @@
 """BM25-first document candidate retrieval."""
 
+from examples.search.adoption import SEARCH_STREAMING_CONTRACTS_ENABLED
 from examples.search.schemas.clicks import SearchRequest
-from examples.search.schemas.search import DocumentScore, DocumentSearchCandidate, ScorePolicy, SearchQuery
+from examples.search.schemas.search import (
+    DocumentScore,
+    DocumentSearchCandidate,
+    DocumentSearchTarget,
+    ScorePolicy,
+    SearchQuery,
+)
 from examples.search.schemas.text import Document
 from examples.search.schemas.user import BandMembership
 from structure import Transform, input, lane, output, step
@@ -29,16 +36,17 @@ class RetrieveDocuments(Transform):
 
     maximum_candidates = 1000
 
-    queries = input(SearchQuery, streaming=True)
+    queries = input(SearchQuery, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
     documents = input(Document)
     document_scores = input(DocumentScore)
-    streamed_documents = input(Document, streaming=True)
-    streamed_document_scores = input(DocumentScore, streaming=True)
-    online_streamed_document_scores = input(DocumentScore, streaming=True)
-    online_document_scores = input(DocumentScore, streaming=True)
-    requests = input(SearchRequest, streaming=True)
+    streamed_documents = input(Document, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
+    streamed_document_scores = input(DocumentScore, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
+    online_streamed_document_scores = input(DocumentScore, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
+    online_document_scores = input(DocumentScore, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
+    requests = input(SearchRequest, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
     band_memberships = input(BandMembership)
     score_policy = input(ScorePolicy)
+    prefilter_targets = input(DocumentSearchTarget, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
     stored_scores = lane(DocumentScore)
     streamed_scores = lane(DocumentScore)
     stored_candidates = lane(DocumentSearchCandidate)
@@ -59,6 +67,7 @@ class RetrieveDocuments(Transform):
         age = datediff(request.requested_at, candidate.scored_at)
         where(
             (candidate.scored_at <= request.requested_at)
+            & (candidate.scored_at >= policy.effective_at)
             & (age >= 0)
             & (age <= policy.maximum_age_days)
             & candidate.experiment_id.null_safe_eq(request.experiment_id)
@@ -83,6 +92,7 @@ class RetrieveDocuments(Transform):
         age = datediff(request.requested_at, candidate.scored_at)
         where(
             (candidate.scored_at <= request.requested_at)
+            & (candidate.scored_at >= policy.effective_at)
             & (age >= 0)
             & (age <= policy.maximum_age_days)
             & candidate.experiment_id.null_safe_eq(request.experiment_id)
@@ -90,7 +100,10 @@ class RetrieveDocuments(Transform):
         drop_duplicates(candidate.query_id, candidate.document_id, candidate.experiment_id)
         return DocumentScore.project(candidate)
 
-    @step(input=[documents, stored_scores, queries, requests, band_memberships], output=stored_candidates)
+    @step(
+        input=[documents, stored_scores, queries, requests, band_memberships, prefilter_targets],
+        output=stored_candidates,
+    )
     def select_stored_candidates(
         self,
         document: Document,
@@ -98,12 +111,16 @@ class RetrieveDocuments(Transform):
         query: SearchQuery,
         request: SearchRequest,
         band: BandMembership,
+        target: DocumentSearchTarget,
     ) -> DocumentSearchCandidate:
         watermark(query.requested_at, delay="10 minutes")
         watermark(request.requested_at, delay="10 minutes")
-        return self._candidate(document, score, query, request, band)
+        return self._candidate(document, score, query, request, band, target)
 
-    @step(input=[streamed_documents, streamed_scores, queries, requests, band_memberships], output=streamed_candidates)
+    @step(
+        input=[streamed_documents, streamed_scores, queries, requests, band_memberships, prefilter_targets],
+        output=streamed_candidates,
+    )
     def select_streamed_candidates(
         self,
         document: Document,
@@ -111,10 +128,11 @@ class RetrieveDocuments(Transform):
         query: SearchQuery,
         request: SearchRequest,
         band: BandMembership,
+        target: DocumentSearchTarget,
     ) -> DocumentSearchCandidate:
         watermark(query.requested_at, delay="10 minutes")
         watermark(request.requested_at, delay="10 minutes")
-        return self._candidate(document, score, query, request, band)
+        return self._candidate(document, score, query, request, band, target)
 
     @step(input=[stored_candidates, streamed_candidates], output=candidates)
     def rank_candidates(
@@ -135,7 +153,9 @@ class RetrieveDocuments(Transform):
         query: SearchQuery,
         request: SearchRequest,
         band: BandMembership,
+        target: DocumentSearchTarget,
     ) -> DocumentSearchCandidate:
+        inner_join(target, on=(target.query_id == query.id) & (target.document_id == document.id))
         inner_join(on=document.id == score.document_id)
         inner_join(on=query.id == score.query_id)
         inner_join(on=request.query_id == query.id)

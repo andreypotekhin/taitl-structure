@@ -4,6 +4,8 @@ Maintain annotated sources for certain parts of project code.
 
 ## Scope
 Currently, we only maintain annotated code for these code dirs and their subdirs:
+- examples/search/transforms/filtering
+- examples/search/transforms/searching/online
 - examples/search/transforms/searching/search_docs
 - examples/store/transforms/catalog
 - examples/store/transforms/personalization

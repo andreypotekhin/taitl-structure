@@ -62,6 +62,7 @@ from examples.search.schemas.features.intermediate import (
     QueryFeatureToken,
     QueryTokenSummary,
 )
+from examples.search.schemas.filtering import DocumentFilterScore, FilterQueryAvailability
 from examples.search.schemas.indexing.lexical.index import (
     DocumentIndexSummary,
     DocumentIndexTarget,
@@ -239,6 +240,7 @@ pytestmark = pytest.mark.integration
 PACKAGE = "integration_search_generated"
 FIXTURES = Path(__file__).resolve().parents[4] / "examples" / "fixtures" / "search"
 SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
+    "examples.search.schemas.filtering": [DocumentFilterScore, FilterQueryAvailability],
     "examples.search.schemas.analytics": [
         DocumentProfile,
         SentenceStatistics,
@@ -605,7 +607,16 @@ def test_query_intents_create_multilingual_english_labels_online_and_generated(s
                     False,
                     None,
                 ),
-                ("q-uk", "natural", "What is the status?", datetime(2026, 7, 21, 9), {"tier": 1}, False, False, "en_UK"),
+                (
+                    "q-uk",
+                    "natural",
+                    "What is the status?",
+                    datetime(2026, 7, 21, 9),
+                    {"tier": 1},
+                    False,
+                    False,
+                    "en_UK",
+                ),
                 ("q-es", "natural", "¿Qué es Structure?", datetime(2026, 7, 21, 9), {"tier": 3}, False, True, "es_ES"),
             ],
             search.SEARCH_QUERY_SCHEMA,
@@ -629,9 +640,9 @@ def test_query_intents_create_multilingual_english_labels_online_and_generated(s
         generated_created = CreateQueryLabels(**inputs).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
-        online = MergeQueryLabels(
-            queries=queries, query_labels=empty_labels, created_labels=online_created.labels
-        ).run(session(spark, execution_mode="online"))
+        online = MergeQueryLabels(queries=queries, query_labels=empty_labels, created_labels=online_created.labels).run(
+            session(spark, execution_mode="online")
+        )
         generated = MergeQueryLabels(
             queries=queries, query_labels=empty_labels, created_labels=generated_created.labels
         ).run(session(spark, execution_mode="generated", generated_package=PACKAGE))
@@ -813,8 +824,26 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
 
         queries = spark.createDataFrame(
             [
-                ("q-structure", "natural", "Structure transformations", datetime(2026, 7, 21, 9), {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
-                ("q-reference", "natural", "reference text", datetime(2026, 7, 21, 9), {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
+                (
+                    "q-structure",
+                    "natural",
+                    "Structure transformations",
+                    datetime(2026, 7, 21, 9),
+                    {"is_question": 0, "is_time_sensitive": 0},
+                    False,
+                    False,
+                    None,
+                ),
+                (
+                    "q-reference",
+                    "natural",
+                    "reference text",
+                    datetime(2026, 7, 21, 9),
+                    {"is_question": 0, "is_time_sensitive": 0},
+                    False,
+                    False,
+                    None,
+                ),
             ],
             __import__(f"{PACKAGE}.pyspark.schemas.search", fromlist=["SEARCH_QUERY_SCHEMA"]).SEARCH_QUERY_SCHEMA,
         )
@@ -897,17 +926,17 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             **{name: value for name, value in similarity_index_inputs.items() if name != "policy"},
         )
         score_policy = spark.createDataFrame(
-            [(30, datetime(2026, 7, 21))],
+            [(30, datetime(2026, 7, 21), datetime(2026, 7, 21), 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0)],
             __import__(f"{PACKAGE}.pyspark.schemas.search", fromlist=["SCORE_POLICY_SCHEMA"]).SCORE_POLICY_SCHEMA,
         )
-        similarity_overlap_inputs = {
-            name: value for name, value in similarity_score_inputs.items() if not name.endswith("_summary")
-        }
+        similarity_overlap_inputs = dict(similarity_score_inputs)
         similarity_overlap_inputs["score_policy"] = score_policy
         online_similarity_overlap_scores = ScoreOverlap(**similarity_overlap_inputs).run(
             session(spark, execution_mode="online")
         )
-        online_similarity_bm25_scores = ScoreBm25(**similarity_score_inputs).run(session(spark, execution_mode="online"))
+        online_similarity_bm25_scores = ScoreBm25(**similarity_score_inputs).run(
+            session(spark, execution_mode="online")
+        )
         generated_similarity_overlap_scores = ScoreOverlap(**similarity_overlap_inputs).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
@@ -1096,8 +1125,26 @@ def test_search_ranks_fixture_sentences_online_and_generated(spark, tmp_path) ->
         documents = spark.createDataFrame(_search_documents(), text_schemas.DOCUMENT_SCHEMA)
         queries = spark.createDataFrame(
             [
-                ("q-aurora", "natural", "aurora beacon navigation", datetime(2026, 7, 21, 9), {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
-                ("q-free-form", "natural", "  AURORA,   beacon! navigation?  ", datetime(2026, 7, 21, 9), {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
+                (
+                    "q-aurora",
+                    "natural",
+                    "aurora beacon navigation",
+                    datetime(2026, 7, 21, 9),
+                    {"is_question": 0, "is_time_sensitive": 0},
+                    False,
+                    False,
+                    None,
+                ),
+                (
+                    "q-free-form",
+                    "natural",
+                    "  AURORA,   beacon! navigation?  ",
+                    datetime(2026, 7, 21, 9),
+                    {"is_question": 0, "is_time_sensitive": 0},
+                    False,
+                    False,
+                    None,
+                ),
             ],
             search_schemas.SEARCH_QUERY_SCHEMA,
         )
@@ -1118,7 +1165,7 @@ def test_search_ranks_fixture_sentences_online_and_generated(spark, tmp_path) ->
             sentence_terms=index.sentence_terms,
             sentence_summary=index.sentence_summary,
             score_policy=spark.createDataFrame(
-                [(30, datetime(2026, 7, 21))],
+                [(30, datetime(2026, 7, 21), datetime(2026, 7, 21), 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0)],
                 search_schemas.SCORE_POLICY_SCHEMA,
             ),
         ).run(session(spark, execution_mode="generated", generated_package=PACKAGE))
@@ -1151,11 +1198,7 @@ def test_search_ranks_fixture_sentences_online_and_generated(spark, tmp_path) ->
         exact = [row for row in results if row["search_query_id"] == "q-aurora"]
         free_form = [row for row in results if row["search_query_id"] == "q-free-form"]
         assert [row["score"] for row in free_form] == [row["score"] for row in exact]
-        assert (
-            cast(float, exact[0]["score"])
-            > cast(float, exact[1]["score"])
-            > cast(float, exact[2]["score"])
-        )
+        assert cast(float, exact[0]["score"]) > cast(float, exact[1]["score"]) > cast(float, exact[2]["score"])
 
 
 def test_passage_search_ranks_paragraphs_with_same_section_context(spark, tmp_path) -> None:
@@ -1200,8 +1243,26 @@ def test_passage_search_ranks_paragraphs_with_same_section_context(spark, tmp_pa
         )
         queries = spark.createDataFrame(
             [
-                ("q-free-form", "natural", "  SIGNAL!  ", datetime(2026, 7, 21, 9), {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
-                ("q-boundary", "natural", "next section", datetime(2026, 7, 21, 9), {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
+                (
+                    "q-free-form",
+                    "natural",
+                    "  SIGNAL!  ",
+                    datetime(2026, 7, 21, 9),
+                    {"is_question": 0, "is_time_sensitive": 0},
+                    False,
+                    False,
+                    None,
+                ),
+                (
+                    "q-boundary",
+                    "natural",
+                    "next section",
+                    datetime(2026, 7, 21, 9),
+                    {"is_question": 0, "is_time_sensitive": 0},
+                    False,
+                    False,
+                    None,
+                ),
             ],
             search_schemas.SEARCH_QUERY_SCHEMA,
         )
@@ -1222,7 +1283,7 @@ def test_passage_search_ranks_paragraphs_with_same_section_context(spark, tmp_pa
             sentence_terms=index.sentence_terms,
             sentence_summary=index.sentence_summary,
             score_policy=spark.createDataFrame(
-                [(30, datetime(2026, 7, 22))],
+                [(30, datetime(2026, 7, 22), datetime(2026, 7, 22), 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0)],
                 search_schemas.SCORE_POLICY_SCHEMA,
             ),
         ).run(session(spark, execution_mode="generated", generated_package=PACKAGE))
@@ -1361,8 +1422,9 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
         search_schemas = __import__(
             f"{PACKAGE}.pyspark.schemas.search", fromlist=["SEARCH_QUERY_SCHEMA", "DOCUMENT_SCORE_SCHEMA"]
         )
-        overlap_schemas = __import__(
-            f"{PACKAGE}.pyspark.schemas.overlap", fromlist=["DOCUMENT_OVERLAP_SCORE_SCHEMA"]
+        overlap_schemas = __import__(f"{PACKAGE}.pyspark.schemas.overlap", fromlist=["DOCUMENT_OVERLAP_SCORE_SCHEMA"])
+        filtering_schemas = __import__(
+            f"{PACKAGE}.pyspark.schemas.filtering", fromlist=["DOCUMENT_FILTER_SCORE_SCHEMA"]
         )
         relevance_schemas = __import__(f"{PACKAGE}.pyspark.schemas.relevance", fromlist=["RELEVANCE_POLICY_SCHEMA"])
         click_schemas = __import__(f"{PACKAGE}.pyspark.schemas.clicks", fromlist=["SEARCH_REQUEST_SCHEMA"])
@@ -1372,14 +1434,34 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
         )
         queries = spark.createDataFrame(
             [
-                ("q-free-form", "natural", "  AURORA,   beacon!  ", datetime(2026, 7, 21, 9), {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
-                ("q-navigation", "natural", "navigation", datetime(2026, 7, 21, 9), {"is_question": 0, "is_time_sensitive": 0}, False, False, None),
+                (
+                    "q-free-form",
+                    "natural",
+                    "  AURORA,   beacon!  ",
+                    datetime(2026, 7, 21, 9),
+                    {"is_question": 0, "is_time_sensitive": 0},
+                    False,
+                    False,
+                    None,
+                ),
+                (
+                    "q-navigation",
+                    "natural",
+                    "navigation",
+                    datetime(2026, 7, 21, 9),
+                    {"is_question": 0, "is_time_sensitive": 0},
+                    False,
+                    False,
+                    None,
+                ),
             ],
             search_schemas.SEARCH_QUERY_SCHEMA,
         )
         scores = {"d-11": 10.0, "d-12": 9.0, "d-13": 8.0}
         documents = spark.createDataFrame(_search_documents(), text_schemas.DOCUMENT_SCHEMA)
-        segments = Chunking(documents=documents).run(session(spark, execution_mode="generated", generated_package=PACKAGE))
+        segments = Chunking(documents=documents).run(
+            session(spark, execution_mode="generated", generated_package=PACKAGE)
+        )
         index = Indexing(words=segments.words).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
@@ -1397,6 +1479,14 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
                 for row in _search_documents()
             ],
             overlap_schemas.DOCUMENT_OVERLAP_SCORE_SCHEMA,
+        )
+        document_filter_scores = spark.createDataFrame(
+            [
+                (query_id, cast(str, row[0]), scored_at, 1, rank)
+                for query_id in ("q-free-form", "q-navigation")
+                for rank, row in enumerate(_search_documents(), start=1)
+            ],
+            filtering_schemas.DOCUMENT_FILTER_SCORE_SCHEMA,
         )
         query_signals = spark.createDataFrame(
             [
@@ -1420,6 +1510,7 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
             streamed_documents=spark.createDataFrame([], text_schemas.DOCUMENT_SCHEMA),
             streamed_document_scores=spark.createDataFrame([], search_schemas.DOCUMENT_SCORE_SCHEMA),
             document_overlap_scores=document_overlap_scores,
+            document_filter_scores=document_filter_scores,
             document_terms=index.document_terms,
             section_terms=index.section_terms,
             paragraph_terms=index.paragraph_terms,
@@ -1428,7 +1519,10 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
             section_summary=index.section_summary,
             paragraph_summary=index.paragraph_summary,
             sentence_summary=index.sentence_summary,
-            score_policy=spark.createDataFrame([(30, scored_at)], search_schemas.SCORE_POLICY_SCHEMA),
+            score_policy=spark.createDataFrame(
+                [(30, scored_at, scored_at, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0)],
+                search_schemas.SCORE_POLICY_SCHEMA,
+            ),
             requests=spark.createDataFrame(
                 [
                     ("r-free-form", "q-free-form", "aurora, beacon!", None, None, "", datetime(2026, 7, 21, 9)),

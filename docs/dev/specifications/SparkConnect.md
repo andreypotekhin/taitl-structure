@@ -36,7 +36,7 @@ The support claim does not cover:
 - storage write orchestration;
 - arbitrary hook internals;
 - direct use of classic-only PySpark internals;
-- fallback to SQL string rendering, Python UDFs, local materialization, or row-wise execution.
+- hidden fallback to SQL string rendering, local materialization, row-wise execution, or undeclared Python UDFs.
 
 ## Required Capabilities
 
@@ -73,6 +73,7 @@ join.cross_join
 join.non_equi_condition
 join.disjunctive_condition
 aggregate.group_by
+pyspark.ordered_timeline_scan
 aggregate.rollup
 aggregate.cube
 aggregate.count

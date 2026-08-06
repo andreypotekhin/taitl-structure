@@ -192,6 +192,26 @@ Intermediate validation is enabled by default because step method return types d
 Set `validate_intermediate = false` to disable intermediate schema validation for generated step method
 boundaries.
 
+Spark Connect applies a variant-specific default: when `plugin.pyspark.variant = "spark-connect"` and
+`validate_intermediate` is not explicitly set, intermediate schema assertions are disabled to avoid a remote
+analysis request for every step. Input and final-output validation remain strict. Set `validate_intermediate = true`
+to restore exhaustive intermediate checks. The separate `connect_plan_boundaries` option controls logical-plan
+containment only:
+
+```toml
+[tool.structure.plugin.pyspark]
+variant = "spark-connect"
+connect_plan_boundaries = "auto"  # off, auto, or strict
+
+# Optional exhaustive diagnostic mode.
+validate_intermediate = true
+```
+
+`auto` inserts bounded temporary-view boundaries at branch points and at a conservative step cadence. `strict`
+inserts one after every non-final step and is intended for diagnostics. Structure drops only the temporary views it
+created; call `StructureSession.close()` (or `GeneratedTransform.close()`) when lazy results no longer need them.
+Closing Structure resources never stops the caller-owned Spark session.
+
 `input_validation_mode`, `intermediate_validation_mode`, and `output_validation_mode` control the cost and
 depth of enabled validation at each phase:
 

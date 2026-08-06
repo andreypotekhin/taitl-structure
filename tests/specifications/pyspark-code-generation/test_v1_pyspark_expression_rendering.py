@@ -263,7 +263,7 @@ def test_v7_expression_renderer_renders_schema_carrying_parsing_helpers() -> Non
         'F.from_csv(F.col("raw.payload_csv"), '
         "'code STRING, amount INT, details STRUCT<region:STRING>', {'sep': '|', 'mode': 'PERMISSIVE'})"
     )
-    assert render(projection["payload_json"], scope_aliases={"rows": "raw"}) == 'F.to_json(F.col("raw.payload"), {})'
+    assert render(projection["payload_json"], scope_aliases={"rows": "raw"}) == 'F.to_json(F.col("raw.payload"))'
     assert render(projection["payload_csv"], scope_aliases={"rows": "raw"}) == (
         'F.to_csv(F.col("raw.payload"), {\'sep\': \'|\'})'
     )

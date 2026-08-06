@@ -488,8 +488,9 @@ deployment, recovery, and side effects caller-owned.
 - Sprint 54 (2026-11-30--2026-12-11): dedicated V10 hardening and release evidence.
 
 The governing V10 plans are the four `P08022601`--`P08022604` documents under `docs/dev/planning/`, together with the
-Sprint 54 hardening plan `P08042601.Collision-safe-generated-identities.plan.md`. Application-specific future
-documents remain outside V10.
+Sprint 54 hardening plan `P08042601.Collision-safe-generated-identities.plan.md` and the explicitly adopted Search
+application proving slice `P08052602.Search-vector-index-and-rrf.plan.md`. Other application-specific future documents
+remain outside V10.
 
 ### v10 must include
 
@@ -502,6 +503,8 @@ documents remain outside V10.
   model without Structure-owned lifecycle generation.
 - Synchronized API Catalog, capability inventories, diagnostics, references, examples, generated artifacts, live target
   evidence, and final `make build`.
+- Search vector-index/RRF work is complete to the bounded plan contract, with caller-owned embedding production,
+  generated/online parity, judged-search evidence, and no accidental adoption of the broader Search future inventory.
 
 ### v10 non-goals
 
@@ -509,7 +512,9 @@ documents remain outside V10.
   `foreach`, `foreachBatch`, custom sinks, or external side effects.
 - Silent support claims for XML, unreleased Variant mutation profiles, unsafe join reordering, arbitrary state, or
   unsupported stream-stream joins.
-- Search, Store, Stocks, Streams, or School application futures.
+- Search futures outside `P08052602.Search-vector-index-and-rrf.plan.md`, including model execution, external ANN
+  services, answer generation, adaptive chunking, and streaming vector-index maintenance.
+- Store, Stocks, Streams, or School application futures.
 
 ## Release Milestones
 

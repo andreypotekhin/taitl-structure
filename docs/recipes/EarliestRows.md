@@ -1,15 +1,7 @@
 # Earliest Rows
 
-Use this recipe to retain the first observed row for each business key from a batch history. Typical uses include a
-customer's first purchase, the first status recorded for an order, or the first version of a configuration.
-
-This recipe uses `dedupe_earliest_by(...)` because the result is a keyed-deduplicated history. `earliest_by(...)` has
-the same selection behavior and can be clearer when the result is described as choosing a first row.
-
-## Scenario
-
-A purchase feed can contain several orders for one customer. Analytics needs the first purchase per customer and
-region, preserving the original order identifier and amount.
+**Problem:** A purchase history can contain several orders for one customer, while analytics needs the first purchase
+for each customer and region with its original identifier and amount.
 
 | region | customer_id | order_id | sequence | amount |
 | --- | --- | --- | ---: | ---: |
@@ -18,11 +10,14 @@ region, preserving the original order identifier and amount.
 | `east` | `C-100` | `o-12` | 3 | 32.00 |
 | `east` | `C-200` | `o-20` | 7 | 18.00 |
 
-The output keeps `o-10` for the west `C-100` customer, `o-12` for the east `C-100` customer, and `o-20` for the east
-`C-200` customer. The region is part of the identity: the same customer can have an independent first purchase in each
-region.
+**Solution:** Use `dedupe_earliest_by(...)` with customer and region as the composite partition and sequence as the
+ordering value. The example keeps `o-10` for west `C-100`, `o-12` for east `C-100`, and `o-20` for east `C-200`.
+`earliest_by(...)` has the same selection behavior and can be clearer when the result is described as choosing a first
+row.
 
-## Define The Row Contracts
+## Define the row contracts
+
+Declare the fields needed to identify a purchase and to carry the winning row into the output.
 
 ```python
 from structure import Schema, Transform, input, output, transform
@@ -45,10 +40,13 @@ class FirstPurchase(Schema):
     amount = decimal(12, 2, nullable=False)
 ```
 
-## Keep The First Purchase
+Both contracts include the business key, ordering value, and purchase details. The output can instead expose only the
+fields downstream consumers need.
 
-The selection belongs before the output projection. Passing a list to `partition_by` makes the composite business key
-visible at the point where the rule is defined.
+## Keep the first purchase
+
+Select the first row before projecting it. Passing a list to `partition_by` makes the composite business key visible at
+the point where the rule is defined.
 
 ```python
 @transform
@@ -71,26 +69,15 @@ class FirstPurchases(Transform):
 ```
 
 `dedupe_earliest_by(...)` retains the row with the smallest `sequence` in each `(region, customer_id)` group. It keeps
-all the fields from that winning row; it is not an aggregation, so it does not need to reconstruct `order_id` or
-`amount` from separate aggregate values.
+the fields from that winning row; it is not an aggregation, so it does not reconstruct `order_id` or `amount` from
+separate aggregate values.
 
-## Run It
+## Run the transform
+
+Run the transform with a DataFrame matching `Purchase`, then retrieve the named output.
 
 ```python
-from structure import (
-    Schema,
-    StructureConfig,
-    StructureSession,
-    StructureTools,
-    Transform,
-    input,
-    lane,
-    output,
-    raw,
-    special,
-    step,
-    transform,
-)
+from structure import StructureSession
 
 
 session = StructureSession(spark=spark)
@@ -98,7 +85,9 @@ result = FirstPurchases(purchases=purchases_df).run(session)
 first_purchases_df = result.first
 ```
 
-## Choose The Right Ordering And Boundary
+`first_purchases_df` contains the three earliest purchases from the example feed.
+
+## Choose ordering and partition keys
 
 Use an ordering value that represents business time unambiguously. A feed offset or ingestion timestamp may be wrong
 when late events arrive; an immutable purchase sequence or the event's authoritative occurrence time is usually a
@@ -108,9 +97,8 @@ better choice. Keep the partition key aligned with the question the output answe
 - First purchase per customer and region: `partition_by=[purchase.region, purchase.customer_id]`.
 - First purchase per customer, region, and campaign: add `purchase.campaign_id` to that list.
 
-As with latest-row selection, ties are not a silent "pick either" case. The current public policy is
-`"error"`, so ensure the chosen ordering gives each partition one earliest row before relying on the result.
-These helpers are batch-only; do not use this recipe for a streaming input.
+Ties are not a silent "pick either" case. The current public policy is `"error"`, so ensure the chosen ordering gives
+each partition one earliest row before relying on the result. These helpers are batch-only; use a batch input here.
 
 For the complete helper contract, see [Latest and Earliest Rows](../QuickRef.md#latest-and-earliest-rows) and the
 [Transform background](../background/Transform.back.md).

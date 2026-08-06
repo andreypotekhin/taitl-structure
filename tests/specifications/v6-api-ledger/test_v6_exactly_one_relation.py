@@ -5,7 +5,6 @@ import pytest
 from structure import Schema, Transform, input, output
 from structure.core.cli.commands.RenderExplainReport import render_explain_report
 from structure.core.compiler.api import Compiler
-from structure.core.target.capabilities.api import BackendCapabilityError
 from structure.plugin.pyspark import cross_join, exactly_one, integer, string
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.plugin.pyspark.render.commands.RenderPySparkStep import render_pyspark_step
@@ -61,13 +60,12 @@ def test_exactly_one_prepares_join_source_with_spark_visible_assertion() -> None
     assert text.index("events_policy_exactly_one_1_count =") < text.index("events = events.crossJoin(policy_joined)")
 
 
-def test_exactly_one_is_ordinary_pyspark_only() -> None:
-    with pytest.raises(BackendCapabilityError):
-        Compiler.frontend.compile()(
-            AssertedPolicyTransform,
-            materialize_schemas=False,
-            plugin={"pyspark": {"variant": "spark-connect"}},
-        )
+def test_exactly_one_is_supported_by_spark_connect() -> None:
+    Compiler.frontend.compile()(
+        AssertedPolicyTransform,
+        materialize_schemas=False,
+        plugin={"pyspark": {"variant": "spark-connect"}},
+    )
 
 
 def test_exactly_one_explain_names_scope_and_streaming_status() -> None:

@@ -47,6 +47,15 @@ SENTENCE_SEARCH_TARGET_SCHEMA = T.StructType(PARAGRAPH_SEARCH_TARGET_SCHEMA.fiel
 SCORE_POLICY_SCHEMA = T.StructType([
     T.StructField("maximum_age_days", T.LongType(), False),
     T.StructField("scored_at", T.TimestampType(), False),
+    T.StructField("effective_at", T.TimestampType(), False),
+    T.StructField("document_bm25_weight", T.DoubleType(), False),
+    T.StructField("document_overlap_weight", T.DoubleType(), False),
+    T.StructField("section_bm25_weight", T.DoubleType(), False),
+    T.StructField("section_overlap_weight", T.DoubleType(), False),
+    T.StructField("paragraph_bm25_weight", T.DoubleType(), False),
+    T.StructField("paragraph_overlap_weight", T.DoubleType(), False),
+    T.StructField("sentence_bm25_weight", T.DoubleType(), False),
+    T.StructField("sentence_overlap_weight", T.DoubleType(), False),
 ])
 
 QUERY_POPULARITY_SCHEMA = T.StructType([

@@ -691,10 +691,12 @@ class EvaluatePySparkExpression:
             return getattr(functions, function)(args[0], expression.data["charset"])
         if function == "from_json":
             schema = self._schema.materialize()(cast(type, expression.data["schema"]))
-            return functions.from_json(args[0], schema, expression.data["options"])
+            options = expression.data["options"]
+            return functions.from_json(args[0], schema) if not options else functions.from_json(args[0], schema, options)
         if function == "from_csv":
             schema = self._ddl_schema(cast(type, expression.data["schema"]))
-            return functions.from_csv(args[0], schema, expression.data["options"])
+            options = expression.data["options"]
+            return functions.from_csv(args[0], schema) if not options else functions.from_csv(args[0], schema, options)
         if function in {
             "is_valid_variant",
             "parse_json",
@@ -725,7 +727,8 @@ class EvaluatePySparkExpression:
         if function == "variant_delete":
             return functions.variant_delete(args[0], *cast(tuple[str, ...], expression.data["paths"]))
         if function in {"to_json", "to_csv"}:
-            return getattr(functions, function)(args[0], expression.data["options"])
+            options = expression.data["options"]
+            return getattr(functions, function)(args[0]) if not options else getattr(functions, function)(args[0], options)
         if function == "coalesce":
             return functions.coalesce(*args)
         if function in {"nvl", "ifnull"}:

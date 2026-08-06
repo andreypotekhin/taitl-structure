@@ -415,6 +415,10 @@ does not call `count`, `collect`, `toPandas`, sample rows, or perform an aggrega
 mode wins; contradictory settings are configuration errors. Generated and direct execution validate at the same
 boundaries.
 
+When `plugin.pyspark.variant = "spark-connect"`, an omitted `validate_intermediate` resolves to `false` because each
+intermediate schema lookup is a remote analysis request. Explicit configuration and transform-level settings remain
+authoritative; input and final-output validation stay enabled.
+
 ## Schema Shape and Data Quality
 
 Schemas describe row shape. Accepted values, ranges, patterns, uniqueness, referential checks, freshness, and row-count

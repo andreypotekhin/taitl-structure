@@ -56,7 +56,7 @@ class StructureConfigBuilder:
             traceability=str(values["traceability"]),
             validate_inputs=bool(values["validate_inputs"]),
             input_validation_mode=str(values["input_validation_mode"]),
-            validate_intermediate=bool(values["validate_intermediate"]),
+            validate_intermediate=semantic_bool("validate_intermediate"),
             intermediate_validation_mode=str(values["intermediate_validation_mode"]),
             validate_outputs=bool(values["validate_outputs"]),
             output_validation_mode=str(values["output_validation_mode"]),

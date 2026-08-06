@@ -36,8 +36,8 @@ inference beyond its declared result contract.
 - The selected PySpark runtime registers/renders the UDF for online and generated execution.
 - `warn_on_udfs=true` emits the documented optimizer-opacity warning. Setting `@transform(warn_on_udfs=False)`
   suppresses the warning for that transform but does not turn the UDF into symbolic logic.
-- UDFs are unsupported for Spark Connect and must fail capability validation before execution/generation on that
-  variant.
+- Scalar Python UDFs are supported for Spark Connect when the selected Spark profile exposes the public `udf` API;
+  they remain an explicit, optimizer-opaque boundary rather than an implicit fallback.
 - Python UDTFs, Pandas UDFs, RDD APIs, actions, and implicit conversion of unsupported Python to a UDF are outside
   this contract.
 
@@ -57,6 +57,7 @@ UDF owner must name this specification and suggest a symbolic helper or `@raw` o
 
 - The shipped example compiles, renders, and executes with identical ordinary-PySpark online/generated rows.
 - The warning is present with the default policy and absent only when the explicit configuration disables it.
-- Spark Connect rejects the same transform through a target capability diagnostic.
+- Spark Connect executes the same transform through its public DataFrame/Column UDF API, with online and generated
+  parity evidence.
 - A normal symbolic helper remains preferred for an equivalent built-in operation; no unsupported Python expression is
   silently lowered to a UDF.

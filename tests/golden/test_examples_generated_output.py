@@ -60,13 +60,16 @@ def test_search_scoring_subpackage_transform_is_discovered_and_compiled() -> Non
     Compiler.frontend.compile()(scoring, config=config, materialize_schemas=False)
 
 
-def test_search_documents_propagates_streaming_query_lineage() -> None:
-    """The online document-search graph declares every query-derived boundary as streaming."""
+def test_search_documents_disables_design_gated_streaming_lineage() -> None:
+    """The unfinished SearchDocuments streaming contract stays out of ordinary delivery builds."""
 
+    from examples.search.transforms.filtering import Filtering
     from examples.search.transforms.scoring.ScoreBase import ScoreBase
     from examples.search.transforms.scoring.Scoring import Scoring
+    from examples.search.transforms.searching.online.filtering import OnlineFiltering
+    from examples.search.transforms.searching.online.filtering import SelectGapQueries as SelectFilterGaps
     from examples.search.transforms.searching.online.scoring import OnlineScoring, SelectGapQueries
-    from examples.search.transforms.searching.search_docs import OverlapDocuments, RerankDocuments, RetrieveDocuments
+    from examples.search.transforms.searching.search_docs import RerankDocuments, RetrieveDocuments, SelectFilterTargets
     from examples.search.transforms.searching.search_docs.SearchDocuments import SearchDocuments
 
     declarations = (
@@ -78,12 +81,36 @@ def test_search_documents_propagates_streaming_query_lineage() -> None:
         (SelectGapQueries, "requests"),
         (Scoring, "queries"),
         (ScoreBase, "queries"),
+        (Filtering, "queries"),
+        (OnlineFiltering, "queries"),
+        (SelectFilterGaps, "queries"),
+        (SelectFilterGaps, "requests"),
+        (SelectFilterTargets, "requests"),
         (RetrieveDocuments, "queries"),
-        (OverlapDocuments, "candidates"),
-        (RerankDocuments, "overlapped_candidates"),
+        (RerankDocuments, "candidates"),
     )
     for transform, input_name in declarations:
-        assert getattr(transform, input_name).streaming
+        assert not getattr(transform, input_name).streaming
+
+
+def test_search_documents_filters_obtains_then_reranks_and_returns() -> None:
+    """Document search separates online filtering, target selection, retrieval, and reranking."""
+
+    from examples.search.transforms.searching.search_docs import RerankDocuments, RetrieveDocuments, SelectFilterTargets
+    from examples.search.transforms.searching.search_docs.SearchDocuments import SearchDocuments
+
+    plan = cast(TransformPlan, Compiler.frontend.compile()(SearchDocuments, materialize_schemas=False).analysis)
+    stages = [step.name.split(".", 1)[0] for step in plan.steps]
+    assert (
+        stages.index("filtered")
+        < stages.index("selected")
+        < stages.index("scored")
+        < stages.index("retrieved")
+        < stages.index("reranked")
+    )
+    assert SelectFilterTargets.maximum_candidates == 10000
+    assert RetrieveDocuments.maximum_candidates == 1000
+    assert RerankDocuments.maximum_results == 100
 
 
 def test_search_query_declares_immutable_event_time() -> None:

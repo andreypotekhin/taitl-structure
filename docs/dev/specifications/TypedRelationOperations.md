@@ -108,8 +108,8 @@ contain exactly one row and returns the same typed relation on success, so later
 fields. Zero rows and more than one row fail at Spark evaluation with one registered cardinality diagnostic; neither
 case is converted to a null row, silently filtered result, driver `collect()`, or nondeterministic `first` value.
 
-The initial implementation is batch-only and ordinary-PySpark-only. It records the asserted relation and its source
-provenance in the immutable operation recipe and traceability. Generated and online paths use a public aggregate
+The implementation is batch-only and supported on ordinary PySpark and Spark Connect. It records the asserted relation
+and its source provenance in the immutable operation recipe and traceability. Generated and online paths use a public aggregate
 count plus assertion expression and no Python action. It is forbidden in scalar lambdas, aggregate assignments,
 windows, and streaming steps. `CreateSimilarityQueries` is intended to replace its driver cardinality check with this
 primitive before reading `SimilarityPolicy.max_document_frequency_ratio`.

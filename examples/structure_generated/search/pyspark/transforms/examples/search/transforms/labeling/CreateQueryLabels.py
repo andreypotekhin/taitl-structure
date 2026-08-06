@@ -6,7 +6,13 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.search.transforms.labeling.CreateQueryLabels import CreateQueryLabels
-from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
+from examples.structure_generated.search.runtime.schema_assert import (
+    TransformResult,
+    assert_schema,
+    project_schema,
+    apply_plan_boundary,
+    close_plan_boundaries,
+)
 from examples.structure_generated.search.pyspark.schemas.label import (
     INTENT_PATTERN_SCHEMA,
     INTENT_SCHEMA,
@@ -24,6 +30,9 @@ class CreateQueryLabelsGenerated:
         self.spark = spark
         self.ctx = ctx
         self._impl = CreateQueryLabels()
+
+    def close(self) -> None:
+        close_plan_boundaries(self.spark)
 
     def run(
         self,

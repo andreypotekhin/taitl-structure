@@ -62,6 +62,8 @@ class MapPySparkStep:
         last: bool,
         capabilities: BackendCapabilities,
         check_intermediate: bool = True,
+        boundary_policy: str = "off",
+        boundary_frames: frozenset[str] = frozenset(),
     ) -> PySparkStepRecipe:
         body = self._body(step)
         input_alias = self._names.alias(step.input_schema.__name__)
@@ -89,7 +91,18 @@ class MapPySparkStep:
                 ),
                 ordinal=result.ordinal,
                 after_hooks=tuple(self._hooks.map(hook) for hook in result.after_hooks),
-                validations=self._validations.result(result, last=last, check_intermediate=check_intermediate),
+                validations=self._validations.result(
+                    result,
+                    last=last,
+                    check_intermediate=check_intermediate,
+                    boundary=self._boundary(
+                        result.frame,
+                        ordinal=step.ordinal,
+                        last=last,
+                        policy=boundary_policy,
+                        boundary_frames=boundary_frames,
+                    ),
+                ),
                 aggregate=(
                     None
                     if body_result.aggregate is None
@@ -112,13 +125,39 @@ class MapPySparkStep:
             joins=joins,
             projection=tuple(self._projection(assignment, capabilities=capabilities) for assignment in body.projection),
             after_hooks=tuple(self._hooks.map(hook) for hook in step.after_hooks),
-            validations=self._validations.step(step, last=last, check_intermediate=check_intermediate),
+            validations=self._validations.step(
+                step,
+                last=last,
+                check_intermediate=check_intermediate,
+                boundary=self._boundary(
+                    step.results[0].frame,
+                    ordinal=step.ordinal,
+                    last=last,
+                    policy=boundary_policy,
+                    boundary_frames=boundary_frames,
+                ),
+            ),
             aggregate=None if body.aggregate is None else self._aggregate(body.aggregate, capabilities=capabilities),
             results=results,
             operations=operations,
             input_sources=tuple(binding.source for binding in step.inputs),
             origin=step.origin,
         )
+
+    @staticmethod
+    def _boundary(
+        frame: str,
+        *,
+        ordinal: int,
+        last: bool,
+        policy: str,
+        boundary_frames: frozenset[str],
+    ) -> bool:
+        if last or policy == "off":
+            return False
+        if policy == "strict":
+            return True
+        return frame in boundary_frames or (ordinal + 1) % 8 == 0
 
     def _operations(
         self,

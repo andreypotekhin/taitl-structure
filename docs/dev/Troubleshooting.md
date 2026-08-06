@@ -97,6 +97,10 @@ Fix: The supported runner starts Connect with a 2 GiB driver heap. Rebuild once 
 it for that run, for example:
 `STRUCTURE_SPARK_CONNECT_DRIVER_MEMORY=3g make integration BACKEND=spark-connect35`.
 
+If the failure occurs after a long chain of intermediate schema checks, verify that Connect is using the default
+`validate_intermediate = false` and `connect_plan_boundaries = "auto"`. Setting `validate_intermediate = true` is a
+diagnostic opt-in and can recreate the expensive remote-analysis behavior.
+
 ### Problem (integration): Spark Connect logs `INVALID_HANDLE.SESSION_CLOSED` during `releaseExecute`
 
 When: A Spark Connect 3.5 integration lane finishes a test or the full pytest run.

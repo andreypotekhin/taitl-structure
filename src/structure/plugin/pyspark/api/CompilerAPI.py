@@ -29,10 +29,15 @@ class CompilerAPI(CompilerAPIV1):
         capabilities = PySpark.capabilities.resolve()(
             profile=str(plugin_options.get("profile", "")), variant=str(plugin_options.get("variant", ""))
         )
+        boundary_policy = self._boundary_policy(plugin_options, capabilities.id.variant)
+        check_intermediate = bool(
+            (plan.options or {}).get("validate_intermediate", options.get("validate_intermediate", True))
+        )
         lowered = PySpark.compiler.lower()(
             plan,
             capabilities=capabilities,
-            check_intermediate=bool(options.get("validate_intermediate", True)),
+            check_intermediate=check_intermediate,
+            boundary_policy=boundary_policy,
         )
         schemas = (
             PySpark.schema.build()(lowered, types=options.get("schema_types"))
@@ -49,3 +54,13 @@ class CompilerAPI(CompilerAPIV1):
     @staticmethod
     def _warn_on_udfs(plan: TransformPlan, *, default: bool) -> bool:
         return bool((plan.options or {}).get("warn_on_udfs", default))
+
+    @staticmethod
+    def _boundary_policy(options, variant: str) -> str:
+        default = "auto" if variant == "spark-connect" else "off"
+        policy = str(options.get("connect_plan_boundaries", default))
+        if policy not in {"off", "auto", "strict"}:
+            raise ValueError(
+                "PLUGIN-E2710: connect_plan_boundaries must be one of 'off', 'auto', or 'strict'."
+            )
+        return policy if variant == "spark-connect" else "off"

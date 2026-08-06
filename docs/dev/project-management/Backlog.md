@@ -356,7 +356,20 @@ boundary; unimplemented parity work is now marked `planned` in `docs/dev/Gaps.md
 - Run optional-provider evidence only with pinned dependencies and finish Sprint 54 with `make build`.
 
 The V10 backlog is governed by `docs/dev/project-management/V10.md`, the grouped plans P08022601–P08022604, and the
-Sprint 54 hardening plan P08042601. The application-specific future documents are not V10 backlog commitments.
+Sprint 54 hardening plan P08042601. The explicitly adopted Search application proving slice is governed by
+P08052602.Search-vector-index-and-rrf.plan.md; other application-specific future documents are not V10 backlog
+commitments.
+
+### Epic: Search Vector Index and Reciprocal Rank Fusion
+
+- Add caller-supplied document and paragraph embedding contracts with model, dimension, content-revision, and
+  experiment identity validation.
+- Build an exact typed vector index and cosine top-K scorer without model invocation, driver-side collection, or an
+  external ANN dependency.
+- Refactor document and paragraph similarity to union lexical/vector ranked candidates and apply equal-weight RRF.
+- Extend document search with vector candidates before feedback reranking while preserving lexical-only compatibility
+  and the caller-owned streaming lifecycle boundary.
+- Add generated/online parity, judged-ranking comparisons, documentation, and v10 release evidence.
 
 ## Sprint 09 Backlog
 

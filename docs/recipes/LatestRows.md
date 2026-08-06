@@ -1,15 +1,7 @@
 # Latest Rows
 
-Use this recipe to keep the current event for each account from a batch event feed. It is useful for a latest-state
-table, a current customer profile, or any pipeline where each business key must retain exactly one most-recent row.
-
-This recipe uses `latest_by(...)`. `dedupe_latest_by(...)` has the same behavior; prefer that name when the business
-intent is specifically keyed deduplication.
-
-## Scenario
-
-An upstream system sends account events with a monotonic sequence number. A downstream table needs only the current
-event for each account.
+**Problem:** An account event feed can contain several rows per account, while a downstream current-state table needs
+exactly one most-recent row for each account.
 
 | account_id | event_id | sequence | status |
 | --- | --- | ---: | --- |
@@ -18,12 +10,14 @@ event for each account.
 | `B-200` | `e-20` | 4 | `pending` |
 | `B-200` | `e-21` | 5 | `suspended` |
 
-The required output is one row for `A-100` at sequence `11` and one for `B-200` at sequence `5`.
+**Solution:** Use `latest_by(...)` with the account key as the partition and the event sequence as the ordering value.
+The example therefore keeps `e-11` for `A-100` and `e-21` for `B-200`. `dedupe_latest_by(...)` has the same behavior;
+prefer that name when the business intent is specifically keyed deduplication.
 
-## Define The Row Contracts
+## Define the row contracts
 
-Keep the input contract broad enough to represent the feed and make the output contract say exactly what downstream
-consumers receive.
+Start with an input contract broad enough to represent the feed and an output contract that says exactly what
+downstream consumers receive.
 
 ```python
 from structure import Schema, Transform, input, output, transform
@@ -44,10 +38,13 @@ class CurrentAccountEvent(Schema):
     status = string(nullable=False)
 ```
 
-## Select The Current Row
+`AccountEvent` supplies the competing rows. `CurrentAccountEvent` keeps the same fields here, but an output contract
+can also narrow or rename the selected row for its consumers.
 
-Declare the input and output, then select the latest row before projecting it. `partition_by` says which rows compete
-with one another. `order_by` says which competing row is current.
+## Select the current row
+
+Declare the input and output, then select the latest row before projecting it. `partition_by` identifies the rows that
+compete with one another; the first argument to `latest_by(...)` identifies which competing row is current.
 
 ```python
 @transform
@@ -65,29 +62,16 @@ class CurrentAccountEvents(Transform):
         )
 ```
 
-Structure retains the row with the greatest `sequence` in every `account_id` partition. The selection is part of the
-compiled transform, so it works the same way in execution and generated-code execution; it does not need a raw hook or
-an unreviewable `dropDuplicates(...)` call.
+Structure retains the row with the greatest `sequence` in every `account_id` partition. Because the selection is part
+of the compiled transform, execution and generated-code execution apply the same rule without a raw hook or a
+`dropDuplicates(...)` call.
 
-## Run It
+## Run the transform
 
-Pass a DataFrame matching `AccountEvent` to the transform and retrieve the named output.
+Run the transform with a DataFrame matching `AccountEvent`, then retrieve the named output.
 
 ```python
-from structure import (
-    Schema,
-    StructureConfig,
-    StructureSession,
-    StructureTools,
-    Transform,
-    input,
-    lane,
-    output,
-    raw,
-    special,
-    step,
-    transform,
-)
+from structure import StructureSession
 
 
 session = StructureSession(spark=spark)
@@ -95,13 +79,13 @@ result = CurrentAccountEvents(events=events_df).run(session)
 current_events_df = result.current
 ```
 
-`current_events_df` contains the rows for `e-11` and `e-21` in the scenario above.
+`current_events_df` contains the rows for `e-11` and `e-21` from the example feed.
 
-## Make The Ordering A Business Rule
+## Choose ordering and partition keys
 
-The ordering value must distinguish the winning row within each partition. The current public tie policy is
-`"error"`: equal ordering values do not express a valid choice of winner. Treat that as an upstream data
-quality issue and provide a sequence, version, or other unique business ordering before this transform runs.
+Choose an ordering value that distinguishes the winning row within each partition. The current public tie policy is
+`"error"`: equal ordering values do not express a valid choice of winner. Treat that as an upstream data-quality
+issue and provide a sequence, version, or other unique business ordering before this transform runs.
 
 Use the smallest business key that identifies one current entity. For example, if account identifiers repeat across
 tenants, partition by both values:
@@ -114,7 +98,7 @@ latest_by(
 ```
 
 Selected-row helpers are batch-only. A streaming current-state table needs explicit state and watermark semantics, so
-use a batch input for this recipe.
+use a batch input here.
 
 For the complete helper contract, see [Latest and Earliest Rows](../QuickRef.md#latest-and-earliest-rows) and the
 [Transform background](../background/Transform.back.md).

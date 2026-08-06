@@ -69,6 +69,17 @@ class StructureSession:
         self.artifacts = artifacts or CompiledArtifactPool()
         self._source_transforms: dict[SourceTransformAddress, list[type[Transform]]] = {}
 
+    def close(self) -> None:
+        """Drop temporary views created by Structure without stopping Spark."""
+        if self.runtime is None:
+            return
+        try:
+            from structure.plugin.pyspark.execution.logic.PlanBoundary import close_plan_boundaries
+
+            close_plan_boundaries(self.runtime)
+        except ImportError:
+            return
+
     def run(self, invocation: Transform | None = None, *, transform=None, **inputs) -> TransformResult:
         if transform is not None:
             if invocation is not None:

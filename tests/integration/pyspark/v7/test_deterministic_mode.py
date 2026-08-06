@@ -66,19 +66,13 @@ def test_v7_deterministic_mode_matches_generated_execution_on_live_backend(spark
             generated_schemas.CUSTOMER_EVENT_SCHEMA,
         )
 
-        assert_online_generated_parity(
-            lambda: ChooseCustomerPreference(rows=source).run(session(spark, execution_mode="online")),
-            lambda: ChooseCustomerPreference(rows=source).run(
-                session(spark, execution_mode="generated", generated_package=PACKAGE)
-            ),
+        online = ChooseCustomerPreference(rows=source).run(session(spark, execution_mode="online"))
+        generated = ChooseCustomerPreference(rows=source).run(
+            session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
+        assert_online_generated_parity(lambda: online, lambda: generated)
 
-        actual = rows(
-            ChooseCustomerPreference(
-                rows=source,
-            ).run(session(spark, execution_mode="generated", generated_package=PACKAGE)).preferences,
-            "customer_id",
-        )
+        actual = rows(generated.preferences, "customer_id")
 
     assert actual == [
         {"customer_id": "customer-1", "preferred_category": "books"},

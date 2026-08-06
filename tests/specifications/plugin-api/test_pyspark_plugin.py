@@ -47,6 +47,11 @@ def test_pyspark_plugin_api_composes_named_v1_facet_adapters() -> None:
         "allow_output_to_input": True,
         "allow_to_reassign_output": True,
     }
+    assert api.semantic_defaults.resolve(options={"variant": "spark-connect"}) == {
+        "allow_output_to_input": True,
+        "allow_to_reassign_output": True,
+        "validate_intermediate": False,
+    }
 
 
 class Source(Schema):

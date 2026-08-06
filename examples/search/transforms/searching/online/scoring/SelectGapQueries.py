@@ -1,5 +1,6 @@
 """Select query groups that need online score resolution."""
 
+from examples.search.adoption import SEARCH_STREAMING_CONTRACTS_ENABLED
 from examples.search.schemas.clicks import SearchRequest
 from examples.search.schemas.scoring.intermediate import ScoreQueryAvailability
 from examples.search.schemas.scoring.overlap import DocumentOverlapScore
@@ -11,8 +12,8 @@ from structure.plugin.pyspark import cross_join, datediff, drop_duplicates, inne
 class SelectGapQueries(Transform):
     """Select queries without fresh document and overlap scores."""
 
-    queries = input(SearchQuery, streaming=True)
-    requests = input(SearchRequest, streaming=True)
+    queries = input(SearchQuery, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
+    requests = input(SearchRequest, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
     document_scores = input(DocumentScore)
     document_overlap_scores = input(DocumentOverlapScore)
     score_policy = input(ScorePolicy)
@@ -27,7 +28,7 @@ class SelectGapQueries(Transform):
     ) -> ScoreQueryAvailability:
         inner_join(on=request.query_id == score.query_id)
         cross_join(policy, allow_cartesian=True)
-        where(self._is_fresh(score.scored_at, request.requested_at, policy.maximum_age_days))
+        where(self._is_fresh(score.scored_at, request.requested_at, policy.maximum_age_days, policy.effective_at))
         drop_duplicates(score.query_id)
         return ScoreQueryAvailability(query_id=score.query_id)
 
@@ -37,7 +38,7 @@ class SelectGapQueries(Transform):
     ) -> ScoreQueryAvailability:
         inner_join(on=request.query_id == score.query_id)
         cross_join(policy, allow_cartesian=True)
-        where(self._is_fresh(score.scored_at, request.requested_at, policy.maximum_age_days))
+        where(self._is_fresh(score.scored_at, request.requested_at, policy.maximum_age_days, policy.effective_at))
         drop_duplicates(score.query_id)
         return ScoreQueryAvailability(query_id=score.query_id)
 
@@ -54,9 +55,9 @@ class SelectGapQueries(Transform):
         return SearchQuery.project(query)
 
     @staticmethod
-    def _is_fresh(score_at: object, requested_at: object, maximum_age_days: object) -> object:
+    def _is_fresh(score_at: object, requested_at: object, maximum_age_days: object, effective_at: object) -> object:
         age = datediff(requested_at, score_at)
-        return (score_at <= requested_at) & (age >= 0) & (age <= maximum_age_days)
+        return (score_at <= requested_at) & (score_at >= effective_at) & (age >= 0) & (age <= maximum_age_days)
 
 
 __all__ = ["SelectGapQueries"]

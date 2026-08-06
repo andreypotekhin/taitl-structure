@@ -99,7 +99,7 @@ The compiler rejects:
 - nested scans or scans inside a scan callback;
 - scans in filters, joins, aggregate keys, hooks, or unrelated relation-operation arguments;
 - scans after a join, aggregation, row-expanding operation, set-composition operation, or order-destroying operation;
-- streaming inputs and Spark Connect profiles that lack the required public PySpark functions;
+- streaming inputs and target profiles that lack the required public PySpark functions;
 - UDF, Pandas, RDD, Spark action, raw hook, or driver-loop recurrence fallback.
 
 ## Lowering
@@ -119,8 +119,10 @@ and expanded intermediate frames and must not re-run the user callback at runtim
 
 ## Capability and Diagnostics
 
-The capability id is `pyspark.ordered_timeline_scan`. The feature is batch-only for ordinary PySpark until the target
-capability matrix proves otherwise.
+The capability id is `pyspark.ordered_timeline_scan`. The feature is batch-only and is supported for ordinary PySpark
+and Spark Connect profiles in the maintained PySpark 3.5 and 4.0 target range. The lowering uses only public
+DataFrame/Column functions (`collect_list`, `sort_array`, higher-order `aggregate`, and row expansion), so it does
+not require classic-only RDD, JVM, or driver-loop access.
 
 Diagnostics must cover invalid public arguments, invalid callback/state shape, unsupported placement, duplicate order
 keys, null order keys, partition-size overrun, streaming rejection, and missing target capability. Each diagnostic

@@ -364,8 +364,8 @@ live PySpark lanes remain explicitly unclaimed in this workspace.
 - Partitioned analytic maximum, deterministic ordered collection, exactly-one validation, and global aggregation have
   documented type/cardinality/empty-input semantics and online/generated/live evidence; aggregate-only methods retain
   global aggregation without requiring a preceding `group_by(...)` call.
-- At least one shipped ordinary-PySpark `@special(type="udf")` example demonstrates its explicit return/nullability
-  contract and warning behavior. It is not a fallback and remains excluded from Spark Connect.
+- At least one shipped `@special(type="udf")` example demonstrates its explicit return/nullability contract and
+  warning behavior on ordinary PySpark and Spark Connect batch. It is not an implicit fallback.
 - Typed generator, branch/set composition, self-alias, ordering, bound, relation-assertion (including parent
   reference), bounded-hierarchy/fallback, and declared-key priority-selection operations retire the corresponding Search hooks only where a same-fixture output
   comparison proves equivalence. Hooks that remain have an explicit P2 rationale.
@@ -496,6 +496,7 @@ Status: planned. V10 begins after the V9 Sprints 45–48 closeout and runs throu
 - `docs/dev/planning/P08022603.V10-streaming-side-effects-and-arbitrary-state.plan.md`
 - `docs/dev/planning/P08022604.V10-evidence-catalog-reconciliation-and-hardening.plan.md`
 - `docs/dev/planning/P08042601.Collision-safe-generated-identities.plan.md`
+- `docs/dev/planning/P08052602.Search-vector-index-and-rrf.plan.md` (explicit v10 Search application proving slice)
 
 ## M16: V11 PySpark 4.1 Adoption
 

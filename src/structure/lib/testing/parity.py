@@ -19,7 +19,13 @@ def assert_online_generated_parity(
     outputs: Sequence[str] | None = None,
     compare_schema: bool = True,
     ordered: bool = False,
-) -> None:
+) -> Mapping[str, Any]:
+    """Assert parity and return the online outputs for follow-up assertions.
+
+    Returning the already-built online outputs lets integration tests inspect
+    them without constructing the same transform a second time (which would
+    otherwise trigger another Spark action).
+    """
     online_outputs = _outputs(online())
     generated_outputs = _outputs(generated())
     names = tuple(outputs or online_outputs)
@@ -39,6 +45,7 @@ def assert_online_generated_parity(
             _frame(online_outputs[name], compare_schema=compare_schema, ordered=ordered),
             _frame(generated_outputs[name], compare_schema=compare_schema, ordered=ordered),
         )
+    return online_outputs
 
 
 def _outputs(result: Any) -> dict[str, Any]:

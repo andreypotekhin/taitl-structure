@@ -34,9 +34,8 @@ POPULAR_QUERY_CANDIDATE_SCHEMA = T.StructType(SEARCH_QUERY_SCHEMA.fields + [
 ])
 
 DOCUMENT_OVERLAP_MATCH_SCHEMA = T.StructType(DOCUMENT_SEARCH_TARGET_SCHEMA.fields + [
-    T.StructField("query_terms", T.LongType(), False),
-    T.StructField("target_distinct_terms", T.LongType(), False),
-    T.StructField("matched_terms", T.LongType(), False),
+    T.StructField("query_idf", T.DoubleType(), False),
+    T.StructField("matched_idf", T.DoubleType(), False),
 ])
 
 SECTION_OVERLAP_MATCH_SCHEMA = T.StructType(DOCUMENT_OVERLAP_MATCH_SCHEMA.fields + SECTION_SEARCH_TARGET_SCHEMA.fields)

@@ -321,6 +321,9 @@ Type: boolean.
 
 Default: `true`.
 
+For the Spark Connect variant, an omitted value resolves to `false` through the PySpark semantic defaults. An explicit
+value always wins.
+
 Compatibility shortcut for intermediate validation. Prefer `intermediate_validation_mode` for new docs and examples.
 
 ### input_validation_mode

@@ -1,6 +1,6 @@
 import csv
 import json
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from datetime import date, datetime
 from pathlib import Path
 
@@ -146,7 +146,7 @@ TRANSFORMS = (
 )
 
 
-def test_security_fixtures_run_online_and_generated(spark, tmp_path) -> None:
+def test_security_fixtures_run_online_and_generated(spark, tmp_path, cache_frames) -> None:
     files = render_generated_projects(
         TRANSFORMS,
         generated_package=PACKAGE,
@@ -164,8 +164,8 @@ def test_security_fixtures_run_online_and_generated(spark, tmp_path) -> None:
         risk = import_module(f"{PACKAGE}.pyspark.schemas.risk")
         inputs = _inputs(spark, assets, events, organization, remediation, reporting, risk)
 
-        online = _run(SecurityPosture, SecurityInventoryQuality, spark, "online", None, inputs)
-        generated = _run(SecurityPosture, SecurityInventoryQuality, spark, "generated", PACKAGE, inputs)
+        online = _run(SecurityPosture, SecurityInventoryQuality, spark, "online", None, inputs, cache_frames)
+        generated = _run(SecurityPosture, SecurityInventoryQuality, spark, "generated", PACKAGE, inputs, cache_frames)
 
         for name, order in _ORDERS.items():
             assert rows(online[name], *order) == rows(generated[name], *order)
@@ -193,7 +193,7 @@ def test_security_fixtures_run_online_and_generated(spark, tmp_path) -> None:
         ]
 
 
-def test_remediation_workflow_pauses_only_valid_current_exceptions(spark, tmp_path) -> None:
+def test_remediation_workflow_pauses_only_valid_current_exceptions(spark, tmp_path, cache_frames) -> None:
     files = render_generated_projects(
         TRANSFORMS,
         generated_package=PACKAGE,
@@ -210,6 +210,7 @@ def test_remediation_workflow_pauses_only_valid_current_exceptions(spark, tmp_pa
         reporting = import_module(f"{PACKAGE}.pyspark.schemas.reporting")
         risk = import_module(f"{PACKAGE}.pyspark.schemas.risk")
         inputs = _inputs(spark, assets, events, organization, remediation, reporting, risk)
+        cache_frames(*inputs.values())
 
         valid = _with_cases(
             spark,
@@ -227,13 +228,35 @@ def test_remediation_workflow_pauses_only_valid_current_exceptions(spark, tmp_pa
                 )
             ],
         )
-        paused = _run(SecurityPosture, SecurityInventoryQuality, spark, "online", None, valid)
+        cache_frames(valid["cases"])
+        paused = _run(
+            SecurityPosture,
+            SecurityInventoryQuality,
+            spark,
+            "online",
+            None,
+            valid,
+            cache_frames,
+            include_reports=False,
+            include_quality=False,
+        )
         assert [row["vuln_id"] for row in rows(paused["expiring_exceptions"], "vuln_id")] == ["vuln-open"]
         assert rows(paused["imminent_notifications"], "delivery_key") == []
         assert _deadline_summary(paused["person_summaries"], "person-ava") == (0, 0)
 
         expired = _with_evaluation(spark, valid, reporting, date(2026, 1, 3))
-        resumed = _run(SecurityPosture, SecurityInventoryQuality, spark, "online", None, expired)
+        cache_frames(expired["evaluation"])
+        resumed = _run(
+            SecurityPosture,
+            SecurityInventoryQuality,
+            spark,
+            "online",
+            None,
+            expired,
+            cache_frames,
+            include_reports=False,
+            include_quality=False,
+        )
         assert [row["vuln_id"] for row in rows(resumed["expired_exceptions"], "vuln_id")] == ["vuln-open"]
         assert [row["vuln_id"] for row in rows(resumed["imminent_notifications"], "vuln_id")] == ["vuln-open"]
 
@@ -243,7 +266,18 @@ def test_remediation_workflow_pauses_only_valid_current_exceptions(spark, tmp_pa
             remediation,
             [("vuln-open", None, datetime(2026, 1, 1, 9), None, None, None, None)],
         )
-        pending_output = _run(SecurityPosture, SecurityInventoryQuality, spark, "online", None, pending)
+        cache_frames(pending["cases"])
+        pending_output = _run(
+            SecurityPosture,
+            SecurityInventoryQuality,
+            spark,
+            "online",
+            None,
+            pending,
+            cache_frames,
+            include_reports=False,
+            include_quality=False,
+        )
         assert [row["vuln_id"] for row in rows(pending_output["unacknowledged"], "vuln_id")] == ["vuln-open"]
         assert [row["vuln_id"] for row in rows(pending_output["pending_exceptions"], "vuln_id")] == ["vuln-open"]
 
@@ -253,7 +287,18 @@ def test_remediation_workflow_pauses_only_valid_current_exceptions(spark, tmp_pa
             remediation,
             [("vuln-unknown", None, None, None, None, None, None)],
         )
-        invalid_output = _run(SecurityPosture, SecurityInventoryQuality, spark, "online", None, invalid)
+        cache_frames(invalid["cases"])
+        invalid_output = _run(
+            SecurityPosture,
+            SecurityInventoryQuality,
+            spark,
+            "online",
+            None,
+            invalid,
+            cache_frames,
+            include_reports=False,
+            include_quality=False,
+        )
         assert [row["vuln_id"] for row in rows(invalid_output["case_issues"], "vuln_id")] == ["vuln-unknown"]
 
 
@@ -294,7 +339,18 @@ _ORDERS = {
 }
 
 
-def _run(posture_type, quality_type, spark, execution_mode, generated_package, inputs):
+def _run(
+    posture_type,
+    quality_type,
+    spark,
+    execution_mode,
+    generated_package,
+    inputs,
+    cache_frames: Callable[..., None] | None = None,
+    *,
+    include_reports: bool = True,
+    include_quality: bool = True,
+):
     execution = session(spark, execution_mode=execution_mode, generated_package=generated_package)
     exposures = (
         posture_type(
@@ -312,16 +368,25 @@ def _run(posture_type, quality_type, spark, execution_mode, generated_package, i
         .run(execution)
         .exposures
     )
-    active = ActiveVulnerabilityReports(exposures=exposures).run(execution)
-    statistics = VulnerabilityStatistics(
-        exposures=exposures,
-        events=inputs["events"],
-        people=inputs["people"],
-        teams=inputs["teams"],
-        departments=inputs["departments"],
-        orgs=inputs["orgs"],
-        periods=inputs["periods"],
-    ).run(execution)
+    if cache_frames is not None:
+        cache_frames(exposures)
+        exposures.count()
+    active = (
+        ActiveVulnerabilityReports(exposures=exposures).run(execution) if include_reports else None
+    )
+    statistics = (
+        VulnerabilityStatistics(
+            exposures=exposures,
+            events=inputs["events"],
+            people=inputs["people"],
+            teams=inputs["teams"],
+            departments=inputs["departments"],
+            orgs=inputs["orgs"],
+            periods=inputs["periods"],
+        ).run(execution)
+        if include_reports
+        else None
+    )
     workflow = VulnerabilityRemediationWorkflow(
         exposures=exposures,
         vulnerabilities=inputs["vulnerabilities"],
@@ -332,40 +397,48 @@ def _run(posture_type, quality_type, spark, execution_mode, generated_package, i
         orgs=inputs["orgs"],
         evaluation=inputs["evaluation"],
     ).run(execution)
+    workflow_exposures = workflow.workflow_exposures
+    if cache_frames is not None:
+        cache_frames(workflow_exposures)
+        workflow_exposures.count()
     notifications = VulnerabilityNotifications(
-        exposures=workflow.workflow_exposures,
+        exposures=workflow_exposures,
         events=inputs["events"],
         people=inputs["people"],
         evaluation=inputs["evaluation"],
         receipts=inputs["receipts"],
     ).run(execution)
     alarms = VulnerabilityAlarms(
-        exposures=workflow.workflow_exposures,
+        exposures=workflow_exposures,
         evaluation=inputs["evaluation"],
         receipts=inputs["receipts"],
     ).run(execution)
     deadlines = VulnerabilityDeadlineReports(
-        exposures=workflow.workflow_exposures,
+        exposures=workflow_exposures,
         people=inputs["people"],
         teams=inputs["teams"],
         departments=inputs["departments"],
         orgs=inputs["orgs"],
         evaluation=inputs["evaluation"],
     ).run(execution)
-    quality = quality_type(
-        vulnerabilities=inputs["quality_vulnerabilities"],
-        devices=inputs["devices"],
-        device_types=inputs["device_types"],
-        software=inputs["software"],
-        vuln_types=inputs["vuln_types"],
-        people=inputs["people"],
-        teams=inputs["teams"],
-        departments=inputs["departments"],
-        orgs=inputs["orgs"],
-    ).run(execution)
-    return {
+    quality = (
+        quality_type(
+            vulnerabilities=inputs["quality_vulnerabilities"],
+            devices=inputs["devices"],
+            device_types=inputs["device_types"],
+            software=inputs["software"],
+            vuln_types=inputs["vuln_types"],
+            people=inputs["people"],
+            teams=inputs["teams"],
+            departments=inputs["departments"],
+            orgs=inputs["orgs"],
+        ).run(execution)
+        if include_quality
+        else None
+    )
+    result = {
         "exposures": exposures,
-        "workflow_exposures": workflow.workflow_exposures,
+        "workflow_exposures": workflow_exposures,
         "case_checks": workflow.case_checks,
         "case_issues": workflow.case_issues,
         "unacknowledged": workflow.unacknowledged,
@@ -376,15 +449,6 @@ def _run(posture_type, quality_type, spark, execution_mode, generated_package, i
         "workflow_team_summaries": workflow.team_summaries,
         "workflow_department_summaries": workflow.department_summaries,
         "workflow_org_summaries": workflow.org_summaries,
-        "device_active": active.device_active,
-        "person_active": active.person_active,
-        "team_active": active.team_active,
-        "department_active": active.department_active,
-        "org_active": active.org_active,
-        "person_statistics": statistics.person_statistics,
-        "team_statistics": statistics.team_statistics,
-        "department_statistics": statistics.department_statistics,
-        "org_statistics": statistics.org_statistics,
         "discovery_notifications": notifications.discovery_notifications,
         "imminent_notifications": notifications.imminent_notifications,
         "overdue_notifications": notifications.overdue_notifications,
@@ -393,11 +457,33 @@ def _run(posture_type, quality_type, spark, execution_mode, generated_package, i
         "team_summaries": deadlines.team_summaries,
         "department_summaries": deadlines.department_summaries,
         "org_summaries": deadlines.org_summaries,
-        "reference_checks": quality.reference_checks,
-        "reference_issues": quality.reference_issues,
-        "reconciliation_checks": quality.reconciliation_checks,
-        "reconciliation_issues": quality.reconciliation_issues,
     }
+    if include_reports:
+        assert active is not None and statistics is not None
+        result.update(
+            {
+                "device_active": active.device_active,
+                "person_active": active.person_active,
+                "team_active": active.team_active,
+                "department_active": active.department_active,
+                "org_active": active.org_active,
+                "person_statistics": statistics.person_statistics,
+                "team_statistics": statistics.team_statistics,
+                "department_statistics": statistics.department_statistics,
+                "org_statistics": statistics.org_statistics,
+            }
+        )
+    if include_quality:
+        assert quality is not None
+        result.update(
+            {
+                "reference_checks": quality.reference_checks,
+                "reference_issues": quality.reference_issues,
+                "reconciliation_checks": quality.reconciliation_checks,
+                "reconciliation_issues": quality.reconciliation_issues,
+            }
+        )
+    return result
 
 
 def _inputs(spark, assets, events, organization, remediation, reporting, risk):

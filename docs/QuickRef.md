@@ -385,8 +385,8 @@ class Publish(Transform):
         return Published(id=self.clean(row.id))
 ```
 
-This is an ordinary-PySpark-only escape hatch, not an implicit fallback for unsupported expressions: Spark Connect
-rejects Python UDF capability requirements. Keep the body scalar and self-contained. Generated modules delegate to
+This is an explicit escape hatch, not an implicit fallback for unsupported expressions. Spark Connect supports the
+public scalar UDF API for batch transforms, while streaming remains ordinary-only. Keep the body scalar and self-contained. Generated modules delegate to
 the source transform unless `generated_code_options` includes `embed_udfs`; embedding affects generated module
 self-containment, not compiler visibility or warning policy.
 
@@ -640,7 +640,7 @@ cross_join(policy, allow_cartesian=True)
 
 The assertion preserves the relation on success. Zero or multiple rows fail during Spark evaluation with `REL-E0701`;
 Structure does not collect the relation on the driver or choose an arbitrary first row. This helper is batch-only and
-ordinary-PySpark-only.
+ordinary PySpark and Spark Connect.
 
 When the selected row must be deterministic, prefer `dedupe_latest_by(...)` or `dedupe_earliest_by(...)`
 with an explicit ordering and tie policy.
@@ -1110,6 +1110,10 @@ Disable intermediate schema validation project-wide:
 ```toml
 validate_intermediate = false
 ```
+
+Spark Connect uses the reduced intermediate-validation default when the setting is omitted. Input and final-output
+checks remain strict. Use `connect_plan_boundaries = "auto"` under `[tool.structure.plugin.pyspark]` to contain long
+remote plans, or `"strict"` for diagnostic boundaries.
 
 Choose fuller validation only when the added Spark work is intentional:
 

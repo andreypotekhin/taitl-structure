@@ -14,7 +14,16 @@ from examples.search.schemas.scoring.overlap import (
 )
 from examples.search.schemas.search import DocumentScore, ParagraphScore, ScorePolicy, SectionScore, SentenceScore
 from structure import Transform, input, output, parameter, step
-from structure.plugin.pyspark import cross_join, inner_join
+from structure.plugin.pyspark import (
+    cross_join,
+    inner_join,
+    rows_between,
+    unbounded_following,
+    unbounded_preceding,
+    when,
+    window,
+    window_max,
+)
 
 
 class SelectScores(Transform):
@@ -41,22 +50,38 @@ class SelectScores(Transform):
     ) -> DocumentScore:
         inner_join(on=(bm25.document_id == overlap.document_id) & (bm25.query_id == overlap.query_id))
         cross_join(policy, allow_cartesian=True)
+        maximum = window_max(
+            bm25.score_bm25,
+            over=window(
+                partition_by=bm25.query_id,
+                order_by=bm25.document_id,
+                frame=rows_between(unbounded_preceding(), unbounded_following()),
+            ),
+        )
         return DocumentScore.base(overlap)(
             experiment_id=self.experiment_id,
             scored_at=policy.scored_at,
-            score=bm25.score_bm25,
+            score=policy.document_bm25_weight * when(maximum > 0.0, bm25.score_bm25 / maximum).otherwise(0.0)
+            + policy.document_overlap_weight * overlap.score_overlap,
         )
 
     @step(input=[section_overlap_scores, section_bm25_scores, score_policy], output=section_scores)
-    def score_sections(
-        self, overlap: SectionOverlapScore, bm25: SectionBm25Score, policy: ScorePolicy
-    ) -> SectionScore:
+    def score_sections(self, overlap: SectionOverlapScore, bm25: SectionBm25Score, policy: ScorePolicy) -> SectionScore:
         inner_join(on=(bm25.section_id == overlap.section_id) & (bm25.query_id == overlap.query_id))
         cross_join(policy, allow_cartesian=True)
+        maximum = window_max(
+            bm25.score_bm25,
+            over=window(
+                partition_by=(bm25.query_id, bm25.document_id),
+                order_by=bm25.section_id,
+                frame=rows_between(unbounded_preceding(), unbounded_following()),
+            ),
+        )
         return SectionScore.base(overlap)(
             experiment_id=self.experiment_id,
             scored_at=policy.scored_at,
-            score=bm25.score_bm25,
+            score=policy.section_bm25_weight * when(maximum > 0.0, bm25.score_bm25 / maximum).otherwise(0.0)
+            + policy.section_overlap_weight * overlap.score_overlap,
         )
 
     @step(input=[paragraph_overlap_scores, paragraph_bm25_scores, score_policy], output=paragraph_scores)
@@ -65,10 +90,19 @@ class SelectScores(Transform):
     ) -> ParagraphScore:
         inner_join(on=(bm25.paragraph_id == overlap.paragraph_id) & (bm25.query_id == overlap.query_id))
         cross_join(policy, allow_cartesian=True)
+        maximum = window_max(
+            bm25.score_bm25,
+            over=window(
+                partition_by=(bm25.query_id, bm25.document_id, bm25.section_id),
+                order_by=bm25.paragraph_id,
+                frame=rows_between(unbounded_preceding(), unbounded_following()),
+            ),
+        )
         return ParagraphScore.base(overlap)(
             experiment_id=self.experiment_id,
             scored_at=policy.scored_at,
-            score=overlap.score_overlap,
+            score=policy.paragraph_bm25_weight * when(maximum > 0.0, bm25.score_bm25 / maximum).otherwise(0.0)
+            + policy.paragraph_overlap_weight * overlap.score_overlap,
         )
 
     @step(input=[sentence_overlap_scores, sentence_bm25_scores, score_policy], output=sentence_scores)
@@ -77,8 +111,17 @@ class SelectScores(Transform):
     ) -> SentenceScore:
         inner_join(on=(bm25.sentence_id == overlap.sentence_id) & (bm25.query_id == overlap.query_id))
         cross_join(policy, allow_cartesian=True)
+        maximum = window_max(
+            bm25.score_bm25,
+            over=window(
+                partition_by=(bm25.query_id, bm25.document_id, bm25.section_id, bm25.paragraph_id),
+                order_by=bm25.sentence_id,
+                frame=rows_between(unbounded_preceding(), unbounded_following()),
+            ),
+        )
         return SentenceScore.base(overlap)(
             experiment_id=self.experiment_id,
             scored_at=policy.scored_at,
-            score=overlap.score_overlap,
+            score=policy.sentence_bm25_weight * when(maximum > 0.0, bm25.score_bm25 / maximum).otherwise(0.0)
+            + policy.sentence_overlap_weight * overlap.score_overlap,
         )

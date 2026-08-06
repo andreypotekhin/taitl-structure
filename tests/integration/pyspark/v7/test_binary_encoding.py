@@ -71,17 +71,13 @@ def test_v7_binary_encoding_matches_generated_execution_on_live_backend(spark, t
             generated_schemas.ENCODED_INPUT_SCHEMA,
         )
 
-        assert_online_generated_parity(
-            lambda: DecodePayloads(rows=source).run(session(spark, execution_mode="online")),
-            lambda: DecodePayloads(rows=source).run(
-                session(spark, execution_mode="generated", generated_package=PACKAGE)
-            ),
+        online = DecodePayloads(rows=source).run(session(spark, execution_mode="online"))
+        generated = DecodePayloads(rows=source).run(
+            session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
+        assert_online_generated_parity(lambda: online, lambda: generated)
 
-        actual = rows(
-            DecodePayloads(rows=source).run(session(spark, execution_mode="generated", generated_package=PACKAGE)).decoded,
-            "id",
-        )
+        actual = rows(generated.decoded, "id")
 
     assert actual[0]["id"] == "row-1"
     assert actual[0]["payload_base64"] == "cGFpZA=="

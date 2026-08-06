@@ -52,7 +52,7 @@ def spark():
         .config("spark.sql.adaptive.enabled", "false")
     )
     packages = os.environ.get("STRUCTURE_SPARK_JARS_PACKAGES")
-    if packages:
+    if packages and not remote:
         builder = builder.config("spark.jars.packages", packages)
         builder = builder.config("spark.sql.extensions", "org.apache.sedona.sql.SedonaSqlExtensions")
     if not remote:
@@ -100,8 +100,15 @@ def _target_profile() -> str:
     return ">=3.5,<4.1"
 
 
-def _plugin() -> dict[str, dict[str, str]]:
-    return {"pyspark": {"profile": _target_profile(), "variant": target_variant()}}
+def _plugin() -> dict[str, dict[str, object]]:
+    options: dict[str, object] = {"profile": _target_profile(), "variant": target_variant()}
+    boundary_policy = os.environ.get("STRUCTURE_CONNECT_PLAN_BOUNDARIES")
+    if boundary_policy:
+        options["connect_plan_boundaries"] = boundary_policy
+    validate_intermediate = os.environ.get("STRUCTURE_VALIDATE_INTERMEDIATE")
+    if validate_intermediate is not None:
+        options["validate_intermediate"] = validate_intermediate.lower() == "true"
+    return {"pyspark": options}
 
 
 def session(spark, *, execution_mode: str, generated_package: str | None = None) -> StructureSession:

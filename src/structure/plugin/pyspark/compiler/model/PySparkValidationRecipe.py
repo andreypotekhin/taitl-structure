@@ -13,3 +13,4 @@ class PySparkValidationRecipe:
     project: bool
     reason: str
     check: bool = True
+    boundary: bool = False

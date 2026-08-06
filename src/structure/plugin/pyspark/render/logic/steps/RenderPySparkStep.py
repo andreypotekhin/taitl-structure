@@ -1825,6 +1825,8 @@ class RenderPySparkStep:
                 )
             if validation.project:
                 lines.append(f"        {target} = project_schema({target}, {schema})")
+            if validation.boundary:
+                lines.append(f"        {target} = apply_plan_boundary({target}, self.spark)")
         return lines
 
     def _scope_aliases(

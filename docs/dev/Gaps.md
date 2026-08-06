@@ -71,8 +71,8 @@ JSON/CSV parsing, deterministic grouped `mode(...)`, and generator expansion thr
 contracts are [Advanced Analytical Operations](design/AdvancedAnalyticalOperations.md)
 and [Typed Relation Operations](design/TypedRelationOperations.md). Missing-column union, sampling,
 and physical-plan directives remain retained backlog. Scalar `@special(type="udf")` is already implemented
-for ordinary PySpark; its user contract is [Explicit Scalar Python UDFs](specifications/ExplicitScalarUdfs.md). It is
-opt-in, type/nullability declared, warning-governed, and excluded from Spark Connect. It is not a substitute for an
+for ordinary PySpark and Spark Connect batch; its user contract is [Explicit Scalar Python UDFs](specifications/ExplicitScalarUdfs.md). It is
+opt-in, type/nullability declared, warning-governed, and not a substitute for an
 unsupported symbolic operation.
 
 The remaining v6 work is cleanup and broader vocabulary, not Search hook retirement. Implemented P1 generators,
@@ -92,9 +92,9 @@ narrower typed capability from that family; no broader API is implied.
 | Lambda-bound struct field access | implemented | Sprint 24; the two Security reconciliation hooks are typed steps |
 | Partitioned `window_max` | implemented | Sprint 24; typed partition/order/frame contract is available, and BM25 no longer needs a raw hook |
 | Ordered `collect_list` | implemented | Sprint 24; explicit ascending/descending aggregate keys retain deterministic collection order |
-| `exactly_one` validation | implemented | Sprint 24 P0; batch-only ordinary-PySpark relation assertion with generated/online `REL-E0701` failure. `CreateSimilarityQueries` now uses it with ordered token aggregation and typed query union. |
+| `exactly_one` validation | implemented | Sprint 24 P0; batch-only ordinary-PySpark/Spark Connect relation assertion with generated/online `REL-E0701` failure. `CreateSimilarityQueries` now uses it with ordered token aggregation and typed query union. |
 | Implicit global aggregation | implemented | Sprint 24; aggregate-only steps retain global semantics and enforce empty-input nullability. `CreateIndex` now uses grouped term aggregates plus aggregate-only summaries without a raw hook. |
-| Explicit scalar UDF example | implemented documentation | Sprint 24; documented opt-in ordinary-PySpark exception with warning and Spark Connect boundary |
+| Explicit scalar UDF example | implemented documentation | Sprint 24; documented opt-in ordinary-PySpark/Spark Connect exception with warning and declared boundary |
 | `posexplode` over array of structs | implemented | Sprint 25; `posexplode_struct(...)` is available, and `Chunking`, `ScoreOverlap`, and `ScoreBm25` now use typed struct-wrapped expansion instead of raw hooks |
 | Other generator forms | deferred | Admit only after a separate cardinality/null/streaming contract |
 | Exact-schema relation set composition and self-alias | implemented | Sprint 25; exact-schema set operations, branchable lane rejoin, and `relation_alias(...)` are implemented. `ReduceSimilarityScores` now uses them for reciprocal pair matching, exact-schema pair union, and typed per-source ranking. |

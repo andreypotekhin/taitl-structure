@@ -1,32 +1,22 @@
 """Shared reusable-index scoring inputs."""
 
-from examples.search.algorithms.text import normalized_token
+from examples.search.adoption import SEARCH_STREAMING_CONTRACTS_ENABLED
 from examples.search.schemas.indexing.lexical.index import (
     DocumentIndexTerm,
     ParagraphIndexTerm,
     SectionIndexTerm,
     SentenceIndexTerm,
 )
-from examples.search.schemas.scoring.intermediate import ExpandedQueryToken, QueryTerm, QueryTermCount, QueryToken
+from examples.search.schemas.scoring.intermediate import QueryTerm, QueryTermCount, QueryToken
 from examples.search.schemas.search import SearchQuery
 from structure import Transform, input, lane, step
-from structure.plugin.pyspark import (
-    arr_distinct,
-    arr_transform,
-    count,
-    group_by,
-    posexplode_struct,
-    split,
-    trim,
-    watermark,
-    where,
-)
+from structure.plugin.pyspark import count, group_by, watermark, where
 
 
 class ScoreBase(Transform):
     """Accept one or more queries and four reusable target-grain indexes."""
 
-    queries = input(SearchQuery, streaming=True)
+    queries = input(SearchQuery, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
     document_terms = input(DocumentIndexTerm)
     section_terms = input(SectionIndexTerm)
     paragraph_terms = input(ParagraphIndexTerm)
@@ -38,13 +28,7 @@ class ScoreBase(Transform):
     @step(input=queries, output=expanded_query_terms)
     def expand_query_terms(self, query: SearchQuery) -> QueryTerm:
         watermark(query.requested_at, delay="10 minutes")
-        tokens = arr_transform(
-            arr_distinct(split(trim(query.content), pattern=r"\s+")),
-            lambda token: QueryToken(
-                token=normalized_token(token)
-            ),
-        )
-        token = posexplode_struct(tokens, as_=ExpandedQueryToken, scope="query_token")
+        token = QueryToken.expand(query)
         where(token.token != "")
         return QueryTerm(query_id=query.id, token=token.token)
 

@@ -199,6 +199,10 @@ Intermediate validation is enabled by default because each step method has a typ
 checks by default, can opt into fuller constraint validation, and can be disabled project-wide, class-wide, or per
 step method when needed.
 
+For Spark Connect, an omitted intermediate-validation setting defaults to disabled because schema inspection is a
+remote analysis request. Input and final-output checks remain strict, and `validate_intermediate = true` restores the
+exhaustive diagnostic behavior.
+
 ## Filtering
 
 Filtering uses `where(...)` inside compiled step methods.

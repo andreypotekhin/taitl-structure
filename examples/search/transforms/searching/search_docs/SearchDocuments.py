@@ -1,6 +1,8 @@
 """Two-stage BM25 and implicit-feedback document search."""
 
+from examples.search.adoption import SEARCH_STREAMING_CONTRACTS_ENABLED
 from examples.search.schemas.clicks import SearchRequest
+from examples.search.schemas.filtering import DocumentFilterScore
 from examples.search.schemas.indexing.lexical.index import (
     DocumentIndexSummary,
     DocumentIndexTerm,
@@ -16,22 +18,24 @@ from examples.search.schemas.scoring.overlap import DocumentOverlapScore
 from examples.search.schemas.search import DocumentScore, DocumentSearchResult, ScorePolicy, SearchQuery
 from examples.search.schemas.text import Document
 from examples.search.schemas.user import BandFallback, BandMembership
+from examples.search.transforms.searching.online.filtering import OnlineFiltering
 from examples.search.transforms.searching.online.scoring import OnlineScoring
-from examples.search.transforms.searching.search_docs.admit import RetrieveDocuments
-from examples.search.transforms.searching.search_docs.overlap import OverlapDocuments
+from examples.search.transforms.searching.search_docs.filter import SelectFilterTargets
+from examples.search.transforms.searching.search_docs.obtain import RetrieveDocuments
 from examples.search.transforms.searching.search_docs.rerank import RerankDocuments
 from structure import Transform, input, output
 
 
 class SearchDocuments(Transform):
-    """Retrieve BM25 candidates, then rerank them with relevance signals."""
+    """Filter, obtain, rerank, and return document search results."""
 
-    queries = input(SearchQuery, streaming=True)
+    queries = input(SearchQuery, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
     documents = input(Document)
     document_scores = input(DocumentScore)
-    streamed_documents = input(Document, streaming=True)
-    streamed_document_scores = input(DocumentScore, streaming=True)
+    streamed_documents = input(Document, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
+    streamed_document_scores = input(DocumentScore, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
     document_overlap_scores = input(DocumentOverlapScore)
+    document_filter_scores = input(DocumentFilterScore)
     document_terms = input(DocumentIndexTerm)
     section_terms = input(SectionIndexTerm)
     paragraph_terms = input(ParagraphIndexTerm)
@@ -41,12 +45,27 @@ class SearchDocuments(Transform):
     paragraph_summary = input(ParagraphIndexSummary)
     sentence_summary = input(SentenceIndexSummary)
     score_policy = input(ScorePolicy)
-    requests = input(SearchRequest, streaming=True)
+    requests = input(SearchRequest, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
     band_memberships = input(BandMembership)
     query_document_signals = input(QueryDocumentSignals)
     document_popularity = input(DocumentPopularity)
     band_fallbacks = input(BandFallback)
     policy = input(RelevancePolicy)
+
+    filtered = OnlineFiltering(
+        queries=queries,
+        requests=requests,
+        document_filter_scores=document_filter_scores,
+        document_terms=document_terms,
+        score_policy=score_policy,
+    )
+
+    selected = SelectFilterTargets(
+        document_filter_scores=document_filter_scores,
+        online_document_filter_scores=filtered.online_document_filter_scores,
+        requests=requests,
+        score_policy=score_policy,
+    )
 
     scored = OnlineScoring(
         queries=queries,
@@ -75,18 +94,11 @@ class SearchDocuments(Transform):
         requests=requests,
         band_memberships=band_memberships,
         score_policy=score_policy,
-    )
-
-    overlapped = OverlapDocuments(
-        candidates=retrieved.candidates,
-        document_overlap_scores=document_overlap_scores,
-        online_document_overlap_scores=scored.online_document_overlap_scores,
-        requests=requests,
-        score_policy=score_policy,
+        prefilter_targets=selected.targets,
     )
 
     reranked = RerankDocuments(
-        overlapped_candidates=overlapped.overlapped_candidates,
+        candidates=retrieved.candidates,
         query_document_signals=query_document_signals,
         document_popularity=document_popularity,
         band_fallbacks=band_fallbacks,

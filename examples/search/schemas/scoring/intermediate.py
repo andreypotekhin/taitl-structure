@@ -1,5 +1,6 @@
 """Scoring-internal intermediate schemas."""
 
+from examples.search.algorithms.text import normalized_token
 from examples.search.schemas.search import (
     DocumentSearchTarget,
     ParagraphSearchTarget,
@@ -8,13 +9,26 @@ from examples.search.schemas.search import (
     SentenceSearchTarget,
 )
 from structure import Schema
-from structure.plugin.pyspark import long, string
+from structure.plugin.pyspark import arr_distinct, arr_transform, double, long, posexplode_struct, split, string, trim
 
 
 class QueryToken(Schema):
     """One normalized query token before row expansion."""
 
     token = string(nullable=False)
+
+    @staticmethod
+    def expand(query: SearchQuery):
+        """Expand normalized, distinct query tokens into rows."""
+
+        return posexplode_struct(
+            arr_transform(
+                arr_distinct(split(trim(query.content), pattern=r"\s+")),
+                lambda value: QueryToken(token=normalized_token(value)),
+            ),
+            as_=ExpandedQueryToken,
+            scope="query_token",
+        )
 
 
 class ExpandedQueryToken(Schema):
@@ -52,11 +66,10 @@ class PopularQueryCandidate(SearchQuery):
 
 
 class DocumentOverlapMatch(DocumentSearchTarget):
-    """Aggregate overlap numerator and denominator fields for one document."""
+    """Aggregate IDF-weighted overlap fields for one document."""
 
-    query_terms = long(nullable=False)
-    target_distinct_terms = long(nullable=False)
-    matched_terms = long(nullable=False)
+    query_idf = double(nullable=False)
+    matched_idf = double(nullable=False)
 
 
 class SectionOverlapMatch(DocumentOverlapMatch, SectionSearchTarget):
@@ -69,3 +82,18 @@ class ParagraphOverlapMatch(SectionOverlapMatch, ParagraphSearchTarget):
 
 class SentenceOverlapMatch(ParagraphOverlapMatch, SentenceSearchTarget):
     """Aggregate overlap fields for one sentence."""
+
+
+class QueryTermIdf(Schema):
+    """IDF weight for one distinct query term at one target grain."""
+
+    query_id = string(nullable=False)
+    token = string(nullable=False)
+    idf = double(nullable=False)
+
+
+class QueryIdfTotal(Schema):
+    """Total possible IDF for one normalized query at one target grain."""
+
+    query_id = string(nullable=False)
+    query_idf = double(nullable=False)

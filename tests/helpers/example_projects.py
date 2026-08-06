@@ -747,6 +747,7 @@ def render_search_example() -> dict[str, str]:
             QueryFeatureToken,
             QueryTokenSummary,
         )
+        from examples.search.schemas.filtering import DocumentFilterMatch, DocumentFilterScore, FilterQueryAvailability
         from examples.search.schemas.indexing.lexical.index import (
             DocumentIndexSummary,
             DocumentIndexTarget,
@@ -919,6 +920,7 @@ def render_search_example() -> dict[str, str]:
         from structure.plugin.pyspark import TimeWindow
 
         schema_modules: dict[str, Sequence[type[Schema]]] = {
+            "examples.search.schemas.filtering": [DocumentFilterMatch, DocumentFilterScore, FilterQueryAvailability],
             "examples.search.schemas.analytics": [
                 DocumentProfile,
                 SentenceStatistics,

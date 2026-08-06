@@ -175,6 +175,13 @@ def test_v5_plugin_default_and_pyspark_table_select_the_configured_target() -> N
     assert config.target == "pyspark"
     assert dict(config.plugin_options["pyspark"])["profile"] == ">=4.0,<4.1"
     assert dict(config.plugin_options["pyspark"])["variant"] == "spark-connect"
+    assert config.validate_intermediate is False
+
+    explicit = StructureConfig.create(
+        validate_intermediate=True,
+        plugin={"default": "pyspark", "pyspark": {"variant": "spark-connect"}},
+    )
+    assert explicit.validate_intermediate is True
 
 
 @pytest.mark.parametrize("plugin", ("wrong", {"pyspark": "wrong"}))

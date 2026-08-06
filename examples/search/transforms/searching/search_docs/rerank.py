@@ -1,5 +1,6 @@
 """Implicit-feedback document reranking."""
 
+from examples.search.adoption import SEARCH_STREAMING_CONTRACTS_ENABLED
 from examples.search.schemas.relevance import DocumentPopularity, QueryDocumentSignals, RelevancePolicy
 from examples.search.schemas.search import (
     DocumentFeedbackOption,
@@ -9,7 +10,7 @@ from examples.search.schemas.search import (
     QueryDocumentFeedback,
 )
 from examples.search.schemas.user import BandFallback
-from examples.search.transforms.searching.search_docs.overlap import OverlapDocuments
+from examples.search.transforms.searching.search_docs.obtain import RetrieveDocuments
 from structure import Transform, input, lane, output, step
 from structure.plugin.pyspark import (
     coalesce,
@@ -30,13 +31,15 @@ from structure.plugin.pyspark.dsl.expressions import literal
 
 
 class RerankDocuments(Transform):
-    """Rerank lexical candidates using relevance signals."""
+    """Rerank lexical candidates and return the set of search results."""
+
+    maximum_results = 100
 
     query_document_signals = input(QueryDocumentSignals)
     document_popularity = input(DocumentPopularity)
     band_fallbacks = input(BandFallback)
     policy = input(RelevancePolicy)
-    overlapped_candidates = input(DocumentSearchCandidate, streaming=True)
+    candidates = input(DocumentSearchCandidate, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
     fallback_options = lane(DocumentFeedbackOption)
     global_options = lane(DocumentFeedbackOption)
     feedback_options = lane(DocumentFeedbackOption)
@@ -44,13 +47,14 @@ class RerankDocuments(Transform):
     popularity_feedback = lane(PopularityFeedback)
     scored_candidates = lane(DocumentSearchCandidate)
     normalized_candidates = lane(DocumentSearchCandidate)
+    ranked_results = lane(DocumentSearchResult)
     results = output(DocumentSearchResult)
 
-    @step(input=[overlapped_candidates, band_fallbacks, policy], output=fallback_options)
+    @step(input=[candidates, band_fallbacks, policy], output=fallback_options)
     def select_fallback_options(
         self, candidate: DocumentSearchCandidate, fallback: BandFallback, policy: RelevancePolicy
     ) -> DocumentFeedbackOption:
-        where(candidate.candidate_rank <= OverlapDocuments.maximum_candidates, candidate.user_band_id.is_not_null())
+        where(candidate.candidate_rank <= RetrieveDocuments.maximum_candidates, candidate.user_band_id.is_not_null())
         inner_join(fallback, on=fallback.user_band_id == candidate.user_band_id)
         policy = cross_join(policy, allow_cartesian=True)
         return DocumentFeedbackOption.project(candidate)(
@@ -59,11 +63,11 @@ class RerankDocuments(Transform):
             minimum_band_impressions=policy.minimum_band_impressions,
         )
 
-    @step(input=[overlapped_candidates, policy], output=global_options)
+    @step(input=[candidates, policy], output=global_options)
     def select_global_options(
         self, candidate: DocumentSearchCandidate, policy: RelevancePolicy
     ) -> DocumentFeedbackOption:
-        where(candidate.candidate_rank <= OverlapDocuments.maximum_candidates, candidate.user_band_id.is_null())
+        where(candidate.candidate_rank <= RetrieveDocuments.maximum_candidates, candidate.user_band_id.is_null())
         policy = cross_join(policy, allow_cartesian=True)
         return DocumentFeedbackOption.project(candidate)(
             feedback_band_id=literal(None),
@@ -135,7 +139,7 @@ class RerankDocuments(Transform):
         )
 
     @step(
-        input=[overlapped_candidates, query_feedback, popularity_feedback, policy],
+        input=[candidates, query_feedback, popularity_feedback, policy],
         output=scored_candidates,
     )
     def score_candidates(
@@ -145,7 +149,7 @@ class RerankDocuments(Transform):
         popularity: PopularityFeedback,
         policy: RelevancePolicy,
     ) -> DocumentSearchCandidate:
-        where(candidate.candidate_rank <= OverlapDocuments.maximum_candidates)
+        where(candidate.candidate_rank <= RetrieveDocuments.maximum_candidates)
         left_join(
             query,
             on=(query.search_query_id == candidate.search_query_id)
@@ -188,7 +192,7 @@ class RerankDocuments(Transform):
             + candidate.feedback_weight * candidate.score_feedback,
         )
 
-    @step(input=normalized_candidates, output=results)
+    @step(input=normalized_candidates, output=ranked_results)
     def rank_results(self, candidate: DocumentSearchCandidate) -> DocumentSearchResult:
         """Publish deterministic ranks for one query, band, and experiment."""
 
@@ -198,3 +202,10 @@ class RerankDocuments(Transform):
                 order_by=(candidate.score_rank.desc_nulls_last(), candidate.document_id.asc_nulls_first()),
             ),
         )
+
+    @step(input=ranked_results, output=results)
+    def select_results(self, result: DocumentSearchResult) -> DocumentSearchResult:
+        """Return only the final page-sized result set after reranking."""
+
+        where(result.rank <= self.maximum_results)
+        return DocumentSearchResult.project(result)

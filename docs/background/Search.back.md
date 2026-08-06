@@ -94,9 +94,10 @@ grain. A score computed for a document is therefore never reused as a paragraph 
 Queries use the same normalization rules as extracted words. `SearchQuery.id` is the request-local key for scoring and
 rank. Query text is also the normalized key used when feedback aggregates observations across equivalent searches.
 
-`ScoreOverlap` provides a bounded distinct-term overlap measure. `ScoreBm25` provides BM25 with the example's fixed
-parameters (`k1 = 1.2`, `b = 0.75`). They are separate outputs so that a caller can select or combine evidence
-explicitly. BM25 is corpus-dependent; neither score is a relevance probability.
+`ScoreOverlap` provides IDF-weighted overlap: the IDF sum of matched distinct query terms divided by the total IDF of
+the distinct query. `ScoreBm25` provides BM25 with the example's fixed parameters (`k1 = 1.2`, `b = 0.75`).
+`SelectScores` normalizes BM25 within each grain's ranking scope and combines it with overlap using independent,
+caller-supplied `ScorePolicy` weights. BM25 is corpus-dependent; neither score is a relevance probability.
 
 Unified score rows carry a `scored_at` timestamp. `ScorePolicy` defines the timestamp used when producing a snapshot and
 the maximum age accepted by serving. Offline scoring aggregates daily impression volume by normalized query and caps
@@ -190,18 +191,72 @@ changing lexical ranking semantics.
 
 ## Document Retrieval and Feedback
 
-Document search begins with `OnlineScoring`. It treats the caller's existing score relations as cache-compatible
-inputs, filters stale or future rows, and calculates missing query groups from the reusable lexical index. It emits only
-the bridge rows calculated for the current request. Retrieval unions those rows with the caller's pre-calculated stored
-and streamed rows, so the caller can persist the bridge output in the same score relation and reuse it on a repeat
-query.
-No separate cache schema, query-key field, or index-version field is required.
+Document search is a bounded funnel. Offline `Filtering` precomputes filter artifacts for a caller-selected query
+subset. Serving `OnlineFiltering` fills only query groups that lack a usable artifact, and `SelectFilterTargets` merges
+cached and online rows before retaining the top 10,000 documents per query. `OnlineScoring` fills missing or invalid
+lexical score groups. `RetrieveDocuments` retains the top 1,000 filtered document candidates, `RerankDocuments` applies
+feedback to those candidates, and only then does it retain the final top 100.
 
-The remaining three stages are `RetrieveDocuments`, `OverlapDocuments`, and `RerankDocuments`. Retrieval admits up to
-1000 persisted or streamed candidates per query by descending score with a document-ID tie-breaker. Overlap narrows
-those candidates to 100 by overlap score. Rerank enriches only those candidates with feedback and ranks their combined
-score.
-A document outside the lexical candidate set cannot enter only because it is popular or has historical clicks.
+The filter and scoring artifacts have separate purposes. A `DocumentFilterScore` contains a simple distinct-term match
+count, deterministic filter rank, and `scored_at`; it is a cheap admission boundary. A unified `DocumentScore` contains
+the composite lexical score used for retrieval. Popularity and query-document feedback never create candidates outside
+the 10,000-document filter and 1,000-document retrieval boundaries.
+
+### Lexical scoring formulas
+
+The same formulas apply independently to documents, sections, paragraphs, and sentences. For grain `g`, query `q`, and
+target `x`, `Q` is the set of distinct normalized query terms, `T(x)` is the indexed target vocabulary, `df_g(t)` is the
+term's grain-specific document frequency, and `N_g` is the grain-specific target count:
+
+```text
+idf_g(t) = log(1 + (N_g - df_g(t) + 0.5) / (df_g(t) + 0.5))
+O_g(q, x) = sum(idf_g(t) for t in Q ∩ T(x)) / sum(idf_g(t) for t in Q)
+```
+
+If a query term is absent from the grain vocabulary, its document frequency is zero. If the total query IDF is zero,
+the overlap score is zero. BM25 uses `k1 = 1.2` and `b = 0.75`:
+
+```text
+BM25_g(q, x, t) = idf_g(t) * tf_g(t, x) * (k1 + 1)
+                   / (tf_g(t, x) + k1 * (1 - b + b * length_g(x) / average_length_g))
+BM25_g(q, x) = sum(BM25_g(q, x, t) for t in Q ∩ T(x))
+```
+
+BM25 is normalized before combination. The maximum is taken across documents for a document score, sections within a
+document for a section score, paragraphs within a document section for a paragraph score, and sentences within a
+document paragraph for a sentence score. A zero maximum produces normalized BM25 zero:
+
+```text
+B̂_g(q, x) = BM25_g(q, x) / max(BM25_g(q, ·))
+S_g(q, x) = policy.<g>_bm25_weight * B̂_g(q, x)
+          + policy.<g>_overlap_weight * O_g(q, x)
+```
+
+The four pairs of `ScorePolicy` weights are caller-supplied and may differ by grain. Cached score or filter rows are
+usable only when `scored_at <= request.requested_at`, their age is within `maximum_age_days`, and
+`scored_at >= effective_at`. The effective timestamp invalidates artifacts produced under an older scoring policy.
+
+### Funnel stages
+
+```text
+Filtering
+  matched_terms(q, d) = |Q ∩ T(d)|
+  rank by matched_terms DESC, document_id ASC; retain 10,000
+        ↓
+OnlineFiltering — calculate only missing/stale query groups
+        ↓
+SelectFilterTargets — merge valid cached + online rows; retain 10,000
+        ↓
+OnlineScoring — calculate missing/stale composite lexical scores
+        ↓
+RetrieveDocuments — retain top 1,000 filtered documents
+        ↓
+RerankDocuments — feedback score, deterministic rank, retain top 100
+```
+
+The reranker uses `0.8 * query-document feedback + 0.2 * document popularity feedback` as its feedback signal, then
+combines normalized lexical score and feedback with the caller's relevance-policy weights. A candidate outside the
+retrieved 1,000 cannot be promoted by feedback; a candidate inside that set can move into the returned top 100.
 
 ### Retrieval And Reranking Boundaries
 
@@ -236,13 +291,14 @@ class SearchDocuments(Transform):
         )
 ```
 
-The concrete Search pipeline uses separate retrieval, overlap, and rerank stages. The example illustrates the invariant:
-feedback enriches an admitted lexical candidate set; it does not create new candidates outside that set.
+The concrete Search pipeline uses separate filtering, target selection, lexical scoring, retrieval, and rerank stages.
+The invariant is that feedback enriches an admitted lexical candidate set; it does not create new candidates outside
+that set.
 
 Within a candidate set, BM25 is normalized by the query's maximum candidate score. Caller-supplied relevance-policy
 weights combine that normalized lexical score with feedback evidence. A document with no feedback remains eligible and
-has zero feedback contribution. Overlap is an explicit narrowing boundary before feedback, not a final reranking
-ingredient.
+has zero feedback contribution. IDF-weighted overlap contributes both to the composite lexical score and to the earlier
+simple-overlap admission boundary; the two uses have different granularity and cost, but share normalized query terms.
 
 Feedback starts with immutable `SearchRequest`, `Impression`, and `Click` records. Every attempt produces a request,
 including a no-result attempt. An impression records the displayed position and its logged examination propensity; a

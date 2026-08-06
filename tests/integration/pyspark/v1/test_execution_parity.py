@@ -27,16 +27,13 @@ def test_parent_hook_owner_has_online_generated_runtime_parity(spark, tmp_path) 
     with generated_project(tmp_path, package, files):
         generated_schemas = importlib.import_module(f"{package}.pyspark.schemas.schemas")
         frame = spark.createDataFrame([("one",)], generated_schemas.RAW_ROW_SCHEMA)
-        assert_online_generated_parity(
-            lambda: transforms.ParentHookPublished(rows=frame).run(session(spark, execution_mode="online")),
-            lambda: transforms.ParentHookPublished(rows=frame).run(
-                session(spark, execution_mode="generated", generated_package=package)
-            ),
+        online = transforms.ParentHookPublished(rows=frame).run(session(spark, execution_mode="online"))
+        generated = transforms.ParentHookPublished(rows=frame).run(
+            session(spark, execution_mode="generated", generated_package=package)
         )
+        assert_online_generated_parity(lambda: online, lambda: generated)
 
-        assert rows(
-            transforms.ParentHookPublished(rows=frame).run(session(spark, execution_mode="online")).published
-        ) == [{"id": "one", "hook_owner": "parent"}]
+        assert rows(online.published) == [{"id": "one", "hook_owner": "parent"}]
 
 
 def test_embedded_parent_hook_has_online_generated_runtime_parity(spark, tmp_path) -> None:

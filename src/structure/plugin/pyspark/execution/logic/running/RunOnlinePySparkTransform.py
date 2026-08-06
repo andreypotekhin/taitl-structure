@@ -12,6 +12,7 @@ from structure.plugin.pyspark.dsl.joins import JoinMethod
 from structure.plugin.pyspark.dsl.types import ArrayType, StructType
 from structure.plugin.pyspark.execution.logic.expressions.EvaluatePySparkExpression import EvaluatePySparkExpression
 from structure.plugin.pyspark.execution.logic.InvokePySparkHooks import InvokePySparkHooks
+from structure.plugin.pyspark.execution.logic.PlanBoundary import apply_plan_boundary
 from structure.plugin.pyspark.execution.logic.running.RunOnlinePySparkStructGenerator import (
     RunOnlinePySparkStructGenerator,
 )
@@ -155,6 +156,8 @@ class RunOnlinePySparkTransform:
                         self._validator.validate(projected, validation, types=types)
                     if validation.project:
                         projected = self._validator.project(projected, validation, types=types, functions=functions)
+                    if validation.boundary:
+                        projected = apply_plan_boundary(projected, session.spark)
                 projected = self._post_operations(step, projected)
                 produced[result.frame] = projected
             return produced
@@ -181,6 +184,8 @@ class RunOnlinePySparkTransform:
                 self._validator.validate(df, validation, types=types)
             if validation.project:
                 df = self._validator.project(df, validation, types=types, functions=functions)
+            if validation.boundary:
+                df = apply_plan_boundary(df, session.spark)
         df = self._post_operations(step, df)
         return {step.results[0].frame: df}
 

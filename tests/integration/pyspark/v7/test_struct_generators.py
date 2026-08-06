@@ -208,16 +208,16 @@ def _assert_matches(
     documents,
     expected: list[dict[str, object]],
 ) -> None:
-    assert_online_generated_parity(
+    online_outputs = assert_online_generated_parity(
         lambda: transform_type(documents=documents).run(session(documents.sparkSession, execution_mode="online")),
         lambda: transform_type(documents=documents).run(
             session(documents.sparkSession, execution_mode="generated", generated_package=PACKAGE)
         ),
     )
 
-    online = transform_type(documents=documents).run(session(documents.sparkSession, execution_mode="online"))
-    order_by = ("doc_id", "ordinal", "token") if "ordinal" in online.terms.columns else ("doc_id", "token")
-    assert rows(online.terms, *order_by) == expected
+    terms = online_outputs["terms"]
+    order_by = ("doc_id", "ordinal", "token") if "ordinal" in terms.columns else ("doc_id", "token")
+    assert rows(terms, *order_by) == expected
 
 
 def _plain_rows() -> list[dict[str, object]]:

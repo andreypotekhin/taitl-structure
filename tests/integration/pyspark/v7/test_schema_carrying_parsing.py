@@ -74,17 +74,13 @@ def test_v7_schema_carrying_parsing_matches_generated_execution_on_live_backend(
             generated_schemas.RAW_PAYLOAD_SCHEMA,
         )
 
-        assert_online_generated_parity(
-            lambda: ParsePayloads(rows=source).run(session(spark, execution_mode="online")),
-            lambda: ParsePayloads(rows=source).run(
-                session(spark, execution_mode="generated", generated_package=PACKAGE)
-            ),
+        online = ParsePayloads(rows=source).run(session(spark, execution_mode="online"))
+        generated = ParsePayloads(rows=source).run(
+            session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
+        assert_online_generated_parity(lambda: online, lambda: generated)
 
-        actual = rows(
-            ParsePayloads(rows=source).run(session(spark, execution_mode="generated", generated_package=PACKAGE)).parsed,
-            "id",
-        )
+        actual = rows(generated.parsed, "id")
 
     assert actual == [
         {

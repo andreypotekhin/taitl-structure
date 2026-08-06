@@ -138,7 +138,7 @@ class RenderPySparkTransformModule:
             )
         )
 
-        helpers = ["TransformResult", "assert_schema", "project_schema"]
+        helpers = ["TransformResult", "assert_schema", "project_schema", "apply_plan_boundary", "close_plan_boundaries"]
         lines.append(f"from {runtime_module} import {', '.join(helpers)}")
 
         for module, constants in self._schema_imports(plan, schema_modules).items():
@@ -235,6 +235,8 @@ class RenderPySparkTransformModule:
         lines.extend(
             self._udf_initializers(plan, source_transform=source_transform, generated_code_options=generated_code_options)
         )
+
+        lines.extend(["", "    def close(self) -> None:", "        close_plan_boundaries(self.spark)"])
 
         methods = self._mirror_step_methods(plan, source_transform=source_transform, fields=fields)
         if methods:
@@ -426,6 +428,7 @@ class RenderPySparkTransformModule:
         lines.extend(
             self._udf_initializers(plan, source_transform=source_transform, generated_code_options=generated_code_options)
         )
+        lines.extend(["", "    def close(self) -> None:", "        close_plan_boundaries(self.spark)"])
         lines.extend(["", "    def run(", "        self,", "        *,"])
         for input in plan.inputs:
             lines.append(f"        {input.name}: DataFrame,")
@@ -539,6 +542,7 @@ class RenderPySparkTransformModule:
         lines.extend(
             self._udf_initializers(plan, source_transform=source_transform, generated_code_options=generated_code_options)
         )
+        lines.extend(["", "    def close(self) -> None:", "        close_plan_boundaries(self.spark)"])
         lines.extend(["", "    def run(", "        self,", "        *,"])
         for input in plan.inputs:
             lines.append(f"        {input.name}: DataFrame,")
@@ -681,7 +685,7 @@ class RenderPySparkTransformModule:
         return hooks
 
     def _validate_embedded_names(self, plan: PySparkExecutionPlan, hooks: tuple[EmbeddedHook, ...]) -> None:
-        reserved = {"__init__", "run"}
+        reserved = {"__init__", "run", "close"}
         reserved.update(self._step_method(step) for step in plan.steps)
         reserved.update(self._mirror_step_method(step) for step in plan.steps)
         for hook in hooks:
@@ -982,8 +986,10 @@ class RenderPySparkTransformModule:
             lines.append(
                 f'        assert_schema({frame}, {schema}, name="{validation.schema.__name__}", mode="{validation.mode.value}")'
             )
-        if validation.project:
-            lines.append(f"        {frame} = project_schema({frame}, {schema})")
+            if validation.project:
+                lines.append(f"        {frame} = project_schema({frame}, {schema})")
+            if validation.boundary:
+                lines.append(f"        {frame} = apply_plan_boundary({frame}, self.spark)")
         return lines
 
     def _schema_imports(

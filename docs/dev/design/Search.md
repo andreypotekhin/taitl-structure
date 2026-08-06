@@ -41,9 +41,39 @@ request-local result ranks.
 `SearchQuery.queryset` is a required caller-defined collection name, for example `natural` or `synthetic`, so evaluation
 can slice comparable ranking runs by query source.
 
-`ScoreOverlap` exposes a bounded lexical-overlap score. `ScoreBm25` exposes BM25 with fixed example parameters
-`k1 = 1.2` and `b = 0.75`. They remain separate score lanes: a caller or focused presentation transform chooses how to
-use them. Neither is a calibrated relevance probability.
+`ScoreOverlap` exposes IDF-weighted lexical overlap. For grain `g`, query `q`, and target `x`, let `Q` be the distinct
+normalized query terms, let `T(x)` be the target's indexed terms, and let `df_g(t)` and `N_g` be the term document
+frequency and target count from that grain's index summary:
+
+```text
+idf_g(t) = log(1 + (N_g - df_g(t) + 0.5) / (df_g(t) + 0.5))
+O_g(q, x) = sum(idf_g(t) for t in Q ∩ T(x)) / sum(idf_g(t) for t in Q)
+```
+
+Missing vocabulary terms use `df_g(t) = 0`; a zero denominator produces overlap `0`. `ScoreBm25` uses fixed example
+parameters `k1 = 1.2` and `b = 0.75`. Its term contribution is:
+
+```text
+BM25_g(q, x, t) = idf_g(t) * tf_g(t, x) * (k1 + 1)
+                   / (tf_g(t, x) + k1 * (1 - b + b * length_g(x) / average_length_g))
+BM25_g(q, x) = sum(BM25_g(q, x, t) for t in Q ∩ T(x))
+```
+
+`SelectScores` first normalizes BM25 within the ranking scope of each grain, then combines the signals using independent
+caller-supplied `ScorePolicy` weights:
+
+```text
+B̂_document       = BM25_document / max(BM25_document for the query)
+B̂_section        = BM25_section / max(BM25_section for the query and document)
+B̂_paragraph      = BM25_paragraph / max(BM25_paragraph for the query, document, and section)
+B̂_sentence       = BM25_sentence / max(BM25_sentence for the query, document, section, and paragraph)
+
+S_g(q, x) = policy.<g>_bm25_weight * B̂_g(q, x)
+          + policy.<g>_overlap_weight * O_g(q, x)
+```
+
+Each zero BM25 maximum yields normalized BM25 `0`. The weights need not be the same across grains. These are lexical
+evidence scores, not calibrated relevance probabilities.
 
 Every unified score row also carries `scored_at`. `ScorePolicy` supplies the score snapshot timestamp and its maximum
 serving age. `OfflineScoring` aggregates daily impression volume by normalized query, scores the most popular
@@ -69,30 +99,58 @@ prompt assembly. This preserves lexical evidence and avoids imposing an answer-m
 
 ### Documents
 
-`SearchDocuments` first runs `OnlineScoring`. It treats caller-supplied document and overlap score relations as
-cache-compatible snapshots, discards rows older than `ScorePolicy.maximum_age_days` (or newer than the request), and
-calculates missing query groups from the reusable indexes. The newly calculated rows are exposed as additional score
-outputs; retrieval unions them with caller-supplied stored and streamed rows, so a caller can persist those rows and
-reuse them on a later request. Score relations remain the cache contract—there are no parallel cache schemas, query-key,
-or index-version fields.
+Document search is an explicit funnel with typed boundaries:
 
-The resulting three-stage document path admits up to 1000 persisted or streamed candidates per query using descending
-score and document ID as the deterministic tie-breaker. It then filters to 100 candidates by overlap score before
-enriching only those candidates with feedback and ranking by the final combined score. A document outside the lexical
-candidate set cannot enter through popularity or click history. Documents without feedback remain eligible with zero
-feedback.
+```text
+Filtering (offline, selected queries)
+    └─ timestamped DocumentFilterScore artifacts
+OnlineFiltering (serving, missing/stale query groups)
+    └─ online DocumentFilterScore artifacts
+SelectFilterTargets
+    └─ cached + online filter rows, top 10,000 documents/query
+OnlineScoring
+    └─ cached + online composite lexical score rows
+RetrieveDocuments
+    └─ top 1,000 document candidates/query by composite lexical score
+RerankDocuments
+    └─ feedback-enriched ranking, then top 100 final results/query/context
+```
 
-The feedback score combines query-document evidence and document-wide popularity. Within each candidate set, BM25 is
-normalized by that query's maximum candidate BM25. The final score blends normalized BM25 and feedback with the
-caller-supplied policy weights. Overlap is used only as the explicit candidate-narrowing boundary.
+`Filtering` is the offline entry point. A caller supplies the subset of queries to prefilter and persists its
+`DocumentFilterScore` rows, which contain `query_id`, `document_id`, `matched_terms`, `filter_rank`, and `scored_at`.
+The simple filter counts distinct normalized query terms shared with a document and orders ties by document ID:
+
+```text
+matched_terms(q, d) = |Q ∩ T(d)|
+filter_rank(q, d) = rank descending by matched_terms, ascending by document_id
+```
+
+`OnlineFiltering` selects query groups without a usable cached filter. A row is usable only when its `scored_at` is no
+later than the request, no older than `ScorePolicy.maximum_age_days`, and no earlier than `ScorePolicy.effective_at`.
+The online transform computes only those gaps from the reusable document-term index. `SelectFilterTargets` applies the
+same validity checks to cached and online rows, merges them, and retains ranks 1 through 10,000.
+
+`OnlineScoring` independently resolves missing or invalid document lexical score groups from the reusable indexes.
+`RetrieveDocuments` joins composite document scores to the selected filter targets and retains ranks 1 through 1,000.
+`RerankDocuments` cannot create new candidates: it only enriches those 1,000 with feedback. For a candidate, its feedback
+is `0.8 * query_document_feedback + 0.2 * document_popularity_feedback`, and the reranker applies the caller's
+`RelevancePolicy` lexical/feedback weights before deterministic ranking. The final cap is applied after reranking, so
+feedback can promote a lexical candidate from position 101 through 1,000 into the returned top 100. Documents without
+feedback remain eligible with a zero feedback contribution.
 
 ### Streaming query boundary
 
-`SearchDocuments.queries` is a declared streaming input. That declaration is propagated through `OnlineScoring`, gap
-selection, `Scoring`/`ScoreBase`, `RetrieveDocuments`, `OverlapDocuments`, and `RerankDocuments`; the compiler therefore
-keeps query-derived scores, candidates, and results in the same streaming lineage. The corpus, lexical indexes,
-freshness policy, feedback snapshots, and ranking policy remain caller-supplied side inputs. Offline `All` and its
-query-producing stages remain batch-only.
+The SearchDocuments design-gated streaming contract is temporarily disabled for integration testing and delivery via
+`examples.search.adoption.SEARCH_STREAMING_CONTRACTS_ENABLED = False`. The document-search graph therefore compiles and
+runs as a batch transform; its query, request, score, candidate, and reranking inputs are not treated as streaming by
+default. This is a Search-only delivery switch: the general Structured Streaming compiler and supported click-feedback
+streams remain unchanged. `SearchQuery.requested_at` remains a required schema field, but is currently ordinary batch
+data in this path.
+
+When the switch is re-enabled, `SearchDocuments.queries` will propagate streaming mode through `OnlineFiltering`,
+`SelectFilterTargets`, `OnlineScoring`, gap selection, `Scoring`/`ScoreBase`, `RetrieveDocuments`, and `RerankDocuments`; the corpus, lexical
+indexes, freshness policy, feedback snapshots, and ranking policy will remain caller-supplied side inputs. Offline `All`
+and its query-producing stages remain batch-only.
 
 The current graph is a compiler-visible migration boundary, not yet a ready-to-start Structured Streaming query. The
 implementation roadmap is recorded in
