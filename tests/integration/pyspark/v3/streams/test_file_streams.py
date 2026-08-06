@@ -27,7 +27,17 @@ from structure import Schema, Transform, input, output, special, stage, transfor
 from structure.plugin.api.v1.model import BackendCapabilityError
 from structure.plugin.pyspark import *
 
-pytestmark = pytest.mark.integration
+# Every test in this module exercises classic Structured Streaming APIs that
+# are intentionally unavailable on Spark Connect.  Skip at collection time so
+# Connect never creates a Spark session only to block while tearing it down.
+pytestmark: pytest.MarkDecorator | list[pytest.MarkDecorator] = (
+    [
+        pytest.mark.integration,
+        pytest.mark.skip(reason="file-stream evidence requires classic PySpark"),
+    ]
+    if backend_name().startswith("spark-connect")
+    else pytest.mark.integration
+)
 
 PACKAGE = "integration_streams_generated"
 SCHEMA_MODULES = {

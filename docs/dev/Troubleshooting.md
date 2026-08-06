@@ -115,6 +115,17 @@ image once to use the quiet Connect runner:
 the image and cache. If pytest actually fails, retain the reported traceback; the runner prints the last 200 Connect
 server log lines only for a failing test run.
 
+### Problem (integration): Spark Connect hangs entering `test_file_streams.py`
+
+When: Running the Spark Connect 4.0 integration lane; pytest stops after the preceding test and the Connect container
+remains alive without progress.
+Cause: The file-stream module contains only classic-PySpark tests, but per-test `spark` fixtures were created before
+the tests skipped. Spark Connect could then block while tearing down a session after the skip.
+Fix: The module skips at collection time on Spark Connect, so no Connect session is created for those tests. Verify
+with `docker compose --env-file infra/compose/.env -f infra/compose/docker-compose.yaml run --rm -e
+INTEGRATION_PYTEST_ARGS='/workspace/tests/integration/pyspark/v3/streams/test_file_streams.py -q'
+structure-integration-spark-connect40`; an expected result is eight skipped stream tests rather than a stalled run.
+
 ### Problem (context): `message` during [when]
 
 When: [describe when problem manifests]

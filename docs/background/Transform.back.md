@@ -186,8 +186,11 @@ class EnrichOrders(Transform):
         return OrderWithCustomer.base(order)(customer_name=customer.name)
 ```
 
-Private helper methods are not compiled. Public helpers without schema return annotations are not steps and should not
-be used for reusable compiler-visible logic; use `@special(type="expr")` for that purpose. Async, generator,
+Private helper methods and public helpers without schema return annotations are not pipeline steps. When reached from a
+compiled step, however, ordinary helper methods and classes are symbolically evaluated like inline compiler logic:
+supported Structure expressions compile to optimized PySpark, and unsupported Python fails with a compiler diagnostic.
+Use `@special(type="expr")` only when explicit expression intent or named embedded helper rendering is useful. Use
+`@special(type="ignore")` to declare code that must remain outside the compiler-visible path. Async, generator,
 classmethod, and staticmethod step forms are outside the compiled DSL. Step methods cannot call other step methods
 directly, because
 source order, lanes, and explicit composition own pipeline flow.
@@ -353,7 +356,8 @@ class StrictPublishOrders(NormalizeBase):
 Supported parent-call forms are `super().method(row)`, `Base.method(self, row)`, and
 `super(Base, self).method(row)`. The parent retains its hooks, validation boundary, lane writes, and traceability entry.
 Compiled step methods may not call other step methods directly; use source order and lanes, private inline helpers,
-invocation-level `.to(...)`, or `@special(type="expr")` for reusable compiler-visible expressions.
+invocation-level `.to(...)`, or ordinary reachable helpers for reusable compiler-visible expressions. `@special(type="expr")`
+is optional when explicit metadata or named rendering is useful.
 
 The parent implementation remains a separate plan step when it is scheduled explicitly:
 
@@ -382,16 +386,17 @@ generated paths mirror that import identity. Discovery preserves class-body orde
 hooks, and validation decorators. Modules imported during compiler commands must declare objects only: Spark startup,
 data reads, writes, network calls, services, actions, and large data parsing belong behind runtime entrypoints or hooks.
 
-Compiled expressions use typed field references, literals, operators, public helpers, and `@special(type="expr")`.
+Compiled expressions use typed field references, literals, operators, ordinary reachable helpers, and optional
+`@special(type="expr")` helpers.
 Python truthiness and control flow over symbolic values, Python string methods, raw SQL column paths, arbitrary
 callbacks,
 and runtime objects are rejected. Use `&`, `|`, `~`, and `when(...)` for symbolic logic; use an explicit hook for target
 code that has no Structure-level contract. These boundaries preserve Spark optimizer visibility and compiler speed.
 
-Prefer a compiler-visible expression helper when the logic is a reusable scalar expression:
+An ordinary helper is compiler-visible when symbolic execution reaches it. Prefer the explicit decorator only when the
+intent should be documented or generated code should preserve a named helper:
 
 ```python
-@special(type="expr")
 def clean_customer_id(value):
     return lower(trim(value))
 
@@ -529,7 +534,7 @@ duplicates and make no ordering promise; ordering-dependent `limit(...)` and `of
 
 ## Compiler-Visible Operations
 
-The compiler understands schema constructors, field references, Python literals, expression helpers, `where(...)`,
+The compiler understands schema constructors, field references, Python literals, reachable helper logic, `where(...)`,
 joins, aggregation and window operations admitted by the API tables, hooks at explicit boundaries, and validation
 declarations.
 Each operation remains a DataFrame or `Column` operation after lowering.
@@ -717,7 +722,10 @@ source transform
 ```
 
 The compiler never runs the user's pipeline during symbolic execution. Unsupported source behavior fails at compile time
-with a structured diagnostic instead of silently falling back to opaque generated code.
+with a structured diagnostic identifying the transform, helper, and schema field when available. Structure never silently
+falls back to opaque generated code. Use `@special(type="ignore")` only for code that must remain outside compilation;
+calling it from compiled logic remains an error. Use `@special(type="udf")` for intentional scalar Python execution or
+an explicit hook for arbitrary DataFrame logic.
 
 The [Compiler background](Compiler.back.md) documents symbolic execution, intermediate representation, and extension
 points. This page owns the author-facing
@@ -971,7 +979,7 @@ same row contract, more fields       -> Schema inheritance and Schema.base(...)
 same logical pipeline, reusable flow  -> Transform inheritance
 independent complete pipelines        -> invocation.to(...)
 target-specific arbitrary DataFrame   -> @raw hook
-reusable typed scalar expression      -> @special(type="expr")
+reusable typed scalar expression      -> ordinary helper (optional @special(type="expr"))
 ```
 
 The [API reference](../reference/API.ref.md) remains the source for supported operation names and target parity. The

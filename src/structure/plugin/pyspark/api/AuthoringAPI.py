@@ -56,9 +56,13 @@ class PySparkStepSession:
         return self._arguments
 
     def validate(self) -> tuple[object, ...]:
-        PySpark.symbolic_execution.validate_comparisons()(self._context.filters, request=self._request)
-        body = PySparkStepBody(value=None, joins=tuple(self._context.joins))
-        return PySpark.symbolic_execution.validate_joins()(body, request=self._request)
+        try:
+            PySpark.symbolic_execution.validate_comparisons()(self._context.filters, request=self._request)
+            body = PySparkStepBody(value=None, joins=tuple(self._context.joins))
+            return PySpark.symbolic_execution.validate_joins()(body, request=self._request)
+        except BaseException:
+            self._close_context()
+            raise
 
     def capture(self, value: object) -> StepAuthoringCapture:
         try:
@@ -69,8 +73,11 @@ class PySparkStepSession:
             )
         finally:
             if self._capture_pending:
-                self._context.__exit__(None, None, None)
+                self._close_context()
                 self._capture_pending = False
+
+    def _close_context(self) -> None:
+        self._context.__exit__(None, None, None)
 
     def _build_arguments(self) -> tuple[object, ...]:
         arguments: list[object] = []

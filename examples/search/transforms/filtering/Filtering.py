@@ -10,7 +10,7 @@ from structure import Transform, input, output
 class Filtering(Transform):
     """Create timestamped simple-overlap filter artifacts for selected queries."""
 
-    queries = input(SearchQuery)
+    queries = input(SearchQuery, streaming=True)
     document_terms = input(DocumentIndexTerm)
     score_policy = input(ScorePolicy)
 

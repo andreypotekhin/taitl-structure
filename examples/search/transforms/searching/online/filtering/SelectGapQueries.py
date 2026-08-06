@@ -1,6 +1,5 @@
 """Select query groups that need online filter resolution."""
 
-from examples.search.adoption import SEARCH_STREAMING_CONTRACTS_ENABLED
 from examples.search.schemas.clicks import SearchRequest
 from examples.search.schemas.filtering import DocumentFilterScore, FilterQueryAvailability
 from examples.search.schemas.search import ScorePolicy, SearchQuery
@@ -11,8 +10,8 @@ from structure.plugin.pyspark import cross_join, datediff, drop_duplicates, inne
 class SelectGapQueries(Transform):
     """Select queries without a fresh persisted simple-overlap filter."""
 
-    queries = input(SearchQuery, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
-    requests = input(SearchRequest, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
+    queries = input(SearchQuery, streaming=True)
+    requests = input(SearchRequest, streaming=True)
     document_filter_scores = input(DocumentFilterScore)
     score_policy = input(ScorePolicy)
 

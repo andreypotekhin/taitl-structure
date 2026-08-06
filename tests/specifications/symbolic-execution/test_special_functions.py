@@ -25,8 +25,29 @@ class Published(Schema):
     id = string(nullable=False)
 
 
+class RankedPublished(Schema):
+    id = string(nullable=False)
+    status = string(nullable=False)
+
+
 class StreamPublished(Schema):
     id = string(nullable=False)
+
+
+def plain_clean(value):
+    return trim(value)
+
+
+def invalid_clean(value):
+    return value.strip()
+
+
+class PlainRanker:
+    def clean(self, value):
+        return trim(value)
+
+    def status(self, value):
+        return upper(value)
 
 
 def test_special_expr_helper_call_through_self_compiles_transparently() -> None:
@@ -44,6 +65,102 @@ def test_special_expr_helper_call_through_self_compiles_transparently() -> None:
     expression = cast(PySparkStepBody, _compile(Publish).analysis.steps[0].plugin_body).projection[0].expression
 
     assert expression.kind == "field"
+
+
+def test_undecorated_module_helper_compiles_transparently() -> None:
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(id=plain_clean(row.id))
+
+    expression = cast(PySparkStepBody, _compile(Publish).analysis.steps[0].plugin_body).projection[0].expression
+
+    assert expression.kind == "call"
+    assert expression.data["function"] == "trim"
+
+
+def test_unsupported_undecorated_helper_reports_helper_call_path() -> None:
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(id=invalid_clean(row.id))
+
+    with pytest.raises(StructureCompileError) as raised:
+        _compile(Publish)
+
+    diagnostic = raised.value.diagnostic
+    assert diagnostic.code == "DSL-E0401"
+    assert "invalid_clean" in diagnostic.problem_text()
+    assert "@special(type=\"ignore\")" in diagnostic.use_text()
+
+
+def test_undecorated_helper_class_compiles_through_transform_parameter() -> None:
+    class Publish(Transform):
+        ranker = parameter(PlainRanker())
+        rows = input(Raw)
+        published = output(RankedPublished)
+
+        def publish(self, row: Raw) -> RankedPublished:
+            ranker = cast(PlainRanker, self.ranker)
+            return RankedPublished(id=ranker.clean(row.id), status=ranker.status(row.id))
+
+    projection = cast(PySparkStepBody, _compile(Publish).analysis.steps[0].plugin_body).projection
+
+    assert [assignment.expression.data["function"] for assignment in projection] == ["trim", "upper"]
+
+
+def test_ignored_helper_runs_outside_compilation_but_fails_inside_it() -> None:
+    @special(type="ignore")
+    def clean(value):
+        return value.strip()
+
+    assert clean(" ready ") == "ready"
+
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(id=clean(row.id))
+
+    with pytest.raises(StructureCompileError) as raised:
+        _compile(Publish)
+
+    assert raised.value.diagnostic.code == "DSL-E0404"
+    assert "outside compiled logic" in raised.value.diagnostic.use_text()
+
+
+def test_ignored_helper_class_runs_outside_compilation_but_fails_inside_it() -> None:
+    @special(type="ignore")
+    class IgnoredRanker:
+        def clean(self, value):
+            return value.strip()
+
+    ignored_ranker = IgnoredRanker()
+    assert ignored_ranker.clean(" ready ") == "ready"
+
+    class Publish(Transform):
+        ranker = parameter(ignored_ranker)
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            ranker = cast(IgnoredRanker, self.ranker)
+            return Published(id=ranker.clean(row.id))
+
+    with pytest.raises(StructureCompileError) as raised:
+        _compile(Publish)
+
+    assert raised.value.diagnostic.code == "DSL-E0404"
+
+
+def test_opaque_special_mode_is_rejected_in_favor_of_ignore() -> None:
+    with pytest.raises(TypeError, match="expr.*ignore.*udf"):
+        special(type="opaque")
 
 
 def test_special_udf_records_optimizer_warning_by_default() -> None:

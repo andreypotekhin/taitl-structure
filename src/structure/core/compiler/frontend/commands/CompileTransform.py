@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import inspect
+import traceback
 from collections.abc import Mapping
 from contextvars import ContextVar
 from dataclasses import replace
@@ -28,6 +29,7 @@ from structure.core.dsl.model.transforms.InputDeclaration import InputDeclaratio
 from structure.core.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.core.dsl.model.transforms.OutputDeclaration import OutputDeclaration
 from structure.core.dsl.model.transforms.SchemaMode import SchemaMode
+from structure.core.dsl.model.transforms.SpecialFunction import IgnoredCompilerCode
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
@@ -657,14 +659,35 @@ class CompileTransform:
                         result = member(instance, *arguments)
         except StructureCompileError:
             raise
+        except IgnoredCompilerCode as error:
+            raise self._error(
+                "DSL-E0404",
+                transform_class=transform_class,
+                member=name,
+                problem=f"{transform_class.__name__}.{name} reached ignored compiler code: {error}",
+                use=(
+                    "Keep ignored code outside compiled logic. Use Structure expression helpers or an undecorated "
+                    "helper when it can compile, @special(type=\"udf\") for intentional scalar Python, or @raw "
+                    "for DataFrame logic."
+                ),
+                context={"helper": str(error).split(" is marked", 1)[0]},
+            ) from error
         except Exception as error:
+            helper = self._symbolic_call_path(error, fallback=name)
             raise self._error(
                 "DSL-E0401",
                 transform_class=transform_class,
                 member=name,
-                problem=f"{transform_class.__name__}.{name} uses unsupported symbolic code: {error}",
-                use="Use Structure expression helpers, combine predicates with &, |, or ~, or move arbitrary PySpark to a hook.",
-                context={"error": type(error).__name__},
+                problem=(
+                    f"{transform_class.__name__}.{name} uses unsupported symbolic code in {helper}: {error}"
+                ),
+                use=(
+                    "Use Structure expression helpers or leave the helper undecorated when it can compile; combine "
+                    "predicates with &, |, or ~; use @special(type=\"udf\") for intentional scalar Python; "
+                    "use @raw for DataFrame logic; or mark code @special(type=\"ignore\") only when it must stay "
+                    "outside compiler-visible logic."
+                ),
+                context={"error": type(error).__name__, "helper": helper},
             ) from error
 
         diagnostics.extend(cast(tuple[Diagnostic, ...], authoring_session.validate()))
@@ -1764,6 +1787,19 @@ class CompileTransform:
 
     def _is_schema(self, value: object) -> bool:
         return isinstance(value, type) and issubclass(value, Schema)
+
+    @staticmethod
+    def _symbolic_call_path(error: BaseException, *, fallback: str) -> str:
+        """Return user helper frames that explain where symbolic evaluation failed."""
+        frames = []
+        for frame, _ in traceback.walk_tb(error.__traceback__):
+            filename = frame.f_code.co_filename.replace("\\", "/")
+            if "/src/structure/" in filename or "/site-packages/" in filename:
+                continue
+            qualname = getattr(frame.f_code, "co_qualname", frame.f_code.co_name)
+            if qualname not in frames:
+                frames.append(qualname)
+        return " -> ".join(frames) or fallback
 
     def _error(
         self,

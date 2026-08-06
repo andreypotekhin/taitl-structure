@@ -7,7 +7,7 @@
 - `@transform` discovery.
 - Single schema-returning step method.
 - Symbolic field refs.
-- One `@special(type="expr")` helper.
+- One compiler-visible ordinary helper, with optional `@special(type="expr")` metadata.
 - `where(...)` filtering.
 - Projection generation.
 - Backend capability interface for first-slice PySpark requirements.
@@ -38,7 +38,7 @@
 - Input, intermediate, and output validation modes.
 - Documented data-quality constraint boundary with schema-only validation as the default.
 - `where(...)` filtering.
-- `@special(type="expr")` helpers.
+- compiler-visible ordinary helpers and optional `@special(type="expr")` helpers.
 - `@raw(lane=lane)` and `@raw(lane=lane)` hooks.
 - Hook signature validation.
 - `lookup_join(...)`.

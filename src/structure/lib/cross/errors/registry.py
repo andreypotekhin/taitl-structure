@@ -34,7 +34,7 @@ diagnostic_registry = DiagnosticRegistry(
             docs="docs/Diagnostics.md#dsl-e0401",
             introduced="1.0.0",
             problem_template="Transform code uses Python behavior Structure cannot lower to Spark expressions.",
-            use_template='Use Structure DSL helpers, @special(type="expr"), @special(type="udf"), or an explicit hook.',
+            use_template='Rewrite with Structure DSL helpers or an ordinary compiler-visible helper; use @special(type="expr") for explicit metadata, @special(type="udf") for intentional scalar Python execution, or @raw for arbitrary DataFrame logic.',
         ),
         DiagnosticEntry(
             code="DSL-E0402",
@@ -46,6 +46,17 @@ diagnostic_registry = DiagnosticRegistry(
             introduced="1.0.0",
             problem_template="Transform source does not match the Structure compiler contract.",
             use_template="Check transform decoration, method annotations, schema flow, and assigned output fields.",
+        ),
+        DiagnosticEntry(
+            code="DSL-E0404",
+            severity="error",
+            title="Ignored compiler code reached",
+            owner="dsl",
+            status="active",
+            docs="docs/Diagnostics.md#dsl-e0404",
+            introduced="1.0.0",
+            problem_template="Compiler-visible logic reached code explicitly marked as outside the compiler contract.",
+            use_template='Keep it outside compiled logic, or use @special(type="udf") or an explicit hook when execution is intentional.',
         ),
         DiagnosticEntry(
             code="DSL-W0403",

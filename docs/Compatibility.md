@@ -143,11 +143,12 @@ compiler instead.
 
 Structure keeps the initial extension surface narrow:
 
-- `@special(type="expr")` helpers for reusable compiler-visible expression logic;
+- ordinary reachable helpers and classes for reusable compiler-visible expression logic, with optional `@special(type="expr")` metadata;
 - explicit, source-ordered `@raw` hooks for arbitrary PySpark DataFrame code.
 
-These paths have different guarantees. `@special(type="expr")` logic participates in compileability checks, generated code,
-traceability, and backend capability diagnostics. Hook bodies are opaque: Structure validates the hook
+These paths have different guarantees. Ordinary reachable helper logic and `@special(type="expr")` logic participate in
+compileability checks, generated code, traceability, and backend capability diagnostics. Code marked
+`@special(type="ignore")` is rejected when reached from compiled logic. Hook bodies are opaque: Structure validates the hook
 declaration, calls the hook at the documented lifecycle point, and records the boundary, but it does not
 inspect arbitrary PySpark code inside the hook.
 

@@ -27,7 +27,7 @@ supplies target-specific service facets, and external wheels can supply equivale
 - Add/drop columns via schema projection.
 - Symbolic `lookup_join(...)`.
 - N-step serial joins.
-- `@special(type="expr")` helpers.
+- compiler-visible ordinary helpers, with optional `@special(type="expr")` metadata.
 - `@raw(lane=lane)` and `@raw(lane=lane)` hooks.
 - Compiler provenance from source node to IR node to generated PySpark node.
 - Static dataflow traceability inferred from IR.

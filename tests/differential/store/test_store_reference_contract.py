@@ -390,7 +390,7 @@ def test_recommendation_enhancements_expose_explicit_stage_contracts() -> None:
 
 
 def test_recommendation_ranker_formulas_are_swappable() -> None:
-    assert getattr(Ranker, "_structure_special_type", None) == "expr"
+    assert getattr(Ranker, "_structure_special_type", None) is None
 
     class ConstantBoostRanker(Ranker):
         def boost_score(self, boost: Any) -> Any:

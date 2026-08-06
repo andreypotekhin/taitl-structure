@@ -62,7 +62,7 @@ from examples.search.schemas.features.intermediate import (
     QueryFeatureToken,
     QueryTokenSummary,
 )
-from examples.search.schemas.filtering import DocumentFilterScore, FilterQueryAvailability
+from examples.search.schemas.filtering import DocumentFilterMatch, DocumentFilterScore, FilterQueryAvailability
 from examples.search.schemas.indexing.lexical.index import (
     DocumentIndexSummary,
     DocumentIndexTarget,
@@ -116,8 +116,10 @@ from examples.search.schemas.scoring.intermediate import (
     ExpandedQueryToken,
     ParagraphOverlapMatch,
     PopularQueryCandidate,
+    QueryIdfTotal,
     QueryTerm,
     QueryTermCount,
+    QueryTermIdf,
     QueryToken,
     ScoreQueryAvailability,
     SectionOverlapMatch,
@@ -240,7 +242,7 @@ pytestmark = pytest.mark.integration
 PACKAGE = "integration_search_generated"
 FIXTURES = Path(__file__).resolve().parents[4] / "examples" / "fixtures" / "search"
 SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
-    "examples.search.schemas.filtering": [DocumentFilterScore, FilterQueryAvailability],
+    "examples.search.schemas.filtering": [DocumentFilterMatch, DocumentFilterScore, FilterQueryAvailability],
     "examples.search.schemas.analytics": [
         DocumentProfile,
         SentenceStatistics,
@@ -281,8 +283,10 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
     "examples.search.schemas.scoring.intermediate": [
         QueryToken,
         ExpandedQueryToken,
+        QueryIdfTotal,
         QueryTerm,
         QueryTermCount,
+        QueryTermIdf,
         ScoreQueryAvailability,
         PopularQueryCandidate,
         DocumentOverlapMatch,

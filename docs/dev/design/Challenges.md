@@ -603,14 +603,16 @@ supported.
 Resolved by clarifying extension compatibility in `Readme.md`, [Compatibility.md](../../Compatibility.md), and the compileability checker
 design. Structure now keeps the initial extension surface deliberately small:
 
-- `@special(type="expr")` is the supported public extension point for reusable compiler-visible expression logic.
+- ordinary reachable helpers and classes are the supported compiler-visible extension path; `@special(type="expr")` is
+  optional metadata, and `@special(type="ignore")` explicitly excludes code from compiled logic.
 - `@raw` hooks are supported public escape hatches for arbitrary PySpark DataFrame code.
 - Backend capability providers, diagnostic renderers, schema type adapters, validation policy plugins, and hook lint
   rule registries remain internal or deferred until their contracts are specified and tested.
 - Monkey-patching compiler registries or relying on hidden UDF-like fallback is unsupported.
 
 Hooks remain useful but intentionally opaque. Traceability and explain output should show hook boundaries, while diagnostics
-should prefer direct DSL or `@special(type="expr")` fixes when logic can stay compiler-visible.
+should prefer direct DSL or ordinary helper fixes when logic can stay compiler-visible, with `@special(type="expr")` as
+an optional explicit marker.
 
 ## +C26. Data Quality Constraints Stop at Schema Shape
 

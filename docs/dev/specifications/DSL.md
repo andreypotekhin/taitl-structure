@@ -72,8 +72,7 @@ class EnrichOrders(Transform):
     customers = input(Customer)
     published = output(OrderPublished)
 
-    @special(type="expr")
-    def clean_id(value):
+    def clean_id(self, value):
         return lower(trim(value))
 
     def normalize(self, order: OrderRaw) -> OrderNormalized:
@@ -346,8 +345,9 @@ Rules:
 - A multi-result step method executes its joins and `where(...)` filters once, then projects every returned schema
   from that shared row set.
 - Private helper methods are allowed and are not compiled as step methods.
-- Public helper methods without a `Structure` return annotation are ignored by the step method collector, but should
-  not be used for compileable expression reuse. Use `@special(type="expr")` instead.
+- Public helper methods without a `Structure` return annotation are ignored by the step method collector, but are still
+  symbolically compiled when reached from a compiled step. Use `@special(type="expr")` only for optional explicit
+  expression metadata; use `@special(type="ignore")` for code that must remain outside compiler-visible logic.
 - Async step methods, generator step methods, classmethods, and staticmethods are out of scope for v1 compiled DSL.
 
 The body of a compiled step method is symbolically executed. It must return a symbolic schema construction expression:
@@ -396,8 +396,8 @@ During symbolic execution:
 Rules:
 
 - Symbolic execution must be deterministic for the same source and configuration.
-- User code outside compiled step method bodies must not be symbolically executed except expression helpers called
-  from those bodies.
+- User code outside compiled step method bodies must not be symbolically executed. Any ordinary helper or class reached
+  from those bodies is part of symbolic execution and must either compile or fail with a structured diagnostic.
 - Unsupported operations must fail with structured compile errors. Structure must not silently lower unsupported
   Python code to UDFs, RDD operations, Pandas conversion, row-wise callbacks, or opaque generated code.
 - Symbolic execution should avoid AST parsing except where needed for source spans, expression text, or diagnostics.
@@ -437,12 +437,12 @@ Detailed type, literal, and nullability behavior is specified by [NullabilityAnd
 
 ## Expression Helpers
 
-`@special(type="expr")` declares a reusable compileable expression helper.
+Reachable ordinary functions and classes are compiler-visible by default. `@special(type="expr")` optionally declares
+explicit metadata for a reusable compiler-visible expression helper.
 
 Module-level form:
 
 ```python
-@special(type="expr")
 def clean_id(value):
     return lower(trim(value))
 ```
@@ -450,25 +450,37 @@ def clean_id(value):
 Class-local form:
 
 ```python
-@special(type="expr")
-def clean_id(value):
+def clean_id(self, value):
     return lower(trim(value))
 
 def normalize(self, order: OrderRaw) -> OrderNormalized:
     return OrderNormalized(customer_id=self.clean_id(order.customer_id))
 ```
 
+Explicit metadata remains available when named helper rendering or declaration-level intent is useful:
+
+```python
+@special(type="expr")
+def normalized_email(value):
+    return lower(trim(value))
+```
+
 Rules:
 
+- Reachable ordinary functions and classes are ordinary Python callables at import time and are compiled when called with
+  symbolic arguments.
 - `@special(type="expr")` functions are ordinary Python callables at import time.
 - `@special(type="expr")` attaches metadata and wraps calls so symbolic arguments produce symbolic expressions.
-- An expression helper must return a symbolic expression or a Python literal accepted as a source expression.
+- A compiler-visible helper must return a symbolic expression or a Python literal accepted as a source expression.
 - A helper returning `None`, a DataFrame, an RDD, a Python collection of rows, or another unsupported object is invalid
   when called from a compiled step method.
-- Class-local `@special(type="expr")` helpers do not take `self`, but may be called through `self` for IDE discoverability.
+- Ordinary class-local helpers use normal method signatures, including `self`. Explicitly decorated class-local helpers
+  may still omit `self` and be called through `self` for IDE discoverability.
 - Module-level helpers and class-local helpers use the same expression semantics.
 - Helpers should be pure and deterministic. Non-deterministic helpers require an explicit future contract.
 - Helpers must not import or require PySpark during compiler phases.
+- `@special(type="ignore")` helpers may run normally outside compilation but fail with `DSL-E0404` when reached from
+  compiler-visible logic.
 - Recursive expression helpers are invalid in v1 unless a future spec defines recursion limits and expansion behavior.
 
 When a helper call is unsupported, diagnostics should show the helper name and the call site, not only the expanded
@@ -850,7 +862,7 @@ DSL diagnostics must include:
 - problem;
 - why it matters when the issue is not obvious;
 - direct DSL fix when one exists;
-- `@special(type="expr")` helper fix when reuse is likely;
+- ordinary compiler-visible helper fix when reuse is likely; `@special(type="expr")` is optional metadata;
 - hook workaround when arbitrary PySpark is appropriate;
 - configuration workaround only when safe and real;
 - link to the most specific specification or public docs page.
@@ -881,7 +893,11 @@ Why this matters:
 Use:
   customer_id=lower(trim(order.customer_id))
 
-For reuse:
+For reuse, leave the helper undecorated:
+  def clean_id(value):
+      return lower(trim(value))
+
+If named helper rendering or explicit metadata is useful:
   @special(type="expr")
   def clean_id(value):
       return lower(trim(value))
@@ -967,7 +983,7 @@ The following are outside v1 DSL scope:
 8. Implement symbolic row proxies and scoped field references.
 9. Implement expression objects with type, nullability, scope, and source metadata.
 10. Implement public expression helpers and helper metadata.
-11. Implement `@special(type="expr")` for module-level and class-local helpers without `self`.
+11. Implement optional `@special(type="expr")` metadata for ordinary module-level and class-local helpers.
 12. Implement `where(...)` context capture and boolean predicate checking.
 13. Implement `lookup_join(...)` input-scope capture and enum validation.
 14. Implement `@raw` metadata, options, ordering, and signature checks.

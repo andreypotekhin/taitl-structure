@@ -22,12 +22,10 @@ class PrepareOrderDemand(Transform):
     promotions = input(Promotion)
     demand = output(Order)
 
-    @special(type="expr")
-    def clean_id(value):
+    def clean_id(self, value):
         return lower(trim(value))
 
-    @special(type="expr")
-    def money(value):
+    def money(self, value):
         return coalesce(to_decimal(value, precision=12, scale=2), 0)
 
     def normalize(self, order: OrderRaw) -> OrderNormalized:

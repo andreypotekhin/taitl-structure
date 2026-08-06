@@ -151,8 +151,9 @@ Rules:
 - Only one active step-method context may receive `where(...)` and join events at a time.
 - The engine must clear the active context in a `finally`-style cleanup path after successful or failed execution.
 - Hooks are not executed.
-- Private helper methods are ordinary Python and are unsupported when they try to manipulate symbolic expressions in
-  ways the DSL cannot capture. Reusable expression logic should use `@special(type="expr")`.
+- Ordinary reachable helper methods and classes are compiled when they manipulate symbolic expressions in ways the DSL
+  can capture. Unsupported behavior fails with a structured diagnostic. Reusable expression logic may use optional
+  `@special(type="expr")`; `@special(type="ignore")` explicitly rejects compiler-visible calls.
 - If user code performs side effects during symbolic execution, Structure is not required to undo them. Diagnostics
   should still guide developers toward pure compiled step methods or explicit hooks.
 
@@ -191,7 +192,8 @@ Rules:
 The compiler invokes step methods on a transform implementation object. During symbolic execution:
 
 - `self.<input_name>` returns a symbolic input scope for declared inputs.
-- `self.<expr_helper_name>(...)` calls a class-local `@special(type="expr")` helper symbolically.
+- `self.<helper_name>(...)` calls a reachable helper symbolically; class-local `@special(type="expr")` remains an
+  optional explicit form.
 - Hook methods are ignored except for previously discovered metadata.
 - Constructor-bound live DataFrames are not used.
 
@@ -314,7 +316,7 @@ Rules:
 
 ## `@special(type="expr")` Expansion
 
-`@special(type="expr")` helpers are reusable compileable expression functions.
+`@special(type="expr")` helpers are reusable compileable expression functions with optional explicit metadata.
 
 Rules:
 
@@ -502,7 +504,7 @@ Unsupported behavior must fail with structured compile errors. Required unsuppor
 - Python truthiness on symbolic expressions;
 - Python `and`, `or`, and `not` for symbolic boolean logic;
 - Python string methods on symbolic string expressions, such as `.strip()` or `.lower()`;
-- arbitrary Python functions that are not public DSL helpers or `@special(type="expr")` helpers;
+- arbitrary Python functions whose bodies cannot be symbolically compiled;
 - source-level PySpark `Column` construction inside compiled step methods;
 - raw string column paths;
 - DataFrame methods inside compiled step methods;
@@ -517,7 +519,9 @@ Rules:
 
 - The engine should reject unsupported operations as close to the source operation as practical.
 - Diagnostics must prefer a direct DSL replacement when one exists.
-- Diagnostics should suggest `@special(type="expr")` for reusable expression logic.
+- Diagnostics should suggest leaving reusable logic undecorated when it can compile, or `@special(type="expr")` when
+  explicit expression metadata is useful.
+- Diagnostics should suggest `@special(type="ignore")` only when code must remain outside compiler-visible logic.
 - Diagnostics should suggest hooks only when arbitrary PySpark is genuinely appropriate.
 - Configuration workarounds should be shown only when a safe setting exists. Unsupported compiled expressions do not
   have a configuration workaround.
@@ -717,7 +721,7 @@ The implementation is complete when tests prove:
 - Field access on the current row produces scoped `FieldRef` expressions.
 - Unknown field access fails with transform, step method, schema, field, and documentation link.
 - Python literals in expression positions produce typed literal expressions.
-- Public expression helpers produce expression IR without importing PySpark.
+- Reachable ordinary helpers and classes produce expression IR without importing PySpark.
 - Module-level `@special(type="expr")` helpers expand when called with symbolic arguments.
 - Class-local `@special(type="expr")` helpers without `self` expand when called through `self`.
 - Recursive `@special(type="expr")` helpers fail clearly.

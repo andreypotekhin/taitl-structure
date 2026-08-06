@@ -89,8 +89,7 @@ class EnrichOrders(Transform):
     products = input(Product)
     published = output(OrderPublished)
 
-    @special(type="expr")
-    def clean_id(value):
+    def clean_id(self, value):
         return lower(trim(value))
 
     def normalize(self, order: OrderRaw) -> OrderNormalized:
@@ -221,12 +220,12 @@ Multiple `where(...)` calls are combined with logical AND.
 Expression helpers are compileable reusable functions.
 
 ```python
-@special(type="expr")
 def clean_id(value):
     return lower(trim(value))
 ```
 
-Class-local expression helpers do not take `self`, but may be called through `self` for IDE discoverability.
+Class-local expression helpers use ordinary method signatures, including `self`, and may be called through `self` for
+IDE discoverability.
 
 ```python
 customer_id=self.clean_id(order.customer_id)

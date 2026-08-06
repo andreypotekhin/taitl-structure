@@ -23,10 +23,9 @@ from structure.plugin.pyspark.dsl.types import (
 class SpecialFunction:
     """Dispatch a decorated Python helper according to its special mode.
 
-    ``expr`` helpers expand into symbolic expression trees, ``udf`` helpers
-    become Python UDF expression nodes inside compilation, and ``opaque``
-    helpers are rejected during compilation because Spark cannot inspect their
-    implementation.
+    ``expr`` helpers expand into symbolic expression trees and ``udf`` helpers
+    become Python UDF expression nodes inside compilation. ``ignore`` is
+    rejected by the target-neutral wrapper before reaching this class.
     """
 
     def __init__(

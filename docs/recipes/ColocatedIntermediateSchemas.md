@@ -1,14 +1,13 @@
 # Colocated Intermediate Schemas
 
-**Problem:** An order-normalization shape is useful only to one publishing
-transform, but putting it in the shared model package makes a private intermediate
-contract look reusable. Nesting it inside `PublishOrders` is not a valid alternative
-because Structure cannot discover nested schema classes.
+**Problem:** An order-normalization shape belongs only to one publishing transform,
+but placing it in the shared model package makes it look reusable and nesting it
+inside `PublishOrders` prevents Structure from discovering it.
 
-**Solution:** Declare the intermediate schema at module scope beside the transform.
-The raw input and published output remain shared model contracts, while Structure
-still validates the intermediate DataFrame and emits its Spark schema, generated
-documentation, and traceability entry.
+**Solution:** Declare the intermediate schema at module scope beside the transform
+so the raw input and published output remain shared contracts while Structure
+validates the intermediate DataFrame and emits its schema, generated documentation,
+and traceability entry.
 
 ## Declare and use the colocated schema
 

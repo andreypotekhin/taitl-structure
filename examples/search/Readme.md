@@ -664,76 +664,8 @@ Use `transforms/training/all/training.Training` as an offline-training endpoint.
 
 ## Query Streaming
 
-The SearchDocuments design-gated streaming contract is temporarily disabled for integration testing and delivery.
-`SEARCH_STREAMING_CONTRACTS_ENABLED` is `False`, so the document-search graph compiles and runs as a batch transform;
-its query, request, score, candidate, and reranking inputs are not treated as streaming by default. This switch does not
-remove the future contract or weaken the general Structured Streaming compiler. `SearchQuery.requested_at` remains a
-required schema field, but it is currently ordinary batch data in this path.
-
-When the switch is re-enabled, the `queries` input will propagate streaming mode through online scoring and document
-ranking. A caller will then supply both event streams, apply the configured watermark delay, and wait for the finite
-query-completion window before accepting results.
-
-The path to a ready-to-start Structured Streaming job is deliberately explicit:
-
-1. Replace query-term and score-cache global deduplication with row-local `array_distinct`, unique query IDs, and
-   bounded event-time state. Do not use an unbounded `drop_duplicates` or a global selected-row helper.
-2. Resolve persisted scores, online scores, and static index lookups into streaming branches before combining them;
-   only exact-schema stream/stream unions are allowed. Static documents, policies, and feedback snapshots remain
-   static lookup inputs for one serving run.
-3. Replace the current global `row_number` candidate and overlap windows with a bounded finite-window top-K state
-   operation. Keep the existing score/document-ID tie-breakers and retain only the configured 1000/100 candidates.
-4. Pre-resolve feedback fallback and popularity into the immutable serving snapshot. Streaming reranking may perform
-   stream/static lookups and bounded normalization, but may not run `select_first_qualified` or a global analytic window.
-5. Emit one final result set per query in append mode after the watermark closes its completion window. Late or duplicate
-   events are discarded according to the watermark contract; emitted results are never revised. Snapshot refreshes start
-   a new caller-owned run.
-
-The future graph is therefore a compiler-visible migration boundary, not yet a ready-to-start job. The compiler must
-reject any remaining unbounded deduplication, global ranking window, unsupported stream-stream join, or unbounded state
-stage before query start. Structure continues to own only DataFrame transformations; the caller owns the source,
-watermark application, checkpoint, trigger, output sink, snapshot refresh, restart policy, and any downstream
-materialization.
-
-The caller-owned run and top-K metadata examples below remain reserved for the future proving lane. While the switch is
-disabled, their `validate()` methods are intentionally inactive and they do not gate Search batch integration:
-
-```python
-from examples.search.adoption import SearchDocumentsRunContract
-
-run = SearchDocumentsRunContract(
-    snapshot_id="search-snapshot-v1",
-    snapshot_inputs=("index", "score_cache", "feedback", "popularity", "policy"),
-    sink_identity="search-results",
-    checkpoint_identity="search-documents-v1",
-    trigger="availableNow",
-    output_mode="append",
-    event_time_field="requested_at",
-    completion_window="10 minutes",
-    refresh_restart_policy="new_run_on_snapshot_refresh",
-    finality_policy="append_final_no_revisions",
-    downstream_materialization="persist final results before serving",
-)
-run.validate()
-```
-
-The future bounded ranking stages are reviewed separately from the run handoff:
-
-```python
-from examples.search.adoption import SearchFiniteTopKContract
-
-SearchFiniteTopKContract(
-    stage="candidate_admission",
-    retained_bound=1000,
-    grouping_key=("query_id",),
-    order_keys=("score desc", "document_id asc"),
-    tie_policy="score_desc_document_id_asc",
-    event_time_field="requested_at",
-    watermark_delay="10 minutes",
-    completion_window="10 minutes",
-    output_mode="append",
-    snapshot_id="search-snapshot-v1",
-    state_identity="search-candidate-v1",
-    restart_policy="same_checkpoint_same_snapshot",
-).validate()
-```
+SearchDocuments declares streaming inputs but is currently `batch_only` because its ranking, deduplication, and join
+shapes are not bounded for Structured Streaming. Future streaming work is deferred until the compiler and Spark
+integration lanes can prove bounded ranking state, finite event-time completion, append-only output, and checkpoint
+restart. The retained requirements are tracked in
+[`P08022605.SearchDocuments-structured-streaming.plan.md`](../dev/planning/P08022605.SearchDocuments-structured-streaming.plan.md).

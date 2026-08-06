@@ -1,6 +1,5 @@
 """BM25-first document candidate retrieval."""
 
-from examples.search.adoption import SEARCH_STREAMING_CONTRACTS_ENABLED
 from examples.search.schemas.clicks import SearchRequest
 from examples.search.schemas.search import (
     DocumentScore,
@@ -36,17 +35,17 @@ class RetrieveDocuments(Transform):
 
     maximum_candidates = 1000
 
-    queries = input(SearchQuery, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
+    queries = input(SearchQuery, streaming=True)
     documents = input(Document)
     document_scores = input(DocumentScore)
-    streamed_documents = input(Document, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
-    streamed_document_scores = input(DocumentScore, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
-    online_streamed_document_scores = input(DocumentScore, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
-    online_document_scores = input(DocumentScore, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
-    requests = input(SearchRequest, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
+    streamed_documents = input(Document, streaming=True)
+    streamed_document_scores = input(DocumentScore, streaming=True)
+    online_streamed_document_scores = input(DocumentScore, streaming=True)
+    online_document_scores = input(DocumentScore, streaming=True)
+    requests = input(SearchRequest, streaming=True)
     band_memberships = input(BandMembership)
     score_policy = input(ScorePolicy)
-    prefilter_targets = input(DocumentSearchTarget, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
+    prefilter_targets = input(DocumentSearchTarget, streaming=True)
     stored_scores = lane(DocumentScore)
     streamed_scores = lane(DocumentScore)
     stored_candidates = lane(DocumentSearchCandidate)
@@ -155,10 +154,10 @@ class RetrieveDocuments(Transform):
         band: BandMembership,
         target: DocumentSearchTarget,
     ) -> DocumentSearchCandidate:
-        inner_join(target, on=(target.query_id == query.id) & (target.document_id == document.id))
         inner_join(on=document.id == score.document_id)
         inner_join(on=query.id == score.query_id)
         inner_join(on=request.query_id == query.id)
+        inner_join(target, on=(target.query_id == query.id) & (target.document_id == document.id))
         left_join(on=band.user_id == request.user_id)
         where(
             score.score.is_not_null()

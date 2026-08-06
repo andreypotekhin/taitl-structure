@@ -11,8 +11,7 @@ class PrepareCatalog(Transform):
     promotions = input(Promotion)
     catalog = output(CatalogProduct)
 
-    @special(type="expr")
-    def clean(value):
+    def clean(self, value):
         return lower(trim(value))
 
     def prepare(self, product: Product, blocked_product: BlockedProduct, promotion: Promotion) -> CatalogProduct:

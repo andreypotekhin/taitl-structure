@@ -1,12 +1,11 @@
 """Simple-overlap filtering from reusable document-index artifacts."""
 
-from examples.search.adoption import SEARCH_STREAMING_CONTRACTS_ENABLED
 from examples.search.schemas.filtering import DocumentFilterMatch, DocumentFilterScore
 from examples.search.schemas.indexing.lexical.index import DocumentIndexTerm
 from examples.search.schemas.scoring.intermediate import QueryTerm, QueryToken
 from examples.search.schemas.search import ScorePolicy, SearchQuery
 from structure import Transform, input, lane, output, step
-from structure.plugin.pyspark import count_distinct, cross_join, group_by, inner_join, row_number, where
+from structure.plugin.pyspark import count_distinct, cross_join, group_by, inner_join, row_number, types, where
 from structure.plugin.pyspark.dsl.expressions import literal
 
 
@@ -15,7 +14,7 @@ class FilterOverlap(Transform):
 
     maximum_candidates = 10000
 
-    queries = input(SearchQuery, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
+    queries = input(SearchQuery, streaming=True)
     document_terms = input(DocumentIndexTerm)
     expanded_query_terms = lane(QueryTerm)
     query_terms = lane(QueryTerm)
@@ -37,12 +36,13 @@ class FilterOverlap(Transform):
     @step(input=[query_terms, document_terms], output=matched_documents)
     def match_documents(self, query: QueryTerm, term: DocumentIndexTerm) -> DocumentFilterMatch:
         inner_join(on=term.token == query.token)
-        group_by(query_id=query.query_id, document_id=term.document_id, filter_rank=literal(0))
+        zero_rank = literal(0).cast(types.long())
+        group_by(query_id=query.query_id, document_id=term.document_id, filter_rank=zero_rank)
         return DocumentFilterMatch(
             query_id=query.query_id,
             document_id=term.document_id,
             matched_terms=count_distinct(query.token),
-            filter_rank=literal(0),
+            filter_rank=zero_rank,
         )
 
     @step(input=matched_documents, output=ranked_documents)
@@ -55,9 +55,7 @@ class FilterOverlap(Transform):
         )
 
     @step(input=[ranked_documents, score_policy], output=document_filter_scores)
-    def publish_filter_scores(
-        self, document: DocumentFilterMatch, policy: ScorePolicy
-    ) -> DocumentFilterScore:
+    def publish_filter_scores(self, document: DocumentFilterMatch, policy: ScorePolicy) -> DocumentFilterScore:
         where(document.filter_rank <= self.maximum_candidates)
         cross_join(policy, allow_cartesian=True)
         return DocumentFilterScore.project(document)(scored_at=policy.scored_at)

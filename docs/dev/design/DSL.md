@@ -20,7 +20,6 @@ class EnrichOrders(Transform):
     customers = input(Customer)
     enriched = output(OrderWithCustomer)
 
-    @special(type="expr")
     def clean_id(value):
         return lower(trim(value))
 
@@ -64,7 +63,9 @@ class EnrichOrders(Transform):
   overlaying explicit field expressions.
 - For multiple direct schema bases, `SchemaClass.base(...)` receives one row per direct base in declaration order.
 - `where(...)` records filter expressions in the current symbolic context.
-- `@special(type="expr")` functions execute symbolically and must return expressions.
+- Reachable ordinary functions and classes execute symbolically and must return supported expressions or schema values.
+- `@special(type="expr")` is optional explicit metadata for reusable expression logic.
+- `@special(type="ignore")` preserves ordinary execution outside compilation but rejects compiler-visible calls.
 - `@raw(lane=lane)` and `@raw(lane=lane)` attach arbitrary PySpark hooks.
 - Hooks use a selected lane signature such as `def hook(self, *, orders, spark, ctx)`.
 - Hooks may opt into original named inputs with `pass_inputs=True` and signature

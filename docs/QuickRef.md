@@ -350,21 +350,26 @@ Reference: [expressions API](api/Expressions.api.md), [Transform expressions](ba
 
 ## Expression Methods
 
-A Transform class can declare expression methods for reusable expressions. Expression methods are expected to have compileable code, and Structure will fail if it can't compile. Use optional decoration `@special(type="expr")` if demarcation is needed for clarity.
+A Transform class can declare expression methods for reusable expressions. Ordinary reachable methods and classes are
+compiled symbolically by default; Structure fails with a compiler diagnostic when their code cannot be lowered. Use
+optional `@special(type="expr")` decoration when explicit expression intent or named helper rendering is useful.
 
 ```python
-@special(type="expr")
 def clean_id(value):
     return lower(trim(value))
 ```
 
-Expression methods do not take `self`, but can be called through `self`.
+Module-level helpers use ordinary function signatures. Class-local helpers use ordinary method signatures, including
+`self`, and can be called through `self`.
 
 ```python
 customer_id=self.clean_id(order.customer_id)
 ```
 
 Reference: [expressions API](api/Expressions.api.md) and [Transform expression helpers](background/Transform.back.md).
+
+Use `@special(type="ignore")` only for code that must remain outside compiler-visible logic. Calling it from a compiled
+method is an error; use `@special(type="udf")` for intentional scalar Python or `@raw` for arbitrary DataFrame logic.
 
 ### Intentional Scalar Python UDFs
 

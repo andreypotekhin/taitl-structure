@@ -117,8 +117,9 @@ value = lower(trim(order.customer_id))
 value = fetch_customer_name(order.customer_id)  # network call
 ```
 
-When target-specific code is intentional, move it to an explicit `@raw` hook. When the logic is a reusable typed scalar
-expression, use `@special(type="expr")` so the helper remains visible to capture and diagnostics.
+When target-specific code is intentional, move it to an explicit `@raw` hook. Reusable typed scalar expression logic can
+remain an ordinary compiler-visible helper; use `@special(type="expr")` when explicit metadata or named helper rendering
+is useful.
 
 
 ## Intermediate Representation

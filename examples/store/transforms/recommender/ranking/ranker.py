@@ -1,8 +1,6 @@
-from structure import special
 from structure.plugin.pyspark import coalesce, when
 
 
-@special(type="expr")
 class Ranker:
     def boost_score(self, boost):
         return coalesce(boost.boost_score, 0.0)

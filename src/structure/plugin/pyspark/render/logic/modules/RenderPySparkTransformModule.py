@@ -53,7 +53,12 @@ class RenderPySparkTransformModule:
             runtime_module=runtime_module,
             generated_code_options=generated_code_options,
         )
-        body = self._class(plan, source_transform=source_transform, generated_code_options=generated_code_options)
+        body = self._class(
+            plan,
+            source_transform=source_transform,
+            generated_code_options=generated_code_options,
+            class_names=self._class_names({source_transform: plan}, generated_code_options=generated_code_options),
+        )
         metadata = self._fingerprints(
             {source_transform: semantic_fingerprint} if semantic_fingerprint else {},
             generated_code_options=generated_code_options,
@@ -83,7 +88,12 @@ class RenderPySparkTransformModule:
                 ).splitlines()
             )
             bodies.append(
-                self._class(plan, source_transform=source_transform, generated_code_options=generated_code_options)
+                self._class(
+                    plan,
+                    source_transform=source_transform,
+                    generated_code_options=generated_code_options,
+                    class_names=self._class_names(plans, generated_code_options=generated_code_options),
+                )
             )
         separator = "\n\n\n"
         metadata = self._fingerprints(semantic_fingerprints or {}, generated_code_options=generated_code_options)
@@ -161,6 +171,7 @@ class RenderPySparkTransformModule:
         *,
         source_transform: str,
         generated_code_options: tuple[str, ...],
+        class_names: Mapping[str, str],
     ) -> str:
         embedded_hooks = self._embedded(plan, generated_code_options=generated_code_options)
         embed_exprs = self._options.enabled(generated_code_options, "embed_exprs")
@@ -194,6 +205,7 @@ class RenderPySparkTransformModule:
                                 plan,
                                 source_transform=source_transform,
                                 embedded_hooks=embedded_hooks,
+                                class_names=class_names,
                             )
                         )
                         lines.append("")
@@ -205,6 +217,7 @@ class RenderPySparkTransformModule:
                             parent_classes=parent_classes,
                             generated_code_options=generated_code_options,
                             embedded_hooks=embedded_hooks,
+                            class_names=class_names,
                         )
                     )
             if embed_exprs:
@@ -233,7 +246,9 @@ class RenderPySparkTransformModule:
             lines.extend(self._hook_impl_initializers(plan, source_transform=source_transform))
             lines.extend(self._udf_impl_initializers(plan, source_transform=source_transform))
         lines.extend(
-            self._udf_initializers(plan, source_transform=source_transform, generated_code_options=generated_code_options)
+            self._udf_initializers(
+                plan, source_transform=source_transform, generated_code_options=generated_code_options
+            )
         )
 
         lines.extend(["", "    def close(self) -> None:", "        close_plan_boundaries(self.spark)"])
@@ -426,7 +441,9 @@ class RenderPySparkTransformModule:
             lines.extend(self._hook_impl_initializers(plan, source_transform=source_transform))
             lines.extend(self._udf_impl_initializers(plan, source_transform=source_transform))
         lines.extend(
-            self._udf_initializers(plan, source_transform=source_transform, generated_code_options=generated_code_options)
+            self._udf_initializers(
+                plan, source_transform=source_transform, generated_code_options=generated_code_options
+            )
         )
         lines.extend(["", "    def close(self) -> None:", "        close_plan_boundaries(self.spark)"])
         lines.extend(["", "    def run(", "        self,", "        *,"])
@@ -491,8 +508,9 @@ class RenderPySparkTransformModule:
         *,
         source_transform: str,
         embedded_hooks: tuple[EmbeddedHook, ...],
+        class_names: Mapping[str, str],
     ) -> list[str]:
-        class_name = self._generated_class_name(owner)
+        class_name = self._generated_class_name(owner, class_names=class_names)
         lines = [f"class {class_name}:"]
         lines.extend(
             self._step_methods(
@@ -517,10 +535,13 @@ class RenderPySparkTransformModule:
         parent_classes: tuple[str, ...],
         generated_code_options: tuple[str, ...],
         embedded_hooks: tuple[EmbeddedHook, ...],
+        class_names: Mapping[str, str],
     ) -> list[str]:
         class_name = f"{plan.transform}Generated"
         bases = (
-            f"({', '.join(self._generated_class_name(owner) for owner in parent_classes)})" if parent_classes else ""
+            f"({', '.join(self._generated_class_name(owner, class_names=class_names) for owner in parent_classes)})"
+            if parent_classes
+            else ""
         )
         source_name = source_transform.rsplit(".", 1)[1]
         lines = [f"class {class_name}{bases}:"]
@@ -540,7 +561,9 @@ class RenderPySparkTransformModule:
             lines.extend(self._hook_impl_initializers(plan, source_transform=source_transform))
             lines.extend(self._udf_impl_initializers(plan, source_transform=source_transform))
         lines.extend(
-            self._udf_initializers(plan, source_transform=source_transform, generated_code_options=generated_code_options)
+            self._udf_initializers(
+                plan, source_transform=source_transform, generated_code_options=generated_code_options
+            )
         )
         lines.extend(["", "    def close(self) -> None:", "        close_plan_boundaries(self.spark)"])
         lines.extend(["", "    def run(", "        self,", "        *,"])
@@ -659,12 +682,46 @@ class RenderPySparkTransformModule:
                 owners.append(owner)
         return tuple(owners)
 
+    def _class_names(
+        self,
+        plans: Mapping[str, PySparkExecutionPlan],
+        *,
+        generated_code_options: tuple[str, ...],
+    ) -> dict[str, str]:
+        parents: set[str] = set()
+        for source_transform, plan in plans.items():
+            parents.update(
+                self._parent_classes(
+                    plan,
+                    source_transform=source_transform,
+                    embedded_hooks=self._embedded(plan, generated_code_options=generated_code_options),
+                )
+            )
+
+        top_level = set(plans)
+        parent_groups: dict[str, list[str]] = defaultdict(list)
+        for parent in parents:
+            parent_groups[parent.rsplit(".", 1)[1]].append(parent)
+
+        names = {source_transform: f"{source_transform.rsplit('.', 1)[1]}Generated" for source_transform in plans}
+        for parent in sorted(parents):
+            simple = parent.rsplit(".", 1)[1]
+            if len(parent_groups[simple]) == 1 and simple not in {source.rsplit(".", 1)[1] for source in top_level}:
+                names[parent] = f"{simple}Generated"
+                continue
+            module = parent.rsplit(".", 1)[0]
+            suffix = "".join(character if character.isalnum() or character == "_" else "_" for character in module)
+            names[parent] = f"{simple}__{suffix}Generated"
+        return names
+
     def _step_owner(self, step, *, source_transform: str) -> str:
         if step.origin is None or step.origin.class_name == source_transform.rsplit(".", 1)[1]:
             return source_transform
         return step.origin.import_name
 
-    def _generated_class_name(self, owner: str) -> str:
+    def _generated_class_name(self, owner: str, *, class_names: Mapping[str, str] | None = None) -> str:
+        if class_names is not None and owner in class_names:
+            return class_names[owner]
         return f"{owner.rsplit('.', 1)[1]}Generated"
 
     def _embedded(

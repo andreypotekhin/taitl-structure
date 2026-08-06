@@ -100,7 +100,7 @@ class Customer(Schema):
 ```python
 # src/orders/transforms/order.py
 
-from structure import Transform, input, lane, output, raw, special
+from structure import Transform, input, lane, output, raw
 from structure.plugin.pyspark import *
 from orders.schemas.order import OrderRaw, OrderNormalized, OrderWithCustomer
 from orders.schemas.customer import Customer
@@ -112,8 +112,7 @@ class EnrichOrders(Transform):
     customers = input(Customer)
     enriched = output(OrderWithCustomer)
 
-    @special(type="expr")
-    def clean_id(value):
+    def clean_id(self, value):
         return lower(trim(value))
 
     def normalize(self, order: OrderRaw) -> OrderNormalized:
@@ -159,7 +158,6 @@ from structure import (
     lane,
     output,
     raw,
-    special,
     step,
     transform,
 )
@@ -277,7 +275,6 @@ from structure import (
     lane,
     output,
     raw,
-    special,
     step,
     transform,
 )

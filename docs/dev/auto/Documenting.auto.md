@@ -1,13 +1,16 @@
 # Automation Documenting
 
-# Documenting - Main
+## References
+### Documenting - Main
 - Main: [Documenting.md](../Documenting.md)
 - 'Documenting' section in [Style.md](../Style.md)
 
-# Documenting additions for automation
+### Authoring automation
+- Main: [Authoring.auto.md](../Authoring.auto.md)
+- Definitions of text operators and processes. 
 
-## Annotated code
-- Main: [CodeAnnotation.auto.md](../CodeAnnotation.auto.md)
+### Annotated source code
+- Main: [Annotation.auto.md](../Annotation.auto.md)
 - Maintain annotated sources per instructions and scope described in main doc. 
 
 ## Documentation style
@@ -31,7 +34,8 @@ Location:
 - The reader's journey is typically from top-level documents to reference/, then to background/ or api/ docs.
 - Reference documentation answers: “What can I declare or use?” It is the practical operation inventory for an
   end-user. It owns public operations, signatures, options, user-visible rules, and corrective examples. It should be
-  organized for lookup while remaining readable top to bottom.
+  organized for lookup while remaining readable top to bottom. Reference documents normally include a code example
+  for each described topic, to help the reader build understanding.
 - Background documents are long-reads thoroughly covering the topic. They are superbly organized/structured
 for top-to-bottom reader. Background documents use design, specifications, architectural decisions
 and code as source of truth. 
@@ -45,10 +49,18 @@ and code as source of truth.
 - Recipes documents are for hands-on users who are trying to solve an issue or apply the library to a
   specific problem or use case. They can be 'landing pages' where the user comes first, e.g. with web search,
   looking for a template solution.
+- Apply annotated source authoring style to Recipe documents. The intro sections are around problem/solution,
+with one centence for each. Include scenario table and details, if needed, as in recipes/EarliestRows.md.
 
 #### End-User documentation tips 
 - Use caution/consider alternative wording on corporate speak such as 'owns', 'boundary', 'intentional'
+- In Reference documents, 
+  - avoid folding several statements into a quick paragraph. Consider bullet lists and examples.
+  - avoid overloading a sentence with several statements.
 - In Recipe documents, avoid excess use of word 'recipe' (reader already realizes that).
+- Code examples use wildcard imports, to save lines.
+- Do not assume example apps code in known/can be referred. 
+  - Ex: 'Keep tenant and other scope keys in the predicate.' - tenant is part of example app, not part of the project.  
 
 ### Developer documentation - Top-level
 Location: docs/dev/ (top level)
@@ -84,3 +96,4 @@ They propagate bottom to top: from code changes to outer documents.
 - Avoid placing new content at top or at random place of the document. Think of best place for the top-to-bottom reader,
 who is trying to build understanding.
 - In code examples, use wildcard imports to save lines.
+

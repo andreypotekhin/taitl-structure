@@ -33,7 +33,7 @@ def test_store_generated_personalization_is_separate_and_tenant_aware() -> None:
 
 
 def test_personalization_algorithm_is_replaceable_like_ranker() -> None:
-    assert getattr(PersonalizationAlgorithm, "_structure_special_type", None) == "expr"
+    assert getattr(PersonalizationAlgorithm, "_structure_special_type", None) is None
 
     class ConstantPersonalizationAlgorithm(PersonalizationAlgorithm):
         def factorization_score(self, request: Any, product: Any) -> Any:

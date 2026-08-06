@@ -1,6 +1,5 @@
 """Cached and online simple-overlap document filtering."""
 
-from examples.search.adoption import SEARCH_STREAMING_CONTRACTS_ENABLED
 from examples.search.schemas.clicks import SearchRequest
 from examples.search.schemas.filtering import DocumentFilterScore
 from examples.search.schemas.search import DocumentSearchTarget, ScorePolicy
@@ -15,7 +14,7 @@ class SelectFilterTargets(Transform):
 
     document_filter_scores = input(DocumentFilterScore)
     online_document_filter_scores = input(DocumentFilterScore)
-    requests = input(SearchRequest, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
+    requests = input(SearchRequest, streaming=True)
     score_policy = input(ScorePolicy)
     merged_filter_scores = lane(DocumentFilterScore)
     targets = output(DocumentSearchTarget)

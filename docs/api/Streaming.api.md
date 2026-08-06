@@ -120,37 +120,11 @@ Validation does not start a query, generate a state processor, own a checkpoint,
 owns the native PySpark API and live restart evidence. Structure must not promote the streaming ledger row until a
 separate runtime contract and PySpark 3.5/4.0 evidence exist.
 
-## SearchDocuments Caller-Owned Run Handoff
+## SearchDocuments Streaming Status
 
-The SearchDocuments streaming path is design-gated and does not start a query for the caller. Before a caller adopts a
-future ready-to-start path, `SearchDocumentsRunContract` records one immutable serving run:
-
-- `snapshot_id` binds the index, score cache, feedback, popularity, and policy snapshots;
-- `checkpoint_identity`, `sink_identity`, `trigger`, and `completion_window` identify the operational run;
-- output mode is `append` and event time is immutable `requested_at`;
-- `refresh_restart_policy` requires a new run whenever a serving snapshot changes;
-- `finality_policy` requires one final result set with no later revisions;
-- `downstream_materialization` states where final results become durable before serving.
-
-`SearchDocumentsRunContract.validate()` checks this handoff metadata only when the Search streaming proving switch is
-enabled. It is currently disabled for integration delivery, so validation is intentionally inactive. It does not prove
-bounded top-K state, watermark completion, stream-stream join support, checkpoint recovery, or generated-code readiness.
-Those remain separate compiler and live-evidence gates.
-
-`completion_window` must be a positive finite Spark duration such as `10 minutes`; an unbounded or zero-width
-declaration cannot establish when a query is final.
-
-## SearchDocuments Finite-Window Top-K Contract
-
-`SearchFiniteTopKContract` records the state boundary required for the two bounded selection stages without admitting a
-runtime implementation. `candidate_admission` must retain exactly 1,000 rows per query window and `overlap_narrowing`
-must retain exactly 100. Both stages require a `query_id` grouping key, `requested_at` event time, compatible watermark
-and completion-window declarations, append output, the immutable serving `snapshot_id`, and restart on the same
-checkpoint only when that snapshot is unchanged.
-
-The order contract is `score desc, document_id asc`; the identifier tie-breaker is mandatory. The metadata guard is
-inactive while `SEARCH_STREAMING_CONTRACTS_ENABLED` is false; when enabled, it still does not lower `row_number`,
-provide arbitrary state, or prove live restart behavior. Until those runtime and evidence gates pass,
-SearchDocuments remains design-gated and callers must use a batch/materialization boundary.
-
-`watermark_delay` and `completion_window` must be positive finite durations, and `grouping_key` must include `query_id`.
+SearchDocuments declares streaming inputs but remains `batch_only` because its current ranking, deduplication, and join
+shapes are not bounded for Structured Streaming. Its future streaming work is deferred until the compiler and Spark
+integration lanes can prove bounded ranking state, finite event-time completion, append-only output, and checkpoint
+restart. The current Search transform does not expose a caller-adoption contract or start a streaming query; see
+[`P08022605.SearchDocuments-structured-streaming.plan.md`](../dev/planning/P08022605.SearchDocuments-structured-streaming.plan.md)
+for the retained requirements.

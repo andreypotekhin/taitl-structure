@@ -61,7 +61,6 @@ Use:
   customer_id=lower(trim(order.customer_id))
 
 For reuse:
-  @special(type="expr")
   def clean_id(value):
       return lower(trim(value))
 
@@ -71,8 +70,9 @@ Hook workaround:
       return orders.withColumn("customer_id", F.lower(F.trim(F.col("customer_id"))))
 
 Hook note:
-  Hooks are supported for arbitrary PySpark, but they are opaque to compileability checks and traceability. Prefer the DSL or
-  @special(type="expr") form when the expression can stay compiler-visible.
+  Hooks are supported for arbitrary PySpark, but they are opaque to compileability checks and traceability. Prefer the DSL
+  or an ordinary helper when the expression can stay compiler-visible. Use @special(type="expr") only when explicit
+  expression metadata is useful, and use @special(type="ignore") only for code that must remain outside compilation.
 
 Configuration workaround:
   None. Unsupported Python methods are not allowed in compiled transforms.
@@ -88,9 +88,12 @@ Only suggest config when it really applies. Examples:
 
 ## Extension Boundaries
 
-The checker should treat `@special(type="expr")` helpers as the preferred project extension point for reusable expression logic.
+The checker should symbolically evaluate ordinary reachable functions and classes as the default project extension path.
 They stay inside symbolic execution and therefore remain visible to generated code, traceability, backend capability checks,
-and diagnostics.
+and diagnostics. `@special(type="expr")` remains an optional explicit marker, not a requirement.
+
+`@special(type="ignore")` is an explicit negative declaration. It preserves normal Python execution outside compilation,
+but a call reached by symbolic execution must fail with `DSL-E0404`; it must never become an implicit opaque expression.
 
 Hooks are supported extension points for arbitrary PySpark DataFrame code, but the checker must treat hook bodies as
 opaque. It validates hook attachment, signature, lifecycle options, and configured safety declarations; it does not

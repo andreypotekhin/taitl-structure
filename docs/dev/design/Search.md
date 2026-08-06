@@ -140,17 +140,10 @@ feedback remain eligible with a zero feedback contribution.
 
 ### Streaming query boundary
 
-The SearchDocuments design-gated streaming contract is temporarily disabled for integration testing and delivery via
-`examples.search.adoption.SEARCH_STREAMING_CONTRACTS_ENABLED = False`. The document-search graph therefore compiles and
-runs as a batch transform; its query, request, score, candidate, and reranking inputs are not treated as streaming by
-default. This is a Search-only delivery switch: the general Structured Streaming compiler and supported click-feedback
-streams remain unchanged. `SearchQuery.requested_at` remains a required schema field, but is currently ordinary batch
-data in this path.
-
-When the switch is re-enabled, `SearchDocuments.queries` will propagate streaming mode through `OnlineFiltering`,
-`SelectFilterTargets`, `OnlineScoring`, gap selection, `Scoring`/`ScoreBase`, `RetrieveDocuments`, and `RerankDocuments`; the corpus, lexical
-indexes, freshness policy, feedback snapshots, and ranking policy will remain caller-supplied side inputs. Offline `All`
-and its query-producing stages remain batch-only.
+SearchDocuments declares streaming inputs but is currently classified `batch_only` because its ranking, deduplication,
+and join shapes are not bounded for Structured Streaming. Streaming work is deferred until the compiler and Spark
+integration lanes can prove bounded ranking state, finite event-time completion, append-only output, and checkpoint
+restart. The general Structured Streaming compiler and supported click-feedback streams remain unchanged.
 
 The current graph is a compiler-visible migration boundary, not yet a ready-to-start Structured Streaming query. The
 implementation roadmap is recorded in

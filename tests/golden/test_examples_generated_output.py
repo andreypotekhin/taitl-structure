@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import difflib
 from typing import cast
 
@@ -60,8 +61,8 @@ def test_search_scoring_subpackage_transform_is_discovered_and_compiled() -> Non
     Compiler.frontend.compile()(scoring, config=config, materialize_schemas=False)
 
 
-def test_search_documents_disables_design_gated_streaming_lineage() -> None:
-    """The unfinished SearchDocuments streaming contract stays out of ordinary delivery builds."""
+def test_search_documents_keeps_design_gated_streaming_lineage_explicit() -> None:
+    """Search preserves streaming declarations while unsupported state keeps delivery batch-only."""
 
     from examples.search.transforms.filtering import Filtering
     from examples.search.transforms.scoring.ScoreBase import ScoreBase
@@ -90,7 +91,25 @@ def test_search_documents_disables_design_gated_streaming_lineage() -> None:
         (RerankDocuments, "candidates"),
     )
     for transform, input_name in declarations:
-        assert not getattr(transform, input_name).streaming
+        assert getattr(transform, input_name).streaming
+
+
+def test_search_generated_owner_names_are_unique_across_nested_modules() -> None:
+    """Nested transforms with the same class name receive distinct generated owners."""
+
+    generated = render_search_example()
+    source = next(
+        text
+        for path, text in generated.items()
+        if path.endswith("/pyspark/transforms/examples/search/transforms/search.py")
+    )
+    classes = [node.name for node in ast.parse(source).body if isinstance(node, ast.ClassDef)]
+
+    assert len(classes) == len(set(classes))
+    assert (
+        "SelectGapQueries__examples_search_transforms_searching_online_filtering_SelectGapQueriesGenerated" in classes
+    )
+    assert "SelectGapQueries__examples_search_transforms_searching_online_scoring_SelectGapQueriesGenerated" in classes
 
 
 def test_search_documents_filters_obtains_then_reranks_and_returns() -> None:

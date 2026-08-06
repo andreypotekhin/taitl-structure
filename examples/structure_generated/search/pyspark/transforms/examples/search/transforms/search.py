@@ -73,7 +73,7 @@ from examples.structure_generated.search.pyspark.schemas.text import DOCUMENT_SC
 from examples.structure_generated.search.pyspark.schemas.user import BAND_FALLBACK_SCHEMA, BAND_MEMBERSHIP_SCHEMA
 
 
-class SelectGapQueriesGenerated:
+class SelectGapQueries__examples_search_transforms_searching_online_filtering_SelectGapQueriesGenerated:
     def _step_filtered_gap_find_available_filters_0(self, frames):
         # Step method: filtered.gap.find_available_filters
         filtered__gap__filter_availability = frames["document_filter_scores"].alias("document_filter_score")
@@ -227,7 +227,7 @@ class FilterOverlapGenerated:
             filtered__filtering__overlap__matched_documents.groupBy(
                 F.col("query_term.query_id").alias("query_id"),
                 F.col("document_terms.document_id").alias("document_id"),
-                F.lit(0).alias("filter_rank"),
+                F.lit(0).cast('bigint').alias("filter_rank"),
             )
             .agg(
                 F.countDistinct(F.col("query_term.token")).cast(T.LongType()).alias("matched_terms"),
@@ -382,7 +382,7 @@ class SelectFilterTargetsGenerated:
         }
 
 
-class SelectGapQueriesGenerated:
+class SelectGapQueries__examples_search_transforms_searching_online_scoring_SelectGapQueriesGenerated:
     def _step_scored_gap_find_available_documents_9(self, frames):
         # Step method: scored.gap.find_available_documents
         scored__gap__document_availability = frames["document_scores"].alias("document_score")
@@ -2188,37 +2188,37 @@ class RetrieveDocumentsGenerated:
     def _step_retrieved_select_stored_candidates_48(self, frames):
         # Step method: retrieved.select_stored_candidates
         retrieved__stored_candidates = frames["documents"].alias("document")
-        selected__targets_joined = frames["selected__targets"].alias("selected__targets")
+        retrieved__stored_scores_joined = frames["retrieved__stored_scores"].alias("retrieved__stored_scores")
         retrieved__stored_candidates = retrieved__stored_candidates.join(
-            selected__targets_joined,
+            retrieved__stored_scores_joined,
+            (F.col("document.id") == F.col("retrieved__stored_scores.document_id")),
+            "inner",
+        )
+        queries_2_joined = frames["queries"].withWatermark("requested_at", '10 minutes').alias("queries_2")
+        retrieved__stored_candidates = retrieved__stored_candidates.join(
+            queries_2_joined,
+            (F.col("queries_2.id") == F.col("retrieved__stored_scores.query_id")),
+            "inner",
+        )
+        requests_3_joined = frames["requests"].withWatermark("requested_at", '10 minutes').alias("requests_3")
+        retrieved__stored_candidates = retrieved__stored_candidates.join(
+            requests_3_joined,
+            (F.col("requests_3.query_id") == F.col("queries_2.id")),
+            "inner",
+        )
+        selected__targets_4_joined = frames["selected__targets"].alias("selected__targets_4")
+        retrieved__stored_candidates = retrieved__stored_candidates.join(
+            selected__targets_4_joined,
             (
-                (F.col("selected__targets.query_id") == F.col("queries_3.id"))
-                & (F.col("selected__targets.document_id") == F.col("document.id"))
+                (F.col("selected__targets_4.query_id") == F.col("queries_2.id"))
+                & (F.col("selected__targets_4.document_id") == F.col("document.id"))
             ),
-            "inner",
-        )
-        retrieved__stored_scores_2_joined = frames["retrieved__stored_scores"].alias("retrieved__stored_scores_2")
-        retrieved__stored_candidates = retrieved__stored_candidates.join(
-            retrieved__stored_scores_2_joined,
-            (F.col("document.id") == F.col("retrieved__stored_scores_2.document_id")),
-            "inner",
-        )
-        queries_3_joined = frames["queries"].withWatermark("requested_at", '10 minutes').alias("queries_3")
-        retrieved__stored_candidates = retrieved__stored_candidates.join(
-            queries_3_joined,
-            (F.col("queries_3.id") == F.col("retrieved__stored_scores_2.query_id")),
-            "inner",
-        )
-        requests_4_joined = frames["requests"].withWatermark("requested_at", '10 minutes').alias("requests_4")
-        retrieved__stored_candidates = retrieved__stored_candidates.join(
-            requests_4_joined,
-            (F.col("requests_4.query_id") == F.col("queries_3.id")),
             "inner",
         )
         band_memberships_5_joined = frames["band_memberships"].alias("band_memberships_5")
         retrieved__stored_candidates = retrieved__stored_candidates.join(
             band_memberships_5_joined,
-            (F.col("band_memberships_5.user_id") == F.col("requests_4.user_id")),
+            (F.col("band_memberships_5.user_id") == F.col("requests_3.user_id")),
             "left",
         )
         retrieved__stored_candidates = retrieved__stored_candidates.where(
@@ -2226,37 +2226,37 @@ class RetrieveDocumentsGenerated:
                 (
                     (
                         (
-                            F.col("retrieved__stored_scores_2.score").isNotNull()
-                            & F.col("retrieved__stored_scores_2.experiment_id").eqNullSafe(
-                                F.col("requests_4.experiment_id")
+                            F.col("retrieved__stored_scores.score").isNotNull()
+                            & F.col("retrieved__stored_scores.experiment_id").eqNullSafe(
+                                F.col("requests_3.experiment_id")
                             )
                         )
-                        & (F.col("queries_3.requested_at") == F.col("requests_4.requested_at"))
+                        & (F.col("queries_2.requested_at") == F.col("requests_3.requested_at"))
                     )
                     & (
                         (
-                            F.col("requests_4.requested_at")
-                            >= (F.col("queries_3.requested_at") - F.expr("INTERVAL 0 seconds"))
+                            F.col("requests_3.requested_at")
+                            >= (F.col("queries_2.requested_at") - F.expr("INTERVAL 0 seconds"))
                         )
                         & (
-                            F.col("requests_4.requested_at")
-                            <= (F.col("queries_3.requested_at") + F.expr("INTERVAL 0 seconds"))
+                            F.col("requests_3.requested_at")
+                            <= (F.col("queries_2.requested_at") + F.expr("INTERVAL 0 seconds"))
                         )
                     )
                 )
             )
         )
         retrieved__stored_candidates = retrieved__stored_candidates.select(
-            F.col("queries_3.id").alias("search_query_id"),
-            F.col("retrieved__stored_scores_2.experiment_id"),
+            F.col("queries_2.id").alias("search_query_id"),
+            F.col("retrieved__stored_scores.experiment_id"),
             F.coalesce(F.col("band_memberships_5.user_band_id"), F.lit(None)).alias("user_band_id"),
             F.col("band_memberships_5.band_id"),
-            F.lower(F.regexp_replace(F.trim(F.col("queries_3.content")), '\\s+', ' ')).alias("query"),
+            F.lower(F.regexp_replace(F.trim(F.col("queries_2.content")), '\\s+', ' ')).alias("query"),
             F.lit(0).cast(T.LongType()).alias("candidate_rank"),
             F.col("document.id").alias("document_id"),
             F.col("document.title"),
             F.col("document.url"),
-            F.col("retrieved__stored_scores_2.score"),
+            F.col("retrieved__stored_scores.score"),
             F.lit(0.0).alias("score_feedback"),
             F.lit(0.0).alias("score_rank"),
             F.lit(0.0).alias("score_weight"),
@@ -2275,37 +2275,37 @@ class RetrieveDocumentsGenerated:
     def _step_retrieved_select_streamed_candidates_49(self, frames):
         # Step method: retrieved.select_streamed_candidates
         retrieved__streamed_candidates = frames["streamed_documents"].alias("document")
-        selected__targets_joined = frames["selected__targets"].alias("selected__targets")
+        retrieved__streamed_scores_joined = frames["retrieved__streamed_scores"].alias("retrieved__streamed_scores")
         retrieved__streamed_candidates = retrieved__streamed_candidates.join(
-            selected__targets_joined,
+            retrieved__streamed_scores_joined,
+            (F.col("document.id") == F.col("retrieved__streamed_scores.document_id")),
+            "inner",
+        )
+        queries_2_joined = frames["queries"].withWatermark("requested_at", '10 minutes').alias("queries_2")
+        retrieved__streamed_candidates = retrieved__streamed_candidates.join(
+            queries_2_joined,
+            (F.col("queries_2.id") == F.col("retrieved__streamed_scores.query_id")),
+            "inner",
+        )
+        requests_3_joined = frames["requests"].withWatermark("requested_at", '10 minutes').alias("requests_3")
+        retrieved__streamed_candidates = retrieved__streamed_candidates.join(
+            requests_3_joined,
+            (F.col("requests_3.query_id") == F.col("queries_2.id")),
+            "inner",
+        )
+        selected__targets_4_joined = frames["selected__targets"].alias("selected__targets_4")
+        retrieved__streamed_candidates = retrieved__streamed_candidates.join(
+            selected__targets_4_joined,
             (
-                (F.col("selected__targets.query_id") == F.col("queries_3.id"))
-                & (F.col("selected__targets.document_id") == F.col("document.id"))
+                (F.col("selected__targets_4.query_id") == F.col("queries_2.id"))
+                & (F.col("selected__targets_4.document_id") == F.col("document.id"))
             ),
-            "inner",
-        )
-        retrieved__streamed_scores_2_joined = frames["retrieved__streamed_scores"].alias("retrieved__streamed_scores_2")
-        retrieved__streamed_candidates = retrieved__streamed_candidates.join(
-            retrieved__streamed_scores_2_joined,
-            (F.col("document.id") == F.col("retrieved__streamed_scores_2.document_id")),
-            "inner",
-        )
-        queries_3_joined = frames["queries"].withWatermark("requested_at", '10 minutes').alias("queries_3")
-        retrieved__streamed_candidates = retrieved__streamed_candidates.join(
-            queries_3_joined,
-            (F.col("queries_3.id") == F.col("retrieved__streamed_scores_2.query_id")),
-            "inner",
-        )
-        requests_4_joined = frames["requests"].withWatermark("requested_at", '10 minutes').alias("requests_4")
-        retrieved__streamed_candidates = retrieved__streamed_candidates.join(
-            requests_4_joined,
-            (F.col("requests_4.query_id") == F.col("queries_3.id")),
             "inner",
         )
         band_memberships_5_joined = frames["band_memberships"].alias("band_memberships_5")
         retrieved__streamed_candidates = retrieved__streamed_candidates.join(
             band_memberships_5_joined,
-            (F.col("band_memberships_5.user_id") == F.col("requests_4.user_id")),
+            (F.col("band_memberships_5.user_id") == F.col("requests_3.user_id")),
             "left",
         )
         retrieved__streamed_candidates = retrieved__streamed_candidates.where(
@@ -2313,37 +2313,37 @@ class RetrieveDocumentsGenerated:
                 (
                     (
                         (
-                            F.col("retrieved__streamed_scores_2.score").isNotNull()
-                            & F.col("retrieved__streamed_scores_2.experiment_id").eqNullSafe(
-                                F.col("requests_4.experiment_id")
+                            F.col("retrieved__streamed_scores.score").isNotNull()
+                            & F.col("retrieved__streamed_scores.experiment_id").eqNullSafe(
+                                F.col("requests_3.experiment_id")
                             )
                         )
-                        & (F.col("queries_3.requested_at") == F.col("requests_4.requested_at"))
+                        & (F.col("queries_2.requested_at") == F.col("requests_3.requested_at"))
                     )
                     & (
                         (
-                            F.col("requests_4.requested_at")
-                            >= (F.col("queries_3.requested_at") - F.expr("INTERVAL 0 seconds"))
+                            F.col("requests_3.requested_at")
+                            >= (F.col("queries_2.requested_at") - F.expr("INTERVAL 0 seconds"))
                         )
                         & (
-                            F.col("requests_4.requested_at")
-                            <= (F.col("queries_3.requested_at") + F.expr("INTERVAL 0 seconds"))
+                            F.col("requests_3.requested_at")
+                            <= (F.col("queries_2.requested_at") + F.expr("INTERVAL 0 seconds"))
                         )
                     )
                 )
             )
         )
         retrieved__streamed_candidates = retrieved__streamed_candidates.select(
-            F.col("queries_3.id").alias("search_query_id"),
-            F.col("retrieved__streamed_scores_2.experiment_id"),
+            F.col("queries_2.id").alias("search_query_id"),
+            F.col("retrieved__streamed_scores.experiment_id"),
             F.coalesce(F.col("band_memberships_5.user_band_id"), F.lit(None)).alias("user_band_id"),
             F.col("band_memberships_5.band_id"),
-            F.lower(F.regexp_replace(F.trim(F.col("queries_3.content")), '\\s+', ' ')).alias("query"),
+            F.lower(F.regexp_replace(F.trim(F.col("queries_2.content")), '\\s+', ' ')).alias("query"),
             F.lit(0).cast(T.LongType()).alias("candidate_rank"),
             F.col("document.id").alias("document_id"),
             F.col("document.title"),
             F.col("document.url"),
-            F.col("retrieved__streamed_scores_2.score"),
+            F.col("retrieved__streamed_scores.score"),
             F.lit(0.0).alias("score_feedback"),
             F.lit(0.0).alias("score_rank"),
             F.lit(0.0).alias("score_weight"),
@@ -2997,10 +2997,10 @@ class RerankDocumentsGenerated:
 
 
 class SearchDocumentsGenerated(
-    SelectGapQueriesGenerated,
+    SelectGapQueries__examples_search_transforms_searching_online_filtering_SelectGapQueriesGenerated,
     FilterOverlapGenerated,
     SelectFilterTargetsGenerated,
-    SelectGapQueriesGenerated,
+    SelectGapQueries__examples_search_transforms_searching_online_scoring_SelectGapQueriesGenerated,
     ScoreBaseGenerated,
     ScoreOverlapGenerated,
     ScoreBm25Generated,

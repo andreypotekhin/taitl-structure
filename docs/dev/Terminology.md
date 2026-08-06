@@ -179,14 +179,16 @@ lower(trim(order.customer_id)) == "c-001"
 
 ### Expression Helper
 
-An expression helper function is a reusable compiler-visible function marked with `@special(type="expr")`. When called with symbolic arguments, the helper is expanded as expression IR.
+An expression helper function is a reusable compiler-visible function whose body returns Structure expressions. Ordinary
+helpers are compiler-visible by default when reached with symbolic arguments; `@special(type="expr")` is optional metadata
+for explicit intent or named helper capture.
 
-Expression helper functions are Structure's preferred way to use expression logic while keeping it visible to the compiler checks, traceability, execution, and generated code.
+Expression helper functions keep logic visible to compiler checks, traceability, execution, and generated code. Code marked
+`@special(type="ignore")` is intentionally excluded from that contract and cannot be called from compiled logic.
 
-Example:
+Ordinary helper (the default):
 
 ```python
-@special(type="expr")
 def clean_id(value):
     return lower(trim(value))
 ```

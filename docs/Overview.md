@@ -250,7 +250,9 @@ Structure is intentionally strict. Compiled step methods must lower to Spark-pla
 
 Unsupported Python operations are rejected at compile time. This is a performance feature: Spark can optimize transformations only when work remains visible in the DataFrame logical plan. Projection, filtering, joins, predicate pushdown, column pruning, aggregation planning, and whole-stage code generation all depend on expressing work through Spark's relational expression model.
 
-For custom logic, create expression helpers with `@special(type="expr")`. This keeps expression logic compiler-visible and reusable.
+For custom scalar logic, write an ordinary helper using Structure expressions. Reachable helpers and classes are compiler-visible
+by default and are compiled when supported; use optional `@special(type="expr")` when explicit intent or named helper rendering
+is useful. Unsupported code fails at compile time with an actionable diagnostic.
 
 Arbitrary PySpark is still supported, but only through explicit hooks. Hooks receive the underlying DataFrame(s) for arbitrary manipulation. Hooks are escape hatches: Structure calls them, records them as opaque boundaries, but does not treat their body as compiler-visible logic.
 

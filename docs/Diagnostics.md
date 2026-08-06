@@ -9,8 +9,9 @@ Below is an index for published diagnostic codes. For the full diagnostic contra
 | --- | --- | --- | --- |
 | CONF-E0101 | error | Unknown configuration key | Remove the key or correct its spelling. |
 | CONF-E0102 | error | Invalid configuration value | Set the value to one of the allowed values. |
-| DSL-E0401 | error | Unsupported symbolic expression | Use Structure DSL helpers, an `@special(type="expr")` helper, or a hook. |
+| DSL-E0401 | error | Unsupported symbolic expression | Rewrite with Structure DSL helpers or an ordinary compiler-visible helper; use `@special(type="expr")` for explicit metadata, `@special(type="udf")` for intentional scalar Python execution, or a hook for arbitrary DataFrame logic. |
 | DSL-E0402 | error | Invalid transform structure | Check decoration, annotations, schema flow, and output fields. |
+| DSL-E0404 | error | Ignored compiler code reached | Keep ignored code outside compiled logic, or use a UDF or explicit hook for intentional runtime execution. |
 | DSL-W0403 | warning | Python UDF is optimizer-opaque | Keep intentional UDFs or set `warn_on_udfs = false`. |
 | SCHEMA-E0301 | error | Nullable expression assigned to non-nullable field | Guard the value or provide a non-null default. |
 | SCHEMA-E0302 | error | Explicit conversion required | Use an explicit conversion helper such as `to_decimal(...)`. |
@@ -59,6 +60,9 @@ See [Diagnostics.md](background/Diagnostics.back.md#dsl-e0401).
 
 ### DSL-E0402
 See [Diagnostics.md](background/Diagnostics.back.md#dsl-e0402).
+
+### DSL-E0404
+See [Diagnostics.md](background/Diagnostics.back.md#dsl-e0404).
 
 ### DSL-W0403
 See [Diagnostics.md](background/Diagnostics.back.md#dsl-w0403).

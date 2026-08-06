@@ -38,7 +38,7 @@ evidence.
 | API Area | Status | PySpark Coverage | Reference |
 | --- | --- | --- | --- |
 | Schemas | supported | `StructType`, SQL types | [Schema reference](Schema.ref.md) |
-| Transforms and hooks | supported | DataFrame pipeline | [Transforms API](../api/Transforms.api.md) |
+| Transforms and hooks | supported | DataFrame pipeline | [Transform reference](Transform.ref.md) |
 | Expressions | supported | Column and SQL-function subset | [Expressions API](../api/Expressions.api.md) |
 
 **Details And Differences**
@@ -48,12 +48,28 @@ evidence.
 - Expression truthiness, raw SQL strings, UDTFs, and arbitrary callback bodies are unsupported. Scalar
   `@special(type="udf")` remains an ordinary-PySpark row-local feature with its warning policy.
 
+```python
+class PublishedOrder(Schema):
+    id = string(nullable=False)
+
+
+class Publish(Transform):
+    orders = input(Order)
+    published = output(PublishedOrder)
+
+    def publish(self, order: Order) -> PublishedOrder:
+        where(order.id.is_not_null())
+        return PublishedOrder.project(order)(id=order.id)
+```
+
+The schema, transform, and expression remain visible to compile-time checking and generated output.
+
 ## Analytical APIs
 
 | API Area | Status | PySpark Coverage | Reference |
 | --- | --- | --- | --- |
-| Joins | supported | DataFrame joins and windowed matching | [Joins API](../api/Joins.api.md) |
-| Aggregations and dedupe | supported | `GroupedData` and Window patterns | [Aggregates](../api/Aggregations.api.md) |
+| Joins | supported | DataFrame joins and windowed matching | [Join reference](Join.ref.md) |
+| Aggregations and dedupe | supported | GroupedData and windows | [Aggregations reference](Aggregations.ref.md) |
 | Inline and reusable windows | supported | `Window` and window functions | [Windows API](../api/Windows.api.md) |
 | Array/map helpers | supported | Higher-order and map SQL functions | [Collections API](../api/Collections.api.md) |
 | Relation operations | supported | Sets, order, assertions, hierarchy, sampling | [API](../api/Relations.api.md) |
@@ -64,11 +80,20 @@ evidence.
 - Aggregates use typed helpers rather than dictionary/list aggregate syntax. Ordered selection is explicit.
 - Array and map callbacks return symbolic expressions; they do not run Python code for every row.
 
+```python
+left_join(on=(order.tenant_id == customer.tenant_id) & (order.customer_id == customer.id))
+group_by(tenant_id=order.tenant_id)
+return CustomerTotal(order_count=count(), total=sum(order.total))
+```
+
+Choose the join cardinality and aggregate grain explicitly; the corresponding focused references contain the full
+operation examples and edge conditions.
+
 ## Runtime And Streaming APIs
 
 | API Area | Status | PySpark Coverage | Reference |
 | --- | --- | --- | --- |
-| PySpark batch | supported | Spark DataFrames | [Execution](../background/Execution.back.md) |
+| PySpark batch | supported | Spark DataFrames | [Execution reference](Execution.ref.md) |
 | Spark Connect batch | supported | Spark Connect DataFrame and Column APIs | [Compatibility.md](../Compatibility.md) |
 | Streaming transforms | supported | Streaming-safe shapes | [Streaming API](../api/Streaming.api.md) |
 | Generated lifecycle | unsupported | `readStream`, `writeStream` | [Streaming](../background/Streaming.back.md) |
@@ -81,6 +106,15 @@ evidence.
   on Spark Connect but remain ordinary-PySpark-only for streaming. Use the tested caller-owned recipe in
   [`examples/streams/adoption.py`](../../examples/streams/adoption.py) for source/sink/query lifecycle code.
 - Classic-only Spark internals such as SparkContext, RDDs, JVM access, and `_jdf` are unsupported for Spark Connect.
+
+```python
+events = spark.readStream.schema(event_schema).json(input_path)
+result = WindowedOrders(events=events).run(session)
+query = result.totals.writeStream.outputMode("append").option("checkpointLocation", checkpoint).start(output_path)
+```
+
+The caller owns the source, sink, checkpoint, trigger, and query lifecycle; the transform owns only the admitted
+typed operation graph.
 
 ## Planned And Unsupported Surface
 

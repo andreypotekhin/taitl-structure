@@ -1,6 +1,5 @@
 """Two-stage BM25 and implicit-feedback document search."""
 
-from examples.search.adoption import SEARCH_STREAMING_CONTRACTS_ENABLED
 from examples.search.schemas.clicks import SearchRequest
 from examples.search.schemas.filtering import DocumentFilterScore
 from examples.search.schemas.indexing.lexical.index import (
@@ -29,11 +28,11 @@ from structure import Transform, input, output
 class SearchDocuments(Transform):
     """Filter, obtain, rerank, and return document search results."""
 
-    queries = input(SearchQuery, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
+    queries = input(SearchQuery, streaming=True)
     documents = input(Document)
     document_scores = input(DocumentScore)
-    streamed_documents = input(Document, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
-    streamed_document_scores = input(DocumentScore, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
+    streamed_documents = input(Document, streaming=True)
+    streamed_document_scores = input(DocumentScore, streaming=True)
     document_overlap_scores = input(DocumentOverlapScore)
     document_filter_scores = input(DocumentFilterScore)
     document_terms = input(DocumentIndexTerm)
@@ -45,7 +44,7 @@ class SearchDocuments(Transform):
     paragraph_summary = input(ParagraphIndexSummary)
     sentence_summary = input(SentenceIndexSummary)
     score_policy = input(ScorePolicy)
-    requests = input(SearchRequest, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
+    requests = input(SearchRequest, streaming=True)
     band_memberships = input(BandMembership)
     query_document_signals = input(QueryDocumentSignals)
     document_popularity = input(DocumentPopularity)

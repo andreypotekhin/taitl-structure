@@ -5,7 +5,6 @@ from structure import *
 from structure.plugin.pyspark import *
 
 
-@special(type="expr")
 class PersonalizationAlgorithm:
     """Replaceable expression strategy for the complete personal score."""
 

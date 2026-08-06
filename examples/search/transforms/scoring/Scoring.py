@@ -1,6 +1,5 @@
 """Production scoring composition."""
 
-from examples.search.adoption import SEARCH_STREAMING_CONTRACTS_ENABLED
 from examples.search.schemas.indexing.lexical.index import (
     DocumentIndexSummary,
     DocumentIndexTerm,
@@ -40,7 +39,7 @@ from structure import Transform, input, output, parameter
 class Scoring(Transform):
     """Run production scoring and select one unified score per target grain."""
 
-    queries = input(SearchQuery, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
+    queries = input(SearchQuery, streaming=True)
     document_terms = input(DocumentIndexTerm)
     section_terms = input(SectionIndexTerm)
     paragraph_terms = input(ParagraphIndexTerm)

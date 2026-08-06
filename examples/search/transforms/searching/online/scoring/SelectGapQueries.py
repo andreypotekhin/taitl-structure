@@ -1,6 +1,5 @@
 """Select query groups that need online score resolution."""
 
-from examples.search.adoption import SEARCH_STREAMING_CONTRACTS_ENABLED
 from examples.search.schemas.clicks import SearchRequest
 from examples.search.schemas.scoring.intermediate import ScoreQueryAvailability
 from examples.search.schemas.scoring.overlap import DocumentOverlapScore
@@ -12,8 +11,8 @@ from structure.plugin.pyspark import cross_join, datediff, drop_duplicates, inne
 class SelectGapQueries(Transform):
     """Select queries without fresh document and overlap scores."""
 
-    queries = input(SearchQuery, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
-    requests = input(SearchRequest, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
+    queries = input(SearchQuery, streaming=True)
+    requests = input(SearchRequest, streaming=True)
     document_scores = input(DocumentScore)
     document_overlap_scores = input(DocumentOverlapScore)
     score_policy = input(ScorePolicy)

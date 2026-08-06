@@ -1,6 +1,5 @@
 """Fill missing or stale document-search scores from reusable indexes."""
 
-from examples.search.adoption import SEARCH_STREAMING_CONTRACTS_ENABLED
 from examples.search.schemas.clicks import SearchRequest
 from examples.search.schemas.indexing.lexical.index import (
     DocumentIndexSummary,
@@ -34,8 +33,8 @@ from structure import Transform, input, output
 class OnlineScoring(Transform):
     """Calculate only score groups missing or stale in caller-supplied scores."""
 
-    queries = input(SearchQuery, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
-    requests = input(SearchRequest, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
+    queries = input(SearchQuery, streaming=True)
+    requests = input(SearchRequest, streaming=True)
     document_scores = input(DocumentScore)
     document_overlap_scores = input(DocumentOverlapScore)
     document_terms = input(DocumentIndexTerm)

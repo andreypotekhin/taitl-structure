@@ -1,6 +1,5 @@
 """Implicit-feedback document reranking."""
 
-from examples.search.adoption import SEARCH_STREAMING_CONTRACTS_ENABLED
 from examples.search.schemas.relevance import DocumentPopularity, QueryDocumentSignals, RelevancePolicy
 from examples.search.schemas.search import (
     DocumentFeedbackOption,
@@ -39,7 +38,7 @@ class RerankDocuments(Transform):
     document_popularity = input(DocumentPopularity)
     band_fallbacks = input(BandFallback)
     policy = input(RelevancePolicy)
-    candidates = input(DocumentSearchCandidate, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
+    candidates = input(DocumentSearchCandidate, streaming=True)
     fallback_options = lane(DocumentFeedbackOption)
     global_options = lane(DocumentFeedbackOption)
     feedback_options = lane(DocumentFeedbackOption)

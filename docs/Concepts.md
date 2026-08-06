@@ -176,17 +176,25 @@ Predicate helpers include `isnull(...)`, `isnotnull(...)`, and `isnan(...)`.
 
 ### Expression Helper
 
-An expression helper function is a reusable compiler-visible function marked with `@special(type="expr")`. When called with
-symbolic arguments, the helper expands as expression IR.
+An expression helper function is a reusable compiler-visible function whose body returns Structure expressions. Reachable
+ordinary helpers are compiled by default; `@special(type="expr")` is optional metadata for explicit intent or named helper
+capture. When called with symbolic arguments, the helper expands as expression IR.
 
 Expression helpers are Structure's preferred way to use reusable expression logic while keeping it visible to
 compiler checks, traceability, execution, and generated code.
 
-Example:
+Ordinary helper (the default):
+
+```python
+def clean_id(value):
+    return lower(trim(value))
+```
+
+Use `@special(type="expr")` when explicit metadata or named helper rendering is useful:
 
 ```python
 @special(type="expr")
-def clean_id(value):
+def normalized_email(value):
     return lower(trim(value))
 ```
 

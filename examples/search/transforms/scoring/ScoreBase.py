@@ -1,6 +1,5 @@
 """Shared reusable-index scoring inputs."""
 
-from examples.search.adoption import SEARCH_STREAMING_CONTRACTS_ENABLED
 from examples.search.schemas.indexing.lexical.index import (
     DocumentIndexTerm,
     ParagraphIndexTerm,
@@ -16,7 +15,7 @@ from structure.plugin.pyspark import count, group_by, watermark, where
 class ScoreBase(Transform):
     """Accept one or more queries and four reusable target-grain indexes."""
 
-    queries = input(SearchQuery, streaming=SEARCH_STREAMING_CONTRACTS_ENABLED)
+    queries = input(SearchQuery, streaming=True)
     document_terms = input(DocumentIndexTerm)
     section_terms = input(SectionIndexTerm)
     paragraph_terms = input(ParagraphIndexTerm)

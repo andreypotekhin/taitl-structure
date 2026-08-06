@@ -36,7 +36,8 @@ are documented in the [Relations API](Relations.api.md).
 | `where(...)` | `filter` / `where` | `where(order.total > 0)` |
 | `@step(cache=True)` | `persist()` | `@step(cache=True)` |
 | `@step(cache=StorageLevel.MEMORY_AND_DISK)` | `persist(StorageLevel.MEMORY_AND_DISK)` | `@step(cache=StorageLevel.MEMORY_AND_DISK)` |
-| `@special(type="expr")` | Reusable `Column` expression | `@special(type="expr")\ndef clean(v): return trim(v)` |
+| Ordinary helper / class | Reusable compiler-visible expression logic | `def clean(v): return trim(v)` |
+| `@special(type="expr")` | Optional expression metadata or named helper rendering | `@special(type="expr")\ndef clean(v): return trim(v)` |
 | `Compiler.frontend.analyze()` | Structural transform plan | `plan = Compiler.frontend.analyze()(Publish)` |
 | `Compiler.frontend.compile()` | Selected-platform compilation | `compiled = Compiler.frontend.compile()(Publish)` |
 
@@ -62,6 +63,7 @@ are documented in the [Relations API](Relations.api.md).
 **Details And Differences**
 
 - `@raw(...)` is the explicit opaque boundary: Structure validates its binding declaration, not the hook body.
+- `@special(type="ignore")` marks code that must remain outside compiler-visible logic; calling it from compiled code fails.
 - `SchemaMode.STRICT` is the default; `SchemaMode.ALLOW_EXTRA_COLUMNS` permits additional hook output columns.
 - `StructureCompileError` exposes a rendered diagnostic with remediation. See the
   [Transforms background](../background/Transform.back.md) and [Hooks reference](../background/HookSemantics.back.md).

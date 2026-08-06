@@ -22,7 +22,9 @@ The v1 implementation must follow these decisions:
 - execution and generated-code execution consume the same checked semantic contract;
 - default validation is schema-only, with value-level data-quality constraints requiring explicit opt-in;
 - hooks are explicit runtime escape hatches and are opaque to compile-time expression analysis;
-- `@special(type="expr")` is the public compiler-visible extension point for reusable expression logic;
+- reachable ordinary helpers and classes are the default compiler-visible extension path for reusable expression logic;
+  `@special(type="expr")` is optional explicit metadata, while `@special(type="ignore")` marks code that must stay
+  outside compilation;
 - v1 lookup joins use `lookup_join(...)`; row-multiplying and existence joins are v2+ features;
 - diagnostics are registry-backed, stable, structured, and linked to documentation;
 - the first implementation checkpoint is first executable slice, a narrow executable vertical slice, before full v1 breadth.
@@ -188,7 +190,8 @@ right-side rows. If right-side uniqueness is not proven, Structure emits a warni
 
 The supported public extension surface is:
 
-- `@special(type="expr")` for compiler-visible reusable expression helpers;
+- ordinary reachable helpers and classes, with optional `@special(type="expr")` metadata, for compiler-visible reusable
+  expression helpers;
 - `@raw` for runtime DataFrame escape hatches.
 
 Compiler registries, backend capability providers, validation policy plugins, schema type adapters, and diagnostic
