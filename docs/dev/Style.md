@@ -136,7 +136,7 @@ Examples:
 - /tests/lib/helper/ - Helper lib tests
 
 #### Specification Testing
-Test cases backing user stories (from [UserStories.md](specifications/UserStories.md)) are in tests/user_stories/.
+Test cases backing user stories (from [UserStories.md](specifications/UserStories.spec.md)) are in tests/user_stories/.
 For each implemented user story from UserStories.md, create a test case
 in the corresponding subpackage of tests/user_stories.
 

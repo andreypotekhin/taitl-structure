@@ -162,7 +162,7 @@ compatibility, and tests are specified.
 The public plugin contract is Plugin API v1. It lets Structure Core invoke one selected plugin through a negotiated
 `PluginAPI` facade without importing the plugin's DSL, runtime, schema materialization, or lowered plan types. The
 complete authoring contract is [PluginAuthoring.md](dev/PluginAuthoring.md), and the detailed v1 specification is
-[PluginAPI.md](dev/specifications/PluginAPI.md).
+[PluginAPI.md](dev/specifications/PluginAPI.spec.md).
 
 The bundled PySpark plugin is selected by:
 

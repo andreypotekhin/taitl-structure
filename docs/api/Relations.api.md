@@ -101,4 +101,4 @@ The initial state must fully populate its Schema. The transition callback receiv
 row, and must return the same state Schema. A positive `max_rows` bounds the inspected history per output row; duplicate
 ordering keys fail under the current `ties="error"` policy.
 
-See [Ordered Timeline Scan](../dev/specifications/OrderedTimelineScan.md) for the complete state and recurrence rules.
+See [Ordered Timeline Scan](../dev/specifications/OrderedTimelineScan.spec.md) for the complete state and recurrence rules.

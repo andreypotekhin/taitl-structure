@@ -667,9 +667,9 @@ shape, and diagnostics for unsupported cases.
 ## Related Documents
 
 - [Concepts.md](Concepts.md): concept-test coverage map.
-- [DSL.md](specifications/DSL.md): public DSL contract.
-- [SymbolicExecution.md](specifications/SymbolicExecution.md): symbolic capture contract.
-- [IntermediateRepresentation.md](specifications/IntermediateRepresentation.md): IR shape and invariants.
-- [ExecutionSemanticContract.md](specifications/ExecutionSemanticContract.md): shared execution/generated-code lowering contract.
-- [PySparkCodeGeneration.md](specifications/PySparkCodeGeneration.md): generated PySpark rendering contract.
-- [Execution.md](specifications/Execution.md): runtime session and direct runtime behavior.
+- [DSL.md](specifications/DSL.spec.md): public DSL contract.
+- [SymbolicExecution.md](specifications/SymbolicExecution.spec.md): symbolic capture contract.
+- [IntermediateRepresentation.md](specifications/IntermediateRepresentation.spec.md): IR shape and invariants.
+- [ExecutionSemanticContract.md](specifications/ExecutionSemanticContract.spec.md): shared execution/generated-code lowering contract.
+- [PySparkCodeGeneration.md](specifications/PySparkCodeGeneration.spec.md): generated PySpark rendering contract.
+- [Execution.md](specifications/Execution.spec.md): runtime session and direct runtime behavior.

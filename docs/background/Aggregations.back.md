@@ -7,8 +7,8 @@ See the exhaustive [aggregations](../api/Aggregations.api.md), [windows](../api/
 [collections](../api/Collections.api.md) API tables for supported names, parity, and examples.
 
 The governing sources are the
-[Advanced Analytical Operations specification](../dev/specifications/AdvancedAnalyticalOperations.md) and
-[design](../dev/design/AdvancedAnalyticalOperations.md). This background follows the implemented, tested contract and
+[Advanced Analytical Operations specification](../dev/specifications/AdvancedAnalyticalOperations.spec.md) and
+[design](../dev/design/AdvancedAnalyticalOperations.design.md). This background follows the implemented, tested contract and
 labels genuinely deferred behavior below.
 
 The analytical surface supports common grouped aggregates, custom grouping sets, ranking, lag/lead, rolling row

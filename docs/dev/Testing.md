@@ -117,7 +117,7 @@ must be intentionally regenerated as part of a compatibility change.
 ## Invariant Tests
 
 Invariant tests prove internal phase-boundary truths that should hold after Structure has accepted user input. See
-[Invariants.md](specifications/Invariants.md). Use invariants for impossible internal states, not user-correctable
+[Invariants.md](specifications/Invariants.spec.md). Use invariants for impossible internal states, not user-correctable
 problems. User-correctable problems must still produce structured diagnostics with documentation links.
 
 ## Execution Correctness
@@ -143,7 +143,7 @@ integration-marked tests are the compact concept-level release proof; tests in `
 `tests/user_stories`, and `tests/integration` continue to own exhaustive semantic edges and infrastructure behavior.
 
 Generated-code snapshots are still required for reviewability, but snapshots are secondary. The semantic authority is
-runtime parity through the shared contract in [ExecutionSemanticContract.md](specifications/ExecutionSemanticContract.md).
+runtime parity through the shared contract in [ExecutionSemanticContract.md](specifications/ExecutionSemanticContract.spec.md).
 
 Live PySpark parity tests are opt-in because they require the optional `pyspark` package and a usable local Spark
 runtime. Run them before release with:
@@ -270,7 +270,7 @@ Use these directories consistently:
 - `tests/differential/...`: comparisons against independently written reference behavior.
 - `tests/metamorphic/...`: relationship-based and property-based behavior tests.
 - `tests/helpers/...`: repo-local helpers for fixture-backed or pytest-specific test scenarios.
-- `tests/user_stories/[section-or-story]/...`: tests backing user stories from [UserStories.md](specifications/UserStories.md).
+- `tests/user_stories/[section-or-story]/...`: tests backing user stories from [UserStories.md](specifications/UserStories.spec.md).
 - `tests/specifications/[specification-doc-slug]/...`: tests backing individual documents under `docs/dev/specifications/`
   when we need to prove the behavior described by a specification document directly.
 
@@ -284,7 +284,7 @@ Examples:
 - Independent reference comparison: `tests/differential/...`
 - Repeated-generation stability: `tests/metamorphic/...`
 - Fixture-specific scenario helpers: `tests/helpers/scenarios/...`
-- User stories completed from [UserStories.md](specifications/UserStories.md): `tests/user_stories/...`
+- User stories completed from [UserStories.md](specifications/UserStories.spec.md): `tests/user_stories/...`
 - Execution semantic contract checks: `tests/specifications/execution-semantic-contract/...`
 - PySpark code generation contract checks: `tests/specifications/pyspark-code-generation/...`
 

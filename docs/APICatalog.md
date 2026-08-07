@@ -15,8 +15,8 @@ each entry must name its owner boundary, evidence, and caller remedy.
 The adoption work adds a separate ledger for the PySpark `>=4.1,<4.2` profile. These rows are admission classifications,
 not current support claims. The primary target variant is ordinary PySpark; Spark Connect receives a support claim only
 when its 4.1-specific evidence passes. The governing design and specification are
-[PySpark 4.1 design](dev/design/V11PySpark41Adoption.md) and
-[PySpark 4.1 parity specification](dev/specifications/V11PySpark41Parity.md).
+[PySpark 4.1 design](dev/design/V11PySpark41Adoption.design.md) and
+[PySpark 4.1 parity specification](dev/specifications/V11PySpark41Parity.spec.md).
 
 | PySpark 4.1 addition | Status | Structure boundary | Design evidence or remedy |
 | --- | --- | --- | --- |
@@ -70,11 +70,11 @@ window helpers, and selected array/map higher-order functions.
 | Hash helpers | implemented | `hash`, `xxhash64`, `md5`, `sha1`, `sha2` | Typed scalar hashes and string digests; not security or cross-engine identity primitives | [Expressions API](api/Expressions.api.md) |
 | Encoding/binary helpers | implemented | `base64`, `unbase64`, `encode`, `decode` | Binary helpers use the public binary field type and typed scalar lowering | [Expressions API](api/Expressions.api.md) |
 | JSON/CSV helpers | implemented | `from_json`, `to_json`, `from_csv`, `to_csv` | Schema-carrying parsing keeps data contracts compiler-visible | [Expressions API](api/Expressions.api.md) |
-| XML helpers | design-gated | Spark XML functions | Low-priority schema-carrying parser/generator design; XML remains outside the active implementation path | [API Catalog Design Gates](dev/design/ApiCatalogDesignGates.md) |
+| XML helpers | design-gated | Spark XML functions | Low-priority schema-carrying parser/generator design; XML remains outside the active implementation path | [API Catalog Design Gates](dev/design/ApiCatalogDesignGates.design.md) |
 | Variant field | implemented | `VariantType` | `variant(...)` preserves an opaque Spark Variant value in schemas; it requires a resolved PySpark 4 profile | [Schemas API](api/Schemas.api.md) |
 | Variant helpers | implemented | `parse_json`, `try_parse_json`, `variant_literal`, `variant_get`, `try_variant_get`, `schema_of_variant`, `schema_of_variant_agg`, `to_variant_object`, `is_variant_null`, `is_valid_variant`, `variant_explode`, `variant_explode_outer` | Typed strict/safe parsing, validated literals, extraction, schema inspection, conversion, JSON-null testing, equality, validation, and PySpark 4 TVF row expansion. `is_valid_variant(...)` requires `>=4.2,<4.3`. | [Expressions API](api/Expressions.api.md) |
-| Variant mutation helpers | design-gated | `variant_array_append`, `try_variant_array_append`, `variant_insert`, `try_variant_insert`, `variant_set`, `try_variant_set`, `variant_delete` | Reserved for PySpark 4.3+ profiles, which are not yet released in the supported project matrix; current PySpark 4.2 transforms reject these helpers before lowering. | [API Catalog Design Gates](dev/design/ApiCatalogDesignGates.md) |
-| Geospatial helpers | design-gated | Provider-neutral Spark SQL `GEOMETRY`/`ST_*` contract | The bundled DSL admits a narrow typed geometry slice; runtime providers remain optional and provider-specific | [API Catalog Design Gates](dev/design/ApiCatalogDesignGates.md) |
+| Variant mutation helpers | design-gated | `variant_array_append`, `try_variant_array_append`, `variant_insert`, `try_variant_insert`, `variant_set`, `try_variant_set`, `variant_delete` | Reserved for PySpark 4.3+ profiles, which are not yet released in the supported project matrix; current PySpark 4.2 transforms reject these helpers before lowering. | [API Catalog Design Gates](dev/design/ApiCatalogDesignGates.design.md) |
+| Geospatial helpers | design-gated | Provider-neutral Spark SQL `GEOMETRY`/`ST_*` contract | The bundled DSL admits a narrow typed geometry slice; runtime providers remain optional and provider-specific | [API Catalog Design Gates](dev/design/ApiCatalogDesignGates.design.md) |
 | Scalar Python UDFs | implemented | PySpark `udf`; `@special(type="udf")` | Ordinary PySpark and Spark Connect row-local batch support with warning policy; streaming remains ordinary-only | Public Spark Connect UDF API |
 | Python UDTFs and UDTs | unsupported | `udtf`, UDT | Row expansion and custom type semantics are caller-owned | Use caller-owned PySpark or hooks |
 | Raw SQL string expressions | unsupported | `expr`, `call_function` | Compiler-visible expressions stay structured | Use typed helpers or hooks |
@@ -88,7 +88,7 @@ window helpers, and selected array/map higher-order functions.
 | Right join diagnostics hardening | implemented | `how="right"` | Rowset API exists; projection rules stay explicit | [Joins API](api/Joins.api.md) |
 | Cross join safety | implemented | `crossJoin`, `how="cross"` | Requires `allow_cartesian=True` | [Joins API](api/Joins.api.md) |
 | Join strategy directives | implemented | `broadcast`, `merge`, shuffle hints | Capability-checked PySpark hints | [Joins API](api/Joins.api.md) |
-| Join reordering | design-gated | Cost-based join planning | No public `join_order(...)` in the current profile; logical reordering needs dependency-safe predicate analysis and explainable selected order | [API Catalog Design Gates](dev/design/ApiCatalogDesignGates.md) |
+| Join reordering | design-gated | Cost-based join planning | No public `join_order(...)` in the current profile; logical reordering needs dependency-safe predicate analysis and explainable selected order | [API Catalog Design Gates](dev/design/ApiCatalogDesignGates.design.md) |
 | Backward/forward as-of joins | implemented | Directional as-of matching | Selects the latest previous or earliest following qualifying right row | [Joins API](api/Joins.api.md) |
 | Nearest as-of joins | implemented | Nearest time matching | Selects the closest non-null right time and fails equidistant matches with `ties="error"` | [Joins API](api/Joins.api.md) |
 | Unbounded or non-contract stream-stream joins | unsupported | Streaming stream-stream joins | Only admitted bounded forms are allowed; all need input modes, watermarks, event-time bounds, and state diagnostics | [Streaming API](api/Streaming.api.md) |
@@ -158,7 +158,7 @@ Structure additions over public DataFrame transformation patterns, not raw DataF
 | Parent hierarchy closure | implemented | Finite iterative self-join expansion | `hierarchy_closure(...)` replaces the active rowset with typed `(node, ancestor, depth)` rows up to literal `max_depth` | Retired cohort-band resolution hook |
 | Bounded parent hierarchy fallbacks | implemented | Hierarchy expansion patterns | `hierarchy_fallbacks(...)` emits ordered parent-substitution fallback IDs plus the terminal global fallback row | Retired cohort-band resolution hook |
 | Sampling | implemented | `sample` | Relation-level `sample(...)` requires a seed unless `reproducible=False`; streaming compatibility is batch-only | [APIExtensions.md](APIExtensions.md#added-relation-helpers) |
-| Bounded ordered `scan(...)` | implemented | Ordered recurrence pattern | Batch-only typed state recurrence over a caller-supplied, partitioned, ordered timeline with duplicate-key and bound checks | [Ordered Timeline Scan](dev/specifications/OrderedTimelineScan.md) |
+| Bounded ordered `scan(...)` | implemented | Ordered recurrence pattern | Batch-only typed state recurrence over a caller-supplied, partitioned, ordered timeline with duplicate-key and bound checks | [Ordered Timeline Scan](dev/specifications/OrderedTimelineScan.spec.md) |
 | Matrix inversion | intentional raw | Driver-side numerical algorithm | Not a symbolic distributed DataFrame transformation | School example hook |
 
 ## Streaming
@@ -197,7 +197,7 @@ lifecycle recipe.
 | Typed struct generators | implemented | `explode`, `posexplode`, `inline` | Typed array-of-struct generators are admitted as stateless row expansion with schema/cardinality contracts | [Collections API](api/Collections.api.md) |
 | Caller-owned lifecycle APIs | caller-owned-guided | Sources, sinks, triggers, checkpoints, query start/stop | Structure only transforms supplied DataFrames; executable recipes keep lifecycle outside generated modules | [Streaming API](api/Streaming.api.md) |
 | `foreachBatch` side-effect sinks | caller-owned-guided | `DataStreamWriter.foreachBatch` | Use `examples.streams.adoption.start_foreach_batch_query(...)` with `ForeachBatchSafety` after Structure returns a transformed DataFrame; the helper validates sink identity, idempotence key, retry policy, and snapshot identity before start | [Streaming API](api/Streaming.api.md) |
-| Row-level `foreach` sinks | design-gated | `DataStreamWriter.foreach` | Needs sink identity, idempotence, retry, and recovery contracts before any Structure-owned support | [Spark Streaming](dev/specifications/SparkStreaming.md) |
+| Row-level `foreach` sinks | design-gated | `DataStreamWriter.foreach` | Needs sink identity, idempotence, retry, and recovery contracts before any Structure-owned support | [Spark Streaming](dev/specifications/SparkStreaming.spec.md) |
 
 ## API Coverage
 

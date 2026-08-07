@@ -6,9 +6,9 @@ sources, sinks, checkpoints, triggers, output modes, query start/stop, deploymen
 
 The [Streaming API](../api/Streaming.api.md) lists supported declarations and parity. This background combines runtime
 shape, compatibility analysis, supported operations, deferred features, hooks, validation, and generated-code rules.
-The normative sources are [Spark Streaming](../dev/specifications/SparkStreaming.md),
-[Streaming Compatibility](../dev/specifications/StreamingCompatibility.md), and the
-[Spark Streaming design](../dev/design/SparkStreaming.md).
+The normative sources are [Spark Streaming](../dev/specifications/SparkStreaming.spec.md),
+[Streaming Compatibility](../dev/specifications/StreamingCompatibility.spec.md), and the
+[Spark Streaming design](../dev/design/SparkStreaming.design.md).
 
 ## Runtime Ownership Boundary
 

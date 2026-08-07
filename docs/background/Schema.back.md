@@ -7,12 +7,12 @@ uniqueness proof.
 
 The [Schema reference](../reference/Schema.ref.md) is the end-user operation inventory. This background gathers the
 semantic, model, inheritance, construction, nullability, validation, and data-quality contracts in reader order. The
-normative source documents are [Schema Semantics](../dev/specifications/SchemaSemantics.md),
-[Schema Declaration Syntax](../dev/specifications/SchemaDeclarationSyntax.md),
-[Schema Model](../dev/specifications/SchemaModel.md), [Schema Inheritance](../dev/specifications/SchemaInheritance.md),
-[Nullability and Type Coercion](../dev/specifications/NullabilityAndTypeCoercion.md), and
-[Data Quality Constraints](../dev/specifications/DataQualityConstraints.md). The design sources are
-[Schema Model](../dev/design/SchemaModel.md) and [Data Quality Constraints](../dev/design/DataQualityConstraints.md).
+normative source documents are [Schema Semantics](../dev/specifications/SchemaSemantics.spec.md),
+[Schema Declaration Syntax](../dev/specifications/SchemaDeclarationSyntax.spec.md),
+[Schema Model](../dev/specifications/SchemaModel.spec.md), [Schema Inheritance](../dev/specifications/SchemaInheritance.spec.md),
+[Nullability and Type Coercion](../dev/specifications/NullabilityAndTypeCoercion.spec.md), and
+[Data Quality Constraints](../dev/specifications/DataQualityConstraints.spec.md). The design sources are
+[Schema Model](../dev/design/SchemaModel.design.md) and [Data Quality Constraints](../dev/design/DataQualityConstraints.design.md).
 
 ## Semantic Layers and Identity
 
@@ -966,7 +966,7 @@ Field:
 Use:
   Add total=... or copy it through OrderNormalized.base(source) when compatible.
 
-See docs/dev/specifications/SchemaSemantics.md
+See docs/dev/specifications/SchemaSemantics.spec.md
 ```
 
 ```text
@@ -981,7 +981,7 @@ Source expression:
 Use:
   total=to_decimal(order.total, precision=12, scale=2)
 
-See docs/dev/specifications/NullabilityAndTypeCoercion.md
+See docs/dev/specifications/NullabilityAndTypeCoercion.spec.md
 ```
 
 Inheritance diagnostics include schema, conflicting field, involved bases, source location, and a local redeclaration
@@ -997,7 +997,7 @@ Invalid schema field type:
 Use an explicit Structure type object:
   id = string(nullable=False)
 
-See docs/dev/specifications/SchemaDeclarationSyntax.md
+See docs/dev/specifications/SchemaDeclarationSyntax.spec.md
 ```
 
 ```text
@@ -1007,7 +1007,7 @@ Invalid decimal type:
 Decimal scale must be less than or equal to precision:
   total = decimal(12, 2, nullable=True)
 
-See docs/dev/specifications/SchemaModel.md
+See docs/dev/specifications/SchemaModel.spec.md
 ```
 
 ```text
@@ -1017,7 +1017,7 @@ Ambiguous inherited field:
 Resolve the field in Order with a local declaration:
   id = string(nullable=False)
 
-See docs/dev/specifications/SchemaInheritance.md
+See docs/dev/specifications/SchemaInheritance.spec.md
 ```
 
 ```text
@@ -1026,7 +1026,7 @@ Invalid schema base:
 
 Use only Schema classes in schema inheritance.
 
-See docs/dev/specifications/SchemaInheritance.md
+See docs/dev/specifications/SchemaInheritance.spec.md
 ```
 
 ## Implementation and Acceptance Contract

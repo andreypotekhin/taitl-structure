@@ -6,8 +6,8 @@ and
 allowed values.
 
 This reference covers configuration files, resolution order, keys, defaults, validation rules, diagnostics, and tests.
-The normative sources are [ConfigSchema](../dev/specifications/ConfigSchema.md) and
-[PluginConfiguration](../dev/specifications/PluginConfiguration.md).
+The normative sources are [ConfigSchema](../dev/specifications/ConfigSchema.spec.md) and
+[PluginConfiguration](../dev/specifications/PluginConfiguration.spec.md).
 
 ## Plugin Configuration
 
@@ -43,7 +43,7 @@ CLI `--target`, `StructureSession(target=...)`, capability resolution, and schem
 name. A target selection never changes configuration files or creates process-wide active-plugin state. A composed
 pipeline must resolve one identical target before a plugin service facet runs.
 
-The normative selection contract is [PluginConfiguration.md](../dev/specifications/PluginConfiguration.md).
+The normative selection contract is [PluginConfiguration.md](../dev/specifications/PluginConfiguration.spec.md).
 
 The root-level target settings shown in the compatibility seed below are the pre-plugin configuration contract. The
 released plugin contract uses `plugin.default`, `plugin.disabled_distributions`, and `plugin.<name>` tables; legacy

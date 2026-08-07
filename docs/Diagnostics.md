@@ -137,7 +137,7 @@ The transform step contains an operation that is not compatible with streaming e
 batch-only, add the required watermark or event-time bound, or rewrite the operation using a supported streaming
 shape. Keep sources, sinks, checkpoints, triggers, output modes, query lifecycle, and side effects in caller-owned
 PySpark code. See [Streaming API](api/Streaming.api.md) and
-[Spark Streaming](dev/specifications/SparkStreaming.md).
+[Spark Streaming](dev/specifications/SparkStreaming.spec.md).
 
 ### STREAM-E0802
 

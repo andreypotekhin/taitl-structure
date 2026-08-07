@@ -724,7 +724,7 @@ class RunOnlinePySparkTransform:
         )
         message = (
             "SCAN-E0801: scan(...) found null order keys, duplicate order keys, or a partition above max_rows; "
-            "see docs/dev/specifications/OrderedTimelineScan.md"
+            "see docs/dev/specifications/OrderedTimelineScan.spec.md"
         )
         violations = nulls.unionByName(duplicates, allowMissingColumns=False).unionByName(
             overruns,

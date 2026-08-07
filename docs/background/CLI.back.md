@@ -8,8 +8,8 @@ The CLI is intentionally a compiler surface, not a Spark job runner. `structure 
 `structure compile --fail-on-diff` must run without PySpark, Java, Spark startup, a `SparkSession`, or a Spark cluster.
 Direct runtime execution remains available through `StructureSession`, not through the CLI.
 
-The normative sources are the [CLI specification](../dev/specifications/CLI.md) and
-[CLI design](../dev/design/CLI.md).
+The normative sources are the [CLI specification](../dev/specifications/CLI.spec.md) and
+[CLI design](../dev/design/CLI.design.md).
 
 ## Command Surface
 

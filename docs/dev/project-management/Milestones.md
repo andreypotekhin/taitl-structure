@@ -435,7 +435,7 @@ evidence, and initial build evidence. Sprints 45--48 closed the remaining design
 2026-08-02.
 The governing completed plan is
 `close/archive/planning/P07292602.V9-pyspark-streaming-api-coverage.plan.md`, and the governing specification is
-`docs/dev/specifications/V9PySparkStreamingApiCoverage.md`.
+`docs/dev/specifications/V9PySparkStreamingApiCoverage.spec.md`.
 
 ### Exit Criteria
 
@@ -450,10 +450,10 @@ The governing completed plan is
   a current rationale.
 - Design-gated streaming rows and non-streaming APICatalog planned/deferred rows have dedicated design,
   implementation specification, and active follow-up planning:
-  `docs/dev/design/V9StreamingDesignGates.md`,
-  `docs/dev/specifications/V9StreamingDesignGatedFeatures.md`,
-  `docs/dev/design/V9ApiCatalogDesignGates.md`,
-  `docs/dev/specifications/V9ApiCatalogDesignGatedFeatures.md`,
+  `docs/dev/design/V9StreamingDesignGates.design.md`,
+  `docs/dev/specifications/V9StreamingDesignGatedFeatures.spec.md`,
+  `docs/dev/design/V9ApiCatalogDesignGates.design.md`,
+  `docs/dev/specifications/V9ApiCatalogDesignGatedFeatures.spec.md`,
 `docs/dev/planning/P07302601.V9-api-catalog-design-gates.plan.md`, and the Variant child plan
 `docs/dev/planning/P07302602.V9-variant-type-and-helpers.plan.md`.
 The released PySpark 4.0/4.2 Variant implementation slice is complete; the repository has no PySpark 4.2 live lane,
@@ -520,5 +520,5 @@ Status: planned. V11 follows the V10 closeout and runs from Sprint 55 through Sp
 - `docs/dev/project-management/V11.md`
 - `docs/dev/planning/P08042601.V11-pyspark-4.1-adoption.plan.md`
 - `docs/dev/planning/P08042603.V11-retained-v9-design-gates.plan.md`
-- `docs/dev/design/V11PySpark41Adoption.md`
-- `docs/dev/specifications/V11PySpark41Parity.md`
+- `docs/dev/design/V11PySpark41Adoption.design.md`
+- `docs/dev/specifications/V11PySpark41Parity.spec.md`

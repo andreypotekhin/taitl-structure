@@ -7,8 +7,8 @@ behavior, and runtime execution.
 Diagnostics must explain what failed, why it matters, and how to fix it. They are also stable enough for tests, CI
 annotations, IDEs, troubleshooting guides, and documentation links.
 
-The normative sources are [Diagnostics](../dev/specifications/Diagnostics.md) and the
-[diagnostics registry design](../dev/design/DiagnosticsContract.md). Feature backgrounds own the meaning of their
+The normative sources are [Diagnostics](../dev/specifications/Diagnostics.spec.md) and the
+[diagnostics registry design](../dev/design/DiagnosticsContract.design.md). Feature backgrounds own the meaning of their
 diagnostics; this document owns codes, lifecycle, registry, rendering, and security.
 
 ## Scope

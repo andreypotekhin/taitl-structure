@@ -98,5 +98,5 @@ integration test exists.
 `docs/dev/planning/P07302602.V9-variant-type-and-helpers.plan.md`,
 `docs/dev/planning/P07302603.V9-closeout-and-release.plan.md`,
 `close/archive/decisions/D07302603.V9-streaming-support-first.md`,
-`docs/dev/specifications/V9ApiCatalogDesignGatedFeatures.md`, and
-`docs/dev/specifications/V9StreamingDesignGatedFeatures.md`.
+`docs/dev/specifications/V9ApiCatalogDesignGatedFeatures.spec.md`, and
+`docs/dev/specifications/V9StreamingDesignGatedFeatures.spec.md`.

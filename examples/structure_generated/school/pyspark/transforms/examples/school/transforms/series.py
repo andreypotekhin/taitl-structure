@@ -68,7 +68,7 @@ class PiAsSeriesGenerated:
                 F.col("__structure_scan_count") == F.lit(0),
                 (
                     "SCAN-E0801: scan(...) found null order keys, duplicate order keys, or a partition above"
-                    "max_rows; see docs/dev/specifications/OrderedTimelineScan.md"
+                    "max_rows; see docs/dev/specifications/OrderedTimelineScan.spec.md"
                 ),
             ).alias("__structure_scan_guard")
         )
@@ -230,7 +230,7 @@ class EAsSeriesGenerated:
                 F.col("__structure_scan_count") == F.lit(0),
                 (
                     "SCAN-E0801: scan(...) found null order keys, duplicate order keys, or a partition above"
-                    "max_rows; see docs/dev/specifications/OrderedTimelineScan.md"
+                    "max_rows; see docs/dev/specifications/OrderedTimelineScan.spec.md"
                 ),
             ).alias("__structure_scan_guard")
         )
@@ -383,7 +383,7 @@ class Ln2AsSeriesGenerated:
                 F.col("__structure_scan_count") == F.lit(0),
                 (
                     "SCAN-E0801: scan(...) found null order keys, duplicate order keys, or a partition above"
-                    "max_rows; see docs/dev/specifications/OrderedTimelineScan.md"
+                    "max_rows; see docs/dev/specifications/OrderedTimelineScan.spec.md"
                 ),
             ).alias("__structure_scan_guard")
         )

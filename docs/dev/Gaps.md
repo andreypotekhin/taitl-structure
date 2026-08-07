@@ -49,9 +49,9 @@ V3's scheduled gaps are complete. V4 now treats this page as input to the checke
 isolated surprises. The catalog classifies every relevant PySpark 3.5.x/4.0.x transformation API as supported,
 scheduled, deferred, or unsupported and links each supported entry to capability and parity evidence.
 
-The delivery design and first ExecPlan are [API Catalog Design Gates](design/ApiCatalogDesignGates.md) and
+The delivery design and first ExecPlan are [API Catalog Design Gates](design/ApiCatalogDesignGates.design.md) and
 [P07132601.V4-transformation-api-coverage.plan.md](planning/P07132601.V4-transformation-api-coverage.plan.md).
-[Spark Streaming](design/SparkStreaming.md) and
+[Spark Streaming](design/SparkStreaming.design.md) and
 [P07152602.V4-caller-owned-streaming-migration.plan.md](../../close/archive/planning/P07152602.V4-caller-owned-streaming-migration.plan.md)
 define the dedicated bounded-streaming transformation slice. Loading, storage, catalog/table management, actions, and
 streaming lifecycle ownership are excluded from this program.
@@ -60,7 +60,7 @@ streaming lifecycle ownership are excluded from this program.
 
 v6 uses the coverage catalog and [APICatalog.md](../APICatalog.md) to schedule small typed PySpark additions, but this
 page remains the durable register of postponed and deferred work. The design is
-[PySpark API Closure](design/PluginArchitecture.md), and the previous release ledger is now consolidated into
+[PySpark API Closure](design/PluginArchitecture.design.md), and the previous release ledger is now consolidated into
 [APICatalog.md](../APICatalog.md). When v6 admits, postpones, or rejects an API, update this page, the coverage
 JSON/reference, and the catalog in the same change. Keep the reason, the user-facing boundary (`step`, explicit scalar
 UDF, `@raw`, or caller-owned PySpark), and the owning plan together so an omitted API never becomes an implicit promise.
@@ -68,10 +68,10 @@ UDF, `@raw`, or caller-owned PySpark), and the owning plan together so an omitte
 The following candidates remain deferred in the catalog until their contracts and evidence are complete: missing-column
 relation set composition, sampling, and physical-plan directives. V7 delivered Binary encoding, schema-carrying
 JSON/CSV parsing, deterministic grouped `mode(...)`, and generator expansion through named delivery slices; their
-contracts are [Advanced Analytical Operations](design/AdvancedAnalyticalOperations.md)
-and [Typed Relation Operations](design/TypedRelationOperations.md). Missing-column union, sampling,
+contracts are [Advanced Analytical Operations](design/AdvancedAnalyticalOperations.design.md)
+and [Typed Relation Operations](design/TypedRelationOperations.design.md). Missing-column union, sampling,
 and physical-plan directives remain retained backlog. Scalar `@special(type="udf")` is already implemented
-for ordinary PySpark and Spark Connect batch; its user contract is [Explicit Scalar Python UDFs](specifications/ExplicitScalarUdfs.md). It is
+for ordinary PySpark and Spark Connect batch; its user contract is [Explicit Scalar Python UDFs](specifications/ExplicitScalarUdfs.spec.md). It is
 opt-in, type/nullability declared, warning-governed, and not a substitute for an
 unsupported symbolic operation.
 

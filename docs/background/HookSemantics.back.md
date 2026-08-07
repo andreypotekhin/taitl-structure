@@ -1,7 +1,7 @@
 # Hook Semantics
 
-The normative source is [Hook Semantics](../dev/specifications/HookSemantics.md). Composed hook ownership is defined by
-the [Composed Hook Ownership design](../dev/design/ComposedHookOwnership.md).
+The normative source is [Hook Semantics](../dev/specifications/HookSemantics.spec.md). Composed hook ownership is defined by
+the [Composed Hook Ownership design](../dev/design/ComposedHookOwnership.design.md).
 
 Hooks are Structure's explicit runtime escape hatch. A hook is a method decorated with `@raw`; it lets a developer run
 arbitrary backend DataFrame logic at a precise point in the transform class without pretending the hook body is

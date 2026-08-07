@@ -32,7 +32,7 @@ The project should prioritize:
 ## Pre-Coding Gate
 
 Before the first vertical slice, Sprint 00 must retire the highest-risk unknowns called out in
-[Challenges.md](../design/Challenges.md).
+[Challenges.md](../design/Challenges.design.md).
 
 Required spikes:
 
@@ -138,11 +138,11 @@ supported logic Spark-plan-visible, and hooks remain explicit escape hatches.
 
 - **Analytical transforms:** typed `group_by(...)`, first-slice aggregations, selected-row helpers, deduplication,
   ranking, lag/lead, rolling metrics, compiler-visible Spark higher-order functions for arrays and maps, and advanced
-  analytical coverage from [AdvancedAnalyticalOperations.md](../specifications/AdvancedAnalyticalOperations.md).
+  analytical coverage from [AdvancedAnalyticalOperations.md](../specifications/AdvancedAnalyticalOperations.spec.md).
 - **Analytical joins:** existence predicates, `inner_join(...)`, deterministic lookup dedupe, temporal validity-window
-  joins, and backward as-of joins from [AnalyticalJoinCoverage.md](../specifications/AnalyticalJoinCoverage.md).
+  joins, and backward as-of joins from [AnalyticalJoinCoverage.md](../specifications/AnalyticalJoinCoverage.spec.md).
 - **Full PySpark rowset joins:** right joins, full joins, cross joins, non-equi predicates, and disjunctive predicates
-  from [FullPySparkJoinSupport.md](../specifications/FullPySparkJoinSupport.md).
+  from [FullPySparkJoinSupport.md](../specifications/FullPySparkJoinSupport.spec.md).
 - **Explicit optimization controls:** cache/persist first-slice directives are admitted in Sprint 09. Repartition,
   coalesce, checkpoint, and broader join strategy directives remain deferred until their physical-plan contract is
   specified.

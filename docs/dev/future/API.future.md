@@ -3,7 +3,7 @@
 ## Deferred Work - ApiCatalogDesignGates.md
 Include Deferred Work from ApiCatalogDesignGates.md
 
-Ref: [ApiCatalogDesignGates.md](/docs/dev/design/ApiCatalogDesignGates.md)
+Ref: [ApiCatalogDesignGates.md](/docs/dev/design/ApiCatalogDesignGates.design.md)
 Quote:
 ````
 ## Non-Streaming Gates

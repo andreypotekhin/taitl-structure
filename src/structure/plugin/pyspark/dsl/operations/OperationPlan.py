@@ -240,7 +240,7 @@ class OperationPlan:
             capability=OperationCapability(
                 "pyspark",
                 "ordered_timeline_scan",
-                docs="docs/dev/specifications/OrderedTimelineScan.md",
+                docs="docs/dev/specifications/OrderedTimelineScan.spec.md",
             ),
             cardinality=OperationCardinality.ROW_PRESERVING,
             streaming=StreamingSupport.BATCH_ONLY,

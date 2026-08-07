@@ -770,7 +770,7 @@ class RenderPySparkStep:
         grouped_partitions = ", ".join(self._literal(column) for column in partition_columns)
         message = (
             "SCAN-E0801: scan(...) found null order keys, duplicate order keys, or a partition above max_rows; "
-            "see docs/dev/specifications/OrderedTimelineScan.md"
+            "see docs/dev/specifications/OrderedTimelineScan.spec.md"
         )
         guard_column = f"__structure_{scan.scope.strip('_')}_guard"
         return [

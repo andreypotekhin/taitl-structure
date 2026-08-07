@@ -1,6 +1,6 @@
 # Structure Specification
 
-This background preserves the complete story inventory from [UserStories.md](../dev/specifications/UserStories.md),
+This background preserves the complete story inventory from [UserStories.md](../dev/specifications/UserStories.spec.md),
 including completed contracts and explicitly uncompleted roadmap items.
 
 This document catalogs Structure user stories. Early sections cover setup and getting started; later sections cover

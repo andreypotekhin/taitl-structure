@@ -8,10 +8,10 @@ compatibility analysis.
 The [Transforms API](../api/Transforms.api.md) and the related API tables provide the concise callable inventory. This
 background gathers the authoring, composition, and compiler-visible rules in the order a reader needs to understand a
 transform: declaration, invocation, operations, reuse, and compilation boundaries.
-The normative sources are [DSL](../dev/specifications/DSL.md),
-[Typed Relation Operations](../dev/specifications/TypedRelationOperations.md),
-[Hook Semantics](../dev/specifications/HookSemantics.md), and
-[Execution Semantic Contract](../dev/specifications/ExecutionSemanticContract.md).
+The normative sources are [DSL](../dev/specifications/DSL.spec.md),
+[Typed Relation Operations](../dev/specifications/TypedRelationOperations.spec.md),
+[Hook Semantics](../dev/specifications/HookSemantics.spec.md), and
+[Execution Semantic Contract](../dev/specifications/ExecutionSemanticContract.spec.md).
 
 ## The Transform Contract
 
@@ -922,7 +922,7 @@ Problem:
 Use:
   Add @step(input=[orders, customers], output=enriched) or rename the declarations.
 
-See docs/dev/specifications/DSL.md
+See docs/dev/specifications/DSL.spec.md
 ```
 
 Example for an unsupported symbolic operation:
@@ -940,7 +940,7 @@ Use:
   Replace `if order.customer_id:` with `where(order.customer_id.is_not_null())` and
   replace `.strip().lower()` with `lower(trim(...))`.
 
-See docs/dev/specifications/DSL.md
+See docs/dev/specifications/DSL.spec.md
 ```
 
 Example for an invalid hook boundary:
@@ -958,7 +958,7 @@ Use:
   def remove_negative_totals(self, *, prepared, spark, ctx):
       return prepared
 
-See docs/dev/specifications/HookSemantics.md
+See docs/dev/specifications/HookSemantics.spec.md
 ```
 
 Diagnostics are emitted before execution or generated-source rendering whenever the compiler can prove the problem.

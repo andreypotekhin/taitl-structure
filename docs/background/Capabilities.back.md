@@ -7,10 +7,10 @@ generic IR remain backend-neutral.
 This document combines the capability interface, compatibility policy, target variants, and alternative-backend
 extension boundary. It starts with the decision model, then explains configuration and PySpark support, and ends with
 the requirements for a future backend. The normative sources are the [Backend Capabilities
-specification](../dev/specifications/BackendCapabilities.md),
-[Alternative Backends](../dev/specifications/AlternativeBackends.md), [Compatibility
-Policy](../dev/specifications/CompatibilityPolicy.md),
-and the [Backend Capabilities design](../dev/design/BackendCapabilities.md).
+specification](../dev/specifications/BackendCapabilities.spec.md),
+[Alternative Backends](../dev/specifications/AlternativeBackends.spec.md), [Compatibility
+Policy](../dev/specifications/CompatibilityPolicy.spec.md),
+and the [Backend Capabilities design](../dev/design/BackendCapabilities.design.md).
 
 ## Capability Boundary
 

@@ -265,7 +265,7 @@ sources, sinks, checkpoints, triggers, output modes, query lifecycle, and `forea
 PySpark code such as [`examples/streams/adoption.py`](../examples/streams/adoption.py).
 
 See [Streaming API](api/Streaming.api.md) and the checked
-[PySpark streaming API coverage](dev/specifications/SparkStreaming.md).
+[PySpark streaming API coverage](dev/specifications/SparkStreaming.spec.md).
 
 ## Configuration
 
