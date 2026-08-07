@@ -5,6 +5,9 @@ writing the predicate: preserve current rows, filter by membership, multiply row
 right-side rows. The [Join background](../background/Join.back.md) explains cardinality, nulls, and temporal semantics;
 the [Joins API](../api/Joins.api.md) is the callable inventory.
 
+Examples use the order and customer schemas introduced in the [Schema reference](Schema.ref.md). Replace those names
+with schemas from your application.
+
 ## Join families
 
 | Desired behavior | Operation |
@@ -20,6 +23,10 @@ the [Joins API](../api/Joins.api.md) is the callable inventory.
 ## Lookup joins
 
 ```python
+from structure import *
+from structure.plugin.pyspark import *
+
+
 def add_customer(self, order: Order, customer: Customer) -> EnrichedOrder:
     lookup_join(
         on=(order.tenant_id == customer.tenant_id) & (order.customer_id == customer.id),
@@ -187,7 +194,7 @@ Nearest ties fail by default. Directional nearest tie preferences are not part o
 time unique or narrow candidates with `tolerance=`.
 
 Temporal and as-of operations are select-one operations. They require a key predicate in addition to the time rule;
-the time field alone does not connect unrelated rows. A closed-open interval avoids double ownership at adjacent
+the time field alone does not connect unrelated rows. A closed-open interval prevents adjacent
 validity boundaries. Null time candidates are ignored by as-of selection. `how="left"` retains an unmatched current row;
 `how="inner"` removes it.
 
@@ -301,9 +308,10 @@ class EnrichEvents(Transform):
         return EnrichedEvent.base(event)(label=key.label)
 ```
 
-This is a compatibility declaration only; the caller owns both streaming inputs and the query that consumes `output`.
+This is a compatibility declaration only. The caller controls both streaming inputs and the query that consumes
+`output`.
 
-## Diagnostics and review checklist
+## Diagnostics and corrections
 
 Join diagnostics should identify the current relation, right relation, join family, predicate, cardinality policy, and
 shortest correction. Before accepting a join, verify:
@@ -316,7 +324,7 @@ shortest correction. Before accepting a join, verify:
 - aliases are unique within the step;
 - a cross join is bounded and explicitly acknowledged;
 - strategy/hint options are supported by the selected target;
-- streaming joins have watermarks, bounds, and caller-owned lifecycle.
+- streaming joins have watermarks, bounds, and application-controlled lifecycle.
 
 Example correction:
 
@@ -419,7 +427,7 @@ return OrderPrice.base(order)(unit_price=price.amount)
 
 The explicit tie and tolerance policy prevents a replay or ambiguous price snapshot from silently changing the result.
 
-## Join output checklist
+## Output shape
 
 Before publishing a joined relation, verify:
 
@@ -434,7 +442,7 @@ Before publishing a joined relation, verify:
 The compiler can preserve a legal join plan, but it cannot infer the business meaning of a duplicated row, a missing
 tenant key, or an unknown shipment match. Those meanings belong in the source predicate and output Schema.
 
-## Join design checklist
+## Stable join decisions
 
 For a production-facing join, record the left and right snapshot identities, expected cardinality, key completeness,
 null policy, duplicate/tie policy, output projection, and target profile. This makes a later change in lookup source or
@@ -444,7 +452,7 @@ When a join feeds an aggregate, verify the row grain immediately before grouping
 `sum(...)` can double-count facts; a lookup dedupe followed by a projection can preserve one row per current key. The
 compiler can report cardinality warnings, but the business owner must choose whether multiplication is intended.
 
-## Minimal join review record
+## Join notes
 
 For each persisted or user-visible join, record:
 

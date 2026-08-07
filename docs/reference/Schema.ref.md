@@ -425,7 +425,7 @@ Schemas describe row shape. Accepted values, ranges, patterns, uniqueness, refer
 rules are data-quality constraints and are not silently enabled by a schema declaration.
 
 `schema_and_constraints` is explicit opt-in for declared constraints at eligible phases. Generated schemas remain
-shape-only, and storage orchestration remains caller-owned.
+shape-only, and storage orchestration remains application-controlled.
 
 ## Diagnostics
 

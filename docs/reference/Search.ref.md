@@ -7,6 +7,9 @@ The [Search background](../background/Search.back.md) explains evidence boundari
 [Search example guide](../../examples/search/Readme.md) shows the end-to-end workflow. Search transforms own DataFrame
 transformations; callers own sources, persistence, serving, streaming lifecycle, and checkpoints.
 
+This page describes the bundled Search example. Its schemas and transform names are example-app APIs, not additional
+Structure core operations. Use the linked guide for the source declarations when adapting the workflow.
+
 ## Pipeline map
 
 | Need | Transform family | Result |
@@ -35,7 +38,7 @@ Each stage consumes a named typed relation from the previous boundary; the map i
 ## Build artifacts
 
 ```python
-from examples.search.transforms.all import All
+from examples.search.transforms.all import *
 
 artifacts = All(
     documents=documents,
@@ -134,7 +137,7 @@ sentence_summary = index.sentence_summary
 ```
 
 Document, section, paragraph, and sentence indexes have independent term frequencies, document frequencies, and length
-statistics. A score at one grain is not silently reused at another. Persisting index relations is caller-owned.
+statistics. A score at one grain is not silently reused at another. The application persists index relations.
 
 ## Score queries
 
@@ -329,7 +332,8 @@ variant summaries do not establish causal impact without an explicit exposure an
 
 ### Feedback event semantics
 
-`Impressions` and `Clicks` are streaming-compatible transformations with caller-owned sources and sinks. Both event
+`Impressions` and `Clicks` are streaming-compatible transformations with application-provided sources and sinks. Both
+event
 IDs are watermark-deduplicated within seven days. An impression contributes exposure even without a click. A click
 must reference an impression and occur from display time through 24 hours later; orphan, duplicate, late, and
 out-of-window clicks produce no attributed daily click fact.
@@ -392,7 +396,7 @@ signals = BuildRelevanceSignals(
 Use the signal snapshot for reranking evidence, while keeping the evaluation transforms as separate quality and
 behavior measurements.
 
-Run each ranking candidate against the same batch, query population, and judgment pool. Persist a caller-owned run ID
+Run each ranking candidate against the same batch, query population, and judgment pool. Persist an application run ID
 beside each summary so comparisons remain tied to a specific corpus, policy, and ranking version.
 
 ```python
@@ -425,7 +429,7 @@ Quality judgments and observed serving behavior are separate inputs and should b
 
 ```python
 results = artifacts.document_scores
-# The caller owns this write and any later serving action.
+# The caller controls this write and any later serving action.
 results.write.mode("overwrite").parquet(results_path)
 ```
 
@@ -477,7 +481,7 @@ reusable_summary = index.document_summary
 
 The online stage reuses the offline index and operates on request-specific inputs rather than rebuilding the corpus.
 
-## Search correctness checklist
+## Before checking search quality
 
 - Normalize query and document terms through the same token contract.
 - Keep statistics independent for document, section, paragraph, and sentence grains.
@@ -488,12 +492,13 @@ The online stage reuses the offline index and operates on request-specific input
 - Log valid examination propensity at serving time; do not infer it from rank.
 - Treat clicks as behavior evidence and judgments as offline quality evidence.
 - Page and sort by emitted rank, never physical Spark row order.
-- Keep sources, storage, query lifecycle, and answer generation caller-owned.
+- Keep sources, storage, query lifecycle, and answer generation under application control.
 
 ## Compatibility and operations
 
 The lexical batch path is available through ordinary Structure execution and generated code when the selected target
-admits its joins, windows, and collection helpers. The click aggregation transforms use the caller-owned streaming
+admits its joins, windows, and collection helpers. The click aggregation transforms use the application-controlled
+streaming
 contract: watermarks and bounded deduplication are explicit, while query sources, sinks, checkpoints, and restart are
 not owned by Search.
 
@@ -501,7 +506,7 @@ not owned by Search.
 a permission to start a query. The deferred design requires finite event-time completion, bounded top-K state,
 append-only results, and restart evidence before the transform can be promoted.
 
-When a score or feedback snapshot changes, start a new caller-owned run with a new effective timestamp or ranking
+When a score or feedback snapshot changes, start a new application run with a new effective timestamp or ranking
 version. Do not mix rows from different snapshots merely because their physical columns match. Persist the metadata
 needed to reproduce a result: corpus snapshot, score policy, relevance policy, experiment, ranking version, and request
 time.
@@ -516,7 +521,7 @@ run_metadata = {
 
 Treat a policy or snapshot change as a new ranking run rather than mutating the metadata of an existing result set.
 
-## Serving handoff checklist
+## Before serving results
 
 Before serving document results, the caller should confirm:
 
@@ -528,9 +533,9 @@ Before serving document results, the caller should confirm:
 - impressions are recorded for every displayed result, including its propensity;
 - no-result requests are retained for behavior evaluation;
 - pagination uses query ID and emitted rank;
-- the caller, not Search, owns the response, cache, and downstream write.
+- the caller, not Search, controls the response, cache, and downstream write.
 
-This checklist keeps retrieval reproducible: the same source snapshots, policies, target profile, and request time
+These practices keep retrieval reproducible: the same source snapshots, policies, target profile, and request time
 should produce the same logical result and explainable candidate movement.
 
 Record the chosen page and snapshot metadata with any served result set so later feedback can be attributed to the

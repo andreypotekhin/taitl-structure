@@ -155,7 +155,7 @@ module import time.
 ## Profile output
 
 `--profile` reports phase timings and counts for `check` and `compile`, including configuration, discovery, source
-inspection, symbolic execution, IR construction, checking, code generation, formatting, provenance, traceability,
+inspection, symbolic execution, plan construction, checking, code generation, formatting, provenance, traceability,
 total time, files considered/written, transforms, and cache hits when available. Elapsed times are diagnostic only and
 must not affect generated content or diff results.
 
@@ -228,7 +228,7 @@ dedicated Structure-owned root before using `clean`.
 structure clean
 ```
 
-Review the command's ownership diagnostic before removing any unknown file that remains outside Structure's manifest.
+Review the command's cleanup diagnostic before removing any unknown file that remains outside Structure's manifest.
 
 ## Configuration overrides in practice
 
@@ -283,7 +283,7 @@ configuration
   -> source-root resolution
   -> discovery and inspection
   -> symbolic execution
-  -> IR construction
+  -> plan construction
   -> compileability and capability checks
   -> in-memory provenance and traceability
 ```
@@ -321,7 +321,7 @@ structure explain orders.transforms.order.EnrichOrders
 
 ### `structure clean`
 
-Clean uses a Structure manifest or generated-file headers as ownership markers. It removes only identifiable output
+Clean uses a Structure manifest or generated-file headers to identify files. It removes only identifiable output
 under `generated_dir`. Unknown files make cleanup conservative rather than destructive. Do not treat clean as a general
 project-directory deletion command.
 
@@ -379,15 +379,15 @@ class Orders(Transform):
 Warnings do not fail `check` or `compile` by default, but they appear before a success summary. An error suppresses the
 success summary so scripts cannot mistake a failed command for a completed generation.
 
-## Ownership summary
+## What the CLI controls
 
 | Concern | CLI | Caller/application |
 | --- | --- | --- |
-| Source discovery and compileability | Owns | Provides import-safe source |
-| Generated artifact writing | Owns during `compile` | Reviews and commits when desired |
-| Spark session and job lifecycle | Does not own | Owns |
-| Streaming source, sink, checkpoint | Does not own | Owns |
-| Storage and deployment | Does not own | Owns |
+| Source discovery and compileability | Controls | Provides import-safe source |
+| Generated artifact writing | Controls during `compile` | Reviews and commits when desired |
+| Spark session and job lifecycle | Does not control | Controls |
+| Streaming source, sink, checkpoint | Does not control | Controls |
+| Storage and deployment | Does not control | Controls |
 
 This separation keeps the CLI useful in build systems while leaving runtime orchestration in the Python application.
 
@@ -440,12 +440,6 @@ assuming the current working directory supplies them. This keeps diagnostics and
 CI, and release environments.
 
 Prefer machine-readable exit status and captured diagnostics over scraping incidental progress text from a terminal.
-
-## Public versus implementation surface
-
-The CLI's public surface is its commands, options, exit codes, rendered diagnostics, and generated-file ownership. The
-internal command classes and compiler phases may evolve as long as those user-visible contracts remain stable. Use the
-Python API when an application needs structured objects rather than terminal text.
 
 ## See also
 

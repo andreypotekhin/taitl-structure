@@ -6,11 +6,14 @@ Execution is the default way to run a transform. The caller supplies a Spark ses
 The [Execution background](../background/Execution.back.md) defines lifecycle and parity rules. The
 [Getting Started guide](../GettingStarted.md) provides a complete first transform.
 
+Examples use the schemas and transform shapes introduced in the [Schema reference](Schema.ref.md) and
+[Transform reference](Transform.ref.md). Replace them with your application's declarations.
+
 ## Run a transform
 
 ```python
-from structure import StructureSession
-from orders.transforms.order import EnrichOrders
+from structure import *
+from structure.plugin.pyspark import *
 
 session = StructureSession(spark=spark, ctx=ctx)
 result = EnrichOrders(
@@ -56,7 +59,7 @@ assert result.schema.plans == plans.schema
 is an additional lookup name, not a second mapping key; the canonical declared name remains stable. There is no
 automatic `df` alias unless an output is explicitly named `df`.
 
-### Result and ownership rules
+### Result access and control
 
 | Result surface | Contract |
 | --- | --- |
@@ -139,7 +142,7 @@ configuration, target profile, and semantic fingerprint.
 
 ## Session responsibilities
 
-`StructureSession` owns the resolved configuration, selected target, runtime delegation, materialized schemas, and a
+`StructureSession` contains the resolved configuration, selected target, materialized schemas, and a
 session-local compiled-artifact pool. It accepts:
 
 ```python
@@ -152,7 +155,7 @@ session = StructureSession(
 )
 ```
 
-The caller owns Spark startup and shutdown, DataFrame reads and writes, streaming sources and sinks, triggers,
+The caller controls Spark startup and shutdown, DataFrame reads and writes, streaming sources and sinks, triggers,
 checkpoints, output modes, and orchestration. A session does not silently change Spark configuration or start a query.
 
 Repeated compatible runs reuse the checked plan but never reuse live DataFrames or suppress input diagnostics. Sessions
@@ -232,8 +235,8 @@ executes the admitted transformation shape. See the [Streaming API](../api/Strea
 event-time windows, dedupe, and bounded join conditions.
 
 `streaming=True` is a compatibility declaration, not a query-start switch. Explicit `input(..., streaming=False)` or
-an explicitly non-streaming composed boundary remains an error when it receives streaming lineage. An intentional
-stream-to-batch boundary requires the documented configuration allowance and a caller-owned materialization boundary.
+an explicitly non-streaming composed boundary remains an error when it receives streaming lineage. A deliberate
+stream-to-batch boundary requires the documented configuration allowance and a caller-controlled materialization step.
 
 ## Errors and remedies
 
@@ -262,7 +265,7 @@ stale artifact                -> regenerate or clear the configured artifact sto
 Plugin-specific runtime failures remain target-owned except where the plugin maps them to the shared diagnostic
 contract. Structure retains the transform, result or lane, execution mode, selected target, and source-level remedy.
 
-## Execution checklist
+## Before running
 
 - Supply an existing Spark session; Structure never creates or stops one.
 - Construct transforms with declared keyword input names.
@@ -271,7 +274,7 @@ contract. Structure retains the transform, result or lane, execution mode, selec
 - Choose `generated` when source artifacts, review, or generated-code execution are required.
 - Read outputs and schemas through their canonical names.
 - Validate inputs, intermediate lanes, and outputs at the intended cost.
-- Keep hooks and streaming lifecycle caller-owned.
+- Keep hooks and streaming lifecycle application-controlled.
 - Compare online and generated results when changing a target or generation option.
 
 ```python
@@ -307,24 +310,6 @@ declared inputs
 The output wrapper preserves declared names and output order. A transform with several outputs does not return an
 untyped tuple and does not invent a `df` key.
 
-## Plugin dispatch
-
-Core owns invocation lifecycle, input binding, step ordering, hook placement, result wrapping, and shared diagnostics.
-The selected plugin owns expression semantics, target validation, schema materialization, lowering, online execution,
-generated rendering, and target-specific runtime behavior.
-
-```text
-caller-owned Spark runtime
-  -> StructureSession
-  -> checked Core artifact
-  -> selected plugin executor
-  -> read-only TransformResult
-```
-
-`StructureSession` is target-neutral. One composed pipeline resolves one target before a plugin service facet runs. A
-plugin-specific plan or schema representation remains opaque to Core except at the shared result and diagnostic
-boundaries.
-
 ## Parity verification
 
 When a workflow uses both modes, compare more than rows:
@@ -342,9 +327,9 @@ The parity contract includes field aliases, nested types, nullability where the 
 extra-column behavior, operation order, hook order, and expected diagnostics. A generated renderer must not re-decide
 semantics while producing source text.
 
-## Caller-owned lifecycle
+## Application-controlled lifecycle
 
-Execution never owns:
+Execution does not control:
 
 - Spark session creation or shutdown;
 - source DataFrame reads and output writes;
@@ -353,7 +338,7 @@ Execution never owns:
 - orchestration, scheduling, transactions, or external side effects.
 
 This remains true in generated mode. Generated code is a callable artifact, not a deployment manager. A caller may use
-the returned DataFrames in a larger application, but that application owns the lifecycle decisions.
+the returned DataFrames in a larger application, but that application controls the lifecycle decisions.
 
 ```python
 stream = spark.readStream.schema(event_schema).json(input_path)
@@ -371,7 +356,7 @@ The caller created the source and starts the query; `run(session)` only construc
 | Compile | Typed plan, target checks, and diagnostics | Source modules are import-safe |
 | Runtime | Shared operation order and result wrapping | Spark runtime and context are valid |
 | Validation | Declared schema checks at configured phases | Chosen validation cost is acceptable |
-| Streaming | Compatibility classification | Caller owns stream lifecycle and restart |
+| Streaming | Compatibility classification | Caller controls stream lifecycle and restart |
 | Generated | Deterministic artifact semantics | Generated source is compiled/importable when selected |
 
 The contract is intentionally asymmetric: Structure describes and executes transformations, while the application
@@ -379,10 +364,10 @@ decides when and where data is read, written, materialized, retried, or publishe
 
 ## Resource hygiene
 
-Do not retain a session-owned artifact pool or generated remote plan boundary longer than the application needs it. Use
+Do not retain a session artifact pool or generated remote plan longer than the application needs it. Use
 one session for compatible invocations that share configuration and target; create an isolated session when lifecycle,
 context, or target selection should be isolated. Close Structure-owned resources after lazy results are materialized or
-released, but do not use `close()` as a substitute for stopping caller-owned Spark or streaming resources.
+released, but do not use `close()` as a substitute for stopping application-controlled Spark or streaming resources.
 
 ```python
 session = StructureSession(spark=spark, config=config)
@@ -404,7 +389,7 @@ When a run fails, inspect boundaries in this order:
 4. Inspect the named step, lane, hook, and validation phase in the diagnostic.
 5. Compare `result.schema` or the expected generated schema with the failing boundary.
 6. If generated mode is selected, verify the artifact fingerprint and import path.
-7. If streaming is involved, verify caller-owned watermark, output-mode, checkpoint, and restart assumptions.
+7. If streaming is involved, verify application-controlled watermark, output-mode, checkpoint, and restart assumptions.
 
 ```python
 try:
@@ -424,13 +409,13 @@ Only then inspect live Spark state or input data. The session cache is an optimi
 semantic variation.
 
 The safest recovery is to correct the named boundary and rerun the same
-source/configuration/target combination. Changing execution mode should be an intentional comparison, not an
+source/configuration/target combination. Changing execution mode should be a deliberate comparison, not an
 error-suppression technique.
 
 ## Action timing and recovery
 
 Transform construction and compilation are planning operations. They should not trigger a Spark action, write an
-output, mutate a caller-owned DataFrame, or start a streaming query. Runtime evaluation begins only when `run(session)`
+output, mutate an application DataFrame, or start a streaming query. Runtime evaluation begins only when `run(session)`
 is called and the selected execution mode accepts the invocation.
 
 If a runtime action fails, preserve the original exception and its Structure boundary in the diagnostic. A retry is safe

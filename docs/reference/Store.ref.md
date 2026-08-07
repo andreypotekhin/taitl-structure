@@ -4,8 +4,11 @@ The Store example is a multi-tenant retail and fulfillment pipeline. Use it to l
 facts, recommendations, commercial demand, fulfillment planning, shipment reconciliation, or analytics.
 
 The [Store background](../background/Store.back.md) explains the evidence and policy boundaries. The
-[Store example guide](../../examples/store/Readme.md) lists the executable workflows and fixtures. Structure owns
+[Store example guide](../../examples/store/Readme.md) lists the executable workflows and fixtures. Structure describes
 transformations; callers provide sources, persistence, business actions, and streaming lifecycle.
+
+This page describes the bundled Store example. Its product, order, tenant, and fulfillment names are example-app
+schemas and transforms, not additional Structure core operations. Use the linked guide when adapting the workflow.
 
 ## Workflow map
 
@@ -246,7 +249,7 @@ plan = PlanFulfillment(
     inbound_inventory=inbound_inventory,
 ).run(session)
 
-# A plan is data for a caller-owned action, not the action itself.
+# A plan is data for an application action, not the action itself.
 plan.plans.write.mode("overwrite").parquet(plan_path)
 ```
 
@@ -419,7 +422,7 @@ customer_rank = analytics.customer_rank.orderBy("tenant_id", "rank")
 
 The caller chooses persistence and presentation of the summary; the transform keeps the declared analytic grain.
 
-## Operational checklist
+## Before using Store results
 
 - Include tenant scope in every cross-tenant join.
 - Preserve `line_number` through demand, planning, shipment, and reconciliation.
@@ -475,7 +478,7 @@ catalog and taxonomy
 Do not let shipment facts silently change recommendation eligibility, or let a plan be presented as evidence of a
 shipment. These are separate transformations and separate business claims.
 
-## Review questions
+## Choosing a Store output
 
 - Does every join preserve tenant and line identity?
 - Does every output name its grain and absence meaning?
@@ -495,7 +498,7 @@ and sinks. A `FulfillmentPlan` does not reserve stock, `RecommendedProduct` does
 
 Generated and online execution should preserve the same tenant keys, line identity, policy decisions, nullability, and
 result grain. If a target-specific hook is needed for an operational action, keep it at an explicit hook boundary and
-document its ownership and retry behavior.
+document who performs the action and how retries behave.
 
 ```python
 result = Fulfillment(
@@ -506,7 +509,7 @@ result = Fulfillment(
     inventory_positions=inventory_positions,
 ).run(session)
 
-# The caller owns persistence and any retry/idempotency policy.
+# The caller controls persistence and any retry/idempotency policy.
 result.plans.write.mode("overwrite").parquet(plan_path)
 ```
 

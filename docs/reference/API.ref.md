@@ -13,6 +13,9 @@ The default target is ordinary PySpark `>=3.5,<4.1`; completed compiler-visible 
 Connect. See [Compatibility.md](../Compatibility.md) for the full target policy,
 [APICatalog.md](../APICatalog.md) for the public API catalog and checked coverage table.
 
+The examples use declaration forms from the [Schema reference](Schema.ref.md) and the
+[Transform reference](Transform.ref.md).
+
 ## PySpark 4.1 adoption reference
 
 The planned target profile is `>=4.1,<4.2`. Ordinary PySpark is the primary variant; Spark Connect is a separate claim
@@ -27,7 +30,7 @@ default support range until the adoption work closes.
 | `DataFrame.exists` and IN subqueries | planned | Correlation, aliases, null behavior, and boolean result |
 | `DataFrame.lateralJoin` | design-gated | Typed relation output, cardinality, correlation, and streaming contract |
 | Complex observations and sketch aggregates | design-gated | Metric side channels and serialized sketch contracts |
-| Arrow UDF/UDTF; `transformWithState` | caller-owned/design-gated | Raw PySpark; no worker Python |
+| Arrow UDF/UDTF; `transformWithState` | application-controlled/design-gated | Raw PySpark; no worker Python |
 
 The full ledger is in [APICatalog.md](../APICatalog.md#pyspark-41-adoption). The current public baseline remains
 ordinary and Connect PySpark `>=3.5,<4.1` until every promoted 4.1 row has capability, diagnostics, tests, and runtime
@@ -44,11 +47,15 @@ evidence.
 **Details And Differences**
 
 - Schema classes own field names, aliases, types, and nullability instead of exposing raw Spark schema objects.
-- Transform source is compiler-visible. `@raw` remains the honest boundary for caller-owned PySpark behavior.
+- Transform source is compiler-visible. `@raw` remains the explicit boundary for caller-supplied PySpark behavior.
 - Expression truthiness, raw SQL strings, UDTFs, and arbitrary callback bodies are unsupported. Scalar
   `@special(type="udf")` remains an ordinary-PySpark row-local feature with its warning policy.
 
 ```python
+from structure import *
+from structure.plugin.pyspark import *
+
+
 class PublishedOrder(Schema):
     id = string(nullable=False)
 
@@ -103,7 +110,7 @@ operation examples and edge conditions.
 - Callers own streaming sources, sinks, triggers, checkpoints, output modes, and query lifecycle. Event-time
   tumbling/sliding aggregation, session-window aggregation, watermark-bounded dedupe, bounded stream-stream joins,
   stream-static joins, and scalar Python UDFs are compiler-visible transformations; scalar UDFs are batch-supported
-  on Spark Connect but remain ordinary-PySpark-only for streaming. Use the tested caller-owned recipe in
+  on Spark Connect but remain ordinary-PySpark-only for streaming. Use the tested application-controlled recipe in
   [`examples/streams/adoption.py`](../../examples/streams/adoption.py) for source/sink/query lifecycle code.
 - Classic-only Spark internals such as SparkContext, RDDs, JVM access, and `_jdf` are unsupported for Spark Connect.
 
@@ -113,7 +120,8 @@ result = WindowedOrders(events=events).run(session)
 query = result.totals.writeStream.outputMode("append").option("checkpointLocation", checkpoint).start(output_path)
 ```
 
-The caller owns the source, sink, checkpoint, trigger, and query lifecycle; the transform owns only the admitted
+The caller controls the source, sink, checkpoint, trigger, and query lifecycle. The transform describes only the
+admitted
 typed operation graph.
 
 ## Planned And Unsupported Surface
@@ -132,7 +140,7 @@ and stay outside Structure's scope.
 | Array variants; generators | partial | `slice`/`explode`/`inline` | Typed only; raw needs contracts. |
 | Window order; more aggregates | supported | Window and aggregate frames | Typed window and aggregate helpers. |
 | Collection basics | supported | Core arrays/maps | [Collections API](../api/Collections.api.md) |
-| Raw APIs/lifecycle | unsupported | `expr`, `WindowSpec`, UDTF | Use hooks; caller owns lifecycle. |
+| Raw APIs/lifecycle | unsupported | `expr`, `WindowSpec`, UDTF | Use hooks; caller controls lifecycle. |
 
 For detailed restrictions, diagnostics, and feature-admission rationale, consult [APICatalog.md](../APICatalog.md)
 and the linked reference pages.

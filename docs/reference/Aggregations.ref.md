@@ -5,6 +5,9 @@ per key, or transform values inside arrays and maps. The [Aggregations backgroun
 explains grain, null behavior, and the analytical boundaries. The [Aggregations API](../api/Aggregations.api.md),
 [Windows API](../api/Windows.api.md), and [Collections API](../api/Collections.api.md) contain the full inventories.
 
+Examples use the order and product schemas introduced in the [Schema reference](Schema.ref.md). Replace those names
+with schemas from your application.
+
 ## Choose the shape first
 
 | Question | Shape |
@@ -18,6 +21,10 @@ Grouped aggregation changes the row grain. A window preserves row identity. Do n
 because both can calculate a sum or rank.
 
 ```python
+from structure import *
+from structure.plugin.pyspark import *
+
+
 # One row per customer.
 group_by(customer_id=order.customer_id)
 summary = CustomerTotal(total=sum(order.total))
@@ -168,7 +175,7 @@ The ordered list has a reproducible order; the set deliberately has no ordering 
 | Statistical metric with insufficient values | Nullable Double |
 | Filtered metric with no qualifying rows | Null except for count forms |
 
-`where=` belongs to the metric that owns it:
+`where=` belongs to the metric that declares it:
 
 ```python
 return PaymentSummary(
@@ -382,11 +389,11 @@ query = result.totals.writeStream.outputMode("append").start(output_path)
 The transform declares compatibility; the caller still chooses the source, sink, checkpoint, trigger, and query
 lifecycle.
 
-## Type and diagnostic checklist
+## Before publishing an aggregate
 
 - Choose grouped, windowed, selected-row, or higher-order shape before choosing a helper.
 - Name grouping keys and aggregate output fields through the output Schema.
-- Use metric-local `where=` only for the metric that owns the filter.
+- Use metric-local `where=` only for the metric that declares the filter.
 - Add scalar ordering and tie policy wherever the result must be reproducible.
 - Distinguish subtotal nulls with `grouping_id()` or `is_grouped(...)`.
 - Use explicit frames for reusable window aggregates.
@@ -497,7 +504,7 @@ return ProductFeatures.project(product)(
 )
 ```
 
-## Aggregation review questions
+## Choosing a stable aggregate
 
 When reviewing an aggregate, ask:
 

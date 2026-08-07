@@ -4,9 +4,16 @@ Maintain annotated sources for certain parts of project code.
 
 ## Scope
 Currently, we only maintain annotated code for these code dirs and their subdirs:
+- examples/search/transforms/chunking
+- examples/search/transforms/features
 - examples/search/transforms/filtering
+- examples/search/transforms/indexing
+- examples/search/transforms/labeling
+- examples/search/transforms/scoring
+- examples/search/transforms/relevance
 - examples/search/transforms/searching/online
 - examples/search/transforms/searching/search_docs
+- examples/search/transforms/training
 - examples/store/transforms/catalog
 - examples/store/transforms/personalization
 - examples/store/transforms/recommender
@@ -22,6 +29,7 @@ Destination: close/annotated/
 ## Creating annotated code
 Maintain creation of annotated code documents for project source code:
 - Annotated source documents are markdown (.py.md) files describing the purpose and workings of single source unit (file)
+- Ignore package and other dunder files (Ex: __init__.md)
 - Annotated source document describes purpose and workings of a source unit, shows source code section, and then lists relevant points with explanations
 - Multiple annotated source documents read as continuous story/narrative, top to bottom, focused on business details such as purpose, parameter values, formulas.  
 - Annotated source dir structure and naming follows the original code dir structure and naming

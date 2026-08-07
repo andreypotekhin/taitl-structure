@@ -130,7 +130,8 @@ Use a session or transform override only when the workflow intentionally needs a
 | `allow_stream_to_batch` | Boolean | Allow an undeclared downstream stream-to-batch boundary |
 
 ```python
-from structure import StructureConfig, StructureSession
+from structure import *
+from structure.plugin.pyspark import *
 
 config = StructureConfig.resolve(
     project_root=".",
@@ -246,9 +247,8 @@ standalone-body and review requirements.
 
 ## Target and plugin details
 
-The selected plugin owns its plugin table. Core merges and freezes the table, then passes only the selected plugin's
-options to that plugin. An unselected plugin's settings are not validated by the active plugin and do not become
-process-wide state. CLI `--target`, `StructureSession(target=...)`, capability resolution, and schema tooling use the
+Each plugin uses only the options under its own configuration table. Settings for an unselected plugin do not change
+the active process. CLI `--target`, `StructureSession(target=...)`, capability resolution, and schema tooling use the
 same target name.
 
 The target profile is a version range, not a request to inspect the locally installed backend during compiler commands.
@@ -339,7 +339,7 @@ Diagnostics should identify the setting path, supplied value when safe, allowed 
 action, and the narrowest documentation link. Secret-bearing settings are not part of the public configuration model;
 future secret values must be redacted.
 
-## Configuration checklist
+## Recommended configuration
 
 - Choose one configuration source for shared project settings and rely on documented precedence.
 - Keep source roots outside the generated directory and import-safe.
@@ -397,7 +397,7 @@ project/
 ```
 
 Each source root is an import root. Generated modules mirror source import paths below `generated_package`. Do not name
-a user package `structure` unless shadowing the installed library is intentional. Mark source roots and, when needed,
+a user package `structure` unless shadowing the installed library is deliberate. Mark source roots and, when needed,
 the generated root in the IDE rather than changing Python import behavior in source modules.
 
 ### Configuration failure order

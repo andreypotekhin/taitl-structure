@@ -8,6 +8,9 @@ The [Transform background](../background/Transform.back.md) explains the source 
 [Transforms API](../api/Transforms.api.md) and the [Relations API](../api/Relations.api.md) provide the complete
 operation inventories.
 
+Examples use the `OrderRaw`, `OrderNormalized`, and related schemas introduced in the [Schema reference](Schema.ref.md).
+Replace them with the schemas in your own application.
+
 ## Declare a transform
 
 ```python
@@ -141,7 +144,8 @@ expression for row-local logic.
 
 ## Hooks
 
-`@raw(...)` is the explicit boundary for caller-owned PySpark code. Structure checks the declaration and schema policy,
+`@raw(...)` is the explicit boundary for caller-supplied PySpark code. Structure checks the declaration and schema
+policy,
 but does not compile the hook body.
 
 ```python
@@ -166,7 +170,7 @@ class WithAudit(Transform):
 
 Hooks run at their declared source-order boundary. Their selected DataFrames, target, schema mode, and validation
 policy are visible in explain output and diagnostics. Raw SQL, RDDs, local row loops, and lifecycle calls are not
-compiler-visible operations; keep them inside an explicitly caller-owned hook when they are necessary.
+compiler-visible operations; keep them inside an explicitly application-controlled hook when they are necessary.
 
 ## Relations and analytical operations
 
@@ -220,7 +224,7 @@ plan = NormalizeOrders.compile(project_root=".")
 result = NormalizeOrders(orders=orders_df).run(session)
 ```
 
-`compile(...)` performs source discovery, symbolic capture, type and capability checks, and target lowering without
+`compile(...)` performs source discovery, symbolic capture, type and capability checks, and target planning without
 binding live DataFrames. `run(session)` executes the checked meaning through the selected runtime. The CLI commands
 `structure check`, `structure compile`, and `structure explain` are Spark-free; see the [CLI reference](CLI.ref.md).
 
@@ -364,7 +368,7 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
     return OrderNormalized.project(order)
 ```
 
-The directive is retained in online and generated execution. It does not transfer DataFrame ownership to Structure and
+The directive is retained in direct and generated execution. It does not transfer DataFrame control to Structure and
 does not make an operation admissible when the selected target cannot honor the requested storage level.
 
 ## Source-module safety and diagnostics
@@ -414,7 +418,7 @@ Use:
       return prepared
 ```
 
-## Authoring checklist
+## Before running a transform
 
 - Every input, lane, and output has the intended Schema identity.
 - Repeated schemas use explicit `input=` and `output=` bindings.
@@ -423,7 +427,7 @@ Use:
 - Row-shaping operations have a declared cardinality and ordering policy.
 - Hooks declare their exact boundary, target, streaming promise, and schema mode.
 - Source modules remain safe to import without Spark.
-- Streaming inputs have a compatible operation path and caller-owned lifecycle.
+- Streaming inputs have a compatible operation path and caller-controlled lifecycle.
 - The same source can execute online or through generated code without changing meaning.
 
 ## Reuse decision guide
@@ -456,12 +460,12 @@ class CleanOrders(Transform):
 
 Use a scalar expression helper for row-local reuse; reserve a composed transform for a separate typed relation flow.
 
-## Generated-source ownership
+## Generated files
 
 Generated PySpark is optional build output. When a project commits it, regenerate after source or configuration changes,
 review the diff, and use `structure compile --fail-on-diff` in CI. Generated classes should contain explicit DataFrame
 and Column operations, stable lane names, input/intermediate/output validation, and no hidden actions or lifecycle
-ownership. A source-backed hook or UDF remains delegated unless the matching embedding option is selected and its
+management. A source-backed hook or UDF remains delegated unless the matching embedding option is selected and its
 standalone restrictions are satisfied.
 
 ```bash
