@@ -346,7 +346,7 @@ deduplication, and admitted bounded stream-stream joins. Streaming sources, sink
 query start/stop, and `foreach` side effects remain caller-owned PySpark code.
 
 See the [Streaming API](docs/api/Streaming.api.md), the checked
-[PySpark streaming API coverage](docs/dev/specifications/SparkStreaming.md), and the tested
+[PySpark streaming API coverage](docs/dev/specifications/SparkStreaming.spec.md), and the tested
 [caller-owned streaming recipe](examples/streams/adoption.py).
 
 ## Performance Focus

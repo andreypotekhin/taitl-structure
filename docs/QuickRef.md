@@ -1213,7 +1213,7 @@ result = session.run(transform="orders.transforms:EnrichOrders", orders=orders_d
 ```
 
 The session compiles every concrete transform in `sources` and retains those results. Select a compiled transform with
-its Python module and class name. See [disk-less source compilation](dev/specifications/DisklessSourceCompilation.md).
+its Python module and class name. See [disk-less source compilation](dev/specifications/DisklessSourceCompilation.spec.md).
 
 Reference: [transforms API](api/Transforms.api.md), [execution](background/Execution.back.md), and
 [execution semantic contract](background/Execution.back.md#semantic-parity-contract).
@@ -1379,6 +1379,6 @@ The PySpark target lowers the recurrence through public DataFrame and Column API
 sort the payload timeline, fold it with higher-order `aggregate(...)`, then expand one output row per input row. It is
 batch-only and ordinary-PySpark-only; it does not use UDFs, Pandas, RDDs, Spark actions, driver loops, streaming state; nor it persists the state between transform runs.
 
-Reference: [Ordered Timeline Scan](dev/specifications/OrderedTimelineScan.md),
+Reference: [Ordered Timeline Scan](dev/specifications/OrderedTimelineScan.spec.md),
 [API extensions](APIExtensions.md), [IR](background/Compiler.back.md), and
 [PySpark code generation](background/Generation.back.md).

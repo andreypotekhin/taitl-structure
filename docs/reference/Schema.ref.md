@@ -468,6 +468,6 @@ Use a local declaration in Order:
 
 - [Schema background](../background/Schema.back.md) explains the model, rationale, and boundaries.
 - [Schemas API](../api/Schemas.api.md) lists the compiler-visible declaration surface and target parity.
-- [Schema Semantics](../dev/specifications/SchemaSemantics.md) is the normative developer specification.
-- [Schema Declaration Syntax](../dev/specifications/SchemaDeclarationSyntax.md) defines accepted declarations.
-- [Schema Inheritance](../dev/specifications/SchemaInheritance.md) defines inheritance resolution.
+- [Schema Semantics](../dev/specifications/SchemaSemantics.spec.md) is the normative developer specification.
+- [Schema Declaration Syntax](../dev/specifications/SchemaDeclarationSyntax.spec.md) defines accepted declarations.
+- [Schema Inheritance](../dev/specifications/SchemaInheritance.spec.md) defines inheritance resolution.

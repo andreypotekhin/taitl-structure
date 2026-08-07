@@ -54,6 +54,8 @@ with one centence for each. Include scenario table and details, if needed, as in
 
 #### End-User documentation tips 
 - Use caution/consider alternative wording on corporate speak such as 'owns', 'boundary', 'intentional'
+'downstream', qualifiers like 'complete' (when not the focus)
+- Avoid formalisms like 'the following'. 
 - In Reference documents, 
   - avoid folding several statements into a quick paragraph. Consider bullet lists and examples.
   - avoid overloading a sentence with several statements.

@@ -2,7 +2,7 @@
 
 ## Project overview
 See /Readme.md 
-Background: /docs/dev/design/Background.md
+Background: /docs/dev/design/Background.design.md
 Development process: /docs/dev/Development.md.
 
 ## Documentation
@@ -37,7 +37,7 @@ Design docs: /docs/dev/design/
 - Components: /docs/dev/design/
 - Decisions: /close/archive/decisions
 
-Specifications: /docs/specifications/
+Specifications: /docs/dev/specifications/
 - Specification documents are ready to implement descriptions of the intended behavior
 - Specification documents are outputs of the design process
 - Specification documents are inputs to coding process
@@ -99,7 +99,7 @@ Code formatting is taken care of automatic build step (with build plugin).
 ### Coding Inputs
 Coding Inputs:
 - Specifications.md (user stories)
-- Specification docs (/docs/specifications/) - more formal, ready to implement
+- Specification docs (/docs/dev/specifications/) - more formal, ready to implement
 descriptions of the intended behavior of various aspects of the system.
 - PM documents (docs/dev/project-management): milestones, risks, iterations, sprints 
 
@@ -108,7 +108,7 @@ Coding guidelines: See Coding section in /dev/Style.md
 Code structure: /dev/Code.md
 
 ## Testing
-Test cases backing user stories (from /docs/specifications/UserStories.md) are in tests/user_stories/[section]/[item-descr].
+Test cases backing user stories (from /docs/dev/specifications/UserStories.spec.md) are in tests/user_stories/[section]/[item-descr].
 Testing standards, guidelines, structure are coverage limits: 
 - Style guide (/docs/dev/Style.md)
 - Testing guide (/docs/dev/Testing.md)

@@ -29,6 +29,6 @@ What did we decide?
 ## Impacted Docs
 
 - README.md
-- [UserStories.md](../../specifications/UserStories.md)
+- [UserStories.md](../../specifications/UserStories.spec.md)
 - devdocs/Architecture.md
 - devdocs/Implementation.md

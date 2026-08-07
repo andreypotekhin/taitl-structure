@@ -81,7 +81,7 @@ state assumptions visible in explain output; it does not make Structure own quer
 - Arbitrary state APIs remain design-gated. A future admission requires typed input, state, and output Schemas;
   grouping keys; event-time or processing-time timeout policy; initialization, update, and removal behavior; a
   resolved PySpark profile; a visible generated-code or hook boundary; and checkpoint/restart evidence. See the
-  [arbitrary-state contract](../dev/specifications/V9StreamingDesignGatedFeatures.md#arbitrary-state-apis).
+  [arbitrary-state contract](../dev/specifications/V9StreamingDesignGatedFeatures.spec.md#arbitrary-state-apis).
 - Pandas, RDD, `mapInPandas`, and state-processor boundaries remain unsupported because their execution and state
   semantics are opaque to the compiler.
 
@@ -95,7 +95,7 @@ stream-stream joins, and bounded left/right/full outer and semi stream-stream jo
 Structure modules must not contain `foreachBatch`. Row-level `foreach` remains design-gated until a side-effect
 contract defines sink identity, idempotence, retry, and recovery behavior. Use `examples/streams/adoption.py` as the
 tested caller-owned recipe shape. See
-[Spark Streaming](../dev/specifications/SparkStreaming.md), and the
+[Spark Streaming](../dev/specifications/SparkStreaming.spec.md), and the
 [Execution reference](../background/Execution.back.md).
 
 ## Caller-Owned Side-Effect Safety

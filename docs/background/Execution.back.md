@@ -7,11 +7,11 @@ existing Spark session, constructs a transform invocation with input DataFrames,
 Generated PySpark remains available for provenance, review, debugging, CI diff checks, and projects that deliberately
 choose generated-code execution.
 
-The normative sources are [Execution](../dev/specifications/Execution.md),
-[Execution Semantic Contract](../dev/specifications/ExecutionSemanticContract.md), and
-[Online Execution](../dev/specifications/OnlineExecution.md). The execution flow is designed in
-[Execution Data Flows](../dev/design/ExecutionDataFlows.md) and
-[Online Execution Runtime](../dev/design/OnlineExecutionRuntime.md).
+The normative sources are [Execution](../dev/specifications/Execution.spec.md),
+[Execution Semantic Contract](../dev/specifications/ExecutionSemanticContract.spec.md), and
+[Online Execution](../dev/specifications/OnlineExecution.spec.md). The execution flow is designed in
+[Execution Data Flows](../dev/design/ExecutionDataFlows.design.md) and
+[Online Execution Runtime](../dev/design/OnlineExecutionRuntime.design.md).
 
 ## Plugin-Dispatched Execution
 
@@ -35,7 +35,7 @@ execution, generated rendering, and Spark Connect behavior. The caller retains S
 streaming queries, triggers, checkpoints, sinks, and orchestration.
 
 The detailed execution semantics below apply through this boundary. Target selection and target behavior follow the
-plugin model above and [Plugin API](../dev/specifications/PluginAPI.md).
+plugin model above and [Plugin API](../dev/specifications/PluginAPI.spec.md).
 
 
 ## Public API

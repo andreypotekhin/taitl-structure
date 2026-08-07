@@ -26,4 +26,4 @@ diagnostics; no random or arbitrary callback behavior is silently admitted.
 
 ## Governing plan
 
-`docs/dev/planning/P08042601.V11-pyspark-4.1-adoption.plan.md` and `docs/dev/design/V11PySpark41ExpressionParity.md`.
+`docs/dev/planning/P08042601.V11-pyspark-4.1-adoption.plan.md` and `docs/dev/design/V11PySpark41ExpressionParity.design.md`.

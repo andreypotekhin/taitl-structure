@@ -7,7 +7,7 @@ compiled or that the selected transform is ambiguous.
 
 Compile the source tree into that session first with `session.compile(sources)`. If two source trees expose the same
 module and class name, give each variant a distinct Python package root. See
-[disk-less source compilation](docs/dev/specifications/DisklessSourceCompilation.md).
+[disk-less source compilation](docs/dev/specifications/DisklessSourceCompilation.spec.md).
 
 ## Input DataFrame Column Is Not a Python Identifier
 
@@ -46,4 +46,4 @@ If streaming diagnostics mention `STREAM-E0801` or `STREAM-W0801` around lifecyc
 Structure transforms should return DataFrame plans. Put lifecycle calls in caller-owned PySpark code such as
 `examples/streams/adoption.py`, then pass the streaming DataFrame into online or generated Structure execution. See
 [Streaming API](docs/api/Streaming.api.md) and
-[Spark Streaming](docs/dev/specifications/SparkStreaming.md).
+[Spark Streaming](docs/dev/specifications/SparkStreaming.spec.md).

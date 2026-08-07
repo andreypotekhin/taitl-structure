@@ -6,8 +6,8 @@ target-specific lowering and rendering belong to the selected plugin.
 
 The [Transform background](Transform.back.md) explains authoring semantics. This background explains source modules,
 generated Python, generated schemas, runtime support, documentation, provenance, and performance guardrails.
-The normative sources are [PySpark Code Generation](../dev/specifications/PySparkCodeGeneration.md) and the
-[PySpark Code Generator design](../dev/design/PySparkCodeGenerator.md).
+The normative sources are [PySpark Code Generation](../dev/specifications/PySparkCodeGeneration.spec.md) and the
+[PySpark Code Generator design](../dev/design/PySparkCodeGenerator.design.md).
 
 ## Source And Artifact Boundary
 

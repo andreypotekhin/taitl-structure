@@ -7,11 +7,11 @@ execution, generation, provenance, traceability, and diagnostics consume the sam
 This background combines symbolic execution, intermediate representation, and cross-stage invariants. It is
 implementation oriented; authoring behavior remains in [Transform](Transform.back.md), [Schema](Schema.back.md), and
 [Join](Join.back.md). The normative sources are [Intermediate
-Representation](../dev/specifications/IntermediateRepresentation.md),
-[Symbolic Execution](../dev/specifications/SymbolicExecution.md), [Compileability
-Checker](../dev/design/CompileabilityChecker.md),
-[Symbolic Execution Engine](../dev/design/SymbolicExecutionEngine.md), and
-[Compiler Performance](../dev/specifications/CompilerPerformanceTargets.md).
+Representation](../dev/specifications/IntermediateRepresentation.spec.md),
+[Symbolic Execution](../dev/specifications/SymbolicExecution.spec.md), [Compileability
+Checker](../dev/design/CompileabilityChecker.design.md),
+[Symbolic Execution Engine](../dev/design/SymbolicExecutionEngine.design.md), and
+[Compiler Performance](../dev/specifications/CompilerPerformanceTargets.spec.md).
 
 ## Compiler Flow
 

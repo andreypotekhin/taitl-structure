@@ -2,7 +2,7 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-MATRIX = ROOT / "docs/dev/specifications/PySparkApiCatalog.md"
+MATRIX = ROOT / "docs/dev/specifications/PySparkApiCatalog.spec.md"
 
 
 def test_v6_executable_specification_matrix_references_real_tests() -> None:

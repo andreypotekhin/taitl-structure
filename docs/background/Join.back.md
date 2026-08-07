@@ -10,11 +10,11 @@ rows must be reduced with an explicit `JoinDedupe` policy. It is not the general
 
 The [Joins API](../api/Joins.api.md) is the concise operation inventory. The [Transform background](Transform.back.md)
 explains how joins fit into source-ordered step methods. The design and specification sources are
-[JoinSemantics](../dev/specifications/JoinSemantics.md), [Analytical Join
-Coverage](../dev/specifications/AnalyticalJoinCoverage.md),
-and [Full PySpark Join Support](../dev/specifications/FullPySparkJoinSupport.md).
-The corresponding designs are [Analytical Join Coverage](../dev/design/AnalyticalJoinCoverage.md) and
-[Full PySpark Join Support](../dev/design/FullPySparkJoinSupport.md).
+[JoinSemantics](../dev/specifications/JoinSemantics.spec.md), [Analytical Join
+Coverage](../dev/specifications/AnalyticalJoinCoverage.spec.md),
+and [Full PySpark Join Support](../dev/specifications/FullPySparkJoinSupport.spec.md).
+The corresponding designs are [Analytical Join Coverage](../dev/design/AnalyticalJoinCoverage.design.md) and
+[Full PySpark Join Support](../dev/design/FullPySparkJoinSupport.design.md).
 
 ## A Reader's Join Model
 
@@ -575,7 +575,7 @@ Problem:
 Use:
   cross_join(calendar_day, allow_cartesian=True)
 
-See docs/dev/specifications/FullPySparkJoinSupport.md
+See docs/dev/specifications/FullPySparkJoinSupport.spec.md
 ```
 
 ```text
@@ -591,7 +591,7 @@ Use:
   add an explicit JoinDedupe policy, validate the source key separately, or use a rowset join when multiplication is
   intended.
 
-See docs/dev/specifications/JoinSemantics.md
+See docs/dev/specifications/JoinSemantics.spec.md
 ```
 
 ## Acceptance and Non-Goals

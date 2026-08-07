@@ -5,8 +5,8 @@ import structure.plugin.pyspark as pyspark
 
 ROOT = Path(__file__).resolve().parents[3]
 API_CATALOG = ROOT / "docs/APICatalog.md"
-DESIGN = ROOT / "docs/dev/design/ApiCatalogDesignGates.md"
-SPEC = ROOT / "docs/dev/specifications/PySparkApiCatalog.md"
+DESIGN = ROOT / "docs/dev/design/ApiCatalogDesignGates.design.md"
+SPEC = ROOT / "docs/dev/specifications/PySparkApiCatalog.spec.md"
 
 
 def test_api_catalog_open_rows_use_design_gate_language() -> None:

@@ -66,7 +66,7 @@ plugin boundaries.
 Plugin selection is configured under `[tool.structure.plugin]`; target-specific options live in
 `[tool.structure.plugin.<name>]`. The PySpark plugin owns its `profile` and `variant` options. CLI commands use
 `--target`; Python sessions use `StructureSession(target=...)`; capability and schema-tool workflows accept the same
-generic target name. See [PluginConfiguration.md](specifications/PluginConfiguration.md).
+generic target name. See [PluginConfiguration.md](specifications/PluginConfiguration.spec.md).
 
 ## PySpark Plugin
 
@@ -87,4 +87,4 @@ with `PluginConformance`. The repository's finite Iterable example is conformanc
 a supported production target.
 
 Private Core engine replacement is deliberately outside the public Plugin API and disabled by default. It is
-target-local, exact-revision-gated, and documented only in [PluginArchitecture.md](design/PluginArchitecture.md).
+target-local, exact-revision-gated, and documented only in [PluginArchitecture.md](design/PluginArchitecture.design.md).

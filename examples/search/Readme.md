@@ -6,7 +6,7 @@ document reranking. Structure owns data transformations; callers own data
 sources, persistence, query serving, stream lifecycles, and checkpoints.
 
 For the architecture, evidence boundaries, and ownership model, see the
-[Search background](../../docs/background/Search.back.md).
+[Search background](../../close/docs/background/Search.back.md).
 
 ## Pipeline
 

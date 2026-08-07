@@ -18,9 +18,9 @@ discrepancies, use the [API catalog](APICatalog.md) and [API reference](referenc
 - [CLI reference](reference/CLI.ref.md): initialization, checking, compilation, explain, diff, profile, and cleanup.
 - [Execution reference](reference/Execution.ref.md): sessions, deferred invocation, result access, execution modes,
   validation, and application-controlled Spark lifecycle.
-- [Search example reference](reference/Search.ref.md): chunking, indexing, lexical scoring, presentation, similarity,
+- [Search example reference](../close/docs/reference/Search.ref.md): chunking, indexing, lexical scoring, presentation, similarity,
   feedback, and evaluation.
-- [Store example reference](reference/Store.ref.md): catalog, recommendations, demand, fulfillment, reconciliation,
+- [Store example reference](../close/docs/reference/Store.ref.md): catalog, recommendations, demand, fulfillment, reconciliation,
   and analytics workflows.
 
 Detailed topic material remains in [background](background/).

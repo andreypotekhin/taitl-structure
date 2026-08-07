@@ -52,7 +52,7 @@ Review date: 2026-07-15.
 
 V4 is ready to begin its foundation sprint, but it is not ready to claim release readiness. Its product boundary,
 delivery order, streaming slice, final hardening charter, and acceptance standard are defined in the historical
-`docs/dev/design/V4TransformationApiCoverage.md`, the Sprint 17 and Sprint 18 charters, and the v4 ExecPlans. The
+`docs/dev/design/V4TransformationApiCoverage.design.md`, the Sprint 17 and Sprint 18 charters, and the v4 ExecPlans. The
 remaining gates below are intentionally release-blocking.
 
 ### Ready
