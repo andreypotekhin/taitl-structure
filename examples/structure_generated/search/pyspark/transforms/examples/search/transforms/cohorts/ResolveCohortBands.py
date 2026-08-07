@@ -769,36 +769,28 @@ class ResolveCohortBandsGenerated:
         assert_schema(singleton_catalog, USER_BAND_SCHEMA, name="UserBand", mode="strict")
 
         # Step method: merge_user_band_catalog
-        all_user_bands = resolved_user_bands.alias("user_band")
-        all_user_bands = all_user_bands.union(singleton_catalog)
-        all_user_bands = all_user_bands.alias("user_band")
-        if all_user_bands.isStreaming:
-            all_user_bands = all_user_bands.dropDuplicatesWithinWatermark(["user_band_id", "band_ids"])
+        user_bands = resolved_user_bands.alias("user_band")
+        user_bands = user_bands.union(singleton_catalog)
+        user_bands = user_bands.alias("user_band")
+        if user_bands.isStreaming:
+            user_bands = user_bands.dropDuplicatesWithinWatermark(["user_band_id", "band_ids"])
         else:
-            all_user_bands = all_user_bands.dropDuplicates(["user_band_id", "band_ids"])
-        all_user_bands = all_user_bands.select(
+            user_bands = user_bands.dropDuplicates(["user_band_id", "band_ids"])
+        user_bands = user_bands.select(
             F.col("user_band_id"),
             F.col("band_ids"),
-        )
-        assert_schema(all_user_bands, USER_BAND_SCHEMA, name="UserBand", mode="strict")
-
-        # Step method: publish_user_bands
-        user_bands = all_user_bands.alias("user_band")
-        user_bands = user_bands.select(
-            F.col("user_band.user_band_id"),
-            F.col("user_band.band_ids"),
         )
         assert_schema(user_bands, USER_BAND_SCHEMA, name="UserBand", mode="strict")
 
         # Step method: build_user_band_memberships
-        resolved_user_band_memberships = users.alias("user")
+        user_band_memberships = users.alias("user")
         user_band_paths_joined = user_band_paths.alias("user_band_paths")
-        resolved_user_band_memberships = resolved_user_band_memberships.join(
+        user_band_memberships = user_band_memberships.join(
             user_band_paths_joined,
             (F.col("user_band_paths.user_id") == F.col("user.id")),
             "left",
         )
-        resolved_user_band_memberships = resolved_user_band_memberships.select(
+        user_band_memberships = user_band_memberships.select(
             F.col("user.id").alias("user_id"),
             F.when(
                 F.col("user_band_paths.user_id").isNotNull(),
@@ -806,16 +798,6 @@ class ResolveCohortBandsGenerated:
             )
             .otherwise(F.lit(None))
             .alias("user_band_id"),
-        )
-        assert_schema(
-            resolved_user_band_memberships, USER_BAND_MEMBERSHIP_SCHEMA, name="UserBandMembership", mode="strict"
-        )
-
-        # Step method: publish_user_band_memberships
-        user_band_memberships = resolved_user_band_memberships.alias("user_band_membership")
-        user_band_memberships = user_band_memberships.select(
-            F.col("user_band_membership.user_id"),
-            F.col("user_band_membership.user_band_id"),
         )
         assert_schema(user_band_memberships, USER_BAND_MEMBERSHIP_SCHEMA, name="UserBandMembership", mode="strict")
 
@@ -841,7 +823,7 @@ class ResolveCohortBandsGenerated:
         assert_schema(direct_band_memberships, BAND_MEMBERSHIP_SCHEMA, name="BandMembership", mode="strict")
 
         # Step method: build_resolved_band_memberships
-        resolved_band_memberships = resolved_user_band_memberships.alias("user_band_membership")
+        resolved_band_memberships = user_band_memberships.alias("user_band_membership")
         resolved_band_memberships = resolved_band_memberships.where(
             (F.col("user_band_membership.user_band_id").isNotNull())
         )
@@ -864,7 +846,7 @@ class ResolveCohortBandsGenerated:
         assert_schema(band_memberships, BAND_MEMBERSHIP_SCHEMA, name="BandMembership", mode="strict")
 
         # Step method: build_band_fallbacks
-        band_fallbacks = all_user_bands.alias("user_band")
+        band_fallbacks = user_bands.alias("user_band")
         band_fallbacks_hierarchy_fallbacks_0_parents = valid_bands.select(
             F.col("id").alias("__structure_fallback_parent_node_0"),
             F.col("parent_band_id").alias("__structure_fallback_parent_value_0"),

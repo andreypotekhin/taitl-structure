@@ -383,6 +383,8 @@ that is not selected remains inert and is not passed to another plugin.
 
 ### Project layout
 
+Use a separate source root and generated root so generated modules cannot be mistaken for authored source.
+
 ```text
 project/
   pyproject.toml

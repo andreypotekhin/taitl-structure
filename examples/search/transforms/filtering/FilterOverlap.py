@@ -1,7 +1,7 @@
 """Simple-overlap filtering from reusable document-index artifacts."""
 
 from examples.search.schemas.filtering import DocumentFilterMatch, DocumentFilterScore
-from examples.search.schemas.indexing.lexical.index import DocumentIndexTerm
+from examples.search.schemas.indexing.lexical.index import DocumentTerm
 from examples.search.schemas.scoring.intermediate import QueryTerm, QueryToken
 from examples.search.schemas.search import ScorePolicy, SearchQuery
 from structure import Transform, input, lane, output, step
@@ -15,9 +15,8 @@ class FilterOverlap(Transform):
     maximum_candidates = 10000
 
     queries = input(SearchQuery, streaming=True)
-    document_terms = input(DocumentIndexTerm)
+    document_terms = input(DocumentTerm)
     expanded_query_terms = lane(QueryTerm)
-    query_terms = lane(QueryTerm)
     score_policy = input(ScorePolicy)
     matched_documents = lane(DocumentFilterMatch)
     ranked_documents = lane(DocumentFilterMatch)
@@ -29,13 +28,9 @@ class FilterOverlap(Transform):
         where(token.token != "")
         return QueryTerm(query_id=query.id, token=token.token)
 
-    @step(input=expanded_query_terms, output=query_terms)
-    def select_distinct_query_terms(self, query: QueryTerm) -> QueryTerm:
-        return QueryTerm.project(query)
-
-    @step(input=[query_terms, document_terms], output=matched_documents)
-    def match_documents(self, query: QueryTerm, term: DocumentIndexTerm) -> DocumentFilterMatch:
-        inner_join(on=term.token == query.token)
+    @step(input=[expanded_query_terms, document_terms], output=matched_documents)
+    def match_documents(self, query: QueryTerm, term: DocumentTerm) -> DocumentFilterMatch:
+        inner_join(on=term.term == query.token)
         zero_rank = literal(0).cast(types.long())
         group_by(query_id=query.query_id, document_id=term.document_id, filter_rank=zero_rank)
         return DocumentFilterMatch(

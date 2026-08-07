@@ -22,6 +22,8 @@ with schemas from your application.
 
 ## Lookup joins
 
+Use a lookup join when the current row should receive at most one matching right-side row.
+
 ```python
 from structure import *
 from structure.plugin.pyspark import *
@@ -83,6 +85,8 @@ Do not use a lookup join to hide a one-to-many relationship. A duplicate right m
 the downstream grain.
 
 ## Rowset joins
+
+Use a rowset join when matching pairs, rather than select-one enrichment, are part of the result.
 
 ```python
 rowset_join(
@@ -147,6 +151,8 @@ enrichment, use `left_join` and project the nullable fields explicitly.
 
 ## Existence joins
 
+Use an existence join when the right relation decides eligibility but its fields do not belong in the result.
+
 ```python
 where(exists(on=(order.customer_id == customer.id) & (order.tenant_id == customer.tenant_id)))
 where(not_exists(on=order.product_id == blocked.product_id))
@@ -157,6 +163,8 @@ eligibility and exclusion predicates. If right-side attributes are needed, use a
 them explicitly.
 
 ## Temporal and as-of joins
+
+Use a temporal or as-of join when the matching right row depends on validity or event time.
 
 ```python
 temporal_one(
@@ -220,6 +228,8 @@ Prefer a declared projection after a join. It avoids duplicate names, makes null
 and generated execution the same output shape. A join does not automatically publish every right-side field.
 
 ### Projection patterns
+
+Project into a result Schema when joined fields need deliberate names and nullability.
 
 ```python
 class EnrichedOrder(Schema):

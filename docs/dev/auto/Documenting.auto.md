@@ -57,6 +57,7 @@ with one centence for each. Include scenario table and details, if needed, as in
 'downstream', qualifiers like 'complete' (when not the focus)
 - Avoid formalisms like 'the following'. 
 - In Reference documents, 
+  - ensure concept is defined/purpose is explained before showing code snippet.
   - avoid folding several statements into a quick paragraph. Consider bullet lists and examples.
   - avoid overloading a sentence with several statements.
 - In Recipe documents, avoid excess use of word 'recipe' (reader already realizes that).
@@ -79,7 +80,7 @@ Changes during planning and design phases propagate top to bottom
 - Changes are formulated as tasks such as requests for creation of design, documentation.
 - Outputs are design documents, specifications, project-management docs, execution plans.
 - Changes propagate to other developer documentation (docs/dev/), e.g. as updates to sprints.
-- Changes propagate to public documentation (docs/), e.g. by synchronizing to background/, reference/, recipes/
+- Changes propagate to public documentation under `docs/`, including background/, reference/, and recipes/
 
 ### Changes introduced during development
 Changes during development include task implementation, decisions made, resolved issues, pivots.
@@ -89,8 +90,7 @@ They propagate bottom to top: from code changes to outer documents.
 - Recording ad-hoc changes in dev documentation: adjustments in decisions records, executive plans, design, and
   specification documents.
 - Synchronizing derived docs, such as annotated source in close/annotated/.
-- Synchronizing public documentation: documentation (docs/), e.g. by synchronizing to documents in background/,
-  reference/, and recipes/.
+- Synchronizing public documentation under `docs/`, including documents in background/, reference/, and recipes/.
 - For public docs, synchronize only information relevant to end users; for dev docs, synchronize only information
   relevant to developers.
 
@@ -98,4 +98,3 @@ They propagate bottom to top: from code changes to outer documents.
 - Avoid placing new content at top or at random place of the document. Think of best place for the top-to-bottom reader,
 who is trying to build understanding.
 - In code examples, use wildcard imports to save lines.
-

@@ -32,12 +32,12 @@ class ScoreOverlap(ScoreAlgorithm):
         return (
             query_terms.join(terms, "token")
             .join(query_sizes, "query_id")
-            .groupBy("query_id", *target, "_query_terms", "target_distinct_terms")
+            .groupBy("query_id", *target, "_query_terms", "target_distinct_term_count")
             .agg(F.countDistinct("token").alias("_matched_terms"))
             .select(
                 "query_id",
                 *target,
-                (F.col("_matched_terms") / F.least(F.col("_query_terms"), F.col("target_distinct_terms"))).alias(
+                (F.col("_matched_terms") / F.least(F.col("_query_terms"), F.col("target_distinct_term_count"))).alias(
                     "score_overlap"
                 ),
             )

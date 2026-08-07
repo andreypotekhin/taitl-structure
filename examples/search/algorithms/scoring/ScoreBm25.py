@@ -35,11 +35,11 @@ class ScoreBm25(ScoreAlgorithm):
 
         matches = query_terms.join(terms, "token").crossJoin(summary)
         inverse_frequency = F.log1p(
-            (F.col("target_count") - F.col("document_frequency") + F.lit(0.5))
-            / (F.col("document_frequency") + F.lit(0.5))
+            (F.col("target_count") - F.col("target_frequency") + F.lit(0.5))
+            / (F.col("target_frequency") + F.lit(0.5))
         )
         normalization = F.col("term_frequency") + F.lit(cls._K1) * (
-            F.lit(1 - cls._B) + F.lit(cls._B) * F.col("target_word_count") / F.col("average_target_length")
+            F.lit(1 - cls._B) + F.lit(cls._B) * F.col("target_term_count") / F.col("average_target_length")
         )
         return (
             matches.withColumn(

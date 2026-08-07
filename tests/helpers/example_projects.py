@@ -706,7 +706,6 @@ def render_search_example() -> dict[str, str]:
             DocumentLine,
             ExpandedDocumentLine,
             ExpandedSentenceText,
-            ExpandedWordText,
             MarkedDocumentLine,
             ParagraphContent,
             ParagraphDraft,
@@ -715,7 +714,6 @@ def render_search_example() -> dict[str, str]:
             SectionHeading,
             SectionKey,
             SentenceText,
-            WordText,
         )
         from examples.search.schemas.clicks import Click, DailyClicks, DailyImpressions, Impression, SearchRequest
         from examples.search.schemas.cohorts.resolve import BandAncestor, BandMatch, SingletonUserBand, UserBandPath
@@ -751,27 +749,31 @@ def render_search_example() -> dict[str, str]:
         from examples.search.schemas.indexing.lexical.index import (
             DocumentIndexSummary,
             DocumentIndexTarget,
-            DocumentIndexTerm,
+            DocumentTerm,
             ParagraphIndexSummary,
             ParagraphIndexTarget,
-            ParagraphIndexTerm,
+            ParagraphTerm,
             SectionIndexSummary,
             SectionIndexTarget,
-            SectionIndexTerm,
+            SectionTerm,
             SentenceIndexSummary,
             SentenceIndexTarget,
-            SentenceIndexTerm,
+            SentenceTerm,
         )
         from examples.search.schemas.indexing.lexical.intermediate import (
+            DocumentHierarchyCounts,
             DocumentIndexTargetStats,
-            DocumentIndexTermCount,
-            IndexTokenFrequency,
+            DocumentTermCount,
+            ExpandedTermText,
+            IndexTargetFrequency,
+            LexicalOccurrence,
             ParagraphIndexTargetStats,
-            ParagraphIndexTermCount,
+            ParagraphTermCount,
             SectionIndexTargetStats,
-            SectionIndexTermCount,
+            SectionTermCount,
             SentenceIndexTargetStats,
-            SentenceIndexTermCount,
+            SentenceTermCount,
+            TermText,
         )
         from examples.search.schemas.label import (
             Intent,
@@ -866,11 +868,11 @@ def render_search_example() -> dict[str, str]:
             SimilaritySectionQuery,
             SimilaritySentenceQuery,
         )
-        from examples.search.schemas.text import Document, Paragraph, Section, Sentence, Word
+        from examples.search.schemas.text import Document, Paragraph, Section, Sentence
         from examples.search.schemas.training import DocumentTrainingData, RankingArtifact
         from examples.search.schemas.user import Band, BandFallback, BandMembership, User, UserBand, UserBandMembership
         from examples.search.transforms.all import All, Training
-        from examples.search.transforms.chunking import Chunking, DocumentChunking, SentenceChunking, WordChunking
+        from examples.search.transforms.chunking import Chunking, DocumentChunking, SentenceChunking
         from examples.search.transforms.clicks.Clicks import Clicks
         from examples.search.transforms.clicks.Impressions import Impressions
         from examples.search.transforms.cohorts import ResolveCohortBands
@@ -936,7 +938,6 @@ def render_search_example() -> dict[str, str]:
                 Section,
                 Paragraph,
                 Sentence,
-                Word,
             ],
             "examples.search.schemas.chunking.chunk": [
                 DocumentLine,
@@ -950,8 +951,6 @@ def render_search_example() -> dict[str, str]:
                 SectionKey,
                 SentenceText,
                 ExpandedSentenceText,
-                WordText,
-                ExpandedWordText,
             ],
             "examples.search.schemas.search": [
                 SearchQuery,
@@ -995,24 +994,28 @@ def render_search_example() -> dict[str, str]:
                 SectionIndexTarget,
                 ParagraphIndexTarget,
                 SentenceIndexTarget,
-                DocumentIndexTerm,
+                DocumentTerm,
                 DocumentIndexSummary,
-                SectionIndexTerm,
+                SectionTerm,
                 SectionIndexSummary,
-                ParagraphIndexTerm,
+                ParagraphTerm,
                 ParagraphIndexSummary,
-                SentenceIndexTerm,
+                SentenceTerm,
                 SentenceIndexSummary,
             ],
             "examples.search.schemas.indexing.lexical.intermediate": [
-                IndexTokenFrequency,
-                DocumentIndexTermCount,
+                IndexTargetFrequency,
+                DocumentTermCount,
                 DocumentIndexTargetStats,
-                SectionIndexTermCount,
+                DocumentHierarchyCounts,
+                TermText,
+                ExpandedTermText,
+                LexicalOccurrence,
+                SectionTermCount,
                 SectionIndexTargetStats,
-                ParagraphIndexTermCount,
+                ParagraphTermCount,
                 ParagraphIndexTargetStats,
-                SentenceIndexTermCount,
+                SentenceTermCount,
                 SentenceIndexTargetStats,
             ],
             "examples.search.schemas.scoring.bm25": [
@@ -1138,7 +1141,6 @@ def render_search_example() -> dict[str, str]:
             (Chunking, "examples.search.transforms.chunking.Chunking.Chunking"),
             (DocumentChunking, "examples.search.transforms.chunking.DocumentChunking.DocumentChunking"),
             (SentenceChunking, "examples.search.transforms.chunking.SentenceChunking.SentenceChunking"),
-            (WordChunking, "examples.search.transforms.chunking.WordChunking.WordChunking"),
             (ProfileDocuments, "examples.search.transforms.stats.ProfileDocuments.ProfileDocuments"),
             (BuildDocumentFeatures, "examples.search.transforms.features.BuildDocumentFeatures.BuildDocumentFeatures"),
             (BuildQueryFeatures, "examples.search.transforms.features.BuildQueryFeatures.BuildQueryFeatures"),

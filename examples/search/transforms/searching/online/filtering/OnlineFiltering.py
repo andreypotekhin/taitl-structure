@@ -2,7 +2,7 @@
 
 from examples.search.schemas.clicks import SearchRequest
 from examples.search.schemas.filtering import DocumentFilterScore
-from examples.search.schemas.indexing.lexical.index import DocumentIndexTerm
+from examples.search.schemas.indexing.lexical.index import DocumentTerm
 from examples.search.schemas.search import ScorePolicy, SearchQuery
 from examples.search.transforms.filtering.Filtering import Filtering
 from examples.search.transforms.searching.online.filtering.SelectGapQueries import SelectGapQueries
@@ -15,7 +15,7 @@ class OnlineFiltering(Transform):
     queries = input(SearchQuery, streaming=True)
     requests = input(SearchRequest, streaming=True)
     document_filter_scores = input(DocumentFilterScore)
-    document_terms = input(DocumentIndexTerm)
+    document_terms = input(DocumentTerm)
     score_policy = input(ScorePolicy)
 
     gap = SelectGapQueries(

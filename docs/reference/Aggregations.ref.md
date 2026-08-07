@@ -42,6 +42,8 @@ order identity.
 
 ## Grouping
 
+Use grouping when the result should contain one row for each declared key combination.
+
 ```python
 class CustomerTotals(Transform):
     orders = input(Order)
@@ -102,6 +104,8 @@ are structural; do not use nullness alone to identify a subtotal.
 `cube`, or `grouping_sets`, or used as a following statement when the aggregate output is unambiguous.
 
 ## Metrics
+
+Use metric helpers to name the values calculated for each grouped result.
 
 ```python
 group_by(tenant_id=order.tenant_id, customer_id=order.customer_id)
@@ -212,6 +216,8 @@ Use a scalar tie-breaker or an explicit tie policy whenever the selected value i
 
 ## Select and deduplicate rows
 
+Use selected-row helpers when one complete input row should survive for each partition.
+
 ```python
 latest_by(order.updated_at, partition_by=order.customer_id)
 return CurrentCustomer.base(order)()
@@ -249,6 +255,8 @@ streaming frame, it requires a preceding watermark and lowers to bounded `dropDu
 uses ordinary duplicate removal. `drop_duplicates_within_watermark(...)` makes the streaming-only contract explicit.
 
 ## Windows
+
+Use a window when each input row must remain visible while receiving a rank, neighbor value, or rolling metric.
 
 ```python
 w = window(

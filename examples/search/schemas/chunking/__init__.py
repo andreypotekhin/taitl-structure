@@ -4,7 +4,6 @@ from examples.search.schemas.chunking.chunk import (
     DocumentLine,
     ExpandedDocumentLine,
     ExpandedSentenceText,
-    ExpandedWordText,
     MarkedDocumentLine,
     ParagraphContent,
     ParagraphDraft,
@@ -13,14 +12,12 @@ from examples.search.schemas.chunking.chunk import (
     SectionHeading,
     SectionKey,
     SentenceText,
-    WordText,
 )
 
 __all__ = [
     "DocumentLine",
     "ExpandedDocumentLine",
     "ExpandedSentenceText",
-    "ExpandedWordText",
     "MarkedDocumentLine",
     "ParagraphContent",
     "ParagraphDraft",
@@ -29,5 +26,4 @@ __all__ = [
     "SectionHeading",
     "SectionKey",
     "SentenceText",
-    "WordText",
 ]

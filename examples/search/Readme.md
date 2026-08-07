@@ -1,18 +1,20 @@
 # Search Example App
 
 This example demonstrates searching a harvested document corpus as typed Structure schemas,
-turns caller-extracted text into sections, paragraphs, sentences, and words. The example computes lexical search, corpus similarity, and impression-backed
+turns caller-extracted text into sections, paragraphs, and sentences. The example computes lexical search, corpus similarity, and impression-backed
 document reranking. Structure owns data transformations; callers own data
 sources, persistence, query serving, stream lifecycles, and checkpoints.
 
 For the architecture, evidence boundaries, and ownership model, see the
-[Search background](../../close/docs/background/Search.back.md).
+[Search background](../../docs/background/Search.back.md).
+
+Focused boundary contracts are collected in the [Search example specifications](../../docs/examples/search/Readme.md).
 
 ## Pipeline
 
 | Concern | Typed boundary | Result | Details |
 | --- | --- | --- | --- |
-| Chunking | `Chunking` | sections, paragraphs, sentences, words | Plain-text hierarchy and shared token normalization. |
+| Chunking | `Chunking` | sections, paragraphs, sentences | Plain-text hierarchy. |
 | Indexing | `Indexing` | target-grain terms and summaries | Build once; score many query batches. |
 | Scoring | `OfflineScoring`, `Scoring`, `OnlineScoring` | timestamped score relations | Score popular and seven-day recent queries offline; fill ad-hoc gaps online and persist bridge rows in the same relations. |
 | Filtering | `Filtering`, `OnlineFiltering`, `SelectFilterTargets` | timestamped filter artifacts and document targets | Prefilter selected queries offline, resolve missing query groups online, and retain at most 10,000 simple-overlap document targets. |
@@ -24,7 +26,7 @@ For the architecture, evidence boundaries, and ownership model, see the
 
 ## Build search artifacts
 
-`All` workflow is the a one-call pre-serving build. It accepts corpus documents, one similarity policy, one `ScorePolicy`, queries and label configuration, persisted daily feedback facts, user/band catalogs, and one relevance policy. It emits the extracted document sections, paragraphs, sentences, words, corpus statistics, blocked near-duplicate candidates, lexical index, similarity pairs, labeled queries, overlap/BM25 scores, user cohorts and relevance signals. `OfflineScoring` caps by 1000 most popular queries plus every query observed in the preceeding seven days.
+`All` workflow is the a one-call pre-serving build. It accepts corpus documents, one similarity policy, one `ScorePolicy`, queries and label configuration, persisted daily feedback facts, user/band catalogs, and one relevance policy. It emits the extracted document sections, paragraphs, sentences, corpus statistics, blocked near-duplicate candidates, lexical index, similarity pairs, labeled queries, overlap/BM25 scores, user cohorts and relevance signals. `OfflineScoring` caps by 1000 most popular queries plus every query observed in the preceeding seven days.
 
 ```python
 from examples.search.transforms.all import All
@@ -59,17 +61,16 @@ document_similarities = artifacts.document_similarities
 section and supplies its heading; blank lines separate paragraphs. Documents
 without a heading use an implicit `Document` section.
 
-`Chunking` accepts raw `Document` rows and emits hierarchical sections, paragraphs, sentences, and normalized words. All later
-lexical paths use that one text-normalization contract.
+`Chunking` accepts raw `Document` rows and emits hierarchical sections, paragraphs, and sentences. `Indexing` applies the
+shared term-normalization contract while building aggregate lexical relations.
 
-`Chunking` composes `DocumentChunking`, the default `SentenceChunking`, and
-`WordChunking`. The default sentence supplier is an explicitly declared Python
+`Chunking` composes `DocumentChunking` and the default `SentenceChunking`. The default sentence supplier is an explicitly declared Python
 UDF that splits on terminal punctuation. It is intentionally only a starting
 point: abbreviations, initials, versions, domains, and locale-specific rules
 can split incorrectly. When source-faithful sentence text or spans matter,
 callers run `DocumentChunking`, replace `SentenceChunking` with a transform
 that emits the same `Sentence` relation, then pass those sentences to
-`WordChunking`.
+`Indexing`.
 
 `SentenceChunking` marks this deliberate UDF boundary on the transform with
 `@transform(warn_on_udfs=False)`. The example's [`structure.toml`](structure.toml)
@@ -78,19 +79,24 @@ body instead of depending on the source transform.
 
 ```python
 segments = Chunking(documents=documents).run(session)
+index = Indexing(sentences=segments.sentences).run(session)
 features = ProfileDocuments(documents=documents).run(session).features
 analytics = AnalyzeText(
-    words=segments.words,
     sentences=segments.sentences,
     paragraphs=segments.paragraphs,
     sections=segments.sections,
+    section_terms=index.section_terms,
+    paragraph_terms=index.paragraph_terms,
+    sentence_terms=index.sentence_terms,
     comparison_left=features,
     comparison_right=features,
 ).run(session)
-corpus = CorpusText(documents=analytics.document_statistics, words=segments.words).run(session)
+corpus = CorpusText(
+    document_statistics=analytics.document_statistics,
+    document_terms=index.document_terms,
+).run(session)
 
-# Feed extracted relations into later transforms or persist as corpus artifacts.
-words = segments.words
+# Feed extracted relations into later transforms or persist aggregate artifacts.
 sentences = segments.sentences
 document_statistics = corpus.corpus_statistics
 ```
@@ -101,13 +107,13 @@ which would double-count shared terms.
 
 ## Indexing
 
-`Indexing` builds reusable document, section, paragraph, and sentence index from the extracted words. Each
-term row holds its target-local frequency and vocabulary/length facts plus the token's target-grain document frequency;
+`Indexing` builds reusable document, section, paragraph, and sentence indexes directly from sentence content. Each
+term row holds its target-local frequency and vocabulary/length facts plus the term's target-grain frequency;
 each summary holds target count and average target length. Its term and summary relations are reusable across query
-batches; persisting them is caller-owned.
+batches; persisting aggregate relations is caller-owned. Raw token occurrences are not part of the public Search model.
 
 ```python
-index = Indexing(words=segments.words).run(session)
+index = Indexing(sentences=segments.sentences).run(session)
 
 # Index artifacts for persisting.
 document_terms = index.document_terms
@@ -138,7 +144,7 @@ result presentation.
 query. `content` is free-form text: callers do not pre-tokenize it. For example, `"  AURORA,   beacon! navigation?  "` is equivalent to
 `"aurora beacon navigation"`.
 The algorithms normalize query terms exactly as
-`Chunking` normalizes document words. `score_overlap` is IDF-weighted: the IDF sum of successfully matched distinct
+`Indexing` normalizes sentence terms. `score_overlap` is IDF-weighted: the IDF sum of successfully matched distinct
 terms divided by the total IDF of the query. `score_bm25` uses fixed `k1=1.2` and `b=0.75` constants. `SelectScores`
 normalizes BM25 per query and combines it with overlap using independent caller-supplied `ScorePolicy` weights for each
 grain. Each selected score row carries `scored_at`; serving also rejects rows older than `effective_at` when the policy
@@ -258,7 +264,7 @@ The shared `Scoring` output supplies the sentence candidates. `SearchSentences`
 accepts immutable sentences and `Scoring.sentence_scores`, emits one-based `SentenceSearchResult` ranks per query and experiment.
 
 ```python
-index = Indexing(words=segments.words).run(session)
+index = Indexing(sentences=segments.sentences).run(session)
 scores = Scoring(
     queries=queries,
     document_terms=index.document_terms,

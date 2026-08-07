@@ -17,7 +17,7 @@ from examples.structure_generated.search.pyspark.schemas.analytics import (
     CORPUS_VOCABULARY_SCHEMA,
     DOCUMENT_STATISTICS_SCHEMA,
 )
-from examples.structure_generated.search.pyspark.schemas.text import WORD_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.index import DOCUMENT_TERM_SCHEMA
 
 
 class CorpusTextGenerated:
@@ -32,16 +32,16 @@ class CorpusTextGenerated:
     def run(
         self,
         *,
-        documents: DataFrame,
-        words: DataFrame,
+        document_statistics: DataFrame,
+        document_terms: DataFrame,
     ) -> TransformResult:
-        assert_schema(documents, DOCUMENT_STATISTICS_SCHEMA, name="DocumentStatistics", mode="strict")
-        assert_schema(words, WORD_SCHEMA, name="Word", mode="strict")
-        _input_documents = documents
-        _input_words = words
+        assert_schema(document_statistics, DOCUMENT_STATISTICS_SCHEMA, name="DocumentStatistics", mode="strict")
+        assert_schema(document_terms, DOCUMENT_TERM_SCHEMA, name="DocumentTerm", mode="strict")
+        _input_document_statistics = document_statistics
+        _input_document_terms = document_terms
 
         # Step method: corpus_stats
-        corpus_statistics = documents.alias("document_statistics")
+        corpus_statistics = document_statistics.alias("document_statistics")
         corpus_statistics = (
             corpus_statistics.groupBy(
                 F.lit('all documents').alias("corpus"),
@@ -87,13 +87,15 @@ class CorpusTextGenerated:
         assert_schema(corpus_statistics, CORPUS_STATISTICS_SCHEMA, name="CorpusStatistics", mode="strict")
 
         # Step method: corpus_vocabulary_stats
-        corpus_vocabulary = words.alias("word")
+        corpus_vocabulary = document_terms.alias("document_term")
         corpus_vocabulary = (
             corpus_vocabulary.groupBy(
                 F.lit('all documents').alias("corpus"),
             )
             .agg(
-                F.approx_count_distinct(F.col("word.token")).cast(T.LongType()).alias("estimated_distinct_words"),
+                F.approx_count_distinct(F.col("document_term.term"))
+                .cast(T.LongType())
+                .alias("estimated_distinct_words"),
             )
             .select(
                 F.col("corpus"),

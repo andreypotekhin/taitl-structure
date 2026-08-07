@@ -1,254 +1,310 @@
 """Reusable, batch-built text index artifacts."""
 
+from examples.search.algorithms.text import normalized_token
 from examples.search.schemas.indexing.lexical.index import (
     DocumentIndexSummary,
-    DocumentIndexTerm,
+    DocumentTerm,
     ParagraphIndexSummary,
-    ParagraphIndexTerm,
+    ParagraphTerm,
     SectionIndexSummary,
-    SectionIndexTerm,
+    SectionTerm,
     SentenceIndexSummary,
-    SentenceIndexTerm,
+    SentenceTerm,
 )
 from examples.search.schemas.indexing.lexical.intermediate import (
     DocumentIndexTargetStats,
-    DocumentIndexTermCount,
-    IndexTokenFrequency,
+    DocumentTermCount,
+    ExpandedTermText,
+    IndexTargetFrequency,
+    LexicalOccurrence,
     ParagraphIndexTargetStats,
-    ParagraphIndexTermCount,
+    ParagraphTermCount,
     SectionIndexTargetStats,
-    SectionIndexTermCount,
+    SectionTermCount,
     SentenceIndexTargetStats,
-    SentenceIndexTermCount,
+    SentenceTermCount,
+    TermText,
 )
-from examples.search.schemas.text import Word
+from examples.search.schemas.text import Sentence
 from structure import Transform, input, lane, output, step
-from structure.plugin.pyspark import avg, count, count_distinct, group_by, inner_join
+from structure.plugin.pyspark import (
+    arr_transform,
+    avg,
+    count,
+    count_distinct,
+    group_by,
+    inner_join,
+    length,
+    posexplode_struct,
+    split,
+    where,
+)
 
 
 class LexIndex(Transform):
-    """Build reusable document, section, paragraph, and sentence indexes."""
+    """Build reusable document, section, paragraph, and sentence term indexes."""
 
-    words = input(Word)
-    document_term_counts = lane(DocumentIndexTermCount)
+    sentences = input(Sentence)
+    occurrences = lane(LexicalOccurrence)
+    document_term_counts = lane(DocumentTermCount)
     document_target_stats = lane(DocumentIndexTargetStats)
-    document_token_frequencies = lane(IndexTokenFrequency)
-    section_term_counts = lane(SectionIndexTermCount)
+    document_target_frequencies = lane(IndexTargetFrequency)
+    section_term_counts = lane(SectionTermCount)
     section_target_stats = lane(SectionIndexTargetStats)
-    section_token_frequencies = lane(IndexTokenFrequency)
-    paragraph_term_counts = lane(ParagraphIndexTermCount)
+    section_target_frequencies = lane(IndexTargetFrequency)
+    paragraph_term_counts = lane(ParagraphTermCount)
     paragraph_target_stats = lane(ParagraphIndexTargetStats)
-    paragraph_token_frequencies = lane(IndexTokenFrequency)
-    sentence_term_counts = lane(SentenceIndexTermCount)
+    paragraph_target_frequencies = lane(IndexTargetFrequency)
+    sentence_term_counts = lane(SentenceTermCount)
     sentence_target_stats = lane(SentenceIndexTargetStats)
-    sentence_token_frequencies = lane(IndexTokenFrequency)
-    document_terms = output(DocumentIndexTerm)
+    sentence_target_frequencies = lane(IndexTargetFrequency)
+    document_terms = output(DocumentTerm)
     document_summary = output(DocumentIndexSummary)
-    section_terms = output(SectionIndexTerm)
+    section_terms = output(SectionTerm)
     section_summary = output(SectionIndexSummary)
-    paragraph_terms = output(ParagraphIndexTerm)
+    paragraph_terms = output(ParagraphTerm)
     paragraph_summary = output(ParagraphIndexSummary)
-    sentence_terms = output(SentenceIndexTerm)
+    sentence_terms = output(SentenceTerm)
     sentence_summary = output(SentenceIndexSummary)
 
-    @step(input=words, output=document_term_counts)
-    def count_document_terms(self, word: Word) -> DocumentIndexTermCount:
-        group_by(document_id=word.document_id, token=word.token)
-        return DocumentIndexTermCount(
-            document_id=word.document_id,
-            token=word.token,
+    @step(input=sentences, output=occurrences)
+    def tokenize(self, sentence: Sentence) -> LexicalOccurrence:
+        terms = arr_transform(
+            split(sentence.content, pattern=r"\s+"),
+            lambda value: TermText(term=value),
+        )
+        expanded = posexplode_struct(terms, as_=ExpandedTermText, ordinal="position", scope="sentence_term")
+        term = normalized_token(expanded.term)
+        where(term != "")
+        return LexicalOccurrence(
+            document_id=sentence.document_id,
+            section_id=sentence.section_id,
+            paragraph_id=sentence.paragraph_id,
+            sentence_id=sentence.id,
+            term=term,
+        )
+
+    @step(input=occurrences, output=document_term_counts)
+    def count_document_terms(self, occurrence: LexicalOccurrence) -> DocumentTermCount:
+        group_by(document_id=occurrence.document_id, term=occurrence.term)
+        return DocumentTermCount(
+            document_id=occurrence.document_id,
+            term=occurrence.term,
             term_frequency=count(),
         )
 
-    @step(input=words, output=document_target_stats)
-    def summarize_documents(self, word: Word) -> DocumentIndexTargetStats:
-        group_by(document_id=word.document_id)
+    @step(input=occurrences, output=document_target_stats)
+    def summarize_documents(self, occurrence: LexicalOccurrence) -> DocumentIndexTargetStats:
+        group_by(document_id=occurrence.document_id)
         return DocumentIndexTargetStats(
-            document_id=word.document_id,
-            target_word_count=count(),
-            target_distinct_terms=count_distinct(word.token),
+            document_id=occurrence.document_id,
+            target_term_count=count(),
+            target_distinct_term_count=count_distinct(occurrence.term),
+            target_average_term_length=avg(length(occurrence.term)),
         )
 
-    @step(input=document_term_counts, output=document_token_frequencies)
-    def count_document_frequencies(self, term: DocumentIndexTermCount) -> IndexTokenFrequency:
-        group_by(token=term.token)
-        return IndexTokenFrequency(token=term.token, document_frequency=count())
+    @step(input=document_term_counts, output=document_target_frequencies)
+    def count_document_frequencies(self, term: DocumentTermCount) -> IndexTargetFrequency:
+        group_by(term=term.term)
+        return IndexTargetFrequency(term=term.term, target_frequency=count())
 
-    @step(input=[document_term_counts, document_target_stats, document_token_frequencies], output=document_terms)
+    @step(
+        input=[document_term_counts, document_target_stats, document_target_frequencies],
+        output=document_terms,
+    )
     def build_document_terms(
-        self, term: DocumentIndexTermCount, stats: DocumentIndexTargetStats, frequency: IndexTokenFrequency
-    ) -> DocumentIndexTerm:
+        self, term: DocumentTermCount, stats: DocumentIndexTargetStats, frequency: IndexTargetFrequency
+    ) -> DocumentTerm:
         inner_join(stats, on=stats.document_id == term.document_id)
-        inner_join(frequency, on=frequency.token == term.token)
-        return DocumentIndexTerm(
+        inner_join(frequency, on=frequency.term == term.term)
+        return DocumentTerm(
             document_id=term.document_id,
-            token=term.token,
+            term=term.term,
             term_frequency=term.term_frequency,
-            target_word_count=stats.target_word_count,
-            target_distinct_terms=stats.target_distinct_terms,
-            document_frequency=frequency.document_frequency,
+            target_term_count=stats.target_term_count,
+            target_distinct_term_count=stats.target_distinct_term_count,
+            target_average_term_length=stats.target_average_term_length,
+            target_frequency=frequency.target_frequency,
         )
 
     @step(input=document_target_stats, output=document_summary)
     def summarize_document_index(self, stats: DocumentIndexTargetStats) -> DocumentIndexSummary:
         return DocumentIndexSummary(
             target_count=count(),
-            average_target_length=avg(stats.target_word_count),
+            average_target_length=avg(stats.target_term_count),
         )
 
-    @step(input=words, output=section_term_counts)
-    def count_section_terms(self, word: Word) -> SectionIndexTermCount:
-        group_by(document_id=word.document_id, section_id=word.section_id, token=word.token)
-        return SectionIndexTermCount(
-            document_id=word.document_id,
-            section_id=word.section_id,
-            token=word.token,
+    @step(input=occurrences, output=section_term_counts)
+    def count_section_terms(self, occurrence: LexicalOccurrence) -> SectionTermCount:
+        group_by(document_id=occurrence.document_id, section_id=occurrence.section_id, term=occurrence.term)
+        return SectionTermCount(
+            document_id=occurrence.document_id,
+            section_id=occurrence.section_id,
+            term=occurrence.term,
             term_frequency=count(),
         )
 
-    @step(input=words, output=section_target_stats)
-    def summarize_sections(self, word: Word) -> SectionIndexTargetStats:
-        group_by(document_id=word.document_id, section_id=word.section_id)
+    @step(input=occurrences, output=section_target_stats)
+    def summarize_sections(self, occurrence: LexicalOccurrence) -> SectionIndexTargetStats:
+        group_by(document_id=occurrence.document_id, section_id=occurrence.section_id)
         return SectionIndexTargetStats(
-            document_id=word.document_id,
-            section_id=word.section_id,
-            target_word_count=count(),
-            target_distinct_terms=count_distinct(word.token),
+            document_id=occurrence.document_id,
+            section_id=occurrence.section_id,
+            target_term_count=count(),
+            target_distinct_term_count=count_distinct(occurrence.term),
+            target_average_term_length=avg(length(occurrence.term)),
         )
 
-    @step(input=section_term_counts, output=section_token_frequencies)
-    def count_section_frequencies(self, term: SectionIndexTermCount) -> IndexTokenFrequency:
-        group_by(token=term.token)
-        return IndexTokenFrequency(token=term.token, document_frequency=count())
+    @step(input=section_term_counts, output=section_target_frequencies)
+    def count_section_frequencies(self, term: SectionTermCount) -> IndexTargetFrequency:
+        group_by(term=term.term)
+        return IndexTargetFrequency(term=term.term, target_frequency=count())
 
-    @step(input=[section_term_counts, section_target_stats, section_token_frequencies], output=section_terms)
+    @step(input=[section_term_counts, section_target_stats, section_target_frequencies], output=section_terms)
     def build_section_terms(
-        self, term: SectionIndexTermCount, stats: SectionIndexTargetStats, frequency: IndexTokenFrequency
-    ) -> SectionIndexTerm:
-        inner_join(stats, on=(stats.document_id == term.document_id) & (stats.section_id == term.section_id))
-        inner_join(frequency, on=frequency.token == term.token)
-        return SectionIndexTerm(
+        self, term: SectionTermCount, stats: SectionIndexTargetStats, frequency: IndexTargetFrequency
+    ) -> SectionTerm:
+        inner_join(
+            stats,
+            on=(stats.document_id == term.document_id) & (stats.section_id == term.section_id),
+        )
+        inner_join(frequency, on=frequency.term == term.term)
+        return SectionTerm(
             document_id=term.document_id,
             section_id=term.section_id,
-            token=term.token,
+            term=term.term,
             term_frequency=term.term_frequency,
-            target_word_count=stats.target_word_count,
-            target_distinct_terms=stats.target_distinct_terms,
-            document_frequency=frequency.document_frequency,
+            target_term_count=stats.target_term_count,
+            target_distinct_term_count=stats.target_distinct_term_count,
+            target_average_term_length=stats.target_average_term_length,
+            target_frequency=frequency.target_frequency,
         )
 
     @step(input=section_target_stats, output=section_summary)
     def summarize_section_index(self, stats: SectionIndexTargetStats) -> SectionIndexSummary:
         return SectionIndexSummary(
             target_count=count(),
-            average_target_length=avg(stats.target_word_count),
+            average_target_length=avg(stats.target_term_count),
         )
 
-    @step(input=words, output=paragraph_term_counts)
-    def count_paragraph_terms(self, word: Word) -> ParagraphIndexTermCount:
+    @step(input=occurrences, output=paragraph_term_counts)
+    def count_paragraph_terms(self, occurrence: LexicalOccurrence) -> ParagraphTermCount:
         group_by(
-            document_id=word.document_id,
-            section_id=word.section_id,
-            paragraph_id=word.paragraph_id,
-            token=word.token,
+            document_id=occurrence.document_id,
+            section_id=occurrence.section_id,
+            paragraph_id=occurrence.paragraph_id,
+            term=occurrence.term,
         )
-        return ParagraphIndexTermCount(
-            document_id=word.document_id,
-            section_id=word.section_id,
-            paragraph_id=word.paragraph_id,
-            token=word.token,
+        return ParagraphTermCount(
+            document_id=occurrence.document_id,
+            section_id=occurrence.section_id,
+            paragraph_id=occurrence.paragraph_id,
+            term=occurrence.term,
             term_frequency=count(),
         )
 
-    @step(input=words, output=paragraph_target_stats)
-    def summarize_paragraphs(self, word: Word) -> ParagraphIndexTargetStats:
-        group_by(document_id=word.document_id, section_id=word.section_id, paragraph_id=word.paragraph_id)
+    @step(input=occurrences, output=paragraph_target_stats)
+    def summarize_paragraphs(self, occurrence: LexicalOccurrence) -> ParagraphIndexTargetStats:
+        group_by(
+            document_id=occurrence.document_id,
+            section_id=occurrence.section_id,
+            paragraph_id=occurrence.paragraph_id,
+        )
         return ParagraphIndexTargetStats(
-            document_id=word.document_id,
-            section_id=word.section_id,
-            paragraph_id=word.paragraph_id,
-            target_word_count=count(),
-            target_distinct_terms=count_distinct(word.token),
+            document_id=occurrence.document_id,
+            section_id=occurrence.section_id,
+            paragraph_id=occurrence.paragraph_id,
+            target_term_count=count(),
+            target_distinct_term_count=count_distinct(occurrence.term),
+            target_average_term_length=avg(length(occurrence.term)),
         )
 
-    @step(input=paragraph_term_counts, output=paragraph_token_frequencies)
-    def count_paragraph_frequencies(self, term: ParagraphIndexTermCount) -> IndexTokenFrequency:
-        group_by(token=term.token)
-        return IndexTokenFrequency(token=term.token, document_frequency=count())
+    @step(input=paragraph_term_counts, output=paragraph_target_frequencies)
+    def count_paragraph_frequencies(self, term: ParagraphTermCount) -> IndexTargetFrequency:
+        group_by(term=term.term)
+        return IndexTargetFrequency(term=term.term, target_frequency=count())
 
-    @step(input=[paragraph_term_counts, paragraph_target_stats, paragraph_token_frequencies], output=paragraph_terms)
+    @step(
+        input=[paragraph_term_counts, paragraph_target_stats, paragraph_target_frequencies],
+        output=paragraph_terms,
+    )
     def build_paragraph_terms(
-        self, term: ParagraphIndexTermCount, stats: ParagraphIndexTargetStats, frequency: IndexTokenFrequency
-    ) -> ParagraphIndexTerm:
+        self, term: ParagraphTermCount, stats: ParagraphIndexTargetStats, frequency: IndexTargetFrequency
+    ) -> ParagraphTerm:
         inner_join(
             stats,
             on=(stats.document_id == term.document_id)
             & (stats.section_id == term.section_id)
             & (stats.paragraph_id == term.paragraph_id),
         )
-        inner_join(frequency, on=frequency.token == term.token)
-        return ParagraphIndexTerm(
+        inner_join(frequency, on=frequency.term == term.term)
+        return ParagraphTerm(
             document_id=term.document_id,
             section_id=term.section_id,
             paragraph_id=term.paragraph_id,
-            token=term.token,
+            term=term.term,
             term_frequency=term.term_frequency,
-            target_word_count=stats.target_word_count,
-            target_distinct_terms=stats.target_distinct_terms,
-            document_frequency=frequency.document_frequency,
+            target_term_count=stats.target_term_count,
+            target_distinct_term_count=stats.target_distinct_term_count,
+            target_average_term_length=stats.target_average_term_length,
+            target_frequency=frequency.target_frequency,
         )
 
     @step(input=paragraph_target_stats, output=paragraph_summary)
     def summarize_paragraph_index(self, stats: ParagraphIndexTargetStats) -> ParagraphIndexSummary:
         return ParagraphIndexSummary(
             target_count=count(),
-            average_target_length=avg(stats.target_word_count),
+            average_target_length=avg(stats.target_term_count),
         )
 
-    @step(input=words, output=sentence_term_counts)
-    def count_sentence_terms(self, word: Word) -> SentenceIndexTermCount:
+    @step(input=occurrences, output=sentence_term_counts)
+    def count_sentence_terms(self, occurrence: LexicalOccurrence) -> SentenceTermCount:
         group_by(
-            document_id=word.document_id,
-            section_id=word.section_id,
-            paragraph_id=word.paragraph_id,
-            sentence_id=word.sentence_id,
-            token=word.token,
+            document_id=occurrence.document_id,
+            section_id=occurrence.section_id,
+            paragraph_id=occurrence.paragraph_id,
+            sentence_id=occurrence.sentence_id,
+            term=occurrence.term,
         )
-        return SentenceIndexTermCount(
-            document_id=word.document_id,
-            section_id=word.section_id,
-            paragraph_id=word.paragraph_id,
-            sentence_id=word.sentence_id,
-            token=word.token,
+        return SentenceTermCount(
+            document_id=occurrence.document_id,
+            section_id=occurrence.section_id,
+            paragraph_id=occurrence.paragraph_id,
+            sentence_id=occurrence.sentence_id,
+            term=occurrence.term,
             term_frequency=count(),
         )
 
-    @step(input=words, output=sentence_target_stats)
-    def summarize_sentences(self, word: Word) -> SentenceIndexTargetStats:
+    @step(input=occurrences, output=sentence_target_stats)
+    def summarize_sentences(self, occurrence: LexicalOccurrence) -> SentenceIndexTargetStats:
         group_by(
-            document_id=word.document_id,
-            section_id=word.section_id,
-            paragraph_id=word.paragraph_id,
-            sentence_id=word.sentence_id,
+            document_id=occurrence.document_id,
+            section_id=occurrence.section_id,
+            paragraph_id=occurrence.paragraph_id,
+            sentence_id=occurrence.sentence_id,
         )
         return SentenceIndexTargetStats(
-            document_id=word.document_id,
-            section_id=word.section_id,
-            paragraph_id=word.paragraph_id,
-            sentence_id=word.sentence_id,
-            target_word_count=count(),
-            target_distinct_terms=count_distinct(word.token),
+            document_id=occurrence.document_id,
+            section_id=occurrence.section_id,
+            paragraph_id=occurrence.paragraph_id,
+            sentence_id=occurrence.sentence_id,
+            target_term_count=count(),
+            target_distinct_term_count=count_distinct(occurrence.term),
+            target_average_term_length=avg(length(occurrence.term)),
         )
 
-    @step(input=sentence_term_counts, output=sentence_token_frequencies)
-    def count_sentence_frequencies(self, term: SentenceIndexTermCount) -> IndexTokenFrequency:
-        group_by(token=term.token)
-        return IndexTokenFrequency(token=term.token, document_frequency=count())
+    @step(input=sentence_term_counts, output=sentence_target_frequencies)
+    def count_sentence_frequencies(self, term: SentenceTermCount) -> IndexTargetFrequency:
+        group_by(term=term.term)
+        return IndexTargetFrequency(term=term.term, target_frequency=count())
 
-    @step(input=[sentence_term_counts, sentence_target_stats, sentence_token_frequencies], output=sentence_terms)
+    @step(
+        input=[sentence_term_counts, sentence_target_stats, sentence_target_frequencies],
+        output=sentence_terms,
+    )
     def build_sentence_terms(
-        self, term: SentenceIndexTermCount, stats: SentenceIndexTargetStats, frequency: IndexTokenFrequency
-    ) -> SentenceIndexTerm:
+        self, term: SentenceTermCount, stats: SentenceIndexTargetStats, frequency: IndexTargetFrequency
+    ) -> SentenceTerm:
         inner_join(
             stats,
             on=(stats.document_id == term.document_id)
@@ -256,22 +312,23 @@ class LexIndex(Transform):
             & (stats.paragraph_id == term.paragraph_id)
             & (stats.sentence_id == term.sentence_id),
         )
-        inner_join(frequency, on=frequency.token == term.token)
-        return SentenceIndexTerm(
+        inner_join(frequency, on=frequency.term == term.term)
+        return SentenceTerm(
             document_id=term.document_id,
             section_id=term.section_id,
             paragraph_id=term.paragraph_id,
             sentence_id=term.sentence_id,
-            token=term.token,
+            term=term.term,
             term_frequency=term.term_frequency,
-            target_word_count=stats.target_word_count,
-            target_distinct_terms=stats.target_distinct_terms,
-            document_frequency=frequency.document_frequency,
+            target_term_count=stats.target_term_count,
+            target_distinct_term_count=stats.target_distinct_term_count,
+            target_average_term_length=stats.target_average_term_length,
+            target_frequency=frequency.target_frequency,
         )
 
     @step(input=sentence_target_stats, output=sentence_summary)
     def summarize_sentence_index(self, stats: SentenceIndexTargetStats) -> SentenceIndexSummary:
         return SentenceIndexSummary(
             target_count=count(),
-            average_target_length=avg(stats.target_word_count),
+            average_target_length=avg(stats.target_term_count),
         )

@@ -45,7 +45,6 @@ class EvaluateDocumentRanking(Transform):
     judgment_totals = lane(EvaluationJudgmentTotals)
     ideal_dcgs = lane(EvaluationIdealDcg)
     result_totals = lane(EvaluationResultTotals)
-    metrics = lane(DocumentQueryEvaluation)
     query_evaluations = output(DocumentQueryEvaluation)
     summary = output(DocumentEvaluationSummary)
 
@@ -149,7 +148,7 @@ class EvaluateDocumentRanking(Transform):
             dcg_at_15=sum(when(result.rank <= 15, gain).otherwise(0.0)),
         )
 
-    @step(input=[evaluated_queries, result_totals, judgment_totals, ideal_dcgs], output=metrics)
+    @step(input=[evaluated_queries, result_totals, judgment_totals, ideal_dcgs], output=query_evaluations)
     def calculate_metrics(
         self,
         query: EvaluationQuery,
@@ -218,11 +217,7 @@ class EvaluateDocumentRanking(Transform):
         maximum = getattr(ideal, f"ideal_dcg_at_{cutoff}")
         return when((relevant_count > 0) & covered & (maximum > 0.0), actual / maximum).otherwise(None)
 
-    @step(input=metrics, output=query_evaluations)
-    def publish_metrics(self, metric: DocumentQueryEvaluation) -> DocumentQueryEvaluation:
-        return DocumentQueryEvaluation.project(metric)
-
-    @step(input=metrics, output=summary)
+    @step(input=query_evaluations, output=summary)
     def summarize(self, metric: DocumentQueryEvaluation) -> DocumentEvaluationSummary:
         group_by(
             window=metric.window,

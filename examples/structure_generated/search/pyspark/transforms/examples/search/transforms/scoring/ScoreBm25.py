@@ -20,13 +20,13 @@ from examples.structure_generated.search.pyspark.schemas.bm25 import (
 )
 from examples.structure_generated.search.pyspark.schemas.index import (
     DOCUMENT_INDEX_SUMMARY_SCHEMA,
-    DOCUMENT_INDEX_TERM_SCHEMA,
+    DOCUMENT_TERM_SCHEMA,
     PARAGRAPH_INDEX_SUMMARY_SCHEMA,
-    PARAGRAPH_INDEX_TERM_SCHEMA,
+    PARAGRAPH_TERM_SCHEMA,
     SECTION_INDEX_SUMMARY_SCHEMA,
-    SECTION_INDEX_TERM_SCHEMA,
+    SECTION_TERM_SCHEMA,
     SENTENCE_INDEX_SUMMARY_SCHEMA,
-    SENTENCE_INDEX_TERM_SCHEMA,
+    SENTENCE_TERM_SCHEMA,
 )
 from examples.structure_generated.search.pyspark.schemas.scoring_intermediate import (
     QUERY_TERM_COUNT_SCHEMA,
@@ -72,21 +72,9 @@ class ScoreBaseGenerated:
             "expanded_query_terms": expanded_query_terms,
         }
 
-    def _step_select_distinct_query_terms_1(self, frames):
-        # Step method: select_distinct_query_terms
-        query_terms = frames["expanded_query_terms"].alias("query_term")
-        query_terms = query_terms.select(
-            F.col("query_term.query_id"),
-            F.col("query_term.token"),
-        )
-        assert_schema(query_terms, QUERY_TERM_SCHEMA, name="QueryTerm", mode="strict")
-        return {
-            "query_terms": query_terms,
-        }
-
-    def _step_count_query_terms_2(self, frames):
+    def _step_count_query_terms_1(self, frames):
         # Step method: count_query_terms
-        query_sizes = frames["query_terms"].alias("query_term")
+        query_sizes = frames["expanded_query_terms"].alias("query_term")
         query_sizes = (
             query_sizes.groupBy(
                 F.col("query_term.query_id").alias("query_id"),
@@ -106,13 +94,13 @@ class ScoreBaseGenerated:
 
 
 class ScoreBm25Generated(ScoreBaseGenerated):
-    def _step_score_document_bm25_3(self, frames):
+    def _step_score_document_bm25_2(self, frames):
         # Step method: score_document_bm25
-        document_bm25_scores = frames["query_terms"].alias("query_term")
+        document_bm25_scores = frames["expanded_query_terms"].alias("query_term")
         document_terms_joined = frames["document_terms"].alias("document_terms")
         document_bm25_scores = document_bm25_scores.join(
             document_terms_joined,
-            (F.col("document_terms.token") == F.col("query_term.token")),
+            (F.col("document_terms.term") == F.col("query_term.token")),
             "inner",
         )
         document_summary_2_joined = frames["document_summary"].alias("document_summary_2")
@@ -134,11 +122,11 @@ class ScoreBm25Generated(ScoreBaseGenerated):
                                             (
                                                 (
                                                     F.col("document_summary_2.target_count")
-                                                    - F.col("document_terms.document_frequency")
+                                                    - F.col("document_terms.target_frequency")
                                                 )
                                                 + F.lit(0.5)
                                             )
-                                            / (F.col("document_terms.document_frequency") + F.lit(0.5))
+                                            / (F.col("document_terms.target_frequency") + F.lit(0.5))
                                         )
                                     )
                                 )
@@ -153,7 +141,7 @@ class ScoreBm25Generated(ScoreBaseGenerated):
                                 * (
                                     F.lit(0.25)
                                     + (
-                                        (F.lit(0.75) * F.col("document_terms.target_word_count"))
+                                        (F.lit(0.75) * F.col("document_terms.target_term_count"))
                                         / F.col("document_summary_2.average_target_length")
                                     )
                                 )
@@ -175,13 +163,13 @@ class ScoreBm25Generated(ScoreBaseGenerated):
             "document_bm25_scores": document_bm25_scores,
         }
 
-    def _step_score_section_bm25_4(self, frames):
+    def _step_score_section_bm25_3(self, frames):
         # Step method: score_section_bm25
-        section_bm25_scores = frames["query_terms"].alias("query_term")
+        section_bm25_scores = frames["expanded_query_terms"].alias("query_term")
         section_terms_joined = frames["section_terms"].alias("section_terms")
         section_bm25_scores = section_bm25_scores.join(
             section_terms_joined,
-            (F.col("section_terms.token") == F.col("query_term.token")),
+            (F.col("section_terms.term") == F.col("query_term.token")),
             "inner",
         )
         section_summary_2_joined = frames["section_summary"].alias("section_summary_2")
@@ -204,11 +192,11 @@ class ScoreBm25Generated(ScoreBaseGenerated):
                                             (
                                                 (
                                                     F.col("section_summary_2.target_count")
-                                                    - F.col("section_terms.document_frequency")
+                                                    - F.col("section_terms.target_frequency")
                                                 )
                                                 + F.lit(0.5)
                                             )
-                                            / (F.col("section_terms.document_frequency") + F.lit(0.5))
+                                            / (F.col("section_terms.target_frequency") + F.lit(0.5))
                                         )
                                     )
                                 )
@@ -223,7 +211,7 @@ class ScoreBm25Generated(ScoreBaseGenerated):
                                 * (
                                     F.lit(0.25)
                                     + (
-                                        (F.lit(0.75) * F.col("section_terms.target_word_count"))
+                                        (F.lit(0.75) * F.col("section_terms.target_term_count"))
                                         / F.col("section_summary_2.average_target_length")
                                     )
                                 )
@@ -246,13 +234,13 @@ class ScoreBm25Generated(ScoreBaseGenerated):
             "section_bm25_scores": section_bm25_scores,
         }
 
-    def _step_score_paragraph_bm25_5(self, frames):
+    def _step_score_paragraph_bm25_4(self, frames):
         # Step method: score_paragraph_bm25
-        paragraph_bm25_scores = frames["query_terms"].alias("query_term")
+        paragraph_bm25_scores = frames["expanded_query_terms"].alias("query_term")
         paragraph_terms_joined = frames["paragraph_terms"].alias("paragraph_terms")
         paragraph_bm25_scores = paragraph_bm25_scores.join(
             paragraph_terms_joined,
-            (F.col("paragraph_terms.token") == F.col("query_term.token")),
+            (F.col("paragraph_terms.term") == F.col("query_term.token")),
             "inner",
         )
         paragraph_summary_2_joined = frames["paragraph_summary"].alias("paragraph_summary_2")
@@ -276,11 +264,11 @@ class ScoreBm25Generated(ScoreBaseGenerated):
                                             (
                                                 (
                                                     F.col("paragraph_summary_2.target_count")
-                                                    - F.col("paragraph_terms.document_frequency")
+                                                    - F.col("paragraph_terms.target_frequency")
                                                 )
                                                 + F.lit(0.5)
                                             )
-                                            / (F.col("paragraph_terms.document_frequency") + F.lit(0.5))
+                                            / (F.col("paragraph_terms.target_frequency") + F.lit(0.5))
                                         )
                                     )
                                 )
@@ -295,7 +283,7 @@ class ScoreBm25Generated(ScoreBaseGenerated):
                                 * (
                                     F.lit(0.25)
                                     + (
-                                        (F.lit(0.75) * F.col("paragraph_terms.target_word_count"))
+                                        (F.lit(0.75) * F.col("paragraph_terms.target_term_count"))
                                         / F.col("paragraph_summary_2.average_target_length")
                                     )
                                 )
@@ -319,13 +307,13 @@ class ScoreBm25Generated(ScoreBaseGenerated):
             "paragraph_bm25_scores": paragraph_bm25_scores,
         }
 
-    def _step_score_sentence_bm25_6(self, frames):
+    def _step_score_sentence_bm25_5(self, frames):
         # Step method: score_sentence_bm25
-        sentence_bm25_scores = frames["query_terms"].alias("query_term")
+        sentence_bm25_scores = frames["expanded_query_terms"].alias("query_term")
         sentence_terms_joined = frames["sentence_terms"].alias("sentence_terms")
         sentence_bm25_scores = sentence_bm25_scores.join(
             sentence_terms_joined,
-            (F.col("sentence_terms.token") == F.col("query_term.token")),
+            (F.col("sentence_terms.term") == F.col("query_term.token")),
             "inner",
         )
         sentence_summary_2_joined = frames["sentence_summary"].alias("sentence_summary_2")
@@ -350,11 +338,11 @@ class ScoreBm25Generated(ScoreBaseGenerated):
                                             (
                                                 (
                                                     F.col("sentence_summary_2.target_count")
-                                                    - F.col("sentence_terms.document_frequency")
+                                                    - F.col("sentence_terms.target_frequency")
                                                 )
                                                 + F.lit(0.5)
                                             )
-                                            / (F.col("sentence_terms.document_frequency") + F.lit(0.5))
+                                            / (F.col("sentence_terms.target_frequency") + F.lit(0.5))
                                         )
                                     )
                                 )
@@ -369,7 +357,7 @@ class ScoreBm25Generated(ScoreBaseGenerated):
                                 * (
                                     F.lit(0.25)
                                     + (
-                                        (F.lit(0.75) * F.col("sentence_terms.target_word_count"))
+                                        (F.lit(0.75) * F.col("sentence_terms.target_term_count"))
                                         / F.col("sentence_summary_2.average_target_length")
                                     )
                                 )
@@ -414,10 +402,10 @@ class ScoreBm25Generated(ScoreBaseGenerated):
         sentence_summary: DataFrame,
     ) -> TransformResult:
         assert_schema(queries, SEARCH_QUERY_SCHEMA, name="SearchQuery", mode="strict")
-        assert_schema(document_terms, DOCUMENT_INDEX_TERM_SCHEMA, name="DocumentIndexTerm", mode="strict")
-        assert_schema(section_terms, SECTION_INDEX_TERM_SCHEMA, name="SectionIndexTerm", mode="strict")
-        assert_schema(paragraph_terms, PARAGRAPH_INDEX_TERM_SCHEMA, name="ParagraphIndexTerm", mode="strict")
-        assert_schema(sentence_terms, SENTENCE_INDEX_TERM_SCHEMA, name="SentenceIndexTerm", mode="strict")
+        assert_schema(document_terms, DOCUMENT_TERM_SCHEMA, name="DocumentTerm", mode="strict")
+        assert_schema(section_terms, SECTION_TERM_SCHEMA, name="SectionTerm", mode="strict")
+        assert_schema(paragraph_terms, PARAGRAPH_TERM_SCHEMA, name="ParagraphTerm", mode="strict")
+        assert_schema(sentence_terms, SENTENCE_TERM_SCHEMA, name="SentenceTerm", mode="strict")
         assert_schema(document_summary, DOCUMENT_INDEX_SUMMARY_SCHEMA, name="DocumentIndexSummary", mode="strict")
         assert_schema(section_summary, SECTION_INDEX_SUMMARY_SCHEMA, name="SectionIndexSummary", mode="strict")
         assert_schema(paragraph_summary, PARAGRAPH_INDEX_SUMMARY_SCHEMA, name="ParagraphIndexSummary", mode="strict")
@@ -452,12 +440,11 @@ class ScoreBm25Generated(ScoreBaseGenerated):
             "input:sentence_summary": _input_sentence_summary,
         }
         frames.update(self._step_expand_query_terms_0(frames))
-        frames.update(self._step_select_distinct_query_terms_1(frames))
-        frames.update(self._step_count_query_terms_2(frames))
-        frames.update(self._step_score_document_bm25_3(frames))
-        frames.update(self._step_score_section_bm25_4(frames))
-        frames.update(self._step_score_paragraph_bm25_5(frames))
-        frames.update(self._step_score_sentence_bm25_6(frames))
+        frames.update(self._step_count_query_terms_1(frames))
+        frames.update(self._step_score_document_bm25_2(frames))
+        frames.update(self._step_score_section_bm25_3(frames))
+        frames.update(self._step_score_paragraph_bm25_4(frames))
+        frames.update(self._step_score_sentence_bm25_5(frames))
 
         # Step method: document_bm25_scores
         document_bm25_scores = frames["document_bm25_scores"].alias("document_bm25_score")

@@ -158,13 +158,13 @@ def test_search_all_builds_the_complete_offline_artifact_graph() -> None:
     from examples.search.schemas.clicks import DailyClicks, DailyImpressions
     from examples.search.schemas.indexing.lexical.index import (
         DocumentIndexSummary,
-        DocumentIndexTerm,
+        DocumentTerm,
         ParagraphIndexSummary,
-        ParagraphIndexTerm,
+        ParagraphTerm,
         SectionIndexSummary,
-        SectionIndexTerm,
+        SectionTerm,
         SentenceIndexSummary,
-        SentenceIndexTerm,
+        SentenceTerm,
     )
     from examples.search.schemas.label import Intent, IntentPattern, QueryLabel
     from examples.search.schemas.relevance import DocumentPopularity, QueryDocumentSignals, RelevancePolicy
@@ -195,7 +195,7 @@ def test_search_all_builds_the_complete_offline_artifact_graph() -> None:
         SentenceSimilarity,
         SimilarityPolicy,
     )
-    from examples.search.schemas.text import Document, Paragraph, Section, Sentence, Word
+    from examples.search.schemas.text import Document, Paragraph, Section, Sentence
     from examples.search.schemas.user import Band, BandFallback, BandMembership, User, UserBand, UserBandMembership
     from examples.search.transforms.all import All
 
@@ -219,7 +219,6 @@ def test_search_all_builds_the_complete_offline_artifact_graph() -> None:
         ("sections", Section),
         ("paragraphs", Paragraph),
         ("sentences", Sentence),
-        ("words", Word),
         ("document_profiles", DocumentProfile),
         ("sentence_statistics", SentenceStatistics),
         ("paragraph_statistics", ParagraphStatistics),
@@ -228,13 +227,13 @@ def test_search_all_builds_the_complete_offline_artifact_graph() -> None:
         ("similar_documents", SimilarDocument),
         ("corpus_statistics", CorpusStatistics),
         ("corpus_vocabulary", CorpusVocabulary),
-        ("document_terms", DocumentIndexTerm),
+        ("document_terms", DocumentTerm),
         ("document_summary", DocumentIndexSummary),
-        ("section_terms", SectionIndexTerm),
+        ("section_terms", SectionTerm),
         ("section_summary", SectionIndexSummary),
-        ("paragraph_terms", ParagraphIndexTerm),
+        ("paragraph_terms", ParagraphTerm),
         ("paragraph_summary", ParagraphIndexSummary),
-        ("sentence_terms", SentenceIndexTerm),
+        ("sentence_terms", SentenceTerm),
         ("sentence_summary", SentenceIndexSummary),
         ("labeled_queries", SearchQuery),
         ("document_scores", DocumentScore),
@@ -366,8 +365,6 @@ def test_behavior_evaluator_keeps_its_request_to_daily_pipeline_local() -> None:
         "summarize_exposure",
         "summarize_requests",
         "publish_daily",
-        "publish_request_behaviors",
-        "publish_daily_behavior",
     ]
 
 

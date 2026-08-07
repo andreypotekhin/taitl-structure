@@ -45,8 +45,6 @@ class ResolveCohortBands(Transform):
     resolved_user_bands = lane(UserBand)
     singleton_user_bands = lane(SingletonUserBand)
     singleton_catalog = lane(UserBand)
-    all_user_bands = lane(UserBand)
-    resolved_user_band_memberships = lane(UserBandMembership)
     direct_band_memberships = lane(BandMembership)
     resolved_band_memberships = lane(BandMembership)
     band_memberships = output(BandMembership)
@@ -135,27 +133,19 @@ class ResolveCohortBands(Transform):
     def publish_singleton_user_bands(self, singleton: SingletonUserBand) -> UserBand:
         return UserBand(user_band_id=singleton.user_band_id, band_ids=singleton.band_ids)
 
-    @step(input=[resolved_user_bands, singleton_catalog], output=all_user_bands)
+    @step(input=[resolved_user_bands, singleton_catalog], output=user_bands)
     def merge_user_band_catalog(self, resolved: UserBand, singleton: UserBand) -> UserBand:
         catalog = union_all(singleton)
         drop_duplicates(catalog.user_band_id, catalog.band_ids)
         return UserBand.project(catalog)
 
-    @step(input=all_user_bands, output=user_bands)
-    def publish_user_bands(self, band: UserBand) -> UserBand:
-        return UserBand.project(band)
-
-    @step(input=[users, user_band_paths], output=resolved_user_band_memberships)
+    @step(input=[users, user_band_paths], output=user_band_memberships)
     def build_user_band_memberships(self, user: User, path: UserBandPath) -> UserBandMembership:
         left_join(path, on=path.user_id == user.id)
         return UserBandMembership(
             user_id=user.id,
             user_band_id=when(path.user_id.is_not_null(), sha2(concat_ws("\u001f", path.band_ids))).otherwise(None),
         )
-
-    @step(input=resolved_user_band_memberships, output=user_band_memberships)
-    def publish_user_band_memberships(self, membership: UserBandMembership) -> UserBandMembership:
-        return UserBandMembership.project(membership)
 
     @step(input=[leaf_matches, band_ancestors, singleton_user_bands], output=direct_band_memberships)
     def build_direct_band_memberships(
@@ -169,7 +159,7 @@ class ResolveCohortBands(Transform):
             user_band_id=singleton.user_band_id,
         )
 
-    @step(input=resolved_user_band_memberships, output=resolved_band_memberships)
+    @step(input=user_band_memberships, output=resolved_band_memberships)
     def build_resolved_band_memberships(self, membership: UserBandMembership) -> BandMembership:
         where(membership.user_band_id.is_not_null())
         return BandMembership(
@@ -182,7 +172,7 @@ class ResolveCohortBands(Transform):
     def merge_band_memberships(self, direct: BandMembership, resolved: BandMembership) -> BandMembership:
         return BandMembership.project(union_all(resolved))
 
-    @step(input=[all_user_bands, valid_bands], output=band_fallbacks)
+    @step(input=[user_bands, valid_bands], output=band_fallbacks)
     def build_band_fallbacks(self, user_band: UserBand, band: Band) -> BandFallback:
         fallbacks = hierarchy_fallbacks(
             user_band.user_band_id,

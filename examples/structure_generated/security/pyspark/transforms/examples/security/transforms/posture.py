@@ -220,35 +220,6 @@ class SecurityPostureGenerated:
             F.col("vulnerability_posture_candidate.org_id"),
             F.col("vulnerability_posture_candidate.org_name"),
         )
-        assert_schema(vulnerabilities, VULNERABILITY_EXPOSURE_SCHEMA, name="VulnerabilityExposure", mode="strict")
-
-        # Step method: publish
-        vulnerabilities = vulnerabilities.alias("vulnerability_exposure")
-        vulnerabilities = vulnerabilities.select(
-            F.col("vulnerability_exposure.vuln_id"),
-            F.col("vulnerability_exposure.vuln_type"),
-            F.col("vulnerability_exposure.description"),
-            F.col("vulnerability_exposure.instructions"),
-            F.col("vulnerability_exposure.severity"),
-            F.col("vulnerability_exposure.date_discovered"),
-            F.col("vulnerability_exposure.date_addressed"),
-            F.col("vulnerability_exposure.target_date"),
-            F.col("vulnerability_exposure.is_active"),
-            F.col("vulnerability_exposure.device_id"),
-            F.col("vulnerability_exposure.device_platform"),
-            F.col("vulnerability_exposure.device_model"),
-            F.col("vulnerability_exposure.software_id"),
-            F.col("vulnerability_exposure.software_name"),
-            F.col("vulnerability_exposure.software_version"),
-            F.col("vulnerability_exposure.person_id"),
-            F.col("vulnerability_exposure.person_name"),
-            F.col("vulnerability_exposure.team_id"),
-            F.col("vulnerability_exposure.team_name"),
-            F.col("vulnerability_exposure.department_id"),
-            F.col("vulnerability_exposure.department_name"),
-            F.col("vulnerability_exposure.org_id"),
-            F.col("vulnerability_exposure.org_name"),
-        )
 
         # Step method: exposures
         exposures = vulnerabilities.alias("vulnerability_exposure")

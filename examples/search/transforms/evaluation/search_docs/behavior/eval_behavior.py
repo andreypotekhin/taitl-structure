@@ -42,10 +42,8 @@ class EvaluateDocSearchBehavior(Transform):
     measured = lane(BehaviorImpression)
     request_totals = lane(BehaviorRequestTotals)
     request_metrics = lane(BehaviorRequestMetrics)
-    measured_requests = lane(DocumentSearchRequestBehavior)
     exposure = lane(BehaviorExposure)
     daily_counts = lane(BehaviorDailyCounts)
-    summarized_daily = lane(DailyDocumentSearchBehavior)
     request_behaviors = output(DocumentSearchRequestBehavior)
     daily_behavior = output(DailyDocumentSearchBehavior)
 
@@ -152,7 +150,7 @@ class EvaluateDocSearchBehavior(Transform):
             )
         )
 
-    @step(input=request_metrics, output=measured_requests)
+    @step(input=request_metrics, output=request_behaviors)
     def publish_requests(self, request: BehaviorRequestMetrics) -> DocumentSearchRequestBehavior:
         return DocumentSearchRequestBehavior.project(request)
 
@@ -202,7 +200,7 @@ class EvaluateDocSearchBehavior(Transform):
             ips_dwell_credit_per_impression=sum(0.0),
         )
 
-    @step(input=[daily_counts, exposure], output=summarized_daily)
+    @step(input=[daily_counts, exposure], output=daily_behavior)
     def publish_daily(self, daily: BehaviorDailyCounts, exposure: BehaviorExposure) -> DailyDocumentSearchBehavior:
         left_join(
             on=(exposure.window == daily.window)
@@ -220,11 +218,3 @@ class EvaluateDocSearchBehavior(Transform):
                 exposure.ips_dwell_credit / exposure.ips_impression_weight,
             ).otherwise(None),
         )
-
-    @step(input=measured_requests, output=request_behaviors)
-    def publish_request_behaviors(self, request: DocumentSearchRequestBehavior) -> DocumentSearchRequestBehavior:
-        return DocumentSearchRequestBehavior.project(request)
-
-    @step(input=summarized_daily, output=daily_behavior)
-    def publish_daily_behavior(self, daily: DailyDocumentSearchBehavior) -> DailyDocumentSearchBehavior:
-        return DailyDocumentSearchBehavior.project(daily)

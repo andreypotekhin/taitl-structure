@@ -15,13 +15,13 @@ from examples.structure_generated.search.runtime.schema_assert import (
 )
 from examples.structure_generated.search.pyspark.schemas.index import (
     DOCUMENT_INDEX_SUMMARY_SCHEMA,
-    DOCUMENT_INDEX_TERM_SCHEMA,
+    DOCUMENT_TERM_SCHEMA,
     PARAGRAPH_INDEX_SUMMARY_SCHEMA,
-    PARAGRAPH_INDEX_TERM_SCHEMA,
+    PARAGRAPH_TERM_SCHEMA,
     SECTION_INDEX_SUMMARY_SCHEMA,
-    SECTION_INDEX_TERM_SCHEMA,
+    SECTION_TERM_SCHEMA,
     SENTENCE_INDEX_SUMMARY_SCHEMA,
-    SENTENCE_INDEX_TERM_SCHEMA,
+    SENTENCE_TERM_SCHEMA,
 )
 from examples.structure_generated.search.pyspark.schemas.search import SEARCH_QUERY_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.similarities_intermediate import (
@@ -62,13 +62,13 @@ class CreateSimilarityQueriesGenerated:
         sentence_summary: DataFrame,
     ) -> TransformResult:
         assert_schema(policy, SIMILARITY_POLICY_SCHEMA, name="SimilarityPolicy", mode="strict")
-        assert_schema(document_terms, DOCUMENT_INDEX_TERM_SCHEMA, name="DocumentIndexTerm", mode="strict")
+        assert_schema(document_terms, DOCUMENT_TERM_SCHEMA, name="DocumentTerm", mode="strict")
         assert_schema(document_summary, DOCUMENT_INDEX_SUMMARY_SCHEMA, name="DocumentIndexSummary", mode="strict")
-        assert_schema(section_terms, SECTION_INDEX_TERM_SCHEMA, name="SectionIndexTerm", mode="strict")
+        assert_schema(section_terms, SECTION_TERM_SCHEMA, name="SectionTerm", mode="strict")
         assert_schema(section_summary, SECTION_INDEX_SUMMARY_SCHEMA, name="SectionIndexSummary", mode="strict")
-        assert_schema(paragraph_terms, PARAGRAPH_INDEX_TERM_SCHEMA, name="ParagraphIndexTerm", mode="strict")
+        assert_schema(paragraph_terms, PARAGRAPH_TERM_SCHEMA, name="ParagraphTerm", mode="strict")
         assert_schema(paragraph_summary, PARAGRAPH_INDEX_SUMMARY_SCHEMA, name="ParagraphIndexSummary", mode="strict")
-        assert_schema(sentence_terms, SENTENCE_INDEX_TERM_SCHEMA, name="SentenceIndexTerm", mode="strict")
+        assert_schema(sentence_terms, SENTENCE_TERM_SCHEMA, name="SentenceTerm", mode="strict")
         assert_schema(sentence_summary, SENTENCE_INDEX_SUMMARY_SCHEMA, name="SentenceIndexSummary", mode="strict")
         _input_policy = policy
         _input_document_terms = document_terms
@@ -110,7 +110,7 @@ class CreateSimilarityQueriesGenerated:
         assert_schema(valid_policy, SIMILARITY_POLICY_SCHEMA, name="SimilarityPolicy", mode="strict")
 
         # Step method: build_document_queries
-        document_query_text = document_terms.alias("document_index_term")
+        document_query_text = document_terms.alias("document_term")
         document_query_text_policy_exactly_one_1_count = valid_policy.agg(F.count(F.lit(1)).alias("__structure_count"))
         document_query_text_policy_exactly_one_1_count = document_query_text_policy_exactly_one_1_count.select(
             F.assert_true(
@@ -130,7 +130,7 @@ class CreateSimilarityQueriesGenerated:
                 (
                     F.col("valid_policy.max_document_frequency_ratio").isNull()
                     | (
-                        (F.col("document_index_term.document_frequency") / F.col("document_summary_2.target_count"))
+                        (F.col("document_term.target_frequency") / F.col("document_summary_2.target_count"))
                         <= F.col("valid_policy.max_document_frequency_ratio")
                     )
                 )
@@ -138,18 +138,18 @@ class CreateSimilarityQueriesGenerated:
         )
         document_query_text = (
             document_query_text.groupBy(
-                F.concat_ws('', F.lit('document:'), F.col("document_index_term.document_id")).alias("query_id"),
-                F.col("document_index_term.document_id").alias("document_id"),
+                F.concat_ws('', F.lit('document:'), F.col("document_term.document_id")).alias("query_id"),
+                F.col("document_term.document_id").alias("document_id"),
             )
             .agg(
                 F.transform(
                     F.sort_array(
                         F.collect_list(
                             F.when(
-                                F.col("document_index_term.token").isNotNull(),
+                                F.col("document_term.term").isNotNull(),
                                 F.struct(
-                                    F.col("document_index_term.token").alias('_structure_order'),
-                                    F.col("document_index_term.token").alias('_structure_value'),
+                                    F.col("document_term.term").alias('_structure_order'),
+                                    F.col("document_term.term").alias('_structure_value'),
                                 ),
                             )
                         ),
@@ -172,7 +172,7 @@ class CreateSimilarityQueriesGenerated:
         )
 
         # Step method: build_section_queries
-        section_query_text = section_terms.alias("section_index_term")
+        section_query_text = section_terms.alias("section_term")
         section_query_text_policy_exactly_one_1_count = valid_policy.agg(F.count(F.lit(1)).alias("__structure_count"))
         section_query_text_policy_exactly_one_1_count = section_query_text_policy_exactly_one_1_count.select(
             F.assert_true(
@@ -192,7 +192,7 @@ class CreateSimilarityQueriesGenerated:
                 (
                     F.col("valid_policy.max_document_frequency_ratio").isNull()
                     | (
-                        (F.col("section_index_term.document_frequency") / F.col("section_summary_2.target_count"))
+                        (F.col("section_term.target_frequency") / F.col("section_summary_2.target_count"))
                         <= F.col("valid_policy.max_document_frequency_ratio")
                     )
                 )
@@ -200,19 +200,19 @@ class CreateSimilarityQueriesGenerated:
         )
         section_query_text = (
             section_query_text.groupBy(
-                F.concat_ws('', F.lit('section:'), F.col("section_index_term.section_id")).alias("query_id"),
-                F.col("section_index_term.document_id").alias("document_id"),
-                F.col("section_index_term.section_id").alias("section_id"),
+                F.concat_ws('', F.lit('section:'), F.col("section_term.section_id")).alias("query_id"),
+                F.col("section_term.document_id").alias("document_id"),
+                F.col("section_term.section_id").alias("section_id"),
             )
             .agg(
                 F.transform(
                     F.sort_array(
                         F.collect_list(
                             F.when(
-                                F.col("section_index_term.token").isNotNull(),
+                                F.col("section_term.term").isNotNull(),
                                 F.struct(
-                                    F.col("section_index_term.token").alias('_structure_order'),
-                                    F.col("section_index_term.token").alias('_structure_value'),
+                                    F.col("section_term.term").alias('_structure_order'),
+                                    F.col("section_term.term").alias('_structure_value'),
                                 ),
                             )
                         ),
@@ -233,7 +233,7 @@ class CreateSimilarityQueriesGenerated:
         )
 
         # Step method: build_paragraph_queries
-        paragraph_query_text = paragraph_terms.alias("paragraph_index_term")
+        paragraph_query_text = paragraph_terms.alias("paragraph_term")
         paragraph_query_text_policy_exactly_one_1_count = valid_policy.agg(F.count(F.lit(1)).alias("__structure_count"))
         paragraph_query_text_policy_exactly_one_1_count = paragraph_query_text_policy_exactly_one_1_count.select(
             F.assert_true(
@@ -253,7 +253,7 @@ class CreateSimilarityQueriesGenerated:
                 (
                     F.col("valid_policy.max_document_frequency_ratio").isNull()
                     | (
-                        (F.col("paragraph_index_term.document_frequency") / F.col("paragraph_summary_2.target_count"))
+                        (F.col("paragraph_term.target_frequency") / F.col("paragraph_summary_2.target_count"))
                         <= F.col("valid_policy.max_document_frequency_ratio")
                     )
                 )
@@ -261,20 +261,20 @@ class CreateSimilarityQueriesGenerated:
         )
         paragraph_query_text = (
             paragraph_query_text.groupBy(
-                F.concat_ws('', F.lit('paragraph:'), F.col("paragraph_index_term.paragraph_id")).alias("query_id"),
-                F.col("paragraph_index_term.document_id").alias("document_id"),
-                F.col("paragraph_index_term.section_id").alias("section_id"),
-                F.col("paragraph_index_term.paragraph_id").alias("paragraph_id"),
+                F.concat_ws('', F.lit('paragraph:'), F.col("paragraph_term.paragraph_id")).alias("query_id"),
+                F.col("paragraph_term.document_id").alias("document_id"),
+                F.col("paragraph_term.section_id").alias("section_id"),
+                F.col("paragraph_term.paragraph_id").alias("paragraph_id"),
             )
             .agg(
                 F.transform(
                     F.sort_array(
                         F.collect_list(
                             F.when(
-                                F.col("paragraph_index_term.token").isNotNull(),
+                                F.col("paragraph_term.term").isNotNull(),
                                 F.struct(
-                                    F.col("paragraph_index_term.token").alias('_structure_order'),
-                                    F.col("paragraph_index_term.token").alias('_structure_value'),
+                                    F.col("paragraph_term.term").alias('_structure_order'),
+                                    F.col("paragraph_term.term").alias('_structure_value'),
                                 ),
                             )
                         ),
@@ -299,7 +299,7 @@ class CreateSimilarityQueriesGenerated:
         )
 
         # Step method: build_sentence_queries
-        sentence_query_text = sentence_terms.alias("sentence_index_term")
+        sentence_query_text = sentence_terms.alias("sentence_term")
         sentence_query_text_policy_exactly_one_1_count = valid_policy.agg(F.count(F.lit(1)).alias("__structure_count"))
         sentence_query_text_policy_exactly_one_1_count = sentence_query_text_policy_exactly_one_1_count.select(
             F.assert_true(
@@ -319,7 +319,7 @@ class CreateSimilarityQueriesGenerated:
                 (
                     F.col("valid_policy.max_document_frequency_ratio").isNull()
                     | (
-                        (F.col("sentence_index_term.document_frequency") / F.col("sentence_summary_2.target_count"))
+                        (F.col("sentence_term.target_frequency") / F.col("sentence_summary_2.target_count"))
                         <= F.col("valid_policy.max_document_frequency_ratio")
                     )
                 )
@@ -327,21 +327,21 @@ class CreateSimilarityQueriesGenerated:
         )
         sentence_query_text = (
             sentence_query_text.groupBy(
-                F.concat_ws('', F.lit('sentence:'), F.col("sentence_index_term.sentence_id")).alias("query_id"),
-                F.col("sentence_index_term.document_id").alias("document_id"),
-                F.col("sentence_index_term.section_id").alias("section_id"),
-                F.col("sentence_index_term.paragraph_id").alias("paragraph_id"),
-                F.col("sentence_index_term.sentence_id").alias("sentence_id"),
+                F.concat_ws('', F.lit('sentence:'), F.col("sentence_term.sentence_id")).alias("query_id"),
+                F.col("sentence_term.document_id").alias("document_id"),
+                F.col("sentence_term.section_id").alias("section_id"),
+                F.col("sentence_term.paragraph_id").alias("paragraph_id"),
+                F.col("sentence_term.sentence_id").alias("sentence_id"),
             )
             .agg(
                 F.transform(
                     F.sort_array(
                         F.collect_list(
                             F.when(
-                                F.col("sentence_index_term.token").isNotNull(),
+                                F.col("sentence_term.term").isNotNull(),
                                 F.struct(
-                                    F.col("sentence_index_term.token").alias('_structure_order'),
-                                    F.col("sentence_index_term.token").alias('_structure_value'),
+                                    F.col("sentence_term.term").alias('_structure_order'),
+                                    F.col("sentence_term.term").alias('_structure_value'),
                                 ),
                             )
                         ),

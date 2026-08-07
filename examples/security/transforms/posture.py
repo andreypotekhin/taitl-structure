@@ -81,6 +81,3 @@ class SecurityPosture(Transform):
             & ((candidate.device_os_id == candidate.software_id) | installed)
         )
         return VulnerabilityExposure.project(candidate)
-
-    def publish(self, finding: VulnerabilityExposure) -> VulnerabilityExposure:
-        return VulnerabilityExposure.project(finding)

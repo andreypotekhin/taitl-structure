@@ -1,5 +1,5 @@
 from examples.search.schemas.analytics import CorpusStatistics, CorpusVocabulary, DocumentStatistics
-from examples.search.schemas.text import Word
+from examples.search.schemas.indexing.lexical.index import DocumentTerm
 from structure import *
 from structure.plugin.pyspark import *
 
@@ -7,12 +7,12 @@ from structure.plugin.pyspark import *
 class CorpusText(Transform):
     """Reduce document-level metrics to one corpus profile."""
 
-    documents = input(DocumentStatistics)
-    words = input(Word)
+    document_statistics = input(DocumentStatistics)
+    document_terms = input(DocumentTerm)
     corpus_statistics = output(CorpusStatistics)
     corpus_vocabulary = output(CorpusVocabulary)
 
-    @step(input=documents, output=corpus_statistics)
+    @step(input=document_statistics, output=corpus_statistics)
     def corpus_stats(self, row: DocumentStatistics) -> CorpusStatistics:
         group_by(corpus="all documents")
         return CorpusStatistics(
@@ -28,10 +28,10 @@ class CorpusText(Transform):
             document_average_word_length_kurtosis=kurtosis(row.average_word_length),
         )
 
-    @step(input=words, output=corpus_vocabulary)
-    def corpus_vocabulary_stats(self, word: Word) -> CorpusVocabulary:
+    @step(input=document_terms, output=corpus_vocabulary)
+    def corpus_vocabulary_stats(self, term: DocumentTerm) -> CorpusVocabulary:
         group_by(corpus="all documents")
         return CorpusVocabulary(
             corpus="all documents",
-            estimated_distinct_words=approx_count_distinct(word.token),
+            estimated_distinct_words=approx_count_distinct(term.term),
         )

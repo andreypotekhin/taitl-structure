@@ -21,7 +21,6 @@ from examples.search.schemas.chunking.chunk import (
     DocumentLine,
     ExpandedDocumentLine,
     ExpandedSentenceText,
-    ExpandedWordText,
     MarkedDocumentLine,
     ParagraphContent,
     ParagraphDraft,
@@ -30,7 +29,6 @@ from examples.search.schemas.chunking.chunk import (
     SectionHeading,
     SectionKey,
     SentenceText,
-    WordText,
 )
 from examples.search.schemas.clicks import Click, DailyClicks, DailyImpressions, Impression, SearchRequest
 from examples.search.schemas.cohorts.resolve import BandAncestor, BandMatch, SingletonUserBand, UserBandPath
@@ -66,27 +64,31 @@ from examples.search.schemas.filtering import DocumentFilterMatch, DocumentFilte
 from examples.search.schemas.indexing.lexical.index import (
     DocumentIndexSummary,
     DocumentIndexTarget,
-    DocumentIndexTerm,
+    DocumentTerm,
     ParagraphIndexSummary,
     ParagraphIndexTarget,
-    ParagraphIndexTerm,
+    ParagraphTerm,
     SectionIndexSummary,
     SectionIndexTarget,
-    SectionIndexTerm,
+    SectionTerm,
     SentenceIndexSummary,
     SentenceIndexTarget,
-    SentenceIndexTerm,
+    SentenceTerm,
 )
 from examples.search.schemas.indexing.lexical.intermediate import (
+    DocumentHierarchyCounts,
     DocumentIndexTargetStats,
-    DocumentIndexTermCount,
-    IndexTokenFrequency,
+    DocumentTermCount,
+    ExpandedTermText,
+    IndexTargetFrequency,
+    LexicalOccurrence,
     ParagraphIndexTargetStats,
-    ParagraphIndexTermCount,
+    ParagraphTermCount,
     SectionIndexTargetStats,
-    SectionIndexTermCount,
+    SectionTermCount,
     SentenceIndexTargetStats,
-    SentenceIndexTermCount,
+    SentenceTermCount,
+    TermText,
 )
 from examples.search.schemas.label import (
     Intent,
@@ -185,11 +187,11 @@ from examples.search.schemas.similarity import (
     SimilaritySectionQuery,
     SimilaritySentenceQuery,
 )
-from examples.search.schemas.text import Document, Paragraph, Section, Sentence, Word
+from examples.search.schemas.text import Document, Paragraph, Section, Sentence
 from examples.search.schemas.training import DocumentTrainingData, RankingArtifact
 from examples.search.schemas.user import Band, BandFallback, BandMembership, User, UserBand, UserBandMembership
 from examples.search.transforms.all import All, Training
-from examples.search.transforms.chunking import Chunking, DocumentChunking, SentenceChunking, WordChunking
+from examples.search.transforms.chunking import Chunking, DocumentChunking, SentenceChunking
 from examples.search.transforms.clicks.Clicks import Clicks
 from examples.search.transforms.clicks.Impressions import Impressions
 from examples.search.transforms.cohorts import ResolveCohortBands
@@ -299,24 +301,28 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         SectionIndexTarget,
         ParagraphIndexTarget,
         SentenceIndexTarget,
-        DocumentIndexTerm,
+        DocumentTerm,
         DocumentIndexSummary,
-        SectionIndexTerm,
+        SectionTerm,
         SectionIndexSummary,
-        ParagraphIndexTerm,
+        ParagraphTerm,
         ParagraphIndexSummary,
-        SentenceIndexTerm,
+        SentenceTerm,
         SentenceIndexSummary,
     ],
     "examples.search.schemas.indexing.lexical.intermediate": [
-        IndexTokenFrequency,
-        DocumentIndexTermCount,
+        IndexTargetFrequency,
+        DocumentTermCount,
         DocumentIndexTargetStats,
-        SectionIndexTermCount,
+        DocumentHierarchyCounts,
+        TermText,
+        ExpandedTermText,
+        LexicalOccurrence,
+        SectionTermCount,
         SectionIndexTargetStats,
-        ParagraphIndexTermCount,
+        ParagraphTermCount,
         ParagraphIndexTargetStats,
-        SentenceIndexTermCount,
+        SentenceTermCount,
         SentenceIndexTargetStats,
     ],
     "examples.search.schemas.scoring.bm25": [
@@ -441,7 +447,6 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         Section,
         Paragraph,
         Sentence,
-        Word,
     ],
     "examples.search.schemas.chunking.chunk": [
         DocumentLine,
@@ -455,8 +460,6 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         SectionKey,
         SentenceText,
         ExpandedSentenceText,
-        WordText,
-        ExpandedWordText,
     ],
 }
 TRANSFORMS = (
@@ -464,7 +467,6 @@ TRANSFORMS = (
     (Chunking, "examples.search.transforms.chunking.Chunking.Chunking"),
     (DocumentChunking, "examples.search.transforms.chunking.DocumentChunking.DocumentChunking"),
     (SentenceChunking, "examples.search.transforms.chunking.SentenceChunking.SentenceChunking"),
-    (WordChunking, "examples.search.transforms.chunking.WordChunking.WordChunking"),
     (ProfileDocuments, "examples.search.transforms.stats.ProfileDocuments.ProfileDocuments"),
     (BuildDocumentFeatures, "examples.search.transforms.features.BuildDocumentFeatures.BuildDocumentFeatures"),
     (BuildQueryFeatures, "examples.search.transforms.features.BuildQueryFeatures.BuildQueryFeatures"),
@@ -758,11 +760,9 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             ],
             schemas.DOCUMENT_SCHEMA,
         )
-        online_segments = Chunking(documents=documents).run(session(spark, execution_mode="online"))
         generated_segments = Chunking(documents=documents).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
-        assert rows(online_segments.words, "id") == rows(generated_segments.words, "id")
         assert len(rows(generated_segments.sections, "id")) == 5
         assert single(generated_segments.sections, lambda row: row["document_id"] == "d-3")["heading"] == "Document"
 
@@ -773,7 +773,6 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             .features
         )
         cache_frames(
-            generated_segments.words,
             generated_segments.sentences,
             generated_segments.paragraphs,
             generated_segments.sections,
@@ -785,11 +784,18 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
         assert guide["content_contains_structure"] is True
         assert guide["content_sha2"]
 
+        online_index = Indexing(sentences=generated_segments.sentences).run(session(spark, execution_mode="online"))
+        generated_index = Indexing(sentences=generated_segments.sentences).run(
+            session(spark, execution_mode="generated", generated_package=PACKAGE)
+        )
         inputs = dict(
-            words=generated_segments.words,
             sentences=generated_segments.sentences,
             paragraphs=generated_segments.paragraphs,
             sections=generated_segments.sections,
+            document_terms=generated_index.document_terms,
+            section_terms=generated_index.section_terms,
+            paragraph_terms=generated_index.paragraph_terms,
+            sentence_terms=generated_index.sentence_terms,
             comparison_left=generated_features,
             comparison_right=generated_features,
         )
@@ -818,7 +824,10 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
         assert first_statistics["word_count"] == 6
         assert len(rows(generated_analytics.similar_documents, "left_document_id", "right_document_id")) == 1
 
-        corpus_inputs = dict(documents=generated_analytics.document_statistics, words=generated_segments.words)
+        corpus_inputs = dict(
+            document_statistics=generated_analytics.document_statistics,
+            document_terms=generated_index.document_terms,
+        )
         online_corpus = CorpusText(**corpus_inputs).run(session(spark, execution_mode="online"))
         generated_corpus = CorpusText(**corpus_inputs).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
@@ -851,10 +860,6 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             ],
             __import__(f"{PACKAGE}.pyspark.schemas.search", fromlist=["SEARCH_QUERY_SCHEMA"]).SEARCH_QUERY_SCHEMA,
         )
-        online_index = Indexing(words=generated_segments.words).run(session(spark, execution_mode="online"))
-        generated_index = Indexing(words=generated_segments.words).run(
-            session(spark, execution_mode="generated", generated_package=PACKAGE)
-        )
         cache_frames(
             generated_index.document_terms,
             generated_index.document_summary,
@@ -865,17 +870,17 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
             generated_index.sentence_terms,
             generated_index.sentence_summary,
         )
-        assert rows(online_index.document_terms, "document_id", "token") == rows(
-            generated_index.document_terms, "document_id", "token"
+        assert rows(online_index.document_terms, "document_id", "term") == rows(
+            generated_index.document_terms, "document_id", "term"
         )
         document_structure = single(
             generated_index.document_terms,
-            lambda row: row["document_id"] == "d-1" and row["token"] == "structure",
+            lambda row: row["document_id"] == "d-1" and row["term"] == "structure",
         )
         assert document_structure["term_frequency"] == 1
-        assert document_structure["document_frequency"] == 2
-        assert cast(int, document_structure["target_word_count"]) >= cast(
-            int, document_structure["target_distinct_terms"]
+        assert document_structure["target_frequency"] == 2
+        assert cast(int, document_structure["target_term_count"]) >= cast(
+            int, document_structure["target_distinct_term_count"]
         )
         assert single(generated_index.document_summary, lambda row: True)["target_count"] == 3
         assert single(generated_index.sentence_summary, lambda row: True)["target_count"] == len(
@@ -1155,7 +1160,7 @@ def test_search_ranks_fixture_sentences_online_and_generated(spark, tmp_path) ->
         segments = Chunking(documents=documents).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
-        index = Indexing(words=segments.words).run(
+        index = Indexing(sentences=segments.sentences).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
         scores = Scoring(
@@ -1273,7 +1278,7 @@ def test_passage_search_ranks_paragraphs_with_same_section_context(spark, tmp_pa
         segments = Chunking(documents=documents).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
-        index = Indexing(words=segments.words).run(
+        index = Indexing(sentences=segments.sentences).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
         scores = Scoring(
@@ -1466,7 +1471,7 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
         segments = Chunking(documents=documents).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
-        index = Indexing(words=segments.words).run(
+        index = Indexing(sentences=segments.sentences).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
         scored_at = datetime(2026, 7, 21)

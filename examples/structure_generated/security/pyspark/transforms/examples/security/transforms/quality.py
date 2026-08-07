@@ -75,56 +75,56 @@ class SecurityInventoryQualityGenerated:
         _input_orgs = orgs
 
         # Step method: check_references
-        quality_lane = vulnerabilities.alias("vuln")
+        reference_checks = vulnerabilities.alias("vuln")
         devices_joined = devices.alias("devices")
-        quality_lane = quality_lane.join(
+        reference_checks = reference_checks.join(
             devices_joined,
             (F.col("devices.id") == F.col("vuln.device_id")),
             "left",
         )
         device_types_2_joined = device_types.alias("device_types_2")
-        quality_lane = quality_lane.join(
+        reference_checks = reference_checks.join(
             device_types_2_joined,
             (F.col("device_types_2.id") == F.col("devices.device_type_id")),
             "left",
         )
         software_3_joined = software.alias("software_3")
-        quality_lane = quality_lane.join(
+        reference_checks = reference_checks.join(
             software_3_joined,
             (F.col("software_3.id") == F.col("vuln.software_id")),
             "left",
         )
         vuln_types_4_joined = vuln_types.alias("vuln_types_4")
-        quality_lane = quality_lane.join(
+        reference_checks = reference_checks.join(
             vuln_types_4_joined,
             (F.col("vuln_types_4.id") == F.col("vuln.vuln_type_id")),
             "left",
         )
         people_5_joined = people.alias("people_5")
-        quality_lane = quality_lane.join(
+        reference_checks = reference_checks.join(
             people_5_joined,
             (F.col("people_5.id") == F.col("vuln.owner_id")),
             "left",
         )
         teams_6_joined = teams.alias("teams_6")
-        quality_lane = quality_lane.join(
+        reference_checks = reference_checks.join(
             teams_6_joined,
             (F.col("teams_6.id") == F.col("people_5.team_id")),
             "left",
         )
         departments_7_joined = departments.alias("departments_7")
-        quality_lane = quality_lane.join(
+        reference_checks = reference_checks.join(
             departments_7_joined,
             (F.col("departments_7.id") == F.col("teams_6.department_id")),
             "left",
         )
         orgs_8_joined = orgs.alias("orgs_8")
-        quality_lane = quality_lane.join(
+        reference_checks = reference_checks.join(
             orgs_8_joined,
             (F.col("orgs_8.id") == F.col("departments_7.org_id")),
             "left",
         )
-        quality_lane = quality_lane.select(
+        reference_checks = reference_checks.select(
             F.col("vuln.id").alias("vuln_id"),
             F.col("vuln.device_id"),
             F.col("vuln.owner_id"),
@@ -205,23 +205,12 @@ class SecurityInventoryQualityGenerated:
                 == F.lit(0)
             ).alias("is_valid"),
         )
-        assert_schema(quality_lane, VULNERABILITY_QUALITY_CHECK_SCHEMA, name="VulnerabilityQualityCheck", mode="strict")
-
-        # Step method: publish_reference_checks
-        quality_lane = quality_lane.alias("vulnerability_quality_check")
-        quality_lane = quality_lane.select(
-            F.col("vulnerability_quality_check.vuln_id"),
-            F.col("vulnerability_quality_check.device_id"),
-            F.col("vulnerability_quality_check.owner_id"),
-            F.col("vulnerability_quality_check.software_id"),
-            F.col("vulnerability_quality_check.vuln_type_id"),
-            F.col("vulnerability_quality_check.issues"),
-            F.col("vulnerability_quality_check.is_valid"),
+        assert_schema(
+            reference_checks, VULNERABILITY_QUALITY_CHECK_SCHEMA, name="VulnerabilityQualityCheck", mode="strict"
         )
-        assert_schema(quality_lane, VULNERABILITY_QUALITY_CHECK_SCHEMA, name="VulnerabilityQualityCheck", mode="strict")
 
         # Step method: publish_reference_issues
-        reference_issues = quality_lane.alias("vulnerability_quality_check")
+        reference_issues = reference_checks.alias("vulnerability_quality_check")
         reference_issues = reference_issues.where((~(F.col("vulnerability_quality_check.is_valid"))))
         reference_issues = reference_issues.select(
             F.col("vulnerability_quality_check.vuln_id"),
@@ -271,8 +260,8 @@ class SecurityInventoryQualityGenerated:
         )
 
         # Step method: publish_reconciliation
-        reconciliation_lane = inventory_candidates.alias("vulnerability_inventory_candidate")
-        reconciliation_lane = reconciliation_lane.select(
+        reconciliation_checks = inventory_candidates.alias("vulnerability_inventory_candidate")
+        reconciliation_checks = reconciliation_checks.select(
             F.col("vulnerability_inventory_candidate.vuln_id"),
             F.col("vulnerability_inventory_candidate.device_id"),
             F.col("vulnerability_inventory_candidate.software_id"),
@@ -281,25 +270,14 @@ class SecurityInventoryQualityGenerated:
             F.col("vulnerability_inventory_candidate.is_reconciled"),
         )
         assert_schema(
-            reconciliation_lane, VULNERABILITY_INVENTORY_CHECK_SCHEMA, name="VulnerabilityInventoryCheck", mode="strict"
-        )
-
-        # Step method: publish_reconciliation_checks
-        reconciliation_lane = reconciliation_lane.alias("vulnerability_inventory_check")
-        reconciliation_lane = reconciliation_lane.select(
-            F.col("vulnerability_inventory_check.vuln_id"),
-            F.col("vulnerability_inventory_check.device_id"),
-            F.col("vulnerability_inventory_check.software_id"),
-            F.col("vulnerability_inventory_check.device_lists_vulnerability"),
-            F.col("vulnerability_inventory_check.device_has_software"),
-            F.col("vulnerability_inventory_check.is_reconciled"),
-        )
-        assert_schema(
-            reconciliation_lane, VULNERABILITY_INVENTORY_CHECK_SCHEMA, name="VulnerabilityInventoryCheck", mode="strict"
+            reconciliation_checks,
+            VULNERABILITY_INVENTORY_CHECK_SCHEMA,
+            name="VulnerabilityInventoryCheck",
+            mode="strict",
         )
 
         # Step method: publish_reconciliation_issues
-        reconciliation_issues = reconciliation_lane.alias("vulnerability_inventory_check")
+        reconciliation_issues = reconciliation_checks.alias("vulnerability_inventory_check")
         reconciliation_issues = reconciliation_issues.where((~(F.col("vulnerability_inventory_check.is_reconciled"))))
         reconciliation_issues = reconciliation_issues.select(
             F.col("vulnerability_inventory_check.vuln_id"),
@@ -311,7 +289,7 @@ class SecurityInventoryQualityGenerated:
         )
 
         # Step method: reference_checks
-        reference_checks = quality_lane.alias("vulnerability_quality_check")
+        reference_checks = reference_checks.alias("vulnerability_quality_check")
         assert_schema(
             reference_checks, VULNERABILITY_QUALITY_CHECK_SCHEMA, name="VulnerabilityQualityCheck", mode="strict"
         )
@@ -323,7 +301,7 @@ class SecurityInventoryQualityGenerated:
         )
 
         # Step method: reconciliation_checks
-        reconciliation_checks = reconciliation_lane.alias("vulnerability_inventory_check")
+        reconciliation_checks = reconciliation_checks.alias("vulnerability_inventory_check")
         assert_schema(
             reconciliation_checks,
             VULNERABILITY_INVENTORY_CHECK_SCHEMA,

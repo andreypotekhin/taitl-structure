@@ -72,7 +72,7 @@ class SimilarityQueries:
         retained = terms
         if ratio is not None:
             retained = retained.crossJoin(summary.select("target_count")).where(
-                F.col("document_frequency") / F.col("target_count") <= F.lit(ratio)
+                F.col("target_frequency") / F.col("target_count") <= F.lit(ratio)
             )
         targets = retained.groupBy(*target).agg(
             F.array_join(F.sort_array(F.collect_list("token")), " ").alias("content")

@@ -27,7 +27,6 @@ from examples.structure_generated.search.pyspark.schemas.text import (
     PARAGRAPH_SCHEMA,
     SECTION_SCHEMA,
     SENTENCE_SCHEMA,
-    WORD_SCHEMA,
 )
 
 
@@ -339,52 +338,12 @@ class SentenceChunkingGenerated:
             F.lit(None).cast(T.DoubleType()).alias("score_overlap"),
             F.lit(None).cast(T.DoubleType()).alias("score_bm25"),
         )
-        assert_schema(sentences_chunked__sentences, SENTENCE_SCHEMA, name="Sentence", mode="strict")
         return {
             "sentences_chunked__sentences": sentences_chunked__sentences,
         }
 
 
-class WordChunkingGenerated:
-    def _step_words_chunked_chunk_10(self, frames):
-        # Step method: words_chunked.chunk
-        words_chunked__words = frames["sentences_chunked__sentences"].alias("sentence")
-        words_chunked__words = words_chunked__words.select(
-            "*",
-            F.posexplode(
-                F.transform(
-                    F.split(F.col("sentence.content"), '\\s+', -1), lambda item: F.struct(item.alias("word_token"))
-                )
-            ).alias("__structure_word_text_1_pos", "__structure_word_text_1_item"),
-        )
-        words_chunked__words = words_chunked__words.withColumn(
-            "position",
-            F.col("__structure_word_text_1_pos").cast(T.LongType()),
-        )
-        words_chunked__words = words_chunked__words.withColumn(
-            "word_token",
-            F.col("__structure_word_text_1_item.word_token"),
-        )
-        words_chunked__words = words_chunked__words.drop("__structure_word_text_1_pos", "__structure_word_text_1_item")
-        words_chunked__words = words_chunked__words.where(
-            ((F.lower(F.regexp_replace(F.trim(F.col("word_token")), '^[^A-Za-z0-9]+|[^A-Za-z0-9]+$', '')) != F.lit('')))
-        )
-        words_chunked__words = words_chunked__words.select(
-            F.concat_ws('#w', F.col("sentence.id"), F.col("position").cast('string')).alias("id"),
-            F.col("sentence.document_id"),
-            F.col("sentence.section_id"),
-            F.col("sentence.paragraph_id"),
-            F.col("sentence.paragraph_ordinal"),
-            F.col("sentence.id").alias("sentence_id"),
-            (F.col("position") + F.lit(1)).cast('int').alias("ordinal"),
-            F.lower(F.regexp_replace(F.trim(F.col("word_token")), '^[^A-Za-z0-9]+|[^A-Za-z0-9]+$', '')).alias("token"),
-        )
-        return {
-            "words_chunked__words": words_chunked__words,
-        }
-
-
-class ChunkingGenerated(DocumentChunkingGenerated, SentenceChunkingGenerated, WordChunkingGenerated):
+class ChunkingGenerated(DocumentChunkingGenerated, SentenceChunkingGenerated):
 
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
@@ -425,7 +384,6 @@ class ChunkingGenerated(DocumentChunkingGenerated, SentenceChunkingGenerated, Wo
         frames.update(self._step_documents_chunked_select_section_keys_7(frames))
         frames.update(self._step_documents_chunked_build_sections_8(frames))
         frames.update(self._step_sentences_chunked_chunk_9(frames))
-        frames.update(self._step_words_chunked_chunk_10(frames))
 
         # Step method: sections
         sections = frames["documents_chunked__sections"].alias("section")
@@ -438,19 +396,10 @@ class ChunkingGenerated(DocumentChunkingGenerated, SentenceChunkingGenerated, Wo
         # Step method: sentences
         sentences = frames["sentences_chunked__sentences"].alias("sentence")
         assert_schema(sentences, SENTENCE_SCHEMA, name="Sentence", mode="strict")
-
-        # Step method: words
-        words = frames["words_chunked__words"].alias("word")
-        assert_schema(words, WORD_SCHEMA, name="Word", mode="strict")
         return TransformResult(
-            {"sections": sections, "paragraphs": paragraphs, "sentences": sentences, "words": words},
+            {"sections": sections, "paragraphs": paragraphs, "sentences": sentences},
             single=False,
-            schema={
-                "sections": SECTION_SCHEMA,
-                "paragraphs": PARAGRAPH_SCHEMA,
-                "sentences": SENTENCE_SCHEMA,
-                "words": WORD_SCHEMA,
-            },
+            schema={"sections": SECTION_SCHEMA, "paragraphs": PARAGRAPH_SCHEMA, "sentences": SENTENCE_SCHEMA},
         )
 
     @staticmethod

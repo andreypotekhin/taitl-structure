@@ -82,12 +82,3 @@ EXPANDED_SENTENCE_TEXT_SCHEMA = T.StructType([
     T.StructField("position", T.LongType(), False),
     T.StructField("sentence_content", T.StringType(), False),
 ])
-
-WORD_TEXT_SCHEMA = T.StructType([
-    T.StructField("word_token", T.StringType(), False),
-])
-
-EXPANDED_WORD_TEXT_SCHEMA = T.StructType([
-    T.StructField("position", T.LongType(), False),
-    T.StructField("word_token", T.StringType(), False),
-])

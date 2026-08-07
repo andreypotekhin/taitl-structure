@@ -13,6 +13,8 @@ Replace them with the schemas in your own application.
 
 ## Declare a transform
 
+Declare a transform when a typed class should connect named inputs, steps, lanes, and outputs.
+
 ```python
 from structure import *
 from structure.plugin.pyspark import *
@@ -219,6 +221,8 @@ windows, unbounded state, and arbitrary state processors remain outside the curr
 
 ## Compile, explain, and run
 
+Compile for a Spark-free plan check, then run when the application is ready to evaluate the transform.
+
 ```python
 plan = NormalizeOrders.compile(project_root=".")
 result = NormalizeOrders(orders=orders_df).run(session)
@@ -277,6 +281,8 @@ invocation-level `.to(...)` for independent transforms, or ordinary reachable he
 generator, classmethod, and staticmethod forms are not compiled step forms.
 
 ### Multiple outputs and branches
+
+Use multiple outputs when one step intentionally publishes separate typed branches from the same input.
 
 ```python
 class SplitOrders(Transform):

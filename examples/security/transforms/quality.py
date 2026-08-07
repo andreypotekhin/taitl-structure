@@ -24,15 +24,13 @@ class SecurityInventoryQuality(Transform):
     teams = input(Team)
     departments = input(Department)
     orgs = input(Org)
-    quality_lane = lane(VulnerabilityQualityCheck)
     inventory_candidates = lane(VulnerabilityInventoryCandidate)
-    reconciliation_lane = lane(VulnerabilityInventoryCheck)
     reference_checks = output(VulnerabilityQualityCheck)
     reference_issues = output(VulnerabilityQualityIssue)
     reconciliation_checks = output(VulnerabilityInventoryCheck)
     reconciliation_issues = output(VulnerabilityInventoryIssue)
 
-    @step(output=quality_lane)
+    @step(output=reference_checks)
     def check_references(
         self,
         vuln: Vuln,
@@ -79,9 +77,6 @@ class SecurityInventoryQuality(Transform):
             is_valid=size(issues) == 0,
         )
 
-    def publish_reference_checks(self, check: VulnerabilityQualityCheck) -> VulnerabilityQualityCheck:
-        return VulnerabilityQualityCheck.project(check)
-
     @step(output=reference_issues)
     def publish_reference_issues(self, check: VulnerabilityQualityCheck) -> VulnerabilityQualityIssue:
         where(~check.is_valid)
@@ -101,14 +96,11 @@ class SecurityInventoryQuality(Transform):
             is_reconciled=array_contains(device.vuln_ids, vuln.id) & device_has_software,
         )
 
-    @step(output=reconciliation_lane)
+    @step(output=reconciliation_checks)
     def publish_reconciliation(self, candidate: VulnerabilityInventoryCandidate) -> VulnerabilityInventoryCheck:
         return VulnerabilityInventoryCheck.project(candidate)
 
-    def publish_reconciliation_checks(self, check: VulnerabilityInventoryCheck) -> VulnerabilityInventoryCheck:
-        return VulnerabilityInventoryCheck.project(check)
-
-    @step(output=reconciliation_issues)
+    @step(input=reconciliation_checks, output=reconciliation_issues)
     def publish_reconciliation_issues(self, check: VulnerabilityInventoryCheck) -> VulnerabilityInventoryIssue:
         where(~check.is_reconciled)
         return VulnerabilityInventoryIssue.base(check)

@@ -6,18 +6,24 @@ from examples.search.schemas.analytics import (
     SentenceStatistics,
     SimilarDocument,
 )
-from examples.search.schemas.text import Paragraph, Section, Sentence, Word
-from structure import *
-from structure.plugin.pyspark import *
+from examples.search.schemas.indexing.lexical.index import DocumentTerm, ParagraphTerm, SectionTerm, SentenceTerm
+from examples.search.schemas.indexing.lexical.intermediate import DocumentHierarchyCounts
+from examples.search.schemas.text import Paragraph, Section, Sentence
+from structure import Transform, input, lane, output, step
+from structure.plugin.pyspark import count_distinct, group_by, inner_join, levenshtein, max
 
 
 class AnalyzeText(Transform):
     """Typed local, corpus, and blocked near-duplicate text analytics."""
 
-    words = input(Word)
     sentences = input(Sentence)
     paragraphs = input(Paragraph)
     sections = input(Section)
+    document_terms = input(DocumentTerm)
+    section_terms = input(SectionTerm)
+    paragraph_terms = input(ParagraphTerm)
+    sentence_terms = input(SentenceTerm)
+    document_hierarchy_counts = lane(DocumentHierarchyCounts)
     comparison_left = input(DocumentProfile)
     comparison_right = input(DocumentProfile)
     sentence_statistics = output(SentenceStatistics)
@@ -26,9 +32,9 @@ class AnalyzeText(Transform):
     document_statistics = output(DocumentStatistics)
     similar_documents = output(SimilarDocument)
 
-    @step(input=[words, sentences], output=sentence_statistics)
-    def sentence_stats(self, word: Word, sentence: Sentence) -> SentenceStatistics:
-        inner_join(on=word.sentence_id == sentence.id)
+    @step(input=[sentence_terms, sentences], output=sentence_statistics)
+    def sentence_stats(self, term: SentenceTerm, sentence: Sentence) -> SentenceStatistics:
+        inner_join(on=term.sentence_id == sentence.id)
         group_by(
             sentence_id=sentence.id,
             document_id=sentence.document_id,
@@ -36,57 +42,101 @@ class AnalyzeText(Transform):
             section_id=sentence.section_id,
             ordinal=sentence.ordinal,
         )
-        words_in_sentence = count()
-        return SentenceStatistics.project(sentence)(
+        term_count = max(term.target_term_count)
+        return SentenceStatistics(
             sentence_id=sentence.id,
-            word_count=words_in_sentence,
-            distinct_words=count_distinct(word.token),
-            average_word_length=avg(length(word.token)),
+            document_id=sentence.document_id,
+            paragraph_id=sentence.paragraph_id,
+            section_id=sentence.section_id,
+            ordinal=sentence.ordinal,
+            word_count=term_count,
+            distinct_words=max(term.target_distinct_term_count),
+            average_word_length=max(term.target_average_term_length),
         )
 
-    @step(input=words, output=paragraph_statistics)
-    def paragraph_stats(self, word: Word) -> ParagraphStatistics:
+    @step(input=[paragraph_terms, paragraphs, sentences], output=paragraph_statistics)
+    def paragraph_stats(
+        self, term: ParagraphTerm, paragraph: Paragraph, sentence: Sentence
+    ) -> ParagraphStatistics:
+        inner_join(
+            on=(term.document_id == paragraph.document_id)
+            & (term.section_id == paragraph.section_id)
+            & (term.paragraph_id == paragraph.id)
+        )
+        inner_join(
+            on=(sentence.document_id == paragraph.document_id)
+            & (sentence.section_id == paragraph.section_id)
+            & (sentence.paragraph_id == paragraph.id)
+        )
         group_by(
-            paragraph_id=word.paragraph_id,
-            document_id=word.document_id,
-            section_id=word.section_id,
+            paragraph_id=paragraph.id,
+            document_id=paragraph.document_id,
+            section_id=paragraph.section_id,
+            ordinal=paragraph.ordinal,
         )
-        words_in_paragraph = count()
-        return ParagraphStatistics.project(word)(
-            ordinal=min(word.paragraph_ordinal),
-            word_count=words_in_paragraph,
-            sentence_count=count_distinct(word.sentence_id),
-            average_word_length=avg(length(word.token)),
+        term_count = max(term.target_term_count)
+        return ParagraphStatistics(
+            paragraph_id=paragraph.id,
+            document_id=paragraph.document_id,
+            section_id=paragraph.section_id,
+            ordinal=paragraph.ordinal,
+            word_count=term_count,
+            sentence_count=count_distinct(sentence.id),
+            average_word_length=max(term.target_average_term_length),
         )
 
-    @step(input=[words, sections], output=section_statistics)
-    def section_stats(self, word: Word, section: Section) -> SectionStatistics:
-        inner_join(on=word.section_id == section.id)
+    @step(input=[section_terms, sections, paragraphs, sentences], output=section_statistics)
+    def section_stats(
+        self, term: SectionTerm, section: Section, paragraph: Paragraph, sentence: Sentence
+    ) -> SectionStatistics:
+        inner_join(on=(term.document_id == section.document_id) & (term.section_id == section.id))
+        inner_join(
+            on=(paragraph.document_id == section.document_id) & (paragraph.section_id == section.id)
+        )
+        inner_join(
+            on=(sentence.document_id == section.document_id) & (sentence.section_id == section.id)
+        )
         group_by(
             section_id=section.id,
             document_id=section.document_id,
             section_ordinal=section.ordinal,
             heading=section.heading,
         )
-        return SectionStatistics.project(section)(
+        term_count = max(term.target_term_count)
+        return SectionStatistics(
             section_id=section.id,
+            document_id=section.document_id,
             section_ordinal=section.ordinal,
-            paragraph_count=count_distinct(word.paragraph_id),
-            sentence_count=count_distinct(word.sentence_id),
-            word_count=count(),
-            average_word_length=avg(length(word.token)),
+            heading=section.heading,
+            paragraph_count=count_distinct(paragraph.id),
+            sentence_count=count_distinct(sentence.id),
+            word_count=term_count,
+            average_word_length=max(term.target_average_term_length),
         )
 
-    @step(input=words, output=document_statistics)
-    def document_stats(self, word: Word) -> DocumentStatistics:
-        group_by(document_id=word.document_id)
-        return DocumentStatistics.project(word)(
-            section_count=count_distinct(word.section_id),
-            paragraph_count=count_distinct(word.paragraph_id),
-            sentence_count=count_distinct(word.sentence_id),
-            word_count=count(),
-            distinct_words=count_distinct(word.token),
-            average_word_length=avg(length(word.token)),
+    @step(input=sentence_terms, output=document_hierarchy_counts)
+    def document_hierarchy(self, term: SentenceTerm) -> DocumentHierarchyCounts:
+        group_by(document_id=term.document_id)
+        return DocumentHierarchyCounts(
+            document_id=term.document_id,
+            section_count=count_distinct(term.section_id),
+            paragraph_count=count_distinct(term.paragraph_id),
+            sentence_count=count_distinct(term.sentence_id),
+        )
+
+    @step(input=[document_terms, document_hierarchy_counts], output=document_statistics)
+    def document_stats(self, term: DocumentTerm, hierarchy: DocumentHierarchyCounts) -> DocumentStatistics:
+        inner_join(on=term.document_id == hierarchy.document_id)
+        group_by(document_id=term.document_id)
+        term_count = max(term.target_term_count)
+        return DocumentStatistics(
+            document_id=term.document_id,
+            section_count=max(hierarchy.section_count),
+            paragraph_count=max(hierarchy.paragraph_count),
+            sentence_count=max(hierarchy.sentence_count),
+            word_count=term_count,
+            distinct_words=max(term.target_distinct_term_count),
+            average_word_length=max(term.target_average_term_length),
         )
 
     @step(input=[comparison_left, comparison_right], output=similar_documents)
@@ -96,7 +146,6 @@ class AnalyzeText(Transform):
             & (left.language == right.language)
             & (left.title_prefix == right.title_prefix)
         )
-        where(left.document_id < right.document_id)
         return SimilarDocument.project(left)(
             left_document_id=left.document_id,
             right_document_id=right.document_id,

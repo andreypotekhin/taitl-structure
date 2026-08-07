@@ -4,13 +4,13 @@ from examples.search.schemas.clicks import SearchRequest
 from examples.search.schemas.filtering import DocumentFilterScore
 from examples.search.schemas.indexing.lexical.index import (
     DocumentIndexSummary,
-    DocumentIndexTerm,
+    DocumentTerm,
     ParagraphIndexSummary,
-    ParagraphIndexTerm,
+    ParagraphTerm,
     SectionIndexSummary,
-    SectionIndexTerm,
+    SectionTerm,
     SentenceIndexSummary,
-    SentenceIndexTerm,
+    SentenceTerm,
 )
 from examples.search.schemas.relevance import DocumentPopularity, QueryDocumentSignals, RelevancePolicy
 from examples.search.schemas.scoring.overlap import DocumentOverlapScore
@@ -35,10 +35,10 @@ class SearchDocuments(Transform):
     streamed_document_scores = input(DocumentScore, streaming=True)
     document_overlap_scores = input(DocumentOverlapScore)
     document_filter_scores = input(DocumentFilterScore)
-    document_terms = input(DocumentIndexTerm)
-    section_terms = input(SectionIndexTerm)
-    paragraph_terms = input(ParagraphIndexTerm)
-    sentence_terms = input(SentenceIndexTerm)
+    document_terms = input(DocumentTerm)
+    section_terms = input(SectionTerm)
+    paragraph_terms = input(ParagraphTerm)
+    sentence_terms = input(SentenceTerm)
     document_summary = input(DocumentIndexSummary)
     section_summary = input(SectionIndexSummary)
     paragraph_summary = input(ParagraphIndexSummary)

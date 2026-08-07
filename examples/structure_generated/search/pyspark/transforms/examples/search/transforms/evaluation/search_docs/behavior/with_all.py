@@ -371,8 +371,8 @@ class EvaluateDocSearchBehaviorGenerated:
         assert_schema(request_metrics, BEHAVIOR_REQUEST_METRICS_SCHEMA, name="BehaviorRequestMetrics", mode="strict")
 
         # Step method: publish_requests
-        measured_requests = request_metrics.alias("behavior_request_metrics")
-        measured_requests = measured_requests.select(
+        request_behaviors = request_metrics.alias("behavior_request_metrics")
+        request_behaviors = request_behaviors.select(
             F.col("behavior_request_metrics.window"),
             F.col("behavior_request_metrics.params"),
             F.col("behavior_request_metrics.experiment_id"),
@@ -390,7 +390,7 @@ class EvaluateDocSearchBehaviorGenerated:
             F.col("behavior_request_metrics.reciprocal_first_long_click_rank"),
         )
         assert_schema(
-            measured_requests,
+            request_behaviors,
             DOCUMENT_SEARCH_REQUEST_BEHAVIOR_SCHEMA,
             name="DocumentSearchRequestBehavior",
             mode="strict",
@@ -509,9 +509,9 @@ class EvaluateDocSearchBehaviorGenerated:
         assert_schema(daily_counts, BEHAVIOR_DAILY_COUNTS_SCHEMA, name="BehaviorDailyCounts", mode="strict")
 
         # Step method: publish_daily
-        summarized_daily = daily_counts.alias("behavior_daily_counts")
+        daily_behavior = daily_counts.alias("behavior_daily_counts")
         exposure_joined = exposure.alias("exposure")
-        summarized_daily = summarized_daily.join(
+        daily_behavior = daily_behavior.join(
             exposure_joined,
             (
                 (
@@ -525,7 +525,7 @@ class EvaluateDocSearchBehaviorGenerated:
             ),
             "left",
         )
-        summarized_daily = summarized_daily.select(
+        daily_behavior = daily_behavior.select(
             F.col("behavior_daily_counts.window"),
             F.col("behavior_daily_counts.params"),
             F.col("behavior_daily_counts.experiment_id"),
@@ -554,58 +554,6 @@ class EvaluateDocSearchBehaviorGenerated:
             )
             .otherwise(F.lit(None))
             .alias("ips_dwell_credit_per_impression"),
-        )
-        assert_schema(
-            summarized_daily, DAILY_DOCUMENT_SEARCH_BEHAVIOR_SCHEMA, name="DailyDocumentSearchBehavior", mode="strict"
-        )
-
-        # Step method: publish_request_behaviors
-        request_behaviors = measured_requests.alias("document_search_request_behavior")
-        request_behaviors = request_behaviors.select(
-            F.col("document_search_request_behavior.window"),
-            F.col("document_search_request_behavior.params"),
-            F.col("document_search_request_behavior.experiment_id"),
-            F.col("document_search_request_behavior.band_id"),
-            F.col("document_search_request_behavior.search_request_id"),
-            F.col("document_search_request_behavior.ranking_version"),
-            F.col("document_search_request_behavior.query"),
-            F.col("document_search_request_behavior.result_count"),
-            F.col("document_search_request_behavior.clicked_result_count"),
-            F.col("document_search_request_behavior.long_clicked_result_count"),
-            F.col("document_search_request_behavior.has_click"),
-            F.col("document_search_request_behavior.has_long_click"),
-            F.col("document_search_request_behavior.first_click_rank"),
-            F.col("document_search_request_behavior.first_long_click_rank"),
-            F.col("document_search_request_behavior.reciprocal_first_long_click_rank"),
-        )
-        assert_schema(
-            request_behaviors,
-            DOCUMENT_SEARCH_REQUEST_BEHAVIOR_SCHEMA,
-            name="DocumentSearchRequestBehavior",
-            mode="strict",
-        )
-
-        # Step method: publish_daily_behavior
-        daily_behavior = summarized_daily.alias("daily_document_search_behavior")
-        daily_behavior = daily_behavior.select(
-            F.col("daily_document_search_behavior.window"),
-            F.col("daily_document_search_behavior.params"),
-            F.col("daily_document_search_behavior.experiment_id"),
-            F.col("daily_document_search_behavior.band_id"),
-            F.col("daily_document_search_behavior.ranking_version"),
-            F.col("daily_document_search_behavior.request_count"),
-            F.col("daily_document_search_behavior.zero_result_request_count"),
-            F.col("daily_document_search_behavior.clicked_request_count"),
-            F.col("daily_document_search_behavior.long_clicked_request_count"),
-            F.col("daily_document_search_behavior.no_click_request_count"),
-            F.col("daily_document_search_behavior.no_long_click_request_count"),
-            F.col("daily_document_search_behavior.raw_click_count"),
-            F.col("daily_document_search_behavior.raw_long_click_count"),
-            F.col("daily_document_search_behavior.mean_first_click_rank"),
-            F.col("daily_document_search_behavior.mean_first_long_click_rank"),
-            F.col("daily_document_search_behavior.mean_reciprocal_first_long_click_rank"),
-            F.col("daily_document_search_behavior.ips_long_click_rate"),
-            F.col("daily_document_search_behavior.ips_dwell_credit_per_impression"),
         )
 
         # Step method: request_behaviors

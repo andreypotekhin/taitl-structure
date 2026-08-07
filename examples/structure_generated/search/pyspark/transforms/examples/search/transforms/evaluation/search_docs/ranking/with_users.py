@@ -413,9 +413,9 @@ class EvaluateDocumentRankingGenerated:
         assert_schema(result_totals, EVALUATION_RESULT_TOTALS_SCHEMA, name="EvaluationResultTotals", mode="strict")
 
         # Step method: calculate_metrics
-        metrics = evaluated_queries.alias("evaluation_query")
+        query_evaluations = evaluated_queries.alias("evaluation_query")
         result_totals_joined = result_totals.alias("result_totals")
-        metrics = metrics.join(
+        query_evaluations = query_evaluations.join(
             result_totals_joined,
             (
                 (F.col("result_totals.search_query_id") == F.col("evaluation_query.search_query_id"))
@@ -424,7 +424,7 @@ class EvaluateDocumentRankingGenerated:
             "left",
         )
         judgment_totals_2_joined = judgment_totals.alias("judgment_totals_2")
-        metrics = metrics.join(
+        query_evaluations = query_evaluations.join(
             judgment_totals_2_joined,
             (
                 (F.col("judgment_totals_2.search_query_id") == F.col("evaluation_query.search_query_id"))
@@ -433,7 +433,7 @@ class EvaluateDocumentRankingGenerated:
             "left",
         )
         ideal_dcgs_3_joined = ideal_dcgs.alias("ideal_dcgs_3")
-        metrics = metrics.join(
+        query_evaluations = query_evaluations.join(
             ideal_dcgs_3_joined,
             (
                 (F.col("ideal_dcgs_3.search_query_id") == F.col("evaluation_query.search_query_id"))
@@ -441,7 +441,7 @@ class EvaluateDocumentRankingGenerated:
             ),
             "left",
         )
-        metrics = metrics.select(
+        query_evaluations = query_evaluations.select(
             F.col("evaluation_query.window"),
             F.col("evaluation_query.params"),
             F.col("evaluation_query.experiment_id"),
@@ -597,43 +597,12 @@ class EvaluateDocumentRankingGenerated:
             .otherwise(F.lit(None))
             .alias("reciprocal_rank"),
         )
-        assert_schema(metrics, DOCUMENT_QUERY_EVALUATION_SCHEMA, name="DocumentQueryEvaluation", mode="strict")
-
-        # Step method: publish_metrics
-        query_evaluations = metrics.alias("document_query_evaluation")
-        query_evaluations = query_evaluations.select(
-            F.col("document_query_evaluation.window"),
-            F.col("document_query_evaluation.params"),
-            F.col("document_query_evaluation.experiment_id"),
-            F.col("document_query_evaluation.band_id"),
-            F.col("document_query_evaluation.search_query_id"),
-            F.col("document_query_evaluation.returned_result_count"),
-            F.col("document_query_evaluation.judged_result_count"),
-            F.col("document_query_evaluation.binary_relevant_judgment_count"),
-            F.col("document_query_evaluation.covered_at_5"),
-            F.col("document_query_evaluation.covered_at_10"),
-            F.col("document_query_evaluation.covered_at_15"),
-            F.col("document_query_evaluation.reciprocal_rank_covered"),
-            F.col("document_query_evaluation.precision_at_5"),
-            F.col("document_query_evaluation.precision_at_10"),
-            F.col("document_query_evaluation.precision_at_15"),
-            F.col("document_query_evaluation.judged_recall_at_5"),
-            F.col("document_query_evaluation.judged_recall_at_10"),
-            F.col("document_query_evaluation.judged_recall_at_15"),
-            F.col("document_query_evaluation.success_at_5"),
-            F.col("document_query_evaluation.success_at_10"),
-            F.col("document_query_evaluation.success_at_15"),
-            F.col("document_query_evaluation.ndcg_at_5"),
-            F.col("document_query_evaluation.ndcg_at_10"),
-            F.col("document_query_evaluation.ndcg_at_15"),
-            F.col("document_query_evaluation.reciprocal_rank"),
-        )
         assert_schema(
             query_evaluations, DOCUMENT_QUERY_EVALUATION_SCHEMA, name="DocumentQueryEvaluation", mode="strict"
         )
 
         # Step method: summarize
-        summary = metrics.alias("document_query_evaluation")
+        summary = query_evaluations.alias("document_query_evaluation")
         summary = (
             summary.groupBy(
                 F.col("document_query_evaluation.window").alias("window"),

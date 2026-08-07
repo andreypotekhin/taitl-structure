@@ -1,7 +1,7 @@
 """Offline reusable-index document filtering composition."""
 
 from examples.search.schemas.filtering import DocumentFilterScore
-from examples.search.schemas.indexing.lexical.index import DocumentIndexTerm
+from examples.search.schemas.indexing.lexical.index import DocumentTerm
 from examples.search.schemas.search import ScorePolicy, SearchQuery
 from examples.search.transforms.filtering.FilterOverlap import FilterOverlap
 from structure import Transform, input, output
@@ -11,7 +11,7 @@ class Filtering(Transform):
     """Create timestamped simple-overlap filter artifacts for selected queries."""
 
     queries = input(SearchQuery, streaming=True)
-    document_terms = input(DocumentIndexTerm)
+    document_terms = input(DocumentTerm)
     score_policy = input(ScorePolicy)
 
     overlap = FilterOverlap(

@@ -36,14 +36,14 @@ class TextIndex:
 
         terms = words.groupBy(*target, "token").agg(F.count("*").alias("term_frequency"))
         targets = words.groupBy(*target).agg(
-            F.count("*").alias("target_word_count"),
-            F.countDistinct("token").alias("target_distinct_terms"),
+            F.count("*").alias("target_term_count"),
+            F.countDistinct("token").alias("target_distinct_term_count"),
         )
-        frequencies = terms.groupBy("token").agg(F.count("*").alias("document_frequency"))
+        frequencies = terms.groupBy("token").agg(F.count("*").alias("target_frequency"))
         return (
             terms.join(targets, list(target)).join(frequencies, "token"),
             targets.agg(
                 F.count("*").alias("target_count"),
-                F.coalesce(F.avg("target_word_count"), F.lit(0.0)).alias("average_target_length"),
+                F.coalesce(F.avg("target_term_count"), F.lit(0.0)).alias("average_target_length"),
             ),
         )

@@ -20,36 +20,40 @@ class SentenceIndexTarget(ParagraphIndexTarget):
     sentence_id = string(nullable=False)
 
 
-class DocumentIndexTerm(DocumentIndexTarget):
-    token = string(nullable=False)
+class DocumentTerm(DocumentIndexTarget):
+    term = string(nullable=False)
     term_frequency = long(nullable=False)
-    target_word_count = long(nullable=False)
-    target_distinct_terms = long(nullable=False)
-    document_frequency = long(nullable=False)
+    target_term_count = long(nullable=False)
+    target_distinct_term_count = long(nullable=False)
+    target_average_term_length = double(nullable=False)
+    target_frequency = long(nullable=False)
 
 
-class SectionIndexTerm(SectionIndexTarget):
-    token = string(nullable=False)
+class SectionTerm(SectionIndexTarget):
+    term = string(nullable=False)
     term_frequency = long(nullable=False)
-    target_word_count = long(nullable=False)
-    target_distinct_terms = long(nullable=False)
-    document_frequency = long(nullable=False)
+    target_term_count = long(nullable=False)
+    target_distinct_term_count = long(nullable=False)
+    target_average_term_length = double(nullable=False)
+    target_frequency = long(nullable=False)
 
 
-class ParagraphIndexTerm(ParagraphIndexTarget):
-    token = string(nullable=False)
+class ParagraphTerm(ParagraphIndexTarget):
+    term = string(nullable=False)
     term_frequency = long(nullable=False)
-    target_word_count = long(nullable=False)
-    target_distinct_terms = long(nullable=False)
-    document_frequency = long(nullable=False)
+    target_term_count = long(nullable=False)
+    target_distinct_term_count = long(nullable=False)
+    target_average_term_length = double(nullable=False)
+    target_frequency = long(nullable=False)
 
 
-class SentenceIndexTerm(SentenceIndexTarget):
-    token = string(nullable=False)
+class SentenceTerm(SentenceIndexTarget):
+    term = string(nullable=False)
     term_frequency = long(nullable=False)
-    target_word_count = long(nullable=False)
-    target_distinct_terms = long(nullable=False)
-    document_frequency = long(nullable=False)
+    target_term_count = long(nullable=False)
+    target_distinct_term_count = long(nullable=False)
+    target_average_term_length = double(nullable=False)
+    target_frequency = long(nullable=False)
 
 
 class DocumentIndexSummary(Schema):

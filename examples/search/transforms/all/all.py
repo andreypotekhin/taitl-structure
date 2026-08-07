@@ -13,13 +13,13 @@ from examples.search.schemas.analytics import (
 from examples.search.schemas.clicks import DailyClicks, DailyImpressions
 from examples.search.schemas.indexing.lexical.index import (
     DocumentIndexSummary,
-    DocumentIndexTerm,
+    DocumentTerm,
     ParagraphIndexSummary,
-    ParagraphIndexTerm,
+    ParagraphTerm,
     SectionIndexSummary,
-    SectionIndexTerm,
+    SectionTerm,
     SentenceIndexSummary,
-    SentenceIndexTerm,
+    SentenceTerm,
 )
 from examples.search.schemas.label import Intent, IntentPattern, QueryLabel
 from examples.search.schemas.relevance import DocumentPopularity, QueryDocumentSignals, RelevancePolicy
@@ -50,7 +50,7 @@ from examples.search.schemas.similarity import (
     SentenceSimilarity,
     SimilarityPolicy,
 )
-from examples.search.schemas.text import Document, Paragraph, Section, Sentence, Word
+from examples.search.schemas.text import Document, Paragraph, Section, Sentence
 from examples.search.schemas.user import Band, BandFallback, BandMembership, User, UserBand, UserBandMembership
 from examples.search.transforms.chunking import Chunking
 from examples.search.transforms.cohorts import ResolveCohortBands
@@ -82,7 +82,7 @@ class All(Transform):
 
     chunked = Chunking(documents=documents)
     profiled = ProfileDocuments(documents=documents)
-    indexed = Indexing(words=chunked.words)
+    indexed = Indexing(sentences=chunked.sentences)
 
     similarities = Similarities(
         policy=similarity_policy,
@@ -131,23 +131,25 @@ class All(Transform):
     )
 
     analyzed = AnalyzeText(
-        words=chunked.words,
         sentences=chunked.sentences,
         paragraphs=chunked.paragraphs,
         sections=chunked.sections,
+        document_terms=indexed.document_terms,
+        section_terms=indexed.section_terms,
+        paragraph_terms=indexed.paragraph_terms,
+        sentence_terms=indexed.sentence_terms,
         comparison_left=profiled.features,
         comparison_right=profiled.features,
     )
 
     corpus = CorpusText(
-        documents=analyzed.document_statistics,
-        words=chunked.words
+        document_statistics=analyzed.document_statistics,
+        document_terms=indexed.document_terms,
     )
 
     sections = output(Section, chunked.sections)
     paragraphs = output(Paragraph, chunked.paragraphs)
     sentences = output(Sentence, chunked.sentences)
-    words = output(Word, chunked.words)
     document_profiles = output(DocumentProfile, profiled.features)
     sentence_statistics = output(SentenceStatistics, analyzed.sentence_statistics)
     paragraph_statistics = output(ParagraphStatistics, analyzed.paragraph_statistics)
@@ -156,13 +158,13 @@ class All(Transform):
     similar_documents = output(SimilarDocument, analyzed.similar_documents)
     corpus_statistics = output(CorpusStatistics, corpus.corpus_statistics)
     corpus_vocabulary = output(CorpusVocabulary, corpus.corpus_vocabulary)
-    document_terms = output(DocumentIndexTerm, indexed.document_terms)
+    document_terms = output(DocumentTerm, indexed.document_terms)
     document_summary = output(DocumentIndexSummary, indexed.document_summary)
-    section_terms = output(SectionIndexTerm, indexed.section_terms)
+    section_terms = output(SectionTerm, indexed.section_terms)
     section_summary = output(SectionIndexSummary, indexed.section_summary)
-    paragraph_terms = output(ParagraphIndexTerm, indexed.paragraph_terms)
+    paragraph_terms = output(ParagraphTerm, indexed.paragraph_terms)
     paragraph_summary = output(ParagraphIndexSummary, indexed.paragraph_summary)
-    sentence_terms = output(SentenceIndexTerm, indexed.sentence_terms)
+    sentence_terms = output(SentenceTerm, indexed.sentence_terms)
     sentence_summary = output(SentenceIndexSummary, indexed.sentence_summary)
     labeled_queries = output(SearchQuery, labeled.labeled_queries)
     document_scores = output(DocumentScore, scored.document_scores)

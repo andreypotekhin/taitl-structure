@@ -5,47 +5,74 @@ from pyspark.sql import types as T
 from examples.structure_generated.search.pyspark.schemas.index import DOCUMENT_INDEX_TARGET_SCHEMA, PARAGRAPH_INDEX_TARGET_SCHEMA, SECTION_INDEX_TARGET_SCHEMA, SENTENCE_INDEX_TARGET_SCHEMA
 
 
-INDEX_TOKEN_FREQUENCY_SCHEMA = T.StructType([
-    T.StructField("token", T.StringType(), False),
-    T.StructField("document_frequency", T.LongType(), False),
+INDEX_TARGET_FREQUENCY_SCHEMA = T.StructType([
+    T.StructField("term", T.StringType(), False),
+    T.StructField("target_frequency", T.LongType(), False),
 ])
 
-DOCUMENT_INDEX_TERM_COUNT_SCHEMA = T.StructType(DOCUMENT_INDEX_TARGET_SCHEMA.fields + [
-    T.StructField("token", T.StringType(), False),
+DOCUMENT_TERM_COUNT_SCHEMA = T.StructType(DOCUMENT_INDEX_TARGET_SCHEMA.fields + [
+    T.StructField("term", T.StringType(), False),
     T.StructField("term_frequency", T.LongType(), False),
 ])
 
 DOCUMENT_INDEX_TARGET_STATS_SCHEMA = T.StructType(DOCUMENT_INDEX_TARGET_SCHEMA.fields + [
-    T.StructField("target_word_count", T.LongType(), False),
-    T.StructField("target_distinct_terms", T.LongType(), False),
+    T.StructField("target_term_count", T.LongType(), False),
+    T.StructField("target_distinct_term_count", T.LongType(), False),
+    T.StructField("target_average_term_length", T.DoubleType(), False),
 ])
 
-SECTION_INDEX_TERM_COUNT_SCHEMA = T.StructType(SECTION_INDEX_TARGET_SCHEMA.fields + [
-    T.StructField("token", T.StringType(), False),
+DOCUMENT_HIERARCHY_COUNTS_SCHEMA = T.StructType(DOCUMENT_INDEX_TARGET_SCHEMA.fields + [
+    T.StructField("section_count", T.LongType(), False),
+    T.StructField("paragraph_count", T.LongType(), False),
+    T.StructField("sentence_count", T.LongType(), False),
+])
+
+TERM_TEXT_SCHEMA = T.StructType([
+    T.StructField("term", T.StringType(), False),
+])
+
+EXPANDED_TERM_TEXT_SCHEMA = T.StructType([
+    T.StructField("position", T.LongType(), False),
+    T.StructField("term", T.StringType(), False),
+])
+
+LEXICAL_OCCURRENCE_SCHEMA = T.StructType([
+    T.StructField("document_id", T.StringType(), False),
+    T.StructField("section_id", T.StringType(), False),
+    T.StructField("paragraph_id", T.StringType(), False),
+    T.StructField("sentence_id", T.StringType(), False),
+    T.StructField("term", T.StringType(), False),
+])
+
+SECTION_TERM_COUNT_SCHEMA = T.StructType(SECTION_INDEX_TARGET_SCHEMA.fields + [
+    T.StructField("term", T.StringType(), False),
     T.StructField("term_frequency", T.LongType(), False),
 ])
 
 SECTION_INDEX_TARGET_STATS_SCHEMA = T.StructType(SECTION_INDEX_TARGET_SCHEMA.fields + [
-    T.StructField("target_word_count", T.LongType(), False),
-    T.StructField("target_distinct_terms", T.LongType(), False),
+    T.StructField("target_term_count", T.LongType(), False),
+    T.StructField("target_distinct_term_count", T.LongType(), False),
+    T.StructField("target_average_term_length", T.DoubleType(), False),
 ])
 
-PARAGRAPH_INDEX_TERM_COUNT_SCHEMA = T.StructType(PARAGRAPH_INDEX_TARGET_SCHEMA.fields + [
-    T.StructField("token", T.StringType(), False),
+PARAGRAPH_TERM_COUNT_SCHEMA = T.StructType(PARAGRAPH_INDEX_TARGET_SCHEMA.fields + [
+    T.StructField("term", T.StringType(), False),
     T.StructField("term_frequency", T.LongType(), False),
 ])
 
 PARAGRAPH_INDEX_TARGET_STATS_SCHEMA = T.StructType(PARAGRAPH_INDEX_TARGET_SCHEMA.fields + [
-    T.StructField("target_word_count", T.LongType(), False),
-    T.StructField("target_distinct_terms", T.LongType(), False),
+    T.StructField("target_term_count", T.LongType(), False),
+    T.StructField("target_distinct_term_count", T.LongType(), False),
+    T.StructField("target_average_term_length", T.DoubleType(), False),
 ])
 
-SENTENCE_INDEX_TERM_COUNT_SCHEMA = T.StructType(SENTENCE_INDEX_TARGET_SCHEMA.fields + [
-    T.StructField("token", T.StringType(), False),
+SENTENCE_TERM_COUNT_SCHEMA = T.StructType(SENTENCE_INDEX_TARGET_SCHEMA.fields + [
+    T.StructField("term", T.StringType(), False),
     T.StructField("term_frequency", T.LongType(), False),
 ])
 
 SENTENCE_INDEX_TARGET_STATS_SCHEMA = T.StructType(SENTENCE_INDEX_TARGET_SCHEMA.fields + [
-    T.StructField("target_word_count", T.LongType(), False),
-    T.StructField("target_distinct_terms", T.LongType(), False),
+    T.StructField("target_term_count", T.LongType(), False),
+    T.StructField("target_distinct_term_count", T.LongType(), False),
+    T.StructField("target_average_term_length", T.DoubleType(), False),
 ])

@@ -2,15 +2,15 @@
 
 from examples.search.schemas.indexing.lexical.index import (
     DocumentIndexSummary,
-    DocumentIndexTerm,
+    DocumentTerm,
     ParagraphIndexSummary,
-    ParagraphIndexTerm,
+    ParagraphTerm,
     SectionIndexSummary,
-    SectionIndexTerm,
+    SectionTerm,
     SentenceIndexSummary,
-    SentenceIndexTerm,
+    SentenceTerm,
 )
-from examples.search.schemas.text import Word
+from examples.search.schemas.text import Sentence
 from examples.search.transforms.indexing.lexical.LexIndex import LexIndex
 from structure import Transform, input, output
 
@@ -18,14 +18,14 @@ from structure import Transform, input, output
 class Indexing(Transform):
     """Build all search indexes through explicit indexing stages."""
 
-    words = input(Word)
-    document_terms = output(DocumentIndexTerm)
+    sentences = input(Sentence)
+    document_terms = output(DocumentTerm)
     document_summary = output(DocumentIndexSummary)
-    section_terms = output(SectionIndexTerm)
+    section_terms = output(SectionTerm)
     section_summary = output(SectionIndexSummary)
-    paragraph_terms = output(ParagraphIndexTerm)
+    paragraph_terms = output(ParagraphTerm)
     paragraph_summary = output(ParagraphIndexSummary)
-    sentence_terms = output(SentenceIndexTerm)
+    sentence_terms = output(SentenceTerm)
     sentence_summary = output(SentenceIndexSummary)
 
-    lexical = LexIndex(words=words)
+    lexical = LexIndex(sentences=sentences)

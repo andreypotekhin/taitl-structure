@@ -4,13 +4,13 @@ from datetime import datetime, timezone
 
 from examples.search.schemas.indexing.lexical.index import (
     DocumentIndexSummary,
-    DocumentIndexTerm,
+    DocumentTerm,
     ParagraphIndexSummary,
-    ParagraphIndexTerm,
+    ParagraphTerm,
     SectionIndexSummary,
-    SectionIndexTerm,
+    SectionTerm,
     SentenceIndexSummary,
-    SentenceIndexTerm,
+    SentenceTerm,
 )
 from examples.search.schemas.label import LabelMapEntry
 from examples.search.schemas.search import SearchQuery
@@ -48,13 +48,13 @@ class CreateSimilarityQueries(Transform):
     """Make document-to-sentence self-queries with optional common-term pruning."""
 
     policy = input(SimilarityPolicy)
-    document_terms = input(DocumentIndexTerm)
+    document_terms = input(DocumentTerm)
     document_summary = input(DocumentIndexSummary)
-    section_terms = input(SectionIndexTerm)
+    section_terms = input(SectionTerm)
     section_summary = input(SectionIndexSummary)
-    paragraph_terms = input(ParagraphIndexTerm)
+    paragraph_terms = input(ParagraphTerm)
     paragraph_summary = input(ParagraphIndexSummary)
-    sentence_terms = input(SentenceIndexTerm)
+    sentence_terms = input(SentenceTerm)
     sentence_summary = input(SentenceIndexSummary)
     valid_policy = lane(SimilarityPolicy)
     document_query_text = lane(DocumentSimilarityQueryText)
@@ -81,7 +81,7 @@ class CreateSimilarityQueries(Transform):
 
     @step(input=[document_terms, document_summary, valid_policy], output=document_query_text)
     def build_document_queries(
-        self, term: DocumentIndexTerm, summary: DocumentIndexSummary, policy: SimilarityPolicy
+        self, term: DocumentTerm, summary: DocumentIndexSummary, policy: SimilarityPolicy
     ) -> DocumentSimilarityQueryText:
         self._retain(policy, summary, term)
         query_id = concat_ws("", "document:", term.document_id)
@@ -89,12 +89,12 @@ class CreateSimilarityQueries(Transform):
         return DocumentSimilarityQueryText(
             query_id=query_id,
             document_id=term.document_id,
-            content_tokens=collect_list(term.token, order_by=term.token),
+            content_tokens=collect_list(term.term, order_by=term.term),
         )
 
     @step(input=[section_terms, section_summary, valid_policy], output=section_query_text)
     def build_section_queries(
-        self, term: SectionIndexTerm, summary: SectionIndexSummary, policy: SimilarityPolicy
+        self, term: SectionTerm, summary: SectionIndexSummary, policy: SimilarityPolicy
     ) -> SectionSimilarityQueryText:
         self._retain(policy, summary, term)
         query_id = concat_ws("", "section:", term.section_id)
@@ -103,12 +103,12 @@ class CreateSimilarityQueries(Transform):
             query_id=query_id,
             document_id=term.document_id,
             section_id=term.section_id,
-            content_tokens=collect_list(term.token, order_by=term.token),
+            content_tokens=collect_list(term.term, order_by=term.term),
         )
 
     @step(input=[paragraph_terms, paragraph_summary, valid_policy], output=paragraph_query_text)
     def build_paragraph_queries(
-        self, term: ParagraphIndexTerm, summary: ParagraphIndexSummary, policy: SimilarityPolicy
+        self, term: ParagraphTerm, summary: ParagraphIndexSummary, policy: SimilarityPolicy
     ) -> ParagraphSimilarityQueryText:
         self._retain(policy, summary, term)
         query_id = concat_ws("", "paragraph:", term.paragraph_id)
@@ -123,12 +123,12 @@ class CreateSimilarityQueries(Transform):
             document_id=term.document_id,
             section_id=term.section_id,
             paragraph_id=term.paragraph_id,
-            content_tokens=collect_list(term.token, order_by=term.token),
+            content_tokens=collect_list(term.term, order_by=term.term),
         )
 
     @step(input=[sentence_terms, sentence_summary, valid_policy], output=sentence_query_text)
     def build_sentence_queries(
-        self, term: SentenceIndexTerm, summary: SentenceIndexSummary, policy: SimilarityPolicy
+        self, term: SentenceTerm, summary: SentenceIndexSummary, policy: SimilarityPolicy
     ) -> SentenceSimilarityQueryText:
         self._retain(policy, summary, term)
         query_id = concat_ws("", "sentence:", term.sentence_id)
@@ -145,7 +145,7 @@ class CreateSimilarityQueries(Transform):
             section_id=term.section_id,
             paragraph_id=term.paragraph_id,
             sentence_id=term.sentence_id,
-            content_tokens=collect_list(term.token, order_by=term.token),
+            content_tokens=collect_list(term.term, order_by=term.term),
         )
 
     @step(input=document_query_text, output=document_search_queries)
@@ -215,14 +215,14 @@ class CreateSimilarityQueries(Transform):
         self,
         policy: SimilarityPolicy,
         summary: DocumentIndexSummary | SectionIndexSummary | ParagraphIndexSummary | SentenceIndexSummary,
-        term: DocumentIndexTerm | SectionIndexTerm | ParagraphIndexTerm | SentenceIndexTerm,
+        term: DocumentTerm | SectionTerm | ParagraphTerm | SentenceTerm,
     ) -> None:
         exactly_one(policy)
         cross_join(policy, allow_cartesian=True)
         cross_join(summary, allow_cartesian=True)
         where(
             policy.max_document_frequency_ratio.is_null()
-            | (term.document_frequency / summary.target_count <= policy.max_document_frequency_ratio)
+            | (term.target_frequency / summary.target_count <= policy.max_document_frequency_ratio)
         )
 
     def _search_query(self, query_id: object, tokens: object) -> SearchQuery:

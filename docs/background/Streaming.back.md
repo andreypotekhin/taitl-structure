@@ -1,10 +1,11 @@
 # Streaming
 
 Structure supports compiler-visible Spark Structured Streaming transformations while leaving streaming lifecycle with
-the caller. A caller creates streaming and static DataFrames, passes them to an ordinary Structure transform, and owns
-sources, sinks, checkpoints, triggers, output modes, query start/stop, deployment, and recovery.
+the application. The application creates streaming and static DataFrames, passes them to an ordinary Structure
+transform, and controls sources, sinks, checkpoints, triggers, output modes, query start/stop, deployment, and recovery.
 
-The [Streaming API](../api/Streaming.api.md) lists supported declarations and parity. This background combines runtime
+The [Streaming reference](../reference/Streaming.ref.md) lists practical declarations and corrections. The
+[Streaming API](../api/Streaming.api.md) lists supported declarations and parity. This background combines runtime
 shape, compatibility analysis, supported operations, deferred features, hooks, validation, and generated-code rules.
 The normative sources are [Spark Streaming](../dev/specifications/SparkStreaming.spec.md),
 [Streaming Compatibility](../dev/specifications/StreamingCompatibility.spec.md), and the
@@ -26,12 +27,36 @@ result = EnrichOrdersGenerated(spark=spark).run(
 query = result.writeStream.option("checkpointLocation", checkpoint).toTable("orders_enriched")
 ```
 
-Structure owns the checked transformation plan and returns a DataFrame plan. It does not generate `readStream` or
+Structure maintains the checked transformation plan and returns a DataFrame plan. It does not generate `readStream` or
 `writeStream`, start or stop queries, set checkpoints or triggers, apply output modes, or perform external side effects.
 
 Streaming compatibility means the generated or online transformation can accept the concrete streaming DataFrame shape,
 and every operation on streaming data is admitted by the compiler-visible policy. It does not mean Structure starts a
 streaming query.
+
+The same transform class can describe batch and streaming use. The input declaration records the expected lineage for
+compatibility analysis; the DataFrame supplied by the application determines the runtime shape:
+
+```python
+class PrepareEvents(Transform):
+    events = input(RawEvent, streaming=True)
+    clean = output(CleanEvent)
+
+    def clean_event(self, event: RawEvent) -> CleanEvent:
+        where(event.event_id.is_not_null())
+        return CleanEvent.project(event)(
+            event_id=event.event_id,
+            occurred_at=event.occurred_at,
+        )
+
+
+batch_result = PrepareEvents(events=spark.read.table("events")).run(session)
+stream_result = PrepareEvents(events=spark.readStream.table("events")).run(session)
+```
+
+The declaration permits streaming analysis. It does not create a source or force a batch DataFrame to become
+streaming. A declared static input is appropriate for lookup data and prevents a lookup operation from silently
+becoming a stream-stream join.
 
 
 ## Declaring Compatibility
@@ -69,6 +94,8 @@ declaration or `allow_stream_to_batch=True`; no allowance suppresses a known inc
 
 ### Compatibility Policy At A Glance
 
+Use this policy matrix to predict whether a streaming finding is silent, advisory, or an error.
+
 ```text
 checks disabled, no marker       -> no streaming diagnostics
 checks enabled, batch transform  -> incompatible shapes warn
@@ -77,7 +104,48 @@ marker with checks disabled      -> marker still runs its compatibility pass
 ```
 
 The marker is an author promise about every operation in the transform. It does not turn batch-only operations into
-streaming operations and does not change the caller-owned runtime lifecycle.
+streaming operations and does not change the application-controlled runtime lifecycle.
+
+### Composition and stream-to-batch boundaries
+
+Composition carries effective streaming lineage from a child result into the downstream transform. The default policy
+allows an undeclared downstream boundary only when the downstream compiler-visible operations are proven compatible:
+
+```python
+@transform(streaming=True)
+class NormalizeEvents(Transform):
+    events = input(RawEvent, streaming=True)
+    normalized = output(NormalizedEvent)
+
+    def normalize(self, event: RawEvent) -> NormalizedEvent:
+        return NormalizedEvent.project(event)(
+            event_id=event.event_id,
+            occurred_at=event.occurred_at,
+        )
+
+
+@transform(streaming=True)
+class PublishEvents(Transform):
+    events = input(NormalizedEvent, streaming=True)
+    published = output(PublishedEvent)
+
+    def publish(self, event: NormalizedEvent) -> PublishedEvent:
+        return PublishedEvent.project(event)
+
+
+@transform(streaming=True)
+class EventPipeline(Transform):
+    events = input(RawEvent, streaming=True)
+    published = output(PublishedEvent)
+
+    normalized = NormalizeEvents(events=events)
+    published = PublishEvents(events=normalized.normalized)
+```
+
+Use `stream_to_batch_policy = "strict"` when every composed boundary must be declared. A downstream input can then
+declare `streaming=True`, or a transform can explicitly set `allow_stream_to_batch=True` for a deliberate boundary.
+That allowance only addresses the declaration guard. It cannot make a known incompatible operation compatible, and
+`streaming=False` remains an explicit rejection for streaming lineage.
 
 
 ## Supported Stateless Operations
@@ -120,8 +188,9 @@ classification.
 
 ## Stateful Operations And Joins
 
-Batch grouped aggregations remain supported. Streaming business-key aggregations may require caller-owned `update` or
-`complete` output modes and can retain unbounded state; Structure reports this advisory risk as `STREAM-W0802`.
+Batch grouped aggregations remain supported. Streaming business-key aggregations may require the application to apply
+`update` or `complete` output modes and can retain unbounded state; Structure reports this advisory risk as
+`STREAM-W0802`.
 Event-time and session-window aggregations require a compiler-visible watermark on the grouped event-time field.
 Watermarked dedupe is admitted only in the documented bounded shapes.
 
@@ -133,6 +202,9 @@ bound such as `event_time_between(left_time, right_time, upper=...)`. Structure 
 retention policy are compiler-visible.
 
 ### Watermarked Stream-Stream Join
+
+Use a bounded stream-stream join when two event-time relations must be correlated while Spark can retain only a finite
+matching horizon.
 
 ```python
 @transform(streaming=True)
@@ -167,6 +239,9 @@ mode, checkpoint, trigger, and sink. A stream-stream join without these declarat
 
 ### Watermarked Dedupe
 
+Use watermark-bounded deduplication when a stable event identifier should be accepted once within the retained event
+time horizon.
+
 ```python
 @transform(streaming=True)
 class LatestClicks(Transform):
@@ -181,6 +256,64 @@ class LatestClicks(Transform):
 
 The watermark-bounded spelling is explicit. Global `distinct()` or unbounded `drop_duplicates(...)` does not acquire
 streaming semantics merely because a watermark appears elsewhere in the transform.
+
+### Event-time and session windows
+
+Use an event-time window when records should be grouped into fixed or sliding time ranges. Use a session window when
+activity is grouped by a fixed inactivity gap. Both forms require a matching watermark before the stateful operation:
+
+```python
+@transform(streaming=True)
+class GateProgress(Transform):
+    passages = input(Passage, streaming=True)
+    progress = output(GateProgressRow)
+
+    def summarize(self, passage: Passage) -> GateProgressRow:
+        watermark(passage.occurred_at, delay="10 minutes")
+        group_by(
+            window(passage.occurred_at, "1 minute"),
+            race_id=passage.race_id,
+            gate_number=passage.gate_number,
+        )
+        return GateProgressRow.project(passage)(
+            passage_count=count(),
+            fastest_millis=min(passage.elapsed_millis),
+        )
+
+
+@transform(streaming=True)
+class PaddlerSessions(Transform):
+    passages = input(Passage, streaming=True)
+    sessions = output(PaddlerSession)
+
+    def summarize(self, passage: Passage) -> PaddlerSession:
+        watermark(passage.occurred_at, delay="30 minutes")
+        group_by(
+            session_window(passage.occurred_at, "5 minutes"),
+            paddler_id=passage.paddler_id,
+        )
+        return PaddlerSession.project(passage)(passage_count=count())
+```
+
+Fixed event-time windows use caller-applied `append` or `update` mode. Session windows use `append` mode and require
+at least one ordinary grouping key in addition to the session key. Dynamic gaps, missing watermarks, mismatched event
+time fields, and arbitrary chained state remain rejected.
+
+### Output-mode metadata
+
+Structure records the output modes that the caller must apply; it does not call `outputMode(...)`. The practical
+mapping is:
+
+| Transform shape | Typical caller mode | State note |
+| --- | --- | --- |
+| Row-local projection or filter | `append` | No Structure-managed state |
+| Watermarked event-time aggregate | `append` or `update` | Watermark bounds event-time state |
+| Session-window aggregate | `append` | Fixed gap and watermark are required |
+| Business-key aggregate without event-time eviction | `update` or `complete` | State may be unbounded; warning |
+| Bounded stream-stream join | `append` | Both watermarks and an event-time bound are required |
+
+The exact mode also depends on the sink and concrete Spark target. Treat explain output as the compatibility report,
+then choose and apply the mode in application code.
 
 
 ## API Ledger And Stateful Boundaries
@@ -230,6 +363,50 @@ def retain_valid(self, *, events, spark, ctx):
 
 Structure records the declaration but does not inspect the hook body. The hook must avoid actions, RDD/Pandas
 conversion, query lifecycle APIs, external side effects, and unmodeled state.
+
+## Caller-controlled lifecycle
+
+Create sources, invoke the Structure transform, configure the writer, and start the query in application code. A
+Structure transform returns a DataFrame plan and may be used as the input to another transform:
+
+```python
+events = spark.readStream.schema(raw_event_schema).json(events_path)
+clean = PrepareEvents(events=events).run(session).clean
+
+query = (
+    clean.writeStream
+    .outputMode("append")
+    .option("checkpointLocation", checkpoint)
+    .format("parquet")
+    .start(output_path)
+)
+```
+
+Keep `readStream`, `writeStream`, `outputMode`, checkpoints, triggers, `start()`, `stop()`, `awaitTermination()`,
+and sink-specific side effects outside transform methods and generated transform modules. A stable checkpoint and a
+caller-selected trigger are operational decisions; Structure reports the transformation requirements but does not
+choose them.
+
+For a batch sink invoked once per micro-batch, keep `foreachBatch` in that same application layer. Validate the
+idempotence and retry policy before starting the query:
+
+```python
+def write_batch(batch, batch_id):
+    batch.write.format("parquet").mode("append").save(output_path)
+
+
+query = (
+    clean.writeStream
+    .foreachBatch(write_batch)
+    .outputMode("append")
+    .option("checkpointLocation", checkpoint)
+    .start()
+)
+```
+
+The callback remains responsible for honoring a stable sink identity, idempotence key, retry policy, and snapshot
+identity. These declarations are application safeguards; they do not turn `foreachBatch` into a Structure transform
+operation.
 
 
 ## Compile-Time And IR Contract
@@ -294,7 +471,7 @@ with an admitted bounded-state policy.
 Streaming diagnostics should identify the transform, step, concrete input lineage, operation, state assumption, and
 shortest fix. Typical fixes are to remove a batch-only operation, make a side input static, add a watermark and
 event-time
-bound, explicitly mark a safe hook, or keep lifecycle code in caller-owned Spark code.
+bound, explicitly mark a safe hook, or keep lifecycle code in application-controlled Spark code.
 
 ```text
 CompileError STREAM-E0801: Transform is not streaming-compatible
@@ -316,4 +493,4 @@ requirements, diagnostics, explain output, online/generated parity, live Spark v
 guidance.
 Future additions may include state-stage lists, more bounded stream-stream joins, and explicit retention rules, but
 sources, sinks, triggers, checkpoints, output modes, deployment, recovery, and external side effects remain
-caller-owned.
+application-controlled.

@@ -20,12 +20,14 @@ from examples.structure_generated.search.pyspark.schemas.analytics import (
     SENTENCE_STATISTICS_SCHEMA,
     SIMILAR_DOCUMENT_SCHEMA,
 )
-from examples.structure_generated.search.pyspark.schemas.text import (
-    PARAGRAPH_SCHEMA,
-    SECTION_SCHEMA,
-    SENTENCE_SCHEMA,
-    WORD_SCHEMA,
+from examples.structure_generated.search.pyspark.schemas.index import (
+    DOCUMENT_TERM_SCHEMA,
+    PARAGRAPH_TERM_SCHEMA,
+    SECTION_TERM_SCHEMA,
+    SENTENCE_TERM_SCHEMA,
 )
+from examples.structure_generated.search.pyspark.schemas.lexical_intermediate import DOCUMENT_HIERARCHY_COUNTS_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.text import PARAGRAPH_SCHEMA, SECTION_SCHEMA, SENTENCE_SCHEMA
 
 
 class AnalyzeTextGenerated:
@@ -40,32 +42,41 @@ class AnalyzeTextGenerated:
     def run(
         self,
         *,
-        words: DataFrame,
         sentences: DataFrame,
         paragraphs: DataFrame,
         sections: DataFrame,
+        document_terms: DataFrame,
+        section_terms: DataFrame,
+        paragraph_terms: DataFrame,
+        sentence_terms: DataFrame,
         comparison_left: DataFrame,
         comparison_right: DataFrame,
     ) -> TransformResult:
-        assert_schema(words, WORD_SCHEMA, name="Word", mode="strict")
         assert_schema(sentences, SENTENCE_SCHEMA, name="Sentence", mode="strict")
         assert_schema(paragraphs, PARAGRAPH_SCHEMA, name="Paragraph", mode="strict")
         assert_schema(sections, SECTION_SCHEMA, name="Section", mode="strict")
+        assert_schema(document_terms, DOCUMENT_TERM_SCHEMA, name="DocumentTerm", mode="strict")
+        assert_schema(section_terms, SECTION_TERM_SCHEMA, name="SectionTerm", mode="strict")
+        assert_schema(paragraph_terms, PARAGRAPH_TERM_SCHEMA, name="ParagraphTerm", mode="strict")
+        assert_schema(sentence_terms, SENTENCE_TERM_SCHEMA, name="SentenceTerm", mode="strict")
         assert_schema(comparison_left, DOCUMENT_PROFILE_SCHEMA, name="DocumentProfile", mode="strict")
         assert_schema(comparison_right, DOCUMENT_PROFILE_SCHEMA, name="DocumentProfile", mode="strict")
-        _input_words = words
         _input_sentences = sentences
         _input_paragraphs = paragraphs
         _input_sections = sections
+        _input_document_terms = document_terms
+        _input_section_terms = section_terms
+        _input_paragraph_terms = paragraph_terms
+        _input_sentence_terms = sentence_terms
         _input_comparison_left = comparison_left
         _input_comparison_right = comparison_right
 
         # Step method: sentence_stats
-        sentence_statistics = words.alias("word")
+        sentence_statistics = sentence_terms.alias("sentence_term")
         sentences_joined = sentences.alias("sentences")
         sentence_statistics = sentence_statistics.join(
             sentences_joined,
-            (F.col("word.sentence_id") == F.col("sentences.id")),
+            (F.col("sentence_term.sentence_id") == F.col("sentences.id")),
             "inner",
         )
         sentence_statistics = (
@@ -77,9 +88,11 @@ class AnalyzeTextGenerated:
                 F.col("sentences.ordinal").alias("ordinal"),
             )
             .agg(
-                F.count(F.lit(1)).cast(T.LongType()).alias("word_count"),
-                F.countDistinct(F.col("word.token")).cast(T.LongType()).alias("distinct_words"),
-                F.avg(F.length(F.col("word.token"))).cast(T.DoubleType()).alias("average_word_length"),
+                F.max(F.col("sentence_term.target_term_count")).cast(T.LongType()).alias("word_count"),
+                F.max(F.col("sentence_term.target_distinct_term_count")).cast(T.LongType()).alias("distinct_words"),
+                F.max(F.col("sentence_term.target_average_term_length"))
+                .cast(T.DoubleType())
+                .alias("average_word_length"),
             )
             .select(
                 F.col("sentence_id"),
@@ -95,18 +108,44 @@ class AnalyzeTextGenerated:
         assert_schema(sentence_statistics, SENTENCE_STATISTICS_SCHEMA, name="SentenceStatistics", mode="strict")
 
         # Step method: paragraph_stats
-        paragraph_statistics = words.alias("word")
+        paragraph_statistics = paragraph_terms.alias("paragraph_term")
+        paragraphs_joined = paragraphs.alias("paragraphs")
+        paragraph_statistics = paragraph_statistics.join(
+            paragraphs_joined,
+            (
+                (
+                    (F.col("paragraph_term.document_id") == F.col("paragraphs.document_id"))
+                    & (F.col("paragraph_term.section_id") == F.col("paragraphs.section_id"))
+                )
+                & (F.col("paragraph_term.paragraph_id") == F.col("paragraphs.id"))
+            ),
+            "inner",
+        )
+        sentences_2_joined = sentences.alias("sentences_2")
+        paragraph_statistics = paragraph_statistics.join(
+            sentences_2_joined,
+            (
+                (
+                    (F.col("sentences_2.document_id") == F.col("paragraphs.document_id"))
+                    & (F.col("sentences_2.section_id") == F.col("paragraphs.section_id"))
+                )
+                & (F.col("sentences_2.paragraph_id") == F.col("paragraphs.id"))
+            ),
+            "inner",
+        )
         paragraph_statistics = (
             paragraph_statistics.groupBy(
-                F.col("word.paragraph_id").alias("paragraph_id"),
-                F.col("word.document_id").alias("document_id"),
-                F.col("word.section_id").alias("section_id"),
+                F.col("paragraphs.id").alias("paragraph_id"),
+                F.col("paragraphs.document_id").alias("document_id"),
+                F.col("paragraphs.section_id").alias("section_id"),
+                F.col("paragraphs.ordinal").alias("ordinal"),
             )
             .agg(
-                F.min(F.col("word.paragraph_ordinal")).cast(T.IntegerType()).alias("ordinal"),
-                F.count(F.lit(1)).cast(T.LongType()).alias("word_count"),
-                F.countDistinct(F.col("word.sentence_id")).cast(T.LongType()).alias("sentence_count"),
-                F.avg(F.length(F.col("word.token"))).cast(T.DoubleType()).alias("average_word_length"),
+                F.max(F.col("paragraph_term.target_term_count")).cast(T.LongType()).alias("word_count"),
+                F.countDistinct(F.col("sentences_2.id")).cast(T.LongType()).alias("sentence_count"),
+                F.max(F.col("paragraph_term.target_average_term_length"))
+                .cast(T.DoubleType())
+                .alias("average_word_length"),
             )
             .select(
                 F.col("paragraph_id"),
@@ -121,11 +160,32 @@ class AnalyzeTextGenerated:
         assert_schema(paragraph_statistics, PARAGRAPH_STATISTICS_SCHEMA, name="ParagraphStatistics", mode="strict")
 
         # Step method: section_stats
-        section_statistics = words.alias("word")
+        section_statistics = section_terms.alias("section_term")
         sections_joined = sections.alias("sections")
         section_statistics = section_statistics.join(
             sections_joined,
-            (F.col("word.section_id") == F.col("sections.id")),
+            (
+                (F.col("section_term.document_id") == F.col("sections.document_id"))
+                & (F.col("section_term.section_id") == F.col("sections.id"))
+            ),
+            "inner",
+        )
+        paragraphs_2_joined = paragraphs.alias("paragraphs_2")
+        section_statistics = section_statistics.join(
+            paragraphs_2_joined,
+            (
+                (F.col("paragraphs_2.document_id") == F.col("sections.document_id"))
+                & (F.col("paragraphs_2.section_id") == F.col("sections.id"))
+            ),
+            "inner",
+        )
+        sentences_3_joined = sentences.alias("sentences_3")
+        section_statistics = section_statistics.join(
+            sentences_3_joined,
+            (
+                (F.col("sentences_3.document_id") == F.col("sections.document_id"))
+                & (F.col("sentences_3.section_id") == F.col("sections.id"))
+            ),
             "inner",
         )
         section_statistics = (
@@ -136,10 +196,12 @@ class AnalyzeTextGenerated:
                 F.col("sections.heading").alias("heading"),
             )
             .agg(
-                F.countDistinct(F.col("word.paragraph_id")).cast(T.LongType()).alias("paragraph_count"),
-                F.countDistinct(F.col("word.sentence_id")).cast(T.LongType()).alias("sentence_count"),
-                F.count(F.lit(1)).cast(T.LongType()).alias("word_count"),
-                F.avg(F.length(F.col("word.token"))).cast(T.DoubleType()).alias("average_word_length"),
+                F.countDistinct(F.col("paragraphs_2.id")).cast(T.LongType()).alias("paragraph_count"),
+                F.countDistinct(F.col("sentences_3.id")).cast(T.LongType()).alias("sentence_count"),
+                F.max(F.col("section_term.target_term_count")).cast(T.LongType()).alias("word_count"),
+                F.max(F.col("section_term.target_average_term_length"))
+                .cast(T.DoubleType())
+                .alias("average_word_length"),
             )
             .select(
                 F.col("section_id"),
@@ -154,19 +216,49 @@ class AnalyzeTextGenerated:
         )
         assert_schema(section_statistics, SECTION_STATISTICS_SCHEMA, name="SectionStatistics", mode="strict")
 
-        # Step method: document_stats
-        document_statistics = words.alias("word")
-        document_statistics = (
-            document_statistics.groupBy(
-                F.col("word.document_id").alias("document_id"),
+        # Step method: document_hierarchy
+        document_hierarchy_counts = sentence_terms.alias("sentence_term")
+        document_hierarchy_counts = (
+            document_hierarchy_counts.groupBy(
+                F.col("sentence_term.document_id").alias("document_id"),
             )
             .agg(
-                F.countDistinct(F.col("word.section_id")).cast(T.LongType()).alias("section_count"),
-                F.countDistinct(F.col("word.paragraph_id")).cast(T.LongType()).alias("paragraph_count"),
-                F.countDistinct(F.col("word.sentence_id")).cast(T.LongType()).alias("sentence_count"),
-                F.count(F.lit(1)).cast(T.LongType()).alias("word_count"),
-                F.countDistinct(F.col("word.token")).cast(T.LongType()).alias("distinct_words"),
-                F.avg(F.length(F.col("word.token"))).cast(T.DoubleType()).alias("average_word_length"),
+                F.countDistinct(F.col("sentence_term.section_id")).cast(T.LongType()).alias("section_count"),
+                F.countDistinct(F.col("sentence_term.paragraph_id")).cast(T.LongType()).alias("paragraph_count"),
+                F.countDistinct(F.col("sentence_term.sentence_id")).cast(T.LongType()).alias("sentence_count"),
+            )
+            .select(
+                F.col("document_id"),
+                F.col("section_count"),
+                F.col("paragraph_count"),
+                F.col("sentence_count"),
+            )
+        )
+        assert_schema(
+            document_hierarchy_counts, DOCUMENT_HIERARCHY_COUNTS_SCHEMA, name="DocumentHierarchyCounts", mode="strict"
+        )
+
+        # Step method: document_stats
+        document_statistics = document_terms.alias("document_term")
+        document_hierarchy_counts_joined = document_hierarchy_counts.alias("document_hierarchy_counts")
+        document_statistics = document_statistics.join(
+            document_hierarchy_counts_joined,
+            (F.col("document_term.document_id") == F.col("document_hierarchy_counts.document_id")),
+            "inner",
+        )
+        document_statistics = (
+            document_statistics.groupBy(
+                F.col("document_term.document_id").alias("document_id"),
+            )
+            .agg(
+                F.max(F.col("document_hierarchy_counts.section_count")).cast(T.LongType()).alias("section_count"),
+                F.max(F.col("document_hierarchy_counts.paragraph_count")).cast(T.LongType()).alias("paragraph_count"),
+                F.max(F.col("document_hierarchy_counts.sentence_count")).cast(T.LongType()).alias("sentence_count"),
+                F.max(F.col("document_term.target_term_count")).cast(T.LongType()).alias("word_count"),
+                F.max(F.col("document_term.target_distinct_term_count")).cast(T.LongType()).alias("distinct_words"),
+                F.max(F.col("document_term.target_average_term_length"))
+                .cast(T.DoubleType())
+                .alias("average_word_length"),
             )
             .select(
                 F.col("document_id"),
@@ -193,9 +285,6 @@ class AnalyzeTextGenerated:
                 & (F.col("document_profile.title_prefix") == F.col("comparison_right.title_prefix"))
             ),
             "inner",
-        )
-        similar_documents = similar_documents.where(
-            ((F.col("document_profile.document_id") < F.col("comparison_right.document_id")))
         )
         similar_documents = similar_documents.select(
             F.col("document_profile.document_id").alias("left_document_id"),

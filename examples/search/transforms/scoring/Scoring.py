@@ -2,13 +2,13 @@
 
 from examples.search.schemas.indexing.lexical.index import (
     DocumentIndexSummary,
-    DocumentIndexTerm,
+    DocumentTerm,
     ParagraphIndexSummary,
-    ParagraphIndexTerm,
+    ParagraphTerm,
     SectionIndexSummary,
-    SectionIndexTerm,
+    SectionTerm,
     SentenceIndexSummary,
-    SentenceIndexTerm,
+    SentenceTerm,
 )
 from examples.search.schemas.scoring.bm25 import (
     DocumentBm25Score,
@@ -40,10 +40,10 @@ class Scoring(Transform):
     """Run production scoring and select one unified score per target grain."""
 
     queries = input(SearchQuery, streaming=True)
-    document_terms = input(DocumentIndexTerm)
-    section_terms = input(SectionIndexTerm)
-    paragraph_terms = input(ParagraphIndexTerm)
-    sentence_terms = input(SentenceIndexTerm)
+    document_terms = input(DocumentTerm)
+    section_terms = input(SectionTerm)
+    paragraph_terms = input(ParagraphTerm)
+    sentence_terms = input(SentenceTerm)
     document_summary = input(DocumentIndexSummary)
     section_summary = input(SectionIndexSummary)
     paragraph_summary = input(ParagraphIndexSummary)

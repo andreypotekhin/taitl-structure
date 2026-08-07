@@ -2,13 +2,13 @@
 
 from examples.search.schemas.indexing.lexical.index import (
     DocumentIndexSummary,
-    DocumentIndexTerm,
+    DocumentTerm,
     ParagraphIndexSummary,
-    ParagraphIndexTerm,
+    ParagraphTerm,
     SectionIndexSummary,
-    SectionIndexTerm,
+    SectionTerm,
     SentenceIndexSummary,
-    SentenceIndexTerm,
+    SentenceTerm,
 )
 from examples.search.schemas.search import ScorePolicy
 from examples.search.schemas.similarity import (
@@ -30,13 +30,13 @@ class Similarities(Transform):
 
     policy = input(SimilarityPolicy)
     score_policy = input(ScorePolicy)
-    document_terms = input(DocumentIndexTerm)
+    document_terms = input(DocumentTerm)
     document_summary = input(DocumentIndexSummary)
-    section_terms = input(SectionIndexTerm)
+    section_terms = input(SectionTerm)
     section_summary = input(SectionIndexSummary)
-    paragraph_terms = input(ParagraphIndexTerm)
+    paragraph_terms = input(ParagraphTerm)
     paragraph_summary = input(ParagraphIndexSummary)
-    sentence_terms = input(SentenceIndexTerm)
+    sentence_terms = input(SentenceTerm)
     sentence_summary = input(SentenceIndexSummary)
     document_similarities = output(DocumentSimilarity)
     section_similarities = output(SectionSimilarity)

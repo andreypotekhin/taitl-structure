@@ -21,7 +21,6 @@ class Document(Schema):
     score_overlap = double(nullable=True)
     score_bm25 = double(nullable=True)
 
-
 class Section(Schema):
     id = string(nullable=False)
     document_id = string(nullable=False)
@@ -54,14 +53,3 @@ class Sentence(Schema):
     search_query_id = string(nullable=True)
     score_overlap = double(nullable=True)
     score_bm25 = double(nullable=True)
-
-
-class Word(Schema):
-    id = string(nullable=False)
-    document_id = string(nullable=False)
-    section_id = string(nullable=False)
-    paragraph_id = string(nullable=False)
-    paragraph_ordinal = integer(nullable=False)
-    sentence_id = string(nullable=False)
-    ordinal = integer(nullable=False)
-    token = string(nullable=False)

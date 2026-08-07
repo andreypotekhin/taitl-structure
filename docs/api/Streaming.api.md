@@ -1,8 +1,11 @@
 # Streaming API
 
-Structure supports a conservative, caller-owned Structured Streaming shape. These declarations and helpers classify
-compatibility and compile to streaming-safe DataFrame transformations when their documented conditions are met.
+Structure supports a conservative, application-controlled Structured Streaming shape. These declarations and helpers
+classify compatibility and compile to streaming-safe DataFrame transformations when their documented conditions are met.
 Examples abbreviate `order` as `o` and a second streaming relation as `c`.
+
+For practical usage, see the [Streaming reference](../reference/Streaming.ref.md). This page remains the compact API
+catalog; the [Streaming background](../background/Streaming.back.md) explains the state and lifecycle rationale.
 
 ## Streaming Declarations
 
@@ -43,14 +46,16 @@ Examples abbreviate `order` as `o` and a second streaming relation as `c`.
 - `window(...)` retains its keyword-only analytical `WindowSpec` form. Its positional event-time form is a grouping key;
   one call cannot mix the two argument families, while separate calls may use either form in the same transform.
 - Event-time windows return `Struct[TimeWindow]` with non-null `start` and `end` timestamps. Tumbling and sliding
-  aggregates require a preceding watermark on that same event-time field and use caller-owned `append` or `update` mode.
+  aggregates require a preceding watermark on that same event-time field and use application-applied `append` or
+  `update` mode.
 - `window_time(...)` accepts only a `TimeWindow` produced by `window(...)` and is supported for one chained pair:
   a watermarked first event-time window aggregate, stateless work, then a second
   `window(window_time(first_window), ...)`
   aggregate. The generated transform uses public `functions.window_time`; broader chained stateful operations remain
   rejected with `STREAM-E0801`.
 - `session_window(...)` requires a preceding watermark on the same event-time field, a static positive gap, one
-  ordinary grouping key in addition to the session key, and caller-owned `append` mode. Dynamic gaps remain deferred.
+  ordinary grouping key in addition to the session key, and application-applied `append` mode. Dynamic gaps remain
+  deferred.
 - Broad analytic windows and global selected-row helpers are streaming-ineligible. For finite event-time selection,
   use grouped `first_value(...)` or `last_value(...)` inside a watermarked `window(...)`; these preserve the typed
   selected value and lower through public `min_by(...)`/`max_by(...)`. The existing `latest_by(...)` and
@@ -72,7 +77,7 @@ Examples abbreviate `order` as `o` and a second streaming relation as `c`.
 
 The compiler records state-stage metadata for admitted aggregates, bounded deduplication, and bounded stream-stream
 joins, including watermarks, grouping or join keys, retention bounds, and required output modes. This metadata makes the
-state assumptions visible in explain output; it does not make Structure own query lifecycle or recovery.
+state assumptions visible in explain output; it does not make Structure control query lifecycle or recovery.
 
 - The supported composition boundary is one admitted stateful operation followed by stateless work. A second stateful
   operation remains rejected with `STREAM-E0801` unless a specific finite contract is admitted.
@@ -89,42 +94,43 @@ state assumptions visible in explain output; it does not make Structure own quer
 
 Supported transform shapes include row-local projection/filter (including scalar Python UDFs), stream-static left/inner
 joins and `exists(...)` filtering, event-time and session-window aggregation, bounded dedupe, bounded inner
-stream-stream joins, and bounded left/right/full outer and semi stream-stream joins. Callers own
+stream-stream joins, and bounded left/right/full outer and semi stream-stream joins. The application controls
 `readStream`, `writeStream`, checkpoints, triggers, output-mode application, query lifecycle, and side effects.
-`foreachBatch` is caller-owned-guided through `examples.streams.adoption.start_foreach_batch_query(...)`; generated
+`foreachBatch` has application-controlled guidance through the streams adoption helper; generated
 Structure modules must not contain `foreachBatch`. Row-level `foreach` remains design-gated until a side-effect
 contract defines sink identity, idempotence, retry, and recovery behavior. Use `examples/streams/adoption.py` as the
-tested caller-owned recipe shape. See
+tested application-controlled shape. See
 [Spark Streaming](../dev/specifications/SparkStreaming.spec.md), and the
 [Execution reference](../background/Execution.back.md).
 
-## Caller-Owned Side-Effect Safety
+## Application-Controlled Side-Effect Safety
 
-Before starting a `foreachBatch` sink, callers provide a `ForeachBatchSafety` declaration with a stable `sink_identity`,
+Before starting a `foreachBatch` sink, the application provides a `ForeachBatchSafety` declaration with a stable
+`sink_identity`,
 an `idempotence_key` such as `snapshot_id:batch_id`, a `retry_policy` (`at_least_once`, `idempotent`, or
 `transactional`), and a stable `snapshot_id`. The adoption helper rejects missing or unknown declarations before
 calling `start()`. These declarations make the recovery assumptions reviewable; they do not make callback code
-idempotent, transactional, or secure. The callback and its sink remain the caller's responsibility, including using the
-declared key, handling retries, and ensuring that the checkpoint and snapshot identity remain compatible.
+idempotent, transactional, or secure. The callback and its sink remain the application's responsibility, including using
+the declared key, handling retries, and ensuring that the checkpoint and snapshot identity remain compatible.
 
 ## Typed Arbitrary-State Contract
 
 Arbitrary state remains design-gated; `ArbitraryStateContract` is a metadata completeness guard, not a state processor
-runtime. Before caller-owned `applyInPandasWithState`, `transformWithState`, or a related state API is reviewed, the
-contract records typed input, key, state, and output Schemas; grouping fields; timeout policy, clock, and duration;
+runtime. Before reviewing native `applyInPandasWithState`, `transformWithState`, or a related state API, the contract
+records typed input, key, state, and output Schemas; grouping fields; timeout policy, clock, and duration;
 initialization, update, and removal behavior; target PySpark profile; hook boundary; checkpoint identity; serialized
 state version; and restart policy. `contract.validate()` rejects missing or inconsistent declarations with
 `ARBITRARY-STATE-E0901`, `ARBITRARY-STATE-E0902`, or `ARBITRARY-STATE-E0903`.
 
-Validation does not start a query, generate a state processor, own a checkpoint, or prove recovery. The caller still
-owns the native PySpark API and live restart evidence. Structure must not promote the streaming ledger row until a
-separate runtime contract and PySpark 3.5/4.0 evidence exist.
+Validation does not start a query, generate a state processor, control a checkpoint, or prove recovery. The application
+still controls the native PySpark API and live restart evidence. Structure must not promote the streaming ledger row
+until a separate runtime contract and PySpark 3.5/4.0 evidence exist.
 
 ## SearchDocuments Streaming Status
 
 SearchDocuments declares streaming inputs but remains `batch_only` because its current ranking, deduplication, and join
 shapes are not bounded for Structured Streaming. Its future streaming work is deferred until the compiler and Spark
 integration lanes can prove bounded ranking state, finite event-time completion, append-only output, and checkpoint
-restart. The current Search transform does not expose a caller-adoption contract or start a streaming query; see
-[`P08022605.SearchDocuments-structured-streaming.plan.md`](../dev/planning/P08022605.SearchDocuments-structured-streaming.plan.md)
-for the retained requirements.
+restart. The current Search transform does not expose a caller-adoption contract or start a streaming query. See the
+retained requirements in
+[search streaming plan](../dev/planning/P08022605.SearchDocuments-structured-streaming.plan.md).

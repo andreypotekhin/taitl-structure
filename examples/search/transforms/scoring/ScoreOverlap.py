@@ -2,13 +2,13 @@
 
 from examples.search.schemas.indexing.lexical.index import (
     DocumentIndexSummary,
-    DocumentIndexTerm,
+    DocumentTerm,
     ParagraphIndexSummary,
-    ParagraphIndexTerm,
+    ParagraphTerm,
     SectionIndexSummary,
-    SectionIndexTerm,
+    SectionTerm,
     SentenceIndexSummary,
-    SentenceIndexTerm,
+    SentenceTerm,
 )
 from examples.search.schemas.scoring.intermediate import (
     DocumentOverlapMatch,
@@ -40,10 +40,10 @@ class ScoreOverlap(ScoreBase):
     section_overlap_matches = lane(SectionOverlapMatch)
     paragraph_overlap_matches = lane(ParagraphOverlapMatch)
     sentence_overlap_matches = lane(SentenceOverlapMatch)
-    document_vocabulary = lane(DocumentIndexTerm)
-    section_vocabulary = lane(SectionIndexTerm)
-    paragraph_vocabulary = lane(ParagraphIndexTerm)
-    sentence_vocabulary = lane(SentenceIndexTerm)
+    document_vocabulary = lane(DocumentTerm)
+    section_vocabulary = lane(SectionTerm)
+    paragraph_vocabulary = lane(ParagraphTerm)
+    sentence_vocabulary = lane(SentenceTerm)
     document_query_idfs = lane(QueryTermIdf)
     section_query_idfs = lane(QueryTermIdf)
     paragraph_query_idfs = lane(QueryTermIdf)
@@ -63,79 +63,79 @@ class ScoreOverlap(ScoreBase):
     sentence_overlap_scores = output(SentenceOverlapScore)
 
     @step(input=ScoreBase.document_terms, output=document_vocabulary)
-    def select_document_vocabulary(self, term: DocumentIndexTerm) -> DocumentIndexTerm:
-        drop_duplicates(term.token)
-        return DocumentIndexTerm.project(term)
+    def select_document_vocabulary(self, term: DocumentTerm) -> DocumentTerm:
+        drop_duplicates(term.term)
+        return DocumentTerm.project(term)
 
     @step(input=ScoreBase.section_terms, output=section_vocabulary)
-    def select_section_vocabulary(self, term: SectionIndexTerm) -> SectionIndexTerm:
-        drop_duplicates(term.token)
-        return SectionIndexTerm.project(term)
+    def select_section_vocabulary(self, term: SectionTerm) -> SectionTerm:
+        drop_duplicates(term.term)
+        return SectionTerm.project(term)
 
     @step(input=ScoreBase.paragraph_terms, output=paragraph_vocabulary)
-    def select_paragraph_vocabulary(self, term: ParagraphIndexTerm) -> ParagraphIndexTerm:
-        drop_duplicates(term.token)
-        return ParagraphIndexTerm.project(term)
+    def select_paragraph_vocabulary(self, term: ParagraphTerm) -> ParagraphTerm:
+        drop_duplicates(term.term)
+        return ParagraphTerm.project(term)
 
     @step(input=ScoreBase.sentence_terms, output=sentence_vocabulary)
-    def select_sentence_vocabulary(self, term: SentenceIndexTerm) -> SentenceIndexTerm:
-        drop_duplicates(term.token)
-        return SentenceIndexTerm.project(term)
+    def select_sentence_vocabulary(self, term: SentenceTerm) -> SentenceTerm:
+        drop_duplicates(term.term)
+        return SentenceTerm.project(term)
 
-    @step(input=[ScoreBase.query_terms, document_vocabulary, document_summary], output=document_query_idfs)
+    @step(input=[ScoreBase.expanded_query_terms, document_vocabulary, document_summary], output=document_query_idfs)
     def weight_document_query_terms(
-        self, query: QueryTerm, term: DocumentIndexTerm, summary: DocumentIndexSummary
+        self, query: QueryTerm, term: DocumentTerm, summary: DocumentIndexSummary
     ) -> QueryTermIdf:
-        left_join(term, on=term.token == query.token)
+        left_join(term, on=term.term == query.token)
         cross_join(summary, allow_cartesian=True)
         group_by(query_id=query.query_id, token=query.token)
-        document_frequency = coalesce(term.document_frequency, 0)
+        target_frequency = coalesce(term.target_frequency, 0)
         return QueryTermIdf(
             query_id=query.query_id,
             token=query.token,
-            idf=log(1.0 + (summary.target_count - document_frequency + 0.5) / (document_frequency + 0.5)),
+            idf=log(1.0 + (summary.target_count - target_frequency + 0.5) / (target_frequency + 0.5)),
         )
 
-    @step(input=[ScoreBase.query_terms, section_vocabulary, section_summary], output=section_query_idfs)
+    @step(input=[ScoreBase.expanded_query_terms, section_vocabulary, section_summary], output=section_query_idfs)
     def weight_section_query_terms(
-        self, query: QueryTerm, term: SectionIndexTerm, summary: SectionIndexSummary
+        self, query: QueryTerm, term: SectionTerm, summary: SectionIndexSummary
     ) -> QueryTermIdf:
-        left_join(term, on=term.token == query.token)
+        left_join(term, on=term.term == query.token)
         cross_join(summary, allow_cartesian=True)
         group_by(query_id=query.query_id, token=query.token)
-        document_frequency = coalesce(term.document_frequency, 0)
+        target_frequency = coalesce(term.target_frequency, 0)
         return QueryTermIdf(
             query_id=query.query_id,
             token=query.token,
-            idf=log(1.0 + (summary.target_count - document_frequency + 0.5) / (document_frequency + 0.5)),
+            idf=log(1.0 + (summary.target_count - target_frequency + 0.5) / (target_frequency + 0.5)),
         )
 
-    @step(input=[ScoreBase.query_terms, paragraph_vocabulary, paragraph_summary], output=paragraph_query_idfs)
+    @step(input=[ScoreBase.expanded_query_terms, paragraph_vocabulary, paragraph_summary], output=paragraph_query_idfs)
     def weight_paragraph_query_terms(
-        self, query: QueryTerm, term: ParagraphIndexTerm, summary: ParagraphIndexSummary
+        self, query: QueryTerm, term: ParagraphTerm, summary: ParagraphIndexSummary
     ) -> QueryTermIdf:
-        left_join(term, on=term.token == query.token)
+        left_join(term, on=term.term == query.token)
         cross_join(summary, allow_cartesian=True)
         group_by(query_id=query.query_id, token=query.token)
-        document_frequency = coalesce(term.document_frequency, 0)
+        target_frequency = coalesce(term.target_frequency, 0)
         return QueryTermIdf(
             query_id=query.query_id,
             token=query.token,
-            idf=log(1.0 + (summary.target_count - document_frequency + 0.5) / (document_frequency + 0.5)),
+            idf=log(1.0 + (summary.target_count - target_frequency + 0.5) / (target_frequency + 0.5)),
         )
 
-    @step(input=[ScoreBase.query_terms, sentence_vocabulary, sentence_summary], output=sentence_query_idfs)
+    @step(input=[ScoreBase.expanded_query_terms, sentence_vocabulary, sentence_summary], output=sentence_query_idfs)
     def weight_sentence_query_terms(
-        self, query: QueryTerm, term: SentenceIndexTerm, summary: SentenceIndexSummary
+        self, query: QueryTerm, term: SentenceTerm, summary: SentenceIndexSummary
     ) -> QueryTermIdf:
-        left_join(term, on=term.token == query.token)
+        left_join(term, on=term.term == query.token)
         cross_join(summary, allow_cartesian=True)
         group_by(query_id=query.query_id, token=query.token)
-        document_frequency = coalesce(term.document_frequency, 0)
+        target_frequency = coalesce(term.target_frequency, 0)
         return QueryTermIdf(
             query_id=query.query_id,
             token=query.token,
-            idf=log(1.0 + (summary.target_count - document_frequency + 0.5) / (document_frequency + 0.5)),
+            idf=log(1.0 + (summary.target_count - target_frequency + 0.5) / (target_frequency + 0.5)),
         )
 
     @step(input=document_query_idfs, output=document_query_totals)
@@ -159,13 +159,13 @@ class ScoreOverlap(ScoreBase):
         return QueryIdfTotal(query_id=term.query_id, query_idf=sum_(term.idf))
 
     @step(
-        input=[ScoreBase.query_terms, ScoreBase.document_terms, document_query_idfs, document_query_totals],
+        input=[ScoreBase.expanded_query_terms, ScoreBase.document_terms, document_query_idfs, document_query_totals],
         output=document_overlap_matches,
     )
     def match_documents(
-        self, query: QueryTerm, term: DocumentIndexTerm, weight: QueryTermIdf, total: QueryIdfTotal
+        self, query: QueryTerm, term: DocumentTerm, weight: QueryTermIdf, total: QueryIdfTotal
     ) -> DocumentOverlapMatch:
-        inner_join(on=term.token == query.token)
+        inner_join(on=term.term == query.token)
         inner_join(on=(weight.query_id == query.query_id) & (weight.token == query.token))
         inner_join(on=total.query_id == query.query_id)
         group_by(
@@ -181,13 +181,13 @@ class ScoreOverlap(ScoreBase):
         )
 
     @step(
-        input=[ScoreBase.query_terms, ScoreBase.section_terms, section_query_idfs, section_query_totals],
+        input=[ScoreBase.expanded_query_terms, ScoreBase.section_terms, section_query_idfs, section_query_totals],
         output=section_overlap_matches,
     )
     def match_sections(
-        self, query: QueryTerm, term: SectionIndexTerm, weight: QueryTermIdf, total: QueryIdfTotal
+        self, query: QueryTerm, term: SectionTerm, weight: QueryTermIdf, total: QueryIdfTotal
     ) -> SectionOverlapMatch:
-        inner_join(on=term.token == query.token)
+        inner_join(on=term.term == query.token)
         inner_join(on=(weight.query_id == query.query_id) & (weight.token == query.token))
         inner_join(on=total.query_id == query.query_id)
         group_by(
@@ -205,13 +205,13 @@ class ScoreOverlap(ScoreBase):
         )
 
     @step(
-        input=[ScoreBase.query_terms, ScoreBase.paragraph_terms, paragraph_query_idfs, paragraph_query_totals],
+        input=[ScoreBase.expanded_query_terms, ScoreBase.paragraph_terms, paragraph_query_idfs, paragraph_query_totals],
         output=paragraph_overlap_matches,
     )
     def match_paragraphs(
-        self, query: QueryTerm, term: ParagraphIndexTerm, weight: QueryTermIdf, total: QueryIdfTotal
+        self, query: QueryTerm, term: ParagraphTerm, weight: QueryTermIdf, total: QueryIdfTotal
     ) -> ParagraphOverlapMatch:
-        inner_join(on=term.token == query.token)
+        inner_join(on=term.term == query.token)
         inner_join(on=(weight.query_id == query.query_id) & (weight.token == query.token))
         inner_join(on=total.query_id == query.query_id)
         group_by(
@@ -231,13 +231,13 @@ class ScoreOverlap(ScoreBase):
         )
 
     @step(
-        input=[ScoreBase.query_terms, ScoreBase.sentence_terms, sentence_query_idfs, sentence_query_totals],
+        input=[ScoreBase.expanded_query_terms, ScoreBase.sentence_terms, sentence_query_idfs, sentence_query_totals],
         output=sentence_overlap_matches,
     )
     def match_sentences(
-        self, query: QueryTerm, term: SentenceIndexTerm, weight: QueryTermIdf, total: QueryIdfTotal
+        self, query: QueryTerm, term: SentenceTerm, weight: QueryTermIdf, total: QueryIdfTotal
     ) -> SentenceOverlapMatch:
-        inner_join(on=term.token == query.token)
+        inner_join(on=term.term == query.token)
         inner_join(on=(weight.query_id == query.query_id) & (weight.token == query.token))
         inner_join(on=total.query_id == query.query_id)
         group_by(

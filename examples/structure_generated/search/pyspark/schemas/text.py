@@ -55,14 +55,3 @@ SENTENCE_SCHEMA = T.StructType([
     T.StructField("score_overlap", T.DoubleType(), True),
     T.StructField("score_bm25", T.DoubleType(), True),
 ])
-
-WORD_SCHEMA = T.StructType([
-    T.StructField("id", T.StringType(), False),
-    T.StructField("document_id", T.StringType(), False),
-    T.StructField("section_id", T.StringType(), False),
-    T.StructField("paragraph_id", T.StringType(), False),
-    T.StructField("paragraph_ordinal", T.IntegerType(), False),
-    T.StructField("sentence_id", T.StringType(), False),
-    T.StructField("ordinal", T.IntegerType(), False),
-    T.StructField("token", T.StringType(), False),
-])

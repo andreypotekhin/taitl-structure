@@ -24,6 +24,8 @@ means an unexpected internal error.
 
 ## Initialize a project
 
+Use `init` to create the first Structure configuration without replacing an existing one.
+
 ```bash
 structure init
 structure init --seed-config
@@ -38,6 +40,8 @@ validation, traceability, performance, and diff settings. A missing `src/` direc
 write invalid configuration.
 
 ## Check source
+
+Use `check` for a read-only validation of source discovery, declarations, and target compatibility.
 
 ```bash
 structure check
@@ -64,6 +68,8 @@ claim that unsupported backends were executed.
 
 ## Compile artifacts
 
+Use `compile` when the validated source should produce generated artifacts.
+
 ```bash
 structure compile
 structure compile --profile
@@ -78,6 +84,8 @@ change source or configuration and regenerate them rather than editing them dire
 
 ## Verify generated output
 
+Use `--fail-on-diff` when CI should verify generated output without changing the configured directory.
+
 ```bash
 structure compile --fail-on-diff
 ```
@@ -89,6 +97,8 @@ When it fails, run `structure compile` and review/commit the generated changes. 
 normalized; whitespace inside files is not.
 
 ## Explain a transform
+
+Use `explain` to inspect one transform's declared inputs, operations, outputs, and warnings.
 
 ```bash
 structure explain orders.transforms.order.EnrichOrders
@@ -106,6 +116,8 @@ Explain resolves and checks the requested fully qualified class without writing 
 If the class is not found, the diagnostic names the class, searched source roots, and a corrective action.
 
 ## Clean generated artifacts
+
+Use `clean` to remove only generated files that Structure can identify as its own output.
 
 ```bash
 structure clean

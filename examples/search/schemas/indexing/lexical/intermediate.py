@@ -7,67 +7,102 @@ from examples.search.schemas.indexing.lexical.index import (
     SentenceIndexTarget,
 )
 from structure import Schema
-from structure.plugin.pyspark import long, string
+from structure.plugin.pyspark import double, long, string
 
 
-class IndexTokenFrequency(Schema):
-    """Internal count of indexed targets containing one token."""
+class TermText(Schema):
+    """Internal sentence term before expansion."""
 
-    token = string(nullable=False)
-    document_frequency = long(nullable=False)
+    term = string(nullable=False)
+
+
+class ExpandedTermText(Schema):
+    """Internal sentence term with its source-local position."""
+
+    position = long(nullable=False)
+    term = string(nullable=False)
+
+
+class LexicalOccurrence(Schema):
+    """Private transient normalized occurrence used only while building aggregates."""
+
+    document_id = string(nullable=False)
+    section_id = string(nullable=False)
+    paragraph_id = string(nullable=False)
+    sentence_id = string(nullable=False)
+    term = string(nullable=False)
+
+
+class DocumentHierarchyCounts(DocumentIndexTarget):
+    """Private document hierarchy counts derived from sentence terms."""
+
+    section_count = long(nullable=False)
+    paragraph_count = long(nullable=False)
+    sentence_count = long(nullable=False)
+
+
+class IndexTargetFrequency(Schema):
+    """Internal count of indexed targets containing one term."""
+
+    term = string(nullable=False)
+    target_frequency = long(nullable=False)
 
 
 class DocumentIndexTargetStats(DocumentIndexTarget):
-    """Internal document-level token totals."""
+    """Internal document-level term totals."""
 
-    target_word_count = long(nullable=False)
-    target_distinct_terms = long(nullable=False)
+    target_term_count = long(nullable=False)
+    target_distinct_term_count = long(nullable=False)
+    target_average_term_length = double(nullable=False)
 
 
 class SectionIndexTargetStats(SectionIndexTarget):
-    """Internal section-level token totals."""
+    """Internal section-level term totals."""
 
-    target_word_count = long(nullable=False)
-    target_distinct_terms = long(nullable=False)
+    target_term_count = long(nullable=False)
+    target_distinct_term_count = long(nullable=False)
+    target_average_term_length = double(nullable=False)
 
 
 class ParagraphIndexTargetStats(ParagraphIndexTarget):
-    """Internal paragraph-level token totals."""
+    """Internal paragraph-level term totals."""
 
-    target_word_count = long(nullable=False)
-    target_distinct_terms = long(nullable=False)
+    target_term_count = long(nullable=False)
+    target_distinct_term_count = long(nullable=False)
+    target_average_term_length = double(nullable=False)
 
 
 class SentenceIndexTargetStats(SentenceIndexTarget):
-    """Internal sentence-level token totals."""
+    """Internal sentence-level term totals."""
 
-    target_word_count = long(nullable=False)
-    target_distinct_terms = long(nullable=False)
+    target_term_count = long(nullable=False)
+    target_distinct_term_count = long(nullable=False)
+    target_average_term_length = double(nullable=False)
 
 
-class DocumentIndexTermCount(DocumentIndexTarget):
+class DocumentTermCount(DocumentIndexTarget):
     """Internal document-level term frequency."""
 
-    token = string(nullable=False)
+    term = string(nullable=False)
     term_frequency = long(nullable=False)
 
 
-class SectionIndexTermCount(SectionIndexTarget):
+class SectionTermCount(SectionIndexTarget):
     """Internal section-level term frequency."""
 
-    token = string(nullable=False)
+    term = string(nullable=False)
     term_frequency = long(nullable=False)
 
 
-class ParagraphIndexTermCount(ParagraphIndexTarget):
+class ParagraphTermCount(ParagraphIndexTarget):
     """Internal paragraph-level term frequency."""
 
-    token = string(nullable=False)
+    term = string(nullable=False)
     term_frequency = long(nullable=False)
 
 
-class SentenceIndexTermCount(SentenceIndexTarget):
+class SentenceTermCount(SentenceIndexTarget):
     """Internal sentence-level term frequency."""
 
-    token = string(nullable=False)
+    term = string(nullable=False)
     term_frequency = long(nullable=False)

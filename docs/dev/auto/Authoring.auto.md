@@ -45,10 +45,12 @@ Existing text operators:
 - top_level(): defined by 
   - section 'End-User documentation' of [Documenting.md](../Documenting.md)
   - section 'End-User top-level documentation' of [Documenting.auto.md](Documenting.auto.md) 
+- background(), reference(), recipes(): defined by
+  - section 'End-User reference documentation' of [Documenting.auto.md](Documenting.auto.md)
+  - section 'End-User documentation tips' of [Documenting.auto.md](Documenting.auto.md)
 - developer(): defined by
   - section 'Developer documentation' of [Documenting.md](../Documenting.md)
   - sections 'Developer documentation - Top-level', 'Developer documentation - Other' of [Documenting.auto.md](Documenting.auto.md)
-- background(), reference(), recipes(): defined by sections 'End-User reference documentation', 'End-User documentation tips' of [Documenting.auto.md](Documenting.auto.md)
 - annotate(): defined in subsections 'Example', 'General tips' of 'Creating annotated code' section of [Annotation.auto.md](Annotation.auto.md). 
 
 ## More text processes and operators

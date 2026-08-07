@@ -103,16 +103,3 @@ class ExpandedSentenceText(Schema):
 
     position = long(nullable=False)
     sentence_content = string(nullable=False)
-
-
-class WordText(Schema):
-    """Internal word text before ordinal expansion."""
-
-    word_token = string(nullable=False)
-
-
-class ExpandedWordText(Schema):
-    """Internal word text with its sentence-local ordinal."""
-
-    position = long(nullable=False)
-    word_token = string(nullable=False)

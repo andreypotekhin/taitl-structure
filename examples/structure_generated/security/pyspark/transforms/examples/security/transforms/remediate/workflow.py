@@ -90,8 +90,8 @@ class VulnerabilityRemediationPrepareGenerated:
 
     def _step_prepared_check_cases_1(self, frames):
         # Step method: prepared.check_cases
-        prepared__case_lane = frames["prepared__case_aggregates"].alias("remediation_case_aggregate")
-        prepared__case_lane = prepared__case_lane.select(
+        prepared__case_checks = frames["prepared__case_aggregates"].alias("remediation_case_aggregate")
+        prepared__case_checks = prepared__case_checks.select(
             F.col("remediation_case_aggregate.vuln_id"),
             F.col("remediation_case_aggregate.acknowledged_at"),
             F.col("remediation_case_aggregate.exception_requested_at"),
@@ -237,35 +237,14 @@ class VulnerabilityRemediationPrepareGenerated:
                 == F.lit(0)
             ).alias("is_valid"),
         )
-        assert_schema(prepared__case_lane, REMEDIATION_CASE_CHECK_SCHEMA, name="RemediationCaseCheck", mode="strict")
-        return {
-            "prepared__case_lane": prepared__case_lane,
-        }
-
-    def _step_prepared_publish_case_checks_2(self, frames):
-        # Step method: prepared.publish_case_checks
-        prepared__case_checks = frames["prepared__case_lane"].alias("remediation_case_check")
-        prepared__case_checks = prepared__case_checks.select(
-            F.col("remediation_case_check.vuln_id"),
-            F.col("remediation_case_check.acknowledged_at"),
-            F.col("remediation_case_check.exception_requested_at"),
-            F.col("remediation_case_check.exception_reason"),
-            F.col("remediation_case_check.exception_approver"),
-            F.col("remediation_case_check.exception_approved_at"),
-            F.col("remediation_case_check.exception_expires_on"),
-            F.col("remediation_case_check.case_count"),
-            F.col("remediation_case_check.vulnerability_exists"),
-            F.col("remediation_case_check.issues"),
-            F.col("remediation_case_check.is_valid"),
-        )
         assert_schema(prepared__case_checks, REMEDIATION_CASE_CHECK_SCHEMA, name="RemediationCaseCheck", mode="strict")
         return {
             "prepared__case_checks": prepared__case_checks,
         }
 
-    def _step_prepared_publish_case_issues_3(self, frames):
+    def _step_prepared_publish_case_issues_2(self, frames):
         # Step method: prepared.publish_case_issues
-        prepared__case_issues = frames["prepared__case_lane"].alias("remediation_case_check")
+        prepared__case_issues = frames["prepared__case_checks"].alias("remediation_case_check")
         prepared__case_issues = prepared__case_issues.where((~(F.col("remediation_case_check.is_valid"))))
         prepared__case_issues = prepared__case_issues.select(
             F.col("remediation_case_check.vuln_id"),
@@ -287,7 +266,7 @@ class VulnerabilityRemediationPrepareGenerated:
 
 
 class VulnerabilityRemediationAccessGenerated:
-    def _step_accessed_enrich_exposure_4(self, frames):
+    def _step_accessed_enrich_exposure_3(self, frames):
         # Step method: accessed.enrich_exposure
         accessed__exposures = frames["exposures"].alias("vulnerability_exposure")
         prepared__case_checks_joined = frames["prepared__case_checks"].alias("prepared__case_checks")
@@ -355,7 +334,7 @@ class VulnerabilityRemediationAccessGenerated:
 
 
 class VulnerabilityRemediationPublishGenerated:
-    def _step_published_publish_unacknowledged_5(self, frames):
+    def _step_published_publish_unacknowledged_4(self, frames):
         # Step method: published.publish_unacknowledged
         published__unacknowledged = frames["accessed__exposures"].alias("vulnerability_workflow_exposure")
         published__unacknowledged = published__unacknowledged.where(
@@ -409,7 +388,7 @@ class VulnerabilityRemediationPublishGenerated:
             "published__unacknowledged": published__unacknowledged,
         }
 
-    def _step_published_publish_pending_6(self, frames):
+    def _step_published_publish_pending_5(self, frames):
         # Step method: published.publish_pending
         published__pending_exceptions = frames["accessed__exposures"].alias("vulnerability_workflow_exposure")
         published__pending_exceptions = published__pending_exceptions.where(
@@ -466,7 +445,7 @@ class VulnerabilityRemediationPublishGenerated:
             "published__pending_exceptions": published__pending_exceptions,
         }
 
-    def _step_published_publish_expiring_7(self, frames):
+    def _step_published_publish_expiring_6(self, frames):
         # Step method: published.publish_expiring
         published__expiring_exceptions = frames["accessed__exposures"].alias("vulnerability_workflow_exposure")
         evaluation_joined = frames["evaluation"].alias("evaluation")
@@ -537,7 +516,7 @@ class VulnerabilityRemediationPublishGenerated:
             "published__expiring_exceptions": published__expiring_exceptions,
         }
 
-    def _step_published_publish_expired_8(self, frames):
+    def _step_published_publish_expired_7(self, frames):
         # Step method: published.publish_expired
         published__expired_exceptions = frames["accessed__exposures"].alias("vulnerability_workflow_exposure")
         evaluation_joined = frames["evaluation"].alias("evaluation")
@@ -601,7 +580,7 @@ class VulnerabilityRemediationPublishGenerated:
 
 
 class VulnerabilityRemediationSummariesGenerated:
-    def _step_summarized_assess_9(self, frames):
+    def _step_summarized_assess_8(self, frames):
         # Step method: summarized.assess
         summarized__activities = frames["accessed__exposures"].alias("vulnerability_workflow_exposure")
         evaluation_joined = frames["evaluation"].alias("evaluation")
@@ -683,7 +662,7 @@ class VulnerabilityRemediationSummariesGenerated:
             "summarized__activities": summarized__activities,
         }
 
-    def _step_summarized_summarize_people_10(self, frames):
+    def _step_summarized_summarize_people_9(self, frames):
         # Step method: summarized.summarize_people
         summarized__person_summaries = frames["people"].alias("person")
         evaluation_joined = frames["evaluation"].alias("evaluation")
@@ -737,7 +716,7 @@ class VulnerabilityRemediationSummariesGenerated:
             "summarized__person_summaries": summarized__person_summaries,
         }
 
-    def _step_summarized_summarize_teams_11(self, frames):
+    def _step_summarized_summarize_teams_10(self, frames):
         # Step method: summarized.summarize_teams
         summarized__team_summaries = frames["teams"].alias("team")
         evaluation_joined = frames["evaluation"].alias("evaluation")
@@ -791,7 +770,7 @@ class VulnerabilityRemediationSummariesGenerated:
             "summarized__team_summaries": summarized__team_summaries,
         }
 
-    def _step_summarized_summarize_departments_12(self, frames):
+    def _step_summarized_summarize_departments_11(self, frames):
         # Step method: summarized.summarize_departments
         summarized__department_summaries = frames["departments"].alias("department")
         evaluation_joined = frames["evaluation"].alias("evaluation")
@@ -845,7 +824,7 @@ class VulnerabilityRemediationSummariesGenerated:
             "summarized__department_summaries": summarized__department_summaries,
         }
 
-    def _step_summarized_summarize_orgs_13(self, frames):
+    def _step_summarized_summarize_orgs_12(self, frames):
         # Step method: summarized.summarize_orgs
         summarized__org_summaries = frames["orgs"].alias("org")
         evaluation_joined = frames["evaluation"].alias("evaluation")
@@ -956,18 +935,17 @@ class VulnerabilityRemediationWorkflowGenerated(
         }
         frames.update(self._step_prepared_aggregate_cases_0(frames))
         frames.update(self._step_prepared_check_cases_1(frames))
-        frames.update(self._step_prepared_publish_case_checks_2(frames))
-        frames.update(self._step_prepared_publish_case_issues_3(frames))
-        frames.update(self._step_accessed_enrich_exposure_4(frames))
-        frames.update(self._step_published_publish_unacknowledged_5(frames))
-        frames.update(self._step_published_publish_pending_6(frames))
-        frames.update(self._step_published_publish_expiring_7(frames))
-        frames.update(self._step_published_publish_expired_8(frames))
-        frames.update(self._step_summarized_assess_9(frames))
-        frames.update(self._step_summarized_summarize_people_10(frames))
-        frames.update(self._step_summarized_summarize_teams_11(frames))
-        frames.update(self._step_summarized_summarize_departments_12(frames))
-        frames.update(self._step_summarized_summarize_orgs_13(frames))
+        frames.update(self._step_prepared_publish_case_issues_2(frames))
+        frames.update(self._step_accessed_enrich_exposure_3(frames))
+        frames.update(self._step_published_publish_unacknowledged_4(frames))
+        frames.update(self._step_published_publish_pending_5(frames))
+        frames.update(self._step_published_publish_expiring_6(frames))
+        frames.update(self._step_published_publish_expired_7(frames))
+        frames.update(self._step_summarized_assess_8(frames))
+        frames.update(self._step_summarized_summarize_people_9(frames))
+        frames.update(self._step_summarized_summarize_teams_10(frames))
+        frames.update(self._step_summarized_summarize_departments_11(frames))
+        frames.update(self._step_summarized_summarize_orgs_12(frames))
 
         # Step method: case_checks
         case_checks = frames["prepared__case_checks"].alias("remediation_case_check")

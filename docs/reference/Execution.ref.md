@@ -11,6 +11,8 @@ Examples use the schemas and transform shapes introduced in the [Schema referenc
 
 ## Run a transform
 
+Call `run(...)` when the application is ready to execute a declared transform against its input DataFrames.
+
 ```python
 from structure import *
 from structure.plugin.pyspark import *
@@ -87,6 +89,8 @@ assert list(result) == ["normalized"]
 The alias does not add a second result key or rename schema fields.
 
 ## Compile before running
+
+Call `compile(...)` first when source and target diagnostics should be separated from live DataFrame execution.
 
 ```python
 artifact = EnrichOrders.compile(project_root=".")

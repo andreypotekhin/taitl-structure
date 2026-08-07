@@ -20,12 +20,13 @@ SENTENCE_INDEX_TARGET_SCHEMA = T.StructType(PARAGRAPH_INDEX_TARGET_SCHEMA.fields
     T.StructField("sentence_id", T.StringType(), False),
 ])
 
-DOCUMENT_INDEX_TERM_SCHEMA = T.StructType(DOCUMENT_INDEX_TARGET_SCHEMA.fields + [
-    T.StructField("token", T.StringType(), False),
+DOCUMENT_TERM_SCHEMA = T.StructType(DOCUMENT_INDEX_TARGET_SCHEMA.fields + [
+    T.StructField("term", T.StringType(), False),
     T.StructField("term_frequency", T.LongType(), False),
-    T.StructField("target_word_count", T.LongType(), False),
-    T.StructField("target_distinct_terms", T.LongType(), False),
-    T.StructField("document_frequency", T.LongType(), False),
+    T.StructField("target_term_count", T.LongType(), False),
+    T.StructField("target_distinct_term_count", T.LongType(), False),
+    T.StructField("target_average_term_length", T.DoubleType(), False),
+    T.StructField("target_frequency", T.LongType(), False),
 ])
 
 DOCUMENT_INDEX_SUMMARY_SCHEMA = T.StructType([
@@ -33,32 +34,35 @@ DOCUMENT_INDEX_SUMMARY_SCHEMA = T.StructType([
     T.StructField("average_target_length", T.DoubleType(), False),
 ])
 
-SECTION_INDEX_TERM_SCHEMA = T.StructType(SECTION_INDEX_TARGET_SCHEMA.fields + [
-    T.StructField("token", T.StringType(), False),
+SECTION_TERM_SCHEMA = T.StructType(SECTION_INDEX_TARGET_SCHEMA.fields + [
+    T.StructField("term", T.StringType(), False),
     T.StructField("term_frequency", T.LongType(), False),
-    T.StructField("target_word_count", T.LongType(), False),
-    T.StructField("target_distinct_terms", T.LongType(), False),
-    T.StructField("document_frequency", T.LongType(), False),
+    T.StructField("target_term_count", T.LongType(), False),
+    T.StructField("target_distinct_term_count", T.LongType(), False),
+    T.StructField("target_average_term_length", T.DoubleType(), False),
+    T.StructField("target_frequency", T.LongType(), False),
 ])
 
 SECTION_INDEX_SUMMARY_SCHEMA = T.StructType(DOCUMENT_INDEX_SUMMARY_SCHEMA.fields)
 
-PARAGRAPH_INDEX_TERM_SCHEMA = T.StructType(PARAGRAPH_INDEX_TARGET_SCHEMA.fields + [
-    T.StructField("token", T.StringType(), False),
+PARAGRAPH_TERM_SCHEMA = T.StructType(PARAGRAPH_INDEX_TARGET_SCHEMA.fields + [
+    T.StructField("term", T.StringType(), False),
     T.StructField("term_frequency", T.LongType(), False),
-    T.StructField("target_word_count", T.LongType(), False),
-    T.StructField("target_distinct_terms", T.LongType(), False),
-    T.StructField("document_frequency", T.LongType(), False),
+    T.StructField("target_term_count", T.LongType(), False),
+    T.StructField("target_distinct_term_count", T.LongType(), False),
+    T.StructField("target_average_term_length", T.DoubleType(), False),
+    T.StructField("target_frequency", T.LongType(), False),
 ])
 
 PARAGRAPH_INDEX_SUMMARY_SCHEMA = T.StructType(DOCUMENT_INDEX_SUMMARY_SCHEMA.fields)
 
-SENTENCE_INDEX_TERM_SCHEMA = T.StructType(SENTENCE_INDEX_TARGET_SCHEMA.fields + [
-    T.StructField("token", T.StringType(), False),
+SENTENCE_TERM_SCHEMA = T.StructType(SENTENCE_INDEX_TARGET_SCHEMA.fields + [
+    T.StructField("term", T.StringType(), False),
     T.StructField("term_frequency", T.LongType(), False),
-    T.StructField("target_word_count", T.LongType(), False),
-    T.StructField("target_distinct_terms", T.LongType(), False),
-    T.StructField("document_frequency", T.LongType(), False),
+    T.StructField("target_term_count", T.LongType(), False),
+    T.StructField("target_distinct_term_count", T.LongType(), False),
+    T.StructField("target_average_term_length", T.DoubleType(), False),
+    T.StructField("target_frequency", T.LongType(), False),
 ])
 
 SENTENCE_INDEX_SUMMARY_SCHEMA = T.StructType(DOCUMENT_INDEX_SUMMARY_SCHEMA.fields)

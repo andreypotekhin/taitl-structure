@@ -158,8 +158,8 @@ def test_search_bm25_scoring_is_typed_and_has_no_opaque_hook_boundary() -> None:
     assert traceability.opaque_boundaries == ()
     assert [step.name for step in plan.steps[:3]] == [
         "expand_query_terms",
-        "select_distinct_query_terms",
         "count_query_terms",
+        "score_document_bm25",
     ]
     for step in scoring_steps:
         joins = [operation.join for operation in step.operations if operation.join is not None]
@@ -222,6 +222,7 @@ def test_search_index_build_is_typed_and_has_no_opaque_hook_boundary() -> None:
             for assignment in summarize_targets.aggregate.assignments
             if assignment.function != "key"
         } == {
+            "avg",
             "count",
             "count_distinct",
         }

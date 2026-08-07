@@ -5,6 +5,7 @@ Maintain annotated sources for certain parts of project code.
 ## Scope
 Currently, we only maintain annotated code for these code dirs and their subdirs:
 - examples/search/transforms/chunking
+- examples/search/transforms/clicks
 - examples/search/transforms/features
 - examples/search/transforms/filtering
 - examples/search/transforms/indexing
@@ -19,7 +20,12 @@ Currently, we only maintain annotated code for these code dirs and their subdirs
 - examples/store/transforms/recommender
 - examples/security/transforms
 - src/structure/core/configuration
+- src/structure/core/compiler
 - src/structure/core/docs
+- src/structure/core/plugins
+- src/structure/core/runtime
+- src/structure/core/sources
+- src/structure/core/target
 
 ## Output
 Destination: close/annotated/
