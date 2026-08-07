@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import PurePath, PureWindowsPath
+from pathlib import PurePosixPath, PureWindowsPath
 
 
 @dataclass(frozen=True)
@@ -27,8 +27,15 @@ class SourceSpan:
     excerpt: SourceExcerpt | None = None
 
     def __post_init__(self) -> None:
-        path = PurePath(self.path)
-        if not self.path or path.is_absolute() or PureWindowsPath(self.path).is_absolute() or ".." in path.parts:
+        path = PurePosixPath(self.path)
+        windows_path = PureWindowsPath(self.path)
+        if (
+            not self.path
+            or path.is_absolute()
+            or windows_path.drive
+            or windows_path.root
+            or ".." in path.parts
+        ):
             raise ValueError("Source span path must be a nonempty relative display path.")
         if min(self.start_line, self.start_column, self.end_line, self.end_column) < 1:
             raise ValueError("Source span lines and columns start at 1.")
