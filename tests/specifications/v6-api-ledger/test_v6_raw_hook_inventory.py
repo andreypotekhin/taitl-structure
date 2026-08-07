@@ -68,7 +68,7 @@ def _raw_hooks() -> set[tuple[str, str]]:
             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and any(
                 _is_raw(decorator) for decorator in node.decorator_list
             ):
-                hooks.add((str(path.relative_to(ROOT)), node.name))
+                hooks.add((path.relative_to(ROOT).as_posix(), node.name))
     return hooks
 
 
