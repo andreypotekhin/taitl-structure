@@ -8,11 +8,13 @@ how results are ultimately displayed.
 
 A heading line beginning with `#` starts a section and supplies its heading. Blank-line groups form paragraphs. A
 document without a heading receives an implicit document section. Outputs retain document identity, parent identity,
-content, and deterministic ordinals. Empty or malformed source content must have an explicit, documented result rather
-than an invented document structure.
+deterministic ordinals, and half-open Unicode code-point spans into the original document. Structural rows do not
+persist duplicate content. Empty or malformed source content must have an explicit, documented result rather than an
+invented document structure.
 
 `Chunking` is the composed boundary. `DocumentChunking` establishes the document/section/paragraph hierarchy and
-`SentenceChunking` supplies sentence text for each paragraph.
+`SentenceChunking` supplies sentence boundaries for each paragraph; consumers materialize text privately from
+`Document.content` when needed.
 
 
 Chunking is intentionally upstream of lexical normalization. It owns structure and source order; `Indexing` owns term
@@ -26,7 +28,7 @@ The composition is intentionally small:
 
 ```python
 chunked = DocumentChunking(documents=documents)
-sentences = SentenceChunking(paragraphs=chunked.paragraphs)
+sentences = SentenceChunking(documents=documents, paragraphs=chunked.paragraphs)
 ```
 
 The important behavior is the relation contract around these calls: parent keys and local ordinals survive the
@@ -37,8 +39,8 @@ transition, while a caller may replace sentence segmentation without changing do
 - Publish sections, paragraphs, and sentences, but not a public word relation. Repeated tokenization by every consumer
   was rejected; shared normalization belongs in Indexing.
 - Preserve explicit ordinals and parent IDs rather than relying on DataFrame order.
-- Keep exact sentence spans caller-replaceable. Claiming source-faithful spans from a simple punctuation splitter was
-  rejected.
+- Keep exact sentence spans caller-replaceable. The default splitter supplies spans, while custom splitters must also
+  provide spans; content-only replacement rows are rejected.
 - Keep adaptive chunk sizes and context-radius policies deferred; they belong to a separate passage design.
 
 
@@ -54,9 +56,9 @@ edge cases, and replacement-supplier parity.
 
 | Boundary | Contract |
 |---|---|
-| Section | A document-preserving group with stable section identity and ordinal. |
-| Paragraph | A section child; blank or rejected text is represented by the declared policy. |
-| Sentence | A paragraph child with stable ordinal; punctuation does not change parent identity. |
+| Section | A section identity, ordinal, body span, and optional heading span. |
+| Paragraph | A section child with stable ordinal and a document-local body span. |
+| Sentence | A paragraph child with stable ordinal and a document-local sentence span. |
 | Parentage | Every emitted child carries document and immediate-parent keys; no cross-document parent is valid. |
 | Replacement | A supplied splitter may change boundaries but must emit the same schema and identity rules. |
 

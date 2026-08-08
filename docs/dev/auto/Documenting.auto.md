@@ -5,8 +5,8 @@
 - Main: [Documenting.md](../Documenting.md)
 - 'Documenting' section in [Style.md](../Style.md)
 
-### Authoring automation
-- Main: [Authoring.auto.md](../Authoring.auto.md)
+### Text style, processes and operators
+- Main: [Prose.auto.md](../Prose.auto.md)
 - Definitions of text operators and processes. 
 
 ### Annotated source code
@@ -55,6 +55,7 @@ with one centence for each. Include scenario table and details, if needed, as in
 #### End-User documentation tips 
 - Use caution/consider alternative wording on corporate speak such as 'owns', 'boundary', 'intentional'
 'downstream', qualifiers like 'complete' (when not the focus)
+- Do not assume the reader actually reads headings - add heading text or its idea to body text if not already there.
 - Avoid formalisms like 'the following'. 
 - In Reference documents, 
   - ensure concept is defined/purpose is explained before showing code snippet.
@@ -62,7 +63,7 @@ with one centence for each. Include scenario table and details, if needed, as in
   - avoid overloading a sentence with several statements.
 - In Recipe documents, avoid excess use of word 'recipe' (reader already realizes that).
 - Code examples use wildcard imports, to save lines.
-- Do not assume example apps code in known/can be referred. 
+- Do not assume example apps code in known/can be referred as-is to the user. 
   - Ex: 'Keep tenant and other scope keys in the predicate.' - tenant is part of example app, not part of the project.  
 
 ### Developer documentation - Top-level

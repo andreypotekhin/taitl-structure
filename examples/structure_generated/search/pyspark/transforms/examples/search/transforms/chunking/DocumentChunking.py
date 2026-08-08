@@ -13,7 +13,7 @@ from examples.structure_generated.search.runtime.schema_assert import (
     apply_plan_boundary,
     close_plan_boundaries,
 )
-from examples.structure_generated.search.pyspark.schemas.chunk import (
+from examples.structure_generated.search.pyspark.schemas.chunking_intermediate import (
     MARKED_DOCUMENT_LINE_SCHEMA,
     PARAGRAPH_CONTENT_SCHEMA,
     PARAGRAPH_DRAFT_SCHEMA,
@@ -30,6 +30,16 @@ class DocumentChunkingGenerated:
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
         self.ctx = ctx
+        self._structure_udf_examples_search_transforms_chunking_documentchunking_documentchunking_canonical_document_lines = (
+            F
+            .udf(
+                 self.canonical_document_lines,
+                 returnType=T.ArrayType(
+                    DOCUMENT_LINE_SCHEMA,
+                     containsNull=False
+                )
+            )
+        )
 
     def close(self) -> None:
         close_plan_boundaries(self.spark)
@@ -47,9 +57,13 @@ class DocumentChunkingGenerated:
         marked_lines = marked_lines.select(
             "*",
             F.posexplode(
-                F.transform(
-                    F.split(F.regexp_replace(F.col("document.content"), '\\r\\n?', '\n'), '\n', -1),
-                    lambda item: F.struct(item.alias("line")),
+                (
+                    self
+                    ._structure_udf_examples_search_transforms_chunking_documentchunking_documentchunking_canonical_document_lines(
+                         F.col(
+                            "document.content"
+                        )
+                    )
                 )
             ).alias("__structure_document_line_1_pos", "__structure_document_line_1_item"),
         )
@@ -61,30 +75,49 @@ class DocumentChunkingGenerated:
             "line",
             F.col("__structure_document_line_1_item.line"),
         )
+        marked_lines = marked_lines.withColumn(
+            "span_start",
+            F.col("__structure_document_line_1_item.span_start"),
+        )
+        marked_lines = marked_lines.withColumn(
+            "span_end",
+            F.col("__structure_document_line_1_item.span_end"),
+        )
+        marked_lines = marked_lines.withColumn(
+            "heading",
+            F.col("__structure_document_line_1_item.heading"),
+        )
+        marked_lines = marked_lines.withColumn(
+            "heading_span_start",
+            F.col("__structure_document_line_1_item.heading_span_start"),
+        )
+        marked_lines = marked_lines.withColumn(
+            "heading_span_end",
+            F.col("__structure_document_line_1_item.heading_span_end"),
+        )
+        marked_lines = marked_lines.withColumn(
+            "is_blank",
+            F.col("__structure_document_line_1_item.is_blank"),
+        )
         marked_lines = marked_lines.drop("__structure_document_line_1_pos", "__structure_document_line_1_item")
         marked_lines = marked_lines.select(
             F.col("document.id").alias("document_id"),
             F.col("ordinal").alias("line_ordinal"),
             F.col("line"),
-            F.when(
-                (F.trim(F.regexp_extract(F.col("line"), '^\\s*#+\\s+(.+?)\\s*$', 1)) != F.lit('')),
-                F.trim(F.regexp_extract(F.col("line"), '^\\s*#+\\s+(.+?)\\s*$', 1)),
-            )
-            .otherwise(F.lit(None))
-            .alias("heading"),
-            (F.trim(F.col("line")) == F.lit('')).alias("is_blank"),
-            F.sum(
-                F.when(
-                    (F.trim(F.regexp_extract(F.col("line"), '^\\s*#+\\s+(.+?)\\s*$', 1)) != F.lit('')), F.lit(1)
-                ).otherwise(F.lit(0))
-            )
+            F.col("span_start"),
+            F.col("span_end"),
+            F.col("heading"),
+            F.col("heading_span_start"),
+            F.col("heading_span_end"),
+            F.col("is_blank"),
+            F.sum(F.when(F.col("heading").isNotNull(), F.lit(1)).otherwise(F.lit(0)))
             .over(
                 Window.partitionBy(F.col("document.id"))
                 .orderBy(F.col("ordinal").asc())
                 .rowsBetween(Window.unboundedPreceding, Window.currentRow)
             )
             .alias("section_ordinal"),
-            F.sum(F.when((F.trim(F.col("line")) == F.lit('')), F.lit(1)).otherwise(F.lit(0)))
+            F.sum(F.when(F.col("is_blank"), F.lit(1)).otherwise(F.lit(0)))
             .over(
                 Window.partitionBy(F.col("document.id"))
                 .orderBy(F.col("ordinal").asc())
@@ -105,6 +138,8 @@ class DocumentChunkingGenerated:
             F.col("marked_document_line.paragraph_group"),
             F.col("marked_document_line.line_ordinal"),
             F.col("marked_document_line.line"),
+            F.col("marked_document_line.span_start"),
+            F.col("marked_document_line.span_end"),
         )
         assert_schema(paragraph_lines, PARAGRAPH_LINE_SCHEMA, name="ParagraphLine", mode="strict")
 
@@ -115,6 +150,8 @@ class DocumentChunkingGenerated:
             F.col("marked_document_line.document_id"),
             F.col("marked_document_line.section_ordinal"),
             F.col("marked_document_line.heading"),
+            F.col("marked_document_line.heading_span_start"),
+            F.col("marked_document_line.heading_span_end"),
         )
         assert_schema(section_headings, SECTION_HEADING_SCHEMA, name="SectionHeading", mode="strict")
 
@@ -133,21 +170,8 @@ class DocumentChunkingGenerated:
                 F.col("paragraph_line.paragraph_group").alias("paragraph_group"),
             )
             .agg(
-                F.transform(
-                    F.sort_array(
-                        F.collect_list(
-                            F.when(
-                                F.col("paragraph_line.line").isNotNull(),
-                                F.struct(
-                                    F.col("paragraph_line.line_ordinal").alias('_structure_order'),
-                                    F.col("paragraph_line.line").alias('_structure_value'),
-                                ),
-                            )
-                        ),
-                        asc=True,
-                    ),
-                    lambda item: item.getField('_structure_value'),
-                ).alias("lines"),
+                F.min(F.col("paragraph_line.span_start")).cast(T.LongType()).alias("span_start"),
+                F.max(F.col("paragraph_line.span_end")).cast(T.LongType()).alias("span_end"),
             )
             .select(
                 F.col("id"),
@@ -155,7 +179,8 @@ class DocumentChunkingGenerated:
                 F.col("section_id"),
                 F.col("section_ordinal"),
                 F.col("paragraph_group"),
-                F.col("lines"),
+                F.col("span_start"),
+                F.col("span_end"),
             )
         )
         assert_schema(paragraph_line_groups, PARAGRAPH_LINE_GROUP_SCHEMA, name="ParagraphLineGroup", mode="strict")
@@ -168,7 +193,8 @@ class DocumentChunkingGenerated:
             F.col("paragraph_line_group.section_id"),
             F.col("paragraph_line_group.section_ordinal"),
             F.col("paragraph_line_group.paragraph_group"),
-            F.concat_ws(' ', F.col("paragraph_line_group.lines")).alias("content"),
+            F.col("paragraph_line_group.span_start"),
+            F.col("paragraph_line_group.span_end"),
         )
         assert_schema(paragraph_content, PARAGRAPH_CONTENT_SCHEMA, name="ParagraphContent", mode="strict")
 
@@ -188,10 +214,8 @@ class DocumentChunkingGenerated:
             .cast(T.LongType())
             .cast('int')
             .alias("ordinal"),
-            F.col("paragraph_content.content"),
-            F.lit(None).cast(T.StringType()).alias("search_query_id"),
-            F.lit(None).cast(T.DoubleType()).alias("score_overlap"),
-            F.lit(None).cast(T.DoubleType()).alias("score_bm25"),
+            F.col("paragraph_content.span_start"),
+            F.col("paragraph_content.span_end"),
         )
         assert_schema(paragraph_drafts, PARAGRAPH_DRAFT_SCHEMA, name="ParagraphDraft", mode="strict")
 
@@ -202,24 +226,32 @@ class DocumentChunkingGenerated:
             F.col("paragraph_draft.document_id"),
             F.col("paragraph_draft.section_id"),
             F.col("paragraph_draft.ordinal"),
-            F.col("paragraph_draft.content"),
-            F.col("paragraph_draft.search_query_id"),
-            F.col("paragraph_draft.score_overlap"),
-            F.col("paragraph_draft.score_bm25"),
+            F.col("paragraph_draft.span_start"),
+            F.col("paragraph_draft.span_end"),
         )
         assert_schema(paragraphs, PARAGRAPH_SCHEMA, name="Paragraph", mode="strict")
 
         # Step method: select_section_keys
         section_keys = paragraph_drafts.alias("paragraph_draft")
-        if section_keys.isStreaming:
-            section_keys = section_keys.dropDuplicatesWithinWatermark(["document_id", "section_id"])
-        else:
-            section_keys = section_keys.dropDuplicates(["document_id", "section_id"])
-        section_keys = section_keys.select(
-            F.col("paragraph_draft.section_id").alias("id"),
-            F.col("paragraph_draft.document_id"),
-            F.col("paragraph_draft.section_ordinal"),
-            F.col("paragraph_draft.section_ordinal").cast('int').alias("ordinal"),
+        section_keys = (
+            section_keys.groupBy(
+                F.col("paragraph_draft.section_id").alias("id"),
+                F.col("paragraph_draft.document_id").alias("document_id"),
+                F.col("paragraph_draft.section_ordinal").alias("section_ordinal"),
+                F.col("paragraph_draft.section_ordinal").cast('int').alias("ordinal"),
+            )
+            .agg(
+                F.min(F.col("paragraph_draft.span_start")).cast(T.LongType()).alias("span_start"),
+                F.max(F.col("paragraph_draft.span_end")).cast(T.LongType()).alias("span_end"),
+            )
+            .select(
+                F.col("id"),
+                F.col("document_id"),
+                F.col("section_ordinal"),
+                F.col("ordinal"),
+                F.col("span_start"),
+                F.col("span_end"),
+            )
         )
         assert_schema(section_keys, SECTION_KEY_SCHEMA, name="SectionKey", mode="strict")
 
@@ -238,10 +270,10 @@ class DocumentChunkingGenerated:
             F.col("section_key.id"),
             F.col("section_key.document_id"),
             F.col("section_key.ordinal"),
-            F.coalesce(F.col("section_headings.heading"), F.lit('Document')).alias("heading"),
-            F.lit(None).cast(T.StringType()).alias("search_query_id"),
-            F.lit(None).cast(T.DoubleType()).alias("score_overlap"),
-            F.lit(None).cast(T.DoubleType()).alias("score_bm25"),
+            F.col("section_key.span_start"),
+            F.col("section_key.span_end"),
+            F.col("section_headings.heading_span_start"),
+            F.col("section_headings.heading_span_end"),
         )
 
         # Step method: sections
@@ -256,3 +288,30 @@ class DocumentChunkingGenerated:
             single=False,
             schema={"sections": SECTION_SCHEMA, "paragraphs": PARAGRAPH_SCHEMA},
         )
+
+    @staticmethod
+    def canonical_document_lines(content: Any) -> list[dict[str, object]]:
+        """Return canonical lines and code-point spans without reconstructing text later."""
+        import re
+
+        canonical = re.sub('\\r\\n?', '\n', content)
+        lines: list[dict[str, object]] = []
+        offset = 0
+        for line in canonical.split('\n'):
+            match = re.match('^\\s*#+\\s+(.+?)\\s*$', line)
+            heading = match.group(1).strip() if match else None
+            heading_start = offset + match.start(1) if match else None
+            heading_end = offset + match.end(1) if match else None
+            lines.append(
+                {
+                    'line': line,
+                    'span_start': offset,
+                    'span_end': offset + len(line),
+                    'heading': heading,
+                    'heading_span_start': heading_start,
+                    'heading_span_end': heading_end,
+                    'is_blank': line.strip() == '',
+                }
+            )
+            offset += len(line) + 1
+        return lines

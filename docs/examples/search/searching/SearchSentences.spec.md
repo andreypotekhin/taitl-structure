@@ -4,7 +4,7 @@
 `SearchSentences` presents the narrowest lexical evidence grain for callers that need exact sentence-level matches.
 
 
-It accepts one or more queries, immutable sentences, and sentence score relations. It emits one-based ranks partitioned
+It accepts one or more queries, the original documents, immutable sentence boundaries, and sentence score relations. It emits one-based ranks partitioned
 by query and experiment. Ordering is descending BM25, descending overlap, then stable document and sentence IDs.
 
 The result is a relation, not an ordered collection. Consumers must page or sort using the emitted rank and must not

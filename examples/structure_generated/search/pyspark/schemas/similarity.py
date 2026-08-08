@@ -11,11 +11,23 @@ SIMILARITY_POLICY_SCHEMA = T.StructType([
 
 SIMILARITY_DOCUMENT_QUERY_SCHEMA = T.StructType(DOCUMENT_SCHEMA.fields)
 
-SIMILARITY_SECTION_QUERY_SCHEMA = T.StructType(SECTION_SCHEMA.fields)
+SIMILARITY_SECTION_QUERY_SCHEMA = T.StructType(SECTION_SCHEMA.fields + [
+    T.StructField("search_query_id", T.StringType(), True),
+    T.StructField("score_overlap", T.DoubleType(), True),
+    T.StructField("score_bm25", T.DoubleType(), True),
+])
 
-SIMILARITY_PARAGRAPH_QUERY_SCHEMA = T.StructType(PARAGRAPH_SCHEMA.fields)
+SIMILARITY_PARAGRAPH_QUERY_SCHEMA = T.StructType(PARAGRAPH_SCHEMA.fields + [
+    T.StructField("search_query_id", T.StringType(), True),
+    T.StructField("score_overlap", T.DoubleType(), True),
+    T.StructField("score_bm25", T.DoubleType(), True),
+])
 
-SIMILARITY_SENTENCE_QUERY_SCHEMA = T.StructType(SENTENCE_SCHEMA.fields)
+SIMILARITY_SENTENCE_QUERY_SCHEMA = T.StructType(SENTENCE_SCHEMA.fields + [
+    T.StructField("search_query_id", T.StringType(), True),
+    T.StructField("score_overlap", T.DoubleType(), True),
+    T.StructField("score_bm25", T.DoubleType(), True),
+])
 
 DOCUMENT_SIMILARITY_QUERY_SCHEMA = T.StructType([
     T.StructField("query_id", T.StringType(), False),
@@ -49,14 +61,23 @@ INDEXED_SIMILAR_DOCUMENT_SCHEMA = T.StructType(DOCUMENT_SCHEMA.fields + [
 ])
 
 INDEXED_SIMILAR_SECTION_SCHEMA = T.StructType(SECTION_SCHEMA.fields + [
+    T.StructField("search_query_id", T.StringType(), True),
+    T.StructField("score_overlap", T.DoubleType(), True),
+    T.StructField("score_bm25", T.DoubleType(), True),
     T.StructField("rank", T.LongType(), False),
 ])
 
 INDEXED_SIMILAR_PARAGRAPH_SCHEMA = T.StructType(PARAGRAPH_SCHEMA.fields + [
+    T.StructField("search_query_id", T.StringType(), True),
+    T.StructField("score_overlap", T.DoubleType(), True),
+    T.StructField("score_bm25", T.DoubleType(), True),
     T.StructField("rank", T.LongType(), False),
 ])
 
 INDEXED_SIMILAR_SENTENCE_SCHEMA = T.StructType(SENTENCE_SCHEMA.fields + [
+    T.StructField("search_query_id", T.StringType(), True),
+    T.StructField("score_overlap", T.DoubleType(), True),
+    T.StructField("score_bm25", T.DoubleType(), True),
     T.StructField("rank", T.LongType(), False),
 ])
 

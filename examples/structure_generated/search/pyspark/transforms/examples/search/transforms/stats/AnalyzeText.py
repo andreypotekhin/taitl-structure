@@ -20,6 +20,7 @@ from examples.structure_generated.search.pyspark.schemas.analytics import (
     SENTENCE_STATISTICS_SCHEMA,
     SIMILAR_DOCUMENT_SCHEMA,
 )
+from examples.structure_generated.search.pyspark.schemas.chunking_intermediate import MATERIALIZED_SECTION_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.index import (
     DOCUMENT_TERM_SCHEMA,
     PARAGRAPH_TERM_SCHEMA,
@@ -27,7 +28,12 @@ from examples.structure_generated.search.pyspark.schemas.index import (
     SENTENCE_TERM_SCHEMA,
 )
 from examples.structure_generated.search.pyspark.schemas.lexical_intermediate import DOCUMENT_HIERARCHY_COUNTS_SCHEMA
-from examples.structure_generated.search.pyspark.schemas.text import PARAGRAPH_SCHEMA, SECTION_SCHEMA, SENTENCE_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.text import (
+    DOCUMENT_SCHEMA,
+    PARAGRAPH_SCHEMA,
+    SECTION_SCHEMA,
+    SENTENCE_SCHEMA,
+)
 
 
 class AnalyzeTextGenerated:
@@ -35,6 +41,9 @@ class AnalyzeTextGenerated:
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
         self.ctx = ctx
+        self._structure_udf_examples_search_transforms_chunking_materializetext__textmaterializer_canonical_span = (
+            F.udf(self.canonical_span, returnType=T.StringType())
+        )
 
     def close(self) -> None:
         close_plan_boundaries(self.spark)
@@ -42,6 +51,7 @@ class AnalyzeTextGenerated:
     def run(
         self,
         *,
+        documents: DataFrame,
         sentences: DataFrame,
         paragraphs: DataFrame,
         sections: DataFrame,
@@ -52,6 +62,7 @@ class AnalyzeTextGenerated:
         comparison_left: DataFrame,
         comparison_right: DataFrame,
     ) -> TransformResult:
+        assert_schema(documents, DOCUMENT_SCHEMA, name="Document", mode="strict")
         assert_schema(sentences, SENTENCE_SCHEMA, name="Sentence", mode="strict")
         assert_schema(paragraphs, PARAGRAPH_SCHEMA, name="Paragraph", mode="strict")
         assert_schema(sections, SECTION_SCHEMA, name="Section", mode="strict")
@@ -61,6 +72,7 @@ class AnalyzeTextGenerated:
         assert_schema(sentence_terms, SENTENCE_TERM_SCHEMA, name="SentenceTerm", mode="strict")
         assert_schema(comparison_left, DOCUMENT_PROFILE_SCHEMA, name="DocumentProfile", mode="strict")
         assert_schema(comparison_right, DOCUMENT_PROFILE_SCHEMA, name="DocumentProfile", mode="strict")
+        _input_documents = documents
         _input_sentences = sentences
         _input_paragraphs = paragraphs
         _input_sections = sections
@@ -70,6 +82,45 @@ class AnalyzeTextGenerated:
         _input_sentence_terms = sentence_terms
         _input_comparison_left = comparison_left
         _input_comparison_right = comparison_right
+
+        # Step method: materialize_section
+        materialized_section = documents.alias("document")
+        sections_joined = sections.alias("sections")
+        materialized_section = materialized_section.join(
+            sections_joined,
+            (F.col("document.id") == F.col("sections.document_id")),
+            "inner",
+        )
+        materialized_section = materialized_section.select(
+            F.col("sections.id"),
+            F.col("sections.document_id"),
+            F.col("sections.ordinal"),
+            F.col("sections.span_start"),
+            F.col("sections.span_end"),
+            F.col("sections.heading_span_start"),
+            F.col("sections.heading_span_end"),
+            F.coalesce(
+                F.when(
+                    F.col("sections.heading_span_start").isNotNull(),
+                    (
+                        self
+                        ._structure_udf_examples_search_transforms_chunking_materializetext__textmaterializer_canonical_span(
+                             F.col(
+                                "document.content"
+                            ),
+                             F.col(
+                                "sections.heading_span_start"
+                            ),
+                             F.col(
+                                "sections.heading_span_end"
+                            ),
+                        )
+                    ),
+                ).otherwise(F.lit('Document')),
+                F.lit('Document'),
+            ).alias("heading"),
+        )
+        assert_schema(materialized_section, MATERIALIZED_SECTION_SCHEMA, name="MaterializedSection", mode="strict")
 
         # Step method: sentence_stats
         sentence_statistics = sentence_terms.alias("sentence_term")
@@ -188,12 +239,18 @@ class AnalyzeTextGenerated:
             ),
             "inner",
         )
+        materialized_section_4_joined = materialized_section.alias("materialized_section_4")
+        section_statistics = section_statistics.join(
+            materialized_section_4_joined,
+            (F.col("materialized_section_4.id") == F.col("sections.id")),
+            "inner",
+        )
         section_statistics = (
             section_statistics.groupBy(
                 F.col("sections.id").alias("section_id"),
                 F.col("sections.document_id").alias("document_id"),
                 F.col("sections.ordinal").alias("section_ordinal"),
-                F.col("sections.heading").alias("heading"),
+                F.col("materialized_section_4.heading").alias("heading"),
             )
             .agg(
                 F.countDistinct(F.col("paragraphs_2.id")).cast(T.LongType()).alias("paragraph_count"),
@@ -334,3 +391,13 @@ class AnalyzeTextGenerated:
                 "similar_documents": SIMILAR_DOCUMENT_SCHEMA,
             },
         )
+
+    @staticmethod
+    def canonical_span(content: Any, start: Any, end: Any) -> str | None:
+        """Extract a half-open span from canonicalized Unicode document text."""
+        import re
+
+        if content is None or start is None or end is None:
+            return None
+        canonical = re.sub('\\r\\n?', '\n', content)
+        return canonical[int(start) : int(end)]

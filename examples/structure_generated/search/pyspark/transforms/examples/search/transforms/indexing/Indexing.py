@@ -12,6 +12,7 @@ from examples.structure_generated.search.runtime.schema_assert import (
     apply_plan_boundary,
     close_plan_boundaries,
 )
+from examples.structure_generated.search.pyspark.schemas.chunking_intermediate import MATERIALIZED_SENTENCE_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.index import (
     DOCUMENT_INDEX_SUMMARY_SCHEMA,
     DOCUMENT_TERM_SCHEMA,
@@ -34,17 +35,49 @@ from examples.structure_generated.search.pyspark.schemas.lexical_intermediate im
     SENTENCE_INDEX_TARGET_STATS_SCHEMA,
     SENTENCE_TERM_COUNT_SCHEMA,
 )
-from examples.structure_generated.search.pyspark.schemas.text import SENTENCE_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.text import DOCUMENT_SCHEMA, SENTENCE_SCHEMA
 
 
 class LexIndexGenerated:
-    def _step_lexical_tokenize_0(self, frames):
+    def _step_lexical_materialize_sentence_0(self, frames):
+        # Step method: lexical.materialize_sentence
+        lexical__materialized_sentence = frames["documents"].alias("document")
+        sentences_joined = frames["sentences"].alias("sentences")
+        lexical__materialized_sentence = lexical__materialized_sentence.join(
+            sentences_joined,
+            (F.col("document.id") == F.col("sentences.document_id")),
+            "inner",
+        )
+        lexical__materialized_sentence = lexical__materialized_sentence.select(
+            F.col("sentences.id"),
+            F.col("sentences.document_id"),
+            F.col("sentences.section_id"),
+            F.col("sentences.paragraph_id"),
+            F.col("sentences.paragraph_ordinal"),
+            F.col("sentences.ordinal"),
+            F.col("sentences.span_start"),
+            F.col("sentences.span_end"),
+            self._structure_udf_examples_search_transforms_chunking_materializetext__textmaterializer_canonical_span(
+                F.col("document.content"), F.col("sentences.span_start"), F.col("sentences.span_end")
+            ).alias("content"),
+        )
+        assert_schema(
+            lexical__materialized_sentence, MATERIALIZED_SENTENCE_SCHEMA, name="MaterializedSentence", mode="strict"
+        )
+        return {
+            "lexical__materialized_sentence": lexical__materialized_sentence,
+        }
+
+    def _step_lexical_tokenize_1(self, frames):
         # Step method: lexical.tokenize
-        lexical__occurrences = frames["sentences"].alias("sentence")
+        lexical__occurrences = frames["lexical__materialized_sentence"].alias("materialized_sentence")
         lexical__occurrences = lexical__occurrences.select(
             "*",
             F.posexplode(
-                F.transform(F.split(F.col("sentence.content"), '\\s+', -1), lambda item: F.struct(item.alias("term")))
+                F.transform(
+                    F.split(F.col("materialized_sentence.content"), '\\s+', -1),
+                    lambda item: F.struct(item.alias("term")),
+                )
             ).alias("__structure_sentence_term_1_pos", "__structure_sentence_term_1_item"),
         )
         lexical__occurrences = lexical__occurrences.withColumn(
@@ -62,10 +95,10 @@ class LexIndexGenerated:
             ((F.lower(F.regexp_replace(F.trim(F.col("term")), '^[^A-Za-z0-9]+|[^A-Za-z0-9]+$', '')) != F.lit('')))
         )
         lexical__occurrences = lexical__occurrences.select(
-            F.col("sentence.document_id"),
-            F.col("sentence.section_id"),
-            F.col("sentence.paragraph_id"),
-            F.col("sentence.id").alias("sentence_id"),
+            F.col("materialized_sentence.document_id"),
+            F.col("materialized_sentence.section_id"),
+            F.col("materialized_sentence.paragraph_id"),
+            F.col("materialized_sentence.id").alias("sentence_id"),
             F.lower(F.regexp_replace(F.trim(F.col("term")), '^[^A-Za-z0-9]+|[^A-Za-z0-9]+$', '')).alias("term"),
         )
         assert_schema(lexical__occurrences, LEXICAL_OCCURRENCE_SCHEMA, name="LexicalOccurrence", mode="strict")
@@ -73,7 +106,7 @@ class LexIndexGenerated:
             "lexical__occurrences": lexical__occurrences,
         }
 
-    def _step_lexical_count_document_terms_1(self, frames):
+    def _step_lexical_count_document_terms_2(self, frames):
         # Step method: lexical.count_document_terms
         lexical__document_term_counts = frames["lexical__occurrences"].alias("lexical_occurrence")
         lexical__document_term_counts = (
@@ -97,7 +130,7 @@ class LexIndexGenerated:
             "lexical__document_term_counts": lexical__document_term_counts,
         }
 
-    def _step_lexical_summarize_documents_2(self, frames):
+    def _step_lexical_summarize_documents_3(self, frames):
         # Step method: lexical.summarize_documents
         lexical__document_target_stats = frames["lexical__occurrences"].alias("lexical_occurrence")
         lexical__document_target_stats = (
@@ -130,7 +163,7 @@ class LexIndexGenerated:
             "lexical__document_target_stats": lexical__document_target_stats,
         }
 
-    def _step_lexical_count_document_frequencies_3(self, frames):
+    def _step_lexical_count_document_frequencies_4(self, frames):
         # Step method: lexical.count_document_frequencies
         lexical__document_target_frequencies = frames["lexical__document_term_counts"].alias("document_term_count")
         lexical__document_target_frequencies = (
@@ -155,7 +188,7 @@ class LexIndexGenerated:
             "lexical__document_target_frequencies": lexical__document_target_frequencies,
         }
 
-    def _step_lexical_build_document_terms_4(self, frames):
+    def _step_lexical_build_document_terms_5(self, frames):
         # Step method: lexical.build_document_terms
         lexical__document_terms = frames["lexical__document_term_counts"].alias("document_term_count")
         lexical__document_target_stats_joined = frames["lexical__document_target_stats"].alias(
@@ -188,7 +221,7 @@ class LexIndexGenerated:
             "lexical__document_terms": lexical__document_terms,
         }
 
-    def _step_lexical_summarize_document_index_5(self, frames):
+    def _step_lexical_summarize_document_index_6(self, frames):
         # Step method: lexical.summarize_document_index
         lexical__document_summary = frames["lexical__document_target_stats"].alias("document_index_target_stats")
         lexical__document_summary = lexical__document_summary.agg(
@@ -207,7 +240,7 @@ class LexIndexGenerated:
             "lexical__document_summary": lexical__document_summary,
         }
 
-    def _step_lexical_count_section_terms_6(self, frames):
+    def _step_lexical_count_section_terms_7(self, frames):
         # Step method: lexical.count_section_terms
         lexical__section_term_counts = frames["lexical__occurrences"].alias("lexical_occurrence")
         lexical__section_term_counts = (
@@ -231,7 +264,7 @@ class LexIndexGenerated:
             "lexical__section_term_counts": lexical__section_term_counts,
         }
 
-    def _step_lexical_summarize_sections_7(self, frames):
+    def _step_lexical_summarize_sections_8(self, frames):
         # Step method: lexical.summarize_sections
         lexical__section_target_stats = frames["lexical__occurrences"].alias("lexical_occurrence")
         lexical__section_target_stats = (
@@ -266,7 +299,7 @@ class LexIndexGenerated:
             "lexical__section_target_stats": lexical__section_target_stats,
         }
 
-    def _step_lexical_count_section_frequencies_8(self, frames):
+    def _step_lexical_count_section_frequencies_9(self, frames):
         # Step method: lexical.count_section_frequencies
         lexical__section_target_frequencies = frames["lexical__section_term_counts"].alias("section_term_count")
         lexical__section_target_frequencies = (
@@ -291,7 +324,7 @@ class LexIndexGenerated:
             "lexical__section_target_frequencies": lexical__section_target_frequencies,
         }
 
-    def _step_lexical_build_section_terms_9(self, frames):
+    def _step_lexical_build_section_terms_10(self, frames):
         # Step method: lexical.build_section_terms
         lexical__section_terms = frames["lexical__section_term_counts"].alias("section_term_count")
         lexical__section_target_stats_joined = frames["lexical__section_target_stats"].alias(
@@ -328,7 +361,7 @@ class LexIndexGenerated:
             "lexical__section_terms": lexical__section_terms,
         }
 
-    def _step_lexical_summarize_section_index_10(self, frames):
+    def _step_lexical_summarize_section_index_11(self, frames):
         # Step method: lexical.summarize_section_index
         lexical__section_summary = frames["lexical__section_target_stats"].alias("section_index_target_stats")
         lexical__section_summary = lexical__section_summary.agg(
@@ -345,7 +378,7 @@ class LexIndexGenerated:
             "lexical__section_summary": lexical__section_summary,
         }
 
-    def _step_lexical_count_paragraph_terms_11(self, frames):
+    def _step_lexical_count_paragraph_terms_12(self, frames):
         # Step method: lexical.count_paragraph_terms
         lexical__paragraph_term_counts = frames["lexical__occurrences"].alias("lexical_occurrence")
         lexical__paragraph_term_counts = (
@@ -373,7 +406,7 @@ class LexIndexGenerated:
             "lexical__paragraph_term_counts": lexical__paragraph_term_counts,
         }
 
-    def _step_lexical_summarize_paragraphs_12(self, frames):
+    def _step_lexical_summarize_paragraphs_13(self, frames):
         # Step method: lexical.summarize_paragraphs
         lexical__paragraph_target_stats = frames["lexical__occurrences"].alias("lexical_occurrence")
         lexical__paragraph_target_stats = (
@@ -410,7 +443,7 @@ class LexIndexGenerated:
             "lexical__paragraph_target_stats": lexical__paragraph_target_stats,
         }
 
-    def _step_lexical_count_paragraph_frequencies_13(self, frames):
+    def _step_lexical_count_paragraph_frequencies_14(self, frames):
         # Step method: lexical.count_paragraph_frequencies
         lexical__paragraph_target_frequencies = frames["lexical__paragraph_term_counts"].alias("paragraph_term_count")
         lexical__paragraph_target_frequencies = (
@@ -435,7 +468,7 @@ class LexIndexGenerated:
             "lexical__paragraph_target_frequencies": lexical__paragraph_target_frequencies,
         }
 
-    def _step_lexical_build_paragraph_terms_14(self, frames):
+    def _step_lexical_build_paragraph_terms_15(self, frames):
         # Step method: lexical.build_paragraph_terms
         lexical__paragraph_terms = frames["lexical__paragraph_term_counts"].alias("paragraph_term_count")
         lexical__paragraph_target_stats_joined = frames["lexical__paragraph_target_stats"].alias(
@@ -476,7 +509,7 @@ class LexIndexGenerated:
             "lexical__paragraph_terms": lexical__paragraph_terms,
         }
 
-    def _step_lexical_summarize_paragraph_index_15(self, frames):
+    def _step_lexical_summarize_paragraph_index_16(self, frames):
         # Step method: lexical.summarize_paragraph_index
         lexical__paragraph_summary = frames["lexical__paragraph_target_stats"].alias("paragraph_index_target_stats")
         lexical__paragraph_summary = lexical__paragraph_summary.agg(
@@ -495,7 +528,7 @@ class LexIndexGenerated:
             "lexical__paragraph_summary": lexical__paragraph_summary,
         }
 
-    def _step_lexical_count_sentence_terms_16(self, frames):
+    def _step_lexical_count_sentence_terms_17(self, frames):
         # Step method: lexical.count_sentence_terms
         lexical__sentence_term_counts = frames["lexical__occurrences"].alias("lexical_occurrence")
         lexical__sentence_term_counts = (
@@ -525,7 +558,7 @@ class LexIndexGenerated:
             "lexical__sentence_term_counts": lexical__sentence_term_counts,
         }
 
-    def _step_lexical_summarize_sentences_17(self, frames):
+    def _step_lexical_summarize_sentences_18(self, frames):
         # Step method: lexical.summarize_sentences
         lexical__sentence_target_stats = frames["lexical__occurrences"].alias("lexical_occurrence")
         lexical__sentence_target_stats = (
@@ -564,7 +597,7 @@ class LexIndexGenerated:
             "lexical__sentence_target_stats": lexical__sentence_target_stats,
         }
 
-    def _step_lexical_count_sentence_frequencies_18(self, frames):
+    def _step_lexical_count_sentence_frequencies_19(self, frames):
         # Step method: lexical.count_sentence_frequencies
         lexical__sentence_target_frequencies = frames["lexical__sentence_term_counts"].alias("sentence_term_count")
         lexical__sentence_target_frequencies = (
@@ -589,7 +622,7 @@ class LexIndexGenerated:
             "lexical__sentence_target_frequencies": lexical__sentence_target_frequencies,
         }
 
-    def _step_lexical_build_sentence_terms_19(self, frames):
+    def _step_lexical_build_sentence_terms_20(self, frames):
         # Step method: lexical.build_sentence_terms
         lexical__sentence_terms = frames["lexical__sentence_term_counts"].alias("sentence_term_count")
         lexical__sentence_target_stats_joined = frames["lexical__sentence_target_stats"].alias(
@@ -643,7 +676,7 @@ class LexIndexGenerated:
             "lexical__sentence_terms": lexical__sentence_terms,
         }
 
-    def _step_lexical_summarize_sentence_index_20(self, frames):
+    def _step_lexical_summarize_sentence_index_21(self, frames):
         # Step method: lexical.summarize_sentence_index
         lexical__sentence_summary = frames["lexical__sentence_target_stats"].alias("sentence_index_target_stats")
         lexical__sentence_summary = lexical__sentence_summary.agg(
@@ -665,6 +698,9 @@ class IndexingGenerated(LexIndexGenerated):
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
         self.ctx = ctx
+        self._structure_udf_examples_search_transforms_chunking_materializetext__textmaterializer_canonical_span = (
+            F.udf(self.canonical_span, returnType=T.StringType())
+        )
 
     def close(self) -> None:
         close_plan_boundaries(self.spark)
@@ -672,35 +708,41 @@ class IndexingGenerated(LexIndexGenerated):
     def run(
         self,
         *,
+        documents: DataFrame,
         sentences: DataFrame,
     ) -> TransformResult:
+        assert_schema(documents, DOCUMENT_SCHEMA, name="Document", mode="strict")
         assert_schema(sentences, SENTENCE_SCHEMA, name="Sentence", mode="strict")
+        _input_documents = documents
         _input_sentences = sentences
         frames = {
+            "documents": documents,
             "sentences": sentences,
+            "input:documents": _input_documents,
             "input:sentences": _input_sentences,
         }
-        frames.update(self._step_lexical_tokenize_0(frames))
-        frames.update(self._step_lexical_count_document_terms_1(frames))
-        frames.update(self._step_lexical_summarize_documents_2(frames))
-        frames.update(self._step_lexical_count_document_frequencies_3(frames))
-        frames.update(self._step_lexical_build_document_terms_4(frames))
-        frames.update(self._step_lexical_summarize_document_index_5(frames))
-        frames.update(self._step_lexical_count_section_terms_6(frames))
-        frames.update(self._step_lexical_summarize_sections_7(frames))
-        frames.update(self._step_lexical_count_section_frequencies_8(frames))
-        frames.update(self._step_lexical_build_section_terms_9(frames))
-        frames.update(self._step_lexical_summarize_section_index_10(frames))
-        frames.update(self._step_lexical_count_paragraph_terms_11(frames))
-        frames.update(self._step_lexical_summarize_paragraphs_12(frames))
-        frames.update(self._step_lexical_count_paragraph_frequencies_13(frames))
-        frames.update(self._step_lexical_build_paragraph_terms_14(frames))
-        frames.update(self._step_lexical_summarize_paragraph_index_15(frames))
-        frames.update(self._step_lexical_count_sentence_terms_16(frames))
-        frames.update(self._step_lexical_summarize_sentences_17(frames))
-        frames.update(self._step_lexical_count_sentence_frequencies_18(frames))
-        frames.update(self._step_lexical_build_sentence_terms_19(frames))
-        frames.update(self._step_lexical_summarize_sentence_index_20(frames))
+        frames.update(self._step_lexical_materialize_sentence_0(frames))
+        frames.update(self._step_lexical_tokenize_1(frames))
+        frames.update(self._step_lexical_count_document_terms_2(frames))
+        frames.update(self._step_lexical_summarize_documents_3(frames))
+        frames.update(self._step_lexical_count_document_frequencies_4(frames))
+        frames.update(self._step_lexical_build_document_terms_5(frames))
+        frames.update(self._step_lexical_summarize_document_index_6(frames))
+        frames.update(self._step_lexical_count_section_terms_7(frames))
+        frames.update(self._step_lexical_summarize_sections_8(frames))
+        frames.update(self._step_lexical_count_section_frequencies_9(frames))
+        frames.update(self._step_lexical_build_section_terms_10(frames))
+        frames.update(self._step_lexical_summarize_section_index_11(frames))
+        frames.update(self._step_lexical_count_paragraph_terms_12(frames))
+        frames.update(self._step_lexical_summarize_paragraphs_13(frames))
+        frames.update(self._step_lexical_count_paragraph_frequencies_14(frames))
+        frames.update(self._step_lexical_build_paragraph_terms_15(frames))
+        frames.update(self._step_lexical_summarize_paragraph_index_16(frames))
+        frames.update(self._step_lexical_count_sentence_terms_17(frames))
+        frames.update(self._step_lexical_summarize_sentences_18(frames))
+        frames.update(self._step_lexical_count_sentence_frequencies_19(frames))
+        frames.update(self._step_lexical_build_sentence_terms_20(frames))
+        frames.update(self._step_lexical_summarize_sentence_index_21(frames))
 
         # Step method: document_terms
         document_terms = frames["lexical__document_terms"].alias("document_term")
@@ -756,3 +798,13 @@ class IndexingGenerated(LexIndexGenerated):
                 "sentence_summary": SENTENCE_INDEX_SUMMARY_SCHEMA,
             },
         )
+
+    @staticmethod
+    def canonical_span(content: Any, start: Any, end: Any) -> str | None:
+        """Extract a half-open span from canonicalized Unicode document text."""
+        import re
+
+        if content is None or start is None or end is None:
+            return None
+        canonical = re.sub('\\r\\n?', '\n', content)
+        return canonical[int(start) : int(end)]

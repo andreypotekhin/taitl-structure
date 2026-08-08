@@ -82,7 +82,7 @@ class All(Transform):
 
     chunked = Chunking(documents=documents)
     profiled = ProfileDocuments(documents=documents)
-    indexed = Indexing(sentences=chunked.sentences)
+    indexed = Indexing(documents=documents, sentences=chunked.sentences)
 
     similarities = Similarities(
         policy=similarity_policy,
@@ -131,6 +131,7 @@ class All(Transform):
     )
 
     analyzed = AnalyzeText(
+        documents=documents,
         sentences=chunked.sentences,
         paragraphs=chunked.paragraphs,
         sections=chunked.sections,

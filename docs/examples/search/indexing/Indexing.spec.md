@@ -1,7 +1,8 @@
 # Search Indexing
 
 
-`Indexing` turns chunked sentences into reusable lexical artifacts for all Search query batches and similarity runs.
+`Indexing` turns document-backed sentence boundaries into reusable lexical artifacts for all Search query batches and
+similarity runs. It materializes text only in a private transient lane.
 
 
 The index publishes independent term and summary relations for documents, sections, paragraphs, and sentences. Term
@@ -30,9 +31,9 @@ shared terms across targets, punctuation normalization, and an empty corpus.
 | Grain | Identity | Required facts |
 |---|---|---|
 | Document | Tenant/corpus/document | Length, normalized text, and source snapshot. |
-| Section | Document/section | Parent identity, ordinal, and section text facts. |
-| Paragraph | Section/paragraph | Parent identity, ordinal, and token statistics. |
-| Sentence | Paragraph/sentence | Parent identity, ordinal, and searchable terms. |
+| Section | Document/section | Parent identity, ordinal, and source span. |
+| Paragraph | Section/paragraph | Parent identity, ordinal, and source span. |
+| Sentence | Paragraph/sentence | Parent identity, ordinal, and source span. |
 
 Index facts are immutable for a source snapshot. Normalization must be shared by term counts, vocabulary, and
 candidate lookup; otherwise a query and its target can disagree about what a term means. Shared terms may be

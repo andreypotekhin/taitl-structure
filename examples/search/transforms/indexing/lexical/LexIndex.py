@@ -1,6 +1,7 @@
 """Reusable, batch-built text index artifacts."""
 
 from examples.search.algorithms.text import normalized_token
+from examples.search.schemas.chunking.intermediate import MaterializedSentence
 from examples.search.schemas.indexing.lexical.index import (
     DocumentIndexSummary,
     DocumentTerm,
@@ -25,7 +26,8 @@ from examples.search.schemas.indexing.lexical.intermediate import (
     SentenceTermCount,
     TermText,
 )
-from examples.search.schemas.text import Sentence
+from examples.search.schemas.text import Document, Sentence
+from examples.search.transforms.chunking.MaterializeText import _TextMaterializer
 from structure import Transform, input, lane, output, step
 from structure.plugin.pyspark import (
     arr_transform,
@@ -41,10 +43,12 @@ from structure.plugin.pyspark import (
 )
 
 
-class LexIndex(Transform):
+class LexIndex(_TextMaterializer):
     """Build reusable document, section, paragraph, and sentence term indexes."""
 
+    documents = input(Document)
     sentences = input(Sentence)
+    materialized_sentence = lane(MaterializedSentence)
     occurrences = lane(LexicalOccurrence)
     document_term_counts = lane(DocumentTermCount)
     document_target_stats = lane(DocumentIndexTargetStats)
@@ -67,8 +71,23 @@ class LexIndex(Transform):
     sentence_terms = output(SentenceTerm)
     sentence_summary = output(SentenceIndexSummary)
 
-    @step(input=sentences, output=occurrences)
-    def tokenize(self, sentence: Sentence) -> LexicalOccurrence:
+    @step(input=[documents, sentences], output=materialized_sentence)
+    def materialize_sentence(self, document: Document, sentence: Sentence) -> MaterializedSentence:
+        inner_join(on=document.id == sentence.document_id)
+        return MaterializedSentence(
+            id=sentence.id,
+            document_id=sentence.document_id,
+            section_id=sentence.section_id,
+            paragraph_id=sentence.paragraph_id,
+            paragraph_ordinal=sentence.paragraph_ordinal,
+            ordinal=sentence.ordinal,
+            span_start=sentence.span_start,
+            span_end=sentence.span_end,
+            content=self.canonical_span(document.content, sentence.span_start, sentence.span_end),
+        )
+
+    @step(input=materialized_sentence, output=occurrences)
+    def tokenize(self, sentence: MaterializedSentence) -> LexicalOccurrence:
         terms = arr_transform(
             split(sentence.content, pattern=r"\s+"),
             lambda value: TermText(term=value),

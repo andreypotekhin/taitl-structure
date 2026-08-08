@@ -15,4 +15,4 @@ class Chunking(Transform):
     sentences = output(Sentence)
 
     documents_chunked = DocumentChunking(documents=documents)
-    sentences_chunked = SentenceChunking(paragraphs=documents_chunked.paragraphs)
+    sentences_chunked = SentenceChunking(documents=documents, paragraphs=documents_chunked.paragraphs)

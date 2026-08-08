@@ -17,11 +17,14 @@ from examples.search.schemas.analytics import (
     SentenceStatistics,
     SimilarDocument,
 )
-from examples.search.schemas.chunking.chunk import (
+from examples.search.schemas.chunking.intermediate import (
     DocumentLine,
     ExpandedDocumentLine,
     ExpandedSentenceText,
     MarkedDocumentLine,
+    MaterializedParagraph,
+    MaterializedSection,
+    MaterializedSentence,
     ParagraphContent,
     ParagraphDraft,
     ParagraphLine,
@@ -448,7 +451,7 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         Paragraph,
         Sentence,
     ],
-    "examples.search.schemas.chunking.chunk": [
+    "examples.search.schemas.chunking.intermediate": [
         DocumentLine,
         ExpandedDocumentLine,
         MarkedDocumentLine,
@@ -459,6 +462,9 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         ParagraphDraft,
         SectionKey,
         SentenceText,
+        MaterializedParagraph,
+        MaterializedSection,
+        MaterializedSentence,
         ExpandedSentenceText,
     ],
 }
@@ -763,8 +769,41 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
         generated_segments = Chunking(documents=documents).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
+        assert generated_segments.sections.columns == [
+            "id",
+            "document_id",
+            "ordinal",
+            "span_start",
+            "span_end",
+            "heading_span_start",
+            "heading_span_end",
+        ]
+        assert generated_segments.paragraphs.columns == [
+            "id",
+            "document_id",
+            "section_id",
+            "ordinal",
+            "span_start",
+            "span_end",
+        ]
+        assert generated_segments.sentences.columns == [
+            "id",
+            "document_id",
+            "section_id",
+            "paragraph_id",
+            "paragraph_ordinal",
+            "ordinal",
+            "span_start",
+            "span_end",
+        ]
         assert len(rows(generated_segments.sections, "id")) == 5
-        assert single(generated_segments.sections, lambda row: row["document_id"] == "d-3")["heading"] == "Document"
+        document_section = single(generated_segments.sections, lambda row: row["document_id"] == "d-3")
+        assert document_section["heading_span_start"] is None
+        assert document_section["heading_span_end"] is None
+        assert document_section["span_start"] == 0
+        assert document_section["span_end"] == len(
+            "Plain text has one paragraph. It still becomes a document section."
+        )
 
         online_features = ProfileDocuments(documents=documents).run(session(spark, execution_mode="online")).features
         generated_features = (
@@ -784,11 +823,12 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
         assert guide["content_contains_structure"] is True
         assert guide["content_sha2"]
 
-        online_index = Indexing(sentences=generated_segments.sentences).run(session(spark, execution_mode="online"))
-        generated_index = Indexing(sentences=generated_segments.sentences).run(
+        online_index = Indexing(documents=documents, sentences=generated_segments.sentences).run(session(spark, execution_mode="online"))
+        generated_index = Indexing(documents=documents, sentences=generated_segments.sentences).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
         inputs = dict(
+            documents=documents,
             sentences=generated_segments.sentences,
             paragraphs=generated_segments.paragraphs,
             sections=generated_segments.sections,
@@ -814,7 +854,7 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
         }
         first_sentence = single(
             generated_segments.sentences,
-            lambda row: row["content"] == "Structure makes typed Spark transforms readable.",
+            lambda row: row["id"] == "d-1#p0#s0",
         )
         first_statistics = single(
             generated_analytics.sentence_statistics,
@@ -1160,7 +1200,7 @@ def test_search_ranks_fixture_sentences_online_and_generated(spark, tmp_path) ->
         segments = Chunking(documents=documents).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
-        index = Indexing(sentences=segments.sentences).run(
+        index = Indexing(documents=documents, sentences=segments.sentences).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
         scores = Scoring(
@@ -1179,7 +1219,12 @@ def test_search_ranks_fixture_sentences_online_and_generated(spark, tmp_path) ->
             ),
         ).run(session(spark, execution_mode="generated", generated_package=PACKAGE))
 
-        inputs = dict(queries=queries, sentences=segments.sentences, sentence_scores=scores.sentence_scores)
+        inputs = dict(
+            queries=queries,
+            documents=documents,
+            sentences=segments.sentences,
+            sentence_scores=scores.sentence_scores,
+        )
         online = SearchSentences(**inputs).run(session(spark, execution_mode="online")).results
         generated = (
             SearchSentences(**inputs).run(session(spark, execution_mode="generated", generated_package=PACKAGE)).results
@@ -1278,7 +1323,7 @@ def test_passage_search_ranks_paragraphs_with_same_section_context(spark, tmp_pa
         segments = Chunking(documents=documents).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
-        index = Indexing(sentences=segments.sentences).run(
+        index = Indexing(documents=documents, sentences=segments.sentences).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
         scores = Scoring(
@@ -1471,7 +1516,7 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
         segments = Chunking(documents=documents).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
-        index = Indexing(sentences=segments.sentences).run(
+        index = Indexing(documents=documents, sentences=segments.sentences).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
         scored_at = datetime(2026, 7, 21)

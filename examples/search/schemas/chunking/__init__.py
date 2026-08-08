@@ -1,6 +1,6 @@
 """Schemas supporting text chunking in the Search example."""
 
-from examples.search.schemas.chunking.chunk import (
+from examples.search.schemas.chunking.intermediate import (
     DocumentLine,
     ExpandedDocumentLine,
     ExpandedSentenceText,

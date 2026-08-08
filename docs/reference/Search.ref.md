@@ -15,7 +15,7 @@ Structure core operations. The source declarations live under `examples/search/s
 
 | Need | Transform family | Result |
 | --- | --- | --- |
-| Split document text | `Chunking`, `DocumentChunking`, `SentenceChunking`, `WordChunking` | Hierarchical text rows |
+| Split document text | `Chunking`, `DocumentChunking`, `SentenceChunking` | Span-only section, paragraph, and sentence boundaries |
 | Build reusable corpus statistics | `ProfileDocuments`, `AnalyzeText`, `CorpusText` | Features and corpus summaries |
 | Build a lexical index | `Indexing` | Terms and summaries at four grains |
 | Score a query batch | `Scoring`, `ScoreOverlap`, `ScoreBm25`, `SelectScores` | Overlap and BM25 score relations |
@@ -26,7 +26,7 @@ Structure core operations. The source declarations live under `examples/search/s
 
 ```python
 chunks = Chunking(documents=documents).run(session)
-index = Indexing(words=chunks.words).run(session)
+index = Indexing(documents=documents, sentences=chunks.sentences).run(session)
 scores = Scoring(
     queries=queries,
     document_terms=index.document_terms,
@@ -81,7 +81,7 @@ contracts are:
 | `RelevancePolicy` | Decay, lexical/feedback weights, dwell/CTR weights, and impression thresholds |
 
 `SearchQuery.id` partitions score and rank output. `SearchQuery.queryset` identifies the query population, such as
-`natural` or `synthetic`. Query text is normalized by the same rules used for document words, so equivalent text can
+`natural` or `synthetic`. Query text is normalized by the same rules used for document terms, so equivalent text can
 share lexical and feedback evidence while retaining separate request-local IDs.
 
 `requested_at` is the event-time key used by serving and streaming compatibility. The matching
@@ -115,25 +115,25 @@ The query can be scored once and reused, while each request remains an auditable
 ## Chunk and normalize text
 
 `Chunking` accepts raw `Document` rows. A line beginning with `#` starts a section; blank lines separate paragraphs;
-documents without a heading use an implicit document section. The pipeline emits a hierarchy of sections, paragraphs,
-sentences, and normalized words.
+documents without a heading use an implicit document section. The pipeline emits separate `Section`, `Paragraph`, and
+`Sentence` relations. Each row uses `span_start`/`span_end` as a zero-based,
+half-open Unicode code-point span into canonical document text; text is materialized privately when a consumer needs it.
 
 ```python
 segments = Chunking(documents=documents).run(session)
-words = segments.words
 sentences = segments.sentences
 ```
 
 The default sentence splitter is an explicit Python UDF starting point. It can split abbreviations, initials, versions,
 domains, and locale-specific text incorrectly. Replace the sentence transform when source-faithful spans matter, then
-feed its output to `WordChunking`.
+feed its output to a span-aware `SentenceChunking` replacement.
 
 ## Index at the target grain
 
 Run `Indexing` after text normalization when later scoring needs term statistics at each search grain.
 
 ```python
-index = Indexing(words=segments.words).run(session)
+index = Indexing(documents=documents, sentences=segments.sentences).run(session)
 
 document_terms = index.document_terms
 document_summary = index.document_summary
@@ -207,6 +207,7 @@ scores = Scoring(
 
 sentences = SearchSentences(
     queries=queries,
+    documents=documents,
     sentences=segments.sentences,
     sentence_scores=scores.sentence_scores,
 ).run(session)
@@ -300,11 +301,12 @@ frequency-ratio setting is the explicit candidate-pruning control; the pipeline 
 
 ## Sentence and passage presentation
 
-`SearchSentences` accepts `SearchQuery`, immutable sentences, and `sentence_scores`. It returns one-based
+`SearchSentences` accepts `SearchQuery`, the original `Document` rows, immutable sentence boundaries, and
+`sentence_scores`. It returns one-based
 `SentenceSearchResult` rows with query, document, section, paragraph, sentence, content, score, and experiment identity.
 The ordering is descending BM25, descending overlap, document ID, and sentence ID.
 
-`SearchPassages` accepts immutable paragraphs, sections, documents, and paragraph scores. Its
+`SearchPassages` accepts immutable paragraph and section boundaries, documents, and paragraph scores. Its
 `PassageSearchResult` contains the matched paragraph plus same-section preceding and following content. Neighboring
 paragraphs do not affect score or rank, and context becomes null at a section boundary. Use the emitted `rank` for
 pagination; physical Spark row order is not a contract.
@@ -448,7 +450,7 @@ The most useful persisted handoff boundaries are:
 
 | Artifact | Consumers |
 | --- | --- |
-| Extracted sections, paragraphs, sentences, words | Indexing, passage context, corpus analytics |
+| Extracted section, paragraph, and sentence boundaries | Indexing, passage context, corpus analytics |
 | Target-grain terms and summaries | Offline and online scoring, similarity queries |
 | `DocumentFilterScore` and `DocumentSearchTarget` | Search-document candidate admission |
 | `DocumentScore` and other grain scores | Sentence, passage, and document presentation |
@@ -480,7 +482,7 @@ unbounded full-corpus scan by implication. `RetrieveDocuments.maximum_candidates
 `RerankDocuments.maximum_results` remain explicit safeguards.
 
 ```python
-index = Indexing(words=words).run(session)
+index = Indexing(documents=documents, sentences=sentences).run(session)
 reusable_terms = index.document_terms
 reusable_summary = index.document_summary
 # Supply these artifacts to the declared request-scoring inputs.

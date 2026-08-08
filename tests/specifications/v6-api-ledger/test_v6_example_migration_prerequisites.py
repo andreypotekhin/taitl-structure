@@ -201,10 +201,13 @@ def test_search_similarity_query_construction_is_typed_and_has_no_opaque_hook_bo
     assert [operation.kind for operation in merge.operations] == ["union_all", "union_all", "union_all"]
 
 
-def test_search_index_build_is_typed_and_has_no_opaque_hook_boundary() -> None:
+def test_search_index_build_keeps_materialization_private_and_typed() -> None:
     plan, traceability = _lowered("examples.search.transforms.index", "Indexing")
 
-    assert traceability.opaque_boundaries == ()
+    assert [
+        (boundary.step, boundary.hook, boundary.schema)
+        for boundary in traceability.opaque_boundaries
+    ] == [("lexical.materialize_sentence", "canonical_span", "MaterializedSentence")]
     for grain in ("document", "section", "paragraph", "sentence"):
         count_terms = _step(plan, f"lexical.count_{grain}_terms")
         summarize_targets = _step(plan, f"lexical.summarize_{grain}s")
@@ -340,10 +343,13 @@ def test_search_cohort_band_resolution_is_typed_and_has_no_opaque_hook_boundary(
     ]
 
 
-def test_search_document_chunking_is_typed_and_has_no_opaque_hook_boundary() -> None:
+def test_search_document_chunking_preserves_spans_in_typed_private_lanes() -> None:
     plan, traceability = _lowered("examples.search.transforms.chunking.DocumentChunking", "DocumentChunking")
 
-    assert traceability.opaque_boundaries == ()
+    assert [
+        (boundary.step, boundary.hook, boundary.schema)
+        for boundary in traceability.opaque_boundaries
+    ] == [("mark_lines", "canonical_document_lines", "MarkedDocumentLine")]
     assert [operation.kind for operation in _step(plan, "mark_lines").operations] == ["posexplode_struct"]
     line_assignments = {assignment.field.name: assignment.expression for assignment in _step(plan, "mark_lines").projection}
     assert {"window_sum"} <= _functions(line_assignments["section_ordinal"])
@@ -351,9 +357,13 @@ def test_search_document_chunking_is_typed_and_has_no_opaque_hook_boundary() -> 
 
     paragraph_collect = _step(plan, "collect_paragraph_lines")
     assert paragraph_collect.aggregate is not None
-    assert paragraph_collect.aggregate.assignments[-1].function == "collect_list"
-    assert paragraph_collect.aggregate.assignments[-1].order_by is not None
-    assert [operation.kind for operation in _step(plan, "select_section_keys").operations] == ["drop_duplicates"]
+    assert {
+        assignment.function
+        for assignment in paragraph_collect.aggregate.assignments
+        if assignment.function != "key"
+    } == {"min", "max"}
+    assert [operation.kind for operation in _step(plan, "select_section_keys").operations] == ["aggregate"]
+    assert _step(plan, "select_section_keys").aggregate is not None
     assert [operation.kind for operation in _step(plan, "build_sections").operations] == ["join"]
 
 

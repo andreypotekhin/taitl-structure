@@ -64,12 +64,15 @@ without a heading use an implicit `Document` section.
 `Chunking` accepts raw `Document` rows and emits hierarchical sections, paragraphs, and sentences. `Indexing` applies the
 shared term-normalization contract while building aggregate lexical relations.
 
-`Chunking` composes `DocumentChunking` and the default `SentenceChunking`. The default sentence supplier is an explicitly declared Python
+`Chunking` composes `DocumentChunking` and the default `SentenceChunking`. It emits `Section`, `Paragraph`, and
+`Sentence` relations containing document-local half-open Unicode code-point spans;
+text remains in `Document.content`. The default sentence supplier is an explicitly declared Python
 UDF that splits on terminal punctuation. It is intentionally only a starting
 point: abbreviations, initials, versions, domains, and locale-specific rules
 can split incorrectly. When source-faithful sentence text or spans matter,
 callers run `DocumentChunking`, replace `SentenceChunking` with a transform
-that emits the same `Sentence` relation, then pass those sentences to
+that emits span-bearing `Sentence` rows, then pass the boundaries and
+the original documents to
 `Indexing`.
 
 `SentenceChunking` marks this deliberate UDF boundary on the transform with
@@ -79,9 +82,10 @@ body instead of depending on the source transform.
 
 ```python
 segments = Chunking(documents=documents).run(session)
-index = Indexing(sentences=segments.sentences).run(session)
+index = Indexing(documents=documents, sentences=segments.sentences).run(session)
 features = ProfileDocuments(documents=documents).run(session).features
 analytics = AnalyzeText(
+    documents=documents,
     sentences=segments.sentences,
     paragraphs=segments.paragraphs,
     sections=segments.sections,
@@ -107,13 +111,14 @@ which would double-count shared terms.
 
 ## Indexing
 
-`Indexing` builds reusable document, section, paragraph, and sentence indexes directly from sentence content. Each
+`Indexing` builds reusable document, section, paragraph, and sentence indexes by privately materializing sentence
+spans from the original documents. Each
 term row holds its target-local frequency and vocabulary/length facts plus the term's target-grain frequency;
 each summary holds target count and average target length. Its term and summary relations are reusable across query
 batches; persisting aggregate relations is caller-owned. Raw token occurrences are not part of the public Search model.
 
 ```python
-index = Indexing(sentences=segments.sentences).run(session)
+index = Indexing(documents=documents, sentences=segments.sentences).run(session)
 
 # Index artifacts for persisting.
 document_terms = index.document_terms
@@ -264,7 +269,7 @@ The shared `Scoring` output supplies the sentence candidates. `SearchSentences`
 accepts immutable sentences and `Scoring.sentence_scores`, emits one-based `SentenceSearchResult` ranks per query and experiment.
 
 ```python
-index = Indexing(sentences=segments.sentences).run(session)
+index = Indexing(documents=documents, sentences=segments.sentences).run(session)
 scores = Scoring(
     queries=queries,
     document_terms=index.document_terms,
@@ -288,6 +293,7 @@ promise physical row order, so consumers sort or page by `rank`.
 ```python
 result = SearchSentences(
     queries=queries,
+    documents=documents,
     sentences=segments.sentences,
     sentence_scores=scores.sentence_scores,
 ).run(session)

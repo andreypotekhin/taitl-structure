@@ -12,7 +12,8 @@ from examples.structure_generated.search.runtime.schema_assert import (
     apply_plan_boundary,
     close_plan_boundaries,
 )
-from examples.structure_generated.search.pyspark.schemas.text import PARAGRAPH_SCHEMA, SENTENCE_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.chunking_intermediate import MATERIALIZED_PARAGRAPH_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.text import DOCUMENT_SCHEMA, PARAGRAPH_SCHEMA, SENTENCE_SCHEMA
 
 
 class SentenceChunkingGenerated:
@@ -20,13 +21,15 @@ class SentenceChunkingGenerated:
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
         self.ctx = ctx
-        self._structure_udf_examples_search_transforms_chunking_sentencechunking_sentencechunking_default_sentence_texts = (
+        self._structure_udf_examples_search_transforms_chunking_materializetext__textmaterializer_canonical_span = (
+            F.udf(self.canonical_span, returnType=T.StringType())
+        )
+        self._structure_udf_examples_search_transforms_chunking_sentencechunking_sentencechunking_default_sentence_spans = (
             F
             .udf(
-                 self.default_sentence_texts,
+                 self.default_sentence_spans,
                  returnType=T.ArrayType(
-                    T.StringType(
-                    ),
+                    SENTENCE_TEXT_SCHEMA,
                      containsNull=False
                 )
             )
@@ -38,26 +41,64 @@ class SentenceChunkingGenerated:
     def run(
         self,
         *,
+        documents: DataFrame,
         paragraphs: DataFrame,
     ) -> TransformResult:
+        assert_schema(documents, DOCUMENT_SCHEMA, name="Document", mode="strict")
         assert_schema(paragraphs, PARAGRAPH_SCHEMA, name="Paragraph", mode="strict")
+        _input_documents = documents
         _input_paragraphs = paragraphs
 
+        # Step method: materialize_paragraph
+        materialized_paragraph = documents.alias("document")
+        paragraphs_joined = paragraphs.alias("paragraphs")
+        materialized_paragraph = materialized_paragraph.join(
+            paragraphs_joined,
+            (F.col("document.id") == F.col("paragraphs.document_id")),
+            "inner",
+        )
+        materialized_paragraph = materialized_paragraph.select(
+            F.col("paragraphs.id"),
+            F.col("paragraphs.document_id"),
+            F.col("paragraphs.section_id"),
+            F.col("paragraphs.ordinal"),
+            F.col("paragraphs.span_start"),
+            F.col("paragraphs.span_end"),
+            F.regexp_replace(
+                (
+                    self
+                    ._structure_udf_examples_search_transforms_chunking_materializetext__textmaterializer_canonical_span(
+                         F.col(
+                            "document.content"
+                        ),
+                         F.col(
+                            "paragraphs.span_start"
+                        ),
+                         F.col(
+                            "paragraphs.span_end"
+                        )
+                    )
+                ),
+                '\n',
+                ' ',
+            ).alias("content"),
+        )
+        assert_schema(
+            materialized_paragraph, MATERIALIZED_PARAGRAPH_SCHEMA, name="MaterializedParagraph", mode="strict"
+        )
+
         # Step method: chunk
-        sentences = paragraphs.alias("paragraph")
+        sentences = materialized_paragraph.alias("materialized_paragraph")
         sentences = sentences.select(
             "*",
             F.posexplode(
-                F.transform(
-                    (
-                        self
-                        ._structure_udf_examples_search_transforms_chunking_sentencechunking_sentencechunking_default_sentence_texts(
-                             F.col(
-                                "paragraph.content"
-                            )
+                (
+                    self
+                    ._structure_udf_examples_search_transforms_chunking_sentencechunking_sentencechunking_default_sentence_spans(
+                         F.col(
+                            "materialized_paragraph.content"
                         )
-                    ),
-                    lambda item: F.struct(item.alias("sentence_content")),
+                    )
                 )
             ).alias("__structure_sentence_text_1_pos", "__structure_sentence_text_1_item"),
         )
@@ -66,22 +107,28 @@ class SentenceChunkingGenerated:
             F.col("__structure_sentence_text_1_pos").cast(T.LongType()),
         )
         sentences = sentences.withColumn(
+            "local_start",
+            F.col("__structure_sentence_text_1_item.local_start"),
+        )
+        sentences = sentences.withColumn(
+            "local_end",
+            F.col("__structure_sentence_text_1_item.local_end"),
+        )
+        sentences = sentences.withColumn(
             "sentence_content",
             F.col("__structure_sentence_text_1_item.sentence_content"),
         )
         sentences = sentences.drop("__structure_sentence_text_1_pos", "__structure_sentence_text_1_item")
-        sentences = sentences.where(((F.trim(F.col("sentence_content")) != F.lit(''))))
+        sentences = sentences.where(((F.col("sentence_content") != F.lit(''))))
         sentences = sentences.select(
-            F.concat_ws('#s', F.col("paragraph.id"), F.col("position").cast('string')).alias("id"),
-            F.col("paragraph.document_id"),
-            F.col("paragraph.section_id"),
-            F.col("paragraph.id").alias("paragraph_id"),
-            F.col("paragraph.ordinal").alias("paragraph_ordinal"),
+            F.concat_ws('#s', F.col("materialized_paragraph.id"), F.col("position").cast('string')).alias("id"),
+            F.col("materialized_paragraph.document_id"),
+            F.col("materialized_paragraph.section_id"),
+            F.col("materialized_paragraph.id").alias("paragraph_id"),
+            F.col("materialized_paragraph.ordinal").alias("paragraph_ordinal"),
             (F.col("position") + F.lit(1)).cast('int').alias("ordinal"),
-            F.trim(F.col("sentence_content")).alias("content"),
-            F.lit(None).cast(T.StringType()).alias("search_query_id"),
-            F.lit(None).cast(T.DoubleType()).alias("score_overlap"),
-            F.lit(None).cast(T.DoubleType()).alias("score_bm25"),
+            (F.col("materialized_paragraph.span_start") + F.col("local_start")).alias("span_start"),
+            (F.col("materialized_paragraph.span_start") + F.col("local_end")).alias("span_end"),
         )
 
         # Step method: sentences
@@ -90,8 +137,36 @@ class SentenceChunkingGenerated:
         return TransformResult({"sentences": sentences}, single=True, schema={"sentences": SENTENCE_SCHEMA})
 
     @staticmethod
-    def default_sentence_texts(content: Any) -> list[str]:
-        """Split on terminal punctuation; inaccurate for abbreviations and source spans."""
+    def canonical_span(content: Any, start: Any, end: Any) -> str | None:
+        """Extract a half-open span from canonicalized Unicode document text."""
         import re
 
-        return [sentence for sentence in re.split('(?<=[.!?])\\s+', content) if sentence.strip()]
+        if content is None or start is None or end is None:
+            return None
+        canonical = re.sub('\\r\\n?', '\n', content)
+        return canonical[int(start) : int(end)]
+
+    @staticmethod
+    def default_sentence_spans(content: Any) -> list[dict[str, object]]:
+        """Split on terminal punctuation while retaining paragraph-local source spans."""
+        import re
+
+        spans: list[dict[str, object]] = []
+        cursor = 0
+        for separator in re.finditer('(?<=[.!?])\\s+', content):
+            start, end = (cursor, separator.start())
+            while start < end and content[start].isspace():
+                start += 1
+            while end > start and content[end - 1].isspace():
+                end -= 1
+            if start < end:
+                spans.append({'local_start': start, 'local_end': end, 'sentence_content': content[start:end]})
+            cursor = separator.end()
+        start, end = (cursor, len(content))
+        while start < end and content[start].isspace():
+            start += 1
+        while end > start and content[end - 1].isspace():
+            end -= 1
+        if start < end:
+            spans.append({'local_start': start, 'local_end': end, 'sentence_content': content[start:end]})
+        return spans

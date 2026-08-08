@@ -18,13 +18,25 @@ class SimilarityDocumentQuery(Document):
 class SimilaritySectionQuery(Section):
     """One caller-supplied section whose corpus neighbours are requested."""
 
+    search_query_id = string(nullable=True)
+    score_overlap = double(nullable=True)
+    score_bm25 = double(nullable=True)
+
 
 class SimilarityParagraphQuery(Paragraph):
     """One caller-supplied paragraph whose corpus neighbours are requested."""
 
+    search_query_id = string(nullable=True)
+    score_overlap = double(nullable=True)
+    score_bm25 = double(nullable=True)
+
 
 class SimilaritySentenceQuery(Sentence):
     """One caller-supplied sentence whose corpus neighbours are requested."""
+
+    search_query_id = string(nullable=True)
+    score_overlap = double(nullable=True)
+    score_bm25 = double(nullable=True)
 
 
 class DocumentSimilarityQuery(Schema):
@@ -63,18 +75,27 @@ class IndexedSimilarDocument(Document):
 class IndexedSimilarSection(Section):
     """A corpus section ranked for one query section by directed BM25."""
 
+    search_query_id = string(nullable=True)
+    score_overlap = double(nullable=True)
+    score_bm25 = double(nullable=True)
     rank = long(nullable=False)
 
 
 class IndexedSimilarParagraph(Paragraph):
     """A corpus paragraph ranked for one query paragraph by directed BM25."""
 
+    search_query_id = string(nullable=True)
+    score_overlap = double(nullable=True)
+    score_bm25 = double(nullable=True)
     rank = long(nullable=False)
 
 
 class IndexedSimilarSentence(Sentence):
     """A corpus sentence ranked for one query sentence by directed BM25."""
 
+    search_query_id = string(nullable=True)
+    score_overlap = double(nullable=True)
+    score_bm25 = double(nullable=True)
     rank = long(nullable=False)
 
 

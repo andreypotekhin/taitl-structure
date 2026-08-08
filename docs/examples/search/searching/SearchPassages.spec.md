@@ -5,7 +5,8 @@
 an answer context.
 
 
-Each result contains the matched paragraph, document title and URL, section heading, lexical score, and nullable
+The transform accepts the original documents plus paragraph and section boundaries. Each result contains the matched
+paragraph, document title and URL, section heading, lexical score, and nullable
 preceding and following paragraph content. Context may include only adjacent paragraphs in the same document section.
 
 Only the matched paragraph contributes terms and rank. Adjacent matched paragraphs remain separate results, and the

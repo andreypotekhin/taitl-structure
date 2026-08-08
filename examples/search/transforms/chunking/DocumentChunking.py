@@ -1,6 +1,8 @@
-"""Chunk caller-provided documents into sections and paragraphs."""
+"""Chunk caller-provided documents into span-only sections and paragraphs."""
 
-from examples.search.schemas.chunking.chunk import (
+from typing import Any
+
+from examples.search.schemas.chunking.intermediate import (
     DocumentLine,
     ExpandedDocumentLine,
     MarkedDocumentLine,
@@ -12,23 +14,17 @@ from examples.search.schemas.chunking.chunk import (
     SectionKey,
 )
 from examples.search.schemas.text import Document, Paragraph, Section
-from structure import Transform, input, lane, output, step
+from structure import Transform, input, lane, output, special, step
 from structure.plugin.pyspark import (
-    arr_transform,
-    coalesce,
-    collect_list,
     concat_ws,
     current_row,
-    drop_duplicates,
     group_by,
     left_join,
+    max,
+    min,
     posexplode_struct,
-    regexp_extract,
-    regexp_replace,
     row_number,
     rows_between,
-    split,
-    trim,
     types,
     unbounded_preceding,
     when,
@@ -39,7 +35,7 @@ from structure.plugin.pyspark import (
 
 
 class DocumentChunking(Transform):
-    """Chunk caller-provided documents into sections and paragraphs."""
+    """Chunk caller-provided documents into document-local half-open spans."""
 
     documents = input(Document)
     marked_lines = lane(MarkedDocumentLine)
@@ -52,16 +48,42 @@ class DocumentChunking(Transform):
     sections = output(Section)
     paragraphs = output(Paragraph)
 
+    @special(
+        type="udf",
+        return_type=types.array(types.struct(DocumentLine), contains_null=False),
+        nullable=False,
+    )
+    def canonical_document_lines(content: Any) -> list[dict[str, object]]:
+        """Return canonical lines and code-point spans without reconstructing text later."""
+        import re
+
+        canonical = re.sub(r"\r\n?", "\n", content)
+        lines: list[dict[str, object]] = []
+        offset = 0
+        for line in canonical.split("\n"):
+            match = re.match(r"^\s*#+\s+(.+?)\s*$", line)
+            heading = match.group(1).strip() if match else None
+            heading_start = offset + match.start(1) if match else None
+            heading_end = offset + match.end(1) if match else None
+            lines.append(
+                {
+                    "line": line,
+                    "span_start": offset,
+                    "span_end": offset + len(line),
+                    "heading": heading,
+                    "heading_span_start": heading_start,
+                    "heading_span_end": heading_end,
+                    "is_blank": line.strip() == "",
+                }
+            )
+            offset += len(line) + 1
+        return lines
+
     @step(input=documents, output=marked_lines)
     def mark_lines(self, document: Document) -> MarkedDocumentLine:
-        lines = arr_transform(
-            split(regexp_replace(document.content, pattern="\\r\\n?", replacement="\n"), pattern="\n"),
-            lambda line: DocumentLine(line=line),
-        )
+        lines = self.canonical_document_lines(document.content)
         line = posexplode_struct(lines, as_=ExpandedDocumentLine, scope="document_line")
-        heading = trim(regexp_extract(line.line, pattern=r"^\s*#+\s+(.+?)\s*$", group=1))
-        is_heading = heading != ""
-        is_blank = trim(line.line) == ""
+        is_heading = line.heading.is_not_null()
         line_window = window(
             partition_by=document.id,
             order_by=line.ordinal,
@@ -71,10 +93,14 @@ class DocumentChunking(Transform):
             document_id=document.id,
             line_ordinal=line.ordinal,
             line=line.line,
-            heading=when(is_heading, heading).otherwise(None),
-            is_blank=is_blank,
+            span_start=line.span_start,
+            span_end=line.span_end,
+            heading=line.heading,
+            heading_span_start=line.heading_span_start,
+            heading_span_end=line.heading_span_end,
+            is_blank=line.is_blank,
             section_ordinal=window_sum(when(is_heading, 1).otherwise(0), over=line_window),
-            paragraph_group=window_sum(when(is_blank, 1).otherwise(0), over=line_window),
+            paragraph_group=window_sum(when(line.is_blank, 1).otherwise(0), over=line_window),
         )
 
     @step(input=marked_lines, output=paragraph_lines)
@@ -86,6 +112,8 @@ class DocumentChunking(Transform):
             paragraph_group=line.paragraph_group,
             line_ordinal=line.line_ordinal,
             line=line.line,
+            span_start=line.span_start,
+            span_end=line.span_end,
         )
 
     @step(input=marked_lines, output=section_headings)
@@ -95,6 +123,8 @@ class DocumentChunking(Transform):
             document_id=line.document_id,
             section_ordinal=line.section_ordinal,
             heading=line.heading,
+            heading_span_start=line.heading_span_start,
+            heading_span_end=line.heading_span_end,
         )
 
     @step(input=paragraph_lines, output=paragraph_line_groups)
@@ -114,7 +144,8 @@ class DocumentChunking(Transform):
             section_id=section_id,
             section_ordinal=line.section_ordinal,
             paragraph_group=line.paragraph_group,
-            lines=collect_list(line.line, order_by=line.line_ordinal),
+            span_start=min(line.span_start),
+            span_end=max(line.span_end),
         )
 
     @step(input=paragraph_line_groups, output=paragraph_content)
@@ -125,7 +156,8 @@ class DocumentChunking(Transform):
             section_id=group.section_id,
             section_ordinal=group.section_ordinal,
             paragraph_group=group.paragraph_group,
-            content=concat_ws(" ", group.lines),
+            span_start=group.span_start,
+            span_end=group.span_end,
         )
 
     @step(input=paragraph_content, output=paragraph_drafts)
@@ -140,10 +172,8 @@ class DocumentChunking(Transform):
             section_id=paragraph.section_id,
             section_ordinal=paragraph.section_ordinal,
             ordinal=ordinal,
-            content=paragraph.content,
-            search_query_id=None,
-            score_overlap=None,
-            score_bm25=None,
+            span_start=paragraph.span_start,
+            span_end=paragraph.span_end,
         )
 
     @step(input=paragraph_drafts, output=paragraphs)
@@ -153,20 +183,25 @@ class DocumentChunking(Transform):
             document_id=paragraph.document_id,
             section_id=paragraph.section_id,
             ordinal=paragraph.ordinal,
-            content=paragraph.content,
-            search_query_id=paragraph.search_query_id,
-            score_overlap=paragraph.score_overlap,
-            score_bm25=paragraph.score_bm25,
+            span_start=paragraph.span_start,
+            span_end=paragraph.span_end,
         )
 
     @step(input=paragraph_drafts, output=section_keys)
     def select_section_keys(self, paragraph: ParagraphDraft) -> SectionKey:
-        drop_duplicates(paragraph.document_id, paragraph.section_id)
+        group_by(
+            id=paragraph.section_id,
+            document_id=paragraph.document_id,
+            section_ordinal=paragraph.section_ordinal,
+            ordinal=paragraph.section_ordinal.cast(types.integer()),
+        )
         return SectionKey(
             id=paragraph.section_id,
             document_id=paragraph.document_id,
             section_ordinal=paragraph.section_ordinal,
             ordinal=paragraph.section_ordinal.cast(types.integer()),
+            span_start=min(paragraph.span_start),
+            span_end=max(paragraph.span_end),
         )
 
     @step(input=[section_keys, section_headings], output=sections)
@@ -179,8 +214,8 @@ class DocumentChunking(Transform):
             id=key.id,
             document_id=key.document_id,
             ordinal=key.ordinal,
-            heading=coalesce(heading.heading, "Document"),
-            search_query_id=None,
-            score_overlap=None,
-            score_bm25=None,
+            span_start=key.span_start,
+            span_end=key.span_end,
+            heading_span_start=heading.heading_span_start,
+            heading_span_end=heading.heading_span_end,
         )

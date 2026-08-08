@@ -22,34 +22,36 @@ class Document(Schema):
     score_bm25 = double(nullable=True)
 
 class Section(Schema):
+    """Persisted document-local section span."""
+
     id = string(nullable=False)
     document_id = string(nullable=False)
     ordinal = integer(nullable=False)
-    heading = string(nullable=False)
-    search_query_id = string(nullable=True)
-    score_overlap = double(nullable=True)
-    score_bm25 = double(nullable=True)
+    span_start = long(nullable=False)
+    span_end = long(nullable=False)
+    heading_span_start = long(nullable=True)
+    heading_span_end = long(nullable=True)
 
 
 class Paragraph(Schema):
+    """Persisted document-local paragraph span."""
+
     id = string(nullable=False)
     document_id = string(nullable=False)
     section_id = string(nullable=False)
     ordinal = integer(nullable=False)
-    content = string(nullable=False)
-    search_query_id = string(nullable=True)
-    score_overlap = double(nullable=True)
-    score_bm25 = double(nullable=True)
+    span_start = long(nullable=False)
+    span_end = long(nullable=False)
 
 
 class Sentence(Schema):
+    """Persisted document-local sentence span."""
+
     id = string(nullable=False)
     document_id = string(nullable=False)
     section_id = string(nullable=False)
     paragraph_id = string(nullable=False)
     paragraph_ordinal = integer(nullable=False)
     ordinal = integer(nullable=False)
-    content = string(nullable=False)
-    search_query_id = string(nullable=True)
-    score_overlap = double(nullable=True)
-    score_bm25 = double(nullable=True)
+    span_start = long(nullable=False)
+    span_end = long(nullable=False)

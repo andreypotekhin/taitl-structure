@@ -89,7 +89,7 @@ Heading: ## Retrieve Documents - We start at Heading 2 by convention (no Heading
  - This implies no need to repeat what is established/explained in previous .py.md docs on same level.
 - Avoid sophisticated/too detailed language - stick to overview style; assume the reader will 
 glance at the listed code and use subsequent bullets for focusing. Also assume the reader does
-not read headings - heading text (and purpose) must be repeated in body text. 
+not read headings - heading text or its idea must be present in body text. 
 - Do not split class/method names with spaces when mentioning in body text.
 (Let's omit 'Inputs' section for now) 'Inputs (no heading)' - Text description of the essential inputs/outputs
 - If listing transform inputs as is, include the full beginning of transform class definition code lines (including 'class', decorations, parameters)

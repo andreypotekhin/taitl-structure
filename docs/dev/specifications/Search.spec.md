@@ -128,8 +128,8 @@ pipeline preserves document, section, paragraph, and sentence identifiers and de
 
 The default `SentenceChunking` implementation splits on terminal punctuation through a declared Python UDF. It is a
 replaceable starting point, not a source-faithful sentence segmenter. A caller requiring exact sentence text or spans
-must run `DocumentChunking`, supply a compatible `Paragraph`-to-`Sentence` transform, and pass those sentences to
-`Indexing`.
+must run `DocumentChunking`, supply a span-aware `Paragraph`-to-`Sentence` transform, and pass those
+boundaries plus the original documents to `Indexing`.
 
 ### Indexing and normalization
 
@@ -318,8 +318,8 @@ operational ownership.
 | Bifurcation | Alternative considered | Choice and consequence |
 | --- | --- | --- |
 | Product boundary | Hosted service or typed pipeline | Typed pipeline; no harvesting, serving, model, or answer work. |
-| Text representation | Publish tokens or normalize per consumer | Keep words private; publish aggregate terms. |
-| Sentence segmentation | Universal spans or replaceable UDF | Use the UDF; callers replace it for exact spans. |
+| Text representation | Publish occurrences or persist text on every grain | Keep text in `Document`; publish boundaries and aggregate terms. |
+| Sentence segmentation | Universal spans or replaceable UDF | Use a span-aware default UDF; callers replace it with another span-aware supplier. |
 | Composition shape | Monolith or typed stages | Independent stages preserve traceability and extension points. |
 | Runtime artifact | Online-only/generated-only/divergent | Online default; generated uses the same contract. |
 | Offline scoring | Score all online or precompute a population | Popular plus seven-day offline; online fills gaps. |

@@ -26,7 +26,13 @@ pass to another system.
 
 ## Text Model and Lexical Pipeline
 
-`Document.content` is plain text. `Chunking` turns heading lines into sections and blank-line groups into paragraphs. Its default sentence supplier is an explicitly declared punctuation-based Python UDF; it is a replaceable starting point, not a source-faithful segmenter. Callers that require exact sentence text or spans supply a `Paragraph`-to-`Sentence` transform and then pass those sentences to `Indexing`. `Indexing` tokenizes and normalizes each sentence once, privately, before emitting aggregate term rows. The hierarchy preserves document, section, paragraph, and sentence identifiers plus deterministic ordinals; token occurrences are not a public or persisted relation.
+`Document.content` is plain text. `Chunking` turns heading lines into sections and blank-line groups into paragraphs, preserving
+separate `Section`, `Paragraph`, and `Sentence` relations with canonical Unicode code-point
+half-open spans. Its default sentence supplier is an explicitly declared punctuation-based Python UDF; it is a replaceable
+starting point, not a source-faithful segmenter. Callers that require custom segmentation provide span-bearing sentence
+boundaries and retain the original documents. `Indexing` materializes sentence spans transiently, tokenizes and normalizes
+each sentence once, and emits aggregate term rows. Text occurrences and materialized text are not public or persisted
+relations.
 
 `Indexing` produces independent document, section, paragraph, and sentence index artifacts. Each grain has its own
 term frequency, document frequency, target length, vocabulary size, target count, and average length. A score at one
