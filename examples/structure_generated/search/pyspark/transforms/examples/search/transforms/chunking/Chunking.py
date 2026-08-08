@@ -15,7 +15,6 @@ from examples.structure_generated.search.runtime.schema_assert import (
 )
 from examples.structure_generated.search.pyspark.schemas.chunking_intermediate import (
     MARKED_DOCUMENT_LINE_SCHEMA,
-    MATERIALIZED_PARAGRAPH_SCHEMA,
     PARAGRAPH_CONTENT_SCHEMA,
     PARAGRAPH_DRAFT_SCHEMA,
     PARAGRAPH_LINE_GROUP_SCHEMA,
@@ -312,57 +311,16 @@ class DocumentChunkingGenerated:
 
 
 class SentenceChunkingGenerated:
-    def _step_sentences_chunked_materialize_paragraph_9(self, frames):
-        # Step method: sentences_chunked.materialize_paragraph
-        sentences_chunked__materialized_paragraph = frames["documents"].alias("document")
+    def _step_sentences_chunked_chunk_9(self, frames):
+        # Step method: sentences_chunked.chunk
+        sentences_chunked__sentences = frames["documents"].alias("document")
         documents_chunked__paragraphs_joined = frames["documents_chunked__paragraphs"].alias(
             "documents_chunked__paragraphs"
         )
-        sentences_chunked__materialized_paragraph = sentences_chunked__materialized_paragraph.join(
+        sentences_chunked__sentences = sentences_chunked__sentences.join(
             documents_chunked__paragraphs_joined,
             (F.col("document.id") == F.col("documents_chunked__paragraphs.document_id")),
             "inner",
-        )
-        sentences_chunked__materialized_paragraph = sentences_chunked__materialized_paragraph.select(
-            F.col("documents_chunked__paragraphs.id"),
-            F.col("documents_chunked__paragraphs.document_id"),
-            F.col("documents_chunked__paragraphs.section_id"),
-            F.col("documents_chunked__paragraphs.ordinal"),
-            F.col("documents_chunked__paragraphs.span_start"),
-            F.col("documents_chunked__paragraphs.span_end"),
-            F.regexp_replace(
-                (
-                    self
-                    ._structure_udf_examples_search_transforms_chunking_materializetext__textmaterializer_canonical_span(
-                         F.col(
-                            "document.content"
-                        ),
-                         F.col(
-                            "documents_chunked__paragraphs.span_start"
-                        ),
-                         F.col(
-                            "documents_chunked__paragraphs.span_end"
-                        ),
-                    )
-                ),
-                '\n',
-                ' ',
-            ).alias("content"),
-        )
-        assert_schema(
-            sentences_chunked__materialized_paragraph,
-            MATERIALIZED_PARAGRAPH_SCHEMA,
-            name="MaterializedParagraph",
-            mode="strict",
-        )
-        return {
-            "sentences_chunked__materialized_paragraph": sentences_chunked__materialized_paragraph,
-        }
-
-    def _step_sentences_chunked_chunk_10(self, frames):
-        # Step method: sentences_chunked.chunk
-        sentences_chunked__sentences = frames["sentences_chunked__materialized_paragraph"].alias(
-            "materialized_paragraph"
         )
         sentences_chunked__sentences = sentences_chunked__sentences.select(
             "*",
@@ -370,8 +328,20 @@ class SentenceChunkingGenerated:
                 (
                     self
                     ._structure_udf_examples_search_transforms_chunking_sentencechunking_sentencechunking_default_sentence_spans(
-                         F.col(
-                            "materialized_paragraph.content"
+                         F.regexp_replace(
+                             self._structure_udf_examples_search_transforms_chunking_materializetext__textmaterializer_canonical_span(
+                                 F.col(
+                                    "document.content"
+                                ),
+                                 F.col(
+                                    "documents_chunked__paragraphs.span_start"
+                                ),
+                                 F.col(
+                                    "documents_chunked__paragraphs.span_end"
+                                ),
+                            ),
+                             '\n',
+                             ' ',
                         )
                     )
                 )
@@ -398,14 +368,14 @@ class SentenceChunkingGenerated:
         )
         sentences_chunked__sentences = sentences_chunked__sentences.where(((F.col("sentence_content") != F.lit(''))))
         sentences_chunked__sentences = sentences_chunked__sentences.select(
-            F.concat_ws('#s', F.col("materialized_paragraph.id"), F.col("position").cast('string')).alias("id"),
-            F.col("materialized_paragraph.document_id"),
-            F.col("materialized_paragraph.section_id"),
-            F.col("materialized_paragraph.id").alias("paragraph_id"),
-            F.col("materialized_paragraph.ordinal").alias("paragraph_ordinal"),
+            F.concat_ws('#s', F.col("documents_chunked__paragraphs.id"), F.col("position").cast('string')).alias("id"),
+            F.col("documents_chunked__paragraphs.document_id"),
+            F.col("documents_chunked__paragraphs.section_id"),
+            F.col("documents_chunked__paragraphs.id").alias("paragraph_id"),
+            F.col("documents_chunked__paragraphs.ordinal").alias("paragraph_ordinal"),
             (F.col("position") + F.lit(1)).cast('int').alias("ordinal"),
-            (F.col("materialized_paragraph.span_start") + F.col("local_start")).alias("span_start"),
-            (F.col("materialized_paragraph.span_start") + F.col("local_end")).alias("span_end"),
+            (F.col("documents_chunked__paragraphs.span_start") + F.col("local_start")).alias("span_start"),
+            (F.col("documents_chunked__paragraphs.span_start") + F.col("local_end")).alias("span_end"),
         )
         return {
             "sentences_chunked__sentences": sentences_chunked__sentences,
@@ -464,8 +434,7 @@ class ChunkingGenerated(DocumentChunkingGenerated, SentenceChunkingGenerated):
         frames.update(self._step_documents_chunked_publish_paragraphs_6(frames))
         frames.update(self._step_documents_chunked_select_section_keys_7(frames))
         frames.update(self._step_documents_chunked_build_sections_8(frames))
-        frames.update(self._step_sentences_chunked_materialize_paragraph_9(frames))
-        frames.update(self._step_sentences_chunked_chunk_10(frames))
+        frames.update(self._step_sentences_chunked_chunk_9(frames))
 
         # Step method: sections
         sections = frames["documents_chunked__sections"].alias("section")

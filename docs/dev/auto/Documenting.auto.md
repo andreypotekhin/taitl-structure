@@ -54,7 +54,8 @@ with one centence for each. Include scenario table and details, if needed, as in
 
 #### End-User documentation tips 
 - Use caution/consider alternative wording on corporate speak such as 'owns', 'boundary', 'intentional'
-'downstream', qualifiers like 'complete' (when not the focus)
+'downstream'
+- Avoid added qualifiers when not the point of the statement, such as 'complete', 'bounded', 'valid'
 - Do not assume the reader actually reads headings - add heading text or its idea to body text if not already there.
 - Avoid formalisms like 'the following'. 
 - In Reference documents, 

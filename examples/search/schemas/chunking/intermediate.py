@@ -121,7 +121,6 @@ class SentenceText(Schema):
     local_end = long(nullable=False)
     sentence_content = string(nullable=False)
 
-
 class ExpandedSentenceText(Schema):
     """Internal sentence text with its paragraph-local ordinal."""
 
@@ -129,42 +128,3 @@ class ExpandedSentenceText(Schema):
     local_start = long(nullable=False)
     local_end = long(nullable=False)
     sentence_content = string(nullable=False)
-
-
-class MaterializedParagraph(Schema):
-    """Private paragraph text materialized from a document span."""
-
-    id = string(nullable=False)
-    document_id = string(nullable=False)
-    section_id = string(nullable=False)
-    ordinal = integer(nullable=False)
-    span_start = long(nullable=False)
-    span_end = long(nullable=False)
-    content = string(nullable=False)
-
-
-class MaterializedSentence(Schema):
-    """Private sentence text materialized from a document span."""
-
-    id = string(nullable=False)
-    document_id = string(nullable=False)
-    section_id = string(nullable=False)
-    paragraph_id = string(nullable=False)
-    paragraph_ordinal = integer(nullable=False)
-    ordinal = integer(nullable=False)
-    span_start = long(nullable=False)
-    span_end = long(nullable=False)
-    content = string(nullable=False)
-
-
-class MaterializedSection(Schema):
-    """Private section heading materialized from a document span."""
-
-    id = string(nullable=False)
-    document_id = string(nullable=False)
-    ordinal = integer(nullable=False)
-    span_start = long(nullable=False)
-    span_end = long(nullable=False)
-    heading_span_start = long(nullable=True)
-    heading_span_end = long(nullable=True)
-    heading = string(nullable=False)

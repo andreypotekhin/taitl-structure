@@ -19,7 +19,14 @@ from integration.pyspark.support.rows import rows
 from structure import Schema, Transform, input, output, transform
 from structure.plugin.pyspark import drop_duplicates, exists, inner_join, left_join, string, timestamp, watermark, where
 
-pytestmark = pytest.mark.integration
+pytestmark: pytest.MarkDecorator | list[pytest.MarkDecorator] = (
+    [
+        pytest.mark.integration,
+        pytest.mark.skip(reason="Structured Streaming restart evidence requires classic PySpark"),
+    ]
+    if backend_name().startswith("spark-connect")
+    else pytest.mark.integration
+)
 
 SOURCE_MODULE = "integration.pyspark.v7.test_stream_static_restart"
 PACKAGE = "integration_v7_stream_static_generated"

@@ -207,7 +207,7 @@ def test_search_index_build_keeps_materialization_private_and_typed() -> None:
     assert [
         (boundary.step, boundary.hook, boundary.schema)
         for boundary in traceability.opaque_boundaries
-    ] == [("lexical.materialize_sentence", "canonical_span", "MaterializedSentence")]
+    ] == [("lexical.tokenize", "canonical_span", "LexicalOccurrence")]
     for grain in ("document", "section", "paragraph", "sentence"):
         count_terms = _step(plan, f"lexical.count_{grain}_terms")
         summarize_targets = _step(plan, f"lexical.summarize_{grain}s")

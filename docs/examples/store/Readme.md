@@ -1,11 +1,13 @@
-# Store Example Specifications
+# Store Example Backgrounds
 
 These specifications describe the Store example by business boundary. Store is a caller-owned typed transformation
 example for tenant-scoped catalog, recommendations, demand, fulfillment, observed shipment facts, and analytics.
 Planned decisions, commercial demand, observed outcomes, and descriptive summaries stay separate so a plan is not
 mistaken for a guarantee, a recommendation is not mistaken for demand, and a rollup is not mistaken for a base row.
 
-The layout follows the public top-level packages under `examples/store/transforms/`.
+The layout follows the public top-level packages under `examples/store/transforms/`. Each background accumulates its
+contract, formulas, alternatives, resolved choices, and failure evidence so the design can be read offline without
+reconstructing decisions from separate documents or discussions.
 
 ## Boundaries
 
@@ -42,9 +44,9 @@ fallback, and summary tie-breaker must be deterministic and explainable.
 | Operations | Fulfillment | Allocation, plan, shipment facts | Caller-owned inventory sources |
 | Measurement | Evaluation/Experiments/Analytics/Advanced | Evidence and summaries | Caller-owned event/run identity |
 
-## Shared decision record
+## Shared architectural decisions
 
-| Decision point | Alternatives | Chosen result | Why |
+| Decision | Alternatives considered | Choice | Why |
 |---|---|---|---|
 | Service boundary | Stateful/hidden effects/typed transforms | Typed transformations | Composable and testable. |
 | Identity | Global keys or tenant-qualified keys | Tenant-qualified keys | Keys cannot cross a business partition. |

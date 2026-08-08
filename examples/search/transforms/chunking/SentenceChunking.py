@@ -2,21 +2,20 @@
 
 from typing import Any
 
-from examples.search.schemas.chunking.intermediate import ExpandedSentenceText, MaterializedParagraph, SentenceText
+from examples.search.schemas.chunking.intermediate import ExpandedSentenceText, SentenceText
 from examples.search.schemas.text import Document, Paragraph, Sentence
 from examples.search.transforms.chunking.MaterializeText import _TextMaterializer
-from structure import input, lane, output, special, step, transform
+from structure import Transform, input, output, special, step, transform
 from structure.plugin.pyspark import concat_ws, inner_join, posexplode_struct, regexp_replace, types, where
 
 
 @transform(warn_on_udfs=False)
-class SentenceChunking(_TextMaterializer):
+class SentenceChunking(Transform):
     """Supply default sentence chunks; callers may replace this transform for exact segmentation."""
 
     documents = input(Document)
     paragraphs = input(Paragraph)
     sentences = output(Sentence)
-    materialized_paragraph = lane(MaterializedParagraph)
 
     @special(
         type="udf",
@@ -47,27 +46,16 @@ class SentenceChunking(_TextMaterializer):
             spans.append({"local_start": start, "local_end": end, "sentence_content": content[start:end]})
         return spans
 
-    @step(input=[documents, paragraphs], output=materialized_paragraph)
-    def materialize_paragraph(self, document: Document, paragraph: Paragraph) -> MaterializedParagraph:
+    @step(input=[documents, paragraphs], output=sentences)
+    def chunk(self, document: Document, paragraph: Paragraph) -> Sentence:
         inner_join(on=document.id == paragraph.document_id)
-        return MaterializedParagraph(
-            id=paragraph.id,
-            document_id=paragraph.document_id,
-            section_id=paragraph.section_id,
-            ordinal=paragraph.ordinal,
-            span_start=paragraph.span_start,
-            span_end=paragraph.span_end,
-            content=regexp_replace(
-                self.canonical_span(document.content, paragraph.span_start, paragraph.span_end),
-                pattern="\n",
-                replacement=" ",
-            ),
+        content = regexp_replace(
+            _TextMaterializer.canonical_span(document.content, paragraph.span_start, paragraph.span_end),
+            pattern="\n",
+            replacement=" ",
         )
-
-    @step(input=materialized_paragraph, output=sentences)
-    def chunk(self, paragraph: MaterializedParagraph) -> Sentence:
         sentence = posexplode_struct(
-            self.default_sentence_spans(paragraph.content),
+            self.default_sentence_spans(content),
             as_=ExpandedSentenceText,
             ordinal="position",
             scope="sentence_text",

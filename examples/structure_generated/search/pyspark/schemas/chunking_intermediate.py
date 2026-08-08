@@ -102,39 +102,6 @@ SENTENCE_TEXT_SCHEMA = T.StructType([
     T.StructField("sentence_content", T.StringType(), False),
 ])
 
-MATERIALIZED_PARAGRAPH_SCHEMA = T.StructType([
-    T.StructField("id", T.StringType(), False),
-    T.StructField("document_id", T.StringType(), False),
-    T.StructField("section_id", T.StringType(), False),
-    T.StructField("ordinal", T.IntegerType(), False),
-    T.StructField("span_start", T.LongType(), False),
-    T.StructField("span_end", T.LongType(), False),
-    T.StructField("content", T.StringType(), False),
-])
-
-MATERIALIZED_SECTION_SCHEMA = T.StructType([
-    T.StructField("id", T.StringType(), False),
-    T.StructField("document_id", T.StringType(), False),
-    T.StructField("ordinal", T.IntegerType(), False),
-    T.StructField("span_start", T.LongType(), False),
-    T.StructField("span_end", T.LongType(), False),
-    T.StructField("heading_span_start", T.LongType(), True),
-    T.StructField("heading_span_end", T.LongType(), True),
-    T.StructField("heading", T.StringType(), False),
-])
-
-MATERIALIZED_SENTENCE_SCHEMA = T.StructType([
-    T.StructField("id", T.StringType(), False),
-    T.StructField("document_id", T.StringType(), False),
-    T.StructField("section_id", T.StringType(), False),
-    T.StructField("paragraph_id", T.StringType(), False),
-    T.StructField("paragraph_ordinal", T.IntegerType(), False),
-    T.StructField("ordinal", T.IntegerType(), False),
-    T.StructField("span_start", T.LongType(), False),
-    T.StructField("span_end", T.LongType(), False),
-    T.StructField("content", T.StringType(), False),
-])
-
 EXPANDED_SENTENCE_TEXT_SCHEMA = T.StructType([
     T.StructField("position", T.LongType(), False),
     T.StructField("local_start", T.LongType(), False),

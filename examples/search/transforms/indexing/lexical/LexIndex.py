@@ -1,7 +1,6 @@
 """Reusable, batch-built text index artifacts."""
 
 from examples.search.algorithms.text import normalized_token
-from examples.search.schemas.chunking.intermediate import MaterializedSentence
 from examples.search.schemas.indexing.lexical.index import (
     DocumentIndexSummary,
     DocumentTerm,
@@ -43,12 +42,11 @@ from structure.plugin.pyspark import (
 )
 
 
-class LexIndex(_TextMaterializer):
+class LexIndex(Transform):
     """Build reusable document, section, paragraph, and sentence term indexes."""
 
     documents = input(Document)
     sentences = input(Sentence)
-    materialized_sentence = lane(MaterializedSentence)
     occurrences = lane(LexicalOccurrence)
     document_term_counts = lane(DocumentTermCount)
     document_target_stats = lane(DocumentIndexTargetStats)
@@ -71,25 +69,14 @@ class LexIndex(_TextMaterializer):
     sentence_terms = output(SentenceTerm)
     sentence_summary = output(SentenceIndexSummary)
 
-    @step(input=[documents, sentences], output=materialized_sentence)
-    def materialize_sentence(self, document: Document, sentence: Sentence) -> MaterializedSentence:
+    @step(input=[documents, sentences], output=occurrences)
+    def tokenize(self, document: Document, sentence: Sentence) -> LexicalOccurrence:
         inner_join(on=document.id == sentence.document_id)
-        return MaterializedSentence(
-            id=sentence.id,
-            document_id=sentence.document_id,
-            section_id=sentence.section_id,
-            paragraph_id=sentence.paragraph_id,
-            paragraph_ordinal=sentence.paragraph_ordinal,
-            ordinal=sentence.ordinal,
-            span_start=sentence.span_start,
-            span_end=sentence.span_end,
-            content=self.canonical_span(document.content, sentence.span_start, sentence.span_end),
-        )
-
-    @step(input=materialized_sentence, output=occurrences)
-    def tokenize(self, sentence: MaterializedSentence) -> LexicalOccurrence:
         terms = arr_transform(
-            split(sentence.content, pattern=r"\s+"),
+            split(
+                _TextMaterializer.canonical_span(document.content, sentence.span_start, sentence.span_end),
+                pattern=r"\s+",
+            ),
             lambda value: TermText(term=value),
         )
         expanded = posexplode_struct(terms, as_=ExpandedTermText, ordinal="position", scope="sentence_term")

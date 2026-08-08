@@ -1036,6 +1036,43 @@ def test_stage_graph_mixes_explicit_and_implicit_stages() -> None:
     ]
 
 
+def test_stage_graph_rejects_wrapper_local_step_methods() -> None:
+    class MixedGraph(Transform):
+        orders = input(Raw)
+        normalized = output(Normalized)
+
+        normalized_stage = NormalizeOrders(orders=orders)
+
+        @step(input=orders, output=normalized)
+        def local(self, order: Raw) -> Normalized:
+            return Normalized(id=order.id, product_id=order.product_id)
+
+    with pytest.raises(StructureCompileError, match="combines stage composition with wrapper-local executable members") as raised:
+        _analysis(MixedGraph)
+
+    assert raised.value.diagnostic.code == "DSL-E0402"
+    assert raised.value.diagnostic.context == {"members": "local"}
+
+
+def test_stage_graph_rejects_wrapper_local_raw_hooks() -> None:
+    class MixedGraph(Transform):
+        orders = input(Raw)
+        normalized = output(Normalized)
+        retained = lane(Normalized)
+
+        normalized_stage = NormalizeOrders(orders=orders)
+
+        @raw(inout=retained | retained)
+        def local_hook(self, normalized):
+            return normalized
+
+    with pytest.raises(StructureCompileError, match="combines stage composition with wrapper-local executable members") as raised:
+        _analysis(MixedGraph)
+
+    assert raised.value.diagnostic.code == "DSL-E0402"
+    assert raised.value.diagnostic.context == {"members": "local_hook"}
+
+
 def test_implicit_stage_unknown_output_reports_available_outputs() -> None:
     with pytest.raises(AttributeError, match=r"NormalizeOrders has no output 'missing'"):
 

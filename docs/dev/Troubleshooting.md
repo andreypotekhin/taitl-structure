@@ -121,7 +121,8 @@ When: Running the Spark Connect 4.0 integration lane; pytest stops after the pre
 remains alive without progress.
 Cause: The file-stream module contains only classic-PySpark tests, but per-test `spark` fixtures were created before
 the tests skipped. Spark Connect could then block while tearing down a session after the skip.
-Fix: The module skips at collection time on Spark Connect, so no Connect session is created for those tests. Verify
+Fix: The classic-only streaming modules (v3 file streams, v7/v8 restart coverage, and v10 foreach-batch coverage)
+skip at collection time on Spark Connect, so no Connect session is created for those tests. Verify
 with `docker compose --env-file infra/compose/.env -f infra/compose/docker-compose.yaml run --rm -e
 INTEGRATION_PYTEST_ARGS='/workspace/tests/integration/pyspark/v3/streams/test_file_streams.py -q'
 structure-integration-spark-connect40`; an expected result is eight skipped stream tests rather than a stalled run.

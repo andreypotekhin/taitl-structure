@@ -1,14 +1,13 @@
 """Ranked sentence-search presentation."""
 
-from examples.search.schemas.chunking.intermediate import MaterializedSentence
 from examples.search.schemas.search import SearchQuery, SentenceScore, SentenceSearchResult
 from examples.search.schemas.text import Document, Sentence
 from examples.search.transforms.chunking.MaterializeText import _TextMaterializer
-from structure import input, lane, output, step
+from structure import Transform, input, output, step
 from structure.plugin.pyspark import inner_join, row_number, where
 
 
-class SearchSentences(_TextMaterializer):
+class SearchSentences(Transform):
     """Rank pre-scored sentence matches for caller-supplied queries."""
 
     queries = input(SearchQuery)
@@ -16,34 +15,18 @@ class SearchSentences(_TextMaterializer):
     sentences = input(Sentence)
     sentence_scores = input(SentenceScore)
     results = output(SentenceSearchResult)
-    materialized_sentence = lane(MaterializedSentence)
 
-    @step(input=[documents, sentences], output=materialized_sentence)
-    def materialize_sentence(self, document: Document, sentence: Sentence) -> MaterializedSentence:
-        inner_join(on=document.id == sentence.document_id)
-        return MaterializedSentence(
-            id=sentence.id,
-            document_id=sentence.document_id,
-            section_id=sentence.section_id,
-            paragraph_id=sentence.paragraph_id,
-            paragraph_ordinal=sentence.paragraph_ordinal,
-            ordinal=sentence.ordinal,
-            span_start=sentence.span_start,
-            span_end=sentence.span_end,
-            content=self.canonical_span(document.content, sentence.span_start, sentence.span_end),
-        )
-
-    @step(input=[sentence_scores, sentences, queries, materialized_sentence], output=results)
+    @step(input=[sentence_scores, sentences, queries, documents], output=results)
     def rank_sentences(
         self,
         score: SentenceScore,
         sentence: Sentence,
         query: SearchQuery,
-        materialized_sentence: MaterializedSentence,
+        document: Document,
     ) -> SentenceSearchResult:
         inner_join(query, on=query.id == score.query_id)
         inner_join(on=sentence.id == score.sentence_id)
-        inner_join(on=materialized_sentence.id == sentence.id)
+        inner_join(on=document.id == score.document_id)
         where(
             score.score.is_not_null(),
         )
@@ -61,6 +44,6 @@ class SearchSentences(_TextMaterializer):
             section_id=score.section_id,
             paragraph_id=score.paragraph_id,
             sentence_id=score.sentence_id,
-            content=materialized_sentence.content,
+            content=_TextMaterializer.canonical_span(document.content, sentence.span_start, sentence.span_end),
             score=score.score,
         )

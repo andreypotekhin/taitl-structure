@@ -74,6 +74,7 @@ class AnalyzeTransform(CompileTransform):
                 pipeline, name=transform_class.__name__, config=config, wrapper_class=transform_class
             )
         if transform_class._structure_stages:
+            self._reject_mixed_stage_members(transform_class)
             return self._compose_graph(transform_class, config=config)
         if not transform_class._structure_outputs:
             raise self._error(

@@ -18,7 +18,14 @@ from examples.streams.adoption import ForeachBatchSafety, start_foreach_batch_qu
 from structure import Schema, Transform, input, output, transform
 from structure.plugin.pyspark import string
 
-pytestmark = pytest.mark.integration
+pytestmark: pytest.MarkDecorator | list[pytest.MarkDecorator] = (
+    [
+        pytest.mark.integration,
+        pytest.mark.skip(reason="foreachBatch restart evidence requires classic PySpark"),
+    ]
+    if backend_name().startswith("spark-connect")
+    else pytest.mark.integration
+)
 
 SOURCE_MODULE = "integration.pyspark.v10.test_foreach_batch_restart"
 PACKAGE = "integration_v10_foreach_batch_generated"

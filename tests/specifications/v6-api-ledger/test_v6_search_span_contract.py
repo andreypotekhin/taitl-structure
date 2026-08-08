@@ -2,7 +2,13 @@
 
 from examples.search.schemas.text import Paragraph, Section, Sentence
 from examples.search.transforms.chunking.DocumentChunking import DocumentChunking
+from examples.search.transforms.chunking.MaterializeText import _TextMaterializer
 from examples.search.transforms.chunking.SentenceChunking import SentenceChunking
+from structure import Transform
+
+
+def test_text_materializer_is_a_utility_not_a_transform_base() -> None:
+    assert not issubclass(_TextMaterializer, Transform)
 
 
 def test_search_boundaries_are_flat_and_text_free() -> None:

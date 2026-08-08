@@ -2,12 +2,12 @@
 
 from typing import Any
 
-from structure import Transform, special
+from structure import special
 from structure.plugin.pyspark import types
 
 
-class _TextMaterializer(Transform):
-    """Shared private UDF for canonical document-code-point span extraction."""
+class _TextMaterializer:
+    """Shared private UDF utility for canonical document-code-point span extraction."""
 
     @special(type="udf", return_type=types.string(), nullable=False)
     def canonical_span(content: Any, start: Any, end: Any) -> str | None:

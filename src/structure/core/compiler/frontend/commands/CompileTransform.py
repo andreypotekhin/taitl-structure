@@ -146,6 +146,7 @@ class CompileTransform:
                 pipeline, name=transform_class.__name__, config=config, wrapper_class=transform_class
             )
         if transform_class._structure_stages:
+            self._reject_mixed_stage_members(transform_class)
             return self._compose_graph(transform_class, config=config)
         if not transform_class._structure_outputs:
             raise self._error(
@@ -177,6 +178,31 @@ class CompileTransform:
             outputs=tuple(outputs),
             options=transform_class.effective_transform_options(),
             diagnostics=tuple(diagnostics),
+        )
+
+    def _reject_mixed_stage_members(self, transform_class: type[Transform]) -> None:
+        members = self._member_collector.collect(transform_class)
+        executable = [
+            member
+            for member in members
+            if getattr(member.member, "_structure_output_method", None) is not None
+            or getattr(member.member, "_structure_raw", None) is not None
+        ]
+        if not executable:
+            return
+        names = ", ".join(member.name for member in executable)
+        raise self._error(
+            "DSL-E0402",
+            transform_class=transform_class,
+            problem=(
+                f"Transform {transform_class.__name__} combines stage composition with wrapper-local executable "
+                f"members: {names}."
+            ),
+            use=(
+                "Move each @step or @raw member into a child transform or remove the stages; a transform must be "
+                "either a local step graph or a composed stage graph."
+            ),
+            context={"members": names},
         )
 
     def _require_module_level_schemas(self, transform_class: type[Transform]) -> None:
