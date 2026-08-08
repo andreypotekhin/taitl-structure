@@ -930,6 +930,8 @@ class RenderPySparkTransformModule:
             yield operation.posexplode_struct.expression
         if operation.scalar_generator is not None:
             yield operation.scalar_generator.expression
+        if operation.map_generator is not None:
+            yield operation.map_generator.expression
         if operation.filter is not None:
             yield operation.filter
         if operation.join is not None:

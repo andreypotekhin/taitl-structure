@@ -117,21 +117,24 @@ contract, the hook remains and the gap is recorded in `docs/dev/Gaps.md`.
 ## Typed Generator Expansion
 
 The generator family expands the existing `posexplode_struct(...)` contract through explicit relation operations rather
-than raw generator Columns. Each operation consumes a declared `array<struct>` expression, creates a declared generated
-scope, and returns a relation whose cardinality and nullability are visible to the compiler.
+than raw generator Columns. Each operation consumes a declared collection expression, creates a declared generated scope,
+and returns a relation whose cardinality and nullability are visible to the compiler.
 
 The public variants are `explode_struct(...)`, `explode_outer_struct(...)`, `posexplode_struct(...)`,
 `posexplode_outer_struct(...)`, `inline_struct(...)`, and `inline_outer_struct(...)`. Inner variants emit zero rows for
 null or empty arrays. Outer variants emit one row with nullable generated fields; outer positional expansion also has a
 nullable ordinal. `inline` variants expose declared struct members as sibling fields. The sibling
 `explode_array(...)`, `explode_outer_array(...)`, `posexplode_array(...)`, and `posexplode_outer_array(...)` forms
-expand admitted primitive scalar arrays through an explicit value field and optional ordinal.
+expand admitted primitive scalar arrays through an explicit value field and optional ordinal. The map siblings
+`explode_map(...)`, `explode_outer_map(...)`, `posexplode_map(...)`, and `posexplode_outer_map(...)` expand primitive
+map keys and values through explicit key and value fields; inner forms preserve map-value nullability and outer forms
+make all generated fields nullable.
 
 Every generator requires a non-nullable element shape, a declared `as_` Schema, a non-empty unique symbolic scope, and
 output names from that Schema rather than runtime data. The operation records kind, source expression, generated Schema,
 optional ordinal, scope, outer flag, cardinality, batch/streaming/Connect classification, capability, diagnostics, and
-provenance. Expansion invalidates any earlier relation-order claim. Generators are batch-only until a separate streaming
-gate proves a safe contract.
+provenance. Expansion invalidates any earlier relation-order claim. The admitted struct, scalar-array, and primitive-map
+forms are stateless streaming-compatible.
 
 Capability, symbolic, recipe, evaluator, renderer, explain, traceability, and invalid-schema tests cover null, empty,
 one-element, multiple-element, nested-field, and schema-mismatch cases. Generated code uses public PySpark generator

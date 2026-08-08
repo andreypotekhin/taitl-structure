@@ -13,6 +13,7 @@ from structure.plugin.pyspark.dsl.types import ArrayType, StructType
 from structure.plugin.pyspark.execution.logic.expressions.EvaluatePySparkExpression import EvaluatePySparkExpression
 from structure.plugin.pyspark.execution.logic.InvokePySparkHooks import InvokePySparkHooks
 from structure.plugin.pyspark.execution.logic.PlanBoundary import apply_plan_boundary
+from structure.plugin.pyspark.execution.logic.running.RunOnlinePySparkMapGenerator import RunOnlinePySparkMapGenerator
 from structure.plugin.pyspark.execution.logic.running.RunOnlinePySparkScalarGenerator import (
     RunOnlinePySparkScalarGenerator,
 )
@@ -29,6 +30,7 @@ class RunOnlinePySparkTransform:
         self._hooks = InvokePySparkHooks()
         self._struct_generators = RunOnlinePySparkStructGenerator()
         self._scalar_generators = RunOnlinePySparkScalarGenerator()
+        self._map_generators = RunOnlinePySparkMapGenerator()
         self._validator = ValidatePySparkFrame()
         self._backend_target = ">=3.5,<4.1"
 
@@ -319,6 +321,11 @@ class RunOnlinePySparkTransform:
                 and operation.scalar_generator is not None
             ):
                 df = self._scalar_array(step, df, operation.scalar_generator, functions=functions, types=types)
+            if (
+                operation.kind in {"explode_map", "explode_outer_map", "posexplode_map", "posexplode_outer_map"}
+                and operation.map_generator is not None
+            ):
+                df = self._map_generator(step, df, operation.map_generator, functions=functions, types=types)
             if operation.kind == "ordered_timeline_scan" and operation.ordered_timeline_scan is not None:
                 df = self._ordered_timeline_scan(
                     step,
@@ -641,6 +648,11 @@ class RunOnlinePySparkTransform:
         aliases = self._scope_aliases(step)
         value = self._expressions.evaluate(generator.expression, functions=functions, aliases=aliases)
         return self._scalar_generators(frame, generator, functions=functions, types=types, value=value)
+
+    def _map_generator(self, step, frame, generator, *, functions, types):
+        aliases = self._scope_aliases(step)
+        value = self._expressions.evaluate(generator.expression, functions=functions, aliases=aliases)
+        return self._map_generators(frame, generator, functions=functions, types=types, value=value)
 
     def _ordered_timeline_scan(self, step, frame, scan, *, functions, types):
         prefix = f"__structure_{scan.scope.strip('_')}"

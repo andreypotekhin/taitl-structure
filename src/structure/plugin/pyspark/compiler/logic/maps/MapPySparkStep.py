@@ -340,6 +340,16 @@ class MapPySparkStep:
                         operation,
                     )
                 )
+            if (
+                operation.kind in {"explode_map", "explode_outer_map", "posexplode_map", "posexplode_outer_map"}
+                and operation.map_generator is not None
+            ):
+                recipes.append(
+                    self._operation_modes(
+                        self._generators.map(operation.map_generator, capabilities=capabilities),
+                        operation,
+                    )
+                )
             if operation.kind == "ordered_timeline_scan" and operation.ordered_timeline_scan is not None:
                 scan = operation.ordered_timeline_scan
                 recipes.append(

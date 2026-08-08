@@ -66,6 +66,9 @@ class CapturePySparkStep:
             if operation.scalar_generator is not None
         )
         expressions.extend(
+            operation.map_generator.expression for operation in body.operations if operation.map_generator is not None
+        )
+        expressions.extend(
             expression
             for operation in body.operations
             if operation.relation_order is not None

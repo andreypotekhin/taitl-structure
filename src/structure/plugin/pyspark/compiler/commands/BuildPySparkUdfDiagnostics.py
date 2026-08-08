@@ -46,6 +46,16 @@ class BuildPySparkUdfDiagnostics:
                 for operation in body.operations
                 if operation.posexplode_struct is not None
             ),
+            *(
+                operation.scalar_generator.expression
+                for operation in body.operations
+                if operation.scalar_generator is not None
+            ),
+            *(
+                operation.map_generator.expression
+                for operation in body.operations
+                if operation.map_generator is not None
+            ),
             *(operation.filter for operation in body.operations if operation.filter is not None),
             *(assignment.expression for result in body.results for assignment in result.projection),
         )

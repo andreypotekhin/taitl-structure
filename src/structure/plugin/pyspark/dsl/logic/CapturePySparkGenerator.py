@@ -6,7 +6,12 @@ from structure.dsl import Schema
 from structure.plugin.api.v1.model import SymbolicContext
 from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.expressions import literal
-from structure.plugin.pyspark.dsl.operations import OperationPlan, PosexplodeStructPlan, ScalarGeneratorPlan
+from structure.plugin.pyspark.dsl.operations import (
+    MapGeneratorPlan,
+    OperationPlan,
+    PosexplodeStructPlan,
+    ScalarGeneratorPlan,
+)
 from structure.plugin.pyspark.dsl.RowScope import RowScope
 from structure.plugin.pyspark.dsl.types import (
     ArrayType,
@@ -18,6 +23,7 @@ from structure.plugin.pyspark.dsl.types import (
     FloatType,
     IntegerType,
     LongType,
+    MapType,
     StringType,
     StructType,
     StructureType,
@@ -308,6 +314,198 @@ class CapturePySparkGenerator:
         return self._scalar_array(
             context, value, as_=as_, value_field=value_field, ordinal=ordinal, scope=scope, outer=True
         )
+
+    def explode_map(
+        self,
+        context: SymbolicContext,
+        value: object,
+        *,
+        as_: type[Schema],
+        key_field: str,
+        value_field: str,
+        scope: str | None = None,
+    ) -> RowScope:
+        return self._map(
+            context,
+            value,
+            as_=as_,
+            key_field=key_field,
+            value_field=value_field,
+            ordinal=None,
+            scope=scope,
+            outer=False,
+        )
+
+    def explode_outer_map(
+        self,
+        context: SymbolicContext,
+        value: object,
+        *,
+        as_: type[Schema],
+        key_field: str,
+        value_field: str,
+        scope: str | None = None,
+    ) -> RowScope:
+        return self._map(
+            context,
+            value,
+            as_=as_,
+            key_field=key_field,
+            value_field=value_field,
+            ordinal=None,
+            scope=scope,
+            outer=True,
+        )
+
+    def posexplode_map(
+        self,
+        context: SymbolicContext,
+        value: object,
+        *,
+        as_: type[Schema],
+        key_field: str,
+        value_field: str,
+        ordinal: str = "ordinal",
+        scope: str | None = None,
+    ) -> RowScope:
+        return self._map(
+            context,
+            value,
+            as_=as_,
+            key_field=key_field,
+            value_field=value_field,
+            ordinal=ordinal,
+            scope=scope,
+            outer=False,
+        )
+
+    def posexplode_outer_map(
+        self,
+        context: SymbolicContext,
+        value: object,
+        *,
+        as_: type[Schema],
+        key_field: str,
+        value_field: str,
+        ordinal: str = "ordinal",
+        scope: str | None = None,
+    ) -> RowScope:
+        return self._map(
+            context,
+            value,
+            as_=as_,
+            key_field=key_field,
+            value_field=value_field,
+            ordinal=ordinal,
+            scope=scope,
+            outer=True,
+        )
+
+    def _map(
+        self,
+        context: SymbolicContext,
+        value: object,
+        *,
+        as_: type[Schema],
+        key_field: str,
+        value_field: str,
+        ordinal: str | None,
+        scope: str | None,
+        outer: bool,
+    ) -> RowScope:
+        function = ("posexplode" if ordinal is not None else "explode") + ("_outer" if outer else "") + "_map"
+        self._validate_options(as_=as_, ordinal=ordinal, scope=scope, function=function)
+        if not isinstance(key_field, str) or not key_field:
+            raise TypeError(f"{function}(key_field=...) requires a non-empty field name")
+        if not isinstance(value_field, str) or not value_field:
+            raise TypeError(f"{function}(value_field=...) requires a non-empty field name")
+        if key_field == value_field:
+            raise TypeError(f"{function}(key_field=...) and value_field=... must differ")
+        expression = self._map_expression(value, function=function, outer=outer)
+        map_type = cast(MapType, expression.type)
+        self._validate_map_schema(
+            as_,
+            key_field=key_field,
+            value_field=value_field,
+            ordinal=ordinal,
+            key=map_type.key,
+            value=map_type.value,
+            value_contains_null=map_type.value_contains_null,
+            outer=outer,
+            function=function,
+        )
+        self._validate_source_collisions(context.default_project_source, generated=as_)
+        generated_scope = scope or self._default_scope(as_)
+        generator = MapGeneratorPlan(
+            expression=expression,
+            scope=generated_scope,
+            schema=as_,
+            key_field=key_field,
+            value_field=value_field,
+            ordinal=ordinal,
+            function=function.removesuffix("_map"),
+            outer=outer,
+        )
+        operation = getattr(OperationPlan, f"{generator.function}_map_operation")
+        context.operations.append(operation(generator))
+        context.register_current_scope(generated_scope)
+        return RowScope(name=generated_scope, schema=as_, nullable=outer)
+
+    def _map_expression(self, value: object, *, function: str, outer: bool) -> Expression:
+        expression = literal(value)
+        if not isinstance(expression, Expression) or not isinstance(expression.type, MapType):
+            raise TypeError(f"{function}(...) requires a map of primitive scalar values")
+        if not isinstance(expression.type.key, self._scalar_array_types()) or not isinstance(
+            expression.type.value, self._scalar_array_types()
+        ):
+            raise TypeError(f"{function}(...) requires a map of primitive scalar values")
+        if not outer and expression.nullable:
+            raise TypeError(f"{function}(...) requires a non-nullable map expression")
+        return expression
+
+    def _validate_map_schema(
+        self,
+        schema: type[Schema],
+        *,
+        key_field: str,
+        value_field: str,
+        ordinal: str | None,
+        key: StructureType,
+        value: StructureType,
+        value_contains_null: bool,
+        outer: bool,
+        function: str,
+    ) -> None:
+        fields = schema._structure_fields
+        allowed = {key_field, value_field}
+        for name, expected, nullable in (
+            (key_field, key, outer),
+            (value_field, value, outer or value_contains_null),
+        ):
+            if name not in fields:
+                raise TypeError(f"{function}(as_=...) schema must declare field {name!r}")
+            field = fields[name]
+            if not self._same_type(field.type, expected):
+                raise TypeError(f"{function}(as_=...) field {name!r} must match the map entry type")
+            if nullable and not field.nullable:
+                raise TypeError(f"{function}(as_=...) field {name!r} must be nullable")
+            if not nullable and field.nullable:
+                raise TypeError(f"{function}(as_=...) field {name!r} must be non-nullable")
+        if ordinal is not None:
+            allowed.add(ordinal)
+            if ordinal in {key_field, value_field}:
+                raise TypeError(f"{function}(ordinal=...) must differ from key_field and value_field")
+            if ordinal not in fields:
+                raise TypeError(f"{function}(as_=...) schema must declare ordinal field {ordinal!r}")
+            if not isinstance(fields[ordinal].type, LongType):
+                raise TypeError(f"{function}(ordinal={ordinal!r}) field must be long()")
+            if outer and not fields[ordinal].nullable:
+                raise TypeError(f"{function}(ordinal={ordinal!r}) field must be nullable")
+            if not outer and fields[ordinal].nullable:
+                raise TypeError(f"{function}(ordinal={ordinal!r}) field must be non-nullable")
+        extras = sorted(set(fields) - allowed)
+        if extras:
+            raise TypeError(f"{function}(as_=...) schema contains undeclared generated field(s): {', '.join(extras)}")
 
     def _scalar_array(
         self,

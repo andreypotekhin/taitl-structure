@@ -8,6 +8,7 @@ from structure.plugin.pyspark.compiler.model.PySparkDuplicateRowsRecipe import P
 from structure.plugin.pyspark.compiler.model.PySparkExactlyOneRecipe import PySparkExactlyOneRecipe
 from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.plugin.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoinRecipe
+from structure.plugin.pyspark.compiler.model.PySparkMapGeneratorRecipe import PySparkMapGeneratorRecipe
 from structure.plugin.pyspark.compiler.model.PySparkOrderedTimelineScanRecipe import PySparkOrderedTimelineScanRecipe
 from structure.plugin.pyspark.compiler.model.PySparkPosexplodeStructRecipe import PySparkPosexplodeStructRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationAliasRecipe import PySparkRelationAliasRecipe
@@ -42,6 +43,7 @@ class PySparkOperationRecipe:
     exactly_one: PySparkExactlyOneRecipe | None = None
     posexplode_struct: PySparkPosexplodeStructRecipe | None = None
     scalar_generator: PySparkScalarGeneratorRecipe | None = None
+    map_generator: PySparkMapGeneratorRecipe | None = None
     ordered_timeline_scan: PySparkOrderedTimelineScanRecipe | None = None
     relation_alias: PySparkRelationAliasRecipe | None = None
     relation_assertion: PySparkRelationAssertionRecipe | None = None
@@ -136,6 +138,22 @@ class PySparkOperationRecipe:
     @staticmethod
     def posexplode_outer_array_operation(generator: PySparkScalarGeneratorRecipe) -> "PySparkOperationRecipe":
         return PySparkOperationRecipe(kind="posexplode_outer_array", scalar_generator=generator)
+
+    @staticmethod
+    def explode_map_operation(generator: PySparkMapGeneratorRecipe) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="explode_map", map_generator=generator)
+
+    @staticmethod
+    def explode_outer_map_operation(generator: PySparkMapGeneratorRecipe) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="explode_outer_map", map_generator=generator)
+
+    @staticmethod
+    def posexplode_map_operation(generator: PySparkMapGeneratorRecipe) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="posexplode_map", map_generator=generator)
+
+    @staticmethod
+    def posexplode_outer_map_operation(generator: PySparkMapGeneratorRecipe) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="posexplode_outer_map", map_generator=generator)
 
     @staticmethod
     def ordered_timeline_scan_operation(scan: PySparkOrderedTimelineScanRecipe) -> "PySparkOperationRecipe":

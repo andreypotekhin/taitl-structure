@@ -193,6 +193,8 @@ class RenderPySparkExplainReport:
             return self._generators.posexplode_struct(operation.posexplode_struct)
         if operation.scalar_generator is not None:
             return self._generators.scalar_array(operation.scalar_generator)
+        if operation.map_generator is not None:
+            return self._generators.map(operation.map_generator)
         if operation.relation_alias is not None:
             return (
                 "relation_alias(row_preserving "
@@ -209,10 +211,7 @@ class RenderPySparkExplainReport:
                     f"nulls={operation.relation_assertion.nulls})"
                 )
             if operation.kind == "require_parent_hierarchy":
-                return (
-                    "require_parent_hierarchy(row_preserving "
-                    f"max_depth={operation.relation_assertion.max_depth})"
-                )
+                return "require_parent_hierarchy(row_preserving " f"max_depth={operation.relation_assertion.max_depth})"
             return "require_all(row_preserving predicate=true)"
         if operation.relation_order is not None:
             return f"order_by(row_preserving keys={len(operation.relation_order.order_by)})"

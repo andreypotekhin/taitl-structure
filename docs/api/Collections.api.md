@@ -108,6 +108,20 @@ values. `as_` must declare exactly the named `value_field`; positional forms als
 Inner forms require a non-null array with non-null elements. Outer forms preserve Spark's null/empty input row and
 require nullable generated fields. Nested arrays, maps, structs, variants, and indexed callbacks are not admitted.
 
+## Typed Map Generators
+
+| Structure API | PySpark parity | Example |
+| --- | --- | --- |
+| `explode_map(...)` | `explode` | `entry = explode_map(document.attributes, as_=Entry, key_field="key", value_field="value")` |
+| `explode_outer_map(...)` | `explode_outer` | `entry = explode_outer_map(document.attributes, as_=OuterEntry, key_field="key", value_field="value")` |
+| `posexplode_map(...)` | `posexplode` | `entry = posexplode_map(document.attributes, as_=PositionedEntry, key_field="key", value_field="value")` |
+| `posexplode_outer_map(...)` | `posexplode_outer` | `entry = posexplode_outer_map(document.attributes, as_=OuterPositionedEntry, key_field="key", value_field="value")` |
+
+Map generators admit primitive scalar keys and values. The generated Schema must declare the explicit `key_field` and
+`value_field`; positional forms additionally declare a long `ordinal`. Inner forms require a non-null map expression,
+non-null keys, and preserve nullable map values. Outer forms make key, value, and ordinal fields nullable so null or
+empty maps preserve their source row. Nested maps, structs, variants, and compatibility aliases remain deferred.
+
 ## Map Helpers
 
 | Structure API | PySpark parity | Example |

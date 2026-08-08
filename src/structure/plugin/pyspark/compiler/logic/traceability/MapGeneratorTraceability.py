@@ -27,7 +27,9 @@ class MapGeneratorTraceability:
                 ),
             )
             for index, operation in enumerate(step.operations)
-            if operation.posexplode_struct is not None or operation.scalar_generator is not None
+            if operation.posexplode_struct is not None
+            or operation.scalar_generator is not None
+            or operation.map_generator is not None
         )
 
     def dependencies(self, step: PySparkStepRecipe) -> tuple[DataflowDependency, ...]:
@@ -41,10 +43,22 @@ class MapGeneratorTraceability:
                     "scope": generator.scope,
                     "schema": generator.schema.__name__,
                     "ordinal": generator.ordinal,
-                    **({"value_field": getattr(generator, "value_field")} if operation.scalar_generator is not None else {}),
+                    **(
+                        {"value_field": getattr(generator, "value_field")}
+                        if operation.scalar_generator is not None
+                        else {}
+                    ),
+                    **(
+                        {
+                            "key_field": getattr(generator, "key_field"),
+                            "value_field": getattr(generator, "value_field"),
+                        }
+                        if operation.map_generator is not None
+                        else {}
+                    ),
                 },
             )
             for index, operation in enumerate(step.operations)
-            for generator in (operation.posexplode_struct or operation.scalar_generator,)
+            for generator in (operation.posexplode_struct or operation.scalar_generator or operation.map_generator,)
             if generator is not None
         )

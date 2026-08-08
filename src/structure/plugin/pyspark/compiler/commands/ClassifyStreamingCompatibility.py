@@ -120,6 +120,8 @@ class ClassifyStreamingCompatibility:
                     findings.extend(self._generators.posexplode_struct(step.name, operation.posexplode_struct))
                 if operation.scalar_generator is not None:
                     findings.extend(self._generators.scalar_array(step.name, operation.scalar_generator))
+                if operation.map_generator is not None:
+                    findings.extend(self._generators.map(step.name, operation.map_generator))
                 if streaming_step and operation.relation_order is not None:
                     findings.extend(self._relation_ordering(step.name, "order_by"))
                 if streaming_step and operation.relation_bound is not None:

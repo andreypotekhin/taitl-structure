@@ -131,6 +131,16 @@ class BuildCompilerTraceability:
                                 for operation in step.operations
                                 if operation.posexplode_struct is not None
                             ),
+                            *(
+                                operation.scalar_generator.expression
+                                for operation in step.operations
+                                if operation.scalar_generator is not None
+                            ),
+                            *(
+                                operation.map_generator.expression
+                                for operation in step.operations
+                                if operation.map_generator is not None
+                            ),
                         ),
                     )
                 )
@@ -150,6 +160,16 @@ class BuildCompilerTraceability:
                                     operation.posexplode_struct.expression
                                     for operation in step.operations
                                     if operation.posexplode_struct is not None
+                                ),
+                                *(
+                                    operation.scalar_generator.expression
+                                    for operation in step.operations
+                                    if operation.scalar_generator is not None
+                                ),
+                                *(
+                                    operation.map_generator.expression
+                                    for operation in step.operations
+                                    if operation.map_generator is not None
                                 ),
                             ),
                         )

@@ -231,6 +231,86 @@ def posexplode_outer_array(
     )
 
 
+def explode_map(
+    value: object,
+    *,
+    as_: type[Schema],
+    key_field: str,
+    value_field: str,
+    scope: str | None = None,
+) -> RowScope:
+    """Explode a primitive map into typed key and value fields."""
+    context = current_symbolic_context()
+    if context is None:
+        raise RuntimeError("explode_map(...) can only be used inside a compiled Structure step method")
+    return _generators.explode_map(context, value, as_=as_, key_field=key_field, value_field=value_field, scope=scope)
+
+
+def explode_outer_map(
+    value: object,
+    *,
+    as_: type[Schema],
+    key_field: str,
+    value_field: str,
+    scope: str | None = None,
+) -> RowScope:
+    """Explode a primitive map while preserving a row for null or empty input."""
+    context = current_symbolic_context()
+    if context is None:
+        raise RuntimeError("explode_outer_map(...) can only be used inside a compiled Structure step method")
+    return _generators.explode_outer_map(
+        context, value, as_=as_, key_field=key_field, value_field=value_field, scope=scope
+    )
+
+
+def posexplode_map(
+    value: object,
+    *,
+    as_: type[Schema],
+    key_field: str,
+    value_field: str,
+    ordinal: str = "ordinal",
+    scope: str | None = None,
+) -> RowScope:
+    """Explode a primitive map and include a zero-based ordinal field."""
+    context = current_symbolic_context()
+    if context is None:
+        raise RuntimeError("posexplode_map(...) can only be used inside a compiled Structure step method")
+    return _generators.posexplode_map(
+        context,
+        value,
+        as_=as_,
+        key_field=key_field,
+        value_field=value_field,
+        ordinal=ordinal,
+        scope=scope,
+    )
+
+
+def posexplode_outer_map(
+    value: object,
+    *,
+    as_: type[Schema],
+    key_field: str,
+    value_field: str,
+    ordinal: str = "ordinal",
+    scope: str | None = None,
+) -> RowScope:
+    """Outer variant of :func:`posexplode_map` for null or empty maps."""
+    context = current_symbolic_context()
+    if context is None:
+        raise RuntimeError("posexplode_outer_map(...) can only be used inside a compiled Structure step method")
+    return _generators.posexplode_outer_map(
+        context,
+        value,
+        as_=as_,
+        key_field=key_field,
+        value_field=value_field,
+        ordinal=ordinal,
+        scope=scope,
+    )
+
+
 def variant_explode(
     value: object,
     *,

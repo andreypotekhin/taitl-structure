@@ -39,6 +39,7 @@
     {"id": "functions.map", "family": "SQL functions", "pyspark": ["map_from_entries", "map_keys", "map_values", "map_entries", "map_contains_key", "map_concat", "map_filter", "transform_keys", "transform_values", "map_zip_with"]},
     {"id": "functions.generators", "family": "SQL functions", "pyspark": ["explode", "explode_outer", "posexplode", "posexplode_outer", "inline", "inline_outer"]},
     {"id": "functions.scalar-generators", "family": "SQL functions", "pyspark": ["explode", "explode_outer", "posexplode", "posexplode_outer"]},
+    {"id": "functions.map-generators", "family": "SQL functions", "pyspark": ["explode", "explode_outer", "posexplode", "posexplode_outer"]},
     {"id": "dataframe.projection", "family": "DataFrame", "pyspark": ["select", "selectExpr", "withColumn", "withColumns", "withColumnRenamed", "drop", "filter", "where"]},
     {"id": "dataframe.join", "family": "DataFrame", "pyspark": ["join", "crossJoin", "hint"]},
     {"id": "dataframe.set", "family": "DataFrame", "pyspark": ["union", "unionByName", "intersect", "intersectAll", "subtract", "exceptAll"]},

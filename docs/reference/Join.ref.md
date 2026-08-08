@@ -8,21 +8,27 @@ the [Joins API](../api/Joins.api.md) is the callable inventory.
 Examples use the order and customer schemas introduced in the [Schema reference](Schema.ref.md). Replace those names
 with schemas from your application.
 
+Most transformations start with the common rowset helpers: use `left_join(...)` for optional enrichment and
+`inner_join(...)` when an unmatched current row should be removed or matching rows should be expanded. Reach for
+`lookup_join(...)` when the business rule specifically selects at most one right-side row.
+
 ## Join families
 
 | Desired behavior | Operation |
 | --- | --- |
-| Enrich every current row, with nullable right fields | `lookup_join(...)` or `left_join(...)` |
-| Keep only current rows with a match | `exists(...)` or `inner_join(...)` |
+| Enrich every current row, with nullable right fields | `left_join(...)` |
+| Keep only current rows with a match or one row per match | `inner_join(...)` |
 | Remove current rows with a match | `not_exists(...)` |
-| Preserve every matching pair | `rowset_join(...)`, `inner_join(...)`, or another explicit `how` |
+| Preserve every matching pair | `rowset_join(...)` or another explicit `how` |
+| Select at most one right row | `lookup_join(...)` |
 | Select one valid-time or nearest-time row | `temporal_one(...)` or `as_of_one(...)` |
 | Admit right-only rows | `right_join(...)` or `full_join(...)` |
 | Pair every row deliberately | `cross_join(..., allow_cartesian=True)` |
 
-## Lookup joins
+## Common rowset joins
 
-Use a lookup join when the current row should receive at most one matching right-side row.
+Use `left_join(...)` for the ordinary optional-enrichment case. Use `inner_join(...)` when missing matches should be
+removed or when each matching pair belongs in the result.
 
 ```python
 from structure import *
@@ -30,13 +36,19 @@ from structure.plugin.pyspark import *
 
 
 def add_customer(self, order: Order, customer: Customer) -> EnrichedOrder:
-    lookup_join(
+    left_join(
         on=(order.tenant_id == customer.tenant_id) & (order.customer_id == customer.id),
-        how="left",
         hint="broadcast",
     )
     return EnrichedOrder.base(order)(customer_name=customer.name)
 ```
+
+`left_join(...)` preserves the current row and makes joined fields nullable when no customer matches. If a matching
+right row is required, replace it with `inner_join(...)`.
+
+## Lookup joins
+
+Use a lookup join when the current row should receive at most one matching right-side row.
 
 `lookup_join(...)` is the short form for select-one enrichment and defaults to a left join. It is row-preserving only
 when the right side is unique for the condition. If uniqueness is not proven, Structure reports a warning or requires
@@ -50,7 +62,7 @@ an explicit dedupe policy.
 | `strategy="shuffle_hash"` | Explicit admitted strategy |
 | `dedupe=JoinDedupe.latest_by(...)` | Select one right row before enrichment |
 
-Same-name shorthand is useful for matching schemas with identical physical keys:
+Same-name shorthand is also available when matching schemas with identical physical keys:
 
 ```python
 left_join(on="tenant_id")

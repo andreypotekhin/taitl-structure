@@ -46,6 +46,7 @@ class RewritePySparkStepBody:
             scalar_generator=(
                 None if operation.scalar_generator is None else self._scalar_generator(operation.scalar_generator)
             ),
+            map_generator=(None if operation.map_generator is None else self._map_generator(operation.map_generator)),
             relation_alias=(
                 None
                 if operation.relation_alias is None
@@ -141,6 +142,9 @@ class RewritePySparkStepBody:
         return replace(posexplode_struct, expression=self._expression(posexplode_struct.expression))
 
     def _scalar_generator(self, generator):
+        return replace(generator, expression=self._expression(generator.expression))
+
+    def _map_generator(self, generator):
         return replace(generator, expression=self._expression(generator.expression))
 
     def _relation_alias(self, relation_alias, *, frames: Mapping[str, str]):

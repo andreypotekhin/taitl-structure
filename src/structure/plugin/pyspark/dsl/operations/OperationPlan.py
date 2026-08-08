@@ -6,6 +6,7 @@ from typing import Any
 from structure.plugin.pyspark.dsl.operations.CachePlan import CachePlan
 from structure.plugin.pyspark.dsl.operations.DuplicateRowsPlan import DuplicateRowsPlan
 from structure.plugin.pyspark.dsl.operations.ExactlyOnePlan import ExactlyOnePlan
+from structure.plugin.pyspark.dsl.operations.MapGeneratorPlan import MapGeneratorPlan
 from structure.plugin.pyspark.dsl.operations.OperationCapability import OperationCapability
 from structure.plugin.pyspark.dsl.operations.OperationCardinality import OperationCardinality
 from structure.plugin.pyspark.dsl.operations.OrderedTimelineScanPlan import OrderedTimelineScanPlan
@@ -37,6 +38,7 @@ class OperationPlan:
     exactly_one: ExactlyOnePlan | None = None
     posexplode_struct: PosexplodeStructPlan | None = None
     scalar_generator: ScalarGeneratorPlan | None = None
+    map_generator: MapGeneratorPlan | None = None
     ordered_timeline_scan: OrderedTimelineScanPlan | None = None
     relation_alias: RelationAliasPlan | None = None
     relation_assertion: RelationAssertionPlan | None = None
@@ -97,9 +99,11 @@ class OperationPlan:
         modes = (
             (StreamingOutputMode.APPEND,)
             if session_window
-            else (StreamingOutputMode.APPEND, StreamingOutputMode.UPDATE)
-            if event_time_window
-            else (StreamingOutputMode.UPDATE, StreamingOutputMode.COMPLETE)
+            else (
+                (StreamingOutputMode.APPEND, StreamingOutputMode.UPDATE)
+                if event_time_window
+                else (StreamingOutputMode.UPDATE, StreamingOutputMode.COMPLETE)
+            )
         )
         return OperationPlan(
             "aggregate",
@@ -218,6 +222,50 @@ class OperationPlan:
             scalar_generator=generator,
             family="generator",
             capability=OperationCapability("generator", "posexplode_outer_array"),
+            cardinality=OperationCardinality.ROW_MULTIPLYING,
+            streaming=StreamingSupport.COMPATIBLE,
+        )
+
+    @staticmethod
+    def explode_map_operation(generator: MapGeneratorPlan) -> OperationPlan:
+        return OperationPlan(
+            "explode_map",
+            map_generator=generator,
+            family="generator",
+            capability=OperationCapability("generator", "explode_map"),
+            cardinality=OperationCardinality.ROW_MULTIPLYING,
+            streaming=StreamingSupport.COMPATIBLE,
+        )
+
+    @staticmethod
+    def explode_outer_map_operation(generator: MapGeneratorPlan) -> OperationPlan:
+        return OperationPlan(
+            "explode_outer_map",
+            map_generator=generator,
+            family="generator",
+            capability=OperationCapability("generator", "explode_outer_map"),
+            cardinality=OperationCardinality.ROW_MULTIPLYING,
+            streaming=StreamingSupport.COMPATIBLE,
+        )
+
+    @staticmethod
+    def posexplode_map_operation(generator: MapGeneratorPlan) -> OperationPlan:
+        return OperationPlan(
+            "posexplode_map",
+            map_generator=generator,
+            family="generator",
+            capability=OperationCapability("generator", "posexplode_map"),
+            cardinality=OperationCardinality.ROW_MULTIPLYING,
+            streaming=StreamingSupport.COMPATIBLE,
+        )
+
+    @staticmethod
+    def posexplode_outer_map_operation(generator: MapGeneratorPlan) -> OperationPlan:
+        return OperationPlan(
+            "posexplode_outer_map",
+            map_generator=generator,
+            family="generator",
+            capability=OperationCapability("generator", "posexplode_outer_map"),
             cardinality=OperationCardinality.ROW_MULTIPLYING,
             streaming=StreamingSupport.COMPATIBLE,
         )

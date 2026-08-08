@@ -23,6 +23,7 @@ from structure.plugin.pyspark.dsl.types import ArrayType, DecimalType, MapType, 
 from structure.plugin.pyspark.render.logic.expressions.RenderPySparkExpression import render_pyspark_expression
 from structure.plugin.pyspark.render.logic.steps.RenderPySparkAggregatePlan import RenderPySparkAggregatePlan
 from structure.plugin.pyspark.render.logic.steps.RenderPySparkFilters import RenderPySparkFilters
+from structure.plugin.pyspark.render.logic.steps.RenderPySparkMapGenerator import RenderPySparkMapGenerator
 from structure.plugin.pyspark.render.logic.steps.RenderPySparkScalarGenerator import RenderPySparkScalarGenerator
 from structure.plugin.pyspark.render.logic.steps.RenderPySparkStructGenerator import RenderPySparkStructGenerator
 
@@ -34,6 +35,7 @@ class RenderPySparkStep:
         self._filters_renderer = RenderPySparkFilters()
         self._struct_generator_renderer = RenderPySparkStructGenerator()
         self._scalar_generator_renderer = RenderPySparkScalarGenerator()
+        self._map_generator_renderer = RenderPySparkMapGenerator()
         from structure.plugin.pyspark.api.PySpark import PySpark
 
         self._schema = PySpark.schema.render(schema_names)
@@ -365,6 +367,19 @@ class RenderPySparkStep:
                 ordered_lines.extend(
                     self._scalar_generator_renderer(
                         operation.scalar_generator,
+                        aliases=self._scope_aliases(step),
+                        target=target,
+                        index=generator_index,
+                    )
+                )
+            if (
+                operation.kind in {"explode_map", "explode_outer_map", "posexplode_map", "posexplode_outer_map"}
+                and operation.map_generator is not None
+            ):
+                generator_index += 1
+                ordered_lines.extend(
+                    self._map_generator_renderer(
+                        operation.map_generator,
                         aliases=self._scope_aliases(step),
                         target=target,
                         index=generator_index,
@@ -938,9 +953,7 @@ class RenderPySparkStep:
                     f"F.col({self._literal(parent)}).withField({self._literal(target_path[index].column)}, "
                     f"{rendered})"
                 )
-            lines.append(
-                f"        {frame} = {frame}.withColumn({self._literal(target_path[0].column)}, {rendered})"
-            )
+            lines.append(f"        {frame} = {frame}.withColumn({self._literal(target_path[0].column)}, {rendered})")
         if relation_set.by_name:
             lines.append(
                 f"        {target} = {target}.unionByName("
@@ -1872,6 +1885,8 @@ class RenderPySparkStep:
                 aliases.update(self._struct_generator_renderer.aliases(step))
             if operation.scalar_generator is not None:
                 aliases.update(self._scalar_generator_renderer.aliases(step))
+            if operation.map_generator is not None:
+                aliases.update(self._map_generator_renderer.aliases(step))
             if operation.ordered_timeline_scan is not None:
                 aliases[operation.ordered_timeline_scan.row_scope] = ""
                 aliases[operation.ordered_timeline_scan.scope] = ""

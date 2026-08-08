@@ -1,9 +1,9 @@
 # Join
 
 Structure joins relate typed row flows while keeping conditions, cardinality, null behavior, aliases, projection, and
-backend capabilities visible to the compiler and Spark optimizer. The examples primarily use rowset joins:
-`left_join(...)` for optional enrichment, `inner_join(...)` for required matches, and `cross_join(...)` for explicit
-candidate or evaluation expansion. The Store rowset fixtures also exercise `right_join(...)` and `full_join(...)`.
+backend capabilities visible to the compiler and Spark optimizer. Most transforms start with rowset helpers:
+`left_join(...)` for optional enrichment and `inner_join(...)` for required matches. Use `cross_join(...)` for explicit
+candidate or evaluation expansion; the Store rowset fixtures also exercise `right_join(...)` and `full_join(...)`.
 
 `lookup_join(...)` is a narrower select-one primitive. The Store order and demand flows use it when duplicate product
 rows must be reduced with an explicit `JoinDedupe` policy. It is not the general join shape used by the examples.
