@@ -17,6 +17,8 @@ families.
 - Preserve sampling reproducibility and batch-only streaming classification.
 - Define bounded dispositions for XML and future Variant profiles.
 - Prototype opt-in, explainable inner-equality join reordering or retain the explicit gate.
+- Implement the typed scalar-array IR/DSL contract and update generated, online, explain, and API-ledger surfaces under
+  `P08082601.Typed-scalar-generators-and-optimizer-visible-search-chunking.plan.md`.
 
 ## Acceptance and Demo
 

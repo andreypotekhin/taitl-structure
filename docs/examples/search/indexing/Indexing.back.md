@@ -2,7 +2,7 @@
 
 
 `Indexing` turns document-backed sentence boundaries into reusable lexical artifacts for all Search query batches and
-similarity runs. It materializes source text only in private transient expressions at the tokenization step.
+similarity runs. It materializes source text only in private transient lanes before tokenization.
 
 
 The index publishes independent term and summary relations for documents, sections, paragraphs, and sentences. Term

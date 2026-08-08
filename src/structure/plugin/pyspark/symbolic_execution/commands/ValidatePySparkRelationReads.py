@@ -51,6 +51,8 @@ class ValidatePySparkRelationReads:
                     self._validate(relations, joined, reads, request)
             if operation.kind == "posexplode_struct" and operation.posexplode_struct is not None:
                 self._validate(relations, joined, self._scopes(operation.posexplode_struct.expression), request)
+            if operation.scalar_generator is not None:
+                self._validate(relations, joined, self._scopes(operation.scalar_generator.expression), request)
             if operation.relation_hierarchy_closure is not None:
                 closure = operation.relation_hierarchy_closure
                 reads = set().union(self._scopes(closure.id), self._scopes(closure.parent))
@@ -66,9 +68,7 @@ class ValidatePySparkRelationReads:
                 self._validate(relations, joined, reads, request)
             if operation.relation_assertion is not None:
                 assertion = operation.relation_assertion
-                references = (
-                    self._scopes(assertion.reference_key) if assertion.reference_key is not None else set()
-                )
+                references = self._scopes(assertion.reference_key) if assertion.reference_key is not None else set()
                 reads = set().union(
                     *(self._scopes(expression) for expression in assertion.keys),
                     self._scopes(assertion.predicate) if assertion.predicate is not None else set(),

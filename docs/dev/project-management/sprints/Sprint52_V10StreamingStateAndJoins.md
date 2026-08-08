@@ -17,6 +17,8 @@ output modes before query start.
 - Prototype bounded cross and anti stream-stream candidates with public Spark APIs.
 - Preserve finite selected-value alternatives and broad batch-only analytic boundaries.
 - Run PySpark 3.5/4.0 parity and restart lanes.
+- Complete streaming classification, traceability, and integration evidence for the scalar-array generators and Search
+  chunking proving slice under `P08082601.Typed-scalar-generators-and-optimizer-visible-search-chunking.plan.md`.
 
 ## Acceptance and Demo
 

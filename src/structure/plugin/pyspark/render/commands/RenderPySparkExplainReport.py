@@ -191,6 +191,8 @@ class RenderPySparkExplainReport:
             return f"exactly_one(row_preserving scope={operation.exactly_one.scope})"
         if operation.posexplode_struct is not None:
             return self._generators.posexplode_struct(operation.posexplode_struct)
+        if operation.scalar_generator is not None:
+            return self._generators.scalar_array(operation.scalar_generator)
         if operation.relation_alias is not None:
             return (
                 "relation_alias(row_preserving "

@@ -6,10 +6,14 @@ from structure.plugin.pyspark.dsl import field as field
 from structure.plugin.pyspark.dsl import types as types
 from structure.plugin.pyspark.dsl.generators import explode_outer_struct as _explode_outer_struct
 from structure.plugin.pyspark.dsl.generators import explode_struct as _explode_struct
+from structure.plugin.pyspark.dsl.generators import explode_array as _explode_array
+from structure.plugin.pyspark.dsl.generators import explode_outer_array as _explode_outer_array
 from structure.plugin.pyspark.dsl.generators import inline_outer_struct as _inline_outer_struct
 from structure.plugin.pyspark.dsl.generators import inline_struct as _inline_struct
 from structure.plugin.pyspark.dsl.generators import posexplode_outer_struct as _posexplode_outer_struct
 from structure.plugin.pyspark.dsl.generators import posexplode_struct as _posexplode_struct
+from structure.plugin.pyspark.dsl.generators import posexplode_array as _posexplode_array
+from structure.plugin.pyspark.dsl.generators import posexplode_outer_array as _posexplode_outer_array
 from structure.plugin.pyspark.dsl.generators import variant_explode as _variant_explode
 from structure.plugin.pyspark.dsl.generators import variant_explode_outer as _variant_explode_outer
 from structure.plugin.pyspark.dsl.geo import contains, geometry_as_wkt, geometry_from_wkt, intersects, within
@@ -44,6 +48,14 @@ def explode_outer_struct(*args: object, **kwargs: object) -> Any:
     return cast(Any, _explode_outer_struct)(*args, **kwargs)
 
 
+def explode_array(*args: object, **kwargs: object) -> Any:
+    return cast(Any, _explode_array)(*args, **kwargs)
+
+
+def explode_outer_array(*args: object, **kwargs: object) -> Any:
+    return cast(Any, _explode_outer_array)(*args, **kwargs)
+
+
 def inline_struct(*args: object, **kwargs: object) -> Any:
     return cast(Any, _inline_struct)(*args, **kwargs)
 
@@ -54,6 +66,14 @@ def inline_outer_struct(*args: object, **kwargs: object) -> Any:
 
 def posexplode_struct(*args: object, **kwargs: object) -> Any:
     return cast(Any, _posexplode_struct)(*args, **kwargs)
+
+
+def posexplode_array(*args: object, **kwargs: object) -> Any:
+    return cast(Any, _posexplode_array)(*args, **kwargs)
+
+
+def posexplode_outer_array(*args: object, **kwargs: object) -> Any:
+    return cast(Any, _posexplode_outer_array)(*args, **kwargs)
 
 
 def posexplode_outer_struct(*args: object, **kwargs: object) -> Any:
@@ -111,7 +131,7 @@ initcap ifnull instr intersect intersect_all first_value following full_join gro
 isnotnull isnull is_grouped kurtosis lag left_join latest_by lead lookup_join last_value length levenshtein lower
 ltrim log limit md5 map_entries map_concat map_contains_key map_filter map_from_entries map_keys map_transform_keys
 map_transform_values map_values map_zip_with max min minute mode month nanvl nvl nvl2 nullif pow not_exists nth_value
-ntile offset order_by percent_rank percentile posexplode_struct posexplode_outer_struct explode_struct explode_outer_struct inline_struct inline_outer_struct variant_explode variant_explode_outer preceding project rank range_between relation_alias regexp_extract regexp_replace require_all require_parent_hierarchy require_reference require_unique hierarchy_closure hierarchy_fallbacks reverse rtrim round
+ntile offset order_by percent_rank percentile posexplode_array posexplode_outer_array posexplode_struct posexplode_outer_struct explode_array explode_outer_array explode_struct explode_outer_struct inline_struct inline_outer_struct variant_explode variant_explode_outer preceding project rank range_between relation_alias regexp_extract regexp_replace require_all require_parent_hierarchy require_reference require_unique hierarchy_closure hierarchy_fallbacks reverse rtrim round
 sample select_first_qualified signum slice sha1 sha2 second right_join rollup row_number rowset_join rows_between rolling_avg rolling_max
 rolling_min rolling_sum scan subtract sum stddev sqrt size sequence session_window skewness split translate substring temporal_one
 to_csv to_decimal to_date to_json to_timestamp TimeWindow trim trunc try_element_at unbase64 union_all union_by_name upper unbounded_following unbounded_preceding
@@ -222,6 +242,8 @@ __all__ = [  # noqa: F405
     "except_all",
     "explode_struct",
     "explode_outer_struct",
+    "explode_array",
+    "explode_outer_array",
     "exp",
     "exists",
     "floor",
@@ -291,6 +313,8 @@ __all__ = [  # noqa: F405
     "percentile",
     "posexplode_outer_struct",
     "posexplode_struct",
+    "posexplode_array",
+    "posexplode_outer_array",
     "variant_explode",
     "variant_explode_outer",
     "preceding",

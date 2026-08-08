@@ -4,29 +4,11 @@ from structure import Schema
 from structure.plugin.pyspark import array, boolean, double, integer, long, string
 
 
-class DocumentLine(Schema):
-    """Internal canonical document line with source-local spans."""
-
-    line = string(nullable=False)
-    span_start = long(nullable=False)
-    span_end = long(nullable=False)
-    heading = string(nullable=True)
-    heading_span_start = long(nullable=True)
-    heading_span_end = long(nullable=True)
-    is_blank = boolean(nullable=False)
-
-
 class ExpandedDocumentLine(Schema):
-    """Internal document line with ordinal and source-local spans."""
+    """Transient generated document line with its zero-based ordinal."""
 
     ordinal = long(nullable=False)
     line = string(nullable=False)
-    span_start = long(nullable=False)
-    span_end = long(nullable=False)
-    heading = string(nullable=True)
-    heading_span_start = long(nullable=True)
-    heading_span_end = long(nullable=True)
-    is_blank = boolean(nullable=False)
 
 
 class MarkedDocumentLine(Schema):
@@ -121,6 +103,7 @@ class SentenceText(Schema):
     local_end = long(nullable=False)
     sentence_content = string(nullable=False)
 
+
 class ExpandedSentenceText(Schema):
     """Internal sentence text with its paragraph-local ordinal."""
 
@@ -128,3 +111,42 @@ class ExpandedSentenceText(Schema):
     local_start = long(nullable=False)
     local_end = long(nullable=False)
     sentence_content = string(nullable=False)
+
+
+class MaterializedParagraph(Schema):
+    """Transient paragraph text materialized from a document span."""
+
+    id = string(nullable=False)
+    document_id = string(nullable=False)
+    section_id = string(nullable=False)
+    ordinal = integer(nullable=False)
+    span_start = long(nullable=False)
+    span_end = long(nullable=False)
+    content = string(nullable=False)
+
+
+class MaterializedSentence(Schema):
+    """Transient sentence text materialized from a document span."""
+
+    id = string(nullable=False)
+    document_id = string(nullable=False)
+    section_id = string(nullable=False)
+    paragraph_id = string(nullable=False)
+    paragraph_ordinal = integer(nullable=False)
+    ordinal = integer(nullable=False)
+    span_start = long(nullable=False)
+    span_end = long(nullable=False)
+    content = string(nullable=False)
+
+
+class MaterializedSection(Schema):
+    """Transient section heading materialized from a document span."""
+
+    id = string(nullable=False)
+    document_id = string(nullable=False)
+    ordinal = integer(nullable=False)
+    span_start = long(nullable=False)
+    span_end = long(nullable=False)
+    heading_span_start = long(nullable=True)
+    heading_span_end = long(nullable=True)
+    heading = string(nullable=False)

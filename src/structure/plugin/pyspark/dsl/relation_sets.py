@@ -638,6 +638,10 @@ def _validate_prior_operations(operations, *, function: str) -> None:
             "inline_outer_struct",
             "posexplode_struct",
             "posexplode_outer_struct",
+            "explode_array",
+            "explode_outer_array",
+            "posexplode_array",
+            "posexplode_outer_array",
             "select_first_qualified",
             "hierarchy_closure",
             "hierarchy_fallbacks",
@@ -663,6 +667,10 @@ def _validate_ordered_state(operations, *, function: str) -> None:
             "join",
             "posexplode_struct",
             "posexplode_outer_struct",
+            "explode_array",
+            "explode_outer_array",
+            "posexplode_array",
+            "posexplode_outer_array",
             "sample",
             "selected_rows",
             "select_first_qualified",
@@ -737,9 +745,7 @@ def _validate_missing_column_union(
     normalized: list[tuple[str, Expression]] = []
     for path, value in defaults.items():
         if not isinstance(path, str) or not path or any(not part for part in path.split(".")):
-            raise TypeError(
-                f"{function}(defaults=...) requires canonical Structure field paths; got {path!r}"
-            )
+            raise TypeError(f"{function}(defaults=...) requires canonical Structure field paths; got {path!r}")
         if path not in missing:
             raise TypeError(f"{function}(defaults=...) names unknown field path: {path}")
         field = missing[path][0]

@@ -123,8 +123,9 @@ scope, and returns a relation whose cardinality and nullability are visible to t
 The public variants are `explode_struct(...)`, `explode_outer_struct(...)`, `posexplode_struct(...)`,
 `posexplode_outer_struct(...)`, `inline_struct(...)`, and `inline_outer_struct(...)`. Inner variants emit zero rows for
 null or empty arrays. Outer variants emit one row with nullable generated fields; outer positional expansion also has a
-nullable ordinal. `inline` variants expose declared struct members as sibling fields. Scalar-array and map generators
-remain separate future contracts because their output naming and map key/value rules differ.
+nullable ordinal. `inline` variants expose declared struct members as sibling fields. The sibling
+`explode_array(...)`, `explode_outer_array(...)`, `posexplode_array(...)`, and `posexplode_outer_array(...)` forms
+expand admitted primitive scalar arrays through an explicit value field and optional ordinal.
 
 Every generator requires a non-nullable element shape, a declared `as_` Schema, a non-empty unique symbolic scope, and
 output names from that Schema rather than runtime data. The operation records kind, source expression, generated Schema,

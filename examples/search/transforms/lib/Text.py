@@ -1,4 +1,4 @@
-"""Private shared support for transient text materialization lanes."""
+"""Shared text helpers for transient Search materialization lanes."""
 
 from typing import Any
 
@@ -6,11 +6,11 @@ from structure import special
 from structure.plugin.pyspark import types
 
 
-class _TextMaterializer:
-    """Shared private UDF utility for canonical document-code-point span extraction."""
+class Text:
+    """Compiler-visible helpers for working with document text."""
 
     @special(type="udf", return_type=types.string(), nullable=False)
-    def canonical_span(content: Any, start: Any, end: Any) -> str | None:
+    def span(content: Any, start: Any, end: Any) -> str | None:
         """Extract a half-open span from canonicalized Unicode document text."""
         import re
 

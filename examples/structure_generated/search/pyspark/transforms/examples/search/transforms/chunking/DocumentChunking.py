@@ -30,16 +30,6 @@ class DocumentChunkingGenerated:
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
         self.ctx = ctx
-        self._structure_udf_examples_search_transforms_chunking_documentchunking_documentchunking_canonical_document_lines = (
-            F
-            .udf(
-                 self.canonical_document_lines,
-                 returnType=T.ArrayType(
-                    DOCUMENT_LINE_SCHEMA,
-                     containsNull=False
-                )
-            )
-        )
 
     def close(self) -> None:
         close_plan_boundaries(self.spark)
@@ -56,68 +46,98 @@ class DocumentChunkingGenerated:
         marked_lines = documents.alias("document")
         marked_lines = marked_lines.select(
             "*",
-            F.posexplode(
-                (
-                    self
-                    ._structure_udf_examples_search_transforms_chunking_documentchunking_documentchunking_canonical_document_lines(
-                         F.col(
-                            "document.content"
-                        )
-                    )
-                )
-            ).alias("__structure_document_line_1_pos", "__structure_document_line_1_item"),
+            F.posexplode(F.split(F.regexp_replace(F.col("document.content"), '\\r\\n?', '\n'), '\n', -1)).alias(
+                "__structure_document_line_1_pos", "__structure_document_line_1_item"
+            ),
+        )
+        marked_lines = marked_lines.withColumn(
+            "line",
+            F.col("__structure_document_line_1_item"),
         )
         marked_lines = marked_lines.withColumn(
             "ordinal",
             F.col("__structure_document_line_1_pos").cast(T.LongType()),
-        )
-        marked_lines = marked_lines.withColumn(
-            "line",
-            F.col("__structure_document_line_1_item.line"),
-        )
-        marked_lines = marked_lines.withColumn(
-            "span_start",
-            F.col("__structure_document_line_1_item.span_start"),
-        )
-        marked_lines = marked_lines.withColumn(
-            "span_end",
-            F.col("__structure_document_line_1_item.span_end"),
-        )
-        marked_lines = marked_lines.withColumn(
-            "heading",
-            F.col("__structure_document_line_1_item.heading"),
-        )
-        marked_lines = marked_lines.withColumn(
-            "heading_span_start",
-            F.col("__structure_document_line_1_item.heading_span_start"),
-        )
-        marked_lines = marked_lines.withColumn(
-            "heading_span_end",
-            F.col("__structure_document_line_1_item.heading_span_end"),
-        )
-        marked_lines = marked_lines.withColumn(
-            "is_blank",
-            F.col("__structure_document_line_1_item.is_blank"),
         )
         marked_lines = marked_lines.drop("__structure_document_line_1_pos", "__structure_document_line_1_item")
         marked_lines = marked_lines.select(
             F.col("document.id").alias("document_id"),
             F.col("ordinal").alias("line_ordinal"),
             F.col("line"),
-            F.col("span_start"),
-            F.col("span_end"),
-            F.col("heading"),
-            F.col("heading_span_start"),
-            F.col("heading_span_end"),
-            F.col("is_blank"),
-            F.sum(F.when(F.col("heading").isNotNull(), F.lit(1)).otherwise(F.lit(0)))
+            F.coalesce(
+                F.sum((F.length(F.col("line")) + F.lit(1))).over(
+                    Window.partitionBy(F.col("document.id"))
+                    .orderBy(F.col("ordinal").asc())
+                    .rowsBetween(Window.unboundedPreceding, -1)
+                ),
+                F.lit(0),
+            )
+            .cast('bigint')
+            .alias("span_start"),
+            (
+                F.coalesce(
+                    F.sum((F.length(F.col("line")) + F.lit(1))).over(
+                        Window.partitionBy(F.col("document.id"))
+                        .orderBy(F.col("ordinal").asc())
+                        .rowsBetween(Window.unboundedPreceding, -1)
+                    ),
+                    F.lit(0),
+                ).cast('bigint')
+                + F.length(F.col("line"))
+            ).alias("span_end"),
+            F.nullif(F.trim(F.regexp_extract(F.col("line"), '^(\\s*#+\\s+)(.+?)\\s*$', 2)), F.lit('')).alias("heading"),
+            F.when(
+                F.nullif(F.trim(F.regexp_extract(F.col("line"), '^(\\s*#+\\s+)(.+?)\\s*$', 2)), F.lit('')).isNotNull(),
+                (
+                    F.coalesce(
+                        F.sum((F.length(F.col("line")) + F.lit(1))).over(
+                            Window.partitionBy(F.col("document.id"))
+                            .orderBy(F.col("ordinal").asc())
+                            .rowsBetween(Window.unboundedPreceding, -1)
+                        ),
+                        F.lit(0),
+                    ).cast('bigint')
+                    + F.length(F.nullif(F.regexp_extract(F.col("line"), '^(\\s*#+\\s+)(.+?)\\s*$', 1), F.lit('')))
+                ),
+            )
+            .otherwise(F.lit(None))
+            .alias("heading_span_start"),
+            F.when(
+                F.nullif(F.trim(F.regexp_extract(F.col("line"), '^(\\s*#+\\s+)(.+?)\\s*$', 2)), F.lit('')).isNotNull(),
+                (
+                    (
+                        F.coalesce(
+                            F.sum((F.length(F.col("line")) + F.lit(1))).over(
+                                Window.partitionBy(F.col("document.id"))
+                                .orderBy(F.col("ordinal").asc())
+                                .rowsBetween(Window.unboundedPreceding, -1)
+                            ),
+                            F.lit(0),
+                        ).cast('bigint')
+                        + F.length(F.nullif(F.regexp_extract(F.col("line"), '^(\\s*#+\\s+)(.+?)\\s*$', 1), F.lit('')))
+                    )
+                    + F.length(
+                        F.nullif(F.trim(F.regexp_extract(F.col("line"), '^(\\s*#+\\s+)(.+?)\\s*$', 2)), F.lit(''))
+                    )
+                ),
+            )
+            .otherwise(F.lit(None))
+            .alias("heading_span_end"),
+            (F.trim(F.col("line")) == F.lit('')).alias("is_blank"),
+            F.sum(
+                F.when(
+                    F.nullif(
+                        F.trim(F.regexp_extract(F.col("line"), '^(\\s*#+\\s+)(.+?)\\s*$', 2)), F.lit('')
+                    ).isNotNull(),
+                    F.lit(1),
+                ).otherwise(F.lit(0))
+            )
             .over(
                 Window.partitionBy(F.col("document.id"))
                 .orderBy(F.col("ordinal").asc())
                 .rowsBetween(Window.unboundedPreceding, Window.currentRow)
             )
             .alias("section_ordinal"),
-            F.sum(F.when(F.col("is_blank"), F.lit(1)).otherwise(F.lit(0)))
+            F.sum(F.when((F.trim(F.col("line")) == F.lit('')), F.lit(1)).otherwise(F.lit(0)))
             .over(
                 Window.partitionBy(F.col("document.id"))
                 .orderBy(F.col("ordinal").asc())
@@ -288,30 +308,3 @@ class DocumentChunkingGenerated:
             single=False,
             schema={"sections": SECTION_SCHEMA, "paragraphs": PARAGRAPH_SCHEMA},
         )
-
-    @staticmethod
-    def canonical_document_lines(content: Any) -> list[dict[str, object]]:
-        """Return canonical lines and code-point spans without reconstructing text later."""
-        import re
-
-        canonical = re.sub('\\r\\n?', '\n', content)
-        lines: list[dict[str, object]] = []
-        offset = 0
-        for line in canonical.split('\n'):
-            match = re.match('^\\s*#+\\s+(.+?)\\s*$', line)
-            heading = match.group(1).strip() if match else None
-            heading_start = offset + match.start(1) if match else None
-            heading_end = offset + match.end(1) if match else None
-            lines.append(
-                {
-                    'line': line,
-                    'span_start': offset,
-                    'span_end': offset + len(line),
-                    'heading': heading,
-                    'heading_span_start': heading_start,
-                    'heading_span_end': heading_end,
-                    'is_blank': line.strip() == '',
-                }
-            )
-            offset += len(line) + 1
-        return lines

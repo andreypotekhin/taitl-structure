@@ -18,10 +18,12 @@ from examples.search.schemas.analytics import (
     SimilarDocument,
 )
 from examples.search.schemas.chunking.intermediate import (
-    DocumentLine,
     ExpandedDocumentLine,
     ExpandedSentenceText,
     MarkedDocumentLine,
+    MaterializedParagraph,
+    MaterializedSection,
+    MaterializedSentence,
     ParagraphContent,
     ParagraphDraft,
     ParagraphLine,
@@ -449,7 +451,6 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         Sentence,
     ],
     "examples.search.schemas.chunking.intermediate": [
-        DocumentLine,
         ExpandedDocumentLine,
         MarkedDocumentLine,
         ParagraphLine,
@@ -459,6 +460,9 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         ParagraphDraft,
         SectionKey,
         SentenceText,
+        MaterializedParagraph,
+        MaterializedSection,
+        MaterializedSentence,
         ExpandedSentenceText,
     ],
 }
@@ -795,9 +799,7 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
         assert document_section["heading_span_start"] is None
         assert document_section["heading_span_end"] is None
         assert document_section["span_start"] == 0
-        assert document_section["span_end"] == len(
-            "Plain text has one paragraph. It still becomes a document section."
-        )
+        assert document_section["span_end"] == len("Plain text has one paragraph. It still becomes a document section.")
 
         online_features = ProfileDocuments(documents=documents).run(session(spark, execution_mode="online")).features
         generated_features = (
@@ -817,7 +819,9 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
         assert guide["content_contains_structure"] is True
         assert guide["content_sha2"]
 
-        online_index = Indexing(documents=documents, sentences=generated_segments.sentences).run(session(spark, execution_mode="online"))
+        online_index = Indexing(documents=documents, sentences=generated_segments.sentences).run(
+            session(spark, execution_mode="online")
+        )
         generated_index = Indexing(documents=documents, sentences=generated_segments.sentences).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )

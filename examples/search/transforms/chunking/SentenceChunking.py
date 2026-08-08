@@ -2,10 +2,10 @@
 
 from typing import Any
 
-from examples.search.schemas.chunking.intermediate import ExpandedSentenceText, SentenceText
+from examples.search.schemas.chunking.intermediate import ExpandedSentenceText, MaterializedParagraph, SentenceText
 from examples.search.schemas.text import Document, Paragraph, Sentence
-from examples.search.transforms.chunking.MaterializeText import _TextMaterializer
-from structure import Transform, input, output, special, step, transform
+from examples.search.transforms.lib.Text import Text
+from structure import Transform, input, lane, output, special, step, transform
 from structure.plugin.pyspark import concat_ws, inner_join, posexplode_struct, regexp_replace, types, where
 
 
@@ -16,6 +16,38 @@ class SentenceChunking(Transform):
     documents = input(Document)
     paragraphs = input(Paragraph)
     sentences = output(Sentence)
+    materialized_paragraph = lane(MaterializedParagraph)
+
+    @step(input=[documents, paragraphs], output=materialized_paragraph)
+    def materialize_paragraph(self, document: Document, paragraph: Paragraph) -> MaterializedParagraph:
+        inner_join(on=document.id == paragraph.document_id)
+        return MaterializedParagraph.project(paragraph)(
+            content=regexp_replace(
+                Text.span(document.content, paragraph.span_start, paragraph.span_end),
+                pattern="\n",
+                replacement=" ",
+            ),
+        )
+
+    @step(input=materialized_paragraph, output=sentences)
+    def chunk(self, paragraph: MaterializedParagraph) -> Sentence:
+        sentence = posexplode_struct(
+            self.default_sentence_spans(paragraph.content),
+            as_=ExpandedSentenceText,
+            ordinal="position",
+            scope="sentence_text",
+        )
+        where(sentence.sentence_content != "")
+        return Sentence(
+            id=concat_ws("#s", paragraph.id, sentence.position.cast(types.string())),
+            document_id=paragraph.document_id,
+            section_id=paragraph.section_id,
+            paragraph_id=paragraph.id,
+            paragraph_ordinal=paragraph.ordinal,
+            ordinal=(sentence.position + 1).cast(types.integer()),
+            span_start=paragraph.span_start + sentence.local_start,
+            span_end=paragraph.span_start + sentence.local_end,
+        )
 
     @special(
         type="udf",
@@ -45,29 +77,3 @@ class SentenceChunking(Transform):
         if start < end:
             spans.append({"local_start": start, "local_end": end, "sentence_content": content[start:end]})
         return spans
-
-    @step(input=[documents, paragraphs], output=sentences)
-    def chunk(self, document: Document, paragraph: Paragraph) -> Sentence:
-        inner_join(on=document.id == paragraph.document_id)
-        content = regexp_replace(
-            _TextMaterializer.canonical_span(document.content, paragraph.span_start, paragraph.span_end),
-            pattern="\n",
-            replacement=" ",
-        )
-        sentence = posexplode_struct(
-            self.default_sentence_spans(content),
-            as_=ExpandedSentenceText,
-            ordinal="position",
-            scope="sentence_text",
-        )
-        where(sentence.sentence_content != "")
-        return Sentence(
-            id=concat_ws("#s", paragraph.id, sentence.position.cast(types.string())),
-            document_id=paragraph.document_id,
-            section_id=paragraph.section_id,
-            paragraph_id=paragraph.id,
-            paragraph_ordinal=paragraph.ordinal,
-            ordinal=(sentence.position + 1).cast(types.integer()),
-            span_start=paragraph.span_start + sentence.local_start,
-            span_end=paragraph.span_start + sentence.local_end,
-        )

@@ -23,6 +23,7 @@ from structure.plugin.pyspark.dsl.types import ArrayType, DecimalType, MapType, 
 from structure.plugin.pyspark.render.logic.expressions.RenderPySparkExpression import render_pyspark_expression
 from structure.plugin.pyspark.render.logic.steps.RenderPySparkAggregatePlan import RenderPySparkAggregatePlan
 from structure.plugin.pyspark.render.logic.steps.RenderPySparkFilters import RenderPySparkFilters
+from structure.plugin.pyspark.render.logic.steps.RenderPySparkScalarGenerator import RenderPySparkScalarGenerator
 from structure.plugin.pyspark.render.logic.steps.RenderPySparkStructGenerator import RenderPySparkStructGenerator
 
 
@@ -32,6 +33,7 @@ class RenderPySparkStep:
         self._aggregate_renderer = RenderPySparkAggregatePlan(self)
         self._filters_renderer = RenderPySparkFilters()
         self._struct_generator_renderer = RenderPySparkStructGenerator()
+        self._scalar_generator_renderer = RenderPySparkScalarGenerator()
         from structure.plugin.pyspark.api.PySpark import PySpark
 
         self._schema = PySpark.schema.render(schema_names)
@@ -344,6 +346,25 @@ class RenderPySparkStep:
                 ordered_lines.extend(
                     self._struct_generator_renderer(
                         operation.posexplode_struct,
+                        aliases=self._scope_aliases(step),
+                        target=target,
+                        index=generator_index,
+                    )
+                )
+            if (
+                operation.kind
+                in {
+                    "explode_array",
+                    "explode_outer_array",
+                    "posexplode_array",
+                    "posexplode_outer_array",
+                }
+                and operation.scalar_generator is not None
+            ):
+                generator_index += 1
+                ordered_lines.extend(
+                    self._scalar_generator_renderer(
+                        operation.scalar_generator,
                         aliases=self._scope_aliases(step),
                         target=target,
                         index=generator_index,
@@ -1849,6 +1870,8 @@ class RenderPySparkStep:
         for operation in step.operations:
             if operation.posexplode_struct is not None:
                 aliases.update(self._struct_generator_renderer.aliases(step))
+            if operation.scalar_generator is not None:
+                aliases.update(self._scalar_generator_renderer.aliases(step))
             if operation.ordered_timeline_scan is not None:
                 aliases[operation.ordered_timeline_scan.row_scope] = ""
                 aliases[operation.ordered_timeline_scan.scope] = ""

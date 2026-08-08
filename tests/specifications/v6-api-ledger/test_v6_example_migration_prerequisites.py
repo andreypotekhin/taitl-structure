@@ -91,7 +91,10 @@ def test_security_reconciliation_is_typed_and_has_no_opaque_hook_boundary() -> N
     assert posture_traceability.opaque_boundaries == ()
     assert quality_traceability.opaque_boundaries == ()
     assert {"array_contains", "array_exists"} <= _functions(_step(posture, "expose").filters[0])
-    assignments = {assignment.field.name: assignment.expression for assignment in _step(quality, "prepare_inventory_reconciliation").projection}
+    assignments = {
+        assignment.field.name: assignment.expression
+        for assignment in _step(quality, "prepare_inventory_reconciliation").projection
+    }
     assert {"array_exists"} <= _functions(assignments["device_has_software"])
     assert {"array_contains", "array_exists"} <= _functions(assignments["is_reconciled"])
 
@@ -204,10 +207,9 @@ def test_search_similarity_query_construction_is_typed_and_has_no_opaque_hook_bo
 def test_search_index_build_keeps_materialization_private_and_typed() -> None:
     plan, traceability = _lowered("examples.search.transforms.index", "Indexing")
 
-    assert [
-        (boundary.step, boundary.hook, boundary.schema)
-        for boundary in traceability.opaque_boundaries
-    ] == [("lexical.tokenize", "canonical_span", "LexicalOccurrence")]
+    assert [(boundary.step, boundary.hook, boundary.schema) for boundary in traceability.opaque_boundaries] == [
+        ("lexical.materialize_sentence", "span", "MaterializedSentence")
+    ]
     for grain in ("document", "section", "paragraph", "sentence"):
         count_terms = _step(plan, f"lexical.count_{grain}_terms")
         summarize_targets = _step(plan, f"lexical.summarize_{grain}s")
@@ -253,7 +255,9 @@ def test_search_similarity_score_reduction_is_typed_and_has_no_opaque_hook_bound
         ]
         assert [operation.kind for operation in _step(plan, f"merge_{grain}_pairs").operations] == ["union_all"]
         ranking = _step(plan, f"rank_{grain}_pairs")
-        rank_expression = next(assignment.expression for assignment in ranking.projection if assignment.field.name == "rank")
+        rank_expression = next(
+            assignment.expression for assignment in ranking.projection if assignment.field.name == "rank"
+        )
         assert {"window_row_number"} <= _functions(rank_expression)
         assert len(_step(plan, f"publish_{grain}_pairs").filters) == 1
 
@@ -326,9 +330,7 @@ def test_search_cohort_band_resolution_is_typed_and_has_no_opaque_hook_boundary(
         "relation_alias",
         "join",
     ]
-    assert [operation.kind for operation in _step(plan, "expand_band_ancestors").operations] == [
-        "hierarchy_closure"
-    ]
+    assert [operation.kind for operation in _step(plan, "expand_band_ancestors").operations] == ["hierarchy_closure"]
     path = _step(plan, "build_user_band_paths")
     assert path.aggregate is not None
     assert path.aggregate.assignments[-1].function == "collect_list"
@@ -338,29 +340,24 @@ def test_search_cohort_band_resolution_is_typed_and_has_no_opaque_hook_boundary(
         "drop_duplicates",
     ]
     assert [operation.kind for operation in _step(plan, "merge_band_memberships").operations] == ["union_all"]
-    assert [operation.kind for operation in _step(plan, "build_band_fallbacks").operations] == [
-        "hierarchy_fallbacks"
-    ]
+    assert [operation.kind for operation in _step(plan, "build_band_fallbacks").operations] == ["hierarchy_fallbacks"]
 
 
 def test_search_document_chunking_preserves_spans_in_typed_private_lanes() -> None:
     plan, traceability = _lowered("examples.search.transforms.chunking.DocumentChunking", "DocumentChunking")
 
-    assert [
-        (boundary.step, boundary.hook, boundary.schema)
-        for boundary in traceability.opaque_boundaries
-    ] == [("mark_lines", "canonical_document_lines", "MarkedDocumentLine")]
-    assert [operation.kind for operation in _step(plan, "mark_lines").operations] == ["posexplode_struct"]
-    line_assignments = {assignment.field.name: assignment.expression for assignment in _step(plan, "mark_lines").projection}
+    assert traceability.opaque_boundaries == ()
+    assert [operation.kind for operation in _step(plan, "mark_lines").operations] == ["posexplode_array"]
+    line_assignments = {
+        assignment.field.name: assignment.expression for assignment in _step(plan, "mark_lines").projection
+    }
     assert {"window_sum"} <= _functions(line_assignments["section_ordinal"])
     assert {"window_sum"} <= _functions(line_assignments["paragraph_group"])
 
     paragraph_collect = _step(plan, "collect_paragraph_lines")
     assert paragraph_collect.aggregate is not None
     assert {
-        assignment.function
-        for assignment in paragraph_collect.aggregate.assignments
-        if assignment.function != "key"
+        assignment.function for assignment in paragraph_collect.aggregate.assignments if assignment.function != "key"
     } == {"min", "max"}
     assert [operation.kind for operation in _step(plan, "select_section_keys").operations] == ["aggregate"]
     assert _step(plan, "select_section_keys").aggregate is not None
@@ -412,9 +409,7 @@ def _step(lowered, name: str):
 
 def _functions(expression) -> set[str]:
     return {
-        str(item.data["function"])
-        for item in _walk(expression)
-        if item.data is not None and "function" in item.data
+        str(item.data["function"]) for item in _walk(expression) if item.data is not None and "function" in item.data
     }
 
 

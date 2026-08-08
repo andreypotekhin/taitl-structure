@@ -96,7 +96,7 @@ narrower typed capability from that family; no broader API is implied.
 | Implicit global aggregation | implemented | Sprint 24; aggregate-only steps retain global semantics and enforce empty-input nullability. `CreateIndex` now uses grouped term aggregates plus aggregate-only summaries without a raw hook. |
 | Explicit scalar UDF example | implemented documentation | Sprint 24; documented opt-in ordinary-PySpark/Spark Connect exception with warning and declared boundary |
 | `posexplode` over array of structs | implemented | Sprint 25; `posexplode_struct(...)` is available, and `Chunking`, `ScoreOverlap`, and `ScoreBm25` now use typed struct-wrapped expansion instead of raw hooks |
-| Other generator forms | deferred | Admit only after a separate cardinality/null/streaming contract |
+| Other generator forms (nested/map/variant) | deferred | Admit only after a separate cardinality/null/streaming contract; primitive scalar-array generators are implemented |
 | Exact-schema relation set composition and self-alias | implemented | Sprint 25; exact-schema set operations, branchable lane rejoin, and `relation_alias(...)` are implemented. `ReduceSimilarityScores` now uses them for reciprocal pair matching, exact-schema pair union, and typed per-source ranking. |
 | Relation order/limit/offset | implemented | Sprint 25; `order_by(...)`, `limit(n)`, and `offset(n)` are compiler-visible. `sample` remains deferred. |
 | Branchable typed union | implemented | Sprint 25; independently materialized typed lanes can rejoin through exact-schema `union_all(...)`. `BuildRelevanceSignals` now uses branch fan-out for global, fallback, and band-scoped impressions/clicks without raw hooks. |

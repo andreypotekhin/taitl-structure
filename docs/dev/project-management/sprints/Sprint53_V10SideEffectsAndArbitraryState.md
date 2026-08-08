@@ -17,6 +17,8 @@ caller-owned lifecycle code for Structure support.
 - Test `foreachBatch` adoption and generated-source cleanliness.
 - Define typed arbitrary-state input/state/output, timeout, initialization, cleanup, target, hook, and restart rules.
 - Keep unsupported state APIs design-gated until implementation and live evidence exist.
+- Reconcile Search documentation, collected artifacts, registries, and deferred collection-API boundaries under
+  `P08082601.Typed-scalar-generators-and-optimizer-visible-search-chunking.plan.md`.
 
 ## Acceptance and Demo
 

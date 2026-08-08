@@ -15,6 +15,7 @@ from examples.structure_generated.search.runtime.schema_assert import (
 )
 from examples.structure_generated.search.pyspark.schemas.chunking_intermediate import (
     MARKED_DOCUMENT_LINE_SCHEMA,
+    MATERIALIZED_PARAGRAPH_SCHEMA,
     PARAGRAPH_CONTENT_SCHEMA,
     PARAGRAPH_DRAFT_SCHEMA,
     PARAGRAPH_LINE_GROUP_SCHEMA,
@@ -36,48 +37,17 @@ class DocumentChunkingGenerated:
         documents_chunked__marked_lines = frames["documents"].alias("document")
         documents_chunked__marked_lines = documents_chunked__marked_lines.select(
             "*",
-            F.posexplode(
-                (
-                    self
-                    ._structure_udf_examples_search_transforms_chunking_documentchunking_documentchunking_canonical_document_lines(
-                         F.col(
-                            "document.content"
-                        )
-                    )
-                )
-            ).alias("__structure_document_line_1_pos", "__structure_document_line_1_item"),
+            F.posexplode(F.split(F.regexp_replace(F.col("document.content"), '\\r\\n?', '\n'), '\n', -1)).alias(
+                "__structure_document_line_1_pos", "__structure_document_line_1_item"
+            ),
+        )
+        documents_chunked__marked_lines = documents_chunked__marked_lines.withColumn(
+            "line",
+            F.col("__structure_document_line_1_item"),
         )
         documents_chunked__marked_lines = documents_chunked__marked_lines.withColumn(
             "ordinal",
             F.col("__structure_document_line_1_pos").cast(T.LongType()),
-        )
-        documents_chunked__marked_lines = documents_chunked__marked_lines.withColumn(
-            "line",
-            F.col("__structure_document_line_1_item.line"),
-        )
-        documents_chunked__marked_lines = documents_chunked__marked_lines.withColumn(
-            "span_start",
-            F.col("__structure_document_line_1_item.span_start"),
-        )
-        documents_chunked__marked_lines = documents_chunked__marked_lines.withColumn(
-            "span_end",
-            F.col("__structure_document_line_1_item.span_end"),
-        )
-        documents_chunked__marked_lines = documents_chunked__marked_lines.withColumn(
-            "heading",
-            F.col("__structure_document_line_1_item.heading"),
-        )
-        documents_chunked__marked_lines = documents_chunked__marked_lines.withColumn(
-            "heading_span_start",
-            F.col("__structure_document_line_1_item.heading_span_start"),
-        )
-        documents_chunked__marked_lines = documents_chunked__marked_lines.withColumn(
-            "heading_span_end",
-            F.col("__structure_document_line_1_item.heading_span_end"),
-        )
-        documents_chunked__marked_lines = documents_chunked__marked_lines.withColumn(
-            "is_blank",
-            F.col("__structure_document_line_1_item.is_blank"),
         )
         documents_chunked__marked_lines = documents_chunked__marked_lines.drop(
             "__structure_document_line_1_pos", "__structure_document_line_1_item"
@@ -86,20 +56,81 @@ class DocumentChunkingGenerated:
             F.col("document.id").alias("document_id"),
             F.col("ordinal").alias("line_ordinal"),
             F.col("line"),
-            F.col("span_start"),
-            F.col("span_end"),
-            F.col("heading"),
-            F.col("heading_span_start"),
-            F.col("heading_span_end"),
-            F.col("is_blank"),
-            F.sum(F.when(F.col("heading").isNotNull(), F.lit(1)).otherwise(F.lit(0)))
+            F.coalesce(
+                F.sum((F.length(F.col("line")) + F.lit(1))).over(
+                    Window.partitionBy(F.col("document.id"))
+                    .orderBy(F.col("ordinal").asc())
+                    .rowsBetween(Window.unboundedPreceding, -1)
+                ),
+                F.lit(0),
+            )
+            .cast('bigint')
+            .alias("span_start"),
+            (
+                F.coalesce(
+                    F.sum((F.length(F.col("line")) + F.lit(1))).over(
+                        Window.partitionBy(F.col("document.id"))
+                        .orderBy(F.col("ordinal").asc())
+                        .rowsBetween(Window.unboundedPreceding, -1)
+                    ),
+                    F.lit(0),
+                ).cast('bigint')
+                + F.length(F.col("line"))
+            ).alias("span_end"),
+            F.nullif(F.trim(F.regexp_extract(F.col("line"), '^(\\s*#+\\s+)(.+?)\\s*$', 2)), F.lit('')).alias("heading"),
+            F.when(
+                F.nullif(F.trim(F.regexp_extract(F.col("line"), '^(\\s*#+\\s+)(.+?)\\s*$', 2)), F.lit('')).isNotNull(),
+                (
+                    F.coalesce(
+                        F.sum((F.length(F.col("line")) + F.lit(1))).over(
+                            Window.partitionBy(F.col("document.id"))
+                            .orderBy(F.col("ordinal").asc())
+                            .rowsBetween(Window.unboundedPreceding, -1)
+                        ),
+                        F.lit(0),
+                    ).cast('bigint')
+                    + F.length(F.nullif(F.regexp_extract(F.col("line"), '^(\\s*#+\\s+)(.+?)\\s*$', 1), F.lit('')))
+                ),
+            )
+            .otherwise(F.lit(None))
+            .alias("heading_span_start"),
+            F.when(
+                F.nullif(F.trim(F.regexp_extract(F.col("line"), '^(\\s*#+\\s+)(.+?)\\s*$', 2)), F.lit('')).isNotNull(),
+                (
+                    (
+                        F.coalesce(
+                            F.sum((F.length(F.col("line")) + F.lit(1))).over(
+                                Window.partitionBy(F.col("document.id"))
+                                .orderBy(F.col("ordinal").asc())
+                                .rowsBetween(Window.unboundedPreceding, -1)
+                            ),
+                            F.lit(0),
+                        ).cast('bigint')
+                        + F.length(F.nullif(F.regexp_extract(F.col("line"), '^(\\s*#+\\s+)(.+?)\\s*$', 1), F.lit('')))
+                    )
+                    + F.length(
+                        F.nullif(F.trim(F.regexp_extract(F.col("line"), '^(\\s*#+\\s+)(.+?)\\s*$', 2)), F.lit(''))
+                    )
+                ),
+            )
+            .otherwise(F.lit(None))
+            .alias("heading_span_end"),
+            (F.trim(F.col("line")) == F.lit('')).alias("is_blank"),
+            F.sum(
+                F.when(
+                    F.nullif(
+                        F.trim(F.regexp_extract(F.col("line"), '^(\\s*#+\\s+)(.+?)\\s*$', 2)), F.lit('')
+                    ).isNotNull(),
+                    F.lit(1),
+                ).otherwise(F.lit(0))
+            )
             .over(
                 Window.partitionBy(F.col("document.id"))
                 .orderBy(F.col("ordinal").asc())
                 .rowsBetween(Window.unboundedPreceding, Window.currentRow)
             )
             .alias("section_ordinal"),
-            F.sum(F.when(F.col("is_blank"), F.lit(1)).otherwise(F.lit(0)))
+            F.sum(F.when((F.trim(F.col("line")) == F.lit('')), F.lit(1)).otherwise(F.lit(0)))
             .over(
                 Window.partitionBy(F.col("document.id"))
                 .orderBy(F.col("ordinal").asc())
@@ -311,16 +342,48 @@ class DocumentChunkingGenerated:
 
 
 class SentenceChunkingGenerated:
-    def _step_sentences_chunked_chunk_9(self, frames):
-        # Step method: sentences_chunked.chunk
-        sentences_chunked__sentences = frames["documents"].alias("document")
+    def _step_sentences_chunked_materialize_paragraph_9(self, frames):
+        # Step method: sentences_chunked.materialize_paragraph
+        sentences_chunked__materialized_paragraph = frames["documents"].alias("document")
         documents_chunked__paragraphs_joined = frames["documents_chunked__paragraphs"].alias(
             "documents_chunked__paragraphs"
         )
-        sentences_chunked__sentences = sentences_chunked__sentences.join(
+        sentences_chunked__materialized_paragraph = sentences_chunked__materialized_paragraph.join(
             documents_chunked__paragraphs_joined,
             (F.col("document.id") == F.col("documents_chunked__paragraphs.document_id")),
             "inner",
+        )
+        sentences_chunked__materialized_paragraph = sentences_chunked__materialized_paragraph.select(
+            F.col("documents_chunked__paragraphs.id"),
+            F.col("documents_chunked__paragraphs.document_id"),
+            F.col("documents_chunked__paragraphs.section_id"),
+            F.col("documents_chunked__paragraphs.ordinal"),
+            F.col("documents_chunked__paragraphs.span_start"),
+            F.col("documents_chunked__paragraphs.span_end"),
+            F.regexp_replace(
+                self._structure_udf_examples_search_transforms_lib_text_text_span(
+                    F.col("document.content"),
+                    F.col("documents_chunked__paragraphs.span_start"),
+                    F.col("documents_chunked__paragraphs.span_end"),
+                ),
+                '\n',
+                ' ',
+            ).alias("content"),
+        )
+        assert_schema(
+            sentences_chunked__materialized_paragraph,
+            MATERIALIZED_PARAGRAPH_SCHEMA,
+            name="MaterializedParagraph",
+            mode="strict",
+        )
+        return {
+            "sentences_chunked__materialized_paragraph": sentences_chunked__materialized_paragraph,
+        }
+
+    def _step_sentences_chunked_chunk_10(self, frames):
+        # Step method: sentences_chunked.chunk
+        sentences_chunked__sentences = frames["sentences_chunked__materialized_paragraph"].alias(
+            "materialized_paragraph"
         )
         sentences_chunked__sentences = sentences_chunked__sentences.select(
             "*",
@@ -328,20 +391,8 @@ class SentenceChunkingGenerated:
                 (
                     self
                     ._structure_udf_examples_search_transforms_chunking_sentencechunking_sentencechunking_default_sentence_spans(
-                         F.regexp_replace(
-                             self._structure_udf_examples_search_transforms_chunking_materializetext__textmaterializer_canonical_span(
-                                 F.col(
-                                    "document.content"
-                                ),
-                                 F.col(
-                                    "documents_chunked__paragraphs.span_start"
-                                ),
-                                 F.col(
-                                    "documents_chunked__paragraphs.span_end"
-                                ),
-                            ),
-                             '\n',
-                             ' ',
+                         F.col(
+                            "materialized_paragraph.content"
                         )
                     )
                 )
@@ -368,14 +419,14 @@ class SentenceChunkingGenerated:
         )
         sentences_chunked__sentences = sentences_chunked__sentences.where(((F.col("sentence_content") != F.lit(''))))
         sentences_chunked__sentences = sentences_chunked__sentences.select(
-            F.concat_ws('#s', F.col("documents_chunked__paragraphs.id"), F.col("position").cast('string')).alias("id"),
-            F.col("documents_chunked__paragraphs.document_id"),
-            F.col("documents_chunked__paragraphs.section_id"),
-            F.col("documents_chunked__paragraphs.id").alias("paragraph_id"),
-            F.col("documents_chunked__paragraphs.ordinal").alias("paragraph_ordinal"),
+            F.concat_ws('#s', F.col("materialized_paragraph.id"), F.col("position").cast('string')).alias("id"),
+            F.col("materialized_paragraph.document_id"),
+            F.col("materialized_paragraph.section_id"),
+            F.col("materialized_paragraph.id").alias("paragraph_id"),
+            F.col("materialized_paragraph.ordinal").alias("paragraph_ordinal"),
             (F.col("position") + F.lit(1)).cast('int').alias("ordinal"),
-            (F.col("documents_chunked__paragraphs.span_start") + F.col("local_start")).alias("span_start"),
-            (F.col("documents_chunked__paragraphs.span_start") + F.col("local_end")).alias("span_end"),
+            (F.col("materialized_paragraph.span_start") + F.col("local_start")).alias("span_start"),
+            (F.col("materialized_paragraph.span_start") + F.col("local_end")).alias("span_end"),
         )
         return {
             "sentences_chunked__sentences": sentences_chunked__sentences,
@@ -387,19 +438,6 @@ class ChunkingGenerated(DocumentChunkingGenerated, SentenceChunkingGenerated):
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
         self.ctx = ctx
-        self._structure_udf_examples_search_transforms_chunking_documentchunking_documentchunking_canonical_document_lines = (
-            F
-            .udf(
-                 self.canonical_document_lines,
-                 returnType=T.ArrayType(
-                    DOCUMENT_LINE_SCHEMA,
-                     containsNull=False
-                )
-            )
-        )
-        self._structure_udf_examples_search_transforms_chunking_materializetext__textmaterializer_canonical_span = (
-            F.udf(self.canonical_span, returnType=T.StringType())
-        )
         self._structure_udf_examples_search_transforms_chunking_sentencechunking_sentencechunking_default_sentence_spans = (
             F
             .udf(
@@ -410,6 +448,7 @@ class ChunkingGenerated(DocumentChunkingGenerated, SentenceChunkingGenerated):
                 )
             )
         )
+        self._structure_udf_examples_search_transforms_lib_text_text_span = F.udf(self.span, returnType=T.StringType())
 
     def close(self) -> None:
         close_plan_boundaries(self.spark)
@@ -434,7 +473,8 @@ class ChunkingGenerated(DocumentChunkingGenerated, SentenceChunkingGenerated):
         frames.update(self._step_documents_chunked_publish_paragraphs_6(frames))
         frames.update(self._step_documents_chunked_select_section_keys_7(frames))
         frames.update(self._step_documents_chunked_build_sections_8(frames))
-        frames.update(self._step_sentences_chunked_chunk_9(frames))
+        frames.update(self._step_sentences_chunked_materialize_paragraph_9(frames))
+        frames.update(self._step_sentences_chunked_chunk_10(frames))
 
         # Step method: sections
         sections = frames["documents_chunked__sections"].alias("section")
@@ -452,43 +492,6 @@ class ChunkingGenerated(DocumentChunkingGenerated, SentenceChunkingGenerated):
             single=False,
             schema={"sections": SECTION_SCHEMA, "paragraphs": PARAGRAPH_SCHEMA, "sentences": SENTENCE_SCHEMA},
         )
-
-    @staticmethod
-    def canonical_document_lines(content: Any) -> list[dict[str, object]]:
-        """Return canonical lines and code-point spans without reconstructing text later."""
-        import re
-
-        canonical = re.sub('\\r\\n?', '\n', content)
-        lines: list[dict[str, object]] = []
-        offset = 0
-        for line in canonical.split('\n'):
-            match = re.match('^\\s*#+\\s+(.+?)\\s*$', line)
-            heading = match.group(1).strip() if match else None
-            heading_start = offset + match.start(1) if match else None
-            heading_end = offset + match.end(1) if match else None
-            lines.append(
-                {
-                    'line': line,
-                    'span_start': offset,
-                    'span_end': offset + len(line),
-                    'heading': heading,
-                    'heading_span_start': heading_start,
-                    'heading_span_end': heading_end,
-                    'is_blank': line.strip() == '',
-                }
-            )
-            offset += len(line) + 1
-        return lines
-
-    @staticmethod
-    def canonical_span(content: Any, start: Any, end: Any) -> str | None:
-        """Extract a half-open span from canonicalized Unicode document text."""
-        import re
-
-        if content is None or start is None or end is None:
-            return None
-        canonical = re.sub('\\r\\n?', '\n', content)
-        return canonical[int(start) : int(end)]
 
     @staticmethod
     def default_sentence_spans(content: Any) -> list[dict[str, object]]:
@@ -514,3 +517,13 @@ class ChunkingGenerated(DocumentChunkingGenerated, SentenceChunkingGenerated):
         if start < end:
             spans.append({'local_start': start, 'local_end': end, 'sentence_content': content[start:end]})
         return spans
+
+    @staticmethod
+    def span(content: Any, start: Any, end: Any) -> str | None:
+        """Extract a half-open span from canonicalized Unicode document text."""
+        import re
+
+        if content is None or start is None or end is None:
+            return None
+        canonical = re.sub('\\r\\n?', '\n', content)
+        return canonical[int(start) : int(end)]

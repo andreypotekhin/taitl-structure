@@ -217,6 +217,8 @@ This matrix maps early sprints to specification sections and major deliverables.
 - As a maintainer, I can close V10 with synchronized ledgers, fresh generated artifacts, live evidence, and `make build`.
 - As a maintainer, I can generate same-basename transforms and same-name schemas without generated files being silently
   overwritten or Python symbols being silently shadowed.
+- As a developer, I can expand primitive scalar arrays through typed compiler-visible generators and obtain equivalent
+  generated/online results, including optimizer-visible Search document line spans.
 
 ## V11
 

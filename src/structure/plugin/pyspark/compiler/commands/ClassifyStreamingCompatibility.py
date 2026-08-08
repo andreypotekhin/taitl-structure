@@ -118,6 +118,8 @@ class ClassifyStreamingCompatibility:
                     findings.extend(self._relation_assertion(step.name, operation.kind))
                 if streaming_step and operation.posexplode_struct is not None:
                     findings.extend(self._generators.posexplode_struct(step.name, operation.posexplode_struct))
+                if operation.scalar_generator is not None:
+                    findings.extend(self._generators.scalar_array(step.name, operation.scalar_generator))
                 if streaming_step and operation.relation_order is not None:
                     findings.extend(self._relation_ordering(step.name, "order_by"))
                 if streaming_step and operation.relation_bound is not None:
@@ -245,7 +247,9 @@ class ClassifyStreamingCompatibility:
             operation="watermark-bounded duplicate removal",
             event_time=tuple(f"{scope}.{column}" for column in sorted(watermark_delays.get(scope, {}))),
             watermarks=self._watermark_metadata(scope, watermark_delays),
-            keys=tuple(self._expression_label(expression) for expression in (duplicate_rows.subset if duplicate_rows else ())),
+            keys=tuple(
+                self._expression_label(expression) for expression in (duplicate_rows.subset if duplicate_rows else ())
+            ),
             retention=tuple(sorted(watermark_delays.get(scope, {}).values())),
             output_modes=tuple(mode.value for mode in operation.streaming_output_modes),
         )
@@ -260,11 +264,7 @@ class ClassifyStreamingCompatibility:
     ) -> StreamingStateStage:
         event_time = self._join_event_time(join.predicate)
         scopes = tuple(sorted({scope for scope, _ in event_time}))
-        metadata = tuple(
-            item
-            for scope in scopes
-            for item in self._watermark_metadata(scope, watermark_delays)
-        )
+        metadata = tuple(item for scope in scopes for item in self._watermark_metadata(scope, watermark_delays))
         modes = tuple(mode.value for mode in operation.streaming_output_modes)
         if not modes and (join.method is JoinMethod.EXISTS or join.how in {Join.LEFT, Join.RIGHT, Join.FULL}):
             modes = ("append",)
@@ -294,10 +294,7 @@ class ClassifyStreamingCompatibility:
         values: list[str] = []
         for key in aggregate.keys:
             if self._is_event_time_window(key.expression) or self._is_session_window(key.expression):
-                values.extend(
-                    self._expression_label(expression)
-                    for expression in key.expression.args[:1]
-                )
+                values.extend(self._expression_label(expression) for expression in key.expression.args[:1])
         if values:
             return tuple(dict.fromkeys(values))
         return tuple(
@@ -323,10 +320,7 @@ class ClassifyStreamingCompatibility:
         scope: str,
         watermark_delays: dict[str, dict[str, str]],
     ) -> tuple[tuple[str, str], ...]:
-        return tuple(
-            (f"{scope}.{column}", delay)
-            for column, delay in sorted(watermark_delays.get(scope, {}).items())
-        )
+        return tuple((f"{scope}.{column}", delay) for column, delay in sorted(watermark_delays.get(scope, {}).items()))
 
     def _join_event_time(self, expression: PySparkExpressionRecipe) -> tuple[tuple[str, str], ...]:
         values: list[tuple[str, str]] = []
@@ -387,9 +381,7 @@ class ClassifyStreamingCompatibility:
         return "unbounded business-key aggregate"
 
     def _uses_streaming_input(self, step, input_modes: dict[str, bool]) -> bool:
-        return bool(input_modes.get(step.source)) or any(
-            bool(input_modes.get(source)) for source in step.input_sources
-        )
+        return bool(input_modes.get(step.source)) or any(bool(input_modes.get(source)) for source in step.input_sources)
 
     def _has_blocking_findings(self, findings: tuple[StreamingFinding, ...]) -> bool:
         return any(finding.support is not StreamingSupport.COMPATIBLE for finding in findings)
@@ -546,8 +538,8 @@ class ClassifyStreamingCompatibility:
         first: _StatefulStreamingOperation,
         second: object | None,
     ) -> bool:
-        return first.aggregate is not None and second is not None and self._is_chained_window_pair(
-            first.aggregate, second
+        return (
+            first.aggregate is not None and second is not None and self._is_chained_window_pair(first.aggregate, second)
         )
 
     def _is_chained_window_pair(self, first, second) -> bool:

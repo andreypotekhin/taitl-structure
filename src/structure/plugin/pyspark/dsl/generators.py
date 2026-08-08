@@ -171,6 +171,66 @@ def posexplode_outer_struct(
     return _generators.posexplode_outer_struct(context, value, as_=as_, ordinal=ordinal, scope=scope)
 
 
+def explode_array(
+    value: object,
+    *,
+    as_: type[Schema],
+    value_field: str,
+    scope: str | None = None,
+) -> RowScope:
+    """Explode an array of primitive values into a typed scalar row."""
+    context = current_symbolic_context()
+    if context is None:
+        raise RuntimeError("explode_array(...) can only be used inside a compiled Structure step method")
+    return _generators.explode_array(context, value, as_=as_, value_field=value_field, scope=scope)
+
+
+def explode_outer_array(
+    value: object,
+    *,
+    as_: type[Schema],
+    value_field: str,
+    scope: str | None = None,
+) -> RowScope:
+    """Explode a primitive array while preserving a row for null or empty input."""
+    context = current_symbolic_context()
+    if context is None:
+        raise RuntimeError("explode_outer_array(...) can only be used inside a compiled Structure step method")
+    return _generators.explode_outer_array(context, value, as_=as_, value_field=value_field, scope=scope)
+
+
+def posexplode_array(
+    value: object,
+    *,
+    as_: type[Schema],
+    value_field: str,
+    ordinal: str = "ordinal",
+    scope: str | None = None,
+) -> RowScope:
+    """Explode a primitive array and expose its zero-based ordinal."""
+    context = current_symbolic_context()
+    if context is None:
+        raise RuntimeError("posexplode_array(...) can only be used inside a compiled Structure step method")
+    return _generators.posexplode_array(context, value, as_=as_, value_field=value_field, ordinal=ordinal, scope=scope)
+
+
+def posexplode_outer_array(
+    value: object,
+    *,
+    as_: type[Schema],
+    value_field: str,
+    ordinal: str = "ordinal",
+    scope: str | None = None,
+) -> RowScope:
+    """Outer variant of :func:`posexplode_array`."""
+    context = current_symbolic_context()
+    if context is None:
+        raise RuntimeError("posexplode_outer_array(...) can only be used inside a compiled Structure step method")
+    return _generators.posexplode_outer_array(
+        context, value, as_=as_, value_field=value_field, ordinal=ordinal, scope=scope
+    )
+
+
 def variant_explode(
     value: object,
     *,

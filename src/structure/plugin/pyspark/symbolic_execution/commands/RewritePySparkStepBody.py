@@ -43,15 +43,16 @@ class RewritePySparkStepBody:
             posexplode_struct=(
                 None if operation.posexplode_struct is None else self._posexplode_struct(operation.posexplode_struct)
             ),
+            scalar_generator=(
+                None if operation.scalar_generator is None else self._scalar_generator(operation.scalar_generator)
+            ),
             relation_alias=(
                 None
                 if operation.relation_alias is None
                 else self._relation_alias(operation.relation_alias, frames=frames)
             ),
             relation_assertion=(
-                None
-                if operation.relation_assertion is None
-                else self._relation_assertion(operation.relation_assertion)
+                None if operation.relation_assertion is None else self._relation_assertion(operation.relation_assertion)
             ),
             relation_hierarchy_closure=(
                 None
@@ -102,7 +103,9 @@ class RewritePySparkStepBody:
 
     def _aggregate(self, aggregate: AggregatePlan) -> AggregatePlan:
         return AggregatePlan(
-            keys=tuple(AggregateKey(name=key.name, expression=self._expression(key.expression)) for key in aggregate.keys),
+            keys=tuple(
+                AggregateKey(name=key.name, expression=self._expression(key.expression)) for key in aggregate.keys
+            ),
             assignments=tuple(
                 AggregateAssignment(
                     field=assignment.field,
@@ -137,6 +140,9 @@ class RewritePySparkStepBody:
     def _posexplode_struct(self, posexplode_struct):
         return replace(posexplode_struct, expression=self._expression(posexplode_struct.expression))
 
+    def _scalar_generator(self, generator):
+        return replace(generator, expression=self._expression(generator.expression))
+
     def _relation_alias(self, relation_alias, *, frames: Mapping[str, str]):
         return replace(relation_alias, source=frames.get(relation_alias.source, relation_alias.source))
 
@@ -145,22 +151,14 @@ class RewritePySparkStepBody:
             relation_assertion,
             keys=tuple(self._expression(expression) for expression in relation_assertion.keys),
             predicate=(
-                None
-                if relation_assertion.predicate is None
-                else self._expression(relation_assertion.predicate)
+                None if relation_assertion.predicate is None else self._expression(relation_assertion.predicate)
             ),
             value=None if relation_assertion.value is None else self._expression(relation_assertion.value),
             reference_key=(
-                None
-                if relation_assertion.reference_key is None
-                else self._expression(relation_assertion.reference_key)
+                None if relation_assertion.reference_key is None else self._expression(relation_assertion.reference_key)
             ),
             parent=None if relation_assertion.parent is None else self._expression(relation_assertion.parent),
-            order_by=(
-                None
-                if relation_assertion.order_by is None
-                else self._expression(relation_assertion.order_by)
-            ),
+            order_by=(None if relation_assertion.order_by is None else self._expression(relation_assertion.order_by)),
         )
 
     def _relation_hierarchy_closure(self, relation_hierarchy_closure):
@@ -175,7 +173,9 @@ class RewritePySparkStepBody:
             relation_hierarchy_fallback,
             source_id=self._expression(relation_hierarchy_fallback.source_id),
             path=self._expression(relation_hierarchy_fallback.path),
-            parent_source=frames.get(relation_hierarchy_fallback.parent_source, relation_hierarchy_fallback.parent_source),
+            parent_source=frames.get(
+                relation_hierarchy_fallback.parent_source, relation_hierarchy_fallback.parent_source
+            ),
             parent_id=self._expression(relation_hierarchy_fallback.parent_id),
             parent=self._expression(relation_hierarchy_fallback.parent),
         )

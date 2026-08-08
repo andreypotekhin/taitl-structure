@@ -137,6 +137,7 @@ Structure supports `arr_transform`, `arr_filter`, `arr_exists`, `arr_forall`, `a
 | Array slicing and sorting variants | implemented | `slice`, `array_sort`, `reverse` | `slice(...)`, `arr_sort(...)`, and `arr_reverse(...)` preserve typed array contracts | [Collections API](api/Collections.api.md) |
 | Element lookup and map concatenation | implemented | `element_at`, `try_element_at`, `map_concat` | Lookup results are nullable; safe lookup avoids out-of-range errors; map concat rejects duplicate-key policy overrides | [Collections API](api/Collections.api.md) |
 | `posexplode` over array of structs | implemented | `posexplode` | `posexplode_struct(...)` expands `array<struct>` with a declared generated scope | [Collections API](api/Collections.api.md) |
+| `explode`/`posexplode` over primitive arrays | implemented | `explode`, `explode_outer`, `posexplode`, `posexplode_outer` | Typed scalar-array generators require explicit value and ordinal field declarations | [Collections API](api/Collections.api.md) |
 | Typed struct generator forms | implemented | `explode`, outer generators, `inline` | Typed struct generator helpers define schema, cardinality, nullability, and streaming classification | [Collections API](api/Collections.api.md) |
 | Python control flow in callbacks | unsupported | Arbitrary Python lambdas | Return symbolic expressions only | [Collections API](api/Collections.api.md) |
 
@@ -225,7 +226,7 @@ streaming-specific rows remain in
 | JSON/CSV conversion | supported | `from_json`, `to_json`, `from_csv`, `to_csv` | Schema-carrying parsing keeps parser options and output schemas compiler-visible. |
 | Array construction, lookup, transformation | supported | Typed array helpers | Exact element/nullability and callback rules are validated. |
 | Map functions | supported | Typed map helpers | Callback bodies remain symbolic. |
-| Generator variants | supported | `explode_struct`, `explode_outer_struct`, `posexplode_struct`, `posexplode_outer_struct`, `inline_struct`, `inline_outer_struct` | Typed struct generators expand declared struct values with schema/cardinality contracts. |
+| Generator variants | supported | `explode_struct`, `explode_outer_struct`, `posexplode_struct`, `posexplode_outer_struct`, `inline_struct`, `inline_outer_struct`, `explode_array`, `explode_outer_array`, `posexplode_array`, `posexplode_outer_array` | Typed struct and primitive scalar-array generators expand declared values with schema/cardinality contracts. |
 | Projection and filtering | supported | Schema projection and `where` | Schema owns output names and replacement. |
 | Joins and hints | supported | Typed join helpers, `relation_alias` | Explicit schema/cardinality; cross needs opt-in; self joins require named aliases. |
 | Set operations | supported/design-gated | `union_all`, `union_by_name`, `intersect`, `intersect_all`, `subtract`, `except_all`; nullable missing-column `union_by_name` | Exact-schema set operations are supported; batch `allow_missing_columns=True` fills nullable or explicitly defaulted top-level and nested struct fields while preserving aliases. | Streaming missing-column union remains design-gated; array/map element evolution is rejected. |

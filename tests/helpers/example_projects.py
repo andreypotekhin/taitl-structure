@@ -703,10 +703,12 @@ def render_search_example() -> dict[str, str]:
             SimilarDocument,
         )
         from examples.search.schemas.chunking.intermediate import (
-            DocumentLine,
             ExpandedDocumentLine,
             ExpandedSentenceText,
             MarkedDocumentLine,
+            MaterializedParagraph,
+            MaterializedSection,
+            MaterializedSentence,
             ParagraphContent,
             ParagraphDraft,
             ParagraphLine,
@@ -940,7 +942,6 @@ def render_search_example() -> dict[str, str]:
                 Sentence,
             ],
             "examples.search.schemas.chunking.intermediate": [
-                DocumentLine,
                 ExpandedDocumentLine,
                 MarkedDocumentLine,
                 ParagraphLine,
@@ -950,6 +951,9 @@ def render_search_example() -> dict[str, str]:
                 ParagraphDraft,
                 SectionKey,
                 SentenceText,
+                MaterializedParagraph,
+                MaterializedSection,
+                MaterializedSentence,
                 ExpandedSentenceText,
             ],
             "examples.search.schemas.search": [

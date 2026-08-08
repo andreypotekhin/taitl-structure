@@ -1,8 +1,9 @@
 """Ranked paragraph-search presentation with immediate answer context."""
 
+from examples.search.schemas.chunking.intermediate import MaterializedParagraph, MaterializedSection
 from examples.search.schemas.search import ParagraphContext, ParagraphScore, PassageSearchResult, SearchQuery
 from examples.search.schemas.text import Document, Paragraph, Section
-from examples.search.transforms.chunking.MaterializeText import _TextMaterializer
+from examples.search.transforms.lib.Text import Text
 from structure import Transform, input, lane, output, step
 from structure.plugin.pyspark import coalesce, inner_join, lag, lead, regexp_replace, row_number, when, where
 
@@ -17,34 +18,49 @@ class SearchPassages(Transform):
     documents = input(Document)
     contexts = lane(ParagraphContext)
     results = output(PassageSearchResult)
+    materialized_paragraph = lane(MaterializedParagraph)
+    materialized_section = lane(MaterializedSection)
 
-    @step(input=[documents, paragraphs], output=contexts)
-    def add_context(self, document: Document, paragraph: Paragraph) -> ParagraphContext:
+    @step(input=[documents, paragraphs], output=materialized_paragraph)
+    def materialize_paragraph(self, document: Document, paragraph: Paragraph) -> MaterializedParagraph:
         inner_join(on=document.id == paragraph.document_id)
-        content = regexp_replace(
-            _TextMaterializer.canonical_span(document.content, paragraph.span_start, paragraph.span_end),
-            pattern="\n",
-            replacement=" ",
+        return MaterializedParagraph.project(paragraph)(
+            content=regexp_replace(
+                Text.span(document.content, paragraph.span_start, paragraph.span_end),
+                pattern="\n",
+                replacement=" ",
+            ),
         )
+
+    @step(input=[documents, sections], output=materialized_section)
+    def materialize_section(self, document: Document, section: Section) -> MaterializedSection:
+        inner_join(on=document.id == section.document_id)
+        heading = when(
+            section.heading_span_start.is_not_null(),
+            Text.span(document.content, section.heading_span_start, section.heading_span_end),
+        ).otherwise("Document")
+        return MaterializedSection.project(section)(
+            heading=coalesce(heading, "Document"),
+        )
+
+    @step(input=materialized_paragraph, output=contexts)
+    def add_context(self, paragraph: MaterializedParagraph) -> ParagraphContext:
         return ParagraphContext.project(paragraph)(
             paragraph_id=paragraph.id,
-            document_id=paragraph.document_id,
-            section_id=paragraph.section_id,
-            content=content,
             preceding_content=lag(
-                content,
+                paragraph.content,
                 partition_by=(paragraph.document_id, paragraph.section_id),
                 order_by=paragraph.ordinal,
             ),
             following_content=lead(
-                content,
+                paragraph.content,
                 partition_by=(paragraph.document_id, paragraph.section_id),
                 order_by=paragraph.ordinal,
             ),
         )
 
     @step(
-        input=[paragraph_scores, queries, contexts, sections, documents],
+        input=[paragraph_scores, queries, contexts, sections, documents, materialized_section],
         output=results,
     )
     def rank_passages(
@@ -54,16 +70,13 @@ class SearchPassages(Transform):
         context: ParagraphContext,
         section: Section,
         document: Document,
+        materialized_section: MaterializedSection,
     ) -> PassageSearchResult:
         inner_join(on=query.id == score.query_id)
         inner_join(on=context.paragraph_id == score.paragraph_id)
         inner_join(on=section.id == score.section_id)
         inner_join(on=document.id == score.document_id)
-        heading = when(
-            section.heading_span_start.is_not_null(),
-            _TextMaterializer.canonical_span(document.content, section.heading_span_start, section.heading_span_end),
-        ).otherwise("Document")
-        heading = coalesce(heading, "Document")
+        inner_join(on=materialized_section.id == section.id)
         where(
             score.score.is_not_null(),
         )
@@ -79,7 +92,7 @@ class SearchPassages(Transform):
             ),
             document_id=score.document_id,
             section_id=score.section_id,
-            section_heading=heading,
+            section_heading=materialized_section.heading,
             paragraph_id=score.paragraph_id,
             content=context.content,
         )

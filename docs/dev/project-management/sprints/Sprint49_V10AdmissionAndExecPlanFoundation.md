@@ -16,6 +16,8 @@ family.
 - Review the V9 final report and carry forward only bounded follow-ups.
 - Publish the four baseline V10 ExecPlans and update governing design/specification/background links; admit the
   collision-safe generated identities plan to the Sprint 54 hardening workstream when a release blocker is found.
+- Admit `P08082601.Typed-scalar-generators-and-optimizer-visible-search-chunking.plan.md` and freeze its scalar-generator,
+  nullability, primitive-type, and Search span contracts.
 - Inventory APICatalog rows, capability ledgers, diagnostics, references, and examples.
 - Add V10 milestone, backlog, roadmap, traceability, and sprint navigation.
 

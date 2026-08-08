@@ -1,9 +1,6 @@
 """Chunk caller-provided documents into span-only sections and paragraphs."""
 
-from typing import Any
-
 from examples.search.schemas.chunking.intermediate import (
-    DocumentLine,
     ExpandedDocumentLine,
     MarkedDocumentLine,
     ParagraphContent,
@@ -14,17 +11,25 @@ from examples.search.schemas.chunking.intermediate import (
     SectionKey,
 )
 from examples.search.schemas.text import Document, Paragraph, Section
-from structure import Transform, input, lane, output, special, step
+from structure import Transform, input, lane, output, step
 from structure.plugin.pyspark import (
+    coalesce,
     concat_ws,
     current_row,
     group_by,
     left_join,
+    length,
     max,
     min,
-    posexplode_struct,
+    nullif,
+    posexplode_array,
+    preceding,
+    regexp_extract,
+    regexp_replace,
     row_number,
     rows_between,
+    split,
+    trim,
     types,
     unbounded_preceding,
     when,
@@ -48,59 +53,46 @@ class DocumentChunking(Transform):
     sections = output(Section)
     paragraphs = output(Paragraph)
 
-    @special(
-        type="udf",
-        return_type=types.array(types.struct(DocumentLine), contains_null=False),
-        nullable=False,
-    )
-    def canonical_document_lines(content: Any) -> list[dict[str, object]]:
-        """Return canonical lines and code-point spans without reconstructing text later."""
-        import re
-
-        canonical = re.sub(r"\r\n?", "\n", content)
-        lines: list[dict[str, object]] = []
-        offset = 0
-        for line in canonical.split("\n"):
-            match = re.match(r"^\s*#+\s+(.+?)\s*$", line)
-            heading = match.group(1).strip() if match else None
-            heading_start = offset + match.start(1) if match else None
-            heading_end = offset + match.end(1) if match else None
-            lines.append(
-                {
-                    "line": line,
-                    "span_start": offset,
-                    "span_end": offset + len(line),
-                    "heading": heading,
-                    "heading_span_start": heading_start,
-                    "heading_span_end": heading_end,
-                    "is_blank": line.strip() == "",
-                }
-            )
-            offset += len(line) + 1
-        return lines
-
     @step(input=documents, output=marked_lines)
     def mark_lines(self, document: Document) -> MarkedDocumentLine:
-        lines = self.canonical_document_lines(document.content)
-        line = posexplode_struct(lines, as_=ExpandedDocumentLine, scope="document_line")
-        is_heading = line.heading.is_not_null()
+        lines = split(
+            regexp_replace(document.content, pattern=r"\r\n?", replacement="\n"),
+            pattern="\n",
+        )
+        line = posexplode_array(lines, as_=ExpandedDocumentLine, value_field="line", scope="document_line")
+        span_window = window(
+            partition_by=document.id,
+            order_by=line.ordinal,
+            frame=rows_between(unbounded_preceding(), preceding(1)),
+        )
         line_window = window(
             partition_by=document.id,
             order_by=line.ordinal,
             frame=rows_between(unbounded_preceding(), current_row()),
         )
+        span_start = coalesce(window_sum(length(line.line) + 1, over=span_window), 0).cast(types.long())
+        heading_prefix = nullif(
+            regexp_extract(line.line, pattern=r"^(\s*#+\s+)(.+?)\s*$", group=1),
+            "",
+        )
+        heading = nullif(
+            trim(regexp_extract(line.line, pattern=r"^(\s*#+\s+)(.+?)\s*$", group=2)),
+            "",
+        )
+        is_heading = heading.is_not_null()
+        is_blank = trim(line.line) == ""
         return MarkedDocumentLine(
             document_id=document.id,
             line_ordinal=line.ordinal,
             line=line.line,
-            span_start=line.span_start,
-            span_end=line.span_end,
-            heading=line.heading,
-            heading_span_start=line.heading_span_start,
-            heading_span_end=line.heading_span_end,
-            is_blank=line.is_blank,
+            span_start=span_start,
+            span_end=span_start + length(line.line),
+            heading=heading,
+            heading_span_start=when(is_heading, span_start + length(heading_prefix)).otherwise(None),
+            heading_span_end=when(is_heading, span_start + length(heading_prefix) + length(heading)).otherwise(None),
+            is_blank=is_blank,
             section_ordinal=window_sum(when(is_heading, 1).otherwise(0), over=line_window),
-            paragraph_group=window_sum(when(line.is_blank, 1).otherwise(0), over=line_window),
+            paragraph_group=window_sum(when(is_blank, 1).otherwise(0), over=line_window),
         )
 
     @step(input=marked_lines, output=paragraph_lines)

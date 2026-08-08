@@ -497,6 +497,7 @@ Status: planned. V10 begins after the V9 Sprints 45–48 closeout and runs throu
 - `docs/dev/planning/P08022604.V10-evidence-catalog-reconciliation-and-hardening.plan.md`
 - `docs/dev/planning/P08042601.Collision-safe-generated-identities.plan.md`
 - `docs/dev/planning/P08052602.Search-vector-index-and-rrf.plan.md` (explicit v10 Search application proving slice)
+- `docs/dev/planning/P08082601.Typed-scalar-generators-and-optimizer-visible-search-chunking.plan.md` (explicit v10 compiler/API and Search chunking proving slice)
 
 ## M16: V11 PySpark 4.1 Adoption
 

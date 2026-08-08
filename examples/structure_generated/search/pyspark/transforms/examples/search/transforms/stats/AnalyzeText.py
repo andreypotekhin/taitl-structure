@@ -20,6 +20,7 @@ from examples.structure_generated.search.pyspark.schemas.analytics import (
     SENTENCE_STATISTICS_SCHEMA,
     SIMILAR_DOCUMENT_SCHEMA,
 )
+from examples.structure_generated.search.pyspark.schemas.chunking_intermediate import MATERIALIZED_SECTION_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.index import (
     DOCUMENT_TERM_SCHEMA,
     PARAGRAPH_TERM_SCHEMA,
@@ -40,9 +41,7 @@ class AnalyzeTextGenerated:
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
         self.ctx = ctx
-        self._structure_udf_examples_search_transforms_chunking_materializetext__textmaterializer_canonical_span = (
-            F.udf(self.canonical_span, returnType=T.StringType())
-        )
+        self._structure_udf_examples_search_transforms_lib_text_text_span = F.udf(self.span, returnType=T.StringType())
 
     def close(self) -> None:
         close_plan_boundaries(self.spark)
@@ -81,6 +80,36 @@ class AnalyzeTextGenerated:
         _input_sentence_terms = sentence_terms
         _input_comparison_left = comparison_left
         _input_comparison_right = comparison_right
+
+        # Step method: materialize_section
+        materialized_section = documents.alias("document")
+        sections_joined = sections.alias("sections")
+        materialized_section = materialized_section.join(
+            sections_joined,
+            (F.col("document.id") == F.col("sections.document_id")),
+            "inner",
+        )
+        materialized_section = materialized_section.select(
+            F.col("sections.id"),
+            F.col("sections.document_id"),
+            F.col("sections.ordinal"),
+            F.col("sections.span_start"),
+            F.col("sections.span_end"),
+            F.col("sections.heading_span_start"),
+            F.col("sections.heading_span_end"),
+            F.coalesce(
+                F.when(
+                    F.col("sections.heading_span_start").isNotNull(),
+                    self._structure_udf_examples_search_transforms_lib_text_text_span(
+                        F.col("document.content"),
+                        F.col("sections.heading_span_start"),
+                        F.col("sections.heading_span_end"),
+                    ),
+                ).otherwise(F.lit('Document')),
+                F.lit('Document'),
+            ).alias("heading"),
+        )
+        assert_schema(materialized_section, MATERIALIZED_SECTION_SCHEMA, name="MaterializedSection", mode="strict")
 
         # Step method: sentence_stats
         sentence_statistics = sentence_terms.alias("sentence_term")
@@ -181,28 +210,28 @@ class AnalyzeTextGenerated:
             ),
             "inner",
         )
-        documents_2_joined = documents.alias("documents_2")
+        paragraphs_2_joined = paragraphs.alias("paragraphs_2")
         section_statistics = section_statistics.join(
-            documents_2_joined,
-            (F.col("documents_2.id") == F.col("sections.document_id")),
-            "inner",
-        )
-        paragraphs_3_joined = paragraphs.alias("paragraphs_3")
-        section_statistics = section_statistics.join(
-            paragraphs_3_joined,
+            paragraphs_2_joined,
             (
-                (F.col("paragraphs_3.document_id") == F.col("sections.document_id"))
-                & (F.col("paragraphs_3.section_id") == F.col("sections.id"))
+                (F.col("paragraphs_2.document_id") == F.col("sections.document_id"))
+                & (F.col("paragraphs_2.section_id") == F.col("sections.id"))
             ),
             "inner",
         )
-        sentences_4_joined = sentences.alias("sentences_4")
+        sentences_3_joined = sentences.alias("sentences_3")
         section_statistics = section_statistics.join(
-            sentences_4_joined,
+            sentences_3_joined,
             (
-                (F.col("sentences_4.document_id") == F.col("sections.document_id"))
-                & (F.col("sentences_4.section_id") == F.col("sections.id"))
+                (F.col("sentences_3.document_id") == F.col("sections.document_id"))
+                & (F.col("sentences_3.section_id") == F.col("sections.id"))
             ),
+            "inner",
+        )
+        materialized_section_4_joined = materialized_section.alias("materialized_section_4")
+        section_statistics = section_statistics.join(
+            materialized_section_4_joined,
+            (F.col("materialized_section_4.id") == F.col("sections.id")),
             "inner",
         )
         section_statistics = (
@@ -210,30 +239,11 @@ class AnalyzeTextGenerated:
                 F.col("sections.id").alias("section_id"),
                 F.col("sections.document_id").alias("document_id"),
                 F.col("sections.ordinal").alias("section_ordinal"),
-                F.coalesce(
-                    F.when(
-                        F.col("sections.heading_span_start").isNotNull(),
-                        (
-                            self
-                            ._structure_udf_examples_search_transforms_chunking_materializetext__textmaterializer_canonical_span(
-                                 F.col(
-                                    "documents_2.content"
-                                ),
-                                 F.col(
-                                    "sections.heading_span_start"
-                                ),
-                                 F.col(
-                                    "sections.heading_span_end"
-                                ),
-                            )
-                        ),
-                    ).otherwise(F.lit('Document')),
-                    F.lit('Document'),
-                ).alias("heading"),
+                F.col("materialized_section_4.heading").alias("heading"),
             )
             .agg(
-                F.countDistinct(F.col("paragraphs_3.id")).cast(T.LongType()).alias("paragraph_count"),
-                F.countDistinct(F.col("sentences_4.id")).cast(T.LongType()).alias("sentence_count"),
+                F.countDistinct(F.col("paragraphs_2.id")).cast(T.LongType()).alias("paragraph_count"),
+                F.countDistinct(F.col("sentences_3.id")).cast(T.LongType()).alias("sentence_count"),
                 F.max(F.col("section_term.target_term_count")).cast(T.LongType()).alias("word_count"),
                 F.max(F.col("section_term.target_average_term_length"))
                 .cast(T.DoubleType())
@@ -372,7 +382,7 @@ class AnalyzeTextGenerated:
         )
 
     @staticmethod
-    def canonical_span(content: Any, start: Any, end: Any) -> str | None:
+    def span(content: Any, start: Any, end: Any) -> str | None:
         """Extract a half-open span from canonicalized Unicode document text."""
         import re
 

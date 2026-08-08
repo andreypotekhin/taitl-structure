@@ -238,8 +238,8 @@ examples/
 Note: we are currently switching from CamelCase to underscored_lower in example app file naming
 (not in the main codebase). Please use it from this point on in example apps.  
 
-#### Example apps guidance
+#### Example apps code guidance
 
 - Use .project()/.base() liberally
 - Prefer result = outputs(...) output assignments
-- Prefer star imports, for brevity
+- Use wildcard imports, for brevity

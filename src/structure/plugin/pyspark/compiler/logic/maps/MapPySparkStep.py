@@ -311,13 +311,32 @@ class MapPySparkStep:
                         operation,
                     )
                 )
-            if operation.kind in {"variant_explode", "variant_explode_outer"} and operation.posexplode_struct is not None:
+            if (
+                operation.kind in {"variant_explode", "variant_explode_outer"}
+                and operation.posexplode_struct is not None
+            ):
                 recipes.append(
                     self._operation_modes(
                         self._generators.posexplode_struct(
                             operation.posexplode_struct,
                             capabilities=capabilities,
                         ),
+                        operation,
+                    )
+                )
+            if (
+                operation.kind
+                in {
+                    "explode_array",
+                    "explode_outer_array",
+                    "posexplode_array",
+                    "posexplode_outer_array",
+                }
+                and operation.scalar_generator is not None
+            ):
+                recipes.append(
+                    self._operation_modes(
+                        self._generators.scalar_array(operation.scalar_generator, capabilities=capabilities),
                         operation,
                     )
                 )
@@ -780,11 +799,7 @@ class MapPySparkStep:
         return any(self._has_non_equi_condition(argument) for argument in expression.args)
 
     def _alias_scopes(self, body: PySparkStepBody) -> set[str]:
-        return {
-            operation.relation_alias.alias
-            for operation in body.operations
-            if operation.relation_alias is not None
-        }
+        return {operation.relation_alias.alias for operation in body.operations if operation.relation_alias is not None}
 
     def _join_source_name(self, source: str) -> str:
         return source.removeprefix("input:")

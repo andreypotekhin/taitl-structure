@@ -6,9 +6,24 @@ from structure.dsl import Schema
 from structure.plugin.api.v1.model import SymbolicContext
 from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.expressions import literal
-from structure.plugin.pyspark.dsl.operations import OperationPlan, PosexplodeStructPlan
+from structure.plugin.pyspark.dsl.operations import OperationPlan, PosexplodeStructPlan, ScalarGeneratorPlan
 from structure.plugin.pyspark.dsl.RowScope import RowScope
-from structure.plugin.pyspark.dsl.types import ArrayType, LongType, StringType, StructType, VariantType
+from structure.plugin.pyspark.dsl.types import (
+    ArrayType,
+    BinaryType,
+    BooleanType,
+    DateType,
+    DecimalType,
+    DoubleType,
+    FloatType,
+    IntegerType,
+    LongType,
+    StringType,
+    StructType,
+    StructureType,
+    TimestampType,
+    VariantType,
+)
 
 
 class CapturePySparkGenerator:
@@ -240,6 +255,172 @@ class CapturePySparkGenerator:
         context.register_current_scope(generated_scope)
         return RowScope(name=generated_scope, schema=as_)
 
+    def explode_array(
+        self,
+        context: SymbolicContext,
+        value: object,
+        *,
+        as_: type[Schema],
+        value_field: str,
+        scope: str | None = None,
+    ) -> RowScope:
+        return self._scalar_array(
+            context, value, as_=as_, value_field=value_field, ordinal=None, scope=scope, outer=False
+        )
+
+    def explode_outer_array(
+        self,
+        context: SymbolicContext,
+        value: object,
+        *,
+        as_: type[Schema],
+        value_field: str,
+        scope: str | None = None,
+    ) -> RowScope:
+        return self._scalar_array(
+            context, value, as_=as_, value_field=value_field, ordinal=None, scope=scope, outer=True
+        )
+
+    def posexplode_array(
+        self,
+        context: SymbolicContext,
+        value: object,
+        *,
+        as_: type[Schema],
+        value_field: str,
+        ordinal: str = "ordinal",
+        scope: str | None = None,
+    ) -> RowScope:
+        return self._scalar_array(
+            context, value, as_=as_, value_field=value_field, ordinal=ordinal, scope=scope, outer=False
+        )
+
+    def posexplode_outer_array(
+        self,
+        context: SymbolicContext,
+        value: object,
+        *,
+        as_: type[Schema],
+        value_field: str,
+        ordinal: str = "ordinal",
+        scope: str | None = None,
+    ) -> RowScope:
+        return self._scalar_array(
+            context, value, as_=as_, value_field=value_field, ordinal=ordinal, scope=scope, outer=True
+        )
+
+    def _scalar_array(
+        self,
+        context: SymbolicContext,
+        value: object,
+        *,
+        as_: type[Schema],
+        value_field: str,
+        ordinal: str | None,
+        scope: str | None,
+        outer: bool,
+    ) -> RowScope:
+        function = ("posexplode" if ordinal is not None else "explode") + ("_outer" if outer else "") + "_array"
+        self._validate_options(as_=as_, ordinal=ordinal, scope=scope, function=function)
+        if not isinstance(value_field, str) or not value_field:
+            raise TypeError(f"{function}(value_field=...) requires a non-empty field name")
+        expression = self._scalar_array_expression(value, function=function, outer=outer)
+        self._validate_scalar_schema(
+            as_,
+            value_field=value_field,
+            ordinal=ordinal,
+            element=cast(ArrayType, expression.type).element,
+            outer=outer,
+            function=function,
+        )
+        self._validate_source_collisions(context.default_project_source, generated=as_)
+        generated_scope = scope or self._default_scope(as_)
+        generator = ScalarGeneratorPlan(
+            expression=expression,
+            scope=generated_scope,
+            schema=as_,
+            value_field=value_field,
+            ordinal=ordinal,
+            function=function.removesuffix("_array"),
+            outer=outer,
+        )
+        operation = getattr(OperationPlan, f"{generator.function}_array_operation")
+        context.operations.append(operation(generator))
+        context.register_current_scope(generated_scope)
+        return RowScope(name=generated_scope, schema=as_, nullable=outer)
+
+    def _scalar_array_expression(self, value: object, *, function: str, outer: bool) -> Expression:
+        expression = literal(value)
+        if not isinstance(expression, Expression) or not isinstance(expression.type, ArrayType):
+            raise TypeError(f"{function}(...) requires an array of primitive scalar values")
+        if not isinstance(expression.type.element, self._scalar_array_types()):
+            raise TypeError(f"{function}(...) requires an array of primitive scalar values")
+        if not outer and expression.nullable:
+            raise TypeError(f"{function}(...) requires a non-nullable array expression")
+        if not outer and expression.type.contains_null:
+            raise TypeError(f"{function}(...) requires contains_null=False for array elements")
+        return expression
+
+    @staticmethod
+    def _scalar_array_types() -> tuple[type[StructureType], ...]:
+        return (
+            StringType,
+            BooleanType,
+            IntegerType,
+            LongType,
+            FloatType,
+            DoubleType,
+            DecimalType,
+            DateType,
+            TimestampType,
+            BinaryType,
+        )
+
+    def _validate_scalar_schema(
+        self,
+        schema: type[Schema],
+        *,
+        value_field: str,
+        ordinal: str | None,
+        element: StructureType,
+        outer: bool,
+        function: str,
+    ) -> None:
+        fields = schema._structure_fields
+        allowed = {value_field}
+        if value_field not in fields:
+            raise TypeError(f"{function}(as_=...) schema must declare value field {value_field!r}")
+        value = fields[value_field]
+        if not self._same_type(value.type, element):
+            raise TypeError(f"{function}(as_=...) field {value_field!r} must match the array element type")
+        if outer and not value.nullable:
+            raise TypeError(f"{function}(as_=...) field {value_field!r} must be nullable for outer generator rows")
+        if not outer and value.nullable:
+            raise TypeError(f"{function}(as_=...) field {value_field!r} must be non-nullable")
+        if ordinal is not None:
+            allowed.add(ordinal)
+            if ordinal == value_field:
+                raise TypeError(f"{function}(ordinal=...) must differ from value_field")
+            if ordinal not in fields:
+                raise TypeError(f"{function}(as_=...) schema must declare ordinal field {ordinal!r}")
+            if not isinstance(fields[ordinal].type, LongType):
+                raise TypeError(f"{function}(ordinal={ordinal!r}) field must be long()")
+            if outer and not fields[ordinal].nullable:
+                raise TypeError(f"{function}(ordinal={ordinal!r}) field must be nullable for outer generator rows")
+            if not outer and fields[ordinal].nullable:
+                raise TypeError(f"{function}(ordinal={ordinal!r}) field must be non-nullable")
+        extras = sorted(set(fields) - allowed)
+        if extras:
+            raise TypeError(f"{function}(as_=...) schema contains undeclared generated field(s): {', '.join(extras)}")
+
+    @staticmethod
+    def _same_type(left: StructureType, right: StructureType) -> bool:
+        if left.name != right.name:
+            return False
+        if isinstance(left, DecimalType) and isinstance(right, DecimalType):
+            return left.precision == right.precision and left.scale == right.scale
+        return True
+
     def variant_explode(
         self,
         context: SymbolicContext,
@@ -278,11 +459,7 @@ class CapturePySparkGenerator:
         self._validate_source_collisions(context.default_project_source, generated=as_)
 
         generated_scope = scope or self._default_scope(as_)
-        operation = (
-            OperationPlan.variant_explode_outer_operation
-            if outer
-            else OperationPlan.variant_explode_operation
-        )
+        operation = OperationPlan.variant_explode_outer_operation if outer else OperationPlan.variant_explode_operation
         context.operations.append(
             operation(
                 PosexplodeStructPlan(
@@ -299,13 +476,20 @@ class CapturePySparkGenerator:
         context.register_current_scope(generated_scope)
         return RowScope(name=generated_scope, schema=as_, nullable=outer)
 
-    def _validate_options(self, *, as_: type[Schema], ordinal: str | None, scope: str | None) -> None:
+    def _validate_options(
+        self,
+        *,
+        as_: type[Schema],
+        ordinal: str | None,
+        scope: str | None,
+        function: str = "posexplode_struct",
+    ) -> None:
         if not isinstance(as_, type) or not issubclass(as_, Schema):
-            raise TypeError("posexplode_struct(as_=...) requires a Structure Schema class")
+            raise TypeError(f"{function}(as_=...) requires a Structure Schema class")
         if ordinal is not None and (not isinstance(ordinal, str) or not ordinal):
-            raise TypeError("posexplode_struct(ordinal=...) requires a non-empty field name")
+            raise TypeError(f"{function}(ordinal=...) requires a non-empty field name")
         if scope is not None and (not isinstance(scope, str) or not scope):
-            raise TypeError("posexplode_struct(scope=...) requires a non-empty string")
+            raise TypeError(f"{function}(scope=...) requires a non-empty string")
 
     def _struct_array(self, value: object) -> Expression:
         expression = literal(value)
@@ -314,7 +498,9 @@ class CapturePySparkGenerator:
         if not isinstance(expression.type.element, StructType):
             raise TypeError("posexplode_struct(...) requires an array<struct<...>> Structure expression")
         if expression.type.contains_null:
-            raise TypeError("posexplode_struct(...) requires contains_null=False until null element semantics are admitted")
+            raise TypeError(
+                "posexplode_struct(...) requires contains_null=False until null element semantics are admitted"
+            )
         return expression
 
     def _validate_generated_schema(

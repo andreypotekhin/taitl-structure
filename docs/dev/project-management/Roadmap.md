@@ -489,8 +489,9 @@ deployment, recovery, and side effects caller-owned.
 
 The governing V10 plans are the four `P08022601`--`P08022604` documents under `docs/dev/planning/`, together with the
 Sprint 54 hardening plan `P08042601.Collision-safe-generated-identities.plan.md` and the explicitly adopted Search
-application proving slice `P08052602.Search-vector-index-and-rrf.plan.md`. Other application-specific future documents
-remain outside V10.
+application proving slices `P08052602.Search-vector-index-and-rrf.plan.md` and
+`P08082601.Typed-scalar-generators-and-optimizer-visible-search-chunking.plan.md`. Other application-specific future
+documents remain outside V10.
 
 ### v10 must include
 
@@ -513,7 +514,8 @@ remain outside V10.
 - Silent support claims for XML, unreleased Variant mutation profiles, unsafe join reordering, arbitrary state, or
   unsupported stream-stream joins.
 - Search futures outside `P08052602.Search-vector-index-and-rrf.plan.md`, including model execution, external ANN
-  services, answer generation, adaptive chunking, and streaming vector-index maintenance.
+  services, answer generation, adaptive chunking, and streaming vector-index maintenance. The scalar-generator/Search
+  chunking proving slice is explicitly limited to `P08082601.Typed-scalar-generators-and-optimizer-visible-search-chunking.plan.md`.
 - Store, Stocks, Streams, or School application futures.
 
 ## Release Milestones

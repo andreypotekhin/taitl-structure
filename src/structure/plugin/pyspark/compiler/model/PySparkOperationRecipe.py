@@ -25,6 +25,7 @@ from structure.plugin.pyspark.compiler.model.PySparkRelationPrioritySelectionRec
 )
 from structure.plugin.pyspark.compiler.model.PySparkRelationSampleRecipe import PySparkRelationSampleRecipe
 from structure.plugin.pyspark.compiler.model.PySparkRelationSetRecipe import PySparkRelationSetRecipe
+from structure.plugin.pyspark.compiler.model.PySparkScalarGeneratorRecipe import PySparkScalarGeneratorRecipe
 from structure.plugin.pyspark.compiler.model.PySparkSelectedRowsRecipe import PySparkSelectedRowsRecipe
 from structure.plugin.pyspark.compiler.model.PySparkWatermarkRecipe import PySparkWatermarkRecipe
 from structure.plugin.pyspark.dsl.operations import StreamingOutputMode
@@ -40,6 +41,7 @@ class PySparkOperationRecipe:
     duplicate_rows: PySparkDuplicateRowsRecipe | None = None
     exactly_one: PySparkExactlyOneRecipe | None = None
     posexplode_struct: PySparkPosexplodeStructRecipe | None = None
+    scalar_generator: PySparkScalarGeneratorRecipe | None = None
     ordered_timeline_scan: PySparkOrderedTimelineScanRecipe | None = None
     relation_alias: PySparkRelationAliasRecipe | None = None
     relation_assertion: PySparkRelationAssertionRecipe | None = None
@@ -118,6 +120,22 @@ class PySparkOperationRecipe:
         variant_explode_outer: PySparkPosexplodeStructRecipe,
     ) -> "PySparkOperationRecipe":
         return PySparkOperationRecipe(kind="variant_explode_outer", posexplode_struct=variant_explode_outer)
+
+    @staticmethod
+    def explode_array_operation(generator: PySparkScalarGeneratorRecipe) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="explode_array", scalar_generator=generator)
+
+    @staticmethod
+    def explode_outer_array_operation(generator: PySparkScalarGeneratorRecipe) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="explode_outer_array", scalar_generator=generator)
+
+    @staticmethod
+    def posexplode_array_operation(generator: PySparkScalarGeneratorRecipe) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="posexplode_array", scalar_generator=generator)
+
+    @staticmethod
+    def posexplode_outer_array_operation(generator: PySparkScalarGeneratorRecipe) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="posexplode_outer_array", scalar_generator=generator)
 
     @staticmethod
     def ordered_timeline_scan_operation(scan: PySparkOrderedTimelineScanRecipe) -> "PySparkOperationRecipe":

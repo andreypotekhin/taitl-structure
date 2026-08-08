@@ -13,6 +13,9 @@ from structure.plugin.pyspark.dsl.types import ArrayType, StructType
 from structure.plugin.pyspark.execution.logic.expressions.EvaluatePySparkExpression import EvaluatePySparkExpression
 from structure.plugin.pyspark.execution.logic.InvokePySparkHooks import InvokePySparkHooks
 from structure.plugin.pyspark.execution.logic.PlanBoundary import apply_plan_boundary
+from structure.plugin.pyspark.execution.logic.running.RunOnlinePySparkScalarGenerator import (
+    RunOnlinePySparkScalarGenerator,
+)
 from structure.plugin.pyspark.execution.logic.running.RunOnlinePySparkStructGenerator import (
     RunOnlinePySparkStructGenerator,
 )
@@ -25,6 +28,7 @@ class RunOnlinePySparkTransform:
         self._expressions = EvaluatePySparkExpression()
         self._hooks = InvokePySparkHooks()
         self._struct_generators = RunOnlinePySparkStructGenerator()
+        self._scalar_generators = RunOnlinePySparkScalarGenerator()
         self._validator = ValidatePySparkFrame()
         self._backend_target = ">=3.5,<4.1"
 
@@ -304,6 +308,17 @@ class RunOnlinePySparkTransform:
                 df = self._posexplode_struct(step, df, operation.posexplode_struct, functions=functions, types=types)
             if operation.kind == "variant_explode_outer" and operation.posexplode_struct is not None:
                 df = self._posexplode_struct(step, df, operation.posexplode_struct, functions=functions, types=types)
+            if (
+                operation.kind
+                in {
+                    "explode_array",
+                    "explode_outer_array",
+                    "posexplode_array",
+                    "posexplode_outer_array",
+                }
+                and operation.scalar_generator is not None
+            ):
+                df = self._scalar_array(step, df, operation.scalar_generator, functions=functions, types=types)
             if operation.kind == "ordered_timeline_scan" and operation.ordered_timeline_scan is not None:
                 df = self._ordered_timeline_scan(
                     step,
@@ -621,6 +636,11 @@ class RunOnlinePySparkTransform:
         aliases = self._scope_aliases(step)
         value = self._expressions.evaluate(generator.expression, functions=functions, aliases=aliases)
         return self._struct_generators(frame, generator, functions=functions, types=types, value=value)
+
+    def _scalar_array(self, step, frame, generator, *, functions, types):
+        aliases = self._scope_aliases(step)
+        value = self._expressions.evaluate(generator.expression, functions=functions, aliases=aliases)
+        return self._scalar_generators(frame, generator, functions=functions, types=types, value=value)
 
     def _ordered_timeline_scan(self, step, frame, scan, *, functions, types):
         prefix = f"__structure_{scan.scope.strip('_')}"
@@ -1680,6 +1700,8 @@ class RunOnlinePySparkTransform:
         for operation in step.operations:
             if operation.posexplode_struct is not None:
                 aliases[operation.posexplode_struct.scope] = ""
+            if operation.scalar_generator is not None:
+                aliases[operation.scalar_generator.scope] = ""
             if operation.ordered_timeline_scan is not None:
                 aliases[operation.ordered_timeline_scan.row_scope] = ""
                 aliases[operation.ordered_timeline_scan.scope] = ""

@@ -356,9 +356,10 @@ boundary; unimplemented parity work is now marked `planned` in `docs/dev/Gaps.md
 - Run optional-provider evidence only with pinned dependencies and finish Sprint 54 with `make build`.
 
 The V10 backlog is governed by `docs/dev/project-management/V10.md`, the grouped plans P08022601–P08022604, and the
-Sprint 54 hardening plan P08042601. The explicitly adopted Search application proving slice is governed by
-P08052602.Search-vector-index-and-rrf.plan.md; other application-specific future documents are not V10 backlog
-commitments.
+Sprint 54 hardening plan P08042601. The explicitly adopted Search application proving slices are governed by
+P08052602.Search-vector-index-and-rrf.plan.md and
+P08082601.Typed-scalar-generators-and-optimizer-visible-search-chunking.plan.md; other application-specific future
+documents are not V10 backlog commitments.
 
 ### Epic: Search Vector Index and Reciprocal Rank Fusion
 

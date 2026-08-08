@@ -94,6 +94,20 @@ Structure contract.
 - Generator cardinality and streaming compatibility are recorded in the compiler plan; generated fields remain typed and
   compiler-visible.
 
+## Typed Scalar-Array Generators
+
+| Structure API | PySpark parity | Example |
+| --- | --- | --- |
+| `explode_array(...)` | `explode` | `item = explode_array(document.lines, as_=Line, value_field="line")` |
+| `explode_outer_array(...)` | `explode_outer` | `item = explode_outer_array(document.lines, as_=NullableLine, value_field="line")` |
+| `posexplode_array(...)` | `posexplode` | `item = posexplode_array(document.lines, as_=PositionedLine, value_field="line")` |
+| `posexplode_outer_array(...)` | `posexplode_outer` | `item = posexplode_outer_array(document.lines, as_=NullablePositionedLine, value_field="line")` |
+
+Scalar-array generators accept primitive arrays only: strings, booleans, numeric values, dates, timestamps, and binary
+values. `as_` must declare exactly the named `value_field`; positional forms also declare a long `ordinal` field.
+Inner forms require a non-null array with non-null elements. Outer forms preserve Spark's null/empty input row and
+require nullable generated fields. Nested arrays, maps, structs, variants, and indexed callbacks are not admitted.
+
 ## Map Helpers
 
 | Structure API | PySpark parity | Example |
@@ -121,5 +135,5 @@ Structure contract.
   with `spark.sql.mapKeyDedupPolicy=EXCEPTION` (the default) so a conflicting merge fails instead of silently choosing
   a value.
 - Python callback control flow and raw/untyped row-expanding generators such as direct `explode(...)` are unsupported.
-  Use the typed struct generator forms above when the element schema is known. See the
+  Use the typed struct or scalar-array generator forms above when the element shape is admitted. See the
   [Transforms background](../background/Transform.back.md).

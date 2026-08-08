@@ -22,6 +22,8 @@ actionable diagnostics for unsafe evolution.
 - Support nullable and explicitly defaulted nested structs; reject implicit array/map element evolution.
 - Verify online/generated parity, schema materialization, diagnostics, and traceability.
 - Run streaming evidence before changing the streaming ledger.
+- Migrate Search line chunking to the scalar generator contract and establish generated/online multilingual span parity under
+  `P08082601.Typed-scalar-generators-and-optimizer-visible-search-chunking.plan.md`.
 
 ## Acceptance and Demo
 

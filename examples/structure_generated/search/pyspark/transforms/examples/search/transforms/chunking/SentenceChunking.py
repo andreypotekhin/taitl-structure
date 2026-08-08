@@ -12,6 +12,7 @@ from examples.structure_generated.search.runtime.schema_assert import (
     apply_plan_boundary,
     close_plan_boundaries,
 )
+from examples.structure_generated.search.pyspark.schemas.chunking_intermediate import MATERIALIZED_PARAGRAPH_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.text import DOCUMENT_SCHEMA, PARAGRAPH_SCHEMA, SENTENCE_SCHEMA
 
 
@@ -20,9 +21,6 @@ class SentenceChunkingGenerated:
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
         self.ctx = ctx
-        self._structure_udf_examples_search_transforms_chunking_materializetext__textmaterializer_canonical_span = (
-            F.udf(self.canonical_span, returnType=T.StringType())
-        )
         self._structure_udf_examples_search_transforms_chunking_sentencechunking_sentencechunking_default_sentence_spans = (
             F
             .udf(
@@ -33,6 +31,7 @@ class SentenceChunkingGenerated:
                 )
             )
         )
+        self._structure_udf_examples_search_transforms_lib_text_text_span = F.udf(self.span, returnType=T.StringType())
 
     def close(self) -> None:
         close_plan_boundaries(self.spark)
@@ -48,34 +47,43 @@ class SentenceChunkingGenerated:
         _input_documents = documents
         _input_paragraphs = paragraphs
 
-        # Step method: chunk
-        sentences = documents.alias("document")
+        # Step method: materialize_paragraph
+        materialized_paragraph = documents.alias("document")
         paragraphs_joined = paragraphs.alias("paragraphs")
-        sentences = sentences.join(
+        materialized_paragraph = materialized_paragraph.join(
             paragraphs_joined,
             (F.col("document.id") == F.col("paragraphs.document_id")),
             "inner",
         )
+        materialized_paragraph = materialized_paragraph.select(
+            F.col("paragraphs.id"),
+            F.col("paragraphs.document_id"),
+            F.col("paragraphs.section_id"),
+            F.col("paragraphs.ordinal"),
+            F.col("paragraphs.span_start"),
+            F.col("paragraphs.span_end"),
+            F.regexp_replace(
+                self._structure_udf_examples_search_transforms_lib_text_text_span(
+                    F.col("document.content"), F.col("paragraphs.span_start"), F.col("paragraphs.span_end")
+                ),
+                '\n',
+                ' ',
+            ).alias("content"),
+        )
+        assert_schema(
+            materialized_paragraph, MATERIALIZED_PARAGRAPH_SCHEMA, name="MaterializedParagraph", mode="strict"
+        )
+
+        # Step method: chunk
+        sentences = materialized_paragraph.alias("materialized_paragraph")
         sentences = sentences.select(
             "*",
             F.posexplode(
                 (
                     self
                     ._structure_udf_examples_search_transforms_chunking_sentencechunking_sentencechunking_default_sentence_spans(
-                         F.regexp_replace(
-                             self._structure_udf_examples_search_transforms_chunking_materializetext__textmaterializer_canonical_span(
-                                 F.col(
-                                    "document.content"
-                                ),
-                                 F.col(
-                                    "paragraphs.span_start"
-                                ),
-                                 F.col(
-                                    "paragraphs.span_end"
-                                )
-                            ),
-                             '\n',
-                             ' ',
+                         F.col(
+                            "materialized_paragraph.content"
                         )
                     )
                 )
@@ -100,30 +108,20 @@ class SentenceChunkingGenerated:
         sentences = sentences.drop("__structure_sentence_text_1_pos", "__structure_sentence_text_1_item")
         sentences = sentences.where(((F.col("sentence_content") != F.lit(''))))
         sentences = sentences.select(
-            F.concat_ws('#s', F.col("paragraphs.id"), F.col("position").cast('string')).alias("id"),
-            F.col("paragraphs.document_id"),
-            F.col("paragraphs.section_id"),
-            F.col("paragraphs.id").alias("paragraph_id"),
-            F.col("paragraphs.ordinal").alias("paragraph_ordinal"),
+            F.concat_ws('#s', F.col("materialized_paragraph.id"), F.col("position").cast('string')).alias("id"),
+            F.col("materialized_paragraph.document_id"),
+            F.col("materialized_paragraph.section_id"),
+            F.col("materialized_paragraph.id").alias("paragraph_id"),
+            F.col("materialized_paragraph.ordinal").alias("paragraph_ordinal"),
             (F.col("position") + F.lit(1)).cast('int').alias("ordinal"),
-            (F.col("paragraphs.span_start") + F.col("local_start")).alias("span_start"),
-            (F.col("paragraphs.span_start") + F.col("local_end")).alias("span_end"),
+            (F.col("materialized_paragraph.span_start") + F.col("local_start")).alias("span_start"),
+            (F.col("materialized_paragraph.span_start") + F.col("local_end")).alias("span_end"),
         )
 
         # Step method: sentences
         sentences = sentences.alias("sentence")
         assert_schema(sentences, SENTENCE_SCHEMA, name="Sentence", mode="strict")
         return TransformResult({"sentences": sentences}, single=True, schema={"sentences": SENTENCE_SCHEMA})
-
-    @staticmethod
-    def canonical_span(content: Any, start: Any, end: Any) -> str | None:
-        """Extract a half-open span from canonicalized Unicode document text."""
-        import re
-
-        if content is None or start is None or end is None:
-            return None
-        canonical = re.sub('\\r\\n?', '\n', content)
-        return canonical[int(start) : int(end)]
 
     @staticmethod
     def default_sentence_spans(content: Any) -> list[dict[str, object]]:
@@ -149,3 +147,13 @@ class SentenceChunkingGenerated:
         if start < end:
             spans.append({'local_start': start, 'local_end': end, 'sentence_content': content[start:end]})
         return spans
+
+    @staticmethod
+    def span(content: Any, start: Any, end: Any) -> str | None:
+        """Extract a half-open span from canonicalized Unicode document text."""
+        import re
+
+        if content is None or start is None or end is None:
+            return None
+        canonical = re.sub('\\r\\n?', '\n', content)
+        return canonical[int(start) : int(end)]

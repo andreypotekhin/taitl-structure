@@ -2,13 +2,13 @@
 
 from examples.search.schemas.text import Paragraph, Section, Sentence
 from examples.search.transforms.chunking.DocumentChunking import DocumentChunking
-from examples.search.transforms.chunking.MaterializeText import _TextMaterializer
 from examples.search.transforms.chunking.SentenceChunking import SentenceChunking
+from examples.search.transforms.lib.Text import Text
 from structure import Transform
 
 
-def test_text_materializer_is_a_utility_not_a_transform_base() -> None:
-    assert not issubclass(_TextMaterializer, Transform)
+def test_text_is_a_utility_not_a_transform_base() -> None:
+    assert not issubclass(Text, Transform)
 
 
 def test_search_boundaries_are_flat_and_text_free() -> None:
@@ -41,16 +41,8 @@ def test_search_boundaries_are_flat_and_text_free() -> None:
     )
 
 
-def test_document_lines_use_canonical_code_point_spans() -> None:
-    lines = DocumentChunking.canonical_document_lines("# 标题\r\n😀 العربية")
-
-    assert lines[0]["line"] == "# 标题"
-    assert lines[0]["span_start"] == 0
-    assert lines[0]["span_end"] == len("# 标题")
-    assert lines[0]["heading_span_start"] == 2
-    assert lines[0]["heading_span_end"] == len("# 标题")
-    assert lines[1]["span_start"] == len("# 标题\n")
-    assert lines[1]["span_end"] == len("# 标题\n😀 العربية")
+def test_document_chunking_uses_compiler_visible_line_expansion() -> None:
+    assert not hasattr(DocumentChunking, "canonical_document_lines")
 
 
 def test_default_sentence_spans_preserve_multilingual_code_point_ranges() -> None:

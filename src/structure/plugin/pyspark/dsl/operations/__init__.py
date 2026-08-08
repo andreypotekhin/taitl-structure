@@ -6,6 +6,7 @@ from structure.plugin.pyspark.dsl.operations.OperationCardinality import Operati
 from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
 from structure.plugin.pyspark.dsl.operations.OrderedTimelineScanPlan import OrderedTimelineScanPlan
 from structure.plugin.pyspark.dsl.operations.PosexplodeStructPlan import PosexplodeStructPlan
+from structure.plugin.pyspark.dsl.operations.ScalarGeneratorPlan import ScalarGeneratorPlan
 from structure.plugin.pyspark.dsl.operations.RelationAliasPlan import RelationAliasPlan
 from structure.plugin.pyspark.dsl.operations.RelationAssertionPlan import RelationAssertionPlan
 from structure.plugin.pyspark.dsl.operations.RelationBoundPlan import RelationBoundPlan
@@ -29,6 +30,7 @@ __all__ = [
     "OperationPlan",
     "OrderedTimelineScanPlan",
     "PosexplodeStructPlan",
+    "ScalarGeneratorPlan",
     "RelationAliasPlan",
     "RelationAssertionPlan",
     "RelationBoundPlan",

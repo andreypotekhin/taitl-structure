@@ -19,6 +19,7 @@ from structure.plugin.pyspark.dsl.operations.RelationOrderPlan import RelationOr
 from structure.plugin.pyspark.dsl.operations.RelationPrioritySelectionPlan import RelationPrioritySelectionPlan
 from structure.plugin.pyspark.dsl.operations.RelationSamplePlan import RelationSamplePlan
 from structure.plugin.pyspark.dsl.operations.RelationSetPlan import RelationSetPlan
+from structure.plugin.pyspark.dsl.operations.ScalarGeneratorPlan import ScalarGeneratorPlan
 from structure.plugin.pyspark.dsl.operations.SelectedRowsPlan import SelectedRowsPlan
 from structure.plugin.pyspark.dsl.operations.StreamingOutputMode import StreamingOutputMode
 from structure.plugin.pyspark.dsl.operations.StreamingSupport import StreamingSupport
@@ -35,6 +36,7 @@ class OperationPlan:
     duplicate_rows: DuplicateRowsPlan | None = None
     exactly_one: ExactlyOnePlan | None = None
     posexplode_struct: PosexplodeStructPlan | None = None
+    scalar_generator: ScalarGeneratorPlan | None = None
     ordered_timeline_scan: OrderedTimelineScanPlan | None = None
     relation_alias: RelationAliasPlan | None = None
     relation_assertion: RelationAssertionPlan | None = None
@@ -172,6 +174,50 @@ class OperationPlan:
             posexplode_struct=explode_struct,
             family="generator",
             capability=OperationCapability("generator", "explode_struct"),
+            cardinality=OperationCardinality.ROW_MULTIPLYING,
+            streaming=StreamingSupport.COMPATIBLE,
+        )
+
+    @staticmethod
+    def explode_array_operation(generator: ScalarGeneratorPlan) -> OperationPlan:
+        return OperationPlan(
+            "explode_array",
+            scalar_generator=generator,
+            family="generator",
+            capability=OperationCapability("generator", "explode_array"),
+            cardinality=OperationCardinality.ROW_MULTIPLYING,
+            streaming=StreamingSupport.COMPATIBLE,
+        )
+
+    @staticmethod
+    def explode_outer_array_operation(generator: ScalarGeneratorPlan) -> OperationPlan:
+        return OperationPlan(
+            "explode_outer_array",
+            scalar_generator=generator,
+            family="generator",
+            capability=OperationCapability("generator", "explode_outer_array"),
+            cardinality=OperationCardinality.ROW_MULTIPLYING,
+            streaming=StreamingSupport.COMPATIBLE,
+        )
+
+    @staticmethod
+    def posexplode_array_operation(generator: ScalarGeneratorPlan) -> OperationPlan:
+        return OperationPlan(
+            "posexplode_array",
+            scalar_generator=generator,
+            family="generator",
+            capability=OperationCapability("generator", "posexplode_array"),
+            cardinality=OperationCardinality.ROW_MULTIPLYING,
+            streaming=StreamingSupport.COMPATIBLE,
+        )
+
+    @staticmethod
+    def posexplode_outer_array_operation(generator: ScalarGeneratorPlan) -> OperationPlan:
+        return OperationPlan(
+            "posexplode_outer_array",
+            scalar_generator=generator,
+            family="generator",
+            capability=OperationCapability("generator", "posexplode_outer_array"),
             cardinality=OperationCardinality.ROW_MULTIPLYING,
             streaming=StreamingSupport.COMPATIBLE,
         )

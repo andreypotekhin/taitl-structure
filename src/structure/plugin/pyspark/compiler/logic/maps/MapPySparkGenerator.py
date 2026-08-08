@@ -4,7 +4,9 @@ from structure.plugin.api.v1.model import BackendCapabilities
 from structure.plugin.pyspark.compiler.logic.maps.MapPySparkExpression import MapPySparkExpression
 from structure.plugin.pyspark.compiler.model.PySparkOperationRecipe import PySparkOperationRecipe
 from structure.plugin.pyspark.compiler.model.PySparkPosexplodeStructRecipe import PySparkPosexplodeStructRecipe
+from structure.plugin.pyspark.compiler.model.PySparkScalarGeneratorRecipe import PySparkScalarGeneratorRecipe
 from structure.plugin.pyspark.dsl.operations.PosexplodeStructPlan import PosexplodeStructPlan
+from structure.plugin.pyspark.dsl.operations.ScalarGeneratorPlan import ScalarGeneratorPlan
 
 
 class MapPySparkGenerator:
@@ -43,3 +45,20 @@ class MapPySparkGenerator:
         if generator.function == "variant_explode":
             return PySparkOperationRecipe.variant_explode_operation(recipe)
         return PySparkOperationRecipe.posexplode_struct_operation(recipe)
+
+    def scalar_array(
+        self,
+        generator: ScalarGeneratorPlan,
+        *,
+        capabilities: BackendCapabilities,
+    ) -> PySparkOperationRecipe:
+        recipe = PySparkScalarGeneratorRecipe(
+            expression=self._expressions.map(generator.expression, capabilities=capabilities),
+            scope=generator.scope,
+            schema=generator.schema,
+            value_field=generator.value_field,
+            ordinal=generator.ordinal,
+            function=generator.function,
+            outer=generator.outer,
+        )
+        return getattr(PySparkOperationRecipe, f"{generator.function}_array_operation")(recipe)

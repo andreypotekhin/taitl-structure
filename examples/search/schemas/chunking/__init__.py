@@ -1,7 +1,6 @@
 """Schemas supporting text chunking in the Search example."""
 
 from examples.search.schemas.chunking.intermediate import (
-    DocumentLine,
     ExpandedDocumentLine,
     ExpandedSentenceText,
     MarkedDocumentLine,
@@ -15,7 +14,6 @@ from examples.search.schemas.chunking.intermediate import (
 )
 
 __all__ = [
-    "DocumentLine",
     "ExpandedDocumentLine",
     "ExpandedSentenceText",
     "MarkedDocumentLine",
