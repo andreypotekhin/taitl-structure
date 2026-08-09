@@ -16,9 +16,9 @@ between the transform's steps.
 
 ```python
 # src/orders/transforms/publish.py
-from structure import Schema, Transform, input, output
-from structure.plugin.pyspark import field
-from orders.schemas.order import OrderPublished, OrderRaw
+from structure import *
+from structure.plugin.pyspark import *
+from orders.schemas.order import *
 
 
 class OrderNormalized(Schema):

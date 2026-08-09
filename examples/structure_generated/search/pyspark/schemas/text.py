@@ -20,6 +20,10 @@ DOCUMENT_SCHEMA = T.StructType([
     T.StructField("search_query_id", T.StringType(), True),
     T.StructField("score_overlap", T.DoubleType(), True),
     T.StructField("score_bm25", T.DoubleType(), True),
+    T.StructField("document_type", T.StringType(), True),
+    T.StructField("category_id", T.StringType(), True),
+    T.StructField("file_type", T.StringType(), True),
+    T.StructField("fields", T.MapType(T.StringType(), T.StringType(), valueContainsNull=False), False),
 ])
 
 SECTION_SCHEMA = T.StructType([

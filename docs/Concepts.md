@@ -37,7 +37,7 @@ A schema is not a Spark DataFrame and does not contain data.
 Example:
 
 ```python
-from structure import Schema
+from structure import *
 from structure.plugin.pyspark import *
 
 

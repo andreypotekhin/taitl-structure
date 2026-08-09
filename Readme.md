@@ -64,8 +64,8 @@ class Product(Schema):
 Transform class compiles into PySpark code operating on DataFrames. For an example of compiled code, see 'Generated code' section below.
 
 ```python
-from orders.schemas.order import OrderRaw, OrderNormalized, OrderWithCustomer
-from orders.schemas.customer import Customer
+from orders.schemas.order import *
+from orders.schemas.customer import *
 
 class EnrichOrders(Transform):
     orders = input(OrderRaw)
@@ -119,7 +119,7 @@ To run transform object, specify input data frames and call `.run(session)`:
 
 ```python
 from structure import *
-from orders.transforms.order import EnrichOrders
+from orders.transforms.order import *
 
 config = StructureConfig.resolve(project_root=".")
 session = StructureSession(spark=spark, ctx=ctx, config=config)
@@ -143,7 +143,7 @@ Generated  PySpark code looks similar to this:
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 
-from orders.transforms.order import EnrichOrders
+from orders.transforms.order import *
 from structure_generated.store.pyspark.schemas.order import (
     ORDER_RAW_SCHEMA,
     ORDER_NORMALIZED_SCHEMA,

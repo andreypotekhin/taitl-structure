@@ -13,6 +13,12 @@ from examples.structure_generated.search.runtime.schema_assert import (
     close_plan_boundaries,
 )
 from examples.structure_generated.search.pyspark.schemas.chunking_intermediate import MATERIALIZED_SENTENCE_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.fields import (
+    ANALYZER_POLICY_SCHEMA,
+    DOCUMENT_FIELD_SCHEMA,
+    FIELD_PROFILE_SCHEMA,
+    FIELD_TERM_SCHEMA,
+)
 from examples.structure_generated.search.pyspark.schemas.index import (
     DOCUMENT_INDEX_SUMMARY_SCHEMA,
     DOCUMENT_TERM_SCHEMA,
@@ -688,12 +694,85 @@ class LexIndexGenerated:
             F.col("target_count"),
             F.col("average_target_length"),
         )
+        assert_schema(
+            lexical__sentence_summary, SENTENCE_INDEX_SUMMARY_SCHEMA, name="SentenceIndexSummary", mode="strict"
+        )
         return {
             "lexical__sentence_summary": lexical__sentence_summary,
         }
 
 
-class IndexingGenerated(LexIndexGenerated):
+class FieldIndexGenerated:
+    def _step_fields_tokenize_22(self, frames):
+        # Step method: fields.tokenize
+        fields__terms = frames["document_fields"].alias("document_field")
+        field_profiles_joined = frames["field_profiles"].alias("field_profiles")
+        fields__terms = fields__terms.join(
+            field_profiles_joined,
+            (
+                (F.col("field_profiles.field_name") == F.col("document_field.field_name"))
+                | (F.col("field_profiles.field_name") == F.lit('*'))
+            ),
+            "inner",
+        )
+        analyzer_policies_2_joined = frames["analyzer_policies"].alias("analyzer_policies_2")
+        fields__terms = fields__terms.join(
+            analyzer_policies_2_joined,
+            (F.col("analyzer_policies_2.policy_id") == F.col("field_profiles.analyzer_policy")),
+            "inner",
+        )
+        fields__terms = fields__terms.where((F.col("field_profiles.searchable")))
+        fields__terms = fields__terms.select(
+            "*",
+            F.posexplode(
+                F.when(
+                    (F.col("field_profiles.field_kind") == F.lit('keyword')),
+                    F.array(F.struct(F.col("document_field.field_value").alias("term"))),
+                ).otherwise(
+                    F.transform(
+                        F.split(F.col("document_field.field_value"), '\\s+', -1),
+                        lambda item: F.struct(item.alias("term")),
+                    )
+                )
+            ).alias("__structure_field_term_1_pos", "__structure_field_term_1_item"),
+        )
+        fields__terms = fields__terms.withColumn(
+            "position",
+            F.col("__structure_field_term_1_pos").cast(T.LongType()),
+        )
+        fields__terms = fields__terms.withColumn(
+            "term",
+            F.col("__structure_field_term_1_item.term"),
+        )
+        fields__terms = fields__terms.drop("__structure_field_term_1_pos", "__structure_field_term_1_item")
+        fields__terms = fields__terms.where(
+            ((F.lower(F.regexp_replace(F.trim(F.col("term")), '^[^A-Za-z0-9]+|[^A-Za-z0-9]+$', '')) != F.lit('')))
+            & (
+                (
+                    (F.col("field_profiles.field_kind") == F.lit('keyword'))
+                    | ~(
+                        F.array_contains(
+                            F.col("analyzer_policies_2.stop_words"),
+                            F.lower(F.regexp_replace(F.trim(F.col("term")), '^[^A-Za-z0-9]+|[^A-Za-z0-9]+$', '')),
+                        )
+                    )
+                )
+            )
+        )
+        fields__terms = fields__terms.select(
+            F.col("document_field.document_id"),
+            F.col("document_field.field_name"),
+            F.lower(F.regexp_replace(F.trim(F.col("term")), '^[^A-Za-z0-9]+|[^A-Za-z0-9]+$', '')).alias("term"),
+            F.col("position"),
+            F.col("field_profiles.analyzer_policy"),
+            F.col("field_profiles.phrase_enabled"),
+        )
+        return {
+            "fields__terms": fields__terms,
+        }
+
+
+class IndexingGenerated(LexIndexGenerated, FieldIndexGenerated):
 
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
@@ -708,16 +787,31 @@ class IndexingGenerated(LexIndexGenerated):
         *,
         documents: DataFrame,
         sentences: DataFrame,
+        document_fields: DataFrame,
+        field_profiles: DataFrame,
+        analyzer_policies: DataFrame,
     ) -> TransformResult:
         assert_schema(documents, DOCUMENT_SCHEMA, name="Document", mode="strict")
         assert_schema(sentences, SENTENCE_SCHEMA, name="Sentence", mode="strict")
+        assert_schema(document_fields, DOCUMENT_FIELD_SCHEMA, name="DocumentField", mode="strict")
+        assert_schema(field_profiles, FIELD_PROFILE_SCHEMA, name="FieldProfile", mode="strict")
+        assert_schema(analyzer_policies, ANALYZER_POLICY_SCHEMA, name="AnalyzerPolicy", mode="strict")
         _input_documents = documents
         _input_sentences = sentences
+        _input_document_fields = document_fields
+        _input_field_profiles = field_profiles
+        _input_analyzer_policies = analyzer_policies
         frames = {
             "documents": documents,
             "sentences": sentences,
+            "document_fields": document_fields,
+            "field_profiles": field_profiles,
+            "analyzer_policies": analyzer_policies,
             "input:documents": _input_documents,
             "input:sentences": _input_sentences,
+            "input:document_fields": _input_document_fields,
+            "input:field_profiles": _input_field_profiles,
+            "input:analyzer_policies": _input_analyzer_policies,
         }
         frames.update(self._step_lexical_materialize_sentence_0(frames))
         frames.update(self._step_lexical_tokenize_1(frames))
@@ -741,6 +835,7 @@ class IndexingGenerated(LexIndexGenerated):
         frames.update(self._step_lexical_count_sentence_frequencies_19(frames))
         frames.update(self._step_lexical_build_sentence_terms_20(frames))
         frames.update(self._step_lexical_summarize_sentence_index_21(frames))
+        frames.update(self._step_fields_tokenize_22(frames))
 
         # Step method: document_terms
         document_terms = frames["lexical__document_terms"].alias("document_term")
@@ -773,6 +868,10 @@ class IndexingGenerated(LexIndexGenerated):
         # Step method: sentence_summary
         sentence_summary = frames["lexical__sentence_summary"].alias("sentence_index_summary")
         assert_schema(sentence_summary, SENTENCE_INDEX_SUMMARY_SCHEMA, name="SentenceIndexSummary", mode="strict")
+
+        # Step method: field_terms
+        field_terms = frames["fields__terms"].alias("field_term")
+        assert_schema(field_terms, FIELD_TERM_SCHEMA, name="FieldTerm", mode="strict")
         return TransformResult(
             {
                 "document_terms": document_terms,
@@ -783,6 +882,7 @@ class IndexingGenerated(LexIndexGenerated):
                 "paragraph_summary": paragraph_summary,
                 "sentence_terms": sentence_terms,
                 "sentence_summary": sentence_summary,
+                "field_terms": field_terms,
             },
             single=False,
             schema={
@@ -794,6 +894,7 @@ class IndexingGenerated(LexIndexGenerated):
                 "paragraph_summary": PARAGRAPH_INDEX_SUMMARY_SCHEMA,
                 "sentence_terms": SENTENCE_TERM_SCHEMA,
                 "sentence_summary": SENTENCE_INDEX_SUMMARY_SCHEMA,
+                "field_terms": FIELD_TERM_SCHEMA,
             },
         )
 

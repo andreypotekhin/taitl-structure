@@ -747,6 +747,18 @@ def render_search_example() -> dict[str, str]:
             QueryFeatureToken,
             QueryTokenSummary,
         )
+        from examples.search.schemas.fields import (
+            AnalyzerPolicy,
+            DocumentField,
+            FieldProfile,
+            FieldSearchClauseMatch,
+            FieldSearchDocumentMatch,
+            FieldSearchQuery,
+            FieldSearchResult,
+            FieldSearchTerm,
+            FieldSearchTermMatch,
+            FieldTerm,
+        )
         from examples.search.schemas.filtering import DocumentFilterMatch, DocumentFilterScore, FilterQueryAvailability
         from examples.search.schemas.indexing.lexical.index import (
             DocumentIndexSummary,
@@ -898,7 +910,8 @@ def render_search_example() -> dict[str, str]:
             SelectExperimentScores,
         )
         from examples.search.transforms.features import BuildDocumentFeatures, BuildQueryFeatures, Features
-        from examples.search.transforms.indexing import Indexing
+        from examples.search.transforms.fields import ExtractDocumentFields
+        from examples.search.transforms.indexing import FieldIndex, Indexing
         from examples.search.transforms.labeling import CreateQueryLabels, Labeling, MergeQueryLabels
         from examples.search.transforms.relevance.BuildRelevanceSignals import BuildRelevanceSignals
         from examples.search.transforms.score import Scoring
@@ -908,7 +921,7 @@ def render_search_example() -> dict[str, str]:
         from examples.search.transforms.scoring.ScoreOverlap import ScoreOverlap
         from examples.search.transforms.scoring.SelectPopularQueries import SelectPopularQueries
         from examples.search.transforms.scoring.SelectRecentQueries import SelectRecentQueries
-        from examples.search.transforms.search import SearchDocuments, SearchSentences
+        from examples.search.transforms.search import SearchDocuments, SearchFields, SearchSentences
         from examples.search.transforms.searching.online.scoring import OnlineScoring
         from examples.search.transforms.searching.search_similarity import SearchSimilarity
         from examples.search.transforms.similarities.CreateSimilarityQueries import CreateSimilarityQueries
@@ -1006,6 +1019,18 @@ def render_search_example() -> dict[str, str]:
                 ParagraphIndexSummary,
                 SentenceTerm,
                 SentenceIndexSummary,
+            ],
+            "examples.search.schemas.fields": [
+                AnalyzerPolicy,
+                DocumentField,
+                FieldProfile,
+                FieldTerm,
+                FieldSearchQuery,
+                FieldSearchTerm,
+                FieldSearchTermMatch,
+                FieldSearchClauseMatch,
+                FieldSearchDocumentMatch,
+                FieldSearchResult,
             ],
             "examples.search.schemas.indexing.lexical.intermediate": [
                 IndexTargetFrequency,
@@ -1158,6 +1183,9 @@ def render_search_example() -> dict[str, str]:
             (AnalyzeText, "examples.search.transforms.stats.AnalyzeText.AnalyzeText"),
             (CorpusText, "examples.search.transforms.stats.CorpusText.CorpusText"),
             (Indexing, "examples.search.transforms.indexing.Indexing.Indexing"),
+            (ExtractDocumentFields, "examples.search.transforms.fields.ExtractDocumentFields.ExtractDocumentFields"),
+            (FieldIndex, "examples.search.transforms.indexing.fields.FieldIndex.FieldIndex"),
+            (SearchFields, "examples.search.transforms.searching.search_fields.SearchFields.SearchFields"),
             (
                 CreateSimilarityQueries,
                 "examples.search.transforms.similarities.CreateSimilarityQueries.CreateSimilarityQueries",

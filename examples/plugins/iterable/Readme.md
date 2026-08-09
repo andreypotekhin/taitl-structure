@@ -9,8 +9,8 @@ It imports only the public Structure Plugin API to do the job.
 Declare normal Structure fields and use `@step`. The plugin supplies symbolic schema rows while Structure compiles the
 method. Return a target schema instance; the Iterable plugin captures its field reads and literals as a projection.
 
-    from structure import Schema, Transform, input, output, step, transform
-    from structure_iterable import left_join
+    from structure import *
+    from structure_iterable import *
 
     class Order(Schema):
         id: int

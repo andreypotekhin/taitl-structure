@@ -15,7 +15,7 @@ Focused boundary contracts are collected in the [Search example specifications](
 | Concern | Typed boundary | Result | Details |
 | --- | --- | --- | --- |
 | Chunking | `Chunking` | sections, paragraphs, sentences | Plain-text hierarchy. |
-| Indexing | `Indexing` | target-grain terms and summaries | Build once; score many query batches. |
+| Indexing | `Chunking`, `ExtractDocumentFields`, `Indexing` | content terms plus positional metadata postings | `Indexing` owns `LexIndex` and its `FieldIndex` child; field postings serve boolean/phrase metadata constraints. |
 | Scoring | `OfflineScoring`, `Scoring`, `OnlineScoring` | timestamped score relations | Score popular and seven-day recent queries offline; fill ad-hoc gaps online and persist bridge rows in the same relations. |
 | Filtering | `Filtering`, `OnlineFiltering`, `SelectFilterTargets` | timestamped filter artifacts and document targets | Prefilter selected queries offline, resolve missing query groups online, and retain at most 10,000 simple-overlap document targets. |
 | Similarity | `CreateSimilarityQueries`, `ReduceSimilarityScores` | same-grain corpus pairs | Reuse the lexical index; BM25 stays directional. |
@@ -26,10 +26,16 @@ Focused boundary contracts are collected in the [Search example specifications](
 
 ## Build search artifacts
 
-`All` workflow is the a one-call pre-serving build. It accepts corpus documents, one similarity policy, one `ScorePolicy`, queries and label configuration, persisted daily feedback facts, user/band catalogs, and one relevance policy. It emits the extracted document sections, paragraphs, sentences, corpus statistics, blocked near-duplicate candidates, lexical index, similarity pairs, labeled queries, overlap/BM25 scores, user cohorts and relevance signals. `OfflineScoring` caps by 1000 most popular queries plus every query observed in the preceeding seven days.
+`All` workflow is the a one-call pre-serving build. It accepts corpus documents, one similarity policy, one `ScorePolicy`, field profiles and analyzer policies, queries and label configuration, persisted daily feedback facts, user/band catalogs, and one relevance policy. It emits the extracted document sections, paragraphs, sentences, enriched documents and fields, corpus statistics, blocked near-duplicate candidates, lexical and field indexes, similarity pairs, labeled queries, overlap/BM25 scores, user cohorts and relevance signals. `OfflineScoring` caps by 1000 most popular queries plus every query observed in the preceeding seven days.
+
+`Document.fields` is the authoritative map for string metadata. `ExtractDocumentFields` copies its reserved values back
+to the preserved named `Document` fields and flattens arbitrary keys into `DocumentField` rows. `FieldIndex` removes
+configured metadata stop words while preserving their original positions, so a phrase such as
+`title:"release notes"` is checked against metadata only. Body content participates only when a caller parses an
+explicit `content:` clause and supplies the existing full-text score relation to `SearchFields`.
 
 ```python
-from examples.search.transforms.all import All
+from examples.search.transforms.all import *
 
 artifacts = All(
     documents=documents,
@@ -513,7 +519,7 @@ Run the transform once per candidate or baseline against the same `batch`, `quer
 caller-owned run identifier beside the summary.
 
 ```python
-from examples.search.transforms.evaluate import EvaluateDocumentRanking
+from examples.search.transforms.evaluate import *
 
 quality = EvaluateDocumentRanking(
     batch=evaluation_batch,          # One EvaluationBatch row.
@@ -541,7 +547,7 @@ Behavior evaluation consumes the raw events from the serving system, not the fee
 through 24 hours after the selected request day because the transform attributes only clicks in that interval.
 
 ```python
-from examples.search.transforms.evaluate import EvaluateDocSearchBehavior
+from examples.search.transforms.evaluate import *
 
 behavior = EvaluateDocSearchBehavior(
     batch=evaluation_batch,  # The same one-day EvaluationBatch contract.

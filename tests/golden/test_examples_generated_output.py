@@ -156,6 +156,7 @@ def test_search_all_builds_the_complete_offline_artifact_graph() -> None:
         SimilarDocument,
     )
     from examples.search.schemas.clicks import DailyClicks, DailyImpressions
+    from examples.search.schemas.fields import AnalyzerPolicy, DocumentField, FieldProfile, FieldTerm
     from examples.search.schemas.indexing.lexical.index import (
         DocumentIndexSummary,
         DocumentTerm,
@@ -203,6 +204,8 @@ def test_search_all_builds_the_complete_offline_artifact_graph() -> None:
     assert isinstance(plan, TransformPlan)
     assert [(item.name, item.schema) for item in plan.inputs] == [
         ("documents", Document),
+        ("field_profiles", FieldProfile),
+        ("analyzer_policies", AnalyzerPolicy),
         ("similarity_policy", SimilarityPolicy),
         ("score_policy", ScorePolicy),
         ("queries", SearchQuery),
@@ -219,6 +222,8 @@ def test_search_all_builds_the_complete_offline_artifact_graph() -> None:
         ("sections", Section),
         ("paragraphs", Paragraph),
         ("sentences", Sentence),
+        ("document_fields", DocumentField),
+        ("field_terms", FieldTerm),
         ("document_profiles", DocumentProfile),
         ("sentence_statistics", SentenceStatistics),
         ("paragraph_statistics", ParagraphStatistics),

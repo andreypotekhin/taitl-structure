@@ -11,6 +11,7 @@ from examples.search.schemas.analytics import (
     SimilarDocument,
 )
 from examples.search.schemas.clicks import DailyClicks, DailyImpressions
+from examples.search.schemas.fields import *
 from examples.search.schemas.indexing.lexical.index import (
     DocumentIndexSummary,
     DocumentTerm,
@@ -54,13 +55,14 @@ from examples.search.schemas.text import Document, Paragraph, Section, Sentence
 from examples.search.schemas.user import Band, BandFallback, BandMembership, User, UserBand, UserBandMembership
 from examples.search.transforms.chunking import Chunking
 from examples.search.transforms.cohorts import ResolveCohortBands
+from examples.search.transforms.fields import ExtractDocumentFields
 from examples.search.transforms.indexing import Indexing
 from examples.search.transforms.labeling import Labeling
 from examples.search.transforms.relevance.BuildRelevanceSignals import BuildRelevanceSignals
 from examples.search.transforms.scoring import OfflineScoring
 from examples.search.transforms.similarities import Similarities
 from examples.search.transforms.stats import AnalyzeText, CorpusText, ProfileDocuments
-from structure import Transform, input, output, parameter
+from structure import *
 
 
 class All(Transform):
@@ -78,11 +80,20 @@ class All(Transform):
     policy = input(RelevancePolicy)
     score_policy = input(ScorePolicy)
     similarity_policy = input(SimilarityPolicy)
+    field_profiles = input(FieldProfile)
+    analyzer_policies = input(AnalyzerPolicy)
     maximum_offline_queries = parameter(1000)
 
     chunked = Chunking(documents=documents)
-    profiled = ProfileDocuments(documents=documents)
-    indexed = Indexing(documents=documents, sentences=chunked.sentences)
+    extracted = ExtractDocumentFields(source_documents=documents)
+    profiled = ProfileDocuments(documents=extracted.documents)
+    indexed = Indexing(
+        documents=extracted.documents,
+        sentences=chunked.sentences,
+        document_fields=extracted.document_fields,
+        field_profiles=field_profiles,
+        analyzer_policies=analyzer_policies,
+    )
 
     similarities = Similarities(
         policy=similarity_policy,
@@ -97,12 +108,7 @@ class All(Transform):
         score_policy=score_policy,
     )
 
-    labeled = Labeling(
-        queries=queries,
-        query_labels=query_labels,
-        intents=intents,
-        patterns=patterns
-    )
+    labeled = Labeling(queries=queries, query_labels=query_labels, intents=intents, patterns=patterns)
 
     scored = OfflineScoring(
         queries=labeled.labeled_queries,
@@ -131,7 +137,7 @@ class All(Transform):
     )
 
     analyzed = AnalyzeText(
-        documents=documents,
+        documents=extracted.documents,
         sentences=chunked.sentences,
         paragraphs=chunked.paragraphs,
         sections=chunked.sections,
@@ -151,6 +157,8 @@ class All(Transform):
     sections = output(Section, chunked.sections)
     paragraphs = output(Paragraph, chunked.paragraphs)
     sentences = output(Sentence, chunked.sentences)
+    document_fields = output(DocumentField, extracted.document_fields)
+    field_terms = output(FieldTerm, indexed.field_terms)
     document_profiles = output(DocumentProfile, profiled.features)
     sentence_statistics = output(SentenceStatistics, analyzed.sentence_statistics)
     paragraph_statistics = output(ParagraphStatistics, analyzed.paragraph_statistics)

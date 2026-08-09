@@ -20,7 +20,7 @@ row.
 Declare the fields needed to identify a purchase and to carry the winning row into the output.
 
 ```python
-from structure import Schema, Transform, input, output, transform
+from structure import *
 from structure.plugin.pyspark import *
 
 
@@ -77,7 +77,7 @@ separate aggregate values.
 Run the transform with a DataFrame matching `Purchase`, then retrieve the named output.
 
 ```python
-from structure import StructureSession
+from structure import *
 
 
 session = StructureSession(spark=spark)

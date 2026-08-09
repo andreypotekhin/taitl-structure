@@ -53,7 +53,7 @@ artifacts. Generated modules mirror source import paths under `structure_generat
 ```python
 # src/orders/schemas/order.py
 
-from structure import Schema
+from structure import *
 from structure.plugin.pyspark import *
 
 
@@ -85,7 +85,7 @@ aliases are schema-local unless inherited.
 ```python
 # src/orders/schemas/customer.py
 
-from structure import Schema
+from structure import *
 from structure.plugin.pyspark import *
 
 
@@ -100,10 +100,10 @@ class Customer(Schema):
 ```python
 # src/orders/transforms/order.py
 
-from structure import Transform, input, lane, output, raw
+from structure import *
 from structure.plugin.pyspark import *
-from orders.schemas.order import OrderRaw, OrderNormalized, OrderWithCustomer
-from orders.schemas.customer import Customer
+from orders.schemas.order import *
+from orders.schemas.customer import *
 
 
 class EnrichOrders(Transform):
@@ -148,20 +148,8 @@ class EnrichOrders(Transform):
 ## 5. Run Transform
 
 ```python
-from structure import (
-    Schema,
-    StructureConfig,
-    StructureSession,
-    StructureTools,
-    Transform,
-    input,
-    lane,
-    output,
-    raw,
-    step,
-    transform,
-)
-from orders.transforms.order import EnrichOrders
+from structure import *
+from orders.transforms.order import *
 
 session = StructureSession(spark=spark)
 
@@ -265,20 +253,8 @@ enriched_df = result.enriched
 We can run a Transform as part of Airflow or other orchestrator - no code generation needed.
 
 ```python
-from structure import (
-    Schema,
-    StructureConfig,
-    StructureSession,
-    StructureTools,
-    Transform,
-    input,
-    lane,
-    output,
-    raw,
-    step,
-    transform,
-)
-from orders.transforms.order import EnrichOrders
+from structure import *
+from orders.transforms.order import *
 
 
 def enrich_orders_task():

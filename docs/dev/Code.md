@@ -240,7 +240,7 @@ Note: we are currently switching from CamelCase to underscored_lower in example 
 
 #### Example apps code guidance
 
-- Use wildcard imports, for brevity
+- Use wildcard imports
 - Use .project()/.base() liberally
 - Prefer single line for the calls can fit onto one line 
   - but keep complex declarations such as join, group_by, where, window, return constructors expanded

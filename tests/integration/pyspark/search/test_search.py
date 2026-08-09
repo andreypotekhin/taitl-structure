@@ -62,6 +62,18 @@ from examples.search.schemas.features.intermediate import (
     QueryFeatureToken,
     QueryTokenSummary,
 )
+from examples.search.schemas.fields import (
+    AnalyzerPolicy,
+    DocumentField,
+    FieldProfile,
+    FieldSearchClauseMatch,
+    FieldSearchDocumentMatch,
+    FieldSearchQuery,
+    FieldSearchResult,
+    FieldSearchTerm,
+    FieldSearchTermMatch,
+    FieldTerm,
+)
 from examples.search.schemas.filtering import DocumentFilterMatch, DocumentFilterScore, FilterQueryAvailability
 from examples.search.schemas.indexing.lexical.index import (
     DocumentIndexSummary,
@@ -215,7 +227,8 @@ from examples.search.transforms.experiment import (
     SelectExperimentScores,
 )
 from examples.search.transforms.features import BuildDocumentFeatures, BuildQueryFeatures, Features
-from examples.search.transforms.indexing import Indexing
+from examples.search.transforms.fields import ExtractDocumentFields
+from examples.search.transforms.indexing import FieldIndex, Indexing
 from examples.search.transforms.labeling import CreateQueryLabels, Labeling, MergeQueryLabels
 from examples.search.transforms.relevance.BuildRelevanceSignals import BuildRelevanceSignals
 from examples.search.transforms.score import Scoring
@@ -227,6 +240,7 @@ from examples.search.transforms.scoring.SelectPopularQueries import SelectPopula
 from examples.search.transforms.scoring.SelectRecentQueries import SelectRecentQueries
 from examples.search.transforms.search import SearchDocuments, SearchPassages, SearchSentences
 from examples.search.transforms.searching.online.scoring import OnlineScoring
+from examples.search.transforms.searching.search_fields import SearchFields
 from examples.search.transforms.searching.search_similarity import SearchSimilarity
 from examples.search.transforms.similarities.CreateSimilarityQueries import CreateSimilarityQueries
 from examples.search.transforms.similarities.ReduceSimilarityScores import ReduceSimilarityScores
@@ -311,6 +325,18 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         ParagraphIndexSummary,
         SentenceTerm,
         SentenceIndexSummary,
+    ],
+    "examples.search.schemas.fields": [
+        AnalyzerPolicy,
+        DocumentField,
+        FieldProfile,
+        FieldTerm,
+        FieldSearchQuery,
+        FieldSearchTerm,
+        FieldSearchTermMatch,
+        FieldSearchClauseMatch,
+        FieldSearchDocumentMatch,
+        FieldSearchResult,
     ],
     "examples.search.schemas.indexing.lexical.intermediate": [
         IndexTargetFrequency,
@@ -481,6 +507,9 @@ TRANSFORMS = (
     (AnalyzeText, "examples.search.transforms.stats.AnalyzeText.AnalyzeText"),
     (CorpusText, "examples.search.transforms.stats.CorpusText.CorpusText"),
     (Indexing, "examples.search.transforms.indexing.Indexing.Indexing"),
+    (ExtractDocumentFields, "examples.search.transforms.fields.ExtractDocumentFields.ExtractDocumentFields"),
+    (FieldIndex, "examples.search.transforms.indexing.fields.FieldIndex.FieldIndex"),
+    (SearchFields, "examples.search.transforms.searching.search_fields.SearchFields.SearchFields"),
     (SearchSentences, "examples.search.transforms.searching.search_sentences.SearchSentences.SearchSentences"),
     (SearchPassages, "examples.search.transforms.searching.search_passages.SearchPassages.SearchPassages"),
     (Impressions, "examples.search.transforms.clicks.Impressions.Impressions"),
@@ -726,6 +755,20 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
                     None,
                     None,
                     None,
+                    "guide",
+                    "docs",
+                    ".md",
+                    {
+                        "source": "structure",
+                        "title": "Structure Guide",
+                        "url": "https://example.test/guide",
+                        "content_type": "text/plain",
+                        "encoding": "utf-8",
+                        "language": "en",
+                        "document_type": "guide",
+                        "category_id": "docs",
+                        "file_type": ".md",
+                    },
                 ),
                 (
                     "d-2",
@@ -743,6 +786,20 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
                     None,
                     None,
                     None,
+                    "guide",
+                    "docs",
+                    ".md",
+                    {
+                        "source": "structure",
+                        "title": "Structure Guide Revised",
+                        "url": "https://example.test/guide-revised",
+                        "content_type": "text/plain",
+                        "encoding": "utf-8",
+                        "language": "en",
+                        "document_type": "guide",
+                        "category_id": "docs",
+                        "file_type": ".md",
+                    },
                 ),
                 (
                     "d-3",
@@ -760,6 +817,19 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -
                     None,
                     None,
                     None,
+                    "reference",
+                    "docs",
+                    ".txt",
+                    {
+                        "source": "reference",
+                        "title": "Reference Notes",
+                        "content_type": "text/plain",
+                        "encoding": "utf-8",
+                        "language": "en",
+                        "document_type": "reference",
+                        "category_id": "docs",
+                        "file_type": ".txt",
+                    },
                 ),
             ],
             schemas.DOCUMENT_SCHEMA,
@@ -1289,6 +1359,20 @@ def test_passage_search_ranks_paragraphs_with_same_section_context(spark, tmp_pa
                     None,
                     None,
                     None,
+                    "guide",
+                    "docs",
+                    ".md",
+                    {
+                        "source": "structure",
+                        "title": "Passage Guide",
+                        "url": "https://example.test/passage-guide",
+                        "content_type": "text/plain",
+                        "encoding": "utf-8",
+                        "language": "en",
+                        "document_type": "guide",
+                        "category_id": "docs",
+                        "file_type": ".md",
+                    },
                 )
             ],
             text_schemas.DOCUMENT_SCHEMA,
@@ -1630,6 +1714,19 @@ def _search_documents() -> list[tuple[object, ...]]:
                 None,
                 None,
                 None,
+                None,
+                row["collection_id"],
+                ".txt",
+                {
+                    "source": row["source"],
+                    "title": row["title"],
+                    **({"url": row["url"]} if row["url"] else {}),
+                    "content_type": row["content_type"],
+                    "encoding": row["encoding"],
+                    "language": row["language"],
+                    "category_id": row["collection_id"],
+                    "file_type": ".txt",
+                },
             )
             for row in csv.DictReader(source)
             if row["id"] in {"d-11", "d-12", "d-13"}

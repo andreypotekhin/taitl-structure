@@ -84,8 +84,8 @@ Airflow should own scheduling, retries, Spark submission, input locations, outpu
 Structure should own only transform compilation and generated transform execution.
 
 ```python
-from structure import StructureConfig, StructureSession
-from orders.transforms.enrich import EnrichOrders
+from structure import *
+from orders.transforms.enrich import *
 
 config = StructureConfig.resolve(project_root="/opt/orders", execution_mode="generated")
 session = StructureSession(spark=spark, config=config, ctx={"run_id": run_id})

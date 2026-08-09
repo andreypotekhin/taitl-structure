@@ -73,6 +73,10 @@ class SearchSimilarityGenerated:
             F.col("similarity_document_query.id").alias("search_query_id"),
             F.col("document_similarities.score_overlap"),
             F.col("document_similarities.bm25_left_to_right").alias("score_bm25"),
+            F.col("documents_2.document_type"),
+            F.col("documents_2.category_id"),
+            F.col("documents_2.file_type"),
+            F.col("documents_2.fields"),
             F.col("document_similarities.rank"),
         )
         assert_schema(query, INDEXED_SIMILAR_DOCUMENT_SCHEMA, name="IndexedSimilarDocument", mode="strict")
@@ -96,6 +100,10 @@ class SearchSimilarityGenerated:
             F.col("indexed_similar_document.search_query_id"),
             F.col("indexed_similar_document.score_overlap"),
             F.col("indexed_similar_document.score_bm25"),
+            F.col("indexed_similar_document.document_type"),
+            F.col("indexed_similar_document.category_id"),
+            F.col("indexed_similar_document.file_type"),
+            F.col("indexed_similar_document.fields"),
             F.col("indexed_similar_document.rank"),
         )
 

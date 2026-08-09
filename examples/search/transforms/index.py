@@ -1,5 +1,5 @@
 """Public reusable-index transform entry point."""
 
-from examples.search.transforms.indexing.Indexing import Indexing
+from examples.search.transforms.indexing import FieldIndex, Indexing
 
-__all__ = ["Indexing"]
+__all__ = ["FieldIndex", "Indexing"]

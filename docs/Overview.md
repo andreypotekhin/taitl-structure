@@ -32,7 +32,7 @@ Define schemas. Define transforms. Run transforms.
 ### Example Schema
 
 ```python
-from structure import Schema
+from structure import *
 from structure.plugin.pyspark import *
 
 
@@ -71,7 +71,7 @@ class Product(Schema):
 ### Example Transform
 
 ```python
-from structure import Transform, input, output, raw
+from structure import *
 from structure.plugin.pyspark import *
 
 
@@ -132,7 +132,7 @@ Run a transform with `.run(session)`:
 
 ```python
 from structure import *
-from orders.transforms.order import EnrichOrders
+from orders.transforms.order import *
 
 session = StructureSession(spark=spark, ctx=ctx)
 
@@ -155,7 +155,7 @@ Example generated PySpark:
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 
-from orders.transforms.order import EnrichOrders
+from orders.transforms.order import *
 from structure_generated.store.pyspark.schemas.order import (
     ORDER_RAW_SCHEMA,
     ORDER_NORMALIZED_SCHEMA,

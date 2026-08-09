@@ -11,7 +11,7 @@ For exhaustive reference on supported APIs, PySpark parity, examples and semanti
 A schema class defines a contract and compiles into PySpark schema (`StructType`/`StructField`).
 
 ```python
-from structure import Schema
+from structure import *
 from structure.plugin.pyspark import *
 
 class OrderRaw(Schema):
@@ -41,7 +41,7 @@ Reference: [schemas API](api/Schemas.api.md), [schema declaration syntax](refere
 A transform class is declared by inheriting `Transform`.
 
 ```python
-from structure import Transform, input, lane, output
+from structure import *
 from structure.plugin.pyspark import *
 
 class NormalizeOrders(Transform):
@@ -1255,20 +1255,7 @@ Reference: [compatibility policy](background/Capabilities.back.md) and
 Generate starter Structure schema classes from live Spark schema metadata:
 
 ```python
-from structure import (
-    Schema,
-    StructureConfig,
-    StructureSession,
-    StructureTools,
-    Transform,
-    input,
-    lane,
-    output,
-    raw,
-    special,
-    step,
-    transform,
-)
+from structure import *
 
 code = StructureTools.schemas.generate(schema=orders_df.schema, to="OrderRaw")
 code = StructureTools.schemas.generate(schema=orders_df, to="OrderRaw")

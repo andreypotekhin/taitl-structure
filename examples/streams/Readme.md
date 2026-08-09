@@ -59,7 +59,7 @@ The helper is intentionally ordinary application code: it creates sources, appli
 starts queries, drains available test input, and stops queries.
 
 ```python
-from examples.streams.adoption import read_json_stream, start_memory_query, stop_query
+from examples.streams.adoption import *
 
 events = read_json_stream(spark, raw_event_schema, events_path)
 passages = PreparePassages(
@@ -87,7 +87,7 @@ The generated Structure module still contains only DataFrame transformations. Th
 For side-effecting sinks, keep `foreachBatch` in the same caller-owned layer:
 
 ```python
-from examples.streams.adoption import ForeachBatchSafety, start_foreach_batch_query
+from examples.streams.adoption import *
 
 def write_batch(batch, batch_id):
     # Idempotence and sink retry policy belong to the caller.
@@ -116,7 +116,7 @@ Arbitrary state is also design-gated. Callers can use `ArbitraryStateContract` t
 writing native `applyInPandasWithState` or `transformWithState` code, but validation does not provide a state runtime:
 
 ```python
-from examples.streams.adoption import ArbitraryStateContract
+from examples.streams.adoption import *
 
 state_contract = ArbitraryStateContract(
     operation="transformWithState",

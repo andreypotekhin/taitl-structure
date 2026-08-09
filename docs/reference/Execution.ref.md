@@ -115,7 +115,7 @@ objects. It must not suppress diagnostics or change source anchors.
 Select a mode in configuration or a resolved Python config:
 
 ```python
-from structure import StructureConfig, StructureSession
+from structure import *
 
 config = StructureConfig.resolve(project_root=".", execution_mode="generated")
 session = StructureSession(spark=spark, config=config)
@@ -132,7 +132,7 @@ live DataFrame and Column objects; it does not execute generated Python source a
 `MemoryStorage` can hold generated artifacts for no-disk workflows:
 
 ```python
-from structure import MemoryStorage, StructureConfig, StructureSession
+from structure import *
 
 storage = MemoryStorage()
 config = StructureConfig.resolve(execution_mode="generated")

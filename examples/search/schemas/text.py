@@ -20,6 +20,11 @@ class Document(Schema):
     search_query_id = string(nullable=True)
     score_overlap = double(nullable=True)
     score_bm25 = double(nullable=True)
+    document_type = string(nullable=True)
+    category_id = string(nullable=True)
+    file_type = string(nullable=True)
+    fields = map(string(), string(), value_contains_null=False, nullable=False)
+
 
 class Section(Schema):
     """Persisted document-local section span."""

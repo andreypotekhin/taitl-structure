@@ -13,6 +13,10 @@
 - Main: [Annotation.auto.md](../Annotation.auto.md)
 - Maintain annotated sources per instructions and scope described in main doc. 
 
+### Documentation hygiene
+Do not include sensitive information such as passwords, host names, absolute paths, developer username/home dir
+in any documents. Timezone should be specified as abbreviation, rather than city-name-based.
+
 ## Documentation style
 
 ### End-User top-level documentation 

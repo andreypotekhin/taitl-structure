@@ -201,7 +201,7 @@ session = StructureSession(spark=spark, config=config)
 Generated execution can use an in-memory artifact when a project wants generated semantics without generated files:
 
 ```python
-from structure import MemoryStorage, StructureConfig, StructureSession
+from structure import *
 
 storage = MemoryStorage()
 config = StructureConfig.resolve(execution_mode="generated")

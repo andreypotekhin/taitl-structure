@@ -1,13 +1,14 @@
 # Search Indexing
 
 
-`Indexing` turns document-backed sentence boundaries into reusable lexical artifacts for all Search query batches and
-similarity runs. It materializes source text only in private transient lanes before tokenization.
+`Indexing` turns document-backed sentence boundaries and extracted document fields into reusable Search artifacts for
+query batches and similarity runs. It materializes source text only in private transient lanes before tokenization.
 
 
-The index publishes independent term and summary relations for documents, sections, paragraphs, and sentences. Term
-rows contain target-local frequency and length facts plus grain-level frequency; summaries contain target count and
-average length. Token occurrences remain private intermediate data.
+The index publishes independent lexical term and summary relations for documents, sections, paragraphs, and sentences,
+plus positional field-term postings for metadata search. Lexical term rows contain target-local frequency and length
+facts plus grain-level frequency; field rows retain field identity and token positions. Token occurrences remain private
+intermediate data.
 
 The same normalization contract is used for sentence extraction, free-form query text, filtering, and scoring. The
 caller may persist any aggregate relation and must treat all of them as belonging to one corpus snapshot.
@@ -47,6 +48,9 @@ The decisions below keep this topic inspectable when an implementation or provid
 | Normalization | Per-consumer; chunking; indexing boundary | Declared boundary | Search stages agree. |
 | Statistics | Global; hidden recompute; corpus artifact | Corpus artifact | Reuse stays explicit. |
 | Public relation | Publish tokens; mixed relation; per-grain | Relations per grain | Consumers get one grain. |
+
+Field indexing is part of this composition as the `Indexing.fields` child. It remains a separate implementation lane
+inside the transform so it does not alter `LexIndex` artifacts or add body-content positions.
 
 
 Failures should identify target identity, parent identity, normalization policy, and snapshot. Examples should compare

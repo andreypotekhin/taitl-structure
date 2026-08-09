@@ -20,7 +20,7 @@ Start with an input contract broad enough to represent the feed and an output co
 downstream consumers receive.
 
 ```python
-from structure import Schema, Transform, input, output, transform
+from structure import *
 from structure.plugin.pyspark import *
 
 
@@ -71,7 +71,7 @@ of the compiled transform, execution and generated-code execution apply the same
 Run the transform with a DataFrame matching `AccountEvent`, then retrieve the named output.
 
 ```python
-from structure import StructureSession
+from structure import *
 
 
 session = StructureSession(spark=spark)

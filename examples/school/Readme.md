@@ -95,7 +95,7 @@ distributed pivot algorithm, which is outside of this example.
 emits the state before the transition for that row.
 
 ```python
-from examples.school.transforms.sequences import Fibonacci, PrimeNumbers
+from examples.school.transforms.sequences import *
 
 fibonacci = Fibonacci(ticks=ticks).run(session).result.orderBy("index")
 primes = PrimeNumbers(ticks=ticks).run(session).result.orderBy("index")
@@ -110,7 +110,7 @@ For indices `0..9`, `PrimeNumbers` emits `2, 3, 5, 7, 11, 13, 17, 19, 23, 29`.
 inline, so the compiled Spark plan stays visible to the optimizer.
 
 ```python
-from examples.school.transforms.series import EAsSeries, Ln2AsSeries, PiAsSeries
+from examples.school.transforms.series import *
 
 pi = PiAsSeries(ticks=ticks).run(session).result
 e = EAsSeries(ticks=ticks).run(session).result
@@ -133,8 +133,8 @@ poetry run pip install -e examples/plugins/iterable
 constructor arguments and emits named `reports` and `audits` outputs:
 
 ```python
-from examples.school.transforms.iterable import ProjectIterableScores
-from structure import StructureSession
+from examples.school.transforms.iterable import *
+from structure import *
 
 scores = [{"student": "Ada", "score": 100, "ignored": False}]
 profiles = [{"student": "Ada", "cohort": "math"}]
@@ -150,7 +150,7 @@ assert result.reports.collect() == [
 contiguous `index` values beginning at zero.
 
 ```python
-from examples.school.transforms.iterable import IterableFibonacci
+from examples.school.transforms.iterable import *
 
 rows=({"index": index} for index in range(4))
 
