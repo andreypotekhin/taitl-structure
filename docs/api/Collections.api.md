@@ -50,8 +50,8 @@ Structure contract.
 
 | Structure API | PySpark parity | Example |
 | --- | --- | --- |
-| `arr_transform(...)` | `transform` | `arr_transform(order.tags, lambda tag: lower(tag))` |
-| `arr_filter(...)` | `filter` | `arr_filter(order.tags, lambda tag: tag.is_not_null())` |
+| `arr_transform(...)` | `transform` | `arr_transform(order.tags, lambda tag: lower(tag))` or `arr_transform(order.values, lambda value, index: value + index)` |
+| `arr_filter(...)` | `filter` | `arr_filter(order.tags, lambda tag: tag.is_not_null())` or `arr_filter(order.values, lambda value, index: index % 2 == 0)` |
 | `arr_exists(...)` | `exists` | `arr_exists(order.tags, lambda tag: tag == "priority")` |
 | `arr_forall(...)` | `forall` | `arr_forall(order.tags, lambda tag: tag.is_not_null())` |
 | `arr_zip_with(...)` | `zip_with` | `arr_zip_with(order.tags, order.tags, lambda left, right: left)` |
@@ -63,6 +63,11 @@ Structure contract.
 **Details And Differences**
 
 - Callbacks run once during symbolic compilation, not once per Python row.
+- `arr_transform(...)` and `arr_filter(...)` accept unary `(item)` or binary `(item, index)` callbacks. The binary index is
+  zero-based, non-null, and typed as `long`; for filtering it always refers to the original input-array position.
+- An indexed transform can return a declared struct to produce an ordinal-aware nested output without exploding rows:
+  `arr_transform(order.tags, lambda tag, index: PositionedTag(value=tag, ordinal=index))`, where `PositionedTag` is a
+  declared `Schema` with `value` and `ordinal` fields.
 - Predicate callbacks must return symbolic Boolean expressions; merge and sort callbacks must return symbolic values.
 - `arr_exists(...)` and `arr_forall(...)` can yield null under Spark's three-valued predicate semantics when an item or
   predicate result is null and no decisive true/false result is present.

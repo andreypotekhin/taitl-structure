@@ -13,6 +13,7 @@ from collections.abc import Callable
 from datetime import date, datetime
 from decimal import Decimal
 from functools import cache as cached
+from inspect import Parameter, signature
 from math import isfinite
 from re import fullmatch
 from typing import Any, cast, overload
@@ -52,6 +53,11 @@ from structure.plugin.pyspark.dsl.windows.GroupedRows import GroupedRows
 from structure.plugin.pyspark.dsl.windows.WindowBound import WindowBound
 from structure.plugin.pyspark.dsl.windows.WindowFrame import WindowFrame
 from structure.plugin.pyspark.dsl.windows.WindowSpec import WindowSpec
+
+
+class _LambdaBinding:
+    def __repr__(self) -> str:
+        return "<lambda-binding>"
 
 
 def group_by(*keys: object, **named_keys: object) -> "GroupedRows":
@@ -1563,24 +1569,44 @@ def _dedupe_scope(fields: tuple[Expression, ...], *, call: str) -> str | None:
     return next(iter(scopes), None)
 
 
-def arr_transform(value: object, function: Callable[[Expression], object]) -> Expression:
+@overload
+def arr_transform(value: object, function: Callable[[Expression], object]) -> Expression: ...
+
+
+@overload
+def arr_transform(value: object, function: Callable[[Expression, Expression], object]) -> Expression: ...
+
+
+def arr_transform(value: object, function: Callable[..., object]) -> Expression:
     """Apply a typed callback to every array element, like Spark ``transform``.
 
     Args:
         value: Array expression.
-        function: One-argument callback that receives an element expression and
-            returns a Structure expression.
+        function: One-argument callback receiving an element expression, or a
+            two-argument callback receiving the element and its zero-based
+            ``LongType`` index.
 
     Returns:
         An array expression whose element type comes from the callback result.
 
     Example:
         normalized = arr_transform(order.tags, lambda tag: lower(trim(tag)))
+        numbered = arr_transform(order.values, lambda value, index: value + index)
     """
     argument = literal(value)
     array = _array_type(argument, "arr_transform(...)")
-    element = _lambda_arg(array.element, nullable=array.contains_null, name="item")
-    result = _callback_expression("arr_transform(...)", function, element)
+    arity = _callback_arity("arr_transform(...)", function)
+    element = _lambda_arg(
+        array.element,
+        nullable=array.contains_null,
+        name="item",
+        binding=_LambdaBinding() if arity == 2 else None,
+    )
+    arguments: tuple[Expression, ...] = (element,)
+    if arity == 2:
+        index = _lambda_arg(LongType(), nullable=False, name="index", binding=_LambdaBinding())
+        arguments += (index,)
+    result = _callback_expression("arr_transform(...)", function, *arguments)
     result_type = result.type
     if result_type is None:
         raise AssertionError("higher-order callback validation must reject untyped results")
@@ -1590,16 +1616,40 @@ def arr_transform(value: object, function: Callable[[Expression], object]) -> Ex
         name="array_transform",
         type=ArrayType(result_type, contains_null=result.nullable),
         nullable=argument.nullable,
-        args=(argument, result),
+        args=(argument, result) if arity == 1 else (argument, element, index, result),
+        data=(('callback_arity', arity),),
     )
 
 
-def arr_filter(value: object, function: Callable[[Expression], object]) -> Expression:
-    """Keep array elements whose callback predicate is true."""
+@overload
+def arr_filter(value: object, function: Callable[[Expression], object]) -> Expression: ...
+
+
+@overload
+def arr_filter(value: object, function: Callable[[Expression, Expression], object]) -> Expression: ...
+
+
+def arr_filter(value: object, function: Callable[..., object]) -> Expression:
+    """Keep array elements whose callback predicate is true.
+
+    The callback may receive only the element or the element and its
+    zero-based ``LongType`` source index.  The index remains the original
+    position even when earlier elements are rejected.
+    """
     argument = literal(value)
     array = _array_type(argument, "arr_filter(...)")
-    element = _lambda_arg(array.element, nullable=array.contains_null, name="item")
-    predicate = _callback_expression("arr_filter(...)", function, element)
+    arity = _callback_arity("arr_filter(...)", function)
+    element = _lambda_arg(
+        array.element,
+        nullable=array.contains_null,
+        name="item",
+        binding=_LambdaBinding() if arity == 2 else None,
+    )
+    arguments: tuple[Expression, ...] = (element,)
+    if arity == 2:
+        index = _lambda_arg(LongType(), nullable=False, name="index", binding=_LambdaBinding())
+        arguments += (index,)
+    predicate = _callback_expression("arr_filter(...)", function, *arguments)
     if not isinstance(predicate.type, BooleanType):
         raise TypeError("arr_filter(...) callback must return a Boolean expression")
     return _reserved_expression(
@@ -1608,7 +1658,8 @@ def arr_filter(value: object, function: Callable[[Expression], object]) -> Expre
         name="array_filter",
         type=argument.type,
         nullable=argument.nullable,
-        args=(argument, predicate),
+        args=(argument, predicate) if arity == 1 else (argument, element, index, predicate),
+        data=(('callback_arity', arity),),
     )
 
 
@@ -2274,6 +2325,21 @@ def map_from_entries(value: object) -> Expression:
     )
 
 
+def _callback_arity(call: str, function: Callable[..., object]) -> int:
+    message = f"{call} callback must declare exactly one or two required positional parameters"
+    try:
+        parameters = tuple(signature(function).parameters.values())
+    except (TypeError, ValueError) as error:
+        raise TypeError(message) from error
+    if any(
+        parameter.kind not in (Parameter.POSITIONAL_ONLY, Parameter.POSITIONAL_OR_KEYWORD)
+        or parameter.default is not Parameter.empty
+        for parameter in parameters
+    ) or len(parameters) not in (1, 2):
+        raise TypeError(message)
+    return len(parameters)
+
+
 def _callback_expression(call: str, function: Callable[..., object], *arguments: Expression) -> Expression:
     try:
         result = literal(function(*arguments))
@@ -2502,12 +2568,15 @@ def _unified_types(call: str, types: tuple[StructureType, ...]) -> StructureType
     return _unify_types(call, types)
 
 
-def _lambda_arg(type, *, nullable: bool, name: str) -> Expression:
+def _lambda_arg(type, *, nullable: bool, name: str, binding: object | None = None) -> Expression:
+    data: dict[str, object] = {"name": name}
+    if binding is not None:
+        data["binding"] = binding
     return Expression(
         kind="lambda_arg",
         type=type,
         nullable=nullable,
-        data={"name": name},
+        data=data,
     )
 
 

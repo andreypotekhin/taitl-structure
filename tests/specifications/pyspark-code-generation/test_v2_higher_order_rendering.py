@@ -18,6 +18,20 @@ class CleanTags(Schema):
     tags = array(string(), contains_null=False, nullable=True)
 
 
+class IndexedTags(Schema):
+    id = string(nullable=False)
+    positions = array(long(), contains_null=False, nullable=True)
+    first = array(string(), contains_null=False, nullable=True)
+
+
+class RawNumbers(Schema):
+    values = array(long(), contains_null=False, nullable=True)
+
+
+class NestedNumbers(Schema):
+    values = array(long(), contains_null=False, nullable=True)
+
+
 class TagSummary(Schema):
     id = string(nullable=False)
     has_priority = boolean(nullable=True)
@@ -57,6 +71,31 @@ class CleanTagTransform(Transform):
             lambda tag: tag.is_not_null(),
         )
         return CleanTags(id=row.id, tags=tags)
+
+
+@transform
+class IndexedTagTransform(Transform):
+    rows = input(RawTags)
+    indexed = output(IndexedTags)
+
+    def index_tags(self, row: RawTags) -> IndexedTags:
+        return IndexedTags(
+            id=row.id,
+            positions=arr_transform(row.tags, lambda item, index: index),
+            first=arr_filter(row.tags, lambda item, index: index == 0),
+        )
+
+
+@transform
+class NestedNumberTransform(Transform):
+    rows = input(RawNumbers)
+    nested = output(NestedNumbers)
+
+    def transform_numbers(self, row: RawNumbers) -> NestedNumbers:
+        def inner(outer_index):
+            return arr_transform(row.values, lambda item, index: item + outer_index)
+
+        return NestedNumbers(values=arr_transform(row.values, lambda item, index: inner(index)))
 
 
 @transform
@@ -124,6 +163,26 @@ def test_array_higher_order_helpers_render_spark_visible_lambdas() -> None:
     assert (
         'F.filter(F.transform(F.col("raw_tags.tags"), lambda item: F.lower(F.trim(item))), '
         "lambda item: item.isNotNull()).alias(\"tags\")"
+    ) in text
+
+
+def test_array_transform_and_filter_render_zero_based_index_callbacks() -> None:
+    plan = _recipe(IndexedTagTransform)
+
+    text = render_pyspark_step(plan.steps[0], current="rows", sources={"rows": "rows"})
+
+    assert ('F.transform(F.col("raw_tags.tags"), lambda item, index: index).alias("positions")') in text
+    assert 'F.filter(F.col("raw_tags.tags"), lambda item, index: (index == F.lit(0))).alias("first")' in text
+
+
+def test_nested_index_callbacks_keep_outer_binding_visible_in_generated_code() -> None:
+    plan = _recipe(NestedNumberTransform)
+
+    text = render_pyspark_step(plan.steps[0], current="rows", sources={"rows": "rows"})
+
+    assert (
+        'F.transform(F.col("raw_numbers.values"), lambda item, index: '
+        'F.transform(F.col("raw_numbers.values"), lambda item_1, index_1: (item_1 + index))).alias("values")'
     ) in text
 
 

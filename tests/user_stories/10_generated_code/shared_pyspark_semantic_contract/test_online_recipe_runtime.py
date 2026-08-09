@@ -1,5 +1,6 @@
 import sys
 from dataclasses import dataclass, replace
+from inspect import signature
 from types import ModuleType, SimpleNamespace
 from typing import Any, cast
 
@@ -345,6 +346,14 @@ def test_online_expression_evaluator_preserves_pyspark_column_semantics() -> Non
         (
             _array_transform(_field(RawTermBatch, "terms"), _call("lower", _lambda_item_field("token"))),
             "transform(col(RawTermBatch.terms), lambda item: lower(item.getField('token')))",
+        ),
+        (
+            _indexed_array_transform(_field(RawTagBatch, "tags")),
+            "transform(col(RawTagBatch.tags), lambda item, index: (item + index))",
+        ),
+        (
+            _indexed_array_filter(_field(RawTagBatch, "tags")),
+            "filter(col(RawTagBatch.tags), lambda item, index: (index == lit(0)))",
         ),
         (
             _map_filter(
@@ -3537,6 +3546,30 @@ def _array_transform(array: PySparkExpressionRecipe, body: PySparkExpressionReci
     )
 
 
+def _indexed_array_transform(array: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
+    item = PySparkExpressionRecipe("lambda_arg", types.string(), False, {"name": "item", "binding": object()})
+    index = PySparkExpressionRecipe("lambda_arg", types.long(), False, {"name": "index", "binding": object()})
+    return PySparkExpressionRecipe(
+        "transform_expression",
+        array.type,
+        array.nullable,
+        {"function": "array_transform", "callback_arity": 2},
+        (array, item, index, _binary("add", item, index)),
+    )
+
+
+def _indexed_array_filter(array: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
+    item = PySparkExpressionRecipe("lambda_arg", types.string(), False, {"name": "item", "binding": object()})
+    index = PySparkExpressionRecipe("lambda_arg", types.long(), False, {"name": "index", "binding": object()})
+    return PySparkExpressionRecipe(
+        "transform_expression",
+        array.type,
+        array.nullable,
+        {"function": "array_filter", "callback_arity": 2},
+        (array, item, index, _binary("eq", index, _literal(0))),
+    )
+
+
 def _array_filter(array: PySparkExpressionRecipe, body: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
     return PySparkExpressionRecipe(
         "transform_expression", array.type, array.nullable, {"function": "array_filter"}, (array, body)
@@ -3908,6 +3941,9 @@ class FakeFunctions(ModuleType):
 
     def transform(self, column, function):
         item = FakeColumn("item")
+        if len(signature(function).parameters) == 2:
+            index = FakeColumn("index")
+            return FakeColumn(f"transform({column.expression}, lambda item, index: {function(item, index).expression})")
         return FakeColumn(f"transform({column.expression}, lambda item: {function(item).expression})")
 
     def posexplode(self, column):
@@ -3943,6 +3979,9 @@ class FakeFunctions(ModuleType):
 
     def filter(self, column, function):
         item = FakeColumn("item")
+        if len(signature(function).parameters) == 2:
+            index = FakeColumn("index")
+            return FakeColumn(f"filter({column.expression}, lambda item, index: {function(item, index).expression})")
         return FakeColumn(f"filter({column.expression}, lambda item: {function(item).expression})")
 
     def transform_values(self, column, function):

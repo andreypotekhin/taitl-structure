@@ -196,6 +196,22 @@ class EvaluatePySparkExpression:
                 expression.data["gap"],
             )
         if function == "array_transform":
+            if expression.data.get("callback_arity", 1) == 2:
+                array, item_argument, index_argument, body = expression.args
+                item_binding = self._lambda_binding(item_argument, "item")
+                index_binding = self._lambda_binding(index_argument, "index")
+                return functions.transform(
+                    self.evaluate(array, functions=functions, aliases=aliases, window=window),
+                    lambda item, index: self.evaluate(
+                        self._bind_lambdas(
+                            body,
+                            {item_binding: item, index_binding: index},
+                        ),
+                        functions=functions,
+                        aliases=aliases,
+                        window=window,
+                    ),
+                )
             array, body = expression.args
             name = self._lambda_name(expression)
             return functions.transform(
@@ -205,6 +221,22 @@ class EvaluatePySparkExpression:
                 ),
             )
         if function == "array_filter":
+            if expression.data.get("callback_arity", 1) == 2:
+                array, item_argument, index_argument, body = expression.args
+                item_binding = self._lambda_binding(item_argument, "item")
+                index_binding = self._lambda_binding(index_argument, "index")
+                return functions.filter(
+                    self.evaluate(array, functions=functions, aliases=aliases, window=window),
+                    lambda item, index: self.evaluate(
+                        self._bind_lambdas(
+                            body,
+                            {item_binding: item, index_binding: index},
+                        ),
+                        functions=functions,
+                        aliases=aliases,
+                        window=window,
+                    ),
+                )
             array, body = expression.args
             name = self._lambda_name(expression)
             return functions.filter(
@@ -633,6 +665,15 @@ class EvaluatePySparkExpression:
 
     def _bind_lambdas(self, expression: PySparkExpressionRecipe, columns):
         if expression.kind == "lambda_arg":
+            binding = expression.data.get("binding")
+            if binding in columns:
+                return PySparkExpressionRecipe(
+                    kind=expression.kind,
+                    type=expression.type,
+                    nullable=expression.nullable,
+                    data={**expression.data, "column": columns[binding]},
+                    args=expression.args,
+                )
             name = expression.data.get("name")
             if name not in columns:
                 return expression
@@ -657,6 +698,9 @@ class EvaluatePySparkExpression:
 
     def _lambda_name(self, expression: PySparkExpressionRecipe) -> str:
         return str(expression.data.get("lambda_name", "item"))
+
+    def _lambda_binding(self, expression: PySparkExpressionRecipe, fallback: str):
+        return expression.data.get("binding", expression.data.get("name", fallback))
 
     def _bound_lambda_field(self, expression: PySparkExpressionRecipe, columns):
         name_path = expression.data.get("name_path")
@@ -692,7 +736,9 @@ class EvaluatePySparkExpression:
         if function == "from_json":
             schema = self._schema.materialize()(cast(type, expression.data["schema"]))
             options = expression.data["options"]
-            return functions.from_json(args[0], schema) if not options else functions.from_json(args[0], schema, options)
+            return (
+                functions.from_json(args[0], schema) if not options else functions.from_json(args[0], schema, options)
+            )
         if function == "from_csv":
             schema = self._ddl_schema(cast(type, expression.data["schema"]))
             options = expression.data["options"]
@@ -707,7 +753,13 @@ class EvaluatePySparkExpression:
         }:
             return getattr(functions, function)(args[0])
         if function in {"geo_from_wkt", "geo_as_wkt", "geo_intersects", "geo_contains", "geo_within"}:
-            names = {"geo_from_wkt": "ST_GeomFromWKT", "geo_as_wkt": "ST_AsText", "geo_intersects": "ST_Intersects", "geo_contains": "ST_Contains", "geo_within": "ST_Within"}
+            names = {
+                "geo_from_wkt": "ST_GeomFromWKT",
+                "geo_as_wkt": "ST_AsText",
+                "geo_intersects": "ST_Intersects",
+                "geo_contains": "ST_Contains",
+                "geo_within": "ST_Within",
+            }
             if function == "geo_from_wkt":
                 args.append(functions.lit(expression.data["srid"]))
             return functions.call_function(names[function], *args)
@@ -728,7 +780,9 @@ class EvaluatePySparkExpression:
             return functions.variant_delete(args[0], *cast(tuple[str, ...], expression.data["paths"]))
         if function in {"to_json", "to_csv"}:
             options = expression.data["options"]
-            return getattr(functions, function)(args[0]) if not options else getattr(functions, function)(args[0], options)
+            return (
+                getattr(functions, function)(args[0]) if not options else getattr(functions, function)(args[0], options)
+            )
         if function == "coalesce":
             return functions.coalesce(*args)
         if function in {"nvl", "ifnull"}:

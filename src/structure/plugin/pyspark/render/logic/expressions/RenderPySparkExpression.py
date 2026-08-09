@@ -64,6 +64,11 @@ class RenderPySparkExpression:
         if expression.kind == "literal":
             return f"F.lit({expression.data['value']!r})"
         if expression.kind == "lambda_arg":
+            binding = expression.data.get("binding")
+            if binding is not None:
+                alias = aliases.get(cast(str, binding))
+                if alias is not None:
+                    return alias
             return str(expression.data["name"])
         if expression.kind == "call":
             return self._call(expression, aliases)
@@ -177,10 +182,28 @@ class RenderPySparkExpression:
         if function == "session_window":
             return f"F.session_window({self._render(expression.args[0], aliases)}, {expression.data['gap']!r})"
         if function == "array_transform":
+            if expression.data.get("callback_arity", 1) == 2:
+                array, item, index, body = expression.args
+                callback_aliases = self._lambda_aliases(aliases, ((item, "item"), (index, "index")))
+                item_name = self._lambda_name(item, "item", callback_aliases)
+                index_name = self._lambda_name(index, "index", callback_aliases)
+                return (
+                    f"F.transform({self._render(array, aliases)}, "
+                    f"lambda {item_name}, {index_name}: {self._render(body, callback_aliases)})"
+                )
             array, body = expression.args
             argument = self._lambda_name(body, "item")
             return f"F.transform({self._render(array, aliases)}, lambda {argument}: {self._render(body, aliases)})"
         if function == "array_filter":
+            if expression.data.get("callback_arity", 1) == 2:
+                array, item, index, body = expression.args
+                callback_aliases = self._lambda_aliases(aliases, ((item, "item"), (index, "index")))
+                item_name = self._lambda_name(item, "item", callback_aliases)
+                index_name = self._lambda_name(index, "index", callback_aliases)
+                return (
+                    f"F.filter({self._render(array, aliases)}, "
+                    f"lambda {item_name}, {index_name}: {self._render(body, callback_aliases)})"
+                )
             array, body = expression.args
             argument = self._lambda_name(body, "item")
             return f"F.filter({self._render(array, aliases)}, lambda {argument}: {self._render(body, aliases)})"
@@ -451,7 +474,33 @@ class RenderPySparkExpression:
             else f"{rendered}.{'desc' if expression.data.get('descending') else 'asc'}()"
         )
 
-    def _lambda_name(self, expression: PySparkExpressionRecipe, fallback: str) -> str:
+    def _lambda_aliases(self, aliases: Mapping[str, str], arguments) -> dict[str, str]:
+        result = dict(aliases)
+        used = set(result.values())
+        for argument, fallback in arguments:
+            name = fallback
+            suffix = 1
+            while name in used:
+                name = f"{fallback}_{suffix}"
+                suffix += 1
+            binding = argument.data.get("binding")
+            if binding is not None:
+                result[cast(str, binding)] = name
+            used.add(name)
+        return result
+
+    def _lambda_name(
+        self,
+        expression: PySparkExpressionRecipe,
+        fallback: str,
+        aliases: Mapping[str, str] | None = None,
+    ) -> str:
+        if aliases is not None:
+            binding = expression.data.get("binding")
+            if binding is not None:
+                alias = aliases.get(cast(str, binding))
+                if alias is not None:
+                    return alias
         return str(expression.data.get("name", fallback)) if expression.kind == "lambda_arg" else fallback
 
     def _field(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:
@@ -493,11 +542,19 @@ class RenderPySparkExpression:
         if function == "from_json":
             schema = self._inline_schema(cast(type, expression.data["schema"]))
             options = cast(dict[str, str], expression.data["options"])
-            return f"F.{function}({args[0]}, {schema})" if not options else f"F.{function}({args[0]}, {schema}, {options!r})"
+            return (
+                f"F.{function}({args[0]}, {schema})"
+                if not options
+                else f"F.{function}({args[0]}, {schema}, {options!r})"
+            )
         if function == "from_csv":
             schema = self._ddl_schema(cast(type, expression.data["schema"]))
             options = cast(dict[str, str], expression.data["options"])
-            return f"F.from_csv({args[0]}, {schema!r})" if not options else f"F.from_csv({args[0]}, {schema!r}, {options!r})"
+            return (
+                f"F.from_csv({args[0]}, {schema!r})"
+                if not options
+                else f"F.from_csv({args[0]}, {schema!r}, {options!r})"
+            )
         if function in {
             "is_valid_variant",
             "parse_json",
@@ -508,7 +565,13 @@ class RenderPySparkExpression:
         }:
             return f"F.{function}({args[0]})"
         if function in {"geo_from_wkt", "geo_as_wkt", "geo_intersects", "geo_contains", "geo_within"}:
-            names = {"geo_from_wkt": "ST_GeomFromWKT", "geo_as_wkt": "ST_AsText", "geo_intersects": "ST_Intersects", "geo_contains": "ST_Contains", "geo_within": "ST_Within"}
+            names = {
+                "geo_from_wkt": "ST_GeomFromWKT",
+                "geo_as_wkt": "ST_AsText",
+                "geo_intersects": "ST_Intersects",
+                "geo_contains": "ST_Contains",
+                "geo_within": "ST_Within",
+            }
             if function == "geo_from_wkt":
                 args.append(f"F.lit({expression.data['srid']})")
             return f"F.call_function({names[function]!r}, {', '.join(args)})"
@@ -662,7 +725,10 @@ class RenderPySparkExpression:
         raise TypeError(f"Unsupported Structure type: {type!r}")
 
     def _ddl_schema(self, schema: Any) -> str:
-        return ", ".join(f"{self._ddl_field(field.column)} {self._ddl_type(field.type)}" for field in schema._structure_fields.values())
+        return ", ".join(
+            f"{self._ddl_field(field.column)} {self._ddl_type(field.type)}"
+            for field in schema._structure_fields.values()
+        )
 
     def _ddl_field(self, name: str) -> str:
         if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", name):

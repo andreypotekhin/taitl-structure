@@ -497,8 +497,8 @@ return OrderCustomerWindow(
 
 Supported array helpers:
 
-- `arr_transform(value, lambda item: ...)`;
-- `arr_filter(value, lambda item: predicate)`;
+- `arr_transform(value, lambda item: ...)` or `arr_transform(value, lambda item, index: ...)`;
+- `arr_filter(value, lambda item: predicate)` or `arr_filter(value, lambda item, index: predicate)`;
 - `arr_exists(value, lambda item: predicate)`;
 - `arr_forall(value, lambda item: predicate)`;
 - `arr_zip_with(left, right, lambda left_item, right_item: ...)`;
@@ -550,6 +550,8 @@ Array examples:
 ```python
 trimmed_tags = arr_transform(order.tags, lambda tag: lower(trim(tag)))
 priority_tags = arr_filter(trimmed_tags, lambda tag: tag == "priority")
+indexed_tags = arr_transform(order.tags, lambda tag, index: PositionedTag(value=tag, ordinal=index))
+even_tags = arr_filter(order.tags, lambda tag, index: index % 2 == 0)
 paired_tags = arr_zip_with(order.tags, order.tags, lambda left, right: lower(trim(left)))
 
 return OrderCollectionProfile(
@@ -588,6 +590,12 @@ Rules:
 
 - Array predicate callbacks must return Boolean expressions for `arr_filter(...)`, `arr_exists(...)`, and
   `arr_forall(...)`.
+- `arr_transform(...)` and `arr_filter(...)` accept unary `(item)` or binary `(item, index)` callbacks. The binary index
+  is zero-based, non-null, and typed as `long`; `arr_filter(...)` reports the original input position after earlier
+  elements are rejected.
+- An indexed `arr_transform(...)` may return a declared struct such as `PositionedTag(value=item, ordinal=index)` to
+  preserve ordinal-aware data inside the array. It does not compute variable-length prefix offsets or replace a row
+  generator plus window calculation automatically.
 - Map predicate callbacks must return Boolean expressions for `map_filter(...)`.
 - `map_transform_keys(...)` currently admits `duplicates="error"` only.
 - `arr_sort_by(...)` validates the symbolic callback and lowers to Spark-visible array sorting.

@@ -55,10 +55,7 @@ class DocumentChunking(Transform):
 
     @step(input=documents, output=marked_lines)
     def mark_lines(self, document: Document) -> MarkedDocumentLine:
-        lines = split(
-            regexp_replace(document.content, pattern=r"\r\n?", replacement="\n"),
-            pattern="\n",
-        )
+        lines = split(regexp_replace(document.content, pattern=r"\r\n?", replacement="\n"), pattern="\n")
         line = posexplode_array(lines, as_=ExpandedDocumentLine, value_field="line", scope="document_line")
         span_window = window(
             partition_by=document.id,
@@ -71,14 +68,8 @@ class DocumentChunking(Transform):
             frame=rows_between(unbounded_preceding(), current_row()),
         )
         span_start = coalesce(window_sum(length(line.line) + 1, over=span_window), 0).cast(types.long())
-        heading_prefix = nullif(
-            regexp_extract(line.line, pattern=r"^(\s*#+\s+)(.+?)\s*$", group=1),
-            "",
-        )
-        heading = nullif(
-            trim(regexp_extract(line.line, pattern=r"^(\s*#+\s+)(.+?)\s*$", group=2)),
-            "",
-        )
+        heading_prefix = nullif(regexp_extract(line.line, pattern=r"^(\s*#+\s+)(.+?)\s*$", group=1), "")
+        heading = nullif(trim(regexp_extract(line.line, pattern=r"^(\s*#+\s+)(.+?)\s*$", group=2)), "")
         is_heading = heading.is_not_null()
         is_blank = trim(line.line) == ""
         return MarkedDocumentLine(

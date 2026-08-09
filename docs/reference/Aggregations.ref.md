@@ -328,8 +328,10 @@ Callbacks are captured symbolically once; they do not execute Python code for ev
 | `arr_sort`, `arr_sort_by`, `arr_flatten`, `arr_distinct` | `map_keys`, `map_values`, `map_entries` |
 | `array_contains`, `size`, `element_at`, `try_element_at` | `map_contains_key`, `map_concat`, `element_at` |
 
-Predicate callbacks must return symbolic Boolean expressions. Array indices are one-based; use `try_element_at(...)`
-for a nullable missing-element result. `map_transform_keys(...)` and `map_concat(...)` currently require
+Predicate callbacks must return symbolic Boolean expressions. Array lookup positions are one-based; use
+`try_element_at(...)` for a nullable missing-element result. The binary `arr_transform(...)` and `arr_filter(...)`
+callback forms instead receive a zero-based, non-null `long` source index; filtering keeps the original source position.
+`map_transform_keys(...)` and `map_concat(...)` currently require
 `duplicates="error"`.
 
 Array callbacks have distinct contracts:
@@ -342,6 +344,10 @@ Array callbacks have distinct contracts:
 | `arr_aggregate` merge | Exactly the initial accumulator type |
 | `arr_aggregate` finish | Optional final value type |
 | `arr_sort_by` | Orderable symbolic key |
+
+`arr_transform(value, lambda item, index: ...)` can return a declared struct such as
+`PositionedTag(value=item, ordinal=index)` to produce an ordinal-aware array without changing row cardinality. Nested
+indexed callbacks retain distinct lexical bindings, including when both callbacks use the names `item` and `index`.
 
 `arr_exists` and `arr_forall` retain Spark's three-valued predicate behavior when nulls prevent a decisive result.
 `arr_aggregate` returns null for a null input array; an empty array returns the initial accumulator unchanged. Typed

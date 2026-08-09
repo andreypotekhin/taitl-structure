@@ -3,7 +3,7 @@ import pytest
 from structure import *
 from structure.plugin.pyspark import *
 from structure.plugin.pyspark.dsl.Expression import Expression
-from structure.plugin.pyspark.dsl.types import ArrayType, MapType, StructType, StructureType
+from structure.plugin.pyspark.dsl.types import ArrayType, LongType, MapType, StructType, StructureType
 
 
 class MapEntry(Schema):
@@ -39,6 +39,59 @@ def test_array_aggregate_requires_a_type_stable_accumulator() -> None:
         TypeError, match=r"arr_aggregate\(\.\.\.\) merge callback must return the initial accumulator type"
     ):
         arr_aggregate(array(2**31), 0, lambda accumulator, item: accumulator + item)
+
+
+def test_array_index_callbacks_expose_a_non_null_long_index_and_preserve_array_nullability() -> None:
+    nullable_items = Expression(
+        kind="test_nullable_items",
+        type=types.array(types.string(), contains_null=True),
+        nullable=True,
+    )
+
+    transformed = arr_transform(nullable_items, lambda item, index: index)
+    filtered = arr_filter(nullable_items, lambda item, index: index == 0)
+
+    assert isinstance(transformed.type, ArrayType)
+    assert isinstance(transformed.type.element, LongType)
+    assert transformed.type.contains_null is False
+    assert transformed.nullable is True
+    assert isinstance(transformed.args[2].type, LongType)
+    assert transformed.args[2].nullable is False
+    transformed_index_data = transformed.args[2].data
+    assert transformed_index_data is not None
+    assert transformed_index_data["name"] == "index"
+    assert filtered.type == nullable_items.type
+    assert filtered.nullable is True
+
+
+def test_array_index_callbacks_keep_distinct_nested_bindings() -> None:
+    values = Expression(
+        kind="test_values",
+        type=types.array(types.long(), contains_null=False),
+        nullable=False,
+    )
+
+    def inner(outer_index):
+        return arr_transform(values, lambda item, index: item + outer_index)
+
+    expression = arr_transform(values, lambda item, index: inner(index))
+    outer_item, outer_index = expression.args[1:3]
+    inner_expression = expression.args[3]
+    inner_item, inner_index = inner_expression.args[1:3]
+
+    outer_item_data = outer_item.data
+    outer_index_data = outer_index.data
+    inner_item_data = inner_item.data
+    inner_index_data = inner_index.data
+    nested_item_data = inner_expression.args[3].args[1].data
+    assert outer_item_data is not None
+    assert outer_index_data is not None
+    assert inner_item_data is not None
+    assert inner_index_data is not None
+    assert nested_item_data is not None
+    assert outer_item_data["binding"] is not inner_item_data["binding"]
+    assert outer_index_data["binding"] is not inner_index_data["binding"]
+    assert nested_item_data["binding"] is outer_index_data["binding"]
 
 
 def test_array_aggregate_propagates_input_and_empty_initial_nullability() -> None:

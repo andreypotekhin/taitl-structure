@@ -1,3 +1,6 @@
+from collections.abc import Callable
+from typing import cast
+
 import pytest
 
 from structure import *
@@ -100,6 +103,58 @@ def test_v2_array_transform_untyped_callback_return_reports_actionable_diagnosti
     assert diagnostic.source.endswith("BadReturn.clean_tags")
     assert (
         "arr_transform(...) callback must return a typed Structure expression or literal" in diagnostic.problem_text()
+    )
+
+
+@pytest.mark.parametrize(
+    "callback",
+    [
+        lambda: (lambda: 0),
+        lambda: (lambda item, index, extra: item),
+        lambda: (lambda *arguments: arguments[0]),
+        lambda: (lambda item, *, index: item),
+    ],
+)
+def test_v2_array_transform_invalid_callback_signature_reports_actionable_diagnostic(callback) -> None:
+    @transform
+    class BadSignature(Transform):
+        rows = input(RawTags)
+        clean = output(CleanTags)
+
+        def clean_tags(self, row: RawTags) -> CleanTags:
+            return CleanTags(tags=arr_transform(row.tags, callback()))
+
+    with pytest.raises(StructureCompileError) as raised:
+        _compile(BadSignature)
+
+    diagnostic = raised.value.diagnostic
+    assert diagnostic.code == "DSL-E0401"
+    assert diagnostic.source.endswith("BadSignature.clean_tags")
+    assert (
+        "arr_transform(...) callback must declare exactly one or two required positional parameters"
+        in diagnostic.problem_text()
+    )
+
+
+def test_v2_array_filter_invalid_callback_signature_reports_actionable_diagnostic() -> None:
+    @transform
+    class BadSignature(Transform):
+        rows = input(RawTags)
+        clean = output(CleanTags)
+
+        def clean_tags(self, row: RawTags) -> CleanTags:
+            callback = cast(Callable[..., object], lambda item, index, extra: item.is_not_null())
+            return CleanTags(tags=arr_filter(row.tags, callback))
+
+    with pytest.raises(StructureCompileError) as raised:
+        _compile(BadSignature)
+
+    diagnostic = raised.value.diagnostic
+    assert diagnostic.code == "DSL-E0401"
+    assert diagnostic.source.endswith("BadSignature.clean_tags")
+    assert (
+        "arr_filter(...) callback must declare exactly one or two required positional parameters"
+        in diagnostic.problem_text()
     )
 
 
